@@ -15,6 +15,10 @@ OperationState = Literal[
 ]
 
 
+def public_device_revision(generation: int | None) -> int:
+    return int(generation or 0) + 1
+
+
 @dataclass(frozen=True)
 class DeviceFacts:
     device_id: str

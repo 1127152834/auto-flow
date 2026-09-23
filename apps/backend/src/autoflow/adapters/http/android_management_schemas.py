@@ -107,6 +107,7 @@ class ImageRead(ApiModel):
     revision: int
     state: str
     verification: dict[str, Any]
+    validation: str = "not_tested"
     created_at: datetime
     source_digest: str | None = None
     architecture: str | None = None
@@ -262,6 +263,7 @@ class DiagnosticsCreate(ApiModel):
     request_id: str = Field(min_length=1, max_length=128)
     device_ids: list[str] = Field(default_factory=list, max_length=50)
     include_advanced_logs: bool = False
+    advanced_logs_consent: bool = False
 
 
 class DiagnosticRead(ApiModel):

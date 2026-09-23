@@ -118,6 +118,29 @@ it('keeps diagnostic contents out of the renderer and saves by controlled id', a
   expect(saveDiagnostic).toHaveBeenCalledWith('diag-1')
 })
 
+it('requires a fresh confirmation for each advanced diagnostic request', async () => {
+  const diagnostics = vi.fn(async () => ({ id: 'advanced', requestId: 'advanced', state: 'ready', payload: {}, createdAt: '' }))
+  const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(false).mockReturnValueOnce(true)
+  render(<DataMaintenance api={{ cleanupPreview: vi.fn(), cleanup: vi.fn(), diagnostics }} resourceIds={[]} diagnosticDeviceIds={['d1']} />)
+  await userEvent.click(screen.getByRole('button', { name: '生成高级日志诊断' }))
+  expect(diagnostics).not.toHaveBeenCalled()
+  await userEvent.click(screen.getByRole('button', { name: '生成高级日志诊断' }))
+  expect(confirm).toHaveBeenCalledTimes(2)
+  expect(diagnostics).toHaveBeenCalledWith(expect.objectContaining({ deviceIds: ['d1'], includeAdvancedLogs: true, advancedLogsConsent: true }))
+  confirm.mockRestore()
+})
+
+it('lets the operator choose up to five diagnostic devices from a larger fleet', async () => {
+  const diagnostics = vi.fn(async () => ({ id: 'advanced', requestId: 'advanced', state: 'ready', payload: {}, createdAt: '' }))
+  const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true)
+  render(<DataMaintenance api={{ cleanupPreview: vi.fn(), cleanup: vi.fn(), diagnostics }} resourceIds={[]} diagnosticDeviceIds={['d1', 'd2', 'd3', 'd4', 'd5', 'd6']} />)
+  await userEvent.click(screen.getByLabelText('诊断设备 d1'))
+  await userEvent.click(screen.getByLabelText('诊断设备 d6'))
+  await userEvent.click(screen.getByRole('button', { name: '生成高级日志诊断' }))
+  expect(diagnostics).toHaveBeenCalledWith(expect.objectContaining({ deviceIds: ['d2', 'd3', 'd4', 'd5', 'd6'], includeAdvancedLogs: true }))
+  confirm.mockRestore()
+})
+
 it('clears a stale cleanup preview when refreshing it fails', async () => {
   let fail = false
   const cleanupPreview = vi.fn(async () => {

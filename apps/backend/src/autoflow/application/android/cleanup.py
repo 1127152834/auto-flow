@@ -1,6 +1,7 @@
 import hashlib
 import json
 import threading
+from collections import Counter
 from contextlib import nullcontext
 from copy import deepcopy
 from pathlib import Path
@@ -116,11 +117,31 @@ class CleanupService:
             else:
                 item["state"] = "needs_verification"
         states = {item.get("state") for item in record.get("items", [])}
-        if states and states <= {"succeeded"}:
+        complete = "candidates" not in record or Counter(str(item.get("id")) for item in record["items"]) == Counter(str(item.get("id")) for item in record["candidates"])
+        if complete and states and states <= {"succeeded"}:
             record["state"] = "succeeded"
         elif states & {"failed", "needs_verification", "cancelled"}:
             record["state"] = "needs_verification"
+        elif states or not complete:
+            record["state"] = "running"
         return record
+
+    def reconcile_request(self, workspace_identity: str, request_id: str) -> None:
+        if self.operations is None or not hasattr(self.resources, "list"):
+            return
+        with self.request_lock:
+            stored = next((item for item in self.resources.list("cleanup-operation") if item.get("workspaceId") == workspace_identity and item.get("requestId") == request_id), None)
+            if stored is None:
+                return
+            record = self._reconcile(deepcopy(stored))
+            if record != stored:
+                self.resources.save("cleanup-operation", record)
+            desired = record.get("state")
+            if desired not in {"succeeded", "needs_verification"}:
+                return
+            parent = self.operations.by_request(workspace_identity, request_id)
+            if parent.state in {"running", "needs_verification"} and parent.state != desired:
+                self.operations.transition(parent.operation_id, parent.state, desired, {"stage_code": "completed" if desired == "succeeded" else "verify", "result_code": "CLEANUP_COMPLETED" if desired == "succeeded" else "CLEANUP_RESULT_UNKNOWN"})
 
     def _items(self, workspace_identity: str | None = None) -> list[dict[str, Any]]:
         if isinstance(self.resources, list):

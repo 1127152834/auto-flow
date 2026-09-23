@@ -10,7 +10,7 @@ import type { Profile } from '../fleet-api'
 afterEach(cleanup)
 const original: Profile = { id: '00000000-0000-4000-8000-000000000001', revision: 1, name: '验证模板', imageId: `sha256:${'a'.repeat(64)}`, width: 720, height: 1280, dpi: 320, cpu: 1, memoryMb: 1536, locale: 'zh-CN', timezone: 'Asia/Shanghai', shellRoot: 'unknown', applicationRoot: 'unknown', archived: false }
 
-function setup(initial: Profile[] = [], initialImages = [{ id: 'img-1', imageId: original.imageId, name: '标准镜像', reference: 'local:standard', revision: 1, state: 'verified', verification: { state: 'passed' }, createdAt: '' }]) {
+function setup(initial: Profile[] = [], initialImages = [{ id: 'img-1', imageId: original.imageId, name: '标准镜像', reference: 'local:standard', revision: 1, state: 'verified', verification: { state: 'passed' }, validation: 'not_tested', createdAt: '' }]) {
   let records = initial.map(item => ({ ...item }))
   let images = initialImages
   const api = {
@@ -82,7 +82,7 @@ it('blocks stale revision writes until the user reloads the current template', a
 })
 
 it('does not allow an empty or unverified image to be saved', async () => {
-  setup([], [{ id: 'img-1', imageId: original.imageId, name: '未验证镜像', reference: 'local:unknown', revision: 1, state: 'registered', verification: { state: 'unknown' }, createdAt: '' }])
+  setup([], [{ id: 'img-1', imageId: original.imageId, name: '未验证镜像', reference: 'local:unknown', revision: 1, state: 'registered', verification: { state: 'unknown' }, validation: 'not_tested', createdAt: '' }])
   await userEvent.click(await screen.findByRole('button', { name: '新建模板' }))
   expect(screen.getByRole('button', { name: '保存模板' })).toBeDisabled()
   await userEvent.type(screen.getByLabelText('模板名称'), '无镜像模板')

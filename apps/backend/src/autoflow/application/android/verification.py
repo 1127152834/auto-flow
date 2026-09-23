@@ -35,7 +35,8 @@ async def verify_lifecycle_operation(
         raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "设备归属无法核实，操作保持待核实", 503)
 
     try:
-        observed = await devices.runtime.inspect(device)
+        verifier = getattr(devices.runtime, "verify_deleted", None) if record.action == "delete" else None
+        observed = await (verifier(device) if callable(verifier) else devices.runtime.inspect(device))
     except (AndroidError, TimeoutError, OSError) as error:
         raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "设备状态仍无法核实", 503) from error
     except Exception as error:

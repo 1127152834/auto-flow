@@ -6,6 +6,7 @@
 
 - `summarize_verification([])` 返回 `not_tested`。
 - 包检测、登录条件缺失和必需检查失败的归并逻辑已有 unit 测试。
+- [全分支审查修复](2026-09-23-final-review-remediation.md)后，API 的 `verification.state` 只表示技术元数据核验，独立 `validation` 表示谷歌组件验收；前端分别显示。一次元数据通过返回 `validation=not_tested`，请求当前不支持的登录核验返回 `validation=blocked`，不会把组件声明或元数据通过写成 GApps `passed`。
 - 本轮没有可用的 Google/GApps 专用镜像、网络、测试账号、商店访问条件或可分发测试 APK。
 - 因此以下检查均未执行：启动、商店、登录、免费测试应用下载/启动、停机重启、第二实例隔离。
 

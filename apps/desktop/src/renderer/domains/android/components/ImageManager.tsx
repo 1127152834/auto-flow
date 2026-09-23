@@ -86,7 +86,7 @@ export function ImageManager({ api }: Props) {
   if (images.isError || !images.data) return <section role="alert">镜像目录暂不可用。<button type="button" onClick={() => void images.refetch()}>重新读取</button></section>
   const page = Array.isArray(images.data) ? { items: [] as Image[], total: 0 } : images.data
   return <section aria-label="镜像管理" aria-busy={busy} className="rounded-card border border-line bg-surface p-5">
-    <header><h2 className="font-semibold">镜像管理</h2><p className="mt-1 text-sm text-muted">登记固定摘要；拉取只接受受限镜像引用，不执行任意命令。</p></header>
+    <header><h2 className="font-semibold">镜像管理</h2><p className="mt-1 text-sm text-muted">登记固定摘要；拉取仅支持 redroid/redroid（含 docker.io 前缀）的 tag 或仓库摘要。</p></header>
     <div className="mt-4 grid gap-4 lg:grid-cols-3">
       <form aria-label="登记镜像" className="grid gap-2 rounded-control border border-line p-3" onSubmit={(event) => { event.preventDefault(); void register() }}>
         <h3 className="font-medium">登记已有镜像</h3>
@@ -97,7 +97,7 @@ export function ImageManager({ api }: Props) {
       </form>
       <form aria-label="拉取镜像" className="grid gap-2 rounded-control border border-line p-3" onSubmit={(event) => { event.preventDefault(); void pull() }}>
         <h3 className="font-medium">受限拉取</h3>
-        <label>镜像引用<input aria-label="拉取镜像引用" value={pullReference} disabled={busy} onChange={(event) => { pullRequest.current = null; setPullReference(event.target.value); setOperation(null) }} placeholder="registry/repository:tag 或 digest" /></label>
+        <label>镜像引用<input aria-label="拉取镜像引用" value={pullReference} disabled={busy} onChange={(event) => { pullRequest.current = null; setPullReference(event.target.value); setOperation(null) }} placeholder="redroid/redroid:13 或 redroid/redroid@sha256:…" /></label>
         <button type="submit" disabled={busy || !pullReference.trim()}>开始拉取</button>
         {operation && <div role="status" className="text-xs">拉取操作：{operation.stageLabel} · {operation.state} · {operation.requestId}<button type="button" disabled={busy} onClick={() => void verifyOperation()}>按原编号核实拉取</button></div>}
       </form>
@@ -110,7 +110,7 @@ export function ImageManager({ api }: Props) {
       const records = Array.isArray(image.verification?.records) ? image.verification.records : []
       const references = (image.references ?? []).map((item) => `${display(item.kind)}:${display(item.id ?? item.name)}`)
       return <article key={image.id} className="rounded-control border border-line p-3">
-        <div className="flex flex-wrap items-start justify-between gap-3"><div><strong>{image.name}</strong><p className="mt-1 break-all text-xs text-muted">{image.imageId} · {image.reference} · {image.state} · 验证 {verificationLabels[verification] ?? verification}</p></div><span className="text-xs text-muted">修订 {image.revision}</span></div>
+        <div className="flex flex-wrap items-start justify-between gap-3"><div><strong>{image.name}</strong><p className="mt-1 break-all text-xs text-muted">{image.imageId} · {image.reference} · {image.state} · 镜像元数据核验 {verificationLabels[verification] ?? verification}</p><p className="mt-1 text-xs text-muted">组件声明 {display(image.googleComponents ?? 'unknown')} · 谷歌组件验收 {verificationLabels[image.validation ?? 'not_tested'] ?? display(image.validation)}</p></div><span className="text-xs text-muted">修订 {image.revision}</span></div>
         <p className="mt-2 text-xs text-muted">引用：{references.length ? references.join('、') : '无'}</p>
         {!!records.length && <ul className="mt-2 grid gap-1 text-xs">{records.map((record, index) => <li key={index}>验证记录：{display(record.check)} · {verificationLabels[String(record.result)] ?? display(record.result)}{typeof record.evidence === 'object' && record.evidence !== null && 'message' in record.evidence ? ` · ${display(record.evidence.message)}` : ''}</li>)}</ul>}
         <div className="mt-3 flex flex-wrap gap-2"><button type="button" disabled={busy} onClick={() => setVerifyDraft({ id: image.id, check: '', evidence: '' })}>验证 {image.name}</button><button type="button" disabled={busy} onClick={() => setDeleteDraft({ id: image.id, content: false, requestId: crypto.randomUUID(), revision: image.revision })}>取消登记 {image.name}</button><button type="button" disabled={busy} onClick={() => setDeleteDraft({ id: image.id, content: true, requestId: crypto.randomUUID(), revision: image.revision })}>删除镜像内容 {image.name}</button></div>

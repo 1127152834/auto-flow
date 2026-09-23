@@ -95,27 +95,44 @@ def test_diagnostic_download_is_host_authenticated_workspace_scoped_and_expiring
     assert expired.json()["error"]["code"] == "ANDROID_DIAGNOSTIC_EXPIRED"
 
 
-def test_diagnostics_advanced_logs_are_explicitly_unsupported():
+def test_diagnostics_advanced_logs_require_single_request_consent_and_redact_messages():
     resources = _Resources()
-    runtime = SimpleNamespace(
-        environment=lambda: {
-            "available": False,
-            "platformSupported": None,
-            "runtimeId": "test",
-            "images": [],
-        }
-    )
-    devices = SimpleNamespace(management=SimpleNamespace(workspace_identity="owned"))
+    now = datetime.now(UTC).timestamp()
+
+    class Runtime:
+        workspace_id = "runtime-owned"
+
+        async def environment(self):
+            return {"available": True, "platformSupported": True, "runtimeId": "test", "images": []}
+
+        async def collect_diagnostic_logs(self, device, *, window_seconds, max_bytes):
+            assert device["deviceId"] == "d1"
+            assert window_seconds == 300 and max_bytes == 65536
+            return f"{now:.3f}  1  2 E SafeTag: account=private@example.com password=hunter2\n".encode()
+
+    runtime = Runtime()
+    devices = SimpleNamespace(runtime=runtime, repository=SimpleNamespace(list=lambda: [
+        {"deviceId": "d1", "workspaceId": "runtime-owned", "deleted": False},
+        {"deviceId": "foreign", "workspaceId": "elsewhere", "deleted": False},
+    ]), management=SimpleNamespace(workspace_identity="owned"))
     app = FastAPI()
     install_error_handlers(app)
     app.include_router(android_management_router(EnvironmentCheckService(runtime), devices=devices, resources=resources))
 
     with TestClient(app) as client:
-        response = client.post("/api/v1/android/management/diagnostics", json={"requestId": "diag-advanced", "includeAdvancedLogs": True})
+        denied = client.post("/api/v1/android/management/diagnostics", json={"requestId": "diag-denied", "deviceIds": ["d1"], "includeAdvancedLogs": True})
+        foreign = client.post("/api/v1/android/management/diagnostics", json={"requestId": "diag-foreign", "deviceIds": ["foreign"], "includeAdvancedLogs": True, "advancedLogsConsent": True})
+        response = client.post("/api/v1/android/management/diagnostics", json={"requestId": "diag-advanced", "deviceIds": ["d1"], "includeAdvancedLogs": True, "advancedLogsConsent": True})
 
+    assert denied.status_code == 422
+    assert foreign.status_code == 403
     assert response.status_code == 202
-    assert response.json()["payload"]["advancedLogs"]["status"] == "unsupported"
-    assert response.json()["payload"]["advancedLogs"]["code"] == "ANDROID_DIAGNOSTICS_ADVANCED_LOGS_UNSUPPORTED"
+    advanced = response.json()["payload"]["advancedLogs"]
+    assert advanced["status"] == "ready"
+    assert advanced["windowSeconds"] == 300
+    assert advanced["devices"][0]["entries"] == [{"at": round(now, 3), "priority": "E"}]
+    assert "private@example.com" not in str(response.json())
+    assert "hunter2" not in str(resources.items)
 
 
 def test_diagnostic_snapshot_uses_runtime_ownership_and_excludes_unapproved_fields():

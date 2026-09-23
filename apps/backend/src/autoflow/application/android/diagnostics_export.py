@@ -1,5 +1,6 @@
 import re
 from collections.abc import Mapping
+from datetime import UTC, datetime
 from typing import Any
 
 _PRIVATE = {
@@ -24,6 +25,21 @@ _PRIVATE = {
     "cookie",
 }
 _HOST_PATH = re.compile(r"(?:(?:/Users|/home|/root|/private/var|/var/folders|/tmp|/workspace|/Volumes)/[^\s'\"`]+|[A-Za-z]:\\Users\\[^\s'\"`]+)")
+_LOGCAT_HEADER = re.compile(rb"^\s*(\d{10}(?:\.\d{1,3})?)\s+\d+\s+\d+\s+([VDIWEF])\s+([A-Za-z0-9_.-]{1,64}):")
+
+
+def summarize_logcat(raw: bytes, *, window_seconds: int = 300, max_bytes: int = 65536) -> list[dict[str, Any]]:
+    """Keep time and severity only; app-controlled tags and messages never enter the export."""
+    now = datetime.now(UTC).timestamp()
+    entries = []
+    for line in raw[-max_bytes:].splitlines()[-200:]:
+        match = _LOGCAT_HEADER.match(line)
+        if match is None:
+            continue
+        at = float(match[1])
+        if now - window_seconds <= at <= now + 5:
+            entries.append({"at": round(at, 3), "priority": match[2].decode()})
+    return entries
 
 
 def _redact(value: Any) -> Any:
@@ -73,7 +89,13 @@ def diagnostic_snapshot(value: dict[str, Any]) -> dict[str, Any]:
         for item in value.get("operations", [])
     ]
     if "advancedLogs" in value:
-        snapshot["advancedLogs"] = {
-            key: value["advancedLogs"][key] for key in ("status", "code") if key in value["advancedLogs"]
-        }
+        advanced = value["advancedLogs"]
+        snapshot["advancedLogs"] = {key: advanced[key] for key in ("status", "code", "windowSeconds") if key in advanced}
+        snapshot["advancedLogs"]["devices"] = [
+            {"deviceId": item["deviceId"], **{key: item[key] for key in ("status", "code") if key in item}, "entries": [
+                {key: entry[key] for key in ("at", "priority") if key in entry}
+                for entry in item.get("entries", [])[:200]
+            ]}
+            for item in advanced.get("devices", [])[:5]
+        ]
     return redact_diagnostics(snapshot)

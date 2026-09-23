@@ -591,7 +591,57 @@ class AndroidConsole:
             return session["view"]
 
     async def verify_app(self, identifier: str, generation: int, request_id: str) -> dict[str, Any]:
-        session = self.get(identifier)
+        if identifier in self.sessions:
+            return await self._verify_app_session(self.get(identifier), generation, request_id)
+        if self.devices is None:
+            raise AndroidError("ANDROID_SESSION_EXPIRED", "控制会话已结束，请重新打开设备", 410)
+        try:
+            persisted = self.resources.get("session", identifier)
+        except AndroidError as error:
+            if error.status == 404:
+                raise AndroidError("ANDROID_SESSION_EXPIRED", "控制会话已结束，请重新打开设备", 410) from error
+            raise
+        receipt = (persisted.get("appReceipts") or {}).get(request_id)
+        if receipt is None:
+            raise AndroidError("ANDROID_REQUEST_NOT_FOUND", "应用操作请求不存在", 404)
+        context = self.devices.context(persisted["deviceId"])
+        context.runtime.lock()
+        try:
+            context.device = context.repository.get(persisted["deviceId"])
+            if context.device.get("deleted"):
+                raise AndroidError("ANDROID_SESSION_EXPIRED", "设备已删除，不能核实旧应用请求", 410)
+            context.runtime.device = context.device
+            context.runtime.save = context._save
+            request = persisted.get("request") or {}
+            session = {
+                "view": {
+                    "id": identifier,
+                    "deviceId": persisted["deviceId"],
+                    "generation": receipt.get("request", receipt).get("generation"),
+                    "access": request.get("access", "manual"),
+                    "endpoint": "embedded",
+                    "state": "recovery_required",
+                    "width": context.device.get("width", 0),
+                    "height": context.device.get("height", 0),
+                    "latestOperation": persisted.get("latestOperation"),
+                },
+                "context": context,
+                "request": request,
+                "appReceipts": deepcopy(persisted.get("appReceipts") or {}),
+                "lock": asyncio.Lock(),
+                "detached": True,
+            }
+            if receipt.get("state") == "running":
+                recovered = session["appReceipts"][request_id]
+                recovered["state"] = "needs_verification"
+                if context.device.get("pendingCommand"):
+                    recovered.setdefault("commandMarker", context.device["pendingCommand"])
+                self._persist_session(session)
+            return await self._verify_app_session(session, generation, request_id)
+        finally:
+            context.runtime.unlock()
+
+    async def _verify_app_session(self, session: dict[str, Any], generation: int, request_id: str) -> dict[str, Any]:
         async with session["lock"]:
             context = self._check(session, generation)
             receipt = session.setdefault("appReceipts", {}).get(request_id)
@@ -615,7 +665,7 @@ class AndroidConsole:
                     elif not receipt.get("commandCompleted"):
                         raise AndroidError("ANDROID_OPERATION_UNKNOWN", "缺少可验证的 Android 操作完成状态", 503)
                     if operation == "install":
-                        inventory = await context.runtime.app_info()
+                        inventory = await (context.runtime.app_info_for_verification() if session.get("detached") else context.runtime.app_info())
                         package_name = metadata.get("packageName")
                         record = next((item for item in inventory.get("applications", []) if item.get("packageName") == package_name), None)
                         if record is None or (metadata.get("versionCode") is not None and record.get("versionCode") != metadata["versionCode"]):

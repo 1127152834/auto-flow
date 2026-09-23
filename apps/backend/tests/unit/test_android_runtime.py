@@ -1,6 +1,7 @@
 import json
 import shlex
 import struct
+import sys
 from concurrent.futures import ThreadPoolExecutor
 from unittest.mock import AsyncMock
 
@@ -14,6 +15,61 @@ from autoflow.infrastructure.database.session import (
     migrate_database,
 )
 from autoflow.providers.android import mac_runtime as mac
+
+
+@pytest.mark.asyncio
+async def test_file_backed_command_streams_stdin_and_stdout(tmp_path):
+    source = tmp_path / "source.bin"
+    target = tmp_path / "target.bin"
+    source.write_bytes(b"android-volume-data" * 4096)
+
+    await mac.run_file([sys.executable, "-c", "import sys; sys.stdout.buffer.write(sys.stdin.buffer.read()[::-1])"], 5, input_path=source, output_path=target)
+
+    assert target.read_bytes() == source.read_bytes()[::-1]
+
+
+@pytest.mark.asyncio
+async def test_advanced_log_collection_checks_owned_running_container_before_logcat(tmp_path, monkeypatch):
+    from autoflow.providers.android import management
+
+    runtime = mac.MacAndroidRuntime(tmp_path, tmp_path / "workspace")
+    device = {"deviceId": "d1", "containerId": "owned-container"}
+    verify = AsyncMock(return_value=([{"State": {"Running": True}}], [{}]))
+    command = AsyncMock(return_value=b"prefix\nprivate-message")
+    monkeypatch.setattr(management, "verify", verify)
+    monkeypatch.setattr(mac, "docker", command)
+    assert await runtime.collect_diagnostic_logs(device, window_seconds=300, max_bytes=15) == b"private-message"
+    verify.assert_awaited_once_with(device, runtime.workspace_id)
+    command.assert_awaited_once_with("exec", "owned-container", "logcat", "-d", "-v", "epoch", "-t", "200", timeout=10)
+    verify.side_effect = AndroidError("ANDROID_OWNERSHIP", "foreign", 403)
+    with pytest.raises(AndroidError, match="foreign"):
+        await runtime.collect_diagnostic_logs(device, window_seconds=300, max_bytes=15)
+    assert command.await_count == 1
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(("volumes", "expected"), [([], "missing"), ([{"Labels": {}}], "retained")])
+async def test_delete_verification_reads_owned_objects_even_when_snapshot_is_not_retained(tmp_path, monkeypatch, volumes, expected):
+    from autoflow.providers.android import management
+
+    runtime = mac.MacAndroidRuntime(tmp_path, tmp_path / "workspace")
+    device = {"deviceId": "d", "dataRetained": False, "containerId": "gone", "volumeId": "data"}
+    verifier = AsyncMock(return_value=([], volumes))
+    monkeypatch.setattr(management, "verify", verifier)
+    assert (await runtime.verify_deleted(device))["androidStatus"] == expected
+    verifier.assert_awaited_once_with(device, runtime.workspace_id)
+
+
+@pytest.mark.asyncio
+async def test_restarted_install_inventory_uses_verified_owned_container_without_adb(tmp_path, monkeypatch):
+    runtime = mac.MacAndroidRuntime(tmp_path, tmp_path / "workspace")
+    runtime.device = {"deviceId": "d", "containerId": "owned"}
+    runtime.inspect = AsyncMock(return_value={"androidStatus": "ready"})
+    command = AsyncMock(return_value=b"package:com.example.test versionCode:7\n")
+    monkeypatch.setattr(mac, "docker", command)
+    assert (await runtime.app_info_for_verification())["applications"] == [{"packageName": "com.example.test", "versionCode": 7}]
+    runtime.inspect.assert_awaited_once_with(runtime.device)
+    command.assert_awaited_once_with("exec", "owned", "pm", "list", "packages", "--show-versioncode", timeout=15)
 
 
 def test_database_claim_has_one_winner(tmp_path):
@@ -226,6 +282,12 @@ async def test_backup_volume_uses_guest_tar_with_metadata_without_starting_andro
     assert {"--xattrs", "--xattrs-include=*", "--acls", "--selinux", "--numeric-owner"} <= set(command)
     assert "--transform=s@^_data@data@S" in command
     assert command[-3:] == ["-cf", "-", "_data"]
+    stream = AsyncMock(side_effect=lambda _argv, _timeout, **kwargs: kwargs["output_path"].write_bytes(b"tar-bytes"))
+    monkeypatch.setattr(mac, "run_file", stream)
+    output = tmp_path / "backup.tar"
+    await runtime.backup_volume_to_path({"volumeId": "volume", "imageId": "image", "deviceId": "device", "workspaceId": runtime.workspace_id}, output)
+    assert output.read_bytes() == b"tar-bytes"
+    assert stream.await_args.kwargs["output_path"] == output
 
 
 @pytest.mark.asyncio
@@ -296,6 +358,23 @@ async def test_restore_volume_extracts_guest_archive_with_xattrs_into_empty_targ
     assert {"--xattrs", "--xattrs-include=*", "--acls", "--selinux", "--transform=s@^data@_data@S"} <= set(extract.args[0])
     assert "--strip-components=1" not in extract.args[0]
     assert extract.args[2] == b"archive"
+
+
+@pytest.mark.asyncio
+async def test_restore_volume_streams_archive_file_into_empty_owned_target(tmp_path, monkeypatch):
+    runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
+    archive = tmp_path / "data.tar"
+    archive.write_bytes(b"archive")
+    monkeypatch.setattr(mac, "docker", AsyncMock(return_value=json.dumps([{"Labels": {mac.LABEL: runtime.workspace_id, "io.autoflow.android.device": "device"}, "Mountpoint": "/var/lib/docker/volumes/device-data/_data"}]).encode()))
+    monkeypatch.setattr(mac, "run", AsyncMock(return_value=b"empty\n"))
+    stream = AsyncMock()
+    monkeypatch.setattr(mac, "run_file", stream)
+    device = {"deviceId": "device", "workspaceId": runtime.workspace_id, "volumeId": "device-data", "imageId": "image", "androidStatus": "stopped", "control": "idle"}
+
+    await runtime.restore_volume_from_path(device, archive)
+
+    assert stream.await_args.kwargs["input_path"] == archive
+    assert "--transform=s@^data@_data@S" in stream.await_args.args[0]
 
 
 @pytest.mark.asyncio

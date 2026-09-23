@@ -8,6 +8,7 @@ from typing import Any, ClassVar
 from uuid import uuid4
 
 from autoflow.application.android.verification import verify_lifecycle_operation
+from autoflow.domain.android.management_models import public_device_revision
 from autoflow.domain.android.ports import AndroidError
 
 
@@ -101,7 +102,7 @@ class AndroidBulkService:
         operations = self._operations()
         if operations is None or not hasattr(operations, "accept"):
             return None
-        request = {"requestId": self._request_id(batch, item, attempt), "action": batch["action"], "deleteData": batch["deleteData"]}
+        request = {"requestId": self._request_id(batch, item, attempt), "action": batch["action"], "deleteData": batch["deleteData"], "expectedRevision": item.get("retryExpectedRevision", item["expectedRevision"])}
         if retry_of is not None:
             request["retryOf"] = retry_of
         digest = hashlib.sha256(json.dumps(request, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
@@ -150,11 +151,11 @@ class AndroidBulkService:
                 continue
             try:
                 device = self._get(item["deviceId"], batch.get("workspaceIdentity"))
-                if int(device.get("generation", 0)) != int(item["expectedRevision"]):
+                if public_device_revision(device.get("generation")) != int(item.get("retryExpectedRevision", item["expectedRevision"])):
                     raise AndroidError("ANDROID_REVISION_CONFLICT", "设备已发生变化，请重新创建批次", 409)
                 attempt = int(item.get("attempt", 0)) + 1
                 item["attempt"] = attempt
-                request = {"requestId": self._request_id(batch, item, attempt), "action": batch["action"], "deleteData": batch["deleteData"]}
+                request = {"requestId": self._request_id(batch, item, attempt), "action": batch["action"], "deleteData": batch["deleteData"], "expectedRevision": item.get("retryExpectedRevision", item["expectedRevision"])}
                 if item.get("retryOf"):
                     request["retryOf"] = item["retryOf"]
                 result = self.devices.operate(item["deviceId"], request)
@@ -196,7 +197,7 @@ class AndroidBulkService:
                 continue
             try:
                 device = self._get(item["deviceId"], batch.get("workspaceIdentity"))
-                if int(device.get("generation", 0)) != int(item["expectedRevision"]):
+                if public_device_revision(device.get("generation")) != int(item.get("retryExpectedRevision", item["expectedRevision"])):
                     raise AndroidError("ANDROID_REVISION_CONFLICT", "设备已发生变化，请重新创建批次", 409)
                 if device.get("control") != "idle":
                     item.update(state="waiting_device", error="设备当前被占用或待核实")
@@ -206,8 +207,14 @@ class AndroidBulkService:
                     if not admitted:
                         item.update(state="waiting_capacity", error=reason)
                         break
+                    device = self._get(item["deviceId"], batch.get("workspaceIdentity"))
+                    if public_device_revision(device.get("generation")) != int(item.get("retryExpectedRevision", item["expectedRevision"])):
+                        raise AndroidError("ANDROID_REVISION_CONFLICT", "设备已发生变化，请重新创建批次", 409)
+                    if device.get("control") != "idle":
+                        item.update(state="waiting_device", error="设备当前被占用或待核实")
+                        break
                 attempt = int(item.get("attempt", 0)) + 1
-                request = {"requestId": self._request_id(batch, item, attempt), "action": batch["action"], "deleteData": batch["deleteData"]}
+                request = {"requestId": self._request_id(batch, item, attempt), "action": batch["action"], "deleteData": batch["deleteData"], "expectedRevision": item.get("retryExpectedRevision", item["expectedRevision"])}
                 if item.get("retryOf"):
                     request["retryOf"] = item["retryOf"]
                 item["attempt"] = attempt
@@ -357,7 +364,12 @@ class AndroidBulkService:
         elif action == "retryFailed":
             for item in batch["items"]:
                 if item["state"] == "failed":
+                    device = self._get(item["deviceId"], batch.get("workspaceIdentity"))
+                    if device.get("deleted") or device.get("control") != "idle" or device.get("ownerRunId") or device.get("pendingCommand"):
+                        item["error"] = "设备仍被占用或结果待核实，请先恢复设备"
+                        continue
                     retry_of = item.get("operationId")
+                    item["retryExpectedRevision"] = public_device_revision(device.get("generation"))
                     item.update(state="queued", operationId=None, retryOf=retry_of, error=None)
                     operations = self._operations()
                     if retry_of and operations is not None:

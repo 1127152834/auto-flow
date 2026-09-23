@@ -16,10 +16,16 @@ from autoflow.application.android.diagnostics import (
     EnvironmentCheckResult,
     EnvironmentCheckService,
 )
-from autoflow.application.android.diagnostics_export import diagnostic_snapshot
+from autoflow.application.android.diagnostics_export import (
+    diagnostic_snapshot,
+    summarize_logcat,
+)
 from autoflow.application.android.images import AndroidImageService
 from autoflow.application.android.verification import verify_lifecycle_operation
-from autoflow.domain.android.management_models import DeviceFacts
+from autoflow.domain.android.management_models import (
+    DeviceFacts,
+    public_device_revision,
+)
 from autoflow.domain.android.management_rules import policy_for, restore_pending
 from autoflow.domain.android.ports import AndroidError
 
@@ -109,7 +115,7 @@ def _management_device(device: dict[str, Any], observation: Any | None = None, *
         stale = observation.stale if observation is not None else bool(device.get("stale", False))
     facts = DeviceFacts(
         device_id=str(device["deviceId"]),
-        revision=max(1, int(device.get("generation", 0) or 0)),
+        revision=public_device_revision(device.get("generation")),
         runtime_state=runtime_state,
         owner_kind="manualSession" if control in manual_controls else ("legacyWorkflow" if device.get("ownerRunId") else "none"),
         owner_id=device.get("ownerRunId"),
@@ -232,11 +238,31 @@ def android_management_router(check_service: EnvironmentCheckService, operations
             "workflow": False,
         }
         if body.include_advanced_logs:
-            payload["advancedLogs"] = {
-                "status": "unsupported",
-                "code": "ANDROID_DIAGNOSTICS_ADVANCED_LOGS_UNSUPPORTED",
-                "message": "当前未配置受控高级日志采集器",
+            if not body.advanced_logs_consent or not 1 <= len(body.device_ids) <= 5:
+                raise AndroidError("ANDROID_DIAGNOSTIC_CONSENT_REQUIRED", "高级日志须为本次请求单独确认并选择一至五台设备", 422)
+            runtime = getattr(devices, "runtime", None)
+            repository = getattr(devices, "repository", None)
+            collector = getattr(runtime, "collect_diagnostic_logs", None)
+            if not callable(collector) or repository is None:
+                raise AndroidError("ANDROID_DIAGNOSTIC_UNAVAILABLE", "当前运行时不支持受控高级日志采集", 503)
+            selected = {
+                row["deviceId"]: row for row in repository.list()
+                if row.get("deviceId") in body.device_ids
+                and row.get("workspaceId") == runtime.workspace_id
+                and not row.get("deleted")
             }
+            if len(selected) != len(set(body.device_ids)) or len(selected) != len(body.device_ids):
+                raise AndroidError("ANDROID_OWNERSHIP", "所选设备不属于当前工作区", 403)
+            collected = []
+            for device_id in body.device_ids:
+                try:
+                    raw = collector(selected[device_id], window_seconds=300, max_bytes=65536)
+                    if inspect.isawaitable(raw):
+                        raw = await raw
+                    collected.append({"deviceId": device_id, "status": "ready", "entries": summarize_logcat(raw)})
+                except (AndroidError, OSError, TimeoutError):
+                    collected.append({"deviceId": device_id, "status": "unknown", "code": "ANDROID_DIAGNOSTIC_COLLECTION_UNKNOWN", "entries": []})
+            payload["advancedLogs"] = {"status": "partial" if any(item["status"] != "ready" for item in collected) else "ready", "windowSeconds": 300, "devices": collected}
         try:
             environment = check_service.check(f"{body.request_id}:environment")
             if inspect.isawaitable(environment):
@@ -354,13 +380,21 @@ def android_management_router(check_service: EnvironmentCheckService, operations
     async def operation_by_request(request_id: str) -> OperationRead:
         if operations is None:
             raise RuntimeError("Android operation repository is not configured")
-        return _operation_response(operations.by_request(workspace_identity(), request_id))
+        record = operations.by_request(workspace_identity(), request_id)
+        if record.action == "cleanup" and callable(reconciler := getattr(cleanup, "reconcile_request", None)):
+            reconciler(workspace_identity(), request_id)
+            record = operations.get(record.operation_id, workspace_identity())
+        return _operation_response(record)
 
     @router.get("/operations/{operation_id}", response_model=OperationRead)
     async def operation(operation_id: str) -> OperationRead:
         if operations is None:
             raise RuntimeError("Android operation repository is not configured")
-        return _operation_response(operations.get(operation_id, workspace_identity()))
+        record = operations.get(operation_id, workspace_identity())
+        if record.action == "cleanup" and callable(reconciler := getattr(cleanup, "reconcile_request", None)):
+            reconciler(workspace_identity(), record.request_id)
+            record = operations.get(operation_id, workspace_identity())
+        return _operation_response(record)
 
     @router.post("/operations/{operation_id}/verify", response_model=OperationRead)
     async def verify(operation_id: str, body: OperationVerifyCommand) -> OperationRead:
@@ -369,6 +403,9 @@ def android_management_router(check_service: EnvironmentCheckService, operations
         record = operations.get(operation_id, workspace_identity())
         if body.request_id != record.request_id:
             raise AndroidError("ANDROID_REQUEST_CONFLICT", "核实请求编号与原操作不一致", 409)
+        if record.action == "cleanup" and callable(reconciler := getattr(cleanup, "reconcile_request", None)):
+            reconciler(workspace_identity(), record.request_id)
+            record = operations.get(operation_id, workspace_identity())
         if record.state != "needs_verification":
             return _operation_response(record)
 
@@ -389,19 +426,29 @@ def android_management_router(check_service: EnvironmentCheckService, operations
         if record.action == "pull":
             if images is None or not hasattr(images, "list"):
                 raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "尚未接入镜像目录核实", 503)
-            observed = next(
-                (
-                    item
-                    for item in images.list()
-                    if item.get("requestId") == record.request_id
-                    and item.get("reference") == payload.get("reference")
-                    and item.get("workspaceId") in {None, workspace}
-                ),
-                None,
-            )
-            if observed is None:
+            pull_verifier = getattr(images, "verify_pull", None)
+            if callable(pull_verifier):
+                try:
+                    observed = await pull_verifier(
+                        record.request_id, payload.get("reference"),
+                        on_verified=lambda: verified({"stage_code": "verified", "result_code": "IMAGE_PULL_VERIFIED"}),
+                    )
+                except (AndroidError, TimeoutError, OSError) as error:
+                    raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "镜像拉取结果仍无法核实", 503) from error
+            else:
+                observed = next(
+                    (
+                        item
+                        for item in images.list()
+                        if item.get("requestId") == record.request_id
+                        and item.get("reference") == payload.get("reference")
+                        and item.get("workspaceId") in {None, workspace}
+                    ),
+                    None,
+                )
+            if not observed:
                 raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "镜像拉取结果仍无法核实", 503)
-            record = verified({"stage_code": "verified", "result_code": "IMAGE_PULL_VERIFIED"})
+            record = observed if callable(pull_verifier) else verified({"stage_code": "verified", "result_code": "IMAGE_PULL_VERIFIED"})
         elif record.action == "backup":
             if backups is None or not hasattr(backups, "resources"):
                 raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "尚未接入备份目录核实", 503)
@@ -574,7 +621,7 @@ def android_management_router(check_service: EnvironmentCheckService, operations
         if backups is None or devices is None or body.device_id is None or body.expected_revision is None:
             raise AndroidError("ANDROID_BACKUP_REQUEST_INVALID", "备份请求缺少设备和版本", 422)
         device = devices.get(body.device_id)
-        if int(device.get("generation", 1) or 1) != body.expected_revision:
+        if public_device_revision(device.get("generation")) != body.expected_revision:
             raise AndroidError("ANDROID_REVISION_CONFLICT", "设备已发生变化，请重新加载", 409)
         return _backup_response(await backups.create_with_runtime(device, None, devices.runtime, body.request_id, body.expected_revision))
 
@@ -587,7 +634,7 @@ def android_management_router(check_service: EnvironmentCheckService, operations
             raise AndroidError("ANDROID_BACKUP_REQUEST_INVALID", "路径设备与请求设备不一致", 422)
         if body.expected_revision is None:
             raise AndroidError("ANDROID_BACKUP_REQUEST_INVALID", "备份请求缺少设备版本", 422)
-        if int(device.get("generation", 1) or 1) != body.expected_revision:
+        if public_device_revision(device.get("generation")) != body.expected_revision:
             raise AndroidError("ANDROID_REVISION_CONFLICT", "设备已发生变化，请重新加载", 409)
         return _backup_response(await backups.create_with_runtime(device, None, devices.runtime, body.request_id, body.expected_revision))
 
@@ -628,7 +675,33 @@ def android_management_router(check_service: EnvironmentCheckService, operations
             if operation is not None:
                 operations.transition(operation.operation_id, "running", "needs_verification", {"stage_code": "verify", "result_code": "RESTORE_RESULT_UNKNOWN", "message": str(error)[:480]})
             raise AndroidError("ANDROID_BACKUP_RESTORE_RESULT_UNKNOWN", "恢复结果未知，请核实新实例", 503) from error
-        if not any(image.get("id") == record.get("imageId") for image in environment.get("images", [])):
+        except Exception as error:
+            # Environment inspection is read-only; no restore target exists yet.
+            if operation is not None:
+                operations.transition(operation.operation_id, "running", "failed", {"stage_code": "failed", "result_code": getattr(error, "code", "ANDROID_BACKUP_RESTORE_PREFLIGHT_FAILED"), "message": str(error)[:480]})
+            raise
+        image_available = any(image.get("id") == record.get("imageId") for image in environment.get("images", []))
+        inspector = getattr(devices.runtime, "inspect_image", None)
+        if callable(inspector):
+            try:
+                metadata = await inspector(record["imageId"])
+            except AndroidError as error:
+                if error.status != 404:
+                    if operation is not None:
+                        operations.transition(operation.operation_id, "running", "needs_verification", {"stage_code": "verify", "result_code": "RESTORE_RESULT_UNKNOWN", "message": error.message[:480]})
+                    raise AndroidError("ANDROID_BACKUP_RESTORE_RESULT_UNKNOWN", "无法核实备份所需的精确镜像", 503) from error
+                image_available = False
+            except (TimeoutError, OSError) as error:
+                if operation is not None:
+                    operations.transition(operation.operation_id, "running", "needs_verification", {"stage_code": "verify", "result_code": "RESTORE_RESULT_UNKNOWN", "message": str(error)[:480]})
+                raise AndroidError("ANDROID_BACKUP_RESTORE_RESULT_UNKNOWN", "无法核实备份所需的精确镜像", 503) from error
+            else:
+                image_available = (
+                    metadata.get("imageId") == record["imageId"]
+                    and metadata.get("os") == "linux"
+                    and metadata.get("architecture") in {"arm64", "aarch64"}
+                )
+        if not image_available:
             if operation is not None:
                 operations.transition(operation.operation_id, "running", "failed", {"stage_code": "failed", "result_code": "ANDROID_BACKUP_IMAGE_MISSING", "message": "备份所需的精确镜像当前不可用"})
             raise AndroidError("ANDROID_BACKUP_IMAGE_MISSING", "备份所需的精确镜像当前不可用", 409)

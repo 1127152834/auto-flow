@@ -7831,6 +7831,11 @@ export type components = {
              * @default false
              */
             includeAdvancedLogs: boolean;
+            /**
+             * Advancedlogsconsent
+             * @default false
+             */
+            advancedLogsConsent: boolean;
         };
         /** EmptyCommand */
         EmptyCommand: Record<string, never>;
@@ -8693,6 +8698,11 @@ export type components = {
             verification: {
                 [key: string]: unknown;
             };
+            /**
+             * Validation
+             * @default not_tested
+             */
+            validation: string;
             /**
              * Createdat
              * Format: date-time

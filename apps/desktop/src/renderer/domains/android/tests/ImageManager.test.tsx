@@ -48,7 +48,9 @@ it('registers a fixed digest and keeps the exact reference', async () => {
 it('retries a pull with the same request id and can verify by request id', async () => {
   const pullImage = vi.fn().mockRejectedValueOnce(new Error('连接中断')).mockResolvedValueOnce({ operationId: 'op-1', requestId: 'pull-1', targetId: 'image-1', action: 'pull', state: 'running', stageCode: 'pulling', stageLabel: '正在拉取', attempt: 1, createdAt: '' })
   const api = renderManager({ pullImage })
-  await userEvent.type(within(await screen.findByRole('form', { name: '拉取镜像' })).getByLabelText('拉取镜像引用'), 'redroid:13')
+  const reference = within(await screen.findByRole('form', { name: '拉取镜像' })).getByLabelText('拉取镜像引用')
+  expect(reference).toHaveAttribute('placeholder', 'redroid/redroid:13 或 redroid/redroid@sha256:…')
+  await userEvent.type(reference, 'redroid/redroid:13')
   await userEvent.click(screen.getByRole('button', { name: '开始拉取' }))
   expect(await screen.findByRole('alert')).toHaveTextContent('连接中断')
   await userEvent.click(screen.getByRole('button', { name: '按原编号重试' }))
@@ -85,4 +87,12 @@ it('核实未知的镜像内容删除结果而不重复删除', async () => {
   await userEvent.click(screen.getByRole('button', { name: '核实删除结果' }))
   expect(verifyImageDelete).toHaveBeenCalledWith('image-1', expect.objectContaining({ requestId: expect.any(String) }))
   expect(deleteImage).toHaveBeenCalledTimes(1)
+})
+
+it('separates image metadata verification from Google component validation', async () => {
+  renderManager({ images: vi.fn(async () => ({ items: [{ ...image, state: 'verified', googleComponents: 'detected', verification: { state: 'passed', records: [] }, validation: 'not_tested' }], nextCursor: null, total: 1 })) })
+
+  expect(await screen.findByText(/镜像元数据核验 通过/)).toBeVisible()
+  expect(screen.getByText(/谷歌组件验收 未测试/)).toBeVisible()
+  expect(screen.getByText(/组件声明 detected/)).toBeVisible()
 })

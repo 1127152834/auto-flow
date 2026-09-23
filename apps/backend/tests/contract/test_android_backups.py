@@ -61,12 +61,27 @@ def test_management_backup_route_returns_public_backup_contract(tmp_path) -> Non
     with TestClient(app) as client:
         response = client.post(
             "/api/v1/android/management/devices/device-1/backups",
-            json={"requestId": "backup-route", "deviceId": "device-1", "expectedRevision": 1},
+            json={"requestId": "backup-route", "deviceId": "device-1", "expectedRevision": 2},
         )
 
     assert response.status_code == 201, response.text
     assert set(response.json()) == {"id", "deviceId", "imageId", "formatVersion", "sha256", "bytes", "createdAt", "state"}
     assert response.json()["state"] == "available"
+
+
+def test_backup_rejects_revision_frozen_before_first_generation_change(tmp_path) -> None:
+    device = {"deviceId": "device-1", "generation": 1, "control": "idle", "ownerRunId": None}
+    runtime = _BackupRuntime(_archive())
+    devices = _BackupDevices(device, runtime)
+    app = FastAPI()
+    install_error_handlers(app)
+    app.include_router(android_management_router(EnvironmentCheckService(runtime), backups=AndroidBackupService(_BackupResources(), tmp_path), devices=devices))
+
+    with TestClient(app) as client:
+        response = client.post("/api/v1/android/management/devices/device-1/backups", json={"requestId": "stale-backup", "deviceId": "device-1", "expectedRevision": 1})
+
+    assert response.status_code == 409
+    assert response.json()["error"]["code"] == "ANDROID_REVISION_CONFLICT"
 
 
 async def _stopped(_device):

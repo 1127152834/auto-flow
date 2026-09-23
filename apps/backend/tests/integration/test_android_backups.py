@@ -156,7 +156,7 @@ async def test_failed_publication_is_not_available_after_repository_reconstructi
     operations = SqlAlchemyAndroidOperationRepository(sessions)
     runtime = _Runtime(_tar(b"proof"))
     service = AndroidBackupService(resources, tmp_path, operations)
-    original_write, original_read = Path.write_bytes, Path.read_bytes
+    original_write, original_open = Path.write_bytes, Path.open
     original_sync, original_replace = os.fsync, os.replace
 
     def write(path, data):
@@ -164,10 +164,10 @@ async def test_failed_publication_is_not_available_after_repository_reconstructi
             raise OSError(28, "injected disk full")
         return original_write(path, data)
 
-    def read(path):
-        if failure == "read" and path.name == "data.tar":
+    def open_file(path, mode="r", *args, **kwargs):
+        if failure == "read" and path.name == "data.tar" and "r" in mode:
             raise PermissionError("injected archive read denied")
-        return original_read(path)
+        return original_open(path, mode, *args, **kwargs)
 
     def sync(fd):
         if failure == "file_sync" and stat.S_ISREG(os.fstat(fd).st_mode):
@@ -187,7 +187,7 @@ async def test_failed_publication_is_not_available_after_repository_reconstructi
             raise OSError("injected database write failure")
 
     monkeypatch.setattr(Path, "write_bytes", write)
-    monkeypatch.setattr(Path, "read_bytes", read)
+    monkeypatch.setattr(Path, "open", open_file)
     monkeypatch.setattr(os, "fsync", sync)
     monkeypatch.setattr(os, "replace", replace)
     from sqlalchemy import event

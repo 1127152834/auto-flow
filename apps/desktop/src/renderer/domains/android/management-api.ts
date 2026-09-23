@@ -40,7 +40,7 @@ export const androidManagementApi = (client: StreamingApiClient) => ({
   cleanupResources: () => client.request<components['schemas']['CleanupResourcePage']>(`${base}/cleanup/resources`, { timeoutMs: 30000 }),
   cleanupPreview: (resourceIds: string[]) => client.request<{ items: Record<string, unknown>[]; previewId?: string; confirmationDigest: string }>(`${base}/cleanup/previews`, { method: 'POST', body: { resourceIds } }),
   cleanup: (body: { requestId: string; previewId?: string; confirmationDigest: string }) => client.request<{ items: Record<string, unknown>[]; state: string; operationId?: string; requestId?: string; previewId?: string }>(`${base}/cleanup`, { method: 'POST', body }),
-  diagnostics: (body: { requestId: string; deviceIds: string[]; includeAdvancedLogs?: boolean }) => client.request<Diagnostic>(`${base}/diagnostics`, { method: 'POST', body }),
+  diagnostics: (body: { requestId: string; deviceIds: string[]; includeAdvancedLogs?: boolean; advancedLogsConsent?: boolean }) => client.request<Diagnostic>(`${base}/diagnostics`, { method: 'POST', body }),
   backups: () => client.request<Backup[]>(`${base}/backups`, { timeoutMs: 20000 }),
   backup: (body: { requestId: string; deviceId: string; expectedRevision: number }) => client.request<Backup>(`${base}/backups`, { method: 'POST', body, timeoutMs: 120000 }),
   restoreBackup: (id: string, body: { requestId: string; newName: string }) => client.request<BackupRestore>(`${base}/backups/${id}/restore`, { method: 'POST', body, timeoutMs: 120000 }),

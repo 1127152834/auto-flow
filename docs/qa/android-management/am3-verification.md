@@ -1,5 +1,7 @@
 # AM3 多实例效率验收
 
+[2026-09-24 真实部分失败与取消](2026-09-24-bulk-failure-cancel.md)补齐两台批次 `[succeeded, failed]`、容量等待 `cancelPending` 与资源清理，并修复新设备 `generation=0` 在公开修订号 1 下被批次误判冲突。十台规模因本机 Lima 7921 MiB 小于最低需求 8192 MiB 标记 `blocked`，见[容量记录](2026-09-24-advanced-logs-and-capacity.md)。
+
 历史审计基线：`3ee61947`；下表已按 2026-09-23 自建 Mac 实例和当前隔离分支重新校准。旧聚焦后端 `235 passed, 2 warnings`、前端 Android `13 files, 81 passed` 仅为该基线快照；当前完整后端/前端门槛见 [AM1 新证据](2026-09-23-am1-real-control-retention.md)。
 
 | 任务 | 状态 | 证据与限制 |
@@ -30,5 +32,7 @@ T15 命令完成语义与人工丢响应读回见 [命令验证](2026-09-23-comm
 T13 最新：[持久容量预留与真实验证](2026-09-23-capacity-verification.md)。前述“尚缺容量integration/持久预留实现”已superseded；1/5/10性能仍未运行。
 
 T13 新增：[真实双实例批量链及响应 DTO 修复](2026-09-23-am3-real-bulk-verification.md)。最初真实接口 `500` 由内部 `workspaceIdentity` 泄入严格 DTO 引起，RED→GREEN 修复后 start/stop/delete 三个批次各自两项均成功；本证据不替代 5/10 台或真实部分失败演练。
+
+T13/T14/T16 后续[五实例真实链](2026-09-23-final-review-remediation.md)已覆盖五台同时 `ready`、20 次管理列表 `median=2.13ms/p95=2.74ms`、两台并发 PNG 预览、五台 Docker 内存读数及逐项清理后无残留容器/卷。下文单实例数字保留为历史快照；10 台与真实部分失败/取消仍未验收。
 
 单实例聚合延迟测量：在隔离工作区启动真实认证 HTTP sidecar，顺序请求 `GET /api/v1/android/management/devices?limit=50` 共 20 次；所有响应为 200 且包含本轮自建 `ready` 实例，脚本输出 `status=passed`。计时使用同机 `time.perf_counter()`，结果为 `min=1.63ms`、`median=1.91ms`、`p95=2.70ms`、`max=4.70ms`。这是单个运行实例下的局部 API 延迟，不包含前端渲染、预览帧或并发 5/10 台的成本。

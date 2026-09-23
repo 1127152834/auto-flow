@@ -31,6 +31,83 @@ IMAGE = "sha256:" + "b" * 64
 
 
 @pytest.mark.asyncio
+async def test_restore_streams_validated_archive_without_loading_bytes(tmp_path: Path) -> None:
+    class StreamRuntime(_Runtime):
+        async def restore_volume(self, _device, _data):
+            raise AssertionError("restore should use the file stream")
+
+        async def restore_volume_from_path(self, _device, path):
+            assert path.read_bytes() == self.payload
+            self.restore_calls += 1
+
+    sessions = _sessions(tmp_path)
+    resources = AndroidResourceRepository(sessions)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    repository = SqlAlchemyDeviceRepository(sessions)
+    runtime = StreamRuntime(_tar(b"source"), IMAGE)
+    devices = AndroidDeviceService(repository, runtime)
+    devices.management.workspace_identity = str(tmp_path.resolve())
+    backups = AndroidBackupService(resources, tmp_path, operations)
+    source = {"deviceId": "source", "imageId": IMAGE, "control": "idle", "ownerRunId": None, "generation": 1,
+              "creationConfig": {"width": 720, "height": 1280, "dpi": 320, "cpu": 1, "memoryMb": 1536}}
+    repository.save(source)
+    backup = await backups.create_with_runtime(source, None, runtime, "backup-stream", 1)
+    app = FastAPI()
+    install_error_handlers(app)
+    app.include_router(android_management_router(EnvironmentCheckService(runtime), operations, backups=backups, devices=devices))
+
+    with TestClient(app) as client:
+        response = client.post(f"/api/v1/android/management/backups/{backup['id']}/restore", json={"requestId": "restore-stream", "newName": "stream copy"})
+
+    assert response.status_code == 202, response.text
+    assert runtime.restore_calls == 1
+    sessions.dispose()
+
+
+@pytest.mark.asyncio
+async def test_restore_accepts_cached_custom_image_missing_from_default_environment_list(tmp_path: Path) -> None:
+    sessions = _sessions(tmp_path)
+    resources = AndroidResourceRepository(sessions)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    repository = SqlAlchemyDeviceRepository(sessions)
+    runtime = _Runtime(_tar(b"source"), IMAGE)
+    devices = AndroidDeviceService(repository, runtime)
+    devices.management.workspace_identity = str(tmp_path.resolve())
+    backups = AndroidBackupService(resources, tmp_path, operations)
+    source = {
+        "deviceId": "source-device", "name": "source", "imageId": IMAGE,
+        "control": "idle", "ownerRunId": None, "generation": 1,
+        "creationConfig": {"width": 720, "height": 1280, "dpi": 320, "cpu": 2, "memoryMb": 1536},
+    }
+    repository.save(source)
+    backup = await backups.create_with_runtime(source, None, runtime, "backup-custom-image", 1)
+    original_environment = runtime.environment
+
+    async def only_default_images():
+        result = await original_environment()
+        result["images"] = []
+        return result
+
+    runtime.environment = only_default_images
+
+    async def inspect_custom_image(reference: str):
+        assert reference == IMAGE
+        return {"imageId": IMAGE, "architecture": "arm64", "os": "linux"}
+
+    runtime.inspect_image = inspect_custom_image
+    app = FastAPI()
+    install_error_handlers(app)
+    app.include_router(android_management_router(EnvironmentCheckService(runtime), operations, backups=backups, devices=devices))
+    with TestClient(app) as client:
+        response = client.post(f"/api/v1/android/management/backups/{backup['id']}/restore", json={"requestId": "restore-custom", "newName": "copy"})
+
+    assert response.status_code == 202, response.text
+    assert response.json()["state"] == "restored"
+    assert runtime.restore_calls == 1
+    sessions.dispose()
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize("fault", [None, "commit_ack", "commit_before", "copy", "cancel"])
 async def test_restore_request_id_creates_one_isolated_target(tmp_path: Path, monkeypatch, fault) -> None:
     sessions = _sessions(tmp_path)
@@ -210,7 +287,14 @@ async def test_restore_rejects_corrupt_digest_and_does_not_write_runtime(
 
 
 @pytest.mark.asyncio
-async def test_restore_environment_failure_marks_operation_unknown(tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    ("probe_error", "expected_state", "expected_code", "http_status"),
+    [
+        (OSError("runtime probe lost"), "needs_verification", "RESTORE_RESULT_UNKNOWN", 503),
+        (AndroidError("ANDROID_COMMAND_FAILED", "image inventory failed", 502), "failed", "ANDROID_COMMAND_FAILED", 502),
+    ],
+)
+async def test_restore_environment_failure_records_terminal_preflight_state(tmp_path: Path, probe_error, expected_state, expected_code, http_status) -> None:
     sessions = _sessions(tmp_path)
     resources = AndroidResourceRepository(sessions)
     operations = SqlAlchemyAndroidOperationRepository(sessions)
@@ -236,7 +320,7 @@ async def test_restore_environment_failure_marks_operation_unknown(tmp_path: Pat
     }
     repository.save(source)
     backup = await backups.create_with_runtime(source, None, runtime, "backup-request", 1)
-    runtime.environment_error = OSError("runtime probe lost")
+    runtime.environment_error = probe_error
 
     app = FastAPI()
     install_error_handlers(app)
@@ -254,10 +338,10 @@ async def test_restore_environment_failure_marks_operation_unknown(tmp_path: Pat
             f"/api/v1/android/management/backups/{backup['id']}/restore", json=body
         )
 
-    assert response.status_code == 503, response.text
+    assert response.status_code == http_status, response.text
     operation = operations.by_request(str(tmp_path.resolve()), body["requestId"])
-    assert operation.state == "needs_verification"
-    assert operation.result_code == "RESTORE_RESULT_UNKNOWN"
+    assert operation.state == expected_state
+    assert operation.result_code == expected_code
     assert runtime.restore_calls == 0
     sessions.dispose()
 

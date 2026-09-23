@@ -12,7 +12,7 @@ def test_bulk_freezes_targets_and_keeps_partial_failures():
     resources = _Resources()
     devices = _Devices()
     service = AndroidBulkService(resources, devices)
-    batch = service.create("ws", "r1", "stop", [{"deviceId": "d1", "expectedRevision": 1}, {"deviceId": "d2", "expectedRevision": 9}], False)
+    batch = service.create("ws", "r1", "stop", [{"deviceId": "d1", "expectedRevision": 2}, {"deviceId": "d2", "expectedRevision": 9}], False)
     assert [item["deviceId"] for item in batch["items"]] == ["d1", "d2"]
     result = service.run(batch["id"])
     assert result["state"] == "running"
@@ -20,12 +20,40 @@ def test_bulk_freezes_targets_and_keeps_partial_failures():
     assert result["items"][1]["state"] == "failed"
 
 
+def test_new_device_public_revision_one_is_accepted_by_inline_bulk():
+    devices = _Devices()
+    devices.items["d1"]["generation"] = 0
+    service = AndroidBulkService(_Resources(), devices)
+    batch = service.create("ws", "new-inline", "stop", [{"deviceId": "d1", "expectedRevision": 1}], False)
+    assert service.run(batch["id"])["items"][0]["state"] == "accepted"
+
+
+@pytest.mark.asyncio
+async def test_new_device_public_revision_one_is_accepted_by_bulk_queue():
+    devices = _QueueDevices()
+    devices.items["d1"]["generation"] = 0
+    service = AndroidBulkService(_Resources(), devices)
+    batch = service.create("ws", "new-queued", "stop", [{"deviceId": "d1", "expectedRevision": 1}], False)
+    await service.tick()
+    assert batch["items"][0]["state"] == "accepted"
+    assert devices.calls[0][0] == "d1"
+
+
+def test_batch_frozen_at_generation_zero_conflicts_after_generation_advances():
+    devices = _Devices()
+    devices.items["d1"]["generation"] = 0
+    service = AndroidBulkService(_Resources(), devices)
+    batch = service.create("ws", "stale-new-device", "delete", [{"deviceId": "d1", "expectedRevision": 1}], True)
+    devices.items["d1"]["generation"] = 1
+    assert service.run(batch["id"])["items"][0]["state"] == "failed"
+
+
 @pytest.mark.asyncio
 async def test_bulk_tick_projects_terminal_device_operation_state_without_get_side_effects():
     resources = _Resources()
     devices = _Devices()
     service = AndroidBulkService(resources, devices)
-    batch = service.create("ws", "r-project", "stop", [{"deviceId": "d1", "expectedRevision": 1}], False)
+    batch = service.create("ws", "r-project", "stop", [{"deviceId": "d1", "expectedRevision": 2}], False)
     result = service.run(batch["id"])
     assert result["state"] == "running"
     devices.items["d1"]["operation"] = {"id": "r-project:d1:1", "state": "succeeded"}
@@ -45,7 +73,7 @@ async def test_bulk_waits_for_unknown_capacity_then_advances_one_device_at_a_tim
     resources = _Resources()
     devices = _QueueDevices()
     service = AndroidBulkService(resources, devices)
-    batch = service.create("ws", "r-capacity", "start", [{"deviceId": "d1", "expectedRevision": 1}, {"deviceId": "d2", "expectedRevision": 1}], False)
+    batch = service.create("ws", "r-capacity", "start", [{"deviceId": "d1", "expectedRevision": 2}, {"deviceId": "d2", "expectedRevision": 2}], False)
 
     await service.tick()
     assert batch["items"][0]["state"] == "waiting_capacity"
@@ -64,11 +92,39 @@ async def test_bulk_waits_for_unknown_capacity_then_advances_one_device_at_a_tim
     assert [call[0] for call in devices.calls] == ["d1", "d2"]
 
 
+@pytest.mark.asyncio
+async def test_capacity_probe_cannot_dispatch_batch_after_device_revision_changes():
+    devices = _QueueDevices()
+
+    async def capacity(_device):
+        devices.items["d1"]["generation"] = 2
+
+    devices.runtime.capacity = capacity
+    service = AndroidBulkService(_Resources(), devices)
+    batch = service.create("ws", "capacity-race", "start", [{"deviceId": "d1", "expectedRevision": 2}], False)
+    await service.tick()
+    assert batch["items"][0]["state"] == "failed"
+    assert devices.calls == []
+
+
+def test_retry_failed_rebases_after_accepted_runtime_failure():
+    devices = _QueueDevices()
+    service = AndroidBulkService(_Resources(), devices)
+    batch = service.create("ws", "runtime-failure", "stop", [{"deviceId": "d1", "expectedRevision": 2}], False)
+    assert service.run(batch["id"])["items"][0]["state"] == "accepted"
+    devices.items["d1"].update(generation=2, control="idle")
+    devices.items["d1"]["operation"]["state"] = "failed"
+    service.action(batch["id"], "retryFailed", "retry-after-recovery")
+    assert batch["items"][0]["retryExpectedRevision"] == 3
+    assert service.run(batch["id"])["items"][0]["state"] == "accepted"
+    assert devices.calls[-1][1]["expectedRevision"] == 3
+
+
 def test_bulk_retry_uses_a_new_request_id_after_terminal_failure():
     resources = _Resources()
     devices = _RetryDevices()
     service = AndroidBulkService(resources, devices)
-    batch = service.create("ws", "r-retry", "stop", [{"deviceId": "d1", "expectedRevision": 1}], False)
+    batch = service.create("ws", "r-retry", "stop", [{"deviceId": "d1", "expectedRevision": 2}], False)
 
     first = service.run(batch["id"])
     assert first["items"][0]["state"] == "failed"
@@ -84,7 +140,7 @@ def test_bulk_retry_preserves_operation_lineage_without_overwriting_failure():
     resources = _Resources()
     devices = _RetryLineageDevices()
     service = AndroidBulkService(resources, devices)
-    batch = service.create("ws", "r-lineage", "stop", [{"deviceId": "d1", "expectedRevision": 1}], False)
+    batch = service.create("ws", "r-lineage", "stop", [{"deviceId": "d1", "expectedRevision": 2}], False)
 
     first = service.run(batch["id"])
     assert first["items"][0]["operationId"] == "operation-1"
@@ -104,7 +160,7 @@ def test_bulk_retry_preserves_operation_lineage_without_overwriting_failure():
 def test_bulk_action_request_is_idempotent_and_conflicts_on_changed_action():
     resources = _Resources()
     service = AndroidBulkService(resources, _Devices())
-    batch = service.create("ws", "r-action", "stop", [{"deviceId": "d1", "expectedRevision": 1}], False)
+    batch = service.create("ws", "r-action", "stop", [{"deviceId": "d1", "expectedRevision": 2}], False)
 
     first = service.action(batch["id"], "cancelPending", "a1")
     again = service.action(batch["id"], "cancelPending", "a1")
@@ -124,7 +180,7 @@ def test_bulk_unknown_result_is_not_reported_as_running_when_queue_is_drained():
 def test_bulk_request_id_is_idempotent_and_conflicts_on_changed_action():
     resources = _Resources()
     service = AndroidBulkService(resources, _Devices())
-    items = [{"deviceId": "d1", "expectedRevision": 1}]
+    items = [{"deviceId": "d1", "expectedRevision": 2}]
     first = service.create("ws", "r1", "stop", items, False)
     again = service.create("ws", "r1", "stop", items, False)
     assert again["id"] == first["id"]
@@ -141,12 +197,12 @@ def test_bulk_service_uses_android_device_service_management_facade():
     devices = AndroidDeviceService(_Repository(), object())
     devices.management = _Management()
     service = AndroidBulkService(resources, devices)
-    batch = service.create("ws", "r-facade", "stop", [{"deviceId": "d1", "expectedRevision": 1}], False)
+    batch = service.create("ws", "r-facade", "stop", [{"deviceId": "d1", "expectedRevision": 2}], False)
 
     result = service.run(batch["id"])
 
     assert result["items"][0]["state"] == "accepted"
-    assert devices.management.calls == [("d1", {"requestId": "r-facade:d1:1", "action": "stop", "deleteData": False})]
+    assert devices.management.calls == [("d1", {"requestId": "r-facade:d1:1", "action": "stop", "deleteData": False, "expectedRevision": 2})]
 
 
 def test_bulk_rejects_targets_owned_by_another_workspace():
@@ -155,7 +211,7 @@ def test_bulk_rejects_targets_owned_by_another_workspace():
     service = AndroidBulkService(resources, devices)
 
     with pytest.raises(AndroidError) as error:
-        service.create("ws-a", "r-cross", "stop", [{"deviceId": "d-b", "expectedRevision": 1}], False)
+        service.create("ws-a", "r-cross", "stop", [{"deviceId": "d-b", "expectedRevision": 2}], False)
 
     assert error.value.status == 404
 
@@ -189,7 +245,7 @@ def test_bulk_uses_runtime_workspace_identity_for_management_devices():
         "/workspace/autoflow",
         "r-runtime-workspace",
         "stop",
-        [{"deviceId": "d1", "expectedRevision": 1}],
+        [{"deviceId": "d1", "expectedRevision": 2}],
         False,
     )
 
@@ -210,7 +266,7 @@ async def test_bulk_queue_only_advances_batches_for_the_bound_workspace():
         "action": "stop",
         "deleteData": False,
         "state": "queued",
-        "items": [{"deviceId": "d-b", "expectedRevision": 1, "state": "queued", "operationId": None, "error": None}],
+        "items": [{"deviceId": "d-b", "expectedRevision": 2, "state": "queued", "operationId": None, "error": None}],
     }
     resources.save("bulk", foreign)
 
@@ -225,7 +281,7 @@ async def test_bulk_reconciles_cancelled_operation_and_batch_state():
     resources = _Resources()
     devices = _OperationDevices(state="cancelled")
     service = AndroidBulkService(resources, devices)
-    batch = service.create("ws-a", "r-cancelled", "stop", [{"deviceId": "d-a", "expectedRevision": 1}], False)
+    batch = service.create("ws-a", "r-cancelled", "stop", [{"deviceId": "d-a", "expectedRevision": 2}], False)
     result = service.run(batch["id"])
 
     assert result["items"][0]["state"] == "accepted"
@@ -241,7 +297,7 @@ async def test_bulk_cancelled_error_persists_unknown_result_before_propagating()
     resources = _Resources()
     devices = _CancelledDevices()
     service = AndroidBulkService(resources, devices)
-    batch = service.create("ws-a", "r-interrupt", "stop", [{"deviceId": "d-a", "expectedRevision": 1}], False)
+    batch = service.create("ws-a", "r-interrupt", "stop", [{"deviceId": "d-a", "expectedRevision": 2}], False)
 
     with pytest.raises(asyncio.CancelledError):
         await service.tick()

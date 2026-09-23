@@ -5,7 +5,7 @@
 
 | 验收 | 状态 | 已有证据与缺口 |
 | --- | --- | --- |
-| AM-AC01 | `partial` | Android 管理页已停止旧设备列表和详情 `/runs` 轮询，移除退役分配/运行记录入口；[详情测试](2026-09-23-control-session-verification.md)覆盖受控顶栏导航，其他模块及完整真机 UI 链未专项验收。 |
+| AM-AC01 | `partial` | Android 管理页已停止旧设备列表和详情 `/runs` 轮询，移除退役分配/运行记录入口；[隔离桌面真机链](2026-09-23-desktop-ui-verification.md)从安卓页创建、启动、停止、恢复实例，页面能力明确不通过工作流执行入口。其他模块未专项验收。 |
 | AM-AC02 | `passed`（自动化） | 环境缺失/超时/不支持的只读契约测试；真实 Mac 环境 `available=true`，见 [AM1](am1-verification.md)。 |
 | AM-AC03 | `passed`（自动化） | 状态规则和前端状态测试覆盖 stop/delete/recover/unknown，见 [AM1](am1-verification.md)。 |
 | AM-AC04 | `passed`（自动化） | 持久操作幂等、冲突、generation、紧凑回执与同事务设备投影测试；[操作历史页面](2026-09-23-operation-history-verification.md)可按设备翻页并用原请求编号核实，见 [AM1](am1-verification.md)。 |
@@ -14,20 +14,20 @@
 | AM-AC07 | `passed`（自动化） | 旧 generation、重复 sequence、跨工作区 heartbeat 拒绝测试，见 [AM1](am1-verification.md)。 |
 | AM-AC08 | `passed`（真实与自动化） | [同一自建实例](2026-09-23-am1-real-control-retention.md)写探针→停机/启动读回→移除容器保留卷→明确 `restore` 重建后同卷读回；缺卷回归返回 `ANDROID_DATA_MISSING` 且无新卷写入。 |
 | AM-AC09 | `passed`（真实与自动化） | [真实双实例隔离](2026-09-23-am1-real-control-retention.md)已核实第二台自建实例独立容器/卷，永久删除第二台后第一台仍 `ready` 且原容器/卷身份不变；另有不同 ADB serial、资源标签及丢响应 `needs_verification` 自动化。外部资源未纳入删除目标。 |
-| AM-AC10 | `partial` | 默认单台、模板与空态前端自动化；[历史增量](2026-09-23-operation-history-verification.md)验证键盘进入/关闭后焦点及模拟断线只读。长名称、200% 缩放与真实断线旧数据仍未专项验收。 |
-| AM-AC11 | `partial` | tag 漂移/固定 imageId/引用阻删集成通过；网络拉取和真实内容删除未验收，见 [AM2](am2-verification.md)。 |
+| AM-AC10 | `partial` | 默认单台、模板与空态前端自动化；[隔离桌面真机链](2026-09-23-desktop-ui-verification.md)验证长名称、应用 125% 和相对 100% 基准约 207.36% 的原生高缩放，修复状态竖排和正常设备误报；历史面板焦点已实测。应用设置无精确 200% 档位，两种指定窗口尺寸和真实断线旧数据仍未完整验收。 |
+| AM-AC11 | `partial` | tag 漂移/固定 imageId/引用阻删集成通过；[隔离桌面真机链](2026-09-23-desktop-ui-verification.md)完成固定摘要镜像登记；[AM2 本机实验](am2-verification.md)通过生产 Mac/Lima 和认证 HTTP 对自建 ARM64 镜像登记、按摘要删除和实际不存在确认，固定摘要官方仓库网络拉取返回相同 imageId/sourceDigest 且原 tag 未变。[审查修复](2026-09-23-final-review-remediation.md)补备份引用保护与每次拉取独立持久回执；桌面内容删除及真实断线核实仍未验收。 |
 | AM-AC12 | `passed`（自动化） | 模板 revision 冲突及已有实例配置快照不变集成，见 [AM2](am2-verification.md)。 |
-| AM-AC13 | `passed`（自动化） | 谷歌组件检测与验证状态分离，缺项不报通过；见 [GApps](gapps-validation.md)。 |
+| AM-AC13 | `passed`（自动化） | [审查修复](2026-09-23-final-review-remediation.md)使镜像元数据核验与 `validation` 谷歌验收单列，缺六项时不报通过，界面也分别标示；见 [GApps](gapps-validation.md)。 |
 | AM-AC14 | `blocked` | 无专用候选镜像、测试账号和商店下载链；登录/下载/重启/隔离均 `not_tested`，见 [GApps](gapps-validation.md)。 |
-| AM-AC15 | `partial` | 批次部分失败/取消/重试规则与 UI 自动化存在；真实多实例批次未演练，见 [AM3](am3-verification.md)。 |
+| AM-AC15 | `partial` | 批次部分失败/取消/重试规则与 UI 自动化存在；[真实双实例批量链](2026-09-23-am3-real-bulk-verification.md)及[五实例规模链](2026-09-23-final-review-remediation.md)完成 start/stop/delete。[真实失败、重试与取消](2026-09-24-bulk-failure-cancel.md)在最新修订号规则下重跑，两台批次先 `[succeeded, failed]`，对修订冲突项显式 `retryFailed` 后 `[succeeded, succeeded]`，容量等待可 `cancelPending`。[最终审查](2026-09-24-final-branch-review.md)补容量 await 后与持锁版本栅栏、运行时失败重试再冻结；真实运行时瞬时失败和未知结果故障注入仍缺。 |
 | AM-AC16 | `passed`（自动化及真实容量实验） | 持久预留、未知预算拒绝、stop 丢响应后核实释放，见 [容量实测](2026-09-23-capacity-verification.md)。 |
-| AM-AC17 | `partial` | 聚合快照、陈旧规则及可见预览自动化通过；[单运行实例](am3-verification.md)真实认证 HTTP 快照 20 次 `median=1.91ms`、`p95=2.70ms`。5/10 台、前台/内存与预览并发指标未实测。 |
-| AM-AC18 | `partial` | APK 大小/Manifest/split、未知结果和保护包自动化；[真实自建实例](2026-09-23-am1-real-control-retention.md)已完成安装包/版本核实、启动、停止、清数据、卸载。桌面确认流与丢响应实机仍未演练。 |
-| AM-AC19 | `partial` | 运行中备份拒绝与原子发布自动化、真实停机备份成功；[真实发布前 SIGKILL](2026-09-23-backup-hard-interruption-verification.md)后操作待核实、无假成功备份，暂存清理与源卷读回通过。磁盘不足、取消、权限和归档传输中中断未完整验收。 |
-| AM-AC20 | `partial` | [最终真实恢复](2026-09-23-persistent-metadata-verification.md)覆盖新 ID/卷、1792 持久条目及启动读回；[写入后发布前 SIGKILL](2026-09-23-restore-hard-interruption-verification.md)后待核实、启动/备份/控制拒绝、目标清理与新请求恢复通过。损坏包/镜像不符/越界拒绝为自动化，解包中断、磁盘不足未实测。 |
-| AM-AC21 | `passed`（自动化及真实清理） | 预览后指纹/引用变化 409、外部路径/标签保护及真实 HTTP 清理，见 [清理验收](2026-09-23-cleanup-verification.md)。 |
-| AM-AC22 | `passed`（默认导出） | 默认诊断字段白名单排除输入、账号、原始日志、截图和数据；受限 IPC 本地保存且无自动上传，见 [后端增量](2026-09-23-validation.md)。高级日志单次同意/限时限量仍属 T19 缺口。 |
-| AM-AC23 | `passed`（代码与迁移门槛） | Alembic 唯一 head `am01_management_operations`，未改旧迁移字节；[全量后端与构建门槛](2026-09-23-full-gates.md)及[最新 T06 全量门槛](2026-09-23-operation-history-verification.md)通过。 |
-| AM-AC24 | `partial` | 四阶段 QA 与真机/自动化/外部条件分列；完整场景、全分支最终审查和剩余失败矩阵未完成。 |
+| AM-AC17 | `partial`；十台本机 `blocked` | 聚合快照、陈旧规则及可见预览自动化通过；[五实例真实规模链](2026-09-23-final-review-remediation.md)20 次认证 HTTP 快照 `median=2.13ms`、`p95=2.74ms`，两台并发预览返回 PNG，五台 Docker 内存实测并全部清理。[容量实测](2026-09-24-advanced-logs-and-capacity.md)显示本机 Lima 7921 MiB，十台最低配置加安全预留需 8192 MiB；桌面前台交互指标尚未实测。 |
+| AM-AC18 | `partial` | APK 大小/Manifest/split、未知结果和保护包自动化；[真实自建实例](2026-09-23-am1-real-control-retention.md)已完成安装包/版本核实、启动、停止、清数据、卸载；[最终审查及真实跨重建核实](2026-09-24-final-branch-review.md)用 Shizuku `versionCode=1086` 的完成标记重建控制台，按原回执核实成功并恢复控制，无需旧 ADB tunnel。真实 HTTP 进程级 `SIGKILL`、桌面确认流与 ADB 实际断连仍未演练。 |
+| AM-AC19 | `partial` | 运行中备份拒绝与原子发布自动化、真实停机备份成功；[真实发布前 SIGKILL](2026-09-23-backup-hard-interruption-verification.md)后操作待核实、无假成功备份；[文件流实测](2026-09-23-final-review-remediation.md)通过 17,868,800 字节归档及恢复读回，生产路径不再整包载入 Python 内存。磁盘不足、取消、权限和归档传输中中断未完整验收。 |
+| AM-AC20 | `partial` | [真实恢复](2026-09-23-persistent-metadata-verification.md)覆盖新 ID/卷、1792 持久条目及启动读回；[写入后发布前 SIGKILL](2026-09-23-restore-hard-interruption-verification.md)后隔离与新请求恢复通过。[审查修复](2026-09-23-final-review-remediation.md)加入自定义镜像固定 ID 核实和文件流真实读回。损坏包/镜像不符/越界拒绝为自动化，解包中断、磁盘不足未实测。 |
+| AM-AC21 | `partial` | 预览后指纹/引用变化 409、外部路径/标签保护及真实 HTTP 清理见[清理验收](2026-09-23-cleanup-verification.md)。[最终审查](2026-09-24-final-branch-review.md)补异步设备删除后的父 Operation 汇合与多候选部分落盘不得假成功；真实多对象硬中断仍未演练。 |
+| AM-AC22 | `passed`（自动化及真实高级日志） | 默认诊断字段白名单排除输入、账号、原始日志、截图和数据；受限 IPC 本地保存且无自动上传。[高级日志实测](2026-09-24-advanced-logs-and-capacity.md)补单次确认、归属校验、5 分钟/64 KiB/200 行边界；真实 ReDroid 返回 196 条仅含时间与级别的元数据，消息/tag 均不导出。 |
+| AM-AC23 | `passed`（软件门禁） | Alembic 唯一 head `am01_management_operations`，未改旧迁移字节；[最终完整门槛](2026-09-24-final-full-gates.md)后端 `4031 passed/26 skipped`、Node 22 前端 `424` 文件/`5625` 项通过，Ruff、编译、类型、lint、OpenAPI、构建、脚本和结构均 exit 0。此项仅指软件门禁，不代替其他验收项的真机缺口。 |
+| AM-AC24 | `partial` | 四阶段 QA 与真机/自动化/外部条件分列；[最终只读全分支审查](2026-09-24-final-branch-review.md)已修复已报告 Critical/Important 并未发现剩余高优先级问题；[最终完整软件门槛](2026-09-24-final-full-gates.md)通过。十台规模、完整故障矩阵及外部 GApps 条件尚未完成。 |
 
-当前软件缺口是 T05/T06/T07 的桌面边界、真实断网与硬中断，T13/T14/T16 的规模与性能，T17/T19/T20 的磁盘/中断、应用命令标记清理、高级日志及完整失败矩阵。外部阻塞主要为 AM-AC14 的专用谷歌镜像与账号/网络条件；本地测试 APK 已用于自建实例，不代表商店下载链。真实备份与恢复实验只清理本轮自建资源，已有外部卷和实例不纳入删除范围。
+当前软件或验证缺口是 T05/T06/T07 的桌面边界、真实断网与进程级控制硬中断，T13/T14/T16 的真实未知结果/失败后重试与桌面前台交互，T17/T19/T20 的磁盘/归档传输中断、仍在使用的旧卷无持久归属标记清理及完整失败矩阵。十台实测因本机 Lima 内存预算不足标记 `blocked`，不计软件通过。外部阻塞主要为 AM-AC14 的专用谷歌镜像与账号/网络条件；本地测试 APK 已用于自建实例，不代表商店下载链。真实备份与恢复实验只清理本轮自建资源，已有外部卷和实例不纳入删除范围。

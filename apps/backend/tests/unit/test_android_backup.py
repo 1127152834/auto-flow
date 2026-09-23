@@ -34,6 +34,57 @@ async def test_runtime_backup_publishes_data_archive_and_manifest(tmp_path: Path
 
 
 @pytest.mark.asyncio
+async def test_backup_record_is_published_before_runtime_lock_is_released(tmp_path: Path):
+    payload = io.BytesIO()
+    with tarfile.open(fileobj=payload, mode="w") as archive:
+        info = tarfile.TarInfo("data/settings.json")
+        info.size = 2
+        archive.addfile(info, io.BytesIO(b"{}"))
+
+    class Runtime(_Runtime):
+        locked = False
+
+        def lock(self):
+            self.locked = True
+
+        def unlock(self):
+            self.locked = False
+
+    runtime = Runtime(payload.getvalue())
+
+    class Resources(_Resources):
+        def save(self, kind, item):
+            assert runtime.locked, "image deletion could race unpublished backup"
+            super().save(kind, item)
+
+    device = {"deviceId": "d", "imageId": "sha256:" + "a" * 64, "control": "idle", "ownerRunId": None}
+    await AndroidBackupService(Resources(), tmp_path).create_with_runtime(device, {"androidStatus": "stopped"}, runtime)
+
+
+@pytest.mark.asyncio
+async def test_backup_streams_runtime_archive_to_staging_file(tmp_path: Path):
+    payload = io.BytesIO()
+    with tarfile.open(fileobj=payload, mode="w") as archive:
+        info = tarfile.TarInfo("data/settings.json")
+        info.size = 2
+        archive.addfile(info, io.BytesIO(b"{}"))
+
+    class StreamRuntime(_Runtime):
+        async def backup_volume(self, _device):
+            raise AssertionError("backup should use the file stream")
+
+        async def backup_volume_to_path(self, _device, path):
+            path.write_bytes(payload.getvalue())
+
+    service = AndroidBackupService(_Resources(), tmp_path)
+    device = {"deviceId": "d", "imageId": "sha256:" + "a" * 64, "control": "idle", "ownerRunId": None}
+
+    record = await service.create_with_runtime(device, {"androidStatus": "stopped"}, StreamRuntime(payload.getvalue()))
+
+    assert (Path(record["path"]) / "data.tar").read_bytes() == payload.getvalue()
+
+
+@pytest.mark.asyncio
 async def test_restore_rejects_corrupt_archive_before_runtime_write(tmp_path: Path):
     payload = io.BytesIO()
     with tarfile.open(fileobj=payload, mode="w") as archive:

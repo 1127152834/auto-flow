@@ -1,10 +1,21 @@
 # 安卓模拟器管理完善：阶段索引
 
-- 日期：2026-09-23（校准；原计划 2026-09-19）
+- 日期：2026-09-24（校准；原计划 2026-09-19）
 - 状态：confirmed（AM1–AM4 全量实施授权）；partial，持续实施中。
-- 当前实施基线：`codex/android-management-complete@501aef30` 加本次恢复硬中断验收记录；原起点 `a92f0688`。
+- 当前实施基线：`codex/android-management-complete@d4677354` 加 2026-09-24 最终分支审查的待提交增量；原起点 `a92f0688`。
 - 实施分支：`codex/android-management-complete`，隔离 worktree。
-- 当前阶段：完整目标 active/partial；T06 操作历史 `4f612d53`、保留卷恢复 `57fb391c` 和 T19 完成标记修复 `2a7a0c0d` 已提交。最近完整后端 `3976 passed/26 skipped`、完整前端 `424` 文件/`5621` 项通过。真实 Mac 输入/切端/租约回收/HTTP 重启、应用动作、同卷恢复与双实例删除隔离已通过；成功应用链客体标记 `5→5`。真实卷备份暂存完成后、发布前 `SIGKILL`，新服务标记操作待核实，公开清理移除孤立暂存，源卷读回一致；真实恢复目标卷写入后、发布前 `SIGKILL`，重启隔离、公开删除与新请求恢复通过。逐项命令与剩余工作以最新 QA 记录为准，不用局部通过代表完整交付。
+
+## 2026-09-23 全分支审查后增量
+
+- 2026-09-24 最终只读复审已覆盖运行时、Operation、镜像、批次、备份恢复、清理、诊断及前端，未发现剩余 Critical/Important。修复和先 RED 后 GREEN 的证据见[最终分支审查](../../docs/qa/android-management/2026-09-24-final-branch-review.md)；未完成真实环境矩阵不因代码审查通过而转为通过。
+
+- 状态：`confirmed`（以下定向/真实证据）；完整目标仍 `partial`。来源：[审查修复与真实验收](../../docs/qa/android-management/2026-09-23-final-review-remediation.md)。以下结论覆盖本页下方较早的规模及自动化快照。
+- AM1：应用操作持久回执可在控制台重建后按原会话与请求编号核实；未核实完成标记不能被普通设备恢复清除。真实 ReDroid 完成标记、重建控制台、回执提交、恢复和删除通过；真实 HTTP 进程 `SIGKILL` 尚未注入。
+- AM2：备份的工作区路径身份加入镜像引用保护；自定义镜像恢复按固定 imageId 实际缓存核实；同摘要每次拉取有独立持久回执；元数据核验与谷歌六项验收分别在契约与界面显示。专用 GApps 镜像/账号链继续 `blocked/not_tested`。
+- AM3：真实五实例全部 ready，20 次 HTTP 快照 `median=2.13ms/p95=2.74ms`，两台并发预览及五台内存读数已记录，最终容器/卷为零。[真实部分失败、修订冲突项重试与取消](../../docs/qa/android-management/2026-09-24-bulk-failure-cancel.md)通过，并修复新设备公开修订号与批次比较不一致。十台最低需求 8192 MiB 超过本机 Lima 的 7921 MiB，真实规模标记 `blocked`；运行时瞬时失败/未知结果的重试仍未验收。
+- AM4：生产备份/恢复改为 Lima 文件描述符流和逐块摘要；真实 17,868,800 字节备份→新实例读回通过。[高级日志](../../docs/qa/android-management/2026-09-24-advanced-logs-and-capacity.md)已按单次确认/归属/限时限量提供元数据摘要，真实 ReDroid 196 条通过。磁盘不足、归档传输与解包中断仍未验收。
+- 自动化：最终审查后[完整软件门槛](../../docs/qa/android-management/2026-09-24-final-full-gates.md)通过：后端 `4031 passed, 26 skipped, 2 warnings in 852.64s`；Node 22 前端 `424` 文件/`5625` 项；类型/lint/OpenAPI/构建、Ruff、迁移、结构与脚本 exit 0。定向测试集合有重叠，不相加。
+- 当前阶段：完整目标 active/partial；历史切片已提交，最终审查增量待提交。真实 Mac 输入/切端/租约回收/HTTP 重启、应用动作及跨重建回执、同卷恢复与双实例删除隔离、五实例、部分失败/修订冲突项重试/容量取消、文件流备份恢复和高级日志均有独立证据；十实例受本机容量阻塞，其他故障和外部 GApps 链仍未完成。逐项命令与风险以最新 QA 记录为准。
 
 正文保存在以下文件，不维护第二份规格：
 
@@ -15,10 +26,10 @@
 
 | 批次 | 任务 | 范围 | 状态 |
 | --- | --- | --- | --- |
-| AM1 | T01–T07 | 单实例稳定管理、环境/状态/会话/操作及数据保留 | T01–T04 后端自动化通过；T05 原生/嵌入式切换、中文输入、30 秒租约回收与 HTTP 重启经真实自建实例验证，页面竞态经 RED→GREEN。T06 操作历史已提交，本轮补保留卷 `restore` 契约/UI，并完成停机启动与同卷恢复读回；双实例删除隔离也已实测，长名称/200% 缩放、真实断网和受控硬中断仍未验收 |
-| AM2 | T08–T12 | 镜像、模板、谷歌组件证据 | T08–T10/T12 自动化（含模板生命周期集成）通过；网络拉取、候选镜像和 Google 组件网络/账号验收 blocked |
-| AM3 | T13–T16 | 批次、容量、聚合观察、按需预览、应用管理 | 批量、观察、应用和双实例基础证据存在；预览取消及应用核验前端边界已补齐。持久容量预留、停止未知预算及启动入口已补齐18项集成与真实双工作区容量实验；自建实例已真实完成 APK 安装/版本核实、启动、停止、清数据、卸载及双实例删除隔离；单实例管理快照 20 次真实 HTTP 读取 `median=1.91ms/p95=2.70ms`，批量压力与 5/10 台规模性能 not_run |
-| AM4 | T17–T20 | 停机备份、恢复新实例、安全清理、诊断 | 基础备份/恢复、默认诊断白名单及受限保存 IPC、安全内部链接、UID/GID/mode、备份发布和清理互斥已验证；恢复意图与持久操作/设备前置绑定，失败隔离和成功原子发布已验证；客体侧 tar 的 xattrs/ACL 经真实 1792 项持久条目一致性验证，根目录属性及硬/软链接另经客体实验验证；成功应用操作不再新增完成标记；真实备份发布前及恢复写入后发布前 `SIGKILL`、重启待核实、安全清理与源卷读回已通过；恢复解包中断、归档传输中断、旧客体标记与中断 APK 文件、高级日志及完整失败演练仍待完成 |
+| AM1 | T01–T07 | 单实例稳定管理、环境/状态/会话/操作及数据保留 | 自动化与真实 Mac 输入、切端、租约回收、HTTP 重启、保留卷恢复及隔离桌面创建/生命周期通过；Shizuku 安装后重建控制台可核实原回执并恢复控制。精确 200% 设置、指定窗口尺寸、真实断网和进程级控制硬中断仍未验收 |
+| AM2 | T08–T12 | 镜像、模板、谷歌组件证据 | T08–T10/T12 自动化（含模板生命周期集成）通过；固定摘要官方 ReDroid 仓库真实网络拉取成功且原 tag 未变，自建 ARM64 小镜像经认证 HTTP 登记并实际删除内容。候选 GApps 镜像/账号下载链 blocked；真实断线后拉取核实和桌面内容删除未验收 |
+| AM3 | T13–T16 | 批次、容量、聚合观察、按需预览、应用管理 | 真实双实例 start/stop/delete、部分失败后修订冲突项 `retryFailed`、容量等待取消、五实例快照及双预览通过；真实 APK 安装/版本核实、启动、停止、清数据、卸载和重建回执通过。十实例因 Lima 内存预算不足 `blocked`；运行时瞬时失败/未知结果及桌面前台交互指标仍未验收 |
+| AM4 | T17–T20 | 停机备份、恢复新实例、安全清理、诊断 | 自动化覆盖归档安全、同事务发布、恢复归属、清理保护与脱敏边界；真实文件流备份恢复、持久条目读回、备份/恢复发布点 `SIGKILL` 后隔离、高级日志 196 条仅元数据、实际资源清理通过。磁盘不足、归档传输/解包中断、旧卷标记清理与完整故障矩阵仍未验收 |
 
 ## 当前校准
 
@@ -26,7 +37,7 @@
 
 ## 验证说明
 
-先前完成的是文档检查，不是业务测试；本轮已补做代码、ADB、Lima、ReDroid 和真实数据卷证据。Google 登录等实际外部条件不足时记录 blocked；测试 APK 与原生窗口已在自建实例验证，多实例规模指标和桌面 UI 同链仍为 not_run，不能把软件缺口归为环境阻塞。后续每批实际证据记录到实施计划指定的 docs/qa/android-management/ 文件，并更新本索引；当前状态仍为 partial，不自动接入工作流。
+先前完成的是文档检查，不是业务测试；本轮已补做代码、ADB、Lima、ReDroid、真实数据卷及隔离桌面页面证据。Google 登录等实际外部条件不足时记录 blocked；测试 APK 与原生窗口已在自建实例验证，多实例规模指标及桌面控制/断网同链仍为 not_run，不能把软件缺口归为环境阻塞。后续每批实际证据记录到实施计划指定的 docs/qa/android-management/ 文件，并更新本索引；当前状态仍为 partial，不自动接入工作流。
 
 - 最新容量证据：[持久预留与真实验收](../../docs/qa/android-management/2026-09-23-capacity-verification.md)。
 
@@ -42,6 +53,10 @@
 
 - 最新 AM4 恢复写入后硬中断证据：[真实 SIGKILL、目标隔离与新请求恢复](../../docs/qa/android-management/2026-09-23-restore-hard-interruption-verification.md)。
 
+- 最新 T15/T19 客体暂存增量：[上传前登记与重启回收](../../docs/qa/android-management/2026-09-23-guest-apk-cleanup-verification.md)。
+
+- 最新 T15/T19 结果未知增量：[应用完成标记跨重启隔离](../../docs/qa/android-management/2026-09-23-app-marker-restart-verification.md)。
+
 - 最新 AM4 清理证据：[目录、文件保护与真实HTTP](../../docs/qa/android-management/2026-09-23-cleanup-verification.md)。
 
 - 最新 AM4 恢复证据：[中断隔离与成功发布](../../docs/qa/android-management/2026-09-23-restore-isolation-verification.md)。
@@ -51,3 +66,11 @@
 - 最新原生窗口与 AM4 属性增量：[原生窗口、恢复归属与持久数据属性](../../docs/qa/android-management/2026-09-23-persistent-metadata-verification.md)。
 
 - 最新 AM1 历史增量：[管理操作历史与原请求核实](../../docs/qa/android-management/2026-09-23-operation-history-verification.md)。
+
+- 最新完整自动化门槛：[后端、Node 22 前端、脚本、结构与构建](../../docs/qa/android-management/2026-09-24-final-full-gates.md)。
+
+- 最新桌面真机链：[镜像、模板、生命周期与高缩放](../../docs/qa/android-management/2026-09-23-desktop-ui-verification.md)。
+
+- 最新 AM2 镜像增量：[固定摘要网络拉取、HTTP 内容删除及来源边界](../../docs/qa/android-management/am2-verification.md)。
+
+- 最新 AM3 实例批次：[真实双实例 start/stop/delete 与 HTTP DTO 修复](../../docs/qa/android-management/2026-09-23-am3-real-bulk-verification.md)。

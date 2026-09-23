@@ -1,12 +1,16 @@
 import asyncio
 import re
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from contextlib import contextmanager
 from copy import deepcopy
 from datetime import UTC, datetime
 from typing import Any
-from uuid import uuid4
+from uuid import NAMESPACE_URL, uuid4, uuid5
 
+from autoflow.domain.android.image_verification import (
+    REQUIRED_CHECKS,
+    summarize_verification,
+)
 from autoflow.domain.android.ports import AndroidError
 
 _IMAGE_ID = re.compile(r"^sha256:[0-9a-f]{64}$")
@@ -44,8 +48,10 @@ class AndroidImageService:
 
     @staticmethod
     def _public(image: dict[str, Any]) -> dict[str, Any]:
-        fields = {"id", "imageId", "name", "reference", "revision", "state", "verification", "createdAt", "sourceDigest", "architecture", "os", "androidVersion", "googleComponents", "references"}
-        return {key: value for key, value in image.items() if key in fields}
+        fields = {"id", "imageId", "name", "reference", "revision", "state", "verification", "validation", "createdAt", "sourceDigest", "architecture", "os", "androidVersion", "googleComponents", "references"}
+        public = {key: value for key, value in image.items() if key in fields}
+        public.setdefault("validation", "not_tested")
+        return public
 
     @staticmethod
     def _metadata_value(metadata: Any, *keys: str, default: Any = None) -> Any:
@@ -99,13 +105,15 @@ class AndroidImageService:
         return normalised
 
     def _persist_registered(
-        self, request: dict[str, Any], metadata: dict[str, Any]
+        self, request: dict[str, Any], metadata: dict[str, Any], receipt: dict[str, Any] | None = None
     ) -> dict[str, Any]:
         image_id = request["id"]
         existing = next((item for item in self.list() if item["imageId"] == image_id), None)
         if existing is not None:
             if any(existing.get(key) != request.get(key) for key in ("name", "reference")):
                 raise AndroidError("ANDROID_IMAGE_CONFLICT", "镜像摘要已登记为其他内容", 409)
+            if existing.get("state") in {"delete_pending", "delete_needs_verification", "delete_blocked"}:
+                raise AndroidError("ANDROID_IMAGE_DELETE_RESULT_UNKNOWN", "镜像删除结果未核实，不能重新登记", 503)
             metadata_fields = (
                 "sourceDigest",
                 "architecture",
@@ -113,9 +121,15 @@ class AndroidImageService:
                 "androidVersion",
                 "googleComponents",
             )
-            if any(existing.get(key) != metadata.get(key) for key in metadata_fields):
+            changed = any(existing.get(key) != metadata.get(key) for key in metadata_fields)
+            if existing.get("state") in {"deleted", "unregistered"}:
+                existing.update(state="verified" if (existing.get("verification") or {}).get("state") == "passed" else "registered", revision=int(existing.get("revision", 0)) + 1)
+                changed = True
+            if changed:
                 existing.update({key: metadata.get(key) for key in metadata_fields})
-                self.resources.save("image", existing)
+                self._save_registration(existing, receipt)
+            elif receipt is not None:
+                self.resources.save("image_pull_receipt", receipt)
             return self._public(existing)
         image = {
             "id": str(uuid4()),
@@ -125,6 +139,7 @@ class AndroidImageService:
             "revision": 1,
             "state": "registered",
             "verification": {"state": "unknown", "evidence": None},
+            "validation": "not_tested",
             "sourceDigest": metadata["sourceDigest"],
             "architecture": metadata["architecture"],
             "os": metadata["os"],
@@ -135,8 +150,29 @@ class AndroidImageService:
             "createdAt": datetime.now(UTC).isoformat(),
             "workspaceId": self._workspace(),
         }
-        self.resources.save("image", image)
+        self._save_registration(image, receipt)
         return self._public(image)
+
+    def _save_registration(self, image: dict[str, Any], receipt: dict[str, Any] | None) -> None:
+        if receipt is None:
+            self.resources.save("image", image)
+        elif callable(writer := getattr(self.resources, "save_many", None)):
+            writer([("image", image), ("image_pull_receipt", receipt)])
+        else:
+            # In-memory test stores expose only save; production repository commits both rows together.
+            self.resources.save("image", image)
+            self.resources.save("image_pull_receipt", receipt)
+
+    @staticmethod
+    def _pull_receipt(workspace: str | None, request_id: str, reference: str, image_id: str) -> dict[str, Any]:
+        return {
+            "id": str(uuid5(NAMESPACE_URL, f"{workspace}/android-image-pull/{request_id}")),
+            "workspaceId": workspace,
+            "requestId": request_id,
+            "reference": reference,
+            "imageId": image_id,
+            "createdAt": datetime.now(UTC).isoformat(),
+        }
 
     async def register(self, request: dict[str, Any]) -> dict[str, Any]:
         image_id = request["id"]
@@ -145,38 +181,71 @@ class AndroidImageService:
         reference = str(request.get("reference", ""))
         if not _REFERENCE.fullmatch(reference):
             raise AndroidError("ANDROID_IMAGE_REFERENCE_INVALID", "镜像引用格式无效", 422)
-        metadata = await self._inspect_reference(reference)
-        if metadata["imageId"] != image_id:
-            raise AndroidError(
-                "ANDROID_IMAGE_METADATA_MISMATCH",
-                "服务端核实的镜像摘要与请求不一致",
-                409,
-            )
-        return self._persist_registered(request, metadata)
+        with self._runtime_lock():
+            metadata = await self._inspect_reference(reference)
+            if metadata["imageId"] != image_id:
+                raise AndroidError(
+                    "ANDROID_IMAGE_METADATA_MISMATCH",
+                    "服务端核实的镜像摘要与请求不一致",
+                    409,
+                )
+            return self._persist_registered(request, metadata)
 
     async def pull(self, request_id: str, reference: str) -> dict[str, Any]:
         if self.catalog is None:
             raise AndroidError("ANDROID_IMAGE_PULL_UNAVAILABLE", "镜像拉取适配器尚未配置", 503)
-        existing = next((item for item in self.list() if item.get("requestId") == request_id), None)
-        if existing is not None:
-            if existing.get("reference") != reference:
-                raise AndroidError("ANDROID_REQUEST_CONFLICT", "请求编号已用于其他镜像拉取", 409)
-            return existing
-        metadata = await (self.catalog.pull(reference) if hasattr(self.catalog, "pull") else self.catalog.inspect(reference))
-        metadata = self._normalise_metadata(metadata)
-        self._validate_metadata(metadata)
-        image = self._persist_registered({
-            "id": metadata["imageId"],
-            "name": reference,
-            "reference": reference,
-            "requestId": request_id,
-            "sourceDigest": metadata["sourceDigest"],
-            "architecture": metadata["architecture"],
-            "os": metadata["os"],
-            "androidVersion": metadata["androidVersion"],
-            "googleComponents": metadata["googleComponents"],
-        }, metadata)
-        return image
+        with self._runtime_lock():
+            workspace = self._workspace()
+            receipt = next((item for item in self.resources.list("image_pull_receipt") if item.get("requestId") == request_id and item.get("workspaceId") == workspace), None)
+            if receipt is not None:
+                if receipt["reference"] != reference:
+                    raise AndroidError("ANDROID_REQUEST_CONFLICT", "请求编号已用于其他镜像拉取", 409)
+                image = next((item for item in self.list() if item["imageId"] == receipt["imageId"]), None)
+                if image is None:
+                    raise AndroidError("ANDROID_IMAGE_PULL_RESULT_UNKNOWN", "拉取回执对应的镜像目录不存在", 503)
+                return self._public(image)
+            existing = next((item for item in self.list() if item.get("requestId") == request_id), None)
+            if existing is not None:
+                if existing.get("reference") != reference:
+                    raise AndroidError("ANDROID_REQUEST_CONFLICT", "请求编号已用于其他镜像拉取", 409)
+                self.resources.save("image_pull_receipt", self._pull_receipt(workspace, request_id, reference, existing["imageId"]))
+                return self._public(existing)
+            metadata = await (self.catalog.pull(reference) if hasattr(self.catalog, "pull") else self.catalog.inspect(reference))
+            metadata = self._normalise_metadata(metadata)
+            self._validate_metadata(metadata)
+            receipt = self._pull_receipt(workspace, request_id, reference, metadata["imageId"])
+            image = self._persist_registered({
+                "id": metadata["imageId"],
+                "name": reference,
+                "reference": reference,
+                "requestId": request_id,
+                "sourceDigest": metadata["sourceDigest"],
+                "architecture": metadata["architecture"],
+                "os": metadata["os"],
+                "androidVersion": metadata["androidVersion"],
+                "googleComponents": metadata["googleComponents"],
+            }, metadata, receipt)
+            return image
+
+    async def verify_pull(self, request_id: str, reference: str, on_verified: Callable[[], Any] | None = None) -> Any:
+        with self._runtime_lock():
+            receipt = next((item for item in self.resources.list("image_pull_receipt") if item.get("requestId") == request_id and item.get("workspaceId") == self._workspace() and item.get("reference") == reference), None)
+            if receipt is None:
+                legacy = next((item for item in self.list() if item.get("requestId") == request_id and item.get("reference") == reference and item.get("state") not in {"deleted", "unregistered"}), None)
+                if legacy is None:
+                    return False
+                receipt = self._pull_receipt(self._workspace(), request_id, reference, legacy["imageId"])
+            image = next((item for item in self.list() if item.get("imageId") == receipt["imageId"] and item.get("state") not in {"deleted", "unregistered"}), None)
+            if image is None:
+                return False
+            runtime = getattr(self.devices, "runtime", None)
+            inspector = getattr(runtime, "inspect_image", None)
+            observed = await (inspector(receipt["imageId"]) if callable(inspector) else self.catalog.inspect(reference))
+            metadata = self._normalise_metadata(observed)
+            verified = metadata["imageId"] == receipt["imageId"] and metadata["architecture"] == "arm64" and metadata["os"] == "linux"
+            if verified and not any(item.get("id") == receipt["id"] for item in self.resources.list("image_pull_receipt")):
+                self.resources.save("image_pull_receipt", receipt)
+            return on_verified() if verified and on_verified is not None else verified
 
     def delete(self, identifier: str, delete_content: bool = False, request_id: str | None = None, expected_revision: int | None = None) -> dict[str, Any]:
         if delete_content:
@@ -201,6 +270,8 @@ class AndroidImageService:
 
     def _references(self, image_id: str) -> list:
         workspace = self._workspace()
+        runtime_workspace = getattr(getattr(self.devices, "runtime", None), "workspace", None)
+        backup_workspace = str(runtime_workspace.resolve()) if runtime_workspace is not None else workspace
         refs = [
             device.get("deviceId")
             for device in self.devices.list()
@@ -209,7 +280,7 @@ class AndroidImageService:
             and (workspace is None or device.get("workspaceId") in {None, workspace})
         ]
         refs.extend(item.get("id") for item in self.resources.list("profile") if not item.get("archived") and item.get("imageId") == image_id and (workspace is None or item.get("workspaceId") in {None, workspace}))
-        refs.extend(item.get("id") for item in self.resources.list("backup") if item.get("imageId") == image_id and (workspace is None or item.get("workspaceId") in {None, workspace}))
+        refs.extend(item.get("id") for item in self.resources.list("backup") if item.get("imageId") == image_id and (backup_workspace is None or item.get("workspaceId") in {None, backup_workspace}))
         return refs
 
     async def delete_content(self, identifier: str, request_id: str | None = None, expected_revision: int | None = None) -> dict[str, Any]:
@@ -301,9 +372,13 @@ class AndroidImageService:
         records = list(verification.get("records") or [])
         records.append({"check": check, "result": result, "source": "server", "evidence": evidence, "recordedAt": datetime.now(UTC).isoformat()})
         verification["records"] = records
-        results = {record.get("result") for record in records}
+        results = {record.get("result") for record in records if record.get("check") in {"image_metadata", "runtime_image"}}
         verification["state"] = "failed" if "failed" in results else "blocked" if "blocked" in results else "passed" if results and results == {"passed"} else "not_tested"
         image["verification"] = verification
+        image["validation"] = summarize_verification([
+            {"checkId": record["check"], "status": record["result"]}
+            for record in records if record.get("check") in REQUIRED_CHECKS
+        ]).status
         image["state"] = "verified" if verification["state"] == "passed" else "registered"
         self.resources.save("image", image)
         return self._public(image)

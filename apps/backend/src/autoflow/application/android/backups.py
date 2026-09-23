@@ -52,12 +52,12 @@ class AndroidBackupService:
         record.state = state
 
     @staticmethod
-    def _validate_archive(data: bytes) -> None:
+    def _validate_archive(data: bytes | Path) -> None:
         """Reject malformed or unsafe tar streams before publishing or restoring."""
-        if not isinstance(data, (bytes, bytearray)):
+        if not isinstance(data, (bytes, bytearray, Path)):
             raise AndroidError("ANDROID_BACKUP_INCOMPATIBLE", "备份数据不是受支持的归档", 409)
         try:
-            with tarfile.open(fileobj=io.BytesIO(data), mode="r:") as archive:
+            with (tarfile.open(data, mode="r:") if isinstance(data, Path) else tarfile.open(fileobj=io.BytesIO(data), mode="r:")) as archive:
                 members = archive.getmembers()
                 validate_archive_members(members)
                 for member in members:
@@ -120,37 +120,39 @@ class AndroidBackupService:
                 raise AndroidError("ANDROID_BACKUP_REQUEST_REPLAYED", "备份请求已处理，请先核实操作结果", 409)
             operation = self.operations.transition(operation.operation_id, "queued", "running", {"stage_code": "checking"})
         try:
-            with self.storage.lock():
-                with self._runtime_lock(runtime):
-                    if hasattr(runtime, "inspect"):
-                        observed = await runtime.inspect(device)
-                    require_restored(device)
-                    if (observed or {}).get("androidStatus") not in {"stopped", "retained"} or device.get("control") != "idle" or device.get("ownerRunId"):
-                        raise AndroidError("ANDROID_BACKUP_REQUIRES_STOPPED", "备份前必须停止实例并释放控制会话", 409)
-                    if not hasattr(runtime, "backup_volume"):
-                        raise AndroidError("ANDROID_BACKUP_UNAVAILABLE", "运行时尚未提供数据卷归档适配器", 503)
-                    data = await runtime.backup_volume(device)
-                    backup_id = str(uuid4())
-                    staged = self.storage.stage(backup_id)
-                    try:
-                        self._validate_archive(data)
-                        data_path = staged / "data.tar"
-                        data_path.write_bytes(data)
-                        os.chmod(data_path, 0o600)
-                        manifest = {"formatVersion": 1, "deviceId": device["deviceId"], "imageId": device["imageId"], "config": device.get("creationConfig", {})}
-                        manifest_path = staged / "manifest.json"
-                        manifest_path.write_text(json.dumps(manifest, ensure_ascii=False), encoding="utf-8")
-                        os.chmod(manifest_path, 0o600)
-                        digest = hashlib.sha256()
-                        size = 0
-                        for path in sorted(staged.iterdir()):
-                            chunk = path.read_bytes()
-                            digest.update(chunk)
-                            size += len(chunk)
-                        published = self.storage.finalize(backup_id)
-                    except BaseException:
-                        self.storage.discard(backup_id)
-                        raise
+            with self.storage.lock(), self._runtime_lock(runtime):
+                if hasattr(runtime, "inspect"):
+                    observed = await runtime.inspect(device)
+                require_restored(device)
+                if (observed or {}).get("androidStatus") not in {"stopped", "retained"} or device.get("control") != "idle" or device.get("ownerRunId"):
+                    raise AndroidError("ANDROID_BACKUP_REQUIRES_STOPPED", "备份前必须停止实例并释放控制会话", 409)
+                if not hasattr(runtime, "backup_volume") and not hasattr(runtime, "backup_volume_to_path"):
+                    raise AndroidError("ANDROID_BACKUP_UNAVAILABLE", "运行时尚未提供数据卷归档适配器", 503)
+                backup_id = str(uuid4())
+                staged = self.storage.stage(backup_id)
+                try:
+                    data_path = staged / "data.tar"
+                    if hasattr(runtime, "backup_volume_to_path"):
+                        await runtime.backup_volume_to_path(device, data_path)
+                    else:
+                        data_path.write_bytes(await runtime.backup_volume(device))
+                    self._validate_archive(data_path)
+                    os.chmod(data_path, 0o600)
+                    manifest = {"formatVersion": 1, "deviceId": device["deviceId"], "imageId": device["imageId"], "config": device.get("creationConfig", {})}
+                    manifest_path = staged / "manifest.json"
+                    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False), encoding="utf-8")
+                    os.chmod(manifest_path, 0o600)
+                    digest = hashlib.sha256()
+                    size = 0
+                    for path in sorted(staged.iterdir()):
+                        with path.open("rb") as stream:
+                            for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+                                digest.update(chunk)
+                                size += len(chunk)
+                    published = self.storage.finalize(backup_id)
+                except BaseException:
+                    self.storage.discard(backup_id)
+                    raise
                 record = {"id": backup_id, "deviceId": device["deviceId"], "imageId": device["imageId"], "workspaceId": str(self.root.parent.resolve()), "formatVersion": 1, "path": str(published), "sha256": digest.hexdigest(), "bytes": size, "createdAt": datetime.now(UTC).isoformat(), "state": "available", "config": device.get("creationConfig", {}), "requestId": request_id, "requestDigest": self._digest("backup", payload)}
                 try:
                     if operation is None:
@@ -250,7 +252,7 @@ class AndroidBackupService:
                 raw_backup_path.is_symlink()
                 or final_root.is_symlink()
                 or not final_root.is_dir()
-                or not hasattr(runtime, "restore_volume")
+                or (not hasattr(runtime, "restore_volume") and not hasattr(runtime, "restore_volume_from_path"))
             ):
                 raise AndroidError("ANDROID_BACKUP_UNAVAILABLE", "运行时尚未提供数据卷恢复适配器", 503)
             backup_path = raw_backup_path.resolve()
@@ -261,7 +263,6 @@ class AndroidBackupService:
                 raise AndroidError("ANDROID_BACKUP_INCOMPATIBLE", "备份缺少可恢复的数据卷归档", 409)
             digest = hashlib.sha256()
             size = 0
-            data = b""
             manifest_data = b""
             names: set[str] = set()
             for path in sorted(backup_path.iterdir()):
@@ -269,14 +270,13 @@ class AndroidBackupService:
                     raise AndroidError("ANDROID_BACKUP_INCOMPATIBLE", "备份目录包含链接条目", 409)
                 if not path.is_file():
                     raise AndroidError("ANDROID_BACKUP_INCOMPATIBLE", "备份目录包含不支持的条目", 409)
-                chunk = path.read_bytes()
                 names.add(path.name)
-                if path.name == "manifest.json":
-                    manifest_data = chunk
-                if path == data_path:
-                    data = chunk
-                digest.update(chunk)
-                size += len(chunk)
+                with path.open("rb") as stream:
+                    for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+                        if path.name == "manifest.json" and len(manifest_data) <= 1024 * 1024:
+                            manifest_data += chunk
+                        digest.update(chunk)
+                        size += len(chunk)
             if backup.get("sha256") != digest.hexdigest() or backup.get("bytes") != size:
                 raise AndroidError("ANDROID_BACKUP_CORRUPT", "备份摘要或字节数不匹配", 409)
             try:
@@ -293,7 +293,7 @@ class AndroidBackupService:
                 or manifest != expected
             ):
                 raise AndroidError("ANDROID_BACKUP_INCOMPATIBLE", "备份清单与目录记录不一致或格式不受支持", 409)
-            self._validate_archive(data)
+            self._validate_archive(data_path)
             config = device.get("creationConfig") or {}
             if (
                 device.get("restoreState") != "pending"
@@ -311,5 +311,8 @@ class AndroidBackupService:
                 if self.operations is None:
                     raise AndroidError("ANDROID_RESTORE_TARGET_INVALID", "恢复目标操作无法核实，禁止写入数据卷", 409)
                 self.operations.verify_restore_target(self.workspace_identity, backup_id, device)
-                await runtime.restore_volume(device, data)
+                if hasattr(runtime, "restore_volume_from_path"):
+                    await runtime.restore_volume_from_path(device, data_path)
+                else:
+                    await runtime.restore_volume(device, data_path.read_bytes())
             return {"deviceId": device["deviceId"], "backupId": backup_id, "state": "restored"}

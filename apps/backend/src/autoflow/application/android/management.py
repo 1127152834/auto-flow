@@ -4,6 +4,7 @@ from copy import deepcopy
 from datetime import UTC, datetime
 from typing import Any
 
+from autoflow.domain.android.management_models import public_device_revision
 from autoflow.domain.android.management_rules import require_restored, restore_pending
 from autoflow.domain.android.ports import AndroidError, AndroidRuntime, DeviceRepository
 
@@ -71,37 +72,52 @@ class AndroidManagement:
 
     def operate(self, device_id: str, request: dict[str, Any]) -> dict[str, Any]:
         device = self.repository.get(device_id)
-        receipts = device.get("operationReceipts", {})
-        prior = receipts.get(request["requestId"])
+        prior = device.get("operationReceipts", {}).get(request["requestId"])
         if prior is not None:
             if prior != request:
                 raise AndroidError("ANDROID_REQUEST_CONFLICT", "操作编号已用于不同请求")
             return device
-        if device.get("deleted"):
-            raise AndroidError("ANDROID_NOT_FOUND", "设备已删除", 404)
-        if device.get("ownerRunId") or device.get("control") not in {"idle", "recovery_required"}:
-            raise AndroidError("ANDROID_BUSY", "请先结束设备的手动会话或工作流")
-        if device.get("control") == "recovery_required" and request["action"] != "recover":
-            raise AndroidError("ANDROID_RECOVERY_REQUIRED", "请先核实上一次设备操作")
-        if restore_pending(device) and (request["action"] not in {"recover", "delete"} or (request["action"] == "delete" and not request.get("deleteData"))):
-            require_restored(device)
-        if device.get("dataRetained") and request["action"] in {"start", "stop", "restart"}:
-            raise AndroidError("ANDROID_DATA_RETAINED", "保留数据实例必须先恢复", 409)
-        if request["action"] == "restore" and not device.get("dataRetained"):
-            raise AndroidError("ANDROID_DATA_NOT_RETAINED", "设备没有待恢复的保留数据", 409)
-        durable = self._accept_operation(device_id, request)
-        if durable is not None and durable.state not in {"queued", "running"}:
-            if durable.state == "needs_verification":
-                device["control"] = "recovery_required"
-            return device
-        if durable is not None and durable.state == "running" and request["requestId"] not in receipts:
-            return device
         self._admit()
+        handed_off = False
         try:
-            return self._start(device, request, durable)
-        except BaseException:
-            self.runtime.unlock()
-            raise
+            # Re-read under the runtime lock: capacity probes and other callers
+            # may have changed the device since the batch captured its revision.
+            device = self.repository.get(device_id)
+            prior = device.get("operationReceipts", {}).get(request["requestId"])
+            if prior is not None:
+                if prior != request:
+                    raise AndroidError("ANDROID_REQUEST_CONFLICT", "操作编号已用于不同请求")
+                return device
+            expected = request.get("expectedRevision")
+            if expected is not None and public_device_revision(device.get("generation")) != expected:
+                raise AndroidError("ANDROID_REVISION_CONFLICT", "设备已发生变化，请重新加载", 409)
+            if device.get("deleted"):
+                raise AndroidError("ANDROID_NOT_FOUND", "设备已删除", 404)
+            if device.get("ownerRunId") or device.get("control") not in {"idle", "recovery_required"}:
+                raise AndroidError("ANDROID_BUSY", "请先结束设备的手动会话或工作流")
+            if device.get("pendingCommand"):
+                raise AndroidError("ANDROID_APP_OPERATION_UNVERIFIED", "应用操作完成标记尚未核实，请按原会话和请求编号核实", 409)
+            if device.get("control") == "recovery_required" and request["action"] != "recover":
+                raise AndroidError("ANDROID_RECOVERY_REQUIRED", "请先核实上一次设备操作")
+            if restore_pending(device) and (request["action"] not in {"recover", "delete"} or (request["action"] == "delete" and not request.get("deleteData"))):
+                require_restored(device)
+            if device.get("dataRetained") and request["action"] in {"start", "stop", "restart"}:
+                raise AndroidError("ANDROID_DATA_RETAINED", "保留数据实例必须先恢复", 409)
+            if request["action"] == "restore" and not device.get("dataRetained"):
+                raise AndroidError("ANDROID_DATA_NOT_RETAINED", "设备没有待恢复的保留数据", 409)
+            durable = self._accept_operation(device_id, request)
+            if durable is not None and durable.state not in {"queued", "running"}:
+                if durable.state == "needs_verification":
+                    device["control"] = "recovery_required"
+                return device
+            if durable is not None and durable.state == "running":
+                return device
+            result = self._start(device, request, durable)
+            handed_off = True
+            return result
+        finally:
+            if not handed_off:
+                self.runtime.unlock()
 
     def _accept_operation(self, device_id: str, request: dict[str, Any]) -> Any | None:
         if self.operations is None:

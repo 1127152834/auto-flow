@@ -31,6 +31,9 @@ class _SessionResources:
     def save(self, kind, item):
         self.saved.append((kind, deepcopy(item)))
 
+    def get(self, kind, identifier):
+        return next(deepcopy(item) for saved_kind, item in reversed(self.saved) if saved_kind == kind and item["id"] == identifier)
+
 
 class _AppRuntime:
     def __init__(self, failure=None):
@@ -423,3 +426,98 @@ async def test_verification_retries_failed_receipt_save_before_acknowledging():
     with pytest.raises(AndroidError) as error:
         await console.verify_app("s", 3, "req")
     assert error.value.code == "ANDROID_APP_OPERATION_FAILED"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("persisted_state", ["needs_verification", "running"])
+async def test_restarted_console_verifies_persisted_app_receipt_before_releasing_marker(persisted_state):
+    from autoflow.application.android.devices import AndroidDeviceService
+
+    marker = "/data/local/tmp/autoflow-operation-" + "a" * 32
+    device = {"deviceId": "device", "generation": 3, "control": "recovery_required", "pendingCommand": marker, "width": 720, "height": 1280}
+
+    class Repository:
+        def get(self, _device_id):
+            return deepcopy(device)
+
+        def save(self, value):
+            device.clear()
+            device.update(deepcopy(value))
+
+    class Runtime:
+        def __init__(self):
+            self.device = None
+            self.save = None
+            self.acknowledged = []
+
+        def lock(self):
+            pass
+
+        def unlock(self):
+            pass
+
+        async def verify_pending_command(self):
+            assert self.device["pendingCommand"] == marker
+            return 0
+
+        async def acknowledge_pending_command(self, value):
+            assert value == marker
+            self.acknowledged.append(value)
+            self.device.pop("pendingCommand")
+            self.save()
+
+    runtime = Runtime()
+    resources = _SessionResources()
+    receipt = {"state": persisted_state, "request": {"operation": "stop", "generation": 3}}
+    if persisted_state != "running":
+        receipt["commandMarker"] = marker
+    resources.save("session", {"id": "s", "deviceId": "device", "request": {"requestId": "s", "deviceId": "device", "access": "manual"}, "appReceipts": {"req": receipt}})
+    console = AndroidConsole(AndroidDeviceService(Repository(), runtime), None, resources, None)
+
+    result = await console.verify_app("s", 3, "req")
+
+    assert result["state"] == "recovery_required"
+    assert resources.get("session", "s")["appReceipts"]["req"]["state"] == "succeeded"
+    assert runtime.acknowledged == [marker]
+    assert "pendingCommand" not in device
+
+
+@pytest.mark.asyncio
+async def test_restarted_install_verifies_package_without_disconnected_adb():
+    from autoflow.application.android.devices import AndroidDeviceService
+
+    marker = "/data/local/tmp/autoflow-operation-" + "b" * 32
+    device = {"deviceId": "device", "generation": 3, "control": "recovery_required", "pendingCommand": marker, "width": 720, "height": 1280}
+
+    class Repository:
+        def get(self, _identifier):
+            return deepcopy(device)
+
+        def save(self, value):
+            device.clear()
+            device.update(deepcopy(value))
+
+    class Runtime:
+        def lock(self): pass
+        def unlock(self): pass
+
+        async def verify_pending_command(self):
+            return 0
+
+        async def app_info(self):
+            raise AndroidError("ANDROID_DISCONNECTED", "no ADB tunnel", 503)
+
+        async def app_info_for_verification(self):
+            return {"applications": [{"packageName": "com.example.test", "versionCode": 7}]}
+
+        async def acknowledge_pending_command(self, value):
+            assert value == marker
+            self.device.pop("pendingCommand")
+            self.save()
+
+    resources = _SessionResources()
+    resources.save("session", {"id": "s", "deviceId": "device", "request": {"requestId": "s", "deviceId": "device", "access": "manual"}, "appReceipts": {"req": {"state": "needs_verification", "request": {"operation": "install", "generation": 3, "apkMetadata": {"packageName": "com.example.test", "versionCode": 7}}, "commandMarker": marker}}})
+    result = await AndroidConsole(AndroidDeviceService(Repository(), Runtime()), None, resources, None).verify_app("s", 3, "req")
+    assert result["state"] == "recovery_required"
+    assert resources.get("session", "s")["appReceipts"]["req"]["state"] == "succeeded"
+    assert "pendingCommand" not in device

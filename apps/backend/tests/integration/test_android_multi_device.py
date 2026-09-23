@@ -65,7 +65,7 @@ async def test_multi_device_bulk_uses_persistent_queue_capacity_and_new_retry_id
     operations = SqlAlchemyAndroidOperationRepository(sessions)
     devices = _Devices(operations)
     service = AndroidBulkService(resources, devices)
-    batch = service.create("ws", "bulk-1", "start", [{"deviceId": "d1", "expectedRevision": 1}, {"deviceId": "d2", "expectedRevision": 1}], False)
+    batch = service.create("ws", "bulk-1", "start", [{"deviceId": "d1", "expectedRevision": 2}, {"deviceId": "d2", "expectedRevision": 2}], False)
     assert all(item["operationId"] for item in batch["items"])
 
     await service.tick()
@@ -129,7 +129,7 @@ async def test_bulk_verify_reconciles_unknown_item_without_replaying_operation(t
 
     devices.runtime.inspect = inspect
     service = AndroidBulkService(resources, devices)
-    batch = service.create("ws", "bulk-verify", "stop", [{"deviceId": "d1", "expectedRevision": 1}], False)
+    batch = service.create("ws", "bulk-verify", "stop", [{"deviceId": "d1", "expectedRevision": 2}], False)
     result = service.run(batch["id"], "ws")
     operation_id = result["items"][0]["operationId"]
     operation = operations.get(operation_id, "ws")

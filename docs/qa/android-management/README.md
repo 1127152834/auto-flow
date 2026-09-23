@@ -2,15 +2,31 @@
 
 [24 项验收校准](2026-09-23-acceptance-matrix.md)逐项区分通过、部分完成与外部阻塞；不把局部自动化或真实单链推断为四阶段全部完成。
 
-最新 AM1 [真实控制、应用与保留卷验收](2026-09-23-am1-real-control-retention.md)覆盖中文输入、原生/嵌入式切换、30 秒失联回收、HTTP 重启、真实 APK 操作及同卷数据恢复；本轮 RED→GREEN 接通了原本缺失的保留数据 `restore` 入口。此前的[管理操作历史](2026-09-23-operation-history-verification.md)与[控制会话竞态](2026-09-23-control-session-verification.md)分别保留自身证据。桌面长名称/200% 缩放、真实网络断开及受控硬中断仍未验收。
+最新 AM1 [真实控制、应用与保留卷验收](2026-09-23-am1-real-control-retention.md)覆盖中文输入、原生/嵌入式切换、30 秒失联回收、HTTP 重启、真实 APK 操作及同卷数据恢复；本轮 RED→GREEN 接通了原本缺失的保留数据 `restore` 入口。此前的[管理操作历史](2026-09-23-operation-history-verification.md)与[控制会话竞态](2026-09-23-control-session-verification.md)分别保留自身证据。真实网络断开及桌面控制同链仍未验收。
 
-最新 T19 [应用操作标记](2026-09-23-command-marker-verification.md)修复成功回执落盘前丢失客体完成证据的问题；真实 APK 链重跑后客体标记保持 `5→5`，旧残留和中断上传的 APK 临时文件仍待安全清理。
+[隔离桌面真机链](2026-09-23-desktop-ui-verification.md)新增镜像登记、模板、长名称实例创建/启动/停止/保留/恢复与历史页面证据，修复镜像/旧环境 500、正常设备误报及高缩放状态竖排。应用 125% 和原生五档高缩放已实测；精确 200% 数值、真实网络断开与桌面原生控制同链仍未验收。
+
+[AM2 镜像增量](am2-verification.md)已在真实 Mac/Lima 按固定摘要拉取官方 ReDroid 镜像，并通过认证 HTTP 登记/删除自建 ARM64 测试镜像内容；拉取前来源边界经 RED→GREEN。候选 GApps 账号链、真实断线核实和桌面内容删除仍未验收。[AM3 双实例批量链](2026-09-23-am3-real-bulk-verification.md)完成 start/stop/delete 三批各两项成功、最终容器与卷消失，同时修复真实 HTTP 批次记录泄漏内部字段引起的 500；[审查修复与五实例真实链](2026-09-23-final-review-remediation.md)另覆盖五台 ready、20 次快照、并发预览、文件流备份/恢复和跨重建应用回执核实。十台本机容量阻塞，真实故障后重试及外部条件仍未验收。
+
+[高级日志与十实例容量](2026-09-24-advanced-logs-and-capacity.md)记录单次确认、受限 logcat 元数据导出及真实 ReDroid 196 条结果；十台最低配置加保留需 8192 MiB，本机 Lima 仅 7921 MiB，因此十台真实规模标记 `blocked`。默认诊断继续只含白名单字段。
+
+[批次部分失败、重试与取消](2026-09-24-bulk-failure-cancel.md)修复新设备公开修订号与执行比较不一致；两台真实批量停止先得 `[succeeded, failed]`，对修订冲突项显式重试后两项均成功；容量等待子项取消后设备仍停机，三台自建资源最终均清理并只读核实。
+
+[最终分支审查与边界回归](2026-09-24-final-branch-review.md)补齐修订号别名、镜像/备份并发发布、跨重建 APK 与删除核实、批次容量/重试栅栏、恢复预检与异步清理父操作；真实 Shizuku 安装后控制台重建核实及回收通过。只读复审未见剩余 Critical/Important。真实故障矩阵仍以验收矩阵逐项状态为准。
+
+最新 T19 [应用操作标记](2026-09-23-command-marker-verification.md)修复成功回执落盘前丢失客体完成证据的问题；真实 APK 链重跑后客体标记保持 `5→5`，旧残留仍待安全清理。
+
+最新 T15/T19 [客体 APK 暂存回收](2026-09-23-guest-apk-cleanup-verification.md)在上传前持久登记受控路径，回执确认或重启恢复时清理；真实客体文件与重启状态注入通过。无持久路径的旧标记及真实 ADB 断连仍待验证。
+
+最新 T15/T19 [应用完成标记跨重启隔离](2026-09-23-app-marker-restart-verification.md)修复自动恢复释放未核实结果的问题；真实重启后设备保持隔离，显式核实才清理已确认的标记。无登记的旧客体文件和真实断连仍待验收。
 
 最新 T17 [真实备份发布前硬中断](2026-09-23-backup-hard-interruption-verification.md)在实际卷归档暂存后发送 `SIGKILL`：重启后原操作为 `needs_verification`，无假成功备份；公开清理删除孤立暂存，源卷探针读回一致。归档传输中断及磁盘不足仍未验收。
 
 最新 T18 [真实恢复写入后发布前硬中断](2026-09-23-restore-hard-interruption-verification.md)在目标卷真实解包完成后发送 `SIGKILL`：重启后仍为待核实，启动/备份/控制被拒绝；目标可删除，同一备份可由新请求正常恢复。tar 解包过程中断仍未验收。
 
 最新 T05/T17/T18 增量见[原生窗口、恢复归属与持久数据属性](2026-09-23-persistent-metadata-verification.md)：118 项最终定向测试与真实 Mac 原生窗口、卷根及扩展属性/ACL、链接保留、部分失败隔离和正常恢复通过；[完整门槛](2026-09-23-full-gates.md)后端 3964 passed、26 skipped。全阶段仍 `partial`。前一增量见[恢复清单与目标身份](2026-09-23-restore-manifest-verification.md)。
+
+[最终完整自动化门槛](2026-09-24-final-full-gates.md)在审查修复后重跑：后端 `4031 passed/26 skipped`，Node 22 前端 `424` 文件/`5625` 项，类型/lint/OpenAPI/构建、Ruff、迁移、结构与脚本均通过。早先[门槛快照](2026-09-23-current-full-gates.md)仅保留历史对照；软件门槛不代替[24 项矩阵](2026-09-23-acceptance-matrix.md)中的真实场景与外部条件。
 
 状态：`partial`，完整开发与验收目标仍 active。[清理目录与文件保护](2026-09-23-cleanup-verification.md)是前一阶段的 346 项后端快照，其后已补恢复中断隔离和数据属性；APK 遗留临时文件、硬中断等仍待完成。[落盘与事务一致性](2026-09-23-publication-verification.md)、[归档安全与属性](2026-09-23-archive-verification.md)、[持久预留与真实验证](2026-09-23-capacity-verification.md)保留各自执行时的历史结果。最新 T06 后端全量、前端及类型/构建门槛见[操作历史记录](2026-09-23-operation-history-verification.md)；前一 AM4 完整门槛见[历史记录](2026-09-23-full-gates.md)。只有明确缺少外部条件的项标记 `blocked`，未执行的验证标记 `not_run`。
 
@@ -23,9 +39,9 @@
 | 阶段 | 任务 | 证据 | 状态 |
 | --- | --- | --- | --- |
 | AM1 | T01–T07 | [am1-verification.md](am1-verification.md) | T01–T04 自动验证；T05/T07 真实输入、切端、租约回收、HTTP 重启及保留卷恢复已验，桌面边界与硬中断仍缺证据 |
-| AM2 | T08–T12 | [am2-verification.md](am2-verification.md) | 镜像/模板自动化已通过；网络拉取、候选镜像和 GApps 条件不足 |
-| AM3 | T13–T16 | [am3-verification.md](am3-verification.md) | 规则、观察、预览和双实例自动化证据存在；单实例真实应用安装/启动/停止/清数据/卸载已验，批量压力仍未验收 |
-| AM4 | T17–T20 | [am4-verification.md](am4-verification.md) | 备份/恢复/清理自动化和基础卷证据存在；完整失败演练与最终交付未完成 |
+| AM2 | T08–T12 | [am2-verification.md](am2-verification.md) | 镜像/模板自动化、固定摘要网络拉取及真实 HTTP 内容删除通过；候选 GApps 镜像/账号链缺条件 |
+| AM3 | T13–T16 | [am3-verification.md](am3-verification.md) | 规则、观察、预览和双实例自动化证据存在；真实五实例规模、批量 start/stop/delete、部分失败及容量等待取消已验；十台本机容量 blocked，真实未知结果/失败后重试仍缺 |
+| AM4 | T17–T20 | [am4-verification.md](am4-verification.md) | 备份/恢复/清理与高级日志自动化、真实文件流读回及 logcat 摘要已验；完整失败演练与最终交付未完成 |
 | GApps | T11 | [gapps-validation.md](gapps-validation.md) | `blocked` / `not_tested` |
 
 ## 全局自动验证

@@ -61,6 +61,42 @@ class Runtime:
         save()
 
 
+@pytest.mark.asyncio
+@pytest.mark.parametrize("control, action", [("recovery_required", "recover"), ("idle", "stop")])
+async def test_recover_cannot_consume_unverified_application_completion_marker(control, action):
+    repository = Repository()
+    runtime = Runtime()
+    repository.save({"deviceId": "device", "control": control, "generation": 3, "pendingCommand": "/data/local/tmp/autoflow-operation-" + "a" * 32})
+    management = AndroidManagement(repository, runtime)
+
+    with pytest.raises(AndroidError) as error:
+        management.operate("device", {"requestId": "lifecycle-1", "action": action, "deleteData": False})
+
+    assert error.value.code == "ANDROID_APP_OPERATION_UNVERIFIED"
+    assert runtime.calls == []
+
+
+@pytest.mark.asyncio
+async def test_bulk_expected_revision_is_checked_after_runtime_lock_is_acquired():
+    repository = Repository()
+    repository.save({"deviceId": "device", "control": "idle", "generation": 1})
+
+    class RacingRuntime(Runtime):
+        def lock(self):
+            super().lock()
+            changed = repository.get("device")
+            changed["generation"] = 2
+            repository.save(changed)
+
+    runtime = RacingRuntime()
+    management = AndroidManagement(repository, runtime)
+    with pytest.raises(AndroidError) as caught:
+        management.operate("device", {"requestId": "stale-batch", "action": "stop", "deleteData": False, "expectedRevision": 2})
+    assert caught.value.code == "ANDROID_REVISION_CONFLICT"
+    assert repository.get("device")["generation"] == 2
+    assert not runtime.locked
+
+
 def config():
     return {'deviceId': str(uuid4()), 'name': 'test', 'imageId': 'sha256:' + 'a' * 64, 'width': 720, 'height': 1280, 'cpu': 1, 'memoryMb': 768, 'dpi': 320, 'start': True}
 

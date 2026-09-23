@@ -136,6 +136,36 @@ class _ImageRuntime:
 
 
 @pytest.mark.asyncio
+async def test_image_pull_holds_runtime_lock_through_catalog_publication():
+    image_id = "sha256:" + "a" * 64
+    runtime = _ImageRuntime()
+    runtime.locked = False
+
+    def lock():
+        if runtime.locked:
+            raise AndroidError("ANDROID_RUNTIME_BUSY", "busy", 409)
+        runtime.locked = True
+
+    def unlock():
+        runtime.locked = False
+
+    runtime.lock, runtime.unlock = lock, unlock
+    devices = _Devices()
+    devices.runtime = runtime
+    resources = _Resources()
+
+    class Catalog(_CatalogFor):
+        async def pull(self, reference):
+            assert runtime.locked, "content deletion could race a completed pull"
+            return await self.inspect(reference)
+
+    service = AndroidImageService(resources, devices, Catalog(image_id))
+    result = await service.pull("pull-locked", "redroid/redroid:13")
+    assert result["imageId"] == image_id
+    assert not runtime.locked
+
+
+@pytest.mark.asyncio
 async def test_image_registration_is_idempotent_and_content_delete_requires_real_io():
     request = {"id": "sha256:" + "b" * 64, "name": "image", "reference": "redroid/redroid:13"}
     service = AndroidImageService(_Resources(), _Devices(), _CatalogFor(request["id"]))
@@ -241,6 +271,24 @@ async def test_server_verification_does_not_pass_without_trusted_source_digest()
 
 
 @pytest.mark.asyncio
+async def test_metadata_pass_does_not_claim_google_validation_passed():
+    image_id = "sha256:" + "7" * 64
+    service = AndroidImageService(_Resources(), _Devices(), _CatalogFor(image_id))
+    image = await service.register({"id": image_id, "name": "candidate", "reference": "redroid/redroid:13"})
+
+    result = await service.verify_server(image["id"], {"check": "image_metadata"})
+
+    assert result["verification"]["state"] == "passed"
+    assert result["validation"] == "not_tested"
+    assert result["googleComponents"] == "unknown"
+
+    blocked = await service.verify_server(image["id"], {"check": "login"})
+    assert blocked["verification"]["state"] == "passed"
+    assert blocked["validation"] == "blocked"
+    assert blocked["verification"]["records"][-1]["evidence"]["code"] == "ANDROID_IMAGE_CHECK_UNSUPPORTED"
+
+
+@pytest.mark.asyncio
 async def test_unknown_content_delete_can_converge_via_server_verification():
     class _Runtime:
         async def delete_image(self, _image_id):
@@ -313,6 +361,43 @@ async def test_delete_ignores_foreign_workspace_device_references():
 
 
 @pytest.mark.asyncio
+async def test_content_delete_keeps_image_referenced_by_current_workspace_backup(tmp_path):
+    devices = _Devices()
+    devices.runtime = _ImageRuntime()
+    devices.runtime.workspace_id = "runtime-workspace-hash"
+    devices.runtime.workspace = tmp_path
+    image_id = "sha256:" + "a" * 64
+    resources = _Resources()
+    service = AndroidImageService(resources, devices, _CatalogFor(image_id))
+    image = await service.register({"id": image_id, "name": "image", "reference": "redroid/redroid:13"})
+    resources.save("backup", {"id": "backup-1", "imageId": image_id, "workspaceId": str(tmp_path.resolve()), "state": "available"})
+
+    with pytest.raises(AndroidError) as error:
+        await service.delete_content(image["id"])
+
+    assert error.value.code == "ANDROID_IMAGE_REFERENCED"
+    assert devices.runtime.deleted == []
+
+
+@pytest.mark.asyncio
+async def test_content_delete_ignores_foreign_workspace_backup(tmp_path):
+    devices = _Devices()
+    devices.runtime = _ImageRuntime()
+    devices.runtime.workspace_id = "runtime-workspace-hash"
+    devices.runtime.workspace = tmp_path
+    image_id = "sha256:" + "b" * 64
+    resources = _Resources()
+    service = AndroidImageService(resources, devices, _CatalogFor(image_id))
+    image = await service.register({"id": image_id, "name": "image", "reference": "redroid/redroid:13"})
+    resources.save("backup", {"id": "foreign", "imageId": image_id, "workspaceId": str(tmp_path / "other"), "state": "available"})
+
+    result = await service.delete_content(image["id"])
+
+    assert result["state"] == "deleted"
+    assert devices.runtime.deleted == [image_id]
+
+
+@pytest.mark.asyncio
 async def test_verification_record_is_appended_and_server_owns_aggregate_state():
     image_id = "sha256:" + "c" * 64
     service = AndroidImageService(_Resources(), _Devices(), _CatalogFor(image_id))
@@ -328,6 +413,97 @@ async def test_pull_registers_catalog_metadata_without_shell_arguments():
     image = await service.pull("request-1", "redroid/redroid:13")
     assert image["imageId"] == "sha256:" + "e" * 64
     assert image["architecture"] == "arm64"
+
+
+@pytest.mark.asyncio
+async def test_second_pull_of_registered_digest_has_its_own_durable_receipt():
+    resources = _Resources()
+    catalog = _Catalog()
+    service = AndroidImageService(resources, _Devices(), catalog)
+    first = await service.pull("pull-1", "redroid/redroid:13")
+
+    second = await service.pull("pull-2", "redroid/redroid:13")
+
+    assert second["imageId"] == first["imageId"]
+    assert len(resources.list("image_pull_receipt")) == 2
+    assert await service.verify_pull("pull-2", "redroid/redroid:13")
+
+
+@pytest.mark.asyncio
+async def test_pull_verification_keeps_runtime_lock_until_operation_is_committed():
+    image_id = "sha256:" + "a" * 64
+    runtime = _ImageRuntime()
+    runtime.locked = False
+    runtime.lock = lambda: setattr(runtime, "locked", True)
+    runtime.unlock = lambda: setattr(runtime, "locked", False)
+    devices = _Devices()
+    devices.runtime = runtime
+
+    class Catalog(_CatalogFor):
+        async def inspect(self, reference):
+            assert runtime.locked
+            return await super().inspect(reference)
+
+    service = AndroidImageService(_Resources(), devices, Catalog(image_id))
+    await service.pull("pending-pull", "redroid/redroid:13")
+    completed = []
+
+    def complete():
+        assert runtime.locked, "image deletion could race the operation transition"
+        completed.append(True)
+        return True
+
+    assert await service.verify_pull("pending-pull", "redroid/redroid:13", on_verified=complete)
+    assert completed == [True]
+    assert not runtime.locked
+
+
+@pytest.mark.asyncio
+async def test_first_pull_crash_between_catalog_and_receipt_does_not_publish_half_record():
+    class InterruptedResources(_Resources):
+        def save(self, kind, value):
+            if kind == "image_pull_receipt":
+                raise RuntimeError("interrupted before receipt")
+            super().save(kind, value)
+
+        def save_many(self, _rows):
+            raise RuntimeError("interrupted before transaction commit")
+
+    resources = InterruptedResources()
+    service = AndroidImageService(resources, _Devices(), _Catalog())
+
+    with pytest.raises(RuntimeError):
+        await service.pull("pull-interrupted", "redroid/redroid:13")
+
+    assert resources.list("image") == []
+    assert resources.list("image_pull_receipt") == []
+
+
+@pytest.mark.asyncio
+async def test_verify_legacy_first_pull_backfills_missing_receipt_after_runtime_check():
+    resources = _Resources()
+    service = AndroidImageService(resources, _Devices(), _Catalog())
+    image = await service.pull("pull-legacy", "redroid/redroid:13")
+    resources.items = {key: value for key, value in resources.items.items() if key[0] != "image_pull_receipt"}
+
+    assert await service.verify_pull("pull-legacy", "redroid/redroid:13")
+    assert resources.list("image_pull_receipt")[0]["imageId"] == image["imageId"]
+
+
+@pytest.mark.asyncio
+async def test_repull_of_deleted_digest_restores_current_catalog_state():
+    devices = _Devices()
+    devices.runtime = _ImageRuntime()
+    image_id = "sha256:" + "e" * 64
+    service = AndroidImageService(_Resources(), devices, _CatalogFor(image_id))
+    first = await service.pull("pull-before-delete", "redroid/redroid:13")
+    await service.delete_content(first["id"])
+
+    second = await service.pull("pull-after-delete", "redroid/redroid:13")
+
+    assert second["state"] == "registered"
+    assert second["revision"] > first["revision"]
+    assert await service.verify_pull("pull-after-delete", "redroid/redroid:13")
 
 
 class _Catalog:

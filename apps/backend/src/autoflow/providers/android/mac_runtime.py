@@ -12,8 +12,10 @@ import signal
 import socket
 import struct
 import subprocess
+import tempfile
 import time
 from collections.abc import Callable
+from contextlib import ExitStack
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
@@ -53,6 +55,36 @@ async def run(argv: list[str], timeout: float = 15, input_data: bytes | None = N
         if process.returncode is None:
             process.kill()
             await process.wait()
+
+
+async def run_file(argv: list[str], timeout: float, *, input_path: Path | None = None, output_path: Path | None = None) -> None:
+    """Attach file descriptors directly so an archive never enters process memory."""
+    with ExitStack() as stack:
+        stdin = stack.enter_context(input_path.open("rb")) if input_path else subprocess.DEVNULL
+        stdout = stack.enter_context(output_path.open("wb")) if output_path else subprocess.DEVNULL
+        stderr = stack.enter_context(tempfile.TemporaryFile())
+        spawn = asyncio.create_task(asyncio.create_subprocess_exec(*argv, stdin=stdin, stdout=stdout, stderr=stderr))
+        try:
+            process = await asyncio.shield(spawn)
+        except asyncio.CancelledError:
+            process = await _wait_for_spawn(spawn)
+            if process.returncode is None:
+                process.kill()
+            await process.wait()
+            raise
+        try:
+            await asyncio.wait_for(process.wait(), timeout)
+            if process.returncode:
+                stderr.seek(0)
+                detail = stderr.read(240).decode(errors="replace").strip()
+                message = "安卓运行环境命令失败，请检查设备与连接"
+                if detail:
+                    message += ": " + detail
+                raise AndroidError("ANDROID_COMMAND_FAILED", message, 502)
+        finally:
+            if process.returncode is None:
+                process.kill()
+                await process.wait()
 
 
 async def docker(*args: str, timeout: float = 30, input_data: bytes | None = None) -> bytes:
@@ -171,6 +203,16 @@ class MacAndroidRuntime:
         name = "autoflow-android-" + config["deviceId"]
         return {key: config[key] for key in ("deviceId", "name", "imageId", "width", "height", "dpi", "cpu", "memoryMb")} | {"runtimeId": VM, "workspaceId": self.workspace_id, "volumeId": name + "-data", "containerId": name, "profileId": config.get("profileId"), "profileName": config.get("profileName"), "instanceType": config.get("instanceType", "persistent"), "locale": config.get("locale", "zh-CN"), "timezone": config.get("timezone", "Asia/Shanghai"), "androidStatus": "unknown", "ownerRunId": None, "control": "idle", "generation": 0}
 
+    async def collect_diagnostic_logs(self, device: dict[str, Any], *, window_seconds: int, max_bytes: int) -> bytes:
+        from autoflow.providers.android.management import verify
+
+        containers, _ = await verify(device, self.workspace_id)
+        if len(containers) != 1 or containers[0].get("State", {}).get("Running") is not True:
+            raise AndroidError("ANDROID_DIAGNOSTIC_DEVICE_NOT_RUNNING", "设备未运行，无法采集日志", 409)
+        # logcat limits rows; the exported summary applies the time window and discards message text.
+        raw = await docker("exec", device["containerId"], "logcat", "-d", "-v", "epoch", "-t", "200", timeout=10)
+        return raw[-max_bytes:]
+
     async def capacity(self, device: dict[str, Any]) -> None:
         from autoflow.providers.android.management import capacity, verify
         containers, _ = await verify(device, self.workspace_id)
@@ -202,13 +244,30 @@ class MacAndroidRuntime:
     async def backup_volume(self, device: dict[str, Any]) -> bytes:
         mountpoint = await self._owned_volume_mount(device)
         try:
-            return await run(["limactl", "shell", "--workdir=/tmp", VM, "sudo", "tar",
-                              "--format=posix", "--xattrs", "--xattrs-include=*", "--acls", "--selinux", "--numeric-owner",
-                              "--transform=s@^_data@data@S", "-C", os.path.dirname(mountpoint), "-cf", "-", "_data"], 600)
+            return await run(self._backup_argv(mountpoint), 600)
+        except AndroidError:
+            raise AndroidError("ANDROID_BACKUP_UNAVAILABLE", "数据卷归档失败，请核实实例", 503) from None
+
+    @staticmethod
+    def _backup_argv(mountpoint: str) -> list[str]:
+        return ["limactl", "shell", "--workdir=/tmp", VM, "sudo", "tar",
+                "--format=posix", "--xattrs", "--xattrs-include=*", "--acls", "--selinux", "--numeric-owner",
+                "--transform=s@^_data@data@S", "-C", os.path.dirname(mountpoint), "-cf", "-", "_data"]
+
+    async def backup_volume_to_path(self, device: dict[str, Any], path: Path) -> None:
+        mountpoint = await self._owned_volume_mount(device)
+        try:
+            await run_file(self._backup_argv(mountpoint), 600, output_path=path)
         except AndroidError:
             raise AndroidError("ANDROID_BACKUP_UNAVAILABLE", "数据卷归档失败，请核实实例", 503) from None
 
     async def restore_volume(self, device: dict[str, Any], data: bytes) -> None:
+        await self._restore_volume(device, data)
+
+    async def restore_volume_from_path(self, device: dict[str, Any], path: Path) -> None:
+        await self._restore_volume(device, path)
+
+    async def _restore_volume(self, device: dict[str, Any], data: bytes | Path) -> None:
         if device.get("workspaceId") != self.workspace_id:
             raise AndroidError("ANDROID_OWNERSHIP", "设备工作区归属校验失败", 403)
         if device.get("androidStatus") is not None and device.get("androidStatus") != "stopped":
@@ -221,9 +280,13 @@ class MacAndroidRuntime:
         if contents.strip() != b"empty":
             raise AndroidError("ANDROID_RESTORE_TARGET_INVALID", "恢复目标数据卷不是空卷，禁止覆盖", 409)
         try:
-            await run(["limactl", "shell", "--workdir=/tmp", VM, "sudo", "tar", "--xattrs", "--xattrs-include=*",
-                       "--acls", "--selinux", "--numeric-owner", "--same-owner", "--same-permissions",
-                       "--transform=s@^data@_data@S", "-C", os.path.dirname(mountpoint), "-xf", "-"], 600, data)
+            argv = ["limactl", "shell", "--workdir=/tmp", VM, "sudo", "tar", "--xattrs", "--xattrs-include=*",
+                    "--acls", "--selinux", "--numeric-owner", "--same-owner", "--same-permissions",
+                    "--transform=s@^data@_data@S", "-C", os.path.dirname(mountpoint), "-xf", "-"]
+            if isinstance(data, Path):
+                await run_file(argv, 600, input_path=data)
+            else:
+                await run(argv, 600, data)
         except AndroidError:
             # GNU tar may have written some members before reporting failure.
             raise TimeoutError("恢复数据卷命令结果未确认") from None
@@ -258,6 +321,12 @@ class MacAndroidRuntime:
     def unlock(self) -> None:
         self._lock.release()
         self._locked = False
+
+    async def verify_deleted(self, device: dict[str, Any]) -> dict[str, Any]:
+        from autoflow.providers.android.management import verify
+
+        containers, volumes = await verify(device, self.workspace_id)
+        return {"androidStatus": "unknown" if containers else "retained" if volumes else "missing"}
 
     async def inspect(self, device: dict[str, Any]) -> dict[str, Any]:
         if device.get("dataRetained"):
@@ -433,6 +502,15 @@ class MacAndroidRuntime:
         match = re.search(r"(?:mResumedActivity|topResumedActivity)[=:].*? ([A-Za-z][A-Za-z0-9_.]+)/", activity)
         uid = (await self._adb("shell", "id", "-u")).strip()
         return {"packages": list(packages), "applications": applications, "currentPackage": match.group(1) if match else None, "shellRoot": "available" if uid == b"0" else "unavailable", "applicationRoot": "unknown"}
+
+    async def app_info_for_verification(self) -> dict[str, Any]:
+        if self.device is None:
+            raise AndroidError("ANDROID_OPERATION_UNKNOWN", "缺少应用操作目标设备", 503)
+        observed = await self.inspect(self.device)
+        if observed.get("androidStatus") != "ready":
+            raise AndroidError("ANDROID_OPERATION_UNKNOWN", "设备尚未就绪，不能核实已安装应用", 503)
+        packages = package_inventory(await docker("exec", self.device["containerId"], "pm", "list", "packages", "--show-versioncode", timeout=15))
+        return {"applications": [{"packageName": name, "versionCode": version} for name, version in packages.items()]}
 
     async def verify_pending_command(self) -> int:
         """Read completion evidence; retain it until the caller persists its receipt."""

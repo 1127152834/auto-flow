@@ -27,6 +27,16 @@ IMAGE_B = "sha256:" + "b" * 64
 PROFILE_ID = "22222222-2222-4222-8222-222222222222"
 
 
+def test_image_and_pull_receipt_publish_in_one_sqlite_transaction(tmp_path: Path) -> None:
+    sessions = _database(tmp_path)
+    resources = AndroidResourceRepository(sessions)
+    with pytest.raises(KeyError):
+        resources.save_many([("image", {"id": str(uuid4()), "imageId": IMAGE_A}), ("image_pull_receipt", {"requestId": "interrupted"})])
+    assert resources.list("image") == []
+    assert resources.list("image_pull_receipt") == []
+    sessions.dispose()
+
+
 @pytest.mark.asyncio
 async def test_image_profile_batch_restart_keeps_original_image_after_tag_retag(tmp_path: Path) -> None:
     sessions = _database(tmp_path)

@@ -98,6 +98,39 @@ def test_delete_verification_does_not_treat_runtime_not_found_as_success(tmp_pat
     sessions.dispose()
 
 
+@pytest.mark.parametrize(("delete_data", "status"), [(True, "missing"), (False, "retained")])
+def test_delete_verification_uses_owned_container_and_volume_after_crash(tmp_path, delete_data, status):
+    database = tmp_path / f"delete-crash-{delete_data}.sqlite3"
+    migrate_database(database)
+    sessions = create_session_factory(database)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    repository = SqlAlchemyDeviceRepository(sessions)
+
+    class Runtime:
+        workspace_id = "default"
+
+        async def inspect(self, _device):
+            raise AndroidError("ANDROID_NOT_FOUND", "container was removed", 404)
+
+        async def verify_deleted(self, _device):
+            return {"androidStatus": status}
+
+    device = {"deviceId": "device-delete-crashed", "name": "delete target", "workspaceId": "default", "control": "recovery_required", "generation": 2, "androidStatus": "unknown", "dataRetained": False, "deleted": False}
+    repository.save(device)
+    record = operations.accept("default", f"delete-crashed-{delete_data}", device["deviceId"], "delete", "digest", {"deleteData": delete_data})
+    operations.transition(record.operation_id, "queued", "running", {})
+    operations.transition(record.operation_id, "running", "needs_verification", {})
+    app = FastAPI()
+    install_error_handlers(app)
+    app.include_router(android_management_router(EnvironmentCheckService(Runtime()), operations, devices=AndroidDeviceService(repository, Runtime())))
+    with TestClient(app) as client:
+        response = client.post(f"/api/v1/android/management/operations/{record.operation_id}/verify", json={"requestId": record.request_id})
+    assert response.status_code == 200, response.text
+    assert repository.get(device["deviceId"])["androidStatus"] == status
+    assert operations.get(record.operation_id).state == "succeeded"
+    sessions.dispose()
+
+
 def test_operation_page_total_is_not_just_the_current_page(tmp_path):
     database = tmp_path / "page.sqlite3"
     migrate_database(database)
@@ -277,6 +310,42 @@ def test_verify_image_pull_is_read_only_and_finalizes_only_when_image_is_observe
     sessions.dispose()
 
 
+def test_verify_second_pull_uses_its_receipt_not_the_original_image_request(tmp_path):
+    import asyncio
+
+    database = tmp_path / "verify-second-pull.sqlite3"
+    migrate_database(database)
+    sessions = create_session_factory(database)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    resources = AndroidResourceRepository(sessions)
+    image_id = "sha256:" + "c" * 64
+
+    class Catalog:
+        async def inspect(self, _reference):
+            return SimpleNamespace(image_id=image_id, source_digest="sha256:" + "d" * 64, architecture="arm64", os="linux", android_version="13", google_components="unknown")
+
+    class Devices:
+        def list(self):
+            return []
+
+    images = AndroidImageService(resources, Devices(), Catalog())
+    asyncio.run(images.pull("first-pull", "redroid/redroid:13"))
+    asyncio.run(images.pull("second-pull", "redroid/redroid:13"))
+    record = operations.accept("default", "second-pull", "pull-target", "pull", "digest", {"reference": "redroid/redroid:13"})
+    operations.transition(record.operation_id, "queued", "running", {})
+    operations.transition(record.operation_id, "running", "needs_verification", {})
+    app = FastAPI()
+    install_error_handlers(app)
+    app.include_router(android_management_router(EnvironmentCheckService(None), operations, images=images))
+
+    with TestClient(app) as client:
+        response = client.post(f"/api/v1/android/management/operations/{record.operation_id}/verify", json={"requestId": "second-pull"})
+
+    assert response.status_code == 200, response.text
+    assert response.json()["state"] == "succeeded"
+    sessions.dispose()
+
+
 def test_verify_environment_check_runs_a_read_only_probe(tmp_path):
     database = tmp_path / "verify-environment.sqlite3"
     migrate_database(database)
@@ -390,6 +459,57 @@ def test_verify_cleanup_is_read_only_and_does_not_delete_again(tmp_path):
     assert response.status_code == 200, response.text
     assert response.json()["state"] == "succeeded"
     assert resources.list("cleanup-operation")[0]["state"] == "succeeded"
+    sessions.dispose()
+
+
+@pytest.mark.parametrize(("child_state", "expected_parent"), [("succeeded", "succeeded"), ("failed", "needs_verification")])
+def test_cleanup_operation_read_reconciles_async_child_without_replaying_delete(tmp_path, child_state, expected_parent):
+    from autoflow.application.android.cleanup import CleanupService
+
+    database = tmp_path / f"cleanup-async-{child_state}.sqlite3"
+    migrate_database(database)
+    sessions = create_session_factory(database)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    resources = AndroidResourceRepository(sessions)
+    child = operations.accept("default", "child-delete", "device", "delete", "child-digest", {"deleteData": True})
+    operations.transition(child.operation_id, "queued", "running", {})
+    parent = operations.accept("default", "cleanup-async", "cleanup", "cleanup", "parent-digest", {"previewId": "p"})
+    operations.transition(parent.operation_id, "queued", "running", {})
+    resources.save("cleanup-operation", {"id": "cleanup-row", "workspaceId": "default", "requestId": "cleanup-async", "previewId": "p", "state": "running", "items": [{"id": "device", "state": "running", "operationId": child.operation_id}]})
+    service = CleanupService(resources, operations=operations)
+    app = FastAPI()
+    install_error_handlers(app)
+    app.include_router(android_management_router(EnvironmentCheckService(None), operations, cleanup=service))
+    with TestClient(app) as client:
+        assert client.get("/api/v1/android/management/operations/by-request/cleanup-async").json()["state"] == "running"
+        operations.transition(child.operation_id, "running", child_state, {})
+        response = client.get("/api/v1/android/management/operations/by-request/cleanup-async")
+    assert response.status_code == 200, response.text
+    assert response.json()["state"] == expected_parent
+    assert resources.list("cleanup-operation")[0]["state"] == expected_parent
+    sessions.dispose()
+
+
+def test_cleanup_reconcile_never_completes_a_partially_recorded_multi_item_request(tmp_path):
+    from autoflow.application.android.cleanup import CleanupService
+
+    database = tmp_path / "cleanup-partial.sqlite3"
+    migrate_database(database)
+    sessions = create_session_factory(database)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    resources = AndroidResourceRepository(sessions)
+    parent = operations.accept("default", "cleanup-partial", "cleanup", "cleanup", "digest", {"previewId": "p"})
+    operations.transition(parent.operation_id, "queued", "running", {})
+    operations.transition(parent.operation_id, "running", "needs_verification", {})
+    resources.save("cleanup-operation", {"id": "partial", "workspaceId": "default", "requestId": "cleanup-partial", "previewId": "p", "state": "running", "candidates": [{"id": "a"}, {"id": "b"}], "items": [{"id": "a", "state": "succeeded"}]})
+    app = FastAPI()
+    install_error_handlers(app)
+    app.include_router(android_management_router(EnvironmentCheckService(None), operations, cleanup=CleanupService(resources, operations=operations)))
+    with TestClient(app) as client:
+        response = client.get("/api/v1/android/management/operations/by-request/cleanup-partial")
+    assert response.status_code == 200, response.text
+    assert response.json()["state"] == "needs_verification"
+    assert resources.list("cleanup-operation")[0]["state"] != "succeeded"
     sessions.dispose()
 
 

@@ -14,6 +14,8 @@
 
 **Baseline:** 原执行起点为 `codex/project-management-pm9@a92f0688f206d4339ff4468c1871f3ccdd6816dc`；当前实现在隔离 worktree 分支 `codex/android-management-complete`，逐项现状以最新 QA 记录为准。原 `5f07e2ad` 仅保留为规格编写时的历史基线。
 
+**2026-09-24 复审校准：** [最终分支审查](../../qa/android-management/2026-09-24-final-branch-review.md)已覆盖并修复已报告的 Critical/Important；真实五实例、部分失败/容量取消、流式备份恢复和受限高级日志已有证据。十实例本机容量、GApps 专用账号/镜像及若干真实断网/磁盘/归档中断仍按[24 项验收矩阵](../../qa/android-management/2026-09-23-acceptance-matrix.md)保持 `blocked` 或 `partial`。最终全量自动化正在重跑，历史 checkbox 与旧门槛计数不是当前完成率。
+
 ### 0.1 当前基线重新校准（2026-09-22）
 
 - 主工作区存在未提交 Studio 迁移修改和未跟踪证据目录；它们不属于本任务，已保留在主工作区，实施只发生在隔离 worktree。
@@ -41,13 +43,26 @@
 - T19 修复诊断设备归属使用路径而非 runtime hash，默认诊断字段改为白名单；高级日志采集仍未实现，不能以环境 blocked 代替。
 - T17/T18 归档安全增量以 `233c09dd` 为基线：内部安全链接、UID/GID/mode、摘要字节复用与源保护已完成；314项聚焦及真实新实例启动读回通过，xattrs/发布耐久性/中断仍待完成。证据见 `docs/qa/android-management/2026-09-23-archive-verification.md`。
 - T17 发布增量以 `715cdb16` 为基线：私有目录、staging 摘要、fsync/rename、备份目录记录与成功终态原子事务及回执未知保护已完成；328项聚焦与真实Mac新实例恢复通过。后续真实卷归档暂存完成后、发布前 `SIGKILL` 的孤立文件核实与公开 HTTP 清理已通过；归档传输中断、磁盘不足等仍待完成。证据见 `docs/qa/android-management/2026-09-23-publication-verification.md` 与 `docs/qa/android-management/2026-09-23-backup-hard-interruption-verification.md`。
-- T19 清理增量以 `a47bbb9d` 为基线：新增目录契约/UI选择、备份暂存及未登记产物、内容指纹/文件锁和明确retained筛选；后端346、前端Android104项以及真实HTTP清理通过。成功应用操作的完成标记已补持久回执后清理，真实 APK 重跑无新增；旧客体标记、上传中断文件/恢复中断仍待完成，证据见 `docs/qa/android-management/2026-09-23-cleanup-verification.md` 与 `docs/qa/android-management/2026-09-23-command-marker-verification.md`。
+- T19 清理增量以 `a47bbb9d` 为基线：新增目录契约/UI选择、备份暂存及未登记产物、内容指纹/文件锁和明确retained筛选；后端346、前端Android104项以及真实HTTP清理通过。成功应用操作的完成标记已补持久回执后清理，真实 APK 重跑无新增；新上传的客体 APK 路径已在 push 前持久化，真实状态注入后重启清理通过。未核实应用标记在自动重启/会话收尾时继续隔离，显式核实才释放；无登记旧客体标记、真实 ADB 断连与高级日志仍待完成，证据见 `docs/qa/android-management/2026-09-23-cleanup-verification.md`、`docs/qa/android-management/2026-09-23-command-marker-verification.md`、`docs/qa/android-management/2026-09-23-guest-apk-cleanup-verification.md` 与 `docs/qa/android-management/2026-09-23-app-marker-restart-verification.md`。
 - T18 恢复隔离增量以 `be067690` 为基线：恢复意图在IO前持久化，启动/控制/备份隔离，generation/请求/备份栅栏与成功原子发布；真实部分写入、普通recover仍隔离、正常HTTP恢复和重放通过。362项后端、105项前端聚焦通过；后续真实目标卷写入完成、成功发布前 `SIGKILL` 的重启隔离、公开删除和新请求恢复已通过；tar 解包中断/磁盘不足仍待完成，见 `docs/qa/android-management/2026-09-23-restore-isolation-verification.md` 与 `docs/qa/android-management/2026-09-23-restore-hard-interruption-verification.md`。
 - 原 checkbox 状态是历史记录，尚未全部重新校准；不得依据旧 blocked 数量宣称代码开发完成。继续任务、失败门槛和真实验证见 `docs/qa/android-management/2026-09-23-validation.md`。
 
 ### 0.4 2026-09-23 当前验收口径
 
-当前隔离分支已提交 `4f612d53` 操作历史、`57fb391c` 保留卷恢复及 `2a7a0c0d` 应用完成标记修复；最新状态以 [24 项验收校准](../../qa/android-management/2026-09-23-acceptance-matrix.md)、[真实控制与保留卷链](../../qa/android-management/2026-09-23-am1-real-control-retention.md)及[真实持久数据属性验收](../../qa/android-management/2026-09-23-persistent-metadata-verification.md)为准。旧 checklist 的 `blocked` 是各次执行时的快照，不再作为软件任务不能继续的结论。真实 Mac 已验证中文输入、原生切端、30 秒回收、HTTP 重启、APK 操作、同卷保留恢复、双实例删除隔离、备份发布前与恢复写入后发布前 `SIGKILL` 的安全隔离和清理；另已验证新卷恢复的 1792 项持久条目与 417 项 xattrs/55 项 ACL，卷根目录属性及硬/软链接另由客体实验验证。专用谷歌镜像/账号/网络链保持外部 `blocked`，高级日志、旧应用命令标记清理、桌面长名称/缩放/真实断网、规模/其他硬中断及 T20 失败矩阵仍是软件或未执行项。前一阶段完整门槛见[记录](../../qa/android-management/2026-09-23-full-gates.md)，本次硬中断结果见[备份](../../qa/android-management/2026-09-23-backup-hard-interruption-verification.md)和[恢复](../../qa/android-management/2026-09-23-restore-hard-interruption-verification.md)记录；通过代码门槛不代表整目标验收完成。
+当前隔离分支已提交 `4f612d53` 操作历史、`57fb391c` 保留卷恢复及 `2a7a0c0d` 应用完成标记修复；最新状态以 [24 项验收校准](../../qa/android-management/2026-09-23-acceptance-matrix.md)、[真实控制与保留卷链](../../qa/android-management/2026-09-23-am1-real-control-retention.md)、[真实持久数据属性验收](../../qa/android-management/2026-09-23-persistent-metadata-verification.md)、[全分支审查修复](../../qa/android-management/2026-09-23-final-review-remediation.md)及[高级日志与十台容量](../../qa/android-management/2026-09-24-advanced-logs-and-capacity.md)为准。旧 checklist 的 `blocked` 是各次执行时的快照，不再作为软件任务不能继续的结论。真实 Mac 已验证中文输入、原生切端、30 秒回收、HTTP 重启、APK 操作、同卷保留恢复、五实例运行/并发预览、文件流备份与新实例恢复，以及客体完成标记跨控制台重建后的核实；另已验证新卷恢复的 1792 项持久条目与 417 项 xattrs/55 项 ACL，卷根目录属性及硬/软链接另由客体实验验证。专用谷歌镜像/账号/网络链保持外部 `blocked`，高级日志已完成受限元数据导出；旧应用命令标记清理、桌面精确缩放/真实断网、其他硬中断及 T20 失败矩阵仍是软件或未执行项。十台本机因内存不足标记 `blocked`。前一阶段完整门槛见[记录](../../qa/android-management/2026-09-23-full-gates.md)，本次增量见[审查修复](../../qa/android-management/2026-09-23-final-review-remediation.md)记录；通过代码门槛不代表整目标验收完成。
+
+### 0.5 当前任务重审（2026-09-23）
+
+以下状态覆盖后文任务 checkbox 的历史快照；`partial` 包括仍缺软件实现或未跑真实验收的任务，不能读成已完成。自动化和真实证据逐项见[24 项矩阵](../../qa/android-management/2026-09-23-acceptance-matrix.md)。
+
+| 阶段 | 任务当前状态 | 下一验收门槛 |
+| --- | --- | --- |
+| AM1 | T01–T04 `passed`；T05–T07 `partial` | 桌面控制与真实断线同链、精确 200%/两种窗口尺寸、旧 temporary 兼容与受控中断 |
+| AM2 | T08/T10 `passed`（自动化）；T09/T12 `partial`；T11 检测规则 `passed`、专用 GApps 账号链 `blocked` | 固定摘要网络拉取和认证 HTTP 内容删除已实测；待桌面删除、断线核实、候选镜像/账号下载链与阶段回退 |
+| AM3 | T13–T16 `partial` | 双实例与五实例真实 start/stop/delete 批次已通过；待真实批次取消/部分失败、10 台、桌面应用确认和真实 ADB 断连 |
+| AM4 | T17–T20 `partial` | 文件流备份/恢复真实读回及全分支审查修复已通过；归档传输与解包中断、磁盘不足、高级日志和完整失败矩阵仍缺 |
+
+本轮两台旧自建 QA 实例及两份备份已通过认证公开 API 删除，卷查询为空；这只清理了本轮测试资源，不补足仍在使用的旧卷无归属标记清理能力。Node 22、全量后端与最终审查仍按本轮实际输出单独登记。
 
 ## Global Constraints
 
@@ -307,7 +322,7 @@ expect(requests.some(p => /workflows|allocations|\/runs/.test(p))).toBe(false);
 
 - [ ] RED：管理页测试按当前代码位置执行 `AndroidPage.test.tsx` 和 `ManagementOverview.test.tsx`，后端执行管理设备/操作契约与集成测试。（状态：partial；历史、焦点、跨设备、游标的 RED→GREEN 见[增量记录](../../qa/android-management/2026-09-23-operation-history-verification.md)，整 T06 仍未完成）
 - [ ] 先共享控件组成状态/卡片/表格/确认框，再挂页面；新temporary请求后端拒绝，旧同编号回执优先返回。生产入口不导入测试数据，不删除历史数据和迁移。（状态：partial；复用现有卡片、表格和确认框，新增历史控件与后端过滤/游标安全；temporary 历史链仍需验收）
-- [ ] GET profiles退出隐式保存；新增显式创建标准模板。创建仅一台persistent默认；复制参数不复制账号。retained可恢复，永久删除显示范围。验证窗口尺寸、缩放、长名称、键盘焦点和断线旧数据。（状态：partial；保留卷明确恢复已 RED→GREEN 并真实同卷读回；200% 缩放、长名称、真实断线仍未验收）
+- [ ] GET profiles退出隐式保存；新增显式创建标准模板。创建仅一台persistent默认；复制参数不复制账号。retained可恢复，永久删除显示范围。验证窗口尺寸、缩放、长名称、键盘焦点和断线旧数据。（状态：partial；保留卷明确恢复已 RED→GREEN 并真实同卷读回；[隔离桌面链](../../qa/android-management/2026-09-23-desktop-ui-verification.md)已实测模板、长名称及高缩放并修复状态竖排，精确 200% 倍率、指定窗口尺寸和真实断线仍未验收）
 - [ ] GREEN后提交有界 T06 增量；旧三列原型断言改为新行为，不删安全回归。（状态：partial；操作历史 `4f612d53` 和保留卷恢复 `57fb391c` 已提交，后者完整后端/前端门槛通过；整 T06 未完成）
 
 ### T07：AM1真实链与交付验收

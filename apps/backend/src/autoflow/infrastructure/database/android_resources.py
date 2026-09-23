@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 from copy import deepcopy
 from typing import Any
 
@@ -35,6 +36,11 @@ class AndroidResourceRepository:
             session.merge(
                 AndroidResourceRow(kind=kind, id=item["id"], payload=deepcopy(item))
             )
+
+    def save_many(self, rows: Iterable[tuple[str, dict[str, Any]]]) -> None:
+        with self.sessions.begin() as session:
+            for kind, item in rows:
+                session.merge(AndroidResourceRow(kind=kind, id=item["id"], payload=deepcopy(item)))
 
     def delete(self, kind: str, identifier: str) -> None:
         with self.sessions.begin() as session:
