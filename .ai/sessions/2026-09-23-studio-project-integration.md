@@ -288,3 +288,5 @@
 - `06171cd2` 复用 Studio 的工作流依赖冻结及嵌套执行器；项目范围内解析 `run_workflow_file`，由项目 Studio 选择稳定工作流 ID。子工作流的浏览器/模型需求、子节点事件和变量回收随运行快照传入项目 worker，跨项目缺失引用在启动前拒绝。无资源白名单；项目默认值与显式覆盖规则保持不变。
 - 后端关联 28 项、前端专项 51 项、Ruff/mypy/TypeScript/ESLint/OpenAPI、renderer/main/preload 和 PyInstaller 构建通过。正式 Electron 开发入口 `formal-project-control-electron-IVC9bC` 与 macOS arm64 本地未签名包 `formal-project-control-electron-IHRniA` 均以真实 UI 保存并运行子工作流，受控网页、子节点日志、输出 42 和进程清理通过。证据及包哈希见 `docs/migration/studio-backend-migration/evidence/project-integration/project-workflow-task-2026-09-23/README.md`。
 - 开发入口执行时代码尚未提交，`result.json.gitHead` 指向父提交；包内复验在 `06171cd2` 后重建并记录该提交。旧项目运行广域回归四项冻结默认值断言与当前 v3 不改写快照行为不一致，已修正测试为断言快照原样保存；关联 28＋16 项通过。运行期交互子流程、macOS Intel/Windows 与用户真实数据仍未核销。
+- 后续真实 worker 用例发现自定义模块内调用子工作流时子节点只保留工作流作用域，外层模块丢失。`7a4a10a0` 在共享嵌套执行器的现有上下文边界传递模块、画布子流程和工作流作用域，共享递归栈与后台任务，不重建调度器。关联项目 29 项、Studio 嵌套/模块针对性 6 项及节点执行器 3 项通过。
+- 针对 `7a4a10a0` 重建冻结后端及 macOS arm64 本地 unsigned 包，正式项目 UI 主链 `formal-project-control-electron-h1SA0V` 通过；组合作用域由真实项目 worker 集成用例验证，包内脚本覆盖两类入口的正常主链而未直接编排组合。哈希与边界见原项目跨工作流证据 README。动态运行期生成的子流程引用、交互命令、Intel/Windows 仍待单列。

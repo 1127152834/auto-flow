@@ -1,0 +1,47 @@
+{
+  "evidenceId": "BE-project-control-flow-formal-electron",
+  "result": "passed",
+  "checkedAt": "2026-09-23T12:48:34.553Z",
+  "gitHead": "7a4a10a00461685fc6ef544a92610105cbc97744",
+  "platform": "darwin-arm64",
+  "entry": "packaged-directory",
+  "projectId": "dd674e0a-e41a-4cd3-9f94-b7e413a44220",
+  "workflowIds": [
+    "XbkImLsKezxijmvStjkrc",
+    "PfFY9EOm9y_sfvdc6bpAn",
+    "q-Oa3xGfqs4ldZ0_VU1Mi",
+    "qAhTzHmXBG5rIkHNS1VsO",
+    "j2NQLirhghzmLI-Rnk2Br",
+    "Mk4rXxRteQNdwa6xnJXGf"
+  ],
+  "batchIds": [
+    "d26cd7f8-84ae-48ca-93a5-ea3e77a24a23",
+    "62ff1257-d858-4fe1-a9c5-84f9ccc6aa17",
+    "84647d90-f8ab-45f3-8ec3-c136d7c0b3d0",
+    "9feff27e-f4d8-41f4-9035-2da3f1ade0a7",
+    "3985bb4a-7dd7-48ac-8166-aeb6ae55ab20"
+  ],
+  "taskIds": [
+    "055154b4-fbbb-488e-afd9-5b66e6143cb4",
+    "24a54ef7-d4df-4e35-af29-50c7c99140d8",
+    "b1f5b172-2dce-4837-af62-cbd86d561194",
+    "87291880-b5d3-4877-9d57-5496d78feca2",
+    "a1092452-d93e-4352-808b-40dfa068a6e9"
+  ],
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "通过模块条真实点击完成初始化、三轮循环、真假分支和汇合后的尾节点",
+    "正式项目 Studio 真实界面创建自定义模块、声明输出、拖入项目流程并持久化",
+    "正式项目批次真实worker执行三轮循环与条件真分支，假分支无副作用；输出、尝试记录和进程清理通过",
+    "正式项目批次真实worker执行列表内嵌条件的真假分支、字典遍历、无限循环退出与两轮跳过；被跳过节点无尝试，最终值为4",
+    "正式项目任务真实执行画布分组子流程，组内导航受控网页，变量传给尾节点输出42；CloakBrowser清理完成",
+    "正式项目任务使用冻结自定义模块独立执行，子节点上下文、输出和资源清理持久化",
+    "正式项目 Studio 选择项目内子工作流并保存，项目任务独立运行、回收变量和子节点上下文，worker 清理完成"
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserStarted": true,
+    "interaction": "formal Electron mouse/keyboard; API only fixture setup and evidence reads"
+  }
+}
