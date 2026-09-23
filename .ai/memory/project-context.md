@@ -1,5 +1,7 @@
 # 项目上下文
 
+2026-09-24 同行来源补证（confirmed局部）：新增真实HTTP/SQLite/worker验证坏身份同行解除绑定后、剩余表拉取失败仍拒绝领取；修复完整拉取后显式新批次才执行，旧失败批次不重启。最终1 passed/10.63秒，CI原选择已收集新用例（33/44，非运行结果）；无生产变更，不重复全量/打包。见peer-outage-follow-through.json；新原生验证仍受认证阻断，releaseAccepted=false。
+
 2026-09-24 当前补丁1c676965（confirmed本机全量/ARM打包，原生新矩阵待验）：首次来源读取失败的空缓存被误报noMatch，已将共享来源身份校验前移至候选扫描，必要/可选输入均明确configurationError。42相关、6边界、2真实worker及Ruff/mypy408通过；完整后端串行3493 passed/80 skipped/2 warnings（778.49秒）；后端构建/ARM打包及完整桌面22截图通过。该生产补丁不在35902129697/35895754111中，两轮旧CI继续保留。详见partial-source-follow-through.json；releaseAccepted=false。
 
 2026-09-24 旧候选三平台完成：35895754111@25bb8ab2整体success，日志和三个原生产物已核对。Mac后端3486/78skip、Windows3478/86skip；三平台前端5473/409文件、真实worker30/11deselected。Windows桌面worker604条/分钟，万行582160ms；Intel1725条/分钟，万行125601ms，均0busy；固定合成负载另列，不声明新性能门槛。该结果仅覆盖生产69baeeb2；不覆盖51e8991e和1c676965。详见ci-metadata-click-follow-through.json，releaseAccepted=false。

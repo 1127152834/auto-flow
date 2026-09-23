@@ -643,6 +643,91 @@ def test_real_worker_uses_reliable_cache_during_source_outage_but_rejects_invali
         assert len(transport.calls) == calls and transport.changes() == 0
 
 
+
+def test_real_shared_sheet_peer_removal_requires_fresh_proof_after_source_outage(
+    tmp_path, valid_profile_values, real_cloak_page,
+):
+    from autoflow.infrastructure.database.project_sync_models import SheetsBindingRow
+    from autoflow.providers.data.google_sheets import SheetsApiError
+    from tests.fixtures.sheets import unbind_impact
+    from tests.integration.test_project_sheets_sync import sync_operations
+
+    executable, url, requests = real_cloak_page
+    source = next(parent for parent in executable.parents if parent.name.startswith("chromium-"))
+    shutil.copytree(source, tmp_path / "data" / "kernels" / source.name, symlinks=True)
+    with shared_tables(tmp_path) as (first, second):
+        app = first.client.app
+        transport = first.transport
+        before = first.records()[0]
+        source_time = first.client.get(first.url("/sync")).json()["summary"]["lastPulledAt"]
+        profile = app.state.profile_service.create(ProfileSpec.from_values({
+            **valid_profile_values, "headless": True, "browser_version": source.name.removeprefix("chromium-"),
+        }))
+        transport.grid("数据").append(["A-1", "duplicate identity", "note"])
+        pull(second)
+        with app.state.session_factory() as session:
+            assert session.get(SheetsBindingRow, second.table).identity_verification["valid"] is False
+        removed = second.client.request("DELETE", second.url("/sheets/binding"), headers=new_key(), json={
+            "expectedTableRevision": second.table_revision(),
+            "impactRevision": unbind_impact(second.client, second.project, second.table),
+        })
+        assert removed.status_code == 202, removed.text
+        assert second.client.get(second.url("/sheets/binding")).json() is None
+        transport.fail_next = SheetsApiError(-1, "offline", "controlled source outage after peer removal")
+        failed = first.client.post(first.url("/sync/pull"), headers=new_key(), json={
+            "expectedTableRevision": first.table_revision(),
+        })
+        assert failed.status_code == 502, failed.text
+        assert failed.json()["error"]["code"] == "SHEETS_API_FAILED"
+        calls = len(transport.calls)
+        blocked_batch = start_real(first, profile, url, "removed peer cannot erase failed identity")
+        wait_for(lambda: batch_detail(first, blocked_batch)["batch"]["status"] == "failed", "stale peer proof blocks public batch")
+        blocked = batch_detail(first, blocked_batch)
+        assert blocked["taskCount"] == 0
+        assert blocked["batch"]["selectionOutcome"]["status"] == "configurationError"
+        assert first.records()[0] == before
+        assert first.client.get(first.url("/sync")).json()["summary"]["lastPulledAt"] == source_time
+        assert len(transport.calls) == calls and requests.count("/fixture") == 0
+        with app.state.session_factory() as session:
+            assert not session.scalars(select(ProjectTaskRow)).all()
+            assert not session.scalars(select(ProjectRecordLeaseRow)).all()
+        assert not app.state.project_workflow_worker_manager.busy()
+
+        transport.grid("数据").pop()
+        pull(first)
+        with app.state.session_factory() as session:
+            binding = session.get(SheetsBindingRow, first.table)
+            assert binding.identity_verification["valid"] is True
+            assert binding.identity_verification["bindingPeers"] == [[first.table, binding.binding_epoch]]
+        assert first.records()[0] == before
+        calls = len(transport.calls)
+        recovered_batch = start_real(first, profile, url, "fresh proof permits local commit")
+        item = wait_for(lambda: manual_item(first), "recovered shared proof reaches real worker")
+        captured = first.client.get(f"/api/v1/projects/{first.project}/tasks/{item['taskId']}").json()["inputSnapshot"]["inputs"][0]
+        assert captured["recordRef"] == before["ref"]
+        assert captured["contentRevision"] == before["contentRevision"]
+        assert {cell["fieldId"]: cell["value"] for cell in captured["values"]} == {
+            cell["fieldId"]: cell["value"] for cell in before["values"]
+        }
+        resume(first, item)
+        wait_for(lambda: batch_detail(first, recovered_batch)["batch"]["status"] == "completed", "recovered shared proof completes")
+        assert batch_detail(first, recovered_batch)["statusCounts"]["succeeded"] == 1
+        after = first.records()[0]
+        assert after["ref"] == before["ref"]
+        assert after["contentRevision"] == before["contentRevision"] + 1
+        assert {cell["fieldId"]: cell["value"] for cell in after["values"]}[first.field_id("title")] == "fresh proof permits local commit"
+        pending = sync_operations(first, "pending")
+        assert len(pending) == 1 and pending[0]["targetContentRevision"] == after["contentRevision"]
+        assert transport.changes() == 0 and len(transport.calls) == calls
+        assert requests.count("/fixture") == 1
+        assert batch_detail(first, blocked_batch)["taskCount"] == 0
+        assert batch_detail(first, blocked_batch)["batch"]["status"] == "failed"
+        with app.state.session_factory() as session:
+            assert len(session.scalars(select(ProjectTaskRow)).all()) == 1
+            assert not session.scalars(select(ProjectRecordLeaseRow).where(ProjectRecordLeaseRow.state.in_(("held", "reconciling")))).all()
+        assert not app.state.project_workflow_worker_manager.busy()
+
+
 def test_real_opposing_writes_enter_manual_branch_without_stealing_leases(
     tmp_path, valid_profile_values, real_cloak_page,
 ):

@@ -4293,6 +4293,15 @@
           "limitations": "全量与新打包原生验证进行中；真实Google/完整身份联合组合未验收",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_rule_or_integration",
+          "report": "docs/project-management/implementation/pm9/peer-outage-follow-through.json",
+          "scope": "同行异常观察移除后断网不恢复旧信任；完整修复来源后显式新批次真实worker恢复",
+          "limitations": "受控Google transport；非完整改绑/全部代次组合或打包实网验收",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "owner": "project-data",
@@ -4353,12 +4362,18 @@
             "symbol": "test_completely_read_empty_sheet_is_a_valid_empty_input",
             "scope": "完整读取的空表保持有效身份；必要输入无匹配、可选输入为空可运行，不把合法空表误阻断。",
             "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_real_cloakbrowser.py",
+            "symbol": "test_real_shared_sheet_peer_removal_requires_fresh_proof_after_source_outage",
+            "scope": "真实HTTP/SQLite/worker：同行完整扫描发现重复身份→公开移除同行绑定→本表拉取失败仍配置错误零Task；修复来源完整拉取后新批次冻结原值执行，本地写入/一条pending意图保留，旧失败批次不重启。",
+            "level": "automated_integration"
           }
         ],
         "gaps": [
           {
             "kind": "test_missing",
-            "detail": "第二视图失败已补HTTP/SQLite必要与可选输入断言；首次读取失败已补公开批次零Task。绑定/同行代次变化等缓存信任组合仍缺同一真实worker联合场景；不新增固定缓存有效期。"
+            "detail": "同行坏身份观察→移除绑定→读取失败→完整修复拉取→显式新批次已补真实worker联合链；完整改绑/本表代次替换及同行namespace组合仍缺同一真实worker证据。"
           },
           {
             "kind": "production_evidence_missing",

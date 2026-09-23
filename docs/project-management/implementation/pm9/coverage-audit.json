@@ -587,9 +587,9 @@
         {
           "id": "DATA-CLAIM-09",
           "status": "partially_verified",
-          "evidenceCount": 3,
+          "evidenceCount": 4,
           "plannedTestExists": false,
-          "reviewedCheckCount": 6,
+          "reviewedCheckCount": 7,
           "gapKinds": [
             "test_missing",
             "production_evidence_missing",

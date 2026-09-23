@@ -578,5 +578,6 @@
     "productionSource": "51e8991e198f782030b678e8decce9a424decaf5",
     "releaseAccepted": false
   },
-  "partialSourceFollowThrough": "partial-source-follow-through.json"
+  "partialSourceFollowThrough": "partial-source-follow-through.json",
+  "peerOutageFollowThrough": "peer-outage-follow-through.json"
 }

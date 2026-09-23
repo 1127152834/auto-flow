@@ -1,5 +1,7 @@
 # PM9 assertion mapping review
 
+2026-09-24 同行来源补证（confirmed局部）：新增真实HTTP/SQLite/worker验证坏身份同行解除绑定后、剩余表拉取失败仍拒绝领取；修复完整拉取后显式新批次才执行，旧失败批次不重启。最终1 passed/10.63秒，CI原选择已收集新用例（33/44，非运行结果）；无生产变更，不重复全量/打包。见peer-outage-follow-through.json；新原生验证仍受认证阻断，releaseAccepted=false。
+
 2026-09-24 并行补证/CI诊断（confirmed局部）：ARM正式打包API通过2/3次循环变量隔离与精确五条写入、唯一End声明输出关联、并行人工串行交接和停止保留前写。公开事件不提供内部scope、同workflow重复绑定两次脚本错误已修正并保留失败报告。当前69baeeb2三平台35886627514的ARM在打包必填提示失败，截图节点未选中，metadata HTTP断言和后端3486/前端5473通过；旧点击helper对覆盖目标误点已由隔离Electron复现并修复，102脚本/4映射及完整ARM打包桌面通过。最终三平台均失败：Intel同为未选中节点，Windows为紧凑重开窗口隐藏就绪文字。恢复视口及显式展开面板已复现通过，最终完整新版桌面通过；全部旧job结束后已触发三平台35895754111，源码25bb8ab2（生产仍69baeeb2），结果待完成。详见parallel-packaged-follow-through.json和ci-metadata-click-follow-through.json。251条状态未升级，releaseAccepted=false。
 
 2026-09-24 Profile冻结补证与代理勘误（confirmed子范围）：ARM正式打包API/真实worker证明旧批次两个Task保留原根文档、UA/语言/时区及实际启动seed，新批次使用公开编辑后的新值。Canvas实测不变，错误的必变断言已更正并保留负向报告。现有资源类/SQLite诊断证实代理新成员与改动端点进入旧快照，ENV-05/XE-A20/XE-C02增加implementation_missing，P1–P3规格/计划待确认。完整打包API/ARM桌面、101脚本/4映射/251引用通过；生产仍69baeeb2，三平台35886627514继续且不含本次新脚本断言。249有断言/2未定位、206partial/45planned/0verified不变，releaseAccepted=false。详见resource-freeze-follow-through.json。
