@@ -87,3 +87,11 @@
 - 定向后端 52 项、前端 52 项、实际 HTTP 事件/回执 4 项通过；Ruff、mypy、TypeScript、ESLint、renderer/main/preload 构建通过。OpenAPI 首次一致性检查发现生成文件仍缺新增查询字段，重新生成后检查通过，未放宽检查。
 - 正式 macOS arm64 开发入口：`evidence/project-integration/formal-electron-GS1ler/result.json`；最新共享边界下，项目五节点、PNG、失败调试、正常关窗取消/保存/停止及第二项目历史隔离完整通过。此处未改真实数据库，未将开发入口计作正式包。
 - 专项日志归档：`evidence/project-integration/run-controls-2026-09-23/`。SSH 独立专项已提交 `2ec6e0d7`，正式窗口验收由主线串行执行后再核销。
+
+
+## SSH 五节点真实窗口核销
+
+- 正式 `smoke-studio-backend-b6-ssh.mjs` 通过，证据 `evidence/b6/formal-ssh-electron-nUEoTd/result.json`。从主窗口真实点击进入 Studio，画布逐一添加/输入/连线/保存，原生正常关窗重开，再真实运行。回环 SSH 使用临时磁盘及受控命令子进程，非 Mock 执行器。
+- 命令输出 `ok\n`、退出码 0；上传和下载 59 字节内容一致，SHA-256 在证据中；五节点日志无密码，SSH 连接/命令进程已结束，无遗留受管 worker。用户数据库、密钥和外部主机未使用。
+- 独立 worker 认证失败、远端缺文件、断开后执行、命令错误及运行中停止，共 9 项测试通过。UI 异常变体、Intel/Windows、冻结包和外部主机仍待对应验收，未以本次成功替代。
+- 能力台账只核销五个 `BE.ssh_*.real-execution`：639 条槽位现为 622 通过/17 待真实执行；聚合状态 185/28（11 个已有槽位但平台限制待核销）。旧 B0 汇总数字不一致已按当前能力台账修正，来源/许可证和修改历史保留。

@@ -107,7 +107,7 @@
 |---|---|---|---|
 | BE-B6-001 | 61 个节点逐项执行正常、失败、取消和不可用平台 | 三条逐节点用例通过；不可用返回 CapabilityUnavailable | 尚未验收 |
 | BE-B6-002 | webhook/API/email/通知使用本地受控服务 | 请求方法、头、正文、代理、超时和次数可核对 | 尚未验收 |
-| BE-B6-003 | SSH 上传/下载/命令和断线 | 本地 SSH fixture 内容与哈希一致；会话关闭 | 尚未验收 |
+| BE-B6-003 | SSH 上传/下载/命令和断线 | 本地 SSH fixture 内容与哈希一致；会话关闭 | 通过 macOS arm64 开发入口：真实 UI 配置五节点、保存、正常关闭重开后运行；回环 SSH 命令输出与退出码、临时磁盘上传/下载内容及哈希一致，连接和命令进程已清理。真实 worker 补充认证失败、缺失文件、断开后执行、命令错误和停止验证。外部主机、Intel/Windows、冻结包及 UI 失败/停止变体待测。[正式 UI](studio-backend-migration/evidence/b6/formal-ssh-electron-nUEoTd/result.json)、[真实 worker](studio-backend-migration/evidence/b6/ssh-local-worker-2026-09-23/result.json) |
 | BE-B6-004 | 文件/屏幕共享启动、访问、停止和端口冲突 | 地址、访问和停止真实；退出后无监听端口 | 尚未验收 |
 | BE-B6-005 | 触发器启动、触发、去重、取消和重启 | 一次事件只启动一次；重启不重放历史动作 | 尚未验收 |
 | BE-B6-006 | 计划任务创建、到点、禁用、错过、日志和删除 | 时区、次数和运行记录可核对；停写时不新启动 | 通过（macOS arm64）：专项测试覆盖中国时区、错过策略、稳定 occurrence 去重、持久队列、重复执行、停写、停止、删除和重启；正式开发入口及冻结目录包通过 UI 创建与停用、真实 CloakBrowser 五节点自动执行、日志/PNG、进程清理和整机重启恢复。[P2 验收索引](studio-backend-migration/evidence/p2/README.md) |

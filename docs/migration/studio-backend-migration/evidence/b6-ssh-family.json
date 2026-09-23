@@ -58,8 +58,15 @@
     "arbitraryLocalFilesystemExposed": false
   },
   "remaining": [
-    "正式Electron中通过真实UI配置、保存、运行并查看五节点日志及下载产物",
     "真实外部SSH主机的网络、主机密钥策略和供应商错误尚未验收；本地受控服务证据不冒充外部环境通过",
-    "macOS Intel与Windows冻结包中的Paramiko原生依赖尚未实机验证"
-  ]
+    "macOS Intel与Windows冻结包中的Paramiko原生依赖尚未实机验证",
+    "正式 Electron 失败/停止变体尚未专项验证；后端真实 worker 已有对应证据。"
+  ],
+  "followup20260923": {
+    "formalElectron": "docs/migration/studio-backend-migration/evidence/b6/formal-ssh-electron-nUEoTd/result.json",
+    "realWorker": "docs/migration/studio-backend-migration/evidence/b6/ssh-local-worker-2026-09-23/result.json",
+    "checks": "真实 UI 五节点配置/保存/原生关闭重开/运行；命令 stdout、文件 59 bytes SHA-256 往返、全部节点日志及连接清理通过；独立真实 worker 失败和停止测试通过。",
+    "entry": "darwin-arm64 development-build",
+    "notClaimed": "Windows/macOS Intel、冻结包、外部主机/主机密钥策略及正式窗口失败/停止变体"
+  }
 }

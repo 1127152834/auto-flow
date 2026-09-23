@@ -40276,7 +40276,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B6",
       "source": {
@@ -40334,7 +40334,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "macOS arm64 开发构建正式 UI 已完成配置、保存、正常关闭重开和五节点真实执行；外部主机、macOS Intel/Windows 与冻结包仍单列待验收。",
       "risk": "平台或第三方依赖需逐项探测；秘密、路径、取消、超时和部分失败不能按原全局状态直接复制。",
       "acceptanceCases": [
         {
@@ -40363,7 +40363,7 @@
         },
         {
           "id": "BE.ssh_connect.real-execution",
-          "status": "已实现待验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -40371,12 +40371,17 @@
           ],
           "operation": "经Studio真实UI添加和配置 ssh_connect，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：SSH连接执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6-ssh-family.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-ssh-electron-nUEoTd/result.json",
+          "additionalEvidencePaths": [
+            "docs/migration/studio-backend-migration/evidence/b6/ssh-local-worker-2026-09-23/result.json"
+          ],
+          "platformBoundary": "darwin-arm64 development-build；失败/停止由真实 worker 验证；正式窗口异常分支、Intel/Windows 和冻结包未计通过。"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产 worker 回环 SSH/SFTP、真实磁盘及命令进程、正式 Electron UI 均有证据；不代表所有平台通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-ssh-family.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-ssh-family.json",
+      "realExecutionEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-ssh-electron-nUEoTd/result.json"
     }
   },
   {
@@ -40516,7 +40521,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B6",
       "source": {
@@ -40573,7 +40578,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "macOS arm64 开发构建正式 UI 已完成配置、保存、正常关闭重开和五节点真实执行；外部主机、macOS Intel/Windows 与冻结包仍单列待验收。",
       "risk": "平台或第三方依赖需逐项探测；秘密、路径、取消、超时和部分失败不能按原全局状态直接复制。",
       "acceptanceCases": [
         {
@@ -40602,7 +40607,7 @@
         },
         {
           "id": "BE.ssh_execute_command.real-execution",
-          "status": "已实现待验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -40610,12 +40615,17 @@
           ],
           "operation": "经Studio真实UI添加和配置 ssh_execute_command，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：SSH命令执行执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6-ssh-family.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-ssh-electron-nUEoTd/result.json",
+          "additionalEvidencePaths": [
+            "docs/migration/studio-backend-migration/evidence/b6/ssh-local-worker-2026-09-23/result.json"
+          ],
+          "platformBoundary": "darwin-arm64 development-build；失败/停止由真实 worker 验证；正式窗口异常分支、Intel/Windows 和冻结包未计通过。"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产 worker 回环 SSH/SFTP、真实磁盘及命令进程、正式 Electron UI 均有证据；不代表所有平台通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-ssh-family.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-ssh-family.json",
+      "realExecutionEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-ssh-electron-nUEoTd/result.json"
     }
   },
   {
@@ -40723,7 +40733,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B6",
       "source": {
@@ -40776,7 +40786,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "macOS arm64 开发构建正式 UI 已完成配置、保存、正常关闭重开和五节点真实执行；外部主机、macOS Intel/Windows 与冻结包仍单列待验收。",
       "risk": "平台或第三方依赖需逐项探测；秘密、路径、取消、超时和部分失败不能按原全局状态直接复制。",
       "acceptanceCases": [
         {
@@ -40805,7 +40815,7 @@
         },
         {
           "id": "BE.ssh_upload_file.real-execution",
-          "status": "已实现待验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -40813,12 +40823,17 @@
           ],
           "operation": "经Studio真实UI添加和配置 ssh_upload_file，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：SSH文件上传执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6-ssh-family.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-ssh-electron-nUEoTd/result.json",
+          "additionalEvidencePaths": [
+            "docs/migration/studio-backend-migration/evidence/b6/ssh-local-worker-2026-09-23/result.json"
+          ],
+          "platformBoundary": "darwin-arm64 development-build；失败/停止由真实 worker 验证；正式窗口异常分支、Intel/Windows 和冻结包未计通过。"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产 worker 回环 SSH/SFTP、真实磁盘及命令进程、正式 Electron UI 均有证据；不代表所有平台通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-ssh-family.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-ssh-family.json",
+      "realExecutionEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-ssh-electron-nUEoTd/result.json"
     }
   },
   {
@@ -40926,7 +40941,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B6",
       "source": {
@@ -40979,7 +40994,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "macOS arm64 开发构建正式 UI 已完成配置、保存、正常关闭重开和五节点真实执行；外部主机、macOS Intel/Windows 与冻结包仍单列待验收。",
       "risk": "平台或第三方依赖需逐项探测；秘密、路径、取消、超时和部分失败不能按原全局状态直接复制。",
       "acceptanceCases": [
         {
@@ -41008,7 +41023,7 @@
         },
         {
           "id": "BE.ssh_download_file.real-execution",
-          "status": "已实现待验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -41016,12 +41031,17 @@
           ],
           "operation": "经Studio真实UI添加和配置 ssh_download_file，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：SSH文件下载执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6-ssh-family.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-ssh-electron-nUEoTd/result.json",
+          "additionalEvidencePaths": [
+            "docs/migration/studio-backend-migration/evidence/b6/ssh-local-worker-2026-09-23/result.json"
+          ],
+          "platformBoundary": "darwin-arm64 development-build；失败/停止由真实 worker 验证；正式窗口异常分支、Intel/Windows 和冻结包未计通过。"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产 worker 回环 SSH/SFTP、真实磁盘及命令进程、正式 Electron UI 均有证据；不代表所有平台通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-ssh-family.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-ssh-family.json",
+      "realExecutionEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-ssh-electron-nUEoTd/result.json"
     }
   },
   {
@@ -41101,7 +41121,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B6",
       "source": {
@@ -41151,7 +41171,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "macOS arm64 开发构建正式 UI 已完成配置、保存、正常关闭重开和五节点真实执行；外部主机、macOS Intel/Windows 与冻结包仍单列待验收。",
       "risk": "平台或第三方依赖需逐项探测；秘密、路径、取消、超时和部分失败不能按原全局状态直接复制。",
       "acceptanceCases": [
         {
@@ -41180,7 +41200,7 @@
         },
         {
           "id": "BE.ssh_disconnect.real-execution",
-          "status": "已实现待验收",
+          "status": "已实现且已验收",
           "level": "formal Electron E2E",
           "preconditions": [
             "正式Electron、真实sidecar、临时工作区",
@@ -41188,12 +41208,17 @@
           ],
           "operation": "经Studio真实UI添加和配置 ssh_disconnect，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：SSH断开连接执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6-ssh-family.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-ssh-electron-nUEoTd/result.json",
+          "additionalEvidencePaths": [
+            "docs/migration/studio-backend-migration/evidence/b6/ssh-local-worker-2026-09-23/result.json"
+          ],
+          "platformBoundary": "darwin-arm64 development-build；失败/停止由真实 worker 验证；正式窗口异常分支、Intel/Windows 和冻结包未计通过。"
         }
       ],
-      "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
+      "evidenceConfidence": "高：冻结源码差分、生产 worker 回环 SSH/SFTP、真实磁盘及命令进程、正式 Electron UI 均有证据；不代表所有平台通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
-      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-ssh-family.json"
+      "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-ssh-family.json",
+      "realExecutionEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-ssh-electron-nUEoTd/result.json"
     }
   },
   {

@@ -1,6 +1,6 @@
 {
   "evidenceId": "BE-B0-source-mapping-2026-09-15",
-  "recordedAt": "2026-09-22",
+  "recordedAt": "2026-09-23",
   "scope": {
     "approvedNodeTypes": 213,
     "decoratorRegistrations": 212,
@@ -8,15 +8,15 @@
     "sharedCapabilities": 13,
     "acceptanceCaseSlots": 639,
     "nodeStatusCounts": {
-      "已实现且已验收": 191,
-      "已实现待验收": 22,
+      "已实现且已验收": 185,
+      "已实现待验收": 28,
       "尚未实现": 0,
       "外部等待": 0,
       "明确排除": 0
     },
     "caseStatusCounts": {
-      "已实现且已验收": 617,
-      "已实现待验收": 22,
+      "已实现且已验收": 622,
+      "已实现待验收": 17,
       "尚未实现": 0,
       "外部等待": 0,
       "明确排除": 0
@@ -46,5 +46,11 @@
       "具体商业授权",
       "公开发布授权"
     ]
+  },
+  "reconciliation20260923": {
+    "source": "capabilities.json backendMigration and acceptanceCases",
+    "aggregate": "185 已验收 / 28 待验收；其中 11 节点全部槽位通过但聚合平台限制仍保留",
+    "cases": "622 已验收 / 17 待真实执行",
+    "change": "仅新增 SSH 五个正式 UI 槽位；更正旧汇总191/22与能力台账180/33不一致。其余平台限制不自动核销。"
   }
 }

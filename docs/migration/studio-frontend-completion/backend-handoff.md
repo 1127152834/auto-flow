@@ -11,7 +11,7 @@
 | [后端全局约束](../../automation-studio/BACKEND_GLOBAL_CONSTRAINTS.md) | 仅 CloakBrowser、仅批准节点、AutoFlow 分层、小助手使用 LangGraph | 用户确认，实施必须遵守 |
 | [后端迁入设计规格](../../superpowers/specs/2026-09-15-studio-backend-webrpa-migration-design.md) | 架构、执行语义、合同、持久化、生命周期和数据库兼容 | 按已批准范围迁入，具体闭合状态见证据 |
 | [后端迁入实施计划](../../superpowers/plans/2026-09-15-studio-backend-webrpa-migration-implementation.md) | B0–B9 任务、文件、接口、测试、退出门槛和估计 | 按依赖并行推进，不再沿用准备时的 B1 单阶段结论 |
-| [213 节点能力台账](capabilities.json) | 每节点冻结源码、符号、业务字段、目标模块和三条后端验收用例 | 639 条槽位中 617 条标记已验收、22 条待真实执行；槽位不等同全部平台完成 |
+| [213 节点能力台账](capabilities.json) | 每节点冻结源码、符号、业务字段、目标模块和三条后端验收用例 | 639 条槽位中 622 条标记已验收、17 条待真实执行；槽位不等同全部平台完成 |
 | [共享后端能力映射](backend-support-mapping.json) | 文档、执行器、浏览器、运行、拾取、录制、Debug、模型/MCP、LangGraph 小助手、凭据、触发器和数据库兼容 | 13 个共享能力集中登记，按各自实际证据核销，不以节点通过代替 |
 | [后端验收矩阵](../studio-backend-migration-validation.md) | 跨节点链路、故障、容量、平台与正式包验收 | 保留已有真实证据和未测平台，继续补齐剩余交付 |
 
@@ -24,7 +24,7 @@
 - B0 历史记录：恢复 `f573a44` 中四个历史 revision，并以 `0011_merge_android_project_data` 合并；这个编号不是当前数据库 head 的声明。新增迁移按现有链继续。本轮仅使用隔离临时数据库，不修改真实用户数据。
 - Studio 小助手按最新用户决定使用 LangGraph 管理真实多轮状态、工具、权限、取消和恢复；普通工作流仍迁入 WebRPA 确定性执行器。
 
-当前工作为剩余节点真实验收及已批准的项目管理深度接入。项目文档入口、真实保存重开和正常关窗已具备 [macOS arm64 正式窗口证据](../studio-backend-migration/evidence/project-integration/formal-documents-electron-HMKavH/result.json)。实现、校验和明确剩余边界集中记录于 [当前会话记录](../../../.ai/sessions/2026-09-23-studio-project-integration.md)。节点聚合状态仍为 180 项已验收、33 项待验收，其中 11 项的三个槽位均已有通过记录；必须结合其平台限制核销，不能将其视为新增缺实现，也不能直接将平台限制抹掉。
+当前工作为剩余节点真实验收及已批准的项目管理深度接入。项目文档入口、真实保存重开和正常关窗已具备 [macOS arm64 正式窗口证据](../studio-backend-migration/evidence/project-integration/formal-documents-electron-HMKavH/result.json)。实现、校验和明确剩余边界集中记录于 [当前会话记录](../../../.ai/sessions/2026-09-23-studio-project-integration.md)。节点聚合状态仍为 185 项已验收、28 项待验收，其中 11 项的三个槽位均已有通过记录；必须结合其平台限制核销，不能将其视为新增缺实现，也不能直接将平台限制抹掉。
 
 项目运行归属、归档等待清理及五节点真实运行已补 [正式窗口证据](../studio-backend-migration/evidence/project-integration/formal-electron-RnPj0V/result.json)：普通运行、失败调试、原生关闭中的取消/放弃停止、重开、内核缺失启动失败均覆盖。运行请求和详情包含可选 `projectId`，已存文档归属在数据库事务中校验，未保存草稿不顺带创建文档。这里的通过限 macOS arm64 开发入口；不表示项目运行读权限、资源授权、数据资产及统计已完成。
 
@@ -75,7 +75,7 @@
 
 本节替代准备阶段“仓库没有真实后端”的旧清单。当前剩余要求继续沿用既有能力台账及矩阵，不能重新笼统判定整族未实现：
 
-- 22 个节点的待真实执行槽位，以及对应平台、凭据、硬件环境；用户删除的 14 个通知节点保持排除。
+- 17 个节点的待真实执行槽位，以及对应平台、凭据、硬件环境；用户删除的 14 个通知节点保持排除。
 - Studio 与项目执行/权限/资源、数据资产、统计、活动及导航的完整接入；项目管理的原运行表与 Studio 运行表尚未统一消费，目录可读不代表项目批次可运行全部迁入节点。
 - 项目范围内 Debug、拾取、录制和宿主切换的完整生命周期矩阵；文档正常关闭证据不能代替其他活跃会话验收。
 - 正式窗口观察到的必填字段规则、全局快捷键 404 和部分启动命令 501，需按原合同继续核销；不能以文档保存成功掩盖。
@@ -96,3 +96,6 @@
 运行/Debug/输入、JS、语音及平台交互请求使用宿主 `projectId` 查询参数。服务在分发前验证对应 run/request 的持久归属；外项目返回 404，不执行命令、不改变在途状态。原 `commandId`/暂停修订/请求负载及响应丢失查询保持不变，查询回执也验证归属。旧流程级变量追踪先按项目选择运行，不能读或清空另一项目记录。
 
 证据：`../studio-backend-migration/evidence/project-integration/run-controls-2026-09-23/result.json` 及 `formal-electron-GS1ler/result.json`。这关闭当前运行控制消费边界，不等同于项目全部权限、资源授权、拾取/录制/助手接入完成。
+
+
+SSH 五节点已通过 [正式 UI 闭环](../studio-backend-migration/evidence/b6/formal-ssh-electron-nUEoTd/result.json)，配套 [真实 worker 失败/停止证据](../studio-backend-migration/evidence/b6/ssh-local-worker-2026-09-23/result.json)。此批核销 5 个真实执行槽位；外部主机、Intel/Windows 和冻结入口仍按族证据的 remaining 保留。
