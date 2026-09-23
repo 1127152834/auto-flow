@@ -56,3 +56,16 @@ it('rejects malformed and unsupported actions before adapters run',async()=>{
  }
  expect(api.writeText).not.toHaveBeenCalled();expect(api.beep).not.toHaveBeenCalled()
 })
+
+it('limits workflow path selection to registered main frames and discards stale dialog results', async () => {
+  const { createWorkflowPathSelectionHandler } = await import('./studio-platform')
+  let current = 'workspace-a'
+  const choose = vi.fn(async () => '/tmp/selected.txt')
+  const handler = createWorkflowPathSelectionHandler({ allowed: sender => sender.senderFrame === sender.sender.mainFrame, context: () => current, choose })
+  await expect(handler({ ...event, senderFrame: {} }, { kind: 'file' })).resolves.toMatchObject({ ok: false })
+  expect(choose).not.toHaveBeenCalled()
+  await expect(handler(event, { kind: 'file', title: '输入文件' })).resolves.toEqual({ ok: true, value: { value: '/tmp/selected.txt' } })
+  choose.mockImplementationOnce(async () => { current = 'workspace-b'; return '/tmp/stale.txt' })
+  await expect(handler(event, { kind: 'folder' })).resolves.toMatchObject({ ok: false, error: { code: 'WORKSPACE_CHANGED' } })
+  for (const invalid of [{ kind: 'device' }, { kind: 'file', title: 7 }, { kind: 'file', fileTypes: [['image', 7]] }, { kind: 'folder', fileTypes: [] }, { kind: 'file', extra: 'unexpected' }]) await expect(handler(event, invalid)).resolves.toMatchObject({ ok: false, error: { code: 'INVALID_PATH_SELECTION' } })
+})

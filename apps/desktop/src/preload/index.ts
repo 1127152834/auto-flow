@@ -50,7 +50,7 @@ const projectFileBridge: ProjectFileBridge = {
 }
 
 const googleSheetsBridge: GoogleSheetsBridge = { connectGoogleSheets: (projectId, accountLabel) => ipcRenderer.invoke('autoflow:google-sheets:connect', projectId, accountLabel) }
-const studioPlatformBridge:StudioPlatformBridge={runStudioPlatformAction:request=>ipcRenderer.invoke('autoflow:studio-platform-action',request)}
+const studioPlatformBridge:StudioPlatformBridge={showProjectInteraction:()=>ipcRenderer.invoke('autoflow:show-project-interaction'),chooseWorkflowPath:request=>ipcRenderer.invoke('autoflow:workflow-select-path',request),runStudioPlatformAction:request=>ipcRenderer.invoke('autoflow:studio-platform-action',request)}
 
 const settingsBridge: SettingsBridge = {
   getSettings: () => ipcRenderer.invoke('autoflow:settings:get'),

@@ -1,0 +1,15 @@
+> @autoflow/desktop@0.1.0 test
+> vitest run src/main/ipc/automation-studio.test.ts src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:15011) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:15012) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  2 passed (2)
+      Tests  22 passed (22)
+   Start at  06:49:14
+   Duration  1.65s (transform 543ms, setup 323ms, import 562ms, tests 335ms, environment 1.20s)

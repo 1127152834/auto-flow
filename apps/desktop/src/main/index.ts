@@ -9,9 +9,9 @@ import { createCopyProxyCredentialsHandler } from './ipc/proxy-credentials'
 import { createOpenExternalLinkHandler } from './ipc/external-links'
 import { createConnectGoogleSheetsHandler } from './google-desktop'
 import { createRevealKernelHandler } from './ipc/kernel-paths'
-import { createStudioPlatformActionHandler } from './ipc/studio-platform'
+import { createStudioPlatformActionHandler, createWorkflowPathSelectionHandler } from './ipc/studio-platform'
 import { createSystemControlActions } from './platform/system-control'
-import { isWindowMainFrame, StudioWindowController, type DesktopIpcEvent } from './ipc/automation-studio'
+import { isWindowMainFrame, retainMainWindowForStudio, StudioWindowController, type DesktopIpcEvent } from './ipc/automation-studio'
 import { protectSettingsHandler } from './ipc/settings'
 import { DesktopSettingsStore, SettingsError } from './settings/store'
 import { ProjectFilesController } from './project-files/controller'
@@ -46,6 +46,7 @@ const qaExcelInput = !app.isPackaged ? process.env.AUTOFLOW_QA_EXCEL_INPUT : und
 const qaXlsxOutputDir = !app.isPackaged ? process.env.AUTOFLOW_QA_XLSX_OUTPUT : undefined
 const studio = new StudioWindowController({
   onInvalidated: () => studioHotkeys?.clear(),
+  onClosed: () => { if (!isQuitting && mainWindow && !mainWindow.isDestroyed() && !mainWindow.isVisible()) mainWindow.show() },
   mainSenderId: () => mainWindow?.webContents.id,
   workspacePartition:()=>{
     const path=settings?.getRuntimeContext().workspaceKey
@@ -76,7 +77,7 @@ function applyPreferences(preferences: UiPreferences): void {
 }
 
 async function createWindow(): Promise<void> {
-  mainWindow = new BrowserWindow({ width: 1440, height: 1024, minWidth: 800, minHeight: 600, webPreferences: { preload: join(__dirname, '../preload/index.js'), contextIsolation: true, sandbox: true, nodeIntegration: false } })
+  mainWindow = new BrowserWindow({ width: 1440, height: 1024, minWidth: 800, minHeight: 600, webPreferences: { preload: join(__dirname, '../preload/index.js'), contextIsolation: true, sandbox: true, nodeIntegration: false, backgroundThrottling: false } })
   const projectFiles = new ProjectFilesController({
     allowedSenderId: mainWindow.webContents.id,
     getHostStatus: () => settings?.getHostStatus() ?? { state: 'stopped' },
@@ -131,6 +132,16 @@ async function createWindow(): Promise<void> {
     request: fetch,
     showItemInFolder: path => shell.showItemInFolder(path),
   }))
+  ipcMain.removeHandler('autoflow:workflow-select-path')
+  ipcMain.handle('autoflow:workflow-select-path', createWorkflowPathSelectionHandler({
+    allowed: event => isWindowMainFrame(event, mainWindow?.webContents.id) || studio.isStudioSender(event),
+    context: () => { const context = settings!.getRuntimeContext(); return JSON.stringify([context.workspaceKey, context.sidecar]) },
+    choose: async request => {
+      const filters = request.fileTypes?.map(([name, pattern]) => ({ name, extensions: pattern.split(/[;,\s]+/).map(part => part === '*.*' ? '*' : part.replace(/^\*\./, '')).filter(Boolean) }))
+      const result = await dialog.showOpenDialog({ title: request.title || (request.kind === 'file' ? '选择文件' : '选择文件夹'), defaultPath: request.initialDir ?? undefined, properties: [request.kind === 'file' ? 'openFile' : 'openDirectory'], ...(filters?.length ? { filters } : {}) })
+      return result.canceled ? null : result.filePaths[0] ?? null
+    },
+  }))
   ipcMain.removeHandler('autoflow:studio-platform-action')
   ipcMain.handle('autoflow:studio-platform-action',createStudioPlatformActionHandler({
     allowed:event=>studio.isStudioSender(event),
@@ -175,6 +186,8 @@ async function createWindow(): Promise<void> {
     try { return await settings!.restart() } catch (error) { throw new Error(error instanceof SettingsError ? error.message : '本地服务重启失败，请重试') } finally { publishRuntimeContext() }
   })
   mainWindow.webContents.on('did-finish-load', () => { if (settings) applyPreferences(settings.getPreferences()) })
+  const ownedWindow = mainWindow
+  ownedWindow.on('close', event => retainMainWindowForStudio(event, ownedWindow, studio.senderId(), isQuitting))
   mainWindow.on('closed', () => { settings?.invalidateChoices(); mainWindow = undefined })
   if (process.env.ELECTRON_RENDERER_URL) await mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
   else await mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
@@ -182,7 +195,7 @@ async function createWindow(): Promise<void> {
 
 const primaryInstance = app.requestSingleInstanceLock()
 if (!primaryInstance) app.quit()
-app.on('second-instance', () => { if (mainWindow) { if (mainWindow.isMinimized()) mainWindow.restore(); mainWindow.focus() } else if (app.isReady()) void createWindow() })
+app.on('second-instance', () => { if (mainWindow) { if (mainWindow.isMinimized()) mainWindow.restore(); mainWindow.show(); mainWindow.focus() } else if (app.isReady()) void createWindow() })
 app.whenReady().then(async () => {
   if (!primaryInstance) return
   settings = new SettingsController({
@@ -237,6 +250,11 @@ app.whenReady().then(async () => {
   ipcMain.handle('autoflow:open-automation-studio', (event, context: unknown) => studio.open(event, context))
   ipcMain.handle('autoflow:studio-leave-ready',event=>studio.registerLeaveReady(event))
   ipcMain.handle('autoflow:studio-leave-result',(event,result:unknown)=>studio.completeLeave(event,result))
+  ipcMain.handle('autoflow:show-project-interaction', event => {
+    if (!isWindowMainFrame(event, mainWindow?.webContents.id)) throw new Error('此窗口不能显示项目交互')
+    if (mainWindow?.isMinimized()) mainWindow.restore()
+    mainWindow?.show(); mainWindow?.focus()
+  })
   ipcMain.handle('autoflow:runtime-context', event => { requireRuntimeSender(event); return settings!.getRuntimeContext() })
   ipcMain.handle('autoflow:sidecar-status', event => { requireRuntimeSender(event); return settings!.getPublicStatus() })
   ipcMain.handle('autoflow:platform-paths', event => {
@@ -246,7 +264,7 @@ app.whenReady().then(async () => {
   await createWindow()
 }).catch(() => { dialog.showErrorBox('AutoFlow 无法启动', '无法读取本机应用目录或设置，请检查目录权限后重新启动。现有数据未删除。'); app.quit() })
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit() })
-app.on('activate', () => { if (!mainWindow || mainWindow.isDestroyed()) void createWindow() })
+app.on('activate', () => { if (!mainWindow || mainWindow.isDestroyed()) void createWindow(); else { mainWindow.show(); mainWindow.focus() } })
 let isQuitting = false
 let stoppedForQuit = false
 app.on('before-quit', event => {

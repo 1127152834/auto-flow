@@ -5,6 +5,7 @@ import { ModelManagementPage } from '../domains/models/pages/ModelManagementPage
 import { ApiProvider } from './ApiProvider'
 import { ApplicationHeader } from './ApplicationHeader'
 import { parseAppLocation, projectHash, useGuardedHashNavigation, type AppRoute } from './navigation'
+import { ProjectInteractionHost } from '../domains/project-runs/components/ProjectInteractionHost'
 import { ProjectsWorkspace } from '../domains/projects/pages/ProjectsWorkspace'
 import type { ProjectRoute } from '../domains/projects/types'
 import { Button } from '../shared/components/ui/button'
@@ -45,6 +46,7 @@ export function App() {
   const settingsAvailable = typeof window.autoflow.getSettings === 'function'
   return <div className="min-h-screen bg-canvas text-ink">
     <ApplicationHeader route={route} onNavigate={navigate} status={status} />
+    {session ? <ProjectInteractionHost key={JSON.stringify([session.workspaceKey, session.instanceId])} client={session.client} connected={status === 'connected' && !workspaceChanging} /> : null}
     {route === 'settings' ? settingsAvailable
       ? <SettingsPage bridge={window.autoflow as SettingsBridge} restartService={() => window.autoflow.restartSidecar()} onServiceChanged={() => void reconnect(false)} />
       : <State title="桌面设置不可用" description="请使用 AutoFlow 桌面应用打开设置。" />

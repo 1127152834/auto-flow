@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from sqlalchemy.orm import Session, sessionmaker
+
 from autoflow.domain.project_runs.models import ProjectRunError
 from autoflow.domain.workflows.runtime import TERMINAL_STATUSES, RunEvent, thaw_json
 from autoflow.infrastructure.database.models import ProjectRow
@@ -9,7 +11,6 @@ from autoflow.infrastructure.database.project_run_models import ProjectTaskRow
 from autoflow.infrastructure.database.workflow_runtime import (
     SqlAlchemyWorkflowRuntimeRepository,
 )
-from sqlalchemy.orm import Session, sessionmaker
 
 
 class ProjectRunEvents:
@@ -72,6 +73,7 @@ def _begin_snapshot(session: Session) -> None:
 def _public(event: RunEvent) -> dict[str, Any]:
     kind = "runStatus" if event.kind == "status" else event.kind
     allowed = {
+        "interaction": {"type", "requestId", "commandId", "status", "executionContext"},
         "runStatus": {"status", "statusRevision"},
         "nodeAttempt": {"status", "durationMs", "error"},
         "log": {"level", "message", "isUserLog"},

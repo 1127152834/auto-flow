@@ -8,6 +8,7 @@ import subprocess
 import sys
 from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from pathlib import Path, PurePosixPath
 from threading import Event, Thread
 from typing import Any, Literal, cast
@@ -206,6 +207,17 @@ class ProjectWorkflowWorkerManager:
                     "runId": worker.run_id, "executionGeneration": worker.generation,
                     "requestId": request_id, "value": value,
                 })
+            elif message.get("type") == "execution:command_applied":
+                command_id, request_id = message.get("commandId"), message.get("requestId")
+                if not isinstance(command_id, str) or not command_id or not isinstance(request_id, str) or not request_id:
+                    raise _protocol_error()
+                await on_event({
+                    "eventId": command_id, "runId": worker.run_id,
+                    "executionGeneration": worker.generation, "kind": "interaction",
+                    "nodeId": None, "nodeVisitId": None, "attempt": None,
+                    "occurredAt": datetime.now(UTC).isoformat(),
+                    "payload": {"type": "execution:command_applied", "commandId": command_id, "requestId": request_id},
+                })
             elif message.get("type") == "finished":
                 if message.get("cleanupConfirmed") is not True:
                     raise WorkflowWorkerError("WORKFLOW_CLEANUP_FAILED", "浏览器清理尚未确认")
@@ -279,6 +291,10 @@ class ProjectWorkflowWorkerManager:
 
     async def _send(self, worker: _Worker, message: dict[str, Any]) -> None:
         async with worker.write_lock:
+            if message.get("type") in {"input_prompt_result", "js_script_result"} and (
+                self._worker is not worker or worker.stop_requested or not worker.ready or worker.cleanup is not None
+            ):
+                raise WorkflowWorkerError("WORKFLOW_INTERACTION_UNAVAILABLE", "交互请求已结束或执行代次已失效")
             if message.get("type") == "credential:result" and (self._worker is not worker or worker.stop_requested or worker.cleanup is not None):
                 return
             await self._write(worker, message)
@@ -292,6 +308,19 @@ class ProjectWorkflowWorkerManager:
             raise _protocol_error()
         worker.process.stdin.write(data)
         await worker.process.stdin.drain()
+
+    async def send_command(self, run_id: str, execution_generation: int, command: dict[str, Any]) -> None:
+        worker = self._worker
+        if (worker is None or worker.run_id != run_id or type(execution_generation) is not int
+            or worker.generation != execution_generation or worker.stop_requested or not worker.ready
+            or worker.cleanup is not None):
+            raise WorkflowWorkerError("WORKFLOW_INTERACTION_UNAVAILABLE", "交互请求已结束或执行代次已失效")
+        if (command.get("type") not in {"input_prompt_result", "js_script_result"}
+            or not isinstance(command.get("commandId"), str) or not command["commandId"]
+            or not isinstance(command.get("requestId"), str) or not command["requestId"]):
+            raise _protocol_error()
+        await self._send(worker, {**command, "protocolVersion": 1, "runId": run_id,
+                                  "executionGeneration": execution_generation})
 
     async def _send_stop(self, worker: _Worker) -> None:
         await self._send(worker, {"type": "stop", "executionGeneration": worker.generation})

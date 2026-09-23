@@ -1,0 +1,11 @@
+autoflow.application.project_runs.interactions: entire frozen module matches source
+autoflow.application.workflows.dispatcher: entire frozen module matches source
+autoflow.application.workflows.executors.input_prompt: entire frozen module matches source
+autoflow.adapters.http.project_run_interactions: entire frozen module matches source
+autoflow.adapters.http.project_run_events: entire frozen module matches source
+autoflow.adapters.http.project_run_events_schemas: entire frozen module matches source
+autoflow.domain.workflows.catalog: entire frozen module matches source
+autoflow.infrastructure.process.project_workflow_worker: entire frozen module matches source
+autoflow.providers.browser.project_workflow_worker: entire frozen module matches source
+autoflow.providers.browser.project_graph: entire frozen module matches source
+autoflow.providers.browser.workflow_worker: entire frozen module matches source

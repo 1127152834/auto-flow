@@ -12,6 +12,10 @@ export type StudioPlatformAction =
 
 export type StudioPlatformActionResult = { value?: string }
 
+export type WorkflowPathSelection = { kind: 'file' | 'folder'; title?: string | null; initialDir?: string | null; fileTypes?: Array<[string, string]> | null }
+
 export type StudioPlatformBridge = {
+  showProjectInteraction(): Promise<void>
+  chooseWorkflowPath(request: WorkflowPathSelection): Promise<DesktopResult<StudioPlatformActionResult>>
   runStudioPlatformAction(request: StudioPlatformAction): Promise<DesktopResult<StudioPlatformActionResult>>
 }

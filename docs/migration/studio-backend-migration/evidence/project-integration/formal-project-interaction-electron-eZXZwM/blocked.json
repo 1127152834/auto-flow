@@ -1,0 +1,21 @@
+{
+  "checkedAt": "2026-09-23T22:53:41.969Z",
+  "gitHead": "2b1df39a6033d9a8a39dfe7ac5cd9ca64e18ae0d",
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程"
+  ],
+  "observedEvents": [],
+  "ui": [
+    {
+      "html": "<button class=\"flex items-center gap-1.5 px-3 py-1.5 rounded-control text-[12px] font-medium transition-all bg-[hsl(var(--brand-500))] text-white shadow-sm\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-layout-list w-3.5 h-3.5\" aria-hidden=\"true\"><rect width=\"7\" height=\"7\" x=\"3\" y=\"3\" rx=\"1\"></rect><rect width=\"7\" height=\"7\" x=\"3\" y=\"14\" rx=\"",
+      "visible": true,
+      "rect": {
+        "x": 689,
+        "y": 718,
+        "width": 80,
+        "height": 30
+      }
+    }
+  ],
+  "error": "Error: Command failed: osascript -e tell application \"System Events\" -e tell (first application process whose unix id is 31819) -e click (first button of (first window whose name contains \"工作流工作台\") whose subrole is \"AXCloseButton\") -e end tell -e end tell\n87:190: execution error: “System Events”遇到一个错误：不能获得“window 1 of application process 1 whose unix id = 31819 whose name contains \"工作流工作台\"”。无效的索引。 (-1719)\n\n    at genericNodeError (node:internal/errors:999:15)\n    at wrappedFn (node:internal/errors:544:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at closeWindowThroughOs (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:2194:5)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:190:5"
+}

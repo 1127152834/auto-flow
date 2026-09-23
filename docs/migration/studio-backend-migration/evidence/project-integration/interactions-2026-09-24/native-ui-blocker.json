@@ -1,0 +1,11 @@
+{
+  "status": "blocked",
+  "source": "cua.getState native inventory",
+  "message": "The Mac is locked and automatic unlock could not unlock it. Ask the user to unlock the Mac manually before continuing.",
+  "attempts": [
+    "formal-project-interaction-electron-rBdQBJ: wrong source display label in test, corrected to 用户输入",
+    "formal-project-interaction-electron-eZXZwM: real UI configured and saved 3 nodes; OS close failed; complete chain not passed"
+  ],
+  "userDatabaseTouched": false,
+  "requires": "User unlocks Mac; resume normal-close/native-picker/formal UI acceptance"
+}

@@ -1,0 +1,38 @@
+> @autoflow/desktop@0.1.0 test
+> vitest run src/main/ipc/automation-studio.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:12932) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/main/ipc/automation-studio.test.ts (18 tests | 1 failed) 92ms
+   × retains the main renderer only while Studio remains open, without blocking app quit 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/ipc/automation-studio.test.ts > retains the main renderer only while Studio remains open, without blocking app quit
+TypeError: retainMainWindowForStudio is not a function
+ ❯ src/main/ipc/automation-studio.test.ts:272:3
+    270|   const { retainMainWindowForStudio } = await import('./automation-stu…
+    271|   const main = { hide: vi.fn() }; const close = { preventDefault: vi.f…
+    272|   retainMainWindowForStudio(close, main, undefined, false)
+       |   ^
+    273|   expect(close.preventDefault).not.toHaveBeenCalled()
+    274|   retainMainWindowForStudio(close, main, 101, false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 17 passed (18)
+   Start at  06:48:33
+   Duration  980ms (transform 183ms, setup 181ms, import 28ms, tests 92ms, environment 560ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/main/ipc/automation-studio.test.ts

@@ -63,3 +63,25 @@ export function createStudioPlatformActionHandler(dependencies:Dependencies) {
     }catch{return failure('PLATFORM_ACTION_FAILED','系统未能完成平台操作。')}
   }
 }
+
+export function createWorkflowPathSelectionHandler(dependencies: {
+  allowed(event: Event): boolean
+  context(): string
+  choose(request: import('../../shared/studio-platform').WorkflowPathSelection): Promise<string | null>
+}) {
+  return async (event: Event, raw: unknown): Promise<DesktopResult<StudioPlatformActionResult>> => {
+    if (!dependencies.allowed(event)) return failure('UNAUTHORIZED_WINDOW', '当前窗口不能选择工作流路径。')
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return failure('INVALID_PATH_SELECTION', '路径选择参数无效。')
+    const value = raw as Record<string, unknown>
+    if (!['file', 'folder'].includes(String(value.kind)) || Object.keys(value).some(key => !['kind', 'title', 'initialDir', ...(value.kind === 'file' ? ['fileTypes'] : [])].includes(key))
+      || ['title', 'initialDir'].some(key => value[key] != null && typeof value[key] !== 'string')
+      || value.fileTypes != null && (!Array.isArray(value.fileTypes) || value.fileTypes.some(pair => !Array.isArray(pair) || pair.length !== 2 || pair.some(part => typeof part !== 'string')))) return failure('INVALID_PATH_SELECTION', '路径选择参数无效。')
+    const context = dependencies.context()
+    try {
+      const path = await dependencies.choose(value as import('../../shared/studio-platform').WorkflowPathSelection)
+      if (dependencies.context() !== context || !dependencies.allowed(event)) return failure('WORKSPACE_CHANGED', '工作区或窗口已变化，未应用选择结果。')
+      if (path !== null && !isAbsolute(path)) return failure('INVALID_PATH_SELECTION', '系统返回了无效路径。')
+      return { ok: true, value: path === null ? {} : { value: path } }
+    } catch { return failure('PATH_SELECTION_FAILED', '系统未能打开路径选择器。') }
+  }
+}

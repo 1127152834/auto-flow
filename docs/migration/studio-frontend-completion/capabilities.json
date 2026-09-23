@@ -11804,7 +11804,13 @@
       "remainingDetails": [
         "正式Electron经真实UI完成输入、取消、响应丢失查询和停止竞态验收",
         "服务进程重启不恢复已中断输入等待，需在宿主生命周期矩阵中留证"
-      ]
+      ],
+      "projectIntegration": {
+        "status": "项目主窗口及真实HTTP/SSE已实现并专项验证；正式UI/原生/打包验收待完成",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/interactions-2026-09-24/README.md",
+        "boundary": "复用原版输入对话框及JS Worker、项目操作表和事件链；实际子进程/SQLite/TCP/SSE、命令恢复、敏感隔离、主窗口组件及宿主适配测试通过。目录已注册，正式UI仅完成编排保存；Mac锁定阻塞正常关窗/原生选择及执行闭环，不计节点项目接入验收通过。"
+      }
     }
   },
   {
@@ -46098,7 +46104,13 @@
       "evidenceConfidence": "高：原版变量/返回值行为、真实 worker、命令幂等、敏感值隔离和 macOS arm64 正式 UI 已通过；Windows 平台不推定通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json",
       "implementationEvidencePath": "docs/migration/studio-backend-migration/evidence/b6-js-script-family.json",
-      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-scripts-electron-Ig5LHP/result.json"
+      "formalElectronEvidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-scripts-electron-Ig5LHP/result.json",
+      "projectIntegration": {
+        "status": "项目主窗口及真实HTTP/SSE已实现并专项验证；正式UI/原生/打包验收待完成",
+        "classification": "AutoFlow必要适配",
+        "evidencePath": "docs/migration/studio-backend-migration/evidence/project-integration/interactions-2026-09-24/README.md",
+        "boundary": "复用原版输入对话框及JS Worker、项目操作表和事件链；实际子进程/SQLite/TCP/SSE、命令恢复、敏感隔离、主窗口组件及宿主适配测试通过。目录已注册，正式UI仅完成编排保存；Mac锁定阻塞正常关窗/原生选择及执行闭环，不计节点项目接入验收通过。"
+      }
     }
   },
   {

@@ -17,6 +17,7 @@ const sourceKernel = process.env.AUTOFLOW_B1_KERNEL_DIR
 const kernelVersion = basename(sourceKernel).replace(/^chromium-/, '')
 const complexDebugOnly = process.env.AUTOFLOW_B8_COMPLEX_DEBUG_ONLY === '1'
 const restartRecoveryOnly = process.env.AUTOFLOW_B8_RESTART_RECOVERY_ONLY === '1'
+const projectInteractionOnly = process.env.AUTOFLOW_PROJECT_INTERACTION_TASK === '1'
 const projectMathOnly = process.env.AUTOFLOW_PROJECT_MATH_TASK === '1'
 const projectUtilityOnly = process.env.AUTOFLOW_PROJECT_UTILITY_TASK === '1'
 const projectWebBasicOnly = process.env.AUTOFLOW_PROJECT_WEB_BASIC_TASK === '1'
@@ -39,11 +40,11 @@ const projectBase64Only = process.env.AUTOFLOW_PROJECT_BASE64_TASK === '1'
 const projectTimingOnly = process.env.AUTOFLOW_PROJECT_TIMING_TASK === '1'
 const projectSshOnly = process.env.AUTOFLOW_PROJECT_SSH_TASK === '1'
 const projectFamilyOnly = projectMathOnly || projectUtilityOnly || projectWebBasicOnly || projectPageLoadOnly || projectAdvancedOnly || projectTabSwitchOnly || projectVariableOnly || projectListExportOnly || projectLogOnly || projectTableOnly || projectHttpOnly || projectControlPrimitivesOnly || projectNetworkOnly || projectAllureOnly
-const projectTaskOnly = process.env.AUTOFLOW_B3_PROJECT_TASK === '1' || projectFamilyOnly || projectSshOnly || projectTimingOnly || projectBase64Only || projectFirecrawlOnly || projectProcessOnly || projectFileWatcherOnly || projectElementChangeOnly
+const projectTaskOnly = process.env.AUTOFLOW_B3_PROJECT_TASK === '1' || projectInteractionOnly || projectFamilyOnly || projectSshOnly || projectTimingOnly || projectBase64Only || projectFirecrawlOnly || projectProcessOnly || projectFileWatcherOnly || projectElementChangeOnly
 const focusedB8 = complexDebugOnly || restartRecoveryOnly
 const evidenceRoot = join(root, `docs/migration/studio-backend-migration/evidence/${projectTaskOnly ? 'project-integration' : focusedB8 ? 'b8' : 'b3'}`)
 await mkdir(evidenceRoot, { recursive: true })
-const evidenceDir = await mkdtemp(join(evidenceRoot, projectElementChangeOnly ? 'formal-project-element-change-electron-' : projectFileWatcherOnly ? 'formal-project-file-watcher-electron-' : projectProcessOnly ? 'formal-project-process-electron-' : projectFirecrawlOnly ? 'formal-project-firecrawl-electron-' : projectBase64Only ? 'formal-project-base64-electron-' : projectTimingOnly ? 'formal-project-timing-electron-' : projectSshOnly ? 'formal-project-ssh-electron-' : projectMathOnly ? 'formal-project-math-electron-' : projectUtilityOnly ? 'formal-project-utility-electron-' : projectWebBasicOnly ? 'formal-project-web-basic-electron-' : projectPageLoadOnly ? 'formal-project-page-load-electron-' : projectAdvancedOnly ? 'formal-project-advanced-browser-electron-' : projectTabSwitchOnly ? 'formal-project-tab-switch-electron-' : projectVariableOnly ? 'formal-project-variable-electron-' : projectListExportOnly ? 'formal-project-list-export-electron-' : projectLogOnly ? 'formal-project-log-electron-' : projectTableOnly ? 'formal-project-table-electron-' : projectHttpOnly ? 'formal-project-http-electron-' : projectControlPrimitivesOnly ? 'formal-project-control-primitives-electron-' : projectNetworkOnly ? 'formal-project-network-electron-' : projectAllureOnly ? 'formal-project-allure-electron-' : projectTaskOnly ? 'formal-project-control-electron-' : restartRecoveryOnly ? 'formal-restart-recovery-electron-' : complexDebugOnly ? 'formal-complex-debug-electron-' : 'formal-control-flow-electron-'))
+const evidenceDir = await mkdtemp(join(evidenceRoot, projectInteractionOnly ? 'formal-project-interaction-electron-' : projectElementChangeOnly ? 'formal-project-element-change-electron-' : projectFileWatcherOnly ? 'formal-project-file-watcher-electron-' : projectProcessOnly ? 'formal-project-process-electron-' : projectFirecrawlOnly ? 'formal-project-firecrawl-electron-' : projectBase64Only ? 'formal-project-base64-electron-' : projectTimingOnly ? 'formal-project-timing-electron-' : projectSshOnly ? 'formal-project-ssh-electron-' : projectMathOnly ? 'formal-project-math-electron-' : projectUtilityOnly ? 'formal-project-utility-electron-' : projectWebBasicOnly ? 'formal-project-web-basic-electron-' : projectPageLoadOnly ? 'formal-project-page-load-electron-' : projectAdvancedOnly ? 'formal-project-advanced-browser-electron-' : projectTabSwitchOnly ? 'formal-project-tab-switch-electron-' : projectVariableOnly ? 'formal-project-variable-electron-' : projectListExportOnly ? 'formal-project-list-export-electron-' : projectLogOnly ? 'formal-project-log-electron-' : projectTableOnly ? 'formal-project-table-electron-' : projectHttpOnly ? 'formal-project-http-electron-' : projectControlPrimitivesOnly ? 'formal-project-control-primitives-electron-' : projectNetworkOnly ? 'formal-project-network-electron-' : projectAllureOnly ? 'formal-project-allure-electron-' : projectTaskOnly ? 'formal-project-control-electron-' : restartRecoveryOnly ? 'formal-restart-recovery-electron-' : complexDebugOnly ? 'formal-complex-debug-electron-' : 'formal-control-flow-electron-'))
 const userData = await mkdtemp(join(tmpdir(), 'autoflow-studio-b3-control-flow-'))
 const workflowName = 'B3 控制流正式闭环'
 const checks = []
@@ -162,6 +163,74 @@ try {
   await studio.command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1024, deviceScaleFactor: 1, mobile: false })
   await waitFor(studio, "document.body?.innerText.includes('模块库') && document.body.innerText.includes('213')", 'formal Studio', 30_000)
   await waitFor(studio, `document.querySelector('[aria-label="运行浏览器配置"]')?.value === ${JSON.stringify(profile.id)}`, 'managed Profile selection')
+  if (projectInteractionOnly) {
+    const name = '项目输入与JS交互验收'
+    const code = 'function main(vars) { const end = Date.now() + 4000; while(Date.now() < end) {} vars.count = (vars.count || 0) + 1; return Number(vars.answer) * 2; }'
+    await newWorkflow(studio, name)
+    await showBlockView(studio)
+    await addBlock(studio, '添加模块', '用户输入')
+    await selectNative(studio, '#inputMode', '整数')
+    await setVariableNameInput(studio, '#variableName', 'answer')
+    await setInput(studio, '[placeholder="输入框的标题"]', '项目交互实测')
+    await addBlock(studio, '添加模块', 'JS脚本')
+    await click(studio, '打开代码编辑器', 'div')
+    await waitFor(studio, "Boolean(document.querySelector('.monaco-editor'))", 'JS editor')
+    await click(studio, '', '.monaco-editor .view-lines')
+    await studio.command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'a', code: 'KeyA', windowsVirtualKeyCode: 65, modifiers: 4, commands: ['selectAll'] })
+    await studio.command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'a', code: 'KeyA', windowsVirtualKeyCode: 65, modifiers: 4 })
+    await studio.command('Input.insertText', { text: code })
+    await click(studio, '保存', 'div.fixed button')
+    await setVariableNameInput(studio, '#resultVariable', 'doubled')
+    await addBlock(studio, '添加模块', '打印日志')
+    await setInput(studio, '[placeholder="要打印的日志信息"]', '交互完成:{answer}:{doubled}:{count}')
+    await click(studio, '保存')
+    const saved = await waitForValue(async () => (await api(runtime, `/workflows?projectId=${projectId}`)).find(item => item.name === name), 'interaction workflow saved', 15_000)
+    assert.deepEqual(saved.nodes.map(node => node.data.moduleType), ['input_prompt', 'js_script', 'print_log'])
+    assert.equal(saved.nodes[1].data.code, code)
+    await closeWindowThroughOs()
+    studio.close(); studio = undefined
+    await waitForNoStudio(desktop.debugOrigin)
+    await click(main, '新建自动化')
+    await setInput(main, '[aria-label="自动化名称"]', name)
+    await selectAutomationWorkflow(main, name, saved.id)
+    await click(main, '保存配置')
+    await waitFor(main, "document.body?.innerText.includes('自动化已创建')", 'interaction automation')
+    // Reopen via the real UI: keep Studio alive while the main window is closed.
+    studio = await openStudioFromMain(main, desktop.debugOrigin)
+    await click(main, '启动运行')
+    await click(main, '启动 1 个任务')
+    await waitFor(main, "document.querySelector('[role=dialog]')?.innerText.includes('项目交互实测')", 'project input request', 30_000)
+    await capture(main, join(evidenceDir, 'project-input.png'))
+    await setInput(main, '[role=dialog] input[type=number]', '21')
+    await click(main, '确定', '[role=dialog] button')
+    await waitForValue(async () => (await api(runtime, '/v1/project-run-interactions')).some(item => item.type === 'execution:js_script' && item.status === 'claimed'), 'JS claimed before main close', 15_000)
+    await native.evaluate("(()=>{const w=qaElectron.BrowserWindow.getAllWindows().find(w=>!w.getTitle().includes('工作流工作台'));qaElectron.app.focus({steal:true});w.show();w.focus();return true})()")
+    execFileSync('osascript', ['-e', 'tell application "System Events" to keystroke "w" using command down'])
+    await waitForValue(async () => native.evaluate("(()=>{const w=qaElectron.BrowserWindow.getAllWindows().find(w=>!w.getTitle().includes('工作流工作台'));return w && !w.isVisible() && !w.isDestroyed()})()"), 'main hidden without disposing JS', 5000)
+    const batch = (await api(runtime, `/v1/projects/${projectId}/batches?pageSize=20`)).items[0]
+    const terminal = await waitForValue(async () => { const value = await api(runtime, `/v1/projects/${projectId}/batches/${batch.batchId}`); return value.batch.status === 'completed' || value.batch.status === 'failed' ? value : null }, 'interactive task completion', 45_000)
+    assert.equal(terminal.statusCounts.succeeded, 1, JSON.stringify(terminal))
+    const task = (await api(runtime, `/v1/projects/${projectId}/tasks?batchId=${batch.batchId}`)).items[0]
+    const outputs = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/outputs?pageSize=100`)
+    assert.equal(outputs.items.find(item => item.name === 'answer')?.value, 21)
+    assert.equal(outputs.items.find(item => item.name === 'doubled')?.value, 42)
+    const logs = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/logs?pageSize=100`)
+    assert.ok(logs.items.some(item => item.message === '交互完成:21:42:1'))
+    assert.deepEqual(await api(runtime, '/v1/project-run-interactions'), [])
+    await closeWindowThroughOs()
+    studio.close(); studio = undefined
+    await waitForValue(async () => native.evaluate("qaElectron.BrowserWindow.getAllWindows().some(w=>!w.getTitle().includes('工作流工作台')&&w.isVisible())"), 'main restored after Studio closes', 5000)
+    await click(main, '查看任务')
+    await click(main, '输入与输出', '[role=tab]')
+    await waitFor(main, "document.body.innerText.includes('doubled')", 'persisted interaction outputs')
+    await capture(main, join(evidenceDir, 'project-interaction-output.png'))
+    checkpoint('真实UI编排保存重开，主窗口输入21；原JS Worker只执行一次，正常关主窗口期间继续，输出42和持久日志，关Studio后主窗口恢复')
+    assert.deepEqual(cloakProcesses(userData), [])
+    const report = { evidenceId: 'BE-project-interaction-formal-electron', result: 'passed', checkedAt: new Date().toISOString(), gitHead, platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build', projectId, workflowId: saved.id, taskId: task.taskId, checks, boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browserStarted: false, interaction: 'real UI mouse/keyboard; original renderer JS Worker; API fixtures and evidence reads only' } }
+    await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
+    console.log(JSON.stringify({ evidenceDir, ...report }, null, 2))
+    throw new EvidenceComplete()
+  }
   if (projectSshOnly) {
     const name = '项目 SSH 文件往返任务验收'
     const credentialName = `项目SSH验收-${randomUUID()}`

@@ -3,6 +3,7 @@ import {requestSessionTransition} from './lib/documentLeave'
 import { checkedRetention } from './lib/retentionContract'
 import {checkedCredentialFields, checkedCredentialWrite} from './lib/credentialContract'
 import {checkedImageWrite} from './lib/imageAssetContract'
+import { nativePathSelection } from './lib/nativePathSelection'
 import {checkedPathSelection} from './lib/pathSelectionContract'
 import {sendDebugControl,sendDebugVariables} from './api/debugControl'
 import { checkedExecutionLogPage, checkedWorkflowRunPage } from './lib/executionLogContract'
@@ -142,11 +143,11 @@ export const systemApi = {
       body: JSON.stringify(cfg),
     }),
   selectFolder: async (title?: string, initialDir?: string) =>
-    checkedPathSelection(await apiRequest<unknown>('/system/select-folder', {
+    window.autoflow?.chooseWorkflowPath ? nativePathSelection({ kind: 'folder', title, initialDir }) : checkedPathSelection(await apiRequest<unknown>('/system/select-folder', {
       method: 'POST', body: JSON.stringify({title,initialDir} satisfies Partial<components['schemas']['StudioFolderSelectRequest']>),
     })),
   selectFile: async (title?: string, initialDir?: string, fileTypes?: Array<[string, string]>) =>
-    checkedPathSelection(await apiRequest<unknown>('/system/select-file', {
+    window.autoflow?.chooseWorkflowPath ? nativePathSelection({ kind: 'file', title, initialDir, fileTypes }) : checkedPathSelection(await apiRequest<unknown>('/system/select-file', {
       method: 'POST', body: JSON.stringify({title,initialDir,fileTypes} satisfies Partial<components['schemas']['StudioFileSelectRequest']>),
     })),
   openUrl: (url: string) =>

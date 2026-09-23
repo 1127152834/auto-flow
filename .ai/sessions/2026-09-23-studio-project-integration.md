@@ -468,3 +468,34 @@
 - 最终冻结172.166秒，目录包成功；比对包内EnvironmentService三方法、scheduler.tick、worker.run和源码一致。开发cWgIdZ、目录包jYk8Qm真实UI成功/停止均通过，task-stop cancelled、环境目录缺失、UI已清理且无保留入口。目录包m1k6Sk结果截图正确；两份截图已人工查看。
 - 仍保留两个早期interrupted失败，不能确定其唯一原因就是EOF缺陷；不删除失败或放宽断言。三次插桩诊断运行已逐目录标DIAGNOSTIC，临时模块已移除，正式验收未使用QA替换。Windows/Intel/签名发布未测。
 - 完整证据见 environment-finalization-2026-09-24/README.md。下一块为项目交互命令（js_script/input_prompt等依赖），复用Studio已有命令与宿主边界，先核对实际项目协议再迁入，不靠空适配注册。项目目录仍余31，整体goal active。
+
+### 项目交互命令进程接入（2026-09-24，confirmed，进行中未提交）
+
+- 上批环境清理/截图收口已提交 `2b1df39a`。本轮继续唯一剩余31项目入口，不恢复14通知；项目资源默认＋覆盖不变。
+- 不新写交互执行器：ProjectGraphExecutor根/嵌套上下文复用现有_WorkerCommandBus，project worker单读取方转发输入/脚本回传，命令确认带协议/运行/执行代次，回执事件不带提交值。持久交互仍走已有event ACK边界。
+- 真实子进程红绿：原项目无请求→接通；排队回复抢过stop→写锁内复查；子流程上下文缺失→共用execution_context封装；密码普通输出泄露→InputPromptExecutor两行接入既有敏感追踪。取消保留变量、原版转换及JS赋值算法不改。
+- 86项共享回归（最后补充前）；最后41项含10个真实项目交互子进程＋项目图＋冻结输入差分通过，Ruff/5生产文件mypy通过。证据统一 interactions-2026-09-24/README.md；capabilities.json仅为两个ID追加projectIntegration进行中，原Studio验收不改。
+- 尚未注册目录，也未增加HTTP/前端：父进程项目命令准入/领取/幂等/确认需沿既有ProjectOperation与项目事件边界完成；复用InputPromptDialog、runJsScript并接主窗口，不能依赖Studio窗口仍打开。需要保护源请求runId/执行代次/项目、迟到结果、重连不重放、停止；密码/凭据派生提示内容不能普通持久化。
+- 恢复文件：providers/browser/project_graph.py、project_workflow_worker.py、workflow_worker.py；infrastructure/process/project_workflow_worker.py；application/workflows/executors/input_prompt.py；新增tests/integration/test_project_interactive_worker.py。全部工作树保留，尚未做本批冻结/正式UI，不以先前目录包作新证明。外部服务及平台门槛仍未关闭。
+
+### 项目交互持久回执与HTTP接入（2026-09-24，confirmed，进行中未提交）
+
+- 本轮有实质代码及验证进展，整体goal继续active。继续在实际仓库分支codex/project-management-pm9；保留全部前序及无关修改，未启动/干扰主应用，未修改用户数据库。
+- 新增application/project_runs/interactions.py复用ProjectOperationRow，adapter project_run_interactions.py已由ProjectHttpServices注入实际dispatcher。请求/领取/回复按项目任务和代次核验，命令只发送一次，worker确认和原事件事务一起落库，终态处理未知回执，停止不重放。
+- dispatcher事件只持久安全定位信息，活跃请求详细内容留内存，经scoped GET/no-store消费；请求关闭/运行结束清空。原SSE公开补读支持interaction，操作视图支持workflowInteraction；generated.ts已更新。重复已持久请求曾导致重开，红绿修复为只观察新提交事件。
+- 85项共享回归通过（重复事件最终补充前）；最终37项服务/真实worker-ASGI/调度通过，包含14项新专项；Ruff、9文件mypy、前端类型、OpenAPI一致性通过。证据继续写原interactions-2026-09-24目录。测试的JS响应是受控数据，ASGI不是TCP或正式UI，不标完整接入。
+- 下一步唯一当前块仍为交互：复用InputPromptDialog的表单/确认逻辑及runJsScript执行工具，通过有限transport注入接主窗口；events.ts现有project useRunEvents仅触发刷新，需增加实际交互事件消费与恢复，禁止重连再执行JS。完成后才放开input_prompt/js_script项目目录，做真实UI/打包验证。
+- 未提交的新增服务/测试与上一轮5个生产修改为同一完整功能块；不可只提交台账为已完成。目录仍182/213，31入口的剩余量不等于全项目剩余；22外部/原生及其它终验收要求不省略。
+
+
+### 主窗口交互、原生边界与TCP/SSE检查点（2026-09-24，confirmed，未关闭正式验收）
+
+- 用户再次确认项目默认资源＋显式覆盖，无白名单；当前分支codex/project-management-pm9，原用户/无关修改保留。整体goal active，有生产与测试进展，不是无进展阻塞轮。
+- ProjectInteractionHost接App路由外，复用InputPromptDialog和runJsScript；发现/请求/命令查询DTO生成。输入恢复查询原命令，JS重连不重放，错误身份回执不无限重试。文件/目录选择经已有Electron宿主登记主frame和workspace复核；共享给原Studio入口。
+- 主窗口正常close在Studio仍存活时隐藏保留renderer；输入请求显示主窗口，Studio关闭后恢复隐藏主窗口，quit不受阻。该行为仅单测通过，不能算原生E2E。
+- 86项前端最终专项通过；原App/项目/输入HTTP等51项此前关联回归通过；25项worker/service通过后将2个ASGI场景升级真实TCP+SSE，最终39项含调度/auth/gate通过。发现SSE时间格式与列表不同，统一现有DTO；原事件8项回归通过。记录都在interactions-2026-09-24，不新建总计划。
+- 目录182→184（新增input_prompt/js_script），29未注册；新2项正式验收未关，所以31项目能力仍未核销，不混淆实现与验收。capabilities的两个ID只更新projectIntegration，保留旧Studio证据。
+- 正式UI首次脚本中文入口错用变量输入框，改为源码用户输入；第二次真实编排保存三节点后OS关窗失败。Computer Use确认Mac已锁定，已向用户请求解锁。不得用destroy绕过关窗；下一步继续原生/开发/正式包执行及文件选择、停止与恢复证据。无用户数据库修改，未干扰其它工作树应用。
+- 当前同块未提交代码保留，renderer/main/preload构建已通过；PyInstaller最终重建在进行中（SSE最终修正后）。完成后需验证冻结字节码和目录包，不能沿用上一批包。正式恢复脚本AUTOFLOW_PROJECT_INTERACTION_TASK=1，开发/包结果分开记账。
+
+- 本检查点后续：最终冻结158.49秒、unsigned macOS arm64目录包构建成功；11个完整模块字节码在冻结目录与app内后端均与源码一致。包哈希及日志保存在同一interactions证据目录。正式包入口、输入/JS实际运行、正常关窗及原生文件选择仍因Mac锁定待验收。没有将工具测试或包构建计作正式通过。

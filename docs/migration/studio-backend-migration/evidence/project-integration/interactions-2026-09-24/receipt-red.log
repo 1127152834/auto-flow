@@ -1,0 +1,39 @@
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/project-runs/interactions.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:41537) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/project-runs/interactions.test.ts (5 tests | 1 failed) 5013ms
+   × rejects a mismatched claim receipt without polling forever or executing JS 5008ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/project-runs/interactions.test.ts > rejects a mismatched claim receipt without polling forever or executing JS
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/renderer/domains/project-runs/interactions.test.ts:43:1
+     41| })
+     42|
+     43| it('rejects a mismatched claim receipt without polling forever or exec…
+       | ^
+     44|   vi.mocked(runJsScript).mockClear()
+     45|   const request = vi.fn(async (path) => path.includes('/requests/') ? …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 passed (5)
+   Start at  06:56:50
+   Duration  5.66s (transform 146ms, setup 148ms, import 25ms, tests 5.01s, environment 368ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/project-runs/interactions.test.ts

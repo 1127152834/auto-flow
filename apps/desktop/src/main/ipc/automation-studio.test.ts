@@ -265,3 +265,15 @@ it('keeps the source window on workspace failure and opens an isolated partition
  expect(FakeWindow.instances[1]!.options.webPreferences).toMatchObject({partition:'persist:workspace-b'})
  expect(FakeWindow.instances[1]!.loadFile).toHaveBeenCalledWith('/studio.html',{query:{view:'automation-studio'}})
 })
+
+ it('retains the main renderer only while Studio remains open, without blocking app quit', async () => {
+  const { retainMainWindowForStudio } = await import('./automation-studio')
+  const main = { hide: vi.fn() }; const close = { preventDefault: vi.fn() }
+  retainMainWindowForStudio(close, main, undefined, false)
+  expect(close.preventDefault).not.toHaveBeenCalled()
+  retainMainWindowForStudio(close, main, 101, false)
+  expect(close.preventDefault).toHaveBeenCalledOnce()
+  expect(main.hide).toHaveBeenCalledOnce()
+  retainMainWindowForStudio(close, main, 101, true)
+  expect(close.preventDefault).toHaveBeenCalledOnce()
+})

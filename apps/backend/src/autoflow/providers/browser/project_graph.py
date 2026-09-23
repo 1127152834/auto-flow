@@ -33,6 +33,7 @@ from .workflow_session import CloakBrowserWorkflowSession
 from .workflow_worker import (
     _CredentialDeadlineExceeded,
     _WorkerCanvasSubflows,
+    _WorkerCommandBus,
     _WorkerCredentialReader,
     _WorkerCustomModules,
     _WorkerNestedWorkflows,
@@ -139,10 +140,16 @@ class ProjectGraphExecutor:
         *, credentials: CredentialReader | None = None,
         models: WorkflowModelGateway | None = None,
         external_integrations: ExternalIntegrationGateway | None = None,
+        command_bus: _WorkerCommandBus | None = None,
     ) -> None:
         self.browser = CloakBrowserWorkflowSession(browser_context) if browser_context is not None else None
         self.cancellation = _Cancellation(should_stop)
         self.context = ExecutionContext(process_cleanup=terminate_subprocess, variables=dict(variables), browser=self.browser, cancellation=self.cancellation, events=self, credentials=credentials, models=models, external_integrations=external_integrations, table_workbooks=OpenpyxlTableWorkbookRenderer())
+        self.command_bus = command_bus
+        if command_bus is not None:
+            interactive = command_bus.for_context(self.context)
+            self.context.input_prompts = interactive
+            self.context.browser_scripts = interactive
         self.legacy = WorkflowExecutor(browser_context, variables, emit, should_stop)
         self.legacy.variables = self.context.variables
         self.emit = emit
@@ -170,7 +177,7 @@ class ProjectGraphExecutor:
         workflows = plan.get('workflowDependencies')
         nested = _WorkerNestedWorkflows(
             workflows, registry=registry, parent=self.context, sink=self,  # type: ignore[arg-type]
-            command_bus=None,
+            command_bus=self.command_bus,
         )
         self.context.nested_workflows = nested
         if isinstance(workflows, Mapping):
@@ -194,13 +201,13 @@ class ProjectGraphExecutor:
             }
             self.context.custom_modules = _WorkerCustomModules(
                 modules, registry=registry, parent=self.context, sink=self,  # type: ignore[arg-type]
-                command_bus=None, nested_workflows=nested,
+                command_bus=self.command_bus, nested_workflows=nested,
             )
             nested.custom_modules = self.context.custom_modules
         if self.graph_adapter:
             canvas_subflows = _WorkerCanvasSubflows(
                 document, registry=registry, parent=self.context, sink=self,  # type: ignore[arg-type]
-                command_bus=None, nested_workflows=nested,
+                command_bus=self.command_bus, nested_workflows=nested,
             )
             self.context.canvas_subflows = canvas_subflows
             document = canvas_subflows.top_level_document()
@@ -227,6 +234,13 @@ class ProjectGraphExecutor:
             if execution_context['scopes'] or execution_context['loops']:
                 payload = {**payload, 'executionContext': execution_context}
             await self.emit(kind, node_id, visit, payload)
+
+        if event['type'] in {
+            'execution:input_prompt', 'execution:input_prompt_closed',
+            'execution:js_script', 'execution:js_script_closed',
+        }:
+            await emit('interaction', dict(event))
+            return
 
         node_data = None
         for scope in reversed(current.execution_scopes):
@@ -313,7 +327,7 @@ class ProjectGraphExecutor:
             if data['moduleType'] == 'page_load_complete':
                 name = config.get('saveToVariable', 'page_loaded')
             if isinstance(name, str) and name and name not in current.sensitive_variables:
-                if data['moduleType'] in {'run_command', 'python_script', 'inject_javascript', 'handle_dialog', 'page_load_complete', 'random_number', 'get_time', 'table_export', 'extract_table_data', 'api_request', 'api_trigger', 'assert_checkpoint', 'network_capture', 'network_monitor_wait', 'network_monitor_stop'}:
+                if data['moduleType'] in {'run_command', 'python_script', 'inject_javascript', 'handle_dialog', 'page_load_complete', 'random_number', 'get_time', 'input_prompt', 'js_script', 'table_export', 'extract_table_data', 'api_request', 'api_trigger', 'assert_checkpoint', 'network_capture', 'network_monitor_wait', 'network_monitor_stop'}:
                     if name in current.variables:
                         await emit('output', {'name': name, 'value': current.variables[name]})
                 elif event.get('data') is not None or (

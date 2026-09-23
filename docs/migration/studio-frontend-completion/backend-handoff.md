@@ -224,3 +224,12 @@ Studio 的 Profile／模型沿用项目 `defaultResources`，允许任务显式�
 [本批证据](../studio-backend-migration/evidence/project-integration/control-project-2026-09-23/result.json)把已迁入的WebRPA图调度和控制执行器接入项目预检：v3图文档保留条件、循环端口与真实拓扑，旧链式文档继续使用原顺序合同。项目目录登记九个已批准且已有执行器的控制／变量节点，不增加第二套调度器或数据库迁移。无入口的纯环在启动前拒绝。
 
 正式Electron开发入口与本次macOS arm64本地unsigned包均从项目页编排、保存并启动三个批次。真实受管worker完成三轮增减与条件真分支，列表／字典各两轮遍历、列表体内嵌条件的真假分支、无限循环退出和两轮跳过；未选分支与被跳过节点无副作用。第三个批次在画布分组子流程内设置变量并以CloakBrowser打开受控网页，调用后尾节点取得42；任务输出、尝试记录及浏览器清理可查。项目预检保留定义分组，拒绝分组／便签连线和空执行图。历史`subflow_header`定义、其他嵌套组合、自定义模块依赖与业务数据写回仍按集成台账保留；Intel/Windows和17个实际环境槽位亦未核销。
+
+
+## 项目任务输入与脚本交互合同（2026-09-24，实施中）
+
+主窗口复用原输入表单和独立JS Worker。`GET /api/v1/project-run-interactions`仅返回活跃请求身份；`GET /api/v1/projects/{projectId}/tasks/{taskId}/interactions/requests/{requestId}`返回有类型的活跃详情，均no-store。`POST .../commands`接受稳定commandId、executionGeneration及原input_prompt_result/js_script_claim/js_script_result；`GET .../commands/{commandId}`查询accepted/applied/unconfirmed。202不代表执行成功，只有worker确认并与事件同事务持久化才applied。未知响应查询原ID，不能换ID重发；主窗口销毁后不能重放已领取脚本。
+
+普通持久事件仅含身份、状态及执行上下文，不含脚本、变量、密码或解析后的默认值。脚本/输入详情随请求结束清空；worker/sidecar退出不恢复执行。列表与SSE使用同一现有事件DTO。文件与目录选择复用登记窗口main-frame校验的Electron IPC，返回时复核工作区身份。
+
+项目默认Profile/模型＋显式覆盖的用户确认继续有效，无资源白名单。新增2个项目目录入口已接入，正式UI及原生门槛未关闭；[当前证据与阻塞](../studio-backend-migration/evidence/project-integration/interactions-2026-09-24/README.md)是权威状态，不能沿用旧Studio通过记录核销项目集成。

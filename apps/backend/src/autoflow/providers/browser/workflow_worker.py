@@ -1446,10 +1446,12 @@ class _WorkerCommandBus:
         stopped: Event,
         stdout: TextIO,
         command: dict[str, Any],
+        *, protocol_metadata: Mapping[str, Any] | None = None,
     ) -> None:
         self._loop = loop
         self._stopped = stopped
         self._stdout = stdout
+        self._protocol_metadata = dict(protocol_metadata or {})
         self._run_id = _required_string(command, "runId")
         self.credentials = _WorkerCredentialReader(stopped, stdout, self._run_id)
         workflow_id = command.get("workflowId")
@@ -1480,10 +1482,19 @@ class _WorkerCommandBus:
         self._pending_webhooks: dict[str, asyncio.Future[Mapping[str, Any]]] = {}
         self._webhook_ids: set[str] = set()
 
+    def _write_command(self, message: dict[str, Any]) -> None:
+        _write(self._stdout, {**message, **self._protocol_metadata})
+
     def for_context(self, context: ExecutionContext) -> _BoundInputPrompts:
         return _BoundInputPrompts(self, context)
 
     def receive(self, command: dict[str, Any]) -> None:
+        if self._protocol_metadata and (
+            command.get("runId") != self._run_id
+            or any(type(command.get(key)) is not type(value) or command.get(key) != value
+                   for key, value in self._protocol_metadata.items())
+        ):
+            return
         if command.get("type") == "credential:result":
             self.credentials.receive(command)
             return
@@ -1743,8 +1754,7 @@ class _WorkerCommandBus:
                 and command_id
                 and self.debug.apply(command)
             ):
-                _write(
-                    self._stdout,
+                self._write_command(
                     {
                         "type": "execution:command_applied",
                         "runId": self._run_id,
@@ -1776,8 +1786,7 @@ class _WorkerCommandBus:
         if value is not None and not isinstance(value, str):
             return
         future.set_result(value)
-        _write(
-            self._stdout,
+        self._write_command(
             {
                 "type": "execution:command_applied",
                 "runId": self._run_id,
@@ -1793,8 +1802,7 @@ class _WorkerCommandBus:
         await self.debug.republish_pause()
 
     def _write_debug_result(self, command_id: str, *, error: str | None = None) -> None:
-        _write(
-            self._stdout,
+        self._write_command(
             {
                 "type": (
                     "execution:command_rejected"
@@ -1827,8 +1835,7 @@ class _WorkerCommandBus:
         future.set_result(
             SpeechResult(success, error if isinstance(error, str) else None)
         )
-        _write(
-            self._stdout,
+        self._write_command(
             {
                 "type": "execution:command_applied",
                 "runId": self._run_id,
@@ -1861,8 +1868,7 @@ class _WorkerCommandBus:
                 error=error if isinstance(error, str) else None,
             )
         )
-        _write(
-            self._stdout,
+        self._write_command(
             {
                 "type": "execution:command_applied",
                 "runId": self._run_id,
@@ -1901,8 +1907,7 @@ class _WorkerCommandBus:
                 error=error if isinstance(error, str) else None,
             )
         )
-        _write(
-            self._stdout,
+        self._write_command(
             {
                 "type": "execution:command_applied",
                 "runId": self._run_id,
@@ -1929,8 +1934,7 @@ class _WorkerCommandBus:
         ):
             return
         future.set_result(copy.deepcopy(dict(data)))
-        _write(
-            self._stdout,
+        self._write_command(
             {
                 "type": "execution:command_applied",
                 "runId": self._run_id,

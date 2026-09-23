@@ -17,6 +17,8 @@ _RUNNABLE_MODULES = (
     ("base64", "Base64编解码"),
     ("run_command", "执行命令"),
     ("python_script", "Python脚本"),
+    ("input_prompt", "用户输入"),
+    ("js_script", "JS脚本"),
     ("random_number", "生成随机数"),
     ("get_time", "获取时间"),
     ("print_log", "打印日志"),

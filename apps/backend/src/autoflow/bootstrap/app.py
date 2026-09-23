@@ -654,6 +654,7 @@ def create_app(
     app.state.project_lifecycle_coordinator = project_lifecycle_coordinator
     app.router.add_event_handler("startup", project_lifecycle_coordinator.startup)
     register_project_routes(app, ProjectHttpServices(
+        run_interactions=project_workflow_dispatcher.interactions,
         run_coordinator=project_run_coordinator,
         run_queries=ProjectRunQueries(session_factory),
         run_evidence=ProjectRunEvidence(session_factory, paths.workspace),

@@ -23,7 +23,10 @@ from autoflow.providers.browser.project_graph import (
 )
 from autoflow.providers.browser.proxy_relay import BrowserProxyRelay
 from autoflow.providers.browser.worker import _optional_proxy, browser_launch_options
-from autoflow.providers.browser.workflow_worker import _WorkerCredentialReader
+from autoflow.providers.browser.workflow_worker import (
+    _WorkerCommandBus,
+    _WorkerCredentialReader,
+)
 from autoflow.providers.integrations.gateway import WorkflowIntegrationGateway
 from autoflow.providers.model import WorkflowModelGateway
 
@@ -108,9 +111,10 @@ class _Incoming(Protocol):
 class _Control:
     """One async reader dispatches control and ACKs independently of actions."""
 
-    def __init__(self, incoming: _Incoming, generation: int, stopped: Event) -> None:
+    def __init__(self, incoming: _Incoming, generation: int, stopped: Event, command_bus: _WorkerCommandBus | None = None) -> None:
         self.incoming, self.generation, self.stopped = incoming, generation, stopped
         self.stop_requested = False
+        self.command_bus = command_bus
         self.failure: ProtocolFailure | None = None
         self.pending: dict[str, asyncio.Future[None]] = {}
 
@@ -126,6 +130,11 @@ class _Control:
                     raise ProtocolFailure
                 if message.get("type") == "stop":
                     self.stop_requested = True
+                    if self.command_bus is not None:
+                        self.command_bus.close()
+                    continue
+                if message.get("type") in {"input_prompt_result", "js_script_result"} and self.command_bus is not None:
+                    self.command_bus.receive(message)
                     continue
                 event_id = message.get("eventId")
                 if message.get("type") != "event_committed" or event_id not in self.pending:
@@ -197,7 +206,13 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
         launch = browser_launch_options(browser, headless=_boolean(browser, "headless"))
         proxy = _optional_proxy(browser)
     relay_context = BrowserProxyRelay(proxy) if proxy else nullcontext()
-    control = _Control(incoming, generation, stopped)
+    command_bus = _WorkerCommandBus(
+        asyncio.get_running_loop(), stopped, stdout, command,
+        protocol_metadata={"protocolVersion": PROTOCOL_VERSION, "executionGeneration": generation},
+    )
+    if isinstance(incoming, _Input) and incoming.credentials is not None:
+        command_bus.credentials = incoming.credentials
+    control = _Control(incoming, generation, stopped, command_bus)
     control_task = asyncio.create_task(control.read())
     context = None
     integrations = WorkflowIntegrationGateway()
@@ -288,6 +303,7 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
                     credentials=incoming.credentials if isinstance(incoming, _Input) else None,
                     models=WorkflowModelGateway(command.pop("modelBindings", [])),
                     external_integrations=integrations,
+                    command_bus=command_bus,
                 )
                 result = await executor.run(command["executionPlan"])
                 control.check_parent()
@@ -313,6 +329,7 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
         except Exception:  # noqa: BLE001 -- retained as unconfirmed cleanup.
             cleanup_failed = True
         cleanup_failed = cleanup_failed or relay_guard.failed
+    command_bus.close()
     control_task.cancel()
     await asyncio.gather(control_task, return_exceptions=True)
     if cleanup_failed:

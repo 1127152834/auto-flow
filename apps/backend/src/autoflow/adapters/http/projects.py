@@ -146,6 +146,7 @@ def projects_router(
             "stopBatch",
             "forceStopBatch",
             "followUpBatch",
+            "workflowInteraction",
             "createTable",
             "updateTable",
             "mutateField",

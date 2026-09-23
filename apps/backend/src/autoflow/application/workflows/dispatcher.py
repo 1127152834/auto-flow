@@ -11,6 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, sessionmaker
 
 from autoflow.application.models.service import ModelExecutionBinding
+from autoflow.application.project_runs.interactions import ProjectRunInteractions
 from autoflow.application.settings.runtime import QuiesceGate
 from autoflow.application.workflows.coordinator import _model_references
 from autoflow.domain.models.errors import ModelError
@@ -25,7 +26,10 @@ from autoflow.infrastructure.database.workflow_runtime import (
     SqlAlchemyWorkflowRuntimeRepository,
 )
 from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
-from autoflow.infrastructure.process.project_workflow_worker import WorkerOutcome
+from autoflow.infrastructure.process.project_workflow_worker import (
+    WorkerOutcome,
+    WorkflowWorkerError,
+)
 
 
 class WorkerPort(Protocol):
@@ -45,6 +49,7 @@ class WorkerPort(Protocol):
         model_bindings: list[dict[str, Any]],
     ) -> WorkerOutcome: ...
 
+    async def send_command(self, run_id: str, execution_generation: int, command: dict[str, Any]) -> None: ...
     async def stop(self, run_id: str) -> None: ...
     async def force_stop(self, run_id: str) -> None: ...
     def discard_uncommitted_artifact(
@@ -95,6 +100,7 @@ class WorkflowRunDispatcher:
     ) -> None:
         self._sessions = session_factory
         self._worker = worker
+        self.interactions = ProjectRunInteractions(session_factory, self._send_interaction)
         self._resources = resources
         self._gate = gate
         self._recover_orphan = recover_orphan
@@ -110,6 +116,14 @@ class WorkflowRunDispatcher:
         self._lock = asyncio.Lock()
         self._control = asyncio.Lock()
         self._idle_listeners: set[Callable[[], None]] = set()
+
+    async def _send_interaction(self, run_id: str, generation: int, command: dict[str, Any]) -> None:
+        try:
+            await self._worker.send_command(run_id, generation, command)
+        except (WorkflowWorkerError, OSError) as error:
+            raise WorkflowRuntimeError(
+                "INTERACTION_UNCONFIRMED", "交互命令尚未确认，请查询原命令结果", 503
+            ) from error
 
     @property
     def capacity(self) -> int:
@@ -512,6 +526,7 @@ class WorkflowRunDispatcher:
                 error=UNKNOWN_RESULT_ERROR,
             )
         finally:
+            self.interactions.forget_run(dispatched.run_id)
             async with self._lock:
                 if self._task is asyncio.current_task():
                     if not cancelled and not unhandled:
@@ -609,12 +624,15 @@ class WorkflowRunDispatcher:
                 )
         if node_id is not None and node_id not in known:
             raise WorkflowRuntimeError("RUN_EVENT_NODE_UNKNOWN", "事件引用了未知节点")
-        value = dict(event)
+        value = self.interactions.public_event(dict(event))
         value.pop("sequence", None)
         try:
             with self._sessions() as session:
-                SqlAlchemyWorkflowRuntimeRepository(session).append_event(value)
+                persisted = SqlAlchemyWorkflowRuntimeRepository(session).append_event(value)
+                self.interactions.confirm(session, value)
                 session.commit()  # returning is the worker manager's ACK boundary
+            if persisted.sequence > current.last_sequence:
+                self.interactions.observe(event)
         except Exception:
             self._discard_uncommitted_artifact(run, event)
             raise
@@ -685,6 +703,7 @@ class WorkflowRunDispatcher:
             if before is not None and changed.status_revision != before.status_revision:
                 repository.append_event(self._status_event(changed))
                 changed = repository.get_run(run_id=run_id) or changed
+            self.interactions.finish(session, changed)
             session.commit()
             return changed
 
@@ -714,6 +733,7 @@ class WorkflowRunDispatcher:
             if changed.status_revision != current.status_revision:
                 repository.append_event(self._status_event(changed))
                 changed = repository.get_run(run_id=run_id) or changed
+            self.interactions.finish(session, changed)
             session.commit()
             return changed
 
