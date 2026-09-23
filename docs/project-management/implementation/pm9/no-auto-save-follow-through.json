@@ -1,0 +1,152 @@
+{
+  "date": "2026-09-24",
+  "status": "local_full_frontend_and_packaged_passed_native_pending",
+  "releaseAccepted": false,
+  "requirement": "XE-A09",
+  "productionSource": "7b89616322ce652b9f4fdb34720807dd3374a89c",
+  "backendProductionSource": "cb040daf2393860b6435a340ce236b0a0f784f55",
+  "change": "TaskEndPanel respects cleaned work copies: show a terminal explanation instead of offering another save; preserve known saved_unlinked repair and remove that action after its completed result. Refresh instance facts after end/repair. Backend contracts and behavior unchanged.",
+  "rootCause": "The panel checked whether an instance existed but not its cleaned state. A passed cookie/cleanup smoke plus no save-success toast did not establish a correct UI; visual inspection revealed the invalid retention form.",
+  "assertions": [
+    "A real browser stores persistent session cookie1 via End saveAs; a later fixed-environment Task changes its own cookie to9 and succeeds with retention disabled.",
+    "A distinct later Task and browser instance restore session1 and signed-in login. Both instances record source generation1 and cleaned state.",
+    "The original environment view remains byte-for-byte equal as parsed JSON (including generation and metadata), and total environment count remains1: no implicit update or saveAs.",
+    "Packaged desktop verifies source generation directory exists and both disposable work-copy directories are absent.",
+    "Actual Task UI shows the cleaned-copy explanation, no end-and-retain button, and no save-success announcement.",
+    "Component coverage retains original-operation repair after a saved_unlinked instance becomes cleaned; completed repair removes the repair button and cannot offer another save."
+  ],
+  "checks": {
+    "componentRed": "1 failed /1 passed /18.98s: cleaned instance still exposes retention form",
+    "targeted": "8 passed across TaskEndPanel and TaskDetailPage; final modified test fixture also included in full run",
+    "fullFrontend": "5475 passed /409 files /525.26s",
+    "typecheck": "passed",
+    "lint": "passed",
+    "scripts": "102 passed /7473.225125ms",
+    "build": "desktop build and unsigned ARM package:dir passed; backend binary hashes unchanged",
+    "backend": "No backend change; prior cb040daf full3497 passed/84 skipped/2 warnings retained in unknown-owner-follow-through.json, not rerun.",
+    "packagedDesktop": {
+      "status": "passed",
+      "screenshots": 24,
+      "report": ".tmp-tests/pm9-no-auto-save-2026-09-24/desktop/project-desktop.json",
+      "facts": {
+        "status": "passed",
+        "savedEnvironmentCount": 1,
+        "environmentId": "181e5bc8-eb33-5415-8ef4-aa2a64e8f99f",
+        "savedGeneration": 1,
+        "modifiedSession": "9",
+        "restoredSession": "1",
+        "instances": [
+          {
+            "taskId": "863ca49b-b805-4e7a-991b-d88616b4e2f6",
+            "instanceId": "06c1ca37-b3d8-4ed5-b0c6-cff1bab0d4c9",
+            "state": "cleaned"
+          },
+          {
+            "taskId": "189ade7f-4288-4306-8e08-82161449ff09",
+            "instanceId": "d7e855a9-4d4a-4c25-8cdc-f514665e7fab",
+            "state": "cleaned"
+          }
+        ],
+        "scope": "actual fixed-environment browser work copy changes its persistent cookie, succeeds without save, is cleaned, then a new Task restores the old saved value and unchanged environment facts",
+        "desktop": {
+          "workCopiesAbsent": true,
+          "saveSuccessAnnouncement": false
+        }
+      },
+      "visualReview": [
+        "project-session-not-saved.png"
+      ],
+      "scope": "Full existing management/Studio/real worker/volume/restart script on rebuilt ARM app; no physical installer or Windows/Intel claim."
+    },
+    "coverage": "4 mapping checks passed;251 references valid. Only XE-A09 planned→partially_verified; no verified promotion."
+  },
+  "priorAttempts": [
+    "First script syntax check found an existing restored variable name collision; renamed the new local before execution.",
+    "First desktop run failed after data/cleanup assertions because new Task route lacked /io; initial-desktop retained. Test fixture error, not product defect.",
+    "Corrected-route old cb040daf app completed all then-current assertions with24screens; screenshot still exposes the cleaned-instance retention form. Retained as data proof plus UI counterexample, not UI acceptance.",
+    "First repair-after-cleanup component extension did not wait for TanStack notification; component-query-timing.log retained. Awaiting visible state fixed the test; server-refetch fixture now returns the same cleaned fact."
+  ],
+  "observations": {
+    "workerLogLoad": {
+      "logCount": 1004,
+      "logPages": 6,
+      "elapsedMs": 34023,
+      "logsPerMinute": 1771,
+      "scope": "real worker throughput and server pagination; no renderer memory claim"
+    },
+    "recordWriteMs": 61859,
+    "concurrentWrites": {
+      "status": "passed",
+      "producers": 5,
+      "records": 10000,
+      "busyRetries": 0
+    },
+    "syntheticProducer": {
+      "targetLogsPerMinute": 1000,
+      "seconds": 60,
+      "emitted": 1000,
+      "elapsedMs": 60022,
+      "maxBatchLagMs": 144
+    },
+    "scope": "Single local run; synthetic1000/min and actual worker throughput are separate observations, not cross-platform performance acceptance."
+  },
+  "remaining": [
+    "Input-associated restore and Windows/Intel same-case native/package evidence remain separate; this scenario is fixed-environment ARM only.",
+    "Persistent identity drift I1-I3 and other pending architecture remain unresolved; preserving a session cookie does not prove preserving Profile identity.",
+    "CLI authentication401 still blocks current all-platform dispatch; previous35902129697 covers older source51e8991e, not current source.",
+    "Current live PM9 Google/OAuth/signing/physical installation acceptance remains pending; historical PM6 service-account evidence stays valid."
+  ],
+  "packageSha256": {
+    "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/app.asar": "403860fc2d772263d0aa4b24195a2012d11f97832f3496d24dbea99db29a3375",
+    "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/backend/autoflow-backend": "eb6cd1e2dba7129ab72750d763724980d2084d7fc3aec32ce4f9b0f4762e5abd",
+    "apps/backend/dist/autoflow-backend/autoflow-backend": "eb6cd1e2dba7129ab72750d763724980d2084d7fc3aec32ce4f9b0f4762e5abd"
+  },
+  "sourceSha256": {
+    "apps/desktop/src/renderer/domains/environments/components/TaskEndPanel.tsx": "d84fcf983d7314492edc4ee5ff919bcead79852bd956d068b75b30d0b6eb9ce1",
+    "apps/desktop/src/renderer/domains/environments/components/TaskEndPanel.test.tsx": "215211b85a38cb98322b7ad4878a67a16136731df76d0f68e7daea2b3aab75e5",
+    "scripts/project-runtime-smoke.mjs": "bab16d82726375096264b46c0e4325849cd9d14a9a9efcafd4d07cc4ec615515",
+    "scripts/smoke-project-management-desktop.mjs": "528d42c3b083d459ae6137f8a38e57272bf1b02644e56231fafdaa5aa0944f0b"
+  },
+  "evidenceSha256": {
+    ".tmp-tests/pm9-no-auto-save-2026-09-24/coverage.log": "2c9825d53e355cdb7edd6eb56b87caa68f679f88dfb237f6cddf1a9453e4f29f",
+    ".tmp-tests/pm9-no-auto-save-2026-09-24/typecheck-final.log": "6698d07215069efcdfd14f4dec1032b348778f3f2282a184a862e442170de611",
+    ".tmp-tests/pm9-no-auto-save-2026-09-24/lint.log": "8c51f199f85a9891eaa822d53a89a63a04913e7876b341f58a8dce4204e5c099",
+    ".tmp-tests/pm9-no-auto-save-2026-09-24/component-final.log": "c7763dc12a8ad16e50c50c7270ab94cba57e3e0523a147a92c315b4586088bad",
+    ".tmp-tests/pm9-no-auto-save-2026-09-24/typecheck.log": "6698d07215069efcdfd14f4dec1032b348778f3f2282a184a862e442170de611",
+    ".tmp-tests/pm9-no-auto-save-2026-09-24/before-ui-fix-desktop.log": "6c8d3275327c3403de7093520e62449cf457742b7cd3c335116e4c58305ffa17",
+    ".tmp-tests/pm9-no-auto-save-2026-09-24/scripts-final.log": "0092b148d27ba32cbf6eaa0e094e73e457d256d14100f21ec249020574d24761",
+    ".tmp-tests/pm9-no-auto-save-2026-09-24/coverage-tests.log": "d4cd7407590129651c099fcc95bd85ed6dddad71ede3a18b9e853309aa3a0116",
+    ".tmp-tests/pm9-no-auto-save-2026-09-24/component-query-timing.log": "f59a52dbc60440dd31c3533a68077c58356a87acc079b7927494c2a08172cb25",
+    ".tmp-tests/pm9-no-auto-save-2026-09-24/lint-final.log": "8c51f199f85a9891eaa822d53a89a63a04913e7876b341f58a8dce4204e5c099",
+    ".tmp-tests/pm9-no-auto-save-2026-09-24/component-red.log": "676c354e3d5903069b3287d692aecc5ddaea847c2f393fb11768f9edd0985c5f",
+    ".tmp-tests/pm9-no-auto-save-2026-09-24/component-green.log": "8608064feeae26224f05c6ed9afffd431a30d2a24592b0f62ed857567e6ceb15",
+    ".tmp-tests/pm9-no-auto-save-2026-09-24/desktop.log": "84c2461758f94d9c13ac53b9eaff0e9128710b660d378c11d89c130c700d926d",
+    ".tmp-tests/pm9-no-auto-save-2026-09-24/frontend-full.log": "9729b0f7530d5e842a138ab4ddfb3173c8d8348d6352ff37052434b514bfb7eb",
+    ".tmp-tests/pm9-no-auto-save-2026-09-24/initial-desktop.log": "aa83b9c0a9a98fdcc5d923840767bc996a668214b2d8a5876e7e270c7768dfab",
+    ".tmp-tests/pm9-no-auto-save-2026-09-24/package.log": "e6e0b318eaa59d1245899b1c2c62de9a1cb48448d8d8093abd58d272b7ba1c44",
+    ".tmp-tests/pm9-no-auto-save-2026-09-24/scripts.log": "1c37cde8becb62d6e17b02e1c70aa2b56e8d391ff64921ddd8695ff8474b529b",
+    ".tmp-tests/pm9-no-auto-save-2026-09-24/build.log": "f5559a49b1f4aefe36548ba3c220549d29537580688db51b47e15a81423a2dd7",
+    ".tmp-tests/pm9-no-auto-save-2026-09-24/before-ui-fix-desktop/project-desktop.json": "c35534507b6f3a30f2b03e39f14948b5f4d47e0cbda6220ca0debe99e3dd6cc4",
+    ".tmp-tests/pm9-no-auto-save-2026-09-24/before-ui-fix-desktop/project-session-not-saved.png": "2339b3c825d3d3e25334a118a5a83908397bb476fd064fad44ae19fce6a1981e",
+    ".tmp-tests/pm9-no-auto-save-2026-09-24/desktop/project-desktop.json": "c65a573956f42287f6667e3de276262256f5abf226bab23b905c772099815590",
+    ".tmp-tests/pm9-no-auto-save-2026-09-24/desktop/project-session-not-saved.png": "da4c8ddbbf56d0bf009af1a9141fb6e1cbf9c1bde6f39e97f100546e68668c49",
+    ".tmp-tests/pm9-no-auto-save-2026-09-24/initial-desktop/project-desktop.json": "573cde4a92b8944b688a349e8b1d5861bb9ff5de3bbcf3133e2eebdd382cff4f",
+    ".tmp-tests/pm9-no-auto-save-2026-09-24/coverage-tests-final.log": "c4bed97a0a48fa8b4460663aaed84164fe6017417741d7aae2120c1c87fcf634",
+    ".tmp-tests/pm9-no-auto-save-2026-09-24/coverage-final.log": "2c9825d53e355cdb7edd6eb56b87caa68f679f88dfb237f6cddf1a9453e4f29f"
+  },
+  "coverage": {
+    "requirements": 251,
+    "statuses": {
+      "partially_verified": 207,
+      "planned": 44
+    },
+    "verified": 0,
+    "gapRequirementCounts": {
+      "production_evidence_missing": 241,
+      "implementation_missing": 19,
+      "test_missing": 8,
+      "external_acceptance_pending": 24
+    },
+    "note": "Only XE-A09 changed to partial from new scoped evidence; gap counts overlap and remain unchanged."
+  }
+}

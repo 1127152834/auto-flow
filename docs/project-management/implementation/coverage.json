@@ -13798,8 +13798,17 @@
       "primary_package": "PM5-B",
       "planned_test_file": "apps/backend/tests/integration/test_project_environment_retention.py",
       "release_regression": "PM9",
-      "status": "planned",
-      "evidence": [],
+      "status": "partially_verified",
+      "evidence": [
+        {
+          "milestone": "PM9",
+          "kind": "automated_and_real_application",
+          "report": "docs/project-management/implementation/pm9/no-auto-save-follow-through.json",
+          "scope": "7b896163 ARM真实cookie1→9不保存→新Task恢复1；来源g1/元数据/环境总数不变，实例/目录清理；修复cleaned任务仍提供保存表单并复核新包界面。仅fixedEnvironment，本机子范围。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
+        }
+      ],
       "owner": "environments",
       "acceptance_methods": [
         "automated_rule_or_integration",
@@ -13820,19 +13829,37 @@
         "PM5-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-24",
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py",
             "symbol": "test_real_project_batch_http",
             "scope": "data 场景第二自动化读取登录后 End retain disabled，真实 worker 关闭",
             "level": "automated_integration"
+          },
+          {
+            "file": "scripts/project-runtime-smoke.mjs",
+            "symbol": "checkProjectRuntime",
+            "level": "automated_real_application",
+            "scope": "noAutomaticSave真实固定环境cookie1→9→1，成功但不保留；来源代次/元数据及环境总数不变，两个实例不同且cleaned；desktop hook额外核对目录与渲染界面。"
+          },
+          {
+            "file": "apps/desktop/src/renderer/domains/environments/components/TaskEndPanel.test.tsx",
+            "testName": "shows a cleaned work copy without offering to save it again",
+            "level": "automated_component",
+            "scope": "cleaned显示不可再次保存说明且不提供保存按钮/勾选，无额外写请求。"
+          },
+          {
+            "file": "apps/desktop/src/renderer/domains/environments/components/TaskEndPanel.test.tsx",
+            "testName": "sends selected record targets and can repair a partial association",
+            "level": "automated_component",
+            "scope": "保留选择记录语义；saved_unlinked后实例cleaned仍可用原操作仅修复，完成后不再提供修复或保存。"
           }
         ],
         "gaps": [
           {
             "kind": "production_evidence_missing",
-            "detail": "还缺修改会话但不保存后再次启动读取旧代次的明确断言"
+            "detail": "本机当前ARM固定环境不保存真实链及清理后界面已通过；Windows/Intel同场景新候选、输入关联来源和完整用户验收仍未据此推定。"
           }
         ],
         "statusBeforeReview": "planned"

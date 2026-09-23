@@ -1,11 +1,7 @@
 # PM9 XE-A09 不自动保存与清理后的任务界面
 
-日期：2026-09-24。状态：confirmed 本机旧包会话行为/界面反例及源码修复；新包验收进行中，releaseAccepted=false。
+2026-09-24 XE-A09不自动保存与界面修复（confirmed本机新包子范围）：真实固定环境cookie1→工作副本9且End不保留→新Task恢复1；来源g1/元数据/环境总数1不变，两实例cleaned且实际目录不存在。旧包截图暴露cleaned仍提供保存表单，7b896163修复为已清理说明，保留仅修复关联并在完成后移除入口。组件RED→8项相关通过，最终前端5475/409、类型/lint/脚本102、构建和未签名ARM完整桌面24截图通过，新界面已目视检查；后端cb040daf及既有3497回归范围不变。XE-A09仅planned→partial；251合计207partial/44planned/0verified，缺口241生产/19实现/8测试/24外部不变。输入环境、身份漂移I1–I3、新三平台/外部验收保留；releaseAccepted=false。见no-auto-save-follow-through.json。
 
-当前 cb040daf ARM 包的真实浏览器已证明：保存会话值1；新工作副本改为9，End retainEnvironment.enabled=false；随后新Task恢复1，原环境代次/元数据不变，两次实例清理且目录不存在。旧包完整桌面链通过其当时断言，但截图实际显示已清理任务仍提供“结束并保留”表单，该界面不是验收通过。新脚本追加环境总数不增加、显示已清理说明且无保存按钮的断言，等待新包运行。
+根因：TaskEndPanel只区分是否存在实例，没有检查cleaned状态。复用现有实例查询及结束/修复结果修正；父页面按workspace/service/project/task键隔离组件状态。后端契约未改变。
 
-根因：TaskEndPanel只区分是否存在实例，没有检查cleaned状态。修复复用现有实例查询：cleaned显示“本次浏览器工作副本已清理，不能再次保存本次会话。”；已知saved_unlinked仍允许原操作仅修复关联，修复成功后依据最新结果移除该入口；结束/修复响应后刷新实例事实。后端保存、身份和权限契约没有变化。
-
-验证：新增cleaned组件反例修复前1 failed/1 passed；相关组件/Task页面8 passed。测试夹具首次未等TanStack异步通知的比较失败已修正并保留。最终完整前端409文件/5475 passed（525.26秒）。初轮桌面检查漏写任务地址/io造成超时属于脚本错误；修正后旧包24截图完整链通过，会话/目录证据与界面缺陷分别记录。构建、最终类型/lint/脚本和新包验收结束后补专项报告。
-
-来源：scripts/project-runtime-smoke.mjs、scripts/smoke-project-management-desktop.mjs、TaskEndPanel.tsx；证据目录 .tmp-tests/pm9-no-auto-save-2026-09-24/。仅固定环境、本机ARM受控站点；不证明输入关联环境、身份持久化I1–I3、Google或Windows/Intel实机。无跨进程恢复或新执行器。
+来源与验证：专项JSON记录确切断言、日志/截图/源码/包SHA256。initial-desktop为漏写/io的脚本超时；before-ui-fix-desktop虽通过当时弱断言，但保留24截图中的真实界面缺陷。组件初始1 failed/1 passed证明根因；TanStack通知等待夹具修正另存component-query-timing.log。最终全前端和新包覆盖当前提交。无Google、其他平台、实机或签名完成声明。

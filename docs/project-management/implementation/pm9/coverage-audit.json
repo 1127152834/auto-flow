@@ -500,8 +500,8 @@
     "acceptance_scenarios": {
       "count": 178,
       "statuses": {
-        "partially_verified": 138,
-        "planned": 40
+        "partially_verified": 139,
+        "planned": 39
       },
       "items": [
         {
@@ -2139,10 +2139,10 @@
         },
         {
           "id": "XE-A09",
-          "status": "planned",
-          "evidenceCount": 0,
+          "status": "partially_verified",
+          "evidenceCount": 1,
           "plannedTestExists": false,
-          "reviewedCheckCount": 1,
+          "reviewedCheckCount": 4,
           "gapKinds": [
             "production_evidence_missing"
           ]
@@ -2633,8 +2633,8 @@
     "withAssertions": 249,
     "withNoLocatedAssertion": 2,
     "statuses": {
-      "partially_verified": 206,
-      "planned": 45
+      "partially_verified": 207,
+      "planned": 44
     }
   }
 }

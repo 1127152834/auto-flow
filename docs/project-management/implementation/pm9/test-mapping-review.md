@@ -1,5 +1,7 @@
 # PM9 assertion mapping review
 
+2026-09-24 XE-A09不自动保存与界面修复（confirmed本机新包子范围）：真实固定环境cookie1→工作副本9且End不保留→新Task恢复1；来源g1/元数据/环境总数1不变，两实例cleaned且实际目录不存在。旧包截图暴露cleaned仍提供保存表单，7b896163修复为已清理说明，保留仅修复关联并在完成后移除入口。组件RED→8项相关通过，最终前端5475/409、类型/lint/脚本102、构建和未签名ARM完整桌面24截图通过，新界面已目视检查；后端cb040daf及既有3497回归范围不变。XE-A09仅planned→partial；251合计207partial/44planned/0verified，缺口241生产/19实现/8测试/24外部不变。输入环境、身份漂移I1–I3、新三平台/外部验收保留；releaseAccepted=false。见no-auto-save-follow-through.json。
+
 2026-09-24 AU-08已有绑定去向勘误（confirmed实现缺失，W1c proposed）：HTTP/真实SQLite诊断证明重复关联409且仅保留原自动化，但错误未给出原projectId/automationId，前端也无定位入口；不是只有缺测试。既有11项契约/仓库测试通过（2依赖警告/1.62秒）不证明该条件。新增可重复诊断、错误分类及W1c契约/界面/并发与失效目标验收切片，随现有W方案等待确认；未修改生产代码，不重跑全量/打包/流水线。251条状态、241生产/19实现/8测试/24外部计数不变，releaseAccepted=false。见binding-destination-audit.json。
 
 2026-09-24 AU-08项目删除解除关联补证（confirmed本机子范围）：当前cb040daf未签名ARM包中，同一独立文档公开编辑后由真实worker执行，项目归档停止并取消Task，再精确名称删除项目；工作区原命令查询/重放一致，项目级查询404、冻结快照清空，原文档ID/版本/节点/边保留并在新项目关联。完整桌面passed/23截图，新关联画面已目视核对；102脚本、4映射/251引用通过。两次查询地址/可选DTO默认值夹具错误保留，非产品修复。仅补测试与证据，不重跑无改动生产全量/构建；CLI401仍阻断新矩阵。AU-08 Studio占用/绑定去向/文档所有权/持久文件清理及持久身份反例仍保留；251状态和241生产/19实现/8测试/24外部缺口计数不变，releaseAccepted=false。详见project-unlink-follow-through.json。
