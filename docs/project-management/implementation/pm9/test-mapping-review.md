@@ -1,5 +1,7 @@
 # PM9 assertion mapping review
 
+2026-09-23 当前台账（confirmed；以 `coverage.json` 及 `node scripts/verify-pm9-coverage.mjs` 核对）：251 条中 248 条有明确子范围断言，3 条未定位；204 partially_verified、47 planned、0 verified。未定位的正是 DATA-LIFE-01（待批准 L1 同主体重授权）、DATA-SH-03（待批准 M1 云端并发新增行）和 XE-G07（完整窗口/平台实机门禁）。当前 ARM 隔离 DMG 安装中的双窗口、缩放和重启只是 G07 子范围；未补足所有原生/平台条件，因此不凭一个 smoke 总通过提升状态。旧日期段落为各候选快照，当前流水线与安装证据见 `verification.json`、`installed-arm-dmg-follow-through.json`。
+
 2026-09-23 本机回归收口（confirmed）：生命周期源码94f8e0a8完整后端3472 passed/74 skipped/2 warnings，796.74秒；之后defa1955二进制读取补丁单独16项+真实worker1项、Ruff/mypy407/构建/原15秒sidecar通过，未宣称同一最终本机全量快照。最终三平台35816693045进行中。已完成源生产恢复/删除/服务重启补证及运行目录清理修复；Windows真实PNG409的读取修复待原生确认。旧14df矩阵35811305102两种Mac成功、Windows失败；所有旧状态以此按hash区分。releaseAccepted=false。
 
 2026-09-23 最新候选 defa1955（局部 confirmed，完整验收 pending）：已修复项目删除遗漏 Run 目录；源生产联合链归档→服务重建→恢复不重放→清理残留→服务重建自动续跑1项通过。随后从历史Windows真实PNG GET409定位并修复O_BINARY缺失，二进制契约/证据16项、Mac真实worker1项通过。三平台35816693045进行中；35815127474/35816258910因新缺陷修复取代而取消，不计通过。下文旧候选/计数/状态仅为历史；248/251有范围断言，203partial/48planned/0verified，releaseAccepted=false。

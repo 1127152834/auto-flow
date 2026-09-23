@@ -343,8 +343,8 @@
       "codeCandidate": "3df7700ce4e9ab4825f76df99cfd95b88a1ae877",
       "runId": "35819716149",
       "url": "https://github.com/1127152834/auto-flow/actions/runs/35819716149",
-      "status": "darwin_arm_source_smoke_failed_other_jobs_in_progress",
-      "reason": "ARM selected real-worker step passed but stale project-runtime smoke issued End against already-cleaned terminal instance and got expected generation revocation 403. Corrected script passed current local installed-app chain; Windows/Intel jobs were still running when recorded."
+      "status": "cancelled_after_darwin_arm_source_smoke_failure",
+      "reason": "ARM selected real-worker 29 passed/11 deselected, then stale project-runtime smoke issued End against an already-cleaned terminal instance and got expected generation revocation 403. Windows/Intel unfinished jobs were cancelled after the corrected script passed the local installed-app chain; they are not counted as passed."
     },
     {
       "codeCandidate": "defa1955be915022dc30e3309159affb28d30ae0",
