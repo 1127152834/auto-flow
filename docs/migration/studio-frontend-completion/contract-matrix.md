@@ -265,8 +265,8 @@
 | event:save_workflow | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:650 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:548; apps/desktop/src/renderer/domains/workflows/lib/customShortcuts.ts:23 | 已登记；服务事件语义由事件合同专项验证 |
 | event:scroll | apps/desktop/src/renderer/domains/workflows/lib/globalTooltip.ts:250 | 无静态发送 | 已登记；服务事件语义由事件合同专项验证 |
 | event:selector:healed | apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx:1067 | apps/desktop/src/renderer/domains/workflows/events.ts:644 | 已登记；服务事件语义由事件合同专项验证 |
-| event:set_current_workflow | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/events.ts:314; apps/desktop/src/renderer/domains/workflows/events.ts:861 | 已登记；服务事件语义由事件合同专项验证 |
-| event:set_verbose_log | 无静态订阅 | apps/desktop/src/renderer/domains/workflows/events.ts:310; apps/desktop/src/renderer/domains/workflows/events.ts:853 | 已登记；服务事件语义由事件合同专项验证 |
+| event:set_current_workflow | 生产由受控Studio宿主替代 | main/studio-hotkeys.ts → useStudioIntegration.ts → 原九项动作 | AutoFlow必要适配；旧Socket全局current不再发送，不持久化热键动作 |
+| event:set_verbose_log | 每连接日志投递开关 | GET /api/events/stream?verboseLog=boolean；event-client.setVerboseLog | AutoFlow必要适配；续读原afterSeq、不取消在途命令；历史持久记录完整，隐藏帧使用studio:cursor |
 | event:show_toast | apps/desktop/src/renderer/domains/workflows/components/assistant/AIAssistantPanel.tsx:433 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:1458; apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:1531; apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:1641 | 已登记；服务事件语义由事件合同专项验证 |
 | event:socket:reconnected | apps/desktop/src/renderer/domains/workflows/hooks/useStudioIntegration.ts:38; apps/desktop/src/renderer/domains/workflows/hooks/useStudioIntegration.ts:121 | apps/desktop/src/renderer/domains/workflows/events.ts:303 | 已登记；服务事件语义由事件合同专项验证 |
 | event:stop_workflow | apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx:662 | apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts:567; apps/desktop/src/renderer/domains/workflows/lib/customShortcuts.ts:22 | 已登记；服务事件语义由事件合同专项验证 |

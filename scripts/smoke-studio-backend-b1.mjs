@@ -190,7 +190,65 @@ try {
     checkpoint('设置界面真实按键绑定快捷键，macOS系统按键前台/后台各保存一次，无本地重复触发')
   }
 
-  if (projectTaskMode) {
+  if (process.env.AUTOFLOW_B1_LOGS === '1') {
+    const requestedStreams = []
+    const failedResponses = []
+    studio.socket.addEventListener('message', event => {
+      const message = JSON.parse(event.data)
+      if (message.method === 'Network.requestWillBeSent' && message.params.request.url.includes('/api/events/stream')) requestedStreams.push(message.params.request.url)
+      if (message.method === 'Network.responseReceived' && message.params.response.status >= 400) failedResponses.push({url: message.params.response.url, status: message.params.response.status})
+    })
+    await studio.command('Network.enable')
+    await addFromQuickPicker(studio, 5, '打印日志')
+    const printId = await waitFor(studio, "[...document.querySelectorAll('.react-flow__node')].find(e=>e.textContent.includes('打印日志'))?.dataset.id", 'print log node')
+    await click(studio, '', `.react-flow__node[data-id=${JSON.stringify(printId)}]`)
+    const marker = '真实用户日志在简洁模式保留'
+    await setInput(studio, '[placeholder="要打印的日志信息"]', marker)
+    const printPoint = await point(studio, `.react-flow__node[data-id=${JSON.stringify(printId)}]`)
+    await studio.command('Input.dispatchMouseEvent', {type:'mousePressed',...printPoint,button:'left',buttons:1,clickCount:1})
+    for (let step=1;step<=12;step++) await studio.command('Input.dispatchMouseEvent',{type:'mouseMoved',x:printPoint.x+step*18,y:printPoint.y-step*16,button:'left',buttons:1})
+    await studio.command('Input.dispatchMouseEvent',{type:'mouseReleased',x:printPoint.x+216,y:printPoint.y-192,button:'left',buttons:0,clickCount:1})
+    await wait(300)
+    await connectNodes(studio, nodeIds[4], printId)
+    await waitFor(studio, "document.querySelectorAll('.react-flow__edge').length === 5", 'six-node log chain')
+    await click(studio, '保存')
+    await waitForValue(async () => (await api(runtime, `/workflows/${saved.id}`)).nodes.length === 6, 'saved log node')
+    await click(studio, '执行日志')
+    for (const verbose of [true, false]) {
+      await click(studio, verbose ? '简洁日志' : '详细日志')
+      await waitForValue(async () => requestedStreams.find(url => new URL(url).searchParams.get('verboseLog') === String(verbose)), 'UI log preference reaches real SSE')
+    }
+    assert.equal(await studio.evaluate("document.body.innerText.includes('Studio command failed')"), false)
+    await click(studio, '运行 (F5)', '[aria-label="运行 (F5)"]')
+    await click(studio, '运行 (F5)', '[role="menuitem"]')
+    const run = await waitForValue(async () => (await api(runtime, `/workflow-runs?documentId=${saved.id}&cursor=0&limit=20`)).items[0], 'real log run')
+    const finalLogRun = await waitForValue(async () => {const value=await api(runtime, `/workflow-runs/${run.runId}`);return ['completed','failed','stopped','interrupted'].includes(value.status)?value:null}, 'real log run cleanup', 120_000)
+    assert.equal(finalLogRun.status, 'completed', JSON.stringify(finalLogRun))
+    await waitFor(studio, `document.body.innerText.includes(${JSON.stringify(marker)}) && document.body.innerText.includes('执行完成')`, 'user log visible in concise mode')
+    const logs = await api(runtime, `/workflow-runs/${run.runId}/logs?cursor=0&limit=100`)
+    assert.ok(logs.items.some(log => log.nodeId === printId && log.message === marker && log.level === 'info'))
+    assert.ok(logs.items.some(log => log.nodeId === nodeIds[0]), 'ordinary logs remain persisted')
+    const userEvent = await waitForValue(async () => observedEvents.find(event => event.name === 'execution:log' && event.data?.runId === run.runId && event.data.log?.nodeId === printId), 'confirmed user log event')
+    assert.equal(userEvent.data.log.isUserLog, true)
+    await capture(studio, join(evidenceDir, 'concise-user-log.png'))
+    const before = requestedStreams.length
+    await click(studio, '简洁日志')
+    await waitForValue(async () => requestedStreams.length > before, 'log preference reconnect')
+    assert.ok(Number(new URL(requestedStreams.at(-1)).searchParams.get('afterSeq')) > 0, 'settings reconnect resumes acknowledged cursor')
+    assert.deepEqual(failedResponses.filter(item => /\/api\/events\//.test(item.url)), [])
+    await closeWindowThroughOs(desktop.child.pid)
+    studio.close(); studio = await openStudioFromMain(main, desktop.debugOrigin)
+    await waitFor(studio, `Boolean(document.querySelector('[aria-label="运行浏览器配置"]'))`, 'reopened Studio')
+    await click(studio, '打开'); await click(studio, saved.name, '[role="button"]')
+    await waitFor(studio, "document.querySelectorAll('.react-flow__node').length === 6", 'saved log workflow reopen')
+    await click(studio, '执行日志')
+    await waitFor(studio, `document.body.innerText.includes(${JSON.stringify(marker)})`, 'persisted user log after reopen')
+    await capture(studio, join(evidenceDir, 'reopened-log-history.png'))
+    assert.deepEqual(execFileSync('ps', ['-axo', 'command='], {encoding:'utf8'}).split('\n').filter(line => line.includes(userData) && /Chromium|CloakBrowser/.test(line)), [])
+    checkpoint('真实UI切换简洁/详细SSE，用户日志保留，普通节点日志完整持久化；续读游标、关窗重开历史和进程清理通过')
+    const report = {evidenceId:'BE-studio-log-delivery',checkedAt:new Date().toISOString(),result:'passed',platform:`${process.platform}-${process.arch}`,entry:desktop.packaged?'packaged-directory':'development-build',workflowId:saved.id,runId:run.runId,requestedStreams:requestedStreams.map(value=>{const url=new URL(value);return {afterSeq:url.searchParams.get('afterSeq'),verboseLog:url.searchParams.get('verboseLog')}}),checks,packageBoundary:desktop.packaged?await verifyPackageBoundary():null,buildArtifacts:desktop.packaged?await packagedBuildHashes():null,boundaries:{userDatabaseTouched:false,workspace:'ephemeral',interaction:'real UI only; API asserts logs and process cleanup'}}
+    await writeFile(join(evidenceDir,'result.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({evidenceDir,...report},null,2))
+  } else if (projectTaskMode) {
     await closeWindowThroughOs(desktop.child.pid)
     studio.close(); studio = undefined
     await waitForNoStudio(desktop.debugOrigin)

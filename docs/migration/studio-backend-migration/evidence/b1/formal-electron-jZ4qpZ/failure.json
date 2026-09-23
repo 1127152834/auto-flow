@@ -1,0 +1,366 @@
+{
+  "checkedAt": "2026-09-23T05:33:41.128Z",
+  "checks": [
+    "主应用真实服务在临时工作区创建 CloakBrowser Profile",
+    "主窗口通过真实点击打开正式 Studio，Studio 只读取主应用 Profile",
+    "通过正式新建入口创建空工作流",
+    "通过画布原生右键菜单逐一添加并配置五个节点，没有直接修改 Store",
+    "通过画布连接手柄建立五节点顺序链",
+    "正式保存经真实 HTTP 写入 SQLite，返回修订 1"
+  ],
+  "observedEvents": [
+    {
+      "id": 1,
+      "name": "execution:started",
+      "data": {
+        "workflowId": "II9tq_rYM_XadQonSIqSS",
+        "runId": "019868a9-052f-470d-90c9-a66ea87a06a9",
+        "documentId": "II9tq_rYM_XadQonSIqSS"
+      }
+    },
+    {
+      "id": 2,
+      "name": "execution:node_start",
+      "data": {
+        "runId": "019868a9-052f-470d-90c9-a66ea87a06a9",
+        "workflowId": "II9tq_rYM_XadQonSIqSS",
+        "nodeId": "rhrVaW3x1583QsL4Oojp-",
+        "executionId": "73e82ab3-0d51-40db-88c5-66ae7aa8b32d",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "sequence": 2
+      }
+    },
+    {
+      "id": 3,
+      "name": "execution:node_complete",
+      "data": {
+        "runId": "019868a9-052f-470d-90c9-a66ea87a06a9",
+        "workflowId": "II9tq_rYM_XadQonSIqSS",
+        "nodeId": "rhrVaW3x1583QsL4Oojp-",
+        "executionId": "73e82ab3-0d51-40db-88c5-66ae7aa8b32d",
+        "success": true,
+        "sequence": 3,
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        }
+      }
+    },
+    {
+      "id": 4,
+      "name": "execution:log",
+      "data": {
+        "runId": "019868a9-052f-470d-90c9-a66ea87a06a9",
+        "workflowId": "II9tq_rYM_XadQonSIqSS",
+        "log": {
+          "sequence": 4,
+          "id": "019868a9-052f-470d-90c9-a66ea87a06a9-4",
+          "timestamp": "2026-09-23T05:33:23.006794+00:00",
+          "level": "success",
+          "message": "已打开网页: [已隐藏的URL]",
+          "isUserLog": false,
+          "isSystemLog": false,
+          "duration": 0,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "nodeId": "rhrVaW3x1583QsL4Oojp-",
+          "executionId": "73e82ab3-0d51-40db-88c5-66ae7aa8b32d"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "name": "execution:node_start",
+      "data": {
+        "runId": "019868a9-052f-470d-90c9-a66ea87a06a9",
+        "workflowId": "II9tq_rYM_XadQonSIqSS",
+        "nodeId": "mwj9o1Pc6LCCvzeyg00j0",
+        "executionId": "1f3249f9-96a2-4871-a989-17010036a9e7",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "sequence": 5
+      }
+    },
+    {
+      "id": 6,
+      "name": "execution:node_complete",
+      "data": {
+        "runId": "019868a9-052f-470d-90c9-a66ea87a06a9",
+        "workflowId": "II9tq_rYM_XadQonSIqSS",
+        "nodeId": "mwj9o1Pc6LCCvzeyg00j0",
+        "executionId": "1f3249f9-96a2-4871-a989-17010036a9e7",
+        "success": true,
+        "sequence": 6,
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        }
+      }
+    },
+    {
+      "id": 7,
+      "name": "execution:log",
+      "data": {
+        "runId": "019868a9-052f-470d-90c9-a66ea87a06a9",
+        "workflowId": "II9tq_rYM_XadQonSIqSS",
+        "log": {
+          "sequence": 7,
+          "id": "019868a9-052f-470d-90c9-a66ea87a06a9-7",
+          "timestamp": "2026-09-23T05:33:23.075383+00:00",
+          "level": "success",
+          "message": "已输入文本到: #workflow-input",
+          "isUserLog": false,
+          "isSystemLog": false,
+          "duration": 0,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "nodeId": "mwj9o1Pc6LCCvzeyg00j0",
+          "executionId": "1f3249f9-96a2-4871-a989-17010036a9e7"
+        }
+      }
+    },
+    {
+      "id": 8,
+      "name": "execution:node_start",
+      "data": {
+        "runId": "019868a9-052f-470d-90c9-a66ea87a06a9",
+        "workflowId": "II9tq_rYM_XadQonSIqSS",
+        "nodeId": "nNUijF_D4hyoXkcDoFUnY",
+        "executionId": "3af0e532-7772-4306-867b-1dba59f9e988",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "sequence": 8
+      }
+    },
+    {
+      "id": 9,
+      "name": "execution:node_complete",
+      "data": {
+        "runId": "019868a9-052f-470d-90c9-a66ea87a06a9",
+        "workflowId": "II9tq_rYM_XadQonSIqSS",
+        "nodeId": "nNUijF_D4hyoXkcDoFUnY",
+        "executionId": "3af0e532-7772-4306-867b-1dba59f9e988",
+        "success": true,
+        "sequence": 9,
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        }
+      }
+    },
+    {
+      "id": 10,
+      "name": "execution:log",
+      "data": {
+        "runId": "019868a9-052f-470d-90c9-a66ea87a06a9",
+        "workflowId": "II9tq_rYM_XadQonSIqSS",
+        "log": {
+          "sequence": 10,
+          "id": "019868a9-052f-470d-90c9-a66ea87a06a9-10",
+          "timestamp": "2026-09-23T05:33:23.103019+00:00",
+          "level": "success",
+          "message": "已点击元素: .workflow-action",
+          "isUserLog": false,
+          "isSystemLog": false,
+          "duration": 0,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "nodeId": "nNUijF_D4hyoXkcDoFUnY",
+          "executionId": "3af0e532-7772-4306-867b-1dba59f9e988"
+        }
+      }
+    },
+    {
+      "id": 11,
+      "name": "execution:node_start",
+      "data": {
+        "runId": "019868a9-052f-470d-90c9-a66ea87a06a9",
+        "workflowId": "II9tq_rYM_XadQonSIqSS",
+        "nodeId": "tSgboBPBZ1G9WQTusx4fu",
+        "executionId": "9356d396-8ed3-4d8e-a822-503e338c92ee",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "sequence": 11
+      }
+    },
+    {
+      "id": 12,
+      "name": "execution:node_complete",
+      "data": {
+        "runId": "019868a9-052f-470d-90c9-a66ea87a06a9",
+        "workflowId": "II9tq_rYM_XadQonSIqSS",
+        "nodeId": "tSgboBPBZ1G9WQTusx4fu",
+        "executionId": "9356d396-8ed3-4d8e-a822-503e338c92ee",
+        "success": true,
+        "sequence": 12,
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        }
+      }
+    },
+    {
+      "id": 13,
+      "name": "execution:log",
+      "data": {
+        "runId": "019868a9-052f-470d-90c9-a66ea87a06a9",
+        "workflowId": "II9tq_rYM_XadQonSIqSS",
+        "log": {
+          "sequence": 13,
+          "id": "019868a9-052f-470d-90c9-a66ea87a06a9-13",
+          "timestamp": "2026-09-23T05:33:23.165269+00:00",
+          "level": "success",
+          "message": "已获取元素信息: 真实 CloakBrowser 五节点",
+          "isUserLog": false,
+          "isSystemLog": false,
+          "duration": 0,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "nodeId": "tSgboBPBZ1G9WQTusx4fu",
+          "executionId": "9356d396-8ed3-4d8e-a822-503e338c92ee"
+        }
+      }
+    },
+    {
+      "id": 14,
+      "name": "execution:node_start",
+      "data": {
+        "runId": "019868a9-052f-470d-90c9-a66ea87a06a9",
+        "workflowId": "II9tq_rYM_XadQonSIqSS",
+        "nodeId": "T0qJNL1viO_gw5ENdyNBj",
+        "executionId": "53ba4f42-1090-4138-bce0-7e6b9cdb4be5",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "sequence": 14
+      }
+    },
+    {
+      "id": 15,
+      "name": "execution:node_complete",
+      "data": {
+        "runId": "019868a9-052f-470d-90c9-a66ea87a06a9",
+        "workflowId": "II9tq_rYM_XadQonSIqSS",
+        "nodeId": "T0qJNL1viO_gw5ENdyNBj",
+        "executionId": "53ba4f42-1090-4138-bce0-7e6b9cdb4be5",
+        "success": true,
+        "sequence": 15,
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        }
+      }
+    },
+    {
+      "id": 16,
+      "name": "execution:log",
+      "data": {
+        "runId": "019868a9-052f-470d-90c9-a66ea87a06a9",
+        "workflowId": "II9tq_rYM_XadQonSIqSS",
+        "log": {
+          "sequence": 16,
+          "id": "019868a9-052f-470d-90c9-a66ea87a06a9-16",
+          "timestamp": "2026-09-23T05:33:23.220465+00:00",
+          "level": "success",
+          "message": "已保存截图: /private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-studio-b1-0Gv9Fp/workspace/runs/019868a9-052f-470d-90c9-a66ea87a06a9/artifacts/screenshot_20260923_053323.png",
+          "isUserLog": false,
+          "isSystemLog": false,
+          "duration": 0,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "nodeId": "T0qJNL1viO_gw5ENdyNBj",
+          "executionId": "53ba4f42-1090-4138-bce0-7e6b9cdb4be5"
+        }
+      }
+    },
+    {
+      "id": 17,
+      "name": "execution:node_start",
+      "data": {
+        "runId": "019868a9-052f-470d-90c9-a66ea87a06a9",
+        "workflowId": "II9tq_rYM_XadQonSIqSS",
+        "nodeId": "5mNUG4RS1OM9wnVmYiCRk",
+        "executionId": "0353a2fb-7263-462e-8545-42881521b41a",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "sequence": 17
+      }
+    },
+    {
+      "id": 18,
+      "name": "execution:node_complete",
+      "data": {
+        "runId": "019868a9-052f-470d-90c9-a66ea87a06a9",
+        "workflowId": "II9tq_rYM_XadQonSIqSS",
+        "nodeId": "5mNUG4RS1OM9wnVmYiCRk",
+        "executionId": "0353a2fb-7263-462e-8545-42881521b41a",
+        "success": true,
+        "sequence": 18,
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        }
+      }
+    },
+    {
+      "id": 19,
+      "name": "execution:log",
+      "data": {
+        "runId": "019868a9-052f-470d-90c9-a66ea87a06a9",
+        "workflowId": "II9tq_rYM_XadQonSIqSS",
+        "log": {
+          "sequence": 19,
+          "id": "019868a9-052f-470d-90c9-a66ea87a06a9-19",
+          "timestamp": "2026-09-23T05:33:23.229973+00:00",
+          "level": "info",
+          "message": "真实用户日志在简洁模式保留",
+          "isUserLog": true,
+          "isSystemLog": false,
+          "duration": 0,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "nodeId": "5mNUG4RS1OM9wnVmYiCRk",
+          "executionId": "0353a2fb-7263-462e-8545-42881521b41a"
+        }
+      }
+    },
+    {
+      "id": 20,
+      "name": "execution:completed",
+      "data": {
+        "runId": "019868a9-052f-470d-90c9-a66ea87a06a9",
+        "workflowId": "II9tq_rYM_XadQonSIqSS",
+        "result": {
+          "status": "completed",
+          "executedNodes": 6,
+          "failedNodes": 0
+        }
+      }
+    }
+  ],
+  "error": "Error: timed out waiting for reopened Studio: CDP Runtime.evaluate failed: Object reference chain is too long\n    at waitFor (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/electron-cdp.mjs:99:9)\n    at async file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b1.mjs:240:5"
+}

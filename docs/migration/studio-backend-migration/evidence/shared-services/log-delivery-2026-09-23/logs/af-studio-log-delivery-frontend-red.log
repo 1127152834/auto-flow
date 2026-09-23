@@ -1,0 +1,56 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/workflows/tests/event-log-preferences.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:82211) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/event-log-preferences.test.ts (2 tests | 2 failed) 1121ms
+   × changes per-connection log delivery without resetting cursors or cancelling commands over memory 59ms
+   × changes per-connection log delivery without resetting cursors or cancelling commands over http 1062ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/event-log-preferences.test.ts > changes per-connection log delivery without resetting cursors or cancelling commands over memory
+TypeError: client.setVerboseLog is not a function
+ ❯ src/renderer/domains/workflows/tests/event-log-preferences.test.ts:39:12
+     37|     const pending = client.command('input_prompt_result', { requestId:…
+     38|     await vi.waitFor(() => expect(confirm).toBeTypeOf('function'))
+     39|     client.setVerboseLog(true)
+       |            ^
+     40|     await vi.waitFor(() => expect(received).toEqual([1, 2]))
+     41|     expect(streams.map(item => [item.after, item.verbose])).toEqual([[…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/event-log-preferences.test.ts > changes per-connection log delivery without resetting cursors or cancelling commands over http
+AssertionError: expected undefined to be type of 'function'
+
+Expected: "function"
+Received: "undefined"
+
+ ❯ src/renderer/domains/workflows/tests/event-log-preferences.test.ts:38:44
+     36|     await vi.waitFor(() => expect(received).toEqual([1]))
+     37|     const pending = client.command('input_prompt_result', { requestId:…
+     38|     await vi.waitFor(() => expect(confirm).toBeTypeOf('function'))
+       |                                            ^
+     39|     client.setVerboseLog(true)
+     40|     await vi.waitFor(() => expect(received).toEqual([1, 2]))
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  13:21:14
+   Duration  2.00s (transform 166ms, setup 176ms, import 21ms, tests 1.12s, environment 570ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/workflows/tests/event-log-preferences.test.ts

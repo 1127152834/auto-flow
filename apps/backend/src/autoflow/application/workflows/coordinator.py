@@ -1112,9 +1112,16 @@ class WorkflowRunCoordinator:
                 "execution:node_complete",
                 completion_event,
             )
-            level = "success" if success else "error"
+            level = (event.get("logLevel") or "success") if success else "error"
+            if not isinstance(level, str) or level not in {"debug", "info", "success", "warning", "error"}:
+                level = "success" if success else "error"
             message = str(event.get("message") or event.get("error") or "节点执行完成")
-            log_payload: dict[str, Any] = {"level": level, "message": message}
+            log_payload: dict[str, Any] = {
+                "level": level, "message": message,
+                "isUserLog": event.get("isUserLog") is True,
+                "isSystemLog": event.get("isSystemLog") is True,
+                "duration": event.get("duration"),
+            }
             if execution_context is not None:
                 log_payload["executionContext"] = execution_context
             log = self._repository.append_event(
@@ -1133,8 +1140,7 @@ class WorkflowRunCoordinator:
                         "sequence": log.sequence,
                         "id": f"{run_id}-{log.sequence}",
                         "timestamp": log.occurred_at.isoformat(),
-                        "level": level,
-                        "message": message,
+                        **log_payload,
                         "nodeId": node_id,
                         "executionId": execution_id,
                         "executionContext": execution_context,
@@ -1156,6 +1162,18 @@ class WorkflowRunCoordinator:
             execution_id=execution_id,
             run_patch={"currentNodeId": node_id} if node_id else None,
         )
+        if event_type == "execution:log":
+            # Standalone worker warnings use the same UI log envelope as node logs.
+            await self._events.publish(event_type, {
+                **_event_identity(run),
+                "log": {
+                    **payload, "sequence": persisted.sequence,
+                    "id": f"{run_id}-{persisted.sequence}",
+                    "timestamp": persisted.occurred_at.isoformat(),
+                    "nodeId": node_id, "executionId": execution_id,
+                },
+            })
+            return
         await self._events.publish(
             event_type,
             {

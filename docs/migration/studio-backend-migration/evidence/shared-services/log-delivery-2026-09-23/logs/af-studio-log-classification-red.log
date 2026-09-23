@@ -1,0 +1,82 @@
+FFF                                                                      [100%]
+=================================== FAILURES ===================================
+__________ test_real_print_executor_marks_user_log_at_each_execution ___________
+
+    @pytest.mark.asyncio
+    async def test_real_print_executor_marks_user_log_at_each_execution():
+        class Events:
+            def __init__(self): self.items = []
+            async def publish(self, event): self.items.append(dict(event))
+
+        events = Events()
+        registry = ExecutorRegistry()
+        registry.register(PrintLogExecutor)
+        result = await WorkflowRuntime(registry).execute({'nodes': [{
+            'id': 'print', 'data': {'moduleType': 'print_log', 'config': {'logMessage': '可见的用户日志', 'logLevel': 'warning'}},
+        }], 'edges': []}, ExecutionContext(events=events))
+        assert result.success
+        completed = next(item for item in events.items if item['type'] == 'execution:node_complete')
+>       assert completed['isUserLog'] is True
+               ^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'isUserLog'
+
+tests/unit/workflows/test_runtime_log_delivery.py:28: KeyError
+______ test_log_classification_is_exact_approved_subset_of_frozen_source _______
+
+    def test_log_classification_is_exact_approved_subset_of_frozen_source():
+>       from autoflow.application.workflows.runtime import IMPORTANT_LOG_NODE_TYPES, SYSTEM_LOG_NODE_TYPES
+E       ImportError: cannot import name 'IMPORTANT_LOG_NODE_TYPES' from 'autoflow.application.workflows.runtime' (/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/src/autoflow/application/workflows/runtime.py)
+
+tests/unit/workflows/test_runtime_log_delivery.py:35: ImportError
+______ test_coordinator_preserves_user_level_and_wraps_standalone_warning ______
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-1925/test_coordinator_preserves_use0')
+
+    @pytest.mark.asyncio
+    async def test_coordinator_preserves_user_level_and_wraps_standalone_warning(tmp_path):
+        from autoflow.adapters.events.workflows import StudioEventJournal, _scope_log_event
+        from autoflow.application.workflows.coordinator import WorkflowRunCoordinator
+        from autoflow.application.workflows.documents import WorkflowDocumentService
+        from autoflow.application.workflows.runs import WorkflowRunService
+        from autoflow.infrastructure.database.session import create_session_factory, migrate_database
+        from autoflow.infrastructure.database.workflow_runs import SqlAlchemyWorkflowRuns
+        from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowDocuments
+        from tests.unit.workflows.test_run_coordinator import FakeProfiles, FakeResources, FakeWorkers, _none, _profile
+
+        database = tmp_path / 'logs.sqlite3'
+        migrate_database(database)
+        sessions = create_session_factory(database)
+        documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(sessions))
+        documents.create({'id': 'log-doc', 'name': '用户日志', 'nodes': [{
+            'id': 'print', 'data': {'moduleType': 'print_log', 'config': {'logMessage': 'warning'}},
+        }], 'edges': [], 'variables': []}, client_request_id='create')
+        repository = SqlAlchemyWorkflowRuns(sessions)
+        runs = WorkflowRunService(repository)
+        journal = StudioEventJournal()
+        registry = ExecutorRegistry()
+        registry.register(PrintLogExecutor)
+        coordinator = WorkflowRunCoordinator(
+            documents=documents, runs=runs, run_repository=repository, runtime=WorkflowRuntime(registry),
+            profiles=FakeProfiles(_profile()), installed_kernels=lambda: [], resolve_proxy=lambda _p, _r: _none(),
+            read_license=lambda: None, workers=FakeWorkers(), resources=FakeResources(), events=journal,
+            artifact_root=tmp_path / 'workspace',
+        )
+        await coordinator.start('log-doc', {'runId': 'logs', 'documentId': 'log-doc', 'profileId': 'profile-1'})
+        await coordinator.on_worker_event({'type': 'execution:node_complete', 'runId': 'logs', 'nodeId': 'print',
+            'executionId': 'exec', 'success': True, 'message': '用户警告', 'logLevel': 'warning', 'duration': 12,
+            'isUserLog': True, 'isSystemLog': False})
+        await coordinator.on_worker_event({'type': 'execution:log', 'runId': 'logs', 'level': 'warning', 'message': '未到达目标'})
+        live = [event for event in journal.replay(after_sequence=0) if event.event == 'execution:log']
+        assert len(live) == 2
+>       assert live[0].data['log']['level'] == 'warning'
+E       AssertionError: assert 'success' == 'warning'
+E
+E         - warning
+E         + success
+
+tests/unit/workflows/test_runtime_log_delivery.py:87: AssertionError
+=========================== short test summary info ============================
+FAILED tests/unit/workflows/test_runtime_log_delivery.py::test_real_print_executor_marks_user_log_at_each_execution
+FAILED tests/unit/workflows/test_runtime_log_delivery.py::test_log_classification_is_exact_approved_subset_of_frozen_source
+FAILED tests/unit/workflows/test_runtime_log_delivery.py::test_coordinator_preserves_user_level_and_wraps_standalone_warning
+3 failed in 1.29s

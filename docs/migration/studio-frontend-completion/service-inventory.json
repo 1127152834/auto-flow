@@ -6078,7 +6078,15 @@
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
-      ]
+      ],
+      "productionAdaptation": {
+        "classification": "AutoFlow必要适配",
+        "status": "verified-macos-arm64-development-and-local-package",
+        "source": "reference/WebRPA/backend/app/main.py:848-890,1005-1010",
+        "replacement": "受控Studio窗口持有原版热键目标，活跃文档由现有SHORTCUT_ACTION_MAP读取；不再发送全局current哨兵；旧emissions只保留源码映射历史",
+        "nativeEvidence": "docs/migration/studio-backend-migration/evidence/shared-services/native-hotkeys-2026-09-23/result.json",
+        "evidence": "docs/migration/studio-backend-migration/evidence/shared-services/log-delivery-2026-09-23/result.json"
+      }
     },
     {
       "id": "event:set_verbose_log",
@@ -6097,7 +6105,15 @@
           "source": "frontend/src/services/socket.ts",
           "via": "this.socket.emit"
         }
-      ]
+      ],
+      "productionAdaptation": {
+        "classification": "AutoFlow必要适配",
+        "status": "verified-macos-arm64-development-and-local-package",
+        "source": "reference/WebRPA/backend/app/api/workflows.py:283-316; backend/app/services/workflow_executor.py:1203-1296",
+        "replacement": "GET /api/events/stream?verboseLog=<boolean>；每连接独立、切换续读afterSeq、隐藏帧保留studio:cursor、历史日志不删；不提交虚假成功命令",
+        "contract": "apps/backend/src/autoflow/adapters/events/workflows.py",
+        "evidence": "docs/migration/studio-backend-migration/evidence/shared-services/log-delivery-2026-09-23/result.json"
+      }
     },
     {
       "id": "event:show_toast",

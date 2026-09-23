@@ -26312,6 +26312,7 @@ export interface operations {
             query?: {
                 afterSeq?: number;
                 projectId?: string | null;
+                verboseLog?: boolean;
             };
             header?: never;
             path?: never;

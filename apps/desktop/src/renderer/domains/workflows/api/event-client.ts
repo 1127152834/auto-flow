@@ -18,10 +18,21 @@ export class StudioEventClient {
   connected = false
   private listeners = new Map<string, Set<Listener>>()
   private controller = new AbortController()
+  private connection: AbortController | undefined
+  private verboseLog: boolean
   private sequence = 0
   private retry: ReturnType<typeof setTimeout> | undefined
   private readonly projectId = getStudioOpenContext().projectId
-  constructor(private baseUrl: string) { queueMicrotask(() => void this.listen()) }
+  constructor(private baseUrl: string, options: { verboseLog?: boolean } = {}) {
+    this.verboseLog = options.verboseLog ?? true
+    queueMicrotask(() => void this.listen())
+  }
+  setVerboseLog(enabled: boolean) {
+    if (this.verboseLog === enabled || this.controller.signal.aborted) return
+    this.verboseLog = enabled
+    // Change only this stream; keep acknowledged cursor and in-flight commands.
+    this.connection?.abort()
+  }
   on(event: string, listener: Listener) {
     if (!this.listeners.has(event)) this.listeners.set(event, new Set())
     this.listeners.get(event)!.add(listener)
@@ -98,10 +109,12 @@ export class StudioEventClient {
   private async listen() {
     if (this.controller.signal.aborted) return
     const connection = new AbortController()
+    this.connection = connection
+    const verboseLog = this.verboseLog
     const abortConnection = () => connection.abort()
     this.controller.signal.addEventListener('abort', abortConnection, { once: true })
     try {
-      const query = new URLSearchParams({ afterSeq: String(this.sequence) })
+      const query = new URLSearchParams({ afterSeq: String(this.sequence), verboseLog: String(verboseLog) })
       if (this.projectId) query.set('projectId', this.projectId)
       const response = await studioFetch(`${this.baseUrl}/api/events/stream?${query}`, { signal: connection.signal })
       if (!response.ok || !response.body) {
@@ -117,6 +130,7 @@ export class StudioEventClient {
       this.dispatch('connect')
       for await (const event of parseServerSentEvents(response.body)) {
         if (this.controller.signal.aborted) return
+        if (connection.signal.aborted) break
         const sequence = Number(event.id)
         if (!Number.isSafeInteger(sequence) || sequence < 1) throw new Error('Invalid Studio event sequence')
         if (sequence <= this.sequence) continue
@@ -126,14 +140,15 @@ export class StudioEventClient {
       }
     } catch (error) {
       if (this.controller.signal.aborted) return
-      this.dispatch('connect_error', error)
+      if (verboseLog === this.verboseLog) this.dispatch('connect_error', error)
     } finally {
       connection.abort()
+      this.connection = undefined
       this.controller.signal.removeEventListener('abort', abortConnection)
     }
     this.connected = false
     this.dispatch('disconnect', 'stream interrupted; awaiting replay')
-    if (!this.controller.signal.aborted) this.retry = setTimeout(() => void this.listen(), 1000)
+    if (!this.controller.signal.aborted) this.retry = setTimeout(() => void this.listen(), verboseLog === this.verboseLog ? 1000 : 0)
   }
   disconnect() {
     clearTimeout(this.retry)

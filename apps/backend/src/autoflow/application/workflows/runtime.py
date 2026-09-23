@@ -15,6 +15,42 @@ from autoflow.domain.workflows.scope import WorkflowScopeIssue, validate_workflo
 from .executors.base import ModuleResult
 from .executors.registry import ExecutorRegistry
 
+# Source: WebRPA workflow_executor.py important_modules/trigger_modules, approved scope only.
+IMPORTANT_LOG_NODE_TYPES = frozenset({
+    'ai_chat',
+    'ai_vision',
+    'api_request',
+    'download_file',
+    'export_log',
+    'image_ocr',
+    'input_prompt',
+    'js_script',
+    'list_export',
+    'print_log',
+    'run_command',
+    'send_email',
+    'share_file',
+    'share_folder',
+    'start_screen_share',
+    'subflow',
+    'system_notification',
+    'table_export',
+    'text_to_speech',
+    'upload_file',
+})
+SYSTEM_LOG_NODE_TYPES = frozenset({
+    'api_trigger',
+    'element_change_trigger',
+    'email_trigger',
+    'face_trigger',
+    'file_watcher_trigger',
+    'hotkey_trigger',
+    'image_trigger',
+    'mouse_trigger',
+    'sound_trigger',
+    'webhook_trigger',
+})
+
 MAX_NODE_DISPATCHES = 100_000
 _LOOP_NODE_TYPES = frozenset({"loop", "foreach", "infinite_loop", "foreach_dict"})
 
@@ -375,6 +411,8 @@ class _WorkflowScheduler:
                 "error": reported_result.error,
                 "data": reported_result.data,
                 "logLevel": reported_result.log_level,
+                "isUserLog": node.type in IMPORTANT_LOG_NODE_TYPES or not reported_result.success,
+                "isSystemLog": node.type in SYSTEM_LOG_NODE_TYPES,
                 "duration": reported_result.duration,
             },
         )

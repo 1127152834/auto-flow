@@ -57,7 +57,7 @@ function readDatabase(): Database {
 }
 let db = readDatabase()
 const events: EventRecord[] = []
-const streams = new Set<ReadableStreamDefaultController<Uint8Array>>()
+const streams = new Map<ReadableStreamDefaultController<Uint8Array>, boolean>()
 const encoder = new TextEncoder()
 let offline = false
 let failNextSave = false
@@ -127,11 +127,27 @@ async function applyIdentifiedCommand(id:string,fingerprint:string,apply:()=>Res
   try{const record=await result;return response(record.response,record.status)}
   finally{pendingCommands.delete(id)}
 }
-const encode = (e: EventRecord) => encoder.encode(`id: ${e.sequence}\nevent: ${e.event}\ndata: ${JSON.stringify(e.data)}\n\n`)
+const encode = (item: EventRecord, verbose = true) => {
+  let e = item
+  if (!verbose && (item.event === 'execution:log' || item.event === 'execution:log_batch') && item.data && typeof item.data === 'object') {
+    const data = item.data as Record<string, unknown>
+    const visible = (value: unknown) => {
+      if (!value || typeof value !== 'object') return true
+      const log = value as Record<string, unknown>
+      return !!(log.isUserLog || log.isSystemLog || log.level === 'warning' || log.level === 'error')
+    }
+    if (item.event === 'execution:log' && !visible(data.log)) e = { ...item, event: 'studio:cursor', data: {} }
+    else if (item.event === 'execution:log_batch' && Array.isArray(data.logs)) {
+      const logs = data.logs.filter(visible)
+      e = logs.length ? { ...item, data: { ...data, logs } } : { ...item, event: 'studio:cursor', data: {} }
+    }
+  }
+  return encoder.encode(`id: ${e.sequence}\nevent: ${e.event}\ndata: ${JSON.stringify(e.data)}\n\n`)
+}
 export function emitMockEvent(event: string, data: unknown) {
   const e = { sequence: events.length + 1, event, data }
   events.push(e)
-  for (const stream of streams) stream.enqueue(encode(e))
+  for (const [stream, verbose] of streams) stream.enqueue(encode(e, verbose))
 }
 function persist(next: Database) { localStorage.setItem(key, JSON.stringify(next)); db = next }
 function emitRunLog(current: NonNullable<typeof run>, log: Omit<StoredExecutionLog, 'sequence'> & { isUserLog?: boolean; isSystemLog?: boolean }) {
@@ -164,7 +180,7 @@ export function configureMock(options: { failNextRequiredFields?: boolean; scrip
   if (options.failNextRun !== undefined) failNextRun = options.failNextRun
   if (options.failNextSave !== undefined) failNextSave = options.failNextSave
   if (options.disconnect || options.offline) {
-    for (const stream of streams) stream.close()
+    for (const stream of streams.keys()) stream.close()
     streams.clear()
   }
 }
@@ -516,14 +532,14 @@ function tick(skipBreakpoint = false) {
     tick()
   }, 300)
 }
-function streamResponse(after: number, signal?: AbortSignal | null) {
+function streamResponse(after: number, signal?: AbortSignal | null, verbose = true) {
   let controller: ReadableStreamDefaultController<Uint8Array>
   const close = () => { if (streams.delete(controller)) controller.close() }
   const body = new ReadableStream<Uint8Array>({
     start(c) {
       controller = c
-      for (const e of events) if (e.sequence > after) c.enqueue(encode(e))
-      streams.add(c)
+      for (const e of events) if (e.sequence > after) c.enqueue(encode(e, verbose))
+      streams.set(c, verbose)
       signal?.addEventListener('abort', close, { once: true })
       if (signal?.aborted) close()
     },
@@ -636,7 +652,9 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       const after = Number(target.searchParams.get('afterSeq') || 0)
       if (!Number.isSafeInteger(after) || after < 0) return failure('Invalid event cursor', 400)
       if (after > events.length) return failure('Event cursor exceeds the current journal', 409)
-      return streamResponse(after, signal)
+      const verbose = target.searchParams.get('verboseLog')
+      if (verbose !== null && !['true', 'false', '1', '0', 'on', 'off', 'yes', 'no'].includes(verbose.toLowerCase())) return failure('Invalid log preference', 422)
+      return streamResponse(after, signal, verbose === null || ['true', '1', 'on', 'yes'].includes(verbose.toLowerCase()))
     }
     const speechQuery = path.match(/^\/events\/tts-requests\/([^/]+)$/)
     if (speechQuery) {

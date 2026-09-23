@@ -99,6 +99,30 @@ def _scope_run_event(item: StudioEvent, project_id: str | None, runs: WorkflowRu
     return item
 
 
+def _scope_log_event(item: StudioEvent, verbose: bool) -> StudioEvent:
+    # Source: WebRPA make_execution_callbacks.on_log. Delivery preference is
+    # connection-local; persisted logs and the shared journal remain complete.
+    if verbose or item.event not in {"execution:log", "execution:log_batch"}:
+        return item
+
+    def visible(log: Any) -> bool:
+        return not isinstance(log, dict) or bool(
+            log.get("isUserLog") or log.get("isSystemLog")
+            or log.get("level") in ("error", "warning")
+        )
+
+    if item.event == "execution:log":
+        return item if visible(item.data.get("log")) else StudioEvent(item.sequence, "studio:cursor", {})
+    logs = item.data.get("logs")
+    if not isinstance(logs, list):
+        return item
+    filtered = [log for log in logs if visible(log)]
+    return (
+        StudioEvent(item.sequence, item.event, {**item.data, "logs": filtered})
+        if filtered else StudioEvent(item.sequence, "studio:cursor", {})
+    )
+
+
 class StudioEventCommands(Protocol):
     async def submit_event_command(
         self, command_id: str, event: str, data: Mapping[str, Any]
@@ -130,6 +154,7 @@ def workflow_events_router(
         request: Request,
         after_sequence: int = Query(default=0, alias="afterSeq", ge=0),
         project_id: str | None = Query(default=None, alias="projectId", min_length=1, max_length=200),
+        verbose_log: bool = Query(default=True, alias="verboseLog"),
     ) -> StreamingResponse:
         # Validate before creating the streaming response so an impossible cursor
         # is returned as the normal AutoFlow error envelope.
@@ -140,7 +165,7 @@ def workflow_events_router(
                 while not await request.is_disconnected():
                     try:
                         item = await asyncio.wait_for(queue.get(), timeout=15)
-                        yield _frame(_scope_run_event(item, project_id, runs))
+                        yield _frame(_scope_log_event(_scope_run_event(item, project_id, runs), verbose_log))
                     except TimeoutError:
                         yield b": keep-alive\n\n"
 

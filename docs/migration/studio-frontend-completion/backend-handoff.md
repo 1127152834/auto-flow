@@ -78,7 +78,7 @@
 - 17 个节点的待真实执行槽位，以及对应平台、凭据、硬件环境；用户删除的 14 个通知节点保持排除。
 - Studio 与项目执行/权限/资源、数据资产、统计、活动及导航的完整接入；项目管理的原运行表与 Studio 运行表尚未统一消费，目录可读不代表项目批次可运行全部迁入节点。
 - 项目范围内 Debug、拾取、录制和宿主切换的完整生命周期矩阵；文档正常关闭证据不能代替其他活跃会话验收。
-- 必填字段规则404已由完整213源规则及真实HTTP/正式包证据核销；全局快捷键404已由受控Electron原生注册核销；两条启动命令501仍待接入，不能以文档保存成功掩盖。
+- 必填字段规则404已由完整213源规则及真实HTTP/正式包证据核销；全局快捷键404已由受控Electron原生注册核销；两条旧启动命令501已由每连接日志投递及受控宿主目标替代核销，不能以文档保存成功掩盖。
 - 真实模型、秘密存储、外部集成与跨平台正式包各自独立记账，以对应能力证据为准。
 
 所有缺口按实际入口追踪；不能将未实现的前端业务归入真实后端外部等待，也不能使用 Mock 通过关闭真实执行槽位。
@@ -140,3 +140,15 @@ SSH 五节点已通过 [正式 UI 闭环](../studio-backend-migration/evidence/b
 保留原版九项动作及配置持久化，生产Electron经已登记Studio主frame注册到globalShortcut，窗口/sidecar身份变化注销；同宿主修改原子替换，失败保留旧映射。回调只发给当前就绪窗口，不写入可续读SSE。前端确认原生注册后抑制同组合本地重复处理。计划任务快捷键注册不受影响。
 
 78项关联测试、类型/lint/构建通过。开发和本地unsigned正式包实际系统按键分别在Studio及主窗口前台保存一次；AXClose注销、重开恢复不重放、实际清除后注销均通过，并回归项目五节点/停止/失败/恢复。证据：[native-hotkeys-2026-09-23/result.json](../studio-backend-migration/evidence/shared-services/native-hotkeys-2026-09-23/result.json)。这是Studio配置能力，不核销hotkey_trigger节点槽位；Intel/Windows未测。
+
+### 实时日志投递接入（2026-09-23 confirmed）
+
+冻结原版 `make_execution_callbacks.on_log` 的简洁模式保留用户/系统/警告/错误日志。AutoFlow 使用现有 `GET /api/events/stream` 的 `verboseLog` 参数表达每连接偏好；缺省 true 保持旧消费者兼容。切换只重连此流并保留 afterSeq，不能取消输入/脚本等正在确认的命令；被抑制帧仍发送空 `studio:cursor`，不删除共享事件或持久历史。项目隔离先于日志过滤。原版 Socket 全局 `set_current_workflow` 已由上节受控宿主目标替代，生产不再发送 `current` 哨兵或两个旧命令，没有返回伪造成功回执。
+
+节点事件按冻结源码重要节点/触发器集合与批准节点集的交集带分类标记，协调器保留节点明确给出的日志级别和用户/系统标志；普通成功节点仍沿既有 success 查询合同。独立 worker 警告统一到实际前端消费的 log 信封。类型经 OpenAPI 更新，Mock 仅对照连接投递合同、不执行节点。
+
+关联失败与修复：真实 HTTP 测试显式禁用外部代理避免本机请求502；保留原 success 导出断言，未更改测试期望。复核以同一个网络 chunk 的取消场景复现旧帧推进游标，现取消后不消费余帧。实际 UI 测试只修正节点遮挡、原版 tooltip 改写及读取 DOM 返回 boolean，保存/重开/真实执行断言保留。
+
+登记的新缺口（非本块阻塞）：`application/workflows/runtime.py` 转发 `ModuleResult.duration` 但未实际计时；冻结源 `workflow_executor.py:1195` 使用实际毫秒。来源为本次日志只读审查，影响节点耗时诊断的准确性；后续在既有调度边界补计时，不能把默认0作为真实测量。它不影响本块的模式切换、日志内容、分类及事件身份验收。
+
+本块97项后端、46项前端及类型/lint/OpenAPI/结构/构建通过。开发入口与本次macOS arm64 unsigned正式包均实际切换日志模式、执行六节点、保存重开、读取同次历史，并确认CloakBrowser清理；PyInstaller与冻结启动通过。证据：[log-delivery-2026-09-23/result.json](../studio-backend-migration/evidence/shared-services/log-delivery-2026-09-23/result.json)。诊断耗时与其余项目集成仍保留，不核销任何未测节点/平台。

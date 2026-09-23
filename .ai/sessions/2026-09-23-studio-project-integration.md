@@ -151,3 +151,11 @@
 - 子任务先红测发现owner接管复用旧回调的问题；修复为跨owner重新注册，同owner继续原子更新。关联78项、TypeScript/ESLint/构建通过。
 - formal-electron-Lg6un9及本地包formal-electron-3Jp5q2实际OS快捷键前台/后台各保存一次，精确revision+1，AXClose注销、重开恢复但不重放、清除注销。继续项目五节点/停止/失败/恢复通过。汇总shared-services/native-hotkeys-2026-09-23。
 - 旧快捷键404结论superseded，不等同hotkey_trigger节点实测，622/17不变。两条启动501下一块按冻结源真实消费者核销：当前workflow仅供原版后端热键定向，现由受控窗口持有；verbose是每连接日志推送偏好，不能全局改动持久历史。
+
+## 日志投递与旧启动501核销 confirmed
+
+- 原版连接偏好适配为SSE verboseLog参数，旧current_workflow目标由已验证宿主桥持有。生产不发两条无消费者命令、不假ACK。项目过滤先于日志过滤，空cursor保留序号，历史完整；Mock只做同合同数据投递。
+- 恢复冻结源批准节点的重要/系统分类、显式日志级别、独立警告log信封。普通节点success合同保持：初次扩大回归发现改变它使既有导出过滤失败，恢复原合同，断言不改。
+- 只读review发现取消旧流仍消费单chunk余帧，新增用例先红后绿，逐帧取消检查保证原afterSeq续读且不取消交互命令。97后端、46前端、类型/lint/OpenAPI/结构通过。
+- 开发formal-electron-34nlyy、本地unsigned包formal-electron-VTa59T：真实UI简洁/详细切换、六节点CloakBrowser执行、用户日志保留、完整历史、关窗重开、资源清理通过。PyInstaller170秒、冻结启动通过。失败RIYCJ6/YpG5Mp/jZ4qpZ均保留：只修复测试节点遮挡、原版tooltip及DOM读取boolean，不改产品或验收断言。
+- 汇总shared-services/log-delivery-2026-09-23。旧404/501三项已核销；source review另发现节点duration默认0，登记为既有运行诊断缺口，准备在既有调度边界计时。其余项目权限资源/业务数据/全部族准入及17节点实际环境未关闭，用户删除14项不恢复。

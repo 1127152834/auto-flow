@@ -342,7 +342,7 @@ class SocketService {
     if (this.socket) this.disconnect()
     console.log('[Socket] 连接到后端:', socketUrl)
     this.socketUrl = socketUrl
-    this.socket = new Socket(socketUrl)
+    this.socket = new Socket(socketUrl, { verboseLog: useWorkflowStore.getState().verboseLog })
     this.socket.on('command_error', (error: unknown) => {
       if (error && typeof error === 'object' && 'status' in error && error.status === 'unconfirmed') {
         useWorkflowStore.getState().addLog({ level: 'warning', message: '命令结果尚未确认' + ': ' + JSON.stringify(error) })
@@ -360,14 +360,8 @@ class SocketService {
       // 绑定外部待绑定的事件监听器
       this.bindPendingListeners()
       
-      // 连接后同步 verboseLog 状态到后端
-      const verboseLog = useWorkflowStore.getState().verboseLog
-      this.socket?.emit('set_verbose_log', { enabled: verboseLog })
-      
-      // 连接后设置当前工作流ID（用于全局热键控制）
-      console.log('[Socket] Socket连接成功，发送 set_current_workflow 事件')
-      this.socket?.emit('set_current_workflow', { workflowId: 'current' })
-      
+      // AutoFlow binds hotkeys to the registered Studio host. Log delivery is
+      // scoped by this SSE connection, not a global backend workflow sentinel.
       // SSE resumes from the acknowledged sequence; connection alone never completes a run.
     })
 
@@ -914,22 +908,9 @@ class SocketService {
     }
   }
 
-  // 设置详细日志开关状态（同步到后端）
+  // SSE delivery preference preserves command ownership and the replay cursor.
   setVerboseLog(enabled: boolean) {
-    if (this.socket?.connected) {
-      this.socket.emit('set_verbose_log', { enabled })
-    }
-  }
-  
-  // 设置当前活动的工作流ID（用于全局热键控制）
-  setCurrentWorkflow(workflowId: string | null) {
-    console.log('[Socket] 准备设置当前工作流ID:', workflowId, '| Socket已连接:', this.socket?.connected)
-    if (this.socket?.connected) {
-      this.socket.emit('set_current_workflow', { workflowId })
-      console.log('[Socket] 已发送 set_current_workflow 事件')
-    } else {
-      console.log('[Socket] Socket未连接，无法发送 set_current_workflow 事件')
-    }
+    this.socket?.setVerboseLog(enabled)
   }
 }
 
