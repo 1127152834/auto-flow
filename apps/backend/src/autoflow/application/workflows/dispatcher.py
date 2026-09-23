@@ -534,8 +534,12 @@ class WorkflowRunDispatcher:
                 {"id": node["nodeId"], "data": node["data"]}
                 for node in plan["nodes"]
             ]}
+        documents = [document]
+        for snapshot in plan.get("customModuleDependencies", {}).values():
+            if isinstance(snapshot, dict) and isinstance(snapshot.get("workflow"), dict):
+                documents.append(snapshot["workflow"])
         default_model_id: str | None = None
-        for node in document["nodes"]:
+        for node in (node for item in documents for node in item["nodes"]):
             data = node["data"]
             if not str(data.get("moduleType", "")).startswith("ai_"):
                 continue
@@ -555,7 +559,7 @@ class WorkflowRunDispatcher:
             if default_model_id is None:
                 default_model_id = self._resolve_default_model(provider_id)
             config["modelId"] = default_model_id
-        references = _model_references([document])
+        references = _model_references(documents)
         if references and self._resolve_model is None:
             raise ModelError("MODEL_SERVICE_UNAVAILABLE", "模型服务不可用", 503)
         bindings: dict[str, ModelExecutionBinding] = {}
@@ -586,6 +590,12 @@ class WorkflowRunDispatcher:
             raise WorkflowRuntimeError("EXECUTION_GENERATION_REVOKED", "执行代次已失效")
         node_id = event.get("nodeId")
         known = set(content.execution_plan.get("orderedNodeIds", ()))
+        for snapshot in content.execution_plan.get("customModuleDependencies", {}).values():
+            if isinstance(snapshot, Mapping) and isinstance(snapshot.get("workflow"), Mapping):
+                known.update(
+                    node["id"] for node in snapshot["workflow"].get("nodes", ())
+                    if isinstance(node, Mapping) and isinstance(node.get("id"), str)
+                )
         if node_id is not None and node_id not in known:
             raise WorkflowRuntimeError("RUN_EVENT_NODE_UNKNOWN", "事件引用了未知节点")
         value = dict(event)

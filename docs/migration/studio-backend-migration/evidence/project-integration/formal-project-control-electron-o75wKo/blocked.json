@@ -1,0 +1,12 @@
+{
+  "checkedAt": "2026-09-23T11:24:10.708Z",
+  "gitHead": "21c336eba4bd74ff98dbd7a0b4d30bb8d0d36b27",
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "通过模块条真实点击完成初始化、三轮循环、真假分支和汇合后的尾节点",
+    "正式项目 Studio 真实界面创建自定义模块、声明输出、拖入项目流程并持久化"
+  ],
+  "observedEvents": [],
+  "ui": [],
+  "error": "Error: GET /api/v1/projects/bca7398d-a7bc-45f1-9a70-9d5be4cfe29a/tasks/03f04952-3a53-483f-950e-0530e990f20f/node-attempts?pageSize=100: 409 {\"error\":{\"code\":\"RUN_EVENT_HISTORY_UNAVAILABLE\",\"message\":\"运行事件历史不完整，无法还原证据\",\"details\":{\"domainCode\":\"run_event_history_unavailable\",\"retryable\":false},\"requestId\":\"d18b6f38-8611-4dee-848a-30bcf2a0872b\"}}\n    at api (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:948:27)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:250:22"
+}

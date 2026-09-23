@@ -6,9 +6,6 @@ import stat
 from pathlib import Path
 from typing import Any
 
-from sqlalchemy import text
-from sqlalchemy.orm import Session, sessionmaker
-
 from autoflow.domain.project_runs.models import ProjectRunError
 from autoflow.domain.workflows.runtime import RunArtifact, RunEvent, thaw_json
 from autoflow.infrastructure.database.models import ProjectRow
@@ -16,6 +13,8 @@ from autoflow.infrastructure.database.project_run_models import ProjectTaskRow
 from autoflow.infrastructure.database.workflow_runtime import (
     SqlAlchemyWorkflowRuntimeRepository,
 )
+from sqlalchemy import text
+from sqlalchemy.orm import Session, sessionmaker
 
 from .presentation import prepared_node_names
 
@@ -195,6 +194,7 @@ class ProjectRunEvidence:
                         "startedAt": None,
                         "completedAt": None,
                         "error": None,
+                        "executionContext": _execution_context(payload),
                     },
                 )
                 if status == "started":
@@ -211,6 +211,7 @@ class ProjectRunEvidence:
                     item["status"] = status
                     item["completedAt"] = event.occurred_at
                     item["error"] = payload.get("error")
+                    item["executionContext"] = _execution_context(payload)
             ordered = sorted(
                 attempts.values(),
                 key=lambda item: (
@@ -313,6 +314,7 @@ def _log(event: RunEvent, node_names: dict[str, str]) -> dict[str, Any]:
         "level": payload["level"],
         "message": payload["message"],
         "occurredAt": event.occurred_at,
+        "executionContext": _execution_context(payload),
     }
 
 
@@ -334,7 +336,15 @@ def _output(event: RunEvent, node_names: dict[str, str]) -> dict[str, Any]:
         "nodeVisitId": event.node_visit_id,
         "attempt": event.attempt,
         "createdAt": event.occurred_at,
+        "executionContext": _execution_context(payload),
     }
+
+
+def _execution_context(payload: dict[str, Any]) -> dict[str, Any] | None:
+    value = payload.get("executionContext")
+    if value is not None and not isinstance(value, dict):
+        raise _history_unavailable()
+    return value
 
 
 def _node_names(

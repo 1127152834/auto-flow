@@ -52,7 +52,7 @@ def prepare_run(document: object) -> PreparedWorkflow:
         node_id = node["id"]
         module_type = node["data"]["moduleType"]
         visual = module_type in {"group", "note"}
-        if (visual and node_id in connected) or (module_type not in supported and not (graph_adapter and visual)):
+        if (visual and node_id in connected) or (module_type not in supported and not (graph_adapter and (visual or module_type == "custom_module"))):
             issues.append(
                 WorkflowIssue(
                     node_id,

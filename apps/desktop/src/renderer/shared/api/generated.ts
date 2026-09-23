@@ -8804,6 +8804,10 @@ export type components = {
             error: {
                 [key: string]: unknown;
             } | null;
+            /** Executioncontext */
+            executionContext?: {
+                [key: string]: unknown;
+            } | null;
         };
         /** NoulAnswer */
         NoulAnswer: {
@@ -9900,6 +9904,10 @@ export type components = {
              * Format: date-time
              */
             occurredAt: string;
+            /** Executioncontext */
+            executionContext?: {
+                [key: string]: unknown;
+            } | null;
         };
         /** RunLogPage */
         RunLogPage: {
@@ -9954,6 +9962,10 @@ export type components = {
              * Format: date-time
              */
             createdAt: string;
+            /** Executioncontext */
+            executionContext?: {
+                [key: string]: unknown;
+            } | null;
         };
         /** RunPolicy */
         RunPolicy: {

@@ -15,6 +15,7 @@ class NodeAttemptView(ApiModel):
     started_at: datetime | None
     completed_at: datetime | None
     error: dict[str, Any] | None
+    execution_context: dict[str, Any] | None = None
 
 
 class NodeAttemptPage(ApiModel):
@@ -37,6 +38,7 @@ class RunLogEntry(ApiModel):
     level: Literal["debug", "info", "warning", "error"]
     message: str
     occurred_at: datetime
+    execution_context: dict[str, Any] | None = None
 
 
 class RunLogPage(ApiModel):
@@ -58,6 +60,7 @@ class RunOutputView(ApiModel):
     node_visit_id: str | None = None
     attempt: int | None = None
     created_at: datetime
+    execution_context: dict[str, Any] | None = None
 
 
 class RunOutputPage(ApiModel):

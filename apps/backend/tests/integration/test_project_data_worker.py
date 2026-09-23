@@ -26,12 +26,14 @@ from autoflow.application.project_automations.resource_query import (
     ProjectAutomationResourceQuery,
 )
 from autoflow.application.project_automations.service import ProjectAutomationService
+from autoflow.application.project_runs.evidence import ProjectRunEvidence
 from autoflow.application.settings.runtime import QuiesceGate
 from autoflow.application.workflows.core_runtime import WorkflowRuntimeService
 from autoflow.application.workflows.dispatcher import WorkflowRunDispatcher
 from autoflow.application.workflows.documents import WorkflowDocumentService
 from autoflow.application.workflows.service import WorkflowService
 from autoflow.domain.models.models import ProviderConnection
+from autoflow.domain.workflows.runtime import WorkflowRuntimeError
 from autoflow.infrastructure.database.models import ProjectRow
 from autoflow.infrastructure.database.project_automations import (
     SqlAlchemyProjectAutomations,
@@ -651,7 +653,7 @@ async def test_project_task_stops_in_flight_external_request(tmp_path: Path) -> 
             expected_status_revision=queued.status_revision,
             execution_generation=queued.execution_generation,
         )
-        assert await asyncio.to_thread(entered.wait, 5)
+        assert await asyncio.to_thread(entered.wait, 15)
         started = monotonic()
         await dispatcher.cancel(
             queued.run_id,
@@ -674,6 +676,218 @@ async def test_project_task_stops_in_flight_external_request(tmp_path: Path) -> 
         server.shutdown()
         server.server_close()
         thread.join(timeout=2)
+
+
+@pytest.mark.asyncio
+async def test_project_batch_freezes_and_executes_custom_module(tmp_path: Path) -> None:
+    from autoflow.application.workflows.modules import CustomModuleService
+    from autoflow.infrastructure.database.workflow_modules import (
+        SqlAlchemyWorkflowModules,
+    )
+
+    factory, _, _, coordinator, _, project, automation = setup(tmp_path)
+    modules = CustomModuleService(SqlAlchemyWorkflowModules(factory))
+    worker = ProjectWorkflowWorkerManager(tmp_path / "module-worker", start_timeout=10)
+    dispatcher = _dispatcher(factory, worker, _NoBrowserResources())
+    try:
+        module = modules.create(
+            {
+                "name": "project_result",
+                "display_name": "项目结果模块",
+                "parameters": [],
+                "outputs": [{"name": "answer"}],
+                "workflow": {
+                    "nodes": [{"id": "module-inner", "type": "set_variable", "data": {
+                        "moduleType": "set_variable",
+                        "config": {"variableName": "answer", "variableValue": "42"},
+                    }}],
+                    "edges": [], "variables": [],
+                },
+            },
+            client_request_id=str(uuid4()),
+        )
+        wrapper = modules.create(
+            {
+                "name": "project_wrapper",
+                "display_name": "项目模块包装",
+                "parameters": [],
+                "outputs": [{"name": "answer"}],
+                "workflow": {
+                    "nodes": [{"id": "module-nested-call", "type": "custom_module", "data": {
+                        "moduleType": "custom_module", "config": {"customModuleId": module.id},
+                    }}],
+                    "edges": [], "variables": [],
+                },
+            },
+            client_request_id=str(uuid4()),
+        )
+        document = workflow_payload(automation.workflow_id)
+        document["content"].update(
+            schemaVersion=3,
+            nodes=[
+                {"id": "module-call", "type": "custom_module", "position": {"x": 100, "y": 80}, "data": {
+                    "moduleType": "custom_module", "config": {"customModuleId": wrapper.id},
+                }},
+                {"id": "root-output", "type": "set_variable", "position": {"x": 250, "y": 80}, "data": {
+                    "moduleType": "set_variable", "config": {
+                        "variableName": "result", "variableValue": "{answer}",
+                    },
+                }},
+            ],
+            edges=[{"id": "after-module", "source": "module-call", "target": "root-output"}],
+        )
+        WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory)).update(
+            automation.workflow_id,
+            {**document["content"], "id": automation.workflow_id},
+            expected_revision=1,
+            client_request_id=str(uuid4()),
+        )
+        runtime = WorkflowRuntimeService(
+            factory, SqlAlchemyWorkflowRepository(factory), modules=modules
+        )
+        coordinator._core = runtime
+        batch, _, _ = coordinator.start(
+            project.project_id, automation.automation_id, str(uuid4()),
+            start_payload(automation),
+        )
+        task = coordinator.list_tasks(project.project_id, batch.batch_id)[0]
+        run = runtime.query_run(run_id=task.run_id)
+        assert run is not None
+        prepared = runtime.query_prepared_content(prepared_content_id=run.prepared_content_id)
+        assert prepared is not None
+        frozen = prepared.execution_plan["customModuleDependencies"][module.id]
+        assert frozen["workflow"]["nodes"][0]["id"] == "module-inner"
+        assert prepared.execution_plan["customModuleDependencies"][wrapper.id]["workflow"]["nodes"][0]["id"] == "module-nested-call"
+        modules.update(module.id, {"display_name": "保存后修改"}, expected_revision=1, client_request_id=str(uuid4()))
+        await dispatcher.dispatch(
+            run.run_id,
+            expected_status_revision=run.status_revision,
+            execution_generation=run.execution_generation,
+        )
+        await dispatcher.wait_idle()
+        with factory() as session:
+            repository = SqlAlchemyWorkflowRuntimeRepository(session)
+            finished = repository.get_run(run_id=run.run_id)
+            events = repository.list_events(run.run_id, after_sequence=0, limit=100)
+        assert finished is not None and finished.status == "succeeded", [
+            (event.kind, event.node_id, dict(event.payload)) for event in events
+        ]
+        assert any(event.node_id == "module-inner" and event.kind == "nodeAttempt" for event in events)
+        assert any(event.node_id == "module-nested-call" and event.kind == "nodeAttempt" for event in events)
+        assert any(
+            event.node_id == "module-inner" and event.kind == "nodeAttempt"
+            and [scope["id"] for scope in event.payload["executionContext"]["scopes"]]
+            == [wrapper.id, module.id]
+            for event in events
+        )
+        assert any(event.node_id == "root-output" and event.kind == "output" and event.payload.get("value") == 42 for event in events)
+        attempts, _ = ProjectRunEvidence(factory).node_attempts(project.project_id, task.task_id)
+        inner = next(item for item in attempts if item["nodeId"] == "module-inner")
+        assert inner["nodeName"] == "设置变量"
+        assert [scope["id"] for scope in inner["executionContext"]["scopes"]] == [wrapper.id, module.id]
+        assert not worker.busy()
+    finally:
+        await dispatcher.shutdown()
+        factory.dispose()
+
+
+def test_project_rejects_excluded_node_inside_custom_module(tmp_path: Path) -> None:
+    from autoflow.application.workflows.modules import CustomModuleService
+    from autoflow.infrastructure.database.workflow_modules import (
+        SqlAlchemyWorkflowModules,
+    )
+
+    factory, _, _, coordinator, _, project, automation = setup(tmp_path)
+    try:
+        modules = CustomModuleService(SqlAlchemyWorkflowModules(factory))
+        module = modules.create(
+            {
+                "name": "excluded_nested_node",
+                "display_name": "已排除节点",
+                "parameters": [], "outputs": [],
+                "workflow": {
+                    "nodes": [{"id": "excluded", "type": "notify_wecom", "data": {"moduleType": "notify_wecom"}}],
+                    "edges": [], "variables": [],
+                },
+            },
+            client_request_id=str(uuid4()),
+        )
+        document = workflow_payload(automation.workflow_id)
+        document["content"].update(
+            schemaVersion=3,
+            nodes=[{"id": "module-call", "type": "custom_module", "position": {"x": 100, "y": 80}, "data": {
+                "moduleType": "custom_module", "config": {"customModuleId": module.id},
+            }}],
+            edges=[],
+        )
+        WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory)).update(
+            automation.workflow_id, {**document["content"], "id": automation.workflow_id},
+            expected_revision=1, client_request_id=str(uuid4()),
+        )
+        coordinator._core = WorkflowRuntimeService(
+            factory, SqlAlchemyWorkflowRepository(factory), modules=modules
+        )
+        with pytest.raises(WorkflowRuntimeError) as rejected:
+            coordinator.start(
+                project.project_id, automation.automation_id, str(uuid4()),
+                start_payload(automation),
+            )
+        assert rejected.value.code == "WORKFLOW_PREFLIGHT_FAILED"
+        assert rejected.value.details["moduleId"] == module.id
+        assert rejected.value.details["issues"][0]["nodeId"] == "excluded"
+        assert rejected.value.details["issues"][0]["code"] == "UNSUPPORTED_NODE_TYPE"
+    finally:
+        factory.dispose()
+
+
+def test_project_detects_browser_requirement_inside_custom_module(tmp_path: Path) -> None:
+    from autoflow.application.workflows.modules import CustomModuleService
+    from autoflow.infrastructure.database.workflow_modules import (
+        SqlAlchemyWorkflowModules,
+    )
+
+    factory, _, _, _, _, _, automation = setup(tmp_path)
+    try:
+        modules = CustomModuleService(SqlAlchemyWorkflowModules(factory))
+        module = modules.create(
+            {
+                "name": "nested_browser",
+                "display_name": "网页模块",
+                "parameters": [], "outputs": [],
+                "workflow": {
+                    "nodes": [{"id": "nested-page", "type": "open_page", "data": {
+                        "moduleType": "open_page", "config": {"url": "http://127.0.0.1/"},
+                    }}],
+                    "edges": [], "variables": [],
+                },
+            },
+            client_request_id=str(uuid4()),
+        )
+        document = workflow_payload(automation.workflow_id)
+        document["content"].update(
+            schemaVersion=3,
+            nodes=[{"id": "browser-module", "type": "custom_module", "position": {"x": 100, "y": 80}, "data": {
+                "moduleType": "custom_module", "config": {"customModuleId": module.id},
+            }}],
+            edges=[],
+        )
+        saved = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory)).update(
+            automation.workflow_id, {**document["content"], "id": automation.workflow_id},
+            expected_revision=1, client_request_id=str(uuid4()),
+        )
+        runtime = WorkflowRuntimeService(
+            factory, SqlAlchemyWorkflowRepository(factory), modules=modules
+        )
+        assert runtime.requires_browser(automation.workflow_id)
+        with pytest.raises(WorkflowRuntimeError) as rejected:
+            runtime.prepare_content(
+                prepare_operation_id=str(uuid4()), workflow_id=automation.workflow_id,
+                source_revision=saved.revision, available_capabilities=[],
+            )
+        assert rejected.value.code == "CAPABILITY_MISSING"
+        assert rejected.value.details["capabilities"] == ["browser.cloakbrowser"]
+    finally:
+        factory.dispose()
 
 
 @pytest.mark.asyncio

@@ -26,6 +26,18 @@ it('shows the task header, persisted attempts and logs', () => {
   expect(screen.getByText('日志按持久序号连续读取。')).toBeVisible()
 })
 
+it('shows the frozen module and loop context beside nested task events', () => {
+  const executionContext = {
+    scopes: [{ kind: 'customModule', id: 'module-1', name: '采集模块' }],
+    loops: [{ nodeId: 'loop-1', type: 'count', currentIndex: 1, iteration: 2 }],
+  }
+  render(<TaskDetail {...props} selectedTab="logs"
+    attempts={{ ...attempts, items: [{ ...attempts.items[0], executionContext }] }}
+    logs={{ ...logs, items: [{ ...logs.items[0], executionContext }] }}/>)
+  expect(screen.getByText('尝试 2 · 采集模块 / 第 2 轮')).toBeVisible()
+  expect(screen.getByText('采集模块 / 第 2 轮')).toBeVisible()
+})
+
 it('applies log search only on submit and clears it immediately', async () => {
   const onQueryChange = vi.fn(), user = userEvent.setup()
   const view = render(<TaskDetail {...props} selectedTab="logs" onQueryChange={onQueryChange}/>)

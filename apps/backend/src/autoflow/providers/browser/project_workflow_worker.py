@@ -177,7 +177,11 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
     if not isinstance(document, dict):
         document = {"nodes": [{"data": {**node["data"], "moduleType": node["moduleType"]}}
                               for node in plan["nodes"]]}
-    requires_browser = WorkflowRuntime(_ProjectRegistry(None)).requires_browser(document)
+    browser_runtime = WorkflowRuntime(_ProjectRegistry(None))
+    requires_browser = browser_runtime.requires_browser(document)
+    for snapshot in plan.get("customModuleDependencies", {}).values():
+        if isinstance(snapshot, dict) and isinstance(snapshot.get("workflow"), dict):
+            requires_browser = requires_browser or browser_runtime.requires_browser(snapshot["workflow"])
     browser = command["browser"]
     launch = {}
     proxy = None

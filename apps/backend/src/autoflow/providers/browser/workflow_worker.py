@@ -672,8 +672,8 @@ class _WorkerCustomModules:
         registry: Any,
         parent: ExecutionContext,
         sink: _WorkerEventSink,
-        command_bus: _WorkerCommandBus,
-        nested_workflows: _WorkerNestedWorkflows,
+        command_bus: _WorkerCommandBus | None,
+        nested_workflows: _WorkerNestedWorkflows | None,
         stack: ContextVar[tuple[str, ...]] | None = None,
     ) -> None:
         self._snapshots = (
@@ -783,12 +783,13 @@ class _WorkerCustomModules:
         )
         child_sink = self._sink.for_context(child)
         child.events = child_sink
-        interactive = self._command_bus.for_context(child)
-        child.input_prompts = interactive
-        child.browser_scripts = interactive
-        child.speech = interactive
-        child.desktop_actions = interactive
-        child.webhook_triggers = interactive
+        if self._command_bus is not None:
+            interactive = self._command_bus.for_context(child)
+            child.input_prompts = interactive
+            child.browser_scripts = interactive
+            child.speech = interactive
+            child.desktop_actions = interactive
+            child.webhook_triggers = interactive
         child.nested_workflows = self._nested_workflows
         child.custom_modules = self.for_context(child, child_sink)
         canvas_subflows = _WorkerCanvasSubflows(

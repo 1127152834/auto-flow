@@ -12,7 +12,10 @@ from autoflow.application.workflows.executors.production import (
     build_production_executor_registry,
 )
 from autoflow.application.workflows.executors.registry import ExecutorRegistry
-from autoflow.application.workflows.runtime import WorkflowRuntime
+from autoflow.application.workflows.runtime import (
+    WorkflowRuntime,
+    execution_context_snapshot,
+)
 from autoflow.domain.workflows.execution import (
     ArtifactWriter,
     ExecutionContext,
@@ -27,6 +30,7 @@ from .workflow_worker import (
     _CredentialDeadlineExceeded,
     _WorkerCanvasSubflows,
     _WorkerCredentialReader,
+    _WorkerCustomModules,
 )
 
 
@@ -109,6 +113,17 @@ class _ProjectRegistry(ExecutorRegistry):
         return _TimedNode(executor) if executor is not None else None
 
 
+class _ProjectEventSink:
+    def __init__(self, owner: ProjectGraphExecutor, context: ExecutionContext) -> None:
+        self.owner, self.context = owner, context
+
+    def for_context(self, context: ExecutionContext) -> _ProjectEventSink:
+        return _ProjectEventSink(self.owner, context)
+
+    async def publish(self, event: Mapping[str, Any]) -> None:
+        await self.owner.publish(event, context=self.context)
+
+
 class ProjectGraphExecutor:
     def __init__(
         self, browser_context: Any, variables: Mapping[str, Any],
@@ -130,6 +145,7 @@ class ProjectGraphExecutor:
         self.artifact_writer = artifact_writer
         self.graph_adapter = False
         self.nodes: dict[str, Any] = {}
+        self.module_nodes: dict[str, dict[str, Any]] = {}
         self.started: dict[str, float] = {}
         self.error: dict[str, str] | None = None
 
@@ -145,6 +161,21 @@ class ProjectGraphExecutor:
             }
         self.nodes = {node['id']: node['data'] for node in document['nodes']}
         registry = _ProjectRegistry(None if self.graph_adapter else self.legacy)
+        modules = plan.get('customModuleDependencies')
+        if isinstance(modules, Mapping):
+            self.module_nodes = {
+                str(module_id): {
+                    node['id']: node['data'] for node in snapshot['workflow']['nodes']
+                    if isinstance(node, dict) and isinstance(node.get('data'), dict)
+                }
+                for module_id, snapshot in modules.items()
+                if isinstance(snapshot, dict) and isinstance(snapshot.get('workflow'), dict)
+                and isinstance(snapshot['workflow'].get('nodes'), list)
+            }
+            self.context.custom_modules = _WorkerCustomModules(
+                modules, registry=registry, parent=self.context, sink=self,  # type: ignore[arg-type]
+                command_bus=None, nested_workflows=None,
+            )
         if self.graph_adapter:
             canvas_subflows = _WorkerCanvasSubflows(
                 document, registry=registry, parent=self.context, sink=self,  # type: ignore[arg-type]
@@ -157,19 +188,29 @@ class ProjectGraphExecutor:
             self.error = {'code': 'WORKFLOW_NODE_INVALID', 'message': '工作流包含不可执行的节点'}
         return {'status': 'succeeded' if result.success else 'failed', 'error': self.error}
 
-    def for_context(self, _context: ExecutionContext) -> ProjectGraphExecutor:
-        # Canvas subflows share the parent variable and event channel.
-        return self
+    def for_context(self, context: ExecutionContext) -> _ProjectEventSink:
+        return _ProjectEventSink(self, context)
 
-    async def publish(self, event: Mapping[str, Any]) -> None:
+    async def publish(self, event: Mapping[str, Any], *, context: ExecutionContext | None = None) -> None:
+        current = context or self.context
         node_id, visit = event['nodeId'], event['executionId']
+        execution_context = execution_context_snapshot(current)
+
+        async def emit(kind: str, payload: dict[str, object]) -> None:
+            if execution_context['scopes'] or execution_context['loops']:
+                payload = {**payload, 'executionContext': execution_context}
+            await self.emit(kind, node_id, visit, payload)
+
+        module_id = next((scope.get('id') for scope in reversed(current.execution_scopes) if scope.get('kind') == 'customModule'), None)
+        node_data = self.module_nodes.get(str(module_id), {}).get(node_id) if module_id else None
+        node_data = node_data or self.nodes[node_id]
         if event['type'] == 'execution:node_start':
             self.started[visit] = monotonic()
-            if self.artifact_writer is not None and self.nodes[node_id].get("moduleType") == "screenshot":
-                self.context.artifacts = self.artifact_writer(node_id, visit)
-            await self.emit('nodeAttempt', node_id, visit, {'status': 'started'})
+            if self.artifact_writer is not None and node_data.get("moduleType") == "screenshot":
+                current.artifacts = self.artifact_writer(node_id, visit)
+            await emit('nodeAttempt', {'status': 'started'})
             self.cancellation.raise_if_cancelled()
-            await self.emit('log', node_id, visit, {'level': 'info', 'message': '开始执行节点'})
+            await emit('log', {'level': 'info', 'message': '开始执行节点'})
             self.cancellation.raise_if_cancelled()
             return
         if event['type'] != 'execution:node_complete':
@@ -178,24 +219,24 @@ class ProjectGraphExecutor:
         success = bool(event['success'])
         payload: dict[str, object] = {'status': 'succeeded' if success else 'failed', 'durationMs': duration}
         if success:
-            data = self.nodes[node_id]
+            data = node_data
             config = data.get('config', data)
             name = config.get('resultVariable') or config.get('variableName')
             # A present JSON null from dict_get_path is a real result, not absence.
             if name and (event.get('data') is not None or (
-                data['moduleType'] == 'dict_get_path' and name in self.context.variables
+                data['moduleType'] == 'dict_get_path' and name in current.variables
             )):
-                await self.emit('output', node_id, visit, {'name': name, 'value': event['data']})
-            await self.emit('log', node_id, visit, {'level': 'info', 'message': '节点执行完成'})
+                await emit('output', {'name': name, 'value': event['data']})
+            await emit('log', {'level': 'info', 'message': '节点执行完成'})
         else:
             timeout = event.get('isTimeout') is True or event.get('error') == 'WORKFLOW_NODE_TIMEOUT'
             self.error = {'code': 'WORKFLOW_NODE_TIMEOUT' if timeout else 'WORKFLOW_NODE_FAILED', 'message': '工作流节点执行超时' if timeout else '工作流节点执行失败'}
             payload['error'] = self.error
-            await self.emit('log', node_id, visit, {'level': 'error', 'message': self.error['message']})
-        await self.emit('nodeAttempt', node_id, visit, payload)
+            await emit('log', {'level': 'error', 'message': self.error['message']})
+        await emit('nodeAttempt', payload)
         if not success and self.capture_failure is not None:
             try:
                 page = self.browser.current_page()._raw if self.graph_adapter and self.browser is not None else self.legacy.page
             except Exception:  # noqa: BLE001 -- absence of a page is valid failure evidence.
                 page = None
-            await self.emit('artifact', node_id, visit, await self.capture_failure(page, node_id, visit))
+            await emit('artifact', await self.capture_failure(page, node_id, visit))

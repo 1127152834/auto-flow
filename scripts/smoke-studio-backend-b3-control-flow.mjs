@@ -83,7 +83,7 @@ try {
   await click(studio, '新建')
   await waitFor(studio, "document.querySelectorAll('.react-flow__node').length === 0", 'new empty workflow')
   await setInput(studio, 'input[placeholder="工作流名称"]', workflowName)
-  await click(studio, '模块条')
+  await showBlockView(studio)
 
   await addBlock(studio, '添加模块', '设置变量')
   await setInput(studio, '[placeholder="变量名"]', 'total')
@@ -128,7 +128,7 @@ try {
     await newWorkflow(studio, extendedName)
     await addGlobalVariable(studio, 'items', 'array', '[10,20]')
     await addGlobalVariable(studio, 'mapping', 'object', '{"a":1,"b":2}')
-    await click(studio, '模块条')
+    await showBlockView(studio)
     const extendedNodes = {}
     extendedNodes.initialize = await addBlock(studio, '添加模块', '设置变量')
     await setInput(studio, '[placeholder="变量名"]', 'visited')
@@ -201,6 +201,35 @@ try {
     assert.ok(subflowGroup && subflowPage)
     assert.ok(subflowPage.position.x >= subflowGroup.position.x && subflowPage.position.x <= subflowGroup.position.x + subflowGroup.data.width)
     assert.ok(subflowPage.position.y >= subflowGroup.position.y && subflowPage.position.y <= subflowGroup.position.y + subflowGroup.data.height)
+
+    await newWorkflow(studio, 'B3 项目模块定义')
+    await click(studio, '模块条')
+    await addBlock(studio, '添加模块', '设置变量')
+    await setInput(studio, '[placeholder="变量名"]', 'module_output')
+    await setInput(studio, '[placeholder="变量的值"]', '42')
+    await click(studio, '保存')
+    await waitForValue(async () => (await api(runtime, `/workflows?projectId=${projectId}`)).find(item => item.name === 'B3 项目模块定义'), 'project module definition saved', 15_000)
+    await clickRect(studio, "[...document.querySelectorAll('button')].find(e=>e.textContent.trim()==='自定义'&&e.parentElement?.textContent.includes('内置'))", 'project custom module tab')
+    await clickRect(studio, "[...document.querySelector('input[placeholder=\"搜索自定义模块...\"]')?.closest('.flex.flex-col.h-full')?.querySelectorAll('button')||[]].find(e=>e.textContent.trim()==='创建模块')", 'create project custom module')
+    await setInput(studio, '[role="dialog"] #name', 'b3_project_custom_module')
+    await setInput(studio, '[role="dialog"] #displayName', 'B3 正式自定义模块')
+    await click(studio, '添加输出', '[role="dialog"] button')
+    await setInput(studio, '[role="dialog"] [placeholder="outputName"]', 'module_output')
+    await click(studio, '创建模块', '[role="dialog"] button')
+    const projectModule = await waitForValue(async () => (await api(runtime, '/custom-modules')).modules.find(item => item.name === 'b3_project_custom_module'), 'project custom module', 15_000)
+    const moduleCallName = 'B3 项目自定义模块正式闭环'
+    await newWorkflow(studio, moduleCallName)
+    await click(studio, '流程图')
+    await clickRect(studio, "[...document.querySelectorAll('button')].find(e=>e.textContent.trim()==='自定义'&&e.parentElement?.textContent.includes('内置'))", 'project custom module card tab')
+    const moduleCallId = await dropCustomModule(studio, projectModule)
+    const moduleTailId = await addCanvasNode(studio, '设置变量', { xRatio: 0.12, yRatio: 0.32 })
+    await setInput(studio, '[placeholder="变量名"]', 'project_module_result')
+    await setInput(studio, '[placeholder="变量的值"]', '{module_output}')
+    await connectNodes(studio, moduleCallId, moduleTailId)
+    await click(studio, '保存')
+    const moduleCall = await waitForValue(async () => (await api(runtime, `/workflows?projectId=${projectId}`)).find(item => item.name === moduleCallName), 'project module call saved', 15_000)
+    assert.equal(moduleCall.nodes.find(node => node.id === moduleCallId)?.data.customModuleId, projectModule.id)
+    checkpoint('正式项目 Studio 真实界面创建自定义模块、声明输出、拖入项目流程并持久化')
     await closeWindowThroughOs()
     studio.close(); studio = undefined
     await waitForNoStudio(desktop.debugOrigin)
@@ -295,7 +324,32 @@ try {
     await capture(main, join(evidenceDir, 'project-subflow-task.png'))
     assert.deepEqual(cloakProcesses(userData), [])
     checkpoint('正式项目任务真实执行画布分组子流程，组内导航受控网页，变量传给尾节点输出42；CloakBrowser清理完成')
-    const report = { evidenceId: 'BE-project-control-flow-formal-electron', result: 'passed', checkedAt: new Date().toISOString(), gitHead, platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build', projectId, workflowIds: [saved.id, extended.id, subflow.id], batchIds: [batch.batchId, extendedBatch.batchId, subflowBatch.batchId], taskIds: [task.taskId, extendedTask.taskId, subflowTask.taskId], checks, boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browserStarted: true, interaction: 'formal Electron mouse/keyboard; API only fixture setup and evidence reads' } }
+
+    await click(main, '自动化', '[aria-label="项目功能"] button,[aria-label="项目功能"] [role="tab"]')
+    await click(main, '新建自动化')
+    await setInput(main, '[aria-label="自动化名称"]', '项目自定义模块自动化')
+    await click(main, '关联工作流', '[role="combobox"]')
+    await click(main, moduleCallName, '[role="option"]')
+    await click(main, '保存配置')
+    await click(main, '启动运行')
+    await click(main, '启动 1 个任务')
+    await waitFor(main, "document.body?.innerText.includes('本批次任务')", 'project module batch')
+    const moduleBatch = (await api(runtime, `/v1/projects/${projectId}/batches?pageSize=20`)).items[0]
+    const moduleTerminal = await waitForValue(async () => { const value = await api(runtime, `/v1/projects/${projectId}/batches/${moduleBatch.batchId}`); return ['completed', 'failed', 'stopped', 'interrupted'].includes(value.batch.status) ? value : null }, 'project module terminal', 60_000)
+    assert.equal(moduleTerminal.statusCounts.succeeded, 1, JSON.stringify(moduleTerminal))
+    const moduleTask = (await api(runtime, `/v1/projects/${projectId}/tasks?batchId=${moduleBatch.batchId}`)).items[0]
+    const moduleAttempts = await api(runtime, `/v1/projects/${projectId}/tasks/${moduleTask.taskId}/node-attempts?pageSize=100`)
+    assert.ok(moduleAttempts.items.some(item => item.nodeId === moduleCallId && item.status === 'succeeded'))
+    assert.ok(moduleAttempts.items.some(item => item.nodeId !== moduleCallId && item.nodeId !== moduleTailId && item.status === 'succeeded' && item.executionContext?.scopes.some(scope => scope.kind === 'customModule' && scope.id === projectModule.id)))
+    const moduleOutputs = await api(runtime, `/v1/projects/${projectId}/tasks/${moduleTask.taskId}/outputs?pageSize=100`)
+    assert.ok(moduleOutputs.items.some(item => item.name === 'project_module_result' && item.value === 42), JSON.stringify(moduleOutputs))
+    await click(main, '查看任务')
+    await click(main, '输入与输出', '[role="tab"]')
+    await waitFor(main, "document.body?.innerText.includes('project_module_result')", 'project module output')
+    await capture(main, join(evidenceDir, 'project-custom-module-task.png'))
+    assert.deepEqual(cloakProcesses(userData), [])
+    checkpoint('正式项目任务使用冻结自定义模块独立执行，子节点上下文、输出和资源清理持久化')
+    const report = { evidenceId: 'BE-project-control-flow-formal-electron', result: 'passed', checkedAt: new Date().toISOString(), gitHead, platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build', projectId, workflowIds: [saved.id, extended.id, subflow.id, moduleCall.id], batchIds: [batch.batchId, extendedBatch.batchId, subflowBatch.batchId, moduleBatch.batchId], taskIds: [task.taskId, extendedTask.taskId, subflowTask.taskId, moduleTask.taskId], checks, boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browserStarted: true, interaction: 'formal Electron mouse/keyboard; API only fixture setup and evidence reads' } }
     await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
     console.log(JSON.stringify({ evidenceDir, ...report }, null, 2))
     throw new EvidenceComplete()
@@ -870,7 +924,12 @@ try {
   if (error instanceof EvidenceComplete) {
     // The focused evidence mode completed before the broader B3 matrix.
   } else {
-  await writeFile(join(evidenceDir, 'blocked.json'), JSON.stringify({ checkedAt: new Date().toISOString(), gitHead, checks, observedEvents, error: error instanceof Error ? error.stack : String(error) }, null, 2) + '\n')
+  if (studio) {
+    await capture(studio, join(evidenceDir, 'blocked-studio.png')).catch(() => {})
+    await writeFile(join(evidenceDir, 'blocked-studio.txt'), await studio.evaluate('document.body.innerText').catch(() => 'unavailable')).catch(() => {})
+  }
+  const ui = studio ? await studio.evaluate("[...document.querySelectorAll('button')].filter(e=>e.textContent.trim()==='模块条').map(e=>({html:e.outerHTML.slice(0,500),visible:Boolean(e.getClientRects().length),rect:(()=>{const r=e.getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height}})()}))").catch(() => []) : []
+  await writeFile(join(evidenceDir, 'blocked.json'), JSON.stringify({ checkedAt: new Date().toISOString(), gitHead, checks, observedEvents, ui, error: error instanceof Error ? error.stack : String(error) }, null, 2) + '\n')
   throw error
   }
 } finally {
@@ -934,6 +993,15 @@ async function newWorkflow(cdp, name) {
   await click(cdp, '新建')
   await waitFor(cdp, "document.querySelectorAll('.react-flow__node').length === 0", `new workflow ${name}`)
   await setInput(cdp, 'input[placeholder="工作流名称"]', name)
+}
+
+async function showBlockView(cdp) {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    await click(cdp, '模块条')
+    if (await cdp.evaluate("document.body.innerText.includes('添加模块')")) return
+    await wait(150)
+  }
+  throw new Error('模块条视图未显示添加模块入口')
 }
 
 async function addGlobalVariable(cdp, name, type, value) {

@@ -568,7 +568,8 @@ def configure_project_workflow_runtime(
         resolve_default_model=models.default_model_id if models is not None else None,
     )
     runtime = WorkflowRuntimeService(
-        session_factory, SqlAlchemyWorkflowRepository(session_factory)
+        session_factory, SqlAlchemyWorkflowRepository(session_factory),
+        modules=CustomModuleService(SqlAlchemyWorkflowModules(session_factory)),
     )
     app.state.project_workflow_runtime = runtime
     app.state.project_workflow_resources = resources

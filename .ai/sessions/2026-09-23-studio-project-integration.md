@@ -274,3 +274,10 @@
 
 - `notify_telegram` 是保留的213节点之一，未恢复其余14个排除通知节点。正式Studio经真实UI配置、保存重开后，生产执行器及httpx向临时TLS夹具发送中文Bot API JSON，成功与`ok=false`失败各一次；节点日志未泄露测试Token，Electron和夹具端口清理断言通过。
 - 前几次失败均是测试夹具路由和同步探针错误，保留原失败记录；证据在`docs/migration/studio-backend-migration/evidence/b6/formal-telegram-electron-JqCVt8/`。节点级台账由629/639变为630/639；第三方真实投递、Intel/Windows及冻结包不算通过。
+
+## 项目任务递归自定义模块（2026-09-23）
+
+- 继承用户确定的项目默认资源＋任务显式覆盖；无资源白名单。项目准备复用既有模块仓储冻结递归依赖，项目 worker 复用 Studio 的模块执行器；保留原模块更新、输出及循环引用语义，未增加第二套调度器。
+- 项目任务证据查询现在能返回冻结模块子节点名称和执行作用域，任务详情展示模块与轮次。首次正式验收暴露循环头前后上下文变化被误判为历史损坏，改为使用节点完成时上下文并加回归断言。
+- 后端32项、前端28项及Ruff/mypy/TypeScript/ESLint/OpenAPI/构建通过；正式 Electron 开发入口真实 UI 创建模块并运行项目任务，输出42、子节点作用域和清理通过。详见`docs/migration/studio-backend-migration/evidence/project-integration/custom-module-task-2026-09-23/README.md`。
+- 冻结包、其他平台、运行期交互命令与跨工作流文件调用仍未核销，不能视作完整项目模块族关闭。

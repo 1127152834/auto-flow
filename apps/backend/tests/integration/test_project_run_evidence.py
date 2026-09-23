@@ -2,8 +2,6 @@
 
 from datetime import UTC, datetime, timedelta
 
-from sqlalchemy import func, select
-
 from autoflow.adapters.http.project_run_schemas import TaskDetail
 from autoflow.application.project_data.capabilities import ProjectDataCapabilityService
 from autoflow.application.project_data.catalog import DataCatalogService
@@ -29,6 +27,8 @@ from autoflow.infrastructure.database.workflow_runtime_models import (
     WorkflowRunEventRow,
     WorkflowRunRow,
 )
+from sqlalchemy import func, select
+
 from tests.integration.test_project_run_data_start import _setup, uid
 
 
@@ -256,6 +256,16 @@ def test_node_attempts_keep_retries_of_one_visit_as_separate_rows(tmp_path):
         visit_id=uid(),
         start=started,
     )
+    with factory.begin() as session:
+        events = session.scalars(
+            select(WorkflowRunEventRow)
+            .where(WorkflowRunEventRow.run_id == task.run_id, WorkflowRunEventRow.kind == "nodeAttempt")
+            .order_by(WorkflowRunEventRow.sequence)
+        ).all()
+        events[0].payload = {"status": "started", "executionContext": {"scopes": [], "loops": []}}
+        events[1].payload = {"status": "succeeded", "executionContext": {
+            "scopes": [], "loops": [{"nodeId": "loop", "iteration": 2}],
+        }}
     attempts, total = ProjectRunEvidence(factory).node_attempts(
         project_id, task.task_id, page=1, page_size=50
     )
@@ -263,5 +273,6 @@ def test_node_attempts_keep_retries_of_one_visit_as_separate_rows(tmp_path):
     assert [item["attempt"] for item in attempts] == [1, 2, 3]
     assert {item["nodeId"] for item in attempts} == {"status-node"}
     assert all(item["status"] == "succeeded" for item in attempts)
+    assert attempts[0]["executionContext"]["loops"][0]["iteration"] == 2
     assert attempts[0]["completedAt"] < attempts[1]["completedAt"]
     factory.dispose()
