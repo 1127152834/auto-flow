@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from autoflow.adapters.http.workflow_gestures import workflow_gesture_router
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+
+from autoflow.adapters.http.workflow_gestures import workflow_gesture_router
 
 
 class GestureService:

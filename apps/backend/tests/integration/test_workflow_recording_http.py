@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import httpx
 import pytest
+
 from autoflow.bootstrap.app import create_app
 from autoflow.bootstrap.config import Settings
 

@@ -11,6 +11,7 @@ from typing import Any
 from unittest.mock import AsyncMock
 
 import pytest
+
 from autoflow.application.workflows.executors.web_basic import SwitchIframeExecutor
 from autoflow.domain.workflows.browser import CurrentPageClosed, UnknownPage
 from autoflow.domain.workflows.execution import ExecutionContext

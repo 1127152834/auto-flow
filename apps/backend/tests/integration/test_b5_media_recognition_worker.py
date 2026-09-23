@@ -5,9 +5,10 @@ import os
 from pathlib import Path
 
 import pytest
-from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
 from PIL import Image, ImageDraw, ImageFont
 from skimage import data
+
+from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
 
 
 def _write_fixtures(root: Path) -> tuple[Path, Path]:

@@ -6,6 +6,7 @@ from pathlib import Path
 from threading import Thread
 
 import pytest
+
 from autoflow.application.workflows.executors.production import (
     build_production_executor_registry,
 )

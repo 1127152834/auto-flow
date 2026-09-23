@@ -1,11 +1,12 @@
 import pytest
+from keyring.errors import KeyringError
+
 from autoflow.domain.credentials import CredentialStoreUnavailableError
 from autoflow.infrastructure.credentials.redaction import (
     redact_sensitive_text,
     redact_sensitive_value,
 )
 from autoflow.infrastructure.credentials.system import SystemCredentialStore
-from keyring.errors import KeyringError
 
 
 class FakeMacBackend:

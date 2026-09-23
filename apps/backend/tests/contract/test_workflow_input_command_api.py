@@ -3,12 +3,13 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+
 from autoflow.adapters.events.workflows import (
     StudioEventJournal,
     workflow_events_router,
 )
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
 
 
 class FakeCommands:

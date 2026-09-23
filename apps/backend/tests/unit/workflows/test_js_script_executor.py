@@ -4,6 +4,7 @@ from collections.abc import Mapping
 from typing import Any
 
 import pytest
+
 from autoflow.application.workflows.executors.production import (
     build_production_executor_registry,
 )

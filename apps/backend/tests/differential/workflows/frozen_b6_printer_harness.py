@@ -24,8 +24,8 @@ sys.modules["win32api"] = SimpleNamespace(
     ShellExecute=lambda *args: calls.append(["print", *args])
 )
 
-from app.executors.base import ExecutionContext  # noqa: E402
-from app.executors.utility_tools import PrinterCallExecutor  # noqa: E402
+from app.executors.base import ExecutionContext
+from app.executors.utility_tools import PrinterCallExecutor
 
 
 async def run(payload):

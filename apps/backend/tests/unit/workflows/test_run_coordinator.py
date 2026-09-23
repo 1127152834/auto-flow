@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+
 from autoflow.adapters.events.workflows import StudioEventJournal
 from autoflow.application.models.service import ModelExecutionBinding
 from autoflow.application.workflows.coordinator import (

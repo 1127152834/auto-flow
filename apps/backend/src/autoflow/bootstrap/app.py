@@ -9,7 +9,10 @@ from fastapi.responses import JSONResponse
 
 from autoflow.adapters.http.android import android_router
 from autoflow.adapters.http.android_fleet import android_fleet_router
-from autoflow.adapters.http.android_management import android_management_internal_router, android_management_router
+from autoflow.adapters.http.android_management import (
+    android_management_internal_router,
+    android_management_router,
+)
 from autoflow.adapters.http.errors import error_response, install_error_handlers
 from autoflow.adapters.http.image_assets import image_assets_router
 from autoflow.adapters.http.local_workflows import local_workflows_router

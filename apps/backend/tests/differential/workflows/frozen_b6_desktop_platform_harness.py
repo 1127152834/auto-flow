@@ -13,14 +13,14 @@ sys.modules["winsound"] = SimpleNamespace(
     Beep=lambda frequency, duration: beeps.append((frequency, duration))
 )
 
-from app.executors.advanced import (  # noqa: E402
+from app.executors.advanced import (
     GetClipboardExecutor,
     LockScreenExecutor,
     SetClipboardExecutor,
     ShutdownSystemExecutor,
 )
-from app.executors.base import ExecutionContext  # noqa: E402
-from app.executors.basic import (  # noqa: E402
+from app.executors.base import ExecutionContext
+from app.executors.basic import (
     PlaySoundExecutor,
     SystemNotificationExecutor,
 )

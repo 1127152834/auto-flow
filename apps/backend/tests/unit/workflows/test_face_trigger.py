@@ -18,7 +18,7 @@ class _Capture:
         self.frames = list(frames or [])
         self.released = False
 
-    def isOpened(self) -> bool:  # noqa: N802 - OpenCV API compatibility.
+    def isOpened(self) -> bool:
         return self.opened
 
     def read(self) -> tuple[bool, Any]:

@@ -17,9 +17,10 @@ from typing import Any
 from urllib.parse import urljoin, urlparse
 
 import html2text  # type: ignore[import-untyped]
+from bs4 import BeautifulSoup  # type: ignore[import-untyped]
+
 from autoflow.domain.workflows.browser import BrowserPagePort
 from autoflow.domain.workflows.execution import ExecutionContext
-from bs4 import BeautifulSoup  # type: ignore[import-untyped]
 
 from .base import ModuleExecutor, ModuleResult
 from .type_utils import to_bool, to_int

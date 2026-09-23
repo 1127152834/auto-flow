@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 from alembic import command
 from alembic.config import Config
+
 from autoflow.infrastructure.database import session as database_session
 from autoflow.infrastructure.database import workflow_recordings
 from autoflow.infrastructure.database.session import (

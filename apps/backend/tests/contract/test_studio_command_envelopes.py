@@ -1,10 +1,11 @@
 import pytest
+from pydantic import ValidationError
+
 from autoflow.adapters.http.workflow_studio_schemas import (
     StudioCommandLookup,
     StudioCommandReceipt,
 )
 from autoflow.bootstrap.schema_export import export_schema
-from pydantic import ValidationError
 
 
 @pytest.mark.parametrize("success", [True, False])

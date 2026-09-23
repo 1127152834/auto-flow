@@ -8,13 +8,14 @@ from pathlib import Path
 from threading import Thread
 
 import pytest
+from PIL import Image, ImageDraw, ImageFont
+
 from autoflow.application.workflows.executors.production import (
     build_production_executor_registry,
 )
 from autoflow.application.workflows.runtime import WorkflowRuntime
 from autoflow.domain.workflows.execution import ExecutionContext
 from autoflow.providers.browser.workflow_session import launch_workflow_session
-from PIL import Image, ImageDraw, ImageFont
 
 
 def _captcha_png() -> bytes:

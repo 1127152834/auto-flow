@@ -3,6 +3,7 @@ import json
 
 import httpx
 import pytest
+
 from autoflow.domain.models import ModelError, ProviderConnection
 from autoflow.providers.model import HttpModelProvider, normalize_base_url
 

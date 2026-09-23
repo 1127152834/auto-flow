@@ -34,7 +34,7 @@ def source(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 class _Capture:
-    def isOpened(self) -> bool:  # noqa: N802 - OpenCV API compatibility.
+    def isOpened(self) -> bool:
         return True
 
     def read(self) -> tuple[bool, str]:

@@ -10,6 +10,7 @@ from pathlib import Path
 from threading import Event, Thread
 
 import pytest
+
 from autoflow.providers.browser.workflow_worker import _run
 
 

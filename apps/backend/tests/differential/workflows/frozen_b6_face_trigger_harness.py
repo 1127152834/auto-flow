@@ -38,8 +38,8 @@ cv2 = SimpleNamespace(
 sys.modules["face_recognition"] = face_recognition
 sys.modules["cv2"] = cv2
 
-from app.executors.base import ExecutionContext  # noqa: E402
-from app.executors.trigger import FaceTriggerExecutor  # noqa: E402
+from app.executors.base import ExecutionContext
+from app.executors.trigger import FaceTriggerExecutor
 
 
 async def run(payload):

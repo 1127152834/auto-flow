@@ -9,6 +9,7 @@ from typing import Any, cast
 from urllib.parse import parse_qsl, quote, urlencode, urlsplit, urlunsplit
 
 import httpx
+
 from autoflow.domain.models import (
     DiscoveryResult,
     ModelError,

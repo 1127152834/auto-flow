@@ -19,7 +19,7 @@ class AssistantSession:
     created_at: datetime
     updated_at: datetime
 
-    def with_changes(self, **changes: Any) -> "AssistantSession":
+    def with_changes(self, **changes: Any) -> AssistantSession:
         return replace(self, **copy.deepcopy(changes))
 
 

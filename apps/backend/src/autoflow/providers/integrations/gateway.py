@@ -5,9 +5,10 @@ import email
 import imaplib
 import io
 import json
+import logging
 import smtplib
 from collections.abc import Mapping
-from datetime import datetime
+from datetime import UTC, datetime
 from email.header import decode_header
 from email.message import EmailMessage
 from email.utils import parseaddr
@@ -251,24 +252,24 @@ class WorkflowIntegrationGateway:
                         "subject": subject,
                         "date": message.get("Date", ""),
                         "body": _email_text_body(message),
-                        "timestamp": datetime.now().isoformat(),
+                        "timestamp": datetime.now(UTC).isoformat(),
                     }
                 )
                 try:
                     client.store(email_id, "+FLAGS", "\\Seen")
                 except Exception:  # noqa: BLE001 - source treats marking read as best effort.
-                    pass
+                    logging.getLogger(__name__).warning("IMAP mark-read failed")
             return result
         finally:
             if client is not None:
                 try:
                     client.close()
                 except Exception:  # noqa: BLE001 - connection cleanup is best effort.
-                    pass
+                    logging.getLogger(__name__).warning("IMAP connection cleanup failed")
                 try:
                     client.logout()
                 except Exception:  # noqa: BLE001 - connection cleanup is best effort.
-                    pass
+                    logging.getLogger(__name__).warning("IMAP connection cleanup failed")
 
     async def _http(self, payload: Mapping[str, Any]) -> Mapping[str, Any]:
         url = payload.get("url")

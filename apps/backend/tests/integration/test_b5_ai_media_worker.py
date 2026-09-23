@@ -8,6 +8,7 @@ from pathlib import Path
 from threading import Thread
 
 import pytest
+
 from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
 
 

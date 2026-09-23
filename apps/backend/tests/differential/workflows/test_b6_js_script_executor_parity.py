@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+
 from autoflow.application.workflows.executors.js_script import JsScriptExecutor
 from autoflow.domain.workflows.execution import ExecutionContext, JsScriptResult
 

@@ -4,6 +4,7 @@ from typing import Any, Self
 from unittest.mock import AsyncMock
 
 import pytest
+
 from autoflow.providers.integrations import WorkflowIntegrationGateway
 
 

@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import cast
 
 import pytest
+
 from autoflow.application.workflows.executors.production import (
     build_production_executor_registry,
 )

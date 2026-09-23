@@ -10,9 +10,11 @@ from __future__ import annotations
 import asyncio
 import math
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable
+from itertools import pairwise
+from typing import Any
 
 from autoflow.domain.workflows.execution import ExecutionContext
 
@@ -188,7 +190,7 @@ class _Gesture:
             if math.dist(point, simplified[-1]) >= self.min_distance:
                 simplified.append(point)
         result: list[Direction] = []
-        for start, end in zip(simplified, simplified[1:], strict=False):
+        for start, end in pairwise(simplified):
             direction = self.direction(start, end)
             if direction is not None and (not result or direction != result[-1]):
                 result.append(direction)

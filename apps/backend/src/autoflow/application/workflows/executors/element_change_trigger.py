@@ -7,7 +7,7 @@ License: LICENSE.WebRPA.
 from __future__ import annotations
 
 import json
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from autoflow.domain.workflows.execution import ExecutionContext
@@ -192,7 +192,7 @@ def _result(
         "addedNodes": added,
         "removedNodes": removed,
         "newElementText": new_text,
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
     }
     if change_variable:
         context.set_variable(change_variable, change_info)

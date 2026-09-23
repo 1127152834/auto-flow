@@ -2,8 +2,9 @@ import sys
 from unittest.mock import AsyncMock, Mock
 
 import pytest
-from autoflow.__main__ import main
 from fastapi.testclient import TestClient
+
+from autoflow.__main__ import main
 
 
 @pytest.mark.parametrize("host", ["0.0.0.0", "192.168.1.10"])

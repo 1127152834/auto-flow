@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 import pytest
+
 from autoflow.application.workflows.executors.python_script import (
     PythonScriptExecutor,
     _local_no_proxy_env,

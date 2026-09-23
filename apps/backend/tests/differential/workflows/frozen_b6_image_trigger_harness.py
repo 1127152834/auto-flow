@@ -17,8 +17,8 @@ ctypes.windll = SimpleNamespace(
     ),
 )
 
-from app.executors.base import ExecutionContext  # noqa: E402
-from app.executors.trigger import ImageTriggerExecutor  # noqa: E402
+from app.executors.base import ExecutionContext
+from app.executors.trigger import ImageTriggerExecutor
 
 
 async def run(payload):

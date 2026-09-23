@@ -13,12 +13,13 @@ from typing import Any
 
 import numpy as np
 import pytest
+from PIL import Image
+
 from autoflow.application.workflows.executors import media_recognition
 from autoflow.application.workflows.executors.production import (
     build_production_executor_registry,
 )
 from autoflow.domain.workflows.execution import BinaryOutputSnapshot, ExecutionContext
-from PIL import Image
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[5]
 FROZEN_BACKEND = REPOSITORY_ROOT / "reference" / "WebRPA" / "backend"

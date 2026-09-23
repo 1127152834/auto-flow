@@ -5,6 +5,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+
 from autoflow.infrastructure.gesture import GestureRecognitionService
 
 
