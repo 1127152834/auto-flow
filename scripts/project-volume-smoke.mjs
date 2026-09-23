@@ -48,7 +48,13 @@ export async function checkProjectVolume(sidecar, cdp, click, runtime, workspace
     pageMs.push(Math.round(performance.now() - started))
     if (page === 6 || page === 11) heapSamples.push(await heap())
   }
-  const frameMs = await cdp.evaluate(`new Promise(resolve=>{const start=performance.now();requestAnimationFrame(()=>requestAnimationFrame(()=>resolve(performance.now()-start)))})`)
+  // requestAnimationFrame is suspended for an occluded native window; measure a visible page.
+  await cdp.command('Page.bringToFront')
+  await waitFor(cdp, "document.visibilityState === 'visible'", 'foreground renderer for animation-frame measurement')
+  const frameMs = await cdp.evaluate(`new Promise(resolve=>{const start=performance.now();requestAnimationFrame(()=>requestAnimationFrame(()=>resolve(performance.now()-start)))})`).catch(async error => {
+    const visibility = await cdp.evaluate('({visibility: document.visibilityState, focused: document.hasFocus()})').catch(() => null)
+    throw new Error(`two-animation-frame measurement failed: ${JSON.stringify(visibility)}`, { cause: error })
+  })
   assert.ok(frameMs < 5000, `renderer failed to respond for ${frameMs}ms`)
   // Separate synthetic input from the real worker evidence above. The helper
   // writes only this runner's disposable workspace through the existing repository.

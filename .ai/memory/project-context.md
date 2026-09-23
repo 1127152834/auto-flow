@@ -1,5 +1,7 @@
 # 项目上下文
 
+2026-09-24 必填规则生产修复（confirmed本机）：正式metadata404已由共用DTO路由和随包冻结资源修复，实际ARM空网址提示/项目规则未覆盖提示通过；来源227仅69有规则。17后端定向、45前端、3486全后端/78skipped、101脚本、4映射、Ruff/mypy408/typecheck/lint/OpenAPI/构建与完整ARM桌面通过。原后台页面两帧测量两次失败，诊断hidden后前置显示并确认可见，保留5秒阈值，最终5ms；负向报告保留。见studio-metadata-follow-through.json。249有断言/2未定位、206partial/45planned/0verified不变，等待新源码三平台；releaseAccepted=false。
+
 2026-09-23 XE-G07窗口子范围（confirmed）：当前ARM包实际窗口复用/恢复、越权打开拒绝、脏稿取消/保存关闭、显式重新打开同文档且Run不重复通过；主进程11、脚本101、映射4通过。AU-06/XE-G01/XE-G07项目会话关联与停靠明确为实现缺失，W1–W3规格/计划待确认；新增窗口断言后的完整ARM桌面脚本通过，详见 studio-window-follow-through.json。249/251有范围断言、2未定位，206partial/45planned/0verified；73条缺预定文件全部已有子范围映射，不等于完整覆盖。生产仍632caf6d，新断言不在现有CI35881272086，不重复流水线，releaseAccepted=false。
 
 2026-09-23 XE-A19打包Studio收口（confirmed本机子范围）：实际零Project通用网页运行、项目上下文提示、独立启动422不生成Run，以及编辑保存保留grant/参数通过。已修复旧运行历史遮住操作反馈、打开文档后误发新建请求两处缺陷；最终定向50、全前端5473（409文件/208.97秒）、101脚本、类型/lint、4项映射、构建/ARM打包与最终完整桌面通过。五路10000行47223ms/0busy、固定1000条合成输入60022ms/最大滞后35ms为单次观察。源码632caf6d新三平台35881272086进行中；旧35874897768不含此修复，已确认取消，不计完整通过。见 `.ai/knowledge/2026-09-23-pm9-standalone-studio.md` / `standalone-studio-follow-through.json`；必填规则元数据404与外部发行门禁保留，251条205partial/46planned/0verified，releaseAccepted=false。

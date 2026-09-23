@@ -1,12 +1,13 @@
 {
-  "date": "2026-09-23",
-  "status": "eb50_manual_cleanup_local_full_and_packaged_passed_ci_pending_artifact_cleanup_missing",
+  "date": "2026-09-24",
+  "status": "studio_metadata_local_full_and_packaged_passed_new_candidate_pending",
   "releaseAccepted": false,
   "confidence": "high",
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
   "branch": "codex/project-management-pm9-runtime",
   "remaining": [
-    "Current source632caf6d fixes actual standalone Studio feedback hiding and open/save identity conflict. Final frontend5473/409 files,50 targeted,101 scripts,typecheck/lint/build/ARM full desktop passed. New three-platform35881272086 is in progress; prior eb50 run35874897768 cancelled because it lacks these fixes. Studio metadata404 and full external gates remain; releaseAccepted=false.",
+    "Current metadata production404 fixed:17 targeted backend/45 frontend/3486 full backend and full ARM packaged desktop passed;69 of227 source nodes covered,project metadata remains uncovered. Foreground frame-measurement harness fixed after visibility=hidden diagnosis; both negative runs retained. Previous632caf6d matrix does not validate this route; new source candidate pending. ReleaseAccepted remains false.",
+    "Current source632caf6d fixes actual standalone Studio feedback hiding and open/save identity conflict. Final frontend5473/409 files,50 targeted,101 scripts,typecheck/lint/build/ARM full desktop passed. New three-platform35881272086 is in progress; prior eb50 run35874897768 cancelled because it lacks these fixes. Its metadata404 has been superseded by the newer local fix; full external gates remain; releaseAccepted=false.",
     "Actual5346 packaged manual resume then browser failure proves automatic deletion leaves resolved manual item and registered PNG in workspace/runs. Manual item cleanup/pending-manual blocker fixed locally (38 targeted passed); eb50e1ef full local backend3483/78 skipped and rebuilt ARM complete desktop passed. Historical three-platform35874897768 was cancelled for the later Studio fixes; current632caf6d matrix35881272086 is in progress. Persistent filesystem cleanup is missing with AD1-AD3 spec/plan proposed; no release acceptance. Prior5346 CI35871462256 cancelled for superseding known defect.",
     "AU-08 real ARM installed UI unlink/worker blocker/original-key replay passed on c165, but SQLite inspection exposed owned snapshot purge ordering and overbroad impact count. Both fixed with direct RED→GREEN; 5346ceca full local backend3479/78 skipped and rebuilt packaged desktop passed; three-platform35871462256 is in progress. Project-owned workflow ownership/deletion remains missing, not merely missing tests.",
     "DATA-LINK-02 forged recordRef.projectId acceptance fixed at shared association preflight and commit boundary; local full backend 3479 passed/77 skipped, contract/rule 33 passed, and actual browser-worker End followed by forged repair refusal/correct repair-only association passed. Current c16532d7 three-platform CI succeeded after Intel-only retry. DATA-LINK-02 remains partial because complete packaged/cross-platform reverse-target and full business acceptance are open; local actual worker-generated forged End target now passed in link-boundary-follow-through.json.",
@@ -523,5 +524,6 @@
     "releaseAccepted": false,
     "supersededByRun": 35881272086
   },
-  "studioWindowFollowThrough": "studio-window-follow-through.json"
+  "studioWindowFollowThrough": "studio-window-follow-through.json",
+  "studioMetadataFollowThrough": "studio-metadata-follow-through.json"
 }

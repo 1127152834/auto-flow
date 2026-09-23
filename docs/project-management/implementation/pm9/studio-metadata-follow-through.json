@@ -1,0 +1,96 @@
+{
+  "date": "2026-09-23",
+  "status": "local_full_and_packaged_passed_new_three_platform_candidate_pending",
+  "releaseAccepted": false,
+  "parentCommit": "3fb223a3638c2c7c10d646589f34ed46c0b254fd",
+  "defect": {
+    "problem": "Formal Studio required-field metadata returns404 because only the development mock registers its existing contract.",
+    "red": "Production bootstrap contract test failed404 with14 other DTO tests passing; prior ARM actual Studio screenshots retain the same404.",
+    "fix": "Register a read-only production route using the existing DTO/auth/error boundary; reuse the AST extractor for a packaged resource and add it to PyInstaller data."
+  },
+  "checks": {
+    "backendTargeted": "17 passed; actual HTTP69-module payload, invalid instance401, missing/corrupt resource500; initial404 regression RED→GREEN",
+    "frontendTargeted": "45 passed /3 files /5.66s",
+    "scripts": "101 passed",
+    "mapping": "251 valid references;4 verifier tests passed; no status upgrades",
+    "ruff": "passed for all backend files",
+    "mypy": "408 source files passed",
+    "typecheck": "passed",
+    "lint": "passed",
+    "openapi": "generated and --check passed",
+    "build": "PyInstaller and ARM application packaging passed; no valid signing identity",
+    "fullBackend": "3486 passed /78 skipped /2 existing dependency warnings /1010.08s",
+    "fullPackagedDesktop": "passed on final route and foreground harness: metadata, standalone Studio, native windows, project CRUD/deletion, real workers,10000 records,synthetic load,200%zoom,second window and restart",
+    "frontendRegressionScope": "Production renderer archive hash is identical to632caf6d whose full409-file/5473-test suite passed;45 metadata consumer tests and typecheck/lint/build rerun for this candidate."
+  },
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "file": "reference/WebRPA/backend/app/services/ai_assistant_module_schemas.py",
+    "extractor": "scripts/export-studio-required-fields.py",
+    "resource": "apps/backend/src/autoflow/adapters/http/module-required-fields.json",
+    "approvedRetainedCount": 227,
+    "coveredCount": 69,
+    "uncoveredCount": 158,
+    "projectNodes": "project_data/project_manual/project_end are outside this frozen source metadata and remain explicitly uncovered"
+  },
+  "evidence": ".tmp-tests/pm9-studio-metadata-2026-09-23/project-desktop.json",
+  "artifacts": {
+    "backendSha256": "c446fdbaf73a68fcfc1a11d3695b21f9a86df6f357dfd5cb3b5b676b7dffffac",
+    "appAsarSha256": "fa536a77f2af1e5a74a01012ecc35a1e4d0fd044963b1f926ab8bfdb93ba663f",
+    "metadataSha256": "41fb1be7a021e71a09cce61361e6002aa910d0303089a60c74e07767721ff8d5",
+    "scope": "new local unsigned ARM package; renderer application archive is unchanged from632caf6d"
+  },
+  "limits": [
+    "Metadata coverage does not change node admission or prove all configuration/execution rules.",
+    "Actual Studio still shows unrelated image-resource/hotkey404 and auxiliary command501; not all Studio capability acceptance.",
+    "The earlier632caf6d matrix35881272086 does not contain this production route or window/metadata assertions.",
+    "No physical Windows/Intel install, current packaged real Google/OAuth, signing/notarization or release acceptance claimed.",
+    "249 scoped assertions/2 unlocated;206 partial/45 planned/0 verified remain unchanged."
+  ],
+  "negativeEvidence": [
+    ".tmp-tests/pm9-studio-metadata-2026-09-23/negative/volume-cdp-timeout.json",
+    ".tmp-tests/pm9-studio-metadata-2026-09-23/negative/volume-cdp-timeout.png",
+    ".tmp-tests/pm9-studio-metadata-2026-09-23/negative/volume-hidden-page.json",
+    ".tmp-tests/pm9-studio-metadata-2026-09-23/negative/volume-hidden-page.png"
+  ],
+  "updatedAt": "2026-09-24",
+  "harnessDefect": {
+    "red": "Two complete attempts passed metadata/standalone/worker scenarios but failed while awaiting two animation frames. The second diagnostic reports visibility=hidden, focused=true.",
+    "fix": "Bring the disposable test page to foreground and require document.visibilityState=visible before the existing two-frame measurement; preserve the 5-second responsiveness assertion and command timeout.",
+    "status": "passed_after_foreground_fix",
+    "twoFramesMs": 5
+  },
+  "packagedMetadata": {
+    "schemaRevision": "WebRPA@5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "coveredCount": 69,
+    "emptyUrlGuidance": "passed",
+    "projectNodeUncovered": true
+  },
+  "observations": {
+    "realWorkerLogs": {
+      "logCount": 1004,
+      "logPages": 6,
+      "elapsedMs": 37234,
+      "logsPerMinute": 1618,
+      "scope": "real worker throughput and server pagination; no renderer memory claim"
+    },
+    "records": 10000,
+    "concurrentWrites": {
+      "status": "passed",
+      "producers": 5,
+      "records": 10000,
+      "busyRetries": 0
+    },
+    "writeElapsedMs": 76475,
+    "synthetic": {
+      "targetLogsPerMinute": 1000,
+      "seconds": 60,
+      "emitted": 1000,
+      "elapsedMs": 60038,
+      "maxBatchLagMs": 92
+    },
+    "scope": "single ARM observation while local regression also ran; not Windows throughput, not a general hardware target"
+  },
+  "evidenceSha256": "0e5c77bf50d33ea6c776a9025610d14e936dce4a869a045f8d53462dd794b5be",
+  "screenshots": 21
+}

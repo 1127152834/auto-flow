@@ -2244,7 +2244,7 @@
         {
           "id": "XE-A19",
           "status": "partially_verified",
-          "evidenceCount": 2,
+          "evidenceCount": 3,
           "plannedTestExists": true,
           "reviewedCheckCount": 4,
           "gapKinds": [

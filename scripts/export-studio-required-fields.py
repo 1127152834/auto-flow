@@ -8,6 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / 'reference/WebRPA/backend/app/services/ai_assistant_module_schemas.py'
 CAPABILITIES = ROOT / 'docs/migration/studio-frontend-completion/capabilities.json'
 TARGET = ROOT / 'apps/desktop/src/renderer/domains/workflows/development/module-required-fields.json'
+PRODUCTION = ROOT / 'apps/backend/src/autoflow/adapters/http/module-required-fields.json'
 MANIFEST = ROOT / 'docs/migration/studio-frontend-completion/required-field-source-coverage.json'
 
 
@@ -46,7 +47,8 @@ def extract():
 
 if __name__ == '__main__':
     import sys
-    for target, content in zip([TARGET, MANIFEST], extract()):
+    result, manifest = extract()
+    for target, content in [(TARGET, result), (PRODUCTION, result), (MANIFEST, manifest)]:
         text = json.dumps(content, ensure_ascii=False, indent=2) + '\n'
         if '--check' in sys.argv:
             if not target.exists() or target.read_text(encoding='utf-8') != text:

@@ -12,6 +12,7 @@ from autoflow.adapters.events.workflows import (
     workflow_events_router,
 )
 from autoflow.adapters.http.custom_modules import custom_modules_router
+from autoflow.adapters.http.workflow_metadata import workflow_metadata_router
 from autoflow.adapters.http.workflow_runs import (
     WorkflowRunCommands,
     workflow_run_command_router,
@@ -178,6 +179,7 @@ def build_workflow_services(
 
 def register_workflow_routes(app: FastAPI, services: WorkflowServices) -> None:
     # Static workflow commands must be registered before the dynamic document ID.
+    app.include_router(workflow_metadata_router())
     app.include_router(workflow_run_command_router(services.commands))
     app.include_router(custom_modules_router(services.modules))
     app.include_router(workflows_router(services.documents))

@@ -2708,6 +2708,23 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/system/module-required-fields": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Module Required Fields */
+        get: operations["module_required_fields_api_system_module_required_fields_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workflows/{workflow_id}/execute": {
         parameters: {
             query?: never;
@@ -8560,6 +8577,17 @@ export type components = {
         } & {
             [key: string]: unknown;
         };
+        /** StudioConditionalRequired */
+        StudioConditionalRequired: {
+            /** Field */
+            field: string;
+            /** Default */
+            default: string | null;
+            /** Map */
+            map: {
+                [key: string]: string[];
+            };
+        };
         /** StudioEventCommandRequest */
         StudioEventCommandRequest: {
             /** Commandid */
@@ -8584,6 +8612,27 @@ export type components = {
              * @enum {string}
              */
             status: "pending" | "answered" | "cancelled" | "expired";
+        };
+        /** StudioModuleRequiredFields */
+        StudioModuleRequiredFields: {
+            /** Schemarevision */
+            schemaRevision: string;
+            /** Coveredmodules */
+            coveredModules: string[];
+            /** Requiredfields */
+            requiredFields: {
+                [key: string]: string[];
+            };
+            /** Conditionalrequired */
+            conditionalRequired: {
+                [key: string]: components["schemas"]["StudioConditionalRequired"];
+            };
+            /** Fieldlabels */
+            fieldLabels: {
+                [key: string]: {
+                    [key: string]: string;
+                };
+            };
         };
         /** StudioRunResultPage */
         StudioRunResultPage: {
@@ -9288,17 +9337,6 @@ export type components = {
              */
             claimId: string | null;
         };
-        /** StudioConditionalRequired */
-        StudioConditionalRequired: {
-            /** Field */
-            field: string;
-            /** Default */
-            default: string | null;
-            /** Map */
-            map: {
-                [key: string]: string[];
-            };
-        };
         /** StudioCredentialConfirmed */
         StudioCredentialConfirmed: {
             /**
@@ -9982,27 +10020,6 @@ export type components = {
             description: string;
         } & {
             [key: string]: unknown;
-        };
-        /** StudioModuleRequiredFields */
-        StudioModuleRequiredFields: {
-            /** Schemarevision */
-            schemaRevision: string;
-            /** Coveredmodules */
-            coveredModules: string[];
-            /** Requiredfields */
-            requiredFields: {
-                [key: string]: string[];
-            };
-            /** Conditionalrequired */
-            conditionalRequired: {
-                [key: string]: components["schemas"]["StudioConditionalRequired"];
-            };
-            /** Fieldlabels */
-            fieldLabels: {
-                [key: string]: {
-                    [key: string]: string;
-                };
-            };
         };
         /** StudioPathSelectionResult */
         StudioPathSelectionResult: {
@@ -22371,6 +22388,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    module_required_fields_api_system_module_required_fields_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioModuleRequiredFields"];
                 };
             };
         };

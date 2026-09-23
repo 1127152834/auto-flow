@@ -9,6 +9,7 @@ from PyInstaller.utils.hooks import collect_data_files, collect_submodules, copy
 
 
 datas = [
+    ('src/autoflow/adapters/http/module-required-fields.json', 'autoflow/adapters/http'),
     ('src/autoflow/infrastructure/filesystem/profile_environment.json', 'autoflow/infrastructure/filesystem'),
     ('src/autoflow/infrastructure/database/alembic.ini', 'autoflow/infrastructure/database'),
     ('src/autoflow/infrastructure/database/migrations', 'autoflow/infrastructure/database/migrations'),

@@ -198,6 +198,13 @@ async function checkStudioWindowLifecycle(document, run) {
 }
 
 async function checkStandaloneStudio(browserVersion) {
+  const metadata = await api('/api/system/module-required-fields')
+  assert.equal(metadata.coveredModules.length, 69)
+  assert.deepEqual(metadata.requiredFields.open_page, ['url'])
+  assert.equal(metadata.coveredModules.includes('project_data'), false)
+  const incomplete = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: '正式必填规则空网址', variables: [], nodes: [
+    { id: 'missing-url', type: 'open_page', position: { x: 100, y: 100 }, data: { moduleType: 'open_page', label: '空网址', url: '' } },
+  ], edges: [] })
   assert.equal((await api('/api/v1/projects')).total, 0)
   const profile = await api('/api/v1/profiles', { name: '独立 Studio 配置', browserVersion, browserEdition: 'public', headless: true })
   const standalone = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: '零项目通用网页', variables: [], nodes: [
@@ -219,6 +226,12 @@ async function checkStandaloneStudio(browserVersion) {
     assert.equal(await studio.evaluate("document.body.innerText.includes('Mock 接口')"), false)
     await waitFor(studio, `document.querySelector('[aria-label="运行浏览器配置"]')?.value===${JSON.stringify(profile.id)}`, 'independent browser profile')
     await click('打开', 'button', studio)
+    await click('打开工作流 ' + incomplete.name, '[role=button]', studio)
+    await click('', '.react-flow__node[data-id="missing-url"]', studio)
+    await waitFor(studio, "document.body.innerText.includes('有 1 个必填项未填写：') && document.body.innerText.includes('要打开的网页 URL')", 'packaged production required URL guidance')
+    assert.equal(await studio.evaluate("document.body.innerText.includes('必填字段规则未加载')"), false)
+    await capture('studio-required-url', studio)
+    await click('打开', 'button', studio)
     await click('打开工作流 ' + standalone.name, '[role=button]', studio)
     await waitFor(studio, "Boolean(document.querySelector('.react-flow__node[data-id=\"open-general\"]'))", 'standalone workflow loaded')
     await click('运行 (F5)', '[aria-label="运行 (F5)"]', studio)
@@ -239,6 +252,8 @@ async function checkStandaloneStudio(browserVersion) {
     await waitFor(studio, "Boolean(document.querySelector('.react-flow__node[data-id=\"write-project\"]'))", 'project write document loaded')
     await click('', '.react-flow__node[data-id="write-project"]', studio)
     await waitFor(studio, "document.body.innerText.includes('从项目自动化批次运行。使用任务的输入快照和数据权限')", 'explicit project capability guidance')
+    await waitFor(studio, "document.body.innerText.includes('此节点尚未提供必填字段规则，请核对配置。')", 'uncovered project metadata remains explicit')
+    assert.equal(await studio.evaluate("document.body.innerText.includes('必填字段规则未加载')"), false)
     await capture('studio-project-context', studio)
     await click('运行 (F5)', '[aria-label="运行 (F5)"]', studio)
     await click('无头运行', '[role=menuitem]', studio)
@@ -262,7 +277,7 @@ async function checkStandaloneStudio(browserVersion) {
     assert.equal((await api('/api/workflow-runs?cursor=0&limit=20')).items.length, 1)
     await capture('studio-project-document-saved', studio)
     const windows = await checkStudioWindowLifecycle(edited, run)
-    return { status: 'passed', windows, standaloneWorkflowId: standalone.id, projectWorkflowId: document.id, runId: run.runId, refusal, checks: ['zero Project before and after independent real browser run', 'actual Studio displays project context guidance; existing standalone admission returns HTTP 422 unsupported node, creates no run and leaves the document unchanged', 'actual Studio edit/save retains project node identity, operation, arguments and frozen grant without implicit Project'], limits: [`one ${process.platform}/${process.arch} application window; full Studio module/physical platform gates remain separate`] }
+    return { status: 'passed', metadata: { schemaRevision: metadata.schemaRevision, coveredCount: metadata.coveredModules.length, emptyUrlGuidance: 'passed', projectNodeUncovered: true }, windows, standaloneWorkflowId: standalone.id, projectWorkflowId: document.id, runId: run.runId, refusal, checks: ['zero Project before and after independent real browser run', 'actual Studio displays project context guidance; existing standalone admission returns HTTP 422 unsupported node, creates no run and leaves the document unchanged', 'actual Studio edit/save retains project node identity, operation, arguments and frozen grant without implicit Project'], limits: [`one ${process.platform}/${process.arch} application window; full Studio module/physical platform gates remain separate`] }
   } catch (error) {
     await capture('studio-failure', studio).catch(() => {})
     throw error

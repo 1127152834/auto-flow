@@ -14211,6 +14211,14 @@
           "scope": "ARM实际打包Studio：零Project独立浏览器运行、明确项目上下文提示、422准入拒绝不产生Run不改文档、编辑保存保持节点与冻结grant/参数。两处实际UI缺陷已修复；非全Studio或实机发行验收。",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_and_real_application",
+          "report": "docs/project-management/implementation/pm9/studio-metadata-follow-through.json",
+          "scope": "正式HTTP/打包ARM必填规则：空网址提示、项目节点明确未覆盖；冻结227中仅69有来源规则，原元数据404已修复。不证明全Studio或完整发行验收。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "owner": "project-data",
@@ -14234,7 +14242,7 @@
         "PM4-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-23",
+        "reviewedAt": "2026-09-24",
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_workflow_real_cloakbrowser.py",
@@ -14245,7 +14253,7 @@
           {
             "file": "scripts/smoke-project-management-desktop.mjs",
             "symbol": "checkStandaloneStudio",
-            "scope": "实际独立Studio窗口从主界面打开；通用网页真实worker完成且零Project。项目写回文档上下文提示可见，独立启动422无Run且文档未变；编辑结果变量后保存修订推进、grant/arguments/operation不丢失，最终零Project/仅一Run。",
+            "scope": "实际独立Studio窗口从主界面打开；通用网页真实worker完成且零Project。项目写回文档上下文提示可见，独立启动422无Run且文档未变；编辑结果变量后保存修订推进、grant/arguments/operation不丢失，最终零Project/仅一Run。 同一正式包读取69个冻结规则，空网址显示真实必填提示，项目节点未覆盖显式可见，均非404。",
             "level": "automated_real_application"
           },
           {
@@ -14264,7 +14272,7 @@
         "gaps": [
           {
             "kind": "production_evidence_missing",
-            "detail": "本机重建ARM窗口子场景通过；新前端与脚本尚未在最终三平台候选执行，Windows/Intel物理窗口与完整发行验收保留。现有元数据404和非项目独立准入通用422不等于全部Studio能力已接通。"
+            "detail": "本机ARM窗口子场景通过；最新接口/窗口/规则断言尚待最终三平台候选执行。Windows/Intel物理窗口、未覆盖的来源/项目规则与完整发行验收保留；字段元数据不改变节点准入，独立项目节点仍以422拒绝。"
           }
         ],
         "statusBeforeReview": "planned"
