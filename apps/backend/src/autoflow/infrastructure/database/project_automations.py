@@ -444,7 +444,13 @@ def _facts(
         session.scalar(
             select(func.count())
             .select_from(WorkflowPreparedContentRow)
-            .where(WorkflowPreparedContentRow.workflow_id == row.workflow_id)
+            .where(
+                WorkflowPreparedContentRow.id.in_(
+                    select(ProjectBatchRow.prepared_content_id).where(
+                        ProjectBatchRow.automation_id == row.id
+                    )
+                )
+            )
         )
         or 0
     )
@@ -561,7 +567,6 @@ def _purge_automation(
         ),
         (cast(Table, WorkflowRunRow.__table__), WorkflowRunRow.id.in_(runs)),
         (cast(Table, ProjectTaskRow.__table__), ProjectTaskRow.batch_id.in_(batches)),
-        (cast(Table, ProjectBatchRow.__table__), ProjectBatchRow.automation_id == row.id),
         (
             cast(Table, WorkflowPreparedContentRow.__table__),
             WorkflowPreparedContentRow.id.in_(
@@ -570,6 +575,8 @@ def _purge_automation(
                 )
             ),
         ),
+        # Prepared-content selection still needs the owning batches to exist.
+        (cast(Table, ProjectBatchRow.__table__), ProjectBatchRow.automation_id == row.id),
     )
     for table, predicate in plan:
         session.execute(delete(table).where(predicate))

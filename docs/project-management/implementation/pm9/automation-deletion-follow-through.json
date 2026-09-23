@@ -1,0 +1,39 @@
+{
+  "date": "2026-09-23",
+  "status": "local_snapshot_fix_passed_full_candidate_validation_in_progress",
+  "releaseAccepted": false,
+  "requirements": [
+    "AU-08"
+  ],
+  "priorPackagedEvidence": {
+    "productionSourceCommit": "c16532d79fe8db87a8f9b371d9045a02fb89e362",
+    "backendSha256": "99a262d7c15c95276ed7012a6ae21fb220fc4ddaade735a1a66bcba91cc3fcaa",
+    "report": "qa-runs/2026-09-23-automation-delete/before-snapshot-fix/project-desktop.json",
+    "scope": "Installed ARM CI app, real browser worker and Electron UI: duplicate association rejected, waiting worker prevents deletion, stopping invalidates old impact and resets exact-name confirmation, fresh deletion preserves workflow document, original command replay returns one operation, independent document can be linked again. Full existing desktop smoke passed. This earlier script did not inspect frozen snapshot deletion; it does not prove the later fix.",
+    "screenshots": "Only four automation-deletion screenshots are archived with this report; other generic full-smoke screenshots remain in the temporary local output."
+  },
+  "rootCause": [
+    "Deletion impact counted every prepared snapshot of the same workflow, including independent preparations outside this automation.",
+    "The purge deleted ProjectBatchRow before evaluating the prepared-content subquery that selected through those batches, so owned snapshots remained."
+  ],
+  "change": "Count only snapshots referenced by this automation batches; execute the existing snapshot delete before deleting its owning batches in the same deferred-FK transaction. Preserve independent workflow and unowned snapshots; no ownership inference or new executor.",
+  "redGreen": [
+    "Original direct test failed with impact count 2 instead of 1 when an independent snapshot shared the same workflow.",
+    "After fixing scope, the same test failed because two snapshots remained instead of only the independent one.",
+    "Moving the existing purge step before batch deletion passed; the test asserts independent document and snapshot remain and owned batch/snapshot are removed."
+  ],
+  "checks": {
+    "targetedBackend": "34 passed / 2 dependency warnings (automation deletion, contract, repository, batch start), 7.19 seconds; final deletion test file after naming/fixture cleanup: 7 passed / 2 dependency warnings in 2.00s",
+    "frontend": "AutomationDeleteDialog: 6 passed, 6.65 seconds; existing UI source unchanged",
+    "scripts": "npm run test:scripts: 101 passed / 0 failed / 0 skipped, 3024.03ms after final SQLite assertions",
+    "static": "Ruff passed; mypy407 passed",
+    "fullBackend": "in progress",
+    "newPackagedDesktop": "in progress",
+    "threePlatformCI": "pending stable source commit"
+  },
+  "limits": [
+    "AU-08 remains partially_verified. Project-owned workflow deletion is still refused with WORKFLOW_OWNERSHIP_UNKNOWN because ownership is not persisted; that proposed design scope is an implementation gap.",
+    "This automated UI slice does not prove Studio simultaneous-edit ownership, existing-association navigation, project-level unlink, or complete Windows/Intel physical installation acceptance.",
+    "The earlier c165 CI cannot validate the new snapshot fix. No merge or release."
+  ]
+}

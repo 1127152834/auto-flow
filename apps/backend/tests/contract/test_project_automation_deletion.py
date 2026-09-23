@@ -293,11 +293,28 @@ def test_impact_rejects_unknown_action_and_foreign_scope(tmp_path):
     )
 
 
-def test_delete_unlinks_the_workflow_and_keeps_run_history(tmp_path):
+def test_delete_unlinks_workflow_and_removes_only_owned_run_history(tmp_path):
     api, factory = client(tmp_path)
     automation_id = create_automation(api)
     batch_id = seed_batch(factory, automation_id, status="completed")
-    revision = impact(api, automation_id)["impactRevision"]
+    with factory() as session:
+        prepared = session.scalars(select(WorkflowPreparedContentRow)).one()
+        independent_id = str(uuid4())
+        values = {
+            column.name: getattr(prepared, column.name)
+            for column in WorkflowPreparedContentRow.__table__.columns
+        }
+        values.update(id=independent_id, prepare_operation_id=str(uuid4()))
+        session.add(WorkflowPreparedContentRow(**values))
+        session.commit()
+    current_impact = impact(api, automation_id)
+    prepared_impact = next(
+        item
+        for item in current_impact["impacts"]
+        if item["code"] == "PREPARED_CONTENTS"
+    )
+    assert prepared_impact["message"] == "配置升级恢复副本 1 个"
+    revision = current_impact["impactRevision"]
     response = delete(
         api,
         automation_id,
@@ -317,6 +334,8 @@ def test_delete_unlinks_the_workflow_and_keeps_run_history(tmp_path):
     # automation and the run facts it owns are removed.
     assert count(factory, WorkflowDocumentRow, id=WORKFLOW) == 1
     assert count(factory, ProjectBatchRow, id=batch_id) == 0
+    assert count(factory, WorkflowPreparedContentRow) == 1
+    assert count(factory, WorkflowPreparedContentRow, id=independent_id) == 1
     assert (
         api.get(f"/api/v1/projects/{PROJECT}/automations/{automation_id}").status_code
         == 404
@@ -331,7 +350,11 @@ def test_delete_requires_live_impact_and_current_revision(tmp_path):
     updated = api.put(
         f"/api/v1/projects/{PROJECT}/automations/{automation_id}",
         headers={"Idempotency-Key": str(uuid4())},
-        json={**automation_body(), "description": "新版", "expectedManagementRevision": 1},
+        json={
+            **automation_body(),
+            "description": "新版",
+            "expectedManagementRevision": 1,
+        },
     )
     assert updated.status_code == 200, updated.text
     body = {
@@ -365,7 +388,9 @@ def test_delete_refuses_owned_document_removal_and_live_batches(tmp_path):
         },
     )
     assert owned.status_code == 409, owned.text
-    assert owned.json()["error"]["details"]["domainCode"] == "workflow_ownership_unknown"
+    assert (
+        owned.json()["error"]["details"]["domainCode"] == "workflow_ownership_unknown"
+    )
     seed_batch(factory, automation_id, status="running")
     live_revision = impact(api, automation_id)["impactRevision"]
     blocked = delete(

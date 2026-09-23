@@ -1,4 +1,7 @@
 import assert from 'node:assert/strict'
+import { randomUUID } from 'node:crypto'
+import { execFile } from 'node:child_process'
+import { promisify } from 'node:util'
 import { mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
@@ -46,6 +49,102 @@ async function capture(name) {
   await writeFile(join(options['output-dir'], filename), data, 'base64')
   report.screenshots.push(filename)
 }
+async function checkAutomationDeletion(browserVersion) {
+  async function api(path, body, method = body === undefined ? 'GET' : 'POST', expectedStatus, key = randomUUID()) {
+    const response = await fetch(sidecar.baseUrl + path, { method, headers: { 'x-autoflow-token': sidecar.token, 'content-type': 'application/json', 'Idempotency-Key': key }, ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(30_000) })
+    const value = await response.json()
+    assert.ok(expectedStatus === undefined ? response.ok : response.status === expectedStatus, `${method} ${path}: ${response.status} ${JSON.stringify(value)}`)
+    return value
+  }
+  async function poll(check, label) {
+    for (let attempt = 0; attempt < 300; attempt++) {
+      const value = await check()
+      if (value) return value
+      await new Promise(resolvePoll => setTimeout(resolvePoll, 200))
+    }
+    throw new Error(`Timeout: ${label}`)
+  }
+  const project = await api('/api/v1/projects', { name: '独立流程解除关联验收' })
+  const prefix = `/api/v1/projects/${project.projectId}`
+  const profile = await api('/api/v1/profiles', { name: '解除关联真实浏览器', browserVersion, headless: true })
+  const nodes = [
+    { id: 'open', type: 'open_page', position: { x: 0, y: 0 }, data: { moduleType: 'open_page', url: 'about:blank' } },
+    { id: 'manual', type: 'project_manual', position: { x: 0, y: 100 }, data: { moduleType: 'project_manual', reason: '验证占用删除保护', timeoutSeconds: 300 } },
+    { id: 'end', type: 'project_end', position: { x: 0, y: 200 }, data: { moduleType: 'project_end', retainEnvironment: { enabled: false } } },
+  ]
+  const workflow = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: '删除自动化后保留独立文档', variables: [], nodes, edges: [{ id: 'open-manual', source: 'open', target: 'manual' }, { id: 'manual-end', source: 'manual', target: 'end' }] })
+  const body = { name: '解除关联测试自动化', description: '', workflowId: workflow.id, inputPlan: { inputs: [] }, parameterSchema: [], environmentPolicy: { source: 'newFromProfile', profileId: profile.id, proxyOverride: { mode: 'none' }, modelProviderId: null }, runPolicy: { maxTasks: 1, concurrency: 1, maxLiveInstances: 1, continueAfterFailure: false, automaticExecutionTimeoutSeconds: 120, manualDeadlineSeconds: 300 } }
+  const automation = await api(prefix + '/automations', body)
+  const automationPath = prefix + `/automations/${automation.automationId}`
+  const duplicate = await api(prefix + '/automations', { ...body, name: '不得重复关联' }, 'POST', 409)
+  assert.equal(duplicate.error.code, 'WORKFLOW_ALREADY_BOUND')
+  const accepted = await api(automationPath + '/batches', { expectedAutomationRevision: automation.managementRevision, parameters: {}, maxTasks: 1, concurrency: 1 })
+  const batchId = accepted.operation.result.batch.batchId
+  const manual = await poll(async () => (await api(prefix + '/manual-items')).items.find(item => item.status === 'waiting'), 'real worker waiting before automation deletion')
+  const taskBefore = await api(prefix + `/tasks/${manual.taskId}`)
+  assert.equal(taskBefore.run.status, 'waiting_manual')
+  const documentBefore = await api(`/api/workflows/${workflow.id}`)
+  async function preparedCount() {
+    const python = join(root, 'apps/backend/.venv', process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python')
+    const { stdout } = await promisify(execFile)(python, ['-c', "import sqlite3,sys; from pathlib import Path; db=sqlite3.connect(Path(sys.argv[1]).as_uri()+'?mode=ro',uri=True); print(db.execute('SELECT count(*) FROM project_workflow_prepared_contents WHERE workflow_id=?',(sys.argv[2],)).fetchone()[0]); db.close()", join(userData, 'data/autoflow.sqlite3'), workflow.id], { timeout: 10_000 })
+    return Number(stdout.trim())
+  }
+  assert.equal(await preparedCount(), 1)
+  const deletes = []
+  const observe = event => {
+    const message = JSON.parse(event.data)
+    const request = message.method === 'Network.requestWillBeSent' && message.params.request
+    if (request && request.method === 'DELETE' && request.url === sidecar.baseUrl + automationPath) deletes.push(request)
+  }
+  await cdp.command('Network.enable')
+  cdp.socket.addEventListener('message', observe)
+  try {
+    await cdp.evaluate(`location.hash=${JSON.stringify('#/projects/' + project.projectId + '/automations/' + automation.automationId)}`)
+    await click('删除自动化', '[aria-label="危险操作"] button')
+    await waitFor(cdp, "document.querySelector('[aria-label=阻断项]')?.innerText.includes('批次尚未结束')", 'live batch deletion blocker')
+    assert.ok(await cdp.evaluate("document.querySelector('[aria-label=将保留]').innerText.includes('工作流文档保留，只解除关联')"))
+    assert.ok(await cdp.evaluate("document.querySelector('[aria-label=将删除]').innerText.includes('运行方案 1 个及其任务与事件')"))
+    await capture('automation-delete-busy')
+    await fill('[aria-label="确认自动化名称"]', body.name)
+    await click('删除自动化', '[role=dialog] button')
+    await waitFor(cdp, "[...document.querySelectorAll('[role=dialog] [role=alert]')].some(e=>e.innerText==='操作失败，请重试')", 'busy delete rejected in UI')
+    assert.equal((await api(automationPath)).automationId, automation.automationId)
+    assert.equal((await api(prefix + `/tasks/${manual.taskId}`)).run.status, 'waiting_manual')
+    const batch = await api(prefix + `/batches/${batchId}`)
+    await api(prefix + `/batches/${batchId}/stop`, { expectedStatusRevision: batch.batch.statusRevision, reason: '完成解除关联前先停止真实任务' })
+    await poll(async () => (await api(prefix + `/batches/${batchId}`)).batch.status === 'stopped', 'stopped worker releases automation')
+    await click('删除自动化', '[role=dialog] button')
+    await waitFor(cdp, "document.body.innerText.includes('影响范围可能已变化，请重新核对后再确认。')", 'old impact rejected after worker stop')
+    assert.equal(await cdp.evaluate("document.querySelector('[aria-label=确认自动化名称]').value"), '')
+    await capture('automation-delete-stale')
+    await click('重新核对影响')
+    await waitFor(cdp, "document.querySelector('[aria-label=阻断项]')?.innerText.includes('没有阻断项')", 'fresh delete impact after worker cleanup')
+    await fill('[aria-label="确认自动化名称"]', '错误名称')
+    assert.equal(await cdp.evaluate("[...document.querySelectorAll('[role=dialog] button')].find(e=>e.textContent.trim()==='删除自动化').disabled"), true)
+    await fill('[aria-label="确认自动化名称"]', body.name)
+    await capture('automation-delete-ready')
+    await click('删除自动化', '[role=dialog] button')
+    await waitFor(cdp, `location.hash===${JSON.stringify('#/projects/' + project.projectId + '/automations')} && !document.querySelector('[role=dialog]')`, 'automation deleted through UI')
+    await api(automationPath, undefined, 'GET', 404)
+    await api(prefix + `/batches/${batchId}`, undefined, 'GET', 404)
+    await api(prefix + `/tasks/${manual.taskId}`, undefined, 'GET', 404)
+    assert.equal(await preparedCount(), 0, 'owned frozen snapshot must be removed before its batch lookup disappears')
+    const documentAfter = await api(`/api/workflows/${workflow.id}`)
+    for (const key of ['id', 'revision', 'nodes', 'edges']) assert.deepEqual(documentAfter[key], documentBefore[key], `independent workflow ${key} must survive`)
+    assert.equal(deletes.length, 3, 'UI issues one command for each explicit busy/stale/fresh confirmation')
+    const request = deletes.at(-1)
+    const key = Object.entries(request.headers).find(([name]) => name.toLowerCase() === 'idempotency-key')?.[1]
+    assert.ok(key)
+    const operation = await api(prefix + `/operations/by-idempotency-key/${key}`)
+    const replay = await api(automationPath, JSON.parse(request.postData), 'DELETE', 200, key)
+    assert.equal(replay.operation.operationId, operation.operationId)
+    assert.equal(replay.operation.status, 'succeeded')
+    const linkedAgain = await api(prefix + '/automations', { ...body, name: '重新关联保留的独立文档' })
+    assert.equal(linkedAgain.workflowId, workflow.id)
+    await capture('automation-unlinked')
+    return { status: 'passed', projectId: project.projectId, workflowId: workflow.id, removedAutomationId: automation.automationId, operationId: operation.operationId, checks: ['one independent workflow cannot be associated twice', 'real waiting worker blocks deletion without losing its task or document', 'stop invalidates old UI impact and clears name confirmation', 'fresh exact-name UI deletion removes automation/batch/task and its frozen snapshot while keeping the original document', 'replaying the accepted original delete key returns the same operation', 'retained independent document can be associated again'], limits: ['project-owned document deletion remains refused because ownership is not persisted', 'Studio editing ownership and Windows/Intel physical UI acceptance are not proved'] }
+  } finally { cdp.socket.removeEventListener('message', observe) }
+}
 try {
   const browserVersion = options['runtime-kernel'] ? await installRuntimeKernel(options['runtime-kernel'], userData) : null
   sidecar = await launch()
@@ -80,6 +179,7 @@ try {
   }
   report.checks.push('all six project tabs open settled production pages')
   if (browserVersion) {
+    report.automationDeletion = await checkAutomationDeletion(browserVersion)
     report.runtime = await checkProjectRuntime(sidecar.baseUrl, sidecar.token, browserVersion, { resumeManual: async (projectId, item) => {
       await cdp.evaluate(`location.hash=${JSON.stringify('#/projects/' + projectId + '/runs/manual/' + item.manualItemId)}`)
       await waitFor(cdp, "Boolean(document.querySelector('input[type=radio][value=continue]:not(:disabled)'))", 'live manual continuation ready')

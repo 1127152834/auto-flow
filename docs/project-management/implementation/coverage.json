@@ -1320,6 +1320,14 @@
           "limitations": "PM8-A2 交付独立流程删除影响与解绑；本轮端到端未复验该界面路径。",
           "platform": "darwin/arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_and_real_application",
+          "report": "docs/project-management/implementation/pm9/automation-deletion-follow-through.json",
+          "scope": "独立工作流自动化删除界面和真实等待worker阻断；快照范围/清理顺序反例修复。本报告按候选区分，不代表项目所有权完成。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "primary_package": "PM3-A",
@@ -1348,19 +1356,57 @@
       ],
       "pm8_note": "PM8-A2 交付独立流程删除影响与解绑；本轮端到端未复验该界面路径。",
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-23",
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_automation_repository.py",
             "symbol": "test_missing_workflow_is_404_and_leaves_no_automation_or_operation",
             "scope": "不存在工作流不建立自动化和命令",
             "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/contract/test_project_automation_deletion.py",
+            "symbol": "test_delete_unlinks_workflow_and_removes_only_owned_run_history",
+            "scope": "真实 SQLite/HTTP 删除仅本自动化批次和配置快照；同工作流的独立快照、原文档保留；影响数不混入独立快照（两次 RED→GREEN）",
+            "level": "automated_contract"
+          },
+          {
+            "file": "apps/backend/tests/contract/test_project_automation_deletion.py",
+            "symbol": "test_delete_refuses_owned_document_removal_and_live_batches",
+            "scope": "所有权未知删除与活动批次均409，自动化和文档保留；安全拒绝不代表项目所有权能力完成",
+            "level": "automated_contract"
+          },
+          {
+            "file": "apps/backend/tests/contract/test_project_automation_deletion.py",
+            "symbol": "test_delete_replays_the_same_key_without_a_second_fact",
+            "scope": "相同命令恢复同一 operation，数据库仅一个删除事实",
+            "level": "automated_contract"
+          },
+          {
+            "file": "apps/desktop/src/renderer/domains/project-automations/components/AutomationDeleteDialog.test.tsx",
+            "testName": "drops the confirmation and asks for a fresh impact check when the impact is stale",
+            "scope": "412清空名称确认并提供重新核对影响入口",
+            "level": "automated_component"
+          },
+          {
+            "file": "scripts/smoke-project-management-desktop.mjs",
+            "symbol": "checkAutomationDeletion",
+            "scope": "真实worker等待阻断、停止后旧清单拒绝、精确名称UI删除、原命令恢复、独立文档不变且可再关联；修复后增加只读SQLite快照清理断言，候选运行结果见专项报告",
+            "level": "automated_real_application"
           }
         ],
         "gaps": [
           {
+            "kind": "implementation_missing",
+            "detail": "项目自建工作流所有权未持久化，deleteOwned仍以WORKFLOW_OWNERSHIP_UNKNOWN拒绝；AU-08 proposed所有权机制未实现，不以安全拒绝算接通。"
+          },
+          {
             "kind": "test_missing",
-            "detail": "独立流程解除关联、占用删除影响的完整 UI/后端断言需补"
+            "detail": "Studio并行编辑/运行占用、已有绑定去向定位及项目级删除后解除关联的完整联合场景仍需补。"
+          },
+          {
+            "kind": "production_evidence_missing",
+            "detail": "本机ARM打包已证明独立流程自动化删除子范围；修复后最终候选完整链及所有AU-08条件待补，不能由子范围升verified。"
           }
         ],
         "statusBeforeReview": "partially_verified"

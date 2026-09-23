@@ -1,5 +1,7 @@
 # 项目上下文
 
+2026-09-23 AU-08删除补证与修复（confirmed局部，最终验证进行中）：ARM真实已安装包的独立文档保留、人工等待阻断、旧影响清单拒绝和原键恢复通过；随后直接SQLite断言发现并修复快照影响范围过宽及先删批次导致快照残留。34后端/6前端/Ruff/mypy407通过，完整后端/新打包/三平台按 `pm9/automation-deletion-follow-through.json` 更新。项目所有权deleteOwned仍未实现；AU-08保持partial，releaseAccepted=false。
+
 2026-09-23 当前字段能力勘误（confirmed）：c16532d7 ARM 打包真实 worker 证明创建新字段后写入受 frozen grant 阻断，预先授权未存在 fieldId 也被拒。DATA-SCHEMA-02/09、FLOW-A14确属实现缺失；同定义复用/异型冲突/T2兼容已补打包证据通过，不能代替新字段写入。新增 FR1–FR3 字段结果权限规格/计划为 proposed，见 `.ai/knowledge/2026-09-23-pm9-created-field-results.md`。此前“已批准功能均有实现”不能覆盖该新反例；releaseAccepted=false。
 
 2026-09-23 End 权限边界补证（confirmed 本机范围）：真实 worker 生成合法/伪造项目记录混合目标，原权限门禁在保存前拒绝整组，已提交数据保留、零环境保存和关联、lease/进程释放。关联两场景2 passed、契约/规则33 passed、Ruff通过；详见 `pm9/link-boundary-follow-through.json`。仅测试/CI选择/文档更新，生产源码仍c16532d7；新增断言不计入此前CI，完整验收仍pending，releaseAccepted=false。
