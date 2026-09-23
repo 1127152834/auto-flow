@@ -1,0 +1,6 @@
+{
+  "deviceId": "34e87958-33c6-4a1f-a787-7693deadaa03",
+  "matchingBatchesWhilePaused": [],
+  "passed": false,
+  "invalidated": "Queried legacy kind=batch, not kind=bulk. This check is excluded; subsequent persisted bulk timestamps provide the evidence."
+}

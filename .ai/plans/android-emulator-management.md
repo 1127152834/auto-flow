@@ -87,3 +87,5 @@
 - 2026-09-24 APK执行中断：[真实ADB断线、HTTP强杀与数据保留](../../docs/qa/android-management/2026-09-24-app-interruption.md)完成两种覆盖安装故障，重启后旧包/数据存在仍保持结果未知并锁定控制，三轮5台自建资源清理。生产代码未变，应用回归32项通过；T07.3通过，当前步骤84passed/15not_run/3blocked，桌面确认流仍未验。
 
 - 2026-09-24 桌面布局与应用确认：两尺寸/100%及200%真实断言、长名换行、共享Dialog焦点、清除/卸载与备份恢复、sidecar不可达旧快照保护均通过；本轮自建实例/备份清理完成。T06.4通过，当前102步骤85passed/14not_run/3blocked。22项应用面板测试通过，最终全量单worker门禁424文件/5636项通过（824.25s）；四worker失败原始输出保留，不能据局部通过替代全量。见[证据](../../docs/qa/android-management/2026-09-24-desktop-apps-layout.md)。
+
+- 2026-09-24 批量 UI 增量（partial）：断线原生 fieldset 保护真实验收通过，补现有 GET 的活跃进度读取、终态停止、卸载取消及迟到栅栏；RED→GREEN，Android 150项与类型/lint/OpenAPI/build通过。最终构建 UI 受 macOS 锁屏阻塞，自建设备尚待停止/清理。AM-R11 取消未准入项与新批次入口列入下一切片；见[证据](../../docs/qa/android-management/2026-09-24-bulk-stale-snapshot.md)。

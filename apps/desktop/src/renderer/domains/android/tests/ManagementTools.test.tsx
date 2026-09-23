@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom/vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { cleanup, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, it, vi } from 'vitest'
 import { BulkActions } from '../components/BulkActions'
@@ -11,7 +11,7 @@ import type { ManagementDevicePage } from '../management-api'
 
 const device: ManagementDevicePage['items'][number] = { deviceId: 'd1', revision: 2, name: '设备一', runtimeState: 'ready', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: {}, latestOperation: null, allowedActions: ['start', 'stop', 'restart', 'delete'], blockedReasons: {} }
 
-afterEach(cleanup)
+afterEach(() => { cleanup(); vi.useRealTimers() })
 
 it('freezes selected revisions when submitting a bulk action', async () => {
   const bulk = vi.fn(async (body: Record<string, unknown>) => ({ id: 'b', requestId: body.requestId as string, action: 'start', deleteData: false, state: 'queued', items: [], createdAt: '' }))
@@ -19,6 +19,63 @@ it('freezes selected revisions when submitting a bulk action', async () => {
   await userEvent.click(screen.getByLabelText('设备一'))
   await userEvent.click(screen.getByRole('button', { name: '提交批量操作' }))
   expect(bulk).toHaveBeenCalledWith(expect.objectContaining({ items: [{ deviceId: 'd1', expectedRevision: 2 }] }))
+})
+
+it('reads active batch progress through to its terminal state without replaying submission', async () => {
+  vi.useFakeTimers()
+  const running = { id: 'b', requestId: 'r', action: 'start', deleteData: false, state: 'running', items: [{ state: 'queued' }], createdAt: '' }
+  const bulk = vi.fn().mockResolvedValue(running)
+  const bulkStatus = vi.fn().mockRejectedValueOnce(new Error('read offline')).mockResolvedValue({ ...running, state: 'succeeded', items: [{ state: 'succeeded' }] })
+  const bulkAction = vi.fn()
+  render(<BulkActions api={{ bulk, bulkStatus, bulkAction }} devices={[device]} />)
+  fireEvent.click(screen.getByLabelText('设备一'))
+  await act(async () => { fireEvent.click(screen.getByRole('button', { name: '提交批量操作' })) })
+  await act(async () => { await vi.advanceTimersByTimeAsync(3000) })
+  expect(bulkStatus).toHaveBeenCalledTimes(1)
+  expect(screen.getByLabelText('批次结果')).toHaveTextContent('running')
+  expect(screen.getByText(/批次状态暂不可读/)).toBeVisible()
+  await act(async () => { await vi.advanceTimersByTimeAsync(3000) })
+  expect(screen.getByLabelText('批次结果')).toHaveTextContent('succeeded')
+  await act(async () => { await vi.advanceTimersByTimeAsync(9000) })
+  expect(bulkStatus).toHaveBeenCalledTimes(2)
+  expect(bulk).toHaveBeenCalledTimes(1)
+  expect(bulkAction).not.toHaveBeenCalled()
+})
+
+it('stops active batch reads at unknown outcomes and leaves reconciliation explicit', async () => {
+  vi.useFakeTimers()
+  const running = { id: 'b', requestId: 'r', action: 'start', deleteData: false, state: 'running', items: [{ state: 'queued' }], createdAt: '' }
+  const bulk = vi.fn().mockResolvedValue(running)
+  const bulkStatus = vi.fn().mockResolvedValue({ ...running, state: 'needs_verification', items: [{ state: 'needs_verification' }] })
+  const bulkAction = vi.fn()
+  render(<BulkActions api={{ bulk, bulkStatus, bulkAction }} devices={[device]} />)
+  fireEvent.click(screen.getByLabelText('设备一'))
+  await act(async () => { fireEvent.click(screen.getByRole('button', { name: '提交批量操作' })) })
+  await act(async () => { await vi.advanceTimersByTimeAsync(3000) })
+  expect(screen.getByLabelText('批次结果')).toHaveTextContent('结果未知')
+  expect(screen.getByRole('button', { name: '核实批次' })).toBeEnabled()
+  await act(async () => { await vi.advanceTimersByTimeAsync(9000) })
+  expect(bulkStatus).toHaveBeenCalledTimes(1)
+  expect(bulkAction).not.toHaveBeenCalled()
+})
+
+it('aborts an in-flight batch read when the panel leaves and ignores its late response', async () => {
+  vi.useFakeTimers()
+  const running = { id: 'b', requestId: 'r', action: 'start', deleteData: false, state: 'running', items: [{ state: 'queued' }], createdAt: '' }
+  let finish!: (value: typeof running) => void
+  const bulk = vi.fn().mockResolvedValue(running)
+  const bulkStatus = vi.fn((_id: string, _signal?: AbortSignal) => new Promise<typeof running>(resolve => { finish = resolve }))
+  const view = render(<BulkActions api={{ bulk, bulkStatus }} devices={[device]} />)
+  fireEvent.click(screen.getByLabelText('设备一'))
+  await act(async () => { fireEvent.click(screen.getByRole('button', { name: '提交批量操作' })) })
+  await act(async () => { await vi.advanceTimersByTimeAsync(3000) })
+  expect(bulkStatus).toHaveBeenCalledTimes(1)
+  const signal = bulkStatus.mock.calls[0][1]!
+  expect(signal.aborted).toBe(false)
+  view.unmount()
+  expect(signal.aborted).toBe(true)
+  await act(async () => { finish({ ...running, state: 'succeeded' }); await vi.advanceTimersByTimeAsync(9000) })
+  expect(bulkStatus).toHaveBeenCalledTimes(1)
 })
 
 it('passes an explicit deleteData choice for bulk deletion', async () => {

@@ -239,6 +239,29 @@ it('keeps the last snapshot and marks it stale when refresh disconnects', async 
   expect(screen.getByRole('button', { name: '启动设备' })).toBeDisabled()
 })
 
+it('locks selected bulk targets on snapshot disconnect and permits them only after a successful refresh', async () => {
+  let disconnected = false
+  const bulk = vi.fn(async () => ({ id: 'batch', state: 'succeeded', items: [] }))
+  const api = { bulk, devices: vi.fn(async () => disconnected ? Promise.reject(new Error('offline')) : { total: 1, nextCursor: null, items: [{ deviceId: 'd', revision: 7, name: '批量缓存设备', runtimeState: 'stopped', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: {}, latestOperation: null, allowedActions: ['start'], blockedReasons: {} }] }) } as unknown as AndroidManagementApi
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  render(<QueryClientProvider client={client}><ManagementOverview api={api} /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('checkbox', { name: '批量缓存设备' }))
+  expect(screen.getByRole('button', { name: '提交批量操作' })).toBeEnabled()
+  disconnected = true
+  await client.invalidateQueries({ queryKey: ['android-management', 'default', 'devices'] })
+  await screen.findByText(/连接已断开/)
+  const submit = screen.getByRole('button', { name: '提交批量操作' })
+  expect(submit).toBeDisabled()
+  expect(screen.getByRole('checkbox', { name: '批量缓存设备' })).toBeDisabled()
+  await userEvent.click(submit)
+  expect(bulk).not.toHaveBeenCalled()
+  disconnected = false
+  await client.invalidateQueries({ queryKey: ['android-management', 'default', 'devices'] })
+  await waitFor(() => expect(submit).toBeEnabled())
+  await userEvent.click(submit)
+  expect(bulk).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ items: [{ deviceId: 'd', expectedRevision: 7 }] }))
+})
+
 it('does not execute operational actions for unknown or stale devices', async () => {
   const onManage = vi.fn()
   const api = { devices: vi.fn(async () => ({ total: 1, nextCursor: null, items: [{ deviceId: 'd', revision: 1, name: '待核实', runtimeState: 'unknown', owner: { kind: 'none', id: null }, observedAt: null, stale: true, specSnapshot: {}, latestOperation: null, allowedActions: ['start', 'verify'], blockedReasons: {} }] })) } as unknown as AndroidManagementApi
