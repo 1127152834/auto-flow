@@ -1,0 +1,107 @@
+FFF                                                                      [100%]
+=================================== FAILURES ===================================
+____ test_delete_cleans_only_owned_studio_history_and_managed_files[False] _____
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-1778/test_delete_cleans_only_owned_0')
+legacy_owner = False
+
+    @pytest.mark.parametrize("legacy_owner", [False, True])
+    def test_delete_cleans_only_owned_studio_history_and_managed_files(tmp_path, legacy_owner):
+        workspace_root = tmp_path / "workspace"
+        context = Context(tmp_path, workspace_root=workspace_root)
+        other, _, _ = context.projects.create(key(), {"name": "另一个项目"})
+        external = tmp_path / "user-output" / "chosen.json"
+        external.parent.mkdir()
+        external.write_bytes(b"user-chosen-output")
+        owned = _studio_history(context, workspace_root, "owned-studio", context.project_id, external=external)
+        other_dir = _studio_history(context, workspace_root, "other-studio", other.project_id)
+        unbound_dir = _studio_history(context, workspace_root, "unbound-studio", None)
+        if legacy_owner:
+            now = datetime.now(UTC)
+            with context.factory() as session:
+                row = session.get(StudioRunRow, "owned-studio")
+                row.payload = {k: v for k, v in row.payload.items() if k != "projectId"}
+                session.add(WorkflowDocumentRow(
+                    id="document-owned-studio", name="旧项目流程", document={"projectId": context.project_id},
+                    layout={}, revision=1, created_at=now, updated_at=now,
+                ))
+                session.commit()
+        context.archive_to_settled()
+        operation = context.delete()
+        context.repository.advance(context.project_id)
+    
+        assert context.state() == "deleted"
+        assert context.projects.workspace_operation(operation.idempotency_key).result["deleted"] is True
+>       assert not owned.exists()
+E       AssertionError: assert not True
+E        +  where True = exists()
+E        +    where exists = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-1778/test_delete_cleans_only_owned_0/workspace/runs/owned-studio').exists
+
+tests/integration/test_project_lifecycle.py:571: AssertionError
+_____ test_delete_cleans_only_owned_studio_history_and_managed_files[True] _____
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-1778/test_delete_cleans_only_owned_1')
+legacy_owner = True
+
+    @pytest.mark.parametrize("legacy_owner", [False, True])
+    def test_delete_cleans_only_owned_studio_history_and_managed_files(tmp_path, legacy_owner):
+        workspace_root = tmp_path / "workspace"
+        context = Context(tmp_path, workspace_root=workspace_root)
+        other, _, _ = context.projects.create(key(), {"name": "另一个项目"})
+        external = tmp_path / "user-output" / "chosen.json"
+        external.parent.mkdir()
+        external.write_bytes(b"user-chosen-output")
+        owned = _studio_history(context, workspace_root, "owned-studio", context.project_id, external=external)
+        other_dir = _studio_history(context, workspace_root, "other-studio", other.project_id)
+        unbound_dir = _studio_history(context, workspace_root, "unbound-studio", None)
+        if legacy_owner:
+            now = datetime.now(UTC)
+            with context.factory() as session:
+                row = session.get(StudioRunRow, "owned-studio")
+                row.payload = {k: v for k, v in row.payload.items() if k != "projectId"}
+                session.add(WorkflowDocumentRow(
+                    id="document-owned-studio", name="旧项目流程", document={"projectId": context.project_id},
+                    layout={}, revision=1, created_at=now, updated_at=now,
+                ))
+                session.commit()
+        context.archive_to_settled()
+        operation = context.delete()
+        context.repository.advance(context.project_id)
+    
+        assert context.state() == "deleted"
+        assert context.projects.workspace_operation(operation.idempotency_key).result["deleted"] is True
+>       assert not owned.exists()
+E       AssertionError: assert not True
+E        +  where True = exists()
+E        +    where exists = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-1778/test_delete_cleans_only_owned_1/workspace/runs/owned-studio').exists
+
+tests/integration/test_project_lifecycle.py:571: AssertionError
+_________ test_delete_studio_cleanup_failure_keeps_indexes_until_retry _________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-1778/test_delete_studio_cleanup_fai0')
+
+    def test_delete_studio_cleanup_failure_keeps_indexes_until_retry(tmp_path):
+        workspace_root = tmp_path / "workspace"
+        context = Context(tmp_path, workspace_root=workspace_root)
+        work_dir = _studio_history(context, workspace_root, "failed-cleanup-studio", context.project_id)
+        context.archive_to_settled()
+        operation = context.delete()
+        container = workspace_root / "runs"
+        container.chmod(0o500)
+        try:
+            context.repository.advance(context.project_id)
+        finally:
+            container.chmod(0o755)
+    
+>       assert context.state() == "deleting"
+E       AssertionError: assert 'deleted' == 'deleting'
+E         
+E         - deleting
+E         + deleted
+
+tests/integration/test_project_lifecycle.py:595: AssertionError
+=========================== short test summary info ============================
+FAILED tests/integration/test_project_lifecycle.py::test_delete_cleans_only_owned_studio_history_and_managed_files[False]
+FAILED tests/integration/test_project_lifecycle.py::test_delete_cleans_only_owned_studio_history_and_managed_files[True]
+FAILED tests/integration/test_project_lifecycle.py::test_delete_studio_cleanup_failure_keeps_indexes_until_retry
+3 failed, 14 deselected in 0.92s

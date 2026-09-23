@@ -1,0 +1,32 @@
+..............F...                                                       [100%]
+=================================== FAILURES ===================================
+___ test_delete_studio_symlink_keeps_external_files_and_indexes_until_retry ____
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-1784/test_delete_studio_symlink_kee0')
+
+    def test_delete_studio_symlink_keeps_external_files_and_indexes_until_retry(tmp_path):
+        workspace_root = tmp_path / "workspace"
+        context = Context(tmp_path, workspace_root=workspace_root)
+        work_dir = _studio_history(context, workspace_root, "linked-studio", context.project_id)
+        external = tmp_path / "user-owned-directory"
+        work_dir.rename(external)
+        work_dir.symlink_to(external, target_is_directory=True)
+        context.archive_to_settled()
+        operation = context.delete()
+        context.repository.advance(context.project_id)
+    
+        assert context.state() == "deleting"
+        saved = context.operation(operation.operation_id)
+        assert saved.status == "failed"
+        assert saved.error["code"] == "DELETE_CLEANUP_FAILED"
+        assert saved.error["details"]["retryable"] is True
+>       assert str(work_dir) in saved.error["details"]["cleanup"]["residue"]
+E       AssertionError: assert '/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-1784/test_delete_studio_symlink_kee0/workspace/runs/linked-studio' in ['Studio 运行目录边界无效：linked-studio']
+E        +  where '/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-1784/test_delete_studio_symlink_kee0/workspace/runs/linked-studio' = str(PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-1784/test_delete_studio_symlink_kee0/workspace/runs/linked-studio'))
+
+tests/integration/test_project_lifecycle.py:641: AssertionError
+------------------------------ Captured log call -------------------------------
+ERROR    autoflow.infrastructure.database.project_lifecycle:project_lifecycle.py:328 Project delete cleanup left residue project_id=541598f1-5639-435a-bad3-acc5968b6486 paths=['Studio 运行目录边界无效：linked-studio']
+=========================== short test summary info ============================
+FAILED tests/integration/test_project_lifecycle.py::test_delete_studio_symlink_keeps_external_files_and_indexes_until_retry
+1 failed, 17 passed in 4.43s

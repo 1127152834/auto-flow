@@ -37,8 +37,12 @@ from .project_data_models import DataImpactRow, DataTableRow
 from .project_excel_models import ProjectExcelExportJobRow, ProjectExcelPublicationRow
 from .project_run_models import ProjectBatchRow, ProjectTaskRow
 from .project_sync_models import SyncOperationRow
+from .workflow_models import WorkflowDocumentRequestRow, WorkflowDocumentRow
 from .workflow_models import WorkflowRunRow as StudioRunRow
-from .workflow_project_scope import studio_run_project_expression
+from .workflow_project_scope import (
+    studio_run_project_expression,
+    workflow_project_expression,
+)
 from .workflow_runtime_models import (
     WorkflowPreparedContentRow,
     WorkflowRunArtifactRow,
@@ -84,8 +88,10 @@ class SqlAlchemyProjectLifecycle:
         session_factory: sessionmaker[Session],
         *,
         environment_root: Path | None = None,
+        workflow_artifact_root: Path | None = None,
     ) -> None:
         self._factory = session_factory
+        self._workflow_artifact_root = workflow_artifact_root.resolve() if workflow_artifact_root is not None else None
         self._environment_root = (
             Path(environment_root).absolute() if environment_root else None
         )
@@ -303,6 +309,8 @@ class SqlAlchemyProjectLifecycle:
                 session.rollback()
                 return
             targets = _local_targets(session, project_id, self._environment_root)
+            studio_targets, unsafe_targets = _studio_run_targets(session, project_id, self._workflow_artifact_root)
+            targets.extend(studio_targets)
             operation = _open_lifecycle_operation(session, project_id)
             if operation is None:
                 # Residue can clear without a new user command. Reuse the failed
@@ -311,7 +319,7 @@ class SqlAlchemyProjectLifecycle:
                 operation = _latest_delete_operation(session, project_id)
             operation_id = operation.id if operation is not None else None
             session.rollback()
-        residue = _remove(targets)
+        residue = [*unsafe_targets, *_remove(targets)]
         if residue:
             self._fail_cleanup(project_id, operation_id, residue)
             return
@@ -361,6 +369,15 @@ class SqlAlchemyProjectLifecycle:
             if project is None or project.lifecycle_state != "deleting":
                 session.rollback()
                 return
+            # Resolve JSON/legacy document ownership before project automation
+            # rows disappear. Studio child indexes cascade with their run.
+            studio_ids = list(session.scalars(select(StudioRunRow.id).where(studio_run_project_expression() == project_id)))
+            document_ids = list(session.scalars(select(WorkflowDocumentRow.id).where(workflow_project_expression() == project_id)))
+            if studio_ids:
+                session.execute(delete(StudioRunRow).where(StudioRunRow.id.in_(studio_ids)))
+            if document_ids:
+                session.execute(delete(WorkflowDocumentRequestRow).where(WorkflowDocumentRequestRow.workflow_id.in_(document_ids)))
+                session.execute(delete(WorkflowDocumentRow).where(WorkflowDocumentRow.id.in_(document_ids)))
             for owned, child_column, parent_column in _EXTRA_PURGES:
                 # Declarative models type `__table__` as FromClause.
                 table = cast(Table, owned)
@@ -620,6 +637,24 @@ def _local_targets(session: Session, project_id: str, root: Path | None) -> list
         *[root / "environments" / value for value in environments],
         *[root / "candidates" / value for value in saves],
     ]
+
+
+def _studio_run_targets(session: Session, project_id: str, root: Path | None) -> tuple[list[Path], list[str]]:
+    run_ids = session.scalars(select(StudioRunRow.id).where(studio_run_project_expression() == project_id)).all()
+    if not run_ids:
+        return [], []
+    if root is None:
+        # Keep cleanup responsibility visible when a host did not wire storage.
+        return [], ["Studio 运行存储未配置"]
+    runs_root = root / "runs"
+    targets, unsafe = [], []
+    for run_id in run_ids:
+        target = runs_root / run_id
+        if Path(run_id).name != run_id or run_id in {".", ".."} or runs_root.resolve() != runs_root or target.is_symlink() or target.resolve().parent != runs_root:
+            unsafe.append(f"Studio 运行目录边界无效：{run_id}")
+        else:
+            targets.append(target)
+    return targets, unsafe
 
 
 def _remove(targets: list[Path]) -> list[str]:
