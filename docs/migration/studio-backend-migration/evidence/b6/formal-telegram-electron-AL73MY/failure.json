@@ -1,0 +1,6 @@
+{
+  "checkedAt": "2026-09-23T10:48:52.120Z",
+  "checks": [],
+  "requests": [],
+  "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ '404 False'\n- '200 True'\n\n    at file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b6-telegram.mjs:43:10"
+}

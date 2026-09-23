@@ -269,3 +269,8 @@
 - 来源：项目图执行器原未装配`external_integrations`，使Studio已迁入的API/邮件/SSH等节点在项目批次中无法使用；项目worker现在复用现有`WorkflowIntegrationGateway`并在所有退出路径关闭，不新增执行器。
 - 临时工作区真实worker向本地HTTP服务发送中文JSON、写入输出事件，另验证在途请求取消后无输出且worker空闲；关联17项通过，Ruff/mypy通过。证据：`docs/migration/studio-backend-migration/evidence/project-integration/external-gateway-2026-09-23/README.md`。
 - 正式项目UI及各外部供应商独有分支仍待验收；自定义模块冻结依赖和项目数据写回不在本块中核销。
+
+## B6 Telegram 正式窗口受控 TLS（2026-09-23，confirmed）
+
+- `notify_telegram` 是保留的213节点之一，未恢复其余14个排除通知节点。正式Studio经真实UI配置、保存重开后，生产执行器及httpx向临时TLS夹具发送中文Bot API JSON，成功与`ok=false`失败各一次；节点日志未泄露测试Token，Electron和夹具端口清理断言通过。
+- 前几次失败均是测试夹具路由和同步探针错误，保留原失败记录；证据在`docs/migration/studio-backend-migration/evidence/b6/formal-telegram-electron-JqCVt8/`。节点级台账由629/639变为630/639；第三方真实投递、Intel/Windows及冻结包不算通过。
