@@ -6,6 +6,7 @@
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
   "branch": "codex/project-management-pm9-runtime",
   "remaining": [
+    "XE-G02 known-owner force-stop after controlled graceful IPC loss passed local real parameter HTTP/SQLite/browser/worker with actual30s grace, generation revocation and terminal original-command replay. Final2 passed/34deselected74.42s; unknown-owner reconciliation, packaged/native new case remain pending. No product change; see force-stop-follow-through.json.",
     "DATA-WRITE-12 finite-group atomic update is an implementation gap, not just missing tests. Current domain rejects RecordRef arrays and worker has no group operation; existing single-write conflict/replay2 tests passed. G1–G3 spec and plan await confirmation. See group-write-audit.json.",
     "DATA-CLAIM-09 public peer replacement/namespace/current-generation recovery passed actual HTTP/SQLite/browser/worker locally. Together with peer removal, closes the specifically named missing-test cases only; packaged live-Google/UI and new native evidence remain pending. Status remains partial; see peer-rebind-follow-through.json.",
     "Current1c676965 fixes first-source-outage empty cache being mistaken for noMatch.42 related/6 boundary/2 real-worker tests and Ruff/mypy408 passed; serial full backend3493 passed/80 skipped/2 warnings/778.49s; rebuilt ARM full desktop passed22screenshots; native matrix pending. Current live matrices exclude this source. See partial-source-follow-through.json; releaseAccepted=false.",
@@ -195,7 +196,7 @@
     "physicalInstallation": "ARM isolated command-line install passed; Windows/Intel physical installation, Finder/Gatekeeper/native panels/signing/notarization pending"
   },
   "codeCandidateScope": "Empty Sheets input proof guard plus prior source-outage/runtime fixes; targeted, serial full backend3493 and rebuilt ARM desktop22screens passed. Existing matrices are earlier production snapshots; newest native dispatch pending authentication.",
-  "testCandidate": "Post-production1c676965 peer removal and rebinding test-only follow-through: final related3 passed/7 deselected/2 warnings/32.46s; current CI selection contains newest case,34/45 collected. These assertions are not covered by prior full3493/package or35902129697. See peer-rebind-follow-through.json.",
+  "testCandidate": "Latest test-only peer removal/rebinding and parameter force-stop evidence sits after production1c676965. Force-stop plus normal-stop final2 passed/34deselected74.42s; CI selection35/46 collected includes newest case. Prior full3493/package22screens and35902129697 do not include these assertions; see peer-rebind-follow-through.json and force-stop-follow-through.json.",
   "d1": "Safe source business values remain preserved. Declared selected input fields are validated before preparation and at claim commit; unused bad fields remain allowed. Local and selected three-platform real worker passed; current packaged real-Google acceptance remains open.",
   "d1Verification": {
     "relatedBackend": "89 passed locally",
@@ -591,5 +592,6 @@
   "partialSourceFollowThrough": "partial-source-follow-through.json",
   "peerOutageFollowThrough": "peer-outage-follow-through.json",
   "peerRebindFollowThrough": "peer-rebind-follow-through.json",
-  "groupWriteAudit": "group-write-audit.json"
+  "groupWriteAudit": "group-write-audit.json",
+  "forceStopFollowThrough": "force-stop-follow-through.json"
 }

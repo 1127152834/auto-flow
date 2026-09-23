@@ -16120,6 +16120,15 @@
           "scope": "真实有限参数运行、人工等待取消和独立内容冻结子范围；不代表整组门禁。",
           "platform": "macOS arm64",
           "user_acceptance": "pending"
+        },
+        {
+          "milestone": "PM9",
+          "kind": "automated_rule_or_integration",
+          "report": "docs/project-management/implementation/pm9/force-stop-follow-through.json",
+          "scope": "参数真实worker停止后下行通道丢失；真实宽限期内强停拒绝、到期公开强停、进程出生身份/退出、代次撤销与原命令查询重放",
+          "limitations": "受控IPC丢失；未证明归属不明核验组合、打包UI或新增三平台同场景",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
         }
       ],
       "primary_package": "PM3-C",
@@ -16147,12 +16156,12 @@
         "PM3-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-23",
+        "reviewedAt": "2026-09-24",
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py",
             "symbol": "test_real_project_batch_http",
-            "scope": "success：两 Task 的冻结参数、真实网页两个输出、5次成功节点访问、10条日志和连续事件、批次幂等查询/重放、worker/blocker/临时目录回收；manual-stop：实际等待人工后停止，至少一个取消Task及全部人工项取消，同样资源回收。只证明两项直接场景，不推定强停/归属不明时的核验。",
+            "scope": "success：两 Task 的冻结参数、真实网页两个输出、5次成功节点访问、10条日志和连续事件、批次幂等查询/重放、worker/blocker/临时目录回收；manual-stop：实际等待人工后停止，至少一个取消Task及全部人工项取消，同样资源回收。只证明两项直接场景，不推定强停/归属不明时的核验。 manual-force-stop：停止后受控下行通道丢失，真实宽限期内409且worker仍活；门禁到期后公开强停，原生birth匹配/退出与临时目录回收、代次撤销、interrupted未知结果、终态操作查询重放、无后续节点和多余Task。",
             "level": "automated_integration"
           },
           {
@@ -16165,7 +16174,7 @@
         "gaps": [
           {
             "kind": "test_missing",
-            "detail": "尚未把强停/归属不明时退出核验、平台进程成员证明与参数运行组织成完整联合门禁；当前取消证据限人工等待。"
+            "detail": "参数任务真实已知归属强停联合链已补；归属不明/退出证明失败时保持核验与资源占用、恢复证明后显式核验的完整联合门禁仍缺。"
           },
           {
             "kind": "production_evidence_missing",

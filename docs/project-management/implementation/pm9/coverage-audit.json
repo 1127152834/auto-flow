@@ -2517,7 +2517,7 @@
         {
           "id": "XE-G02",
           "status": "partially_verified",
-          "evidenceCount": 2,
+          "evidenceCount": 3,
           "plannedTestExists": true,
           "reviewedCheckCount": 2,
           "gapKinds": [

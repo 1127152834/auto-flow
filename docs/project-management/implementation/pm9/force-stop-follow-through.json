@@ -1,0 +1,66 @@
+{
+  "date": "2026-09-24",
+  "status": "local_real_worker_passed_native_pending",
+  "releaseAccepted": false,
+  "requirement": "XE-G02",
+  "productionSource": "1c676965fb581ea3e33882b3ecb300b3abc99368",
+  "parentCommit": "bad404d2540bd6ee2345686fdfd99555ea0d63cd",
+  "change": "Test-only manual-force-stop scenario in existing real parameter batch harness. CI main matrix and worker probe selectors include it. No product behavior/timeout/ownership guard changed.",
+  "test": {
+    "file": "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py",
+    "symbol": "test_real_project_batch_http",
+    "scenario": "manual-force-stop",
+    "sha256": "61ab7e91398da0f867b7657f515f8c29361b45604ba3de2c71cde06c2cda90d3"
+  },
+  "fixtureBoundary": "Only manager._send is dropped once worker.stop_requested is true. Real HTTP/SQLite/bootstrap/worker/browser, 30s dispatcher grace, process birth identity, force cleanup and ledger remain production. Graceful IPC loss is controlled, not a live OS transport failure.",
+  "assertions": [
+    "Exactly one parameter Task uses frozen parameters and a real browser request, then waits at manual checkpoint.",
+    "Public normal stop closes batch; public force before grace returns409 FORCE_STOP_GRACE_ACTIVE; worker still alive and native process birth matches tracked owner.",
+    "Waits for actual public forceStopAllowed, without clock/timeout overrides; public force accepted after grace.",
+    "Run finishes interrupted with WORKFLOW_RESULT_UNKNOWN and incremented executionGeneration; manual items cancelled, no after-manual node ran.",
+    "Worker process has returncode and original birth no longer matches; owned work directory removed, manager/scheduler/dispatcher idle, no temporary generation directory.",
+    "Force operation reaches succeeded by original idempotency key; replay returns same terminal operation and entire batch result after normalizing only createdAt/completedAt UTC notation. Batch start original key replay still works; no extra Task or browser."
+  ],
+  "checks": {
+    "command": "AUTOFLOW_TEST_CLOAKBROWSER=<worktree pinned145.0.7632.109.2> uv run --directory apps/backend pytest -q --tb=short tests/integration/test_project_batch_real_cloakbrowser.py -k \"manual-force-stop or manual-stop\"",
+    "result": "2 passed /34 deselected /74.42s",
+    "ruff": "passed",
+    "ciSelection": "35/46 collected,11deselected,1.02s; manual-force-stop present. Collection only, not native execution.",
+    "coverage": "4 mapping tests passed;251 references valid; no requirement status promoted."
+  },
+  "earlierAttempts": [
+    {
+      "log": "initial.log",
+      "result": "1failed/35deselected11.31s",
+      "explanation": "Dropping only stop allowed manual-cancel capability reply to end worker normally; no force happened. Fixture incomplete, not product RED."
+    },
+    {
+      "log": "channel-loss.log",
+      "result": "1failed/35deselected41.43s",
+      "explanation": "Force completed interrupted per production/design, test incorrectly expected cancelled; corrected assertion and added unknown-result/generation checks."
+    },
+    {
+      "log": "related.log",
+      "result": "1failed/1passed/34deselected49.19s",
+      "explanation": "Force operation legitimately progresses running→succeeded; initial receipt is not immutable final status."
+    },
+    {
+      "log": "final.log",
+      "result": "1failed/35deselected41.28s",
+      "explanation": "Generic operation lookup types nested BatchView timestamps; run-command result keeps raw JSON UTC notation. Normalize only those two timestamps, retain all other equality checks."
+    }
+  ],
+  "evidenceSha256": {
+    ".tmp-tests/pm9-force-stop-2026-09-24/channel-loss.log": "1cc1ec5737f70f1fe68bad7398163a6808a8fc566ee1b495b18e8ce635ab5d93",
+    ".tmp-tests/pm9-force-stop-2026-09-24/ci-selection.log": "917fb0b7a168ea9b91d4ce05b0f5ea79408ee2b3fe5459b643cafd5b42a7d968",
+    ".tmp-tests/pm9-force-stop-2026-09-24/final-related.log": "d5516b6aff22b861eac0ab16829bd1f25c5ce6c40549d23bfdcd71c08862361e",
+    ".tmp-tests/pm9-force-stop-2026-09-24/final.log": "2c3c8c3257a42009ecec1b625ad296574689df7208f105a7ccb8373c30ecf51b",
+    ".tmp-tests/pm9-force-stop-2026-09-24/initial.log": "3df20fec525b26153c94ff7890b1ce25324f57ff28062e4c61f4d2c801452fa7",
+    ".tmp-tests/pm9-force-stop-2026-09-24/related.log": "5c17060cc4ddb03c8384badc158d394a860b5d27c971e733a33ab31b1a17449f"
+  },
+  "remaining": [
+    "Unknown native ownership/exit-proof failure combined with public parameter batch and explicit reconciliation remains unproved by this scenario.",
+    "Current packaged UI and Windows/Intel execution of this new case pending; existing35902129697 excludes latest production and new assertions.",
+    "New all-platform dispatch still requires authentication restoration/manual trigger. G1-G3 and other proposed contracts remain approval pending; live Sheets/OAuth/signing/physical platform evidence remains external."
+  ]
+}
