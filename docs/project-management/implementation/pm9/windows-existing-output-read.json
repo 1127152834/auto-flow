@@ -23,11 +23,12 @@
     "url": "https://github.com/1127152834/auto-flow/actions/runs/35830710429",
     "headSha": "0bac3886ce3338e68590d14b8a73c1b2ae599902",
     "result": "Windows platform-boundary step: 250 passed, 28 skipped, 1 failed. New existing-file read, missing-parent and real-worker tests passed; one older table-family test still asserted Windows must fail with 501, while the worker now correctly succeeded. The other matrix jobs were cancelled and this run is not counted as a passing candidate.",
-    "correction": "Remove the obsolete platform-failure assertion and three obsolete Windows skips for new-file table exports; include worker contract and table parity in the bounded native probe. Final candidate recheck pending."
+    "correction": "Remove the obsolete platform-failure assertion and two obsolete Windows skips for relative new-file table exports; retain the absolute-drive-path skip until its application contract is implemented. Include worker contract and those two table cases in the bounded native probe. Final candidate recheck pending."
   },
+  "scopedProbeAdjustment": "35831675395 @bde396de passed the corrected worker contract and existing-file read cases, but its broad differential file selection failed 32 frozen-source cases because the bounded job does not check out reference/WebRPA; the remaining absolute-drive-path fake case is still deliberately rejected by TableExportExecutor. This is not a Windows read regression. The next probe selects only the two applicable relative new-file table tests.",
   "limits": [
     "This scoped native job did not include the later read-only parent fix and did not run the three-platform full regression or packaged desktop chain for the final code.",
-    "Existing-file overwrite and append still return 501; prior held-target rename experiment could not prove conditional atomic replacement.",
+    "Existing-file overwrite and append still return 501; prior held-target rename experiment could not prove conditional atomic replacement. Table export also still rejects Windows absolute drive paths at its application layer.",
     "Physical Windows installation, native dialogs, current packaged Sheets/OAuth and signing remain separate acceptance conditions."
   ]
 }

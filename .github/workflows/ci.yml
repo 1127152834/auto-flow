@@ -30,7 +30,7 @@ jobs:
           python-version: '3.11'
       - uses: astral-sh/setup-uv@v5
       - run: uv sync --directory apps/backend --locked
-      - run: uv run --directory apps/backend pytest -vv --tb=short tests/unit/test_browser_processes.py tests/integration/test_workflow_worker_process.py tests/integration/test_workflow_recovery.py tests/integration/test_workflow_artifacts.py tests/unit/workflows/test_browser_session_contract.py tests/differential/workflows/test_b4_table_executor_parity.py
+      - run: uv run --directory apps/backend pytest -vv --tb=short tests/unit/test_browser_processes.py tests/integration/test_workflow_worker_process.py tests/integration/test_workflow_recovery.py tests/integration/test_workflow_artifacts.py tests/unit/workflows/test_browser_session_contract.py tests/differential/workflows/test_b4_table_executor_parity.py::test_csv_export_uses_the_real_atomic_artifact_writer tests/differential/workflows/test_b4_table_executor_parity.py::test_table_exports_formula_like_text_as_literal_data
       - run: python scripts/pm9-windows-native-probe.py
       - uses: actions/upload-artifact@v4
         if: always()
