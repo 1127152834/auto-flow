@@ -2,7 +2,7 @@
 
 - 状态：`partial`；代码、契约和真实基础 ReDroid 链路已验证，Google 组件、测试 APK、批量压力和手动原生窗口仍 `blocked`。
 - worktree：`codex/android-management-complete`，起点 `a92f0688f206d4339ff4468c1871f3ccdd6816dc`。
-- 代码交付提交：`c60148fb`；OpenAPI 生成类型与本提交一致。
+- 代码交付提交：`3ee61947`；OpenAPI 生成类型与本提交一致。
 - 主工作区既有 Studio 未提交改动未复制、未修改。
 
 ## 已执行
@@ -33,7 +33,7 @@
 
 ## 已覆盖
 
-只读环境诊断、逐项 `unknown`、workflow=false；独立 Android operation 表、workspace/request 幂等、摘要冲突 409、状态栅栏、needs_verification、全量计数分页和迁移；管理首页不请求 workflows/allocations/runs 或旧 `/api/v1/android/devices`；现有 provider 归属校验、生命周期锁、generation/sequence；控制会话 clientSessionId/generation heartbeat；镜像登记、引用保护、来源校验、拉取引用安全校验、服务端镜像元数据验证和精确 imageId 删除核实、模板 revision 归档；persistent 默认创建并以稳定错误拒绝 temporary；停机备份前置条件、受限目录/权限、归档摘要/字节数/镜像一致性和路径安全校验；诊断导出采集环境/设备/操作快照并递归脱敏；容量未知和预留阻止准入；观察器活跃 3 秒刷新、失败指数退避和 10/45 秒陈旧规则；应用操作 requestId/保护包边界、真实 Android 平台包名解析；清理预览摘要冻结并执行受控删除；批量操作 UI 冻结设备 revision、失败项 retryOf lineage 和稳定请求号；smoke 授权保护；前端诊断面板、管理快照、批量操作、备份入口、镜像/模板和会话控制器。备份适配使用 Docker volume copy，不依赖 Android 镜像提供独立 `/bin/sh`。
+只读环境诊断、逐项 `unknown`、workflow=false；独立 Android operation 表、workspace/request 幂等、摘要冲突 409、状态栅栏、needs_verification、全量计数分页和迁移；管理首页不请求 workflows/allocations/runs 或旧 `/api/v1/android/devices`；现有 provider 归属校验、生命周期锁、generation/sequence；控制会话 clientSessionId/generation heartbeat；镜像登记、引用保护、来源校验、拉取引用安全校验、服务端镜像元数据验证和精确 imageId 删除核实、模板 revision 归档；persistent 默认创建并以稳定错误拒绝 temporary；停机备份前置条件、受限目录/权限、归档摘要/字节数/镜像一致性和路径安全校验；诊断导出采集环境/设备/操作快照并递归脱敏；容量未知阻止准入、预留纯规则通过（实际持久预留尚未闭环）；观察器活跃 3 秒刷新、失败指数退避和 10/45 秒陈旧规则；应用操作 requestId/保护包边界、真实 Android 平台包名解析；清理预览摘要冻结并执行受控删除；批量操作 UI 冻结设备 revision、失败项 retryOf lineage 和稳定请求号；smoke 授权保护；前端诊断面板、管理快照、批量操作、备份入口、镜像/模板和会话控制器。备份适配使用 Docker volume copy，不依赖 Android 镜像提供独立 `/bin/sh`。
 
 ## 阻塞项与风险
 
@@ -46,3 +46,7 @@
 - 镜像拉取和内容删除已接入 Mac runtime 的受限 Docker pull/inspect/rm 适配和兼容性门禁；服务端验证忽略客户端结果并核对精确 digest、架构和 OS，未知删除可按原 requestId 核实。本轮真实使用了缓存基础镜像并核对固定 digest，网络拉取、内容删除实机和 GApps 候选仍未验收。观察器规则已接入后台启动/关闭调度；应用列表已接入版本/系统应用标识、搜索、停止、卸载、清除数据、确认和结果未知复核。
 - 备份已接入受限数据卷 copy 归档、摘要、路径/特殊文件校验，并真实完成数据标记写入、停机归档和新卷恢复；缺失适配器、缺失精确镜像、旧 manifest 或损坏归档会明确失败，不发布“恢复成功”。清理按实际 workspace identity 汇总保留数据和备份，预览包含不可逆影响与引用指纹，执行前重检并分别走设备删除操作或受控备份目录删除。
 - AM3 的批量压力和人工窗口验收仍未执行；应用停止/卸载/清除的真实破坏性动作未执行，保持保护边界。诊断导出当前只采集管理快照和只读环境检查，未接入高级日志 IPC/时间窗口，仍不宣称完整日志导出。
+
+## 后续校准
+
+本页保留 9 月 22 日历史证据。旧引用 `c60148fb` 是 amend 前的提交，现已纠正为 `3ee61947`。新增结果与未完成的软件项以 [9 月 23 日记录](2026-09-23-validation.md) 为准。

@@ -211,7 +211,10 @@ class AndroidConsole:
             )
         ):
             raise AndroidError("ANDROID_SESSION_STALE", "控制权已变化，请刷新会话")
-        if manual and context.device.get("pendingCommand"):
+        if manual and (context.device.get("pendingCommand") or any(
+            receipt.get("state") in {"running", "needs_verification"}
+            for receipt in session.get("appReceipts", {}).values()
+        )):
             raise AndroidError(
                 "ANDROID_OPERATION_UNKNOWN",
                 "上一操作结果尚未确认，请结束控制并核实设备",
@@ -424,6 +427,9 @@ class AndroidConsole:
     ) -> None:
         receipt = session.get("appReceipts", {}).get(request_id) if request_id else None
         if receipt is not None:
+            marker = session["context"].device.get("pendingCommand")
+            if marker:
+                receipt.setdefault("commandMarker", marker)
             receipt.update(
                 state="needs_verification",
                 error={
@@ -518,8 +524,13 @@ class AndroidConsole:
                 session["view"]["latestOperation"] = "应用操作执行中"
                 self._persist_session(session)
             if operation == "install":
+                installed = False
                 try:
                     await context.runtime.install_apk(value)
+                    installed = True
+                    if request_id:
+                        receipts[request_id]["commandCompleted"] = True
+                        self._persist_session(session)
                     # The transport's Success output is not the application result. Read
                     # the package inventory after install and bind the result to the APK
                     # metadata captured before the side effect.
@@ -539,7 +550,7 @@ class AndroidConsole:
                 except AndroidError as error:
                     # A post-install observation failure is unknown; a parser/runtime
                     # rejection remains a deterministic failure.
-                    if error.code == "ANDROID_INSTALL_VERIFY_FAILED":
+                    if installed or context.device.get("pendingCommand"):
                         self._app_operation_unknown(session, request_id, error)
                         raise
                     self._app_operation_failed(session, request_id, error)
@@ -558,7 +569,10 @@ class AndroidConsole:
                     self._app_operation_unknown(session, request_id, error)
                     raise AndroidError("ANDROID_OPERATION_UNKNOWN", "应用操作结果未知，请先核实后重试", 503) from error
                 except AndroidError as error:
-                    self._app_operation_failed(session, request_id, error)
+                    if context.device.get("pendingCommand"):
+                        self._app_operation_unknown(session, request_id, error)
+                    else:
+                        self._app_operation_failed(session, request_id, error)
                     raise
                 except Exception as error:
                     self._app_operation_unknown(session, request_id, error)
@@ -578,45 +592,51 @@ class AndroidConsole:
             receipt = session.setdefault("appReceipts", {}).get(request_id)
             if receipt is None:
                 raise AndroidError("ANDROID_REQUEST_NOT_FOUND", "应用操作请求不存在", 404)
-            if receipt.get("state") == "succeeded":
-                return session["view"]
-            if receipt.get("state") != "needs_verification":
+            if receipt.get("state") not in {"needs_verification", "succeeded", "failed"}:
                 raise AndroidError("ANDROID_REQUEST_NOT_VERIFYABLE", "应用操作当前不需要核实", 409)
             request = receipt.get("request", receipt)
             operation = request.get("operation")
             metadata = request.get("apkMetadata") or {}
-            try:
-                verify_pending = getattr(context.runtime, "verify_pending_command", None)
-                marker_verified = callable(verify_pending)
-                if marker_verified:
-                    result = await verify_pending()
-                    if result != 0:
-                        raise AndroidError("ANDROID_APP_OPERATION_FAILED", "Android 已确认应用操作失败", 422)
-                if operation == "install":
-                    inventory = await context.runtime.app_info()
-                    package_name = metadata.get("packageName")
-                    record = next((item for item in inventory.get("applications", []) if item.get("packageName") == package_name), None)
-                    if record is None or (metadata.get("versionCode") is not None and record.get("versionCode") != metadata["versionCode"]):
-                        raise AndroidError("ANDROID_INSTALL_VERIFY_FAILED", "未核实 APK 的包名或版本", 422)
-                elif not marker_verified:
-                    raise AndroidError("ANDROID_OPERATION_UNKNOWN", "缺少可验证的 Android 操作完成状态", 503)
-                receipt["state"] = "succeeded"
-                receipt.pop("error", None)
-                session["view"]["latestOperation"] = "应用操作已核实"
-                self._persist_session(session)
-                return session["view"]
-            except AndroidError as error:
-                if error.code in {"ANDROID_APP_OPERATION_FAILED", "ANDROID_INSTALL_VERIFY_FAILED"}:
-                    self._app_operation_failed(session, request_id, error)
-                    raise
-                self._app_operation_unknown(session, request_id, error)
-                raise AndroidError("ANDROID_OPERATION_UNKNOWN", "应用操作仍未核实，请稍后重试", 503) from error
-            except (TimeoutError, OSError) as error:
-                self._app_operation_unknown(session, request_id, error)
-                raise AndroidError("ANDROID_OPERATION_UNKNOWN", "应用操作仍未核实，请稍后重试", 503) from error
-            except Exception as error:
-                self._app_operation_unknown(session, request_id, error)
-                raise AndroidError("ANDROID_OPERATION_UNKNOWN", "应用操作仍未核实，请稍后重试", 503) from error
+            marker = receipt.get("commandMarker")
+            if receipt["state"] == "needs_verification":
+                try:
+                    pending = context.device.get("pendingCommand")
+                    if pending:
+                        if not marker or marker != pending:
+                            raise AndroidError("ANDROID_OPERATION_UNKNOWN", "完成标记与应用请求不匹配", 503)
+                        result = await context.runtime.verify_pending_command()
+                        if result != 0:
+                            raise AndroidError("ANDROID_APP_OPERATION_FAILED", "Android 已确认应用操作失败", 422)
+                    elif not receipt.get("commandCompleted"):
+                        raise AndroidError("ANDROID_OPERATION_UNKNOWN", "缺少可验证的 Android 操作完成状态", 503)
+                    if operation == "install":
+                        inventory = await context.runtime.app_info()
+                        package_name = metadata.get("packageName")
+                        record = next((item for item in inventory.get("applications", []) if item.get("packageName") == package_name), None)
+                        if record is None or (metadata.get("versionCode") is not None and record.get("versionCode") != metadata["versionCode"]):
+                            raise AndroidError("ANDROID_INSTALL_VERIFY_FAILED", "未核实 APK 的包名或版本", 422)
+                    receipt["state"] = "succeeded"
+                    receipt.pop("error", None)
+                    session["view"]["latestOperation"] = "应用操作已核实"
+                    self._persist_session(session)
+                except AndroidError as error:
+                    if error.code in {"ANDROID_APP_OPERATION_FAILED", "ANDROID_INSTALL_VERIFY_FAILED"}:
+                        self._app_operation_failed(session, request_id, error)
+                    else:
+                        self._app_operation_unknown(session, request_id, error)
+                        raise AndroidError("ANDROID_OPERATION_UNKNOWN", "应用操作仍未核实，请稍后重试", 503) from error
+                except Exception as error:
+                    self._app_operation_unknown(session, request_id, error)
+                    raise AndroidError("ANDROID_OPERATION_UNKNOWN", "应用操作仍未核实，请稍后重试", 503) from error
+            self._persist_session(session)
+            # Never consume completion evidence before the terminal receipt is durable.
+            # A cleanup failure can be retried without executing the application action.
+            if marker:
+                await context.runtime.acknowledge_pending_command(marker)
+            if receipt["state"] == "failed":
+                error = receipt["error"]
+                raise AndroidError(error["code"], error["message"], error["status"])
+            return session["view"]
 
     async def shutdown(self) -> None:
         if self.reaper and not self.reaper.done():

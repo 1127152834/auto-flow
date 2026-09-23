@@ -337,7 +337,7 @@ async def test_prepare_uses_the_same_workspace_root_as_the_running_service(tmp_p
     assert seen == [tmp_path / "workspace"]
 
 @pytest.mark.asyncio
-async def test_verify_pending_command_consumes_marker_without_replaying(tmp_path, monkeypatch):
+async def test_verify_pending_command_preserves_evidence_until_receipt_is_durable(tmp_path, monkeypatch):
     runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
     marker = "/data/local/tmp/autoflow-operation-" + "a" * 32
     runtime.device = {"containerId": "container", "pendingCommand": marker}
@@ -346,6 +346,15 @@ async def test_verify_pending_command_consumes_marker_without_replaying(tmp_path
     docker = AsyncMock(side_effect=[b"0\n", b""])
     monkeypatch.setattr(mac, "docker", docker)
     assert await runtime.verify_pending_command() == 0
-    assert "pendingCommand" not in runtime.device
+    assert runtime.device["pendingCommand"] == marker
     assert docker.await_args_list[0].args[:4] == ("exec", "container", "cat", marker)
-    assert docker.await_count == 2
+    assert docker.await_count == 1
+
+
+@pytest.mark.asyncio
+async def test_missing_command_marker_is_not_evidence_of_success(tmp_path):
+    runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
+    runtime.device = {"containerId": "container"}
+    with pytest.raises(AndroidError) as error:
+        await runtime.verify_pending_command()
+    assert error.value.code == "ANDROID_OPERATION_UNKNOWN"

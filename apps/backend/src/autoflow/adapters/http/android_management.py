@@ -16,7 +16,7 @@ from autoflow.application.android.diagnostics import (
     EnvironmentCheckResult,
     EnvironmentCheckService,
 )
-from autoflow.application.android.diagnostics_export import redact_diagnostics
+from autoflow.application.android.diagnostics_export import diagnostic_snapshot
 from autoflow.application.android.verification import verify_lifecycle_operation
 from autoflow.domain.android.management_models import DeviceFacts
 from autoflow.domain.android.management_rules import policy_for
@@ -236,11 +236,12 @@ def android_management_router(check_service: EnvironmentCheckService, operations
         repository = getattr(devices, "repository", None)
         if repository is not None and callable(getattr(repository, "list", None)):
             wanted = set(body.device_ids)
+            runtime_workspace = getattr(getattr(devices, "runtime", None), "workspace_id", workspace)
             payload["devices"] = [
                 _management_device(row).model_dump(by_alias=True, mode="json")
                 for row in repository.list()
                 if (not wanted or str(row.get("deviceId")) in wanted)
-                and row.get("workspaceId") in {None, workspace}
+                and row.get("workspaceId") == runtime_workspace
                 and not row.get("deleted")
             ]
         if operations is not None and callable(getattr(operations, "page", None)):
@@ -249,7 +250,7 @@ def android_management_router(check_service: EnvironmentCheckService, operations
             except TypeError:
                 rows = operations.page(None, None, 200)
             payload["operations"] = [_operation_response(row).model_dump(by_alias=True, mode="json") for row in rows]
-        return redact_diagnostics(payload)
+        return diagnostic_snapshot(payload)
 
     if backups is not None and operations is not None:
         backups.operations = operations

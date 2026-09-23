@@ -1,10 +1,10 @@
 # 安卓模拟器管理验收证据
 
-状态：`partial`（自动化覆盖已扩展；真实 macOS/Lima/网络/GApps/人工窗口条件仍按项 blocked）。本文档只索引实际执行的命令和证据；没有执行或缺少设备、网络、账号、APK、人工窗口条件的项目明确写为 `blocked` 或 `not_run`。
+状态：`partial`，完整开发与验收目标仍 active。最新证据见 [2026-09-23-validation.md](2026-09-23-validation.md)。仍有可继续修复的软件缺口及全量门槛失败；只有明确缺少外部条件的项标记 `blocked`，未执行的验证标记 `not_run`。
 
-实施计划 100 个 checkbox 当前分布：`passed=25`、`blocked=70`、`not_run=5`、`failed=0`。
+实施计划的旧 checkbox 状态未完成逐项重新审计，不能作为当前完成率；以最新验收记录中的实际命令、输出和剩余工作为准。
 
-审计基线：`codex/android-management-complete`，代码交付提交 `c60148fb`；本页聚焦计数按隔离 worktree 的可复核输出记录，主工作区既有 Studio 文档改动不属于本模块，未纳入 Android 证据。
+审计基线：`codex/android-management-complete`，9 月 22 日历史代码提交 `3ee61947`；本页聚焦计数按隔离 worktree 的可复核输出记录，主工作区既有 Studio 文档改动不属于本模块，未纳入 Android 证据。
 
 ## 阶段索引
 
@@ -18,13 +18,13 @@
 
 ## 全局自动验证
 
-以下输出来自 `2026-09-22-validation.md`，不是对缺失的真实设备或人工步骤的替代：
+以下为 `2026-09-22-validation.md` 的历史输出；9 月 23 日后端聚焦（含 migration heads）已更新为 `253 passed, 2 warnings`，完整后端及 Ruff 仍失败。历史前端和构建结果不冒充本轮重跑：
 
 - Android 后端聚焦集合：`235 passed, 2 warnings`。
 - Android 前端：`13 files, 81 passed`（含旧设备列表轮询、未知操作核实、stale/unknown 打开保护、镜像服务端验证/删除核实、批量失败项重试）；typecheck、lint、OpenAPI check、structure 和 build 通过。
 - 全后端：`276 passed, 1 warning` 后在既有 `tests/contract/test_proxy_runtime.py::test_runtime_mounts_proxies_but_never_publishes_host_contract` 失败；该断言属于 proxy compatibility，不在 Android 范围。
 - 全量前端 `npm test`（最新审计）：`423 files, 417 passed, 6 failed（20 个测试失败）`，失败集中在非 Android 模块，不能视为全量门槛通过。
-- 已补软件回归：批量 workspace hash 归属、删除结果核实、观察器首次快照/逐设备异常、环境探测异常均有 RED→GREEN 测试；源实例复制通过服务端快照契约。应用 APK Manifest/split 校验和未知应用操作核实入口仍是剩余软件风险。
+- 已补软件回归：批量 workspace hash 归属、删除结果核实、观察器首次快照/逐设备异常、环境探测异常均有 RED→GREEN 测试；源实例复制通过服务端快照契约。APK Manifest/split 校验、安装后版本核对及未知应用操作核实入口已实现；9 月 23 日继续修复完成标记、回执持久化顺序和诊断默认字段白名单。
 - 全脚本：历史总记录为 `95 tests: 92 passed, 3 pre-existing Studio inventory/reference failures`；最新审计重跑为 `95 tests: 92 passed, 3 failures`，失败仍为 Studio inventory/reference。
 - 本轮真实管理链：环境与能力检查 `available=true`；管理快照返回真实设备；停止操作最终 `succeeded`；备份路由返回 `201 Created/state=available/bytes=18585260`；清理预览和执行返回 `200/state=succeeded`；删除实例后按 workspace/device 标签核验容器和卷均为 `0`。GApps 镜像没有 Google-components 标签，保持 `blocked/not_tested`。
 - 最终 guarded smoke（显式 `--allow-device-mutation`，隔离 workspace）返回 `status=passed`：`deviceId=cd0b0480-8d3c-4241-908a-a27308e7613d`、`workspaceId=9eb2124e1b481bbf56e749a8d0aa267e4777126e069687310eed050e5d6a1fbb`、应用 `102/102`、截图 `553476` bytes；停止保留数据、启动、移除运行环境、清理独立数据四个阶段完成，`deleted=true/dataRetained=false`。随后按 workspace 标签查询容器和卷均无输出。

@@ -32,6 +32,15 @@
 | 操作状态来源不一致 | 既有操作投影在设备 payload，执行任务/console session 部分为内存状态 | 新增独立 Operation/ControlSession 读模型，迁移历史 active 为 `needs_verification` |
 | 真实运行条件 | 本轮环境可能缺 Docker/Lima/设备/账号/网络 | 单元/契约/集成测试使用 fake IO 边界；真实链逐项记录 `blocked`，不伪造通过 |
 
+### 0.3 2026-09-23 增量校准
+
+- 本轮基线为隔离分支 `codex/android-management-complete@3ee61947`；保留 worktree 中 3 个 Studio 文档的已有未提交改动，不纳入本轮提交。
+- Alembic 当前唯一 head 为 `am01_management_operations`；新核验/容量/诊断修复无数据库形状变化，无需新增迁移。
+- T15 发现并修复缺标记误判成功、回执落盘前清除证据、结果未知继续接受新写入及安装后观察失败误分类；完成标记绑定原请求并在持久终态后清除。
+- T13 修复 Docker 未限额内存记零、容器枚举失败和不完整 inspect 被准入；持久容量预留仍需实现与竞态证据。
+- T19 修复诊断设备归属使用路径而非 runtime hash，默认诊断字段改为白名单；高级日志采集仍未实现，不能以环境 blocked 代替。
+- 原 checkbox 状态是历史记录，尚未全部重新校准；不得依据旧 blocked 数量宣称代码开发完成。继续任务、失败门槛和真实验证见 `docs/qa/android-management/2026-09-23-validation.md`。
+
 ## Global Constraints
 
 - GC-01：本轮运行平台仅 Apple Silicon macOS + 现有 Lima/ReDroid；其他平台明确提示不支持，不影响主应用启动。

@@ -116,3 +116,34 @@ def test_diagnostics_advanced_logs_are_explicitly_unsupported():
     assert response.status_code == 202
     assert response.json()["payload"]["advancedLogs"]["status"] == "unsupported"
     assert response.json()["payload"]["advancedLogs"]["code"] == "ANDROID_DIAGNOSTICS_ADVANCED_LOGS_UNSUPPORTED"
+
+
+def test_diagnostic_snapshot_uses_runtime_ownership_and_excludes_unapproved_fields():
+    import json
+
+    class Runtime:
+        workspace_id = "runtime-workspace-hash"
+
+        async def environment(self):
+            return {"available": True, "platformSupported": True, "runtimeId": "lima",
+                    "newSecretField": "private-token", "message": "private-token",
+                    "checks": {"adb": {"status": "fail", "code": "ANDROID_ADB_UNKNOWN",
+                                        "message": "password=private-token"}}}
+
+    own = {"deviceId": "d1", "workspaceId": "runtime-workspace-hash", "androidStatus": "ready",
+           "name": "private-token", "creationConfig": {"newSecretField": "private-token"},
+           "operation": {"state": "failed", "error": "password=private-token"}}
+    devices = SimpleNamespace(runtime=Runtime(), management=SimpleNamespace(workspace_identity="/workspace/path"),
+                              repository=SimpleNamespace(list=lambda: [own, dict(own, deviceId="foreign", workspaceId="other"),
+                                                                       dict(own, deviceId="unowned", workspaceId=None)]))
+    app = FastAPI()
+    install_error_handlers(app)
+    app.include_router(android_management_router(EnvironmentCheckService(devices.runtime), devices=devices, resources=_Resources()))
+    with TestClient(app) as client:
+        response = client.post("/api/v1/android/management/diagnostics", json={"requestId": "scoped-diagnostics"})
+    assert response.status_code == 202
+    payload = response.json()["payload"]
+    assert [item["deviceId"] for item in payload["devices"]] == ["d1"]
+    assert "private-token" not in json.dumps(payload)
+    assert "legacy" not in payload["environment"]
+    assert payload["environment"]["checks"]["adb"] == {"status": "fail", "code": "ANDROID_ADB_UNKNOWN"}

@@ -67,3 +67,55 @@ async def test_fleet_capacity_without_runtime_fails_closed() -> None:
 class _Resources:
     def list(self, _kind):
         return []
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("memory", [0, None, True, -1])
+async def test_runtime_capacity_blocks_unknown_external_memory(monkeypatch, memory):
+    import json
+    from unittest.mock import AsyncMock
+
+    from autoflow.providers.android import management
+
+    monkeypatch.setattr(management, "docker", AsyncMock(side_effect=[
+        json.dumps({"NCPU": 4, "MemTotal": 8 * 1024**3}).encode(),
+        b"other\n",
+        json.dumps([{"Id": "other", "HostConfig": {"Memory": memory}}]).encode(),
+    ]))
+    with pytest.raises(AndroidError) as error:
+        await management.capacity({"containerId": "target", "cpu": 1, "memoryMb": 1024})
+    assert error.value.code == "ANDROID_CAPACITY_UNKNOWN"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("inspection", [[], [{"Id": "unlisted", "HostConfig": {"Memory": 1024**3}}]])
+async def test_runtime_capacity_requires_complete_running_container_inventory(monkeypatch, inspection):
+    import json
+    from unittest.mock import AsyncMock
+
+    from autoflow.providers.android import management
+
+    monkeypatch.setattr(management, "docker", AsyncMock(side_effect=[
+        json.dumps({"NCPU": 4, "MemTotal": 8 * 1024**3}).encode(),
+        b"other\n",
+        json.dumps(inspection).encode(),
+    ]))
+    with pytest.raises(AndroidError) as error:
+        await management.capacity({"containerId": "target", "cpu": 1, "memoryMb": 1024})
+    assert error.value.code == "ANDROID_CAPACITY_UNKNOWN"
+
+
+@pytest.mark.asyncio
+async def test_runtime_capacity_inventory_failure_is_reported_as_unknown(monkeypatch):
+    import json
+    from unittest.mock import AsyncMock
+
+    from autoflow.providers.android import management
+
+    monkeypatch.setattr(management, "docker", AsyncMock(side_effect=[
+        json.dumps({"NCPU": 4, "MemTotal": 8 * 1024**3}).encode(),
+        AndroidError("ANDROID_COMMAND_FAILED", "daemon unavailable", 502),
+    ]))
+    with pytest.raises(AndroidError) as error:
+        await management.capacity({"containerId": "target", "cpu": 1, "memoryMb": 1024})
+    assert error.value.code == "ANDROID_CAPACITY_UNKNOWN"

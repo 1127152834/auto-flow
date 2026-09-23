@@ -119,19 +119,22 @@ async def capacity(device: dict[str, Any]) -> None:
         or total_memory <= 0
     ):
         raise AndroidError("ANDROID_CAPACITY_UNKNOWN", "运行环境容量尚未核实，不能启动实例", 409)
-    ids = (await docker("ps", "-q")).decode().split()
     allocated = 0
-    if ids:
-        try:
+    try:
+        ids = (await docker("ps", "-q", "--no-trunc")).decode().split()
+        if ids:
             records = json.loads(await docker("inspect", *ids))
+            if not isinstance(records, list) or len(records) != len(ids) or {obj["Id"] for obj in records} != set(ids):
+                raise ValueError("incomplete running container inventory")
             for obj in records:
                 if obj["Id"] != device["containerId"]:
                     memory = obj.get("HostConfig", {}).get("Memory")
-                    if isinstance(memory, bool) or not isinstance(memory, int) or memory < 0:
-                        raise ValueError("invalid memory allocation")
+                    # Docker's zero limit means unlimited, not zero consumption.
+                    if isinstance(memory, bool) or not isinstance(memory, int) or memory <= 0:
+                        raise ValueError("unknown memory allocation")
                     allocated += memory
-        except (AndroidError, OSError, TimeoutError, ValueError, TypeError, KeyError, json.JSONDecodeError) as error:
-            raise AndroidError("ANDROID_CAPACITY_UNKNOWN", "运行环境容量尚未核实，不能启动实例", 409) from error
+    except (AndroidError, OSError, TimeoutError, ValueError, TypeError, KeyError, AttributeError) as error:
+        raise AndroidError("ANDROID_CAPACITY_UNKNOWN", "运行环境容量尚未核实，不能启动实例", 409) from error
     # CPU is a quota, shared by scheduling; do not promise dedicated CPU cores.
     requested_cpu = device.get("cpu", 1)
     requested_memory = device.get("memoryMb", 1536)

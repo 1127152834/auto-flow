@@ -225,6 +225,14 @@ async def test_unknown_app_action_can_be_reconciled_by_marker_without_replay():
     console, runtime, _resources = _app_console(TimeoutError("adb timeout"))
     from unittest.mock import AsyncMock
     runtime.verify_pending_command = AsyncMock(return_value=0)
+    runtime.acknowledge_pending_command = AsyncMock()
+    original_command = runtime.command
+
+    async def marked_command(*args):
+        console.sessions["s"]["context"].device["pendingCommand"] = "completion-marker"
+        return await original_command(*args)
+
+    runtime.command = marked_command
     with pytest.raises(AndroidError) as error:
         await console.app_operation("s", 3, "stop", "com.example.app", "stop-req")
     assert error.value.code == "ANDROID_OPERATION_UNKNOWN"
@@ -248,3 +256,127 @@ async def test_install_version_mismatch_stays_unverified_until_explicit_reconcil
         await console.verify_app("s", 3, "install-mismatch")
     assert verified.value.code == "ANDROID_INSTALL_VERIFY_FAILED"
     assert console.sessions["s"]["appReceipts"]["install-mismatch"]["state"] == "failed"
+
+
+@pytest.mark.asyncio
+async def test_post_install_android_observation_error_is_unknown():
+    from unittest.mock import AsyncMock
+    console, runtime, resources = _app_console()
+    runtime.app_info = AsyncMock(side_effect=AndroidError("ANDROID_COMMAND_FAILED", "ADB disconnected", 502))
+    with pytest.raises(AndroidError):
+        await console.app_operation("s", 3, "install", b"opaque", "install-req",
+                                    {"packageName": "com.example.app", "versionCode": 1})
+    assert resources.saved[-1][1]["appReceipts"]["install-req"]["state"] == "needs_verification"
+
+
+@pytest.mark.asyncio
+async def test_unknown_receipt_blocks_new_application_writes_without_runtime_marker():
+    console, runtime, _resources = _app_console(TimeoutError())
+    with pytest.raises(AndroidError):
+        await console.app_operation("s", 3, "stop", "com.example.app", "first")
+    runtime.failure = None
+    with pytest.raises(AndroidError) as error:
+        await console.app_operation("s", 3, "stop", "com.example.app", "second")
+    assert error.value.code == "ANDROID_OPERATION_UNKNOWN"
+    assert len(runtime.calls) == 1
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("fail_receipt_save", [False, True])
+async def test_app_verification_releases_marker_only_after_durable_receipt(tmp_path, monkeypatch, fail_receipt_save):
+    from unittest.mock import AsyncMock
+
+    from autoflow.providers.android import mac_runtime as mac
+
+    console, _, resources = _app_console()
+    session = console.sessions["s"]
+    marker = "/data/local/tmp/autoflow-operation-" + "a" * 32
+    session["appReceipts"] = {"req": {"state": "needs_verification", "commandMarker": marker,
+                                      "request": {"operation": "stop", "generation": 3}}}
+    runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
+    runtime.device = session["context"].device
+    runtime.device.update(containerId="container", pendingCommand=marker)
+    runtime.inspect = AsyncMock()
+    session["context"].runtime = runtime
+    original_save = resources.save
+
+    def save(kind, item):
+        nonlocal fail_receipt_save
+        if fail_receipt_save and item["appReceipts"]["req"]["state"] == "succeeded":
+            fail_receipt_save = False
+            raise OSError("disk unavailable")
+        original_save(kind, item)
+
+    resources.save = save
+    commands = []
+
+    async def docker(*args, **kwargs):
+        commands.append(args)
+        if args[2] == "rm":
+            assert resources.saved[-1][1]["appReceipts"]["req"]["state"] == "succeeded"
+            return b""
+        assert args == ("exec", "container", "cat", marker)
+        return b"0\n"
+
+    monkeypatch.setattr(mac, "docker", docker)
+    if fail_receipt_save:
+        with pytest.raises(AndroidError):
+            await console.verify_app("s", 3, "req")
+        assert runtime.device["pendingCommand"] == marker
+        assert all(command[2] == "cat" for command in commands)
+    await console.verify_app("s", 3, "req")
+    assert resources.saved[-1][1]["appReceipts"]["req"]["state"] == "succeeded"
+    assert "pendingCommand" not in runtime.device
+    assert commands[-1] == ("exec", "container", "rm", "-f", marker)
+
+
+@pytest.mark.asyncio
+async def test_app_verification_rejects_another_requests_marker():
+    from unittest.mock import AsyncMock
+    console, runtime, resources = _app_console()
+    session = console.sessions["s"]
+    session["appReceipts"] = {"req": {"state": "needs_verification", "commandMarker": "original",
+                                      "request": {"operation": "stop", "generation": 3}}}
+    session["context"].device["pendingCommand"] = "different"
+    runtime.verify_pending_command = AsyncMock(return_value=0)
+    with pytest.raises(AndroidError) as error:
+        await console.verify_app("s", 3, "req")
+    assert error.value.code == "ANDROID_OPERATION_UNKNOWN"
+    assert resources.saved[-1][1]["appReceipts"]["req"]["state"] == "needs_verification"
+    runtime.verify_pending_command.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_installed_inventory_alone_cannot_resolve_timed_out_install():
+    console, _runtime, resources = _app_console(TimeoutError())
+    with pytest.raises(AndroidError):
+        await console.app_operation("s", 3, "install", b"opaque", "req",
+                                    {"packageName": "com.example.app", "versionCode": 1})
+    with pytest.raises(AndroidError) as error:
+        await console.verify_app("s", 3, "req")
+    assert error.value.code == "ANDROID_OPERATION_UNKNOWN"
+    assert resources.saved[-1][1]["appReceipts"]["req"]["state"] == "needs_verification"
+
+
+@pytest.mark.asyncio
+async def test_verification_retries_failed_receipt_save_before_acknowledging():
+    from unittest.mock import AsyncMock
+    console, runtime, resources = _app_console()
+    session = console.sessions["s"]
+    session["context"].device["pendingCommand"] = "marker"
+    session["appReceipts"] = {"req": {"state": "needs_verification", "commandMarker": "marker",
+                                      "request": {"operation": "stop", "generation": 3}}}
+    runtime.verify_pending_command = AsyncMock(return_value=1)
+
+    async def acknowledge(_marker):
+        assert resources.saved[-1][1]["appReceipts"]["req"]["state"] == "failed"
+
+    runtime.acknowledge_pending_command = acknowledge
+    original_save = resources.save
+    resources.save = lambda *_args: (_ for _ in ()).throw(OSError("disk unavailable"))
+    with pytest.raises(OSError):
+        await console.verify_app("s", 3, "req")
+    resources.save = original_save
+    with pytest.raises(AndroidError) as error:
+        await console.verify_app("s", 3, "req")
+    assert error.value.code == "ANDROID_APP_OPERATION_FAILED"
