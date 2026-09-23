@@ -662,7 +662,7 @@ def test_csv_export_allows_explicit_absolute_path(tmp_path: Path) -> None:
     )
 
     assert result.success is True
-    assert artifacts.text_calls[0]["output_path"] == str(target)
+    assert Path(artifacts.text_calls[0]["output_path"]) == target
 
 
 def test_export_rejects_unknown_format_without_touching_artifacts() -> None:
