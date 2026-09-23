@@ -7740,7 +7740,7 @@
         "BE.SUPPORT.credentials-integrations"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/desktop_platform.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
@@ -7754,7 +7754,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "生产执行器已注册且有模块族证据；本节点正式 Electron 实际执行仍待验收，未测平台按证据单列。",
       "risk": "平台或第三方依赖需逐项探测；秘密、路径、取消、超时和部分失败不能按原全局状态直接复制。",
       "acceptanceCases": [
         {
@@ -7890,7 +7890,7 @@
         "BE.SUPPORT.credentials-integrations"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/desktop_platform.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
@@ -7904,7 +7904,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "生产执行器已注册且有模块族证据；本节点正式 Electron 实际执行仍待验收，未测平台按证据单列。",
       "risk": "平台或第三方依赖需逐项探测；秘密、路径、取消、超时和部分失败不能按原全局状态直接复制。",
       "acceptanceCases": [
         {
@@ -8093,7 +8093,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B6",
       "source": {
@@ -12208,7 +12208,7 @@
         "BE.SUPPORT.triggers-schedules"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/input_triggers.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
@@ -12223,7 +12223,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "生产执行器已注册且有模块族证据；本节点正式 Electron 实际执行仍待验收，未测平台按证据单列。",
       "risk": "长期监听必须服从工作区停写、重连和退出；服务崩溃后不得重放一次性动作。",
       "acceptanceCases": [
         {
@@ -12445,7 +12445,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B6",
       "source": {
@@ -12493,7 +12493,7 @@
         "BE.SUPPORT.triggers-schedules"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/file_watcher.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
@@ -12508,7 +12508,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "生产执行器已注册；逐节点实际执行已验收，未测平台与外部依赖按证据单列。",
       "risk": "长期监听必须服从工作区停写、重连和退出；服务崩溃后不得重放一次性动作。",
       "acceptanceCases": [
         {
@@ -12785,7 +12785,7 @@
         "BE.SUPPORT.triggers-schedules"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/email_trigger.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
@@ -12800,7 +12800,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "生产执行器已注册且有模块族证据；本节点正式 Electron 实际执行仍待验收，未测平台按证据单列。",
       "risk": "长期监听必须服从工作区停写、重连和退出；服务崩溃后不得重放一次性动作。",
       "acceptanceCases": [
         {
@@ -13052,7 +13052,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B6",
       "source": {
@@ -13108,7 +13108,7 @@
         "BE.SUPPORT.triggers-schedules"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/external_http.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
@@ -13123,7 +13123,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "生产执行器已注册；逐节点实际执行已验收，未测平台与外部依赖按证据单列。",
       "risk": "长期监听必须服从工作区停写、重连和退出；服务崩溃后不得重放一次性动作。",
       "acceptanceCases": [
         {
@@ -13380,7 +13380,7 @@
         "BE.SUPPORT.triggers-schedules"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/input_triggers.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
@@ -13395,7 +13395,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "生产执行器已注册且有模块族证据；本节点正式 Electron 实际执行仍待验收，未测平台按证据单列。",
       "risk": "长期监听必须服从工作区停写、重连和退出；服务崩溃后不得重放一次性动作。",
       "acceptanceCases": [
         {
@@ -13670,7 +13670,7 @@
         "BE.SUPPORT.triggers-schedules"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/image_trigger.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
@@ -13685,7 +13685,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "生产执行器已注册且有模块族证据；本节点正式 Electron 实际执行仍待验收，未测平台按证据单列。",
       "risk": "长期监听必须服从工作区停写、重连和退出；服务崩溃后不得重放一次性动作。",
       "acceptanceCases": [
         {
@@ -13897,7 +13897,7 @@
         "BE.SUPPORT.triggers-schedules"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/sound_trigger.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
@@ -13912,7 +13912,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "生产执行器已注册且有模块族证据；本节点正式 Electron 实际执行仍待验收，未测平台按证据单列。",
       "risk": "长期监听必须服从工作区停写、重连和退出；服务崩溃后不得重放一次性动作。",
       "acceptanceCases": [
         {
@@ -14166,7 +14166,7 @@
         "BE.SUPPORT.triggers-schedules"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/face_trigger.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
@@ -14181,7 +14181,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "生产执行器已注册且有模块族证据；本节点正式 Electron 实际执行仍待验收，未测平台按证据单列。",
       "risk": "长期监听必须服从工作区停写、重连和退出；服务崩溃后不得重放一次性动作。",
       "acceptanceCases": [
         {
@@ -14472,7 +14472,7 @@
         "BE.SUPPORT.triggers-schedules"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/gesture_trigger.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
@@ -14487,7 +14487,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "生产执行器已注册且有模块族证据；本节点正式 Electron 实际执行仍待验收，未测平台按证据单列。",
       "risk": "长期监听必须服从工作区停写、重连和退出；服务崩溃后不得重放一次性动作。",
       "acceptanceCases": [
         {
@@ -14681,7 +14681,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B6",
       "source": {
@@ -14728,7 +14728,7 @@
         "BE.SUPPORT.triggers-schedules"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/element_change_trigger.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
@@ -14743,7 +14743,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "生产执行器已注册；逐节点实际执行已验收，未测平台与外部依赖按证据单列。",
       "risk": "长期监听必须服从工作区停写、重连和退出；服务崩溃后不得重放一次性动作。",
       "acceptanceCases": [
         {
@@ -39846,7 +39846,7 @@
         "BE.SUPPORT.credentials-integrations"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/messaging.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
@@ -39860,7 +39860,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "生产执行器已注册且有模块族证据；本节点正式 Electron 实际执行仍待验收，未测平台按证据单列。",
       "risk": "平台或第三方依赖需逐项探测；秘密、路径、取消、超时和部分失败不能按原全局状态直接复制。",
       "acceptanceCases": [
         {
@@ -40034,7 +40034,7 @@
         "BE.SUPPORT.credentials-integrations"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/messaging.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
@@ -40048,7 +40048,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "生产执行器已注册且有模块族证据；本节点正式 Electron 实际执行仍待验收，未测平台按证据单列。",
       "risk": "平台或第三方依赖需逐项探测；秘密、路径、取消、超时和部分失败不能按原全局状态直接复制。",
       "acceptanceCases": [
         {
@@ -41561,7 +41561,7 @@
         "BE.SUPPORT.credentials-integrations"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/network_sharing.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
@@ -41575,7 +41575,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "生产执行器已注册且有模块族证据；本节点正式 Electron 实际执行仍待验收，未测平台按证据单列。",
       "risk": "平台或第三方依赖需逐项探测；秘密、路径、取消、超时和部分失败不能按原全局状态直接复制。",
       "acceptanceCases": [
         {
@@ -41778,7 +41778,7 @@
         "BE.SUPPORT.credentials-integrations"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/network_sharing.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
@@ -41792,7 +41792,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "生产执行器已注册且有模块族证据；本节点正式 Electron 实际执行仍待验收，未测平台按证据单列。",
       "risk": "平台或第三方依赖需逐项探测；秘密、路径、取消、超时和部分失败不能按原全局状态直接复制。",
       "acceptanceCases": [
         {
@@ -41949,7 +41949,7 @@
         "BE.SUPPORT.credentials-integrations"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/network_sharing.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
@@ -41963,7 +41963,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "生产执行器已注册且有模块族证据；本节点正式 Electron 实际执行仍待验收，未测平台按证据单列。",
       "risk": "平台或第三方依赖需逐项探测；秘密、路径、取消、超时和部分失败不能按原全局状态直接复制。",
       "acceptanceCases": [
         {
@@ -42171,7 +42171,7 @@
         "BE.SUPPORT.credentials-integrations"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/network_sharing.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
@@ -42185,7 +42185,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "生产执行器已注册且有模块族证据；本节点正式 Electron 实际执行仍待验收，未测平台按证据单列。",
       "risk": "平台或第三方依赖需逐项探测；秘密、路径、取消、超时和部分失败不能按原全局状态直接复制。",
       "acceptanceCases": [
         {
@@ -42342,7 +42342,7 @@
         "BE.SUPPORT.credentials-integrations"
       ],
       "autoFlow": {
-        "existingExecutor": null,
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/network_sharing.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
@@ -42356,7 +42356,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "生产执行器已注册且有模块族证据；本节点正式 Electron 实际执行仍待验收，未测平台按证据单列。",
       "risk": "平台或第三方依赖需逐项探测；秘密、路径、取消、超时和部分失败不能按原全局状态直接复制。",
       "acceptanceCases": [
         {
@@ -45498,7 +45498,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B6",
       "source": {
@@ -45541,7 +45541,7 @@
         "BE.SUPPORT.credentials-integrations"
       ],
       "autoFlow": {
-        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/basic.py",
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/text_to_speech.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
@@ -45555,7 +45555,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "生产执行器已注册；逐节点实际执行已验收，未测平台与外部依赖按证据单列。",
       "risk": "平台或第三方依赖需逐项探测；秘密、路径、取消、超时和部分失败不能按原全局状态直接复制。",
       "acceptanceCases": [
         {
@@ -46362,7 +46362,7 @@
         "BE.SUPPORT.credentials-integrations"
       ],
       "autoFlow": {
-        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/utility_tools.py",
+        "existingExecutor": "apps/backend/src/autoflow/application/workflows/executors/printer.py",
         "reusable": [
           "apps/backend/src/autoflow/adapters/http/workflow_studio_schemas.py"
         ],
@@ -46376,7 +46376,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "生产执行器已注册且有模块族证据；本节点正式 Electron 实际执行仍待验收，未测平台按证据单列。",
       "risk": "平台或第三方依赖需逐项探测；秘密、路径、取消、超时和部分失败不能按原全局状态直接复制。",
       "acceptanceCases": [
         {
@@ -46528,7 +46528,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B6",
       "source": {
@@ -46579,7 +46579,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "生产执行器已注册；逐节点实际执行已验收，未测平台与外部依赖按证据单列。",
       "risk": "平台或第三方依赖需逐项探测；秘密、路径、取消、超时和部分失败不能按原全局状态直接复制。",
       "acceptanceCases": [
         {
@@ -46742,7 +46742,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B6",
       "source": {
@@ -46798,7 +46798,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "生产执行器已注册；逐节点实际执行已验收，未测平台与外部依赖按证据单列。",
       "risk": "平台或第三方依赖需逐项探测；秘密、路径、取消、超时和部分失败不能按原全局状态直接复制。",
       "acceptanceCases": [
         {
@@ -46953,7 +46953,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B6",
       "source": {
@@ -47007,7 +47007,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "生产执行器已注册；逐节点实际执行已验收，未测平台与外部依赖按证据单列。",
       "risk": "平台或第三方依赖需逐项探测；秘密、路径、取消、超时和部分失败不能按原全局状态直接复制。",
       "acceptanceCases": [
         {
@@ -47173,7 +47173,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B6",
       "source": {
@@ -47227,7 +47227,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "生产执行器已注册；逐节点实际执行已验收，未测平台与外部依赖按证据单列。",
       "risk": "平台或第三方依赖需逐项探测；秘密、路径、取消、超时和部分失败不能按原全局状态直接复制。",
       "acceptanceCases": [
         {
@@ -47374,7 +47374,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B6",
       "source": {
@@ -47427,7 +47427,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "生产执行器已注册；逐节点实际执行已验收，未测平台与外部依赖按证据单列。",
       "risk": "平台或第三方依赖需逐项探测；秘密、路径、取消、超时和部分失败不能按原全局状态直接复制。",
       "acceptanceCases": [
         {
@@ -47565,7 +47565,7 @@
     },
     "remainingDetails": [],
     "backendMigration": {
-      "status": "已实现待验收",
+      "status": "已实现且已验收",
       "classification": "AutoFlow必要适配",
       "milestone": "B6",
       "source": {
@@ -47622,7 +47622,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "前端和Mock协议已验收；AutoFlow没有该节点的真实执行器或已注册生产运行入口。",
+      "gap": "生产执行器已注册；逐节点实际执行已验收，未测平台与外部依赖按证据单列。",
       "risk": "平台或第三方依赖需逐项探测；秘密、路径、取消、超时和部分失败不能按原全局状态直接复制。",
       "acceptanceCases": [
         {
