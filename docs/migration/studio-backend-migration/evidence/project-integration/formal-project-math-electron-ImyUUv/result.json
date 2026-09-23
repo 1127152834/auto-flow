@@ -1,0 +1,23 @@
+{
+  "evidenceId": "BE-project-math-formal-electron",
+  "result": "passed",
+  "checkedAt": "2026-09-23T13:50:05.238Z",
+  "gitHead": "e6c9bbd96af893662e0a4a6a13ffcdb8d03853e1",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "projectId": "27b62a96-772d-4e17-9b7a-54062f9e8479",
+  "workflowId": "lJ54Af3VEWYRsMQJ0rzn7",
+  "batchId": "4f786779-f48b-4180-bfb0-0b683467b70d",
+  "taskId": "81fe6d4b-f929-43c0-8aa0-2db2cda7030d",
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "正式项目 Studio 通过真实 UI 配置并保存列表求和、四舍五入和绝对值顺序流程",
+    "正式项目任务真实 worker 产出三个数值和持久节点记录，未启动 CloakBrowser"
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "interaction": "formal Electron mouse/keyboard; API only fixture setup and evidence reads"
+  }
+}

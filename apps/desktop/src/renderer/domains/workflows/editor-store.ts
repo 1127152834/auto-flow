@@ -6,7 +6,7 @@ import { applyNodeChanges, applyEdgeChanges, addEdge } from '@xyflow/react'
 import type { ModuleType, Variable, LogEntry, ExecutionStatus, ModuleConfig, DataAsset, ImageAsset } from './types/index'
 import { useGlobalConfigStore } from './hooks/stores/globalConfigStore'
 import { layoutGraph } from './lib/elkLayout'
-import { collectNodeVarNames } from './lib/moduleDefaultVars'
+import { collectNodeVarNames, MATH_DEFAULT_VARS } from './lib/moduleDefaultVars'
 import { snapshotKey } from './lib/snapshotKey'
 
 let latestLayoutRequest = 0
@@ -2489,6 +2489,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         ...(defaultTimeout > 0 ? { timeout: defaultTimeout } : {}),
         ...(isGroup ? { color: '#3b82f6', width: 300, height: 200 } : {}),
         ...(isNote ? { color: '#fef08a', content: '' } : {}),
+        ...MATH_DEFAULT_VARS[type],
         ...defaultData,
         // 合并额外的配置（优先级最高）
         ...extraConfig,

@@ -59,6 +59,9 @@ from autoflow.infrastructure.database.workflows import (
 from autoflow.infrastructure.process.project_workflow_worker import (
     ProjectWorkflowWorkerManager,
 )
+from tests.differential.workflows.test_b4_math_family_executor_parity import (
+    VALID_CASES as MATH_CASES,
+)
 from tests.fixtures.workflows import workflow_payload
 from tests.integration.test_project_run_start import setup, start_payload
 
@@ -107,7 +110,7 @@ def _studio_payload(workflow_id: str) -> dict[str, Any]:
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("family", ["strings", "containers"])
+@pytest.mark.parametrize("family", ["strings", "containers", "math"])
 async def test_project_task_executes_pure_data_family_in_real_worker(
     tmp_path: Path, family: str,
 ) -> None:
@@ -130,7 +133,13 @@ async def test_project_task_executes_pure_data_family_in_real_worker(
         ("dict-get", "dict_get", {"dictVariable": "record", "dictKey": "first", "variableName": "chosen"}, "甲"),
         ("dict-keys", "dict_keys", {"dictVariable": "record", "keyType": "keys", "variableName": "keys"}, ("first",)),
     ]
-    steps = string_steps if family == "strings" else container_steps
+    math_steps = [
+        (case["type"], case["type"], {
+            **case["config"], "resultVariable": f"result_{case['type']}"
+        }, None)
+        for case in MATH_CASES
+    ]
+    steps = {"strings": string_steps, "containers": container_steps, "math": math_steps}[family]
     node_types = {module_type for _, module_type, _, _ in steps}
     assert node_types <= runnable_module_types()
     assert "list_export" not in runnable_module_types()  # Project artifacts are not wired yet.
@@ -145,7 +154,8 @@ async def test_project_task_executes_pure_data_family_in_real_worker(
         edges=[{
             "id": f"edge-{index}", "source": steps[index][0], "target": steps[index + 1][0],
         } for index in range(len(steps) - 1)],
-        variables=[],
+        variables=([{"name": "items", "type": "array", "value": [1, 2, 3, 3]}]
+                   if family == "math" else []),
     )
     WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory)).update(
         automation.workflow_id, document, expected_revision=1,
@@ -171,13 +181,23 @@ async def test_project_task_executes_pure_data_family_in_real_worker(
         with factory() as session:
             repository = SqlAlchemyWorkflowRuntimeRepository(session)
             finished = repository.get_run(run_id=run.run_id)
-            events = repository.list_events(run.run_id, after_sequence=0, limit=100)
+            events = []
+            after_sequence = 0
+            while page := repository.list_events(run.run_id, after_sequence=after_sequence, limit=100):
+                events.extend(page)
+                after_sequence = page[-1].sequence
         assert finished is not None and finished.status == "succeeded", (
             finished.error if finished else None,
             [(event.kind, event.node_id, dict(event.payload)) for event in events],
         )
         outputs = {event.node_id: event.payload["value"] for event in events if event.kind == "output"}
-        assert outputs == {node_id: expected for node_id, _, _, expected in steps if expected is not None}
+        if family == "math":
+            assert set(outputs) == node_types
+            assert outputs["list_sum"] == 9
+            assert outputs["math_power"] == 1024
+            assert outputs["stat_median"] == 2.5
+        else:
+            assert outputs == {node_id: expected for node_id, _, _, expected in steps if expected is not None}
         assert sum(event.kind == "nodeAttempt" and event.payload.get("status") == "succeeded" for event in events) == len(steps)
         assert not resources.requests and not worker.busy()
     finally:

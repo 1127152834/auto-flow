@@ -9,6 +9,40 @@
  *
  * 新增模块时只需在这一处添加，不要再到处分散硬编码。
  */
+export const MATH_DEFAULT_VARS: Record<string, { resultVariable: string }> = {
+  list_sum: { resultVariable: 'sum' },
+  list_average: { resultVariable: 'average' },
+  list_max: { resultVariable: 'max' },
+  list_min: { resultVariable: 'min' },
+  list_sort: { resultVariable: 'sorted_list' },
+  list_unique: { resultVariable: 'unique_list' },
+  list_slice: { resultVariable: 'sliced_list' },
+  math_round: { resultVariable: 'rounded' },
+  math_base_convert: { resultVariable: 'converted' },
+  math_floor: { resultVariable: 'floor' },
+  math_modulo: { resultVariable: 'modulo' },
+  math_abs: { resultVariable: 'abs' },
+  math_sqrt: { resultVariable: 'sqrt' },
+  math_power: { resultVariable: 'power' },
+  math_log: { resultVariable: 'log' },
+  math_trig: { resultVariable: 'trig_result' },
+  math_exp: { resultVariable: 'exp' },
+  math_gcd: { resultVariable: 'gcd' },
+  math_lcm: { resultVariable: 'lcm' },
+  math_factorial: { resultVariable: 'factorial' },
+  math_permutation: { resultVariable: 'permutation' },
+  math_percentage: { resultVariable: 'percentage' },
+  math_clamp: { resultVariable: 'clamped' },
+  math_random_advanced: { resultVariable: 'random' },
+  stat_median: { resultVariable: 'median' },
+  stat_mode: { resultVariable: 'mode' },
+  stat_variance: { resultVariable: 'variance' },
+  stat_stdev: { resultVariable: 'stdev' },
+  stat_percentile: { resultVariable: 'percentile' },
+  stat_normalize: { resultVariable: 'normalized' },
+  stat_standardize: { resultVariable: 'standardized' },
+}
+
 export const MODULE_DEFAULT_VARS: Record<string, Record<string, string>> = {
   // ==================== 媒体处理 ====================
   format_convert: { resultVariable: 'converted_path' },
@@ -145,6 +179,7 @@ export const MODULE_DEFAULT_VARS: Record<string, Record<string, string>> = {
   infinite_loop: { indexVariable: 'loop_index' },
 
   // ==================== 数学/统计 ====================
+  ...MATH_DEFAULT_VARS,
 
   // ==================== 字典 ====================
 

@@ -302,3 +302,9 @@
 - 在现有 `data_structure.py` 执行器之上，项目目录新增 `list_operation`、`list_get`、`list_length`、`dict_operation`、`dict_get`、`dict_keys` 六个批准入口；真实项目 worker 六节点串联输出和持久事件一致，没有浏览器资源请求，清理完成。项目目录为 71 个，Studio 批准范围仍为 213 个。
 - 冻结 WebRPA 差分及项目关联共 194 项通过；两族真实 worker 连续三轮通过，Ruff、生产目录 mypy、OpenAPI 一致性通过。测试中两族一度在无节点事件时被人为的 10 秒 worker 启动预算打断；捕获到 `TimeoutError` 后改用生产默认的 90 秒预算，未更改成功、输出及清理断言。
 - `list_export` 因项目产物登记尚未接通而继续禁用。六节点的项目正式 Electron UI 与最新冻结包未验收；证据及边界见 `docs/migration/studio-backend-migration/evidence/project-integration/container-family-2026-09-23/README.md`。
+
+## 项目任务数学／统计节点族（2026-09-23，confirmed）
+
+- 沿用用户确认的项目默认资源＋任务显式覆盖，无资源白名单。项目目录新增 31 个现有 Studio 数学／统计节点，项目真实 worker 31 节点串联输出及持久尝试通过；冻结差分与关联测试共 270 项通过。Studio 批准范围 213 不变，项目目录为 102。
+- 正式 Electron 开发入口以真实 UI 保存三节点流程，关闭 Studio 后运行项目自动化，输出 6、6、7 且无浏览器残留。首次正式验收发现数学节点可见的默认输出名未写入工作流文档；在节点创建共用入口补齐 31 类默认值，专项 14 项、类型、lint、构建及正式链路复验通过。
+- PyInstaller 冻结后端与 macOS arm64 本地未签名 Electron 目录包构建后，同一真实 UI 链路包内复验通过；哈希、开发及包内证据见 `docs/migration/studio-backend-migration/evidence/project-integration/math-family-2026-09-23/README.md`。Intel/Windows 和 `list_export` 项目产物链尚未核销。
