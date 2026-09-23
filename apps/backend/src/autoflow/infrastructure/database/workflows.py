@@ -15,6 +15,7 @@ from autoflow.domain.workflows.document import (
 )
 from autoflow.domain.workflows.errors import WorkflowDocumentError
 
+from .core_workflows import _canonical_document_shape
 from .workflow_models import WorkflowDocumentRequestRow, WorkflowDocumentRow
 
 
@@ -23,11 +24,20 @@ def _aware(value: datetime) -> datetime:
 
 
 def _saved(row: WorkflowDocumentRow) -> SavedWorkflow:
+    document = copy.deepcopy(row.document)
+    layout = copy.deepcopy(row.layout)
+    if _canonical_document_shape(document):
+        # The project catalog wraps the same persisted graph; Studio consumes
+        # the unwrapped document, with its database identity and revision.
+        draft = WorkflowDraft.from_payload({
+            **document["content"], "id": row.id, "name": row.name, "layout": layout,
+        })
+        document, layout = draft.document, draft.layout
     return SavedWorkflow(
         id=row.id,
         name=row.name,
-        document=copy.deepcopy(row.document),
-        layout=copy.deepcopy(row.layout),
+        document=document,
+        layout=layout,
         revision=row.revision,
         created_at=_aware(row.created_at),
         updated_at=_aware(row.updated_at),

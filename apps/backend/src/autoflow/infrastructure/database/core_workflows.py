@@ -177,10 +177,16 @@ def _canonical_document_shape(document: object) -> bool:
 def _studio_document_shape(document: object) -> bool:
     return (
         isinstance(document, dict)
-        and isinstance(document.get("schemaVersion"), int)
+        and ("schemaVersion" not in document or document["schemaVersion"] == 3)
         and isinstance(document.get("nodes"), list)
         and isinstance(document.get("edges"), list)
         and isinstance(document.get("variables"), list)
+        and all(
+            isinstance(node, dict)
+            and isinstance(node.get("data"), dict)
+            and isinstance(node["data"].get("moduleType"), str)
+            for node in document["nodes"]
+        )
     )
 
 

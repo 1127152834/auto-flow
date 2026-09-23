@@ -3,7 +3,6 @@ from __future__ import annotations
 import hashlib
 from datetime import datetime
 from typing import Literal
-from uuid import UUID
 
 from fastapi import APIRouter, Query
 
@@ -65,8 +64,8 @@ def workflow_catalog_router(service: WorkflowService) -> APIRouter:
         return WorkflowCatalogList(items=[_item(record) for record in records])
 
     @router.get("/{workflowId}", response_model=WorkflowCatalogDetail)
-    def get_workflow(workflowId: UUID, projectId: str | None = Query(default=None, min_length=1, max_length=200)) -> WorkflowCatalogDetail:
-        record = service.get(str(workflowId))
+    def get_workflow(workflowId: str, projectId: str | None = Query(default=None, min_length=1, max_length=200)) -> WorkflowCatalogDetail:
+        record = service.get(workflowId)
         if projectId is not None and record.document["content"].get("projectId") != projectId:
             raise WorkflowError("WORKFLOW_NOT_FOUND", "工作流不存在", 404)
         return WorkflowCatalogDetail.model_validate(_item(record).model_dump())

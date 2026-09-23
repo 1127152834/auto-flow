@@ -31,6 +31,23 @@ def payload():
     }
 
 
+def test_preserves_studio_nanoid_without_weakening_other_identity_validation():
+    candidate = payload()
+    candidate["workflowId"] = "V1StGXR8_Z5jdHi6B-myT"
+    assert validate_write(candidate)["workflowId"] == candidate["workflowId"]
+    candidate["parameterSchema"][0]["parameterId"] = candidate["workflowId"]
+    with pytest.raises(ProjectError):
+        validate_write(candidate)
+
+
+@pytest.mark.parametrize("workflow_id", ["", "not-a-uuid", "../" + "a" * 18, "界" * 21, None, 123])
+def test_rejects_invalid_workflow_identity(workflow_id):
+    candidate = payload()
+    candidate["workflowId"] = workflow_id
+    with pytest.raises(ProjectError):
+        validate_write(candidate)
+
+
 def data_input(input_id: str, table_id: str, generation: str) -> dict:
     return {
         "inputId": input_id,

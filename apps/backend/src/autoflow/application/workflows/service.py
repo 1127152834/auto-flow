@@ -14,7 +14,10 @@ from autoflow.domain.workflows.models import (
     WorkflowSaveOperation,
     canonical_json,
 )
-from autoflow.domain.workflows.references import require_canonical_uuid
+from autoflow.domain.workflows.references import (
+    require_canonical_uuid,
+    require_workflow_id,
+)
 from autoflow.domain.workflows.validation import project_document
 
 
@@ -51,7 +54,7 @@ class WorkflowService:
         return record
 
     def get(self, workflow_id: str) -> WorkflowRecord:
-        workflow_id = require_canonical_uuid(workflow_id, "workflowId")
+        workflow_id = require_workflow_id(workflow_id, "workflowId")
         record = self._repository.get(workflow_id)
         if record is None:
             raise WorkflowError("WORKFLOW_NOT_FOUND", "工作流不存在", 404)
@@ -72,7 +75,7 @@ class WorkflowService:
         expected_revision: int,
         save_operation_id: str,
     ) -> WorkflowRecord:
-        workflow_id = require_canonical_uuid(workflow_id, "workflowId")
+        workflow_id = require_workflow_id(workflow_id, "workflowId")
         projected = _project_request_document(document)
         if projected["id"] != workflow_id:
             raise WorkflowError(
@@ -111,7 +114,7 @@ class WorkflowService:
         expected_revision: int,
         save_operation_id: str,
     ) -> WorkflowSaveOperation:
-        workflow_id = require_canonical_uuid(workflow_id, "workflowId")
+        workflow_id = require_workflow_id(workflow_id, "workflowId")
         save_operation_id = require_canonical_uuid(
             save_operation_id, "saveOperationId"
         )
@@ -148,5 +151,5 @@ class WorkflowService:
 def _project_request_document(document: object) -> dict[str, Any]:
     if not isinstance(document, dict):
         return project_document(document)
-    require_canonical_uuid(document.get("id"), "document.id")
+    require_workflow_id(document.get("id"), "document.id")
     return project_document(document)
