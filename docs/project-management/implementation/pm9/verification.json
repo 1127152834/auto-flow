@@ -6,7 +6,8 @@
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
   "branch": "codex/project-management-pm9-runtime",
   "remaining": [
-    "Actual5346 packaged manual resume then browser failure proves automatic deletion leaves resolved manual item and registered PNG in workspace/runs. Manual item cleanup/pending-manual blocker fixed locally (38 targeted passed); eb50e1ef full local backend3483/78 skipped and rebuilt ARM complete desktop passed. New three-platform35874897768 remains in progress. Persistent filesystem cleanup is missing with AD1-AD3 spec/plan proposed; no release acceptance. Prior5346 CI35871462256 cancelled for superseding known defect.",
+    "Current source632caf6d fixes actual standalone Studio feedback hiding and open/save identity conflict. Final frontend5473/409 files,50 targeted,101 scripts,typecheck/lint/build/ARM full desktop passed. New three-platform35881272086 is in progress; prior eb50 run35874897768 cancelled because it lacks these fixes. Studio metadata404 and full external gates remain; releaseAccepted=false.",
+    "Actual5346 packaged manual resume then browser failure proves automatic deletion leaves resolved manual item and registered PNG in workspace/runs. Manual item cleanup/pending-manual blocker fixed locally (38 targeted passed); eb50e1ef full local backend3483/78 skipped and rebuilt ARM complete desktop passed. Historical three-platform35874897768 was cancelled for the later Studio fixes; current632caf6d matrix35881272086 is in progress. Persistent filesystem cleanup is missing with AD1-AD3 spec/plan proposed; no release acceptance. Prior5346 CI35871462256 cancelled for superseding known defect.",
     "AU-08 real ARM installed UI unlink/worker blocker/original-key replay passed on c165, but SQLite inspection exposed owned snapshot purge ordering and overbroad impact count. Both fixed with direct RED→GREEN; 5346ceca full local backend3479/78 skipped and rebuilt packaged desktop passed; three-platform35871462256 is in progress. Project-owned workflow ownership/deletion remains missing, not merely missing tests.",
     "DATA-LINK-02 forged recordRef.projectId acceptance fixed at shared association preflight and commit boundary; local full backend 3479 passed/77 skipped, contract/rule 33 passed, and actual browser-worker End followed by forged repair refusal/correct repair-only association passed. Current c16532d7 three-platform CI succeeded after Intel-only retry. DATA-LINK-02 remains partial because complete packaged/cross-platform reverse-target and full business acceptance are open; local actual worker-generated forged End target now passed in link-boundary-follow-through.json.",
     "S4 Windows existing ordinary-file read and absolute-drive new-file table export passed bounded native probe 35832925704 and final three-platform matrix 35833223498 at dadb24a1. Existing output overwrite/append remain refused with 501.",
@@ -491,13 +492,25 @@
   ],
   "automationDeletionFollowThrough": "automation-deletion-follow-through.json",
   "currentCandidateValidation": {
+    "sourceCommit": "632caf6dfbf5034f6bee0d48fe0662a53417f85e",
+    "report": "standalone-studio-follow-through.json",
+    "ciRunId": 35881272086,
+    "status": "local_full_frontend_and_packaged_passed_three_platform_ci_in_progress",
+    "backendUnchangedSource": "eb50e1effb7e32149528f27ac257361f4212b4f7",
+    "previousCompleteCandidate": "c16532d79fe8db87a8f9b371d9045a02fb89e362",
+    "supersededRun": 35874897768,
+    "supersededStatus": "cancelled",
+    "releaseAccepted": false
+  },
+  "standaloneStudioFollowThrough": "standalone-studio-follow-through.json",
+  "previousCandidateValidation": {
     "sourceCommit": "eb50e1effb7e32149528f27ac257361f4212b4f7",
     "report": "automation-deletion-follow-through.json",
     "ciRunId": 35874897768,
-    "status": "local_full_and_packaged_passed_three_platform_ci_in_progress",
+    "status": "local_full_and_packaged_passed_ci_cancelled_superseded_by_studio_fix",
     "previousCompleteCandidate": "c16532d79fe8db87a8f9b371d9045a02fb89e362",
     "supersededCancelledRun": 35871462256,
-    "releaseAccepted": false
-  },
-  "standaloneStudioFollowThrough": "standalone-studio-follow-through.json"
+    "releaseAccepted": false,
+    "supersededByRun": 35881272086
+  }
 }

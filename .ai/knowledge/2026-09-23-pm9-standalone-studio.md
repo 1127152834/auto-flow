@@ -15,3 +15,5 @@
 前两次入口探针失败是测试选择器未包括按钮说明/文字笔误，不是产品失败；随后界面隐藏拒绝和保存409有独立失败报告、截图与单测反例。失败原始记录保持 failed。
 
 限制：必填字段元数据入口仍404，不宣称全部 Studio 节点接入；项目已有上下文提示及编辑保存子范围通过不构成完整窗口验收。Google/OAuth、签名/公证、Finder/Gatekeeper、Windows/Intel实机保留待验；AD/FR/L/M及Windows既有文件写入决定不被替代。XE-A19保持partial，251条205partial/46planned/0verified，releaseAccepted=false。主目录Studio工作未修改；草稿PR不合并、不发布。
+
+源码632caf6d已推送，新三平台Actions35881272086进行中；旧eb50矩阵35874897768已确认取消，不计完整通过。最终候选之后仅证据/状态提交不重复启动流水线。

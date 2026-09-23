@@ -1,6 +1,6 @@
 # 项目上下文
 
-2026-09-23 XE-A19打包Studio收口（confirmed本机子范围）：实际零Project通用网页运行、项目上下文提示、独立启动422不生成Run，以及编辑保存保留grant/参数通过。已修复旧运行历史遮住操作反馈、打开文档后误发新建请求两处缺陷；最终定向50、全前端5473（409文件/208.97秒）、101脚本、类型/lint、4项映射、构建/ARM打包与最终完整桌面通过。五路10000行47223ms/0busy、固定1000条合成输入60022ms/最大滞后35ms为单次观察。新三平台候选待启动；旧35874897768不含此修复。见 `.ai/knowledge/2026-09-23-pm9-standalone-studio.md` / `standalone-studio-follow-through.json`；必填规则元数据404与外部发行门禁保留，251条205partial/46planned/0verified，releaseAccepted=false。
+2026-09-23 XE-A19打包Studio收口（confirmed本机子范围）：实际零Project通用网页运行、项目上下文提示、独立启动422不生成Run，以及编辑保存保留grant/参数通过。已修复旧运行历史遮住操作反馈、打开文档后误发新建请求两处缺陷；最终定向50、全前端5473（409文件/208.97秒）、101脚本、类型/lint、4项映射、构建/ARM打包与最终完整桌面通过。五路10000行47223ms/0busy、固定1000条合成输入60022ms/最大滞后35ms为单次观察。源码632caf6d新三平台35881272086进行中；旧35874897768不含此修复，已确认取消，不计完整通过。见 `.ai/knowledge/2026-09-23-pm9-standalone-studio.md` / `standalone-studio-follow-through.json`；必填规则元数据404与外部发行门禁保留，251条205partial/46planned/0verified，releaseAccepted=false。
 
 2026-09-23 AU-08残留更正（confirmed局部）：5346已通过的快照子范围不证明文件全清理。实际打包删除留下cancelled/resolved人工事项和浏览器失败PNG；人工事项清理/未结束阻断已修复，38后端/6前端/101脚本/Ruff/mypy407通过，新包证实人工项消失但PNG仍在。AD1–AD3持久文件删除恢复规格/计划待确认，旧CI35871462256取消；eb50e1ef全后端3483/78skip、ARM新包完整桌面通过，新CI35874897768进行中。详见 `.ai/knowledge/2026-09-23-pm9-automation-delete-residue.md`；releaseAccepted=false。
 

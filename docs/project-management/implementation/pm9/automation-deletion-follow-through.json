@@ -127,8 +127,11 @@
         "runId": 35874897768,
         "url": "https://github.com/1127152834/auto-flow/actions/runs/35874897768",
         "sourceCommit": "eb50e1effb7e32149528f27ac257361f4212b4f7",
-        "status": "in_progress",
-        "supersededCancelledRun": 35871462256
+        "status": "completed",
+        "supersededCancelledRun": 35871462256,
+        "conclusion": "cancelled",
+        "supersededByRun": 35881272086,
+        "reason": "Newly reproduced independent Studio identity/feedback defects fixed in632caf6d; do not count this old candidate as full success."
       },
       "frontend": "6 passed including MANUAL_PENDING visibility, 3.41s",
       "scripts": "101 passed / 0 failed / 0 skipped, 2219.39ms",

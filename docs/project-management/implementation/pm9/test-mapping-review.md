@@ -1,6 +1,6 @@
 # PM9 assertion mapping review
 
-2026-09-23 XE-A19打包Studio收口（confirmed本机子范围）：实际零Project通用网页运行、项目上下文提示、独立启动422不生成Run，以及编辑保存保留grant/参数通过。已修复旧运行历史遮住操作反馈、打开文档后误发新建请求两处缺陷；最终定向50、全前端5473（409文件/208.97秒）、101脚本、类型/lint、4项映射、构建/ARM打包与最终完整桌面通过。五路10000行47223ms/0busy、固定1000条合成输入60022ms/最大滞后35ms为单次观察。新三平台候选待启动；旧35874897768不含此修复。见 `.ai/knowledge/2026-09-23-pm9-standalone-studio.md` / `standalone-studio-follow-through.json`；必填规则元数据404与外部发行门禁保留，251条205partial/46planned/0verified，releaseAccepted=false。
+2026-09-23 XE-A19打包Studio收口（confirmed本机子范围）：实际零Project通用网页运行、项目上下文提示、独立启动422不生成Run，以及编辑保存保留grant/参数通过。已修复旧运行历史遮住操作反馈、打开文档后误发新建请求两处缺陷；最终定向50、全前端5473（409文件/208.97秒）、101脚本、类型/lint、4项映射、构建/ARM打包与最终完整桌面通过。五路10000行47223ms/0busy、固定1000条合成输入60022ms/最大滞后35ms为单次观察。源码632caf6d新三平台35881272086进行中；旧35874897768不含此修复，已确认取消，不计完整通过。见 `.ai/knowledge/2026-09-23-pm9-standalone-studio.md` / `standalone-studio-follow-through.json`；必填规则元数据404与外部发行门禁保留，251条205partial/46planned/0verified，releaseAccepted=false。
 
 2026-09-23 eb50e1ef本机收口（confirmed本机范围）：终态人工事项清理与未决人工阻断修复完整后端3483 passed/78 skipped/2依赖警告（792.43秒）；38相关后端、最终11删除契约、6前端、101脚本、Ruff/mypy407、前端typecheck/lint、后端构建/应用打包通过。新ARM包完整桌面smoke passed，取消后删除无人工残留，独立文档/原命令恢复保持；五路10000行56381ms/0busy、真实worker1004条31665ms、固定1000条合成输入60019ms/最大滞后51ms分别记录。实际resolved事项清理也由另一真实worker探针证明，但同一PNG文件仍残留，该负向报告保持failed。AD1–AD3等待确认，不用本片成功覆盖文件缺口。新三平台35874897768运行中，旧5346矩阵35871462256已取消；[专项报告](automation-deletion-follow-through.json)按候选保存。251条205partial/46planned/0verified不变，releaseAccepted=false。
 
