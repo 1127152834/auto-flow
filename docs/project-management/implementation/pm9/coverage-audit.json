@@ -165,7 +165,7 @@
           "status": "partially_verified",
           "evidenceCount": 3,
           "plannedTestExists": true,
-          "reviewedCheckCount": 6,
+          "reviewedCheckCount": 7,
           "gapKinds": [
             "implementation_missing",
             "test_missing",

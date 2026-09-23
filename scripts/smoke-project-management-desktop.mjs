@@ -129,6 +129,7 @@ async function checkAutomationDeletion(browserVersion) {
     await api(prefix + `/batches/${batchId}`, undefined, 'GET', 404)
     await api(prefix + `/tasks/${manual.taskId}`, undefined, 'GET', 404)
     assert.equal(await preparedCount(), 0, 'owned frozen snapshot must be removed before its batch lookup disappears')
+    assert.equal((await api(prefix + '/manual-items')).items.filter(item => item.taskId === manual.taskId).length, 0, 'terminal manual items must not point at deleted tasks')
     const documentAfter = await api(`/api/workflows/${workflow.id}`)
     for (const key of ['id', 'revision', 'nodes', 'edges']) assert.deepEqual(documentAfter[key], documentBefore[key], `independent workflow ${key} must survive`)
     assert.equal(deletes.length, 3, 'UI issues one command for each explicit busy/stale/fresh confirmation')
@@ -142,7 +143,7 @@ async function checkAutomationDeletion(browserVersion) {
     const linkedAgain = await api(prefix + '/automations', { ...body, name: '重新关联保留的独立文档' })
     assert.equal(linkedAgain.workflowId, workflow.id)
     await capture('automation-unlinked')
-    return { status: 'passed', projectId: project.projectId, workflowId: workflow.id, removedAutomationId: automation.automationId, operationId: operation.operationId, checks: ['one independent workflow cannot be associated twice', 'real waiting worker blocks deletion without losing its task or document', 'stop invalidates old UI impact and clears name confirmation', 'fresh exact-name UI deletion removes automation/batch/task and its frozen snapshot while keeping the original document', 'replaying the accepted original delete key returns the same operation', 'retained independent document can be associated again'], limits: ['project-owned document deletion remains refused because ownership is not persisted', 'Studio editing ownership and Windows/Intel physical UI acceptance are not proved'] }
+    return { status: 'passed', projectId: project.projectId, workflowId: workflow.id, removedAutomationId: automation.automationId, operationId: operation.operationId, checks: ['one independent workflow cannot be associated twice', 'real waiting worker blocks deletion without losing its task or document', 'stop invalidates old UI impact and clears name confirmation', 'fresh exact-name UI deletion removes automation/batch/task, terminal manual item and frozen snapshot while keeping the original document', 'replaying the accepted original delete key returns the same operation', 'retained independent document can be associated again'], limits: ['project-owned document deletion remains refused because ownership is not persisted', 'Studio editing ownership and Windows/Intel physical UI acceptance are not proved'] }
   } finally { cdp.socket.removeEventListener('message', observe) }
 }
 try {

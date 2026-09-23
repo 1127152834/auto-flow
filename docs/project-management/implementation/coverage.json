@@ -1391,14 +1391,20 @@
           {
             "file": "scripts/smoke-project-management-desktop.mjs",
             "symbol": "checkAutomationDeletion",
-            "scope": "真实worker等待阻断、停止后旧清单拒绝、精确名称UI删除、原命令恢复、独立文档不变且可再关联；修复后增加只读SQLite快照清理断言，候选运行结果见专项报告",
+            "scope": "真实worker等待阻断、停止后旧清单拒绝、精确名称UI删除、原命令恢复、独立文档不变且可再关联；修复后增加只读SQLite快照清理断言，候选运行结果见专项报告 追加终态人工项不残留断言；不包含文件清理成功。",
             "level": "automated_real_application"
+          },
+          {
+            "file": "apps/backend/tests/contract/test_project_automation_deletion.py",
+            "symbol": "test_delete_removes_terminal_manual_items_but_blocks_unsettled_items",
+            "scope": "终态批次但waiting/resume_requested人工项存在时仍阻断删除；取消/已解决人工项随其Task删除，其他Task人工项保留。resolved状态另有实际打包worker反例。",
+            "level": "automated_contract"
           }
         ],
         "gaps": [
           {
             "kind": "implementation_missing",
-            "detail": "项目自建工作流所有权未持久化，deleteOwned仍以WORKFLOW_OWNERSHIP_UNKNOWN拒绝；AU-08 proposed所有权机制未实现，不以安全拒绝算接通。"
+            "detail": "项目自建工作流所有权未持久化，deleteOwned仍以WORKFLOW_OWNERSHIP_UNKNOWN拒绝；AU-08 proposed所有权机制未实现，不以安全拒绝算接通。 实际失败截图在自动化删除成功后仍留workspace/runs，持久文件清理与失败/重启恢复缺失；AD1–AD3规格/计划待确认。"
           },
           {
             "kind": "test_missing",

@@ -1,5 +1,7 @@
 # PM9 assertion mapping review
 
+2026-09-23 AU-08删除后残留复核（confirmed）：5346ceca已通过的本机界面/快照子范围不等于全部清理完成。真实worker取消后删除留下cancelled人工事项；人工继续后浏览器失败生成可读取PNG，删除成功仍留下resolved人工事项和同一截图文件。终态人工记录已在同删除事务按目标Task清理；waiting/resume_requested在批次终态时仍独立阻断，其他Task事项保留。38相关后端、最终删除文件11项、前端6项（含人工阻断显示）、101脚本、Ruff/mypy407通过。新包真实resolved人工项清理已证实，但截图仍残留，失败报告明确保留。AD1–AD3持久文件删除/失败恢复规格与计划已提交确认，未先实现；新完整后端和打包验收进行中。旧CI35871462256因新确定缺陷取消，不计通过。完整证据见[删除专项报告](automation-deletion-follow-through.json)，台账状态未提升，releaseAccepted=false。
+
 2026-09-23 AU-08候选5346ceca本机收口（confirmed，本机范围）：完整后端3479 passed/78 skipped/2依赖警告（793.08秒），Ruff/mypy407、101脚本、34相关后端和6删除对话框通过。新重建ARM打包应用完整桌面passed，实际UI删除后批次/任务404、只读SQLite确认本流程冻结快照归零、独立文档保留并重关联；原键仍返回同一成功命令。五路万行51959ms/0busy、真实worker1004条32035ms、固定1000条合成输入60021ms分别记录。78个skip比旧77多出新增选择性真实worker场景，不算全量已执行浏览器验收。三平台35871462256仍in_progress；旧c165矩阵不替代此修复。历史孤儿快照无归属证明不自动清理，运行产物目录清理未由本片证明。详见[报告](automation-deletion-follow-through.json)，releaseAccepted=false。
 
 2026-09-23 AU-08 独立流程删除（confirmed 子范围；新候选回归进行中）：c16532d7 ARM 已安装应用的真实 worker/UI 通过重复关联拒绝、人工等待阻断、停止后旧影响清单拒绝并清空名称、精确名称删除、原命令恢复、独立文档不变且可重新关联。随后补充 SQLite 断言发现两个真实缺陷：影响数混入同工作流独立快照；删除批次后才查询该批次快照导致残留。已限定本自动化批次引用并调整同事务删除顺序，两次 RED→GREEN；34 项相关后端和6项前端通过，Ruff/mypy407通过。完整后端、重建打包桌面和新三平台验证继续。项目自建工作流所有权未持久化，deleteOwned仍拒绝，归为 implementation_missing；Studio联合编辑占用/已有绑定去向和项目级解除关联仍保留缺证。AU-08保持partial；251条205 partial/46 planned/0 verified，releaseAccepted=false。见[专项报告](automation-deletion-follow-through.json)。

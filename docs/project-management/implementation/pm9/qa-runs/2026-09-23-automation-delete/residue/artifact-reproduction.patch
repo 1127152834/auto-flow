@@ -1,0 +1,160 @@
+--- a/scripts/smoke-project-management-desktop.mjs
++++ b/scripts/smoke-project-management-desktop.mjs
+@@ -2,15 +2,15 @@
+ import { randomUUID } from 'node:crypto'
+ import { execFile } from 'node:child_process'
+ import { promisify } from 'node:util'
+-import { mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises'
++import { mkdir, mkdtemp, readFile, readdir, realpath, rm, writeFile } from 'node:fs/promises'
+ import { tmpdir } from 'node:os'
+ import { join, resolve } from 'node:path'
+-import { connectCdp, launchElectron, waitFor, waitForProjectPage } from './electron-cdp.mjs'
+-import { checkProjectManagement, installRuntimeKernel, projectSmokeOptions } from './smoke-project-management.mjs'
+-import { checkProjectRuntime } from './project-runtime-smoke.mjs'
+-import { checkProjectVolume } from './project-volume-smoke.mjs'
+-import { assertOutsideHistory, redactSidecarLog } from './project-smoke-output.mjs'
+-import { stop } from './smoke-sidecar.mjs'
++import { connectCdp, launchElectron, waitFor, waitForProjectPage } from '/Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow/scripts/electron-cdp.mjs'
++import { checkProjectManagement, installRuntimeKernel, projectSmokeOptions } from '/Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow/scripts/smoke-project-management.mjs'
++import { checkProjectRuntime } from '/Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow/scripts/project-runtime-smoke.mjs'
++import { checkProjectVolume } from '/Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow/scripts/project-volume-smoke.mjs'
++import { assertOutsideHistory, redactSidecarLog } from '/Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow/scripts/project-smoke-output.mjs'
++import { stop } from '/Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow/scripts/smoke-sidecar.mjs'
+ 
+ const root = resolve(import.meta.dirname, '..')
+ const options = projectSmokeOptions(process.argv.slice(2))
+@@ -70,9 +70,10 @@
+   const nodes = [
+     { id: 'open', type: 'open_page', position: { x: 0, y: 0 }, data: { moduleType: 'open_page', url: 'about:blank' } },
+     { id: 'manual', type: 'project_manual', position: { x: 0, y: 100 }, data: { moduleType: 'project_manual', reason: '验证占用删除保护', timeoutSeconds: 300 } },
++    { id: 'fail', type: 'click_element', position: { x: 0, y: 150 }, data: { moduleType: 'click_element', selector: '#absent', timeout: .3 } },
+     { id: 'end', type: 'project_end', position: { x: 0, y: 200 }, data: { moduleType: 'project_end', retainEnvironment: { enabled: false } } },
+   ]
+-  const workflow = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: '删除自动化后保留独立文档', variables: [], nodes, edges: [{ id: 'open-manual', source: 'open', target: 'manual' }, { id: 'manual-end', source: 'manual', target: 'end' }] })
++  const workflow = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: '删除自动化后保留独立文档', variables: [], nodes, edges: [{ id: 'open-manual', source: 'open', target: 'manual' }, { id: 'manual-fail', source: 'manual', target: 'fail' }, { id: 'fail-end', source: 'fail', target: 'end' }] })
+   const body = { name: '解除关联测试自动化', description: '', workflowId: workflow.id, inputPlan: { inputs: [] }, parameterSchema: [], environmentPolicy: { source: 'newFromProfile', profileId: profile.id, proxyOverride: { mode: 'none' }, modelProviderId: null }, runPolicy: { maxTasks: 1, concurrency: 1, maxLiveInstances: 1, continueAfterFailure: false, automaticExecutionTimeoutSeconds: 120, manualDeadlineSeconds: 300 } }
+   const automation = await api(prefix + '/automations', body)
+   const automationPath = prefix + `/automations/${automation.automationId}`
+@@ -110,9 +111,14 @@
+     await waitFor(cdp, "[...document.querySelectorAll('[role=dialog] [role=alert]')].some(e=>e.innerText==='操作失败，请重试')", 'busy delete rejected in UI')
+     assert.equal((await api(automationPath)).automationId, automation.automationId)
+     assert.equal((await api(prefix + `/tasks/${manual.taskId}`)).run.status, 'waiting_manual')
+-    const batch = await api(prefix + `/batches/${batchId}`)
+-    await api(prefix + `/batches/${batchId}/stop`, { expectedStatusRevision: batch.batch.statusRevision, reason: '完成解除关联前先停止真实任务' })
+-    await poll(async () => (await api(prefix + `/batches/${batchId}`)).batch.status === 'stopped', 'stopped worker releases automation')
++    await api(prefix + `/manual-items/${manual.manualItemId}/resume`, { checkpointRevision: manual.checkpointRevision, expectedStatusRevision: manual.statusRevision })
++    await poll(async () => ['completed', 'failed'].includes((await api(prefix + `/batches/${batchId}`)).batch.status), 'browser failure after manual continue')
++    const artifactsBefore = (await api(prefix + `/tasks/${manual.taskId}/artifacts`)).items
++    assert.equal(artifactsBefore.length, 1)
++    assert.equal(artifactsBefore[0].availability, 'available')
++    report.filesBefore = await readdir(join(userData, 'workspace/runs', taskBefore.run.runId), { recursive: true })
++    assert.ok(report.filesBefore.some(path => path.endsWith('.png')))
++    report.artifactsBefore = artifactsBefore.map(({ artifactId, byteSize, sha256 }) => ({ artifactId, byteSize, sha256 }))
+     await click('删除自动化', '[role=dialog] button')
+     await waitFor(cdp, "document.body.innerText.includes('影响范围可能已变化，请重新核对后再确认。')", 'old impact rejected after worker stop')
+     assert.equal(await cdp.evaluate("document.querySelector('[aria-label=确认自动化名称]').value"), '')
+@@ -129,6 +135,12 @@
+     await api(prefix + `/batches/${batchId}`, undefined, 'GET', 404)
+     await api(prefix + `/tasks/${manual.taskId}`, undefined, 'GET', 404)
+     assert.equal(await preparedCount(), 0, 'owned frozen snapshot must be removed before its batch lookup disappears')
++    const runId = taskBefore.run.runId
++    assert.equal(typeof runId, 'string')
++    const manuals = (await api(prefix + '/manual-items')).items.filter(item => item.taskId === manual.taskId).map(item => ({ manualItemId: item.manualItemId, taskId: item.taskId, status: item.status }))
++    const files = await readdir(join(userData, 'workspace/runs', runId), { recursive: true }).catch(error => { if (error.code === 'ENOENT') return []; throw error })
++    report.automationDeletionResidue = { runId, manuals, files }
++    assert.deepEqual({ manuals, files }, { manuals: [], files: [] }, 'deleted run should leave no task-only manual item or run files')
+     const documentAfter = await api(`/api/workflows/${workflow.id}`)
+     for (const key of ['id', 'revision', 'nodes', 'edges']) assert.deepEqual(documentAfter[key], documentBefore[key], `independent workflow ${key} must survive`)
+     assert.equal(deletes.length, 3, 'UI issues one command for each explicit busy/stale/fresh confirmation')
+@@ -146,89 +158,9 @@
+   } finally { cdp.socket.removeEventListener('message', observe) }
+ }
+ try {
+-  const browserVersion = options['runtime-kernel'] ? await installRuntimeKernel(options['runtime-kernel'], userData) : null
++  const browserVersion = await installRuntimeKernel(options['runtime-kernel'], userData)
+   sidecar = await launch()
+-  await click('项目')
+-  await click('新建项目')
+-  await waitFor(cdp, "document.activeElement?.id==='project-name'", 'keyboard autofocus')
+-  await cdp.command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Tab', code: 'Tab', windowsVirtualKeyCode: 9 })
+-  await cdp.command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Tab', code: 'Tab', windowsVirtualKeyCode: 9 })
+-  assert.equal(await cdp.evaluate('document.activeElement.id'), 'project-description')
+-  await fill('#project-name', 'PM9 桌面项目')
+-  await fill('#project-description', '真实界面创建与中文空格路径')
+-  await click('创建项目')
+-  await waitForProjectPage(cdp)
+-  const response = await fetch(`${sidecar.baseUrl}/api/v1/projects`, { headers: { 'x-autoflow-token': sidecar.token } })
+-  assert.equal(response.status, 200)
+-  const project = (await response.json()).items.find(item => item.name === 'PM9 桌面项目')
+-  assert.ok(project)
+-  report = { ...report, ...await checkProjectManagement(sidecar.baseUrl, sidecar.token, project) }
+-  report.checks.push('Electron UI creates project with keyboard focus and real preload/sidecar authentication')
+-  await cdp.command('Page.reload', { ignoreCache: true })
+-  await waitForProjectPage(cdp)
+-  const pages = [
+-    ['概览', '今日数据变化'], ['自动化', '还没有自动化'], ['运行记录', '还没有运行记录'],
+-    ['统计', '按日处理量'], ['数据', '中文 数据表'], ['环境', '当前没有临时现场'],
+-  ]
+-  for (const [tab, expected] of pages) {
+-    await click(tab, '[aria-label="项目功能"] button')
+-    await waitFor(cdp, `document.querySelector('[aria-label="项目功能"] [aria-current=page]')?.textContent.trim()===${JSON.stringify(tab)} && document.body.innerText.includes(${JSON.stringify(expected)})`, `live ${tab} page`)
+-    await waitFor(cdp, "!document.querySelector('main [role=progressbar]')", 'page settled')
+-    assert.equal(await cdp.evaluate("document.body.innerText.includes('暂未开放')"), false)
+-    await capture(tab)
+-  }
+-  report.checks.push('all six project tabs open settled production pages')
+-  if (browserVersion) {
+-    report.automationDeletion = await checkAutomationDeletion(browserVersion)
+-    report.runtime = await checkProjectRuntime(sidecar.baseUrl, sidecar.token, browserVersion, { resumeManual: async (projectId, item) => {
+-      await cdp.evaluate(`location.hash=${JSON.stringify('#/projects/' + projectId + '/runs/manual/' + item.manualItemId)}`)
+-      await waitFor(cdp, "Boolean(document.querySelector('input[type=radio][value=continue]:not(:disabled)'))", 'live manual continuation ready')
+-      await cdp.evaluate("document.querySelector('input[type=radio][value=continue]').click()")
+-      await fill('[aria-label="确认码"]', 'verified')
+-      await capture('manual-declared-input')
+-      await click('提交处理结果')
+-      await waitFor(cdp, "!document.querySelector('[aria-label=确认码]')", 'manual command accepted and directory restored')
+-      report.checks.push('manual detail submits declared input to the same real worker and selects one direct successor')
+-    } })
+-    report.volume = await checkProjectVolume(sidecar, cdp, click, report.runtime, userData)
+-    report.boundary = 'production management, real runtime and renderer volume; live Sheets and physical installation remain pending'
+-    await capture('volume')
+-    await cdp.evaluate(`location.hash=${JSON.stringify('#/projects/' + project.projectId + '/environments')}`)
+-    await waitFor(cdp, "document.querySelector('[aria-label=\"项目功能\"] [aria-current=page]')?.textContent.trim()==='环境' && !document.querySelector('main [role=progressbar]')", 'environment route settled before zoom')
+-  }
+-  await native.evaluate('pm9Electron.BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(2)')
+-  await waitFor(native, 'pm9Electron.BrowserWindow.getAllWindows()[0].webContents.getZoomFactor()===2', 'native 200% zoom applied', 5_000)
+-  await waitFor(cdp, 'document.documentElement.scrollWidth <= innerWidth + 1', '200% zoom has no document horizontal overflow')
+-  await capture('zoom-200')
+-  await native.evaluate('pm9Electron.BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(1)')
+-  await waitFor(native, 'pm9Electron.BrowserWindow.getAllWindows()[0].webContents.getZoomFactor()===1', 'native zoom reset', 5_000)
+-  await cdp.evaluate('window.autoflow.openAutomationStudio()')
+-  let studioTarget
+-  for (let attempt = 0; attempt < 100; attempt++) {
+-    const targets = await (await fetch(`${desktop.debugOrigin}/json/list`)).json()
+-    studioTarget = targets.find(target => target.type === 'page' && target.url.includes('view=automation-studio'))
+-    if (studioTarget) break
+-    await new Promise(resolveWait => setTimeout(resolveWait, 100))
+-  }
+-  assert.ok(studioTarget, 'Studio second window opens')
+-  studio = await connectCdp(studioTarget.webSocketDebuggerUrl)
+-  const studioSidecar = await waitFor(studio, `(async()=>{const r=await window.autoflow.getRuntimeContext(); return r.sidecar.state==='ready'?r.sidecar.instanceId:null})()`, 'Studio shares ready sidecar', 30_000)
+-  assert.equal(studioSidecar, sidecar.instanceId)
+-  studio.close()
+-  await native.evaluate("pm9Electron.BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().includes('view=automation-studio')).close()")
+-  report.checks.push('200% native window zoom keeps document within viewport; Studio second window shares the authenticated service')
+-  native.close()
+-  cdp.close()
+-  await stop(desktop.child)
+-  const restarted = await launch()
+-  const saved = await fetch(`${restarted.baseUrl}/api/v1${report.tablePath}`, { headers: { 'x-autoflow-token': restarted.token } })
+-  assert.equal(saved.status, 200)
+-  assert.equal((await saved.json()).recordCount, 1)
+-  await click('项目')
+-  await click('全部项目')
+-  await waitFor(cdp, "document.body.innerText.includes('PM9 桌面项目')", 'project after app restart')
+-  await capture('restarted')
+-  report.checks.push('Electron and its production sidecar restart retain the same data')
++  report.automationDeletion = await checkAutomationDeletion(browserVersion)
+   report.status = 'passed'
+ } catch (error) {
+   report.error = String(error.stack ?? error)

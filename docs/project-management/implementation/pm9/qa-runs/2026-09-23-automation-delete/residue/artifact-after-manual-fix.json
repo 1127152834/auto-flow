@@ -1,0 +1,35 @@
+{
+  "status": "failed",
+  "platform": "darwin",
+  "arch": "arm64",
+  "packaged": true,
+  "startedAt": "2026-09-23T14:29:10.213Z",
+  "checks": [],
+  "screenshots": [
+    "project-automation-delete-busy.png",
+    "project-automation-delete-stale.png",
+    "project-automation-delete-ready.png",
+    "project-failure.png"
+  ],
+  "filesBefore": [
+    "generation-1",
+    "generation-1/3adbd30c-a959-4bf3-9585-2cc73c66c34b.png"
+  ],
+  "artifactsBefore": [
+    {
+      "artifactId": "3adbd30c-a959-4bf3-9585-2cc73c66c34b",
+      "byteSize": 7469,
+      "sha256": "40684ca380dbedcbb3ed9895392ace2a123a5f067707e12fac841743cbb0439c"
+    }
+  ],
+  "automationDeletionResidue": {
+    "runId": "00e3edca-d800-45bf-ad57-358085b629b9",
+    "manuals": [],
+    "files": [
+      "generation-1",
+      "generation-1/3adbd30c-a959-4bf3-9585-2cc73c66c34b.png"
+    ]
+  },
+  "error": "AssertionError [ERR_ASSERTION]: deleted run should leave no task-only manual item or run files\n+ actual - expected\n\n  {\n+   files: [\n+     'generation-1',\n+     'generation-1/3adbd30c-a959-4bf3-9585-2cc73c66c34b.png'\n+   ],\n-   files: [],\n    manuals: []\n  }\n\n    at checkAutomationDeletion (file:///private/tmp/pm9-automation-failure-artifact-probe.mjs:143:12)\n    at async file:///private/tmp/pm9-automation-failure-artifact-probe.mjs:163:31",
+  "sidecarLog": "\n=== local service start 2026-09-23T14:29:15.421Z pid=87313 ===\n"
+}

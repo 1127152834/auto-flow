@@ -1,11 +1,12 @@
 {
   "date": "2026-09-23",
-  "status": "automation_snapshot_purge_fix_local_full_and_packaged_passed_three_platform_ci_in_progress",
+  "status": "manual_item_cleanup_fix_local_targeted_passed_artifact_cleanup_implementation_missing",
   "releaseAccepted": false,
   "confidence": "high",
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
   "branch": "codex/project-management-pm9-runtime",
   "remaining": [
+    "Actual5346 packaged manual resume then browser failure proves automatic deletion leaves resolved manual item and registered PNG in workspace/runs. Manual item cleanup/pending-manual blocker fixed locally (38 targeted passed); full/new packaged validation in progress. Persistent filesystem cleanup is missing with AD1-AD3 spec/plan proposed; no release acceptance. Prior5346 CI35871462256 cancelled for superseding known defect.",
     "AU-08 real ARM installed UI unlink/worker blocker/original-key replay passed on c165, but SQLite inspection exposed owned snapshot purge ordering and overbroad impact count. Both fixed with direct RED→GREEN; 5346ceca full local backend3479/78 skipped and rebuilt packaged desktop passed; three-platform35871462256 is in progress. Project-owned workflow ownership/deletion remains missing, not merely missing tests.",
     "DATA-LINK-02 forged recordRef.projectId acceptance fixed at shared association preflight and commit boundary; local full backend 3479 passed/77 skipped, contract/rule 33 passed, and actual browser-worker End followed by forged repair refusal/correct repair-only association passed. Current c16532d7 three-platform CI succeeded after Intel-only retry. DATA-LINK-02 remains partial because complete packaged/cross-platform reverse-target and full business acceptance are open; local actual worker-generated forged End target now passed in link-boundary-follow-through.json.",
     "S4 Windows existing ordinary-file read and absolute-drive new-file table export passed bounded native probe 35832925704 and final three-platform matrix 35833223498 at dadb24a1. Existing output overwrite/append remain refused with 501.",
@@ -493,7 +494,7 @@
     "sourceCommit": "5346cecab54b337673dd0ba01c304a1579ee9c9e",
     "report": "automation-deletion-follow-through.json",
     "ciRunId": 35871462256,
-    "status": "local_full_and_packaged_passed_three_platform_ci_in_progress",
+    "status": "superseded_by_manual_item_cleanup_worktree_changes",
     "previousCompleteCandidate": "c16532d79fe8db87a8f9b371d9045a02fb89e362",
     "releaseAccepted": false
   }

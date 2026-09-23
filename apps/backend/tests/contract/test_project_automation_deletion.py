@@ -3,6 +3,7 @@
 from datetime import UTC, datetime
 from uuid import uuid4
 
+import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy import func, select
@@ -10,6 +11,7 @@ from sqlalchemy import func, select
 from autoflow.adapters.http.errors import install_error_handlers
 from autoflow.adapters.http.project_automations import project_automations_router
 from autoflow.application.project_automations.service import ProjectAutomationService
+from autoflow.infrastructure.database.environment_models import ProjectManualItemRow
 from autoflow.infrastructure.database.models import ProjectOperationRow, ProjectRow
 from autoflow.infrastructure.database.project_automation_models import (
     ProjectAutomationRow,
@@ -17,7 +19,10 @@ from autoflow.infrastructure.database.project_automation_models import (
 from autoflow.infrastructure.database.project_automations import (
     SqlAlchemyProjectAutomations,
 )
-from autoflow.infrastructure.database.project_run_models import ProjectBatchRow
+from autoflow.infrastructure.database.project_run_models import (
+    ProjectBatchRow,
+    ProjectTaskRow,
+)
 from autoflow.infrastructure.database.projects import SqlAlchemyProjects
 from autoflow.infrastructure.database.session import (
     create_session_factory,
@@ -26,6 +31,7 @@ from autoflow.infrastructure.database.session import (
 from autoflow.infrastructure.database.workflow_models import WorkflowDocumentRow
 from autoflow.infrastructure.database.workflow_runtime_models import (
     WorkflowPreparedContentRow,
+    WorkflowRunRow,
 )
 
 PROJECT = "00000000-0000-0000-0000-000000000010"
@@ -427,3 +433,91 @@ def test_delete_replays_the_same_key_without_a_second_fact(tmp_path):
         == second.json()["operation"]["operationId"]
     )
     assert count(factory, ProjectOperationRow, kind="deleteAutomation") == 1
+
+
+@pytest.mark.parametrize(
+    "manual_status", ["cancelled", "resolved", "waiting", "resume_requested"]
+)
+def test_delete_removes_terminal_manual_items_but_blocks_unsettled_items(
+    tmp_path, manual_status
+):
+    api, factory = client(tmp_path)
+    automation_id = create_automation(api)
+    batch_id = seed_batch(factory, automation_id, status="stopped")
+    now = datetime.now(UTC)
+    task_id, run_id, manual_id, unrelated_id = (str(uuid4()) for _ in range(4))
+    with factory() as session:
+        batch = session.get(ProjectBatchRow, batch_id)
+        session.add(
+            WorkflowRunRow(
+                id=run_id,
+                run_request_id=str(uuid4()),
+                request_digest="0" * 64,
+                prepared_content_id=batch.prepared_content_id,
+                parameters={},
+                resource_request={},
+                capability_bindings=[],
+                status="cancelled",
+                status_revision=2,
+                execution_generation=1,
+                last_sequence=0,
+                created_at=now,
+                updated_at=now,
+                completed_at=now,
+            )
+        )
+        session.flush()
+        session.add(
+            ProjectTaskRow(
+                id=task_id,
+                project_id=PROJECT,
+                batch_id=batch_id,
+                run_id=run_id,
+                run_request_id=str(uuid4()),
+                ordinal=1,
+                created_at=now,
+            )
+        )
+        for item_id, owner in [(manual_id, task_id), (unrelated_id, str(uuid4()))]:
+            session.add(
+                ProjectManualItemRow(
+                    id=item_id,
+                    project_id=PROJECT,
+                    task_id=owner,
+                    run_id=run_id if owner == task_id else str(uuid4()),
+                    instance_id=None,
+                    checkpoint_revision=1,
+                    status=manual_status,
+                    status_revision=1,
+                    expires_at=None,
+                    allowed_targets=[],
+                    resume_started=False,
+                    reason="保留真实状态",
+                    created_at=now,
+                    updated_at=now,
+                )
+            )
+        session.commit()
+    current = impact(api, automation_id)
+    response = delete(
+        api,
+        automation_id,
+        str(uuid4()),
+        {
+            "impactRevision": current["impactRevision"],
+            "expectedManagementRevision": 1,
+            "workflowDisposition": "unlink",
+        },
+    )
+    if manual_status in {"waiting", "resume_requested"}:
+        assert any(item["code"] == "MANUAL_PENDING" for item in current["blockers"])
+        assert response.status_code == 409, response.text
+        assert response.json()["error"]["code"] == "AUTOMATION_BUSY"
+        assert count(factory, ProjectTaskRow, id=task_id) == 1
+        assert count(factory, ProjectManualItemRow, id=manual_id) == 1
+    else:
+        assert current["blockers"] == []
+        assert response.status_code == 200, response.text
+        assert count(factory, ProjectManualItemRow, id=manual_id) == 0
+        assert count(factory, ProjectTaskRow, id=task_id) == 0
+    assert count(factory, ProjectManualItemRow, id=unrelated_id) == 1

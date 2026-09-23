@@ -21,7 +21,10 @@ const impact = {
     { code: 'REFERENCED_RESOURCES_KEPT', resource, message: '数据表与记录、外部来源、其它自动化与项目资源保留', blocking: false },
     { code: 'WORKFLOW_DOCUMENT_KEPT', resource, message: '关联的工作流文档保留，只解除关联', blocking: false },
   ],
-  blockers: [{ code: 'AUTOMATION_BUSY', resource, state: 'running', message: '批次尚未结束，先停止或等它收尾' }],
+  blockers: [
+    { code: 'AUTOMATION_BUSY', resource, state: 'running', message: '批次尚未结束，先停止或等它收尾' },
+    { code: 'MANUAL_PENDING', resource: { type: 'task', projectId: 'p1', taskId: 't1' }, state: 'resume_requested', message: '人工事项尚未结束，请先完成或取消处理' },
+  ],
 } as AutomationImpact
 
 const open = (override: Partial<Parameters<typeof AutomationDeleteDialog>[0]> = {}) => render(
@@ -38,6 +41,7 @@ it('splits the real impact into what is deleted and what is kept, and lists the 
   expect(kept.getByText('关联的工作流文档保留，只解除关联')).toBeVisible()
   expect(kept.getByText('数据表与记录、外部来源、其它自动化与项目资源保留')).toBeVisible()
   expect(screen.getByText('批次尚未结束，先停止或等它收尾（running）')).toBeVisible()
+  expect(screen.getByText('人工事项尚未结束，请先完成或取消处理（resume_requested）')).toBeVisible()
 })
 
 it('requires the exact automation name and submits the frozen impact revision with an unlink disposition', async () => {

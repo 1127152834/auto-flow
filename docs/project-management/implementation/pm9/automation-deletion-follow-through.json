@@ -1,6 +1,6 @@
 {
   "date": "2026-09-23",
-  "status": "local_full_and_packaged_desktop_passed_three_platform_ci_in_progress",
+  "status": "manual_residue_fix_targeted_passed_artifact_cleanup_confirmed_missing",
   "releaseAccepted": false,
   "requirements": [
     "AU-08"
@@ -59,7 +59,7 @@
     "threePlatformCI": {
       "runId": 35871462256,
       "url": "https://github.com/1127152834/auto-flow/actions/runs/35871462256",
-      "status": "in_progress",
+      "status": "cancelled_superseded_by_confirmed_manual_residue_defect",
       "sourceCommit": "5346cecab54b337673dd0ba01c304a1579ee9c9e",
       "scope": "one workflow_dispatch full Windows x64 / macOS Intel / Apple Silicon matrix; standalone native/worker probes skipped"
     }
@@ -68,7 +68,46 @@
     "AU-08 remains partially_verified. Project-owned workflow deletion is still refused with WORKFLOW_OWNERSHIP_UNKNOWN because ownership is not persisted; that proposed design scope is an implementation gap.",
     "This automated UI slice does not prove Studio simultaneous-edit ownership, existing-association navigation, project-level unlink, or complete Windows/Intel physical installation acceptance.",
     "The earlier c165 CI cannot validate the new snapshot fix. No merge or release.",
-    "This fix prevents new owned-snapshot residue; preexisting orphan snapshots without batch ownership are not swept because ownership can no longer be established safely. Filesystem artifact cleanup is not asserted by this deletion slice."
+    "This fix prevents new owned-snapshot residue; preexisting orphan snapshots without batch ownership are not swept because ownership can no longer be established safely. Later actual-worker failure probe confirms filesystem artifact cleanup is missing; see manualAndArtifactFollowThrough."
   ],
-  "productionSourceCommit": "5346cecab54b337673dd0ba01c304a1579ee9c9e"
+  "productionSourceCommit": "5346cecab54b337673dd0ba01c304a1579ee9c9e",
+  "manualAndArtifactFollowThrough": {
+    "baseSourceCommit": "5346cecab54b337673dd0ba01c304a1579ee9c9e",
+    "baseScriptCommit": "53d6e9861cefa30caed3e6dfdc8a5e7ad6f76776",
+    "negativeEvidence": [
+      {
+        "report": "qa-runs/2026-09-23-automation-delete/residue/manual-cancelled.json",
+        "patch": "qa-runs/2026-09-23-automation-delete/residue/manual-reproduction.patch",
+        "scope": "Actual packaged worker stop then UI delete leaves cancelled manual item referencing deleted task. This first probe used an incorrect run-directory prefix and therefore is not file-cleanup evidence."
+      },
+      {
+        "report": "qa-runs/2026-09-23-automation-delete/residue/manual-resolved-and-artifact.json",
+        "patch": "qa-runs/2026-09-23-automation-delete/residue/artifact-reproduction.patch",
+        "scope": "Actual manual resume then missing-element browser failure creates a registered available PNG, byteSize7469 with SHA25640684ca380dbedcbb3ed9895392ace2a123a5f067707e12fac841743cbb0439c. Correct workspace/runs path is nonempty before deletion; UI deletion removes task but resolved manual item and exactly the same generation/PNG files remain."
+      }
+    ],
+    "diagnosticExclusions": [
+      "An explicit screenshot node probe was rejected at batch preparation by the current supported-node boundary. It is not file-cleanup evidence and no whitelist was expanded.",
+      "The first direct regression fixture used a non-contract resumed status; it was corrected to resolved, which the actual worker negative report proves. Final tests cover cancelled/resolved/waiting/resume_requested."
+    ],
+    "boundedFix": "Project-scoped pending manual items are included in impact and rechecked under the delete transaction even when batch is terminal. Terminal items belonging to the target tasks are deleted before tasks; other task items remain.",
+    "checks": {
+      "backend": "38 related backend tests passed / 2 dependency warnings in7.63s; final deletion file rerun recorded separately",
+      "static": "Ruff/mypy407 passed after import-format correction",
+      "fullBackend": "in progress",
+      "newPackagedDesktop": "in progress",
+      "threePlatformCI": "old5346 workflow35871462256 cancelled because confirmed new manual-item defect requires a new candidate; next full run after stabilization",
+      "frontend": "6 passed including MANUAL_PENDING visibility, 3.41s",
+      "scripts": "101 passed / 0 failed / 0 skipped, 2219.39ms",
+      "finalBackend": "11 deletion contracts passed / 2 dependency warnings, 2.98s"
+    },
+    "artifactStatus": "implementation_missing; file cleanup and durable failure/restart semantics require proposed AD1-AD3, awaiting confirmation",
+    "spec": "docs/superpowers/specs/2026-09-23-pm9-automation-delete-cleanup.md",
+    "plan": "docs/superpowers/plans/2026-09-23-pm9-automation-delete-cleanup.md",
+    "resolvedManualPostFix": {
+      "report": "qa-runs/2026-09-23-automation-delete/residue/artifact-after-manual-fix.json",
+      "backendSha256": "cb6b8166723b1c4b103b69e100f1037af9e0b8dcaa48c9920a4e0c2c9f366908",
+      "scope": "Rebuilt package, real manual resume then browser failure: manual list contains no removed-task item, but the exact generated PNG remains. Report status is correctly failed; this is not successful filesystem cleanup."
+    }
+  }
 }
