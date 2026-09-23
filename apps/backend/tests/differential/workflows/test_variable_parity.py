@@ -75,6 +75,13 @@ def test_execution_context_get_variable_accepts_both_reference_forms() -> None:
     assert context.get_variable("missing", "默认") == "默认"
 
 
+def test_typed_resolution_keeps_nested_indexed_value() -> None:
+    context = ExecutionContext(variables={"rows": [{"ref": {"recordKey": "A"}}], "index": 0})
+
+    assert context.resolve_value("{rows[{index}][ref]}", preserve_types=True) == {"recordKey": "A"}
+    assert context.resolve_value("{rows[{index}][ref]} suffix", preserve_types=True) == '{"recordKey": "A"} suffix'
+
+
 def test_variable_manager_scope_and_safe_numeric_expression_match_source() -> None:
     manager = VariableManager()
     manager.set("count", 2)

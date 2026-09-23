@@ -496,8 +496,8 @@
     "acceptance_scenarios": {
       "count": 178,
       "statuses": {
-        "partially_verified": 136,
-        "planned": 42
+        "partially_verified": 137,
+        "planned": 41
       },
       "items": [
         {
@@ -1813,12 +1813,11 @@
         },
         {
           "id": "DATA-WRITE-13",
-          "status": "planned",
-          "evidenceCount": 0,
+          "status": "partially_verified",
+          "evidenceCount": 1,
           "plannedTestExists": true,
-          "reviewedCheckCount": 1,
+          "reviewedCheckCount": 2,
           "gapKinds": [
-            "test_missing",
             "production_evidence_missing"
           ]
         },
@@ -1945,9 +1944,9 @@
         {
           "id": "FLOW-A06",
           "status": "partially_verified",
-          "evidenceCount": 1,
+          "evidenceCount": 2,
           "plannedTestExists": true,
-          "reviewedCheckCount": 2,
+          "reviewedCheckCount": 3,
           "gapKinds": [
             "production_evidence_missing"
           ]
@@ -2622,8 +2621,8 @@
     "withAssertions": 248,
     "withNoLocatedAssertion": 3,
     "statuses": {
-      "partially_verified": 203,
-      "planned": 48
+      "partially_verified": 204,
+      "planned": 47
     }
   }
 }

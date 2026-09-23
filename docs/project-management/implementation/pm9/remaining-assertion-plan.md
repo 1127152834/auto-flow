@@ -200,3 +200,4 @@ SH-02 新增两种写入顺序，逐次远端值/原历史 confirmed/双方完�
 2026-09-23 XE-A01：parameter-single 真实 worker 场景 1 passed/32 deselected（38.06 秒）；无表、参数 first 网页填写/读取、同键重放后唯一 Batch/Task/Run、零 lease 和资源回收联合通过。仅本机源码证据，不扩大为打包 UI/三平台或 XE-G02 全部门禁。当前 242 有断言/9 未定位、201 partial/50 planned/0 verified。
 
 2026-09-23 生命周期补审：LIFE-01/02 不能再仅写缺测试——连接无原位重授权/稳定主体契约，普通改绑无条件新建数据代次。LIFE-07 临时真实 HTTP 探针复现旧 unknown 仍在时重绑并再次云写；L0 在改绑新/旧目标及解绑复用持久值发送围栏，4 个直接反例 RED→GREEN。L0只拒绝绕过，不完成永久失权隔离；L1→L2→L3 具体规格/计划已保存，新增能力尚待批准。最新 243 有范围断言/8 未定位、202 partial/49 planned/0 verified。生产候选已改变，旧 c2 矩阵不能证明此修复，新完整矩阵见 verification.json。
+2026-09-23 DATA-WRITE-13 Sheets 续证（confirmed 局部）：原第二本地表循环子范围已补绑定 Sheets 的真实 worker 场景，断言前两条 pending 意图、原远端未变及第三次校验失败后的版本/lease/End。共用变量解析修复嵌套索引完整引用类型，20 个变量差异测试和 6 个 Sheets 真实场景通过。248/251 有范围断言、204 partial/47 planned/0 verified；打包 UI/真实 Google/跨平台同场景未验收。详见 sheets-loop-partial-follow-through.json，releaseAccepted=false。

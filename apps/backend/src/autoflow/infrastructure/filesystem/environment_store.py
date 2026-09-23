@@ -2,8 +2,13 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import shutil
+import socket
+import sys
 from pathlib import Path
+
+from autoflow.infrastructure.process.browser_processes import process_identity_is_alive
 
 
 class EnvironmentStore:
@@ -92,7 +97,25 @@ class EnvironmentStore:
         directory = self.root / "instances" / instance_id
         if not directory.is_dir():
             return False
-        return any((directory / name).exists() for name in _RUNTIME_LOCK_NAMES)
+        if sys.platform == "darwin":
+            lock = directory / "SingletonLock"
+            try:
+                target = os.readlink(lock)
+            except OSError:
+                pass
+            else:
+                host, separator, pid_text = target.rpartition("-")
+                if (separator and not lock.exists() and host == socket.gethostname() and pid_text.isascii()
+                    and pid_text.isdecimal() and len(pid_text) <= 10
+                    and 0 < int(pid_text) < 2**31
+                    and not process_identity_is_alive(int(pid_text), None)):
+                    # A killed Chromium can leave a live socket pathname behind.
+                    # A changed lock or any uncertain owner remains busy.
+                    try:
+                        return os.readlink(lock) != target
+                    except OSError:
+                        return True
+        return any(os.path.lexists(directory / name) for name in _RUNTIME_LOCK_NAMES)
 
     def digest(self, directory: Path) -> str:
         digest = hashlib.sha256()

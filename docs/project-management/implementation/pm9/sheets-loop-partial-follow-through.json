@@ -1,0 +1,37 @@
+{
+  "date": "2026-09-23",
+  "status": "targeted_source_worker_passed_full_regression_and_native_ci_pending",
+  "requirement": "DATA-WRITE-13",
+  "source": "docs/project-management/design/data-and-state-rules.md:254",
+  "productionFix": "apps/backend/src/autoflow/domain/workflows/variables.py retains the object and integer types of complete indexed references containing a nested loop index; malformed trailing access paths remain unresolved.",
+  "evidence": [
+    {
+      "command": "uv run --directory apps/backend pytest tests/differential/workflows/test_variable_parity.py -q",
+      "result": "20 passed",
+      "scope": "Typed nested indexed references and frozen default variable parity."
+    },
+    {
+      "command": "AUTOFLOW_TEST_CLOAKBROWSER=<local Chromium executable> uv run --directory apps/backend pytest tests/integration/test_project_sheets_real_cloakbrowser.py -q",
+      "result": "6 passed; 2 dependency deprecation warnings",
+      "scope": "Real macOS ARM HTTP/SQLite/worker/CloakBrowser. Local trigger input, bound Sheets second table, three queried refs, two committed updates, third field validation failure, two pending Sheets intents, unchanged fixture remote, released leases, and no End. Sheets transport is a controlled fixture."
+    },
+    {
+      "command": "uv run --directory apps/backend ruff check src/autoflow/domain/workflows/variables.py tests/differential/workflows/test_variable_parity.py tests/integration/test_project_sheets_real_cloakbrowser.py && uv run --directory apps/backend mypy src/autoflow/domain/workflows/variables.py",
+      "result": "passed"
+    }
+  ],
+  "coverage": {
+    "requirements": 251,
+    "withScopedAssertions": 248,
+    "withoutLocatedAssertions": 3,
+    "partiallyVerified": 204,
+    "planned": 47,
+    "verified": 0
+  },
+  "remaining": [
+    "Current PM9 packaged UI and real Google delivery/reconciliation for this partial-success chain are not validated.",
+    "Cross-platform execution of this exact loop/Sheets combination and user-visible partial-success state are not validated.",
+    "S4 existing Windows file operations, L1-L3 and M1-M3 implementation, and other PM9 release gates remain open."
+  ],
+  "releaseAccepted": false
+}

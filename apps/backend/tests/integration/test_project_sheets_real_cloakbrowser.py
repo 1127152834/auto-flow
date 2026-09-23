@@ -450,3 +450,98 @@ def test_real_archive_waits_for_run_save_and_unknown_sheet_outcome(
         assert transport.grid('数据')[3] == ['C', 'save-before']
         assert app.state.project_run_scheduler.blockers() == []
         assert app.state.project_lifecycle_coordinator.blockers() == []
+
+
+def test_real_loop_keeps_two_sheet_intents_when_third_write_fails(
+    tmp_path, valid_profile_values, real_cloak_page,
+):
+    from autoflow.infrastructure.database.project_data_models import DataFieldRow
+    from tests.fixtures.sheets import new_field, new_table
+    from tests.integration.test_project_run_data_start import _input
+    from tests.integration.test_project_sheets_sync import sync_operations
+
+    executable, url, requests = real_cloak_page
+    source = next(parent for parent in executable.parents if parent.name.startswith('chromium-'))
+    shutil.copytree(source, tmp_path / 'data' / 'kernels' / source.name, symlinks=True)
+    transport = FakeSheetsTransport({'数据': [['编号', '标题'], ['A', 'orig-0'], ['B', 'orig-1'], ['C', 'orig-2']]})
+    with open_sheets_table(tmp_path, transport, [('code', '编号', 'string'), ('title', '标题', 'string')]) as bound:
+        client, app = bound.client, bound.client.app
+        prefix = f'/api/v1/projects/{bound.project}'
+        trigger = new_table(client, bound.project, '批次入口')
+        trigger_field = new_field(client, bound.project, trigger['tableId'], 'token', '令牌', expectedTableRevision=trigger['tableRevision'])
+        created = client.post(prefix + f"/tables/{trigger['tableId']}/records", headers=new_key(), json={
+            'datasetGeneration': trigger['datasetGeneration'],
+            'values': [{'fieldId': trigger_field['ref']['fieldId'], 'value': 'once'}],
+        })
+        assert created.status_code == 201, created.text
+        with app.state.session_factory.begin() as session:
+            session.get(DataFieldRow, (bound.field_id('title'), bound.dataset_generation())).validation = {'pattern': '^row-[01]$'}
+        pull(bound)
+        before = bound.records()
+        profile = app.state.profile_service.create(ProfileSpec.from_values({
+            **valid_profile_values, 'headless': True, 'browser_version': source.name.removeprefix('chromium-'),
+        }))
+        def node(identity, kind, data):
+            return {'id': identity, 'type': kind, 'position': {'x': 0, 'y': 0}, 'data': {'moduleType': kind, **data}}
+        nodes = [
+            node('inputs', 'project_data', {'operation': 'inputs', 'variableName': 'trigger', 'arguments': {}}),
+            node('open', 'open_page', {'url': url, 'timeout': 30}),
+            node('query', 'project_data', {'operation': 'queryRecords', 'variableName': 'rows',
+                'arguments': {'tableId': bound.table, 'datasetGeneration': bound.dataset_generation(), 'fieldIds': [bound.field_id('title')], 'readPurpose': 'condition', 'filter': None, 'orderBy': [], 'cursor': None, 'limit': 3},
+                'tableGrant': {'tableId': bound.table, 'datasetGeneration': bound.dataset_generation(), 'operations': ['queryRecords'], 'fieldIds': [bound.field_id('title')], 'readPurposes': ['condition']}}),
+            node('loop', 'loop', {'count': 3, 'indexVariable': 'index'}),
+            node('write', 'project_data', {'operation': 'updateRecord', 'variableName': 'saved',
+                'arguments': {'recordRef': "{rows['items'][{index}]['ref']}", 'changes': {bound.field_id('title'): 'row-{index}'},
+                              'expectedContentRevision': "{rows['items'][{index}]['contentRevision']}"},
+                'tableGrant': {'tableId': bound.table, 'datasetGeneration': bound.dataset_generation(), 'operations': ['updateRecord'], 'fieldIds': [bound.field_id('title')], 'readPurposes': ['condition']}}),
+            node('end', 'project_end', {'retainEnvironment': {'enabled': False}}),
+        ]
+        document = workflow_payload(uid())
+        document['content']['nodes'] = nodes
+        document['content']['edges'] = [
+            {'id': uid(), 'source': a, 'target': b} for a, b in [('inputs', 'open'), ('open', 'query'), ('query', 'loop')]
+        ] + [
+            {'id': uid(), 'source': 'loop', 'target': 'write', 'sourceHandle': 'loop'},
+            {'id': uid(), 'source': 'loop', 'target': 'end', 'sourceHandle': 'done'},
+        ]
+        saved = client.post('/api/workflows', json={**document['content'], 'id': document['id'], 'clientRequestId': uid()})
+        assert saved.status_code == 201, saved.text
+        automation = client.post(prefix + '/automations', headers=new_key(), json={
+            'name': 'Sheets 两次成功第三次失败', 'description': '', 'workflowId': saved.json()['id'],
+            'inputPlan': {'inputs': [_input(bound.project, trigger, trigger_field, 'trigger')]}, 'parameterSchema': [],
+            'environmentPolicy': {'source': 'newFromProfile', 'profileId': profile.id, 'proxyOverride': {'mode': 'none'}, 'modelProviderId': None},
+            'runPolicy': {'maxTasks': 1, 'concurrency': 1, 'maxLiveInstances': 1, 'continueAfterFailure': False, 'automaticExecutionTimeoutSeconds': 60, 'manualDeadlineSeconds': 180},
+        })
+        assert automation.status_code == 201, automation.text
+        config = automation.json()
+        validation = client.get(prefix + f"/automations/{config['automationId']}/validation")
+        assert validation.status_code == 200 and validation.json()['runnable'], validation.text
+        accepted = client.post(prefix + f"/automations/{config['automationId']}/batches", headers=new_key(), json={
+            'expectedAutomationRevision': config['managementRevision'], 'parameters': {}, 'maxTasks': 1, 'concurrency': 1,
+        })
+        assert accepted.status_code == 202, accepted.text
+        batch = accepted.json()['operation']['result']['batch']['batchId']
+        wait_for(lambda: batch_detail(bound, batch)['batch']['status'] == 'failed', 'third Sheets write fails after two commits')
+        detail = batch_detail(bound, batch)
+        assert detail['statusCounts']['failed'] == 1, detail
+        task, = client.get(prefix + '/tasks', params={'batchId': batch}).json()['items']
+        attempts = client.get(prefix + f"/tasks/{task['taskId']}/node-attempts").json()['items']
+        writes = [attempt for attempt in attempts if attempt['nodeId'] == 'write']
+        assert [attempt['status'] for attempt in writes] == ['succeeded', 'succeeded', 'failed'], attempts
+        assert writes[-1]['error']['code'] == 'INVALID_PROJECT_DATA'
+        assert not any(attempt['nodeId'] == 'end' for attempt in attempts)
+        after = bound.records()
+        title = bound.field_id('title')
+        assert [next(cell['value'] for cell in row['values'] if cell['fieldId'] == title) for row in after] == ['row-0', 'row-1', 'orig-2']
+        assert [row['contentRevision'] for row in after] == [2, 2, 1]
+        assert [(row['statusRevision'], row['linkRevision']) for row in after] == [(row['statusRevision'], row['linkRevision']) for row in before]
+        pending = sync_operations(bound, 'pending')
+        assert len(pending) == 2 and {item['record']['recordKey']['value'] for item in pending} == {'A', 'B'}
+        assert {item['targetContentRevision'] for item in pending} == {2}
+        assert not sync_operations(bound, 'unknown')
+        assert transport.changes() == 0 and transport.grid('数据')[1:] == [['A', 'orig-0'], ['B', 'orig-1'], ['C', 'orig-2']]
+        assert requests.count('/fixture') == 1
+        with app.state.session_factory() as session:
+            leases = session.scalars(select(ProjectRecordLeaseRow).where(ProjectRecordLeaseRow.task_id == task['taskId'])).all()
+            assert all(lease.state == 'released' for lease in leases)
+        assert not app.state.project_workflow_worker_manager.busy()

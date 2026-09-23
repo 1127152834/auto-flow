@@ -1,5 +1,9 @@
 # PM9 剩余工作复核
 
+2026-09-23 FLOW-A06 原生回归缺陷（confirmed 局部）：旧 defa1955 三平台矩阵的 macOS ARM `data-response-loss` 27 项真实 worker 通过、1 项失败；本机复现同一终态实例清理卡住。原因是 Chromium 所属 PID 已退出而遗留 `SingletonSocket` 目标仍存在；macOS 环境适配器现只在本机锁 PID 已确认退出且锁未变化时忽略遗留标记，其他情况保持保守拒绝。本机同场景 RED→GREEN、环境单元15项、相关所有权/恢复46项通过；最终源码全量和新三平台待验证。旧矩阵不能计三平台通过，详见 [专项报告](response-loss-lock-follow-through.json)，`releaseAccepted=false`。
+
+2026-09-23 DATA-WRITE-13 最新子范围（confirmed）：修复循环索引嵌套引用把 `RecordRef` 对象转成字符串的共用变量解析缺陷。源码真实 HTTP/SQLite/worker/CloakBrowser + 受控 Sheets transport 6 项通过：第二表前两行更新及两条 pending 出站意图在第三行字段校验失败后保留；lease 释放、End 未执行。变量差异测试20项通过。台账 248/251 有范围断言、3 未定位，204 partial/47 planned/0 verified。打包 UI、真实 Google 送达核验、跨平台该组合仍待验收；完整回归和新候选 CI 进行中，`releaseAccepted=false`。详见 [专项报告](sheets-loop-partial-follow-through.json)。下文旧计数均为历史候选。
+
 2026-09-23 本机回归收口（confirmed）：生命周期源码94f8e0a8完整后端3472 passed/74 skipped/2 warnings，796.74秒；之后defa1955二进制读取补丁单独16项+真实worker1项、Ruff/mypy407/构建/原15秒sidecar通过，未宣称同一最终本机全量快照。最终三平台35816693045进行中。已完成源生产恢复/删除/服务重启补证及运行目录清理修复；Windows真实PNG409的读取修复待原生确认。旧14df矩阵35811305102两种Mac成功、Windows失败；所有旧状态以此按hash区分。releaseAccepted=false。
 
 2026-09-23 最新候选 defa1955（局部 confirmed，完整验收 pending）：已修复项目删除遗漏 Run 目录；源生产联合链归档→服务重建→恢复不重放→清理残留→服务重建自动续跑1项通过。随后从历史Windows真实PNG GET409定位并修复O_BINARY缺失，二进制契约/证据16项、Mac真实worker1项通过。三平台35816693045进行中；35815127474/35816258910因新缺陷修复取代而取消，不计通过。下文旧候选/计数/状态仅为历史；248/251有范围断言，203partial/48planned/0verified，releaseAccepted=false。

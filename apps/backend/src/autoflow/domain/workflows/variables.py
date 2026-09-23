@@ -112,7 +112,7 @@ def resolve_value(
     def resolve_access_path(expression: str) -> Any:
         expression = resolve_nested(expression.strip(), max_depth=3)
         match = re.match(
-            rf"^({_VARIABLE_NAME})((?:\[[^\]]+\])*)",
+            rf"^({_VARIABLE_NAME})((?:\[[^\]]+\])*)$",
             expression,
         )
         if not match:
@@ -167,7 +167,7 @@ def resolve_value(
         return text
 
     if preserve_types:
-        reference = re.fullmatch(r"\$?\{([^{}]+)\}", value)
+        reference = re.fullmatch(r"\$?\{(.+)\}", value)
         if reference:
             resolved = resolve_access_path(reference.group(1))
             if resolved is not missing:

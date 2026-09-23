@@ -11616,8 +11616,18 @@
       "primary_package": "PM4-B",
       "planned_test_file": "apps/backend/tests/integration/test_project_node_writes.py",
       "release_regression": "PM9",
-      "status": "planned",
-      "evidence": [],
+      "status": "partially_verified",
+      "evidence": [
+        {
+          "milestone": "PM9",
+          "kind": "source_real_worker_integration",
+          "report": "docs/project-management/implementation/pm9/sheets-loop-partial-follow-through.json",
+          "scope": "macOS ARM 源码真实 HTTP/SQLite/worker/CloakBrowser，Sheets 来源第二张表循环修改前两条，第三条字段规则拒绝；前两条本地效果、版本与 pending 出站意图保留，未发送远端。",
+          "limitations": "Sheets transport 为受控 fixture；当前打包应用、真实 Google、跨平台该组合和 UI 可视部分成功仍待验收。",
+          "platform": "macOS arm64",
+          "user_acceptance": "pending"
+        }
+      ],
       "owner": "project-data",
       "acceptance_methods": [
         "automated_rule_or_integration",
@@ -11646,16 +11656,18 @@
             "symbol": "test_real_project_batch_http",
             "scope": "仅 data-loop-partial 参数：macOS ARM 真实 HTTP/SQLite/worker/CloakBrowser 在第二张本地表循环创建 row-0/row-1 后第三次被规则拒绝；前两行/版本/成功操作保留，两个动态 lease 释放，End 不执行，后续参数任务取消。",
             "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_real_cloakbrowser.py",
+            "symbol": "test_real_loop_keeps_two_sheet_intents_when_third_write_fails",
+            "scope": "真实 HTTP/SQLite/worker/CloakBrowser，先以本地输入启动，查询绑定 Sheets 三行，再循环在第二张表逐条 updateRecord；前两次成功、第三次字段规则失败；断言两条本地内容/版本与 pending Sheets 意图仍在，远端 fixture 未写，动态 lease 释放，End 未运行。",
+            "level": "automated_integration"
           }
         ],
         "gaps": [
           {
-            "kind": "test_missing",
-            "detail": "Sheets 来源的前两条出站意图在第三行失败后保留仍待联合断言。"
-          },
-          {
             "kind": "production_evidence_missing",
-            "detail": "当前仅本机源码真实 worker，本例尚未在打包 UI 或三平台执行。"
+            "detail": "本例 Sheets transport 为受控 fixture；当前 PM9 打包 UI、真实 Google 送达核验、三平台该组合与用户可视部分成功仍待验收。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -12362,7 +12374,8 @@
       "release_regression": "PM9",
       "status": "partially_verified",
       "evidence": [
-        "docs/project-management/implementation/pm9/follow-through.json"
+        "docs/project-management/implementation/pm9/follow-through.json",
+        "docs/project-management/implementation/pm9/response-loss-lock-follow-through.json"
       ],
       "owner": "project-data",
       "acceptance_methods": [
@@ -12399,12 +12412,19 @@
             "scope": "data-response-loss：实际 create 提交后 parent→worker 回复丢失，Run 中断；HTTP 原 commandId 两次恢复同一成功结果，表只有一个新记录",
             "level": "automated_production",
             "evidence": "docs/project-management/implementation/pm9/follow-through.json"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py",
+            "symbol": "test_real_project_batch_http",
+            "scope": "data-response-loss 的 macOS ARM 旧候选 CI 失败且本机重现：已提交原命令可恢复，但退出 Chromium 遗留 socket 阻塞实例清理；锁归属确认修复后真实 HTTP/SQLite/worker/CloakBrowser 同场景通过，后续 Task 能结算。",
+            "level": "automated_production",
+            "evidence": "docs/project-management/implementation/pm9/response-loss-lock-follow-through.json"
           }
         ],
         "gaps": [
           {
             "kind": "production_evidence_missing",
-            "detail": "原操作查询恢复已验证；未宣称中断后重跑节点或跨进程恢复浏览器，相关 UI 恢复入口仍需验收"
+            "detail": "原操作查询恢复和本机浏览器清理已验证；旧候选 macOS ARM 失败保留，新候选三平台及打包 UI 恢复入口仍待验收。不包含中断后重跑节点或跨进程恢复浏览器。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -16989,5 +17009,5 @@
     "verification": "平台与全链验收负责人；逐平台记录证据"
   },
   "pm1_plan": "docs/superpowers/plans/2026-09-13-project-management-pm1.md",
-  "pm9_note": "2026-09-22: 251 条覆盖账本，228 条有范围断言 / 23 条未定位，193 partially_verified / 58 planned / 0 verified。R3 系统 UUID 初始化及恢复补局部证据，R4 继续。C Mac @21f8bb1e、Windows @07619b6d 原生流水线通过，不能替代 R3/R4 当前候选三平台及 Google 实网。历史 73 条失效预定路径保留。releaseAccepted=false。"
+  "pm9_note": "2026-09-23: 251 条覆盖账本，248 条有范围断言 / 3 条未定位，204 partially_verified / 47 planned / 0 verified。DATA-WRITE-13 源码真实 worker 补两条 Sheets pending 意图保留，打包/真实 Google/跨平台仍待验收。原 73 条失效预定路径已有逐条映射；releaseAccepted=false。"
 }

@@ -1,0 +1,21 @@
+{
+  "date": "2026-09-23",
+  "status": "local_red_green_passed_new_native_candidate_pending",
+  "requirement": "FLOW-A06",
+  "regression": {
+    "ciRun": "https://github.com/1127152834/auto-flow/actions/runs/35816693045",
+    "codeCandidate": "defa1955be915022dc30e3309159affb28d30ae0",
+    "platform": "darwin-arm64",
+    "result": "27 real-worker scenarios passed, data-response-loss failed: the committed command was recoverable, but terminal instance cleanup repeatedly reported the work copy busy and the second task remained queued.",
+    "localReproduction": "The same data-response-loss test failed before the fix. The surviving SingletonSocket target existed while the local Chromium SingletonLock owner PID and matching task browser process were absent."
+  },
+  "fix": "On macOS, a Chromium singleton socket is ignored only when the accompanying local-host SingletonLock has a valid PID that native process lookup confirms exited and the lock has not changed. Live, reused, foreign-host, malformed, missing or changing owners remain busy. Other platforms retain the conservative check.",
+  "localValidation": [
+    "test_environment_store.py and test_environment_browser.py: 15 passed",
+    "data-response-loss real HTTP/SQLite/worker/CloakBrowser: RED 1 failed, GREEN 1 passed",
+    "browser ownership, environment persist/restore and workflow recovery: 46 passed, 8 skipped",
+    "Ruff source/tests and mypy 407 source files passed"
+  ],
+  "limits": "The final-source full backend regression, new three-platform matrix and packaged native dialogs are pending. The old ARM failure is not counted as a pass.",
+  "releaseAccepted": false
+}
