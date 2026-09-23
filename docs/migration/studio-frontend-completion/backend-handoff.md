@@ -122,3 +122,9 @@ SSH 五节点已通过 [正式 UI 闭环](../studio-backend-migration/evidence/b
 统计 recordingCount 现在来自已登记项目归属的真实录制 session，按文档和创建时间筛选；运行 status 过滤不适用于录制时为 null+原因。历史无归属不计入且页面说明。最近活动包括录制更新时间。
 
 [专项及边界](../studio-backend-migration/evidence/project-integration/inspection-recording-2026-09-23/result.json) · [正式录制、重开、独立重放和项目统计](../studio-backend-migration/evidence/project-integration/formal-recording-electron-eUd5nT/result.json)。仅 macOS arm64 开发构建实测，未替代正式包、其他平台、项目资源权限或任务/业务表桥接验收。
+
+### 项目自动化调用 Studio 五节点（2026-09-23）
+
+项目文档目录、自动化校验和批次准备现准入 `open_page/input_text/click_element/get_element_info/screenshot`。旧项目四节点协议保持兼容；Studio 格式使用现有迁入图执行器及同一 CloakBrowser 当前页，冻结完整文档和主应用 Profile。截图复用工作区产物存储和原事件 SQL 事务，结果/失败用途分别展示；回执不确定时保留文件，停止及父通道断开可中断启动/节点，清理后才终态。
+
+宿主按 workflowId 打开已保存文档时，保存使用更新合同；新建仍创建新身份。正式开发入口已完成项目绑定→五节点→PNG、长导航停止、失败截图、恢复后成功和进程清理。证据：[`project-task-bridge-2026-09-23/result.json`](../studio-backend-migration/evidence/project-integration/project-task-bridge-2026-09-23/result.json)。同一链路已在本次 macOS arm64 本地 unsigned 包完成，记录具体 app.asar/后端哈希；Intel/Windows 未测。其余项目节点族、业务表写入、权限资源及已登记404/501不因此关闭；213节点槽位仍622/17。
