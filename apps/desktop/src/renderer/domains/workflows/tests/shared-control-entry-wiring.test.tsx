@@ -45,6 +45,7 @@ vi.mock('../components/controls/dual-coordinate-input', () => ({ DualCoordinateI
 import { ConfigPanel } from '../components/ConfigPanel'
 import { useWorkflowStore as store } from '../editor-store'
 import type { ModuleType } from '../types/workflow'
+import { excludedModuleTypes } from '../lib/moduleCatalog'
 
 const tools = ['VariableInput', 'VariableNameInput', 'VariableRefInput', 'NumberInput'] as const
 type Tool = (typeof tools)[number]
@@ -69,6 +70,11 @@ it.each(entries)('$id mounts and commits through its actual ConfigPanel consumer
   const nodeId = store.getState().nodes[0].id
   render(<ConfigPanel selectedNodeId={nodeId} />)
   const controls = screen.queryAllByTestId(`tool-${tool}`)
+  if (excludedModuleTypes.has(type)) {
+    expect(screen.getAllByRole('status').some(item => item.textContent?.includes('此节点已排除，保留原配置'))).toBe(true)
+    expect(controls, `${id} must stay read-only when its module is excluded`).toHaveLength(0)
+    return
+  }
   expect(controls.length, `${id} did not mount a direct ${tool}`).toBeGreaterThan(0)
 
   const before = structuredClone(store.getState().nodes[0].data)

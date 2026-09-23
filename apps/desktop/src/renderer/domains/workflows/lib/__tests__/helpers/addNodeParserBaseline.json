@@ -22,10 +22,10 @@
   "modulesWithVarFieldsCount": 174,
   "computedVarFieldCount": 8,
   "fieldDistribution": {
-    "resultVariable": 115,
+    "resultVariable": 114,
     "saveToVariable": 24,
     "appVariable": 15,
-    "variableName": 14,
+    "variableName": 15,
     "controlVariable": 14,
     "indexVariable": 2,
     "itemVariable": 1,

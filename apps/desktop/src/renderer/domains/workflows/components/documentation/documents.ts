@@ -121,7 +121,7 @@ export const documents: DocumentItem[] = [
     id: 'notify-guide',
     title: '多渠道通知',
     icon: Bell,
-    description: '钉钉、微信、Telegram、Discord等16种通知',
+    description: 'Telegram 与自定义 Webhook 的前端配置',
   },
   {
     id: 'ssh-guide',

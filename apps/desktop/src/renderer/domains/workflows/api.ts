@@ -708,8 +708,12 @@ async function recorderRequest<T>(path:string,sessionId:string,options:RequestIn
   return result
 }
 
+const stopCommandIds = new Map<string, string>()
 async function issueRecorderCommand<T>(sessionId:string,action:'start'|'pause'|'resume'|'stop',afterSeq=0):Promise<ApiResponse<T>>{
-  const revision=getStudioTransportRevision(),commandId=crypto.randomUUID()
+  const revision=getStudioTransportRevision()
+  const key=action==='stop'?`${revision}:${sessionId}:${afterSeq}`:''
+  const commandId=key?(stopCommandIds.get(key)??crypto.randomUUID()):crypto.randomUUID()
+  if(key)stopCommandIds.set(key,commandId)
   const body=action==='start'?{sessionId,commandId}:{sessionId,commandId,afterSeq}
   const result=await recorderRequest<T>(`/recorder/${action}`,sessionId,{method:'POST',body:JSON.stringify(body)})
   if(revision!==getStudioTransportRevision()||(result.httpStatus&&result.httpStatus<500&&!result.success)||result.success)return result
@@ -771,7 +775,10 @@ export const recorderApi = {
     const revision=getStudioTransportRevision()
     const result=await issueRecorderCommand<components['schemas']['StudioRecorderStarted']>(sessionId,'start')
     if(revision!==getStudioTransportRevision())return result
-    if(result.success&&result.data?.success===true&&result.data.recording===true&&Number.isSafeInteger(result.data.nextSeq)&&result.data.nextSeq>=0)return result
+    if(result.success&&result.data?.success===true&&result.data.recording===true&&Number.isSafeInteger(result.data.nextSeq)&&result.data.nextSeq>=0){
+      stopCommandIds.clear()
+      return result
+    }
     if(!result.httpStatus||result.httpStatus>=500){
       if(!result.success)return {success:false,error:result.error||'录制启动尚未确认',httpStatus:result.httpStatus,outcomeUnknown:result.outcomeUnknown}
     }

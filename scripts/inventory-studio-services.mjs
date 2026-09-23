@@ -40,9 +40,15 @@ for (const { file, tree } of sources) walk(tree, node => {
     const id = `${node.name.getText(tree)}.${member.name.getText(tree)}`
     const requests = []
     walk(member, child => {
-      if (!ts.isCallExpression(child) || !/^(apiRequest|studioFetch|fetch)$/.test(child.expression.getText(tree))) return
-      registeredRequests.add(`${file}:${child.pos}`)
-      requests.push({ ...requestContract(child, tree), call: child.getText(tree), ...site(file, tree, child) })
+      if (!ts.isCallExpression(child)) return
+      const callee = child.expression.getText(tree)
+      if (/^(apiRequest|studioFetch|fetch)$/.test(callee)) {
+        registeredRequests.add(`${file}:${child.pos}`)
+        requests.push({ ...requestContract(child, tree), call: child.getText(tree), ...site(file, tree, child) })
+      } else if (file.endsWith('/api/mcp.ts') && callee === 'command' && ts.isStringLiteral(child.arguments[1])) {
+        const endpoint = child.arguments[1].text
+        requests.push({ endpoint: child.arguments[1].getText(tree), method: endpoint.endsWith('/config') ? 'PUT' : 'POST', body: child.arguments[2]?.getText(tree) ?? null, responseType: null, call: child.getText(tree), ...site(file, tree, child) })
+      }
     })
     services.set(id, { id: `service:${id}`, operation: id, ...site(file, tree, member), requests, consumers: [], status: '已登记' })
   }
