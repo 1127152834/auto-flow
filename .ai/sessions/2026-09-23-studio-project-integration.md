@@ -257,3 +257,9 @@
 - 同一正式Electron项目工作区以真实UI新增第二条流程：全局列表／字典初值，列表和字典各遍历两轮，无限循环中break、两轮次数循环中continue，最后写出visited=4。开发`formal-project-control-electron-fTx2GB`及同一冻结后端的macOS arm64本地unsigned包`formal-project-control-electron-dsxJew`均通过；每轮尝试、被跳过节点无尝试、输出和进程清理见既有`project-integration/control-project-2026-09-23/result.json`。
 - 首次新脚本只等可见成功日志而超时，改为核对项目作用域下持久文档；失败尝试`formal-project-control-electron-dlPeHa`保留。其他嵌套组合、子流程／模块依赖、业务数据桥和未测平台仍待核销，213节点622/17槽位不变。
 - 追加列表循环体内的条件分支，正式UI两轮分别命中真假路径各一次。开发`formal-project-control-electron-WNL3g2`与同一冻结包`formal-project-control-electron-iiRx21`通过；其他嵌套组合与模块依赖仍按未验收处理。
+
+## 项目画布子流程与真实网页动作（2026-09-23）
+
+- 项目预检保留未连线的可视定义区，拒绝可视节点参与执行连线及只有可视节点的流程；项目图执行器复用原Studio的`_WorkerCanvasSubflows`，子上下文沿已有事件与变量通道，不新造子流程算法。项目目录新增批准的`subflow`调用入口。
+- 单元与真实项目worker验证组内变量仅在调用时产生，尾节点获得42。关联156项、Ruff/mypy/OpenAPI通过；PyInstaller重构建与macOS arm64本地unsigned包均通过。正式UI开发`formal-project-control-electron-Ipn9Fb`、包内`formal-project-control-electron-rOVoqM`从项目页建流程、保存、关联自动化并运行，组内CloakBrowser打开本地受控网页，结束后无浏览器残留。包哈希与失败脚本尝试见原`project-integration/control-project-2026-09-23/result.json`。
+- 尚未核销历史`subflow_header`定义、自定义模块冻结依赖、其他嵌套组合、业务数据写回、Intel/Windows及17个环境执行槽位；213节点总范围不变。

@@ -13,6 +13,7 @@ _RUNNABLE_MODULES = (
     ("continue_loop", "跳过本轮"),
     ("set_variable", "设置变量"),
     ("increment_decrement", "自增自减"),
+    ("subflow", "子流程"),
     ("ai_chat", "AI对话"),
     ("ai_classify", "AI文本分类"),
     ("ai_dedup_semantic", "AI语义去重"),

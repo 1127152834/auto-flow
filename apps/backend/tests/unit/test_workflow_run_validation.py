@@ -196,9 +196,23 @@ def test_unimplemented_or_unknown_module_can_be_saved_but_not_run(module_type):
             "nodeId": "open",
             "path": ["content", "nodes", "0", "data", "moduleType"],
             "code": "WORKFLOW_NOT_RUNNABLE",
-            "message": f"服务端尚不支持运行节点 {module_type}",
+            "message": "展示节点不能接入执行链" if module_type == "group" else f"服务端尚不支持运行节点 {module_type}",
         }
     ]
+
+
+def test_visual_only_graph_cannot_start_project_run():
+    payload = workflow_payload()
+    payload["content"]["schemaVersion"] = 3
+    payload["content"]["nodes"] = [
+        {"id": "visual", "type": "group", "position": {"x": 0, "y": 0},
+         "data": {"moduleType": "group", "isSubflow": True}}
+    ]
+    payload["content"]["edges"] = []
+    with pytest.raises(WorkflowError) as caught:
+        prepare_run(payload)
+    assert caught.value.code == "WORKFLOW_NOT_RUNNABLE"
+    assert str(caught.value) == "工作流没有可执行节点"
 
 
 def test_condition_without_branch_remains_unrunnable():

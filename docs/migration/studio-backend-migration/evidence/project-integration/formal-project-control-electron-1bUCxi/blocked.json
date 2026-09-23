@@ -1,0 +1,10 @@
+{
+  "checkedAt": "2026-09-23T10:08:44.152Z",
+  "gitHead": "80fc5bfb309c7ff4fb864e7b04398fa657168143",
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "通过模块条真实点击完成初始化、三轮循环、真假分支和汇合后的尾节点"
+  ],
+  "observedEvents": [],
+  "error": "Error: timed out waiting for empty positioned canvas point for 打开网页: null\n    at waitFor (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/electron-cdp.mjs:99:9)\n    at async addCanvasNode (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:1122:7)\n    at async file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:182:27"
+}

@@ -620,6 +620,56 @@ async def test_project_batch_runs_condition_and_loop_in_real_worker(tmp_path: Pa
 
 
 @pytest.mark.asyncio
+async def test_project_batch_executes_canvas_subflow_in_real_worker(tmp_path: Path) -> None:
+    factory, _, _, coordinator, runtime, project, automation = setup(tmp_path)
+    worker = ProjectWorkflowWorkerManager(tmp_path / "subflow-worker", start_timeout=10)
+    resources = _NoBrowserResources()
+    dispatcher = _dispatcher(factory, worker, resources)
+    try:
+        document = workflow_payload(automation.workflow_id)
+        document["content"]["schemaVersion"] = 3
+        document["content"]["nodes"] = [
+            {"id": "definition", "type": "group", "position": {"x": 100, "y": 100},
+             "data": {"moduleType": "group", "isSubflow": True, "subflowName": "项目子流程", "width": 300, "height": 200}},
+            {"id": "inner", "type": "set_variable", "position": {"x": 150, "y": 150},
+             "data": {"moduleType": "set_variable", "config": {"variableName": "answer", "variableValue": "42"}}},
+            {"id": "call", "type": "subflow", "position": {"x": 500, "y": 100},
+             "data": {"moduleType": "subflow", "config": {"subflowGroupId": "definition", "subflowName": "项目子流程"}}},
+            {"id": "tail", "type": "set_variable", "position": {"x": 700, "y": 100},
+             "data": {"moduleType": "set_variable", "config": {"variableName": "result", "variableValue": "{answer}"}}},
+        ]
+        document["content"]["edges"] = [{"id": "after", "source": "call", "target": "tail"}]
+        WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory)).update(
+            automation.workflow_id, {**document["content"], "id": automation.workflow_id},
+            expected_revision=1, client_request_id=str(uuid4()),
+        )
+        batch, _, _ = coordinator.start(
+            project.project_id, automation.automation_id, str(uuid4()), start_payload(automation)
+        )
+        task = coordinator.list_tasks(project.project_id, batch.batch_id)[0]
+        run = runtime.query_run(run_id=task.run_id)
+        assert run is not None
+        await dispatcher.dispatch(
+            run.run_id,
+            expected_status_revision=run.status_revision,
+            execution_generation=run.execution_generation,
+        )
+        await dispatcher.wait_idle()
+        with factory() as session:
+            repository = SqlAlchemyWorkflowRuntimeRepository(session)
+            finished = repository.get_run(run_id=run.run_id)
+            events = repository.list_events(run.run_id, after_sequence=0, limit=100)
+        assert finished is not None and finished.status == "succeeded"
+        completed = [event.node_id for event in events if event.kind == "nodeAttempt" and event.payload["status"] == "succeeded"]
+        assert completed == ["inner", "call", "tail"]
+        assert any(event.kind == "output" and event.payload.get("name") == "result" and event.payload.get("value") == 42 for event in events)
+        assert resources.requests == [] and not worker.busy()
+    finally:
+        await dispatcher.shutdown()
+        factory.dispose()
+
+
+@pytest.mark.asyncio
 async def test_real_worker_persists_present_json_null_output_without_browser(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

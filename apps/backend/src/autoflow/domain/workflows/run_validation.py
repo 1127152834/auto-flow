@@ -39,26 +39,32 @@ def prepare_run(document: object) -> PreparedWorkflow:
     assert isinstance(document, dict)
     nodes = projected["content"]["nodes"]
     supported = runnable_module_types()
+    graph_adapter = projected["content"].get("schemaVersion") == 3 or any(
+        node["data"]["moduleType"] not in _DEFAULT_CONFIGS for node in nodes
+    )
+    connected = {
+        endpoint
+        for edge in projected["content"]["edges"]
+        for endpoint in (edge["source"], edge["target"])
+    }
     issues = []
     for index, node in enumerate(nodes):
         node_id = node["id"]
         module_type = node["data"]["moduleType"]
-        if module_type not in supported:
+        visual = module_type in {"group", "note"}
+        if (visual and node_id in connected) or (module_type not in supported and not (graph_adapter and visual)):
             issues.append(
                 WorkflowIssue(
                     node_id,
                     ["content", "nodes", str(index), "data", "moduleType"],
                     "WORKFLOW_NOT_RUNNABLE",
-                    f"服务端尚不支持运行节点 {module_type}",
+                    "展示节点不能接入执行链" if visual and node_id in connected else f"服务端尚不支持运行节点 {module_type}",
                 )
             )
     if issues:
         raise WorkflowError(
             "WORKFLOW_NOT_RUNNABLE", "工作流包含尚不可执行的节点", 422, issues
         )
-    graph_adapter = projected["content"].get("schemaVersion") == 3 or any(
-        node["data"]["moduleType"] not in _DEFAULT_CONFIGS for node in nodes
-    )
     by_id = {node["id"]: node for node in nodes}
     # Defaults validate Studio content without rewriting its frozen snapshot.
     validation_nodes = deepcopy(nodes) if graph_adapter else nodes
@@ -82,13 +88,15 @@ def prepare_run(document: object) -> PreparedWorkflow:
             config_issues,
         )
     if graph_adapter:
+        node_ids = [node["id"] for node in nodes if node["data"]["moduleType"] not in {"group", "note"}]
+        if not node_ids:
+            raise WorkflowError("WORKFLOW_NOT_RUNNABLE", "工作流没有可执行节点", 422)
         valid, errors = WorkflowDefinition.from_raw(projected["content"]).validate()
         if not valid:
             raise WorkflowError(
                 "WORKFLOW_NOT_RUNNABLE", "工作流执行图不受支持", 422,
                 [WorkflowIssue(None, ["content", "edges"], "INVALID_EXECUTION_GRAPH", message) for message in errors],
             )
-        node_ids = [node["id"] for node in nodes]
     else:
         node_ids = _ordered_chain(nodes, projected["content"]["edges"])
     return PreparedWorkflow(

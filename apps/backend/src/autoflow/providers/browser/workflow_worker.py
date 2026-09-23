@@ -837,8 +837,8 @@ class _WorkerCanvasSubflows:
         registry: Any,
         parent: ExecutionContext,
         sink: _WorkerEventSink,
-        command_bus: _WorkerCommandBus,
-        nested_workflows: _WorkerNestedWorkflows,
+        command_bus: _WorkerCommandBus | None,
+        nested_workflows: _WorkerNestedWorkflows | None,
         stack: ContextVar[tuple[str, ...]] | None = None,
     ) -> None:
         self._document = copy.deepcopy(document)
@@ -927,12 +927,13 @@ class _WorkerCanvasSubflows:
         )
         child_sink = self._sink.for_context(child)
         child.events = child_sink
-        interactive = self._command_bus.for_context(child)
-        child.input_prompts = interactive
-        child.browser_scripts = interactive
-        child.speech = interactive
-        child.desktop_actions = interactive
-        child.webhook_triggers = interactive
+        if self._command_bus is not None:
+            interactive = self._command_bus.for_context(child)
+            child.input_prompts = interactive
+            child.browser_scripts = interactive
+            child.speech = interactive
+            child.desktop_actions = interactive
+            child.webhook_triggers = interactive
         child.nested_workflows = self._nested_workflows
         if isinstance(self._parent.custom_modules, _WorkerCustomModules):
             child.custom_modules = self._parent.custom_modules.for_context(

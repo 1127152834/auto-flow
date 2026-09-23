@@ -1,8 +1,8 @@
 {
   "capabilityId": "BE-B3-001/002 project-task adapter",
-  "slice": "project-condition-loop-variable-graph",
+  "slice": "project-control-graph-and-canvas-subflow",
   "classification": "AutoFlow必要适配",
-  "status": "backend-and-macos-arm64-formal-ui-passed-for-basic-control-family",
+  "status": "backend-and-macos-arm64-formal-ui-passed-for-control-and-canvas-subflow",
   "scope": 213,
   "admittedTypes": [
     "condition",
@@ -13,18 +13,19 @@
     "break_loop",
     "continue_loop",
     "set_variable",
-    "increment_decrement"
+    "increment_decrement",
+    "subflow"
   ],
   "sourceReuse": [
-    "已迁入的WebRPA控制与变量执行器及图调度器",
+    "已迁入的WebRPA控制、变量、画布子流程执行器及图调度器",
     "既有项目ProjectGraphExecutor和受管worker",
     "旧webrpa-chain/v1文档继续执行原顺序链"
   ],
   "checks": {
-    "projectContractAndWorker": "153 passed: catalog, preparation, graph adapter, real project worker and advanced-data regressions",
+    "projectContractAndWorker": "156 passed after subflow and visual-node validation: catalog, preparation, graph adapter, real project worker and advanced-data regressions",
     "sourceDifferentialAndRuntime": "54 passed",
     "ruff": "changed backend source and tests passed",
-    "mypy": "2 changed source files passed",
+    "mypy": "4 changed source files passed",
     "openapi": "check passed",
     "frozenBackend": "PyInstaller build passed",
     "formalElectron": "development and local unsigned macOS arm64 package passed",
@@ -32,25 +33,34 @@
   },
   "actualEvidence": [
     "项目运行预检对v3图文档保留条件和循环端口，旧顺序文档仍按原链路校验；无入口的纯环在启动前拒绝",
-    "九个批准控制与变量节点在项目目录登记，并逐项确认已批准且有真实执行器",
+    "九个批准控制与变量节点及子流程调用在项目目录登记，并逐项确认已批准且有真实执行器",
     "真实项目worker执行三轮循环、条件真分支、变量更新和结束路径；假分支未执行，无浏览器依赖和残留进程",
     "正式Electron开发入口与本次unsigned包从项目页进入Studio，真实模块条编排、保存、关联自动化、启动批次并在任务页查看输出",
     "第二条项目流程声明列表和字典初值，真实worker各遍历两轮；列表体内的条件真假分支各执行一次；无限循环以break退出、次数循环两轮continue，跳过的节点没有尝试，最终输出为4",
+    "第三条项目流程通过画布创建分组子流程，真实调用时才执行组内设置变量和CloakBrowser网页导航；尾节点得到42，结束后浏览器和worker清理完成",
+    "可视分组/便签不进入项目执行节点名单；错误接入连线及只有可视节点的流程仍在启动前拒绝",
     "全部使用临时SQLite和工作区，未修改用户数据库"
   ],
   "formalEvidence": {
-    "development": "formal-project-control-electron-WNL3g2/result.json",
-    "packaged": "formal-project-control-electron-iiRx21/result.json",
+    "development": "formal-project-control-electron-Ipn9Fb/result.json",
+    "packaged": "formal-project-control-electron-rOVoqM/result.json",
+    "earlierNestedControlDevelopment": "formal-project-control-electron-WNL3g2/result.json",
+    "earlierNestedControlPackaged": "formal-project-control-electron-iiRx21/result.json",
     "earlierFlatControlDevelopment": "formal-project-control-electron-fTx2GB/result.json",
     "earlierFlatControlPackaged": "formal-project-control-electron-dsxJew/result.json",
     "earlierConditionCountLoopDevelopment": "formal-project-control-electron-IgPlCr/result.json",
     "earlierConditionCountLoopPackaged": "formal-project-control-electron-uL7WoF/result.json",
-    "failedHarnessAttempt": "formal-project-control-electron-dlPeHa/blocked.json",
+    "failedHarnessAttempts": [
+      "formal-project-control-electron-dlPeHa/blocked.json",
+      "formal-project-control-electron-DXOF6l/blocked.json",
+      "formal-project-control-electron-vKJlZj/blocked.json",
+      "formal-project-control-electron-1bUCxi/blocked.json"
+    ],
     "packagedAppAsarSha256": "fdf9939f917f5221b58610188dd9ef5c2ea42566c958a63b68eb2f6f812992f2",
-    "frozenBackendExecutableSha256": "bd839c1e8a5fb00e2cb9e57441b045ef18753a1b4a3712d6c4d1cab6f9ff03f1"
+    "frozenBackendExecutableSha256": "991db476c8bdc87fd152d1e1ff7dc7553c59a304f4c71ef2fe4576d68f8fa463"
   },
   "notYetAccepted": [
-    "项目正式UI已实测条件、次数/列表/字典/无限循环、break/continue及列表体内嵌条件；子流程、自定义模块依赖、其他嵌套组合和业务数据写回仍属于后续项目集成块",
+    "项目正式UI已实测条件、次数/列表/字典/无限循环、break/continue、列表体内嵌条件和含真实网页导航的分组子流程；历史subflow_header定义、自定义模块依赖、其他嵌套组合和业务数据写回仍属于后续项目集成块",
     "macOS Intel与Windows未实机验收"
   ],
   "nodeExecutionLedger": "213 approved, 622 of 639 execution slots passed, 17 pending; project bridge does not relabel node slots"

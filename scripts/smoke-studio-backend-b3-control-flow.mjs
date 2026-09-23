@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto'
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { basename, join, resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
 
 import { connectCdp, launchElectron, wait, waitFor } from './electron-cdp.mjs'
 import { stop } from './smoke-sidecar.mjs'
@@ -171,6 +172,35 @@ try {
       return null
     }, 'extended project control saved', 15_000)
     assert.ok(extended && extended.projectId === projectId)
+
+    const subflowName = 'B3 项目画布子流程正式闭环'
+    await newWorkflow(studio, subflowName)
+    await click(studio, '流程图')
+    const subflowInnerId = await addCanvasNode(studio, '设置变量', { xRatio: 0.82, yRatio: 0.12 })
+    await setInput(studio, '[placeholder="变量名"]', 'inner_answer')
+    await setInput(studio, '[placeholder="变量的值"]', '42')
+    const subflowPageId = await addCanvasNode(studio, '打开网页', { xRatio: 0.82, yRatio: 0.45 })
+    await setInput(studio, '[placeholder="https://example.com"]', pathToFileURL(join(root, 'apps/backend/tests/fixtures/workflow-page.html')).href)
+    await connectNodes(studio, subflowInnerId, subflowPageId)
+    const subflowGroupId = await addCanvasNode(studio, '分组', { xRatio: 0.65, yRatio: 0.05 })
+    await click(studio, '', '[role="switch"]')
+    await setInput(studio, '[placeholder="子流程名称"]', '项目组内流程')
+    await resizeGroup(studio, subflowGroupId, 100, 300)
+    const subflowCallId = await addCanvasNode(studio, '子流程')
+    await selectNative(studio, '#subflowGroupId', '[分组] 项目组内流程')
+    const subflowTailId = await addCanvasNode(studio, '设置变量', { xRatio: 0.12, yRatio: 0.32 })
+    await setInput(studio, '[placeholder="变量名"]', 'subflow_result')
+    await setInput(studio, '[placeholder="变量的值"]', '{inner_answer}')
+    await connectNodes(studio, subflowCallId, subflowTailId)
+    await click(studio, '保存')
+    const subflow = await waitForValue(async () => (await api(runtime, `/workflows?projectId=${projectId}`)).find(item => item.name === subflowName), 'project subflow saved', 15_000)
+    assert.equal(subflow.nodes.find(node => node.id === subflowCallId)?.data.subflowGroupId, subflowGroupId)
+    assert.ok(subflow.nodes.some(node => node.id === subflowInnerId))
+    const subflowGroup = subflow.nodes.find(node => node.id === subflowGroupId)
+    const subflowPage = subflow.nodes.find(node => node.id === subflowPageId)
+    assert.ok(subflowGroup && subflowPage)
+    assert.ok(subflowPage.position.x >= subflowGroup.position.x && subflowPage.position.x <= subflowGroup.position.x + subflowGroup.data.width)
+    assert.ok(subflowPage.position.y >= subflowGroup.position.y && subflowPage.position.y <= subflowGroup.position.y + subflowGroup.data.height)
     await closeWindowThroughOs()
     studio.close(); studio = undefined
     await waitForNoStudio(desktop.debugOrigin)
@@ -237,7 +267,35 @@ try {
     await capture(main, join(evidenceDir, 'project-extended-control-task.png'))
     assert.deepEqual(cloakProcesses(userData), [])
     checkpoint('正式项目批次真实worker执行列表内嵌条件的真假分支、字典遍历、无限循环退出与两轮跳过；被跳过节点无尝试，最终值为4')
-    const report = { evidenceId: 'BE-project-control-flow-formal-electron', result: 'passed', checkedAt: new Date().toISOString(), gitHead, platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build', projectId, workflowIds: [saved.id, extended.id], batchIds: [batch.batchId, extendedBatch.batchId], taskIds: [task.taskId, extendedTask.taskId], checks, boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browserStarted: false, interaction: 'formal Electron mouse/keyboard; API only fixture setup and evidence reads' } }
+
+    await click(main, '自动化', '[aria-label="项目功能"] button,[aria-label="项目功能"] [role="tab"]')
+    await click(main, '新建自动化')
+    await setInput(main, '[aria-label="自动化名称"]', '项目画布子流程自动化')
+    await click(main, '关联工作流', '[role="combobox"]')
+    await click(main, subflowName, '[role="option"]')
+    await click(main, '保存配置')
+    await waitFor(main, "document.body?.innerText.includes('自动化已创建')", 'project subflow automation')
+    await click(main, '启动运行')
+    await waitFor(main, "document.body?.innerText.includes('启动自动化')", 'project subflow batch dialog')
+    await click(main, '启动 1 个任务')
+    await waitFor(main, "document.body?.innerText.includes('本批次任务')", 'project subflow batch')
+    const subflowBatch = (await api(runtime, `/v1/projects/${projectId}/batches?pageSize=20`)).items[0]
+    const subflowTerminal = await waitForValue(async () => { const value = await api(runtime, `/v1/projects/${projectId}/batches/${subflowBatch.batchId}`); return ['completed', 'failed', 'stopped', 'interrupted'].includes(value.batch.status) ? value : null }, 'project subflow terminal', 60_000)
+    assert.equal(subflowTerminal.statusCounts.succeeded, 1, JSON.stringify(subflowTerminal))
+    const subflowTask = (await api(runtime, `/v1/projects/${projectId}/tasks?batchId=${subflowBatch.batchId}`)).items[0]
+    const subflowAttempts = await api(runtime, `/v1/projects/${projectId}/tasks/${subflowTask.taskId}/node-attempts?pageSize=100`)
+    const completedSubflowNodes = subflowAttempts.items.filter(item => item.status === 'succeeded').map(item => item.nodeId)
+    assert.equal(completedSubflowNodes.length, 4)
+    assert.deepEqual(new Set(completedSubflowNodes), new Set([subflowInnerId, subflowPageId, subflowCallId, subflowTailId]))
+    const subflowOutputs = await api(runtime, `/v1/projects/${projectId}/tasks/${subflowTask.taskId}/outputs?pageSize=100`)
+    assert.ok(subflowOutputs.items.some(item => item.name === 'subflow_result' && item.value === 42), JSON.stringify(subflowOutputs))
+    await click(main, '查看任务')
+    await click(main, '输入与输出', '[role="tab"]')
+    await waitFor(main, "document.body?.innerText.includes('subflow_result')", 'project subflow output')
+    await capture(main, join(evidenceDir, 'project-subflow-task.png'))
+    assert.deepEqual(cloakProcesses(userData), [])
+    checkpoint('正式项目任务真实执行画布分组子流程，组内导航受控网页，变量传给尾节点输出42；CloakBrowser清理完成')
+    const report = { evidenceId: 'BE-project-control-flow-formal-electron', result: 'passed', checkedAt: new Date().toISOString(), gitHead, platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build', projectId, workflowIds: [saved.id, extended.id, subflow.id], batchIds: [batch.batchId, extendedBatch.batchId, subflowBatch.batchId], taskIds: [task.taskId, extendedTask.taskId, subflowTask.taskId], checks, boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browserStarted: true, interaction: 'formal Electron mouse/keyboard; API only fixture setup and evidence reads' } }
     await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
     console.log(JSON.stringify({ evidenceDir, ...report }, null, 2))
     throw new EvidenceComplete()

@@ -255,3 +255,35 @@ def test_core_runtime_and_bootstrap_import_in_fresh_process() -> None:
         capture_output=True,
         timeout=20,
     )
+
+
+@pytest.mark.asyncio
+async def test_project_graph_executes_canvas_subflow_body() -> None:
+    document = workflow_payload()
+    document["content"]["schemaVersion"] = 3
+    document["content"]["nodes"] = [
+        {"id": "definition", "type": "group", "position": {"x": 100, "y": 100},
+         "data": {"moduleType": "group", "isSubflow": True, "subflowName": "组内流程", "width": 300, "height": 200}},
+        {"id": "inner", "type": "set_variable", "position": {"x": 150, "y": 150},
+         "data": {"moduleType": "set_variable", "config": {"variableName": "answer", "variableValue": "42"}}},
+        {"id": "call", "type": "subflow", "position": {"x": 500, "y": 100},
+         "data": {"moduleType": "subflow", "config": {"subflowGroupId": "definition", "subflowName": "组内流程"}}},
+        {"id": "tail", "type": "set_variable", "position": {"x": 700, "y": 100},
+         "data": {"moduleType": "set_variable", "config": {"variableName": "result", "variableValue": "{answer}"}}},
+    ]
+    document["content"]["edges"] = [
+        {"id": "after-call", "source": "call", "target": "tail"}
+    ]
+    prepared = prepare_run(document)
+    events: list[tuple[str, str, str, dict[str, object]]] = []
+
+    async def emit(kind: str, node_id: str, visit: str, body: dict[str, object]) -> None:
+        events.append((kind, node_id, visit, body))
+
+    executor = ProjectGraphExecutor(None, {}, emit, lambda: False)
+    outcome = await executor.run({"document": prepared.document["content"]})
+
+    assert outcome == {"status": "succeeded", "error": None}
+    completed = [node_id for kind, node_id, _visit, body in events if kind == "nodeAttempt" and body["status"] == "succeeded"]
+    assert completed == ["inner", "call", "tail"]
+    assert executor.context.variables["result"] == 42
