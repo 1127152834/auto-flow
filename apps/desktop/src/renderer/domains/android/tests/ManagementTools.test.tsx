@@ -150,6 +150,68 @@ it('summarizes failed batch items and retries them with an idempotent action req
   expect(bulkAction.mock.calls[0][1].requestId).toBe(bulkAction.mock.calls[1][1].requestId)
 })
 
+it('cancels only pending batch items while admitted work remains observable', async () => {
+  const running = { id: 'b', requestId: 'r', action: 'start', deleteData: false, state: 'running', items: [{ deviceId: 'd1', state: 'waiting_capacity' }, { deviceId: 'd2', state: 'accepted' }], createdAt: '' }
+  const bulk = vi.fn().mockResolvedValue(running)
+  const bulkAction = vi.fn().mockResolvedValue({ ...running, items: [{ deviceId: 'd1', state: 'cancelled' }, { deviceId: 'd2', state: 'accepted' }] })
+  render(<BulkActions api={{ bulk, bulkAction }} devices={[device]} />)
+  await userEvent.click(screen.getByLabelText('设备一'))
+  await userEvent.click(screen.getByRole('button', { name: '提交批量操作' }))
+  await userEvent.click(screen.getByRole('button', { name: '取消未开始项' }))
+  expect(bulkAction).toHaveBeenCalledWith('b', { requestId: expect.any(String), action: 'cancelPending' })
+  expect(screen.queryByRole('button', { name: '取消未开始项' })).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '开始新批次' })).toBeDisabled()
+  expect(screen.getByLabelText('批次结果')).toHaveTextContent('结果未知')
+  expect(bulk).toHaveBeenCalledTimes(1)
+})
+
+it('replays the original cancellation after transport failure without resubmitting the batch', async () => {
+  const running = { id: 'b', requestId: 'r', action: 'start', deleteData: false, state: 'running', items: [{ deviceId: 'd1', state: 'queued' }], createdAt: '' }
+  const bulk = vi.fn().mockResolvedValue(running)
+  const bulkAction = vi.fn().mockRejectedValueOnce(new Error('取消响应丢失')).mockResolvedValue({ ...running, state: 'cancelled', items: [{ deviceId: 'd1', state: 'cancelled' }] })
+  render(<BulkActions api={{ bulk, bulkAction }} devices={[device]} />)
+  await userEvent.click(screen.getByLabelText('设备一'))
+  await userEvent.click(screen.getByRole('button', { name: '提交批量操作' }))
+  await userEvent.click(screen.getByRole('button', { name: '取消未开始项' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('取消响应丢失')
+  expect(screen.getByRole('button', { name: '开始新批次' })).toBeDisabled()
+  expect(screen.queryByRole('button', { name: '重试批量操作' })).not.toBeInTheDocument()
+  await userEvent.click(screen.getByRole('button', { name: '重试批次动作' }))
+  expect(bulkAction.mock.calls[1]).toEqual(bulkAction.mock.calls[0])
+  expect(bulk).toHaveBeenCalledTimes(1)
+  expect(screen.getByLabelText('批次结果')).toHaveTextContent('cancelled')
+  expect(screen.getByRole('button', { name: '开始新批次' })).toBeEnabled()
+})
+
+it('starts a fresh batch from current revisions only after a confirmed terminal result', async () => {
+  const bulk = vi.fn(async (body: Record<string, unknown>) => ({ id: String(body.requestId), requestId: String(body.requestId), action: String(body.action), deleteData: false, state: 'succeeded', items: [{ deviceId: 'd1', state: 'succeeded' }], createdAt: '' }))
+  const view = render(<BulkActions api={{ bulk }} devices={[device]} />)
+  await userEvent.click(screen.getByLabelText('设备一'))
+  await userEvent.click(screen.getByRole('button', { name: '提交批量操作' }))
+  expect(screen.getByLabelText('设备一')).toBeDisabled()
+  expect(screen.getByRole('button', { name: '提交批量操作' })).toBeDisabled()
+  view.rerender(<BulkActions api={{ bulk }} devices={[{ ...device, revision: 7 }]} />)
+  await userEvent.click(screen.getByRole('button', { name: '开始新批次' }))
+  expect(screen.queryByLabelText('批次结果')).not.toBeInTheDocument()
+  expect(screen.getByLabelText('设备一')).not.toBeChecked()
+  await userEvent.selectOptions(screen.getByLabelText('批量动作'), 'stop')
+  await userEvent.click(screen.getByLabelText('设备一'))
+  await userEvent.click(screen.getByRole('button', { name: '提交批量操作' }))
+  expect(bulk.mock.calls[1][0]).toEqual({ requestId: expect.any(String), action: 'stop', deleteData: false, items: [{ deviceId: 'd1', expectedRevision: 7 }] })
+  expect(bulk.mock.calls[1][0].requestId).not.toBe(bulk.mock.calls[0][0].requestId)
+})
+
+it.each([
+  ['running', 'queued'], ['running', 'accepted'], ['needs_verification', 'needs_verification'], ['partially_failed', 'needs_verification'],
+])('keeps a %s batch frozen while an item is %s', async (state, itemState) => {
+  const bulk = vi.fn().mockResolvedValue({ id: 'b', requestId: 'r', action: 'start', deleteData: false, state, items: [{ deviceId: 'd1', state: itemState }], createdAt: '' })
+  render(<BulkActions api={{ bulk }} devices={[device]} />)
+  await userEvent.click(screen.getByLabelText('设备一'))
+  await userEvent.click(screen.getByRole('button', { name: '提交批量操作' }))
+  expect(screen.getByRole('button', { name: '开始新批次' })).toBeDisabled()
+  expect(screen.getByLabelText('设备一')).toBeDisabled()
+})
+
 it('requires a preview before cleanup execution', async () => {
   const cleanupPreview = vi.fn(async () => ({ items: [{ id: 'v1', kind: 'backup', references: ['d1'], size: 128, reversible: false, fingerprint: 'fingerprint' }], confirmationDigest: 'digest' }))
   const cleanup = vi.fn(async () => ({ items: [], state: 'accepted' }))

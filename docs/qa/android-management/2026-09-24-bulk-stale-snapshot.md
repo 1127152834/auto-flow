@@ -27,10 +27,10 @@ npm exec --offline --yes --package=node@22.23.2 -c 'npm run test --workspace @au
 2. [已选目标](2026-09-24-bulk-stale-snapshot/selected-before-pause.txt)后，仅暂停身份已核对的自有 sidecar 90 秒。[断线界面](2026-09-24-bulk-stale-snapshot/paused-disabled.txt)和[截图](2026-09-24-bulk-stale-snapshot/paused-disabled.png)显示 checkbox 仍勾选但所有批量入口禁用；[恢复界面](2026-09-24-bulk-stale-snapshot/resumed-enabled.txt)恢复可操作且保留选择。
 3. 恢复后点击批量启动，生产持久回执 [submitted-batch.json](2026-09-24-bulk-stale-snapshot/submitted-batch.json) 为 succeeded，expectedRevision=3，设备 ready / revision=4。创建时间晚于 sidecar 恢复，见[时间线](2026-09-24-bulk-stale-snapshot/bulk-timeline.json)。
 4. 审计纠正：最初查 legacy kind=`batch` 的 [paused-no-batch.json](2026-09-24-bulk-stale-snapshot/paused-no-batch.json)已标 invalidated，不作为暂停期间无提交证据；实际 kind=`bulk` 的最终时间线替代它。
-5. 新进度代码最终构建已启动专用 Electron，但 CUA 返回“The Mac is locked and automatic unlock could not unlock it”。已请求手动解锁。最后的真实 UI 自动收敛与清理尚待完成，`blocked`；不能以组件测试代替。
+5. 新进度代码最终构建已启动专用 Electron，但 CUA 返回“The Mac is locked and automatic unlock could not unlock it”。已请求手动解锁。最后的真实 UI 自动收敛仍为 `blocked`；不能以组件测试代替。客户端已按精确命令身份发送 SIGTERM 并正常 exit 0，随后生产 HTTP 完成清理。
 
 ## 剩余与资源
 
-- 当前唯一自建实例仍 ready，计划通过最终 UI 批量停止后生产 HTTP 删除；未打开控制会话、未装 APK、无本轮备份。专用 profile `/private/tmp/autoflow-android-desktop-qa-20260924`。自有 Electron 正等待解锁。
+- 自建实例已通过生产 HTTP 删除，运行时容器/卷核实为 `missing`，见[清理结果](2026-09-24-bulk-stale-snapshot/cleanup.json)。未打开控制会话、未装 APK、无本轮备份；自有 Electron/sidecar 已退出。专用 profile `/private/tmp/autoflow-android-desktop-qa-20260924` 保留验收记录，解锁后需重建自有 fixture 完成 UI 验证。
 - 新发现 AM-R11 的“取消未准入项”已有后端接口但前端缺入口；终态后也缺开始下一批入口，列入下一有界切片。原 T13 的后端验收通过不代表这些 UI 功能已完成。
 - 全量分支门禁与审查仍须在所有增量结束后重跑；不追认历史 RED，也不关闭 GApps/十实例阻塞。

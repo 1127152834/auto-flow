@@ -695,3 +695,7 @@ assert source_data_digest_after == source_data_digest_before
 代码块是任务中的测试示例，不是本次已经实现的功能。fixture必须按各任务说明创建并调用真实被测服务，只fake IO边界；不得只验证mock自己的返回值。文档结构检查与业务测试、真实Electron、真实ReDroid及谷歌网络验证分别报告。
 
 规格及计划评审后，先执行AM1。具备实际子代理工具时可按独立任务分工并审查；否则按依赖顺序执行。文档完成不代表AM1–AM4已实施，也不自动授权设备变更或默认分支合并。
+
+### 2026-09-24 批次入口与并发取消校准
+
+[批次增量报告](../../qa/android-management/2026-09-24-bulk-actions.md)记录取消未准入项、原动作重试、确认终态后新批次、零匹配目标保护；容量await、跨批次快照及核实await的取消覆盖均经真实SQLite确定性RED后修复。独立复审无剩余Critical/Important，前端160/后端47项聚焦通过，完整后端4048passed/26skipped/2warnings（981.16s）、Ruff/compileall通过；前端完整424文件/5650项（802.11s）、类型/lint/OpenAPI/build通过。真实ReDroid容量等待取消、服务重启原编号回执一致且自建资源清理missing。Mac锁屏阻塞最新桌面验证，AC15校准为partial；T14隐藏页进度读取与性能/探测同链、T09桌面镜像链及T12回退演练继续。原102步骤统计85passed/14not_run/3blocked不虚增，历史RED缺证保留。

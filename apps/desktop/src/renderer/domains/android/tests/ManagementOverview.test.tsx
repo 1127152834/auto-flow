@@ -283,3 +283,42 @@ it('shows a quarantined restore and one reason without start or open actions', a
   expect(screen.getByRole('button', { name: '打开中断恢复' })).toBeDisabled()
   expect(screen.getByRole('button', { name: '核实状态' })).toBeEnabled()
 })
+
+it.each([
+  ['running', 'waiting_capacity', '取消未开始项', 'cancelPending', 'cancelled'],
+  ['needs_verification', 'needs_verification', '核实批次', 'verify', 'succeeded'],
+])('retains batch controls for %s when runtime changes remove every target from the active filter', async (state, itemState, button, action, terminal) => {
+  let ready = false
+  const batch = { id: 'b', requestId: 'r', action: 'start', deleteData: false, state, items: [{ deviceId: 'd', state: itemState }], createdAt: '' }
+  const api = {
+    devices: vi.fn(async () => ({ total: 1, nextCursor: null, items: [{ deviceId: 'd', revision: ready ? 3 : 2, name: '筛选目标', runtimeState: ready ? 'ready' : 'stopped', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: {}, latestOperation: null, allowedActions: ready ? ['stop'] : ['start'], blockedReasons: {} }] })),
+    bulk: vi.fn().mockResolvedValue(batch),
+    bulkAction: vi.fn().mockResolvedValue({ ...batch, state: terminal, items: [{ deviceId: 'd', state: terminal }] }),
+  } as unknown as AndroidManagementApi
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  render(<QueryClientProvider client={client}><ManagementOverview api={api} /></QueryClientProvider>)
+  await userEvent.selectOptions(await screen.findByLabelText('筛选状态'), 'stopped')
+  await userEvent.click(screen.getByRole('checkbox', { name: '筛选目标' }))
+  await userEvent.click(screen.getByRole('button', { name: '提交批量操作' }))
+  ready = true
+  await client.invalidateQueries({ queryKey: ['android-management', 'default', 'devices'] })
+  await screen.findByText('没有匹配的实例。')
+  expect(screen.getByLabelText('批次结果')).toHaveTextContent(state === 'running' ? 'running' : '结果未知')
+  expect(screen.getByRole('button', { name: '开始新批次' })).toBeDisabled()
+  await userEvent.click(screen.getByRole('button', { name: button }))
+  expect(api.bulkAction).toHaveBeenCalledWith('b', expect.objectContaining({ action }))
+  expect(screen.getByLabelText('批次结果')).toHaveTextContent(terminal)
+  expect(api.bulk).toHaveBeenCalledTimes(1)
+})
+
+it('does not freeze an empty batch when selected targets leave the filter before submission', async () => {
+  const api = { bulk: vi.fn(), devices: vi.fn(async () => ({ total: 1, nextCursor: null, items: [{ deviceId: 'd', revision: 2, name: '已选目标', runtimeState: 'stopped', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: {}, latestOperation: null, allowedActions: ['start'], blockedReasons: {} }] })) } as unknown as AndroidManagementApi
+  render(<QueryClientProvider client={new QueryClient()}><ManagementOverview api={api} /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('checkbox', { name: '已选目标' }))
+  await userEvent.type(screen.getByLabelText('搜索实例'), 'no-match')
+  expect(screen.getByRole('button', { name: '提交批量操作' })).toBeDisabled()
+  await userEvent.click(screen.getByRole('button', { name: '提交批量操作' }))
+  expect(api.bulk).not.toHaveBeenCalled()
+  await userEvent.clear(screen.getByLabelText('搜索实例'))
+  expect(screen.getByRole('button', { name: '提交批量操作' })).toBeEnabled()
+})

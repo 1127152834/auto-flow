@@ -1,3 +1,4 @@
+import asyncio
 import hashlib
 import json
 from pathlib import Path
@@ -143,3 +144,130 @@ async def test_bulk_verify_reconciles_unknown_item_without_replaying_operation(t
     assert devices.items["d1"].get("control") == "idle"
     assert len(devices.requests) == 1
     sessions.dispose()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("probe_result", ["available", "full", "error", "cancelled"])
+async def test_cancel_pending_survives_in_flight_capacity_probe(tmp_path: Path, probe_result: str):
+    database = tmp_path / "cancel-during-capacity.sqlite3"
+    migrate_database(database)
+    sessions = create_session_factory(database)
+    resources = AndroidResourceRepository(sessions)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    devices = _Devices(operations)
+    entered, release = asyncio.Event(), asyncio.Event()
+
+    async def capacity(_device):
+        entered.set()
+        await release.wait()
+        if probe_result == "full":
+            raise AndroidError("ANDROID_MEMORY_BUDGET", "full")
+        if probe_result == "error":
+            raise AndroidError("ANDROID_COMMAND_FAILED", "probe unavailable")
+
+    devices.runtime.capacity = capacity
+    service = AndroidBulkService(resources, devices)
+    batch = service.create("ws", "cancel-race", "start", [{"deviceId": "d1", "expectedRevision": 2}], False)
+    tick = asyncio.create_task(service.tick())
+    try:
+        await asyncio.wait_for(entered.wait(), 2)
+        cancelled = service.action(batch["id"], "cancelPending", "cancel-original")
+        assert cancelled["state"] == "cancelled"
+        if probe_result == "cancelled":
+            tick.cancel()
+            with pytest.raises(asyncio.CancelledError):
+                await tick
+        else:
+            release.set()
+            await tick
+        saved = service.get(batch["id"])
+        assert saved["state"] == "cancelled"
+        assert saved["items"][0]["state"] == "cancelled"
+        assert saved["actionReceipts"] == {"cancel-original": "cancelPending"}
+        assert operations.get(saved["items"][0]["operationId"], "ws").state == "cancelled"
+        assert devices.requests == []
+        assert service.action(batch["id"], "cancelPending", "cancel-original") == saved
+    finally:
+        tick.cancel()
+        await asyncio.gather(tick, return_exceptions=True)
+        sessions.dispose()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("verified", [True, False])
+async def test_verification_preserves_cancellation_recorded_while_runtime_read_is_pending(tmp_path: Path, verified: bool):
+    database = tmp_path / "cancel-during-verify.sqlite3"
+    migrate_database(database)
+    sessions = create_session_factory(database)
+    resources = AndroidResourceRepository(sessions)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    devices = _Devices(operations)
+    devices.capacity.ready = True
+    entered, release = asyncio.Event(), asyncio.Event()
+
+    async def inspect(_device):
+        entered.set()
+        await release.wait()
+        if not verified:
+            raise OSError("runtime disconnected")
+        return {"androidStatus": "ready"}
+
+    devices.runtime.inspect = inspect
+    service = AndroidBulkService(resources, devices)
+    batch = service.create("ws", "verify-cancel-race", "start", [{"deviceId": "d1", "expectedRevision": 2}, {"deviceId": "d2", "expectedRevision": 2}], False)
+    await service.tick()
+    batch = service.get(batch["id"])
+    operations.transition(batch["items"][0]["operationId"], "running", "needs_verification", {})
+    verify = asyncio.create_task(service.verify(batch["id"], "ws"))
+    try:
+        await asyncio.wait_for(entered.wait(), 2)
+        service.action(batch["id"], "cancelPending", "cancel-during-verify")
+        release.set()
+        result = await verify
+        assert result["items"][1]["state"] == "cancelled"
+        assert result["actionReceipts"] == {"cancel-during-verify": "cancelPending"}
+        assert result["items"][0]["state"] == ("succeeded" if verified else "needs_verification")
+        assert service.get(batch["id"]) == result
+        assert len(devices.requests) == 1
+    finally:
+        verify.cancel()
+        await asyncio.gather(verify, return_exceptions=True)
+        sessions.dispose()
+
+
+@pytest.mark.asyncio
+async def test_tick_rereads_later_batch_cancelled_during_an_earlier_capacity_probe(tmp_path: Path):
+    database = tmp_path / "cancel-later-batch.sqlite3"
+    migrate_database(database)
+    sessions = create_session_factory(database)
+    resources = AndroidResourceRepository(sessions)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    devices = _Devices(operations)
+    entered, release = asyncio.Event(), asyncio.Event()
+    probed = []
+
+    async def capacity(device):
+        probed.append(device["deviceId"])
+        entered.set()
+        await release.wait()
+        raise AndroidError("ANDROID_MEMORY_BUDGET", "full")
+
+    devices.runtime.capacity = capacity
+    service = AndroidBulkService(resources, devices)
+    service.create("ws", "earlier", "start", [{"deviceId": "d1", "expectedRevision": 2}], False)
+    later = service.create("ws", "later", "start", [{"deviceId": "d2", "expectedRevision": 2}], False)
+    tick = asyncio.create_task(service.tick())
+    try:
+        await asyncio.wait_for(entered.wait(), 2)
+        service.action(later["id"], "cancelPending", "cancel-later")
+        release.set()
+        await tick
+        saved = service.get(later["id"])
+        assert saved["state"] == "cancelled"
+        assert saved["actionReceipts"] == {"cancel-later": "cancelPending"}
+        assert probed == ["d1"]
+        assert devices.requests == []
+    finally:
+        tick.cancel()
+        await asyncio.gather(tick, return_exceptions=True)
+        sessions.dispose()

@@ -3,6 +3,7 @@ import hashlib
 import inspect
 import json
 import logging
+from copy import deepcopy
 from datetime import UTC, datetime
 from typing import Any, ClassVar
 from uuid import uuid4
@@ -179,6 +180,7 @@ class AndroidBulkService:
             for batch in sorted(self.resources.list("bulk"), key=lambda item: item.get("createdAt", "")):
                 if workspace is not None and batch.get("workspaceIdentity") != workspace:
                     continue
+                batch = self.get(batch["id"], workspace)
                 if batch.get("state") in {"succeeded", "failed", "cancelled", "partially_failed", "needs_verification"} and not any(item.get("state") in {"queued", "waiting_capacity", "waiting_device", "accepted"} for item in batch.get("items", [])):
                     continue
                 await self._advance(batch)
@@ -186,6 +188,7 @@ class AndroidBulkService:
                     break
 
     async def _advance(self, batch: dict[str, Any]) -> None:
+        superseded = False
         changed = self._reconcile(batch)
         if any(item.get("state") == "accepted" for item in batch["items"]):
             self._batch_state(batch)
@@ -203,7 +206,13 @@ class AndroidBulkService:
                     item.update(state="waiting_device", error="设备当前被占用或待核实")
                     break
                 if batch["action"] in {"start", "restart"}:
-                    admitted, reason = await self._capacity(device)
+                    before_probe = deepcopy(self.get(batch["id"], batch.get("workspaceIdentity")))
+                    try:
+                        admitted, reason = await self._capacity(device)
+                    finally:
+                        superseded = self.get(batch["id"], batch.get("workspaceIdentity")) != before_probe
+                    if superseded:
+                        return
                     if not admitted:
                         item.update(state="waiting_capacity", error=reason)
                         break
@@ -223,15 +232,21 @@ class AndroidBulkService:
                 changed = True
                 break
             except asyncio.CancelledError:
+                if superseded:
+                    raise
                 item.update(state="needs_verification", error="操作被中断，结果未知，请核实设备状态")
                 self._batch_state(batch)
                 self.resources.save("bulk", batch)
                 raise
             except (TimeoutError, OSError):
+                if superseded:
+                    return
                 item.update(state="needs_verification", error="操作结果未知，请核实设备状态")
                 changed = True
                 break
             except AndroidError as error:
+                if superseded:
+                    return
                 if error.code in {"ANDROID_CAPACITY", "ANDROID_MEMORY_BUDGET", "ANDROID_CPU_BUDGET", "ANDROID_CAPACITY_UNKNOWN"}:
                     item.update(state="waiting_capacity", error=error.message)
                 elif error.code in {"ANDROID_BUSY", "ANDROID_RUNTIME_BUSY", "ANDROID_MANAGEMENT_BUSY", "ANDROID_RECOVERY_REQUIRED"}:
@@ -277,9 +292,12 @@ class AndroidBulkService:
         batch = self.get(identifier, workspace)
         self._reconcile(batch)
         operations = self._operations()
+        checked: set[str] = set()
+        errors: dict[str, str] = {}
         for item in batch["items"]:
             if item.get("state") not in {"accepted", "needs_verification"} or not item.get("operationId") or operations is None:
                 continue
+            checked.add(item["operationId"])
             try:
                 record = self._operation_record(operations, item["operationId"], batch.get("workspaceIdentity"))
                 if record.state != "needs_verification":
@@ -291,9 +309,17 @@ class AndroidBulkService:
                     workspace_identity=batch.get("workspaceIdentity") or "default",
                 )
             except AndroidError as error:
-                item.update(state="needs_verification", error=error.message)
-            else:
-                item.update(state="succeeded", error=None)
+                errors[item["operationId"]] = error.message
+        # Runtime reads yield to queue actions. Merge only the checked operation
+        # outcomes into the latest batch so cancellation and receipts survive.
+        batch = self.get(identifier, workspace)
+        self._reconcile(batch)
+        for item in batch["items"]:
+            if item.get("operationId") not in checked or item.get("state") not in {"accepted", "needs_verification"}:
+                continue
+            state, message = self._operation_state(item, batch.get("workspaceIdentity"))
+            if state in self._terminal_items:
+                item.update(state=state, error=errors.get(item["operationId"], message) if state == "needs_verification" else message)
         self._batch_state(batch)
         self.resources.save("bulk", batch)
         return batch

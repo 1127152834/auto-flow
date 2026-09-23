@@ -36,3 +36,9 @@ T13 新增：[真实双实例批量链及响应 DTO 修复](2026-09-23-am3-real-
 T13/T14/T16 后续[五实例真实链](2026-09-23-final-review-remediation.md)已覆盖五台同时 `ready`、20 次管理列表 `median=2.13ms/p95=2.74ms`、两台并发 PNG 预览、五台 Docker 内存读数及逐项清理后无残留容器/卷。下文单实例数字保留为历史快照；10 台容量 blocked；真实部分失败、修订冲突项重试与取消已由 2026-09-24 记录补足。
 
 单实例聚合延迟测量：在隔离工作区启动真实认证 HTTP sidecar，顺序请求 `GET /api/v1/android/management/devices?limit=50` 共 20 次；所有响应为 200 且包含本轮自建 `ready` 实例，脚本输出 `status=passed`。计时使用同机 `time.perf_counter()`，结果为 `min=1.63ms`、`median=1.91ms`、`p95=2.70ms`、`max=4.70ms`。这是单个运行实例下的局部 API 延迟，不包含前端渲染、预览帧或并发 5/10 台的成本。
+
+## 2026-09-24 批次入口与取消一致性增量
+
+状态partial，来源[本轮报告](2026-09-24-bulk-actions.md)。前端补取消未准入项、原动作幂等重试、终态后新批次，筛选零匹配仍保留回执并禁止提交空目标；后端容量/核实await及跨批次快照不再覆盖取消。聚焦前端160/后端47项通过；真实ReDroid容量等待取消、服务重启、原编号回执一致及资源清理通过。Mac锁屏阻塞最终UI，AC15整体partial；T14隐藏页与性能同链尚未完成，不以此增量关闭AM3。
+
+本轮最终完整门禁：后端4048passed/26skipped/2warnings（981.16s），前端424文件/5650项（802.11s），Ruff/compileall/类型/lint/OpenAPI/build全部exit0；前端采用Node22和单worker，未提高超时。真实UI仍blocked，完整阶段不因软件门禁转为完成。
