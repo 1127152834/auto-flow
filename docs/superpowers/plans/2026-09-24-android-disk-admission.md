@@ -27,7 +27,15 @@
 - [x] 验证：备份/runtime/restore/cleanup相关单元、合同、集成；Ruff/compileall；真实自建设备停机卷估计与实际归档尺寸、真实空间探测、备份、传输取消、源数据探针及清理。低磁盘使用自建64MiB磁盘；本轮未重新执行真实恢复，恢复路径仅运行自动化回归。
 - [x] 独立审查并修复C/I，记录命令/输出及实际范围，提交此垂直切片。接口响应已有错误契约，无新表，不创建空迁移。
 
-## Task 2：创建与拉取（待Task1后最终校准）
+## Task 2a：宿主与 VM 独立磁盘观测（2026-09-24 继续执行）
+
+基线 de0708db，只有三份受保护 Studio 文件未提交。创建/拉取准入需要区分文件系统，先贯通只读观测作为同一需求的垂直切片：provider → HTTP schema → OpenAPI → RuntimeDiagnostics。
+
+- [x] RED：宿主与 DockerRootDir 的可用字节独立；0 为已知不足；任一探测失败只令对应值为 null。契约保留两值；UI分别显示容量/未知。
+- [x] GREEN：宿主使用 workspace 文件系统；VM通过只读 statvfs 检查 Docker info 返回的根目录，用 argv 传参；不推断写入所需大小、不改动生命周期或持久状态。
+- [x] 验证：真实只读 Mac/Lima 结果、Android 回归、全后端/前端及工程门禁、增量审查、证据与 .ai 同步。无数据库字段，不创建迁移。
+
+## Task 2b：创建与拉取（待Task1后最终校准）
 
 - [ ] 复核单实例、批量、复制快照和备份恢复创建的全部调用者；检查 VM Docker root 与宿主 Lima 数据所在文件系统。
 - [ ] 明确可估计量与未知量。不得用任意固定阈值或镜像压缩尺寸伪装实际所需空间；未知时需显式确认或明确阻塞。确认若采用，必须冻结到原请求摘要，UI明确显示未知且默认不勾选。
@@ -44,3 +52,6 @@ uv run --project apps/backend ruff check apps/backend/src/autoflow/providers/and
 最新快速验收时 Mac 已解锁并完成真实桌面快速检查；完整桌面验收尚未执行。创建/拉取磁盘准入仍是软件未完成项，不列为外部条件阻塞。
 
 2026-09-24 用户要求最快检查验收，Task2未实施；当前快速签收结论见 docs/qa/android-management/2026-09-24-final-acceptance.md。
+
+
+Task2b 调用链校准（2026-09-24，confirmed 源码阅读，尚未实施）：单实例 `AndroidCreate → AndroidManagement.create → provider.management.manage`；批量和配置复制由 `AndroidFleet._device_step` 汇入相同 create；备份恢复 HTTP 创建同样进入该链。拉取由 `ImagePullCreate → AndroidImageService.pull → ImageCatalog.pull → MacAndroidRuntime.pull_image`。准入必须在两条共享写入路径生效，放在所有权/固定镜像校验后、首次 volume/create/pull 前；成功幂等回执不能重新触发探测。无法估计时采用现有规格允许的显式拒绝或原请求绑定确认，不能使用任意固定阈值。数据恢复创建与后续解包应分别校验真实目标文件系统，不把宿主工作区可用量当作 Lima 虚拟磁盘宿主文件可用量。

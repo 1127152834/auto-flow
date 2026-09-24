@@ -195,14 +195,36 @@ class MacAndroidRuntime:
         checks["images"] = {"status": "pass" if cached else "fail" if info else "unknown", "code": None if cached else "ANDROID_IMAGE_MISSING" if info else "ANDROID_IMAGE_UNKNOWN", "message": "已发现兼容镜像" if cached else "未发现兼容镜像" if info else "尚未检查镜像"}
         capacity_ok = isinstance(info.get("NCPU"), int) and info.get("NCPU", 0) > 0 and isinstance(info.get("MemTotal"), int) and info.get("MemTotal", 0) > 0
         checks["capacity"] = {"status": "pass" if capacity_ok else "unknown", "code": None if capacity_ok else "ANDROID_CAPACITY_UNKNOWN", "message": "CPU 与内存容量可用" if capacity_ok else "容量尚未核实"}
+        host_free = vm_free = None
         try:
-            free = shutil.disk_usage(self.workspace if self.workspace.exists() else self.root).free
-            disk_ok = free > 0
+            target = self.workspace
+            while not target.exists() and target != target.parent:
+                target = target.parent
+            value = shutil.disk_usage(target).free
+            if type(value) is int and value >= 0:
+                host_free = value
         except OSError:
-            disk_ok = False
-        checks["disk"] = {"status": "pass" if disk_ok else "unknown", "code": None if disk_ok else "ANDROID_DISK_UNKNOWN", "message": "工作区磁盘可用" if disk_ok else "磁盘空间尚未核实"}
+            pass
+        docker_root = info.get("DockerRootDir")
+        if vm_running and isinstance(docker_root, str) and docker_root.startswith("/") and "\0" not in docker_root:
+            try:
+                raw = (await run([
+                    "limactl", "shell", "--workdir=/tmp", VM, "sudo", "python3", "-c",
+                    "import os,sys; s=os.statvfs(sys.argv[1]); print(s.f_bavail*s.f_frsize)",
+                    docker_root,
+                ], 5)).strip()
+                if raw.isdigit():
+                    vm_free = int(raw)
+            except (AndroidError, TimeoutError, OSError, ValueError):
+                pass
+        if host_free == 0 or vm_free == 0:
+            checks["disk"] = {"status": "fail", "code": "ANDROID_DISK_SPACE_INSUFFICIENT", "message": "宿主工作区或 VM Docker 数据盘空间已耗尽"}
+        elif host_free is None or vm_free is None:
+            checks["disk"] = {"status": "unknown", "code": "ANDROID_DISK_UNKNOWN", "message": "宿主工作区或 VM Docker 数据盘空间尚未核实"}
+        else:
+            checks["disk"] = {"status": "pass", "code": None, "message": "宿主工作区和 VM Docker 数据盘均有可用空间；具体操作仍需容量预检"}
         ready = bool(info.get("OSType") == "linux" and info.get("Architecture") in {"aarch64", "arm64"} and binder)
-        return {"images": cached, "cpuCount": info.get("NCPU", 0), "memoryMb": info.get("MemTotal", 0) // (1024 * 1024), "available": supported and tools and vendor and ready, "platformSupported": supported, "checks": checks,
+        return {"hostWorkspaceFreeBytes": host_free, "vmDockerFreeBytes": vm_free, "images": cached, "cpuCount": info.get("NCPU", 0), "memoryMb": info.get("MemTotal", 0) // (1024 * 1024), "available": supported and tools and vendor and ready, "platformSupported": supported, "checks": checks,
                 "runtimeId": VM, "message": "运行环境可用" if supported and tools and vendor and ready else "需要 Apple Silicon Mac、Lima Linux、ADB 和固定版 scrcpy；请运行设备准备命令"}
 
     def new_device(self, config: dict[str, Any]) -> dict[str, Any]:

@@ -127,3 +127,24 @@ def test_legacy_environment_route_projects_extended_runtime_checks() -> None:
     assert response.json()["available"] is True
     assert response.json()["cpuCount"] == 6
     assert "checks" not in response.json()
+
+
+@pytest.mark.parametrize("disk", [
+    {"hostWorkspaceFreeBytes": 1073741824, "vmDockerFreeBytes": 2147483648},
+    {"hostWorkspaceFreeBytes": 0, "vmDockerFreeBytes": None},
+    {},
+])
+def test_environment_route_preserves_independent_disk_bytes_and_unknowns(disk):
+    runtime = AsyncMock()
+    runtime.environment.return_value = {
+        "available": True, "platformSupported": True,
+        "runtimeId": "autoflow-redroid", "message": "可用", **disk,
+    }
+    app = FastAPI()
+    app.include_router(android_management_router(EnvironmentCheckService(runtime)))
+    with TestClient(app) as client:
+        response = client.get("/api/v1/android/management/environment")
+    assert response.status_code == 200
+    body = response.json()
+    assert body.get("hostWorkspaceFreeBytes", "missing") == disk.get("hostWorkspaceFreeBytes")
+    assert body.get("vmDockerFreeBytes", "missing") == disk.get("vmDockerFreeBytes")

@@ -79,9 +79,9 @@
 | <a id="t11"></a>T11 | `blocked` | [GApps](gapps-validation.md)：缺专用镜像/账号/商店下载链；本地 APK 已可用，不能再称测试 APK 缺失。 |
 | <a id="t12"></a>T12 | `not_run` | 基础镜像/模板链已验；[可启动自定义候选](2026-09-24-custom-image.md)及固定ID重启/备份恢复/引用阻删通过；阶段回退演练及历史RED缺证仍未关闭。 |
 | <a id="t13"></a>T13 | `passed` | [真实批次](2026-09-24-bulk-failure-cancel.md)部分失败、修订冲突重试、容量取消通过；[真实容器消失失败与回执前强杀](2026-09-24-bulk-runtime-fault.md)补足恢复后重试、未知项不重放及重启后核实。 |
-| <a id="t14"></a>T14 | `not_run` | [五台/双预览](2026-09-23-final-review-remediation.md)通过；[1/5台后台观察](2026-09-24-observation.md)已记录计数/间隔/停机降频，隐藏页批次GET暂停已补RED→GREEN；桌面隐藏页面同链与前台延迟仍blocked。 |
+| <a id="t14"></a>T14 | `not_run` | [五台/双预览](2026-09-23-final-review-remediation.md)通过；[1/5台后台观察](2026-09-24-observation.md)已记录计数/间隔/停机降频，隐藏页批次GET暂停已补RED→GREEN；桌面隐藏页面同链与前台延迟仍not_run；2026-09-24快速验收已确认锁屏阻塞解除。 |
 | <a id="t15"></a>T15 | `not_run` | [真实 APK 动作](2026-09-23-am1-real-control-retention.md)及[跨重建版本核实](2026-09-24-final-branch-review.md)通过；[真实覆盖安装执行中断](2026-09-24-app-interruption.md)与数据保留已验；[桌面确认、执行与备份恢复](2026-09-24-desktop-apps-layout.md)已验；本轮焦点增量有RED→GREEN，但原后端步骤历史RED缺证仍保留。 |
-| <a id="t16"></a>T16 | `not_run` / 十台 `blocked` | 1/5 台 API、双实例隔离有证据；[7921 MiB < 8192 MiB](2026-09-24-advanced-logs-and-capacity.md)阻塞十台，[1/5台API/内存/后台计数](2026-09-24-observation.md)已补；真实桌面前台/隐藏页受Mac锁屏blocked。 |
+| <a id="t16"></a>T16 | `not_run` / 十台 `blocked` | 1/5 台 API、双实例隔离有证据；[7921 MiB < 8192 MiB](2026-09-24-advanced-logs-and-capacity.md)阻塞十台，[1/5台API/内存/后台计数](2026-09-24-observation.md)已补；真实桌面前台/隐藏页仍not_run；Mac锁屏阻塞已解除。 |
 | <a id="t17"></a>T17 | `passed`（已列功能） | [真实磁盘不足与传输取消](2026-09-24-backup-failure-verification.md)补足 AC19；归档/权限/摘要/发布回归通过。[传输中进程树 SIGKILL](2026-09-24-restore-cancel-and-disk-full.md)已补；真实权限拒绝仍作扩展故障 `not_run`。 |
 | <a id="t18"></a>T18 | `passed`（已列功能） | [新卷属性读回](2026-09-23-persistent-metadata-verification.md)与[写入后硬中断](2026-09-23-restore-hard-interruption-verification.md)通过；[真实解包中 SIGKILL](2026-09-24-restore-transfer-interruption.md)已验；[目标 ENOSPC/取消恢复](2026-09-24-restore-cancel-and-disk-full.md)已验，源与备份保留，进程树回收通过。 |
 | <a id="t19"></a>T19 | `passed`（已列功能） | [真实清理](2026-09-23-cleanup-verification.md)、[高级诊断](2026-09-24-advanced-logs-and-capacity.md)通过；[多对象清理硬中断](2026-09-24-cleanup-interruption.md)已验；无归属记录的旧文件保持排除，不据此推断可删除。 |
@@ -107,3 +107,5 @@ APK中断续行：T07.3补安装执行中ADB断线/HTTP强杀、重启核实隔�
 - 2026-09-24 批量入口校准：T13原有后端与步骤证据保留；新增真实桌面取消/新批次/自动终态受锁屏blocked，AC15整体改为partial。取消和新批次软件入口已补，修复旧快照覆盖取消的四项审查问题；[新增报告](2026-09-24-bulk-actions.md)按RED→GREEN、真实HTTP与真实UI分别记录。102个原步骤统计不因此虚增；T14隐藏页进度读取检查另列剩余。
 
 2026-09-24规格增量审查：T13.4原先只有汇总/失败名，不能支持原“逐项结果”表述；本轮用冻结items补全部状态/错误，并保留accepted的执行栅栏。T09页面GET误当核实改为GET→必要时POST verify，连续请求身份另有RED保护。[本轮证据](2026-09-24-item-results-image-recovery.md)记录5项可观察RED、166项Android回归及增量审查；真实桌面仍blocked，不能按软件通过关闭T09/T13全任务。原102步骤计数不新增。
+
+- 2026-09-24 磁盘观测增量：[宿主与 VM 独立字节数](2026-09-24-disk-observation.md)完成provider/HTTP/OpenAPI/页面及真实只读探测、实际桌面刷新。AM-R12创建/拉取准入仍属软件未完成；不增加原102步骤passed计数，不将剩余桌面测试列为当前锁屏blocked。

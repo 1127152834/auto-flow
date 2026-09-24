@@ -75,6 +75,8 @@ def _environment_response(result: EnvironmentCheckResult) -> ManagementEnvironme
         images=list(legacy.get("images") or []),
         cpu_count=int(legacy.get("cpuCount") or 0),
         memory_mb=int(legacy.get("memoryMb") or legacy.get("memoryMB") or 0),
+        host_workspace_free_bytes=legacy.get("hostWorkspaceFreeBytes"),
+        vm_docker_free_bytes=legacy.get("vmDockerFreeBytes"),
         checked_at=result.checked_at,
         checks={name: check.__dict__ for name, check in result.checks.items()},
         capabilities=result.capabilities,

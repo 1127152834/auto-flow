@@ -179,7 +179,15 @@ async def test_unsupported_platform_is_unavailable_without_running_commands(tmp_
 
 
 @pytest.mark.asyncio
-async def test_environment_reports_each_runtime_check(tmp_path, monkeypatch):
+@pytest.mark.parametrize(("host_free", "vm_free", "disk_status"), [
+    (1073741824, b"2147483648\n", "pass"),
+    (0, b"2147483648\n", "fail"),
+    (1073741824, b"0\n", "fail"),
+    (1073741824, b"-1\n", "unknown"),
+    (1073741824, None, "unknown"),
+    (None, b"2147483648\n", "unknown"),
+])
+async def test_environment_reports_each_runtime_check(tmp_path, monkeypatch, host_free, vm_free, disk_status):
     monkeypatch.setattr(mac.platform, "system", lambda: "Darwin")
     monkeypatch.setattr(mac.platform, "machine", lambda: "arm64")
     monkeypatch.setattr(mac.shutil, "which", lambda tool: "/usr/bin/" + tool)
@@ -192,14 +200,31 @@ async def test_environment_reports_each_runtime_check(tmp_path, monkeypatch):
             return b"autoflow-redroid Running\n"
         if "/proc/filesystems" in argv:
             return b"nodev\tbinder\n"
+        if "python3" in argv:
+            assert argv[-1] == "/srv/docker data", "Probe the actual Docker root, never assume /var/lib/docker"
+            if vm_free is None:
+                raise TimeoutError("VM disk unavailable")
+            return vm_free
         raise AssertionError(argv)
 
+    def host_usage(path):
+        assert path == tmp_path
+        if host_free is None:
+            raise OSError("host disk unavailable")
+        return mac.shutil._ntuple_diskusage(4294967296, 0, host_free)
+
+    monkeypatch.setattr(mac.shutil, "disk_usage", host_usage)
     monkeypatch.setattr(mac, "run", fake_run)
-    monkeypatch.setattr(mac, "docker", AsyncMock(return_value=json.dumps({"OSType": "linux", "Architecture": "aarch64", "NCPU": 6, "MemTotal": 8 * 1024**3}).encode()))
+    monkeypatch.setattr(mac, "docker", AsyncMock(return_value=json.dumps({"OSType": "linux", "Architecture": "aarch64", "NCPU": 6, "MemTotal": 8 * 1024**3, "DockerRootDir": "/srv/docker data"}).encode()))
     from autoflow.providers.android import management
     monkeypatch.setattr(management, "images", AsyncMock(return_value=[{"id": "sha256:image"}]))
-    checks = (await mac.MacAndroidRuntime(tmp_path, tmp_path).environment())["checks"]
-    assert {name: checks[name]["status"] for name in ("platform", "adb", "lima", "ssh", "scrcpy", "vm", "docker", "binder", "images", "capacity", "disk")} == {name: "pass" for name in ("platform", "adb", "lima", "ssh", "scrcpy", "vm", "docker", "binder", "images", "capacity", "disk")}
+    environment = await mac.MacAndroidRuntime(tmp_path, tmp_path).environment()
+    checks = environment["checks"]
+    assert environment.get("hostWorkspaceFreeBytes", "missing") == host_free
+    expected_vm = {b"2147483648\n": 2147483648, b"0\n": 0, b"-1\n": None, None: None}[vm_free]
+    assert environment.get("vmDockerFreeBytes", "missing") == expected_vm
+    assert checks["disk"]["status"] == disk_status
+    assert {name: checks[name]["status"] for name in ("platform", "adb", "lima", "ssh", "scrcpy", "vm", "docker", "binder", "images", "capacity")} == {name: "pass" for name in ("platform", "adb", "lima", "ssh", "scrcpy", "vm", "docker", "binder", "images", "capacity")}
 
 
 @pytest.mark.asyncio

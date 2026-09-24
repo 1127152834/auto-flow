@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest'
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, render, screen, within } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, it, vi } from 'vitest'
@@ -58,4 +58,21 @@ it('starts an explicit check and retains the prior snapshot when it fails', asyn
   await userEvent.click(screen.getByRole('button', { name: '核实原检查请求' }))
   expect(api.verify).toHaveBeenCalledWith('check-op', { requestId: api.checkEnvironment.mock.calls[0][0].requestId })
   expect(api.checkEnvironment).toHaveBeenCalledTimes(1)
+})
+
+
+it.each([
+  [1073741824, 2147483648, '1.00 GiB', '2.00 GiB'],
+  [0, null, '0.00 GiB', '未知'],
+  [undefined, undefined, '未知', '未知'],
+])('separates host and VM disk availability including zero and unknown (%s, %s)', async (host, vm, hostText, vmText) => {
+  const api = {
+    environment: vi.fn(async () => ({ available: true, platformSupported: true, runtimeId: 'redroid', message: '可用', checkedAt: '2026-09-24T00:00:00Z', checks: {}, capabilities: {}, hostWorkspaceFreeBytes: host, vmDockerFreeBytes: vm })),
+    capabilities: vi.fn(async () => ({ management: true, control: true, images: true, bulk: true, backups: true, workflow: false, reasons: {} })),
+  } as unknown as AndroidManagementApi
+  render(<QueryClientProvider client={new QueryClient()}><RuntimeDiagnostics api={api} /></QueryClientProvider>)
+  const hostRegion = await screen.findByRole('group', { name: '宿主工作区可用空间' })
+  const vmRegion = screen.getByRole('group', { name: 'Linux VM Docker 可用空间' })
+  expect(within(hostRegion).getByText(hostText)).toBeVisible()
+  expect(within(vmRegion).getByText(vmText)).toBeVisible()
 })

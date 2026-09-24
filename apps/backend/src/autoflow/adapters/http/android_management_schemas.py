@@ -47,6 +47,8 @@ class ManagementEnvironmentRead(ApiModel):
     images: list[dict[str, Any]] = Field(default_factory=list)
     cpu_count: int = 0
     memory_mb: int = 0
+    host_workspace_free_bytes: int | None = Field(default=None, ge=0, strict=True)
+    vm_docker_free_bytes: int | None = Field(default=None, ge=0, strict=True)
     checked_at: datetime
     checks: dict[str, EnvironmentCheckRead]
     capabilities: dict[str, bool | str]

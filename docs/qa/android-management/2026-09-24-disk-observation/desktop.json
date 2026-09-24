@@ -1,0 +1,24 @@
+{
+  "status": "passed",
+  "source": "CUA native accessibility tree, final build 35.67s",
+  "url": "#/android",
+  "hostDisplay": "182.34 GiB",
+  "vmDockerDisplay": "31.15 GiB",
+  "checkedAtBefore": "2026-09-24T00:23:08.702968Z",
+  "checkedAtAfter": "2026-09-24T00:23:14.963566Z",
+  "explicitRefresh": "passed",
+  "deviceCount": 0,
+  "ownedElectronExited": true,
+  "scope": "Only disk observation; no instance creation or image pull",
+  "databaseCounts": {
+    "android_devices": 0,
+    "android_operations": 1
+  },
+  "operations": [
+    {
+      "action": "check",
+      "state": "succeeded",
+      "result_code": null
+    }
+  ]
+}

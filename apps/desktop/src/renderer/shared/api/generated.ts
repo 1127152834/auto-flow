@@ -9159,6 +9159,10 @@ export type components = {
              * @default 0
              */
             memoryMb: number;
+            /** Hostworkspacefreebytes */
+            hostWorkspaceFreeBytes?: number | null;
+            /** Vmdockerfreebytes */
+            vmDockerFreeBytes?: number | null;
             /**
              * Checkedat
              * Format: date-time

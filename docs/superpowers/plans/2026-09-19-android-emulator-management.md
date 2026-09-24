@@ -699,3 +699,5 @@ assert source_data_digest_after == source_data_digest_before
 ### 2026-09-24 批次入口与并发取消校准
 
 [批次增量报告](../../qa/android-management/2026-09-24-bulk-actions.md)记录取消未准入项、原动作重试、确认终态后新批次、零匹配目标保护；容量await、跨批次快照及核实await的取消覆盖均经真实SQLite确定性RED后修复。独立复审无剩余Critical/Important，前端160/后端47项聚焦通过，完整后端4048passed/26skipped/2warnings（981.16s）、Ruff/compileall通过；前端完整424文件/5650项（802.11s）、类型/lint/OpenAPI/build通过。真实ReDroid容量等待取消、服务重启原编号回执一致且自建资源清理missing。Mac锁屏阻塞最新桌面验证，AC15校准为partial；T14隐藏页进度读取与性能/探测同链、T09桌面镜像链及T12回退演练继续。原102步骤统计85passed/14not_run/3blocked不虚增，历史RED缺证保留。
+
+2026-09-24 AM-R12增量：[独立磁盘观测](../../qa/android-management/2026-09-24-disk-observation.md)贯通真实provider、HTTP/OpenAPI和桌面；创建/拉取准入仍未关闭，T14/T16及完整目标不因此标记完成。
