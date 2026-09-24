@@ -70,7 +70,7 @@ def main():
         environment = api('GET', 'android/environment')
         assert environment['available'] and environment['images']
         for index in range(2):
-            body = {'deviceId': str(uuid4()), 'name': f'管理验收 {index+1}', 'imageId': environment['images'][0]['id'], 'width': 540, 'height': 960, 'dpi': 240, 'cpu': 1, 'memoryMb': 768, 'start': True}
+            body = {'deviceId': str(uuid4()), 'name': f'管理验收 {index+1}', 'imageId': environment['images'][0]['id'], 'width': 540, 'height': 960, 'dpi': 240, 'cpu': 1, 'memoryMb': 768, 'allowUnknownDiskEstimate': True, 'start': True}
             ids.append(body['deviceId'])
             created = api('POST', 'android/devices', body, 202)
             assert created['control'] == 'managing'

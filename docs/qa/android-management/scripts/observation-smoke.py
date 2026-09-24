@@ -85,7 +85,7 @@ async def exercise(output):
             while len(devices) < scale:
                 identifier = str(uuid4())
                 devices.append(identifier)
-                result = expect(await client.post('/api/v1/android/devices', json={'deviceId': identifier, 'name': f'QA observation {len(devices)}', 'imageId': image, 'width': 720, 'height': 1280, 'dpi': 320, 'cpu': 1, 'memoryMb': 1024, 'start': True}), 202)
+                result = expect(await client.post('/api/v1/android/devices', json={'deviceId': identifier, 'name': f'QA observation {len(devices)}', 'imageId': image, 'width': 720, 'height': 1280, 'dpi': 320, 'cpu': 1, 'memoryMb': 1024, 'allowUnknownDiskEstimate': True, 'start': True}), 202)
                 row = await HELPERS['wait_device'](service.repository, identifier, result['operation']['id'])
                 assert row['androidStatus'] == 'ready', row['androidStatus']
             async with asyncio.timeout(35):

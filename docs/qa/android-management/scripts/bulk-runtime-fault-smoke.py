@@ -119,7 +119,7 @@ async def exercise():
         report["imageId"] = image
         expect(await client.post("/api/v1/android/management/images", json={"id": image, "name": "Bulk QA base", "reference": "redroid/redroid:13.0.0_64only-latest"}), 201)
         for identifier in ids:
-            result = expect(await client.post("/api/v1/android/devices", json={"deviceId": identifier, "name": "Bulk runtime QA " + identifier[:8], "imageId": image, "width": 720, "height": 1280, "dpi": 320, "cpu": 1, "memoryMb": 1536, "start": True}), 202)
+            result = expect(await client.post("/api/v1/android/devices", json={"deviceId": identifier, "name": "Bulk runtime QA " + identifier[:8], "imageId": image, "width": 720, "height": 1280, "dpi": 320, "cpu": 1, "memoryMb": 1536, "allowUnknownDiskEstimate": True, "start": True}), 202)
             row = await HELPERS["wait_device"](repository, identifier, result["operation"]["id"])
             await docker("exec", row["containerId"], "sh", "-c", f"printf %s {identifier} > {probe}")
             hashes[identifier] = (await docker("exec", row["containerId"], "sha256sum", probe)).decode().split()[0]

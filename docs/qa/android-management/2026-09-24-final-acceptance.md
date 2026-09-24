@@ -1,49 +1,39 @@
-# 安卓模拟器管理快速验收结果
+# 安卓模拟器管理当前验收结果
 
-后续同日增量：[磁盘观测与完整自动化](2026-09-24-disk-observation.md)已补宿主/VM容量展示并重跑全仓门禁；下文保留de0708db前的验收快照。创建/拉取准入仍未完成，整体不通过的结论未改变。
+2026-09-24；状态：**partial，尚不能完整签收**；置信度：高。当前产品候选 `ef0af03f`，隔离分支 `codex/android-management-complete`。原有三份Studio未提交文件保持原SHA256且不纳入本任务提交；未合并或发布。
 
-- 日期：2026-09-24；结论：**完整验收不通过，当前 partial**；置信度：高。
-- 用户最新要求最快检查验收，本轮冻结功能扩展，运行安卓范围验收、工程门禁、迁移检查、最终分支限时审查及真实桌面快速检查。未完成项目直接列明，不继续展开新方案。
-- 基线 `b51fac4f` 加[候选源码哈希](2026-09-24-final-acceptance/candidate-hashes.json)。原三份 Studio 未提交文件保持原哈希，未纳入提交。迁移仍为 `am01_management_operations → 0019_recording_commands`（head → parent），没有空迁移。
+## 当前验证结果
 
-## 完成项及实际验证
-
-| 范围 | 本次实际结果 |
+| 实际执行命令 | 实际结果 |
 | --- | --- |
-| 后端 Android 全部合同/单元/集成 | **477 passed，2 warnings，35.14s，exit0**；[输出](2026-09-24-final-acceptance/backend-android.log) |
-| 其中备份/runtime/restore/cleanup定向 | 158 passed，1 warning，14.73s；包含于上一行，不相加；[输出](2026-09-24-final-acceptance/backend-focused.log) |
-| Android 前端全部 | **14文件 / 177 passed，8.36s，exit0**；[输出](2026-09-24-final-acceptance/frontend.log) |
-| 工程门禁 | typecheck、lint、OpenAPI check、build全部exit0；renderer 38.27s；同上日志。后端Ruff/compileall exit0（首次三处测试import排序已修正） |
-| 迁移 | **6 passed，1.30s，exit0**；[输出](2026-09-24-final-acceptance/migrations.log) |
-| 全分支限时只读审查 | 未发现新增Critical；前端未知请求跨动作覆盖已修复并复审关闭；AM-R12未完成保留Important；[审查范围](2026-09-24-final-acceptance/reviews.md) |
-| 真实备份磁盘准入 | 自建64MiB磁盘仅剩2MiB时，预检拒绝且归档调用 **0次**；释放后估计与实际均 **18,595,840字节**，成功归档1次；[JSON](2026-09-24-final-acceptance/real-disk-result.json) |
-| 真实传输取消/清理 | 写入122,880字节时取消，持久needs_verification，无发布或staging残留；原请求不重放，源探针保留；自建设备/卷均missing，私有磁盘卸载删除。不是填满用户系统盘 |
-| 真实桌面快速检查 | Mac已解锁；启动独立空工作区，最终构建完成后重新加载，实际页面显示实例/批量/镜像/未知拉取/模板/维护及真实运行环境可用。无效拉取被拒绝后输入可修正。数据库设备及操作均0，未提交修正后的拉取；自有Electron已退出；[记录](2026-09-24-final-acceptance/desktop-smoke.json) |
+| `cd apps/backend && uv run pytest -x -q` | exit0；4099 passed、26 skipped、2 warnings；794.17秒；对应ef0af03f |
+| `cd apps/desktop && npm test -- --maxWorkers=2` | exit0；424文件、5683项通过；351.96秒；本轮Node26.7.0，localStorage实验警告保留 |
+| `uv run --project apps/backend ruff check apps/backend/src apps/backend/tests` | exit0 |
+| `uv run --project apps/backend python -m compileall -q apps/backend/src/autoflow` | exit0 |
+| `uv run --project apps/backend pytest apps/backend/tests/integration/test_android_m4_migration.py apps/backend/tests/integration/test_migration_heads.py -q` | exit0；6 passed，1.03秒；唯一head仍am01_management_operations |
+| `npm run typecheck` / `npm run lint` / `npm run openapi:check` | 全部exit0 |
+| `npm run test:structure` / `npm run test:scripts` | exit0；分别4和95项通过；生成的受保护Studio文档已恢复运行前字节 |
+| `npm run build` | exit0；renderer32.59秒 |
+| `uv run --project apps/backend python docs/qa/android-management/scripts/create-disk-admission-smoke.py --allow-device-mutation --output /private/tmp/android-create-disk-real-v2.json` | exit0/statuspassed；真实Mac/Lima/ReDroid，8条自建记录对应容器/卷清空，自有备份0 |
 
-已交付的基础生命周期、环境诊断、统一状态、控制、保留/删除/恢复、镜像/模板、批量、应用和维护功能继续按各阶段既有证据保留，本次没有重新冒称全部功能已实机走完。[模块索引](README.md)、[AM1](am1-verification.md)、[AM2](am2-verification.md)、[AM3](am3-verification.md)、[AM4](am4-verification.md)。
+完整输出及逐命令退出码见[最终候选证据](2026-09-24-create-disk-admission.md)。其中Android定向后端515项、前端193项已通过，包含在各自全套中，不相加。旧候选提前中断的后端运行exit130保留原日志，不计通过。早期Node22和旧测试数属于各自提交历史，不代替当前结果。
 
-本轮新增备份空间预检采用原GNU tar参数在客体内流式计数；停机、归属及锁校验之后，在stage之前检查实际宿主目标文件系统。归档/manifest按分配块向上取整，并预算尚缺目录；未知估计或探测失败明确拒绝。预检取消记录failed/BACKUP_PREFLIGHT_CANCELLED，开始写入后取消仍needs_verification。页面仅对三个明确磁盘拒绝释放请求；响应丢失先核实原回执，未知期间禁止新备份/恢复动作。
+## 已完成范围
 
-RED证据：[初始9失败](2026-09-24-final-acceptance/backend-red.log)、[预检取消1失败](2026-09-24-final-acceptance/cancel-red.log)、[目录预算1失败](2026-09-24-final-acceptance/directories-red.log)、[磁盘拒绝后新尝试3失败](2026-09-24-final-acceptance/ui-red.log)、[核实失败终态后新尝试1失败](2026-09-24-final-acceptance/ui-cancel-red.log)、[未知跨动作2失败](2026-09-24-final-acceptance/unknown-cross-action-red.log)。
+- AM1基础生命周期、环境诊断、统一状态、持久操作、控制会话、保留卷删除和恢复、永久删除已实现；[AM1证据](am1-verification.md)。归属校验、独占控制、generation/sequence、幂等和未知结果保护保留。
+- AM2镜像登记/拉取/删除、固定镜像身份、模板revision和快照已实现；[AM2证据](am2-verification.md)。[真实未知拉取](2026-09-24-pull-disk-and-bulk.md)已验证重启发现、核实前禁新请求、按原编号核实；实际pull仅一次。
+- AM3批次、取消未开始项、失败重试和容量准入已实现；[AM3证据](am3-verification.md)。[真实Electron批次](2026-09-24-pull-disk-and-bulk.md)验证筛选保留选择、冻结目标、取消和终态新批次，持久记录一致，自建资源已清理。
+- AM4应用、备份、恢复、清理及脱敏诊断已实现；[AM4证据](am4-verification.md)。真实故障、源数据保护和清理结果按[24项验收矩阵](2026-09-23-acceptance-matrix.md)逐项列明。
+- AM-R12原软件缺口已补：宿主/VM观测、备份预检、镜像拉取、单/批创建、配置复制、保留数据重建与备份恢复写前磁盘检查。不能可靠估计时由当前请求显式确认，默认拒绝；已知零空间/探测失败不能绕过，来源确认不能继承。最终真实创建/恢复/复制及未确认失败批次重试均通过。
 
-## 不通过项、阻塞项与风险
+Task3和Task4独立规格/质量审查通过，无Critical/Important。完整分支 `a92f0688..ef0af03f` 最终审查发现旧操作核实覆盖新会话、镜像核实复活登记及UI入口/心跳问题，正在固化复现并修复。全量自动化通过不表示这些未覆盖问题已通过；修复后必须重新验证。
 
-1. **Important / 软件未完成：AM-R12创建和镜像拉取缺少操作前磁盘准入；宿主与VM两套可用空间数值未展示。** 备份预检已补齐，不能代表这两条路径完成。该项不是外部blocked。
-2. **not_run / 部分实机验收未完：**完整批次取消/新批次/筛选保留交互、未知拉取跨桌面重启核实、镜像内容删除、下载途中断网、T14/T16前台/隐藏页测量及同一发布切换链数据库/旧实例保留。历史HTTP、组件、前端补丁演练仅证明各自范围。Mac锁屏阻塞本次已解除，相关完整桌面流程改为待执行，不再沿用当前locked说法。
-3. **blocked / 外部条件：**十台最低配置需要8192MiB，当前VM实际 `MemTotal=8306655232` bytes（约7922MiB）、6CPU，低于门槛；GApps专用镜像/账号/商店链条件仍未齐备。
-4. **最终全仓全量门禁未在最后候选上重跑。** 本次按用户加速指令先给快速失败结论；已知规格硬缺口使完整签收不成立。旧4048后端/5656前端等全量报告属于旧源码，不能冒充当前全量通过。
-5. 预检是容量估计，不保证期间外部写入、文件系统额外元数据或卷内容变化不会引发ENOSPC；保留失败清理和结果未知保护。预检取消的Event集成测试不冒充远端tar强杀退出验证。
+## 阻塞、未执行与风险
 
-## 可复现命令
+- **blocked：Mac再次锁屏。** 控制工具实际报告无法自动解锁；新四入口确认UI、隐藏页及前台性能不能继续真实桌面验证。此前解锁期间完成的批次/未知拉取桌面证据仍有效，但不能覆盖新入口。
+- **blocked：十实例容量。** 最低配置含预留需要8192MiB，当前Lima实际约7922MiB、6CPU。没有降低规格或占用用户外部实例来伪造通过。
+- **blocked：GApps。** 专用镜像、测试账号及商店下载链缺失；没有以普通APK测试代替。
+- **not_run：**镜像内容删除的完整桌面链、下载途中真实断网；同一发布切换链的旧temporary实例/数据库兼容；部分T14/T16桌面指标和历史缺失的RED原始输出。历史GREEN不能追认RED，后台HTTP耗时不能冒充桌面交互耗时。
+- 磁盘预检不能保证其他进程随后占满空间，既有失败清理与needs_verification继续生效。本轮Node26实验警告、两条既有后端警告及旧默认四worker不稳定记录均保留。顶层旧smoke脚本额外Ruff扫描既有I001/BLE001已在HEAD基线复现；规定的后端src/tests检查通过。
 
-```sh
-# 在 apps/backend
-uv run pytest tests/contract/test_android*.py tests/unit/test_android*.py tests/integration/test_android*.py -q
-
-# 在仓库根目录
-uv run --project apps/backend pytest apps/backend/tests/integration/test_android_m4_migration.py apps/backend/tests/integration/test_migration_heads.py -q
-npm exec --offline --yes --package=node@22.23.2 -c 'npm test -w @autoflow/desktop -- src/renderer/domains/android && npm run typecheck && npm run lint && npm run openapi:check && npm run build'
-uv run --project apps/backend python docs/qa/android-management/scripts/disk-full-smoke.py --allow-device-mutation --scrcpy-archive /Users/zhangtiancheng/.autoflow/android-runtime/scrcpy-macos-aarch64-v3.3.4.tar.gz
-```
-
-当前只记录验收结论，不宣布AM1–AM4完整目标完成，不合并或发布。
+本报告不宣布AM1–AM4完整目标完成；审查、实际环境和证据缺口关闭前，不进行合并或发布。

@@ -136,7 +136,7 @@ async def exercise(interrupt_backup_first=False):
         source_id = str(uuid4())
         created = expect(await client.post("/api/v1/android/devices", json={
             "deviceId": source_id, "name": "AM4 real unpack source", "imageId": image,
-            "width": 720, "height": 1280, "dpi": 320, "cpu": 1, "memoryMb": 1536, "start": True,
+            "width": 720, "height": 1280, "dpi": 320, "cpu": 1, "memoryMb": 1536, "allowUnknownDiskEstimate": True, "start": True,
         }), 202)
         source = await wait_device(repository, source_id, created["operation"]["id"])
         assert source["androidStatus"] == "ready"
@@ -205,7 +205,7 @@ else: raise TimeoutError('No real target write observed')
             "limactl", "shell", "--workdir=/tmp", VM, "sudo", "python3", "-c", watcher, target_probe,
             stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
         )
-        body = {"requestId": request_id, "newName": "AM4 interrupted unpack"}
+        body = {"requestId": request_id, "allowUnknownDiskEstimate": True, "newName": "AM4 interrupted unpack"}
         transfer = asyncio.create_task(client.post(f"/api/v1/android/management/backups/{backup['id']}/restore", json=body))
         observed = int(await asyncio.wait_for(monitor.stdout.readline(), 130))
         assert 0 < observed < 256 * 1024**2, observed
@@ -242,7 +242,7 @@ else: raise TimeoutError('No real target write observed')
         deleted = await operate(client, repository, target_id, "delete")
         assert (await runtime.verify_deleted(deleted))["androidStatus"] == "missing"
         report.update(recoveredOperationState=operation["state"], replayProtected=True, startBackupControlBlocked=True, interruptedTargetDeleted=True)
-        restored = expect(await client.post(f"/api/v1/android/management/backups/{backup['id']}/restore", json={"requestId": str(uuid4()), "newName": "AM4 new request after interruption"}), 202)
+        restored = expect(await client.post(f"/api/v1/android/management/backups/{backup['id']}/restore", json={"requestId": str(uuid4()), "allowUnknownDiskEstimate": True, "newName": "AM4 new request after interruption"}), 202)
         assert restored["state"] == "restored"
         target = await operate(client, repository, restored["deviceId"], "start")
         restored_hash = (await docker("exec", target["containerId"], "sha256sum", probe)).decode().split()[0]

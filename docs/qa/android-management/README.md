@@ -1,5 +1,7 @@
 # 安卓模拟器管理验收证据
 
+**当前结果以[最终验收汇总](2026-09-24-final-acceptance.md)及[创建/复制/恢复准入](2026-09-24-create-disk-admission.md)为准。** 以下各条为各自提交时的历史快照；创建/拉取准入未实现的旧结论已superseded。
+
 [自定义候选镜像实测](2026-09-24-custom-image.md)完成基础/候选启动、模板与tag漂移后的固定imageId重启、候选备份恢复，以及模板/实例/备份分别阻止删除。T12.3通过；Google仍not_tested，回退演练和桌面链仍未完成。
 
 [真实恢复空间不足与取消](2026-09-24-restore-cancel-and-disk-full.md)发现并修复命令取消后 SSH 子进程继续写入：4 项真实子进程 RED→GREEN，运行时 63 项通过，Android 聚焦 451 项通过。[多对象清理硬中断](2026-09-24-cleanup-interruption.md)已验证首项删除不被误判为全成功；本轮全后端4035 passed/26 skipped，命令与终态见同一故障报告。T18/T19 已列功能通过，完整目标仍 partial。

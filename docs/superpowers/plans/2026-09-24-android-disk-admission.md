@@ -37,10 +37,11 @@
 
 ## Task 2b：创建与拉取（待Task1后最终校准）
 
-- [ ] 复核单实例、批量、复制快照和备份恢复创建的全部调用者；检查 VM Docker root 与宿主 Lima 数据所在文件系统。
-- [ ] 明确可估计量与未知量。不得用任意固定阈值或镜像压缩尺寸伪装实际所需空间；未知时需显式确认或明确阻塞。确认若采用，必须冻结到原请求摘要，UI明确显示未知且默认不勾选。
-- [ ] RED→GREEN同步DTO、OpenAPI、单/批创建、拉取服务与provider、前端。已知不足/探测失败不可通过未知确认绕过；已完成回执不重新拉取/创建。
+- [x] 复核单实例、批量、复制快照和备份恢复创建的全部调用者；检查 VM Docker root 与宿主 Lima 数据所在文件系统。
+- [x] 明确可估计量与未知量。不得用任意固定阈值或镜像压缩尺寸伪装实际所需空间；未知时需显式确认或明确阻塞。确认若采用，必须冻结到原请求摘要，UI明确显示未知且默认不勾选。
+- [x] RED→GREEN同步DTO、OpenAPI、单/批创建、拉取服务与provider、前端。已知不足/探测失败不可通过未知确认绕过；已完成回执不重新拉取/创建。
 - [ ] 真实Mac验证、增量审查、全量后端/前端/类型/lint/OpenAPI/build和最终阶段证据。
+
 
 ## 验证命令
 
@@ -100,9 +101,13 @@ Task3已完成18b75c49+c4b6159d，独立复审与真实HTTP/桌面核实通过�
 - 继续使用既有组件/请求ref/错误样式，不引入依赖、不做无关重构。已有控制会话、generation/sequence、idempotency、保护包/恢复源保护及未知结果都不可退化；不接入已退役工作流。
 
 执行与验收：
-- [ ] RED：共享provider未确认/0/探测失败零写入；确认放行；单/批/副本/保留数据重建/备份恢复字段贯通与拒绝；旧false回放、改变确认冲突；来源确认不继承；恢复写入前再次检查；事件驱动取消边界；前端四入口默认未选、冻结、参数变化重置与原编号重试。
-- [ ] GREEN：最小跨层实现+受影响fake/调用更新+OpenAPI生成，无数据库结构变化则无需迁移。
-- [ ] Android后端和前端全套、Ruff、compile、类型、lint、OpenAPI、build；根任务统一执行全仓长套件，不重复。
-- [ ] 自有代码提交+task-4-report记录有效RED/GREEN、实际命令输出、风险；主任务真实Mac创建/恢复验收与独立审查。
+- [x] RED：共享provider未确认/0/探测失败零写入；确认放行；单/批/副本/保留数据重建/备份恢复字段贯通与拒绝；旧false回放、改变确认冲突；来源确认不继承；恢复写入前再次检查；事件驱动取消边界；前端四入口默认未选、冻结、参数变化重置与原编号重试。
+- [x] GREEN：最小跨层实现+受影响fake/调用更新+OpenAPI生成，无数据库结构变化则无需迁移。
+- [x] Android后端和前端全套、Ruff、compile、类型、lint、OpenAPI、build；根任务统一执行全仓长套件，不重复。ef0af03f：4099后端/5683前端通过。
+- [x] 自有代码提交+task-4-report记录有效RED/GREEN、实际命令输出、风险；主任务真实Mac创建/恢复验收与独立审查。实际新UI仍blocked，不包含在此后端真实结果内。
 
 文件由实现者追踪真实调用链选择，预期涉及backend android.py/android_fleet_schemas.py/android_management_schemas.py/android_management.py、application/android/{management,fleet,backups}.py、providers/android/{management,mac_runtime}.py、上述前端四入口与生成类型/测试。根任务独占docs/qa、.ai与本计划；不得stage Studio脏文件。实现者不得更改任何QA脚本或其他代理提交。
+
+2026-09-24 最终候选校准（supersedes上文“Task2未实施/创建拉取未实现”的历史进度）：18b75c49+c4b6159d完成拉取，b744666d+ef0af03f完成四入口创建/复制/恢复；Task3/Task4规格与质量审查Approved。真实Mac创建/恢复/复制/失败重试及自建资源清理通过。全前端5683项及类型/lint/OpenAPI/build/迁移通过；全后端及完整分支审查正在收尾。新确认UI因Mac锁屏blocked，保留对应最终真实验收复选框未关闭。
+
+Task4实现切片完成：b744666d+ef0af03f，独立审查Approved，完整自动化与真实后端通过。完整分支最终审查发现另外的并发核实与UI可达缺陷，必须作为一次修复批次处理并复验；本计划最终整体验收仍未关闭。

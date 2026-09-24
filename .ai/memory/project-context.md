@@ -188,3 +188,5 @@ proposed：本轮完整规格尚未确认，6组补图未生成；参数定义�
 - 2026-09-24（confirmed，整体partial）：18b75c49镜像拉取磁盘准入、严格未知确认和请求冻结已实现；真实未确认0pull、确认后强杀/重启/核实1pull通过。真实Electron批量筛选选择保留、目标冻结、取消未开始项、新批次通过，AC15关闭；两台自建资源已清理。创建/复制/恢复准入与最终全仓验证待Task4，不能沿用旧完整结果当本候选通过。见[验收证据](../../docs/qa/android-management/2026-09-24-pull-disk-and-bulk.md)。
 
 2026-09-24后续confirmed：真实Electron重启发现未知pull、核实前拒绝新请求、显式核实succeeded并清空历史、改引用撤销确认已验；自有登记已撤销。c4b6159d修复202/failed重放误报已接受，187前端回归通过，独立复审进行中。
+
+2026-09-24 当前准入状态（confirmed，整体partial；supersedes以上创建/拉取未完成的进度快照）：Task3及Task4已完成API/OpenAPI/provider/四UI入口并独立审查通过，最终真实Mac创建/保留卷恢复/备份恢复/模板批量/复制/拒绝后重试通过，8条自建记录已清理。严格当前请求确认、来源确认不继承、实际宿主Lima磁盘与VM检查、恢复写前重检见[事实记录](../knowledge/2026-09-24-android-disk-admission.md)。新确认UI仍因Mac再次锁屏blocked，最终全分支与完整门禁以[验收报告](../../docs/qa/android-management/2026-09-24-create-disk-admission.md)为准，不套用历史数字。

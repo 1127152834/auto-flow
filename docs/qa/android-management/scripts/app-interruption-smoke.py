@@ -90,7 +90,7 @@ async def exercise(apk):
         expect(await client.post("/api/v1/android/management/images", json={"id": image, "name": "Install interruption QA", "reference": "redroid/redroid:13.0.0_64only-latest"}), 201)
         for mode in ("adb_disconnect", "http_sigkill"):
             identifier = str(uuid4())
-            created = expect(await client.post("/api/v1/android/devices", json={"deviceId": identifier, "name": "APK fault " + mode, "imageId": image, "width": 720, "height": 1280, "dpi": 320, "cpu": 1, "memoryMb": 1536, "start": True}), 202)
+            created = expect(await client.post("/api/v1/android/devices", json={"deviceId": identifier, "name": "APK fault " + mode, "imageId": image, "width": 720, "height": 1280, "dpi": 320, "cpu": 1, "memoryMb": 1536, "allowUnknownDiskEstimate": True, "start": True}), 202)
             owned.append(identifier)
             device = await HELPERS["wait_device"](devices.repository, identifier, created["operation"]["id"])
             assert device["androidStatus"] == "ready"

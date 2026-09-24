@@ -68,7 +68,7 @@ async def exercise():
         process, client = await HELPERS["start_server"](workspace)
         expect(await client.post("/api/v1/android/management/images", json={"id": image, "name": "AM4 fault base", "reference": "redroid/redroid:13.0.0_64only-latest"}), 201)
         source_id = str(uuid4())
-        created = expect(await client.post("/api/v1/android/devices", json={"deviceId": source_id, "name": "AM4 disk and cancel source", "imageId": image, "width": 720, "height": 1280, "dpi": 320, "cpu": 1, "memoryMb": 1536, "start": True}), 202)
+        created = expect(await client.post("/api/v1/android/devices", json={"deviceId": source_id, "name": "AM4 disk and cancel source", "imageId": image, "width": 720, "height": 1280, "dpi": 320, "cpu": 1, "memoryMb": 1536, "allowUnknownDiskEstimate": True, "start": True}), 202)
         source = await HELPERS["wait_device"](repository, source_id, created["operation"]["id"])
         probe = "/data/local/tmp/autoflow-restore-fault-probe"
         await docker("exec", source["containerId"], "dd", "if=/dev/urandom", f"of={probe}", "bs=1048576", "count=256", timeout=90)
@@ -96,7 +96,7 @@ async def exercise():
         async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://qa-local") as local:
             corrupt_request = str(uuid4())
             corrupt_target = str(uuid5(NAMESPACE_URL, f"{paths.workspace.resolve()}/android-restore/{corrupt_request}"))
-            corrupt_body = {"requestId": corrupt_request, "newName": "AM4 deliberately corrupt fixture"}
+            corrupt_body = {"requestId": corrupt_request, "allowUnknownDiskEstimate": True, "newName": "AM4 deliberately corrupt fixture"}
             corrupt = await local.post(f"/api/v1/android/management/backups/{damaged['id']}/restore", json=corrupt_body)
             assert corrupt.status_code == 409 and "ANDROID_BACKUP_CORRUPT" in corrupt.text, (corrupt.status_code, corrupt.text)
             rejected = repository.get(corrupt_target)
@@ -138,7 +138,7 @@ finally:os.unlink(f)
                     await original_restore(device, data_path)
 
                 runtime.restore_volume_from_path = restore_with_real_fault
-                body = {"requestId": request_id, "newName": f"AM4 real {mode}"}
+                body = {"requestId": request_id, "allowUnknownDiskEstimate": True, "newName": f"AM4 real {mode}"}
                 transfer = asyncio.create_task(local.post(f"/api/v1/android/management/backups/{backup['id']}/restore", json=body))
                 await asyncio.wait_for(entered.wait(), 60)
                 if mode == "cancel":
@@ -203,7 +203,7 @@ else:raise TimeoutError('No in-flight write')
             target = await operate(client, repository, target_id, "delete")
             assert (await runtime.verify_deleted(target))["androidStatus"] == "missing"
             scenario.update(preservedAfterRestart=True, recoverCannotReleaseIncompleteRestore=True, targetDeleted=True)
-        restored = expect(await client.post(f"/api/v1/android/management/backups/{backup['id']}/restore", json={"requestId": str(uuid4()), "newName": "AM4 after disk and cancel"}), 202)
+        restored = expect(await client.post(f"/api/v1/android/management/backups/{backup['id']}/restore", json={"requestId": str(uuid4()), "allowUnknownDiskEstimate": True, "newName": "AM4 after disk and cancel"}), 202)
         target = await operate(client, repository, restored["deviceId"], "start")
         assert (await docker("exec", target["containerId"], "sha256sum", probe)).decode().split()[0] == source_hash
         await operate(client, repository, restored["deviceId"], "delete")

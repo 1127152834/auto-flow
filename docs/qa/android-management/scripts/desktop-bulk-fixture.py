@@ -41,7 +41,7 @@ async def exercise(action, output):
                 identifier = str(uuid4())
                 report['devices'].append(identifier)
                 output.write_text(json.dumps(report, indent=2))
-                created = expect(await client.post('/api/v1/android/devices', json={'deviceId': identifier, 'name': f'QA批量验收{index + 1}', 'imageId': image, 'width': 720, 'height': 1280, 'dpi': 320, 'cpu': 1, 'memoryMb': 1024, 'start': False}), 202)
+                created = expect(await client.post('/api/v1/android/devices', json={'deviceId': identifier, 'name': f'QA批量验收{index + 1}', 'imageId': image, 'width': 720, 'height': 1280, 'dpi': 320, 'cpu': 1, 'memoryMb': 1024, 'allowUnknownDiskEstimate': True, 'start': False}), 202)
                 row = await HELPERS['wait_device'](repository, identifier, created['operation']['id'])
                 assert row['workspaceId'] == runtime.workspace_id
                 assert (await runtime.inspect(row))['androidStatus'] == 'stopped'

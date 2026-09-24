@@ -1,5 +1,7 @@
 # 安卓管理全分支复审结论
 
+以下是早期提交的历史审查与测试快照；当前候选及剩余验收状态见[最终汇总](../../docs/qa/android-management/2026-09-24-final-acceptance.md)，不要将旧4031/5625结果当作最终候选验证。
+
 - 日期：2026-09-24；状态：`confirmed`（代码与定向 RED→GREEN；全阶段验收仍 `partial`）。来源：[最终分支审查 QA](../../docs/qa/android-management/2026-09-24-final-branch-review.md)及隔离工作区全分支只读复核。
 - 共享运行时独占锁必须覆盖镜像内容的实际变动与其目录/Operation 发布，以及备份归档到引用目录的发布窗口；仅包住 Docker 调用不足以阻止数据丢失。
 - 批次公开修订号为 `generation+1`。容量等待后的复读只能提前发现冲突；最终栅栏必须在生命周期控制器持锁后复核。显式失败重试可冻结新的内部 `retryExpectedRevision`，原批次创建输入仍不可变。

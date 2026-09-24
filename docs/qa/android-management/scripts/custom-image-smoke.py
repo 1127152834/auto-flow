@@ -81,7 +81,7 @@ async def exercise():
             report.setdefault("deleteBlockedBy", []).append(reference_kind)
 
         await blocked_delete("template")
-        batch = expect(await client.post("/api/v1/android/batches", json={"batchId": str(uuid4()), "name": "Real custom candidate", "profileId": profile_id, "profileRevision": profile["revision"], "quantity": 1, "start": True}), 202)
+        batch = expect(await client.post("/api/v1/android/batches", json={"batchId": str(uuid4()), "name": "Real custom candidate", "profileId": profile_id, "profileRevision": profile["revision"], "quantity": 1, "allowUnknownDiskEstimate": True, "start": True}), 202)
         candidate_id = batch["items"][0]["deviceId"]
         for _ in range(480):
             batches = expect(await client.get("/api/v1/android/batches"), 200)
@@ -96,7 +96,7 @@ async def exercise():
         assert candidate["androidStatus"] == "ready" and candidate["imageId"] == image_a, candidate
         assert (await docker("exec", candidate["containerId"], "cat", "/autoflow-qa-marker")).decode() == "candidate-v1"
         base_id = str(uuid4())
-        created = expect(await client.post("/api/v1/android/devices", json={"deviceId": base_id, "name": "Unmodified base peer", "imageId": base, "width": 720, "height": 1280, "dpi": 320, "cpu": 1, "memoryMb": 1536, "start": True}), 202)
+        created = expect(await client.post("/api/v1/android/devices", json={"deviceId": base_id, "name": "Unmodified base peer", "imageId": base, "width": 720, "height": 1280, "dpi": 320, "cpu": 1, "memoryMb": 1536, "allowUnknownDiskEstimate": True, "start": True}), 202)
         peer = await HELPERS["wait_device"](repository, base_id, created["operation"]["id"])
         assert peer["androidStatus"] == "ready"
         await docker("exec", peer["containerId"], "test", "!", "-e", "/autoflow-qa-marker")
@@ -114,7 +114,7 @@ async def exercise():
         await docker("exec", candidate["containerId"], "sh", "-c", "printf custom-data > /data/local/tmp/autoflow-custom-probe")
         candidate = await operate(client, repository, candidate_id, "stop")
         backup = expect(await client.post(BASE + "/backups", json={"requestId": str(uuid4()), "deviceId": candidate_id, "expectedRevision": public_device_revision(candidate["generation"])}), 201)
-        restored = expect(await client.post(BASE + f"/backups/{backup['id']}/restore", json={"requestId": str(uuid4()), "newName": "Custom image restored"}), 202)
+        restored = expect(await client.post(BASE + f"/backups/{backup['id']}/restore", json={"requestId": str(uuid4()), "allowUnknownDiskEstimate": True, "newName": "Custom image restored"}), 202)
         restored_row = await operate(client, repository, restored["deviceId"], "start")
         assert (await docker("exec", restored_row["containerId"], "cat", "/autoflow-qa-marker")).decode() == "candidate-v1"
         assert (await docker("exec", restored_row["containerId"], "cat", "/data/local/tmp/autoflow-custom-probe")).decode() == "custom-data"
