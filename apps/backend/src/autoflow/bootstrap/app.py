@@ -509,6 +509,9 @@ def create_app(
         resolve_credential=studio_credentials.resolve,
         models=model_service,
     )
+    from autoflow.application.workflows.coordinator import WorkflowRunCoordinator
+    if isinstance(workflow_services.commands, WorkflowRunCoordinator):
+        workflow_services.commands.configure_node_browser_environments(app.state.project_workflow_resources, environment_service)
     automation_resources = ProjectAutomationResourceQuery(
         SqlAlchemyProjects(session_factory),
         profile_service,

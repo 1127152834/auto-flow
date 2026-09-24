@@ -41,7 +41,7 @@ class WorkflowRunStart:
     workflow_name: str
     document_snapshot: dict[str, Any]
     layout_snapshot: dict[str, Any]
-    profile_id: str
+    profile_id: str | None
     profile_snapshot: dict[str, Any]
     mode: RunMode
     custom_module_snapshots: dict[str, Any] = field(default_factory=dict)
@@ -73,7 +73,7 @@ class WorkflowRun:
     workflow_name: str
     document_snapshot: dict[str, Any]
     layout_snapshot: dict[str, Any]
-    profile_id: str
+    profile_id: str | None
     profile_snapshot: dict[str, Any]
     mode: RunMode
     status: RunStatus

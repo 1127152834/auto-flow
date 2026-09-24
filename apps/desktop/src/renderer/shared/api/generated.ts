@@ -14066,7 +14066,7 @@ export type components = {
             /** Documentid */
             documentId: string;
             /** Profileid */
-            profileId: string;
+            profileId?: string | null;
             /** Projectid */
             projectId?: string | null;
             /**

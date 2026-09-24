@@ -65,9 +65,13 @@ class OpenPageExecutor(ModuleExecutor):
         open_mode = context.resolve_value(config.get("openMode", "new_tab"))
         if not url:
             return ModuleResult(success=False, error="URL不能为空")
-        if context.browser is None:
-            return ModuleResult(success=False, error="没有打开的页面")
         try:
+            if 'browserEnvironment' in config:
+                if context.browser_initializer is None:
+                    return ModuleResult(False, error='BROWSER_ENVIRONMENT_RUNTIME_UNAVAILABLE')
+                context.browser = await context.browser_initializer(context, config['browserEnvironment'])
+            if context.browser is None:
+                return ModuleResult(False, error='BROWSER_INSTANCE_REQUIRED')
             page = (
                 context.browser.current_page()
                 if open_mode == "current_tab"

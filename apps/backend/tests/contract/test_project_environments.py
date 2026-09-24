@@ -1511,3 +1511,21 @@ def test_invalid_instance_configuration_does_not_leave_pending_lock(tmp_path, fa
     renamed = client.patch(url, headers={'Idempotency-Key': str(uuid4())}, json={'expectedMetadataRevision': 1, 'name': 'still-editable'})
     assert renamed.status_code == 200, renamed.text
     assert renamed.json()['ref']['contentGeneration'] == 1
+
+
+def test_studio_preview_copies_frozen_generation_and_rejects_changed_source(tmp_path):
+    from autoflow.domain.environments.identity import request_from_identity
+    _client, projects, service = make(tmp_path)
+    project_id = _project(projects)
+    instance = _closed_instance(service, project_id, b'original-login')
+    saved = service.publish_new(project_id, name='preview', notes='', profile_id=PROFILE, instance_id=instance.instance_id)
+    frozen = {**request_from_identity(saved.identity_package), 'identityPackage': saved.identity_package, 'environmentRef': saved.ref.to_dict()}
+    target = tmp_path / 'owned-studio' / 'preview' / 'instances' / 'browser'
+    service.prepare_studio_copy(frozen, target)
+    assert (target / 'Default' / 'Cookies').read_bytes() == b'original-login'
+    (target / 'Default' / 'Cookies').write_bytes(b'preview-change')
+    assert (service.store.generation_dir(saved.ref.environment_id, 1) / 'Default' / 'Cookies').read_bytes() == b'original-login'
+    wrong = {**frozen, 'environmentRef': {**frozen['environmentRef'], 'contentGeneration': 2}}
+    with pytest.raises(ProjectError, match='环境已改变'):
+        service.prepare_studio_copy(wrong, target)
+    assert (target / 'Default' / 'Cookies').read_bytes() == b'preview-change'

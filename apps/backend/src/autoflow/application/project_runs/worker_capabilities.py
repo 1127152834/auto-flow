@@ -6,7 +6,7 @@ from dataclasses import fields, replace
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 
 from autoflow.application.project_data.capabilities import ProjectDataCapabilityService
 from autoflow.domain.project_data import capabilities as commands
@@ -17,6 +17,11 @@ from autoflow.domain.projects.models import ProjectError
 from autoflow.domain.workflows.canvas_subflows import CanvasSubflowGraph
 from autoflow.domain.workflows.graph import parse_workflow
 from autoflow.domain.workflows.parallel_graph import direct_members, structured_fork
+from autoflow.domain.workflows.runtime import WorkflowRuntimeError
+from autoflow.infrastructure.database.environment_models import (
+    ProjectEnvironmentInstanceRow,
+)
+from autoflow.infrastructure.database.models import ProjectRow
 from autoflow.infrastructure.database.project_capabilities import (
     SqlAlchemyProjectDataCapabilities,
 )
@@ -81,6 +86,7 @@ class ProjectWorkerCapabilities:
     def __init__(self, sessions: Any, environments: Any = None) -> None:
         self.sessions = sessions
         self.environments = environments
+        self.browser_dispatcher: Any = None
         from .manual_runtime import ProjectManualRuntime
         self.manual = ProjectManualRuntime(sessions, environments, self.end) if environments else None
         if environments:
@@ -104,10 +110,10 @@ class ProjectWorkerCapabilities:
             assert prepared is not None
             node = next((node for node in prepared.execution_plan['nodes'] if node['nodeId'] == request.get('nodeId')), None)
             config = node['data'].get('config', node['data']) if node else {}
-            expected_operation = 'end' if node and node['moduleType'] == 'project_end' else ('manual' if node and node['moduleType'] == 'project_manual' else config.get('operation'))
+            expected_operation = 'initializeBrowser' if node and node['moduleType'] == 'open_page' and run.resource_request.get('browser') == 'node' else 'end' if node and node['moduleType'] == 'project_end' else ('manual' if node and node['moduleType'] == 'project_manual' else config.get('operation'))
             if expected_operation == 'manual' and request.get('operation') == 'manualComplete':
                 expected_operation = 'manualComplete'
-            if node is None or node['moduleType'] not in {'project_data', 'project_end', 'project_manual'} or expected_operation != request.get('operation'):
+            if node is None or (node['moduleType'] == 'open_page' and expected_operation != 'initializeBrowser') or node['moduleType'] not in {'project_data', 'project_end', 'project_manual', 'open_page'} or expected_operation != request.get('operation'):
                 raise _denied()
             event = session.scalar(select(WorkflowRunEventRow).where(
                 WorkflowRunEventRow.run_id == run_id,
@@ -123,6 +129,8 @@ class ProjectWorkerCapabilities:
             in_subflow = any(item.get("kind") == "subflow" for item in event.payload.get("executionContext", {}).get("scopes", []))
             project_id, task_id = task.project_id, task.id
             browserless = run.resource_request.get("browser") == "none"
+            if run.resource_request.get("browser") == "node" and self.environments is not None:
+                browserless = self.environments.environments.find_instance_by_task(project_id, task_id) is None
             manual_limit = min(config.get('timeoutSeconds', 1800), run.resource_request.get('manualDeadlineSeconds', 1800)) if expected_operation == 'manual' else None
             if request['operation'] == 'inputs':
                 if request.get('arguments') != {}:
@@ -133,6 +141,13 @@ class ProjectWorkerCapabilities:
         arguments = request.get('arguments')
         if not isinstance(arguments, dict) or set(arguments) & {'projectId', 'executionGeneration', 'operationId'}:
             raise _denied()
+        if request['operation'] == 'initializeBrowser':
+            if arguments or self.browser_dispatcher is None or in_subflow:
+                raise _denied()
+            try:
+                return await self.browser_dispatcher.initialize_browser(run_id, generation, request['commandId'], lambda: self._prepare_browser(project_id, task_id, run_id, generation, request))
+            except WorkflowRuntimeError as error:
+                raise ProjectError(error.code, error.message, error.status) from error
         if request['operation'] == 'manual' and self.manual is not None:
             if not isinstance(arguments.get('timeoutSeconds'), (int, float)) or isinstance(arguments['timeoutSeconds'], bool):
                 raise _denied()
@@ -189,6 +204,30 @@ class ProjectWorkerCapabilities:
         result = getattr(self.data, method)(scope, command)
         # Mutations return (original result, replayed); the wire result is stable on replay.
         return json_value(result[0] if isinstance(result, tuple) else result)
+
+    def _prepare_browser(self, project_id, task_id, run_id, generation, request):
+        if self.environments is None:
+            raise _denied()
+        with self.sessions() as session:
+            session.execute(text('BEGIN IMMEDIATE'))
+            project = session.get(ProjectRow, project_id)
+            run = session.get(WorkflowRunRow, run_id)
+            if project is None or project.lifecycle_state != 'active' or run is None or run.status != 'running' or run.execution_generation != generation:
+                raise _denied()
+            frozen = run.resource_request.get('nodeBrowserEnvironments', {}).get(request['nodeId'])
+            if not frozen or frozen.get('environmentResolution'):
+                raise _denied()
+            existing = session.scalar(select(ProjectEnvironmentInstanceRow).where(ProjectEnvironmentInstanceRow.project_id == project_id, ProjectEnvironmentInstanceRow.active_task_id == task_id))
+            if existing is not None:
+                if existing.id != request['commandId'] or existing.active_run_id != run_id:
+                    raise ProjectError('BROWSER_INSTANCE_ALREADY_INITIALIZED', '任务已有浏览器实例，请使用当前实例', 409)
+            else:
+                policy = frozen['environmentPolicy']
+                inputs = {policy['inputId']: {'currentEnvironmentId': frozen['environmentRef']['environmentId']}} if policy['source'] == 'inputEnvironment' else None
+                self.environments.reserve_task_instance(session, project_id, task_id, run_id, policy, inputs, resource_request=frozen, instance_id=request['commandId'])
+                session.commit()
+        self.environments.attach_task_instance(project_id, task_id, run_id, frozen['environmentPolicy'])
+        return frozen
 
     def end(self, project_id, task_id, run_id, generation, request, retain):
         if request.get('browserClosed') is not True or self.environments is None:

@@ -21,8 +21,10 @@ from autoflow.domain.models.errors import ModelError
 from autoflow.domain.profiles.errors import KernelNotInstalled
 from autoflow.domain.profiles.models import Profile, ProfileBrowserProxy
 from autoflow.domain.workflows.browser import WorkflowBrowserBusy
+from autoflow.domain.workflows.browser_environment import node_browser_environments
 from autoflow.domain.workflows.document import WorkflowDraft
 from autoflow.domain.workflows.errors import WorkflowDocumentError
+from autoflow.domain.workflows.models import WorkflowError
 from autoflow.domain.workflows.modules import custom_module_reference
 from autoflow.domain.workflows.runs import (
     TerminalRunStatus,
@@ -33,8 +35,10 @@ from autoflow.domain.workflows.runs import (
 from autoflow.domain.workflows.scope import APPROVED_NODE_TYPES
 from autoflow.domain.workflows.variables import resolve_value
 
+from .browser_resources import BrowserLease, WorkflowBrowserResources
 from .documents import WorkflowDocumentService
 from .modules import CustomModuleService
+from .node_browser_resources import freeze_node_browser_resources
 from .runs import WorkflowRunRepository, WorkflowRunService
 from .runtime import WorkflowRuntime
 from .webhooks import webhook_payload
@@ -46,7 +50,7 @@ class WorkflowWorkers(Protocol):
     async def start(
         self,
         run_id: str,
-        profile_id: str,
+        profile_id: str | None,
         executable: Path | None,
         payload: dict[str, Any],
     ) -> object: ...
@@ -54,6 +58,8 @@ class WorkflowWorkers(Protocol):
     async def stop(self, run_id: str) -> None: ...
 
     async def send_command(self, run_id: str, command: dict[str, Any]) -> None: ...
+
+    def browser_directory(self, run_id: str) -> Path: ...
 
     def busy(self) -> bool: ...
 
@@ -123,14 +129,64 @@ class WorkflowRunCoordinator:
         self._active_runs_by_workflow: dict[str, set[str]] = {}
         self._command_receipts: dict[str, tuple[str, dict[str, Any], int]] = {}
         self._event_command_runs: dict[str, str] = {}
+        self._node_browser_resources: WorkflowBrowserResources | None = None
+        self._node_environments: Any = None
+        self._node_browser_leases: dict[str, BrowserLease] = {}
+        self._node_browser_visits: dict[str, tuple[str, str]] = {}
+        self._node_browser_initializations: dict[str, tuple[tuple[str, str], dict[str, Any]]] = {}
         self._command_waiters: dict[str, asyncio.Future[str | None]] = {}
+
+    def configure_node_browser_environments(self, resources: WorkflowBrowserResources, environments: Any) -> None:
+        self._node_browser_resources = resources
+        self._node_environments = environments
+
+    async def _initialize_node_browser(self, run: WorkflowRun, event: Mapping[str, Any]) -> None:
+        run_id = run.run_id
+        request_id = _required_string(event, 'requestId')
+        visit = (_required_string(event, 'nodeId'), _required_string(event, 'executionId'))
+        reply: dict[str, Any] = {'type': 'browser:initialized', 'runId': run_id, 'requestId': request_id}
+        try:
+            if (run.stop_requested or run.status not in {'starting', 'running'}
+                or self._node_browser_resources is None
+                or event.get('workflowId') != run.workflow_id
+                or self._node_browser_visits.get(run_id) != visit
+                or set(event) - {'type', 'runId', 'workflowId', 'nodeId', 'executionId', 'requestId'}):
+                raise WorkflowRunError('BROWSER_INITIALIZATION_DENIED', '浏览器初始化身份或运行状态不允许', 409)
+            previous = self._node_browser_initializations.get(run_id)
+            if previous is not None:
+                if previous[0] != visit:
+                    raise WorkflowRunError('BROWSER_INSTANCE_ALREADY_INITIALIZED', '已有浏览器实例，请使用当前实例', 409)
+                reply.update(previous[1])
+            else:
+                frozen = run.profile_snapshot.get('nodeBrowserEnvironments', {}).get(visit[0])
+                if not isinstance(frozen, dict):
+                    raise WorkflowRunError('BROWSER_INITIALIZATION_DENIED', '节点没有冻结的浏览器配置', 409)
+                directory = self._workers.browser_directory(run_id)
+                directory.mkdir(parents=True, exist_ok=True)
+                request = {**frozen, 'userDataDir': str(directory / 'preview' / 'instances' / 'browser')}
+                lease = await self._node_browser_resources.acquire(request, run_id)
+                # Pin the lease before any further await; worker exit is its only release.
+                self._node_browser_leases[run_id] = lease
+                current = self._runs.get(run_id)
+                if current.stop_requested or current.status not in {'starting', 'running'}:
+                    raise WorkflowRunError('BROWSER_INITIALIZATION_DENIED', '运行已停止', 409)
+                if frozen.get('environmentRef'):
+                    self._node_environments.prepare_studio_copy(frozen, Path(request['userDataDir']))
+                value = {'browser': {**lease.browser, 'headless': bool(run.profile_snapshot.get('runOptions', {}).get('headless'))}, 'executablePath': str(lease.executable), 'cacheDirectory': str(directory)}
+                self._node_browser_initializations[run_id] = (visit, value)
+                reply.update(value)
+        except Exception as error:  # noqa: BLE001 -- never expose provider credentials across the pipe error boundary.
+            reply['error'] = {'code': getattr(error, 'code', 'BROWSER_INITIALIZATION_FAILED'), 'message': '浏览器初始化未完成，请检查节点资源与运行状态'}
+            if run_id in self._node_browser_leases and run_id not in self._node_browser_initializations:
+                self._node_browser_initializations[run_id] = (visit, {'error': reply['error']})
+        await self._workers.send_command(run_id, reply)
 
     async def start(
         self, workflow_id: str, request: Mapping[str, Any]
     ) -> Mapping[str, Any]:
         run_id = _required_string(request, "runId")
         document_id = _required_string(request, "documentId")
-        profile_id = _required_string(request, "profileId")
+        profile_id = _optional_string(request.get("profileId"))
         step_mode = request.get("stepMode", False)
         if not isinstance(step_mode, bool):
             raise WorkflowRunError("RUN_REQUEST_INVALID", "stepMode 必须是布尔值", 422)
@@ -206,7 +262,7 @@ class WorkflowRunCoordinator:
                     workflow_name=draft.name,
                     document_snapshot=copy.deepcopy(draft.document),
                     layout_snapshot=copy.deepcopy(draft.layout),
-                    profile_id=profile_id,
+                    profile_id=None if previous.profile_snapshot.get("browserEnvironmentVersion") == 1 else profile_id,
                     profile_snapshot={
                         **previous.profile_snapshot,
                         "runOptions": run_options,
@@ -217,6 +273,16 @@ class WorkflowRunCoordinator:
                 )
                 return _summary(self._runs.start(replay))
             document = draft.to_payload()
+            try:
+                node_declarations = node_browser_environments(document)
+            except WorkflowError as error:
+                raise WorkflowRunError(error.code, str(error), 422) from error
+            node_mode = node_declarations is not None
+            if not node_mode and not profile_id:
+                raise WorkflowRunError('RUN_REQUEST_INVALID', '旧工作流请先将浏览器配置迁移到打开网页节点', 422)
+            if node_mode:
+                profile_id = None
+
             document_node_ids = {
                 str(node["id"])
                 for node in document.get("nodes", [])
@@ -346,8 +412,18 @@ class WorkflowRunCoordinator:
                 workflow_dependencies,
                 custom_module_dependencies,
             )
-            profile = self._profiles.get(profile_id)
-            kernel = self._kernel(profile) if requires_browser else None
+            frozen_nodes = {}
+            if node_mode:
+                if self._node_browser_resources is None:
+                    raise WorkflowRunError('BROWSER_ENVIRONMENT_RUNTIME_UNAVAILABLE', '节点浏览器服务尚未就绪', 503)
+                project_id = request.get('projectId') or draft.document.get('projectId')
+                defaults = self._node_environments.projects.get(project_id).default_resources if project_id else {}
+                frozen_nodes = freeze_node_browser_resources(self._node_browser_resources, self._node_environments, project_id, node_declarations, defaults or {})
+                if any(value.get('environmentResolution') == 'atTaskStart' for value in frozen_nodes.values()):
+                    raise WorkflowRunError('BROWSER_INPUT_REQUIRES_TASK', '输入关联环境需要从项目自动化领取数据后运行；Studio 调试请选择固定环境', 422)
+                requires_browser = False
+            profile = self._profiles.get(profile_id) if profile_id else None
+            kernel = self._kernel(profile) if requires_browser and profile else None
             start = WorkflowRunStart(
                 run_id=run_id,
                 workflow_id=workflow_id,
@@ -357,7 +433,7 @@ class WorkflowRunCoordinator:
                 layout_snapshot=copy.deepcopy(draft.layout),
                 profile_id=profile_id,
                 profile_snapshot={
-                    **_profile_snapshot(profile),
+                    **(_profile_snapshot(profile) if profile else {"browserEnvironmentVersion": 1, "nodeBrowserEnvironments": frozen_nodes}),
                     "runOptions": run_options,
                     **({"resolvedDefaultModelId": resolved_default_model} if resolved_default_model else {}),
                 },
@@ -374,7 +450,7 @@ class WorkflowRunCoordinator:
                 proxy = None
                 license_key = None
                 if requires_browser:
-                    assert kernel is not None
+                    assert kernel is not None and profile is not None and profile_id is not None
                     await self._resources.acquire(
                         run_id,
                         profile_id,
@@ -830,6 +906,9 @@ class WorkflowRunCoordinator:
         run_id = _required_string(event, "runId")
         run = self._runs.get(run_id)
         event_type = _required_string(event, "type")
+        if event_type == 'browser:initialize':
+            await self._initialize_node_browser(run, event)
+            return
         if event_type == "credential:read":
             # Secrets only cross this owned worker pipe, never the journal/HTTP/SSE.
             request_id = _required_string(event, "requestId")
@@ -1181,6 +1260,7 @@ class WorkflowRunCoordinator:
         node_id = _optional_string(event.get("nodeId"))
         execution_id = _optional_string(event.get("executionId"))
         if event_type == "execution:node_complete":
+            self._node_browser_visits.pop(run_id, None)
             if node_id is None or execution_id is None:
                 raise WorkflowRunError("WORKER_EVENT_INVALID", "节点事件身份无效", 422)
             raw_execution_context = event.get("executionContext")
@@ -1283,6 +1363,8 @@ class WorkflowRunCoordinator:
             execution_id=execution_id,
             run_patch={"currentNodeId": node_id} if node_id else None,
         )
+        if event_type == 'execution:node_start' and node_id and execution_id:
+            self._node_browser_visits[run_id] = (node_id, execution_id)
         if event_type == "execution:log":
             # Standalone worker warnings use the same UI log envelope as node logs.
             await self._events.publish(event_type, {
@@ -1799,6 +1881,12 @@ class WorkflowRunCoordinator:
         # private directory are gone. Resource release is the final cleanup step.
         run = self._runs.get(run_id)
         self._credential_reads.pop(run_id, None)
+        self._node_browser_visits.pop(run_id, None)
+        self._node_browser_initializations.pop(run_id, None)
+        lease = self._node_browser_leases.get(run_id)
+        if lease is not None:
+            lease.release()
+            self._node_browser_leases.pop(run_id)
         self._debug_pauses.pop(run_id, None)
         active = self._active_runs_by_workflow.get(run.workflow_id)
         if active is not None:
@@ -1914,7 +2002,7 @@ def _profile_snapshot(profile: Profile) -> dict[str, Any]:
 
 def _worker_payload(
     start: WorkflowRunStart,
-    profile: Profile,
+    profile: Profile | None,
     proxy: ProfileBrowserProxy | None,
     license_key: str | None,
     *,
@@ -1927,36 +2015,22 @@ def _worker_payload(
     model_bindings: Sequence[ModelExecutionBinding],
     executable_document: dict[str, Any],
 ) -> dict[str, Any]:
-    spec = profile.spec
     run_options = start.profile_snapshot.get("runOptions", {})
     if not isinstance(run_options, Mapping):
         run_options = {}
+    browser_values = _profile_snapshot(profile) if profile else {}
+    # Map the existing profile snapshot's snake-case spec through the shared payload.
+    if profile is not None:
+        from autoflow.infrastructure.process.project_test_browser_worker import (
+            browser_worker_payload,
+        )
+        browser_values = browser_worker_payload(start.run_id, profile, proxy, license_key)
+        browser_values.pop("startUrl", None)
     return {
+        **browser_values,
         "runId": start.run_id,
         "workflowId": start.workflow_id,
-        "profileId": profile.id,
-        "fingerprintSeed": profile.fingerprint_seed,
-        "locale": spec.locale,
-        "timezone": spec.timezone,
-        "geoip": spec.geoip,
-        "humanize": spec.humanize,
-        "humanPreset": spec.human_preset,
-        "userAgent": spec.user_agent,
-        "viewport": spec.viewport,
-        "colorScheme": spec.color_scheme,
-        "extensionPaths": spec.extension_paths,
-        "expertArgs": spec.expert_args,
-        "browserVersion": spec.browser_version,
-        "releaseChannel": spec.release_channel,
-        "proxy": (
-            {
-                "server": proxy.server,
-                "username": proxy.username,
-                "password": proxy.password,
-            }
-            if proxy
-            else None
-        ),
+        "profileId": start.profile_id,
         "licenseKey": license_key,
         "headless": headless,
         "artifactRoot": str(artifact_root),

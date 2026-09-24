@@ -6,6 +6,7 @@ import json
 import os
 import sys
 from collections.abc import Mapping
+from contextlib import AsyncExitStack
 from contextvars import ContextVar
 from pathlib import Path
 from threading import Event, Lock, Thread
@@ -20,6 +21,7 @@ from autoflow.application.workflows.runtime import (
     WorkflowRuntime,
     execution_context_snapshot,
 )
+from autoflow.domain.workflows.browser_environment import node_browser_environments
 from autoflow.domain.workflows.canvas_subflows import CanvasSubflowGraph, _node_data
 from autoflow.domain.workflows.execution import (
     CustomModuleResult,
@@ -31,6 +33,7 @@ from autoflow.domain.workflows.execution import (
     SpeechResult,
 )
 from autoflow.domain.workflows.runs import WorkflowArtifact
+from autoflow.domain.workflows.runtime import WorkflowRuntimeError
 from autoflow.infrastructure.filesystem.workflow_artifacts import WorkflowArtifactStore
 from autoflow.infrastructure.filesystem.workflow_table_workbook import (
     OpenpyxlTableWorkbookRenderer,
@@ -74,7 +77,35 @@ async def _run(
     if not isinstance(requires_browser, bool):
         raise TypeError("requiresBrowser must be a boolean")
     _required_string(command, "runId")
-    _required_string(command, "profileId")
+    node_mode = node_browser_environments(command.get('document', {})) is not None
+    if not node_mode:
+        _required_string(command, 'profileId')
+    if node_mode:
+        async with AsyncExitStack() as sessions:
+            initialized = None
+            initialized_visit = None
+            async def initialize(context, declaration):
+                nonlocal initialized, initialized_visit
+                if declaration['source'] == 'current':
+                    if initialized is None:
+                        raise WorkflowRuntimeError('BROWSER_INSTANCE_REQUIRED', '当前没有浏览器实例，请先执行初始化节点')
+                    return initialized
+                if initialized is not None:
+                    if initialized_visit != context.current_execution_id:
+                        raise WorkflowRuntimeError('BROWSER_INSTANCE_ALREADY_INITIALIZED', '已有浏览器实例，请使用当前实例')
+                    return initialized
+                payload = await command_bus.initialize_browser(context)
+                executable = Path(payload['executablePath'])
+                cache = Path(payload['cacheDirectory'])
+                if not executable.is_absolute() or not executable.is_file() or not cache.is_absolute():
+                    raise ValueError('workflow worker paths are invalid')
+                os.environ['CLOAKBROWSER_BINARY_PATH'] = str(executable)
+                os.environ['CLOAKBROWSER_CACHE_DIR'] = str(cache)
+                initialized = await sessions.enter_async_context(launch_workflow_session(payload['browser']))
+                initialized_visit = context.current_execution_id
+                return initialized
+            return await _run_in_session(command, stopped, stdout, None, command_bus, initialize)
+
     if not requires_browser:
         return await _run_in_session(command, stopped, stdout, None, command_bus)
     executable = Path(_required_environment("CLOAKBROWSER_BINARY_PATH"))
@@ -95,9 +126,10 @@ async def _run_in_session(
     stdout: TextIO,
     browser: Any,
     command_bus: _WorkerCommandBus,
+    browser_initializer: Any = None,
 ) -> int:
     run_id = _required_string(command, "runId")
-    profile_id = _required_string(command, "profileId")
+    profile_id = command.get("profileId")
     ready: dict[str, Any] = {
         "type": "ready",
         "runId": run_id,
@@ -119,6 +151,7 @@ async def _run_in_session(
             process_cleanup=terminate_subprocess,
             variables=_initial_variables(document),
             browser=browser,
+            browser_initializer=browser_initializer,
             cancellation=_ThreadCancellation(stopped),
             table_workbooks=OpenpyxlTableWorkbookRenderer(),
             models=WorkflowModelGateway(_model_bindings(command)),
@@ -609,6 +642,7 @@ class _WorkerNestedWorkflows:
                 {"kind": "workflow", "id": canonical, "name": name},
             ),
             browser=self._parent.browser,
+            browser_initializer=self._parent.browser_initializer,
             table_workbooks=self._parent.table_workbooks,
             credentials=self._parent.credentials,
             models=self._parent.models,
@@ -789,6 +823,7 @@ class _WorkerCustomModules:
                 {"kind": "customModule", "id": module_id, "name": name},
             ),
             browser=self._parent.browser,
+            browser_initializer=self._parent.browser_initializer,
             table_workbooks=self._parent.table_workbooks,
             credentials=self._parent.credentials,
             models=self._parent.models,
@@ -935,6 +970,7 @@ class _WorkerCanvasSubflows(CanvasSubflowGraph):
                 {"kind": "subflow", "id": identity, "name": display_name, "callNodeId": self._parent.current_node_id, "callVisitId": self._parent.current_execution_id},
             ),
             browser=self._parent.browser,
+            browser_initializer=self._parent.browser_initializer,
             table_workbooks=self._parent.table_workbooks,
             credentials=self._parent.credentials,
             models=self._parent.models,
@@ -1352,6 +1388,7 @@ class _WorkerCommandBus:
                 else None
             ),
         )
+        self._pending_browsers: dict[str, asyncio.Future[dict[str, Any]]] = {}
         self._pending: dict[str, asyncio.Future[str | None]] = {}
         self._pending_scripts: dict[str, asyncio.Future[JsScriptResult]] = {}
         self._pending_speech: dict[str, asyncio.Future[SpeechResult]] = {}
@@ -1384,6 +1421,25 @@ class _WorkerCommandBus:
         self.credentials.close()
         if not self._loop.is_closed():
             self._loop.call_soon_threadsafe(self._cancel_pending)
+
+    async def initialize_browser(self, context: ExecutionContext) -> dict[str, Any]:
+        request_id = str(uuid4())
+        future: asyncio.Future[dict[str, Any]] = self._loop.create_future()
+        self._pending_browsers[request_id] = future
+        self._write_command({'type': 'browser:initialize', 'requestId': request_id,
+            'runId': self._run_id, 'workflowId': self._workflow_id,
+            'nodeId': context.current_node_id, 'executionId': context.current_execution_id})
+        try:
+            while not future.done():
+                if self._stopped.is_set():
+                    raise asyncio.CancelledError
+                await asyncio.wait({future}, timeout=0.05)
+            reply = future.result()
+            if reply.get('error'):
+                raise WorkflowRuntimeError(reply['error']['code'], reply['error']['message'])
+            return reply
+        finally:
+            self._pending_browsers.pop(request_id, None)
 
     async def request_input(
         self,
@@ -1605,6 +1661,11 @@ class _WorkerCommandBus:
 
     def _apply(self, command: dict[str, Any]) -> None:
         command_type = command.get("type")
+        if command_type == 'browser:initialized':
+            browser_future = self._pending_browsers.get(str(command.get('requestId')))
+            if command.get('runId') == self._run_id and browser_future is not None and not browser_future.done():
+                browser_future.set_result(command)
+            return
         if command_type == "debug_breakpoints":
             command_id = command.get("commandId")
             if (
@@ -1824,6 +1885,9 @@ class _WorkerCommandBus:
         )
 
     def _cancel_pending(self) -> None:
+        for browser_future in self._pending_browsers.values():
+            if not browser_future.done():
+                browser_future.cancel()
         if self.debug is not None:
             self.debug.close()
         for future in self._pending.values():

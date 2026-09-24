@@ -631,7 +631,7 @@ class ProjectBatchScheduler:
                     if isinstance(item, dict) and item.get("inputId"):
                         inputs[item["inputId"]] = item
             frozen = batch.frozen_request or {}
-            if frozen.get("resourceRequest", {}).get("browser") == "none":
+            if frozen.get("resourceRequest", {}).get("browser") in {"none", "node"}:
                 return
             policy = frozen.get("resourceRequest", {}).get("environmentPolicy") or frozen.get("environmentOverride") or frozen.get("automation", {}).get(
                 "environmentPolicy"
@@ -884,11 +884,29 @@ class ProjectBatchScheduler:
                         {item.input_id: thaw_json(item.value) for item in selection.inputs},
                     )
                     resource_request = resource_resolver.freeze_input_environment(resource_request, selected_source)
-                except (ProjectError, ProjectRunError) as error:
+                except (ProjectError, ProjectRunError, WorkflowRuntimeError) as error:
                     row.claim_gate_state = "closed"
                     row.selection_outcome = {"status": "configurationError", "issueDetails": {"environmentPolicy": error.message}, "errorCode": error.code}
                     ProjectBatchScheduler._commit(session)
                     return "configurationError"
+            if resource_request.get("browser") == "node":
+                from copy import deepcopy
+
+                from autoflow.domain.environments.identity import request_from_identity
+                resource_request = deepcopy(resource_request)
+                try:
+                    for node_id, frozen_node in resource_request['nodeBrowserEnvironments'].items():
+                        if frozen_node.get('environmentResolution') != 'atTaskStart':
+                            continue
+                        if environments is None:
+                            raise ProjectRunError('RESOURCE_UNAVAILABLE', '环境服务尚未就绪', 409)
+                        selected = environments.environments.resolve_source_in_session(session, project_id, frozen_node['environmentPolicy'], {item.input_id: thaw_json(item.value) for item in selection.inputs})
+                        resource_request['nodeBrowserEnvironments'][node_id] = {**request_from_identity(selected.identity_package), 'identityPackage': selected.identity_package, 'environmentRef': selected.environment_ref.to_dict(), 'environmentPolicy': frozen_node['environmentPolicy']}
+                except (ProjectError, ProjectRunError, WorkflowRuntimeError) as error:
+                    row.claim_gate_state = 'closed'
+                    row.selection_outcome = {'status': 'configurationError', 'errorCode': error.code}
+                    ProjectBatchScheduler._commit(session)
+                    return 'configurationError'
             run = WorkflowRuntimeService(factory).prepare_run(
                 run_request_id=request_id,
                 prepared_content_id=prepared["preparedContentId"],
@@ -936,7 +954,7 @@ class ProjectBatchScheduler:
                 )
             )
             session.flush()
-            if environments is not None and resource_request.get("browser") != "none":
+            if environments is not None and resource_request.get("browser") not in {"none", "node"}:
                 environments.reserve_task_instance(
                     session, project_id, task_id, run.run_id, policy,
                     {item["inputId"]: item for item in inputs if item.get("inputId")},

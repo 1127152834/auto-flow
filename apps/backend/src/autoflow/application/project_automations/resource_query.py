@@ -59,7 +59,7 @@ class ProjectAutomationResourceQuery:
             ]
         defaults = project.default_resources
         issues: list[dict[str, Any]] = []
-        if not self.requires_browser(automation):
+        if (self._workflow_runtime is not None and self._workflow_runtime.node_browser_mode(automation.workflow_id)) or not self.requires_browser(automation):
             return self._model_issues(automation, defaults) if (
                 self._workflow_runtime is not None
                 and self._workflow_runtime.requires_default_model(automation.workflow_id)

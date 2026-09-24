@@ -268,6 +268,11 @@ class ProjectWorkflowWorkerManager:
                 }
                 try:
                     reply["result"] = await self._capability_while_alive(worker, message)
+                    if message.get('operation') == 'initializeBrowser':
+                        executable = Path(reply['result']['executablePath']).resolve(strict=True)
+                        if worker.executable is not None and worker.executable != executable:
+                            raise _protocol_error()
+                        worker.executable = executable
                 except ProjectError as rejected:
                     reply["error"] = {"code": rejected.code, "message": "项目能力请求未完成"}
                 # Unknown failures may follow a commit. Fence the run rather than

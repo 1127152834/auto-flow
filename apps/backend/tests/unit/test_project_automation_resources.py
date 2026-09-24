@@ -264,6 +264,7 @@ def test_browser_free_task_still_validates_project_model_override():
         models=Models(),
         workflow_runtime=SimpleNamespace(
             requires_browser=lambda _workflow_id: False,
+            node_browser_mode=lambda _workflow_id: False,
             requires_default_model=lambda _workflow_id: True,
         ),
     )
@@ -284,6 +285,7 @@ def test_browser_free_data_task_does_not_require_unused_project_model():
         models=Models(),
         workflow_runtime=SimpleNamespace(
             requires_browser=lambda _workflow_id: False,
+            node_browser_mode=lambda _workflow_id: False,
             requires_default_model=lambda _workflow_id: False,
         ),
     )

@@ -74,7 +74,7 @@ class WorkflowBrowserResources:
 
     @contextmanager
     def _share(self, key: tuple[str, str], create: Callable[[], AbstractContextManager[None]]) -> Iterator[None]:
-        # All guard operations are synchronous on the dispatcher's event loop;
+        # Dispatcher and maintenance share synchronous guard accounting;
         # reference sharing is internal, the original OS exclusion stays held.
         with self._sharing_lock:
             guard = self._shared.get(key)
@@ -111,7 +111,7 @@ class WorkflowBrowserResources:
 
     def freeze(
         self, profile_id: str, *, proxy: dict[str, Any] | None = None,
-        model_provider_id: str | None = None,
+        model_provider_id: str | None = None, kernel: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         profile = self._profiles.get(profile_id)
         policy = dict({"mode": "profile"} if proxy is None else proxy)
@@ -131,6 +131,10 @@ class WorkflowBrowserResources:
             spec_values.update(proxy_mode="pool", proxy_id=None, proxy_pool_id=policy['proxyPoolId'])
         elif mode != "profile":
             raise WorkflowRuntimeError("WORKFLOW_RESOURCE_INVALID", "代理策略无效", 422)
+        if kernel is not None:
+            if set(kernel) != {"edition", "version"}:
+                raise WorkflowRuntimeError("WORKFLOW_RESOURCE_INVALID", "内核字段无效", 422)
+            spec_values.update(browser_edition=kernel["edition"], browser_version=kernel["version"], release_channel="stable")
         spec = ProfileSpec.from_values(spec_values)
         self._kernel(spec)
         return {

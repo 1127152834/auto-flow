@@ -6,11 +6,15 @@ from autoflow.application.project_automations.resource_query import (
     ProjectAutomationResourceQuery,
 )
 from autoflow.application.workflows.browser_resources import WorkflowBrowserResources
+from autoflow.application.workflows.node_browser_resources import (
+    freeze_node_browser_resources,
+)
 from autoflow.domain.environments.identity import request_from_identity
 from autoflow.domain.environments.models import ResolvedEnvironmentSource
 from autoflow.domain.profiles.errors import KernelNotInstalled, ProfileNotFound
 from autoflow.domain.project_automations.models import AutomationRecord
 from autoflow.domain.project_runs.models import ProjectRunError
+from autoflow.domain.workflows.browser_environment import node_browser_environments
 from autoflow.domain.workflows.runtime import WorkflowRuntimeError
 
 
@@ -32,6 +36,7 @@ class ProjectRunResourceResolver:
         automation: AutomationRecord,
         project_defaults: dict[str, Any],
         inputs: dict[str, dict[str, Any]] | None = None,
+        *, document: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         issues = self._query.inspect_resources(automation)
         if issues:
@@ -58,6 +63,11 @@ class ProjectRunResourceResolver:
                 **({"modelProviderId": model_provider_id} if model_provider_id else {}),
                 **timing,
             }
+
+        nodes = node_browser_environments(document) if document is not None else None
+        if nodes is not None:
+            frozen = freeze_node_browser_resources(self._browser, self._environments, automation.project_id, nodes, project_defaults, model_provider_id)
+            return {'browser': 'node', 'nodeBrowserEnvironments': frozen, 'modelProviderId': model_provider_id, **timing}
 
         source = policy.get("source")
         if source not in {"newFromProfile", "fixedEnvironment", "inputEnvironment"}:

@@ -5,6 +5,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any
 
+from .browser_environment import node_browser_environments
 from .canvas_subflows import CanvasSubflowGraph
 from .catalog import runnable_module_types
 from .graph import WorkflowDefinition, parse_workflow
@@ -39,6 +40,7 @@ class PreparedWorkflow:
 
 def prepare_run(document: object) -> PreparedWorkflow:
     projected = project_document(document)
+    node_browser_environments(projected)
     assert isinstance(document, dict)
     nodes = projected["content"]["nodes"]
     graph = CanvasSubflowGraph(projected["content"])

@@ -25,3 +25,12 @@
 - 验证：环境域和项目 API 合计 39 项前端测试通过；项目资源解析 13 项测试通过（已有环境不采用项目默认代理）；前端 typecheck 和环境域 ESLint 通过。
 - 切片 2 的新增测试最初含无效 Testing Library exact 选项，已去掉并重新通过 typecheck，提交为 01171e27；不影响产品逻辑。
 - 后续主任务仍为节点契约/延迟启动、Studio 控件切换与兼容迁移；当前不是完整交付。
+
+## 切片 4（2026-09-24，运行链已接通，最终联合验收待切片 5）
+
+- confirmed：版本 1 节点契约、引用校验和准备时资源冻结；项目任务与 Studio 共享冻结器、OpenPageExecutor 和 Runtime。新模式不再要求全局 Profile，真正执行初始化节点时才经宿主通道取得资源并启动。原节点命令重放复用实例；第二次初始化、失效执行代次、未授权目录字段拒绝。后续 current 节点复用实例，分支未进入零启动。
+- confirmed：PM 宿主以 Run/代次/节点访问命令身份预约唯一工作实例；输入关联来源在领取事务冻结。延迟资源纳入原所有权、停止及 End 保存链。Studio 用现有 worker 私有目录保存临时工作副本，退出确认后释放 lease；固定环境预览校验项目/代次/身份/占用后复制，不反写源环境、不自动保存。数据输入关联仍需项目 Task，独立 Studio 调试提示选择固定环境。
+- confirmed：Studio 原初始化响应丢失重发、启动期间停止不返回可启动资源且清理确认前保留锁；固定来源复制后改预览 Cookie 不影响源，旧代次拒绝。已保存实例跨内核迁移仍按切片 2 限制。
+- 验证：项目定向回归 163 passed；Studio/worker/契约回归 111 passed / 3 skipped；新增取消和响应丢失后 coordinator 8 passed；固定来源复制 1 passed。真实已安装 CloakBrowser 三项通过（10.09 秒）：宿主单实例重放、PM 登录→current 读登录态→End 保存身份、Studio 无全局 Profile→登录态连续→确认清理。相关 28 源文件 mypy 通过，Ruff 修正导入后通过，OpenAPI 已生成。原生测试使用临时 SQLite/目录和本地 HTTP，未操作用户项目 q。
+- 验证过程保留：Studio 新测试最初夹具 migrate_database 参数错误、事件属性 kind/type 错误均已修正；生产首次缺 pending browser future 与动态内核清理已修复。完整后端 mypy 的既存 Android 诊断未在本切片修复。
+- 未完成：Studio 节点控件、显式迁移、录制/拾取配置联动、自动化资源页、全量回归、真实代理/界面联合场景、三平台和整分支独立审查。并行共享浏览器仍明确拒绝；不宣称完整 PM9 验收。releaseAccepted=false。

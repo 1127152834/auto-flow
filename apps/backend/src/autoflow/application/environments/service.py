@@ -234,6 +234,27 @@ class EnvironmentService:
             environments=self.environments.map_environments(project_id),
         )
 
+    def prepare_studio_copy(self, frozen: dict[str, Any], target) -> None:
+        """Copy a frozen saved generation into the owned Studio worker's scratch space."""
+        from sqlalchemy import text
+
+        from autoflow.infrastructure.database.environment_models import (
+            ProjectEnvironmentOccupancyRow,
+        )
+        ref = frozen['environmentRef']
+        # ponytail: hold the write fence during copy; a generation read lease can
+        # shorten this transaction if large-profile preview copying becomes common.
+        with self.environments._session_factory() as session:
+            session.execute(text('BEGIN IMMEDIATE'))
+            selected = self.environments.resolve_source_in_session(session, ref['projectId'], {'source': 'fixedEnvironment', 'environmentId': ref['environmentId']})
+            if selected.environment_ref.to_dict() != ref or selected.identity_package != frozen['identityPackage']:
+                raise environment_error('ENVIRONMENT_CHANGED', '环境已改变，请重新运行以冻结新版本', 409)
+            if session.get(ProjectEnvironmentOccupancyRow, ref['environmentId']) is not None:
+                raise environment_error('ENVIRONMENT_BUSY', '环境正在使用', 409)
+            if self.store.generation_identity(ref['environmentId'], ref['contentGeneration']) != selected.identity_package:
+                raise environment_error('ENVIRONMENT_IDENTITY_UNVERIFIED', '环境内容与身份资料不一致', 409)
+            EnvironmentStore(target.parent.parent).prepare_instance(target.name, self.store.generation_dir(ref['environmentId'], ref['contentGeneration']))
+
     def reserve(
         self,
         project_id: str,
@@ -520,7 +541,7 @@ class EnvironmentService:
         self, session: Session, project_id: str, task_id: str, run_id: str,
         policy: dict[str, Any],
         inputs: dict[str, dict[str, Any]] | None = None,
-        *, resource_request: dict[str, Any] | None = None,
+        *, resource_request: dict[str, Any] | None = None, instance_id: str | None = None,
     ) -> EnvironmentInstance:
         resolved = self.environments.resolve_source_in_session(session, project_id, policy, inputs)
         from autoflow.domain.environments.identity import identity_from_request
@@ -533,7 +554,7 @@ class EnvironmentService:
         now = datetime.now(UTC)
         reference = resolved.environment_ref
         instance = EnvironmentInstance(
-            str(uuid4()), project_id, reference.environment_id if reference else None,
+            instance_id or str(uuid4()), project_id, reference.environment_id if reference else None,
             "reserved", resolved.source, reference.content_generation if reference else None,
             1, task_id, run_id, None, resolved.profile_id, now, now, deepcopy(identity),
         )

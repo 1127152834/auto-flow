@@ -237,7 +237,7 @@ def project_document(value: object) -> dict[str, Any]:
         "content": {
             "id": content["id"],
             "name": content["name"],
-            **{key: deepcopy(content[key]) for key in ("schemaVersion", "projectId") if key in content},
+            **{key: deepcopy(content[key]) for key in ("schemaVersion", "projectId", "browserEnvironmentVersion") if key in content},
             "nodes": projected_nodes,
             "edges": projected_edges,
             "variables": projected_variables,
