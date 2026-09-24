@@ -59,7 +59,7 @@ export function App() {
               ? <main className="mx-auto max-w-4xl p-6"><State title="无法打开项目" description={location.error} /><Button onClick={() => navigate('projects')}>返回项目目录</Button></main>
               : <ProjectsWorkspace route={location.project!} workspaceKey={session.workspaceKey} instanceId={session.instanceId} client={session.client} disabled={status !== 'connected' || workspaceChanging} onNavigate={navigateProject} registerLeaveGuard={registerLeaveGuard} />
             : route === 'proxies' ? <ProxyManagementPage api={session.client} />
-            : route === 'android' ? <AndroidPage connected={status === 'connected' && !workspaceChanging} />
+            : route === 'android' ? <AndroidPage connected={status === 'connected' && !workspaceChanging} registerLeaveGuard={registerLeaveGuard} />
             : route === 'models' && modelApi ? <ModelManagementPage api={modelApi} instanceId={session.instanceId} />
             : route === 'lab' ? <LabPage client={session.client} workspaceKey={session.workspaceKey} />
             : <BrowserManagementPage disabled={status !== 'connected'} onReconnect={() => void reconnect()} />}

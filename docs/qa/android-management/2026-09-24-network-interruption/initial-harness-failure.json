@@ -1,0 +1,39 @@
+{
+  "status": "failed",
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-network-cut-d1u64ecy",
+  "guestRoot": "/tmp/autoflow-network-cut-c791fb56ca6d4f5291f8a31bbabcb265",
+  "scope": "production HTTP/services/Mac adapter; Docker command transport selects dedicated real daemon; real TLS proxy fault; no mock response",
+  "reference": "redroid/redroid@sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "existingImageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "existingContainerIds": [
+    "a16690c74f02",
+    "5aa5cb6bb463",
+    "db81f3555d92",
+    "e29079a97dff",
+    "37a74f8c3ec7",
+    "245b229f93a1"
+  ],
+  "supervisor": {
+    "root": "/tmp/autoflow-network-cut-c791fb56ca6d4f5291f8a31bbabcb265",
+    "daemonPid": 425179
+  },
+  "responseStatus": 502,
+  "responseBody": {
+    "error": {
+      "code": "ANDROID_COMMAND_FAILED",
+      "message": "安卓运行环境命令失败，请检查设备与连接: unexpected EOF",
+      "details": {},
+      "requestId": "4efbe89a-8adc-452a-856a-bd623eac9dfc"
+    }
+  },
+  "fault": {
+    "upstreamBytes": 4200864,
+    "fault": "close TLS tunnels; reject subsequent proxy connects",
+    "hostAtCut": "production.cloudfront.docker.com"
+  },
+  "errorType": "AssertionError",
+  "error": "docker.io/redroid/redroid@sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b: Pulling from redroid/redroid\n7ae0e9111b77: Pulling fs layer\n",
+  "daemonLog": "time=\"2026-09-24T10:41:54.244155654+08:00\" level=warning msg=\"overriding existing proxy variable with value from configuration\" name=HTTP_PROXY new-value=\"http://127.0.0.1:34907\" old-value=\"http://192.168.5.2:7892\"\ntime=\"2026-09-24T10:41:54.244201094+08:00\" level=warning msg=\"overriding existing proxy variable with value from configuration\" name=http_proxy new-value=\"http://127.0.0.1:34907\" old-value=\"http://192.168.5.2:7892\"\ntime=\"2026-09-24T10:41:54.244208681+08:00\" level=warning msg=\"overriding existing proxy variable with value from configuration\" name=HTTPS_PROXY new-value=\"http://127.0.0.1:34907\" old-value=\"http://192.168.5.2:7892\"\ntime=\"2026-09-24T10:41:54.244214142+08:00\" level=warning msg=\"overriding existing proxy variable with value from configuration\" name=https_proxy new-value=\"http://127.0.0.1:34907\" old-value=\"http://192.168.5.2:7892\"\ntime=\"2026-09-24T10:41:54.244224981+08:00\" level=info msg=\"Starting up\"\ntime=\"2026-09-24T10:41:54.244990322+08:00\" level=info msg=\"OTEL tracing is not configured, using no-op tracer provider\"\ntime=\"2026-09-24T10:41:54.245080825+08:00\" level=info msg=\"CDI directory does not exist, skipping: failed to monitor for changes: no such file or directory\" dir=/var/run/cdi\ntime=\"2026-09-24T10:41:54.245090997+08:00\" level=info msg=\"CDI directory does not exist, skipping: failed to monitor for changes: no such file or directory\" dir=/etc/cdi\ntime=\"2026-09-24T10:41:54.245173205+08:00\" level=info msg=\"detected 127.0.0.53 nameserver, assuming systemd-resolved, so using resolv.conf: /run/systemd/resolve/resolv.conf\"\ntime=\"2026-09-24T10:41:54.251791262+08:00\" level=info msg=\"Creating a containerd client\" address=/run/containerd/containerd.sock timeout=1m0s\ntime=\"2026-09-24T10:41:54.268159109+08:00\" level=info msg=\"Loading containers: start.\"\ntime=\"2026-09-24T10:41:54.268194668+08:00\" level=info msg=\"[graphdriver] trying configured driver: vfs\"\ntime=\"2026-09-24T10:41:54.269113294+08:00\" level=info msg=\"Restoring containers: start.\"\ntime=\"2026-09-24T10:41:54.290904392+08:00\" level=info msg=\"Loading containers: done.\"\ntime=\"2026-09-24T10:41:54.299387757+08:00\" level=info msg=\"Docker daemon\" commit=\"29.1.3-0ubuntu3~24.04.2\" containerd-snapshotter=false storage-driver=vfs version=29.1.3\ntime=\"2026-09-24T10:41:54.299476426+08:00\" level=info msg=\"Initializing buildkit\"\ntime=\"2026-09-24T10:41:54.307301878+08:00\" level=info msg=\"Completed buildkit initialization\"\ntime=\"2026-09-24T10:41:54.314006187+08:00\" level=info msg=\"Daemon has completed initialization\"\ntime=\"2026-09-24T10:41:54.314043789+08:00\" level=info msg=\"API listen on /tmp/autoflow-network-cut-c791fb56ca6d4f5291f8a31bbabcb265/docker.sock\"\ntime=\"2026-09-24T10:42:01.611115842+08:00\" level=error msg=\"Download failed after 1 attempts: unexpected EOF\"\ntime=\"2026-09-24T10:42:01.613497115+08:00\" level=info msg=\"Attempting next endpoint for pull after error: unexpected EOF\"\ntime=\"2026-09-24T10:42:02.419170292+08:00\" level=info msg=\"Processing signal 'terminated'\"\ntime=\"2026-09-24T10:42:02.421750665+08:00\" level=info msg=\"stopping event stream following graceful shutdown\" error=\"<nil>\" module=libcontainerd namespace=moby\ntime=\"2026-09-24T10:42:02.423643445+08:00\" level=info msg=\"Daemon shutdown complete\"\n",
+  "isolatedDaemonRemoved": true,
+  "existingResourcesUnchanged": true
+}

@@ -1,0 +1,80 @@
+{
+  "sourceDeviceId": "c47111a4-dc6b-48da-abba-cbaea9acdb01",
+  "workspaceId": "4855fd557382bebb50debbe3ba8bb42b11436909260efa3d10534c0803cddff9",
+  "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "cleanup": [
+    {
+      "deviceId": "d805e450-1dc9-53b2-a28f-f373dd5d09b5",
+      "containers": 0,
+      "volumes": 0,
+      "deleted": true
+    },
+    {
+      "deviceId": "c47111a4-dc6b-48da-abba-cbaea9acdb01",
+      "containers": 0,
+      "volumes": 0,
+      "deleted": true
+    },
+    {
+      "deviceId": "0eef6804-1586-51c7-a146-425b5463b797",
+      "containers": 0,
+      "volumes": 0,
+      "deleted": true
+    }
+  ],
+  "sourceMetadataState": {
+    "files": 1792,
+    "xattrs": 417,
+    "acls": 55,
+    "sha256": "f760bfe4030acc5ec72cc41f24aac7ff061b0d7c7527fff87297f326fd54ed3f",
+    "transientSockets": [
+      "system/ndebugsocket",
+      "system/unsolzygotesocket"
+    ]
+  },
+  "backupId": "acfffce2-669f-4c97-a7cd-6a62fd31182c",
+  "backupBytes": 18596080,
+  "metadata": {
+    "data/local/tmp/restore-proof": {
+      "uid": 10001,
+      "gid": 2000,
+      "mode": "0o640",
+      "content": "restore-isolation-proof"
+    }
+  },
+  "directRetryRejected": "ANDROID_RESTORE_TARGET_INVALID",
+  "partialRestore": {
+    "deviceId": "d805e450-1dc9-53b2-a28f-f373dd5d09b5",
+    "state": "needs_verification",
+    "realPartialWrite": true,
+    "afterRecover": "pending",
+    "rejected": [
+      "start",
+      "restart",
+      "restore",
+      "control",
+      "backup"
+    ],
+    "replayStatus": 409
+  },
+  "targetMetadataState": {
+    "files": 1792,
+    "xattrs": 417,
+    "acls": 55,
+    "sha256": "f760bfe4030acc5ec72cc41f24aac7ff061b0d7c7527fff87297f326fd54ed3f",
+    "transientSockets": []
+  },
+  "targetDeviceId": "0eef6804-1586-51c7-a146-425b5463b797",
+  "normalResponse": {
+    "operationId": "c6606776-b364-4aaa-9064-1910e283d38a",
+    "requestId": "normal-copy",
+    "targetId": "0eef6804-1586-51c7-a146-425b5463b797",
+    "deviceId": "0eef6804-1586-51c7-a146-425b5463b797",
+    "backupId": "acfffce2-669f-4c97-a7cd-6a62fd31182c",
+    "state": "restored"
+  },
+  "replayStatus": 202,
+  "bootReadback": "restore-isolation-proof",
+  "sourceProofFileUnchanged": true,
+  "status": "passed"
+}

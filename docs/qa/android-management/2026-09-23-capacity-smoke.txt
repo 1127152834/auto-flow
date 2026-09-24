@@ -1,0 +1,90 @@
+import asyncio
+import json
+from pathlib import Path
+from uuid import uuid4
+from autoflow.application.android.management import AndroidManagement
+from autoflow.bootstrap.android_prepare import prepare
+from autoflow.domain.android.ports import AndroidError
+from autoflow.infrastructure.database.android import SqlAlchemyDeviceRepository
+from autoflow.infrastructure.database.session import create_session_factory, migrate_database
+from autoflow.infrastructure.filesystem.android_paths import android_runtime_root
+from autoflow.infrastructure.filesystem.paths import AppPaths
+from autoflow.providers.android import management, capacity_reservations
+from autoflow.providers.android.mac_runtime import MacAndroidRuntime, docker
+
+async def operation(runtime, repository, device, action, delete=False):
+    service = AndroidManagement(repository, runtime)
+    service.operate(device['deviceId'], {'requestId': str(uuid4()), 'action': action, 'deleteData': delete})
+    await service.task
+    return repository.get(device['deviceId'])
+
+async def main():
+    paths = [AppPaths.from_data_dir(Path('/tmp/autoflow-capacity-20260923-final-' + name)) for name in ('first', 'second')]
+    if any(path.workspace.exists() for path in paths):
+        raise RuntimeError('Refusing to reuse a workspace')
+    if (await docker('ps', '-q')).strip():
+        raise RuntimeError('Other running containers present; leave them untouched')
+    root = android_runtime_root()
+    before = capacity_reservations.load(root)
+    first = await prepare(Path('/tmp/autoflow-capacity-20260923-final-first'), Path('/Users/zhangtiancheng/.autoflow/android-runtime/scrcpy-macos-aarch64-v3.3.4.tar.gz'), False)
+    factories = []
+    for path in paths:
+        path.database.parent.mkdir(parents=True, exist_ok=True)
+        migrate_database(path.database)
+        factories.append(create_session_factory(path.database))
+    repos = [SqlAlchemyDeviceRepository(factory) for factory in factories]
+    runtimes = [MacAndroidRuntime(root, path.workspace) for path in paths]
+    second = None
+    report = {'firstDeviceId': first['deviceId'], 'firstWorkspace': first['workspaceId'], 'imageId': first['imageId'], 'injection': 'discard real stop response after command completion', 'cleanup': []}
+    try:
+        service = AndroidManagement(repos[1], runtimes[1])
+        second = service.create({'deviceId': str(uuid4()), 'name': 'capacity-candidate', 'imageId': first['imageId'], 'width': 720, 'height': 1280, 'dpi': 320, 'cpu': 1, 'memoryMb': 6144, 'start': False})
+        await service.task
+        second = repos[1].get(second['deviceId'])
+        assert second['operation']['state'] == 'succeeded', second['operation']
+        report.update(secondDeviceId=second['deviceId'], secondWorkspace=second['workspaceId'], candidateMemoryMb=second['memoryMb'])
+        original = management.run
+        async def discard_stop(argv, *args, **kwargs):
+            result = await original(argv, *args, **kwargs)
+            if argv[-1].startswith('docker stop '):
+                raise TimeoutError('deliberately discarded completed stop response')
+            return result
+        management.run = discard_stop
+        try:
+            first = await operation(runtimes[0], repos[0], first, 'stop')
+        finally:
+            management.run = original
+        assert first['control'] == 'recovery_required', first
+        assert (await runtimes[0].inspect(first))['dockerStatus'] == 'exited'
+        pending = capacity_reservations.pending(root, first)
+        assert pending and pending['memoryBytes'] == 1536 * 1024**2
+        report['pendingMemoryBytes'] = pending['memoryBytes']
+        fresh = MacAndroidRuntime(root, paths[1].workspace)
+        try:
+            await fresh.capacity(second)
+            raise AssertionError('pending stop budget was released prematurely')
+        except AndroidError as error:
+            assert error.code == 'ANDROID_CAPACITY', error.code
+            report['beforeRecovery'] = error.code
+        first = await operation(MacAndroidRuntime(root, paths[0].workspace), repos[0], first, 'recover')
+        assert first['control'] == 'idle', first
+        await fresh.capacity(second)
+        report['afterRecovery'] = 'admitted'
+        report['status'] = 'passed'
+    finally:
+        for runtime, repo, device in zip(runtimes, repos, (first, second), strict=True):
+            if device is None:
+                continue
+            current = repo.get(device['deviceId'])
+            if current.get('control') == 'recovery_required':
+                current = await operation(runtime, repo, current, 'recover')
+            current = await operation(runtime, repo, current, 'delete', True)
+            containers, volumes = await management.verify(current, runtime.workspace_id)
+            report['cleanup'].append({'deviceId': current['deviceId'], 'containers': len(containers), 'volumes': len(volumes), 'deleted': current.get('deleted')})
+            assert current.get('deleted') and not containers and not volumes
+        assert capacity_reservations.load(root) == before
+        for factory in factories:
+            factory.dispose()
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+
+asyncio.run(main())

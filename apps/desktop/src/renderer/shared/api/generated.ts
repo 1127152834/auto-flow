@@ -4257,6 +4257,433 @@ export type paths = {
         patch: operations["rename_api_v1_android_devices__device_id__patch"];
         trace?: never;
     };
+    "/api/v1/android/management/environment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Environment */
+        get: operations["environment_api_v1_android_management_environment_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/capabilities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Capabilities */
+        get: operations["capabilities_api_v1_android_management_capabilities_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Management Devices */
+        get: operations["management_devices_api_v1_android_management_devices_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/environment/checks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Environment Check */
+        post: operations["environment_check_api_v1_android_management_environment_checks_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/operations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Operation Page */
+        get: operations["operation_page_api_v1_android_management_operations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/operations/by-request/{request_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Operation By Request */
+        get: operations["operation_by_request_api_v1_android_management_operations_by_request__request_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/operations/{operation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Operation */
+        get: operations["operation_api_v1_android_management_operations__operation_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/operations/{operation_id}/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Verify */
+        post: operations["verify_api_v1_android_management_operations__operation_id__verify_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/images": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Image Page */
+        get: operations["image_page_api_v1_android_management_images_get"];
+        put?: never;
+        /** Register Image */
+        post: operations["register_image_api_v1_android_management_images_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/image-pulls": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Image Pull */
+        post: operations["image_pull_api_v1_android_management_image_pulls_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/images/{identifier}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Image */
+        delete: operations["delete_image_api_v1_android_management_images__identifier__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/images/{identifier}/verifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Verify Image */
+        post: operations["verify_image_api_v1_android_management_images__identifier__verifications_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/images/{identifier}/delete-verifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Verify Image Delete */
+        post: operations["verify_image_delete_api_v1_android_management_images__identifier__delete_verifications_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/profiles/{identifier}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Profile */
+        get: operations["profile_api_v1_android_management_profiles__identifier__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/profiles/{identifier}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Archive Profile */
+        post: operations["archive_profile_api_v1_android_management_profiles__identifier__archive_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/backups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Backup Page */
+        get: operations["backup_page_api_v1_android_management_backups_get"];
+        put?: never;
+        /** Create Backup */
+        post: operations["create_backup_api_v1_android_management_backups_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/devices/{identifier}/backups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Backup */
+        post: operations["backup_api_v1_android_management_devices__identifier__backups_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/backups/{identifier}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Restore Backup */
+        post: operations["restore_backup_api_v1_android_management_backups__identifier__restore_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/bulk-operations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Bulk Create */
+        post: operations["bulk_create_api_v1_android_management_bulk_operations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/bulk-operations/{identifier}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Bulk Get */
+        get: operations["bulk_get_api_v1_android_management_bulk_operations__identifier__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/bulk-operations/{identifier}/actions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Bulk Action */
+        post: operations["bulk_action_api_v1_android_management_bulk_operations__identifier__actions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/cleanup/resources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Cleanup Resources */
+        get: operations["cleanup_resources_api_v1_android_management_cleanup_resources_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/cleanup/previews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cleanup Preview */
+        post: operations["cleanup_preview_api_v1_android_management_cleanup_previews_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/cleanup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cleanup Execute */
+        post: operations["cleanup_execute_api_v1_android_management_cleanup_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/diagnostics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Diagnostics */
+        post: operations["diagnostics_api_v1_android_management_diagnostics_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/android/profiles": {
         parameters: {
             query?: never;
@@ -4268,6 +4695,23 @@ export type paths = {
         get: operations["profiles_api_v1_android_profiles_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/profiles/standard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Standard Profile */
+        post: operations["standard_profile_api_v1_android_profiles_standard_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4412,6 +4856,23 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/android/sessions/{identifier}/heartbeat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Heartbeat */
+        post: operations["heartbeat_api_v1_android_sessions__identifier__heartbeat_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/android/sessions/{identifier}/actions": {
         parameters: {
             query?: never;
@@ -4491,6 +4952,40 @@ export type paths = {
         put?: never;
         /** Launch */
         post: operations["launch_api_v1_android_sessions__identifier__apps_launch_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/sessions/{identifier}/apps/actions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** App Action */
+        post: operations["app_action_api_v1_android_sessions__identifier__apps_actions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/sessions/{identifier}/apps/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Verify App */
+        post: operations["verify_app_api_v1_android_sessions__identifier__apps_verify_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -5527,6 +6022,11 @@ export type components = {
              * @default true
              */
             start: boolean;
+            /**
+             * Allowunknowndiskestimate
+             * @default false
+             */
+            allowUnknownDiskEstimate: boolean;
         };
         /** AndroidDeviceCommand */
         AndroidDeviceCommand: {
@@ -5539,12 +6039,17 @@ export type components = {
              * Action
              * @enum {string}
              */
-            action: "start" | "stop" | "restart" | "delete" | "recover";
+            action: "start" | "stop" | "restart" | "restore" | "delete" | "recover";
             /**
              * Deletedata
              * @default false
              */
             deleteData: boolean;
+            /**
+             * Allowunknowndiskestimate
+             * @default false
+             */
+            allowUnknownDiskEstimate: boolean;
         };
         /** AndroidDeviceRead */
         AndroidDeviceRead: {
@@ -5585,16 +6090,10 @@ export type components = {
              * @default 320
              */
             dpi: number;
-            /**
-             * Androidversion
-             * @default 13
-             */
-            androidVersion: string;
-            /**
-             * Architecture
-             * @default arm64
-             */
-            architecture: string;
+            /** Androidversion */
+            androidVersion?: string | null;
+            /** Architecture */
+            architecture?: string | null;
             /**
              * Dataretained
              * @default false
@@ -5608,11 +6107,8 @@ export type components = {
             operation?: components["schemas"]["AndroidOperation"] | null;
             /** Profileid */
             profileId?: string | null;
-            /**
-             * Profilename
-             * @default Android 13 标准 · ARM64
-             */
-            profileName: string;
+            /** Profilename */
+            profileName?: string | null;
             /**
              * Instancetype
              * @default persistent
@@ -5716,10 +6212,26 @@ export type components = {
              */
             api_key: string;
         };
+        /** AppAction */
+        AppAction: {
+            /** Requestid */
+            requestId: string;
+            /** Generation */
+            generation: number;
+            /** Packagename */
+            packageName: string;
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "stop" | "uninstall" | "clearData";
+        };
         /** AppInfo */
         AppInfo: {
             /** Packages */
             packages: string[];
+            /** Applications */
+            applications?: components["schemas"]["AppRecord"][];
             /** Currentpackage */
             currentPackage: string | null;
             /** Shellroot */
@@ -5729,10 +6241,32 @@ export type components = {
         };
         /** AppLaunch */
         AppLaunch: {
+            /** Requestid */
+            requestId: string;
             /** Generation */
             generation: number;
             /** Packagename */
             packageName: string;
+        };
+        /** AppRecord */
+        AppRecord: {
+            /** Packagename */
+            packageName: string;
+            /** Versioncode */
+            versionCode?: number | null;
+            /** Versionname */
+            versionName?: string | null;
+            /** System */
+            system: boolean;
+            /** Protected */
+            protected: boolean;
+        };
+        /** AppVerify */
+        AppVerify: {
+            /** Requestid */
+            requestId: string;
+            /** Generation */
+            generation: number;
         };
         /** ArchiveProjectRequest */
         ArchiveProjectRequest: {
@@ -6148,6 +6682,64 @@ export type components = {
             environmentPolicy: components["schemas"]["NewFromProfile"] | components["schemas"]["FixedEnvironment"] | components["schemas"]["InputEnvironment"];
             runPolicy: components["schemas"]["RunPolicy"];
         };
+        /** BackupCreate */
+        BackupCreate: {
+            /** Requestid */
+            requestId: string;
+            /** Deviceid */
+            deviceId?: string | null;
+            /** Expectedrevision */
+            expectedRevision?: number | null;
+        };
+        /** BackupRead */
+        BackupRead: {
+            /** Id */
+            id: string;
+            /** Deviceid */
+            deviceId: string;
+            /** Imageid */
+            imageId: string;
+            /** Formatversion */
+            formatVersion: number;
+            /** Sha256 */
+            sha256: string;
+            /** Bytes */
+            bytes: number;
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /** State */
+            state: string;
+        };
+        /** BackupRestore */
+        BackupRestore: {
+            /** Requestid */
+            requestId: string;
+            /** Newname */
+            newName: string;
+            /**
+             * Allowunknowndiskestimate
+             * @default false
+             */
+            allowUnknownDiskEstimate: boolean;
+        };
+        /** BackupRestoreRead */
+        BackupRestoreRead: {
+            /** Operationid */
+            operationId?: string | null;
+            /** Requestid */
+            requestId: string;
+            /** Targetid */
+            targetId: string;
+            /** Deviceid */
+            deviceId: string;
+            /** Backupid */
+            backupId: string;
+            /** State */
+            state: string;
+        };
         /** BatchAction */
         BatchAction: {
             /**
@@ -6172,9 +6764,11 @@ export type components = {
             profileId: string;
             /** Profilerevision */
             profileRevision: number;
+            /** Sourcedeviceid */
+            sourceDeviceId?: string | null;
             /**
              * Quantity
-             * @default 3
+             * @default 1
              */
             quantity: number;
             /**
@@ -6188,6 +6782,11 @@ export type components = {
              * @default true
              */
             start: boolean;
+            /**
+             * Allowunknowndiskestimate
+             * @default false
+             */
+            allowUnknownDiskEstimate: boolean;
             /**
              * Width
              * @default 720
@@ -6403,6 +7002,62 @@ export type components = {
             /** Url */
             url?: string | null;
         };
+        /** BulkAction */
+        BulkAction: {
+            /** Requestid */
+            requestId: string;
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "cancelPending" | "retryFailed" | "verify";
+        };
+        /** BulkCreate */
+        BulkCreate: {
+            /** Requestid */
+            requestId: string;
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "start" | "stop" | "restart" | "delete";
+            /** Items */
+            items: components["schemas"]["BulkItemCreate"][];
+            /**
+             * Deletedata
+             * @default false
+             */
+            deleteData: boolean;
+        };
+        /** BulkItemCreate */
+        BulkItemCreate: {
+            /** Deviceid */
+            deviceId: string;
+            /** Expectedrevision */
+            expectedRevision: number;
+        };
+        /** BulkRead */
+        BulkRead: {
+            /** Id */
+            id: string;
+            /** Requestid */
+            requestId: string;
+            /** Action */
+            action: string;
+            /** Deletedata */
+            deleteData: boolean;
+            /** State */
+            state: string;
+            /** Items */
+            items: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+        };
         /** BundleExport */
         BundleExport: {
             /** Name */
@@ -6485,6 +7140,89 @@ export type components = {
             criteria: {
                 [key: string]: string;
             };
+        };
+        /** CleanupExecute */
+        CleanupExecute: {
+            /** Requestid */
+            requestId: string;
+            /** Previewid */
+            previewId?: string | null;
+            /** Confirmationdigest */
+            confirmationDigest: string;
+        };
+        /** CleanupPreviewCreate */
+        CleanupPreviewCreate: {
+            /** Resourceids */
+            resourceIds: string[];
+        };
+        /** CleanupPreviewItem */
+        CleanupPreviewItem: {
+            /** Id */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Purpose */
+            purpose: string;
+            /** Revision */
+            revision: number;
+            /** References */
+            references?: {
+                [key: string]: unknown;
+            }[];
+            /** Workspaceid */
+            workspaceId: string;
+            /** Ownership */
+            ownership: {
+                [key: string]: unknown;
+            };
+            /** Size */
+            size: number;
+            /** Irreversibleimpact */
+            irreversibleImpact: string;
+            /** Sha256 */
+            sha256?: string | null;
+            /** Pathsummary */
+            pathSummary?: {
+                [key: string]: string;
+            } | null;
+            /** Summary */
+            summary: {
+                [key: string]: unknown;
+            };
+            /** Fingerprint */
+            fingerprint: string;
+            /**
+             * Reversible
+             * @default false
+             */
+            reversible: boolean;
+        };
+        /** CleanupPreviewRead */
+        CleanupPreviewRead: {
+            /** Items */
+            items: components["schemas"]["CleanupPreviewItem"][];
+            /** Confirmationdigest */
+            confirmationDigest: string;
+            /** Previewid */
+            previewId: string;
+        };
+        /** CleanupRead */
+        CleanupRead: {
+            /** Items */
+            items: components["schemas"]["CleanupPreviewItem"][];
+            /** State */
+            state: string;
+            /** Operationid */
+            operationId?: string | null;
+            /** Requestid */
+            requestId?: string | null;
+            /** Previewid */
+            previewId?: string | null;
+        };
+        /** CleanupResourcePage */
+        CleanupResourcePage: {
+            /** Items */
+            items: components["schemas"]["CleanupPreviewItem"][];
         };
         /** CleanupSummaryView */
         CleanupSummaryView: {
@@ -7487,6 +8225,43 @@ export type components = {
             /** Startedat */
             startedAt: string;
         };
+        /** DiagnosticRead */
+        DiagnosticRead: {
+            /** Id */
+            id: string;
+            /** Requestid */
+            requestId: string;
+            /** State */
+            state: string;
+            /** Payload */
+            payload: {
+                [key: string]: unknown;
+            };
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /** Expiresat */
+            expiresAt?: string | null;
+        };
+        /** DiagnosticsCreate */
+        DiagnosticsCreate: {
+            /** Requestid */
+            requestId: string;
+            /** Deviceids */
+            deviceIds?: string[];
+            /**
+             * Includeadvancedlogs
+             * @default false
+             */
+            includeAdvancedLogs: boolean;
+            /**
+             * Advancedlogsconsent
+             * @default false
+             */
+            advancedLogsConsent: boolean;
+        };
         /** EmptyCommand */
         EmptyCommand: Record<string, never>;
         /** Endpoint */
@@ -7495,6 +8270,25 @@ export type components = {
             host: string;
             /** Port */
             port: number;
+        };
+        /** EnvironmentCheckCommand */
+        EnvironmentCheckCommand: {
+            /** Requestid */
+            requestId: string;
+        };
+        /** EnvironmentCheckRead */
+        EnvironmentCheckRead: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pass" | "fail" | "unknown" | "unsupported";
+            /** Code */
+            code?: string | null;
+            /** Message */
+            message: string;
+            /** Action */
+            action?: string | null;
         };
         /** EnvironmentDeleteRequest */
         EnvironmentDeleteRequest: {
@@ -7740,6 +8534,11 @@ export type components = {
              * @enum {string}
              */
             applicationRoot: "unknown" | "available" | "unavailable";
+            /**
+             * Archived
+             * @default false
+             */
+            archived: boolean;
         };
         /** EnvironmentRefView */
         EnvironmentRefView: {
@@ -8276,6 +9075,105 @@ export type components = {
             source: "local_probe" | "provider_probe" | "none";
             error?: components["schemas"]["ApiError"] | null;
         };
+        /** ImageDelete */
+        ImageDelete: {
+            /** Requestid */
+            requestId: string;
+            /** Expectedrevision */
+            expectedRevision: number;
+            /**
+             * Deletecontent
+             * @default false
+             */
+            deleteContent: boolean;
+        };
+        /** ImageDeleteVerification */
+        ImageDeleteVerification: {
+            /** Requestid */
+            requestId: string;
+        };
+        /** ImagePageRead */
+        ImagePageRead: {
+            /** Items */
+            items: components["schemas"]["ImageRead"][];
+            /** Nextcursor */
+            nextCursor?: string | null;
+            /** Total */
+            total: number;
+        };
+        /** ImagePullCreate */
+        ImagePullCreate: {
+            /** Requestid */
+            requestId: string;
+            /** Reference */
+            reference: string;
+            /**
+             * Allowunknowndiskestimate
+             * @default false
+             */
+            allowUnknownDiskEstimate: boolean;
+        };
+        /** ImageRead */
+        ImageRead: {
+            /** Id */
+            id: string;
+            /** Imageid */
+            imageId: string;
+            /** Name */
+            name: string;
+            /** Reference */
+            reference: string;
+            /** Revision */
+            revision: number;
+            /** State */
+            state: string;
+            /** Verification */
+            verification: {
+                [key: string]: unknown;
+            };
+            /**
+             * Validation
+             * @default not_tested
+             */
+            validation: string;
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /** Sourcedigest */
+            sourceDigest?: string | null;
+            /** Architecture */
+            architecture?: string | null;
+            /** Os */
+            os?: string | null;
+            /** Androidversion */
+            androidVersion?: string | null;
+            /** Googlecomponents */
+            googleComponents?: string | null;
+            /** References */
+            references?: {
+                [key: string]: unknown;
+            }[];
+        };
+        /** ImageRegister */
+        ImageRegister: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Reference */
+            reference: string;
+        };
+        /** ImageVerificationCreate */
+        ImageVerificationCreate: {
+            /** Check */
+            check: string;
+            /** Evidence */
+            evidence?: {
+                [key: string]: unknown;
+            };
+        };
         /** Impact */
         Impact: {
             /** Code */
@@ -8689,6 +9587,111 @@ export type components = {
         MaintenanceStartRequest: {
             /** Expectedcontentgeneration */
             expectedContentGeneration: number;
+        };
+        /** ManagementCapabilitiesRead */
+        ManagementCapabilitiesRead: {
+            /** Management */
+            management: boolean | string;
+            /** Control */
+            control: boolean | string;
+            /** Images */
+            images: boolean | string;
+            /** Bulk */
+            bulk: boolean | string;
+            /** Backups */
+            backups: boolean | string;
+            /** Workflow */
+            workflow: boolean;
+            /** Reasons */
+            reasons: {
+                [key: string]: string;
+            };
+        };
+        /** ManagementDevicePageRead */
+        ManagementDevicePageRead: {
+            /** Items */
+            items: components["schemas"]["ManagementDeviceRead"][];
+            /** Nextcursor */
+            nextCursor?: string | null;
+            /** Total */
+            total: number;
+        };
+        /** ManagementDeviceRead */
+        ManagementDeviceRead: {
+            /** Deviceid */
+            deviceId: string;
+            /** Revision */
+            revision: number;
+            /** Name */
+            name: string;
+            /**
+             * Runtimestate
+             * @enum {string}
+             */
+            runtimeState: "stopped" | "starting" | "ready" | "retained" | "missing" | "unknown";
+            /** Restorestate */
+            restoreState?: ("pending" | "restored") | null;
+            owner: components["schemas"]["OwnerRead"];
+            /** Observedat */
+            observedAt: string | null;
+            /** Stale */
+            stale: boolean;
+            /** Specsnapshot */
+            specSnapshot: {
+                [key: string]: unknown;
+            };
+            /** Latestoperation */
+            latestOperation: {
+                [key: string]: unknown;
+            } | null;
+            /** Allowedactions */
+            allowedActions: string[];
+            /** Blockedreasons */
+            blockedReasons: {
+                [key: string]: string;
+            };
+        };
+        /** ManagementEnvironmentRead */
+        ManagementEnvironmentRead: {
+            /** Available */
+            available: boolean;
+            /** Platformsupported */
+            platformSupported: boolean | null;
+            /** Runtimeid */
+            runtimeId: string;
+            /** Message */
+            message: string;
+            /** Images */
+            images?: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Cpucount
+             * @default 0
+             */
+            cpuCount: number;
+            /**
+             * Memorymb
+             * @default 0
+             */
+            memoryMb: number;
+            /** Hostworkspacefreebytes */
+            hostWorkspaceFreeBytes?: number | null;
+            /** Vmdockerfreebytes */
+            vmDockerFreeBytes?: number | null;
+            /**
+             * Checkedat
+             * Format: date-time
+             */
+            checkedAt: string;
+            /** Checks */
+            checks: {
+                [key: string]: components["schemas"]["EnvironmentCheckRead"];
+            };
+            /** Capabilities */
+            capabilities: {
+                [key: string]: boolean | string;
+            };
         };
         /** ManualFinishRequest */
         ManualFinishRequest: {
@@ -9141,6 +10144,56 @@ export type components = {
         OperationAccepted: {
             operation: components["schemas"]["ProjectOperationView"];
         };
+        /** OperationPageRead */
+        OperationPageRead: {
+            /** Items */
+            items: components["schemas"]["OperationRead"][];
+            /** Nextcursor */
+            nextCursor?: string | null;
+            /** Total */
+            total: number;
+        };
+        /** OperationRead */
+        OperationRead: {
+            /** Operationid */
+            operationId: string;
+            /** Requestid */
+            requestId: string;
+            /** Targetid */
+            targetId: string;
+            /** Action */
+            action: string;
+            /** State */
+            state: string;
+            /** Stagecode */
+            stageCode: string;
+            /** Stagelabel */
+            stageLabel: string;
+            /** Attempt */
+            attempt: number;
+            /** Retryof */
+            retryOf?: string | null;
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /** Startedat */
+            startedAt?: string | null;
+            /** Finishedat */
+            finishedAt?: string | null;
+            /** Resultcode */
+            resultCode?: string | null;
+            /** Message */
+            message?: string | null;
+            /** Allowedactions */
+            allowedActions?: string[];
+        };
+        /** OperationVerifyCommand */
+        OperationVerifyCommand: {
+            /** Requestid */
+            requestId: string;
+        };
         /** OperationView */
         OperationView: {
             /** Id */
@@ -9167,6 +10220,16 @@ export type components = {
              * Format: date-time
              */
             updated_at: string;
+        };
+        /** OwnerRead */
+        OwnerRead: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "none" | "manualSession" | "legacyWorkflow" | "unknown";
+            /** Id */
+            id?: string | null;
         };
         /** ParameterDefinition */
         ParameterDefinition: {
@@ -9211,6 +10274,13 @@ export type components = {
              * @enum {string}
              */
             protocol: "http" | "socks5";
+        };
+        /** ProfileArchiveCommand */
+        ProfileArchiveCommand: {
+            /** Requestid */
+            requestId: string;
+            /** Expectedrevision */
+            expectedRevision: number;
         };
         /** ProfileDuplicate */
         ProfileDuplicate: {
@@ -10627,6 +11697,15 @@ export type components = {
              * @enum {string}
              */
             access: "manual" | "readonly";
+            /** Clientsessionid */
+            clientSessionId?: string | null;
+        };
+        /** SessionHeartbeat */
+        SessionHeartbeat: {
+            /** Clientsessionid */
+            clientSessionId: string;
+            /** Generation */
+            generation: number;
         };
         /** SessionRead */
         SessionRead: {
@@ -10655,6 +11734,8 @@ export type components = {
             height: number;
             /** Latestoperation */
             latestOperation?: string | null;
+            /** Clientsessionid */
+            clientSessionId?: string | null;
         };
         /** SheetsBinding */
         SheetsBinding: {
@@ -28981,6 +30062,844 @@ export interface operations {
             };
         };
     };
+    environment_api_v1_android_management_environment_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagementEnvironmentRead"];
+                };
+            };
+        };
+    };
+    capabilities_api_v1_android_management_capabilities_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagementCapabilitiesRead"];
+                };
+            };
+        };
+    };
+    management_devices_api_v1_android_management_devices_get: {
+        parameters: {
+            query?: {
+                status?: string | null;
+                profileId?: string | null;
+                retained?: boolean | null;
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagementDevicePageRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    environment_check_api_v1_android_management_environment_checks_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnvironmentCheckCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    operation_page_api_v1_android_management_operations_get: {
+        parameters: {
+            query?: {
+                deviceId?: string | null;
+                cursor?: string | null;
+                limit?: number;
+                action?: string | null;
+                state?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationPageRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    operation_by_request_api_v1_android_management_operations_by_request__request_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    operation_api_v1_android_management_operations__operation_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                operation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    verify_api_v1_android_management_operations__operation_id__verify_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                operation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OperationVerifyCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    image_page_api_v1_android_management_images_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImagePageRead"];
+                };
+            };
+        };
+    };
+    register_image_api_v1_android_management_images_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImageRegister"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImageRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    image_pull_api_v1_android_management_image_pulls_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImagePullCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_image_api_v1_android_management_images__identifier__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImageDelete"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImageRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    verify_image_api_v1_android_management_images__identifier__verifications_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImageVerificationCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImageRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    verify_image_delete_api_v1_android_management_images__identifier__delete_verifications_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImageDeleteVerification"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImageRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    profile_api_v1_android_management_profiles__identifier__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnvironmentProfile"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    archive_profile_api_v1_android_management_profiles__identifier__archive_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProfileArchiveCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnvironmentProfile"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    backup_page_api_v1_android_management_backups_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupRead"][];
+                };
+            };
+        };
+    };
+    create_backup_api_v1_android_management_backups_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BackupCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    backup_api_v1_android_management_devices__identifier__backups_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BackupCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    restore_backup_api_v1_android_management_backups__identifier__restore_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BackupRestore"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupRestoreRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    bulk_create_api_v1_android_management_bulk_operations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BulkCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    bulk_get_api_v1_android_management_bulk_operations__identifier__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    bulk_action_api_v1_android_management_bulk_operations__identifier__actions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BulkAction"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cleanup_resources_api_v1_android_management_cleanup_resources_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CleanupResourcePage"];
+                };
+            };
+        };
+    };
+    cleanup_preview_api_v1_android_management_cleanup_previews_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CleanupPreviewCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CleanupPreviewRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cleanup_execute_api_v1_android_management_cleanup_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CleanupExecute"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CleanupRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    diagnostics_api_v1_android_management_diagnostics_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DiagnosticsCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DiagnosticRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     profiles_api_v1_android_profiles_get: {
         parameters: {
             query?: never;
@@ -28997,6 +30916,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EnvironmentProfile"][];
+                };
+            };
+        };
+    };
+    standard_profile_api_v1_android_profiles_standard_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnvironmentProfile"];
                 };
             };
         };
@@ -29306,6 +31245,41 @@ export interface operations {
             };
         };
     };
+    heartbeat_api_v1_android_sessions__identifier__heartbeat_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SessionHeartbeat"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     action_api_v1_android_sessions__identifier__actions_post: {
         parameters: {
             query?: never;
@@ -29471,10 +31445,81 @@ export interface operations {
             };
         };
     };
+    app_action_api_v1_android_sessions__identifier__apps_actions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AppAction"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    verify_app_api_v1_android_sessions__identifier__apps_verify_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AppVerify"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     install_api_v1_android_sessions__identifier__apps_install_post: {
         parameters: {
             query: {
                 generation: number;
+                requestId: string;
             };
             header?: never;
             path: {

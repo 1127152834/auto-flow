@@ -207,6 +207,70 @@ async def test_stop_while_continuing_cancels_close_before_resume_publication():
     assert not any(call.args[0]['type'] == 'resumed' for call in emit.call_args_list)
 
 
+@pytest.mark.asyncio
+async def test_recover_keeps_needs_verification_device_quarantined():
+    runtime, repo = Runtime(), Repository()
+    repo.device.update(
+        control="managing",
+        operation={"state": "needs_verification", "action": "start"},
+    )
+    service = AndroidDeviceService(repo, runtime)
+
+    await service.recover()
+
+    assert repo.device["control"] == "recovery_required"
+    assert repo.device["lastError"]
+    runtime.recover.assert_not_awaited()
+    assert not runtime.locked
+
+
+@pytest.mark.asyncio
+async def test_recover_quarantines_idle_projection_with_unknown_operation():
+    runtime, repo = Runtime(), Repository()
+    repo.device.update(
+        control="idle",
+        operation={"state": "needs_verification", "action": "start"},
+    )
+    service = AndroidDeviceService(repo, runtime)
+
+    await service.recover()
+
+    assert repo.device["control"] == "recovery_required"
+    runtime.recover.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_startup_recovery_keeps_unresolved_app_marker_quarantined():
+    runtime, repo = Runtime(), Repository()
+    marker = "/data/local/tmp/autoflow-operation-" + "a" * 32
+    repo.device.update(control="manual", ownerRunId="old-session", pendingCommand=marker)
+    service = AndroidDeviceService(repo, runtime)
+
+    await service.recover()
+
+    assert repo.device["control"] == "recovery_required"
+    assert repo.device["pendingCommand"] == marker
+    assert repo.device["lastError"]
+    runtime.recover.assert_awaited_once_with(repo.device, preserve_command=True)
+
+
+@pytest.mark.asyncio
+async def test_session_cleanup_does_not_release_unresolved_app_marker():
+    runtime, repo = Runtime(), Repository()
+    service = AndroidDeviceService(repo, runtime)
+    service.claim("device", "old-session")
+    marker = "/data/local/tmp/autoflow-operation-" + "b" * 32
+    service.device["pendingCommand"] = marker
+    service._save()
+
+    await service.cleanup()
+
+    assert repo.device["control"] == "recovery_required"
+    assert repo.device["pendingCommand"] == marker
+    assert repo.device["ownerRunId"] is None
+    runtime.recover.assert_awaited_once_with(repo.device, preserve_command=True)
+
+
 def test_current_runtime_boundary_rejects_retired_workflow_takeover():
     from autoflow.bootstrap.android import CurrentAndroidRunBoundary
 

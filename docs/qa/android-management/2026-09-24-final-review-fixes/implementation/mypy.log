@@ -1,0 +1,8 @@
+apps/backend/src/autoflow/application/android/images.py:248: error: Item "None" of "Any | None" has no attribute "inspect"  [union-attr]
+apps/backend/src/autoflow/application/android/images.py:276: error: Function "autoflow.application.android.images.AndroidImageService.list" is not valid as a type  [valid-type]
+apps/backend/src/autoflow/application/android/images.py:276: note: Perhaps you need "Callable[...]" or a callback protocol?
+apps/backend/src/autoflow/infrastructure/database/android_operations.py:164: error: Incompatible types in assignment (expression has type "datetime", target has type "str")  [assignment]
+apps/backend/src/autoflow/infrastructure/database/android_operations.py:166: error: Incompatible types in assignment (expression has type "datetime", target has type "str")  [assignment]
+apps/backend/src/autoflow/infrastructure/database/android_operations.py:188: error: Incompatible types in assignment (expression has type "datetime", target has type "str")  [assignment]
+apps/backend/src/autoflow/infrastructure/database/android_operations.py:190: error: Incompatible types in assignment (expression has type "datetime", target has type "str")  [assignment]
+Found 6 errors in 2 files (checked 3 source files)

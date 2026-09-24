@@ -1,0 +1,19 @@
+Traceback (most recent call last):
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/docs/qa/android-management/scripts/image-pull-interruption-smoke.py", line 139, in <module>
+    asyncio.run(exercise(args.output))
+  File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/docs/qa/android-management/scripts/image-pull-interruption-smoke.py", line 106, in exercise
+    verified = expect(await client.post(f"/api/v1/android/management/operations/{record['operationId']}/verify", json={'requestId': str(uuid4())}), 200)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/docs/qa/android-management/scripts/restore-interruption-smoke.py", line 104, in expect
+    assert response.status_code == status, (response.status_code, response.text[:400])
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: (409, '{"error":{"code":"ANDROID_REQUEST_CONFLICT","message":"核实请求编号与原操作不一致","details":{},"requestId":"2eb69e68-b537-4794-a01d-1af7f0808384"}}')

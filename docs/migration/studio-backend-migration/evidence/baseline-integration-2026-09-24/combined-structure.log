@@ -1,0 +1,16 @@
+
+> test:structure
+> node --test scripts/structure.test.mjs
+
+✔ required path exists: apps/desktop/package.json (0.579541ms)
+✔ required path exists: apps/backend/pyproject.toml (0.126042ms)
+✔ root scripts expose the foundation checks (0.201542ms)
+✔ renderer table headers never nest a <td> inside <thead> (92.422291ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 155.014583

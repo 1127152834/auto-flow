@@ -1,0 +1,17 @@
+Traceback (most recent call last):
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/docs/qa/android-management/scripts/image-network-interruption-smoke.py", line 192, in <module>
+    asyncio.run(exercise(args.output))
+  File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/docs/qa/android-management/scripts/image-network-interruption-smoke.py", line 147, in exercise
+    assert 'Downloading' in progress and 'Pull complete' not in progress, progress
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: docker.io/redroid/redroid@sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b: Pulling from redroid/redroid
+7ae0e9111b77: Pulling fs layer

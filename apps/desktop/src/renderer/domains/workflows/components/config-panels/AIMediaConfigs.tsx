@@ -2,6 +2,7 @@
 import { Label } from '../controls/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../controls/select'
 import { Textarea } from '../controls/textarea'
+import { VariableInput } from '../controls/variable-input'
 import { PathInput } from '../controls/path-input'
 import { ImagePathInput } from '../controls/image-path-input'
 import { VariableNameInput } from '../controls/variable-name-input'
@@ -34,9 +35,10 @@ export function AIGenerateImageConfig({ data, onChange, onBatchChange }: MediaCo
 
       <div className="space-y-2">
         <Label>提示词</Label>
-        <Textarea
+        <VariableInput
           value={(data.prompt as string) || ''}
-          onChange={(e) => onChange('prompt', e.target.value)}
+          onChange={(value) => onChange('prompt', value)}
+          multiline
           placeholder="一只可爱的猫咪在花园里玩耍"
           rows={4}
         />
@@ -136,9 +138,10 @@ export function AIGenerateVideoConfig({ data, onChange, onBatchChange }: MediaCo
 
       <div className="space-y-2">
         <Label>提示词</Label>
-        <Textarea
+        <VariableInput
           value={(data.prompt as string) || ''}
-          onChange={(e) => onChange('prompt', e.target.value)}
+          onChange={(value) => onChange('prompt', value)}
+          multiline
           placeholder="一只猫咪在草地上奔跑"
           rows={4}
         />

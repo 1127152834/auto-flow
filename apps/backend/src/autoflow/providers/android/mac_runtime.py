@@ -13,13 +13,16 @@ import socket
 import struct
 import subprocess
 import sys
+import tempfile
 import time
 from collections.abc import Callable
+from contextlib import ExitStack
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
-from autoflow.domain.android.ports import AndroidError
+from autoflow.domain.android.management_rules import require_restored
+from autoflow.domain.android.ports import AndroidDiskPreflightCancelled, AndroidError
 from autoflow.infrastructure.filesystem.locking import ExclusiveFileLock
 from autoflow.infrastructure.process.browser_processes import (
     process_birth,
@@ -33,35 +36,98 @@ ARCHIVE_SHA = "8fef43520405dd523c74e1530ac68febcc5a405ea89712c874936675da8513dd"
 LABEL = "io.autoflow.android.workspace"
 
 
-async def run(argv: list[str], timeout: float = 15) -> bytes:
-    spawn = asyncio.create_task(asyncio.create_subprocess_exec(*argv, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE))
+async def _stop_command(process: asyncio.subprocess.Process) -> None:
+    # Failed or interrupted limactl commands may leave an SSH child writing archives.
+    try:
+        if os.name == "posix":
+            os.killpg(process.pid, signal.SIGKILL)
+        elif process.returncode is None:
+            process.kill()
+    except ProcessLookupError:
+        pass
+    await process.wait()
+
+
+async def run(argv: list[str], timeout: float = 15, input_data: bytes | None = None) -> bytes:
+    spawn = asyncio.create_task(asyncio.create_subprocess_exec(*argv, stdin=asyncio.subprocess.PIPE if input_data is not None else None, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, start_new_session=os.name == "posix"))
     try:
         process = await asyncio.shield(spawn)
     except asyncio.CancelledError:
         process = await _wait_for_spawn(spawn)
-        if process.returncode is None:
-            process.kill()
-        await process.wait()
+        await _stop_command(process)
         raise
     try:
-        stdout, _ = await asyncio.wait_for(process.communicate(), timeout)
+        stdout, stderr = await asyncio.wait_for(process.communicate(input_data), timeout)
         if process.returncode:
-            raise AndroidError("ANDROID_COMMAND_FAILED", "安卓运行环境命令失败，请检查设备与连接", 502)
+            detail = stderr.decode(errors="replace").strip()
+            message = "安卓运行环境命令失败，请检查设备与连接"
+            if detail:
+                message += ": " + detail[:240]
+            raise AndroidError("ANDROID_COMMAND_FAILED", message, 502)
         return stdout
-    finally:
-        if process.returncode is None:
-            process.kill()
-            await process.wait()
+    except BaseException:
+        await _stop_command(process)
+        raise
 
 
-async def docker(*args: str, timeout: float = 30) -> bytes:
-    return await run(["limactl", "shell", "--workdir=/tmp", VM, "sudo", "docker", *args], timeout)
+async def run_file(argv: list[str], timeout: float, *, input_path: Path | None = None, output_path: Path | None = None) -> None:
+    """Attach file descriptors directly so an archive never enters process memory."""
+    with ExitStack() as stack:
+        stdin = stack.enter_context(input_path.open("rb")) if input_path else subprocess.DEVNULL
+        stdout = stack.enter_context(output_path.open("wb")) if output_path else subprocess.DEVNULL
+        stderr = stack.enter_context(tempfile.TemporaryFile())
+        spawn = asyncio.create_task(asyncio.create_subprocess_exec(*argv, stdin=stdin, stdout=stdout, stderr=stderr, start_new_session=os.name == "posix"))
+        try:
+            process = await asyncio.shield(spawn)
+        except asyncio.CancelledError:
+            process = await _wait_for_spawn(spawn)
+            await _stop_command(process)
+            raise
+        try:
+            await asyncio.wait_for(process.wait(), timeout)
+            if process.returncode:
+                stderr.seek(0)
+                detail = stderr.read(240).decode(errors="replace").strip()
+                message = "安卓运行环境命令失败，请检查设备与连接"
+                if detail:
+                    message += ": " + detail
+                raise AndroidError("ANDROID_COMMAND_FAILED", message, 502)
+        except BaseException:
+            await _stop_command(process)
+            raise
+
+
+async def docker(*args: str, timeout: float = 30, input_data: bytes | None = None) -> bytes:
+    return await run(["limactl", "shell", "--workdir=/tmp", VM, "sudo", "docker", *args], timeout, input_data)
 
 
 def png_size(data: bytes) -> tuple[int, int]:
     if len(data) < 24 or data[:8] != b"\x89PNG\r\n\x1a\n" or data[12:16] != b"IHDR":
         raise AndroidError("ANDROID_SCREEN_INVALID", "设备未返回有效 PNG", 502)
     return struct.unpack(">II", data[16:24])
+
+
+def package_inventory(data: bytes) -> dict[str, int | None]:
+    packages: dict[str, int | None] = {}
+    for line in data.decode(errors="replace").splitlines():
+        if not line.strip():
+            continue
+        match = re.fullmatch(r"package:([A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)*)(?: versionCode:(\d+))?", line.strip())
+        if match is None:
+            raise AndroidError("ANDROID_APP_INFO_UNKNOWN", "无法核实已安装应用，请重新读取", 502)
+        packages[match[1]] = int(match[2]) if match[2] else None
+    return packages
+
+
+def completion_script(argv: list[str], marker: str, confirmation: str = "") -> str:
+    # Persist semantic success before the ADB response can be lost; do not store raw output.
+    check = "if [ \"$rc\" -eq 0 ]; then " + confirmation + "fi; " if confirmation else ""
+    return (
+        "output=$(" + shlex.join(argv) + " 2>&1); rc=$?; "
+        + check
+        + "printf '%s\\n' \"$output\"; printf 'v2:%s\\n' \"$rc\" > "
+        + shlex.quote(marker)
+    )
 
 
 class MacAndroidRuntime:
@@ -77,44 +143,262 @@ class MacAndroidRuntime:
         self.terminal: int | None = None
         self.device: dict[str, Any] | None = None
         self.save: Callable[[], None] = lambda: None
+        self.image_catalog: Any | None = None
 
     def for_device(self, device_id: str) -> "MacAndroidRuntime":
         device_id = str(__import__("uuid").UUID(device_id))
         runtime = MacAndroidRuntime(self.root, self.workspace)
         runtime._lock = ExclusiveFileLock(self.root / (VM + "-" + device_id + ".lock"))
+        runtime.image_catalog = self.image_catalog
         return runtime
 
     async def environment(self) -> dict[str, Any]:
         supported = platform.system() == "Darwin" and platform.machine() == "arm64"
-        tools = all(shutil.which(tool) for tool in ("adb", "limactl", "ssh"))
+        tool_state = {tool: bool(shutil.which(tool)) for tool in ("adb", "limactl", "ssh")}
+        tools = all(tool_state.values())
         vendor = (self.root / VENDOR / "scrcpy").is_file()
-        ready = False
         info: dict[str, Any] = {}
-        if supported and tools:
+        checks: dict[str, dict[str, Any]] = {}
+        checks["platform"] = {"status": "pass" if supported else "unsupported", "code": None if supported else "ANDROID_PLATFORM_UNSUPPORTED", "message": "平台支持" if supported else "当前平台不支持安卓运行时"}
+        for tool, present in tool_state.items():
+            name = "lima" if tool == "limactl" else tool
+            checks[name] = {"status": "pass" if present else "fail", "code": None if present else "ANDROID_TOOL_MISSING", "message": "工具可用" if present else f"缺少 {name}"}
+        checks["scrcpy"] = {"status": "pass" if vendor else "fail", "code": None if vendor else "ANDROID_SCRCPY_MISSING", "message": "固定版 scrcpy 可用" if vendor else "固定版 scrcpy 不存在"}
+        vm_running = False
+        if supported and tool_state["limactl"]:
+            try:
+                listing = await run(["limactl", "list"], 5)
+                vm_running = any(line.split()[:2] == [VM, "Running"] for line in listing.decode(errors="replace").splitlines())
+                checks["vm"] = {"status": "pass" if vm_running else "fail", "code": None if vm_running else "ANDROID_VM_STOPPED", "message": "Lima 虚拟机运行中" if vm_running else "Lima 虚拟机未运行"}
+            except (AndroidError, TimeoutError, OSError):
+                checks["vm"] = {"status": "unknown", "code": "ANDROID_VM_UNKNOWN", "message": "无法核实 Lima 虚拟机状态"}
+        else:
+            checks["vm"] = {"status": "unsupported" if not supported else "unknown", "code": "ANDROID_VM_UNAVAILABLE", "message": "无法检查 Lima 虚拟机"}
+        if vm_running:
             try:
                 info = json.loads(await docker("info", "--format", "{{json .}}", timeout=5))
-                filesystems = await run(["limactl", "shell", "--workdir=/tmp", VM, "cat", "/proc/filesystems"], 5)
-                ready = info.get("OSType") == "linux" and info.get("Architecture") in {"aarch64", "arm64"} and b"binder" in filesystems
+                docker_ok = info.get("OSType") == "linux" and info.get("Architecture") in {"aarch64", "arm64"}
+                checks["docker"] = {"status": "pass" if docker_ok else "fail", "code": None if docker_ok else "ANDROID_DOCKER_INCOMPATIBLE", "message": "Linux ARM64 Docker 可用" if docker_ok else "Docker 不是兼容的 Linux ARM64"}
             except (AndroidError, TimeoutError, OSError, ValueError):
-                pass
+                checks["docker"] = {"status": "fail", "code": "ANDROID_DOCKER_UNAVAILABLE", "message": "Docker 守护进程不可访问"}
+        else:
+            checks["docker"] = {"status": "unknown", "code": "ANDROID_DOCKER_UNKNOWN", "message": "虚拟机未运行，无法检查 Docker"}
+        binder = False
+        if vm_running:
+            try:
+                filesystems = await run(["limactl", "shell", "--workdir=/tmp", VM, "cat", "/proc/filesystems"], 5)
+                binder = b"binder" in filesystems
+                checks["binder"] = {"status": "pass" if binder else "fail", "code": None if binder else "ANDROID_BINDER_MISSING", "message": "Android binder 可用" if binder else "未发现 Android binder"}
+            except (AndroidError, TimeoutError, OSError):
+                checks["binder"] = {"status": "unknown", "code": "ANDROID_BINDER_UNKNOWN", "message": "无法核实 Android binder"}
+        else:
+            checks["binder"] = {"status": "unknown", "code": "ANDROID_BINDER_UNKNOWN", "message": "虚拟机未运行，无法检查 binder"}
         from autoflow.providers.android.management import images
 
-        cached = await images() if ready else []
-        return {"images": cached, "cpuCount": info.get("NCPU", 0), "memoryMb": info.get("MemTotal", 0) // (1024 * 1024), "available": supported and tools and vendor and ready, "platformSupported": supported,
+        cached = await images() if info else []
+        checks["images"] = {"status": "pass" if cached else "fail" if info else "unknown", "code": None if cached else "ANDROID_IMAGE_MISSING" if info else "ANDROID_IMAGE_UNKNOWN", "message": "已发现兼容镜像" if cached else "未发现兼容镜像" if info else "尚未检查镜像"}
+        capacity_ok = isinstance(info.get("NCPU"), int) and info.get("NCPU", 0) > 0 and isinstance(info.get("MemTotal"), int) and info.get("MemTotal", 0) > 0
+        checks["capacity"] = {"status": "pass" if capacity_ok else "unknown", "code": None if capacity_ok else "ANDROID_CAPACITY_UNKNOWN", "message": "CPU 与内存容量可用" if capacity_ok else "容量尚未核实"}
+        host_free = vm_free = None
+        try:
+            target = self.workspace
+            while not target.exists() and target != target.parent:
+                target = target.parent
+            value = shutil.disk_usage(target).free
+            if type(value) is int and value >= 0:
+                host_free = value
+        except OSError:
+            pass
+        docker_root = info.get("DockerRootDir")
+        if vm_running and isinstance(docker_root, str) and docker_root.startswith("/") and "\0" not in docker_root:
+            try:
+                raw = (await run([
+                    "limactl", "shell", "--workdir=/tmp", VM, "sudo", "python3", "-c",
+                    "import os,sys; s=os.statvfs(sys.argv[1]); print(s.f_bavail*s.f_frsize)",
+                    docker_root,
+                ], 5)).strip()
+                if raw.isdigit():
+                    vm_free = int(raw)
+            except (AndroidError, TimeoutError, OSError, ValueError):
+                pass
+        if host_free == 0 or vm_free == 0:
+            checks["disk"] = {"status": "fail", "code": "ANDROID_DISK_SPACE_INSUFFICIENT", "message": "宿主工作区或 VM Docker 数据盘空间已耗尽"}
+        elif host_free is None or vm_free is None:
+            checks["disk"] = {"status": "unknown", "code": "ANDROID_DISK_UNKNOWN", "message": "宿主工作区或 VM Docker 数据盘空间尚未核实"}
+        else:
+            checks["disk"] = {"status": "pass", "code": None, "message": "宿主工作区和 VM Docker 数据盘均有可用空间；具体操作仍需容量预检"}
+        ready = bool(info.get("OSType") == "linux" and info.get("Architecture") in {"aarch64", "arm64"} and binder)
+        return {"hostWorkspaceFreeBytes": host_free, "vmDockerFreeBytes": vm_free, "images": cached, "cpuCount": info.get("NCPU", 0), "memoryMb": info.get("MemTotal", 0) // (1024 * 1024), "available": supported and tools and vendor and ready, "platformSupported": supported, "checks": checks,
                 "runtimeId": VM, "message": "运行环境可用" if supported and tools and vendor and ready else "需要 Apple Silicon Mac、Lima Linux、ADB 和固定版 scrcpy；请运行设备准备命令"}
 
     def new_device(self, config: dict[str, Any]) -> dict[str, Any]:
         name = "autoflow-android-" + config["deviceId"]
-        return {key: config[key] for key in ("deviceId", "name", "imageId", "width", "height", "dpi", "cpu", "memoryMb")} | {"runtimeId": VM, "workspaceId": self.workspace_id, "volumeId": name + "-data", "containerId": name, "profileId": config.get("profileId"), "profileName": config.get("profileName", "Android 13 标准 · ARM64"), "instanceType": config.get("instanceType", "persistent"), "locale": config.get("locale", "zh-CN"), "timezone": config.get("timezone", "Asia/Shanghai"), "androidStatus": "unknown", "ownerRunId": None, "control": "idle", "generation": 0}
+        return {key: config[key] for key in ("deviceId", "name", "imageId", "width", "height", "dpi", "cpu", "memoryMb")} | {"runtimeId": VM, "workspaceId": self.workspace_id, "volumeId": name + "-data", "containerId": name, "profileId": config.get("profileId"), "profileName": config.get("profileName"), "instanceType": config.get("instanceType", "persistent"), "locale": config.get("locale", "zh-CN"), "timezone": config.get("timezone", "Asia/Shanghai"), "androidStatus": "unknown", "ownerRunId": None, "control": "idle", "generation": 0}
+
+    async def collect_diagnostic_logs(self, device: dict[str, Any], *, window_seconds: int, max_bytes: int) -> bytes:
+        from autoflow.providers.android.management import verify
+
+        containers, _ = await verify(device, self.workspace_id)
+        if len(containers) != 1 or containers[0].get("State", {}).get("Running") is not True:
+            raise AndroidError("ANDROID_DIAGNOSTIC_DEVICE_NOT_RUNNING", "设备未运行，无法采集日志", 409)
+        # logcat limits rows; the exported summary applies the time window and discards message text.
+        raw = await docker("exec", device["containerId"], "logcat", "-d", "-v", "epoch", "-t", "200", timeout=10)
+        return raw[-max_bytes:]
 
     async def capacity(self, device: dict[str, Any]) -> None:
-        from autoflow.providers.android.management import capacity
-        await capacity(device)
+        from autoflow.providers.android.management import capacity, verify
+        containers, _ = await verify(device, self.workspace_id)
+        memory = containers[0].get('HostConfig', {}).get('Memory') if containers else 0
+        if containers and (type(memory) is not int or memory <= 0):
+            raise AndroidError('ANDROID_CAPACITY_UNKNOWN', '实例实际内存限额尚未核实，不能启动', 409)
+        candidate = {**device, 'containerId': containers[0]['Id']} if containers else device
+        await capacity(candidate, self.root, minimum_memory=memory)
 
     async def manage(self, device: dict[str, Any], request: dict[str, Any], stage: Callable[[str], None], save: Callable[[], None]) -> None:
         from autoflow.providers.android.management import manage
 
         await manage(self, device, request, stage, save)
+
+    async def _owned_volume_mount(self, device: dict[str, Any]) -> str:
+        volume_id = device.get("volumeId")
+        if device.get("workspaceId") != self.workspace_id or not isinstance(volume_id, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,254}", volume_id):
+            raise AndroidError("ANDROID_OWNERSHIP", "设备数据卷归属校验失败", 403)
+        try:
+            volume = json.loads(await docker("volume", "inspect", volume_id, timeout=5))[0]
+        except (AndroidError, OSError, TimeoutError, ValueError, IndexError, KeyError, TypeError) as error:
+            raise AndroidError("ANDROID_OWNERSHIP", "设备数据卷归属无法核实", 403) from error
+        labels = volume.get("Labels") or {}
+        mountpoint = volume.get("Mountpoint")
+        if labels.get(LABEL) != self.workspace_id or labels.get("io.autoflow.android.device") != device.get("deviceId") or not isinstance(mountpoint, str) or not mountpoint.startswith("/") or os.path.basename(mountpoint) != "_data":
+            raise AndroidError("ANDROID_OWNERSHIP", "设备数据卷归属标签不符", 403)
+        return mountpoint
+
+    async def backup_volume(self, device: dict[str, Any]) -> bytes:
+        mountpoint = await self._owned_volume_mount(device)
+        try:
+            return await run(self._backup_argv(mountpoint), 600)
+        except AndroidError:
+            raise AndroidError("ANDROID_BACKUP_UNAVAILABLE", "数据卷归档失败，请核实实例", 503) from None
+
+    @staticmethod
+    def _backup_argv(mountpoint: str) -> list[str]:
+        return ["limactl", "shell", "--workdir=/tmp", VM, "sudo", "tar",
+                "--format=posix", "--xattrs", "--xattrs-include=*", "--acls", "--selinux", "--numeric-owner",
+                "--transform=s@^_data@data@S", "-C", os.path.dirname(mountpoint), "-cf", "-", "_data"]
+
+    async def estimate_backup_bytes(self, device: dict[str, Any]) -> int:
+        mountpoint = await self._owned_volume_mount(device)
+        # Count the same metadata-preserving tar stream inside Lima; no host archive or helper container.
+        script = ("import subprocess,sys\n"
+                  "with subprocess.Popen(sys.argv[1:], stdout=subprocess.PIPE) as process:\n"
+                  " size = sum(len(chunk) for chunk in iter(lambda: process.stdout.read(1024 * 1024), b''))\n"
+                  " if process.wait(): raise SystemExit(1)\n"
+                  " print(size)\n")
+        try:
+            result = await run(["limactl", "shell", "--workdir=/tmp", VM, "sudo", "python3", "-c", script, *self._backup_argv(mountpoint)[5:]], 600)
+            if not re.fullmatch(rb"[0-9]+\s*", result) or int(result) <= 0:
+                raise ValueError("invalid archive size")
+            return int(result)
+        except (AndroidError, OSError, TimeoutError, ValueError) as error:
+            raise AndroidError("ANDROID_DISK_ESTIMATE_UNKNOWN", "无法估计备份所需空间，归档尚未写入，请检查运行环境后重试", 409) from error
+
+    async def backup_volume_to_path(self, device: dict[str, Any], path: Path) -> None:
+        mountpoint = await self._owned_volume_mount(device)
+        try:
+            await run_file(self._backup_argv(mountpoint), 600, output_path=path)
+        except AndroidError:
+            raise AndroidError("ANDROID_BACKUP_UNAVAILABLE", "数据卷归档失败，请核实实例", 503) from None
+
+    async def restore_volume(self, device: dict[str, Any], data: bytes) -> None:
+        await self._restore_volume(device, data)
+
+    async def restore_volume_from_path(self, device: dict[str, Any], path: Path) -> None:
+        await self._restore_volume(device, path)
+
+    async def _restore_volume(self, device: dict[str, Any], data: bytes | Path) -> None:
+        if device.get("workspaceId") != self.workspace_id:
+            raise AndroidError("ANDROID_OWNERSHIP", "设备工作区归属校验失败", 403)
+        if device.get("androidStatus") is not None and device.get("androidStatus") != "stopped":
+            raise AndroidError("ANDROID_BACKUP_REQUIRES_STOPPED", "恢复前必须停止目标实例", 409)
+        if device.get("ownerRunId") or device.get("control") not in {None, "idle"}:
+            raise AndroidError("ANDROID_BACKUP_REQUIRES_STOPPED", "恢复前必须停止并释放目标实例控制会话", 409)
+        mountpoint = await self._owned_volume_mount(device)
+        probe = "import os,sys\nwith os.scandir(sys.argv[1]) as entries:\n print('occupied' if next(entries,None) else 'empty')\n"
+        contents = await run(["limactl", "shell", "--workdir=/tmp", VM, "sudo", "python3", "-c", probe, mountpoint], 30)
+        if contents.strip() != b"empty":
+            raise AndroidError("ANDROID_RESTORE_TARGET_INVALID", "恢复目标数据卷不是空卷，禁止覆盖", 409)
+        try:
+            argv = ["limactl", "shell", "--workdir=/tmp", VM, "sudo", "tar", "--xattrs", "--xattrs-include=*",
+                    "--acls", "--selinux", "--numeric-owner", "--same-owner", "--same-permissions",
+                    "--transform=s@^data@_data@S", "-C", os.path.dirname(mountpoint), "-xf", "-"]
+            if isinstance(data, Path):
+                await run_file(argv, 600, input_path=data)
+            else:
+                await run(argv, 600, data)
+        except AndroidError:
+            # GNU tar may have written some members before reporting failure.
+            raise TimeoutError("恢复数据卷命令结果未确认") from None
+
+    async def inspect_image(self, reference: str) -> dict[str, Any]:
+        try:
+            item = json.loads(await docker("image", "inspect", reference, timeout=10))[0]
+        except AndroidError as error:
+            if error.status == 502 and any(marker in error.message.lower() for marker in ("no such image", "manifest unknown", "not found")):
+                raise AndroidError("ANDROID_IMAGE_NOT_FOUND", "镜像不存在", 404) from error
+            raise
+        repo_digests = item.get("RepoDigests") or []
+        source_digest = next((value.split("@", 1)[1] for value in repo_digests if "@" in value), None)
+        labels = item.get("Config", {}).get("Labels") or {}
+        return {"imageId": item.get("Id"), "sourceDigest": source_digest, "architecture": item.get("Architecture"), "os": item.get("Os"), "androidVersion": labels.get("org.opencontainers.image.version"), "googleComponents": labels.get("autoflow.google-components", "unknown")}
+
+    async def require_vm_disk_space(self, *, allow_unknown_disk_estimate: bool = False) -> None:
+        """Check both filesystems that can fill while Docker grows the Lima disk."""
+        try:
+            listing = json.loads(await run(["limactl", "list", "--json", VM], 5))
+            if (not isinstance(listing, dict) or listing.get("name") != VM
+                    or listing.get("status") != "Running" or listing.get("vmType") != "vz"
+                    or not isinstance(listing.get("config"), dict)
+                    or listing["config"].get("vmType") != "vz"
+                    or listing["config"].get("additionalDisks")
+                    or not isinstance(listing.get("dir"), str)):
+                raise ValueError("Lima 虚拟机身份或磁盘布局无法核实")
+            vm_dir = Path(listing["dir"])
+            if not vm_dir.is_absolute() or any((vm_dir / name).exists() or (vm_dir / name).is_symlink() for name in ("diffdisk", "basedisk")):
+                raise ValueError("Lima 虚拟机磁盘布局无法核实")
+            disk = (vm_dir / "disk").resolve(strict=True)
+            if not disk.is_file():
+                raise ValueError("Lima 虚拟机磁盘文件无法核实")
+            host_free = shutil.disk_usage(disk).free
+            docker_root = (await docker("info", "--format", "{{.DockerRootDir}}", timeout=5)).decode().strip()
+            if not docker_root.startswith("/") or "\0" in docker_root:
+                raise ValueError("Docker 数据目录无法核实")
+            raw = (await run([
+                "limactl", "shell", "--workdir=/tmp", VM, "sudo", "python3", "-c",
+                "import os,sys; s=os.statvfs(sys.argv[1]); print(s.f_bavail*s.f_frsize)",
+                docker_root,
+            ], 5)).strip()
+            if not raw.isdigit():
+                raise ValueError("Docker 数据盘可用空间无法核实")
+            vm_free = int(raw)
+            if type(host_free) is not int or host_free < 0:
+                raise ValueError("Lima 磁盘宿主可用空间无法核实")
+        except asyncio.CancelledError as error:
+            raise AndroidDiskPreflightCancelled() from error
+        except (AndroidError, TimeoutError, OSError, ValueError, TypeError, KeyError, RuntimeError) as error:
+            raise AndroidError("ANDROID_DISK_PROBE_FAILED", "无法核实 Lima 磁盘文件或 Docker 数据盘可用空间，尚未开始写入", 409) from error
+        if host_free == 0 or vm_free == 0:
+            raise AndroidError("ANDROID_DISK_SPACE_INSUFFICIENT", "Lima 磁盘文件所在宿主文件系统或 Docker 数据盘空间已耗尽，尚未开始写入", 409)
+        if not allow_unknown_disk_estimate:
+            raise AndroidError("ANDROID_DISK_ESTIMATE_UNKNOWN", "最终磁盘占用空间无法可靠估计，尚未开始写入；确认未知占用后可重试", 409)
+
+    async def pull_image(self, reference: str, *, allow_unknown_disk_estimate: bool = False) -> None:
+        await self.require_vm_disk_space(allow_unknown_disk_estimate=allow_unknown_disk_estimate)
+        await docker("pull", reference, timeout=900)
+
+    async def delete_image(self, image_id: str) -> None:
+        if not re.fullmatch(r"sha256:[0-9a-f]{64}", image_id):
+            raise AndroidError("ANDROID_IMAGE_ID_INVALID", "镜像摘要格式无效", 422)
+        await docker("image", "rm", image_id, timeout=60)
 
     def lock(self) -> None:
         if platform.system() != "Darwin":
@@ -126,6 +410,12 @@ class MacAndroidRuntime:
     def unlock(self) -> None:
         self._lock.release()
         self._locked = False
+
+    async def verify_deleted(self, device: dict[str, Any]) -> dict[str, Any]:
+        from autoflow.providers.android.management import verify
+
+        containers, volumes = await verify(device, self.workspace_id)
+        return {"androidStatus": "unknown" if containers else "retained" if volumes else "missing"}
 
     async def inspect(self, device: dict[str, Any]) -> dict[str, Any]:
         if device.get("dataRetained"):
@@ -170,12 +460,13 @@ class MacAndroidRuntime:
         self.save()
 
     async def connect(self, device: dict[str, Any], save: Callable[[], None]) -> None:
+        require_restored(device)
         self.device, self.save = device, save
         observed = await self.inspect(device)
         if observed["dockerStatus"] == "missing":
             raise AndroidError("ANDROID_DATA_RETAINED", "请先从设备页恢复实例，再打开窗口或运行工作流")
         if observed["dockerStatus"] != "running":
-            await docker("start", device["containerId"])
+            raise AndroidError("ANDROID_NOT_READY", "请先从设备管理启动实例，再连接控制台", 409)
         deadline = time.monotonic() + 180
         while True:
             try:
@@ -221,7 +512,7 @@ class MacAndroidRuntime:
             raise AndroidError("ANDROID_DISCONNECTED", "安卓设备未连接", 503)
         return await run(["adb", "-s", self.serial, *args], timeout)
 
-    async def command(self, operation: str, args: dict[str, Any], timeout: float) -> bytes:
+    async def command(self, operation: str, args: dict[str, Any], timeout: float, *, retain_completion: bool = False) -> bytes:
         if operation == "android_screenshot":
             data = await self._adb("exec-out", "screencap", "-p", timeout=timeout)
             png_size(data)
@@ -251,42 +542,130 @@ class MacAndroidRuntime:
             if not component:
                 raise AndroidError("ANDROID_APP_UNAVAILABLE", "应用不存在或没有启动入口", 422)
             argv = ["am", "start", "-W", "-n", component]
+        elif operation in {"android_stop_app", "android_uninstall_app", "android_clear_app_data"}:
+            package = args["packageName"]
+            if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)+", package):
+                raise AndroidError("ANDROID_PACKAGE_INVALID", "应用包名无效", 422)
+            if operation in {"android_uninstall_app", "android_clear_app_data"}:
+                system = package_inventory(await self._adb("shell", "pm", "list", "packages", "-s"))
+                if package in system or package.startswith(("com.android.", "com.google.android.")):
+                    raise AndroidError("ANDROID_PROTECTED_APP", "系统或保护应用不能卸载或清除数据", 409)
+                users = package_inventory(await self._adb("shell", "pm", "list", "packages", "-3"))
+                if package not in users:
+                    raise AndroidError("ANDROID_APP_INFO_UNKNOWN", "无法确认目标为已安装的用户应用", 409)
+            argv = {
+                "android_stop_app": ["am", "force-stop", package],
+                "android_uninstall_app": ["pm", "uninstall", package],
+                "android_clear_app_data": ["pm", "clear", package],
+            }[operation]
         else:
             raise AndroidError("ANDROID_OPERATION_INVALID", "不支持的设备操作", 422)
         assert self.device is not None
         marker = "/data/local/tmp/autoflow-operation-" + uuid4().hex
         self.device["pendingCommand"] = marker
         self.save()  # A crash or cancellation cannot make the device silently reusable.
-        script = shlex.join(argv) + "; rc=$?; echo $rc > " + marker + "; exit $rc"
+        confirmation = ""
+        if operation == "android_launch_app":
+            confirmation = "case \"$output\" in *'Error:'*) rc=1;; *'Status: timeout'*) rc=124;; *'Status: ok'*) ;; *) rc=124;; esac; "
+        elif operation in {"android_uninstall_app", "android_clear_app_data"}:
+            confirmation = "case \"$output\" in Success) ;; Failure*|Failed*) rc=1;; *) rc=124;; esac; "
+        elif operation == "android_stop_app":
+            confirmation = "case \"$output\" in '') ;; *'Error:'*) rc=1;; *) rc=124;; esac; "
+        script = completion_script(argv, marker, confirmation) + "; exit $rc"
         data = await self._adb("shell", "sh", "-c", shlex.quote(script), timeout=timeout)
         if operation == "android_launch_app" and (b"Error:" in data or b"Status: ok" not in data):
             raise AndroidError("ANDROID_LAUNCH_FAILED", "Android 未确认应用启动成功", 502)
-        self.device.pop("pendingCommand", None)
-        self.save()
+        if operation in {"android_uninstall_app", "android_clear_app_data"} and b"Success" not in data:
+            raise AndroidError("ANDROID_APP_OPERATION_FAILED", "Android 未确认应用操作成功", 502)
+        if not retain_completion:
+            self.device.pop("pendingCommand", None)
+            self.save()
         return data
 
     async def app_info(self) -> dict[str, Any]:
-        packages = (await self._adb("shell", "pm", "list", "packages", "-3")).decode().splitlines()
+        packages = package_inventory(await self._adb("shell", "pm", "list", "packages", "--show-versioncode"))
+        system = package_inventory(await self._adb("shell", "pm", "list", "packages", "-s"))
+        applications = [{"packageName": name, "versionCode": version, "versionName": None, "system": name in system,
+                         "protected": name in system or name.startswith(("com.android.", "com.google.android."))} for name, version in packages.items()]
         activity = (await self._adb("shell", "dumpsys", "activity", "activities")).decode()
         match = re.search(r"(?:mResumedActivity|topResumedActivity)[=:].*? ([A-Za-z][A-Za-z0-9_.]+)/", activity)
         uid = (await self._adb("shell", "id", "-u")).strip()
-        return {"packages": [line.removeprefix("package:") for line in packages if line.startswith("package:")], "currentPackage": match.group(1) if match else None, "shellRoot": "available" if uid == b"0" else "unavailable", "applicationRoot": "unknown"}
+        return {"packages": list(packages), "applications": applications, "currentPackage": match.group(1) if match else None, "shellRoot": "available" if uid == b"0" else "unavailable", "applicationRoot": "unknown"}
+
+    async def app_info_for_verification(self) -> dict[str, Any]:
+        if self.device is None:
+            raise AndroidError("ANDROID_OPERATION_UNKNOWN", "缺少应用操作目标设备", 503)
+        observed = await self.inspect(self.device)
+        if observed.get("androidStatus") != "ready":
+            raise AndroidError("ANDROID_OPERATION_UNKNOWN", "设备尚未就绪，不能核实已安装应用", 503)
+        packages = package_inventory(await docker("exec", self.device["containerId"], "pm", "list", "packages", "--show-versioncode", timeout=15))
+        return {"applications": [{"packageName": name, "versionCode": version} for name, version in packages.items()]}
+
+    async def verify_pending_command(self) -> int:
+        """Read completion evidence; retain it until the caller persists its receipt."""
+        if not self.device:
+            raise AndroidError("ANDROID_OPERATION_UNKNOWN", "设备操作结果未知，请重新连接", 503)
+        marker = self.device.get("pendingCommand")
+        if not marker:
+            raise AndroidError("ANDROID_OPERATION_UNKNOWN", "缺少 Android 操作完成标记", 503)
+        if not re.fullmatch(r"/data/local/tmp/autoflow-operation-[0-9a-f]{32}", marker):
+            raise AndroidError("ANDROID_RECOVERY_REQUIRED", "设备操作标记无效", 503)
+        await self.inspect(self.device)
+        result = await docker("exec", self.device["containerId"], "cat", marker, timeout=5)
+        match = re.fullmatch(rb"v2:([0-9]+)\s*", result)
+        if match:
+            if int(match[1]) == 124:
+                raise AndroidError("ANDROID_OPERATION_UNKNOWN", "Android 应用操作结果仍未核实", 503)
+            return int(match[1])
+        # Old nonzero codes prove failure; zero proves only shell completion.
+        if not re.fullmatch(rb"[0-9]+\s*", result) or int(result) == 0:
+            raise AndroidError("ANDROID_OPERATION_UNKNOWN", "Android 操作完成状态仍未知", 503)
+        return int(result.strip())
+
+    async def acknowledge_pending_command(self, marker: str) -> None:
+        """Release only the command whose result the caller has durably recorded."""
+        if not self.device or not self.device.get("pendingCommand"):
+            return
+        if self.device["pendingCommand"] != marker or not re.fullmatch(r"/data/local/tmp/autoflow-operation-[0-9a-f]{32}", marker):
+            raise AndroidError("ANDROID_OPERATION_UNKNOWN", "设备操作标记已变化", 503)
+        remote = self.device.get("pendingApk")
+        if remote and not re.fullmatch(r"/data/local/tmp/autoflow-apk-[0-9a-f]{32}\.apk", remote):
+            raise AndroidError("ANDROID_RECOVERY_REQUIRED", "APK 暂存路径无效", 503)
+        await self.inspect(self.device)
+        if remote:
+            await docker("exec", self.device["containerId"], "rm", "-f", remote, timeout=5)
+        await docker("exec", self.device["containerId"], "rm", "-f", marker, timeout=5)
+        self.device.pop("pendingCommand")
+        self.device.pop("pendingApk", None)
+        try:
+            self.save()
+        except BaseException:
+            self.device["pendingCommand"] = marker
+            if remote:
+                self.device["pendingApk"] = remote
+            raise
 
     async def install_apk(self, data: bytes) -> None:
+        # Keep runtime callers safe even when they bypass the HTTP upload route.
+        from autoflow.application.android.apk import parse_apk
+        parse_apk(data)
         import tempfile
         with tempfile.TemporaryDirectory(prefix="autoflow-apk-") as directory:
             path = Path(directory) / "application.apk"
             await asyncio.to_thread(path.write_bytes, data)
             assert self.device is not None
+            if self.device.get("pendingApk") or self.device.get("pendingCommand"):
+                raise AndroidError("ANDROID_RECOVERY_REQUIRED", "上一应用操作尚未清理", 503)
             remote = "/data/local/tmp/autoflow-apk-" + uuid4().hex + ".apk"
+            self.device["pendingApk"] = remote
+            self.save()  # Persist the guest path before a lost push response can orphan it.
             await self._adb("push", str(path), remote, timeout=60)
             marker = "/data/local/tmp/autoflow-operation-" + uuid4().hex
             self.device["pendingCommand"] = marker
             self.save()
-            script = f"pm install -r {remote}; rc=$?; rm -f {remote}; echo $rc > {marker}; exit $rc"
+            script = completion_script(["pm", "install", "-r", remote], marker, "case \"$output\" in Success) ;; Failure*|Failed*) rc=1;; *) rc=124;; esac; ")
+            script += f"; rm -f {remote}; exit $rc"
             result = await self._adb("shell", "sh", "-c", shlex.quote(script), timeout=120)
-            self.device.pop("pendingCommand", None)
-            self.save()
             if b"Success" not in result:
                 raise AndroidError("ANDROID_INSTALL_FAILED", "Android 未确认 APK 安装成功", 422)
 
@@ -367,7 +746,7 @@ class MacAndroidRuntime:
             await run(["adb", "disconnect", self.serial])
             self.serial = None
 
-    async def recover(self, device: dict[str, Any]) -> None:
+    async def recover(self, device: dict[str, Any], *, preserve_command: bool = False) -> None:
         # Only signals identities persisted by this device controller; never a name-wide kill.
         for identity in device.get("processes", {}).values():
             pid, birth = identity["pid"], identity["birth"]
@@ -391,7 +770,17 @@ class MacAndroidRuntime:
                 raise AndroidError("ANDROID_RECOVERY_REQUIRED", "设备操作标记无效", 503)
             await self.inspect(device)
             result = await docker("exec", device["containerId"], "cat", marker, timeout=5)
-            if not re.fullmatch(rb"[0-9]+\s*", result):
+            completion = re.fullmatch(rb"(v2:)?([0-9]+)\s*", result)
+            if completion is None or (completion[1] and int(completion[2]) == 124) or (not completion[1] and int(completion[2]) == 0):
                 raise AndroidError("ANDROID_RECOVERY_REQUIRED", "Android 操作结束状态未知", 503)
-        device.pop("pendingCommand", None)
+        remote = device.get("pendingApk")
+        if remote:
+            if not re.fullmatch(r"/data/local/tmp/autoflow-apk-[0-9a-f]{32}\.apk", remote):
+                raise AndroidError("ANDROID_RECOVERY_REQUIRED", "APK 暂存路径无效", 503)
+            await self.inspect(device)
+            await docker("exec", device["containerId"], "rm", "-f", remote, timeout=5)
+            device.pop("pendingApk", None)
+        if marker and not preserve_command:
+            await docker("exec", device["containerId"], "rm", "-f", marker, timeout=5)
+            device.pop("pendingCommand", None)
         device["processes"] = {}

@@ -34,8 +34,9 @@ describe.each(['memory','http'] as const)('recording review service %s',mode=>{
   expect(stopped.success).toBe(true);expect(stopped.data?.data.events).toHaveLength(451)
   expect(stopped.data?.nextSeq).toBe(451);expect(stopped.data?.hasMore).toBe(false)
   const retry=await recorderApi.stop('paged-review')
-  // A second user stop is a new command; its complete confirmed tail is identical.
-  expect(retry.data).toEqual({...stopped.data,commandId:secondCommand})
+  // Retrying the same session/cursor reuses the confirmed command identity.
+  expect(retry.data).toEqual(stopped.data)
+  expect(crypto.randomUUID).toHaveBeenCalledOnce()
   // Retrying the original wire command returns that exact receipt, including its
   // original bounded first page. The API above assembles all subsequent pages.
   const replay=await apiRequest('/recorder/stop',{method:'POST',body:JSON.stringify({sessionId:'paged-review',commandId:firstCommand,afterSeq:0})})

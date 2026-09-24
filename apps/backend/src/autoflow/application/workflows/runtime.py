@@ -653,6 +653,7 @@ class _WorkflowScheduler:
         await self._exit_loop_scope(loop_node, loop_state)
         self.executed.add(loop_node.id)
         self.executing.discard(loop_node.id)
+        await self._exit_loop_scope(loop_node, loop_state)
         if done_nodes and not self.halted and not self.context.stop_workflow:
             await self._notify_successors(done_nodes, loop_node.id)
 

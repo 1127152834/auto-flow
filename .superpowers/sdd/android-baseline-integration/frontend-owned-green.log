@@ -1,0 +1,17 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/workflows/tests/module-scope.test.ts src/renderer/domains/workflows/lib/__tests__/moduleColors.audit.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-baseline-integration/autoflow/apps/desktop
+
+(node:22481) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22482) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  2 passed (2)
+      Tests  11 passed (11)
+   Start at  11:52:34
+   Duration  2.46s (transform 1.80s, setup 664ms, import 2.58s, tests 13ms, environment 1.33s)
+

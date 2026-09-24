@@ -1,0 +1,14 @@
+{
+  "baselineCommit": "a274c978",
+  "baselineCwd": "/Users/zhangtiancheng/.codex/worktrees/pm9-baseline-merge/autoflow/apps/backend",
+  "command": "PYTHONPATH=src /Users/zhangtiancheng/.codex/worktrees/studio-baseline-integration/autoflow/apps/backend/.venv/bin/python -m mypy src --cache-dir /tmp/autoflow-baseline-mypy-cache",
+  "baselineErrors": 65,
+  "mergedErrors": 65,
+  "sameErrorsIgnoringLines": true,
+  "added": [],
+  "removed": [],
+  "logs": {
+    "baseline": "/tmp/autoflow-baseline-android-mypy.log",
+    "merged": "/tmp/autoflow-merge-android-mypy.log"
+  }
+}

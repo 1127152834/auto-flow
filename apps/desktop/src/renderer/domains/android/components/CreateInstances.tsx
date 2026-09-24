@@ -1,5 +1,5 @@
 import { ApiClientError } from '../../../shared/api/client'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ArrowLeft, CaretDown, CheckCircle, Info, Laptop } from '@phosphor-icons/react'
 import type { AndroidDevice, AndroidEnvironment } from '../api'
 import type { BatchRequest, Profile } from '../fleet-api'
@@ -9,6 +9,7 @@ export function CreateInstances({
   profiles,
   environment,
   source,
+  sourceSnapshot,
   onBack,
   onProfiles,
   onSubmit,
@@ -16,23 +17,63 @@ export function CreateInstances({
   profiles: Profile[]
   environment?: AndroidEnvironment
   source?: AndroidDevice
+  sourceSnapshot?: Record<string, unknown>
   onBack(): void
   onProfiles(): void
   onSubmit(value: BatchRequest): Promise<void>
 }) {
+  const availableProfiles = profiles.filter((profile) => !profile.archived)
+  const snapshot = sourceSnapshot ?? {}
+  const snapshotValue = (key: string, fallback: unknown) => snapshot[key] ?? snapshot[key.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)] ?? fallback
+  const snapshotProfileId = String(snapshotValue('profileId', source?.profileId ?? ''))
+  const snapshotProfileName = String(snapshotValue('profileName', source?.profileName ?? '已归档环境'))
+  const sourceProfile = source && snapshotProfileId && !availableProfiles.some((profile) => profile.id === snapshotProfileId)
+    ? ({
+      id: snapshotProfileId,
+      name: snapshotProfileName,
+      revision: Number(snapshotValue('profileRevision', 1)),
+      imageId: String(snapshotValue('imageId', source.imageId)),
+      width: Number(snapshotValue('width', source.width)),
+      height: Number(snapshotValue('height', source.height)),
+      dpi: Number(snapshotValue('dpi', source.dpi)),
+      cpu: Number(snapshotValue('cpu', source.cpu)),
+      memoryMb: Number(snapshotValue('memoryMb', source.memoryMb)),
+      locale: String(snapshotValue('locale', source.locale ?? 'zh-CN')),
+      timezone: String(snapshotValue('timezone', source.timezone ?? 'Asia/Shanghai')),
+      shellRoot: 'unknown',
+      applicationRoot: 'unknown',
+      archived: true,
+    } as Profile)
+    : undefined
+  const selectableProfiles = sourceProfile ? [...availableProfiles, sourceProfile] : availableProfiles
   const [name, setName] = useState(source ? `${source.name} 副本` : '测试设备'),
-    [quantity, setQuantity] = useState(3)
-  const [profileId, setProfileId] = useState(source?.profileId ?? profiles[0]?.id ?? '')
-  const profile = profiles.find((p) => p.id === profileId)
-  const [resolution, setResolution] = useState(`${source?.width ?? 720}x${source?.height ?? 1280}`)
-  const [temporary, setTemporary] = useState(false),
-    [start, setStart] = useState(true),
+    [quantity, setQuantity] = useState(1)
+  const [profileId, setProfileId] = useState(selectableProfiles.some((profile) => profile.id === snapshotProfileId) ? snapshotProfileId : selectableProfiles[0]?.id ?? '')
+  const [copySourceDeviceId, setCopySourceDeviceId] = useState(source?.deviceId)
+  const profile = (copySourceDeviceId ? selectableProfiles : availableProfiles).find((p) => p.id === profileId)
+  const [resolution, setResolution] = useState(`${Number(snapshotValue('width', source?.width ?? 720))}x${Number(snapshotValue('height', source?.height ?? 1280))}`)
+  const [start, setStart] = useState(true),
     [advanced, setAdvanced] = useState(false)
-  const [locale, setLocale] = useState(source?.locale ?? 'zh-CN'),
-    [timezone, setTimezone] = useState(source?.timezone ?? 'Asia/Shanghai')
+  const [locale, setLocale] = useState(String(snapshotValue('locale', source?.locale ?? 'zh-CN'))),
+    [timezone, setTimezone] = useState(String(snapshotValue('timezone', source?.timezone ?? 'Asia/Shanghai')))
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(''),
     pending = useRef<BatchRequest | null>(null)
+  const [allowUnknownDiskEstimate, setAllowUnknownDiskEstimate] = useState(false)
+  useEffect(() => { setAllowUnknownDiskEstimate(false) }, [name, quantity, profileId, resolution, start, locale, timezone, copySourceDeviceId])
+  const clearSourceCopy = () => {
+    if (!copySourceDeviceId) return
+    setCopySourceDeviceId(undefined)
+    if (!availableProfiles.some((candidate) => candidate.id === profileId)) {
+      const fallback = availableProfiles[0]
+      if (fallback) {
+        setProfileId(fallback.id)
+        setLocale(fallback.locale ?? 'zh-CN')
+        setTimezone(fallback.timezone ?? 'Asia/Shanghai')
+        setResolution(`${fallback.width}x${fallback.height}`)
+      }
+    }
+  }
   const submit = async () => {
     if (!profile || busy) return
     setBusy(true)
@@ -43,16 +84,18 @@ export function CreateInstances({
       name,
       quantity,
       profileId: profile.id,
-      profileRevision: profile.revision ?? 1,
+      profileRevision: copySourceDeviceId ? Number(snapshotValue('profileRevision', profile.revision ?? 1)) : Number(profile.revision ?? 1),
+      sourceDeviceId: copySourceDeviceId,
       width,
       height,
       start,
-      instanceType: temporary ? 'temporary' : 'persistent',
+      instanceType: 'persistent',
       locale,
       timezone,
+      allowUnknownDiskEstimate,
     }
     try {
-      await onSubmit(pending.current)
+      await onSubmit(pending.current!)
     } catch (e) {
       if (e instanceof ApiClientError && e.status >= 400 && e.status < 500) pending.current = null
       setError(e instanceof Error ? e.message : '创建结果尚未确认，请按原编号重试')
@@ -104,7 +147,8 @@ export function CreateInstances({
                   value={profileId}
                   onChange={(e) => {
                     setProfileId(e.target.value)
-                    const p = profiles.find((p) => p.id === e.target.value)
+                    if (e.target.value !== snapshotProfileId) setCopySourceDeviceId(undefined)
+                    const p = selectableProfiles.find((p) => p.id === e.target.value)
                     if (p) {
                       setLocale(p.locale ?? 'zh-CN')
                       setTimezone(p.timezone ?? 'Asia/Shanghai')
@@ -115,9 +159,9 @@ export function CreateInstances({
                   <option value="" disabled>
                     请选择环境配置
                   </option>
-                  {profiles.map((p) => (
+                  {selectableProfiles.map((p) => (
                     <option key={p.id} value={p.id}>
-                      {p.name}
+                      {p.name}{p.archived ? '（已归档，仅复制快照）' : ''}
                     </option>
                   ))}
                 </select>
@@ -130,6 +174,7 @@ export function CreateInstances({
                   软件渲染 · {resolution.replace('x', ' × ')} ·{' '}
                   {profile?.shellRoot === 'available' ? 'shell root 可用' : 'shell root 待验证'}
                 </span>
+                {copySourceDeviceId && <span role="status">复制源快照：服务端将使用原实例已验证配置；修改环境配置后按当前模板创建。</span>}
                 <span>
                   <Info size={18} />
                   应用级 root 需单独验证。
@@ -137,7 +182,7 @@ export function CreateInstances({
               </div>
               <div className="ad-form-row ad-resolution">
                 <label htmlFor="ad-resolution">分辨率</label>
-                <select id="ad-resolution" value={resolution} onChange={(e) => setResolution(e.target.value)}>
+                <select id="ad-resolution" value={resolution} onChange={(e) => { setResolution(e.target.value); if (e.target.value !== `${snapshotValue('width', source?.width ?? 720)}x${snapshotValue('height', source?.height ?? 1280)}`) clearSourceCopy() }}>
                   {['540x960', '720x1280', '1080x1920'].map((v) => (
                     <option key={v} value={v}>
                       {v.replace('x', ' × ')}
@@ -153,14 +198,14 @@ export function CreateInstances({
                 <div className="ad-advanced-fields">
                   <label>
                     语言
-                    <select value={locale} onChange={(e) => setLocale(e.target.value)}>
+                    <select value={locale} onChange={(e) => { setLocale(e.target.value); if (e.target.value !== String(snapshotValue('locale', source?.locale ?? 'zh-CN'))) clearSourceCopy() }}>
                       <option value="zh-CN">简体中文</option>
                       <option value="en-US">English</option>
                     </select>
                   </label>
                   <label>
                     时区
-                    <select value={timezone} onChange={(e) => setTimezone(e.target.value)}>
+                    <select value={timezone} onChange={(e) => { setTimezone(e.target.value); if (e.target.value !== String(snapshotValue('timezone', source?.timezone ?? 'Asia/Shanghai'))) clearSourceCopy() }}>
                       <option>Asia/Shanghai</option>
                       <option>UTC</option>
                       <option>America/Los_Angeles</option>
@@ -176,20 +221,7 @@ export function CreateInstances({
               <div className="ad-form-row">
                 <label>实例类型</label>
                 <div className="ad-instance-types">
-                  {[false, true].map((t) => (
-                    <label key={String(t)} className={!temporary === !t ? 'selected' : ''}>
-                      <input
-                        type="radio"
-                        name="instance-type"
-                        checked={temporary === t}
-                        onChange={() => setTemporary(t)}
-                      />
-                      <div>
-                        <strong>{t ? '临时实例' : '持久实例'}</strong>
-                        <p>{t ? '供工作流使用，按运行清理策略回收' : '保留应用和数据，适合重复调试'}</p>
-                      </div>
-                    </label>
-                  ))}
+                  <div className="selected"><strong>持久实例</strong><p>保留应用和数据，适合重复调试</p></div>
                 </div>
               </div>
               <div className="ad-form-row ad-start-row">
@@ -199,6 +231,7 @@ export function CreateInstances({
                   <span>启动完成且 Android 就绪后才可操作。</span>
                 </div>
               </div>
+              <label className="ad-form-row"><input type="checkbox" checked={allowUnknownDiskEstimate} onChange={(e) => setAllowUnknownDiskEstimate(e.target.checked)} />最终磁盘占用无法可靠估计；我确认继续创建。</label>
             </section>
           </fieldset>
           {error && (
@@ -218,7 +251,7 @@ export function CreateInstances({
               </div>
               <div>
                 <dt>系统</dt>
-                <dd>Android 13 · ARM64</dd>
+                <dd>{profile?.name ?? '系统版本待核实'}</dd>
               </div>
               <div>
                 <dt>分辨率</dt>
@@ -226,7 +259,7 @@ export function CreateInstances({
               </div>
               <div>
                 <dt>数据</dt>
-                <dd>{temporary ? '运行后按策略回收' : '独立持久保存'}</dd>
+                <dd>独立持久保存</dd>
               </div>
             </dl>
           </div>
@@ -257,7 +290,7 @@ export function CreateInstances({
         </Action>
         <p>创建进度可在资源看板逐台查看。</p>
         <span>
-          将创建 <strong>{quantity}</strong> 台{temporary ? '临时' : '持久'}实例
+          将创建 <strong>{quantity}</strong> 台持久实例
         </span>
         <Action
           primary

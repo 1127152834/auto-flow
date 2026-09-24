@@ -21,5 +21,5 @@ it('keeps the approved 213-node scope and only approved notification channels', 
 })
 
 it('exposes the AutoFlow project extension alongside the frozen source catalog', () => {
-  expect(getAllAvailableModules().some(module => module.type === 'project_data')).toBe(true)
+  expect(getAllAvailableModules().filter(module => ['project_data', 'project_manual', 'project_end'].includes(module.type)).map(module => module.type)).toEqual(['project_data', 'project_manual', 'project_end'])
 })

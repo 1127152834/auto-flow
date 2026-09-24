@@ -1,0 +1,388 @@
+F.FF                                                                     [100%]
+=================================== FAILURES ===================================
+_______________ test_studio_backend_history_has_one_merged_head ________________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-268/test_studio_backend_history_ha0')
+
+    def test_studio_backend_history_has_one_merged_head(tmp_path: Path) -> None:
+        scripts = ScriptDirectory.from_config(_config(tmp_path / "heads.sqlite3"))
+    
+>       assert scripts.get_heads() == ["0020_merge_android_pm9"]
+E       AssertionError: assert ['am01_manage...heet_cursors'] == ['0020_merge_android_pm9']
+E         
+E         At index 0 diff: 'am01_management_operations' != '0020_merge_android_pm9'
+E         Left contains one more item: 'pm10_shared_sheet_cursors'
+E         Use -v to get more diff
+
+tests/integration/test_migration_heads.py:22: AssertionError
+_ test_android_pm9_merge_upgrades_each_published_head_without_losing_data[am01_management_operations] _
+
+self = <alembic.script.base.ScriptDirectory object at 0x10cbed510>
+ancestor = 'Destination %(end)s is not a valid upgrade target from current head(s)'
+multiple_heads = "Multiple head revisions are present for given argument 'head'; please specify a specific target revision, '<branchname>@head' to narrow to a specific head, or 'heads' for all heads"
+start = None, end = 'head', resolution = None
+
+    @contextmanager
+    def _catch_revision_errors(
+        self,
+        ancestor: str | None = None,
+        multiple_heads: str | None = None,
+        start: str | None = None,
+        end: str | None = None,
+        resolution: str | None = None,
+    ) -> Iterator[None]:
+        try:
+>           yield
+
+.venv/lib/python3.11/site-packages/alembic/script/base.py:207: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.venv/lib/python3.11/site-packages/alembic/script/base.py:426: in _upgrade_revs
+    for script in reversed(list(revs))
+                           ^^^^^^^^^^
+.venv/lib/python3.11/site-packages/alembic/script/revision.py:807: in iterate_revisions
+    revisions, heads = fn(
+.venv/lib/python3.11/site-packages/alembic/script/revision.py:1440: in _collect_upgrade_revisions
+    for rev in self._parse_upgrade_target(
+.venv/lib/python3.11/site-packages/alembic/script/revision.py:1227: in _parse_upgrade_target
+    return self.get_revisions(target)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.11/site-packages/alembic/script/revision.py:537: in get_revisions
+    resolved_id, branch_label = self._resolve_revision_number(id_)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.11/site-packages/alembic/script/revision.py:771: in _resolve_revision_number
+    current_head = self.get_current_head(branch_label)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <alembic.script.revision.RevisionMap object at 0x10cbf8a50>
+branch_label = None
+
+    def get_current_head(self, branch_label: str | None = None) -> str | None:
+        """Return the current head revision.
+    
+        If the script directory has multiple heads
+        due to branching, an error is raised;
+        :meth:`.ScriptDirectory.get_heads` should be
+        preferred.
+    
+        :param branch_label: optional branch name which will limit the
+         heads considered to those which include that branch_label.
+    
+        :return: a string revision number.
+    
+        .. seealso::
+    
+            :meth:`.ScriptDirectory.get_heads`
+    
+        """
+        current_heads: Sequence[str] = self.heads
+        if branch_label:
+            current_heads = self.filter_for_lineage(
+                current_heads, branch_label
+            )
+        if len(current_heads) > 1:
+>           raise MultipleHeads(
+                current_heads,
+                "%s@head" % branch_label if branch_label else "head",
+            )
+E           alembic.script.revision.MultipleHeads: Multiple heads are present for given argument 'head'; am01_management_operations, pm10_shared_sheet_cursors
+
+.venv/lib/python3.11/site-packages/alembic/script/revision.py:501: MultipleHeads
+
+The above exception was the direct cause of the following exception:
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-268/test_android_pm9_merge_upgrade0')
+previous_head = 'am01_management_operations'
+
+    @pytest.mark.parametrize("previous_head", ["am01_management_operations", "pm10_shared_sheet_cursors"])
+    def test_android_pm9_merge_upgrades_each_published_head_without_losing_data(tmp_path, previous_head):
+        database = tmp_path / "published-head.sqlite3"
+        command.upgrade(_config(database), previous_head)
+        with sqlite3.connect(database) as connection:
+            connection.execute(
+                "INSERT INTO workflow_documents VALUES (?, ?, ?, ?, ?, ?, ?)",
+                ("kept", "Original workflow", '{"nodes": []}', '{}', 7, "2026-09-24", "2026-09-24"),
+            )
+            if previous_head == "am01_management_operations":
+                connection.execute(
+                    """INSERT INTO android_operations
+                    (id, workspace_identity, request_id, target_id, action, request_digest,
+                     payload, state, stage_code, stage_label, attempt, created_at)
+                    VALUES ('op-kept', 'workspace', 'request', 'device', 'start', 'digest',
+                            '{"deviceId":"device"}', 'succeeded', 'complete', 'Complete', 1, '2026-09-24')"""
+                )
+            before = connection.execute("SELECT * FROM workflow_documents").fetchall()
+    
+>       database_session.migrate_database(database)
+
+tests/integration/test_migration_heads.py:95: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/autoflow/infrastructure/database/session.py:20: in migrate_database
+    command.upgrade(config, "head")
+.venv/lib/python3.11/site-packages/alembic/command.py:487: in upgrade
+    script.run_env()
+.venv/lib/python3.11/site-packages/alembic/script/base.py:550: in run_env
+    util.load_python_file(self.dir, "env.py")
+.venv/lib/python3.11/site-packages/alembic/util/pyfiles.py:114: in load_python_file
+    module = load_module_py(module_id, path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.11/site-packages/alembic/util/pyfiles.py:132: in load_module_py
+    spec.loader.exec_module(module)  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap_external>:940: in exec_module
+    ???
+<frozen importlib._bootstrap>:241: in _call_with_frames_removed
+    ???
+src/autoflow/infrastructure/database/migrations/env.py:55: in <module>
+    run_migrations_online()
+src/autoflow/infrastructure/database/migrations/env.py:47: in run_migrations_online
+    context.run_migrations()
+<string>:8: in run_migrations
+    ???
+.venv/lib/python3.11/site-packages/alembic/runtime/environment.py:970: in run_migrations
+    self.get_context().run_migrations(**kw)
+.venv/lib/python3.11/site-packages/alembic/runtime/migration.py:609: in run_migrations
+    for step in self._migrations_fn(heads, self):
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.11/site-packages/alembic/command.py:476: in upgrade
+    return script._upgrade_revs(revision, rev)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.11/site-packages/alembic/script/base.py:414: in _upgrade_revs
+    with self._catch_revision_errors(
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/contextlib.py:158: in __exit__
+    self.gen.throw(typ, value, traceback)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <alembic.script.base.ScriptDirectory object at 0x10cbed510>
+ancestor = 'Destination %(end)s is not a valid upgrade target from current head(s)'
+multiple_heads = "Multiple head revisions are present for given argument 'head'; please specify a specific target revision, '<branchname>@head' to narrow to a specific head, or 'heads' for all heads"
+start = None, end = 'head', resolution = None
+
+    @contextmanager
+    def _catch_revision_errors(
+        self,
+        ancestor: str | None = None,
+        multiple_heads: str | None = None,
+        start: str | None = None,
+        end: str | None = None,
+        resolution: str | None = None,
+    ) -> Iterator[None]:
+        try:
+            yield
+        except revision.RangeNotAncestorError as rna:
+            if start is None:
+                start = cast(Any, rna.lower)
+            if end is None:
+                end = cast(Any, rna.upper)
+            if not ancestor:
+                ancestor = (
+                    "Requested range %(start)s:%(end)s does not refer to "
+                    "ancestor/descendant revisions along the same branch"
+                )
+            ancestor = ancestor % {"start": start, "end": end}
+            raise util.CommandError(ancestor) from rna
+        except revision.MultipleHeads as mh:
+            if not multiple_heads:
+                multiple_heads = (
+                    "Multiple head revisions are present for given "
+                    "argument '%(head_arg)s'; please "
+                    "specify a specific target revision, "
+                    "'<branchname>@%(head_arg)s' to "
+                    "narrow to a specific head, or 'heads' for all heads"
+                )
+            multiple_heads = multiple_heads % {
+                "head_arg": end or mh.argument,
+                "heads": util.format_as_comma(mh.heads),
+            }
+>           raise util.CommandError(multiple_heads) from mh
+E           alembic.util.exc.CommandError: Multiple head revisions are present for given argument 'head'; please specify a specific target revision, '<branchname>@head' to narrow to a specific head, or 'heads' for all heads
+
+.venv/lib/python3.11/site-packages/alembic/script/base.py:233: CommandError
+_ test_android_pm9_merge_upgrades_each_published_head_without_losing_data[pm10_shared_sheet_cursors] _
+
+self = <alembic.script.base.ScriptDirectory object at 0x10e6cf9d0>
+ancestor = 'Destination %(end)s is not a valid upgrade target from current head(s)'
+multiple_heads = "Multiple head revisions are present for given argument 'head'; please specify a specific target revision, '<branchname>@head' to narrow to a specific head, or 'heads' for all heads"
+start = None, end = 'head', resolution = None
+
+    @contextmanager
+    def _catch_revision_errors(
+        self,
+        ancestor: str | None = None,
+        multiple_heads: str | None = None,
+        start: str | None = None,
+        end: str | None = None,
+        resolution: str | None = None,
+    ) -> Iterator[None]:
+        try:
+>           yield
+
+.venv/lib/python3.11/site-packages/alembic/script/base.py:207: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.venv/lib/python3.11/site-packages/alembic/script/base.py:426: in _upgrade_revs
+    for script in reversed(list(revs))
+                           ^^^^^^^^^^
+.venv/lib/python3.11/site-packages/alembic/script/revision.py:807: in iterate_revisions
+    revisions, heads = fn(
+.venv/lib/python3.11/site-packages/alembic/script/revision.py:1440: in _collect_upgrade_revisions
+    for rev in self._parse_upgrade_target(
+.venv/lib/python3.11/site-packages/alembic/script/revision.py:1227: in _parse_upgrade_target
+    return self.get_revisions(target)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.11/site-packages/alembic/script/revision.py:537: in get_revisions
+    resolved_id, branch_label = self._resolve_revision_number(id_)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.11/site-packages/alembic/script/revision.py:771: in _resolve_revision_number
+    current_head = self.get_current_head(branch_label)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <alembic.script.revision.RevisionMap object at 0x10e556b50>
+branch_label = None
+
+    def get_current_head(self, branch_label: str | None = None) -> str | None:
+        """Return the current head revision.
+    
+        If the script directory has multiple heads
+        due to branching, an error is raised;
+        :meth:`.ScriptDirectory.get_heads` should be
+        preferred.
+    
+        :param branch_label: optional branch name which will limit the
+         heads considered to those which include that branch_label.
+    
+        :return: a string revision number.
+    
+        .. seealso::
+    
+            :meth:`.ScriptDirectory.get_heads`
+    
+        """
+        current_heads: Sequence[str] = self.heads
+        if branch_label:
+            current_heads = self.filter_for_lineage(
+                current_heads, branch_label
+            )
+        if len(current_heads) > 1:
+>           raise MultipleHeads(
+                current_heads,
+                "%s@head" % branch_label if branch_label else "head",
+            )
+E           alembic.script.revision.MultipleHeads: Multiple heads are present for given argument 'head'; am01_management_operations, pm10_shared_sheet_cursors
+
+.venv/lib/python3.11/site-packages/alembic/script/revision.py:501: MultipleHeads
+
+The above exception was the direct cause of the following exception:
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-268/test_android_pm9_merge_upgrade1')
+previous_head = 'pm10_shared_sheet_cursors'
+
+    @pytest.mark.parametrize("previous_head", ["am01_management_operations", "pm10_shared_sheet_cursors"])
+    def test_android_pm9_merge_upgrades_each_published_head_without_losing_data(tmp_path, previous_head):
+        database = tmp_path / "published-head.sqlite3"
+        command.upgrade(_config(database), previous_head)
+        with sqlite3.connect(database) as connection:
+            connection.execute(
+                "INSERT INTO workflow_documents VALUES (?, ?, ?, ?, ?, ?, ?)",
+                ("kept", "Original workflow", '{"nodes": []}', '{}', 7, "2026-09-24", "2026-09-24"),
+            )
+            if previous_head == "am01_management_operations":
+                connection.execute(
+                    """INSERT INTO android_operations
+                    (id, workspace_identity, request_id, target_id, action, request_digest,
+                     payload, state, stage_code, stage_label, attempt, created_at)
+                    VALUES ('op-kept', 'workspace', 'request', 'device', 'start', 'digest',
+                            '{"deviceId":"device"}', 'succeeded', 'complete', 'Complete', 1, '2026-09-24')"""
+                )
+            before = connection.execute("SELECT * FROM workflow_documents").fetchall()
+    
+>       database_session.migrate_database(database)
+
+tests/integration/test_migration_heads.py:95: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/autoflow/infrastructure/database/session.py:20: in migrate_database
+    command.upgrade(config, "head")
+.venv/lib/python3.11/site-packages/alembic/command.py:487: in upgrade
+    script.run_env()
+.venv/lib/python3.11/site-packages/alembic/script/base.py:550: in run_env
+    util.load_python_file(self.dir, "env.py")
+.venv/lib/python3.11/site-packages/alembic/util/pyfiles.py:114: in load_python_file
+    module = load_module_py(module_id, path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.11/site-packages/alembic/util/pyfiles.py:132: in load_module_py
+    spec.loader.exec_module(module)  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap_external>:940: in exec_module
+    ???
+<frozen importlib._bootstrap>:241: in _call_with_frames_removed
+    ???
+src/autoflow/infrastructure/database/migrations/env.py:55: in <module>
+    run_migrations_online()
+src/autoflow/infrastructure/database/migrations/env.py:47: in run_migrations_online
+    context.run_migrations()
+<string>:8: in run_migrations
+    ???
+.venv/lib/python3.11/site-packages/alembic/runtime/environment.py:970: in run_migrations
+    self.get_context().run_migrations(**kw)
+.venv/lib/python3.11/site-packages/alembic/runtime/migration.py:609: in run_migrations
+    for step in self._migrations_fn(heads, self):
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.11/site-packages/alembic/command.py:476: in upgrade
+    return script._upgrade_revs(revision, rev)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.11/site-packages/alembic/script/base.py:414: in _upgrade_revs
+    with self._catch_revision_errors(
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/contextlib.py:158: in __exit__
+    self.gen.throw(typ, value, traceback)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <alembic.script.base.ScriptDirectory object at 0x10e6cf9d0>
+ancestor = 'Destination %(end)s is not a valid upgrade target from current head(s)'
+multiple_heads = "Multiple head revisions are present for given argument 'head'; please specify a specific target revision, '<branchname>@head' to narrow to a specific head, or 'heads' for all heads"
+start = None, end = 'head', resolution = None
+
+    @contextmanager
+    def _catch_revision_errors(
+        self,
+        ancestor: str | None = None,
+        multiple_heads: str | None = None,
+        start: str | None = None,
+        end: str | None = None,
+        resolution: str | None = None,
+    ) -> Iterator[None]:
+        try:
+            yield
+        except revision.RangeNotAncestorError as rna:
+            if start is None:
+                start = cast(Any, rna.lower)
+            if end is None:
+                end = cast(Any, rna.upper)
+            if not ancestor:
+                ancestor = (
+                    "Requested range %(start)s:%(end)s does not refer to "
+                    "ancestor/descendant revisions along the same branch"
+                )
+            ancestor = ancestor % {"start": start, "end": end}
+            raise util.CommandError(ancestor) from rna
+        except revision.MultipleHeads as mh:
+            if not multiple_heads:
+                multiple_heads = (
+                    "Multiple head revisions are present for given "
+                    "argument '%(head_arg)s'; please "
+                    "specify a specific target revision, "
+                    "'<branchname>@%(head_arg)s' to "
+                    "narrow to a specific head, or 'heads' for all heads"
+                )
+            multiple_heads = multiple_heads % {
+                "head_arg": end or mh.argument,
+                "heads": util.format_as_comma(mh.heads),
+            }
+>           raise util.CommandError(multiple_heads) from mh
+E           alembic.util.exc.CommandError: Multiple head revisions are present for given argument 'head'; please specify a specific target revision, '<branchname>@head' to narrow to a specific head, or 'heads' for all heads
+
+.venv/lib/python3.11/site-packages/alembic/script/base.py:233: CommandError
+=========================== short test summary info ============================
+FAILED tests/integration/test_migration_heads.py::test_studio_backend_history_has_one_merged_head
+FAILED tests/integration/test_migration_heads.py::test_android_pm9_merge_upgrades_each_published_head_without_losing_data[am01_management_operations]
+FAILED tests/integration/test_migration_heads.py::test_android_pm9_merge_upgrades_each_published_head_without_losing_data[pm10_shared_sheet_cursors]
+3 failed, 1 passed in 0.98s

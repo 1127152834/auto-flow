@@ -1,0 +1,12 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --maxWorkers=1
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+
+
+ Test Files  424 passed (424)
+      Tests  5636 passed (5636)
+   Start at  05:39:48
+   Duration  824.25s (transform 10.04s, setup 11.32s, import 228.16s, tests 350.49s, environment 188.91s)

@@ -1,0 +1,11 @@
+
+> test
+> npm --workspace @autoflow/desktop test --maxWorkers=1
+
+npm warn Unknown cli config "--maxWorkers". This will stop working in the next major version of npm.
+
+> @autoflow/desktop@0.1.0 test
+> vitest run
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop

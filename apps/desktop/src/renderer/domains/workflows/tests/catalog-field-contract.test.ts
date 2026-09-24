@@ -24,6 +24,17 @@ const explicitInlineFields = new Map<string, string>([
   ['NODE.ai_route.field.moduleType', 'catalog-panel-registration.test.tsx'],
   ['NODE.note.field.content', 'complex-structure-interactions.test.tsx'],
 ])
+// Frozen WebRPA field cases remain useful evidence, but these editor fields were
+// replaced by the main application's modelId contract and CloakBrowser session.
+const retiredFieldsByType: Partial<Record<ModuleType, readonly string[]>> = {
+  ai_chat: ['apiKey', 'apiUrl', 'model'],
+  ai_vision: ['apiKey', 'apiUrl', 'model'],
+  ai_vision_act: ['apiKey', 'apiUrl', 'model'],
+  ai_generate_image: ['ai', 'apiBase', 'apiKey', 'model'],
+  ai_generate_video: ['ai', 'apiBase', 'apiKey', 'apiUrl'],
+  ai_smart_scraper: ['apiKey', 'apiUrl', 'azureEndpoint', 'headless', 'llmModel', 'llmProvider'],
+  ai_element_selector: ['apiKey', 'apiUrl', 'azureEndpoint', 'llmModel', 'llmProvider'],
+}
 
 const capabilityById = new Map((capabilities as Capability[]).map(capability => [capability.id, capability]))
 const fieldEntries = (fieldCases as FieldCase[])
@@ -34,7 +45,7 @@ const entries = fieldEntries
   .map(testCase => ({
     id: testCase.id,
     capabilityId: testCase.capability,
-    type: capabilityById.get(testCase.capability)!.type,
+    type: capabilityById.get(testCase.capability)?.type,
     field: testCase.preconditions!.field!,
   }))
 
@@ -51,6 +62,12 @@ it('historical field cases outside the current catalog belong only to the 14 exc
 })
 
 it.each(entries)('$id remains mapped by the current panel inventory and document contract', ({ id, capabilityId, type, field }) => {
+  if (!type) {
+    const excludedType = capabilityId.replace(/^node:/, '') as ModuleType
+    expect(excludedModuleTypes.has(excludedType), `${id} has no catalog capability and is not explicitly excluded`).toBe(true)
+    expect(capabilityById.has(capabilityId)).toBe(false)
+    return
+  }
   const reconciled = reconciliationById.get(capabilityId)
   expect(reconciled?.specializedFields, `${id} is absent from the frozen node mapping`).toContain(field)
 
@@ -59,6 +76,10 @@ it.each(entries)('$id remains mapped by the current panel inventory and document
       current.component === source.component && current.file === source.file && current.fields.includes(field),
     ),
   )
+  if (retiredFieldsByType[type]?.includes(field)) {
+    expect(mappedByCurrentPanel, `${id} should no longer be an editable legacy field`).toBe(false)
+    return
+  }
   expect(
     mappedByCurrentPanel || explicitInlineFields.has(id),
     `${id} is no longer present in the current component inventory and has no inline-entry evidence`,

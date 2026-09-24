@@ -11,7 +11,7 @@ from alembic.script import ScriptDirectory
 
 from autoflow.infrastructure.database import session as database_session
 
-EXPECTED_HEAD = "0022_merge_studio_pm10"
+EXPECTED_HEAD = "0023_merge_studio_android"
 
 
 def _config(path: Path) -> Config:

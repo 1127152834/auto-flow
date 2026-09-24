@@ -1,0 +1,171 @@
+Window: "AutoFlow", App: Electron.
+0 标准窗口 AutoFlow, Secondary Actions: Raise
+	1 container AutoFlow
+		2 container
+			3 HTML 内容 AutoFlow, URL: file:///Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/out/renderer/index.html#/android
+				4 container
+					5 link Description: AutoFlow, Value: file:///Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/out/renderer/index.html#/dashboard
+					6 container 全局导航
+						7 按钮 总览
+						8 按钮 项目
+						9 按钮 浏览器配置
+						10 按钮 安卓设备
+						11 按钮 代理管理
+						12 按钮 模型管理
+					13 按钮 设置
+						14 图像
+						15 文本 设置
+					16 文本 本地服务正常
+					17 container 安卓运行环境诊断
+						18 container
+							19 标题 运行环境诊断, Value: 2
+								20 文本 运行环境诊断
+							21 text 运行环境可用  ·  autoflow-redroid
+							22 按钮 重新检查
+							23 文本 检查时间：
+							24 文本 2026-09-23T22:01:04.552146Z
+						25 文本 平台
+						26 文本 通过
+						27 文本 平台支持
+						28 文本 ADB
+						29 文本 通过
+						30 文本 工具可用
+						31 文本 Lima
+						32 文本 通过
+						33 文本 工具可用
+						34 文本 SSH
+						35 文本 通过
+						36 文本 工具可用
+						37 文本 scrcpy
+						38 文本 通过
+						39 文本 固定版 scrcpy 可用
+						40 文本 虚拟机
+						41 文本 通过
+						42 文本 Lima 虚拟机运行中
+						43 文本 Docker
+						44 文本 通过
+						45 文本 Linux ARM64 Docker 可用
+						46 文本 设备绑定
+						47 文本 通过
+						48 文本 Android binder 可用
+						49 文本 镜像
+						50 文本 通过
+						51 文本 已发现兼容镜像
+						52 文本 容量
+						53 文本 通过
+						54 文本 CPU 与内存容量可用
+						55 文本 磁盘
+						56 文本 通过
+						57 文本 工作区磁盘可用
+						58 标题 能力, Value: 3
+							59 文本 能力
+						60 container
+							61 text 管理： true  · 控制： true  · 镜像： true
+						62 文本 批量操作已注册
+						63 文本 备份服务已注册
+						64 文本 安卓管理不通过工作流执行入口
+					65 container 安卓管理实例
+						66 container
+							67 标题 实例管理, Value: 2
+								68 文本 实例管理
+							69 text 显示  1  /  1  台实例 · 快照读取不触发运行时探测
+							70 按钮 创建实例
+						71 container 实例统计
+							72 text 总数  1 运行中  0 已停止  1 需处理  0
+						73 文本栏 (settable) 搜索实例
+						74 弹出式按钮 Description: 筛选状态, Value: 全部状态
+							75 (selected) 全部状态
+						76 弹出式按钮 Description: 筛选模板, Value: 全部模板
+							77 (selected) 全部模板
+						78 弹出式按钮 Description: 筛选数据, Value: 全部数据
+							79 (selected) 全部数据
+						80 container
+							81 text QA 断线批量选择保护 已停止 修订  3  ·  快照有效
+							82 图像
+							83 text 暂无在线画面 可操作： start、delete
+							84 按钮 (disabled) 打开QA 断线批量选择保护
+							85 按钮 查看QA 断线批量选择保护操作历史
+							86 按钮 启动设备
+							87 按钮 删除实例
+						88 container 批量操作
+							89 container
+								90 标题 批量操作, Value: 2
+									91 文本 批量操作
+								92 文本 目标在提交时冻结，单批最多 20 台。
+							93 container
+								94 复选框 Description: QA 断线批量选择保护, Value: 1
+								95 text QA 断线批量选择保护  · 修订  3
+							96 弹出式按钮 Description: 批量动作, Value: 启动
+								97 (selected) 启动
+							98 按钮 提交批量操作
+					99 container 镜像管理
+						100 container
+							101 标题 镜像管理, Value: 2
+								102 文本 镜像管理
+							103 文本 登记固定摘要；拉取仅支持 redroid/redroid（含 docker.io 前缀）的 tag 或仓库摘要。
+						104 container 登记镜像
+							105 标题 登记已有镜像, Value: 3
+								106 文本 登记已有镜像
+							107 container
+								108 文本 镜像名称
+								109 文本栏 (settable) 镜像名称
+							110 container
+								111 文本 镜像摘要
+								112 文本栏 (settable) Description: 镜像摘要, Placeholder: sha256:…
+							113 container
+								114 文本 镜像引用
+								115 文本栏 (settable) Description: 镜像引用, Placeholder: registry/repository:tag
+							116 按钮 (disabled) 登记镜像
+						117 container 拉取镜像
+							118 标题 受限拉取, Value: 3
+								119 文本 受限拉取
+							120 container
+								121 文本 镜像引用
+								122 文本栏 (settable) Description: 拉取镜像引用, Placeholder: redroid/redroid:13 或 redroid/redroid@sha256:…
+							123 按钮 (disabled) 开始拉取
+						124 标题 目录状态, Value: 3
+							125 文本 目录状态
+						126 container
+							127 text 已登记  1  个镜像
+						128 文本 删除登记与删除本机内容分开确认。
+						129 container
+							130 text Desktop control QA base sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b  ·  redroid/redroid:13.0.0_64only-latest  ·  registered  · 镜像元数据核验  未知 组件声明  unknown  · 谷歌组件验收  未测试 修订  1 引用： source:sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b
+							131 按钮 验证 Desktop control QA base
+								132 文本 验证
+								133 文本 Desktop control QA base
+							134 按钮 取消登记 Desktop control QA base
+								135 文本 取消登记
+								136 文本 Desktop control QA base
+							137 按钮 删除镜像内容 Desktop control QA base
+								138 文本 删除镜像内容
+								139 文本 Desktop control QA base
+					140 container 设备模板
+						141 container
+							142 标题 设备模板, Value: 2
+								143 文本 设备模板
+							144 文本 模板只保存创建默认值；已创建实例使用自己的配置快照。
+							145 按钮 新建模板
+						146 container
+							147 text Android 13 标准 · ARM64 修订  1 镜像  sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b  ·  720  ×  1280  ·  1536  MB
+							148 按钮 编辑Android 13 标准 · ARM64
+							149 按钮 复制Android 13 标准 · ARM64
+							150 按钮 归档Android 13 标准 · ARM64
+					151 container 数据维护
+						152 标题 数据维护, Value: 2
+							153 文本 数据维护
+						154 按钮 刷新清理对象
+						155 按钮 (disabled) 预览清理
+						156 按钮 生成脱敏诊断
+						157 按钮 生成高级日志诊断
+						158 container 选择清理对象
+							159 文本 选择清理对象
+							160 文本 暂无可清理对象
+	161 关闭按钮
+	162 全屏幕按钮 Help: 此按钮也可以执行缩放窗口的操作, Secondary Actions: 缩放窗口
+	163 最小化按钮
+164 menu bar
+	165 Electron
+	166 File
+	167 Edit
+	168 View
+	169 Window

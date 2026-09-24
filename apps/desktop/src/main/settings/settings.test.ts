@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -278,5 +278,34 @@ describe('diagnostic preview and local save', () => {
     const next = await h.controller.previewDiagnostics(false)
     vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 300_001)
     await expectCode(h.controller.saveDiagnostics(next.id), 'DIAGNOSTIC_PREVIEW_EXPIRED')
+  })
+
+  it('downloads an Android diagnostic by id in the main process and writes it mode 0600', async () => {
+    const output = join(temporary('android-diagnostic'), 'android.json')
+    const h = harness({
+      selectSavePath: async () => output,
+      request: vi.fn((input: string | URL | Request) => String(input).includes('/internal/android/management/diagnostics/')
+        ? response({ id: 'diag-1', requestId: 'diag-1', state: 'ready', payload: { environment: { status: 'unknown' } }, createdAt: '2026-09-22T00:00:00Z', expiresAt: '2099-01-01T00:00:00Z' })
+        : response({ apiVersion: 'v1', backendVersion: '0.1.0', pythonVersion: '3.11.0', sqliteVersion: '3.0.0', blockers: [] })) as unknown as typeof fetch,
+    })
+    await h.controller.start()
+
+    await expect(h.controller.saveAndroidDiagnostic('diag-1')).resolves.toEqual({ saved: true, path: output })
+    expect(JSON.parse(readFileSync(output, 'utf8'))).toMatchObject({ application: 'AutoFlow', payload: { environment: { status: 'unknown' } } })
+    expect(statSync(output).mode & 0o777).toBe(0o600)
+  })
+
+  it('rejects a missing or expired Android diagnostic before opening a save dialog', async () => {
+    const selectSavePath = vi.fn(async () => join(temporary('android-diagnostic-expired'), 'android.json'))
+    const h = harness({
+      selectSavePath,
+      request: vi.fn((input: string | URL | Request) => String(input).includes('/internal/android/management/diagnostics/')
+        ? response({ error: { code: 'ANDROID_DIAGNOSTIC_EXPIRED', message: 'expired' } }, 410)
+        : response({ apiVersion: 'v1', backendVersion: '0.1.0', pythonVersion: '3.11.0', sqliteVersion: '3.0.0', blockers: [] })) as unknown as typeof fetch,
+    })
+    await h.controller.start()
+
+    await expectCode(h.controller.saveAndroidDiagnostic('diag-expired'), 'ANDROID_DIAGNOSTIC_EXPIRED')
+    expect(selectSavePath).not.toHaveBeenCalled()
   })
 })

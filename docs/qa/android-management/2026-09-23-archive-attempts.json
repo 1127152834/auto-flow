@@ -1,0 +1,32 @@
+[
+  {
+    "sourceDeviceId": "a1c887d8-f134-4da8-b4ec-966c257e06c6",
+    "workspaceId": "a21a0836daad93a457fc1b2746d1021a8538655db64114e77bd928325180c86c",
+    "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+    "cleanup": [
+      {
+        "deviceId": "a1c887d8-f134-4da8-b4ec-966c257e06c6",
+        "containers": 0,
+        "volumes": 0,
+        "deleted": true
+      }
+    ],
+    "status": "failed",
+    "error": "AndroidError('安卓运行环境命令失败，请检查设备与连接: mkdir: Needs 1 argument (see \"mkdir --help\")')"
+  },
+  {
+    "sourceDeviceId": "631f6752-35fd-444a-814c-a2d2692c5895",
+    "workspaceId": "141b9e810608f15912b595eaedc4da68de6aacee308918d41d581bac5e744db5",
+    "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+    "cleanup": [
+      {
+        "deviceId": "631f6752-35fd-444a-814c-a2d2692c5895",
+        "containers": 0,
+        "volumes": 0,
+        "deleted": true
+      }
+    ],
+    "status": "failed",
+    "error": "AndroidError(\"安卓运行环境命令失败，请检查设备与连接: chown: '/data/local/tmp/autoflow-metadata/file' to '10001:10002': Operation not permitted\")"
+  }
+]

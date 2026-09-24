@@ -1,0 +1,11 @@
+Observed first full frontend run (tool output excerpt, not the complete raw log).
+The raw log was overwritten when the rerun started after an incorrect relative-path mv.
+Command: npm test -- --maxWorkers=2 (apps/desktop)
+Exit code: 1
+FAIL src/renderer/domains/workflows/lib/__tests__/helpers/addNodeDefaults.test.ts
+逐字段分布与共用基线一致（只比总数会漏掉互相抵消的偏差）
+fieldDistribution.variableName: expected 15, received 16
+Test Files: 1 failed | 428 passed (429)
+Tests: 1 failed | 5724 passed (5725)
+Start at: 11:51:41
+Duration: 477.46s

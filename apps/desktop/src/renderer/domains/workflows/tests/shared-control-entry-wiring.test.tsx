@@ -54,7 +54,10 @@ type Tool = (typeof tools)[number]
 type ToolCase = { id: string; capability: string; preconditions: { tool: string } }
 const entries = (toolCases.cases as ToolCase[])
   .filter(entry => tools.includes(entry.preconditions.tool as Tool))
-  .map(entry => ({ id: entry.id, type: entry.capability.slice(5) as ModuleType, tool: entry.preconditions.tool as Tool }))
+  .map(entry => ({ id: entry.id, type: entry.capability.slice(5) as ModuleType, tool: entry.preconditions.tool as Tool, managedModel: false }))
+  .flatMap(entry => entry.tool === 'VariableInput' && ['ai_generate_image', 'ai_generate_video'].includes(entry.type)
+    ? [entry, { ...entry, id: `${entry.id}.managed-model`, managedModel: true }]
+    : [entry])
 const entrySetup: Record<string, Record<string, unknown>> = {
   'NODE.inject_javascript.tool.VariableInput': { injectMode: 'url_match' },
   'NODE.get_time.tool.VariableInput': { timeFormat: 'custom' },
@@ -72,8 +75,7 @@ afterEach(() => {
   else Reflect.deleteProperty(HTMLElement.prototype, 'scrollIntoView')
 })
 
-it.each(entries)('$id follows its current ConfigPanel consumer or explicit scope adaptation', async ({ id, type, tool }) => {
-  const managedModel = tool === 'VariableInput' && ['ai_generate_image', 'ai_generate_video'].includes(type)
+it.each(entries)('$id follows its current ConfigPanel consumer or explicit scope adaptation', async ({ id, type, tool, managedModel }) => {
   if (managedModel) Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', { configurable: true, value: vi.fn() })
   if (managedModel) vi.spyOn(modelApi, 'listOptions').mockResolvedValue({ success: true, data: {
     items: [{ id: 'model-test', providerId: 'provider-test', providerName: '托管供应商', modelKey: 'model', displayName: '主应用测试模型', tagsJson: [] }], total: 1,
@@ -93,9 +95,8 @@ it.each(entries)('$id follows its current ConfigPanel consumer or explicit scope
 
   const before = structuredClone(store.getState().nodes[0].data)
   if (managedModel) {
-    // These two historical VariableInput entries edited provider URLs/keys;
-    // the approved host adapter now selects a managed model by stable ID.
-    expect(controls).toHaveLength(0)
+    // Prompt variable input and the approved managed-model selector coexist.
+    expect(controls).toHaveLength(1)
     const picker = within(screen.getByText('主应用模型').parentElement!).getByRole('combobox')
     await waitFor(() => expect(picker.getAttribute('data-disabled')).toBeNull())
     fireEvent.keyDown(picker, { key: 'ArrowDown' })

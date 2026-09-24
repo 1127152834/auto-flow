@@ -1,0 +1,85 @@
+{
+  "status": "passed",
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-image-pull-interruption-xb2sj5nd",
+  "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "requestId": "216200e4-1486-433f-8416-bc1cb5671c6a",
+  "reference": "redroid/redroid@sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "cleanup": "Only owned workspace registration removed; existing image content retained; no devices created.",
+  "unconfirmedPreflight": {
+    "state": "failed",
+    "resultCode": "ANDROID_DISK_ESTIMATE_UNKNOWN",
+    "actualDockerPullCalls": 0,
+    "replayPreserved": true,
+    "changedConfirmationRejected": true
+  },
+  "killedOwnedProcessGroups": 1,
+  "lostResponse": "RemoteProtocolError",
+  "afterRestart": {
+    "operationId": "524616b1-da3d-4867-8eee-28eb741ceead",
+    "requestId": "216200e4-1486-433f-8416-bc1cb5671c6a",
+    "targetId": "5cb9c4b9-118a-5933-aa86-3b38b5427e60",
+    "action": "pull",
+    "state": "needs_verification",
+    "stageCode": "verify",
+    "stageLabel": "待核实",
+    "attempt": 1,
+    "retryOf": null,
+    "createdAt": "2026-09-24T00:49:14.246634",
+    "startedAt": "2026-09-24T00:49:14.248422",
+    "finishedAt": "2026-09-24T00:49:19.073998",
+    "resultCode": "SERVICE_RESTART_RESULT_UNKNOWN",
+    "message": "服务已重启，请核实外部操作结果",
+    "allowedActions": [
+      "verify"
+    ]
+  },
+  "discoveredAfterRestart": {
+    "items": [
+      {
+        "operationId": "524616b1-da3d-4867-8eee-28eb741ceead",
+        "requestId": "216200e4-1486-433f-8416-bc1cb5671c6a",
+        "targetId": "5cb9c4b9-118a-5933-aa86-3b38b5427e60",
+        "action": "pull",
+        "state": "needs_verification",
+        "stageCode": "verify",
+        "stageLabel": "待核实",
+        "attempt": 1,
+        "retryOf": null,
+        "createdAt": "2026-09-24T00:49:14.246634",
+        "startedAt": "2026-09-24T00:49:14.248422",
+        "finishedAt": "2026-09-24T00:49:19.073998",
+        "resultCode": "SERVICE_RESTART_RESULT_UNKNOWN",
+        "message": "服务已重启，请核实外部操作结果",
+        "allowedActions": [
+          "verify"
+        ]
+      }
+    ],
+    "nextCursor": null,
+    "total": 1
+  },
+  "verified": {
+    "operationId": "524616b1-da3d-4867-8eee-28eb741ceead",
+    "requestId": "216200e4-1486-433f-8416-bc1cb5671c6a",
+    "targetId": "5cb9c4b9-118a-5933-aa86-3b38b5427e60",
+    "action": "pull",
+    "state": "succeeded",
+    "stageCode": "verified",
+    "stageLabel": "已完成",
+    "attempt": 1,
+    "retryOf": null,
+    "createdAt": "2026-09-24T00:49:14.246634",
+    "startedAt": "2026-09-24T00:49:14.248422",
+    "finishedAt": "2026-09-24T00:49:19.322412",
+    "resultCode": "IMAGE_PULL_VERIFIED",
+    "message": "服务已重启，请核实外部操作结果",
+    "allowedActions": []
+  },
+  "unknownHistoryAfterVerify": {
+    "items": [],
+    "nextCursor": null,
+    "total": 0
+  },
+  "actualDockerPullCalls": 1,
+  "originalTagUnchanged": true
+}

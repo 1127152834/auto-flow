@@ -1,0 +1,3 @@
+usage: image-pull-interruption-smoke.py [-h] [--allow-image-pull] --output
+                                        OUTPUT
+image-pull-interruption-smoke.py: error: --allow-image-pull is required for the owned-workspace real pull

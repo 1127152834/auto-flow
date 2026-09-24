@@ -1,0 +1,189 @@
+import asyncio
+import io
+import json
+import shlex
+import tarfile
+from pathlib import Path
+from uuid import uuid4
+
+import httpx
+from fastapi import FastAPI
+from autoflow.adapters.http.android_management import android_management_router
+from autoflow.adapters.http.errors import install_error_handlers
+from autoflow.application.android.backups import AndroidBackupService
+from autoflow.application.android.devices import AndroidDeviceService
+from autoflow.application.android.diagnostics import EnvironmentCheckService
+from autoflow.application.android.management import AndroidManagement
+from autoflow.bootstrap.android_prepare import prepare
+from autoflow.domain.android.ports import AndroidError
+from autoflow.infrastructure.database.android import SqlAlchemyDeviceRepository
+from autoflow.infrastructure.database.android_operations import SqlAlchemyAndroidOperationRepository
+from autoflow.infrastructure.database.android_resources import AndroidResourceRepository
+from autoflow.infrastructure.database.session import create_session_factory
+from autoflow.infrastructure.filesystem.android_paths import android_runtime_root
+from autoflow.infrastructure.filesystem.paths import AppPaths
+from autoflow.providers.android.mac_runtime import MacAndroidRuntime, docker, run
+from autoflow.providers.android.management import verify
+
+async def operate(runtime, repo, device, action, delete=False):
+    manager = AndroidManagement(repo, runtime)
+    manager.operate(device['deviceId'], {'requestId': str(uuid4()), 'action': action, 'deleteData': delete})
+    await manager.task
+    device = repo.get(device['deviceId'])
+    assert device['operation']['state'] == 'succeeded', device
+    return device
+
+def metadata(data):
+    with tarfile.open(fileobj=io.BytesIO(data)) as archive:
+        return {m.name: {'uid': m.uid, 'gid': m.gid, 'mode': oct(m.mode), 'content': archive.extractfile(m).read().decode()} for m in archive if m.name.endswith('/restore-proof')}
+
+async def volume_state(device):
+    mount = json.loads(await docker('volume', 'inspect', device['volumeId']))[0]['Mountpoint']
+    scanner = """import hashlib,json,os,stat,sys
+root=sys.argv[1]; todo=[root]; rows=[]; attrs=0; acls=0; sockets=[]
+while todo:
+ p=todo.pop(); info=os.lstat(p); relative=os.path.relpath(p,root)
+ if stat.S_ISSOCK(info.st_mode): sockets.append(relative); continue
+ xattrs=sorted((name,os.getxattr(p,name,follow_symlinks=False).hex()) for name in os.listxattr(p,follow_symlinks=False))
+ attrs+=len(xattrs); acls+=sum(name.startswith('system.posix_acl_') for name,_ in xattrs)
+ content=hashlib.sha256(open(p,'rb').read()).hexdigest() if stat.S_ISREG(info.st_mode) else os.readlink(p) if stat.S_ISLNK(info.st_mode) else ''
+ rows.append((relative,info.st_uid,info.st_gid,stat.S_IMODE(info.st_mode),stat.S_IFMT(info.st_mode),xattrs,content))
+ if stat.S_ISDIR(info.st_mode):
+  with os.scandir(p) as entries: todo.extend(entry.path for entry in entries)
+payload=json.dumps(sorted(rows),sort_keys=True,separators=(',',':')).encode()
+print(json.dumps({'files':len(rows),'xattrs':attrs,'acls':acls,'sha256':hashlib.sha256(payload).hexdigest(),'transientSockets':sorted(sockets)}))
+"""
+    return json.loads(await run(['limactl', 'shell', '--workdir=/tmp', 'autoflow-redroid', 'sudo', 'python3', '-c', scanner, mount], 600))
+
+async def main():
+    data_dir = Path('/tmp/autoflow-restore-rootfixed-20260923')
+    assert not data_dir.exists(), 'Refusing reused workspace'
+    assert not (await docker('ps', '-q')).strip(), 'Other running containers left untouched'
+    source = await prepare(data_dir, Path('/Users/zhangtiancheng/.autoflow/android-runtime/scrcpy-macos-aarch64-v3.3.4.tar.gz'), False)
+    paths = AppPaths.from_data_dir(data_dir)
+    sessions = create_session_factory(paths.database)
+    repo = SqlAlchemyDeviceRepository(sessions)
+    runtime = MacAndroidRuntime(android_runtime_root(), paths.workspace)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    backups = AndroidBackupService(AndroidResourceRepository(sessions), paths.workspace, operations)
+    devices = AndroidDeviceService(repo, runtime)
+    devices.management.workspace_identity = backups.workspace_identity
+    devices.management.operations = operations
+    app = FastAPI()
+    install_error_handlers(app)
+    app.include_router(android_management_router(EnvironmentCheckService(runtime), operations, backups=backups, devices=devices))
+    report = {'sourceDeviceId': source['deviceId'], 'workspaceId': runtime.workspace_id, 'imageId': source['imageId'], 'cleanup': []}
+    backup = None
+    try:
+        await docker('exec', '-u', '0', source['containerId'], 'sh', '-c', 'printf restore-isolation-proof > /data/local/tmp/restore-proof && chown 10001:2000 /data/local/tmp/restore-proof && chmod 640 /data/local/tmp/restore-proof')
+        source = await operate(runtime, repo, source, 'stop')
+        source['creationConfig'] = {'width': 720, 'height': 1280, 'dpi': 320, 'cpu': 1, 'memoryMb': 1536}
+        repo.save(source)
+        backup = await backups.create_with_runtime(source, None, runtime, 'source-backup', source['generation'])
+        before = metadata((Path(backup['path']) / 'data.tar').read_bytes())
+        source_state = await volume_state(source)
+        assert source_state['xattrs'] > 0 and source_state['acls'] > 0, source_state
+        report['sourceMetadataState'] = source_state
+        assert before['data/local/tmp/restore-proof']['uid'] == 10001
+        report.update(backupId=backup['id'], backupBytes=backup['bytes'], metadata=before)
+        original_restore = runtime.restore_volume
+        async def partially_write_then_interrupt(device, _data):
+            partial = io.BytesIO()
+            with tarfile.open(fileobj=partial, mode='w') as archive:
+                info = tarfile.TarInfo('data/partial-restore')
+                contents = b'incomplete-target'
+                info.size = len(contents)
+                archive.addfile(info, io.BytesIO(contents))
+            await original_restore(device, partial.getvalue())
+            raise TimeoutError('Injected connection loss after real partial target write')
+        base = '/api/v1/android/management'
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url='http://local') as client:
+            runtime.restore_volume = partially_write_then_interrupt
+            response = await client.post(base + f"/backups/{backup['id']}/restore", json={'requestId': 'partial-copy', 'newName': 'partial'})
+            runtime.restore_volume = original_restore
+            assert response.status_code == 503, response.text
+            receipt = operations.by_request(backups.workspace_identity, 'partial-copy')
+            partial = repo.get(receipt.target_id)
+            assert partial['restoreState'] == 'pending' and receipt.state == 'needs_verification'
+            with tarfile.open(fileobj=io.BytesIO(await runtime.backup_volume(partial))) as archive:
+                assert archive.extractfile('data/partial-restore').read() == b'incomplete-target'
+            partial = await operate(runtime, repo, partial, 'recover')
+            assert partial['control'] == 'idle' and partial['restoreState'] == 'pending'
+            try:
+                await backups.restore_data(backup['id'], partial, runtime)
+            except AndroidError as error:
+                assert error.code == 'ANDROID_RESTORE_TARGET_INVALID', error.code
+                report['directRetryRejected'] = error.code
+            else:
+                raise AssertionError('direct restore retry unexpectedly wrote target volume')
+            rejected = []
+            for action in ('start', 'restart', 'restore'):
+                try:
+                    devices.management.operate(partial['deviceId'], {'requestId': str(uuid4()), 'action': action, 'deleteData': False})
+                except AndroidError as error:
+                    assert error.code == 'ANDROID_RESTORE_INCOMPLETE', error.code
+                    rejected.append(action)
+                else:
+                    raise AssertionError(action + ' unexpectedly admitted')
+            try:
+                repo.claim(partial['deviceId'], 'manual-proof')
+            except AndroidError as error:
+                assert error.code == 'ANDROID_RESTORE_INCOMPLETE'
+                rejected.append('control')
+            else:
+                raise AssertionError('control unexpectedly admitted')
+            try:
+                await backups.create_with_runtime(partial, None, runtime)
+            except AndroidError as error:
+                assert error.code == 'ANDROID_RESTORE_INCOMPLETE'
+                rejected.append('backup')
+            else:
+                raise AssertionError('backup unexpectedly admitted')
+            replay = await client.post(base + f"/backups/{backup['id']}/restore", json={'requestId': 'partial-copy', 'newName': 'partial'})
+            assert replay.status_code == 409, replay.text
+            report['partialRestore'] = {'deviceId': partial['deviceId'], 'state': receipt.state, 'realPartialWrite': True, 'afterRecover': partial['restoreState'], 'rejected': rejected, 'replayStatus': replay.status_code}
+            partial = await operate(runtime, repo, partial, 'delete', True)
+            c, v = await verify(partial, runtime.workspace_id)
+            assert not c and not v
+            report['cleanup'].append({'deviceId': partial['deviceId'], 'containers': len(c), 'volumes': len(v), 'deleted': partial['deleted']})
+            response = await client.post(base + f"/backups/{backup['id']}/restore", json={'requestId': 'normal-copy', 'newName': 'restored'})
+            assert response.status_code == 202, response.text
+            replay = await client.post(base + f"/backups/{backup['id']}/restore", json={'requestId': 'normal-copy', 'newName': 'restored'})
+            assert replay.status_code == 202 and replay.json() == response.json(), replay.text
+            target = repo.get(response.json()['deviceId'])
+            assert target['restoreState'] == 'restored' and target['dataRetained'] is False
+            target_state = await volume_state(target)
+            assert {key: value for key, value in target_state.items() if key != 'transientSockets'} == {key: value for key, value in source_state.items() if key != 'transientSockets'}, {'source': source_state, 'target': target_state}
+            report['targetMetadataState'] = target_state
+            after = metadata(await runtime.backup_volume(target))
+            assert after == before, (after, before)
+            target = await operate(runtime, repo, target, 'start')
+            runtime.lock()
+            try:
+                await runtime.connect(target, lambda: repo.save(target))
+                result = (await runtime._adb('shell', 'sh', '-c', shlex.quote('cat /data/local/tmp/restore-proof'))).decode().strip()
+                assert result == 'restore-isolation-proof', result
+            finally:
+                await runtime.disconnect()
+                runtime.unlock()
+            assert metadata(await runtime.backup_volume(source)) == before
+            report.update(targetDeviceId=target['deviceId'], normalResponse=response.json(), replayStatus=replay.status_code, bootReadback=result, sourceProofFileUnchanged=True, status='passed')
+    except BaseException as error:
+        report.update(status='failed', error=repr(error))
+        raise
+    finally:
+        for current in repo.list():
+            if current.get('deleted'):
+                continue
+            if current.get('control') == 'recovery_required':
+                current = await operate(runtime, repo, current, 'recover')
+            current = await operate(runtime, repo, current, 'delete', True)
+            containers, volumes = await verify(current, runtime.workspace_id)
+            report['cleanup'].append({'deviceId': current['deviceId'], 'containers': len(containers), 'volumes': len(volumes), 'deleted': current.get('deleted')})
+            assert not containers and not volumes and current.get('deleted')
+        if backup:
+            backups.delete(backup['id'])
+        sessions.dispose()
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+
+asyncio.run(main())

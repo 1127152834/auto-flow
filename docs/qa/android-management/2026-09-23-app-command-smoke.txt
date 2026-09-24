@@ -1,0 +1,69 @@
+import asyncio
+import json
+from pathlib import Path
+from autoflow.bootstrap.android_prepare import prepare
+from autoflow.infrastructure.database.android import SqlAlchemyDeviceRepository
+from autoflow.infrastructure.database.session import create_session_factory
+from autoflow.infrastructure.filesystem.android_paths import android_runtime_root
+from autoflow.infrastructure.filesystem.paths import AppPaths
+from autoflow.providers.android.mac_runtime import MacAndroidRuntime
+from autoflow.providers.android.management import objects
+from autoflow.domain.android.ports import AndroidError
+
+async def main():
+    data = Path('/tmp/autoflow-android-semantic-smoke-20260923-c')
+    if data.exists():
+        raise RuntimeError('Refusing to reuse an existing workspace')
+    device = await prepare(data, Path('/Users/zhangtiancheng/.autoflow/android-runtime/scrcpy-macos-aarch64-v3.3.4.tar.gz'), False)
+    paths = AppPaths.from_data_dir(data)
+    sessions = create_session_factory(paths.database)
+    repo = SqlAlchemyDeviceRepository(sessions)
+    runtime = MacAndroidRuntime(android_runtime_root(), paths.workspace)
+    report = {'deviceId': device['deviceId'], 'workspaceId': device['workspaceId'], 'imageId': device['imageId'], 'transportFault': 'real ADB command completed, local response deliberately discarded', 'results': []}
+    runtime.lock()
+    try:
+        await runtime.connect(device, lambda: repo.save(device))
+        for operation in ('android_launch_app', 'android_stop_app'):
+            original = runtime._adb
+            async def drop_response(*args, **kwargs):
+                if args[:3] == ('shell', 'sh', '-c'):
+                    process = await asyncio.create_subprocess_exec('adb', '-s', runtime.serial, *args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+                    stdout, stderr = await asyncio.wait_for(process.communicate(), 40)
+                    report.setdefault('commandDiagnostics', []).append({'operation': operation, 'returncode': process.returncode, 'stdout': stdout.decode(), 'stderr': stderr.decode()})
+                    raise TimeoutError('deliberately discarded real command response')
+                return await original(*args, **kwargs)
+            runtime._adb = drop_response
+            try:
+                await runtime.command(operation, {'packageName': 'com.android.settings'}, 30)
+                raise AssertionError('response loss was not exercised')
+            except TimeoutError:
+                pass
+            finally:
+                runtime._adb = original
+            marker = device['pendingCommand']
+            try:
+                result = await runtime.verify_pending_command()
+                assert result == 0, result
+            except AndroidError as error:
+                assert operation == 'android_launch_app' and error.code == 'ANDROID_OPERATION_UNKNOWN', error.code
+                assert device['pendingCommand'] == marker
+                report['results'].append({'operation': operation, 'verificationCode': error.code, 'markerRetained': True, 'currentPackage': (await runtime.app_info())['currentPackage']})
+                await runtime.recover(device)  # Explicit recovery after completed-but-unknown launch; no replay.
+                repo.save(device)
+                continue
+            current = (await runtime.app_info())['currentPackage']
+            if operation == 'android_launch_app':
+                assert current == 'com.android.settings', current
+            report['results'].append({'operation': operation, 'verificationExitCode': result, 'currentPackage': current})
+            await runtime.acknowledge_pending_command(marker)
+            assert 'pendingCommand' not in device
+    finally:
+        await runtime.disconnect()
+        await runtime.manage(device, {'action': 'delete', 'deleteData': True}, lambda _: None, lambda: repo.save(device))
+        repo.save(device)
+        report['cleanup'] = {'containers': len(await objects('container', device['containerId'])), 'volumes': len(await objects('volume', device['volumeId']))}
+        runtime.unlock()
+        sessions.dispose()
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+
+asyncio.run(main())

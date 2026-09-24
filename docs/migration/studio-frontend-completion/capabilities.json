@@ -36213,6 +36213,7 @@
         "apps/desktop/src/renderer/domains/workflows/components/controls/select.tsx#SelectScrollUpButton",
         "apps/desktop/src/renderer/domains/workflows/components/controls/select.tsx#SelectTrigger",
         "apps/desktop/src/renderer/domains/workflows/components/controls/textarea.tsx#Textarea",
+        "apps/desktop/src/renderer/domains/workflows/components/controls/variable-input.tsx#VariableInput",
         "apps/desktop/src/renderer/domains/workflows/components/controls/variable-name-input.tsx#RenameConfirmDialog",
         "apps/desktop/src/renderer/domains/workflows/components/controls/variable-name-input.tsx#VariableNameInput"
       ],
@@ -36567,7 +36568,6 @@
         "apps/desktop/src/renderer/domains/workflows/components/controls/select.tsx#SelectScrollDownButton",
         "apps/desktop/src/renderer/domains/workflows/components/controls/select.tsx#SelectScrollUpButton",
         "apps/desktop/src/renderer/domains/workflows/components/controls/select.tsx#SelectTrigger",
-        "apps/desktop/src/renderer/domains/workflows/components/controls/textarea.tsx#Textarea",
         "apps/desktop/src/renderer/domains/workflows/components/controls/variable-input.tsx#VariableInput",
         "apps/desktop/src/renderer/domains/workflows/components/controls/variable-name-input.tsx#RenameConfirmDialog",
         "apps/desktop/src/renderer/domains/workflows/components/controls/variable-name-input.tsx#VariableNameInput"

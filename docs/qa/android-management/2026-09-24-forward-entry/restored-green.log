@@ -1,0 +1,12 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/android/tests/AndroidPage.test.tsx -t QA AM2 forward entry rollback
+
+
+ RUN  v4.1.11 /private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-am2-forward-entry-jthvshsy/checkout/apps/desktop
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 35 skipped (36)
+   Start at  07:31:57
+   Duration  2.38s (transform 385ms, setup 177ms, import 1.47s, tests 202ms, environment 425ms)

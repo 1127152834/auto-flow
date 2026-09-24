@@ -1,0 +1,57 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/android/tests/AndroidPage.test.tsx src/renderer/domains/android/tests/ManagementOverview.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+
+(node:97808) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:97807) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/android/tests/ManagementOverview.test.tsx (21 tests | 1 failed) 801ms
+   × does not execute operational actions for unknown or stale devices 22ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/android/tests/ManagementOverview.test.tsx > does not execute operational actions for unknown or stale devices
+AssertionError: expected "vi.fn()" to be called with arguments: [ 'd', 'verify', undefined, undefined ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+    "d",
+-   "verify",
++   "recover",
+    undefined,
+    undefined,
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/renderer/domains/android/tests/ManagementOverview.test.tsx:272:20
+    270|   expect(screen.getByRole('button', { name: '核实状态' })).toBeEnabled()
+    271|   await userEvent.click(screen.getByRole('button', { name: '核实状态' }))
+    272|   expect(onManage).toHaveBeenCalledWith('d', 'verify', undefined, unde…
+       |                    ^
+    273| })
+    274|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 63 passed (64)
+   Start at  09:46:39
+   Duration  7.07s (transform 543ms, setup 278ms, import 1.58s, tests 5.90s, environment 729ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/android/tests/AndroidPage.test.tsx src/renderer/domains/android/tests/ManagementOverview.test.tsx

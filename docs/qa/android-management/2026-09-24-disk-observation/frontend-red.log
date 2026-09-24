@@ -1,0 +1,181 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/android/tests/RuntimeDiagnostics.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+
+ ❯ src/renderer/domains/android/tests/RuntimeDiagnostics.test.tsx (5 tests | 3 failed) 3204ms
+   × separates host and VM disk availability including zero and unknown (1073741824, 2147483648) 1011ms
+   × separates host and VM disk availability including zero and unknown (0, null) 1009ms
+   × separates host and VM disk availability including zero and unknown (undefined, undefined) 1007ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/android/tests/RuntimeDiagnostics.test.tsx > separates host and VM disk availability including zero and unknown (1073741824, 2147483648)
+ FAIL  src/renderer/domains/android/tests/RuntimeDiagnostics.test.tsx > separates host and VM disk availability including zero and unknown (0, null)
+ FAIL  src/renderer/domains/android/tests/RuntimeDiagnostics.test.tsx > separates host and VM disk availability including zero and unknown (undefined, undefined)
+TestingLibraryElementError: Unable to find role="group" and name "宿主工作区可用空间"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33maria-busy[39m=[32m"false"[39m
+      [33maria-label[39m=[32m"安卓运行环境诊断"[39m
+      [33mclass[39m=[32m"space-y-5 rounded-card border border-line bg-surface p-5"[39m
+    [36m>[39m
+      [36m<header>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-start justify-between gap-3"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<h2[39m
+              [33mclass[39m=[32m"font-semibold"[39m
+            [36m>[39m
+              [0m运行环境诊断[0m
+            [36m</h2>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"mt-1 text-sm text-muted"[39m
+            [36m>[39m
+              [0m可用[0m
+              [0m · [0m
+              [0mredroid[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0m重新检查[0m
+          [36m</button>[39m
+        [36m</div>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-2 text-xs text-muted"[39m
+        [36m>[39m
+          [0m检查时间：[0m
+          [36m<time[39m
+            [33mdatetime[39m=[32m"2026-09-24T00:00:00Z"[39m
+          [36m>[39m
+            [0m2026-09-24T00:00:00Z[0m
+          [36m</time>[39m
+        [36m</p>[39m
+      [36m</header>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"grid gap-2 sm:grid-cols-2 lg:grid-cols-3"[39m
+      [36m/>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"rounded-control bg-surface-subtle p-3 text-sm"[39m
+      [36m>[39m
+        [36m<h3[39m
+          [33mclass[39m=[32m"font-medium"[39m
+        [36m>[39m
+          [0m能力[0m
+        [36m</h3>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-2"[39m
+        [36m>[39m
+          [0m管理：[0m
+          [0mtrue[0m
+          [0m · 控制：[0m
+          [0mtrue[0m
+          [0m · 镜像：[0m
+          [0mtrue[0m
+        [36m</p>[39m
+      [36m</div>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33maria-busy[39m=[32m"false"[39m
+      [33maria-label[39m=[32m"安卓运行环境诊断"[39m
+      [33mclass[39m=[32m"space-y-5 rounded-card border border-line bg-surface p-5"[39m
+    [36m>[39m
+      [36m<header>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-start justify-between gap-3"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<h2[39m
+              [33mclass[39m=[32m"font-semibold"[39m
+            [36m>[39m
+              [0m运行环境诊断[0m
+            [36m</h2>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"mt-1 text-sm text-muted"[39m
+            [36m>[39m
+              [0m可用[0m
+              [0m · [0m
+              [0mredroid[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0m重新检查[0m
+          [36m</button>[39m
+        [36m</div>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-2 text-xs text-muted"[39m
+        [36m>[39m
+          [0m检查时间：[0m
+          [36m<time[39m
+            [33mdatetime[39m=[32m"2026-09-24T00:00:00Z"[39m
+          [36m>[39m
+            [0m2026-09-24T00:00:00Z[0m
+          [36m</time>[39m
+        [36m</p>[39m
+      [36m</header>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"grid gap-2 sm:grid-cols-2 lg:grid-cols-3"[39m
+      [36m/>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"rounded-control bg-surface-subtle p-3 text-sm"[39m
+      [36m>[39m
+        [36m<h3[39m
+          [33mclass[39m=[32m"font-medium"[39m
+        [36m>[39m
+          [0m能力[0m
+        [36m</h3>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"mt-2"[39m
+        [36m>[39m
+          [0m管理：[0m
+          [0mtrue[0m
+          [0m · 控制：[0m
+          [0mtrue[0m
+          [0m · 镜像：[0m
+          [0mtrue[0m
+        [36m</p>[39m
+      [36m</div>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../../node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/renderer/domains/android/tests/RuntimeDiagnostics.test.tsx:74:35
+     72|   } as unknown as AndroidManagementApi
+     73|   render(<QueryClientProvider client={new QueryClient()}><RuntimeDiagn…
+     74|   const hostRegion = await screen.findByRole('group', { name: '宿主工作区可用…
+       |                                   ^
+     75|   const vmRegion = screen.getByRole('group', { name: 'Linux VM Docker …
+     76|   expect(within(hostRegion).getByText(hostText)).toBeVisible()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 2 passed (5)
+   Start at  08:15:55
+   Duration  4.54s (transform 198ms, setup 206ms, import 210ms, tests 3.20s, environment 784ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/android/tests/RuntimeDiagnostics.test.tsx

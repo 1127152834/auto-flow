@@ -1,0 +1,6 @@
+{
+  "apps/desktop/src/renderer/domains/android/components/BulkActions.tsx": "9831653d72e491e8e5c9ad712de236ecb7f7b36f20a3fe68ca91203fe05381d8",
+  "apps/desktop/src/renderer/domains/android/components/ImageManager.tsx": "27c2523429451dda6940b1d46bc0154e7e44766057cde6fdf97f65168350fe15",
+  "apps/desktop/src/renderer/domains/android/tests/ManagementTools.test.tsx": "8c48fe12b7dd2805294e608f9c59b98c8e571cf88948923a065785a02cac491b",
+  "apps/desktop/src/renderer/domains/android/tests/ImageManager.test.tsx": "ec4c9c7b1152d593172a374a94a8581942f12cdc95de08e992d9ed51b64a26af"
+}

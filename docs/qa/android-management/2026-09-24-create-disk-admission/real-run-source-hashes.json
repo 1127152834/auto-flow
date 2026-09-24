@@ -1,0 +1,11 @@
+{
+  "apps/backend/src/autoflow/adapters/http/android.py": "6ba905f4ab44198bccf7147bd9020a4222bd8c2c0a818c332a5382bc58aec8be",
+  "apps/backend/src/autoflow/adapters/http/android_fleet_schemas.py": "00a2f1bdfc579ba924ed2c9e09883fc8caf20ddf07192b55bfa89071d13f1e04",
+  "apps/backend/src/autoflow/adapters/http/android_management.py": "40ff34e5f3b2f84fc80b446cc694597e825a0d5627a3436a3e88dce7eab2a332",
+  "apps/backend/src/autoflow/adapters/http/android_management_schemas.py": "9c26ead4f8c53f729984bc7371d5ea68a8161595ea9e93ca1976bf456eea4a0d",
+  "apps/backend/src/autoflow/application/android/backups.py": "bb445213abb03568c25e1757bfa6900d02411724272b2790329106f98c15b91e",
+  "apps/backend/src/autoflow/application/android/fleet.py": "8ccab1614778ebf2b11d97029dda5caf592a6552119f07ae8148fe8223622503",
+  "apps/backend/src/autoflow/application/android/management.py": "654782bf6fb396f05a5f26547de22cd674c6f0124a4698364266cde9c4f85180",
+  "apps/backend/src/autoflow/providers/android/mac_runtime.py": "85acc7c60030e32bec36d6c9653929d183d7dd32c33410c44224edf6ae41942b",
+  "apps/backend/src/autoflow/providers/android/management.py": "db151d0f97de95ff5e7ef7f449f24cadf75c2ed1b17a0356d14b4890947b330d"
+}

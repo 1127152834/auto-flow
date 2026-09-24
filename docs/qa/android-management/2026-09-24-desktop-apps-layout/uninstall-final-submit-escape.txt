@@ -1,0 +1,70 @@
+The following is a diff from the previous accessibility tree for Window: "AutoFlow" with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.
+Removed element IDs: 82-88
+~				80 container
+~					81 link Description: AutoFlow, Value: file:///Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/out/renderer/index.html#/dashboard
++					82 container 全局导航
++						83 按钮 总览
++						84 按钮 项目
++						85 按钮 浏览器配置
++						86 按钮 安卓设备
++						87 按钮 代理管理
++						88 按钮 模型管理
++					89 按钮 设置
++						90 图像
++						91 文本 设置
++					92 文本 本地服务正常
++					93 container
++						94 按钮 返回资源看板 / QA 卸载后备份恢复与焦点复验
++							95 图像
++							96 文本 返回资源看板
++							97 文本 /
++							98 文本 QA 卸载后备份恢复与焦点复验
++						99 标题 QA 卸载后备份恢复与焦点复验, Value: 1
++							100 文本 QA 卸载后备份恢复与焦点复验
++						101 图像
++						102 text 已就绪 持久实例
++						103 container
++							104 text Android  版本待核实  ·  720  ×  1280
++						105 按钮 复制配置
++							106 图像
++							107 文本 复制配置
++						108 按钮 更多设备操作
++							109 图像
++						110 container 设备详情
++							111 按钮 控制台
++							112 按钮 应用
++							113 按钮 环境配置
++						114 container
++							115 标题 应用, Value: 3
++								116 文本 应用
++							117 文本 当前应用
++							118 图像
++							119 文本 launcher3
++							120 文本 com.android.launcher3
++							121 按钮 上传 APK
++								122 图像
++								123 文本 上传 APK
++							124 按钮 启动应用
++								125 图像
++								126 文本 启动应用
++						127 container 应用管理
++							128 标题 应用管理, Value: 2
++								129 文本 应用管理
++							130 搜索文本字段 (settable) Description: 搜索应用, Value: moe.shizuku.privileged.api, Placeholder: 搜索包名
++							131 container
++								132 text moe.shizuku.privileged.api 用户应用  ·  版本 1086
++								133 按钮 启动
++								134 按钮 停止
++								135 按钮 清除数据
++								136 按钮 卸载
++						137 text 已连接 最新操作： 等待操作
++					138 container 实例备份
++						139 标题 数据备份, Value: 2
++							140 文本 数据备份
++						141 文本 仅允许已停止且无控制会话的实例。
++						142 文本 备份保存在本机，未加密，可能包含账号和应用私密数据。
++						143 文本 恢复会创建新实例并还原应用数据；不保证登录状态、DRM 或私有密钥可用。
++						144 文本 备份创建已禁用：实例必须已停止、状态新鲜、未被控制且没有活动控制会话。
++						145 按钮 (disabled) 创建停机备份
++						146 文本 此实例尚无备份。
+The focused UI element is 130 搜索文本字段 (settable) Description: 搜索应用, Value: moe.shizuku.privileged.api, Placeholder: 搜索包名

@@ -1,0 +1,58 @@
+import asyncio
+import io
+import json
+import tarfile
+from collections import Counter
+from pathlib import Path
+from uuid import uuid4
+
+from autoflow.application.android.management import AndroidManagement
+from autoflow.bootstrap.android_prepare import prepare
+from autoflow.infrastructure.database.android import SqlAlchemyDeviceRepository
+from autoflow.infrastructure.database.session import create_session_factory
+from autoflow.infrastructure.filesystem.android_paths import android_runtime_root
+from autoflow.infrastructure.filesystem.paths import AppPaths
+from autoflow.providers.android.mac_runtime import MacAndroidRuntime, docker, run
+from autoflow.providers.android.management import verify
+
+
+async def main():
+    data_dir = Path('/tmp/autoflow-android-xattr-inventory-20260923')
+    assert not data_dir.exists()
+    assert not (await docker('ps', '-q')).strip()
+    device = await prepare(data_dir, Path('/Users/zhangtiancheng/.autoflow/android-runtime/scrcpy-macos-aarch64-v3.3.4.tar.gz'), False)
+    paths = AppPaths.from_data_dir(data_dir)
+    sessions = create_session_factory(paths.database)
+    repo = SqlAlchemyDeviceRepository(sessions)
+    runtime = MacAndroidRuntime(android_runtime_root(), paths.workspace)
+    report = {'deviceId': device['deviceId'], 'volumeId': device['volumeId']}
+    helper = None
+    try:
+        manager = AndroidManagement(repo, runtime)
+        manager.operate(device['deviceId'], {'requestId': str(uuid4()), 'action': 'stop', 'deleteData': False})
+        await manager.task
+        device = repo.get(device['deviceId'])
+        mount = json.loads(await docker('volume', 'inspect', device['volumeId']))[0]['Mountpoint']
+        scan = "import collections,json,os,sys; root=sys.argv[1]; todo=[root]; counts=collections.Counter(); samples={}; files=0\nwhile todo:\n p=todo.pop(); files+=1\n for key in os.listxattr(p,follow_symlinks=False):\n  counts[key]+=1; samples.setdefault(key,os.path.relpath(p,root))\n if not os.path.islink(p) and os.path.isdir(p):\n  with os.scandir(p) as entries: todo.extend(e.path for e in entries)\nprint(json.dumps({'files':files,'counts':counts,'samples':samples}))"
+        report['source'] = json.loads(await run(['limactl', 'shell', '--workdir=/tmp', 'autoflow-redroid', 'sudo', 'python3', '-c', scan, mount], 600))
+        helper = (await docker('create', '-v', device['volumeId'] + ':/data:ro', device['imageId'])).decode().strip()
+        data = await docker('cp', helper + ':/data', '-', timeout=600)
+        with tarfile.open(fileobj=io.BytesIO(data)) as archive:
+            report['dockerArchivePax'] = dict(Counter(key for item in archive for key in item.pax_headers))
+        report['status'] = 'observed'
+    finally:
+        if helper:
+            await docker('rm', '-f', helper)
+        current = repo.get(device['deviceId'])
+        if not current.get('deleted'):
+            manager = AndroidManagement(repo, runtime)
+            manager.operate(current['deviceId'], {'requestId': str(uuid4()), 'action': 'delete', 'deleteData': True})
+            await manager.task
+            current = repo.get(current['deviceId'])
+        containers, volumes = await verify(current, runtime.workspace_id)
+        report['cleanup'] = {'deleted': current.get('deleted'), 'containers': len(containers), 'volumes': len(volumes)}
+        sessions.dispose()
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+
+
+asyncio.run(main())

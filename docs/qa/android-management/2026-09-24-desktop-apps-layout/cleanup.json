@@ -1,0 +1,106 @@
+{
+  "deviceIds": [
+    "3d819343-8b92-4e66-9db1-4dfd468b54c5",
+    "df7fd086-a8cb-5e14-8ab1-3922db919248"
+  ],
+  "backupId": "6bd56bb0-1b06-4b8e-8e61-53618812c183",
+  "deleted": [
+    {
+      "deviceId": "3d819343-8b92-4e66-9db1-4dfd468b54c5",
+      "containerAndVolume": "missing"
+    },
+    {
+      "deviceId": "df7fd086-a8cb-5e14-8ab1-3922db919248",
+      "containerAndVolume": "missing"
+    }
+  ],
+  "backupPreview": {
+    "items": [
+      {
+        "id": "6bd56bb0-1b06-4b8e-8e61-53618812c183",
+        "kind": "backup",
+        "purpose": "android",
+        "revision": 1,
+        "references": [
+          {
+            "kind": "device",
+            "id": "3d819343-8b92-4e66-9db1-4dfd468b54c5"
+          },
+          {
+            "kind": "image",
+            "id": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b"
+          }
+        ],
+        "workspaceId": "/private/tmp/autoflow-android-desktop-qa-20260924/workspace",
+        "ownership": {
+          "workspaceId": "/private/tmp/autoflow-android-desktop-qa-20260924/workspace",
+          "ownerId": null
+        },
+        "size": 25457142,
+        "irreversibleImpact": "删除后无法恢复此本地资源及其数据",
+        "sha256": "2e2f4646c7c0c4defe5d8110f374ce865de72d1577fcbf0ba32318be7e9f22ab",
+        "pathSummary": {
+          "basename": "6bd56bb0-1b06-4b8e-8e61-53618812c183",
+          "parent": "android-backups/final"
+        },
+        "summary": {
+          "sha256": "2e2f4646c7c0c4defe5d8110f374ce865de72d1577fcbf0ba32318be7e9f22ab",
+          "path": {
+            "basename": "6bd56bb0-1b06-4b8e-8e61-53618812c183",
+            "parent": "android-backups/final"
+          }
+        },
+        "fingerprint": "0af89a2a0e00028cc22b17f51b61c8b3c06e243b175e6311f72520d35c9f50a5",
+        "reversible": false
+      }
+    ],
+    "confirmationDigest": "2f46395056c5a1bb882a8775538cdf312de0e31c198a478f9648f141940e3519",
+    "previewId": "6b123114-3918-45c6-9748-c54f0a5aebef"
+  },
+  "backupCleanup": {
+    "items": [
+      {
+        "id": "6bd56bb0-1b06-4b8e-8e61-53618812c183",
+        "kind": "backup",
+        "purpose": "android",
+        "revision": 1,
+        "references": [
+          {
+            "kind": "device",
+            "id": "3d819343-8b92-4e66-9db1-4dfd468b54c5"
+          },
+          {
+            "kind": "image",
+            "id": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b"
+          }
+        ],
+        "workspaceId": "/private/tmp/autoflow-android-desktop-qa-20260924/workspace",
+        "ownership": {
+          "workspaceId": "/private/tmp/autoflow-android-desktop-qa-20260924/workspace",
+          "ownerId": null
+        },
+        "size": 25457142,
+        "irreversibleImpact": "删除后无法恢复此本地资源及其数据",
+        "sha256": "2e2f4646c7c0c4defe5d8110f374ce865de72d1577fcbf0ba32318be7e9f22ab",
+        "pathSummary": {
+          "basename": "6bd56bb0-1b06-4b8e-8e61-53618812c183",
+          "parent": "android-backups/final"
+        },
+        "summary": {
+          "sha256": "2e2f4646c7c0c4defe5d8110f374ce865de72d1577fcbf0ba32318be7e9f22ab",
+          "path": {
+            "basename": "6bd56bb0-1b06-4b8e-8e61-53618812c183",
+            "parent": "android-backups/final"
+          }
+        },
+        "fingerprint": "0af89a2a0e00028cc22b17f51b61c8b3c06e243b175e6311f72520d35c9f50a5",
+        "reversible": false
+      }
+    ],
+    "state": "succeeded",
+    "operationId": "b5602763-17d8-41e6-b27b-c4a63927badd",
+    "requestId": "7d5629f1-86fa-442d-93bd-a7847e342c6f",
+    "previewId": "6b123114-3918-45c6-9748-c54f0a5aebef"
+  },
+  "passed": true
+}

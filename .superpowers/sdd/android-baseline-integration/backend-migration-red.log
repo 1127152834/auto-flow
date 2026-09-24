@@ -1,0 +1,20 @@
+F.                                                                       [100%]
+=================================== FAILURES ===================================
+_______________ test_studio_backend_history_has_one_merged_head ________________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-266/test_studio_backend_history_ha0')
+
+    def test_studio_backend_history_has_one_merged_head(tmp_path: Path) -> None:
+        scripts = ScriptDirectory.from_config(_config(tmp_path / "heads.sqlite3"))
+    
+>       assert scripts.get_heads() == ["0020_merge_android_pm9"]
+E       AssertionError: assert ['am01_manage...heet_cursors'] == ['0020_merge_android_pm9']
+E         
+E         At index 0 diff: 'am01_management_operations' != '0020_merge_android_pm9'
+E         Left contains one more item: 'pm10_shared_sheet_cursors'
+E         Use -v to get more diff
+
+tests/integration/test_migration_heads.py:18: AssertionError
+=========================== short test summary info ============================
+FAILED tests/integration/test_migration_heads.py::test_studio_backend_history_has_one_merged_head
+1 failed, 1 passed in 0.68s

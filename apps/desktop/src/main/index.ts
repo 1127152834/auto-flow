@@ -170,6 +170,7 @@ async function createWindow(): Promise<void> {
     'open-directory': directory => settings!.openDirectory(directory),
     'preview-diagnostics': includeLogs => settings!.previewDiagnostics(includeLogs),
     'save-diagnostics': id => settings!.saveDiagnostics(id),
+    'save-android-diagnostic': id => settings!.saveAndroidDiagnostic(id),
     'quit': async () => { setTimeout(() => app.quit(), 0); return { quitting: true } },
   }
   for (const [name, action] of Object.entries(actions)) {

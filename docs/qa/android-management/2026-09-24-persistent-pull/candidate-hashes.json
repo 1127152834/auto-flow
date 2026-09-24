@@ -1,0 +1,11 @@
+{
+  "apps/backend/src/autoflow/adapters/http/android_management.py": "894180f7225af5d966a534097d1adaffdfe75425a8fb4e156d08290cdb7cb8e6",
+  "apps/backend/src/autoflow/infrastructure/database/android_operations.py": "1fd7835172dfa7e2e0112297ff1fd1016156c0ccb5d82fead7f131cb711da89a",
+  "apps/backend/tests/contract/test_android_management_operations.py": "e84ac1035deb51f5e9ed27e715e12b40b5dd2f546912f61923abf8ced5cd8262",
+  "apps/desktop/src/renderer/domains/android/components/ImageManager.tsx": "d807e74734ee40e466adcfebdaa24bf5f1a549fc825017ebb5f446a6727a3fa6",
+  "apps/desktop/src/renderer/domains/android/pages/AndroidPage.tsx": "eae6285d1f554877a1576f306b229c706f8514b91cee8c9850eb9570ed29667e",
+  "apps/desktop/src/renderer/domains/android/tests/ImageManager.test.tsx": "bc8a165394772fff94766ec4aa8a7eaea3a4f6f7db3ad8ff988b3b2b4ecec14f",
+  "apps/desktop/src/renderer/domains/android/tests/AndroidPage.test.tsx": "6ed0f392db775764a5782b8359588371448e563eb776162b74b5050c72fda96c",
+  "apps/desktop/src/renderer/shared/api/generated.ts": "17553ba07b3c6f4abaf28f1860ec9f3f8c541d9ac6096eb8b191b6c6f0ea343c",
+  "docs/qa/android-management/scripts/image-pull-interruption-smoke.py": "fcd9fccd50f6582922fc5abd73c7a8243782da4a9fe96a66522e985821c6ffd0"
+}

@@ -1,0 +1,10 @@
+/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/android-final-mypy-package-8ayhjaj1/autoflow/application/android/images.py:248: error: Item "None" of "Any | None" has no attribute "inspect"  [union-attr]
+/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/android-final-mypy-package-8ayhjaj1/autoflow/application/android/images.py:276: error: Function "autoflow.application.android.images.AndroidImageService.list" is not valid as a type  [valid-type]
+/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/android-final-mypy-package-8ayhjaj1/autoflow/application/android/images.py:276: note: Perhaps you need "Callable[...]" or a callback protocol?
+/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/android-final-mypy-package-8ayhjaj1/autoflow/infrastructure/database/android_operations.py:164: error: Incompatible types in assignment (expression has type "datetime", target has type "str")  [assignment]
+/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/android-final-mypy-package-8ayhjaj1/autoflow/infrastructure/database/android_operations.py:166: error: Incompatible types in assignment (expression has type "datetime", target has type "str")  [assignment]
+/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/android-final-mypy-package-8ayhjaj1/autoflow/infrastructure/database/android_operations.py:188: error: Incompatible types in assignment (expression has type "datetime", target has type "str")  [assignment]
+/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/android-final-mypy-package-8ayhjaj1/autoflow/infrastructure/database/android_operations.py:190: error: Incompatible types in assignment (expression has type "datetime", target has type "str")  [assignment]
+Found 6 errors in 2 files (checked 3 source files)
+
+exit=1

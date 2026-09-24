@@ -8,6 +8,7 @@ License: LICENSE.WebRPA.
 from __future__ import annotations
 
 import asyncio
+import logging
 from collections.abc import Mapping
 from typing import Any
 
@@ -92,8 +93,8 @@ async def _wait_for_email(
                     return dict(last)
         except asyncio.CancelledError:
             raise
-        except Exception:  # noqa: BLE001, S110 - source keeps polling after IMAP failures.
-            pass
+        except Exception:  # noqa: BLE001 - source keeps polling after IMAP failures.
+            logging.getLogger(__name__).warning("IMAP polling failed; retrying")
         await asyncio.sleep(max(0, check_interval))
 
 

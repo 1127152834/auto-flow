@@ -1,0 +1,161 @@
+Window: "DevTools", App: Google Chrome.
+0 标准窗口 DevTools - zhangtiancheng, Secondary Actions: Raise, URL: devtools://devtools/bundled/js_app.html?remoteBase=https://chrome-devtools-frontend.appspot.com/serve_file/@792bf6722e73a45aa9e47c163b9901bdc17f3230/
+	1 container DevTools - zhangtiancheng, URL: devtools://devtools/bundled/js_app.html?remoteBase=https://chrome-devtools-frontend.appspot.com/serve_file/@792bf6722e73a45aa9e47c163b9901bdc17f3230/
+		2 container
+			3 container
+				4 HTML 内容 DevTools, URL: devtools://devtools/bundled/js_app.html?remoteBase=https://chrome-devtools-frontend.appspot.com/serve_file/@792bf6722e73a45aa9e47c163b9901bdc17f3230/
+					5 container
+						6 container
+							7 container DevTools is now available in Chinese
+								8 文本 DevTools is now available in Chinese
+								9 按钮 Don’t show again
+								10 按钮 Always match Chrome’s language
+								11 按钮 Switch DevTools to Chinese
+								12 container Close
+									13 按钮 Close
+							14 container
+								15 container
+									16 container Main toolbar
+										17 container
+											18 标签组 Panels
+												19 标签 (selected) Console, Value: 1
+												20 标签 (settable, integer) Sources, Value: 0
+												21 标签 (settable, integer) Network, Value: 0
+												22 标签 (settable, integer) Performance, Value: 0
+												23 标签 (settable, integer) Memory, Value: 0
+										24 工具栏
+											25 container Open Console to view 1 error
+												26 按钮 Open Console to view 1 error
+											27 container Settings, Help: Settings - F1 - ⇧ ?
+												28 按钮 Settings - F1 - ⇧ ?
+											29 弹出式按钮 Customize and control DevTools
+												30 按钮 Customize and control DevTools
+									31 container Console panel
+										32 container console
+											33 container
+												34 工具栏
+													35 container Hide Console sidebar
+														36 按钮 Hide Console sidebar
+													37 container Clear console, Help: Clear console - Ctrl L - ⌘ K
+														38 按钮 Clear console - Ctrl L - ⌘ K
+													39 container Collapse all
+														40 按钮 Collapse all
+													41 按钮 JavaScript context: /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron[79852]
+													42 container Create live expression
+														43 按钮 Create live expression
+													44 文本输入区 (settable) Filter
+														45 文本 Filter
+													46 弹出式按钮 (disabled) Log level: Default levels
+														47 文本 Custom levels
+													48 container Some problems no longer generate console messages, but are surfaced in the Issues tab. Click to go to the Issues tab
+														49 按钮 Some problems no longer generate console messages, but are surfaced in the Issues tab. Click to go to the Issues tab
+													50 container Console settings
+														51 切换按钮 Console settings, Value: 0
+													52 container 0 messages in console
+												53 container
+													54 外框
+														55 row (selected)    No messages
+															56 文本 No messages
+														57 row    No user messages
+															58 文本 No user messages
+														59 row    No errors
+															60 文本 No errors
+														61 row    No warnings
+															62 文本 No warnings
+														63 row    No info
+															64 文本 No info
+														65 row    No verbose
+															66 文本 No verbose
+													67 container
+														68 container
+															69 container
+																70 text JSON . stringify ( require ( 'electron' ). BrowserWindow . getAllWindows (). map ( w =>({ id : w . id , url : w . webContents . getURL (), bounds : w . getBounds (), zoom : w . webContents . getZoomFactor ()})))
+															71 container '[{"id":1,"url":"file:///Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/out/renderer/index.html#/dashboard","bounds":{"x":180,"y":44,"width":1440,"height":1024},"zoom":1}]' Stack table collapsed
+																72 container
+																	73 text '[{"id":1,"url":" file:///Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/out/renderer/index.html#/dashboard ","bounds":{"x":180,"y":44,"width":1440,"height":1024},"zoom":1}]'
+															74 container
+																75 text var qaWindow  =  require ( 'electron' ). BrowserWindow . fromId ( 1 );  qaWindow . setSize ( 1280 , 800 );  JSON . stringify ({ bounds : qaWindow . getBounds (), zoom : qaWindow . webContents . getZoomFactor ()})
+															76 container '{"bounds":{"x":180,"y":44,"width":1280,"height":800},"zoom":1}' Stack table collapsed
+																77 文本 '{"bounds":{"x":180,"y":44,"width":1280,"height":800},"zoom":1}'
+															78 container
+																79 text qaWindow . webContents . setZoomFactor ( 2 );  JSON . stringify ({ bounds : qaWindow . getBounds (), zoom : qaWindow . webContents . getZoomFactor ()})
+															80 container '{"bounds":{"x":180,"y":44,"width":1280,"height":800},"zoom":2}' Stack table collapsed
+																81 文本 '{"bounds":{"x":180,"y":44,"width":1280,"height":800},"zoom":2}'
+															82 container
+																83 text qaWindow . setSize ( 1440 , 900 );  JSON . stringify ({ bounds : qaWindow . getBounds (), zoom : qaWindow . webContents . getZoomFactor ()})
+															84 container '{"bounds":{"x":180,"y":44,"width":1440,"height":900},"zoom":2}' Stack table collapsed
+																85 文本 '{"bounds":{"x":180,"y":44,"width":1440,"height":900},"zoom":2}'
+															86 container
+																87 text JSON . stringify ( await qaWindow . webContents . executeJavaScript ( require ( 'fs' ). readFileSync ( '/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/docs/qa/android-management/scripts/create-layout-check.js' , 'utf8' )))
+															88 container Uncaught Error: Script failed to execute, this normally means an error was thrown. Check the renderer console for the error.
+																89 container
+																	90 container Error
+																	91 container Uncaught Stack table collapsed
+																		92 container
+																			93 text Uncaught Error: Script failed to execute, this normally means an error was thrown. Check the renderer console for the error.
+    at node:electron
+																			94 链接 /js2c/sandbox_bundle:2, Help: /js2c/sandbox_bundle
+																				95 文本 /js2c/sandbox_bundle:2
+																			96 文本 :128198
+    at IpcRendererInternal.<anonymous> (node:electron
+																			97 链接 /js2c/sandbox_bundle:2, Help: /js2c/sandbox_bundle
+																				98 文本 /js2c/sandbox_bundle:2
+																			99 文本 :122466)
+    at IpcRendererInternal.emit (node:electron
+																			100 链接 /js2c/sandbox_bundle:2, Help: /js2c/sandbox_bundle
+																				101 文本 /js2c/sandbox_bundle:2
+																			102 文本 :45759)
+    at Object.onMessage (node:electron
+																			103 链接 /js2c/sandbox_bundle:2, Help: /js2c/sandbox_bundle
+																				104 文本 /js2c/sandbox_bundle:2
+																			105 文本 :121525)
+															106 container
+																107 text var qaLayoutSource  =  require ( 'fs' ). readFileSync ( '/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/docs/qa/android-management/scripts/create-layout-check.js' , 'utf8' );  JSON . stringify ( await qaWindow . webContents . executeJavaScript ( '(function(){try{return eval(' + JSON . stringify ( qaLayoutSource )+ ')}catch(e){return {passed:false,error:e.message}}})()' ))
+															108 container '{"passed":false,"error":"Create layout overflows: {\\"width\\":708,\\"pageWidth\\":971,\\"controls\\":16,\\"overflow\\":[{\\"label\\":\\"创建预览数量1 台系统Android 13 标准 · ARM64分辨率720 × 1280数据独立持久保存运行环境Mac 本机 已连接当前配置兼容同时启动数量由\\",\\"left\\":618,\\"right\\":958}]}"}' Stack table collapsed
+																109 文本 '{"passed":false,"error":"Create layout overflows: {\\"width\\":708,\\"pageWidth\\":971,\\"controls\\":16,\\"overflow\\":[{\\"label\\":\\"创建预览数量1 台系统Android 13 标准 · ARM64分辨率720 × 1280数据独立持久保存运行环境Mac 本机 已连接当前配置兼容同时启动数量由\\",\\"left\\":618,\\"right\\":958}]}"}'
+															110 container
+																111 text qaWindow . webContents . setZoomFactor ( 1 )
+															112 container undefined Stack table collapsed
+																113 文本 undefined
+															114 container
+																115 text var qaDetailSource = require ( 'fs' ). readFileSync ( '/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/docs/qa/android-management/scripts/detail-layout-check.js' , 'utf8' );  JSON . stringify ( await qaWindow . webContents . executeJavaScript ( '(function(){try{return eval(' + JSON . stringify ( qaDetailSource )+ ')}catch(e){return {passed:false,error:e.message}}})()' ))
+															116 container '{"passed":false,"error":"Device heading overlaps tabs: {\\"contentBottom\\":226.09375,\\"tabsTop\\":193}"}' Stack table collapsed
+																117 文本 '{"passed":false,"error":"Device heading overlaps tabs: {\\"contentBottom\\":226.09375,\\"tabsTop\\":193}"}'
+														118 container
+															119 container
+																120 文本输入区 (settable) Console prompt, Value:
+
+								121 container Tool drawer
+									122 container
+										123 工具栏
+											124 弹出式按钮 More Tools
+												125 按钮 More Tools
+										126 标签组
+											127 标签 (selected) Console, Value: 1
+											128 标签 (settable, integer) AI assistance, Value: 0
+										129 工具栏
+											130 container Toggle drawer orientation
+												131 按钮 Toggle drawer orientation
+											132 container Expand drawer
+												133 按钮 Expand drawer
+											134 container Close drawer
+												135 按钮 Close drawer
+										136 container Console panel
+						137 文本 DevTools is undocked
+	138 关闭按钮
+	139 全屏幕按钮 Help: 此按钮也可以执行缩放窗口的操作, Secondary Actions: 缩放窗口
+	140 最小化按钮
+	141 文本 DevTools
+142 menu bar
+	143 Chrome
+	144 文件
+	145 编辑
+	146 显示
+	147 历史记录
+	148 书签
+	149 个人资料
+	150 标签页
+	151 窗口
+	152 帮助
+
+The focused UI element is 120 文本输入区 (settable) Console prompt, Value:

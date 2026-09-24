@@ -1,0 +1,142 @@
+{
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-create-disk-fuy1k2ff",
+  "status": "passed",
+  "checks": [
+    "unconfirmed create failed; zero containers/volumes; false replay unchanged; true conflict",
+    "retained restore did not inherit creation confirmation; explicit current confirmation preserves same volume/probe",
+    "backup restore requires current confirmation; new device/volume probe matches; source archive hashes unchanged",
+    "batch default refuses with zero runtime objects; confirmed template and source snapshot create distinct stopped instances",
+    "source probe preserved after backup restore and configuration copies"
+  ],
+  "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "batches": [
+    {
+      "id": "bc5c90d9-32c5-470d-9769-5dbdb261669a",
+      "createdAt": "2026-09-24T01:10:30.021351+00:00",
+      "state": "failed",
+      "request": {
+        "name": "Unconfirmed batch",
+        "batchId": "bc5c90d9-32c5-470d-9769-5dbdb261669a",
+        "profileId": "9e60601e-956d-4c59-9ca1-c3ce2b5c12b9",
+        "profileRevision": 1,
+        "sourceDeviceId": null,
+        "quantity": 1,
+        "instanceType": "persistent",
+        "start": false,
+        "allowUnknownDiskEstimate": false,
+        "width": 720,
+        "height": 1280,
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai"
+      },
+      "items": [
+        {
+          "deviceId": "542db72f-aaef-458c-86c6-dc7f6d57e503",
+          "name": "Unconfirmed batch 01",
+          "state": "failed",
+          "error": "最终磁盘占用空间无法可靠估计，尚未开始写入；确认未知占用后可重试"
+        }
+      ]
+    },
+    {
+      "id": "e0a6615a-b628-443b-b672-a47c092b89aa",
+      "createdAt": "2026-09-24T01:10:31.401445+00:00",
+      "state": "succeeded",
+      "request": {
+        "name": "Confirmed batch",
+        "batchId": "e0a6615a-b628-443b-b672-a47c092b89aa",
+        "profileId": "9e60601e-956d-4c59-9ca1-c3ce2b5c12b9",
+        "profileRevision": 1,
+        "sourceDeviceId": null,
+        "quantity": 1,
+        "instanceType": "persistent",
+        "start": false,
+        "allowUnknownDiskEstimate": true,
+        "width": 720,
+        "height": 1280,
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai"
+      },
+      "items": [
+        {
+          "deviceId": "4917fde7-bfa5-4921-b712-49823cf5a1c7",
+          "name": "Confirmed batch 01",
+          "state": "succeeded",
+          "error": null
+        }
+      ]
+    },
+    {
+      "id": "031f2f1b-f3fd-4075-a26d-bf8f005bdf60",
+      "createdAt": "2026-09-24T01:10:33.496723+00:00",
+      "state": "failed",
+      "request": {
+        "name": "Unconfirmed snapshot copy",
+        "batchId": "031f2f1b-f3fd-4075-a26d-bf8f005bdf60",
+        "profileId": "9e60601e-956d-4c59-9ca1-c3ce2b5c12b9",
+        "profileRevision": 1,
+        "sourceDeviceId": "4917fde7-bfa5-4921-b712-49823cf5a1c7",
+        "quantity": 1,
+        "instanceType": "persistent",
+        "start": false,
+        "allowUnknownDiskEstimate": false,
+        "width": 720,
+        "height": 1280,
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai"
+      },
+      "items": [
+        {
+          "deviceId": "bfda7c3a-cdd9-47e4-83d4-246859c8189b",
+          "name": "Unconfirmed snapshot copy 01",
+          "state": "failed",
+          "error": "最终磁盘占用空间无法可靠估计，尚未开始写入；确认未知占用后可重试"
+        }
+      ]
+    },
+    {
+      "id": "7cc759aa-3017-4d72-a89b-0deab46b1322",
+      "createdAt": "2026-09-24T01:10:35.689653+00:00",
+      "state": "succeeded",
+      "request": {
+        "name": "Confirmed snapshot copy",
+        "batchId": "7cc759aa-3017-4d72-a89b-0deab46b1322",
+        "profileId": "9e60601e-956d-4c59-9ca1-c3ce2b5c12b9",
+        "profileRevision": 1,
+        "sourceDeviceId": "4917fde7-bfa5-4921-b712-49823cf5a1c7",
+        "quantity": 1,
+        "instanceType": "persistent",
+        "start": false,
+        "allowUnknownDiskEstimate": true,
+        "width": 720,
+        "height": 1280,
+        "locale": "zh-CN",
+        "timezone": "Asia/Shanghai"
+      },
+      "items": [
+        {
+          "deviceId": "a3726951-6c27-4a59-b644-61a215b16f5d",
+          "name": "Confirmed snapshot copy 01",
+          "state": "succeeded",
+          "error": null
+        }
+      ]
+    }
+  ],
+  "sourceId": "ff0efc52-6992-4722-86d3-c85090449be1",
+  "restoredId": "dedc5de0-7be6-53c1-adea-f1f048ecaa4a",
+  "cleanup": {
+    "deviceIds": [
+      "00e1e699-662c-46bc-92db-9e6d527a4589",
+      "ff0efc52-6992-4722-86d3-c85090449be1",
+      "35909edf-92a0-5bf4-9eeb-0acb42f93b48",
+      "dedc5de0-7be6-53c1-adea-f1f048ecaa4a",
+      "542db72f-aaef-458c-86c6-dc7f6d57e503",
+      "4917fde7-bfa5-4921-b712-49823cf5a1c7",
+      "bfda7c3a-cdd9-47e4-83d4-246859c8189b",
+      "a3726951-6c27-4a59-b644-61a215b16f5d"
+    ],
+    "containersAndVolumes": 0,
+    "backups": 0
+  }
+}

@@ -1,0 +1,23 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_______ test_first_backup_space_budget_includes_all_missing_directories ________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-205/test_first_backup_space_budget0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10829ad90>
+
+    def test_first_backup_space_budget_includes_all_missing_directories(tmp_path, monkeypatch):
+        from types import SimpleNamespace
+        from autoflow.providers.android import backup_storage
+        from autoflow.domain.android.ports import AndroidError
+
+        storage = backup_storage.BackupStorage(tmp_path / "backups")
+        free = 16384  # Two archive blocks, one manifest block and only one directory block.
+        monkeypatch.setattr(backup_storage.shutil, "disk_usage", lambda _path: SimpleNamespace(free=free))
+        monkeypatch.setattr(backup_storage.os, "statvfs", lambda _path: SimpleNamespace(f_frsize=4096))
+>       with pytest.raises(AndroidError) as rejected:
+E       Failed: DID NOT RAISE AndroidError
+
+apps/backend/tests/unit/test_android_backup_storage.py:132: Failed
+=========================== short test summary info ============================
+FAILED apps/backend/tests/unit/test_android_backup_storage.py::test_first_backup_space_budget_includes_all_missing_directories
+1 failed, 8 deselected in 0.13s

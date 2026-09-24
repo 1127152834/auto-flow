@@ -40,7 +40,7 @@ class WebDavConfig(ApiModel):
     enabled: bool = False
     url: str = ""
     username: str = ""
-    password: str = Field(default="", json_schema_extra={"writeOnly": True})
+    password: str = Field(default="", json_schema_extra={"writeOnly": True}, repr=False)
     remote_dir: str = Field(default="", alias="remoteDir")
 
 
