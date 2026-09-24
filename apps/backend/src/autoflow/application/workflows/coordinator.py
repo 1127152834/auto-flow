@@ -37,15 +37,8 @@ from .documents import WorkflowDocumentService
 from .modules import CustomModuleService
 from .runs import WorkflowRunRepository, WorkflowRunService
 from .runtime import WorkflowRuntime
+from .webhooks import webhook_payload
 
-_SENSITIVE_WEBHOOK_HEADERS = {
-    "authorization",
-    "cookie",
-    "x-api-key",
-    "x-auth-token",
-    "x-csrf-token",
-    "proxy-authorization",
-}
 _MAX_INLINE_DIAGNOSTIC_BYTES = 64 * 1024
 
 
@@ -1411,6 +1404,9 @@ class WorkflowRunCoordinator:
             self._command_receipts[command_id] = (fingerprint, receipt, 200)
             return copy.deepcopy(receipt), 200
 
+    def has_webhook(self, webhook_id: str) -> bool:
+        return webhook_id in self._webhook_requests
+
     async def trigger_webhook(
         self,
         webhook_id: str,
@@ -1428,43 +1424,13 @@ class WorkflowRunCoordinator:
                     "Webhook不存在、HTTP方法不匹配或已经触发",
                     404,
                 )
-            allowed_method = str(state["method"]).upper()
-            if allowed_method != "ANY" and allowed_method != method.upper():
-                raise WorkflowRunError(
-                    "WEBHOOK_NOT_FOUND", "Webhook不存在或HTTP方法不匹配", 404
-                )
-            normalized_headers = {key.lower(): value for key, value in headers.items()}
-            expected_headers = dict(state["validateHeaders"])
-            if any(
-                normalized_headers.get(str(key).lower()) != str(value)
-                for key, value in expected_headers.items()
-            ):
-                raise WorkflowRunError(
-                    "WEBHOOK_HEADER_MISMATCH", "Webhook请求头验证失败", 403
-                )
-            expected_params = dict(state["validateParams"])
-            if any(query.get(str(key)) != str(value) for key, value in expected_params.items()):
-                raise WorkflowRunError(
-                    "WEBHOOK_PARAM_MISMATCH", "Webhook查询参数验证失败", 403
-                )
+            data = webhook_payload(state, method=method, headers=headers, query=query, body=body)
 
             request_id = str(state["requestId"])
             command_id = str(uuid4())
             waiter = asyncio.get_running_loop().create_future()
             self._command_waiters[command_id] = waiter
             state["status"] = "delivering"
-            filtered_headers = {
-                key: value
-                for key, value in headers.items()
-                if key.lower() not in _SENSITIVE_WEBHOOK_HEADERS
-            }
-            data = {
-                "method": method.upper(),
-                "headers": filtered_headers,
-                "body": copy.deepcopy(body),
-                "query": dict(query),
-                "timestamp": datetime_now().isoformat(),
-            }
             try:
                 await self._workers.send_command(
                     str(state["runId"]),

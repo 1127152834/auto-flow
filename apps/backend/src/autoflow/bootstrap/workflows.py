@@ -28,6 +28,7 @@ from autoflow.adapters.http.workflow_runs import (
     workflow_variable_tracking_router,
 )
 from autoflow.adapters.http.workflows import workflows_router
+from autoflow.application.project_runs.interactions import ProjectRunInteractions
 from autoflow.application.workflows.assistant import WorkflowAssistantService
 from autoflow.application.workflows.coordinator import WorkflowRunCoordinator
 from autoflow.application.workflows.documents import WorkflowDocumentService
@@ -143,6 +144,9 @@ class PendingWorkflowRunCommands:
         raise WorkflowRunError(
             "WORKFLOW_EXECUTION_NOT_READY", "真实运行协调器尚未完成装配", 503
         )
+
+    def has_webhook(self, webhook_id: str) -> bool:
+        return False
 
     async def trigger_webhook(
         self,
@@ -453,10 +457,10 @@ def build_workflow_services(
     )
 
 
-def register_workflow_routes(app: FastAPI, services: WorkflowServices) -> None:
+def register_workflow_routes(app: FastAPI, services: WorkflowServices, *, project_interactions: ProjectRunInteractions | None = None) -> None:
     app.include_router(workflow_metadata_router())
     # Static workflow commands must be registered before the dynamic document ID.
-    app.include_router(workflow_trigger_router(services.commands))
+    app.include_router(workflow_trigger_router(services.commands, project_interactions=project_interactions))
     if services.gestures is not None:
         app.include_router(workflow_gesture_router(services.gestures))
     app.include_router(workflow_run_command_router(services.commands, services.runs))

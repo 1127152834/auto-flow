@@ -150,6 +150,7 @@ class ProjectGraphExecutor:
             interactive = command_bus.for_context(self.context)
             self.context.input_prompts = interactive
             self.context.browser_scripts = interactive
+            self.context.webhook_triggers = interactive
         self.legacy = WorkflowExecutor(browser_context, variables, emit, should_stop)
         self.legacy.variables = self.context.variables
         self.emit = emit
@@ -238,6 +239,7 @@ class ProjectGraphExecutor:
         if event['type'] in {
             'execution:input_prompt', 'execution:input_prompt_closed',
             'execution:js_script', 'execution:js_script_closed',
+            'execution:webhook_waiting', 'execution:webhook_closed',
         }:
             await emit('interaction', dict(event))
             return
@@ -318,6 +320,8 @@ class ProjectGraphExecutor:
                     or config.get('saveResult') or config.get('saveMessage'))
             if data['moduleType'] in {'json_parse', 'base64', 'run_command', 'table_get_cell', 'table_export', 'extract_table_data', 'api_request', 'network_capture'}:
                 name = config.get('variableName')
+            if data['moduleType'] == 'webhook_trigger':
+                name = str(config.get('saveToVariable', 'webhook_data'))
             if data['moduleType'] == 'api_trigger':
                 name = config.get('saveToVariable', 'api_request')
             if data['moduleType'] == 'file_watcher_trigger':
@@ -332,7 +336,7 @@ class ProjectGraphExecutor:
             if data['moduleType'] == 'ocr_captcha':
                 name = str(config.get('variableName') or config.get('resultVariable') or '').strip()
             if isinstance(name, str) and name and name not in current.sensitive_variables:
-                if data['moduleType'] in {'run_command', 'python_script', 'inject_javascript', 'handle_dialog', 'page_load_complete', 'random_number', 'get_time', 'input_prompt', 'js_script', 'table_export', 'extract_table_data', 'api_request', 'api_trigger', 'assert_checkpoint', 'network_capture', 'network_monitor_wait', 'network_monitor_stop', 'ocr_captcha', 'face_recognition', 'image_ocr'}:
+                if data['moduleType'] in {'run_command', 'python_script', 'inject_javascript', 'handle_dialog', 'page_load_complete', 'random_number', 'get_time', 'input_prompt', 'js_script', 'table_export', 'extract_table_data', 'api_request', 'api_trigger', 'assert_checkpoint', 'network_capture', 'network_monitor_wait', 'network_monitor_stop', 'ocr_captcha', 'face_recognition', 'image_ocr', 'webhook_trigger'}:
                     if name in current.variables:
                         await emit('output', {'name': name, 'value': current.variables[name]})
                 elif event.get('data') is not None or (

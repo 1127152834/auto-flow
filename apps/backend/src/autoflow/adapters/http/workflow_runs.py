@@ -12,6 +12,7 @@ from fastapi.responses import FileResponse, JSONResponse, Response, StreamingRes
 from pydantic import ConfigDict, Field
 
 from autoflow.adapters.http.schemas import ApiModel
+from autoflow.application.project_runs.interactions import ProjectRunInteractions
 from autoflow.application.workflows.runs import WorkflowRunService
 from autoflow.domain.workflows.runs import WorkflowRun, WorkflowRunError
 
@@ -67,6 +68,8 @@ class WorkflowRunCommands(Protocol):
     def tts_request_state(self, request_id: str) -> dict[str, str]: ...
 
     def desktop_action_state(self, request_id: str) -> dict[str, str]: ...
+
+    def has_webhook(self, webhook_id: str) -> bool: ...
 
     async def trigger_webhook(
         self,
@@ -218,7 +221,7 @@ def workflow_run_command_router(commands: WorkflowRunCommands, runs: WorkflowRun
     return router
 
 
-def workflow_trigger_router(commands: WorkflowRunCommands) -> APIRouter:
+def workflow_trigger_router(commands: WorkflowRunCommands, *, project_interactions: ProjectRunInteractions | None = None) -> APIRouter:
     router = APIRouter(prefix="/api/triggers", tags=["studio-workflow-triggers"])
 
     @router.get("/webhook/{webhook_id}")
@@ -243,7 +246,17 @@ def workflow_trigger_router(commands: WorkflowRunCommands) -> APIRouter:
                 body = json.loads(raw) if raw else {}
             except (json.JSONDecodeError, UnicodeDecodeError):
                 body = {}
-        response_body, response_status = await commands.trigger_webhook(
+        target = commands.trigger_webhook
+        if project_interactions is not None:
+            project_waiting = project_interactions.has_webhook(webhook_id)
+            studio_waiting = commands.has_webhook(webhook_id)
+            if project_waiting and studio_waiting:
+                raise WorkflowRunError("WEBHOOK_AMBIGUOUS", "Studio与项目运行使用相同Webhook ID，请使用不同标识", 409)
+            if project_waiting:
+                target = project_interactions.trigger_webhook
+            elif not studio_waiting:
+                raise WorkflowRunError("WEBHOOK_NOT_FOUND", "Webhook不存在或已经结束", 404)
+        response_body, response_status = await target(
             webhook_id,
             method=request.method,
             headers=dict(request.headers),

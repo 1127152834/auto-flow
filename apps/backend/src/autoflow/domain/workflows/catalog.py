@@ -59,6 +59,7 @@ _RUNNABLE_MODULES = (
     ("ssh_disconnect", "SSH断开连接"),
     ("subflow", "子流程"),
     ("run_workflow_file", "运行工作流"),
+    ("webhook_trigger", "Webhook触发器"),
     ("ocr_captcha", "OCR验证码识别"),
     ("slider_captcha", "滑块验证码"),
     ("face_recognition", "人脸识别"),

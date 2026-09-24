@@ -176,3 +176,27 @@ async def test_recognition_project_outputs_use_actual_variables_and_source_names
     })
     outputs = [payload for kind, _, _, payload in events if kind == 'output']
     assert outputs == ([{'name': name, 'value': 'actual value'}] if name and not sensitive else [])
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('config,name', [({}, 'webhook_data'), ({'saveToVariable': 'request'}, 'request'), ({'saveToVariable': ''}, '')])
+@pytest.mark.parametrize('sensitive', [False, True])
+async def test_webhook_project_output_preserves_name_and_sensitive_boundary(config, name, sensitive):
+    events = []
+
+    async def emit(*event):
+        events.append(event)
+
+    executor = ProjectGraphExecutor(None, {}, emit, lambda: False)
+    executor.nodes = {'hook': {'moduleType': 'webhook_trigger', 'config': config}}
+    value = {'body': {'answer': 42}}
+    if name:
+        executor.context.set_variable(name, value, sensitive=sensitive)
+    executor.started['visit'] = monotonic()
+    await executor.publish({
+        'type': 'execution:node_complete', 'nodeId': 'hook', 'executionId': 'visit',
+        'success': True, 'data': {'body': {'answer': 'not the current variable'}},
+    })
+    assert [payload for kind, _, _, payload in events if kind == 'output'] == (
+        [{'name': name, 'value': value}] if name and not sensitive else []
+    )

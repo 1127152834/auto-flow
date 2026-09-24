@@ -133,7 +133,7 @@ class _Control:
                     if self.command_bus is not None:
                         self.command_bus.close()
                     continue
-                if message.get("type") in {"input_prompt_result", "js_script_result"} and self.command_bus is not None:
+                if message.get("type") in {"input_prompt_result", "js_script_result", "webhook_result"} and self.command_bus is not None:
                     self.command_bus.receive(message)
                     continue
                 event_id = message.get("eventId")

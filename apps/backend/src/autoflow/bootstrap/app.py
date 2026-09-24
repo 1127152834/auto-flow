@@ -622,7 +622,7 @@ def create_app(
     laya_runtime = LayaRuntime(paths.cache)
     app.include_router(laya_lab_router(LayaService(laya_runtime)))
     app.router.add_event_handler("shutdown", laya_runtime.close)
-    register_workflow_routes(app, workflow_services)
+    register_workflow_routes(app, workflow_services, project_interactions=project_workflow_dispatcher.interactions)
     app.include_router(local_workflows_router(local_workflows, webdav_workflows))
     app.include_router(image_assets_router(image_assets))
     app.include_router(workflow_bundles_router(workflow_bundles))
@@ -714,7 +714,7 @@ def create_app(
             or request.url.path.endswith("/models/discover")
         )
         guarded_request = request.url.path.startswith("/api/") and (
-            request.method not in {"GET", "HEAD", "OPTIONS"} or guarded_get
+            request.method not in {"GET", "HEAD", "OPTIONS"} or guarded_get or external_webhook
         )
         if not guarded_request:
             return await call_next(request)

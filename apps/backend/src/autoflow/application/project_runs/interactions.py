@@ -6,20 +6,23 @@ import asyncio
 import copy
 import hashlib
 import json
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Mapping
 from datetime import UTC, datetime
 from typing import Any
+from uuid import uuid4
 
-from sqlalchemy import select
-from sqlalchemy.orm import Session, sessionmaker
-
+from autoflow.application.workflows.webhooks import webhook_payload
 from autoflow.domain.project_runs.models import ProjectRunError
-from autoflow.domain.workflows.runtime import CoreRun
+from autoflow.domain.workflows.runs import WorkflowRunError
+from autoflow.domain.workflows.runtime import CoreRun, WorkflowRuntimeError
 from autoflow.infrastructure.database.models import ProjectOperationRow, ProjectRow
 from autoflow.infrastructure.database.project_run_models import ProjectTaskRow
 from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
+from sqlalchemy import select
+from sqlalchemy.orm import Session, sessionmaker
 
-REQUESTS = {"execution:input_prompt", "execution:js_script"}
+UI_REQUESTS = {"execution:input_prompt", "execution:js_script"}
+REQUESTS = UI_REQUESTS | {"execution:webhook_waiting"}
 
 
 class ProjectRunInteractions:
@@ -62,6 +65,7 @@ class ProjectRunInteractions:
         elif payload.get("type") in {
             "execution:input_prompt_closed",
             "execution:js_script_closed",
+            "execution:webhook_closed",
         }:
             # Drop actual values immediately; the persisted close event is evidence.
             self._requests.pop(key, None)
@@ -70,6 +74,8 @@ class ProjectRunInteractions:
         result = []
         with self._sessions() as session:
             for (run_id, generation, request_id), state in list(self._requests.items()):
+                if state["type"] not in UI_REQUESTS:
+                    continue
                 task = session.scalar(select(ProjectTaskRow).where(ProjectTaskRow.run_id == run_id))
                 if task is None:
                     continue
@@ -87,7 +93,7 @@ class ProjectRunInteractions:
             state = self._requests.get((run.id, run.execution_generation, request_id))
             if run.status != "running":
                 return {"requestId": request_id, "status": "cancelled"}
-            if state is None:
+            if state is None or state["type"] not in UI_REQUESTS:
                 raise ProjectRunError(
                     "INTERACTION_EXPIRED", "交互请求不存在或已结束", 410
                 )
@@ -179,11 +185,10 @@ class ProjectRunInteractions:
                     raise ProjectRunError(
                         "INTERACTION_EXPIRED", "交互请求不存在或已提交", 409
                     )
-                expected_type = (
-                    "execution:input_prompt"
-                    if event == "input_prompt_result"
-                    else "execution:js_script"
-                )
+                expected_type = {
+                    "input_prompt_result": "execution:input_prompt",
+                    "webhook_result": "execution:webhook_waiting",
+                }.get(event, "execution:js_script")
                 if state["type"] != expected_type:
                     raise ProjectRunError(
                         "INTERACTION_CONFLICT", "命令与请求类型不符", 409
@@ -243,6 +248,51 @@ class ProjectRunInteractions:
                     {"type": event, "commandId": command_id, **copy.deepcopy(data)},
                 )
             return self.command(project_id, task_id, command_id)
+
+    def has_webhook(self, webhook_id: str) -> bool:
+        return any(state.get("webhookId") == webhook_id for state in self._requests.values()
+                   if state["type"] == "execution:webhook_waiting")
+
+    async def trigger_webhook(self, webhook_id: str, *, method: str, headers: Mapping[str, str],
+                              query: Mapping[str, str], body: Any) -> tuple[Any, int]:
+        candidates = [(key, state) for key, state in self._requests.items()
+                      if state["type"] == "execution:webhook_waiting" and state.get("webhookId") == webhook_id]
+        if not candidates:
+            raise WorkflowRunError("WEBHOOK_NOT_FOUND", "Webhook不存在或已经结束", 404)
+        if len(candidates) != 1:
+            raise WorkflowRunError("WEBHOOK_AMBIGUOUS", "多个运行使用相同Webhook ID，请使用不同标识", 409)
+        (run_id, generation, request_id), state = candidates[0]
+        data = webhook_payload(state, method=method, headers=headers, query=query, body=body)
+        with self._sessions() as session:
+            task = session.scalar(select(ProjectTaskRow).where(ProjectTaskRow.run_id == run_id))
+            if task is None:
+                raise WorkflowRunError("WEBHOOK_NOT_FOUND", "Webhook所属任务不存在", 404)
+            project_id, task_id = task.project_id, task.id
+        command_id = str(uuid4())
+        try:
+            await self.submit(project_id, task_id, command_id, generation, "webhook_result",
+                              {"requestId": request_id, "data": data})
+        except WorkflowRuntimeError as error:
+            if error.code == "INTERACTION_UNCONFIRMED":
+                raise WorkflowRunError("WEBHOOK_DELIVERY_UNCONFIRMED", "Webhook已接收，但运行进程未确认", 503) from error
+            raise
+        except ProjectRunError as error:
+            if error.code in {"INTERACTION_EXPIRED", "NOT_FOUND"}:
+                raise WorkflowRunError("WEBHOOK_NOT_FOUND", "Webhook不存在或已经结束", 404) from error
+            raise
+        # Reuse the durable worker-confirmed receipt; accepted HTTP is not delivery.
+        try:
+            async with asyncio.timeout(10):
+                while True:
+                    receipt = self.command(project_id, task_id, command_id)
+                    if receipt["status"] == "applied":
+                        return copy.deepcopy(state.get("responseBody") or {"success": True}), int(state["responseStatus"])
+                    if receipt["status"] == "unconfirmed":
+                        break
+                    await asyncio.sleep(.01)
+        except TimeoutError:
+            pass
+        raise WorkflowRunError("WEBHOOK_DELIVERY_UNCONFIRMED", "Webhook已接收，但运行进程未确认", 503)
 
     def confirm(self, session: Session, event: dict[str, Any]) -> None:
         payload = event.get("payload", {})
@@ -320,6 +370,8 @@ class ProjectRunInteractions:
                 and set(data) == {"requestId", "value"}
                 and (data["value"] is None or isinstance(data["value"], str))
             )
+        elif event == "webhook_result":
+            valid = valid and set(data) == {"requestId", "data"} and isinstance(data.get("data"), dict)
         elif event == "js_script_claim":
             valid = (
                 valid

@@ -298,7 +298,7 @@ class ProjectWorkflowWorkerManager:
 
     async def _send(self, worker: _Worker, message: dict[str, Any]) -> None:
         async with worker.write_lock:
-            if message.get("type") in {"input_prompt_result", "js_script_result"} and (
+            if message.get("type") in {"input_prompt_result", "js_script_result", "webhook_result"} and (
                 self._worker is not worker or worker.stop_requested or not worker.ready or worker.cleanup is not None
             ):
                 raise WorkflowWorkerError("WORKFLOW_INTERACTION_UNAVAILABLE", "交互请求已结束或执行代次已失效")
@@ -322,7 +322,7 @@ class ProjectWorkflowWorkerManager:
             or worker.generation != execution_generation or worker.stop_requested or not worker.ready
             or worker.cleanup is not None):
             raise WorkflowWorkerError("WORKFLOW_INTERACTION_UNAVAILABLE", "交互请求已结束或执行代次已失效")
-        if (command.get("type") not in {"input_prompt_result", "js_script_result"}
+        if (command.get("type") not in {"input_prompt_result", "js_script_result", "webhook_result"}
             or not isinstance(command.get("commandId"), str) or not command["commandId"]
             or not isinstance(command.get("requestId"), str) or not command["requestId"]):
             raise _protocol_error()

@@ -4,12 +4,12 @@ import json
 from uuid import uuid4
 
 import pytest
-from sqlalchemy import select
-
 from autoflow.application.project_runs.interactions import ProjectRunInteractions
 from autoflow.domain.project_runs.models import ProjectRunError
 from autoflow.infrastructure.database.models import ProjectOperationRow
 from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
+from sqlalchemy import select
+
 from tests.integration.test_project_run_dispatch import services
 
 
@@ -161,9 +161,6 @@ async def test_http_to_real_worker_confirmed_in_same_event_transaction(tmp_path,
     from types import SimpleNamespace
 
     import uvicorn
-    from fastapi import FastAPI
-    from httpx import AsyncClient
-
     from autoflow.adapters.http.errors import install_error_handlers
     from autoflow.adapters.http.project_run_events import project_run_events_router
     from autoflow.adapters.http.project_run_interactions import (
@@ -178,6 +175,9 @@ async def test_http_to_real_worker_confirmed_in_same_event_transaction(tmp_path,
     from autoflow.infrastructure.process.project_workflow_worker import (
         ProjectWorkflowWorkerManager,
     )
+    from fastapi import FastAPI
+    from httpx import AsyncClient
+
     from tests.fixtures.workflow_runs import SyntheticResources
     from tests.integration.test_project_interactive_worker import plan
 
@@ -491,3 +491,144 @@ def test_discovery_only_exposes_live_request_identity(tmp_path):
         session.commit()
     assert service.pending() == []
     factory.dispose()
+
+
+def webhook_state(tmp_path):
+    factory, project, task, service, request, event, sent = prepare(tmp_path, 'webhook_waiting')
+    # Enrich the single observed runtime request, without a second registration.
+    service._requests[(task.run_id, 0, request)].update(
+        webhookId='hook', method='ANY', validateHeaders={}, validateParams={}, responseBody={}, responseStatus=200,
+    )
+    return factory, project, task, service, request, event, sent
+
+
+def test_webhook_state_is_not_exposed_as_a_renderer_dialog(tmp_path):
+    factory, project, task, service, request, event, _ = webhook_state(tmp_path)
+    assert service.has_webhook('hook') and service.pending() == []
+    with pytest.raises(ProjectRunError, match='不存在或已结束'):
+        service.request(project, task.task_id, request)
+    service.observe({**event, 'payload': {'type': 'execution:webhook_closed', 'requestId': request}})
+    assert not service.has_webhook('hook')
+    service.observe(event)  # owner cleanup also removes a newly observed request
+    service.forget_run(task.run_id)
+    assert not service.has_webhook('hook')
+    factory.dispose()
+
+
+@pytest.mark.asyncio
+async def test_webhook_duplicate_ids_fail_closed_without_delivering(tmp_path):
+    from autoflow.domain.workflows.runs import WorkflowRunError
+
+    factory, _, task, service, request, _, sent = webhook_state(tmp_path)
+    service._requests[(task.run_id, 0, str(uuid4()))] = dict(service._requests[(task.run_id, 0, request)])
+    with pytest.raises(WorkflowRunError, match='多个运行'):
+        await service.trigger_webhook('hook', method='POST', headers={}, query={}, body={})
+    assert sent == []
+    factory.dispose()
+
+
+@pytest.mark.asyncio
+async def test_webhook_stop_before_worker_ack_never_confirms_delivery_or_replays(tmp_path):
+    import asyncio
+
+    from autoflow.domain.workflows.runs import WorkflowRunError
+
+    factory, project, task, service, _, _, sent = webhook_state(tmp_path)
+    delivering = asyncio.create_task(service.trigger_webhook('hook', method='POST', headers={}, query={}, body={'value': 1}))
+    try:
+        async with asyncio.timeout(2):
+            while not sent:
+                await asyncio.sleep(.01)
+        command_id = sent[0][2]['commandId']
+        with factory() as session:
+            session.get(WorkflowRunRow, task.run_id).status = 'cancelled'
+            session.commit()
+        with pytest.raises(WorkflowRunError) as error:
+            await delivering
+        assert error.value.code == 'WEBHOOK_DELIVERY_UNCONFIRMED'
+        assert service.command(project, task.task_id, command_id)['status'] == 'unconfirmed'
+        with pytest.raises(WorkflowRunError) as duplicate:
+            await service.trigger_webhook('hook', method='POST', headers={}, query={}, body={'value': 1})
+        assert duplicate.value.status == 404
+        assert len(sent) == 1
+    finally:
+        if not delivering.done():
+            delivering.cancel()
+        await asyncio.gather(delivering, return_exceptions=True)
+        factory.dispose()
+
+
+@pytest.mark.asyncio
+async def test_shared_webhook_route_rejects_studio_project_collision(tmp_path):
+    from autoflow.adapters.http.errors import install_error_handlers
+    from autoflow.adapters.http.workflow_runs import workflow_trigger_router
+    from autoflow.bootstrap.workflows import PendingWorkflowRunCommands
+    from fastapi import FastAPI
+    from httpx import ASGITransport, AsyncClient
+
+    factory, _, _, service, _, _, sent = webhook_state(tmp_path)
+
+    class ExistingStudioWaiter(PendingWorkflowRunCommands):
+        def has_webhook(self, webhook_id):
+            return webhook_id == 'hook'
+
+    app = FastAPI()
+    install_error_handlers(app)
+    app.include_router(workflow_trigger_router(ExistingStudioWaiter(), project_interactions=service))
+    async with AsyncClient(transport=ASGITransport(app), base_url='http://test') as client:
+        response = await client.post('/api/triggers/webhook/hook', json={})
+        assert response.status_code == 409 and response.json()['error']['code'] == 'WEBHOOK_AMBIGUOUS'
+    assert sent == []
+    factory.dispose()
+
+
+def test_external_get_webhook_obeys_quiesce_without_sidecar_token(tmp_path):
+    from autoflow.bootstrap.app import create_app
+    from autoflow.bootstrap.config import Settings
+    from fastapi.testclient import TestClient
+
+    app = create_app(Settings(data_dir=str(tmp_path), instance_id='webhook-gate', instance_token='test-only-token'))
+    with TestClient(app) as client:
+        gate = app.state.project_workflow_dispatcher._gate
+        async def pause_when_idle():
+            import asyncio
+
+            # Startup schedulers legitimately hold the gate briefly. Pause only
+            # after they release it; never override the real mutation counter.
+            async with asyncio.timeout(3):
+                while blockers := gate.pause(list):
+                    assert blockers == ['api_mutation_in_progress']
+                    await asyncio.sleep(.01)
+
+        client.portal.call(pause_when_idle)
+        response = client.get('/api/triggers/webhook/unregistered')
+        assert response.status_code == 409 and response.json()['error']['code'] == 'SERVICE_QUIESCED'
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('failure', ['transport', 'ack_timeout'])
+async def test_webhook_delivery_failure_is_unconfirmed_and_not_replayed(tmp_path, failure):
+    from autoflow.domain.workflows.runs import WorkflowRunError
+    from autoflow.domain.workflows.runtime import WorkflowRuntimeError
+
+    factory, project, task, service, _, _, sent = webhook_state(tmp_path)
+    original_send = service._send
+
+    async def send(*args):
+        await original_send(*args)
+        if failure == 'transport':
+            raise WorkflowRuntimeError('INTERACTION_UNCONFIRMED', 'transport lost', 503)
+
+    service._send = send
+    try:
+        with pytest.raises(WorkflowRunError) as error:
+            await service.trigger_webhook('hook', method='POST', headers={}, query={}, body={'value': 1})
+        assert error.value.code == 'WEBHOOK_DELIVERY_UNCONFIRMED' and error.value.status == 503
+        assert len(sent) == 1
+        receipt = service.command(project, task.task_id, sent[0][2]['commandId'])
+        assert receipt['status'] != 'applied'
+        with pytest.raises(WorkflowRunError) as repeated:
+            await service.trigger_webhook('hook', method='POST', headers={}, query={}, body={'value': 1})
+        assert repeated.value.status == 404 and len(sent) == 1
+    finally:
+        factory.dispose()
