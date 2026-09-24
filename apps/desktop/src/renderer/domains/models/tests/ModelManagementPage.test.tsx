@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest'
-import { screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { expect, it, vi } from 'vitest'
 import type { ModelApi } from '../api'
 import type { ModelProvider } from '../model'
@@ -12,6 +12,39 @@ const second: ModelProvider = { ...first, id: 'p2', name: 'Second', models: [{ .
 function api(overrides: Partial<ModelApi> = {}): ModelApi {
   return { listProviders: vi.fn().mockResolvedValue({ items: [first, second], total: 2 }), getProvider: vi.fn(), previewConnection: vi.fn(), connect: vi.fn(), updateProvider: vi.fn().mockResolvedValue(first), updateConnection: vi.fn(), removeProvider: vi.fn().mockResolvedValue(undefined), testProvider: vi.fn(), discoverModels: vi.fn().mockResolvedValue({ ok: true, items: [], total: 0, latencyMs: 1, message: '' }), testModel: vi.fn(), createModel: vi.fn(), updateModel: vi.fn(), removeModel: vi.fn(), listOptions: vi.fn(), ...overrides }
 }
+
+it('keeps saved connection status without replaying historical feedback', async () => {
+  const checked = { ...first, connectionStatus: 'connected' as const, lastCheckMessage: '历史连接结果', lastCheckLatencyMs: 499 }
+  renderModelUi(<ModelManagementPage api={api({ listProviders: vi.fn().mockResolvedValue({ items: [checked], total: 1 }) })} instanceId="one" />)
+  expect(await screen.findByText('连接正常')).toBeInTheDocument()
+  expect(screen.queryByText(/历史连接结果/)).not.toBeInTheDocument()
+})
+
+it.each([
+  ['provider', false], ['provider', true], ['model', false], ['model', true],
+] as const)('dismisses %s feedback (failure=%s) two seconds after the latest result', async (kind, failure) => {
+  const operation = failure ? vi.fn().mockRejectedValue(new Error('本次操作失败')) : vi.fn().mockResolvedValue({ ok: true, modelKey: 'sample-chat', latencyMs: 1, outputPreview: '本次操作成功', reasoningPreview: '', message: '本次操作成功' })
+  const { unmount } = renderModelUi(<ModelManagementPage api={api({ [kind === 'provider' ? 'testProvider' : 'testModel']: operation })} instanceId="one" />)
+  const button = await screen.findByRole('button', { name: kind === 'provider' ? '测试连接' : 'Sample chat 测试模型' })
+  const feedback = () => screen.queryByText(failure ? '本次操作失败' : /本次操作成功/)
+  vi.useFakeTimers()
+  try {
+    await act(async () => { fireEvent.click(button) })
+    await act(async () => { await vi.advanceTimersByTimeAsync(1000) })
+    expect(feedback()).toBeInTheDocument()
+    await act(async () => { fireEvent.click(button) })
+    await act(async () => { await vi.advanceTimersByTimeAsync(1999) })
+    expect(feedback()).toBeInTheDocument()
+    await act(async () => { await vi.advanceTimersByTimeAsync(1) })
+    expect(feedback()).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /Second/ }))
+    fireEvent.click(screen.getByRole('button', { name: /First/ }))
+    expect(feedback()).not.toBeInTheDocument()
+  } finally {
+    unmount()
+    vi.useRealTimers()
+  }
+})
 
 it('preserves selected details when supplier search hides the item, and preserves model filters on selection', async () => {
   const { user } = renderModelUi(<ModelManagementPage api={api()} instanceId="one" />)
