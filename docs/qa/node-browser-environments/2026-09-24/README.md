@@ -26,3 +26,11 @@
 独立审查覆盖 15088ecb..1527848e，确认两项 P2：延迟初始化后失败截图取不到当前页面，以及 AI 装载丢失版本标记。已补反例并修复。真实 Electron 验收另外发现 Studio／维护错误查询项目 Task 工作目录，改为宿主显式传入各自受控目录；项目任务继续使用原权限与占用校验。
 
 导入、导出、撤销、AI 装载及模块备份保留版本。跨版本浏览器节点合并拒绝，要求先显式迁移；旧文档不会随保存悄悄升级。
+
+## 远端候选验收
+
+代码候选 `27e93a40` 已推送至 [草稿 PR #2](https://github.com/1127152834/auto-flow/pull/2)，[三平台 CI #118](https://github.com/1127152834/auto-flow/actions/runs/35978138740) 已执行：Windows 与 Apple Silicon 的节点初始化、真实 worker 和清理专项均通过。Windows 完整任务在 test:scripts 步骤失败，Apple Silicon 在 mypy 步骤失败，Intel 在依赖安装阶段失败、未进入浏览器专项；各平台最终状态和公开步骤见 verification.json 与 ci-results.json。Windows 脚本失败缺少可读的认证日志，原因待查，不归因为既有问题，也不宣称验收完成。
+
+Intel 安装阻断在当前代码及干净的 `15088ecb` 同样复现：`uv sync --locked --group build --python-platform x86_64-apple-darwin --dry-run` 报 `mediapipe==0.10.35` 没有 Intel macOS wheel 或源码发行包。本轮未改变依赖清单/锁文件，也未删除依赖来伪造平台通过。远端详细日志需要有效 GitHub 登录，目前仅核验公开步骤结果；不把本地 mypy 诊断数量当成已读取远端日志。
+
+远端 baseline 尚为 `c6e02427`，本地此前已合并到 `1bc6b24d`；草稿 PR 包含继承历史，本轮实现审查范围从 `15088ecb` 开始。未推送共享 baseline、合并或发布。文档更新使用 `[skip ci]`，上述结果仅对应明确记录的代码候选。

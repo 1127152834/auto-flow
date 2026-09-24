@@ -39,13 +39,28 @@
     "fixed": 2
   },
   "ci": {
-    "status": "pending_remote_candidate",
-    "platforms": [
-      "windows-2022",
-      "macos-15-intel",
-      "macos-15"
-    ],
-    "fullPipelineExpectedBlocker": "existing Android mypy errors"
+    "status": "completed_with_failures",
+    "candidate": "27e93a40621975f8635df2440a3b33e07f2bd658",
+    "runUrl": "https://github.com/1127152834/auto-flow/actions/runs/35978138740",
+    "pullRequest": "https://github.com/1127152834/auto-flow/pull/2",
+    "platforms": {
+      "windows-2022": {
+        "nodeBrowserInitialization": "passed",
+        "fullJob": "failed at test:scripts; detailed failure requires authenticated logs"
+      },
+      "macos-15": {
+        "nodeBrowserInitialization": "passed",
+        "fullJob": "failed at full mypy"
+      },
+      "macos-15-intel": {
+        "nodeBrowserInitialization": "not_run",
+        "fullJob": "failed at dependency installation"
+      }
+    },
+    "intelDependencyReproduction": "Current and clean 15088ecb: uv sync --locked --group build --python-platform x86_64-apple-darwin --dry-run rejects mediapipe==0.10.35 because no Intel macOS wheel or source distribution exists",
+    "fullMypyEvidence": "CI fails at mypy on macOS ARM; local current and clean 15088ecb reproduce the same 65 Android diagnostics. Authenticated CI logs unavailable; remote diagnostic count not asserted.",
+    "publicStepEvidence": "ci-results.json",
+    "limits": "GitHub CLI credentials invalid; configured Git credential helper has no usable HTTPS credential; public step status verified, authenticated job logs inaccessible."
   },
   "limits": [
     "No signing/notarization/OAuth or Windows/Intel physical-device proof",

@@ -91,3 +91,5 @@
 
 
 2026-09-24 实施与本地验证已执行；勾选表示步骤已执行，不表示所有发布门禁通过。完整结果见 `docs/qa/node-browser-environments/2026-09-24/verification.json`。现有 Android mypy 与 OCR 停止耗时失败保留；三平台候选待运行结果，不合并、不发布。
+
+远端候选 27e93a40 已执行 CI #118，草稿 PR #2 已创建：Windows/Apple Silicon 节点专项通过；完整矩阵失败，分别阻断于 Windows test:scripts、ARM mypy、Intel 依赖安装。详见 docs/qa/node-browser-environments/2026-09-24/verification.json；Windows 具体脚本错误待有效 GitHub 日志授权核查。releaseAccepted=false。

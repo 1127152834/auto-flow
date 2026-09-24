@@ -56,3 +56,10 @@
 - 远端 codex/architecture-baseline 仍为 c6e02427，本地 baseline 已是 1bc6b24d；本分支继承已在本地完成的合并历史。只推送功能分支，不擅自推送或改写共享 baseline；草稿 PR 须注明本轮实现审查范围从 15088ecb 开始。
 
 - 最终真实浏览器链：节点初始化及持久登录态保存恢复 5 passed（17.58 秒），覆盖直接保存与 End 保存。
+
+## 远端交付与 CI（2026-09-24，confirmed）
+
+- 功能分支已推送，草稿 PR https://github.com/1127152834/auto-flow/pull/2 已关联当前任务；未合并发布。代码候选 27e93a40，完整 CI https://github.com/1127152834/auto-flow/actions/runs/35978138740。
+- Windows 和 Apple Silicon 的节点初始化/真实 worker/清理专项通过；后续完整步骤分别在 test:scripts 和 mypy 失败。Intel 在 uv sync 失败，专项未运行。公开步骤结果保存到 docs/qa/node-browser-environments/2026-09-24/ci-results.json。
+- Intel 同一锁文件在当前与干净 15088ecb 均可 dry-run 复现 mediapipe 0.10.35 无 Intel macOS 发行包；本轮未修改该依赖。Windows 脚本失败原因尚未核实：gh 授权失效、现有 Git HTTPS credential helper 无可用凭据，公开 API 只提供失败步骤；不猜测或批量重跑。后续需有效 GitHub 日志读取授权定位。
+- 文档收尾使用 [skip ci]，不为纯证据重复执行完整矩阵。以上验证只归属 27e93a40，releaseAccepted=false。原有真实用户预览未强制重启，避免丢弃未保存草稿；截图验收使用隔离 Electron。
