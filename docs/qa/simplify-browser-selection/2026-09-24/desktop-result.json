@@ -12,5 +12,13 @@
   "kernelVersion": "145.0.7632.109.2",
   "limits": [
     "source build; no signing/notarization or Windows/Intel physical-device proof"
-  ]
+  ],
+  "completedNodeIds": [
+    "open",
+    "again"
+  ],
+  "persistedCompletionSummary": [
+    "执行完成，共执行 2 个节点，失败 0 个"
+  ],
+  "uiSummaryIssue": "Screenshot shows 1 executed node; persisted summary says 2 and both node IDs succeeded. Display count mismatch remains uninvestigated."
 }

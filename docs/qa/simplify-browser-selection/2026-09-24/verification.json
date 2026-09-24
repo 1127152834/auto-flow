@@ -1,0 +1,97 @@
+{
+  "date": "2026-09-24",
+  "candidate": "ada81955970a57e7c1d6bf6c92ae04cd73928e50",
+  "releaseAccepted": false,
+  "frontend": {
+    "files": 445,
+    "passed": 5860,
+    "failed": 0
+  },
+  "scripts": {
+    "passed": 108
+  },
+  "backend": {
+    "fullCollected": 5222,
+    "passed": 5091,
+    "failed": 1,
+    "skipped": 130,
+    "shards": [
+      {
+        "shard": 0,
+        "passed": 1288,
+        "failed": 1,
+        "skipped": 28,
+        "deselected": 3905,
+        "summary": "1 failed, 1288 passed, 28 skipped, 3905 deselected, 1 warning in 553.42s (0:09:13)"
+      },
+      {
+        "shard": 1,
+        "passed": 1196,
+        "failed": 0,
+        "skipped": 13,
+        "deselected": 4013,
+        "summary": "1196 passed, 13 skipped, 4013 deselected, 1 warning in 305.07s (0:05:05)"
+      },
+      {
+        "shard": 2,
+        "passed": 1443,
+        "failed": 0,
+        "skipped": 7,
+        "deselected": 3772,
+        "summary": "1443 passed, 7 skipped, 3772 deselected, 1 warning in 439.53s (0:07:19)"
+      },
+      {
+        "shard": 3,
+        "passed": 1164,
+        "failed": 0,
+        "skipped": 82,
+        "deselected": 3976,
+        "summary": "1164 passed, 82 skipped, 3976 deselected, 2 warnings in 325.28s (0:05:25)"
+      }
+    ],
+    "remainingFailure": "test_project_recognition_uses_real_models_files_branches_and_cleanup[ocr_stop] took 3.247s; assertion remains <3s; baseline failure previously reproduced",
+    "latestTargeted": {
+      "passed": 70,
+      "note": "Includes four malformed source/proxy input regressions added after full collection; all pass in latest targeted run"
+    },
+    "serialAttempt": "Interrupted at ~2% to switch to four disjoint file-hash shards; not counted as a passing run"
+  },
+  "checks": {
+    "typecheck": "passed",
+    "lint": "passed",
+    "build": "passed",
+    "openapi": "passed",
+    "ruff": "passed",
+    "scopedMypy": "5 changed source files passed",
+    "fullMypy": "65 Android-related errors in 11 files"
+  },
+  "nativeNodeBrowser": {
+    "passed": 5,
+    "scope": "host authorization replay plus real Studio/PM old and explicit-profile Cookie continuity and cleanup"
+  },
+  "inspection": {
+    "passed": 5,
+    "scope": "three real worker modes plus two resource boundary cases"
+  },
+  "desktop": "desktop-result.json",
+  "ci": {
+    "status": "completed_with_failures",
+    "runUrl": "https://github.com/1127152834/auto-flow/actions/runs/35998571394",
+    "pullRequest": "https://github.com/1127152834/auto-flow/pull/3",
+    "nodeBrowserInitialization": {
+      "windows-2022": "passed",
+      "macos-15": "passed",
+      "macos-15-intel": "not_run_dependency_install_failed"
+    },
+    "stepEvidence": "ci-results.json",
+    "fullPipelineFailures": {
+      "windows-2022": "test:scripts; authenticated failure logs unavailable, cause not asserted",
+      "macos-15": "full mypy",
+      "macos-15-intel": "dependency installation"
+    }
+  },
+  "limits": [
+    "No signing/OAuth/Windows-Intel physical acceptance",
+    "Existing UI completion summary says one node while two persisted node-success events and backend summary prove two; count display issue recorded separately"
+  ]
+}
