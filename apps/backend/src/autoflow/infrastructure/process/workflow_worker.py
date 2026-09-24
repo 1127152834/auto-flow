@@ -139,6 +139,7 @@ class WorkflowWorkerManager:
         profile_id: str | None,
         executable: Path | None,
         payload: dict[str, Any],
+        *, prepare_directory: Callable[[Path], None] | None = None,
     ) -> WorkflowWorkerSession:
         if not _SAFE_ID.fullmatch(run_id):
             raise ValueError("runId 无效")
@@ -156,6 +157,8 @@ class WorkflowWorkerManager:
         registered: asyncio.Event | None = None
         try:
             directory.mkdir(parents=True, exist_ok=False)
+            if prepare_directory is not None:
+                prepare_directory(directory)
             env = workflow_environment({**os.environ, **self._worker_env})
             env.pop("CLOAKBROWSER_LICENSE_KEY", None)
             if executable is None:

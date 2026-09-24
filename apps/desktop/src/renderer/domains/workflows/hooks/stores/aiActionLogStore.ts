@@ -12,6 +12,7 @@ export interface AiActionEntry {
   label: string           // 中文可读标签
   /** 操作「之前」的画布快照，用于一键回退到这一步之前 */
   before: {
+    browserEnvironmentVersion?: number
     nodes: Node<NodeData>[]
     edges: Edge[]
     name: string

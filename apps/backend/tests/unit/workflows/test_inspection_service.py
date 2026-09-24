@@ -550,3 +550,39 @@ async def test_recording_retries_drained_events_after_transient_database_failure
 
 async def _none():
     return None
+
+@pytest.mark.asyncio
+async def test_inspection_uses_node_proxy_and_kernel_without_mutating_template(tmp_path, valid_profile_values):
+    from autoflow.domain.profiles.models import ProfileBrowserProxy
+    from tests.unit.test_workflow_browser_resources import (
+        resources as browser_resources,
+    )
+    browser, _state, selected = browser_resources(tmp_path, valid_profile_values)
+    workers, resources = Workers(), Resources()
+    observed = []
+    async def resolve(profile, _session):
+        observed.append(profile)
+        return ProfileBrowserProxy('http://127.0.0.1:8899', 'private-user', 'private-secret')
+    payloads = []
+    async def start(session_id, _profile_id, _executable, payload, *, prepare_directory=None):
+        if prepare_directory: prepare_directory(tmp_path / session_id)
+        payloads.append(payload)
+        workers.running, workers.session_id = True, session_id
+    workers.start = start
+    service = WorkflowInspectionService(profiles=browser._profiles, installed_kernels=browser._installed,
+        resolve_proxy=resolve, read_license=lambda: None, resources=resources, workers=workers)
+    workers.service = service
+    service.configure_node_browser_environments(browser, None)
+    declaration = {'source':'newFromProfile', 'profileId':selected.id, 'proxy':{'mode':'fixed','proxyId':'node-proxy'}, 'kernel':{'edition':selected.spec.browser_edition,'version':selected.spec.browser_version}}
+    opened = await service.open(profile_id=None, browser_environment=declaration)
+    assert observed[0].spec.proxy_id == 'node-proxy'
+    assert selected.spec.proxy_id != 'node-proxy'
+    assert payloads[0]['proxy']['server'] == 'http://127.0.0.1:8899'
+    assert payloads[0]['userDataDir'].startswith(str(tmp_path))
+    assert payloads[0]['fingerprintSeed'] == 42
+    assert 'private-secret' not in str(opened)
+    with pytest.raises(WorkflowRunError):
+        await service.open(profile_id=None, browser_environment={**declaration,'proxy':{'mode':'none'}})
+    assert len(payloads) == 1
+    await service.close(opened['sessionId'])
+    assert not service.busy() and resources.owner_id is None

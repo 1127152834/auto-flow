@@ -858,6 +858,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
     try {
       const wf = useWorkflowStore.getState()
       preSnapshot = {
+        browserEnvironmentVersion: wf.browserEnvironmentVersion,
         nodes: JSON.parse(JSON.stringify(wf.nodes || [])),
         edges: JSON.parse(JSON.stringify(wf.edges || [])),
         name: wf.name,
@@ -1382,7 +1383,7 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
               }
               try {
                 // 1) 恢复画布
-                useWorkflowStore.getState().restoreSnapshot({ nodes: snap.nodes, edges: snap.edges, name: snap.name, variables: snap.variables })
+                useWorkflowStore.getState().restoreSnapshot({ browserEnvironmentVersion: snap.browserEnvironmentVersion, nodes: snap.nodes, edges: snap.edges, name: snap.name, variables: snap.variables })
                 // 2) 截断对话：本地删除这条消息及其之后的所有消息，并清理它们的回滚快照
                 const idx = messages.findIndex((mm) => mm.id === m.id)
                 if (idx >= 0) {

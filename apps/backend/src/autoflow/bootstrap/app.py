@@ -512,6 +512,8 @@ def create_app(
     from autoflow.application.workflows.coordinator import WorkflowRunCoordinator
     if isinstance(workflow_services.commands, WorkflowRunCoordinator):
         workflow_services.commands.configure_node_browser_environments(app.state.project_workflow_resources, environment_service)
+    if workflow_services.inspection is not None:
+        workflow_services.inspection.configure_node_browser_environments(app.state.project_workflow_resources, environment_service)
     automation_resources = ProjectAutomationResourceQuery(
         SqlAlchemyProjects(session_factory),
         profile_service,

@@ -1,3 +1,4 @@
+import os
 from dataclasses import asdict
 from datetime import UTC, datetime
 from types import SimpleNamespace
@@ -103,7 +104,7 @@ async def test_real_worker_delayed_browser_keeps_cookie_in_one_task(capability_c
     factory, project_id, task, *_ = capability_context
     executable, url, requests = real_cloak_page
     now = datetime.now(UTC)
-    profile = Profile(str(uuid4()), ProfileSpec.from_values({'name': 'node-real', 'browser_version': '145.0.7632.109.2', 'headless': True, 'geoip': False}), 31415, now, now)
+    profile = Profile(str(uuid4()), ProfileSpec.from_values({'name': 'node-real', 'browser_version': os.environ.get('AUTOFLOW_TEST_CLOAK_VERSION', '145.0.7632.109.2'), 'headless': True, 'geoip': False}), 31415, now, now)
     environments = EnvironmentService(ProjectService(SqlAlchemyProjects(factory)), SqlAlchemyEnvironments(factory), EnvironmentStore(tmp_path / 'envs'))
     from autoflow.providers.browser.environment_browser import (
         EnvironmentBrowserLauncher,
@@ -181,7 +182,7 @@ async def test_real_studio_node_browser_without_global_profile(tmp_path, real_cl
 
     executable, url, requests = real_cloak_page
     now = datetime.now(UTC)
-    profile = Profile(str(uuid4()), ProfileSpec.from_values({'name': 'studio-node', 'browser_version': '145.0.7632.109.2', 'geoip': False}), 31415, now, now)
+    profile = Profile(str(uuid4()), ProfileSpec.from_values({'name': 'studio-node', 'browser_version': os.environ.get('AUTOFLOW_TEST_CLOAK_VERSION', '145.0.7632.109.2'), 'geoip': False}), 31415, now, now)
     async def no_proxy(*_): return None
     profiles = SimpleNamespace(get=lambda _: profile)
     installed = lambda: [InstalledKernel('public', profile.spec.browser_version, executable, 0)]

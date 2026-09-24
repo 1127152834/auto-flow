@@ -1,3 +1,5 @@
+import {useWorkflowStore} from './editor-store'
+import type {BrowserEnvironment} from './types/workflow'
 import {useGlobalConfigStore} from './hooks/stores/globalConfigStore'
 import {requestSessionTransition} from './lib/documentLeave'
 import { checkedRetention } from './lib/retentionContract'
@@ -490,6 +492,41 @@ export const projectResourceApi = {
 }
 
 export const browserApi = {
+  validateNodeResources: async (nodes: {id:string;data:Record<string,unknown>}[]):Promise<ApiResponse<{nodeId?:string}>> => {
+    if(!nodes.some(node=>node.data.moduleType==='open_page'))return {success:true}
+    const [profiles,defaults]=await Promise.all([browserApi.profiles(),projectResourceApi.defaults()])
+    if(!profiles.success||!defaults.success)return {success:false,error:profiles.error||defaults.error,httpStatus:profiles.httpStatus||defaults.httpStatus}
+    for(const node of nodes){
+      if(node.data.moduleType!=='open_page')continue
+      const value=node.data.browserEnvironment as BrowserEnvironment|undefined
+      const fail=(message:string)=>({success:false,error:message,data:{nodeId:node.id}})
+      if(!value)return fail('请在打开网页节点配置浏览器环境')
+      if(value.source==='newFromProfile'){
+        const id=value.profileId||defaults.data?.profileId
+        if(!id||!profiles.data?.items.some(p=>p.id===id))return fail('请选择可用浏览器模板或设置项目默认模板')
+        if(value.proxy?.mode==='fixed'&&!value.proxy.proxyId)return fail('请选择指定代理')
+        if(value.proxy?.mode==='pool'&&!value.proxy.proxyPoolId)return fail('请选择代理池')
+      }
+      if(value.source==='fixedEnvironment'&&!value.environmentId)return fail('请选择保存环境')
+      if(value.source==='inputEnvironment')return fail('输入关联环境请从项目自动化运行；Studio 调试请选择固定环境')
+    }
+    return {success:true}
+  },
+  resolveNodeBrowser: async ():Promise<ApiResponse<{profileId:string;browserEnvironment?:BrowserEnvironment}>> => {
+    if(browserSession?.profileId&&!browserSession.unconfirmed)return {success:true,data:{profileId:browserSession.profileId}}
+    const state=useWorkflowStore.getState(),node=state.nodes.find(n=>n.id===state.selectedNodeId)
+    const value=node?.data.browserEnvironment as BrowserEnvironment|undefined
+    if(state.browserEnvironmentVersion!==1||node?.data.moduleType!=='open_page'||!value||value.source==='current'||value.source==='inputEnvironment')return {success:false,error:'请先选择配置了新建实例或固定环境的打开网页节点，再打开浏览器进行录制或拾取'}
+    if(value.source==='fixedEnvironment')return {success:true,data:{profileId:'',browserEnvironment:structuredClone(value)}}
+    const revision=getStudioTransportRevision()
+    const [profiles,defaults]=await Promise.all([browserApi.profiles(),projectResourceApi.defaults()])
+    if(state.id!==useWorkflowStore.getState().id||state.selectedNodeId!==useWorkflowStore.getState().selectedNodeId||JSON.stringify(value)!==JSON.stringify(useWorkflowStore.getState().nodes.find(n=>n.id===state.selectedNodeId)?.data.browserEnvironment)||revision!==getStudioTransportRevision())return {success:false,error:'文档、节点或服务已变更，请重新启动'}
+    if(!profiles.success||!defaults.success)return {success:false,error:profiles.error||defaults.error,httpStatus:profiles.httpStatus||defaults.httpStatus}
+    const profileId=value.profileId||defaults.data?.profileId
+    if(!profileId)return {success:false,error:'请在打开网页节点选择浏览器模板'}
+    if(!profiles.data?.items.some(profile=>profile.id===profileId))return {success:false,error:'所选模板不存在或已不可用，请在节点重新选择',httpStatus:404}
+    return {success:true,data:{profileId,browserEnvironment:structuredClone(value)}}
+  },
   profiles: async () => {
     const result=await apiRequest<components['schemas']['ProfileList']>('/v1/profiles')
     if(!result.success)return result
@@ -528,7 +565,7 @@ export const browserApi = {
   },
   /** 检测 Playwright 内置 Chromium 是否可用（浏览器扩展兜底是否生效） */
   chromiumStatus: () => apiRequest('/browser/chromium-status'),
-  open: async (url?: string, _legacyBrowserConfig?: unknown, profileId?: string) => {
+  open: async (url?: string, _legacyBrowserConfig?: unknown, _profileId?: string) => {
     const revision=getStudioTransportRevision()
     if(browserSession?.starting)return {success:false,error:'浏览器正在启动，请等待当前请求完成'}
     browserStatusRequest++
@@ -536,14 +573,14 @@ export const browserApi = {
     const provisional=!currentBrowserSession()?operation:null
     if(provisional)browserSession={id:provisional,connection:revision,unconfirmed:true}
     if(browserSession)browserSession.starting=operation
-    const profile=await browserApi.resolveProfile(browserSession?.profileId??profileId)
+    const profile=await browserApi.resolveNodeBrowser()
     if(!profile.success||!profile.data){
       if(browserSession?.starting===operation)browserSession.starting=undefined
       if(browserSession?.id===provisional)browserSession=null
       return {success:false,error:profile.error,httpStatus:profile.httpStatus}
     }
-    if(browserSession)browserSession.profileId=profile.data.id
-    const result=await apiRequest('/browser/open', { method: 'POST', body: JSON.stringify({ url, profileId:profile.data.id }) })
+    if(browserSession)browserSession.profileId=profile.data.profileId
+    const result=await apiRequest('/browser/open', { method: 'POST', body: JSON.stringify({ url, profileId:profile.data.profileId||null, browserEnvironment:profile.data.browserEnvironment }) })
     if(browserSession?.starting===operation)browserSession.starting=undefined
     if(revision!==getStudioTransportRevision())return {success:false,error:'服务连接已变更，浏览器启动结果未应用'}
     if(!result.success&&result.httpStatus&&result.httpStatus<500&&browserSession?.id===provisional)browserSession=null
@@ -582,10 +619,11 @@ export const browserApi = {
 // ==================== 元素选择器 API ====================
 type PickerSessionState=components['schemas']['StudioPickerSessionState']
 let pickerSessionId:string|null=null
+let pickerStartConfiguration:{sessionId:string;profileId:string;browserEnvironment?:BrowserEnvironment}|null=null
 let pickerConnectionRevision=-1
 export function currentPickerSession(){
   const revision=getStudioTransportRevision()
-  if(revision!==pickerConnectionRevision){pickerSessionId=null;pickerConnectionRevision=revision}
+  if(revision!==pickerConnectionRevision){pickerSessionId=null;pickerStartConfiguration=null;pickerConnectionRevision=revision}
   return pickerSessionId
 }
 function checkedPickerSession(result:ApiResponse<any>,expected:string):ApiResponse<PickerSessionState>{
@@ -627,17 +665,18 @@ export const elementPickerApi = {
     pickerSessionId=sessionId
     const provisionalBrowser=!currentBrowserSession()?crypto.randomUUID():null
     if(provisionalBrowser)browserSession={id:provisionalBrowser,connection:revision,unconfirmed:true,starting:provisionalBrowser}
-    const profile=await browserApi.resolveProfile(browserSession?.profileId)
+    const profile=pickerStartConfiguration?.sessionId===sessionId?{success:true,data:pickerStartConfiguration}:await browserApi.resolveNodeBrowser()
     if(!profile.success||!profile.data){
       if(!previous&&pickerSessionId===sessionId)pickerSessionId=null
       if(browserSession?.id===provisionalBrowser)browserSession=null
       return {success:false,error:profile.error,httpStatus:profile.httpStatus}
     }
     if(revision!==getStudioTransportRevision()||sessionId!==currentPickerSession())return {success:false,error:'拾取请求已取消或服务已变更'}
-    if(browserSession)browserSession.profileId=profile.data.id
+    pickerStartConfiguration={sessionId,...profile.data}
+    if(browserSession)browserSession.profileId=profile.data.profileId
     let result=checkedPickerSession(await apiRequest('/element-picker/start', {
       method: 'POST',
-      body: JSON.stringify({sessionId,url:url||null,profileId:profile.data.id}),
+      body: JSON.stringify({sessionId,url:url||null,profileId:profile.data.profileId||null,browserEnvironment:profile.data.browserEnvironment}),
     }),sessionId)
     if(browserSession?.starting===provisionalBrowser)browserSession.starting=undefined
     if(revision!==getStudioTransportRevision()||sessionId!==currentPickerSession())return {success:false,error:'服务连接或拾取会话已变更，启动结果未应用'}

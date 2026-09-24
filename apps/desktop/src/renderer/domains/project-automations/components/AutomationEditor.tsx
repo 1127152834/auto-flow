@@ -15,7 +15,7 @@ import { RunPolicyEditor } from './RunPolicyEditor'
 
 type Tab = 'overview' | 'inputs' | 'resources' | 'run'
 type ResourceOption = { id: string; name: string }
-export type WorkflowOption = ResourceOption & { revision?: number; updatedAt?: string; runnable?: boolean; validationMessage?: string }
+export type WorkflowOption = ResourceOption & { browserEnvironmentVersion?: number | null; revision?: number; updatedAt?: string; runnable?: boolean; validationMessage?: string }
 
 export type AutomationEditorProps = {
   initialValue: AutomationWrite
@@ -71,7 +71,9 @@ export function AutomationEditor({ initialValue, resetKey, workflowOptions, isNe
   }
   for (const [path, entry] of Object.entries(serverErrorRef.current.entries)) if (entry.value !== typedSnapshot(valueAt(value, path))) delete serverErrorRef.current.entries[path]
   const retainedServerErrors = Object.fromEntries(Object.entries(serverErrorRef.current.entries).map(([path, entry]) => [path, entry.message]))
-  const clientErrors = validateAutomationForm(value)
+  const nodeBrowserMode = workflowOptions.find(option=>option.id===value.workflowId)?.browserEnvironmentVersion === 1
+  const effectiveValue = nodeBrowserMode ? {...value,environmentPolicy:{source:'newFromProfile' as const,...(Object.hasOwn(value.environmentPolicy,'modelProviderId')?{modelProviderId:value.environmentPolicy.modelProviderId}:{})}} : value
+  const clientErrors = validateAutomationForm(effectiveValue)
   const errors = useMemo(() => Object.fromEntries(Object.entries({ ...clientErrors, ...retainedServerErrors }).filter(([, message]) => Boolean(message))) as AutomationFormErrors, [clientErrors, retainedServerErrors])
   const counts = useMemo(() => {
     const result = Object.keys(errors).reduce<Record<Tab, number>>((totals, field) => { totals[tabFor(field)] += 1; return totals }, { overview: 0, inputs: 0, resources: 0, run: 0 })
@@ -102,7 +104,7 @@ export function AutomationEditor({ initialValue, resetKey, workflowOptions, isNe
   const submit = async () => {
     if (locked || !dirty) return
     if (!valid) { focusFirstError(); return }
-    await onSubmit(normalizeAutomation(value))
+    await onSubmit(normalizeAutomation(effectiveValue))
   }
   const workflow = workflowOptions.find(option => option.id === value.workflowId)
   const workflowSelectOptions = [
@@ -137,10 +139,10 @@ export function AutomationEditor({ initialValue, resetKey, workflowOptions, isNe
         </div>
       </TabsContent>
       <TabsContent forceMount value="inputs" hidden={activeTab !== 'inputs'} data-tab-panel="inputs" className="min-h-[22rem] py-5"><div className="grid gap-7">{renderInputPlan(value.inputPlan, next => { change('inputPlan', next); if (!next.inputs.length) change('runPolicy', { ...value.runPolicy, concurrency: 1, maxLiveInstances: 1 }) }, locked, { resetKey, onDraftStateChange: setInputDraft, errors: Object.fromEntries(Object.entries(errors).flatMap(([path, message]) => { const match = /^inputPlan\.inputs\.(\d+)(?:\.(.*))?$/.exec(path); const item = match ? value.inputPlan.inputs[Number(match[1])] : undefined; return item ? [[`${item.inputId}.${match?.[2] ?? 'configuration'}`, message]] : [] })) })}<ParameterEditor value={value.parameterSchema} onChange={next => change('parameterSchema', next)} disabled={locked} errors={parameterErrors} resetKey={resetKey} onDraftStateChange={setParameterDraft}/></div></TabsContent>
-      <TabsContent forceMount value="resources" hidden={activeTab !== 'resources'} data-tab-panel="resources" className="min-h-[22rem] py-5"><EnvironmentPolicyEditor value={value.environmentPolicy} inputs={value.inputPlan.inputs} onChange={next => change('environmentPolicy', next)} disabled={locked} errors={fieldErrors('environmentPolicy.')} {...environmentOptions}/></TabsContent>
+      <TabsContent forceMount value="resources" hidden={activeTab !== 'resources'} data-tab-panel="resources" className="min-h-[22rem] py-5"><EnvironmentPolicyEditor nodeBrowserMode={nodeBrowserMode} value={value.environmentPolicy} inputs={value.inputPlan.inputs} onChange={next => change('environmentPolicy', next)} disabled={locked} errors={fieldErrors('environmentPolicy.')} {...environmentOptions}/></TabsContent>
       <TabsContent forceMount value="run" hidden={activeTab !== 'run'} data-tab-panel="run" className="min-h-[22rem] py-5"><RunPolicyEditor dataBatch={value.inputPlan.inputs.length > 0} value={value.runPolicy} onChange={next => change('runPolicy', { ...next, maxTasks: next.maxTasks ?? value.runPolicy.maxTasks })} disabled={locked} errors={fieldErrors('runPolicy.')} resetKey={resetKey} onDraftStateChange={setRunDraft}/></TabsContent>
     </Tabs>
-    {activeTab !== 'resources' ? <aside aria-label="配置摘要" className="mx-5 flex flex-wrap items-center gap-4 border-t border-line py-4 text-sm"><strong className="mr-4">配置摘要</strong><span className="flex items-center gap-2 border-l border-line pl-4"><SlidersHorizontal size={21} aria-hidden/>{value.parameterSchema.length} 个参数</span><span className="flex items-center gap-2 border-l border-line pl-4"><Browser size={21} aria-hidden/>{value.environmentPolicy.source === 'newFromProfile' ? '临时浏览器环境' : '已保存的环境策略'}</span><span className="flex items-center gap-2 border-l border-line pl-4"><FileText size={21} aria-hidden/>最多 {value.runPolicy.maxTasks} 个任务</span><span className="flex items-center gap-2 border-l border-line pl-4"><Lightning size={21} aria-hidden/>{value.inputPlan.inputs.length ? `配置并发上限 ${Math.min(value.runPolicy.concurrency, value.runPolicy.maxLiveInstances)}` : '并发 1'}</span></aside> : null}
+    {activeTab !== 'resources' ? <aside aria-label="配置摘要" className="mx-5 flex flex-wrap items-center gap-4 border-t border-line py-4 text-sm"><strong className="mr-4">配置摘要</strong><span className="flex items-center gap-2 border-l border-line pl-4"><SlidersHorizontal size={21} aria-hidden/>{value.parameterSchema.length} 个参数</span><span className="flex items-center gap-2 border-l border-line pl-4"><Browser size={21} aria-hidden/>{nodeBrowserMode ? '由工作流节点配置环境' : value.environmentPolicy.source === 'newFromProfile' ? '临时浏览器环境' : '已保存的环境策略'}</span><span className="flex items-center gap-2 border-l border-line pl-4"><FileText size={21} aria-hidden/>最多 {value.runPolicy.maxTasks} 个任务</span><span className="flex items-center gap-2 border-l border-line pl-4"><Lightning size={21} aria-hidden/>{value.inputPlan.inputs.length ? `配置并发上限 ${Math.min(value.runPolicy.concurrency, value.runPolicy.maxLiveInstances)}` : '并发 1'}</span></aside> : null}
     <footer className="sticky bottom-0 z-10 rounded-b-card bg-surface flex flex-wrap items-center justify-between gap-3 border-t border-line px-5 py-4"><span className="flex items-center gap-2 text-sm text-muted"><Info size={18} aria-hidden/>{recovering ? '正在核对保存结果…' : saving ? '正在保存配置…' : dirty ? '有未保存的修改' : '没有未保存的修改'}</span><div className="flex gap-2"><Button disabled={locked || !dirty} onClick={onCancel}>取消修改</Button><Button variant="primary" loading={saving || recovering} loadingText={recovering ? '正在核对…' : '正在保存…'} disabled={locked || !dirty} onClick={() => void submit()}>保存配置</Button></div></footer>
   </section>
 }

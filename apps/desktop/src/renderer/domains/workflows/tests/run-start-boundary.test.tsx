@@ -9,13 +9,13 @@ import { useWorkflowStore as store } from '../editor-store'
 import { useDebugStore } from '../hooks/stores/debugStore'
 import { browserApi, workflowApi } from '../api'
 import { socketService } from '../events'
-type ResolvedProfile = NonNullable<Awaited<ReturnType<typeof browserApi.resolveProfile>>['data']>
-const profile = (id = 'profile-1') => ({id} as ResolvedProfile)
+const profile = () => ({})
 const deferred = <T,>() => { let resolve!: (value: T) => void; const promise = new Promise<T>(r => { resolve = r }); return { promise, resolve } }
 beforeEach(() => {
   store.getState().clearWorkflow()
   store.getState().addNode('open_page', { x: 0, y: 0 })
   useDebugStore.setState({ breakpoints: new Set(), stepMode: false })
+  vi.spyOn(browserApi, 'validateNodeResources').mockResolvedValue({success:true})
   vi.spyOn(workflowApi, 'create').mockResolvedValue({ success: true, data: { id: 'start-fixture' } })
   vi.spyOn(workflowApi, 'execute').mockResolvedValue({ success: true })
   vi.spyOn(workflowApi, 'update').mockResolvedValue({ success: true })
@@ -50,22 +50,22 @@ it.each(['completed', 'stopped', 'failed', 'pending'] as const)('does not replac
   expect(store.getState().executionStatus).toBe(status)
 })
 it('coalesces repeated starts during preparation and freezes debug options before awaiting', async () => {
-  const response = deferred<Awaited<ReturnType<typeof browserApi.resolveProfile>>>()
-  vi.spyOn(browserApi, 'resolveProfile').mockReturnValue(response.promise)
+  const response = deferred<Awaited<ReturnType<typeof browserApi.validateNodeResources>>>()
+  vi.spyOn(browserApi, 'validateNodeResources').mockReturnValue(response.promise)
   const documentId = store.getState().id
   const nodeId = store.getState().nodes[0].id
   useDebugStore.setState({ breakpoints: new Set([nodeId]), stepMode: true })
   render(<Toolbar />)
   fireEvent.keyDown(window, { key: 'F5' })
   fireEvent.keyDown(window, { key: 'F5' })
-  await waitFor(()=>expect(browserApi.resolveProfile).toHaveBeenCalledTimes(1))
+  await waitFor(()=>expect(browserApi.validateNodeResources).toHaveBeenCalledTimes(1))
   act(() => useDebugStore.setState({ breakpoints: new Set(), stepMode: false }))
   await act(async () => response.resolve({ success: true, data: profile() }))
   expect(workflowApi.execute).toHaveBeenCalledTimes(1)
   expect(workflowApi.execute).toHaveBeenCalledWith(documentId, expect.objectContaining({ breakpoints: [nodeId], stepMode: true }))
 })
 it('releases preparation ownership after failure so an explicit retry can start', async () => {
-  vi.spyOn(browserApi, 'resolveProfile')
+  vi.spyOn(browserApi, 'validateNodeResources')
     .mockResolvedValueOnce({ success: false, error: '准备失败' })
     .mockResolvedValue({ success: true, data: profile() })
   render(<Toolbar />)
@@ -74,7 +74,7 @@ it('releases preparation ownership after failure so an explicit retry can start'
   expect(workflowApi.execute).not.toHaveBeenCalled()
   fireEvent.keyDown(window, { key: 'F5' })
   await waitFor(() => expect(workflowApi.execute).toHaveBeenCalledTimes(1))
-  expect(browserApi.resolveProfile).toHaveBeenCalledTimes(2)
+  expect(browserApi.validateNodeResources).toHaveBeenCalledTimes(2)
 })
 it('does not start another request through run-from-node while a run is active', async () => {
   store.getState().setExecutionStatus('running')
@@ -171,10 +171,10 @@ it('can stop an accepted startup without sending another execution request',asyn
  expect(view.getByRole('status').textContent).toContain('等待启动确认')
 })
 it('does not submit a prepared snapshot after the editor document changes',async()=>{
- const preparation=deferred<Awaited<ReturnType<typeof browserApi.resolveProfile>>>()
- vi.spyOn(browserApi,'resolveProfile').mockReturnValueOnce(preparation.promise).mockResolvedValue({success:true,data:profile()})
+ const preparation=deferred<Awaited<ReturnType<typeof browserApi.validateNodeResources>>>()
+ vi.spyOn(browserApi,'validateNodeResources').mockReturnValueOnce(preparation.promise).mockResolvedValue({success:true,data:profile()})
  render(<Toolbar/>);fireEvent.keyDown(window,{key:'F5'})
- await waitFor(()=>expect(browserApi.resolveProfile).toHaveBeenCalledTimes(1))
+ await waitFor(()=>expect(browserApi.validateNodeResources).toHaveBeenCalledTimes(1))
  act(()=>{store.getState().clearWorkflow();store.getState().addNode('open_page',{x:0,y:0})})
  await act(async()=>preparation.resolve({success:true,data:profile()}))
  expect(workflowApi.execute).not.toHaveBeenCalled()
@@ -183,16 +183,18 @@ it('does not submit a prepared snapshot after the editor document changes',async
  expect(workflowApi.execute).toHaveBeenCalledWith(store.getState().id,expect.anything())
 })
 
-it('freezes the managed profile and document before the start response',async()=>{
+it('freezes node configuration and document without a global profile before the start response',async()=>{
  const response=deferred<Awaited<ReturnType<typeof workflowApi.execute>>>()
  vi.mocked(workflowApi.execute).mockReturnValue(response.promise)
  const profiles=await import('../hooks/stores/globalConfigStore')
- profiles.useGlobalConfigStore.getState().setBrowserProfileId('10000000-0000-4000-8000-000000000001')
+ profiles.useGlobalConfigStore.getState().setBrowserProfileId('unused-global')
+ store.getState().updateNodeData(store.getState().nodes[0].id,{browserEnvironment:{source:'newFromProfile',profileId:'node-template'}})
  render(<Toolbar/>);fireEvent.keyDown(window,{key:'F5'})
  await waitFor(()=>expect(workflowApi.execute).toHaveBeenCalledTimes(1))
  act(()=>{profiles.useGlobalConfigStore.getState().setBrowserProfileId('changed-after-start');store.getState().addNode('click_element',{x:100,y:0})})
  const request=vi.mocked(workflowApi.execute).mock.calls[0][1]
- expect(request.profileId).toBe('10000000-0000-4000-8000-000000000001')
+ expect(request).not.toHaveProperty('profileId')
+ expect(request.document.nodes[0].data.browserEnvironment.profileId).toBe('node-template')
  expect(request.document.nodes).toHaveLength(1)
  expect(request).not.toHaveProperty('browserConfig')
  await act(async()=>response.resolve({success:true}))

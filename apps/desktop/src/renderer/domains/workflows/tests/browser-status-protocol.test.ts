@@ -44,6 +44,7 @@ it('does not release browser startup while a concurrent status still reports clo
  let finish!:(response:Response)=>void
  let opened=false
  let closes=0
+ selectBrowserNode('profile')
  const restore=configureStudioConnection('http://browser-starting.test',async input=>{
   const path=new URL(String(input)).pathname
   if(path.endsWith('/profiles'))return Response.json({items:[{id:'profile',name:'配置'}],total:1})
@@ -63,3 +64,7 @@ it('does not release browser startup while a concurrent status still reports clo
   expect(closes).toBe(1)
  }finally{restore()}
 })
+
+import {beforeEach as beforeBrowserNode} from 'vitest'
+import {selectBrowserNode} from './select-browser-node'
+beforeBrowserNode(()=>selectBrowserNode())

@@ -34,3 +34,11 @@
 - 验证：项目定向回归 163 passed；Studio/worker/契约回归 111 passed / 3 skipped；新增取消和响应丢失后 coordinator 8 passed；固定来源复制 1 passed。真实已安装 CloakBrowser 三项通过（10.09 秒）：宿主单实例重放、PM 登录→current 读登录态→End 保存身份、Studio 无全局 Profile→登录态连续→确认清理。相关 28 源文件 mypy 通过，Ruff 修正导入后通过，OpenAPI 已生成。原生测试使用临时 SQLite/目录和本地 HTTP，未操作用户项目 q。
 - 验证过程保留：Studio 新测试最初夹具 migrate_database 参数错误、事件属性 kind/type 错误均已修正；生产首次缺 pending browser future 与动态内核清理已修复。完整后端 mypy 的既存 Android 诊断未在本切片修复。
 - 未完成：Studio 节点控件、显式迁移、录制/拾取配置联动、自动化资源页、全量回归、真实代理/界面联合场景、三平台和整分支独立审查。并行共享浏览器仍明确拒绝；不宣称完整 PM9 验收。releaseAccepted=false。
+
+## Task 5 — 节点界面与入口（2026-09-24，implemented / final acceptance pending）
+
+- 打开网页节点使用真实模板、代理、已安装内核和项目环境目录；环境来源显式配置。顶部浏览器选择器删除，运行、录制和拾取不得回退旧全局值。
+- 旧文档保持原版本；明确选择迁移入口后写新版标记，其他导航使用 current。导入导出、历史撤销、AI 回滚和自定义模块备份保留版本；跨版本浏览器节点合并拒绝，避免隐式迁移。远程协作在当前产品中已禁用，不扩展其协议。
+- 录制／拾取沿用真实 worker、资源授权和私有工作目录；固定环境复制冻结内容，启动重试复用原会话配置。自动化的新模式资源表单保留模型配置，浏览器由节点维护。
+- 验证：新增组件与模块/草稿保护 77 passed；旧入口协议适配后 116 passed；真实 inspection worker 两种模式 2 passed；HTTP/inspection 29 passed。typecheck、lint、build 通过。完整回归和隔离 Electron 正在执行，结果尚未声明通过。
+- CI 新增三平台节点初始化真实 worker 检查，内核版本与平台实际安装版本一致。未改 releaseAccepted，不合并发布。

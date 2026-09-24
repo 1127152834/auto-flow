@@ -33,6 +33,8 @@ export interface CustomModule {
   parameters: CustomModuleParameter[]
   outputs: CustomModuleOutput[]
   workflow: {
+    schemaVersion?: number
+    browserEnvironmentVersion?: number
     nodes: any[]
     edges: any[]
     variables?: Variable[]
@@ -60,6 +62,8 @@ export interface CustomModuleCreate {
   parameters: CustomModuleParameter[]
   outputs: CustomModuleOutput[]
   workflow: {
+    schemaVersion?: number
+    browserEnvironmentVersion?: number
     nodes: any[]
     edges: any[]
     variables?: Variable[]

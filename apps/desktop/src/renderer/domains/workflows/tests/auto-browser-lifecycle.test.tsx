@@ -1,3 +1,4 @@
+import {selectBrowserNode} from './select-browser-node'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 vi.hoisted(() => {
@@ -189,9 +190,8 @@ it('passes the selected AutoFlow profile without mixing source launch settings',
  })
  try {
    render(<AutoBrowserDialog isOpen onClose={vi.fn()} onLog={log}/>)
-   await screen.findByRole('option',{name:'验收配置'})
-   fireEvent.change(screen.getByLabelText('浏览器配置'),{target:{value:'profile-1'}})
+   selectBrowserNode('profile-1')
    fireEvent.click(screen.getByRole('button',{name:'打开浏览器'}))
-   await waitFor(()=>expect(bodies).toEqual([{profileId:'profile-1'}]))
+   await waitFor(()=>expect(bodies).toEqual([{profileId:'profile-1',browserEnvironment:{source:'newFromProfile',profileId:'profile-1'}}]))
  } finally {cleanup();restore()}
 })

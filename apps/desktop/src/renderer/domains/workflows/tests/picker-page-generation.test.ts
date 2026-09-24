@@ -57,3 +57,7 @@ async function checkLateResult(mode:'memory'|'http',action:'selected'|'test-sele
   await browserApi.close();mock.configureMock({disconnect:true});await server?.close();restore()
  }
 }
+
+import {beforeEach as beforeBrowserNode} from 'vitest'
+import {selectBrowserNode} from './select-browser-node'
+beforeBrowserNode(()=>selectBrowserNode())

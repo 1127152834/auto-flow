@@ -56,6 +56,7 @@ jobs:
           executable = ensure_binary(browser_version='146.0.7680.177.5')
           with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as output:
               output.write(f'PM9_BROWSER_EXECUTABLE={executable}\n')
+              output.write(f"PM9_BROWSER_VERSION={'146.0.7680.177.5' if sys.platform == 'win32' else '145.0.7632.109.2'}\n")
           PYTHON
       - run: uv run --directory apps/backend pytest -q tests/integration/test_workflow_worker_process.py::test_project_worker_launch_preserves_venv_without_redirector_job
       - name: Diagnose real worker protocol without payload logging
@@ -120,11 +121,17 @@ jobs:
           executable = ensure_binary(browser_version='146.0.7680.177.5' if sys.platform == 'win32' else '145.0.7632.109.2')
           with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as output:
               output.write(f'PM9_BROWSER_EXECUTABLE={executable}\n')
+              output.write(f"PM9_BROWSER_VERSION={'146.0.7680.177.5' if sys.platform == 'win32' else '145.0.7632.109.2'}\n")
           PYTHON
       - name: Verify real worker recovery, shared Sheets claims and manual expiry race
         run: uv run --directory apps/backend pytest -q tests/integration/test_project_batch_real_cloakbrowser.py tests/integration/test_project_sheets_real_cloakbrowser.py tests/integration/test_project_excel_real_cloakbrowser.py tests/integration/test_project_unlimited_real_cloakbrowser.py tests/integration/test_project_write_conflict_real_cloakbrowser.py -k "parallel or manual-declared or manual-evidence-reconnect or manual-force-stop or data-schema or data-delete-field or data-subflow or data-response-loss or data-link- or data-old-candidate or manual-race or manual-expire or shared_sheet or real_archive or bad_source or parameter-single or parameter-isolation or optional_input or browser_startup_failure or excel_multi_input or unlimited_final_record or real_write_versions or data-loop-partial or real_loop_keeps_two_sheet_intents or source_outage or real_opposing_writes"
         env:
           AUTOFLOW_TEST_CLOAKBROWSER: ${{ env.PM9_BROWSER_EXECUTABLE }}
+      - name: Verify node-owned browser initialization and cleanup
+        run: uv run --directory apps/backend pytest -q tests/integration/test_node_browser_initialization.py
+        env:
+          AUTOFLOW_TEST_CLOAKBROWSER: ${{ env.PM9_BROWSER_EXECUTABLE }}
+          AUTOFLOW_TEST_CLOAK_VERSION: ${{ env.PM9_BROWSER_VERSION }}
       - run: node scripts/smoke-project-management.mjs --runtime-kernel "${{ env.PM9_BROWSER_EXECUTABLE }}" --output-dir artifacts/pm9/source
       - run: node scripts/smoke-project-management-desktop.mjs --output-dir artifacts/pm9/source
       - run: npm run backend:build

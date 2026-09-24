@@ -347,6 +347,7 @@ export async function executeClientAction(
           action,
           label: AI_ACTION_LABELS[action] || action,
           before: {
+            browserEnvironmentVersion: ws.browserEnvironmentVersion,
             nodes: JSON.parse(JSON.stringify(ws.nodes)),
             edges: JSON.parse(JSON.stringify(ws.edges)),
             name: ws.name,

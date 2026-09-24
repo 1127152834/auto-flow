@@ -133,3 +133,12 @@ it('distinguishes inherited, explicit and absent model providers and preserves s
   await chooseOption(user, screen.getByRole('combobox', { name: '模型提供方' }), 'inherit')
   expect(p.onChange).toHaveBeenLastCalledWith({ source: 'newFromProfile' })
 })
+
+it('node mode retains model selection while removing conflicting browser policy controls',()=>{
+ render(<EnvironmentPolicyEditor {...props()} nodeBrowserMode/>)
+ expect(screen.queryByRole('combobox',{name:'浏览器配置来源'})).toBeNull()
+ expect(screen.queryByRole('radiogroup',{name:'代理设置'})).toBeNull()
+ expect(screen.queryByRole('radiogroup',{name:'环境策略'})).toBeNull()
+ expect(screen.getByRole('combobox',{name:'模型提供方'})).toBeTruthy()
+ expect(screen.getByText(/浏览器实例由工作流的打开网页节点/)).toBeTruthy()
+})

@@ -45,6 +45,7 @@ export interface SessionListItem {
 
 /** 回滚快照：记录某条用户消息发送「之前」的画布状态，供一键回滚 */
 export interface RollbackSnapshot {
+  browserEnvironmentVersion?: number
   nodes: any[]
   edges: any[]
   name?: string

@@ -25,8 +25,8 @@ export async function enterCustomModuleEditing(id: string): Promise<boolean> {
     const state = useWorkflowStore.getState()
     const alreadyEditing = !!sessionStorage.getItem('editingCustomModuleId')
     if (!alreadyEditing) {
-      const { id: documentId, name, nodes, edges, variables, history, historyIndex, hasUnsavedChanges, selectedNodeId } = state
-      sessionStorage.setItem(backupKey, JSON.stringify({ id: documentId, name, nodes, edges, variables, history, historyIndex, hasUnsavedChanges, selectedNodeId }))
+      const { id: documentId, name, browserEnvironmentVersion, nodes, edges, variables, history, historyIndex, hasUnsavedChanges, selectedNodeId } = state
+      sessionStorage.setItem(backupKey, JSON.stringify({ id: documentId, name, browserEnvironmentVersion, nodes, edges, variables, history, historyIndex, hasUnsavedChanges, selectedNodeId }))
     }
     const previousId = sessionStorage.getItem('editingCustomModuleId')
     const previousName = sessionStorage.getItem('editingCustomModuleName')
@@ -63,8 +63,8 @@ export async function saveCustomModuleEditing(): Promise<boolean> {
   saving = true
   try {
     const serialized = useWorkflowStore.getState().exportWorkflow()
-    const { nodes, edges, variables } = JSON.parse(serialized)
-    const result = await customModulesApi.update(id, { workflow: { nodes, edges, variables } })
+    const { nodes, edges, variables, schemaVersion, browserEnvironmentVersion } = JSON.parse(serialized)
+    const result = await customModulesApi.update(id, { workflow: { nodes, edges, variables, schemaVersion, browserEnvironmentVersion } })
     if (!result.success || result.error || result.data?.success === false || result.data?.id !== id) throw new Error(result.error || result.data?.error || '模块保存未得到确认')
     useCustomModuleStore.setState(state => ({ modules: state.modules.map(module => module.id === id ? result.data : module) }))
     if (sessionStorage.getItem('editingCustomModuleId') !== id || snapshotKey(useWorkflowStore.getState().exportWorkflow()) !== snapshotKey(serialized)) {
@@ -87,8 +87,8 @@ export function restoreMainWorkflow(): boolean {
     if (!Array.isArray(backup.nodes) || !Array.isArray(backup.edges) || !Array.isArray(backup.variables) || typeof backup.name !== 'string') throw new Error('主工作流备份损坏；已保留模块草稿')
     if (backup.id && (!Array.isArray(backup.history) || !Number.isInteger(backup.historyIndex) || !backup.history[backup.historyIndex])) throw new Error('主工作流历史备份损坏；已保留模块草稿')
     if (backup.id) {
-      const { id, nodes, edges, variables, name, history, historyIndex, hasUnsavedChanges, selectedNodeId } = backup
-      useWorkflowStore.setState({ id, nodes, edges, variables, name, history, historyIndex, hasUnsavedChanges, selectedNodeId })
+      const { id, nodes, edges, variables, name, browserEnvironmentVersion, history, historyIndex, hasUnsavedChanges, selectedNodeId } = backup
+      useWorkflowStore.setState({ id, nodes, edges, variables, name, browserEnvironmentVersion, history, historyIndex, hasUnsavedChanges, selectedNodeId })
     } else {
       // Legacy backups did not retain document identity or history.
       useWorkflowStore.getState().restoreSnapshot(backup, { resetHistory: true })

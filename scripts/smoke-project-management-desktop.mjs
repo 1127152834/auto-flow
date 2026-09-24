@@ -263,8 +263,8 @@ async function checkStandaloneStudio(browserVersion) {
   ], edges: [] })
   assert.equal((await api('/api/v1/projects')).total, 0)
   const profile = await api('/api/v1/profiles', { name: '独立 Studio 配置', browserVersion, browserEdition: 'public', headless: true })
-  const standalone = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: '零项目通用网页', variables: [], nodes: [
-    { id: 'open-general', type: 'open_page', position: { x: 100, y: 100 }, data: { moduleType: 'open_page', label: '通用网页', url: 'about:blank' } },
+  const standalone = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: '零项目通用网页', schemaVersion: 3, browserEnvironmentVersion: 1, variables: [], nodes: [
+    { id: 'open-general', type: 'open_page', position: { x: 100, y: 100 }, data: { moduleType: 'open_page', label: '通用网页', url: 'about:blank', browserEnvironment: {source: 'newFromProfile', profileId: profile.id} } },
   ], edges: [] })
   const tableId = randomUUID(), datasetGeneration = randomUUID(), fieldId = randomUUID()
   const projectData = { moduleType: 'project_data', label: '项目写回', operation: 'createRecord', variableName: 'saved_record',
@@ -279,7 +279,7 @@ async function checkStandaloneStudio(browserVersion) {
   try {
     await prepareStudioView()
     assert.equal(await studio.evaluate("document.body.innerText.includes('Mock 接口')"), false)
-    await waitFor(studio, `document.querySelector('[aria-label="运行浏览器配置"]')?.value===${JSON.stringify(profile.id)}`, 'independent browser profile')
+    assert.equal(await studio.evaluate(`Boolean(document.querySelector('[aria-label="运行浏览器配置"]'))`), false)
     await click('打开', 'button', studio)
     await click('打开工作流 ' + incomplete.name, '[role=button]', studio)
     await click('', '.react-flow__node[data-id="missing-url"]', studio)

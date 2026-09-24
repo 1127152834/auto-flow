@@ -1,3 +1,4 @@
+import {selectBrowserNode} from './select-browser-node'
 import userEvent from '@testing-library/user-event'
 import { choiceTestEnvironment, chooseOption, choiceValue } from '../../../shared/testing/choice-user'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
@@ -204,6 +205,7 @@ describe('Studio project browser resource defaults', () => {
 
     expect((await screen.findByRole('alert')).textContent).toContain('项目默认资源暂不可用')
     expect(choiceValue(screen.getByRole('combobox', { name: '浏览器配置' }))).toBe('')
+    selectBrowserNode(profiles[0].id)
     await expect(browserApi.open('about:blank')).resolves.toMatchObject({
       success: false,
       httpStatus: 503,
@@ -341,7 +343,7 @@ describe('Studio project browser resource defaults', () => {
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
-  it('opens the interactive browser with the project override selected in its own UI', async () => {
+  it('opens the interactive browser with the selected node template', async () => {
     const openBodies: Array<Record<string, unknown>> = []
     let browserOpen = false
     useGlobalConfigStore.setState(state => ({
@@ -366,9 +368,8 @@ describe('Studio project browser resource defaults', () => {
       },
     )
     render(<AutoBrowserDialog isOpen onClose={vi.fn()} onLog={vi.fn()} />)
-    const select = screen.getByRole<HTMLButtonElement>('combobox', { name: '浏览器配置' })
-    await waitFor(() => expect(choiceValue(select)).toBe(profiles[1].id))
-    await chooseOption(userEvent.setup(), select, profiles[0].id)
+    selectBrowserNode(profiles[0].id)
+    expect(screen.queryByRole('combobox', {name:'浏览器配置'})).toBeNull()
 
     fireEvent.click(screen.getByRole('button', { name: '打开浏览器' }))
 

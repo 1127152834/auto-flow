@@ -51,3 +51,7 @@ describe.each(['memory','http'] as const)('recording review service %s',mode=>{
   old.configureMock({disconnect:true})
  })
 })
+
+import {beforeEach as beforeBrowserNode} from 'vitest'
+import {selectBrowserNode} from './select-browser-node'
+beforeBrowserNode(()=>selectBrowserNode())

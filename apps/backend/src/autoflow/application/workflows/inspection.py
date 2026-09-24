@@ -10,11 +10,16 @@ from typing import Any, cast
 from uuid import uuid4
 
 from autoflow.application.profiles.service import ProfileService
+from autoflow.application.workflows.node_browser_resources import (
+    freeze_node_browser_resources,
+)
+from autoflow.domain.environments.identity import profile_from_request
 from autoflow.domain.kernels.errors import LicenseInvalid
 from autoflow.domain.kernels.models import InstalledKernel, KernelEdition, KernelRef
 from autoflow.domain.profiles.errors import KernelNotInstalled
 from autoflow.domain.profiles.models import Profile, ProfileBrowserProxy
 from autoflow.domain.workflows.browser import WorkflowBrowserBusy
+from autoflow.domain.workflows.browser_environment import node_browser_environments
 from autoflow.domain.workflows.runs import WorkflowRunError
 from autoflow.infrastructure.process.project_test_browser_worker import (
     browser_worker_payload,
@@ -30,6 +35,7 @@ class _BrowserState:
     session_id: str
     profile_id: str
     project_id: str | None = None
+    browser_environment: dict[str, Any] | None = None
     phase: str = "starting"
     picker_session_id: str | None = None
     picker_fingerprint: tuple[str | None, str] | None = None
@@ -52,6 +58,8 @@ class WorkflowInspectionService:
         workers: WorkflowWorkerManager,
         recordings: Any | None = None,
     ) -> None:
+        self._node_browser_resources: Any = None
+        self._node_environments: Any = None
         self._profiles = profiles
         self._installed = installed_kernels
         self._resolve_proxy = resolve_proxy
@@ -66,6 +74,10 @@ class WorkflowInspectionService:
         self._lock = asyncio.Lock()
         self._picker_lock = asyncio.Lock()
         self._recording_command_lock = asyncio.Lock()
+
+    def configure_node_browser_environments(self, resources, environments) -> None:
+        self._node_browser_resources = resources
+        self._node_environments = environments
 
     def busy(self) -> bool:
         return self._state is not None or self._workers.busy()
@@ -84,22 +96,34 @@ class WorkflowInspectionService:
         if browser and self._state is not None and self._state.project_id != project_id:
             raise WorkflowRunError("INSPECTION_NOT_FOUND", "浏览器会话不属于当前项目", 404)
 
-    async def open(self, *, profile_id: str, url: str | None = None,
-                   project_id: str | None = None) -> dict[str, Any]:
+    async def open(self, *, profile_id: str | None, url: str | None = None,
+                   project_id: str | None = None, browser_environment: dict[str, Any] | None = None) -> dict[str, Any]:
         async with self._lock:
             self.check_project_access(project_id, writable=True)
             if self._state is not None:
                 self._require_browser()
-                if self._state.profile_id != profile_id:
+                if (profile_id is not None and self._state.profile_id != profile_id) or (browser_environment is not None and self._state.browser_environment != browser_environment):
                     raise _conflict("当前浏览器使用其他 Profile，请先关闭")
                 if url:
                     await self._command("navigate", url=url)
                 return await self.status()
-            profile = self._profiles.get(profile_id)
+            frozen = None
+            if browser_environment is not None:
+                declarations = node_browser_environments({'schemaVersion':3, 'browserEnvironmentVersion':1, 'nodes':[{'id':'inspection','data':{'moduleType':'open_page','browserEnvironment':browser_environment}}]})
+                if browser_environment.get('source') not in {'newFromProfile','fixedEnvironment'} or self._node_browser_resources is None:
+                    raise WorkflowRunError('BROWSER_INITIALIZATION_REQUIRED', '请选择新建实例或固定环境的打开网页节点', 422)
+                defaults = self._node_environments.projects.get(project_id).default_resources if project_id else {}
+                frozen = freeze_node_browser_resources(self._node_browser_resources, self._node_environments, project_id, declarations, defaults or {})['inspection']
+                profile = profile_from_request(frozen)
+                profile_id = profile.id
+            else:
+                if not profile_id:
+                    raise WorkflowRunError('INSPECTION_PROFILE_REQUIRED', '请选择浏览器初始化节点', 422)
+                profile = self._profiles.get(profile_id)
             kernel = self._kernel(profile)
             session_id = str(uuid4())
             acquired = False
-            state = _BrowserState(session_id, profile_id, project_id=project_id)
+            state = _BrowserState(session_id, profile_id, project_id=project_id, browser_environment=browser_environment)
             if self._recordings is not None:
                 self._recordings.admit_browser(project_id, lambda: setattr(self, "_state", state))
             else:
@@ -131,9 +155,15 @@ class WorkflowInspectionService:
                         "inspectionUrl": url,
                     }
                 )
-                await self._workers.start(
-                    session_id, profile_id, kernel.executable_path, payload
-                )
+                if frozen is not None:
+                    def prepare(directory):
+                        target = directory / 'preview' / 'instances' / 'browser'
+                        payload['userDataDir'] = str(target)
+                        if frozen.get('environmentRef'):
+                            self._node_environments.prepare_studio_copy(frozen, target)
+                    await self._workers.start(session_id, profile_id, kernel.executable_path, payload, prepare_directory=prepare)
+                else:
+                    await self._workers.start(session_id, profile_id, kernel.executable_path, payload)
                 state.phase = "ready"
                 return await self.status()
             except BaseException as error:
@@ -248,18 +278,18 @@ class WorkflowInspectionService:
         return await self._command("url")
 
     async def start_picker(
-        self, *, session_id: str, profile_id: str, url: str | None, project_id: str | None = None
+        self, *, session_id: str, profile_id: str | None, url: str | None, project_id: str | None = None, browser_environment: dict[str, Any] | None = None
     ) -> dict[str, Any]:
         async with self._picker_lock:
             return await self._start_picker(
-                session_id=session_id, profile_id=profile_id, url=url, project_id=project_id
+                session_id=session_id, profile_id=profile_id, url=url, project_id=project_id, browser_environment=browser_environment
             )
 
     async def _start_picker(
-        self, *, session_id: str, profile_id: str, url: str | None, project_id: str | None = None
+        self, *, session_id: str, profile_id: str | None, url: str | None, project_id: str | None = None, browser_environment: dict[str, Any] | None = None
     ) -> dict[str, Any]:
         self.check_project_access(project_id, writable=True)
-        fingerprint = (url, profile_id)
+        fingerprint = (url, json.dumps([profile_id,browser_environment], sort_keys=True))
         state = self._state
         if state and state.picker_session_id == session_id:
             if state.picker_fingerprint != fingerprint:
@@ -272,9 +302,9 @@ class WorkflowInspectionService:
         if state and state.recorder_session_id:
             raise _conflict("录制期间不能启动元素拾取")
         if state is None:
-            await self.open(profile_id=profile_id, url=url, project_id=project_id)
+            await self.open(profile_id=profile_id, url=url, project_id=project_id, browser_environment=browser_environment)
             state = self._require_browser()
-        elif state.profile_id != profile_id:
+        elif (profile_id is not None and state.profile_id != profile_id) or (browser_environment is not None and state.browser_environment != browser_environment):
             raise _conflict("拾取请求与浏览器 Profile 不一致")
         elif url:
             await self.navigate(url)

@@ -6998,7 +6998,11 @@ export type components = {
         /** BrowserOpenRequest */
         BrowserOpenRequest: {
             /** Profileid */
-            profileId: string;
+            profileId?: string | null;
+            /** Browserenvironment */
+            browserEnvironment?: {
+                [key: string]: unknown;
+            } | null;
             /** Url */
             url?: string | null;
         };
@@ -12865,6 +12869,10 @@ export type components = {
         StudioPickerSessionStartRequest: {
             /** Sessionid */
             sessionId: string;
+            /** Browserenvironment */
+            browserEnvironment?: {
+                [key: string]: unknown;
+            } | null;
             /** Url */
             url?: string | null;
             /** Profileid */
@@ -13992,6 +14000,8 @@ export type components = {
             revision: number;
             /** Checksum */
             checksum: string;
+            /** Browserenvironmentversion */
+            browserEnvironmentVersion?: number | null;
             validation: components["schemas"]["WorkflowCatalogValidation"];
             /**
              * Createdat
@@ -14025,6 +14035,8 @@ export type components = {
             revision: number;
             /** Checksum */
             checksum: string;
+            /** Browserenvironmentversion */
+            browserEnvironmentVersion?: number | null;
             validation: components["schemas"]["WorkflowCatalogValidation"];
             /**
              * Createdat
