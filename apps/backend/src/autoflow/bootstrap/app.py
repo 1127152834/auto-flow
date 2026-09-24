@@ -449,7 +449,8 @@ def create_app(
         installed_kernel_lookup or catalog_provider, "installed", None
     ) or catalog_provider.installed
     environment_browser = EnvironmentBrowserLauncher(
-        profile_service, kernel_inventory, environment_store
+        profile_service, kernel_inventory, environment_store,
+        resource_provider=lambda: app.state.project_workflow_resources,
     )
     environment_service = EnvironmentService(
         ProjectService(SqlAlchemyProjects(session_factory)),
@@ -458,6 +459,7 @@ def create_app(
         opener=environment_browser.opener,
         closer=environment_browser.closer,
         execution_generation_lookup=_run_execution_generation,
+        validate_browser_configuration=profile_service.validate_resources,
     )
     app.state.environment_browser = environment_browser
     app.state.environment_service = environment_service
@@ -507,6 +509,11 @@ def create_app(
         resolve_credential=studio_credentials.resolve,
         models=model_service,
     )
+    from autoflow.application.workflows.coordinator import WorkflowRunCoordinator
+    if isinstance(workflow_services.commands, WorkflowRunCoordinator):
+        workflow_services.commands.configure_node_browser_environments(app.state.project_workflow_resources, environment_service)
+    if workflow_services.inspection is not None:
+        workflow_services.inspection.configure_node_browser_environments(app.state.project_workflow_resources, environment_service)
     automation_resources = ProjectAutomationResourceQuery(
         SqlAlchemyProjects(session_factory),
         profile_service,

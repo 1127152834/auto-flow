@@ -1,6 +1,7 @@
 import asyncio
 import threading
 import time
+from dataclasses import asdict, replace
 from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
@@ -162,10 +163,10 @@ def test_end_handler_closes_browser_before_saving(tmp_path, monkeypatch):
     service._closer = close_browser
     stage = service.store.stage_candidate
 
-    def stage_after_close(operation_id, instance_id):
+    def stage_after_close(operation_id, instance_id, **kwargs):
         assert events == ["browser-closed"]
         events.append("snapshot")
-        return stage(operation_id, instance_id)
+        return stage(operation_id, instance_id, **kwargs)
 
     monkeypatch.setattr(service.store, "stage_candidate", stage_after_close)
     response = client.post(
@@ -209,6 +210,12 @@ def _project(projects, name="环境项目"):
 
 def _closed_instance(service, project_id, marker: bytes):
     resolved = service.resolve(project_id, {"source": "newFromProfile", "profileId": PROFILE})
+    profile = _profile_record()
+    resolved = replace(resolved, identity_package={
+        "schemaVersion": 1, "profileId": PROFILE, "kernelId": f"public:{PROFILE_KERNEL}",
+        "frozenConfiguration": {"profileSpec": asdict(profile.spec), "fingerprintSeed": 31415,
+                                "createdAt": profile.created_at.isoformat(), "updatedAt": profile.updated_at.isoformat()},
+    })
     instance = service.reserve(
         project_id,
         resolved,
@@ -1050,11 +1057,11 @@ def test_end_retry_after_lost_response_resumes_without_second_environment(
     stage = service.store.stage_candidate
     attempts = {"count": 0}
 
-    def flaky_stage(operation_id, instance_id):
+    def flaky_stage(operation_id, instance_id, **kwargs):
         attempts["count"] += 1
         if attempts["count"] == 1:
             raise RuntimeError("simulated process loss before publish")
-        return stage(operation_id, instance_id)
+        return stage(operation_id, instance_id, **kwargs)
 
     monkeypatch.setattr(service.store, "stage_candidate", flaky_stage)
     with pytest.raises(RuntimeError):
@@ -1410,3 +1417,115 @@ def test_manual_deadline_round_trips_utc_in_detail_and_list(tmp_path):
     for result in [detail, listed]:
         assert datetime.fromisoformat(result['expiresAt']) == deadline
         assert datetime.fromisoformat(result['createdAt']).tzinfo is not None
+
+
+def test_browser_configuration_patch_preserves_login_and_recovers_original_command(tmp_path):
+    client, projects, service = make(tmp_path)
+    service._validate_browser_configuration = lambda _spec: None
+    project_id = _project(projects)
+    instance = _closed_instance(service, project_id, b'unchanged-login')
+    saved = service.publish_new(project_id, name='editable', notes='', profile_id=PROFILE, instance_id=instance.instance_id)
+    url = f'/api/v1/projects/{project_id}/environments/{saved.ref.environment_id}'
+    key = str(uuid4())
+    body = {'expectedMetadataRevision': 1, 'expectedContentGeneration': 1,
+            'browserConfiguration': {'proxy': {'mode': 'fixed', 'proxyId': 'proxy-2'},
+                                     'kernel': {'edition': 'public', 'version': PROFILE_KERNEL}}}
+    response = client.patch(url, headers={'Idempotency-Key': key}, json=body)
+    assert response.status_code == 200, response.text
+    assert response.json()['browserConfiguration']['proxy'] == {'mode': 'fixed', 'proxyId': 'proxy-2'}
+    assert response.json()['ref']['contentGeneration'] == 2
+    assert response.json()['ref']['metadataRevision'] == 2
+    replay = client.patch(url, headers={'Idempotency-Key': key}, json=body)
+    assert replay.status_code == 200
+    assert replay.json()['ref']['contentGeneration'] == 2
+    for generation in (1, 2):
+        assert (service.store.generation_dir(saved.ref.environment_id, generation) / 'Default' / 'Cookies').read_bytes() == b'unchanged-login'
+    assert service.store.generation_identity(saved.ref.environment_id, 1)['frozenConfiguration']['profileSpec']['proxy_mode'] == 'none'
+    assert client.patch(url, headers={'Idempotency-Key': str(uuid4())}, json=body).status_code == 409
+
+
+def test_browser_configuration_patch_refuses_active_instance(tmp_path):
+    client, projects, service = make(tmp_path)
+    service._validate_browser_configuration = lambda _spec: None
+    project_id = _project(projects)
+    instance = _closed_instance(service, project_id, b'login')
+    saved = service.publish_new(project_id, name='busy', notes='', profile_id=PROFILE, instance_id=instance.instance_id)
+    source = service.resolve(project_id, {'source': 'fixedEnvironment', 'environmentId': saved.ref.environment_id})
+    active = service.reserve(project_id, source, task_id=str(uuid4()), run_id=str(uuid4()), holder_kind='task', holder_id=str(uuid4()))
+    response = client.patch(f'/api/v1/projects/{project_id}/environments/{saved.ref.environment_id}', headers={'Idempotency-Key': str(uuid4())}, json={
+        'expectedMetadataRevision': 1, 'expectedContentGeneration': 1,
+        'browserConfiguration': {'proxy': {'mode': 'none'}, 'kernel': {'edition': 'public', 'version': PROFILE_KERNEL}},
+    })
+    assert response.status_code == 423, response.text
+    assert service.get_instance(project_id, active.instance_id).state == 'active'
+    assert service.get(project_id, saved.ref.environment_id)[0].ref.content_generation == 1
+
+
+def test_configuration_recovers_publication_before_database_commit(tmp_path, monkeypatch):
+    client, projects, service = make(tmp_path)
+    service._validate_browser_configuration = lambda _spec: None
+    project_id = _project(projects)
+    instance = _closed_instance(service, project_id, b'login')
+    saved = service.publish_new(project_id, name='recover', notes='', profile_id=PROFILE, instance_id=instance.instance_id)
+    url = f'/api/v1/projects/{project_id}/environments/{saved.ref.environment_id}'
+    key = str(uuid4())
+    body = {'expectedMetadataRevision': 1, 'expectedContentGeneration': 1,
+            'browserConfiguration': {'proxy': {'mode': 'none'}, 'kernel': {'edition': 'public', 'version': PROFILE_KERNEL}}}
+    original = service.store.publish
+    def interrupted(*args):
+        original(*args)
+        raise OSError('response lost after directory publication')
+    monkeypatch.setattr(service.store, 'publish', interrupted)
+    with pytest.raises(OSError):
+        client.patch(url, headers={'Idempotency-Key': key}, json=body)
+    # A different writer must not consume the unpublished candidate as its own.
+    rename = client.patch(url, headers={'Idempotency-Key': str(uuid4())}, json={'expectedMetadataRevision': 1, 'name': 'changed'})
+    assert rename.status_code == 423
+    monkeypatch.setattr(service.store, 'publish', original)
+    result = client.patch(url, headers={'Idempotency-Key': key}, json=body)
+    assert result.status_code == 200, result.text
+    assert result.json()['ref']['contentGeneration'] == 2
+    assert len(list(service.store.generation_dir(saved.ref.environment_id, 1).parent.iterdir())) == 2
+
+
+@pytest.mark.parametrize('failure', ['proxy', 'kernel', 'migration'])
+def test_invalid_instance_configuration_does_not_leave_pending_lock(tmp_path, failure):
+    from autoflow.domain.profiles.errors import KernelNotInstalled, ProxyUnavailable
+    client, projects, service = make(tmp_path)
+    project_id = _project(projects)
+    instance = _closed_instance(service, project_id, b'login')
+    saved = service.publish_new(project_id, name='valid', notes='', profile_id=PROFILE, instance_id=instance.instance_id)
+    def validate(_spec):
+        if failure == 'proxy':
+            raise ProxyUnavailable
+        if failure == 'kernel':
+            raise KernelNotInstalled
+    service._validate_browser_configuration = validate
+    url = f'/api/v1/projects/{project_id}/environments/{saved.ref.environment_id}'
+    body = {'expectedMetadataRevision': 1, 'expectedContentGeneration': 1,
+            'browserConfiguration': {'proxy': {'mode': 'none'}, 'kernel': {'edition': 'public', 'version': '999.0.0' if failure == 'migration' else PROFILE_KERNEL}}}
+    key = str(uuid4())
+    response = client.patch(url, headers={'Idempotency-Key': key}, json=body)
+    assert response.status_code == 422, response.text
+    assert client.patch(url, headers={'Idempotency-Key': key}, json=body).status_code == 422
+    renamed = client.patch(url, headers={'Idempotency-Key': str(uuid4())}, json={'expectedMetadataRevision': 1, 'name': 'still-editable'})
+    assert renamed.status_code == 200, renamed.text
+    assert renamed.json()['ref']['contentGeneration'] == 1
+
+
+def test_studio_preview_copies_frozen_generation_and_rejects_changed_source(tmp_path):
+    from autoflow.domain.environments.identity import request_from_identity
+    _client, projects, service = make(tmp_path)
+    project_id = _project(projects)
+    instance = _closed_instance(service, project_id, b'original-login')
+    saved = service.publish_new(project_id, name='preview', notes='', profile_id=PROFILE, instance_id=instance.instance_id)
+    frozen = {**request_from_identity(saved.identity_package), 'identityPackage': saved.identity_package, 'environmentRef': saved.ref.to_dict()}
+    target = tmp_path / 'owned-studio' / 'preview' / 'instances' / 'browser'
+    service.prepare_studio_copy(frozen, target)
+    assert (target / 'Default' / 'Cookies').read_bytes() == b'original-login'
+    (target / 'Default' / 'Cookies').write_bytes(b'preview-change')
+    assert (service.store.generation_dir(saved.ref.environment_id, 1) / 'Default' / 'Cookies').read_bytes() == b'original-login'
+    wrong = {**frozen, 'environmentRef': {**frozen['environmentRef'], 'contentGeneration': 2}}
+    with pytest.raises(ProjectError, match='环境已改变'):
+        service.prepare_studio_copy(wrong, target)
+    assert (target / 'Default' / 'Cookies').read_bytes() == b'preview-change'

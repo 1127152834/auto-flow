@@ -25,6 +25,7 @@ from autoflow.domain.environments.rules import (
     validate_save,
 )
 from autoflow.domain.projects.models import ProjectError
+from autoflow.domain.workflows.runtime import WorkflowRuntimeError
 
 END_TERMINAL_PHASES = frozenset({"completed", "saved_unlinked", "failed"})
 
@@ -102,7 +103,7 @@ def save_environment(service, project_id: str, key: str, payload: dict[str, Any]
             assert source is not None  # validate_save rejects update without a source.
             publication_target = service.store.generation_dir(source.environment_id, source.content_generation + 1)
         service.environments.set_instance_state(instance_id, "saving")
-        digest = service.store.stage_candidate(save_id, instance_id)
+        digest = service.store.stage_candidate(save_id, instance_id, identity_package=instance.identity_package)
         service.environments.record_save(
             save_id,
             project_id,
@@ -137,6 +138,7 @@ def save_environment(service, project_id: str, key: str, payload: dict[str, Any]
                 None,
                 now,
                 now,
+                identity_package=service.store.generation_identity(environment_id, generation),
             )
             saved = service.environments.create_ready(
                 record,
@@ -161,7 +163,8 @@ def save_environment(service, project_id: str, key: str, payload: dict[str, Any]
                     encoding="utf-8"
                 ).strip()
             saved = service.environments.publish_update(
-                project_id, environment_id, digest, generation=generation
+                project_id, environment_id, digest, generation=generation,
+                identity_package=service.store.generation_identity(environment_id, generation)
             )
         service.environments.record_save(
             save_id,
@@ -200,7 +203,8 @@ def save_environment(service, project_id: str, key: str, payload: dict[str, Any]
         if instance.environment_id:
             service.environments.release_occupancy(instance.environment_id, instance_id)
         return outcome, done, False
-    except (ProjectError, OSError) as cause:
+    except (ProjectError, WorkflowRuntimeError, OSError) as cause:
+        error: ProjectError | WorkflowRuntimeError
         if isinstance(cause, OSError):
             # Once a generation directory exists, publication may have succeeded.
             # Leave that operation unresolved for original-command reconciliation.
@@ -417,7 +421,7 @@ def end_task(service, project_id: str, key: str, payload: dict[str, Any]):
             datetime.now(UTC),
         )
         return outcome, done, False
-    except ProjectError as error:
+    except (ProjectError, WorkflowRuntimeError) as error:
         if ledger["phase"] not in END_TERMINAL_PHASES:
             record("failed")
         service.environments.complete_operation(
@@ -468,7 +472,7 @@ def _bind(service, project_id: str, environment: PersistentEnvironment, instance
         results = bind_targets(environment.ref.environment_id, targets)
         service.environments.bind_records(project_id, environment.ref.environment_id, results)
         phase = "completed"
-    except ProjectError as error:
+    except (ProjectError, WorkflowRuntimeError) as error:
         if error.code in {"LINK_REVISION_CONFLICT", "ASSOCIATION_REPLACE_FORBIDDEN", "ASSOCIATION_TARGET_MISSING"}:
             details = error.details
             if error.code == "LINK_REVISION_CONFLICT":

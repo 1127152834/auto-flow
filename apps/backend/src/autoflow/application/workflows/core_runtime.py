@@ -167,6 +167,14 @@ class WorkflowRuntimeService:
                     )
         return snapshots
 
+    def node_browser_mode(self, workflow_id: str) -> bool:
+        from autoflow.domain.workflows.browser_environment import (
+            node_browser_environments,
+        )
+        with self._session_factory() as session:
+            row = session.get(WorkflowDocumentRow, workflow_id)
+            return row is not None and node_browser_environments(workflow_record(row).document) is not None
+
     def requires_browser(self, workflow_id: str) -> bool:
         from .runtime import WorkflowRuntime
 

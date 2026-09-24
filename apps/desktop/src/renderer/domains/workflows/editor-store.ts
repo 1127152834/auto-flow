@@ -1,5 +1,6 @@
 // Source: WebRPA@5ccb900e, store/workflowStore.ts; see SOURCE.md for license and adaptation boundaries.
 import { create } from 'zustand'
+import type { BrowserEnvironment } from './types/workflow'
 import { nanoid } from 'nanoid'
 import type { Node, Edge, Connection, NodeChange, EdgeChange } from '@xyflow/react'
 import { applyNodeChanges, applyEdgeChanges, addEdge } from '@xyflow/react'
@@ -26,8 +27,8 @@ function historyEdges(edges: Edge[]): Edge[] {
   return edges.map(edge => { const copy = { ...edge }; delete copy.selected; return copy })
 }
 
-function matchesHistory(state: { nodes: Node<NodeData>[]; edges: Edge[]; name: string; variables: Variable[] }, snapshot?: HistorySnapshot): boolean {
-  return !!snapshot && state.name === snapshot.name && JSON.stringify(state.variables) === JSON.stringify(snapshot.variables) &&
+function matchesHistory(state: { browserEnvironmentVersion?: number; nodes: Node<NodeData>[]; edges: Edge[]; name: string; variables: Variable[] }, snapshot?: HistorySnapshot): boolean {
+  return !!snapshot && state.browserEnvironmentVersion === snapshot.browserEnvironmentVersion && state.name === snapshot.name && JSON.stringify(state.variables) === JSON.stringify(snapshot.variables) &&
     JSON.stringify(historyNodes(state.nodes)) === JSON.stringify(historyNodes(snapshot.nodes)) &&
     JSON.stringify(historyEdges(state.edges)) === JSON.stringify(historyEdges(snapshot.edges))
 }
@@ -180,6 +181,7 @@ export type BottomPanelTab = 'logs' | 'data' | 'variables' | 'assets' | 'images'
 
 // 历史记录快照类型
 interface HistorySnapshot {
+  browserEnvironmentVersion?: number
   variables: Variable[]
   nodes: Node<NodeData>[]
   edges: Edge[]
@@ -219,6 +221,8 @@ export type DataRow = Record<string, unknown>
 
 // 工作流状态
 interface WorkflowState {
+  browserEnvironmentVersion: number | undefined
+  migrateBrowserEnvironment(nodeId:string, configuration:BrowserEnvironment): void
   // 工作流基本信息
   id: string
   name: string
@@ -367,9 +371,9 @@ interface WorkflowState {
   setWorkflowName: (name: string) => void
   setWorkflowNameWithHistory: (name: string) => void  // 设置名称并保存历史
   clearWorkflow: () => void
-  loadWorkflow: (workflow: { nodes: Node<NodeData>[]; edges: Edge[]; name: string; variables?: Variable[] }) => void
+  loadWorkflow: (workflow: { browserEnvironmentVersion?: number; nodes: Node<NodeData>[]; edges: Edge[]; name: string; variables?: Variable[] }) => void
   // 回滚：把画布完整恢复到某个快照（含节点、连线、名称、全局变量）
-  restoreSnapshot: (snapshot: { nodes: Node<NodeData>[]; edges: Edge[]; name?: string; variables?: Variable[] }, options?: { resetHistory?: boolean }) => void
+  restoreSnapshot: (snapshot: { browserEnvironmentVersion?: number; nodes: Node<NodeData>[]; edges: Edge[]; name?: string; variables?: Variable[] }, options?: { resetHistory?: boolean }) => void
   
   // 未保存状态管理
   markAsUnsaved: () => void
@@ -1403,6 +1407,7 @@ export function getModuleDefaultTimeout(moduleType: ModuleType): number {
 export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   id: nanoid(),
   name: '未命名工作流',
+  browserEnvironmentVersion: 1,
   nodes: [],
   edges: [],
   variables: [],
@@ -1421,7 +1426,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   imageAssets: [],
   bottomPanelTab: 'logs',
   hasUnsavedChanges: false,
-  history: [{ nodes: [], edges: [], variables: [], name: '未命名工作流' }],
+  history: [{ browserEnvironmentVersion: 1, nodes: [], edges: [], variables: [], name: '未命名工作流' }],
   historyIndex: 0,
 
   onNodesChange: (changes) => {
@@ -1569,7 +1574,9 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     // 根据模块类型应用默认配置
     let defaultData: Partial<NodeData> = {}
     
-    if (type === 'project_end') {
+    if (type === 'open_page' && get().browserEnvironmentVersion === 1) {
+      defaultData = {browserEnvironment: {source: get().nodes.some(node=>node.data.moduleType === 'open_page' && (node.data.browserEnvironment as BrowserEnvironment|undefined)?.source !== 'current') ? 'current' : 'newFromProfile'}}
+    } else if (type === 'project_end') {
       defaultData = { retainEnvironment: { enabled: false, mode: 'saveAs', recordTargets: [] } }
     } else if (type === 'project_manual') {
       defaultData = { reason: '等待人工处理', timeoutSeconds: 1800 }
@@ -3068,6 +3075,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       nodes: JSON.parse(JSON.stringify(historyNodes(state.nodes))),
       edges: JSON.parse(JSON.stringify(historyEdges(state.edges))),
       name: state.name,
+      browserEnvironmentVersion: state.browserEnvironmentVersion,
       variables: structuredClone(state.variables),
     }
     
@@ -3077,6 +3085,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         JSON.stringify(historyNodes(currentSnapshot.nodes)) === JSON.stringify(snapshot.nodes) &&
         JSON.stringify(historyEdges(currentSnapshot.edges)) === JSON.stringify(snapshot.edges) &&
         currentSnapshot.name === snapshot.name &&
+        currentSnapshot.browserEnvironmentVersion === snapshot.browserEnvironmentVersion &&
         JSON.stringify(currentSnapshot.variables) === JSON.stringify(snapshot.variables)) {
       return // 没有变化，不保存
     }
@@ -3106,6 +3115,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         nodes: JSON.parse(JSON.stringify(snapshot.nodes)),
         edges: JSON.parse(JSON.stringify(snapshot.edges)),
         name: snapshot.name,
+        browserEnvironmentVersion: snapshot.browserEnvironmentVersion,
         variables: structuredClone(snapshot.variables),
         historyIndex: newIndex,
         hasUnsavedChanges: true,
@@ -3123,6 +3133,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         nodes: JSON.parse(JSON.stringify(snapshot.nodes)),
         edges: JSON.parse(JSON.stringify(snapshot.edges)),
         name: snapshot.name,
+        browserEnvironmentVersion: snapshot.browserEnvironmentVersion,
         variables: structuredClone(snapshot.variables),
         historyIndex: newIndex,
         hasUnsavedChanges: true,
@@ -3155,10 +3166,19 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     }
   },
 
+  migrateBrowserEnvironment: (nodeId, configuration) => {
+    const state = get()
+    if (!state.nodes.some(node=>node.id===nodeId && node.data.moduleType==='open_page')) return
+    state.pushHistory()
+    set({browserEnvironmentVersion:1, hasUnsavedChanges:true, nodes:state.nodes.map(node=>node.data.moduleType==='open_page'
+      ? {...node,data:{...node.data,browserEnvironment:node.id===nodeId?structuredClone(configuration):{source:'current'}}} : node)})
+  },
+
   clearWorkflow: () => {
     set({
       id: nanoid(),
       name: '未命名工作流',
+  browserEnvironmentVersion: 1,
       nodes: [],
       edges: [],
       selectedNodeId: null,
@@ -3171,7 +3191,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       currentExecutionRunId: null,
       variables: [],
       hasUnsavedChanges: false,  // 清空后标记为已保存
-      history: [{ nodes: [], edges: [], variables: [], name: '未命名工作流' }],
+      history: [{ browserEnvironmentVersion: 1, nodes: [], edges: [], variables: [], name: '未命名工作流' }],
       historyIndex: 0,
     })
   },
@@ -3184,12 +3204,14 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       nodes: JSON.parse(JSON.stringify(safeNodes)),
       edges: JSON.parse(JSON.stringify(safeEdges)),
       name: workflow.name,
+      browserEnvironmentVersion: workflow.browserEnvironmentVersion,
       variables: structuredClone(workflow.variables ?? []),
     }
     set({
       nodes: safeNodes as any,
       edges: safeEdges as any,
       name: workflow.name,
+      browserEnvironmentVersion: workflow.browserEnvironmentVersion,
       variables: structuredClone(workflow.variables ?? []),
       selectedNodeId: null,
       clipboard: [],
@@ -3216,6 +3238,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       nodes: structuredClone(sanitizeNodes(snapshot.nodes || [])),
       edges: structuredClone(sanitizeEdges(snapshot.edges || [])),
       name: snapshot.name ?? state.name,
+      browserEnvironmentVersion: snapshot.browserEnvironmentVersion,
       variables: structuredClone(snapshot.variables ?? state.variables),
     }
     if (!options?.resetHistory) get().pushHistory()
@@ -3258,7 +3281,9 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     
     const workflow = {
       id: state.id,
+      ...(state.browserEnvironmentVersion !== undefined ? {schemaVersion: 3} : {}),
       name: state.name,
+      browserEnvironmentVersion: state.browserEnvironmentVersion,
       nodes: convertedNodes,
       edges: state.edges,
       variables: state.variables,
@@ -3330,12 +3355,13 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       set({
         id: workflow.id || nanoid(),
         name: workflow.name || '导入的工作流',
+        browserEnvironmentVersion: workflow.browserEnvironmentVersion,
         nodes: safeNodes,
         edges: safeEdges,
         variables: importedVariables,  // 恢复变量
         selectedNodeId: null,
         hasUnsavedChanges: false,  // 导入后标记为已保存
-        history: [{ nodes: JSON.parse(JSON.stringify(safeNodes)), edges: JSON.parse(JSON.stringify(safeEdges)), name: workflow.name || '导入的工作流', variables: structuredClone(importedVariables) }],
+        history: [{ browserEnvironmentVersion: workflow.browserEnvironmentVersion, nodes: JSON.parse(JSON.stringify(safeNodes)), edges: JSON.parse(JSON.stringify(safeEdges)), name: workflow.name || '导入的工作流', variables: structuredClone(importedVariables) }],
         historyIndex: 0,
       })
       return true
@@ -3351,6 +3377,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       
       const state = get()
       const importedNodes = sanitizeNodes(workflow.nodes)
+      if(workflow.browserEnvironmentVersion!==state.browserEnvironmentVersion&&importedNodes.some(node=>node.data.moduleType==='open_page'))return false
       
       // 生成新的节点ID映射（旧ID -> 新ID）
       const idMap = new Map<string, string>()

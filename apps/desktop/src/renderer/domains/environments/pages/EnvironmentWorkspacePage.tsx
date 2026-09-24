@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowRight, Clock, HardDrive, Monitor } from '@phosphor-icons/react'
+import { Clock } from '@phosphor-icons/react'
 import { notify } from '../../../shared/components/Toaster'
 import { useMemo, useState } from 'react'
 import type { StreamingApiClient } from '../../../shared/api/client'
@@ -40,7 +40,7 @@ const sections: Record<View, { title: string; note: string }> = {
   running: { title: '当前现场', note: '' },
   manual: { title: '等待人工现场', note: '保留浏览器、输入和租约；现场保留期间仍占用运行容量。' },
   saved: { title: '持久环境', note: '工作流结束节点明确保存的记录，不是正在运行的会话。' },
-  defaults: { title: '项目默认资源', note: '用于未单独指定对应资源的方案。' },
+  defaults: { title: '新建环境默认设置', note: '设置新建环境使用的模板和代理。' },
 }
 const sorts = [
   { value: '-updatedAt', label: '最近修改' },
@@ -117,7 +117,7 @@ function Workspace({ workspaceKey, instanceId, projectId, project, client, disab
     { value: 'running' as View, label: '运行环境', count: running.data ? runningItems.length : null },
     { value: 'manual' as View, label: '等待人工', count: manual.data ? manual.data.total : null },
     { value: 'saved' as View, label: '持久环境', count: saved.data ? saved.data.total : null },
-    { value: 'defaults' as View, label: '项目默认资源', count: null },
+    { value: 'defaults' as View, label: '新建环境默认设置', count: null },
   ]
   const section = sections[view]
   const lastUpdated = Math.max(saved.dataUpdatedAt, running.dataUpdatedAt, manual.dataUpdatedAt)
@@ -126,7 +126,7 @@ function Workspace({ workspaceKey, instanceId, projectId, project, client, disab
     : view === 'saved' && saved.data
       ? { title: section.title, note: `工作流结束节点明确保存的 ${saved.data.total} 条记录，不是正在运行的会话。` }
       : section
-  return <section className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_19rem] xl:items-start">
+  return <section className="grid min-w-0 gap-4">
     <div className="grid min-w-0 gap-4">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
@@ -192,36 +192,12 @@ function Workspace({ workspaceKey, instanceId, projectId, project, client, disab
           {saved.data ? <Pagination showPage offset={(saved.data.page - 1) * saved.data.pageSize} limit={saved.data.pageSize} total={saved.data.total} count={saved.data.items.length} disabled={saved.isFetching} onOffsetChange={offset => setQuery(current => ({ ...current, page: Math.floor(offset / current.pageSize) + 1 }))} /> : null}
         </TabsContent>
         <TabsContent value="defaults">
-          <ProjectDefaultsPanel project={project} readOnly={readOnly} />
+          <ProjectDefaultsPanel key={`${workspaceKey}:${instanceId}:${projectId}`} project={project} client={client} workspaceKey={workspaceKey} instanceId={instanceId} readOnly={readOnly || disabled} />
         </TabsContent>
       </Tabs>
     </div>
-    <aside className="grid min-w-0 gap-4" aria-label="环境概览">
-      <DefaultsCard project={project} count={saved.data ? saved.data.total : null} onShowDefaults={() => setView('defaults')} onShowSaved={() => setView('saved')} />
-    </aside>
-  </section>
-}
 
-// The approved artboard keeps 项目默认资源 and 持久环境 visible next to the current
-// scene, so the two shortcuts live in a right column instead of only inside the chips.
-function DefaultsCard({ project, count, onShowDefaults, onShowSaved }: { project: ProjectView; count: number | null; onShowDefaults(): void; onShowSaved(): void }) {
-  const resources = project.defaultResources
-  const proxy = { sourceDefault: '沿用浏览器配置', none: '不使用代理', fixed: '固定代理', pool: '代理池' }[resources.proxy.mode] ?? resources.proxy.mode
-  const rows: [string, string][] = [['浏览器', resources.profileId ? '已指定浏览器配置' : '未指定'], ['代理', proxy]]
-  return <>
-    <section className="grid gap-3 rounded-control border border-line bg-surface p-4" aria-label="项目默认资源概览">
-      <h3 className="m-0 flex items-center gap-2 text-sm font-semibold"><Monitor size={19} aria-hidden className="text-clay" />项目默认资源</h3>
-      <dl className="grid gap-2 text-sm">
-        {rows.map(([label, value]) => <div key={label} className="flex items-baseline justify-between gap-3"><dt className="text-muted">{label}</dt><dd className="m-0 min-w-0 truncate text-right font-medium">{value}</dd></div>)}
-      </dl>
-      <Button variant="ghost" className="justify-between text-clay" onClick={onShowDefaults}>查看默认资源<ArrowRight aria-hidden /></Button>
-    </section>
-    <section className="grid gap-3 rounded-control border border-line bg-surface p-4" aria-label="持久环境概览">
-      <h3 className="m-0 flex items-center gap-2 text-sm font-semibold"><HardDrive size={19} aria-hidden className="text-clay" />持久环境{count === null ? null : ` ${count}`}</h3>
-      <p className="m-0 text-sm text-muted">工作流明确保存的环境。</p>
-      <Button variant="ghost" className="justify-between text-clay" onClick={onShowSaved}>查看持久环境{count === null ? null : ` ${count}`}<ArrowRight aria-hidden /></Button>
-    </section>
-  </>
+  </section>
 }
 
 function minutesText(expiresAt: string | null) {

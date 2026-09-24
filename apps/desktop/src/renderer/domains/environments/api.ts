@@ -1,5 +1,7 @@
-import type { StreamingApiClient } from '../../shared/api/client'
+import { ApiClientError, type StreamingApiClient } from '../../shared/api/client'
 import type { components } from '../../shared/api/generated'
+import { DataCommandNotAccepted, DataCommandUncertain } from '../project-data/data-command'
+import { isDefinitiveProjectFailure } from '../projects/api'
 import { createOperationCommand } from '../project-data/operation-command'
 
 type Schema = components['schemas']
@@ -24,7 +26,27 @@ export function createEnvironmentApi(client: StreamingApiClient, projectId: stri
   // Environment deletes are stored in the same project operation table, so the
   // shared by-idempotency-key lookup recovers an uncertain outcome.
   const operations = createOperationCommand<Schema['EnvironmentOperationSnapshot']>(client, projectId)
+  async function patchConfiguration(environmentId: string, body: EnvironmentPatch, key: string, resume = false): Promise<Environment> {
+    const submit = () => client.request<Environment>(`${base}/environments/${encode(environmentId)}`, { method: 'PATCH', headers: { 'Idempotency-Key': key }, body })
+    if (!resume) try { return await submit() } catch (error) { if (isDefinitiveProjectFailure(error)) throw error }
+    try {
+      const operation = await operations.lookup(key, 'updateEnvironment', () => true)
+      if (operation.resource.environmentId !== environmentId) throw new DataCommandUncertain(new Error('操作环境不一致'))
+      if (operation.status === 'failed') throw new ApiClientError(String(operation.error?.message ?? '保存失败'), Number(operation.error?.status ?? 409), String(operation.error?.code ?? 'CONFIGURATION_FAILED'))
+      if (operation.status === 'succeeded') {
+        const result = operation.result as Environment | null
+        if (result?.ref.environmentId !== environmentId || result.ref.projectId !== projectId) throw new DataCommandUncertain(new Error('保存结果不一致'))
+        return result
+      }
+    } catch (error) {
+      if (isDefinitiveProjectFailure(error)) throw error
+      if (!(error instanceof DataCommandNotAccepted)) throw new DataCommandUncertain(error)
+    }
+    // The same immutable command finishes a publication interrupted before DB commit.
+    try { return await submit() } catch (error) { if (isDefinitiveProjectFailure(error)) throw error; throw new DataCommandUncertain(error) }
+  }
   return {
+    patchConfiguration,
     list: (query: EnvironmentQuery, signal?: AbortSignal) => {
       const state = query.state ? `&state=${encode(query.state)}` : ''
       return client.request<EnvironmentPage>(`${base}/environments?q=${encode(query.query)}&page=${query.page}&pageSize=${query.pageSize}&sort=${encode(query.sort)}${state}`, { signal })

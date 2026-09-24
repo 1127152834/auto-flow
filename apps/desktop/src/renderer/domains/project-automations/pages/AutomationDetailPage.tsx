@@ -25,7 +25,7 @@ export type AutomationDetailPageProps = {
   /** Leaving the editor after this automation stopped existing. */
   onDeleted?(): void
   onBatchCreated?(batchId: string): void
-  onOpenStudio?(workflowId: string): void
+  onOpenStudio?(workflowId?: string): void
   registerLeaveGuard(guard: (() => Promise<boolean>) | null): void
 }
 type Baseline = { value: AutomationWrite; revision: number; resetKey: string }
@@ -39,6 +39,13 @@ function Detail({ projectDefaults, workspaceKey, instanceId, projectId, automati
   const cache = useQueryClient()
   const result = useQuery({ queryKey: [...prefix, 'detail', automationId], queryFn: ({ signal }) => api.get(automationId!, signal), enabled: Boolean(automationId) && !disabled })
   const workflows = useQuery({ queryKey: [workspaceKey, instanceId, 'workflow-catalog', projectId], queryFn: ({ signal }) => resources.workflows(signal), enabled: !disabled })
+  const refreshWorkflows = workflows.refetch
+  useEffect(() => {
+    if (disabled) return
+    const refresh = () => { void refreshWorkflows() }
+    window.addEventListener('focus', refresh)
+    return () => window.removeEventListener('focus', refresh)
+  }, [disabled, refreshWorkflows])
   const profiles = useQuery({ queryKey: [workspaceKey, instanceId, 'automation-profiles'], queryFn: ({ signal }) => resources.profiles(signal), enabled: !disabled })
   const proxies = useQuery({ queryKey: [workspaceKey, instanceId, 'automation-proxies'], queryFn: ({ signal }) => resources.proxies(signal), enabled: !disabled })
   const models = useQuery({ queryKey: [workspaceKey, instanceId, 'automation-models'], queryFn: ({ signal }) => resources.models(signal), enabled: !disabled })
@@ -117,7 +124,7 @@ function Detail({ projectDefaults, workspaceKey, instanceId, projectId, automati
     {command.recovering ? <div role="alert" className="flex flex-wrap items-center gap-3 border border-warning/40 bg-surface p-3 text-sm"><span>{command.notAccepted ? '原请求尚未接受，可以重试原请求或继续编辑。' : '保存结果尚未确认，请先核对原操作。'}</span><Button size="sm" disabled={disabled || command.busy} onClick={() => void command.lookup()}>核对保存结果</Button>{command.notAccepted ? <><Button size="sm" disabled={disabled || readOnly || command.busy} onClick={() => void command.retry()}>重试原请求</Button><Button size="sm" variant="ghost" disabled={command.busy} onClick={command.discardNotAccepted}>继续编辑</Button></> : null}</div> : null}
     {command.conflict ? <div role="alert" className="flex flex-wrap items-center gap-3 border border-warning/40 bg-surface p-3 text-sm"><p>自动化资料已变化，你的输入已保留。最新名称：{latestConflict?.name ?? '尚未读取'}。</p><Button size="sm" disabled={disabled || result.isFetching} onClick={() => setReloadConflict(value => value + 1)}>读取最新资料</Button><Button size="sm" disabled={!latestConflict || disabled} onClick={() => setConfirmation('latest')}>载入最新资料重新编辑</Button></div> : null}
     <AutomationEditor onOpenStudio={onOpenStudio} onStartRun={automationId && onBatchCreated ? () => { setStartOpen(true); void validation.refetch() } : undefined} validationNotice={automationId && validation.data && !validation.data.runnable ? <details className="mx-5 border-b border-line py-2 text-sm"><summary className="cursor-pointer text-muted">查看运行条件 · 尚未满足</summary><ul className="mb-0 mt-2 pl-5">{validation.data.issues.map((issue, index) => <li key={`${issue.code}:${index}`}>{safeProjectError(issue)}</li>)}</ul><p className="mb-0 text-muted">可以继续维护配置，保存配置不代表开始运行。</p></details> : null} initialValue={baseline.value} resetKey={baseline.resetKey} isNew={!automationId} disabled={disabled || readOnly} saving={command.busy} recovering={command.recovering} error={command.error} serverErrors={command.fields}
-      workflowOptions={(workflows.data?.items ?? []).map(workflow => ({ id: workflow.workflowId, name: workflow.name, revision: workflow.revision, updatedAt: workflow.updatedAt, runnable: workflow.validation.runnable, validationMessage: workflow.validation.issues.map(safeProjectError).join('；') }))}
+      workflowOptions={(workflows.data?.items ?? []).map(workflow => ({ id: workflow.workflowId, name: workflow.name, browserEnvironmentVersion: workflow.browserEnvironmentVersion, revision: workflow.revision, updatedAt: workflow.updatedAt, runnable: workflow.validation.runnable, validationMessage: workflow.validation.issues.map(safeProjectError).join('；') }))}
       environmentOptions={{ projectDefaults, profiles: profiles.data?.items ?? [], proxies: (proxies.data?.proxies ?? []).filter(proxy => proxy.enabled), pools: proxies.data?.pools ?? [], modelProviders: (models.data?.items ?? []).filter(provider => provider.enabled).map(provider => ({ id: provider.id, name: provider.name })), environments: (environments.data?.items ?? []).map(item => ({ id: item.ref.environmentId, name: item.name })) }}
       renderInputPlan={(value, onChange, locked, draft) => <><InputPlanEditor {...draft} value={value} onChange={onChange} disabled={locked} tables={options} onLoadRecords={id => { setRecordTableId(id); setRecordPage(1) }} />{records.isFetching ? <p role="status" className="text-sm text-muted">正在读取记录…</p> : null}{records.data && records.data.total > 200 ? <Pagination offset={(recordPage - 1) * 200} limit={200} count={records.data.items.length} total={records.data.total} disabled={records.isFetching || locked} showPage onOffsetChange={offset => setRecordPage(Math.floor(offset / 200) + 1)} /> : null}</>}
       onSubmit={value => command.submit(automationId ? { ...value, expectedManagementRevision: baseline.revision } : value, automationId)} onCancel={() => setConfirmation('reset')} onDraftStateChange={state => { dirty.current = state.dirty }} />

@@ -6,10 +6,15 @@ from autoflow.application.project_automations.resource_query import (
     ProjectAutomationResourceQuery,
 )
 from autoflow.application.workflows.browser_resources import WorkflowBrowserResources
+from autoflow.application.workflows.node_browser_resources import (
+    freeze_node_browser_resources,
+)
+from autoflow.domain.environments.identity import request_from_identity
 from autoflow.domain.environments.models import ResolvedEnvironmentSource
 from autoflow.domain.profiles.errors import KernelNotInstalled, ProfileNotFound
 from autoflow.domain.project_automations.models import AutomationRecord
 from autoflow.domain.project_runs.models import ProjectRunError
+from autoflow.domain.workflows.browser_environment import node_browser_environments
 from autoflow.domain.workflows.runtime import WorkflowRuntimeError
 
 
@@ -31,6 +36,7 @@ class ProjectRunResourceResolver:
         automation: AutomationRecord,
         project_defaults: dict[str, Any],
         inputs: dict[str, dict[str, Any]] | None = None,
+        *, document: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         issues = self._query.inspect_resources(automation)
         if issues:
@@ -57,6 +63,11 @@ class ProjectRunResourceResolver:
                 **({"modelProviderId": model_provider_id} if model_provider_id else {}),
                 **timing,
             }
+
+        nodes = node_browser_environments(document) if document is not None else None
+        if nodes is not None:
+            frozen = freeze_node_browser_resources(self._browser, self._environments, automation.project_id, nodes, project_defaults, model_provider_id)
+            return {'browser': 'node', 'nodeBrowserEnvironments': frozen, 'modelProviderId': model_provider_id, **timing}
 
         source = policy.get("source")
         if source not in {"newFromProfile", "fixedEnvironment", "inputEnvironment"}:
@@ -87,13 +98,17 @@ class ProjectRunResourceResolver:
         if not isinstance(profile_id, str) or not profile_id:
             raise _field_error("environmentPolicy.profileId", "请选择浏览器配置")
 
-        request = self._freeze_profile(profile_id, proxy, model_provider_id)
+        request = (
+            request_from_identity(pinned.identity_package) if pinned is not None
+            else self._freeze_profile(profile_id, proxy, model_provider_id)
+        )
         if pinned is not None:
             request = {
                 **request,
                 "browser": "persistent",
                 "environmentRef": pinned.environment_ref.to_dict() if pinned.environment_ref else None,
                 "identityPackage": pinned.identity_package,
+                "modelProviderId": model_provider_id,
             }
         return {**request, **timing}
 
@@ -101,14 +116,13 @@ class ProjectRunResourceResolver:
         self, pending: dict[str, Any], selected: ResolvedEnvironmentSource,
     ) -> dict[str, Any]:
         """Freeze the source selected and reserved by the Task claim transaction."""
-        request = self._freeze_profile(
-            selected.profile_id, pending.get("proxy"), pending.get("modelProviderId"),
-        )
+        request = request_from_identity(selected.identity_package)
         return {
             **request,
             "browser": "persistent",
             "environmentRef": selected.environment_ref.to_dict() if selected.environment_ref else None,
             "identityPackage": selected.identity_package,
+            "modelProviderId": pending.get("modelProviderId"),
             "manualDeadlineSeconds": pending["manualDeadlineSeconds"],
             "automaticExecutionTimeoutSeconds": pending["automaticExecutionTimeoutSeconds"],
         }

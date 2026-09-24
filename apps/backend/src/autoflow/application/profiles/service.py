@@ -59,7 +59,7 @@ class ProfileService:
             return self._require(repository, profile_id)
 
     def create(self, spec: ProfileSpec) -> Profile:
-        self._validate_resources(spec)
+        self.validate_resources(spec)
         now = datetime.now(UTC)
         profile = Profile(str(uuid4()), spec, new_seed(), now, now)
         with self.transaction() as repository:
@@ -69,7 +69,7 @@ class ProfileService:
     def update(self, profile_id: str, spec: ProfileSpec) -> Profile:
         with self.transaction() as repository:
             current = self._require(repository, profile_id)
-            self._validate_resources(spec)
+            self.validate_resources(spec)
             updated = replace(current, spec=spec, updated_at=datetime.now(UTC))
             repository.update(updated)
         return updated
@@ -78,7 +78,7 @@ class ProfileService:
         with self.transaction() as repository:
             source = self._require(repository, profile_id)
             spec = ProfileSpec.from_values({**asdict(source.spec), "name": name})
-            self._validate_resources(spec)
+            self.validate_resources(spec)
             now = datetime.now(UTC)
             copied = Profile(str(uuid4()), spec, new_seed(source.fingerprint_seed), now, now)
             repository.add(copied)
@@ -122,7 +122,7 @@ class ProfileService:
             raise ProfileNotFound
         return profile
 
-    def _validate_resources(self, spec: ProfileSpec) -> None:
+    def validate_resources(self, spec: ProfileSpec) -> None:
         if not self.installed_kernels.is_installed(spec.browser_edition, spec.browser_version):
             raise KernelNotInstalled
         if spec.proxy_mode == "proxy" and (

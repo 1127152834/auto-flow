@@ -213,10 +213,11 @@ class ProjectGraphExecutor:
         external_integrations: ExternalIntegrationGateway | None = None,
         command_bus: _WorkerCommandBus | None = None,
         capability: Callable[..., Awaitable[Any]] | None = None,
+        browser_initializer: Callable[..., Awaitable[Any]] | None = None,
     ) -> None:
         self.browser = CloakBrowserWorkflowSession(browser_context) if browser_context is not None else None
         self.cancellation = _Cancellation(should_stop)
-        self.context = ExecutionContext(process_cleanup=terminate_subprocess, variables=dict(variables), browser=self.browser, cancellation=self.cancellation, events=self, credentials=credentials, models=models, external_integrations=external_integrations, table_workbooks=OpenpyxlTableWorkbookRenderer())
+        self.context = ExecutionContext(process_cleanup=terminate_subprocess, variables=dict(variables), browser=self.browser, browser_initializer=browser_initializer, cancellation=self.cancellation, events=self, credentials=credentials, models=models, external_integrations=external_integrations, table_workbooks=OpenpyxlTableWorkbookRenderer())
         self.command_bus = command_bus
         if command_bus is not None:
             interactive = command_bus.for_context(self.context)
@@ -438,7 +439,7 @@ class ProjectGraphExecutor:
         await emit('nodeAttempt', payload)
         if not success and self.capture_failure is not None:
             try:
-                page = self.browser.current_page()._raw if self.graph_adapter and self.browser is not None else self.legacy.page
+                page = getattr(current.browser.current_page(), '_raw', None) if self.graph_adapter and current.browser is not None else self.legacy.page
             except Exception:  # noqa: BLE001 -- absence of a page is valid failure evidence.
                 page = None
             await emit('artifact', await self.capture_failure(page, node_id, visit))

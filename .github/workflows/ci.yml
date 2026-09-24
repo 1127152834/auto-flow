@@ -19,6 +19,10 @@ on:
         default: all
         options: [all, windows-2022, macos-15-intel, macos-15]
 
+concurrency:
+  group: ci-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   pm9-native-probe:
     if: github.event_name == 'workflow_dispatch' && inputs.pm9NativeProbe
@@ -89,8 +93,24 @@ jobs:
         with:
           python-version: '3.11'
       - uses: astral-sh/setup-uv@v5
-      - run: uv sync --directory apps/backend --locked
+      - run: uv sync --directory apps/backend --locked --group build
       - run: npm ci
+      - name: Install pinned real browser for PM9 runtime acceptance
+        shell: bash
+        run: |
+          uv run --directory apps/backend python - <<'PYTHON'
+          import os, sys
+          from cloakbrowser import ensure_binary
+          executable = ensure_binary(browser_version='146.0.7680.177.5' if sys.platform == 'win32' else '145.0.7632.109.2')
+          with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as output:
+              output.write(f'PM9_BROWSER_EXECUTABLE={executable}\n')
+              output.write(f"PM9_BROWSER_VERSION={'146.0.7680.177.5' if sys.platform == 'win32' else '145.0.7632.109.2'}\n")
+          PYTHON
+      - name: Verify node-owned browser initialization and cleanup
+        run: uv run --directory apps/backend pytest -q tests/integration/test_node_browser_initialization.py
+        env:
+          AUTOFLOW_TEST_CLOAKBROWSER: ${{ env.PM9_BROWSER_EXECUTABLE }}
+          AUTOFLOW_TEST_CLOAK_VERSION: ${{ env.PM9_BROWSER_VERSION }}
       - run: npm run typecheck
       - run: npm run test:scripts
       - run: npm run lint
@@ -111,16 +131,6 @@ jobs:
       - run: npm run build
         env:
           NODE_OPTIONS: --max-old-space-size=6144
-      - name: Install pinned real browser for PM9 runtime acceptance
-        shell: bash
-        run: |
-          uv run --directory apps/backend python - <<'PYTHON'
-          import os, sys
-          from cloakbrowser import ensure_binary
-          executable = ensure_binary(browser_version='146.0.7680.177.5' if sys.platform == 'win32' else '145.0.7632.109.2')
-          with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as output:
-              output.write(f'PM9_BROWSER_EXECUTABLE={executable}\n')
-          PYTHON
       - name: Verify real worker recovery, shared Sheets claims and manual expiry race
         run: uv run --directory apps/backend pytest -q tests/integration/test_project_batch_real_cloakbrowser.py tests/integration/test_project_sheets_real_cloakbrowser.py tests/integration/test_project_excel_real_cloakbrowser.py tests/integration/test_project_unlimited_real_cloakbrowser.py tests/integration/test_project_write_conflict_real_cloakbrowser.py -k "parallel or manual-declared or manual-evidence-reconnect or manual-force-stop or data-schema or data-delete-field or data-subflow or data-response-loss or data-link- or data-old-candidate or manual-race or manual-expire or shared_sheet or real_archive or bad_source or parameter-single or parameter-isolation or optional_input or browser_startup_failure or excel_multi_input or unlimited_final_record or real_write_versions or data-loop-partial or real_loop_keeps_two_sheet_intents or source_outage or real_opposing_writes"
         env:

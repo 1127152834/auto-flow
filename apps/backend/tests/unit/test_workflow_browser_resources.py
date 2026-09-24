@@ -189,3 +189,52 @@ async def test_unknown_native_guard_cleanup_pins_workspace_and_cannot_be_hidden_
     with pytest.raises(WorkflowRuntimeError, match='资源锁清理'):
         await service.acquire(service.freeze(original.id), 'run-b')
     assert not workspace_closed
+
+
+@pytest.mark.asyncio
+async def test_persistent_identity_wins_over_later_template_snapshot(tmp_path, valid_profile_values):
+    from copy import deepcopy
+
+    service, state, original = resources(tmp_path, valid_profile_values)
+    saved = service.freeze(original.id, proxy={'mode': 'none'})
+    state['profile'] = Profile(original.id, ProfileSpec.from_values({
+        **valid_profile_values, 'locale': 'fr-FR', 'proxy_mode': 'proxy', 'proxy_id': 'later-proxy',
+    }), 999, original.created_at, original.updated_at)
+    request = service.freeze(original.id)
+    request.update(browser='persistent', userDataDir=str(tmp_path / 'instance'), identityPackage={
+        'schemaVersion': 1,
+        'profileId': original.id,
+        'kernelId': saved['kernelId'],
+        'frozenConfiguration': deepcopy(saved['frozenConfiguration']),
+    })
+    lease = await service.acquire(request, 'saved-run')
+    try:
+        assert lease.browser['fingerprintSeed'] == 42
+        assert state['proxy_profile'].spec.proxy_mode == 'none'
+        assert state['proxy_profile'].spec.locale == original.spec.locale
+    finally:
+        lease.release()
+
+
+@pytest.mark.asyncio
+async def test_persistent_without_identity_is_not_restored_from_current_template(tmp_path, valid_profile_values):
+    from autoflow.domain.workflows.runtime import WorkflowRuntimeError
+
+    service, state, original = resources(tmp_path, valid_profile_values)
+    request = service.freeze(original.id)
+    request.update(browser='persistent', userDataDir=str(tmp_path / 'instance'))
+    with pytest.raises(WorkflowRuntimeError) as caught:
+        await service.acquire(request, 'legacy-run')
+    assert caught.value.code == 'ENVIRONMENT_IDENTITY_UNVERIFIED'
+    assert state['holds'] == 0
+
+@pytest.mark.asyncio
+async def test_studio_private_directory_does_not_query_project_task_identity(tmp_path, valid_profile_values):
+    service, _, profile = resources(tmp_path, valid_profile_values)
+    def project_directory(_request):
+        raise AssertionError('Studio has no Project Task run identity')
+    service._environment_directory = project_directory
+    directory = tmp_path / 'owned-studio-worker' / 'preview'
+    lease = await service.acquire(service.freeze(profile.id), 'studio-run', work_directory=directory)
+    assert lease.browser['userDataDir'] == str(directory)
+    lease.release()

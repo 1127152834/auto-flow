@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Literal
+
+from .identity import browser_configuration
 
 PersistentEnvironmentState = Literal["ready", "unavailable", "deleting", "deleted"]
 InstanceState = Literal[
@@ -72,6 +74,7 @@ class PersistentEnvironment:
     # so the list view needs the creating source and task without a second call.
     created_from_source: str = "newFromProfile"
     created_from_task_id: str | None = None
+    identity_package: dict[str, Any] | None = field(default=None, repr=False)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -90,6 +93,7 @@ class PersistentEnvironment:
             "updatedAt": self.updated_at,
             "createdFromSource": self.created_from_source,
             "createdFromTaskId": self.created_from_task_id,
+            "browserConfiguration": browser_configuration(self.identity_package),
         }
 
 
@@ -108,6 +112,8 @@ class EnvironmentInstance:
     profile_id: str
     created_at: datetime
     updated_at: datetime
+
+    identity_package: dict[str, Any] | None = field(default=None, repr=False)
 
     def to_dict(self) -> dict[str, Any]:
         return {

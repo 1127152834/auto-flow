@@ -67,7 +67,7 @@ class ProjectRunCoordinator:
         session_factory: sessionmaker[Session],
         core_runtime: WorkflowRuntimeService,
         *,
-        resolve_resources: Callable[[AutomationRecord, dict[str, Any]], dict[str, Any]],
+        resolve_resources: Callable[..., dict[str, Any]],
         available_capabilities: Sequence[str],
         resolve_create_record_targets: Callable[
             [Session, AutomationRecord], Sequence[tuple[str, str]]
@@ -479,12 +479,19 @@ class ProjectRunCoordinator:
             if start.environment_override is not None
             else automation
         )
-        resources = self._resolve_resources(
-            effective, dict(project.default_resources)
-        )
         workflow = session.get(WorkflowDocumentRow, automation.workflow_id)
         if workflow is None:
             raise ProjectRunError("NOT_FOUND", "关联工作流不存在", 404)
+        from autoflow.domain.workflows.browser_environment import (
+            node_browser_environments,
+        )
+        from autoflow.infrastructure.database.core_workflows import (
+            _record as workflow_record,
+        )
+        document = workflow_record(workflow).document
+        resources = self._resolve_resources(effective, dict(project.default_resources), document=document) if node_browser_environments(document) is not None else self._resolve_resources(effective, dict(project.default_resources))
+        if not has_data_inputs and any(node.get('environmentResolution') == 'atTaskStart' for node in resources.get('nodeBrowserEnvironments', {}).values()):
+            raise ProjectRunError('VALIDATION_ERROR', '输入环境节点需要自动化声明输入', 422)
         now, batch_id, operation_id = datetime.now(UTC), str(uuid4()), str(uuid4())
         prepared = self._core.prepare_content(
             prepare_operation_id=operation_id,
@@ -660,9 +667,10 @@ class ProjectRunCoordinator:
                 )
             )
             session.flush()
-            if self._environments is not None and resources.get("browser") != "none":
+            if self._environments is not None and resources.get("browser") not in {"none", "node"}:
                 self._environments.reserve_task_instance(
-                    session, project_id, task_id, run.run_id, policy
+                    session, project_id, task_id, run.run_id, policy,
+                    resource_request=resources,
                 )
             created_tasks.append((task_id, run.run_id))
         batch = SqlAlchemyProjectRuns(session).batch(project_id, batch_id)
@@ -679,7 +687,7 @@ class ProjectRunCoordinator:
             # SQLAlchemy marks it inactive. Never return that connection to the pool.
             session.invalidate()
             raise
-        if self._environments is not None and resources.get("browser") != "none":
+        if self._environments is not None and resources.get("browser") not in {"none", "node"}:
             for task_id, run_id in created_tasks:
                 self._environments.attach_task_instance(
                     project_id, task_id, run_id, policy

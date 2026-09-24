@@ -731,3 +731,56 @@ async def test_late_ack_only_confirms_original_event_after_action_timeout() -> N
     finally:
         reader.cancel()
         await asyncio.gather(reader, return_exceptions=True)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('scenario', ['navigate', 'second-initialize', 'current-without-instance', 'skipped-branch'])
+async def test_node_browser_starts_only_at_authorized_initialization(monkeypatch, tmp_path, scenario):
+    from uuid import uuid4
+    context, output, starts, commands = Context(), io.StringIO(), [], []
+    executable = tmp_path / 'chrome'
+    executable.write_bytes(b'x')
+    monkeypatch.delenv('CLOAKBROWSER_BINARY_PATH', raising=False)
+    monkeypatch.setenv('CLOAKBROWSER_CACHE_DIR', str(tmp_path))
+    async def foreground(_self):
+        pass
+    monkeypatch.setattr(Page, 'bring_to_front', foreground, raising=False)
+    async def launch(**options):
+        starts.append(options)
+        assert commands[-1]['operation'] == 'initializeBrowser'
+        return context
+    monkeypatch.setitem(sys.modules, 'cloakbrowser', _fake_cloakbrowser(launch, launch))
+    payload = command()
+    granted = {**payload['browser'], 'userDataDir': str(tmp_path / 'instance')}
+    payload.update(runId=str(uuid4()), browser={})
+    declarations = [{'source': 'newFromProfile'}, {'source': 'current'}]
+    if scenario == 'second-initialize': declarations[1] = {'source': 'newFromProfile'}
+    if scenario == 'current-without-instance': declarations = [{'source': 'current'}]
+    nodes = [{'id': f'open-{index}', 'type': 'open_page', 'position': {'x': 0, 'y': index * 100}, 'data': {'moduleType': 'open_page', 'url': 'https://one', 'browserEnvironment': declaration}} for index, declaration in enumerate(declarations)]
+    edges = [{'id': 'next', 'source': 'open-0', 'target': 'open-1'}] if len(nodes) == 2 else []
+    if scenario == 'skipped-branch':
+        nodes = [{'id': 'condition', 'type': 'condition', 'position': {'x': 0, 'y': 0}, 'data': {'moduleType': 'condition', 'conditions': [{'left': 'a', 'operator': '==', 'right': 'a'}] }}, nodes[0], {'id': 'value', 'type': 'set_variable', 'position': {'x': 0, 'y': 200}, 'data': {'moduleType': 'set_variable', 'variableName': 'answer', 'variableValue': 'ok'}}]
+        edges = [{'id': 'yes', 'source': 'condition', 'target': 'value', 'sourceHandle': 'true'}, {'id': 'no', 'source': 'condition', 'target': 'open-0', 'sourceHandle': 'false'}]
+    payload['executionPlan'] = {'document': {'schemaVersion': 3, 'browserEnvironmentVersion': 1, 'nodes': nodes, 'edges': edges}}
+    class Replies:
+        cursor = 0
+        async def next(self):
+            while True:
+                lines = output.getvalue().splitlines()
+                while self.cursor < len(lines):
+                    value = json.loads(lines[self.cursor]); self.cursor += 1
+                    if value['type'] == 'event':
+                        return {'type': 'event_committed', 'eventId': value['event']['eventId'], 'executionGeneration': 3}
+                    if value['type'] == 'capability':
+                        commands.append(value)
+                        return {**value, 'type': 'capability_result', 'result': {'browser': granted, 'executablePath': str(executable)}}
+                await asyncio.sleep(.001)
+    await asyncio.wait_for(_run(payload, threading.Event(), Replies(), output), 5)
+    terminal = json.loads(output.getvalue().splitlines()[-1])
+    expected_starts = 0 if scenario in {'current-without-instance', 'skipped-branch'} else 1
+    assert len(starts) == len(commands) == expected_starts
+    assert terminal['status'] == ('succeeded' if scenario in {'navigate', 'skipped-branch'} else 'failed'), output.getvalue()
+    if starts:
+        assert starts[0]['user_data_dir'] == str(tmp_path / 'instance')
+        assert context.closed
+        assert len(context.pages) == (2 if scenario == 'navigate' else 1)

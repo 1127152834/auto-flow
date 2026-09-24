@@ -80,14 +80,14 @@ function renderPage(instances: unknown[] = [instance]) {
   return { onNavigate }
 }
 
-it('opens on the current scene, keeps the two overview shortcuts, and lists live work', async () => {
+it('opens on the current scene without duplicate overview cards and lists live work', async () => {
   const { onNavigate } = renderPage()
   // 原型 001 的默认分区是"运行环境"，主列标题是"当前现场"
   expect(await screen.findByRole('heading', { name: '当前现场', level: 2 })).toBeVisible()
   await waitFor(() => expect(screen.getByText('1 个临时现场 · 含 1 个等待人工')).toBeVisible())
-  expect(screen.getByRole('region', { name: '项目默认资源概览' })).toBeVisible()
-  expect(screen.getByRole('region', { name: '持久环境概览' })).toBeVisible()
-  expect(screen.getByRole('button', { name: '查看持久环境 0' })).toBeVisible()
+  expect(screen.queryByRole('region', { name: '项目默认资源概览' })).toBeNull()
+  expect(screen.queryByRole('region', { name: '持久环境概览' })).toBeNull()
+  expect(screen.queryByRole('complementary', { name: '环境概览' })).toBeNull()
   expect(screen.getByRole('heading', { name: '需要人工处理 1', level: 3 })).toBeVisible()
   expect(screen.getByText('需要人工完成验证码')).toBeVisible()
   expect(screen.getByText('剩余 13 分钟')).toBeVisible()

@@ -870,3 +870,69 @@ async def test_js_script_claim_and_result_are_owned_idempotent_commands(
 
 async def _none() -> None:
     return None
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('cancel_during_acquire', [False, True])
+async def test_node_browser_studio_starts_without_global_profile_and_authorizes_one_visit(tmp_path, valid_profile_values, cancel_during_acquire):
+    from tests.unit.test_workflow_browser_resources import resources
+    browser, state, profile = resources(tmp_path, valid_profile_values)
+    migrate_database(tmp_path / 'node-studio.db')
+    sessions = create_session_factory(tmp_path / 'node-studio.db')
+    documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(sessions))
+    documents.create({'id': 'node-flow', 'name': '节点环境', 'schemaVersion': 3,
+        'browserEnvironmentVersion': 1, 'nodes': [{'id': 'open', 'type': 'moduleNode', 'data': {'moduleType': 'open_page', 'config': {'url': 'https://example.test', 'browserEnvironment': {'source': 'newFromProfile', 'profileId': profile.id}}}}], 'edges': [], 'variables': []}, client_request_id='node-create')
+    repository = SqlAlchemyWorkflowRuns(sessions)
+    runs = WorkflowRunService(repository)
+    workers = FakeWorkers()
+    workers.browser_directory = lambda run_id: tmp_path / run_id
+    coordinator = WorkflowRunCoordinator(documents=documents, runs=runs, run_repository=repository,
+        runtime=WorkflowRuntime(build_production_executor_registry()), profiles=FakeProfiles(_profile()),
+        installed_kernels=list, resolve_proxy=lambda *_: _none(), read_license=lambda: None,
+        workers=workers, resources=FakeResources(), events=StudioEventJournal(), artifact_root=tmp_path)
+    coordinator.configure_node_browser_environments(browser, None)
+    accepted = await coordinator.start('node-flow', {'runId': 'node-run', 'documentId': 'node-flow'})
+    assert accepted['status'] == 'running'
+    assert runs.get('node-run').profile_id is None
+    assert workers.payloads[0]['requiresBrowser'] is False
+    assert state['holds'] == 0
+    request = {'type': 'browser:initialize', 'runId': 'node-run', 'workflowId': 'node-flow', 'nodeId': 'open', 'executionId': 'visit-1', 'requestId': 'request-1'}
+    await coordinator.on_worker_event(request)
+    assert workers.commands[-1][1]['error']['code'] == 'BROWSER_INITIALIZATION_DENIED'
+    await coordinator.on_worker_event({**request, 'type': 'execution:node_start'})
+    if cancel_during_acquire:
+        entered, proceed = asyncio.Event(), asyncio.Event()
+        original = browser._resolve_proxy
+        async def delayed_proxy(*args):
+            entered.set()
+            await proceed.wait()
+            return await original(*args)
+        browser._resolve_proxy = delayed_proxy
+        pending = asyncio.create_task(coordinator.on_worker_event(request))
+        await entered.wait()
+        runs.request_stop('node-run')
+        proceed.set()
+        await pending
+        assert 'browser' not in workers.commands[-1][1]
+        assert state['holds'] > 0  # remains owned until confirmed worker cleanup
+        await coordinator.on_worker_exit('node-run', 1)
+        assert state['holds'] == 0
+        return
+    original_send = workers.send_command
+    async def lose_response(*args):
+        await original_send(*args)
+        raise ConnectionError('response lost')
+    workers.send_command = lose_response
+    with pytest.raises(ConnectionError):
+        await coordinator.on_worker_event(request)
+    workers.send_command = original_send
+    await coordinator.on_worker_event(request)
+    result = workers.commands[-1][1]
+    assert result['browser']['fingerprintSeed'] == 42
+    assert state['holds'] > 0
+    await coordinator.on_worker_event({**request, 'requestId': 'replay'})
+    assert workers.commands[-1][1]['browser'] == result['browser']
+    await coordinator.on_worker_event({**request, 'type': 'execution:node_start', 'executionId': 'visit-2'})
+    await coordinator.on_worker_event({**request, 'executionId': 'visit-2'})
+    assert workers.commands[-1][1]['error']['code'] == 'BROWSER_INSTANCE_ALREADY_INITIALIZED'
+    await coordinator.on_worker_exit('node-run', 1)
+    assert state['holds'] == 0

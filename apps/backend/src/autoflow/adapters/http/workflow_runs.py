@@ -87,7 +87,7 @@ class WorkflowExecuteRequest(ApiModel):
 
     run_id: str = Field(alias="runId", min_length=1, max_length=128)
     document_id: str = Field(alias="documentId", min_length=1)
-    profile_id: str = Field(alias="profileId", min_length=1)
+    profile_id: str | None = Field(default=None, alias="profileId", min_length=1)
     project_id: str | None = Field(default=None, alias="projectId", min_length=1, max_length=200)
     headless: bool = False
     document: dict[str, Any] | None = None

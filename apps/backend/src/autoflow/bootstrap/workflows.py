@@ -559,15 +559,24 @@ def configure_project_workflow_runtime(
     async def recover(run: Any) -> None:
         if capabilities.manual is not None:
             capabilities.manual.cancel_run(run.run_id)
-        if run.resource_request.get("browser") == "none":
+        request = dict(run.resource_request)
+        if request.get("browser") == "node":
+            scope = run.input_snapshot_ref
+            instance = environments.environments.find_instance_by_task(scope['projectId'], scope['taskId']) if environments else None
+            if instance is None:
+                request = {'browser': 'none'}
+            else:
+                from autoflow.domain.environments.identity import request_from_identity
+                request = request_from_identity(instance.identity_package)
+        if request.get("browser") == "none":
             await recover_worker_directories(temp_dir, run.run_id, None)
             return
         for kernel in installed():
-            if f"{kernel.edition}:{kernel.version}" == run.resource_request.get(
+            if f"{kernel.edition}:{kernel.version}" == request.get(
                 "kernelId"
             ):
                 with resources.guard(
-                    str(run.resource_request["profileId"]), KernelRef(kernel.edition, kernel.version)
+                    str(request["profileId"]), KernelRef(kernel.edition, kernel.version)
                 ):
                     await recover_worker_directories(
                         temp_dir, run.run_id, kernel.executable_path
@@ -581,6 +590,7 @@ def configure_project_workflow_runtime(
         resolve_model=models.execution_binding if models is not None else None,
         resolve_default_model=models.default_model_id if models is not None else None,
     )
+    capabilities.browser_dispatcher = dispatcher
     if capabilities.manual is not None:
         capabilities.manual.dispatcher = dispatcher
     runtime = WorkflowRuntimeService(

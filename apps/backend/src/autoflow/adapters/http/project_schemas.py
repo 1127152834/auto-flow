@@ -29,6 +29,7 @@ from .project_excel_schemas import (
     ExcelInspectionView,
     ExcelReconcileResult,
 )
+from .project_resource_schemas import ProjectProxy
 from .project_run_schemas import BatchView
 from .project_sheets_schemas import (
     SheetsBinding,
@@ -41,29 +42,6 @@ from .project_sheets_schemas import (
     SyncRunResult,
 )
 from .schemas import ApiModel
-
-
-class SourceDefaultProxy(ApiModel):
-    mode: Literal["sourceDefault"]
-
-
-class NoProxy(ApiModel):
-    mode: Literal["none"]
-
-
-class FixedProxy(ApiModel):
-    mode: Literal["fixed"]
-    proxy_id: str
-
-
-class PoolProxy(ApiModel):
-    mode: Literal["pool"]
-    proxy_pool_id: str
-
-
-ProjectProxy = Annotated[
-    SourceDefaultProxy | NoProxy | FixedProxy | PoolProxy, Field(discriminator="mode")
-]
 
 
 class ProjectDefaultResources(ApiModel):

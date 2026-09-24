@@ -93,6 +93,7 @@ class _RunOwner:
     automatic_timeout: asyncio.Timeout | None = None
     automatic_remaining: float | None = None
     cleanup_unknown: bool = False
+    browser_command_id: str | None = None
     control: asyncio.Lock = field(default_factory=asyncio.Lock)
 
 
@@ -442,6 +443,26 @@ class WorkflowRunDispatcher:
         owner = self._owners.get(run_id)
         return owner.control if owner is not None else self._control
 
+    async def initialize_browser(self, run_id: str, generation: int, command_id: str, prepare: Callable[[], Mapping[str, Any]]) -> dict[str, Any]:
+        owner = self._owners.get(run_id)
+        if owner is None or owner.generation != generation:
+            raise WorkflowRuntimeError('CAPABILITY_SCOPE_DENIED', '运行所有权已失效', 409)
+        async with owner.control:
+            current = self._get_run(run_id)
+            if current.status != 'running' or current.execution_generation != generation:
+                raise WorkflowRuntimeError('CAPABILITY_SCOPE_DENIED', '运行已停止', 409)
+            if owner.lease is not None:
+                if owner.browser_command_id != command_id:
+                    raise WorkflowRuntimeError('BROWSER_INSTANCE_ALREADY_INITIALIZED', '任务已有浏览器实例，请使用当前实例', 409)
+            else:
+                with self._gate.mutation() as admitted:
+                    if not admitted:
+                        raise WorkflowRuntimeError('WORKFLOW_ADMISSION_CLOSED', '运行准入已关闭', 503)
+                    request = prepare()
+                    owner.lease = await self._resources.acquire(request, current.run_request_id)
+                    owner.browser_command_id = command_id
+            return {'browser': dict(owner.lease.browser), 'executablePath': str(owner.lease.executable)}
+
     async def _execute(self, dispatched: CoreRun, owner: _RunOwner) -> None:
         lease: LeasePort | None = None
         cancelled = False
@@ -469,7 +490,7 @@ class WorkflowRunDispatcher:
                             error={"code": error.code, "message": error.message},
                         )
                     return
-                if "browser.cloakbrowser" in content.capability_requirements:
+                if "browser.cloakbrowser" in content.capability_requirements and dispatched.resource_request.get("browser") != "node":
                     lease = await self._resources.acquire(
                         dispatched.resource_request, dispatched.run_request_id
                     )
@@ -553,7 +574,7 @@ class WorkflowRunDispatcher:
                 return
             fenced = self._transition(current, "reconciling")
             try:
-                if lease is None:
+                if owner.lease is None:
                     await self._recover_orphan(fenced)
                 else:
                     await self._worker.force_stop(current.run_id)
@@ -563,9 +584,7 @@ class WorkflowRunDispatcher:
                 return
             if self._worker.busy(dispatched.run_id):
                 return
-            if lease is not None:
-                lease.release()
-                owner.lease = None
+            self._release_lease(owner)
             self._transition_current(
                 fenced.run_id,
                 fenced.execution_generation,

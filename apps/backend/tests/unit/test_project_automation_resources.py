@@ -264,6 +264,7 @@ def test_browser_free_task_still_validates_project_model_override():
         models=Models(),
         workflow_runtime=SimpleNamespace(
             requires_browser=lambda _workflow_id: False,
+            node_browser_mode=lambda _workflow_id: False,
             requires_default_model=lambda _workflow_id: True,
         ),
     )
@@ -284,7 +285,27 @@ def test_browser_free_data_task_does_not_require_unused_project_model():
         models=Models(),
         workflow_runtime=SimpleNamespace(
             requires_browser=lambda _workflow_id: False,
+            node_browser_mode=lambda _workflow_id: False,
             requires_default_model=lambda _workflow_id: False,
         ),
     )
     assert query.inspect_resources(_automation()) == []
+
+
+def test_saved_environment_inspects_its_own_kernel_and_proxy_not_project_defaults():
+    from dataclasses import asdict, replace
+
+    from autoflow.domain.environments.models import (
+        EnvironmentRef,
+        ResolvedEnvironmentSource,
+    )
+
+    saved_profile = _profile(proxy_mode='proxy', proxy_id='saved-proxy')
+    identity = {'schemaVersion': 1, 'profileId': saved_profile.id, 'kernelId': 'public:1',
+                'frozenConfiguration': {'profileSpec': asdict(saved_profile.spec), 'fingerprintSeed': 12345,
+                                        'createdAt': NOW.isoformat(), 'updatedAt': NOW.isoformat()}}
+    current_profile = replace(saved_profile, spec=replace(saved_profile.spec, browser_version='uninstalled', proxy_id='wrong-proxy'))
+    query = _query({'proxy': {'mode': 'fixed', 'proxyId': 'unavailable-default'}}, current_profile, proxies=Proxies(['saved-proxy']))
+    query._installed_kernels = SimpleNamespace(is_installed=lambda edition, version: version == '1')
+    query._environments = SimpleNamespace(resolve=lambda *_: ResolvedEnvironmentSource('fixedEnvironment', EnvironmentRef('project-1', 'env', 1, 1), saved_profile.id, identity))
+    assert query.inspect_resources(_automation({'source': 'fixedEnvironment', 'environmentId': 'env'})) == []

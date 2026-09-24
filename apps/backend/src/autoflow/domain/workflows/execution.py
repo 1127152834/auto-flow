@@ -294,6 +294,7 @@ class ExecutionContext:
     variables: dict[str, Any] = field(default_factory=dict)
     sensitive_variables: set[str] = field(default_factory=set)
     browser: BrowserSessionPort | None = None
+    browser_initializer: Callable[[ExecutionContext, dict[str, Any]], Awaitable[BrowserSessionPort]] | None = None
     artifacts: ArtifactWriter | None = None
     table_workbooks: TableWorkbookRenderer | None = None
     credentials: CredentialReader | None = None

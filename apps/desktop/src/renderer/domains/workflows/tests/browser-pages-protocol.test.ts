@@ -8,7 +8,9 @@ it.each(['memory','http'] as const)('binds page select, focus and navigation to 
  try{
   expect((await browserApi.pages()).httpStatus).toBe(409)
   const profiles=await browserApi.profiles();expect(profiles.data?.items.length).toBe(1)
-  expect((await browserApi.open(undefined,undefined,'missing')).httpStatus).toBe(404)
+  selectBrowserNode('missing')
+  expect((await browserApi.open()).httpStatus).toBe(404)
+  selectBrowserNode(profiles.data!.items[0].id)
   await browserApi.open(undefined,undefined,profiles.data!.items[0].id);const initial=(await browserApi.pages()).data!
   mock.configureMockBrowserPages([{pageId:'first',url:'http://local.test/a',title:'一'},{pageId:'second',url:'http://local.test/b',title:'二'}],'first')
   const current=(await browserApi.pages()).data!
@@ -32,3 +34,7 @@ it.each([{sessionId:'s',revision:0,targetPageId:'missing',pages:[]},{sessionId:'
  const restore=configureStudioConnection('http://bad-pages.test',async()=>Response.json(body))
  try{expect((await browserApi.pages()).success).toBe(false)}finally{restore()}
 })
+
+import {beforeEach as beforeBrowserNode} from 'vitest'
+import {selectBrowserNode} from './select-browser-node'
+beforeBrowserNode(()=>selectBrowserNode())

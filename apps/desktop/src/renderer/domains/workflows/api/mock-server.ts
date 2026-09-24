@@ -1052,8 +1052,8 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       if (!sessionId) return failure('缺少拾取会话标识', 422)
       if ((body.url != null && typeof body.url !== 'string') ||
           (body.profileId != null && (typeof body.profileId!=='string'||!mockBrowserProfiles.some(profile=>profile.id===body.profileId))) ||
-          Object.keys(body).some(key => !['sessionId','url','profileId'].includes(key))) return failure('拾取启动参数格式错误',422)
-      const fingerprint = JSON.stringify({ url: body.url ?? null, profileId: body.profileId ?? null })
+          Object.keys(body).some(key => !['sessionId','url','profileId','browserEnvironment'].includes(key))) return failure('拾取启动参数格式错误',422)
+      const fingerprint = JSON.stringify({ url: body.url ?? null, profileId: body.profileId ?? null, browserEnvironment:body.browserEnvironment??null })
       if (sessionId === pickerSessionId) return pickerRequestFingerprint === fingerprint
         ? response({ ...pickerState(sessionId, true), isPicking: true })
         : failure('拾取会话 ID 已用于不同的启动参数', 409)

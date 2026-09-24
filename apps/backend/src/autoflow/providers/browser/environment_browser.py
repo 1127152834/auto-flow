@@ -21,11 +21,16 @@ from pathlib import Path
 from threading import Event, Lock, Thread
 from typing import Any
 
+from autoflow.domain.environments.identity import (
+    profile_from_request,
+    request_from_identity,
+)
 from autoflow.domain.environments.rules import environment_error
 from autoflow.domain.kernels.models import InstalledKernel
 from autoflow.domain.profiles.errors import KernelNotInstalled
 from autoflow.domain.profiles.models import Profile
 from autoflow.providers.browser.persistent_context import persistent_launch_kwargs
+from autoflow.providers.browser.proxy_relay import BrowserProxyRelay
 
 _START_TIMEOUT_SECONDS = 110
 _CLOSE_TIMEOUT_SECONDS = 60
@@ -86,7 +91,11 @@ class EnvironmentBrowserLauncher:
         store,
         *,
         launcher=None,
+        resource_provider=None,
     ) -> None:
+        self._resource_provider = resource_provider
+        self._leases: dict[str, Any] = {}
+        self._relays: dict[str, BrowserProxyRelay] = {}
         self._profiles = profiles
         self._installed_kernels = installed_kernels
         self._store = store
@@ -126,13 +135,8 @@ class EnvironmentBrowserLauncher:
             self._settled[instance_id] = settled
         try:
             directory = self._instance_directory(instance_id)
-            profile = self._profiles.get(instance.profile_id)
-            executable = self._kernel_executable(profile)
-            command = self._launch_command(profile, executable)
             owner = self._owner_loop()
-            context = owner.run(
-                self._launcher(directory, command), timeout=_START_TIMEOUT_SECONDS
-            )
+            context = owner.run(self._launch_owned(instance, directory), timeout=_START_TIMEOUT_SECONDS)
         except BaseException:
             with self._lock:
                 self._starting.discard(instance_id)
@@ -144,6 +148,48 @@ class EnvironmentBrowserLauncher:
             self._settled.pop(instance_id, None)
             self._contexts[instance_id] = context
             settled.set()
+
+    async def _launch_owned(self, instance, directory):
+        request = request_from_identity(instance.identity_package)
+        profile = profile_from_request(request)
+        if profile.id != instance.profile_id:
+            raise environment_error("WORKFLOW_RESOURCE_INVALID", "环境身份来源不一致", 422)
+        lease = None
+        relay = None
+        try:
+            if self._resource_provider is not None:
+                lease = await self._resource_provider().acquire({
+                    **request, "identityPackage": instance.identity_package,
+                }, f"maintenance:{instance.instance_id}", work_directory=directory)
+                command = {**lease.browser, "headless": False, "executablePath": str(lease.executable)}
+                upstream = command.pop("proxy", None)
+                if upstream is not None:
+                    relay = BrowserProxyRelay(upstream)
+                    relay.__enter__()
+                    command["proxy"] = {"server": relay.url}
+            else:
+                self._profiles.get(profile.id)
+                command = self._launch_command(profile, self._kernel_executable(profile))
+            context = await self._launcher(directory, command)
+        except BaseException:
+            if relay is not None:
+                relay.close()
+            if lease is not None:
+                lease.release()
+            raise
+        if lease is not None:
+            self._leases[instance.instance_id] = lease
+        if relay is not None:
+            self._relays[instance.instance_id] = relay
+        return context
+
+    async def _close_owned(self, instance_id, context):
+        await context.close()
+        if instance_id in self._relays:
+            self._relays.pop(instance_id).close()
+        if instance_id in self._leases:
+            self._leases[instance_id].release()
+            self._leases.pop(instance_id)
 
     def closer(self, _service, instance) -> None:
         """``closer`` hook: close the owned context and confirm it is gone."""
@@ -178,7 +224,7 @@ class EnvironmentBrowserLauncher:
                 )
             return
         try:
-            self._owner_loop().run(context.close(), timeout=_CLOSE_TIMEOUT_SECONDS)
+            self._owner_loop().run(self._close_owned(instance_id, context), timeout=_CLOSE_TIMEOUT_SECONDS)
         except Exception as error:
             # The context stays owned: a later attempt may still close it, and a
             # copy that is not confirmed closed must never be copied as a save.
@@ -205,12 +251,17 @@ class EnvironmentBrowserLauncher:
 
     def shutdown(self) -> None:
         with self._lock:
-            contexts = list(self._contexts.values())
-            self._contexts.clear()
+            contexts = list(self._contexts.items())
             owner = self._owner
-        for context in contexts:
-            _close_quietly(owner, context)
-        if owner is not None:
+        for instance_id, context in contexts:
+            try:
+                if owner is not None:
+                    owner.run(self._close_owned(instance_id, context), timeout=_CLOSE_TIMEOUT_SECONDS)
+                with self._lock:
+                    self._contexts.pop(instance_id, None)
+            except Exception:  # noqa: BLE001, S112 -- preserve ownership when close is unconfirmed.
+                continue
+        if owner is not None and not self._contexts:
             owner.stop()
 
     def owner_loop_running(self) -> bool:
@@ -265,9 +316,10 @@ async def _launch_context(user_data_dir: Path, command: dict[str, Any]):
     headless = command.pop("headless", False)
     executable = command.pop("executablePath", None)
     with _pinned_kernel(executable):
-        return await launch_persistent_context_async(
-            **persistent_launch_kwargs(user_data_dir, command, headless=headless)
-        )
+        options = persistent_launch_kwargs(user_data_dir, command, headless=headless)
+        if command.get("proxy") is not None:
+            options["proxy"] = command["proxy"]
+        return await launch_persistent_context_async(**options)
 
 
 @contextmanager
@@ -295,14 +347,3 @@ def _pinned_kernel(executable: str | None):
                 os.environ.pop(_KERNEL_ENV, None)
             else:
                 os.environ[_KERNEL_ENV] = previous
-
-
-def _close_quietly(owner: _OwnerLoop | None, context: Any) -> None:
-    """Shutdown keeps closing every context even when one refuses to close."""
-
-    if owner is None:
-        return
-    try:
-        owner.run(context.close(), timeout=_CLOSE_TIMEOUT_SECONDS)
-    except Exception:  # noqa: BLE001 -- a stuck context must not block the others.
-        return

@@ -146,12 +146,7 @@ def resolve_environment_source(
             source,
             environment.ref,
             environment.profile_id,
-            {
-                "source": source,
-                "environmentId": environment.ref.environment_id,
-                "contentGeneration": environment.ref.content_generation,
-                "profileId": environment.profile_id,
-            },
+            environment.identity_package or {},
         )
     input_id = policy.get("inputId")
     snapshots = inputs or {}
@@ -191,13 +186,7 @@ def resolve_environment_source(
         source,
         environment.ref,
         environment.profile_id,
-        {
-            "source": source,
-            "inputId": input_id,
-            "environmentId": environment.ref.environment_id,
-            "contentGeneration": environment.ref.content_generation,
-            "profileId": environment.profile_id,
-        },
+        environment.identity_package or {},
     )
 
 

@@ -969,6 +969,7 @@ class StudioPickerSessionRequest(ApiModel):
 
 
 class StudioPickerSessionStartRequest(StudioPickerSessionRequest):
+    browser_environment: dict[str, Any] | None = None
     url: str | None = None
     profile_id: str | None = Field(default=None, min_length=1)
 

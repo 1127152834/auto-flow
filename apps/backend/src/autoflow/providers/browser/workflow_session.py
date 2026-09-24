@@ -714,7 +714,13 @@ async def launch_workflow_session(
             command, headless=bool(command.get("headless", False))
         )
         options["proxy"] = {"server": relay_value.url} if relay_value else None
-        context = await launch_context_async(**options)
+        if command.get('userDataDir'):
+            from cloakbrowser import (
+                launch_persistent_context_async,  # type: ignore[import-untyped]
+            )
+            context = await launch_persistent_context_async(str(command['userDataDir']), **options)
+        else:
+            context = await launch_context_async(**options)
         if not context.pages:
             await context.new_page()
         session = CloakBrowserWorkflowSession.from_context(

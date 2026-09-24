@@ -9,6 +9,7 @@ import { createProfilesApi } from '../../profiles/api'
 import { safeProjectError } from '../../projects/presentation-error'
 import type { ProjectRoute } from '../../projects/types'
 import { createEnvironmentApi } from '../api'
+import { EnvironmentConfigurationEditor } from '../components/EnvironmentConfigurationEditor'
 import { EnvironmentRenameDrawer, type EnvironmentRenameDraft } from '../components/EnvironmentRenameDrawer'
 
 const stamp = (value: string) => new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
@@ -49,7 +50,7 @@ export function EnvironmentDetailPage({ workspaceKey, instanceId, projectId, env
     queryFn: ({ signal }) => api.impact(environmentId, signal),
     enabled: !disabled,
   })
-  // The artboard's 保存时的资源快照 names the browser configuration the copy was taken
+  // The artboard's 实例浏览器设置 names the browser configuration the copy was taken
   // from, so the directory resolves the saved profile id instead of printing it.
   const profiles = useQuery({
     queryKey: [workspaceKey, instanceId, 'profiles'],
@@ -59,6 +60,7 @@ export function EnvironmentDetailPage({ workspaceKey, instanceId, projectId, env
   })
   const environment = detail.data?.environment
   const [editing, setEditing] = useState(false)
+  const [configuring, setConfiguring] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const [removal, setRemoval] = useState<{ key: string; busy: boolean; error: string | null } | null>(null)
   const [removed, setRemoved] = useState<{ name: string; detached: number; operationId: string; at: string } | null>(null)
@@ -171,7 +173,7 @@ export function EnvironmentDetailPage({ workspaceKey, instanceId, projectId, env
         {busy ? <Button size="sm" disabled={disabled || readOnly || openBrowser.isPending} onClick={() => openBrowser.mutate()}>进入当前浏览器</Button> : null}
         {busy && detail.data?.activeInstance?.maintenanceOperationId
           ? <Button size="sm" variant="secondary" disabled={disabled || readOnly || discard.isPending} onClick={() => discard.mutate()}>放弃维护</Button>
-          : <Button size="sm" variant="secondary" disabled={disabled || readOnly || busy || maintenance.isPending} onClick={() => maintenance.mutate()}>维护打开</Button>}
+          : <Button size="sm" variant="secondary" disabled={disabled || readOnly || busy || !environment.browserConfiguration || maintenance.isPending} onClick={() => maintenance.mutate()}>维护打开</Button>}
       </div>
     </header>
     <div className="grid gap-5 xl:grid-cols-2">
@@ -190,15 +192,18 @@ export function EnvironmentDetailPage({ workspaceKey, instanceId, projectId, env
         <p className="m-0 text-sm">备注：{environment.notes || '无备注'}</p>
         <p className="m-0 rounded-control border border-line bg-subtle p-3 text-sm text-muted">保存原因：工作流结束节点明确声明保存。任务结束后使用过的工作副本会被关闭并清理，只有这里保留的副本会继续存在。</p>
       </section>
-      <section className="grid gap-4 rounded-card border border-line bg-surface p-5" aria-label="保存时的资源快照">
-        <h3 className="m-0 text-base">保存时的资源快照</h3>
+      <section className="grid gap-4 rounded-card border border-line bg-surface p-5" aria-label="实例浏览器设置">
+        <h3 className="m-0 text-base">实例浏览器设置</h3>
         <Facts items={[
           ['浏览器配置', profiles.isError ? '浏览器配置暂时无法读取' : profileName ?? (profiles.isLoading ? '正在读取…' : '已删除或不可见')],
-          ['代理', '跟随保存时的浏览器配置'],
+          ['代理', environment.browserConfiguration ? { none: '不使用代理', fixed: '固定代理', pool: '代理池' }[environment.browserConfiguration.proxy.mode] : '原身份资料缺失'],
+          ['浏览器内核', environment.browserConfiguration ? `${environment.browserConfiguration.kernel.edition === 'public' ? '公开版' : '授权版'} ${environment.browserConfiguration.kernel.version}` : '无法确认'],
           ['工作副本', '每个任务创建独立副本；不会并发共用这个可变实例'],
           ['引用', `${environment.ref.contentGeneration} 个已发布内容代次`],
         ]} />
-        <p className="m-0 text-sm text-muted">保存时截图不属于本阶段已实现的能力，这里不展示占位图。</p>
+        <p className="m-0 text-sm text-muted">实例设置独立保存，修改不会影响来源模板。</p>
+        {!environment.browserConfiguration ? <p role="alert">原身份资料缺失，不能根据当前模板恢复此环境。</p> : configuring ? <EnvironmentConfigurationEditor key={`${workspaceKey}:${instanceId}:${projectId}:${environmentId}`} environment={environment} client={client} workspaceKey={workspaceKey} instanceId={instanceId} disabled={disabled || readOnly || busy} onSaved={() => { setConfiguring(false); void cache.invalidateQueries({ queryKey: prefix }) }} /> : <Button disabled={disabled || readOnly || busy} onClick={() => setConfiguring(true)}>修改实例设置</Button>}
+        {busy ? <p className="m-0 text-sm text-muted">关闭当前浏览器后可修改实例设置。</p> : null}
       </section>
     </div>
     <p className="m-0 text-xs text-muted">技术信息：内容代次 {environment.ref.contentGeneration} · 元数据修订 {environment.ref.metadataRevision}</p>

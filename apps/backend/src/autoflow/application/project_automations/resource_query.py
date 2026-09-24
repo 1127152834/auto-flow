@@ -5,6 +5,10 @@ from typing import Any
 from autoflow.application.models.service import ModelService
 from autoflow.application.profiles.service import ProfileService
 from autoflow.application.workflows.core_runtime import WorkflowRuntimeService
+from autoflow.domain.environments.identity import (
+    profile_from_request,
+    request_from_identity,
+)
 from autoflow.domain.models.errors import ModelError
 from autoflow.domain.profiles.errors import ProfileNotFound
 from autoflow.domain.profiles.models import Profile
@@ -12,6 +16,7 @@ from autoflow.domain.profiles.ports import InstalledKernelLookup, ProxyOptionsLo
 from autoflow.domain.project_automations.models import AutomationRecord
 from autoflow.domain.projects.models import ProjectError
 from autoflow.domain.projects.ports import Projects
+from autoflow.domain.workflows.runtime import WorkflowRuntimeError
 
 
 class ProjectAutomationResourceQuery:
@@ -54,7 +59,7 @@ class ProjectAutomationResourceQuery:
             ]
         defaults = project.default_resources
         issues: list[dict[str, Any]] = []
-        if not self.requires_browser(automation):
+        if (self._workflow_runtime is not None and self._workflow_runtime.node_browser_mode(automation.workflow_id)) or not self.requires_browser(automation):
             return self._model_issues(automation, defaults) if (
                 self._workflow_runtime is not None
                 and self._workflow_runtime.requires_default_model(automation.workflow_id)
@@ -65,10 +70,11 @@ class ProjectAutomationResourceQuery:
         profile_id = None if source == "inputEnvironment" else policy.get("profileId") or defaults.get("profileId")
         if source == "fixedEnvironment" and self._environments is not None:
             try:
-                profile_id = self._environments.resolve(
-                    automation.project_id, policy
-                ).profile_id
-            except ProjectError as error:
+                selected = self._environments.resolve(automation.project_id, policy)
+                profile_id = selected.profile_id
+                profile = profile_from_request(request_from_identity(selected.identity_package))
+            except (ProjectError, WorkflowRuntimeError) as error:
+                profile_id = None
                 issues.append(
                     _issue(
                         ["environmentPolicy", "environmentId"],
@@ -90,7 +96,9 @@ class ProjectAutomationResourceQuery:
             )
         elif profile_id:
             try:
-                profile = self._profiles.get(profile_id)
+                current = self._profiles.get(profile_id)
+                if source == "newFromProfile":
+                    profile = current
             except ProfileNotFound:
                 issues.append(
                     _issue(
@@ -117,8 +125,8 @@ class ProjectAutomationResourceQuery:
                     )
                 )
         proxy, proxy_path = _effective_proxy(
-            automation.environment_policy.get("proxyOverride"),
-            defaults.get("proxy"),
+            automation.environment_policy.get("proxyOverride") if source == "newFromProfile" else None,
+            defaults.get("proxy") if source == "newFromProfile" else None,
             profile,
         )
         if proxy.get("mode") == "fixed" and not self._proxy_options.proxy_is_available(

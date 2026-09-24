@@ -27,6 +27,8 @@ const explicitInlineFields = new Map<string, string>([
 // Frozen WebRPA field cases remain useful evidence, but these editor fields were
 // replaced by the main application's modelId contract and CloakBrowser session.
 const retiredFieldsByType: Partial<Record<ModuleType, readonly string[]>> = {
+  // NetworkCaptureConfig exposes only page-level capture; OS proxy/process inputs were retired.
+  network_capture: ['proxyPort', 'targetPorts', 'targetProcess'],
   ai_chat: ['apiKey', 'apiUrl', 'model'],
   ai_vision: ['apiKey', 'apiUrl', 'model'],
   ai_vision_act: ['apiKey', 'apiUrl', 'model'],

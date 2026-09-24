@@ -34,7 +34,6 @@ import { useDebugStore } from '../hooks/stores/debugStore'
 import { ScheduledTasksDialog } from './scheduled-tasks/ScheduledTasksDialog'
 import { WorkflowOpenDialog } from './WorkflowOpenDialog'
 import { LocalWorkflowDialog } from './LocalWorkflowDialog'
-import { BrowserProfileSelect } from './BrowserProfileSelect'
 import { VariableTrackingPanel } from './VariableTrackingPanel'
 import { ScreenshotNameDialog, ScreenshotErrorDialog } from './ScreenshotNameDialog'
 import { useClipboardImageMonitor } from '../hooks/useClipboardImageMonitor'
@@ -262,12 +261,16 @@ export function Toolbar() {
       breakpoints: Array.from(useDebugStore.getState().breakpoints),
       stepMode: useDebugStore.getState().stepMode,
     }
-    let selectedProfileId:string
+    if(source.browserEnvironmentVersion!==1&&nodes.some(node=>node.data.moduleType==='open_page')){
+      const node=nodes.find(node=>node.data.moduleType==='open_page')
+      if(node)source.selectNode(node.id)
+      addLog({level:'error',message:'请先在打开网页节点明确迁移浏览器配置；旧文档仍可保存或导出。'})
+      return
+    }
     transitionPending.current=true
     try {
-      const profile=await browserApi.resolveProfile()
-      if(!profile.success||!profile.data){addLog({level:'error',message:profile.error||'请选择管理端浏览器配置'});return}
-      selectedProfileId=profile.data.id
+      const prepared=await browserApi.validateNodeResources(nodes)
+      if(!prepared.success){if(prepared.data?.nodeId)source.selectNode(prepared.data.nodeId);addLog({level:'error',message:prepared.error||'请检查浏览器节点配置'});return}
       if(getDocumentLeaveResources().length&&!await requestDocumentLeave({preserveMainDocument:true,sessionsOnly:true}))return
       if(sourceDocumentId!==useWorkflowStore.getState().id||sourceConnection!==getStudioTransportRevision())return
     } finally {transitionPending.current=false}
@@ -296,6 +299,8 @@ export function Toolbar() {
       const currentWorkflowId = workflowId || sourceDocumentId
       const document = {
         id: sourceDocumentId,
+        schemaVersion: 3,
+        browserEnvironmentVersion: 1,
         name,
         nodes: nodes.map(n => ({
           id: n.id,
@@ -325,7 +330,6 @@ export function Toolbar() {
       setStartPhase('awaiting')
       const executeResult = await workflowApi.execute(currentWorkflowId, { 
         headless,
-        profileId: selectedProfileId,
         ...debugOptions,
         runId,
         documentId: sourceDocumentId,
@@ -1301,7 +1305,7 @@ export function Toolbar() {
 
       <div className="hidden @[48rem]:block h-5 w-px bg-[hsl(var(--border))]" />
 
-      <BrowserProfileSelect label="运行浏览器配置" disabled={isRunning || !!startPhase}/>
+
 
       {/* 自定义模块编辑模式按钮 */}
       {editingCustomModuleId && (

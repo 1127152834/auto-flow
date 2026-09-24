@@ -1,5 +1,6 @@
+import {selectBrowserNode} from './select-browser-node'
 import {cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react'
-import {expect,it,vi} from 'vitest'
+import {beforeEach,expect,it,vi} from 'vitest'
 vi.hoisted(()=>{const values=new Map<string,string>();vi.stubGlobal('localStorage',{getItem:(key:string)=>values.get(key)??null,setItem:(key:string,value:string)=>values.set(key,value)})})
 import {AutoBrowserDialog} from '../components/AutoBrowserDialog'
 import {configureStudioConnection} from '../api/config'
@@ -31,7 +32,7 @@ it('keeps uncertain startup occupied until status confirms the browser identity 
  }finally{restore();await server.close()}
 })
 it('does not interleave close with picker startup through the real HTTP adapter',async()=>{
- vi.resetModules();const mock=await import('../api/mock-server')
+ selectBrowserNode();vi.resetModules();const mock=await import('../api/mock-server')
  let release!:()=>void;const gate=new Promise<void>(resolve=>{release=resolve});let starts=0;let closes=0
  const server=await startHttpStudioFixture(async(input,init)=>{
   const url=(input as Request).url
@@ -53,3 +54,5 @@ it('does not interleave close with picker startup through the real HTTP adapter'
   await screen.findByRole('button',{name:'启动选择器'},{timeout:5000});expect(mock.mockSnapshot().picking).toBe(false)
  }finally{release();cleanup();mock.configureMock({disconnect:true});await server.close();restore()}
 })
+
+beforeEach(()=>selectBrowserNode('managed'))

@@ -3,7 +3,6 @@ import { getStudioTransportRevision } from '../api/transport'
 import { useState, useEffect, useRef } from 'react'
 import { X, Globe, MousePointer, Copy, Check, RefreshCw } from 'lucide-react'
 import { Button } from './controls/button'
-import { BrowserProfileSelect } from './BrowserProfileSelect'
 import { BrowserPagesPanel } from './BrowserPagesPanel'
 import { browserApi, elementPickerApi, systemApi, featurePackApi } from '../api'
 import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
@@ -361,7 +360,7 @@ export function AutoBrowserDialog({ isOpen, onClose, onLog }: AutoBrowserDialogP
             </>
           )}
 
-          {!browserOpen&&<BrowserProfileSelect disabled={loading}/>}
+          {!browserOpen&&<p className="text-xs text-muted-foreground">使用画布所选打开网页节点的环境设置。</p>}
           {/* 浏览器控制 */}
           <div className="flex gap-2">
             {!browserOpen ? (
