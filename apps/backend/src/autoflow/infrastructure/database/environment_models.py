@@ -33,6 +33,7 @@ class ProjectEnvironmentRow(Base):
     content_generation: Mapped[int] = mapped_column(Integer, nullable=False)
     metadata_revision: Mapped[int] = mapped_column(Integer, nullable=False)
     current_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    identity_package: Mapped[dict[str, Any] | None] = mapped_column(JSON(none_as_null=True), nullable=True)
     created_from_source: Mapped[str] = mapped_column(String, nullable=False)
     created_from_task_id: Mapped[str | None] = mapped_column(String(36))
     unavailable_reason: Mapped[str | None] = mapped_column(Text)

@@ -79,7 +79,8 @@ def test_fixed_and_input_sources_pin_current_generation():
         inputs={INPUT: {"currentEnvironmentId": ENV}},
         environments=saved,
     )
-    assert linked.identity_package["environmentId"] == ENV
+    assert linked.environment_ref.environment_id == ENV
+    assert linked.identity_package == {}  # Missing historical identity must not be invented.
 
 
 def test_two_linked_inputs_without_choice_are_ambiguous():

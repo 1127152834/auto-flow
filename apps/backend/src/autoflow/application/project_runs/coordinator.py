@@ -662,7 +662,8 @@ class ProjectRunCoordinator:
             session.flush()
             if self._environments is not None and resources.get("browser") != "none":
                 self._environments.reserve_task_instance(
-                    session, project_id, task_id, run.run_id, policy
+                    session, project_id, task_id, run.run_id, policy,
+                    resource_request=resources,
                 )
             created_tasks.append((task_id, run.run_id))
         batch = SqlAlchemyProjectRuns(session).batch(project_id, batch_id)

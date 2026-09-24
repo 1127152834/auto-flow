@@ -210,6 +210,7 @@ class SqlAlchemyEnvironments:
                     notes=record.notes,
                     state=record.state,
                     profile_id=record.profile_id,
+                    identity_package=record.identity_package,
                     content_generation=record.ref.content_generation,
                     metadata_revision=record.ref.metadata_revision,
                     current_digest=digest,
@@ -239,6 +240,7 @@ class SqlAlchemyEnvironments:
         digest: str,
         *,
         generation: int | None = None,
+        identity_package: dict[str, Any] | None = None,
     ) -> PersistentEnvironment:
         with self._session_factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
@@ -258,6 +260,7 @@ class SqlAlchemyEnvironments:
                 )
             row.content_generation = generation or row.content_generation + 1
             row.current_digest = digest
+            row.identity_package = identity_package
             row.updated_at = datetime.now(UTC)
             session.commit()
             return _environment(row)
@@ -286,6 +289,9 @@ class SqlAlchemyEnvironments:
                 occupancy.holder_kind, occupancy.holder_id,
                 _occupancy(current) if current else None,
             )
+            source = self._environment(session, record.project_id, occupancy.environment_id, writable=True)
+            if source.content_generation != record.source_content_generation or (source.identity_package or None) != record.identity_package:
+                raise environment_error("SAVE_GENERATION_CONFLICT", "环境内容或身份已变化，请重新准备任务", 409)
             if current is None:
                 session.add(
                     ProjectEnvironmentOccupancyRow(
@@ -1197,6 +1203,7 @@ def _environment(row: ProjectEnvironmentRow) -> PersistentEnvironment:
         row.updated_at,
         row.created_from_source,
         row.created_from_task_id,
+        row.identity_package,
     )
 
 
@@ -1215,6 +1222,7 @@ def _instance(row: ProjectEnvironmentInstanceRow) -> EnvironmentInstance:
         row.profile_id,
         row.created_at,
         row.updated_at,
+        row.identity_package or None,
     )
 
 
@@ -1231,7 +1239,7 @@ def _instance_row(record: EnvironmentInstance) -> ProjectEnvironmentInstanceRow:
         active_run_id=record.active_run_id,
         maintenance_operation_id=record.maintenance_operation_id,
         profile_id=record.profile_id,
-        identity_package={"source": record.source, "profileId": record.profile_id},
+        identity_package=record.identity_package or {},
         created_at=record.created_at,
         updated_at=record.updated_at,
     )

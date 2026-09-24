@@ -21,6 +21,10 @@ from pathlib import Path
 from threading import Event, Lock, Thread
 from typing import Any
 
+from autoflow.domain.environments.identity import (
+    profile_from_request,
+    request_from_identity,
+)
 from autoflow.domain.environments.rules import environment_error
 from autoflow.domain.kernels.models import InstalledKernel
 from autoflow.domain.profiles.errors import KernelNotInstalled
@@ -126,7 +130,10 @@ class EnvironmentBrowserLauncher:
             self._settled[instance_id] = settled
         try:
             directory = self._instance_directory(instance_id)
-            profile = self._profiles.get(instance.profile_id)
+            profile = profile_from_request(request_from_identity(instance.identity_package))
+            if profile.id != instance.profile_id:
+                raise environment_error("WORKFLOW_RESOURCE_INVALID", "环境身份来源不一致", 422)
+            self._profiles.get(instance.profile_id)  # Existence only; never replace the saved identity.
             executable = self._kernel_executable(profile)
             command = self._launch_command(profile, executable)
             owner = self._owner_loop()

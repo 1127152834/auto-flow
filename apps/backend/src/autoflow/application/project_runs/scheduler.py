@@ -940,6 +940,7 @@ class ProjectBatchScheduler:
                 environments.reserve_task_instance(
                     session, project_id, task_id, run.run_id, policy,
                     {item["inputId"]: item for item in inputs if item.get("inputId")},
+                    resource_request=resource_request,
                 )
             row.selection_outcome = {
                 "status": "ready",

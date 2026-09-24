@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+from copy import deepcopy
 from datetime import UTC, datetime
 from threading import Lock, RLock
 from typing import Any
@@ -38,6 +39,7 @@ from autoflow.domain.environments.rules import (
     validate_open_instance,
 )
 from autoflow.domain.projects.models import ProjectError, ProjectOperation
+from autoflow.domain.workflows.runtime import WorkflowRuntimeError
 from autoflow.infrastructure.database.environments import SqlAlchemyEnvironments
 from autoflow.infrastructure.filesystem.environment_store import EnvironmentStore
 
@@ -255,6 +257,7 @@ class EnvironmentService:
             resolved.profile_id,
             now,
             now,
+            deepcopy(resolved.identity_package) if resolved.identity_package.get("schemaVersion") else None,
         )
         occupancy = None
         if resolved.environment_ref is not None:
@@ -273,6 +276,7 @@ class EnvironmentService:
                 resolved.environment_ref.environment_id,
                 resolved.environment_ref.content_generation,
                 saved.instance_id,
+                identity_package=saved.identity_package,
             )
         return self.environments.set_instance_state(saved.instance_id, "active")
 
@@ -289,7 +293,8 @@ class EnvironmentService:
         metadata = validate_metadata(name, notes)
         now = datetime.now(UTC)
         environment_id = str(uuid4())
-        digest = self.store.stage_candidate(environment_id, instance_id)
+        identity = self.environments.get_instance(project_id, instance_id).identity_package
+        digest = self.store.stage_candidate(environment_id, instance_id, identity_package=identity)
         self.store.publish(environment_id, 1, environment_id)
         record = PersistentEnvironment(
             EnvironmentRef(project_id, environment_id, 1, 1),
@@ -300,6 +305,7 @@ class EnvironmentService:
             None,
             now,
             now,
+            identity_package=identity,
         )
         return self.environments.create_ready(
             record, digest, created_from_source="newFromProfile", created_from_task_id=task_id
@@ -307,13 +313,14 @@ class EnvironmentService:
 
     def publish_update(self, project_id: str, environment_id: str, instance_id: str) -> PersistentEnvironment:
         current, _instance = self.environments.get_with_instance(project_id, environment_id)
-        digest = self.store.stage_candidate(f"{environment_id}:{current.ref.content_generation + 1}", instance_id)
+        identity = self.environments.get_instance(project_id, instance_id).identity_package
+        digest = self.store.stage_candidate(f"{environment_id}:{current.ref.content_generation + 1}", instance_id, identity_package=identity)
         self.store.publish(
             environment_id,
             current.ref.content_generation + 1,
             f"{environment_id}:{current.ref.content_generation + 1}",
         )
-        return self.environments.publish_update(project_id, environment_id, digest)
+        return self.environments.publish_update(project_id, environment_id, digest, generation=current.ref.content_generation + 1, identity_package=identity)
 
     def close_instance(self, project_id: str, instance_id: str, environment_id: str | None) -> None:
         with self._lifecycle_lock(instance_id):
@@ -431,7 +438,7 @@ class EnvironmentService:
                     "conflicts": [],
                     "launched": launched,
                 }
-        except ProjectError as error:
+        except (ProjectError, WorkflowRuntimeError) as error:
             # An accepted operation that never completes leaves the user with a
             # request that can only ever answer "still running".
             self._opened.discard(instance_id)
@@ -489,6 +496,7 @@ class EnvironmentService:
                     self.store.restore_generation(
                         existing.environment_id, existing.source_content_generation,
                         existing.instance_id,
+                        identity_package=existing.identity_package,
                     )
                 return self.environments.set_instance_state(existing.instance_id, "active")
             return existing
@@ -506,14 +514,22 @@ class EnvironmentService:
         self, session: Session, project_id: str, task_id: str, run_id: str,
         policy: dict[str, Any],
         inputs: dict[str, dict[str, Any]] | None = None,
+        *, resource_request: dict[str, Any] | None = None,
     ) -> EnvironmentInstance:
         resolved = self.environments.resolve_source_in_session(session, project_id, policy, inputs)
+        from autoflow.domain.environments.identity import identity_from_request
+
+        identity = resolved.identity_package if resolved.identity_package.get("schemaVersion") else None
+        if resource_request is not None:
+            identity = identity_from_request(resource_request)
+            if resolved.environment_ref and resource_request.get("environmentRef") != resolved.environment_ref.to_dict():
+                raise environment_error("SAVE_GENERATION_CONFLICT", "环境已变化，请重新准备任务", 409)
         now = datetime.now(UTC)
         reference = resolved.environment_ref
         instance = EnvironmentInstance(
             str(uuid4()), project_id, reference.environment_id if reference else None,
             "reserved", resolved.source, reference.content_generation if reference else None,
-            1, task_id, run_id, None, resolved.profile_id, now, now,
+            1, task_id, run_id, None, resolved.profile_id, now, now, deepcopy(identity),
         )
         occupancy = (
             occupy_environment(reference.environment_id, instance.instance_id, "task", task_id, None)
@@ -621,12 +637,7 @@ class EnvironmentService:
                 "fixedEnvironment",
                 environment.ref,
                 environment.profile_id,
-                {
-                    "source": "fixedEnvironment",
-                    "environmentId": environment.ref.environment_id,
-                    "contentGeneration": environment.ref.content_generation,
-                    "profileId": environment.profile_id,
-                },
+                environment.identity_package or {},
             )
             instance = self.reserve(
                 project_id,
@@ -636,7 +647,7 @@ class EnvironmentService:
                 holder_kind="maintenance",
                 holder_id=accepted.operation_id,
             )
-        except ProjectError as error:
+        except (ProjectError, WorkflowRuntimeError) as error:
             self.environments.complete_operation(
                 accepted,
                 None,

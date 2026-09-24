@@ -18,7 +18,8 @@ def _config(database: Path) -> Config:
 def test_studio_backend_history_has_one_merged_head(tmp_path: Path) -> None:
     scripts = ScriptDirectory.from_config(_config(tmp_path / "heads.sqlite3"))
 
-    assert scripts.get_heads() == ["0023_merge_studio_android"]
+    assert scripts.get_heads() == ["0024_environment_identity"]
+    assert scripts.get_revision("0024_environment_identity").down_revision == "0023_merge_studio_android"
     assert scripts.get_revision("0023_merge_studio_android").down_revision == (
         "0022_merge_studio_pm10", "0020_merge_android_pm9",
     )
@@ -105,7 +106,7 @@ def test_android_pm9_merge_upgrades_each_published_head_without_losing_data(tmp_
 
     with sqlite3.connect(database) as connection:
         assert connection.execute("SELECT version_num FROM alembic_version").fetchall() == [
-            ("0023_merge_studio_android",)
+            ("0024_environment_identity",)
         ]
         assert connection.execute("SELECT * FROM workflow_documents").fetchall() == before
         if previous_head == "am01_management_operations":

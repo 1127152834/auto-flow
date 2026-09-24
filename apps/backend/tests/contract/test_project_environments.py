@@ -1,6 +1,7 @@
 import asyncio
 import threading
 import time
+from dataclasses import asdict, replace
 from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
@@ -162,10 +163,10 @@ def test_end_handler_closes_browser_before_saving(tmp_path, monkeypatch):
     service._closer = close_browser
     stage = service.store.stage_candidate
 
-    def stage_after_close(operation_id, instance_id):
+    def stage_after_close(operation_id, instance_id, **kwargs):
         assert events == ["browser-closed"]
         events.append("snapshot")
-        return stage(operation_id, instance_id)
+        return stage(operation_id, instance_id, **kwargs)
 
     monkeypatch.setattr(service.store, "stage_candidate", stage_after_close)
     response = client.post(
@@ -209,6 +210,12 @@ def _project(projects, name="环境项目"):
 
 def _closed_instance(service, project_id, marker: bytes):
     resolved = service.resolve(project_id, {"source": "newFromProfile", "profileId": PROFILE})
+    profile = _profile_record()
+    resolved = replace(resolved, identity_package={
+        "schemaVersion": 1, "profileId": PROFILE, "kernelId": f"public:{PROFILE_KERNEL}",
+        "frozenConfiguration": {"profileSpec": asdict(profile.spec), "fingerprintSeed": 31415,
+                                "createdAt": profile.created_at.isoformat(), "updatedAt": profile.updated_at.isoformat()},
+    })
     instance = service.reserve(
         project_id,
         resolved,
@@ -1050,11 +1057,11 @@ def test_end_retry_after_lost_response_resumes_without_second_environment(
     stage = service.store.stage_candidate
     attempts = {"count": 0}
 
-    def flaky_stage(operation_id, instance_id):
+    def flaky_stage(operation_id, instance_id, **kwargs):
         attempts["count"] += 1
         if attempts["count"] == 1:
             raise RuntimeError("simulated process loss before publish")
-        return stage(operation_id, instance_id)
+        return stage(operation_id, instance_id, **kwargs)
 
     monkeypatch.setattr(service.store, "stage_candidate", flaky_stage)
     with pytest.raises(RuntimeError):

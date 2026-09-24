@@ -9,6 +9,7 @@ import asyncio
 import os
 import threading
 import time
+from dataclasses import asdict, replace
 from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
@@ -92,6 +93,7 @@ def _instance(profile: Profile, project_id: str, instance_id: str) -> Environmen
         profile_id=profile.id,
         created_at=now,
         updated_at=now,
+        identity_package={"schemaVersion": 1, "profileId": profile.id, "kernelId": f"public:{VERSION}", "frozenConfiguration": {"profileSpec": asdict(profile.spec), "fingerprintSeed": profile.fingerprint_seed, "createdAt": now.isoformat(), "updatedAt": now.isoformat()}},
     )
 
 
@@ -382,3 +384,28 @@ def test_pinned_kernel_restores_the_previous_override(tmp_path, monkeypatch):
 
     assert seen == [str(Path("/kernels/chromium/Chromium"))]
     assert os.environ["CLOAKBROWSER_BINARY_PATH"] == "/kernels/outer/Chromium"
+
+
+def test_maintenance_uses_saved_identity_after_template_edit(tmp_path):
+    profile = _profile()
+    instance = _instance(profile, str(uuid4()), str(uuid4()))
+    launcher, store, calls, _contexts = _launcher(tmp_path, replace(profile, fingerprint_seed=999))
+    store.prepare_instance(instance.instance_id)
+    try:
+        launcher.opener(None, instance)
+        assert calls[0][1]['fingerprintSeed'] == 31415
+    finally:
+        launcher.shutdown()
+
+
+def test_maintenance_without_identity_does_not_guess_template(tmp_path):
+    from autoflow.domain.workflows.runtime import WorkflowRuntimeError
+
+    profile = _profile()
+    instance = replace(_instance(profile, str(uuid4()), str(uuid4())), identity_package=None)
+    launcher, store, calls, _contexts = _launcher(tmp_path, profile)
+    store.prepare_instance(instance.instance_id)
+    with pytest.raises(WorkflowRuntimeError) as caught:
+        launcher.opener(None, instance)
+    assert caught.value.code == 'ENVIRONMENT_IDENTITY_UNVERIFIED'
+    assert calls == []

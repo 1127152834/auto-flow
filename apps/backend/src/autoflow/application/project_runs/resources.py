@@ -6,6 +6,7 @@ from autoflow.application.project_automations.resource_query import (
     ProjectAutomationResourceQuery,
 )
 from autoflow.application.workflows.browser_resources import WorkflowBrowserResources
+from autoflow.domain.environments.identity import request_from_identity
 from autoflow.domain.environments.models import ResolvedEnvironmentSource
 from autoflow.domain.profiles.errors import KernelNotInstalled, ProfileNotFound
 from autoflow.domain.project_automations.models import AutomationRecord
@@ -87,13 +88,17 @@ class ProjectRunResourceResolver:
         if not isinstance(profile_id, str) or not profile_id:
             raise _field_error("environmentPolicy.profileId", "请选择浏览器配置")
 
-        request = self._freeze_profile(profile_id, proxy, model_provider_id)
+        request = (
+            request_from_identity(pinned.identity_package) if pinned is not None
+            else self._freeze_profile(profile_id, proxy, model_provider_id)
+        )
         if pinned is not None:
             request = {
                 **request,
                 "browser": "persistent",
                 "environmentRef": pinned.environment_ref.to_dict() if pinned.environment_ref else None,
                 "identityPackage": pinned.identity_package,
+                "modelProviderId": model_provider_id,
             }
         return {**request, **timing}
 
@@ -101,14 +106,13 @@ class ProjectRunResourceResolver:
         self, pending: dict[str, Any], selected: ResolvedEnvironmentSource,
     ) -> dict[str, Any]:
         """Freeze the source selected and reserved by the Task claim transaction."""
-        request = self._freeze_profile(
-            selected.profile_id, pending.get("proxy"), pending.get("modelProviderId"),
-        )
+        request = request_from_identity(selected.identity_package)
         return {
             **request,
             "browser": "persistent",
             "environmentRef": selected.environment_ref.to_dict() if selected.environment_ref else None,
             "identityPackage": selected.identity_package,
+            "modelProviderId": pending.get("modelProviderId"),
             "manualDeadlineSeconds": pending["manualDeadlineSeconds"],
             "automaticExecutionTimeoutSeconds": pending["automaticExecutionTimeoutSeconds"],
         }

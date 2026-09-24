@@ -1,12 +1,20 @@
+from dataclasses import asdict
 from datetime import UTC, datetime
 
 import pytest
 
 from autoflow.application.project_runs.resources import ProjectRunResourceResolver
+from autoflow.domain.profiles.models import ProfileSpec
 from autoflow.domain.project_automations.models import AutomationRecord
 from autoflow.domain.project_runs.models import ProjectRunError
 
 NOW = datetime(2026, 9, 15, tzinfo=UTC)
+
+
+def saved_identity(profile_id):
+    return {"schemaVersion": 1, "profileId": profile_id, "kernelId": "public:1",
+            "frozenConfiguration": {"profileSpec": asdict(ProfileSpec.from_values({"name": "saved", "browser_version": "1", "proxy_mode": "proxy", "proxy_id": "saved-proxy"})),
+                                    "fingerprintSeed": 42, "createdAt": NOW.isoformat(), "updatedAt": NOW.isoformat()}}
 
 
 def automation(environment_policy):
@@ -206,7 +214,7 @@ def test_fixed_environment_freezes_persistent_source():
                 "fixedEnvironment",
                 EnvironmentRef(project_id, policy["environmentId"], 4, 1),
                 "env-profile",
-                {"source": "fixedEnvironment", "environmentId": policy["environmentId"]},
+                saved_identity("env-profile"),
             )
 
     browser = BrowserResources()
@@ -222,7 +230,8 @@ def test_fixed_environment_freezes_persistent_source():
     )
     assert request["browser"] == "persistent"
     assert request["environmentRef"]["contentGeneration"] == 4
-    assert browser.calls[0][0] == "env-profile"
+    assert browser.calls == []
+    assert request["frozenConfiguration"]["profileSpec"]["proxy_id"] == "saved-proxy"
 
 
 def test_rejects_missing_effective_profile_without_freezing():
@@ -254,9 +263,10 @@ def test_input_environment_defers_profile_until_claim_and_uses_selected_source(d
     assert pending["environmentResolution"] == "atTaskStart"
     assert "profileId" not in pending
     assert browser.calls == []
-    selected = ResolvedEnvironmentSource("inputEnvironment", EnvironmentRef("project-1", "environment-1", 3, 1), "saved-profile", {"profileId": "saved-profile"})
+    selected = ResolvedEnvironmentSource("inputEnvironment", EnvironmentRef("project-1", "environment-1", 3, 1), "saved-profile", saved_identity("saved-profile"))
     request = resolver.freeze_input_environment(pending, selected)
-    assert browser.calls == [("saved-profile", {"mode": "none"}, None)]
+    assert browser.calls == []
+    assert request["frozenConfiguration"]["profileSpec"]["proxy_id"] == "saved-proxy"
     assert request["browser"] == "persistent"
     assert request["environmentRef"]["contentGeneration"] == 3
     assert request["automaticExecutionTimeoutSeconds"] == 12.5

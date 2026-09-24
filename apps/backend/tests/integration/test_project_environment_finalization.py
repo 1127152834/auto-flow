@@ -182,10 +182,10 @@ async def test_save_in_flight_and_cleanup_share_the_instance_lock(tmp_path, monk
     factory, project, task, service, instance, directory, scheduler = setup_copy(tmp_path, status="running", state="closed")
     started, release = Event(), Event()
     original = service.store.stage_candidate
-    def stage_candidate(*args):
+    def stage_candidate(*args, **kwargs):
         started.set()
         assert release.wait(5)
-        return original(*args)
+        return original(*args, **kwargs)
     # PM9 admission fences terminal runs. End the run only after this save is
     # accepted, while candidate creation still owns the instance lifecycle lock.
     monkeypatch.setattr(service.store, "stage_candidate", stage_candidate)

@@ -2,19 +2,21 @@ from __future__ import annotations
 
 from collections.abc import Awaitable, Callable, Iterator, Mapping, Sequence
 from contextlib import AbstractContextManager, ExitStack, contextmanager, nullcontext
-from copy import deepcopy
 from dataclasses import asdict, dataclass, field
-from datetime import datetime
 from pathlib import Path
 from typing import Any, cast
 
 from autoflow.application.profiles.service import ProfileService
+from autoflow.domain.environments.identity import (
+    profile_from_request,
+    request_from_identity,
+)
 from autoflow.domain.kernels.errors import LicenseInvalid
 from autoflow.domain.kernels.models import InstalledKernel, KernelEdition, KernelRef
 from autoflow.domain.profiles.errors import KernelNotInstalled
 from autoflow.domain.profiles.models import Profile, ProfileBrowserProxy, ProfileSpec
 from autoflow.domain.profiles.ports import ProfileUsageGuard
-from autoflow.domain.workflows.runtime import WorkflowRuntimeError, thaw_json
+from autoflow.domain.workflows.runtime import WorkflowRuntimeError
 from autoflow.infrastructure.process.project_test_browser_worker import (
     browser_worker_payload,
 )
@@ -141,22 +143,14 @@ class WorkflowBrowserResources:
     async def acquire(self, request: Mapping[str, Any], run_request_id: str) -> BrowserLease:
         if request.get("browser") not in {"newFromProfile", "persistent"}:
             raise WorkflowRuntimeError("WORKFLOW_RESOURCE_UNSUPPORTED", "当前运行需要浏览器配置", 422)
-        snapshot = deepcopy(thaw_json(request.get("frozenConfiguration")))
-        if not isinstance(snapshot, dict) or not isinstance(request.get("profileId"), str):
-            raise WorkflowRuntimeError("WORKFLOW_RESOURCE_INVALID", "浏览器资源快照无效", 422)
-        profile_id = str(request['profileId'])
-        try:
-            if not isinstance(snapshot['profileSpec'], dict) or type(snapshot['fingerprintSeed']) is not int:
-                raise ValueError('Invalid frozen profile shape')
-            profile = Profile(
-                profile_id, ProfileSpec.from_values(snapshot['profileSpec']),
-                snapshot['fingerprintSeed'], datetime.fromisoformat(snapshot['createdAt']),
-                datetime.fromisoformat(snapshot['updatedAt']),
-            )
-        except (KeyError, TypeError, ValueError):
-            raise WorkflowRuntimeError("WORKFLOW_RESOURCE_INVALID", "浏览器资源快照无效", 422) from None
-        if request.get('kernelId') != f"{profile.spec.browser_edition}:{profile.spec.browser_version}":
-            raise WorkflowRuntimeError("WORKFLOW_RESOURCE_INVALID", "浏览器内核快照不一致", 422)
+        if request.get("browser") == "persistent":
+            identity_request = request_from_identity(request.get("identityPackage"))
+            if identity_request["profileId"] != request.get("profileId"):
+                raise WorkflowRuntimeError("WORKFLOW_RESOURCE_INVALID", "环境身份来源不一致", 422)
+            profile = profile_from_request(identity_request)
+        else:
+            profile = profile_from_request(request)
+        profile_id = profile.id
         guards = ExitStack()
         try:
             kernel = KernelRef(cast(KernelEdition, profile.spec.browser_edition), profile.spec.browser_version)
