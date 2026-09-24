@@ -202,7 +202,7 @@ export function EnvironmentDetailPage({ workspaceKey, instanceId, projectId, env
           ['引用', `${environment.ref.contentGeneration} 个已发布内容代次`],
         ]} />
         <p className="m-0 text-sm text-muted">实例设置独立保存，修改不会影响来源模板。</p>
-        {!environment.browserConfiguration ? <p role="alert">原身份资料缺失，不能根据当前模板恢复此环境。</p> : configuring ? <EnvironmentConfigurationEditor key={`${workspaceKey}:${projectId}:${environmentId}`} environment={environment} client={client} workspaceKey={workspaceKey} instanceId={instanceId} disabled={disabled || readOnly || busy} onSaved={() => { setConfiguring(false); void cache.invalidateQueries({ queryKey: prefix }) }} /> : <Button disabled={disabled || readOnly || busy} onClick={() => setConfiguring(true)}>修改实例设置</Button>}
+        {!environment.browserConfiguration ? <p role="alert">原身份资料缺失，不能根据当前模板恢复此环境。</p> : configuring ? <EnvironmentConfigurationEditor key={`${workspaceKey}:${instanceId}:${projectId}:${environmentId}`} environment={environment} client={client} workspaceKey={workspaceKey} instanceId={instanceId} disabled={disabled || readOnly || busy} onSaved={() => { setConfiguring(false); void cache.invalidateQueries({ queryKey: prefix }) }} /> : <Button disabled={disabled || readOnly || busy} onClick={() => setConfiguring(true)}>修改实例设置</Button>}
         {busy ? <p className="m-0 text-sm text-muted">关闭当前浏览器后可修改实例设置。</p> : null}
       </section>
     </div>

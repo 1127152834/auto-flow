@@ -30,11 +30,11 @@
 
 **Interfaces:** 新增纯函数 `identity_from_request(request)`、`request_from_identity(identity)` 与 `profile_from_request(request)`，返回可复制的无凭据身份/资源/现有 Profile。PersistentEnvironment 与 EnvironmentInstance 内部增加可空 identity_package；不把完整身份公开到列表。
 
-- [ ] 编写缺失/非法身份、模板后改、字典隔离测试。核心断言：`assert restored['frozenConfiguration']['fingerprintSeed'] == original_seed`；缺失身份应抛 `ENVIRONMENT_IDENTITY_UNVERIFIED`。
-- [ ] `cd apps/backend && uv run pytest tests/unit/test_environment_identity.py tests/unit/test_workflow_browser_resources.py -q`，观察新增行为先失败。
-- [ ] 从已有资源冻结中提取共同的严格身份组装；新增可空列（从唯一 0023 head 追加），旧库不伪造值。预约实例持有实际 Run 快照；保存和发布将同一身份包随内容代次保存。重放使用原实例/候选，不能读取当前模板。
-- [ ] worker 和维护从同一身份恢复 Profile；已有环境解析不应用项目默认代理。验证新建冻结路径仍成立；错误发生在浏览器启动前。
-- [ ] 运行上述单测及 `tests/integration/test_environment_persist_restore.py`、`tests/contract/test_project_environments.py` 和迁移检查，记录结果并提交。
+- [x] 编写缺失/非法身份、模板后改、字典隔离测试。核心断言：`assert restored['frozenConfiguration']['fingerprintSeed'] == original_seed`；缺失身份应抛 `ENVIRONMENT_IDENTITY_UNVERIFIED`。
+- [x] `cd apps/backend && uv run pytest tests/unit/test_environment_identity.py tests/unit/test_workflow_browser_resources.py -q`，观察新增行为先失败。
+- [x] 从已有资源冻结中提取共同的严格身份组装；新增可空列（从唯一 0023 head 追加），旧库不伪造值。预约实例持有实际 Run 快照；保存和发布将同一身份包随内容代次保存。重放使用原实例/候选，不能读取当前模板。
+- [x] worker 和维护从同一身份恢复 Profile；已有环境解析不应用项目默认代理。验证新建冻结路径仍成立；错误发生在浏览器启动前。
+- [x] 运行上述单测及 `tests/integration/test_environment_persist_restore.py`、`tests/contract/test_project_environments.py` 和迁移检查，记录结果并提交。
 
 ### Task 2: 编辑实例代理与内核
 
@@ -42,11 +42,11 @@
 
 **Interfaces:** 现有 EnvironmentPatch 添加可选 `browserConfiguration`（代理策略、KernelRef）及 `expectedContentGeneration`。EnvironmentView 仅公开非秘密摘要/身份可恢复状态。沿用 PATCH、ProjectOperation、修订及占用检查，不新建保存系统。
 
-- [ ] 扩展真实 HTTP 测试：关闭实例修改代理后再读相同值；已占用/旧修订拒绝；模板与 Cookie 内容不变。
-- [ ] `cd apps/backend && uv run pytest tests/contract/test_project_environments.py -q`，新增断言先失败。
-- [ ] 在同一短写事务核对项目、占用、内容/元数据版本；更新身份配置并推进修订。仅允许可证明兼容的内核，不能自动修改原目录。
-- [ ] 更新 OpenAPI 和前端摘要/编辑组件；输入缺失、只读、运行中和失效内核有明确反馈，未知保存结果复用原幂等命令。
-- [ ] 运行契约与详情组件测试、OpenAPI 检查、类型检查并提交。
+- [x] 扩展真实 HTTP 测试：关闭实例修改代理后再读相同值；已占用/旧修订拒绝；模板与 Cookie 内容不变。
+- [x] `cd apps/backend && uv run pytest tests/contract/test_project_environments.py -q`，新增断言先失败。
+- [x] 在同一短写事务核对项目、占用、内容/元数据版本；更新身份配置并推进修订。仅允许可证明兼容的内核，不能自动修改原目录。
+- [x] 更新 OpenAPI 和前端摘要/编辑组件；输入缺失、只读、运行中和失效内核有明确反馈，未知保存结果复用原幂等命令。
+- [x] 运行契约与详情组件测试、OpenAPI 检查、类型检查并提交。
 
 ### Task 3: 项目默认设置与环境布局
 
@@ -54,11 +54,11 @@
 
 **Interfaces:** 默认面板接收 client/项目上下文；用 `createProjectsApi.patch` / `resumePatch` 保存 defaultResources，带 expectedManagementRevision；保留 modelProviderId。
 
-- [ ] 新增默认设置组件测试：选择模板/代理、保存再读、失效引用、只读、冲突、响应丢失恢复；修改页面测试为右侧概览不存在。
-- [ ] `npm test -- src/renderer/domains/environments`，观察新增断言失败。
-- [ ] 删除 DefaultsCard/aside 与两列样式；默认面板改为真实表单。复用原项目命令恢复，不新建临时保存接口。草稿不被查询刷新覆盖。
-- [ ] 新建默认值只能作用于新实例；在任务 1 的资源测试补 `assert restored_proxy == saved_proxy`，项目默认不同也不影响已有环境。
-- [ ] 运行环境组件、项目 API、资源解析测试、类型和 lint 后提交。
+- [x] 新增默认设置组件测试：选择模板/代理、保存再读、失效引用、只读、冲突、响应丢失恢复；修改页面测试为右侧概览不存在。
+- [x] `npm test -- src/renderer/domains/environments`，观察新增断言失败。
+- [x] 删除 DefaultsCard/aside 与两列样式；默认面板改为真实表单。复用原项目命令恢复，不新建临时保存接口。草稿不被查询刷新覆盖。
+- [x] 新建默认值只能作用于新实例；在任务 1 的资源测试补 `assert restored_proxy == saved_proxy`，项目默认不同也不影响已有环境。
+- [x] 运行环境组件、项目 API、资源解析测试、类型和 lint 后提交。
 
 ### Task 4: 节点契约与受控延迟启动
 
