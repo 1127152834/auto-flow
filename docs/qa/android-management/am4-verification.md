@@ -4,7 +4,7 @@
 
 | 任务 | 状态 | 证据与限制 |
 | --- | --- | --- |
-| T17 停机备份 | `passed`（AC19 功能） | 运行/控制拒绝、归档安全、权限、原子发布及真实停机备份通过；[真实 ENOSPC 与传输中取消](2026-09-24-backup-failure-verification.md)证明不发布成功备份、原请求不重放、源数据保留。UI 已 RED→GREEN 补本机未加密与私密数据说明。[传输中进程树 SIGKILL](2026-09-24-restore-cancel-and-disk-full.md)已补；真实权限拒绝仍属扩展未验项。 |
+| T17 停机备份 | `passed`（AC19 功能） | 运行/控制拒绝、归档安全、权限、原子发布及真实停机备份通过；[真实 ENOSPC 与传输中取消](2026-09-24-backup-failure-verification.md)证明不发布成功备份、原请求不重放、源数据保留。UI 已 RED→GREEN 补本机未加密与私密数据说明。[传输中进程树 SIGKILL](2026-09-24-restore-cancel-and-disk-full.md)已补；[真实权限拒绝](2026-09-24-backup-permission.md)扩展故障已passed。 |
 | T18 安全恢复 | `passed`（已列功能） | 新 ID/新卷/源保护、摘要/镜像/路径/链接/属性回归通过；真实1792项属性读回、恢复发布前硬中断隔离及新请求恢复已验。UI 已说明应用数据恢复不保证登录/DRM/私钥；[真实解包在途中 SIGKILL](2026-09-24-restore-transfer-interruption.md)后隔离及新请求恢复通过；[真实目标 ENOSPC 与取消恢复](2026-09-24-restore-cancel-and-disk-full.md)已通过，并修复命令取消后的 SSH 子进程遗留写入。 |
 | T19 清理与诊断 | `passed`（已列功能） | 冻结预览、引用/归属变化409、真实备份/暂存清理和受限保存通过；[高级日志](2026-09-24-advanced-logs-and-capacity.md)单次确认及真实196条仅元数据通过。[多对象清理硬中断](2026-09-24-cleanup-interruption.md)已验，首项成功不掩盖未执行项；无来源旧客体文件按归属边界保持排除。 |
 | T20 AM4 最终演练 | `partial` | 真实写入/停机备份/新卷恢复/读回/清理、备份和恢复发布点 SIGKILL、真实 ENOSPC/传输取消、最终分支审查及软件门禁均有记录；恢复解包在途中硬中断已补；目标磁盘不足、取消恢复和多对象清理硬中断已补；完整真实负向矩阵尚未结束。 |

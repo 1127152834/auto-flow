@@ -96,3 +96,5 @@
 - 2026-09-24 磁盘观测（confirmed，整体partial）：宿主workspace与VM实际DockerRootDir可用字节分别透传HTTP/OpenAPI并展示，0与unknown分开；真实Mac只读路由及最终构建页面刷新通过。创建/拉取准入仍未实现，不能以两侧数值展示代替。证据：[验证报告](2026-09-24-disk-observation.md)。 最终本候选完整后端4069passed/26skipped/2warnings（880.33s）、前端424文件/5670项（213.55s）、Android后端485/前端180、迁移6及类型/lint/OpenAPI/结构4/脚本95/build通过；增量审查无新增C/I。
 
 - 2026-09-24 拉取准入与桌面批量增量（confirmed，整体partial）：真实未确认零pull拒绝、原回执/确认冲突、确认后强杀重启核实且仅一次pull通过；真实Electron筛选保留选择、冻结目标、取消未开始项、终态新批次通过，两台自建设备已核实清理。创建准入与最终全仓门禁仍待后续，见[证据与命令](2026-09-24-pull-disk-and-bulk.md)。
+
+2026-09-24补验：[真实备份权限拒绝](2026-09-24-backup-permission.md)passed；[旧版本数据库/temporary实例向前升级](2026-09-24-legacy-upgrade.md)passed，并修复历史批次重放兼容缺陷。当前整体结论仍以最终验收报告为准。

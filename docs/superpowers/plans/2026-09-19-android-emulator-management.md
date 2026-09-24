@@ -57,7 +57,7 @@
 
 | 阶段 | 任务当前状态 | 下一验收门槛 |
 | --- | --- | --- |
-| AM1 | T01–T06 所列功能 `passed`；T07 历史 RED 缺证 | 精确 200%/两种窗口尺寸、键盘焦点、不可达旧快照与桌面应用确认已补；旧 temporary 契约已验，历史实例真实同链另列风险 |
+| AM1 | T01–T06 所列功能 `passed`；T07 历史 RED 缺证 | 精确 200%/两种窗口尺寸、键盘焦点、不可达旧快照与桌面应用确认已补；旧 temporary 契约及真实旧版本数据库/实例升级已验，同发布入口停用组合链仍未验 |
 | AM2 | T08/T10 功能 `passed`；T09/T12 `partial`；T11 检测规则 `passed`、专用 GApps 账号链 `blocked` | 固定摘要网络拉取和认证 HTTP 内容删除已实测；待桌面删除、断线核实、候选镜像/账号下载链与阶段回退 |
 | AM3 | T13–T16 `partial` | 双实例/五实例、部分失败、修订冲突项重试和容量等待取消已验；十台容量 blocked，运行时瞬时故障/未知结果、应用确认与真实 ADB 断连已补；桌面前台/探测指标仍未完整记录 |
 | AM4 | T17–T19 已列功能 `passed`；T20 `partial` | 文件流备份恢复、真实 ENOSPC/传输取消、受限高级日志与全分支审查修复已验；恢复解包中 SIGKILL 已补；目标磁盘不足/取消恢复、多对象清理硬中断已补；备份传输硬中断和完整负向矩阵见后续验证记录 |
@@ -466,7 +466,7 @@ def test_tag_change_does_not_upgrade_existing_instance(scenario):
 
 - [ ] RED/GREEN：`(cd apps/backend && uv run pytest tests/integration/test_android_images_templates.py -q)`及ImagesTemplatesFlow.test.tsx。（状态：not_run；当前 GREEN 已验证；该步骤独立历史 RED 输出未找到，不追认通过；[证据 T12.2](../../qa/android-management/2026-09-24-task-evidence-audit.md#t12)）
 - [x] 真实验证基础与一个候选自定义镜像；谷歌失败不阻塞基础镜像交付，但状态必须保留failed/blocked/not_tested。（状态：passed；基础与自定义 ReDroid 均ready；模板/tag变化后旧实例固定ID、备份恢复和三类引用阻删实测通过；Google仍not_tested；[证据 T12.3](../../qa/android-management/2026-09-24-task-evidence-audit.md#t12)）
-- [ ] 完整发布命令、迁移回归、旧实例恢复、镜像引用和回退检查；记录未覆盖条件。（状态：not_run；完整软件门禁通过；阶段停用入口及向前回退演练尚未运行；[证据 T12.4](../../qa/android-management/2026-09-24-task-evidence-audit.md#t12)）
+- [ ] 完整发布命令、迁移回归、旧实例恢复、镜像引用和回退检查；记录未覆盖条件。（状态：not_run；完整软件门禁通过；旧版本SQLite/临时实例向前迁移及数据保留已实测，阶段停用/重新启用入口组合链仍未运行；[证据 T12.4](../../qa/android-management/2026-09-24-task-evidence-audit.md#t12)）
 - [x] 提交 `test(android): verify image and template lifecycle`；停在AM2验收点。（状态：passed；生命周期代码/证据已入历史；阶段仍有真实未验项；[证据 T12.5](../../qa/android-management/2026-09-24-task-evidence-audit.md#t12)）
 
 ## 4. AM3：多实例管理效率
