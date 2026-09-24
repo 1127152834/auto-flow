@@ -1,0 +1,71 @@
+{
+  "evidenceId": "BE-B6-013-allure-family",
+  "recordedAt": "2026-09-22",
+  "classification": "原版功能迁入 + AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "reference/WebRPA/backend/app/executors/allure.py",
+      "reference/WebRPA/backend/app/executors/allure_report_builder.py"
+    ],
+    "license": "LICENSE.WebRPA",
+    "reportBuilderSha256": "383d38e08dc957d8177ca805c33c93241f3dfab9d53a6bdc58cb9d5ad9b3061f"
+  },
+  "nodes": [
+    "allure_init",
+    "allure_start_test",
+    "allure_add_step",
+    "allure_add_attachment",
+    "allure_stop_test",
+    "allure_generate_report"
+  ],
+  "implemented": [
+    "保留原版套件、用例、步骤、附件、强制结束未完成用例、状态和默认消息语义",
+    "原版Allure风格单页HTML生成器逐字迁入，未增加Java或allure-commandline依赖",
+    "报告通过AutoFlow运行产物写入器原子落盘并登记，默认保存到本次运行的allure_reports目录",
+    "autoOpen通过已登记Studio主frame和Electron shell.openPath执行；打开失败不抹掉已经成功生成的报告",
+    "由凭据引用解析出的文本或路径不能进入报告；报告构建移入工作线程，避免阻塞worker命令与取消通道"
+  ],
+  "adaptations": [
+    "冻结源码默认写入后端安装目录；AutoFlow改为工作区运行产物目录，显式绝对路径仍由现有安全输出边界处理",
+    "冻结源码使用Python webbrowser；AutoFlow使用有限的Electron open_path平台动作",
+    "前端保留但冻结执行器未消费的resultsDir、clean和attachmentType字段继续不改变原版执行语义"
+  ],
+  "checks": [
+    {
+      "command": "pytest allure differential/unit/real-worker plus registry and scope regressions",
+      "result": "93 passed",
+      "covers": "冻结源码三组序列差分、六节点生命周期、敏感值保护、真实worker HTML写入/产物登记/自动打开请求及生产注册"
+    },
+    {
+      "command": "vitest Studio platform IPC/execution/delivery, catalog and path entry regressions",
+      "result": "250 passed",
+      "covers": "受控open_path、响应失败、既有平台动作、Allure节点目录与路径工具入口"
+    },
+    {
+      "command": "Ruff; mypy; ESLint; TypeScript; OpenAPI check; Electron build",
+      "result": "passed",
+      "covers": "后端静态检查、main/preload/renderer类型合同、生成API和正式构建入口"
+    }
+  ],
+  "boundaries": {
+    "workspace": "pytest isolated tmp_path",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "mockExecutionUsedForBackendEvidence": false,
+    "formalElectronUiTested": true
+  },
+  "remaining": [
+    "Windows安全输出和shell.openPath仍需Windows实机记录",
+    "正式打包入口仍需平台专项验收"
+  ],
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b6-allure.mjs",
+    "result": "passed",
+    "platform": "darwin-arm64",
+    "entry": "development-build",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-allure-electron-6XygAv/result.json",
+    "covers": "正式 Studio 真实 UI 编排 Allure 六节点，使用临时附件生成 HTML 报告并登记产物，验证运行完成和清理",
+    "boundary": "本地临时文本附件、开发入口，未测试 Windows/macOS Intel 和正式打包 shell.openPath"
+  }
+}

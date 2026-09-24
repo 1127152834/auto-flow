@@ -1,0 +1,7 @@
+2026-09-23: Before parent fix, an actual ProjectWorkflowWorkerManager + WorkflowRunDispatcher + temporary SQLite pure-data run was exercised (no browser, model, or production writes).
+Node: dict_get_path; dictVariable=record; path={{cred:.password}}; resultVariable=out.
+Variable: record={"{{cred:.password}}":"preserved"}.
+Expected: succeeded, preserve unresolved placeholder, no credential resolver call.
+Observed tool output:
+{'reference': '{{cred:.password}}', 'status': 'interrupted', 'error': {'code': 'WORKFLOW_RESULT_UNKNOWN', 'message': '执行结果不明确，已撤销旧执行写入权限'}, 'resolverCalls': [], 'busy': False, 'events': [{'kind': 'status', 'payload': {'status': 'running', 'statusRevision': 2}}, {'kind': 'nodeAttempt', 'payload': {'status': 'started'}}, {'kind': 'log', 'payload': {'level': 'info', 'message': '开始执行节点'}}, {'kind': 'status', 'payload': {'status': 'reconciling', 'statusRevision': 3}}, {'kind': 'status', 'payload': {'status': 'interrupted', 'statusRevision': 4}}]}
+Root cause: project parent _exchange rejects empty name/field as protocol invalid, unlike ordinary coordinator's source-compatible None reply.

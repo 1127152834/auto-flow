@@ -1,6 +1,8 @@
 import argparse
 import os
+import runpy
 import socket
+import sys
 from pathlib import Path
 from threading import Event, Thread
 
@@ -9,9 +11,11 @@ from autoflow.bootstrap.app import create_app
 
 def main() -> None:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--python-script", nargs=argparse.REMAINDER)
     parser.add_argument("--kernel-worker", action="store_true")
     parser.add_argument("--test-browser-worker", action="store_true")
     parser.add_argument("--workflow-worker", action="store_true")
+    parser.add_argument("--inspection-worker", action="store_true")
     parser.add_argument("--project-workflow-worker", action="store_true")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=0)
@@ -19,6 +23,18 @@ def main() -> None:
     parser.add_argument("--parent-pid", type=int)
     parser.add_argument("--data-dir")
     args = parser.parse_args()
+    if args.python_script is not None:
+        if not args.python_script:
+            parser.error("--python-script requires a script path")
+        original_argv, original_path = sys.argv, list(sys.path)
+        try:
+            sys.argv = args.python_script
+            sys.path.insert(0, str(Path(sys.argv[0]).resolve().parent))
+            runpy.run_path(sys.argv[0], run_name="__main__")
+        finally:
+            sys.argv = original_argv
+            sys.path[:] = original_path
+        return
     if args.kernel_worker:
         from autoflow.bootstrap.kernel_worker import kernel_worker_main
 
@@ -35,6 +51,10 @@ def main() -> None:
         from autoflow.bootstrap.workflow_worker import workflow_worker_main
 
         raise SystemExit(workflow_worker_main())
+    if args.inspection_worker:
+        from autoflow.bootstrap.inspection_worker import inspection_worker_main
+
+        raise SystemExit(inspection_worker_main())
     if args.instance_id is None:
         parser.error("the following arguments are required: --instance-id")
     if args.data_dir is None:

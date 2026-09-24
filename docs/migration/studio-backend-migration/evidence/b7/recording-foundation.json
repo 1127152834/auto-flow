@@ -1,0 +1,97 @@
+{
+  "evidenceId": "BE-B7-recording-foundation",
+  "recordedAt": "2026-09-21",
+  "classification": "原版功能迁入 + AutoFlow必要适配 + 已批准增强",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "reference/WebRPA/backend/app/services/recorder.py",
+      "reference/WebRPA/backend/app/api/recorder.py",
+      "reference/WebRPA/frontend/src/components/workflow/RecorderPanel.tsx"
+    ],
+    "license": "LICENSE.WebRPA"
+  },
+  "implemented": [
+    "冻结WebRPA录制脚本注入当前页面、未来页面和可访问框架，保留输入、点击、双击、选择、勾选、按键、拖拽、上传占位和滚动采集语义",
+    "录制复用正式可见CloakBrowser检查会话、主应用Profile、worker进程监护及资源锁；与元素拾取互斥",
+    "确认步骤按单调序号持久化并支持非破坏分页补读；审查草稿使用revision并发校验",
+    "敏感输入原值在数据库边界清除并标记待补值；页面对象、Cookie、登录态和注入句柄不持久化",
+    "容量限制为单值1MiB、单录制10000步和64MiB；整批越界不写入并停止采集，浏览器保留供审查",
+    "worker异常退出将会话标记为interrupted并保留已确认步骤；正常sidecar关闭先确认尾部再清理浏览器和资源",
+    "现有start、events、stop、status和reviews接口接入真实工作区数据库，OpenAPI生成类型已同步",
+    "录制会话支持开始、暂停、恢复和停止；暂停确认已采集尾部，暂停期间忽略页面操作，恢复继续复用同一浏览器会话",
+    "开始、暂停、恢复和停止均使用稳定commandId；服务在SQLite中保存请求指纹和终态，重复请求返回原结果，响应丢失按原commandId回查，崩溃后的待确认命令标记失败且不重放"
+  ],
+  "adaptations": [
+    "不启动WebRPA全局浏览器管理器，录制控制器挂入AutoFlow既有inspection worker",
+    "在冻结sessionStorage缓冲之外增加CloakBrowser原生CDP Runtime binding镜像，并用事件内部标识去重，以保留跨origin导航前的尾部操作；Playwright高层binding在跨协议文档中仅保留为兼容回退",
+    "录制事件和审查使用Alembic 0016增量迁移，不修改历史迁移或用户数据库"
+  ],
+  "checks": [
+    {
+      "command": "pytest recording HTTP/repository/provider/inspection and migration compatibility/schema export",
+      "result": "41 passed at foundation checkpoint; inspection suite expanded to 8 passed for transient storage retry",
+      "covers": "接口、序号分页、幂等停止、审查冲突、容量、敏感值、崩溃恢复、瞬时磁盘失败重试、迁移链、OpenAPI一致性及关闭清理"
+    },
+    {
+      "command": "vitest recorder session/review/recovery/source parity/picker leave suites",
+      "result": "72 passed",
+      "covers": "前端请求恢复、审查编辑生成、迟到响应、离开保护及冻结源码行为"
+    },
+    {
+      "command": "Ruff, mypy, TypeScript, ESLint, OpenAPI generation check and Electron renderer/main/preload build",
+      "result": "passed",
+      "covers": "格式、类型、生成合同和正式构建入口"
+    },
+    {
+      "command": "AUTOFLOW_B1_CLOAK_EXECUTABLE=<CloakBrowser> pytest test_b7_recording_cloakbrowser_flow.py（连续3次）及录制专项回归",
+      "result": "真实浏览器用例连续3次通过；录制provider/service/repository/HTTP/真实浏览器19项通过；Ruff和mypy通过",
+      "covers": "中文输入、点击去重、未来标签页、iframe元数据、跨origin导航尾部、事件去重和类型边界"
+    },
+    {
+      "command": "node scripts/smoke-studio-backend-b7-recording.mjs",
+      "result": "passed on formal Electron development build (darwin-arm64)",
+      "covers": "正式UI打开CloakBrowser、受信任键盘输入与点击、停止、服务端审查保存、生成预览、整批加入画布、真实HTTP/SQLite保存、录制浏览器清理、正常窗口关闭重开、独立CloakBrowser重放及进程清理；正式UI使用ASCII输入，中文输入由真实provider用例覆盖"
+    },
+    {
+      "command": "pytest recording provider/service/HTTP/contract + real CloakBrowser pause/resume; vitest recorder protocol/UI; typecheck/lint/OpenAPI/build",
+      "result": "后端录制专项50项通过，真实CloakBrowser暂停/恢复1项通过，前端协议与UI 29项通过；静态检查、生成合同和正式构建通过",
+      "covers": "暂停前尾部确认、暂停期间真实操作不采集、恢复后继续采集、控制响应丢失恢复、同会话幂等及正式UI状态"
+    },
+    {
+      "command": "node scripts/smoke-studio-backend-b7-recording.mjs",
+      "result": "passed on formal Electron development build (darwin-arm64), evidence formal-recording-electron-HmTUKs",
+      "covers": "正式UI暂停/恢复、真实CloakBrowser输入点击、审查生成、SQLite保存、正常关窗重开、独立重放和两次浏览器进程清理"
+    },
+    {
+      "command": "pytest recording command contract/repository/HTTP/service and full migration-head compatibility; vitest recorder HTTP recovery/parity; formal Electron smoke",
+      "result": "录制及命令专项56项、迁移兼容74项、前端相关80项通过；正式Electron darwin-arm64通过，evidence formal-recording-electron-72nI0V",
+      "covers": "commandId同请求幂等、异请求冲突、成功/失败/待确认查询、响应丢失回查、重启持久化、崩溃不重放、0018到0019增量升级及正式UI全链路"
+    },
+    {
+      "command": "pytest -q apps/backend/tests/unit/workflows/test_inspection_service.py",
+      "result": "10 passed",
+      "covers": "进程树清理首次失败时浏览器会话、Profile/内核资源锁和工作区互斥继续占用；同一会话重试成功后才释放资源并报告关闭"
+    }
+  ],
+  "realBrowser": {
+    "previouslyConfirmed": [
+      "当前文档和未来标签页注入",
+      "中文输入",
+      "点击去重",
+      "iframe元数据"
+    ],
+    "currentAttempt": "passed",
+    "reason": null,
+    "businessAssertionReached": true,
+    "evidence": "apps/backend/tests/integration/test_b7_recording_cloakbrowser_flow.py passed three consecutive runs on CloakBrowser 145.0.7632.109.2"
+  },
+  "boundaries": {
+    "workspace": "pytest temporary directory",
+    "userDatabaseTouched": false,
+    "mockExecutionUsedForBackendEvidence": false,
+    "formalElectronUiTested": true,
+    "windowsTested": false
+  },
+  "remaining": []
+}

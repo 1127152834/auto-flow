@@ -1,0 +1,53 @@
+.F
+=================================== FAILURES ===================================
+___ test_webhook_delivery_failure_is_unconfirmed_and_not_replayed[transport] ___
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-198/test_webhook_delivery_failure_0')
+failure = 'transport'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize('failure', ['transport', 'ack_timeout'])
+    async def test_webhook_delivery_failure_is_unconfirmed_and_not_replayed(tmp_path, failure):
+        from autoflow.domain.workflows.runs import WorkflowRunError
+        from autoflow.domain.workflows.runtime import WorkflowRuntimeError
+
+        factory, project, task, service, _, _, sent = webhook_state(tmp_path)
+        original_send = service._send
+
+        async def send(*args):
+            await original_send(*args)
+            if failure == 'transport':
+                raise WorkflowRuntimeError('INTERACTION_UNCONFIRMED', 'transport lost', 503)
+
+        service._send = send
+        try:
+            with pytest.raises(WorkflowRunError) as error:
+>               await service.trigger_webhook('hook', method='POST', headers={}, query={}, body={'value': 1})
+
+apps/backend/tests/integration/test_project_interaction_commands.py:625:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+apps/backend/src/autoflow/application/project_runs/interactions.py:273: in trigger_webhook
+    await self.submit(project_id, task_id, command_id, generation, "webhook_result",
+apps/backend/src/autoflow/application/project_runs/interactions.py:245: in submit
+    await self._send(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = ('e5e84104-01c2-46d3-81ef-f5091073bf71', 0, {'type': 'webhook_result', 'commandId': '650273c7-f4b1-4a43-b459-216f903f0...f2130-faa0-4b70-bc7f-191259b9df78', 'data': {'method': 'POST', 'headers': {}, 'body': {'value': 1}, 'query': {}, ...}})
+
+    async def send(*args):
+        await original_send(*args)
+        if failure == 'transport':
+>           raise WorkflowRuntimeError('INTERACTION_UNCONFIRMED', 'transport lost', 503)
+E           autoflow.domain.workflows.runtime.WorkflowRuntimeError: transport lost
+
+apps/backend/tests/integration/test_project_interaction_commands.py:620: WorkflowRuntimeError
+=============================== warnings summary ===============================
+tests/integration/test_project_interaction_commands.py::test_external_get_webhook_obeys_quiesce_without_sidecar_token
+  /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED apps/backend/tests/integration/test_project_interaction_commands.py::test_webhook_delivery_failure_is_unconfirmed_and_not_replayed[transport]
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed, 1 passed, 19 deselected, 1 warning in 2.38s

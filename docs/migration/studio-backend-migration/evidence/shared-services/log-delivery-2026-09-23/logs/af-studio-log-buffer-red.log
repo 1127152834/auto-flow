@@ -1,0 +1,49 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/workflows/tests/event-log-preferences.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:78549) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/event-log-preferences.test.ts (6 tests | 1 failed) 1173ms
+   × does not acknowledge buffered frames from the stream cancelled by a log-mode change 54ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/event-log-preferences.test.ts > does not acknowledge buffered frames from the stream cancelled by a log-mode change
+AssertionError: expected [ '0', '3' ] to deeply equal [ '0', '1' ]
+
+- Expected
++ Received
+
+  [
+    "0",
+-   "1",
++   "3",
+  ]
+
+ ❯ src/renderer/domains/workflows/tests/event-log-preferences.test.ts:130:33
+    128|   try {
+    129|     await vi.waitFor(() => expect(cursors.length).toBeGreaterThan(1))
+    130|     expect(cursors.slice(0, 2)).toEqual(['0', '1'])
+       |                                 ^
+    131|     expect(values).toEqual([1, 2, 3])
+    132|   } finally { client.disconnect(); setStudioTransport(mockRequest) }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 passed (6)
+   Start at  13:35:32
+   Duration  2.04s (transform 303ms, setup 159ms, import 26ms, tests 1.17s, environment 568ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/workflows/tests/event-log-preferences.test.ts

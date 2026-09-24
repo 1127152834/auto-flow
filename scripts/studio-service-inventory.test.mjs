@@ -34,9 +34,9 @@ test('the matrix registers every discovered service and event without treating r
 test('every service family is assigned to the frozen frontend contract matrix', () => {
   const coveredFamilies = new Set([
     'aiAssistantApi', 'browserApi', 'browserScriptTestsApi', 'credentialApi',
-    'customModulesApi', 'elementPickerApi', 'executorApi', 'featurePackApi',
+    'customModulesApi', 'desktopActionApi', 'elementPickerApi', 'executorApi', 'featurePackApi',
     'imageAssetApi', 'inputPromptApi', 'jsScriptApi', 'localWorkflowApi',
-    'mcpApi', 'pluginApi', 'recorderApi', 'retentionApi', 'scheduledTaskApi',
+    'mcpApi', 'modelApi', 'pluginApi', 'projectResourceApi', 'recorderApi', 'retentionApi', 'scheduledTaskApi',
     'speechApi', 'sponsorApi', 'systemApi', 'variableTrackingApi', 'workflowApi',
     'workflowBundleApi',
   ])
@@ -62,11 +62,17 @@ test('plain Event emissions are recorded alongside CustomEvent emissions',()=>{
 })
 
 test('MCP requests nested in validation helpers keep explicit endpoints and consumers',()=>{
-  for(const [name,method] of [['config','GET'],['status','GET'],['save','PUT'],['reload','POST']]){
+  for(const [name,method,endpoint] of [
+    ['config','GET',"'/ai-assistant/mcp/config'"],
+    ['status','GET',"'/ai-assistant/mcp/status'"],
+    ['save','PUT',"'/ai-assistant/mcp/config'"],
+    ['reload','POST',"'/ai-assistant/mcp/reload'"],
+  ]){
     const item=operation(`mcpApi.${name}`)
     assert.equal(item.requests[0].method,method)
-    assert.ok(item.requests[0].endpoint.includes('/ai-assistant/mcp/'))
+    assert.equal(item.requests[0].endpoint,endpoint)
     assert.ok(item.consumers.some(row=>row.file.endsWith('/components/MCPConfigPanel.tsx')))
+    if(name==='save'||name==='reload')assert.ok(item.requests.some(request=>request.endpoint.includes('/ai-assistant/mcp/commands/')))
   }
   assert.match(matrix,/mcp-service-contract.md/)
 })

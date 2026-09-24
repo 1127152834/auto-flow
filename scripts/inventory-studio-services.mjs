@@ -16,34 +16,94 @@ const sources = [...files(domain), 'apps/desktop/src/renderer/app/StudioApp.tsx'
 const site = (file, tree, node) => ({ file, line: tree.getLineAndCharacterOfPosition(node.getStart(tree)).line + 1, source: manifest.get(file) ?? null })
 const services = new Map(), events = new Map(), directRequests = [], assistantActions = []
 const registeredRequests = new Set()
+const helpers = new Map()
+for (const { file, tree } of sources) walk(tree, node => {
+  if (ts.isFunctionDeclaration(node) && node.name && node.parent === tree && node.body) {
+    helpers.set(`${file}:${node.name.text}`, node)
+  }
+})
 function event(name) {
   if (!events.has(name)) events.set(name, { id: `event:${name}`, name, subscriptions: [], emissions: [] })
   return events.get(name)
 }
-function requestContract(node, tree) {
+function boundNode(node, bindings) {
+  let current = node
+  const seen = new Set()
+  while (current && ts.isIdentifier(current) && bindings?.has(current.text) && !seen.has(current.text)) {
+    seen.add(current.text)
+    current = bindings.get(current.text)
+  }
+  return current
+}
+function expressionText(node, tree, bindings) {
+  const resolved = boundNode(node, bindings)
+  if (!resolved) return null
+  if (!ts.isTemplateExpression(resolved)) return resolved.getText(tree)
+  let value = `\`${resolved.head.text}`
+  for (const span of resolved.templateSpans) {
+    const expression = boundNode(span.expression, bindings)
+    value += expression && ts.isStringLiteral(expression)
+      ? expression.text
+      : `\${${expression?.getText(tree) ?? span.expression.getText(tree)}}`
+    value += span.literal.text
+  }
+  return `${value}\``
+}
+function staticMethod(initializer, bindings) {
+  const resolved = boundNode(initializer, bindings)
+  if (resolved && ts.isStringLiteral(resolved)) return resolved.text
+  if (!resolved || !ts.isConditionalExpression(resolved)) return null
+  const condition = resolved.condition
+  if (!ts.isCallExpression(condition) || !ts.isPropertyAccessExpression(condition.expression)
+    || condition.expression.name.text !== 'endsWith' || condition.arguments.length !== 1
+    || !ts.isStringLiteral(condition.arguments[0])) return null
+  const receiver = boundNode(condition.expression.expression, bindings)
+  if (!receiver || !ts.isStringLiteral(receiver)) return null
+  const selected = receiver.text.endsWith(condition.arguments[0].text) ? resolved.whenTrue : resolved.whenFalse
+  return ts.isStringLiteral(selected) ? selected.text : null
+}
+function requestContract(node, tree, bindings = new Map()) {
   const options = node.arguments[1]
   const literalOptions = options && ts.isObjectLiteralExpression(options)
   const property = name => literalOptions ? options.properties.find(member => member.name?.getText(tree) === name) : undefined
   const method = property('method')
+  const methodValue = method && ts.isPropertyAssignment(method) ? staticMethod(method.initializer, bindings) : null
   return {
-    endpoint: node.arguments[0]?.getText(tree) ?? null,
-    method: method && ts.isPropertyAssignment(method) && ts.isStringLiteral(method.initializer)
-      ? method.initializer.text : (!options || (literalOptions && !options.properties.some(ts.isSpreadAssignment) && !method) ? 'GET' : 'dynamic'),
+    endpoint: expressionText(node.arguments[0], tree, bindings),
+    method: methodValue ?? (!options || (literalOptions && !options.properties.some(ts.isSpreadAssignment) && !method) ? 'GET' : 'dynamic'),
     body: property('body')?.getText(tree) ?? null,
     responseType: node.typeArguments?.map(type => type.getText(tree)).join(', ') ?? null,
   }
+}
+function collectRequests(file, tree, member) {
+  const requests = []
+  const scan = (rootNode, bindings = new Map(), stack = new Set(), fromHelper = false) => walk(rootNode, child => {
+    if (!ts.isCallExpression(child)) return
+    const callee = child.expression.getText(tree)
+    if (/^(apiRequest|studioFetch|fetch)$/.test(callee)) {
+      if (!fromHelper) registeredRequests.add(`${file}:${child.pos}`)
+      requests.push({ ...requestContract(child, tree, bindings), call: child.getText(tree), ...site(file, tree, child) })
+      return
+    }
+    const helper = helpers.get(`${file}:${callee}`)
+    if (!helper?.body || stack.has(helper)) return
+    const helperBindings = new Map()
+    for (let index = 0; index < helper.parameters.length; index++) {
+      const parameter = helper.parameters[index]
+      if (!ts.isIdentifier(parameter.name) || !child.arguments[index]) continue
+      helperBindings.set(parameter.name.text, boundNode(child.arguments[index], bindings))
+    }
+    scan(helper.body, helperBindings, new Set([...stack, helper]), true)
+  })
+  scan(member)
+  return requests
 }
 for (const { file, tree } of sources) walk(tree, node => {
   if (!ts.isVariableDeclaration(node) || !node.initializer || !ts.isObjectLiteralExpression(node.initializer) || !/Api$/.test(node.name.getText(tree))) return
   for (const member of node.initializer.properties) {
     if (!member.name) continue
     const id = `${node.name.getText(tree)}.${member.name.getText(tree)}`
-    const requests = []
-    walk(member, child => {
-      if (!ts.isCallExpression(child) || !/^(apiRequest|studioFetch|fetch)$/.test(child.expression.getText(tree))) return
-      registeredRequests.add(`${file}:${child.pos}`)
-      requests.push({ ...requestContract(child, tree), call: child.getText(tree), ...site(file, tree, child) })
-    })
+    const requests = collectRequests(file, tree, member)
     services.set(id, { id: `service:${id}`, operation: id, ...site(file, tree, member), requests, consumers: [], status: '已登记' })
   }
 })
@@ -89,8 +149,9 @@ const lines = [
   '| 图像元数据和变更响应 | 上传/重命名/移动/删除包络、分页和缺失资源错误；见 image-schema-validation.md、image-command-validation.md | 实际文件系统及原生资源端点 |',
   '| HTTP/SSE | 受控鉴权传输、连接代际隔离、序号补读、断帧不确认和监听器隔离；见 authenticated-transport.md、sse-framing-validation.md | 服务进程重启及真实事件生产 |',
   '| Debug 与运行 | pauseId/controlRevision/runId/executionId、断点、变量、日志和产物分页；见 F3 协议及诊断证据 | 真实浏览器执行、暂停和清理 |',
-  '| 节点必填字段 | 生成 DTO、覆盖列表、条件规则、失败重试及连接隔离；见 required-field-service-contract.md | 后端必须按 227 节点目录实现真实预检 |',
+  '| 节点必填字段 | 生成 DTO、覆盖列表、条件规则、失败重试及连接隔离；见 required-field-service-contract.md | 后端必须按 213 节点目录实现真实预检 |',
   '| 系统路径选择 | 生成请求/响应 DTO、成功/取消/失败和错误码；见 path-service-contract.md 和 path-tool-delivery.md | 真实宿主对话框及平台实机 |',
+  '| 项目默认资源与托管模型 | 项目上下文、默认 Profile/模型、显式会话覆盖、连接代际隔离及无静默回退；见 project-resource-defaults、project-model-defaults 与 project-model-protocol 专项 | 主应用项目、Profile 和模型服务提供真实资源 |',
   '| MCP、凭据与 WebDAV | 保存确认、修订/命令身份、跨连接隔离、离开保护及扩展字段保留；见 mcp-service-contract.md 与 F5 专项证据 | 真实 MCP、秘密存储和远程文件服务 |',
   '| 拾取与录制 | 会话/页面/请求身份、分页、迟到结果隔离、停止及恢复；见 F4 专项证据 | 真实浏览器采集和进程清理 |', '',
   '## 静态服务方法', '',

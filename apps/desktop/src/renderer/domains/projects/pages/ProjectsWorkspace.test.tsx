@@ -22,6 +22,18 @@ function mount(request: StreamingApiClient['request'], props: Partial<Parameters
   return { ...view, onNavigate, values }
 }
 
+it('opens the empty project Studio with the current workspace and project identity', async () => {
+  const openAutomationStudio = vi.fn().mockResolvedValue(undefined)
+  Object.defineProperty(window, 'autoflow', { value: { openAutomationStudio }, configurable: true })
+  const request = vi.fn((path: string) => Promise.resolve(path.includes('/automations') || path.includes('?') ? { items: [], total: 0, page: 1, pageSize: 50 } : a))
+  try {
+    mount(request as StreamingApiClient['request'], { route: { projectId: a.projectId, tab: 'automations' } })
+    await screen.findByText('还没有自动化')
+    await userEvent.click(screen.getByRole('button', { name: '工作流工作台' }))
+    expect(openAutomationStudio).toHaveBeenCalledExactlyOnceWith({ workspaceKey: 'w1', instanceId: 'i1', projectId: a.projectId })
+  } finally { Reflect.deleteProperty(window, 'autoflow') }
+})
+
 it('only lets the latest same-instance open request navigate', async () => {
   const opens = new Map([[a.projectId, deferred<{ project: ProjectView }>()], [b.projectId, deferred<{ project: ProjectView }>()]])
   const request = vi.fn((path: string) => path.includes('/open') ? opens.get(path.split('/').at(-2)!)!.promise : Promise.resolve({ items: [a, b], page: 1, pageSize: 50, total: 2, sort: '-lastOpenedAt' }))

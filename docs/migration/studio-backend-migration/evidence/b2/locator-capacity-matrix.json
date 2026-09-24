@@ -1,0 +1,38 @@
+{
+  "id": "BE-B2-locator-capacity-matrix",
+  "date": "2026-09-21",
+  "platform": "darwin-arm64",
+  "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+  "classification": [
+    "原版功能迁入",
+    "AutoFlow必要适配"
+  ],
+  "verified": [
+    "CSS零匹配、多匹配、非法语法和XPath定位测试",
+    "开放Shadow DOM内部目标拾取、定位测试和Playwright生产定位",
+    "同源外层与跨origin内层的嵌套iframe拾取及两级switch_iframe真实重放",
+    "页面修订失效、导航后重新注入、当前目标页关闭后不静默回退",
+    "跨frame重复拾取按最新确认结果返回，非消费式查询保持可重连",
+    "超过1 MiB的真实页面提取、下载和元素PNG均写入登记产物",
+    "大值节点事件只含有界摘要和artifactIds，落盘大小与SHA-256一致"
+  ],
+  "commands": [
+    {
+      "command": "AUTOFLOW_B1_CLOAK_EXECUTABLE=<installed-kernel> uv run --project apps/backend pytest -q apps/backend/tests/integration/test_b2_inspection_cloakbrowser_flow.py apps/backend/tests/integration/test_b2_large_artifacts_cloakbrowser_flow.py apps/backend/tests/unit/workflows/test_browser_session_contract.py",
+      "result": "27 passed"
+    },
+    {
+      "command": "uv run --project apps/backend ruff check <B2 locator/capacity files>",
+      "result": "passed"
+    },
+    {
+      "command": "uv run --project apps/backend mypy <B2 locator/capacity source files>",
+      "result": "passed"
+    }
+  ],
+  "remaining": [
+    "Debug和录制尚无真实后端会话，四类会话互斥在对应里程碑接入后集中验收",
+    "Windows与macOS Intel未实机验证",
+    "冻结后端与正式安装包入口留待B9集中验收"
+  ]
+}

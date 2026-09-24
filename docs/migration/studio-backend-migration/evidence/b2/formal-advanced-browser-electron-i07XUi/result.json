@@ -1,0 +1,110 @@
+{
+  "evidenceId": "BE-B2-advanced-browser-formal-electron",
+  "checkedAt": "2026-09-20T16:46:31.962Z",
+  "gitHead": "59d9fe4ea648dc62da5b06d14bac8dc1bbbe4618",
+  "buildSha256": "1937f29695ad15e48420b2decd391c0c5cb3e67f91dfbbc9f90fbc0776edcf9f",
+  "workflowId": "qVwTu0Kd5a_DJJB1-ex57",
+  "profileId": "75a809de-a135-43cc-b8db-4f9b217759da",
+  "runId": "01ffc131-7f6d-4106-8561-9cd1216eb58e",
+  "result": "passed",
+  "checks": [
+    "真实 sidecar 在临时工作区创建 CloakBrowser Profile",
+    "主窗口通过真实点击打开正式 Studio，并选择真实 sidecar Profile",
+    "通过正式 Studio UI 添加并配置全部 11 类高级网页节点",
+    "通过画布连接手柄建立下载、上传、亲属元素查询及条件真分支链",
+    "真实 HTTP/SQLite 保存高级网页配置、上传路径、下载触发器和条件分支端口",
+    "正常关闭并重开 Studio，修订 1 的高级网页节点、配置和连线从 SQLite 恢复",
+    "真实 CloakBrowser 执行全部 11 类高级网页节点；页面副作用、条件分支、日志和两个产物哈希均通过",
+    "高级网页动作运行终态后 CloakBrowser 进程树和资源占用释放"
+  ],
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "advancedBrowser": {
+    "familyTypes": [
+      "select_dropdown",
+      "set_checkbox",
+      "drag_element",
+      "scroll_page",
+      "upload_file",
+      "download_file",
+      "save_image",
+      "get_child_elements",
+      "get_sibling_elements",
+      "element_exists",
+      "element_visible"
+    ],
+    "moduleTypes": [
+      "open_page",
+      "select_dropdown",
+      "set_checkbox",
+      "drag_element",
+      "scroll_page",
+      "upload_file",
+      "download_file",
+      "save_image",
+      "get_child_elements",
+      "get_sibling_elements",
+      "element_exists",
+      "element_visible"
+    ],
+    "nodeIds": [
+      "FwLI2cUC9Y9pL2V_PWjR3",
+      "p_rp3VihMfT-QhRH_SRrk",
+      "CnY62rLp8hdHElOnuG-eQ",
+      "5VXHeBXey_0g6oDTuuo6r",
+      "qqr-lpc0BcTJTEbQ33Evc",
+      "tAq4FWCc0j7zuDzmuDgVp",
+      "AW-PNwC5VTYLerDg-8Vyd",
+      "sgE6CxY6swei-MyhT2ORn",
+      "n34eB9prrL5aWoXoSYvuK",
+      "OiZwbtBPevUeHuiKMy4nB",
+      "qcbayXNu6Bx4DU-QTvB9b",
+      "_DdGm7legdKyEPY4R1J2M"
+    ],
+    "resultCount": 6,
+    "logCount": 13,
+    "artifacts": [
+      {
+        "artifactId": "91bb2dcb-a251-451b-a1e9-451409161693",
+        "ordinal": 1,
+        "nodeId": "AW-PNwC5VTYLerDg-8Vyd",
+        "executionId": "97c33f2a-66a6-4d34-b344-17eaa41a8461",
+        "size": 15,
+        "sha256": "bc152ca02d13a21d24544d4f3b5ad3849a92926aa63db717dc96763095203cbc",
+        "mimeType": "application/octet-stream",
+        "purpose": "result",
+        "eventSequence": 21
+      },
+      {
+        "artifactId": "e86a39d6-d994-4d0c-9061-a015723c6297",
+        "ordinal": 2,
+        "nodeId": "sgE6CxY6swei-MyhT2ORn",
+        "executionId": "c16fc9f7-2cf4-497c-a41b-33c7a4931f0b",
+        "size": 68,
+        "sha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+        "mimeType": "image/png",
+        "purpose": "result",
+        "eventSequence": 24
+      }
+    ],
+    "downloadedSha256": "bc152ca02d13a21d24544d4f3b5ad3849a92926aa63db717dc96763095203cbc",
+    "imageSha256": "431ced6916a2a21a156e38701afe55bbd7f88969fbbfc56d7fe099d47f265460",
+    "cloakBrowserProcessesObserved": [
+      "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-studio-b2-advanced-browser-VuktJM/data/kernels/chromium-145.0.7632.109.2/Chromium.app/Contents/MacOS/Chromium --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --no-sandbox --no-sandbox --fingerprint=88902 --fingerprint-platform=macos --ignore-gpu-blocklist --accept-lang=zh-CN --fingerprint-timezone=Asia/Shanghai --lang=zh-CN --fingerprint-locale=zh-CN --user-data-dir=/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-studio-b2-advanced-browser-VuktJM/tmp/workflow-worker/b632f047a8044b7ca789c3bb614ea8f2/01ffc131-7f6d-4106-8561-9cd1216eb58e/playwright_chromiumdev_profile-kZrVYq --remote-debugging-pipe --no-startup-window"
+    ]
+  },
+  "directoryPackage": {
+    "status": "needs-rebuild",
+    "backend": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/backend/autoflow-backend",
+    "backendModifiedAt": "2026-09-20T10:55:49.048Z",
+    "newestB2Source": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/src/autoflow/bootstrap/workflows.py",
+    "newestB2SourceModifiedAt": "2026-09-20T13:15:55.902Z",
+    "reason": "目录包后端早于 B2 执行器/注册/接线路径，不能作为 B2 通过证据"
+  },
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browser": "CloakBrowser only",
+    "interaction": "CDP mouse and keyboard through the formal Studio UI; BrowserWindow.close used for a normal close event; no Store access"
+  }
+}

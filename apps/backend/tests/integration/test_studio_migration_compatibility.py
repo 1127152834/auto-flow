@@ -79,13 +79,21 @@ def test_all_supported_histories_upgrade_without_losing_existing_rows(
         tables = _tables(connection)
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchall() == [("pm10_shared_sheet_cursors",)]
+        ).fetchall() == [("0022_merge_studio_pm10",)]
         assert {
             "workflow_documents",
             "workflow_runs",
             "workflow_run_events",
             "workflow_run_artifacts",
             "workflow_debug_commands",
+            "workflow_recording_sessions",
+            "workflow_recording_events",
+            "workflow_recording_reviews",
+            "studio_credentials",
+            "studio_credential_state",
+            "studio_credential_commands",
+            "workflow_scheduled_tasks",
+            "workflow_scheduled_task_executions",
             "android_devices",
             "android_resources",
             "projects",
@@ -177,6 +185,6 @@ def test_interrupted_branch_merge_rolls_back_and_can_restart(tmp_path: Path) -> 
     with sqlite3.connect(database) as connection:
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchall() == [("pm10_shared_sheet_cursors",)]
+        ).fetchall() == [("0022_merge_studio_pm10",)]
         assert {"android_devices", "android_resources"} <= _tables(connection)
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []

@@ -1,0 +1,217 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/environments/components/TaskEndPanel.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:7377) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/environments/components/TaskEndPanel.test.tsx (3 tests | 2 failed) 2271ms
+   × does not offer to retain a cleaned copy (cleaned, false) 1007ms
+   × does not offer to retain a cleaned copy (active, true) 1004ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/environments/components/TaskEndPanel.test.tsx > does not offer to retain a cleaned copy (cleaned, false)
+ FAIL  src/renderer/domains/environments/components/TaskEndPanel.test.tsx > does not offer to retain a cleaned copy (active, true)
+TestingLibraryElementError: Unable to find an element with the text: 临时环境已清理，无法再保留此工作副本；已保存的环境不受影响。. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33maria-label[39m=[32m"结束并保留环境"[39m
+      [33mclass[39m=[32m"grid gap-3 rounded-control border border-line bg-surface p-4"[39m
+    [36m>[39m
+      [36m<h3[39m
+        [33mclass[39m=[32m"m-0 text-base"[39m
+      [36m>[39m
+        [0m结束任务[0m
+      [36m</h3>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"m-0 text-sm text-muted"[39m
+      [36m>[39m
+        [0m保留环境会保存当前登录上下文。关联账号只使用本任务已声明的记录目标；保存成功但关联失败会显示部分结果，不会假装已完成。[0m
+      [36m</p>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"flex items-center gap-2 text-sm"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33maria-checked[39m=[32m"true"[39m
+          [33mclass[39m=[32m"h-4 w-4 rounded border border-line bg-surface data-[state=checked]:bg-clay"[39m
+          [33mdata-state[39m=[32m"checked"[39m
+          [33mrole[39m=[32m"checkbox"[39m
+          [33mtype[39m=[32m"button"[39m
+          [33mvalue[39m=[32m"on"[39m
+        [36m/>[39m
+        [36m<span>[39m
+          [0m保留当前登录环境[0m
+        [36m</span>[39m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"grid gap-2 md:grid-cols-2"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"grid gap-1 text-sm"[39m
+        [36m>[39m
+          [36m<span>[39m
+            [0m环境名称[0m
+          [36m</span>[39m
+          [36m<input[39m
+            [33maria-label[39m=[32m"保留环境名称"[39m
+            [33mclass[39m=[32m"w-full min-w-0 px-3 h-[var(--control-md)] text-sm"[39m
+            [33mdata-af-control[39m=[32m"true"[39m
+            [33mmaxlength[39m=[32m"36"[39m
+            [33mvalue[39m=[32m"登录环境"[39m
+          [36m/>[39m
+        [36m</label>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"grid gap-1 text-sm"[39m
+        [36m>[39m
+          [36m<span>[39m
+            [0m备注[0m
+          [36m</span>[39m
+          [36m<input[39m
+            [33maria-label[39m=[32m"保留环境备注"[39m
+            [33mclass[39m=[32m"w-full min-w-0 px-3 h-[var(--control-md)] text-sm"[39m
+            [33mdata-af-control[39m=[32m"true"[39m
+            [33mmaxlength[39m=[32m"120"[39m
+            [33mvalue[39m=[32m""[39m
+          [36m/>[39m
+        [36m</label>[39m
+      [36m</div>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"m-0 text-sm text-muted"[39m
+      [36m>[39m
+        [0m当前任务没有可关联的记录目标，可以只保存环境。[0m
+      [36m</p>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-wrap gap-2"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"af-button relative inline-flex shrink-0 items-center justify-center gap-2 rounded-control border font-semibold transition-colors [transition-duration:var(--motion-control)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed border-control-border bg-surface text-ink enabled:hover:bg-surface-hover enabled:active:bg-clay-soft h-[var(--control-sm)] px-3 text-xs"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"grid min-w-0"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2"[39m
+            [36m>[39m
+              [0m结束并保留[0m
+            [36m</span>[39m
+          [36m</span>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33maria-label[39m=[32m"结束并保留环境"[39m
+      [33mclass[39m=[32m"grid gap-3 rounded-control border border-line bg-surface p-4"[39m
+    [36m>[39m
+      [36m<h3[39m
+        [33mclass[39m=[32m"m-0 text-base"[39m
+      [36m>[39m
+        [0m结束任务[0m
+      [36m</h3>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"m-0 text-sm text-muted"[39m
+      [36m>[39m
+        [0m保留环境会保存当前登录上下文。关联账号只使用本任务已声明的记录目标；保存成功但关联失败会显示部分结果，不会假装已完成。[0m
+      [36m</p>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"flex items-center gap-2 text-sm"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33maria-checked[39m=[32m"true"[39m
+          [33mclass[39m=[32m"h-4 w-4 rounded border border-line bg-surface data-[state=checked]:bg-clay"[39m
+          [33mdata-state[39m=[32m"checked"[39m
+          [33mrole[39m=[32m"checkbox"[39m
+          [33mtype[39m=[32m"button"[39m
+          [33mvalue[39m=[32m"on"[39m
+        [36m/>[39m
+        [36m<span>[39m
+          [0m保留当前登录环境[0m
+        [36m</span>[39m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"grid gap-2 md:grid-cols-2"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"grid gap-1 text-sm"[39m
+        [36m>[39m
+          [36m<span>[39m
+            [0m环境名称[0m
+          [36m</span>[39m
+          [36m<input[39m
+            [33maria-label[39m=[32m"保留环境名称"[39m
+            [33mclass[39m=[32m"w-full min-w-0 px-3 h-[var(--control-md)] text-sm"[39m
+            [33mdata-af-control[39m=[32m"true"[39m
+            [33mmaxlength[39m=[32m"36"[39m
+            [33mvalue[39m=[32m"登录环境"[39m
+          [36m/>[39m
+        [36m</label>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"grid gap-1 text-sm"[39m
+        [36m>[39m
+          [36m<span>[39m
+            [0m备注[0m
+          [36m</span>[39m
+          [36m<input[39m
+            [33maria-label[39m=[32m"保留环境备注"[39m
+            [33mclass[39m=[32m"w-full min-w-0 px-3 h-[var(--control-md)] text-sm"[39m
+            [33mdata-af-control[39m=[32m"true"[39m
+            [33mmaxlength[39m=[32m"120"[39m
+            [33mvalue[39m=[32m""[39m
+          [36m/>[39m
+        [36m</label>[39m
+      [36m</div>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"m-0 text-sm text-muted"[39m
+      [36m>[39m
+        [0m当前任务没有可关联的记录目标，可以只保存环境。[0m
+      [36m</p>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-wrap gap-2"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"af-button relative inline-flex shrink-0 items-center justify-center gap-2 rounded-control border font-semibold transition-colors [transition-duration:var(--motion-control)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed border-control-border bg-surface text-ink enabled:hover:bg-surface-hover enabled:active:bg-clay-soft h-[var(--control-sm)] px-3 text-xs"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"grid min-w-0"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2"[39m
+            [36m>[39m
+              [0m结束并保留[0m
+            [36m</span>[39m
+          [36m</span>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../../node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/renderer/domains/environments/components/TaskEndPanel.test.tsx:61:23
+     59|     <TaskEndPanel workspaceKey="w" instanceId="i" projectId="p" taskId…
+     60|   </QueryClientProvider>)
+     61|   expect(await screen.findByText('临时环境已清理，无法再保留此工作副本；已保存的环境不受影响。')).to…
+       |                       ^
+     62|   expect(screen.queryByRole('button', { name: '结束并保留' })).not.toBeInTh…
+     63| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 1 passed (3)
+   Start at  05:04:39
+   Duration  6.58s (transform 372ms, setup 341ms, import 2.08s, tests 2.27s, environment 1.60s)

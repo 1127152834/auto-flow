@@ -1,0 +1,58 @@
+{
+  "evidenceId": "BE-B6-scripts-formal-electron",
+  "checkedAt": "2026-09-21T19:41:11.828Z",
+  "gitHead": "98be1fd941ac1bacebf96681ac7e29a3b90f05b3",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflowId": "Ls8WQyGIOwOZ9dog0rwmH",
+  "profileId": "3714a173-73ef-4273-90ee-a6960a0b0949",
+  "runId": "63445fc8-8f8b-465d-a3d2-858be0c90d7a",
+  "checks": [
+    "主窗口真实点击打开正式 Studio；动作库为 213，运行配置来自主应用 Profile",
+    "通过正式 Studio 真实 UI 添加并配置 JS、Python 和日志节点，保存默认脚本内容",
+    "正式保存接口把脚本节点、日志节点和字段配置写入临时 SQLite",
+    "真实 worker 执行浏览器 JS 与 Python 脚本，变量/返回值和后续日志均核验",
+    "纯系统工具流程未启动 CloakBrowser，运行结束后无子进程或浏览器残留"
+  ],
+  "nodes": [
+    {
+      "moduleType": "js_script",
+      "nodeId": "eDpAMFD5M3Og41k-NWIT6",
+      "result": {
+        "result": null
+      }
+    },
+    {
+      "moduleType": "python_script",
+      "nodeId": "5OLn5yt03hMRqf1aOd8Z6",
+      "result": {
+        "stdout": "所有可用变量: ['js_result']\n计算结果: 2",
+        "stderr": "",
+        "returnCode": 0,
+        "result": {
+          "status": "success",
+          "result": 2,
+          "message": "处理完成"
+        }
+      }
+    },
+    {
+      "moduleType": "print_log",
+      "nodeId": "fdw-LvIQ5kL37hqHdjFQs",
+      "result": {
+        "level": "info",
+        "message": "Python脚本已完成"
+      }
+    }
+  ],
+  "buildSha256": "464d9a3d31b8bbdf11677ab31923253ab762c532ff46d4fb8a55a9563c09eb48",
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserLaunch": "none",
+    "script": "default WebRPA-compatible JS/Python editor contents; no user input or external file",
+    "interaction": "formal Electron via CDP mouse and keyboard; public sidecar APIs only for fixture setup and evidence reads; no Store or page-internal business function access",
+    "platformPending": "Windows packaged Python path and browser script platform differences remain separately unverified"
+  }
+}

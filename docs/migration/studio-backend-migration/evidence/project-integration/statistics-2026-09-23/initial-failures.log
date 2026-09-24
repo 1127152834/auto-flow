@@ -1,0 +1,56 @@
+FFF                                                                      [100%]
+=================================== FAILURES ===================================
+_ test_statistics_counts_persisted_executions_once_and_pages_without_foreign_data _
+
+studio_stats = (sessionmaker(class_='Session', bind=Engine(sqlite:////private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-...utoflush=True, expire_on_commit=False), 'ffe0941f-aa69-405a-9d6a-0ad89629d14b', '79e0b651-491b-4275-a8ac-477298600138')
+
+    def test_statistics_counts_persisted_executions_once_and_pages_without_foreign_data(studio_stats):
+        factory, own, _ = studio_stats
+        service = ProjectStatisticsService(factory)
+        window = {'from_': BASE, 'to': BASE + timedelta(hours=1)}
+>       value = service.studio(own, **window, limit=2)
+                ^^^^^^^^^^^^^^
+E       AttributeError: 'ProjectStatisticsService' object has no attribute 'studio'
+
+tests/integration/test_studio_project_statistics.py:54: AttributeError
+__ test_statistics_filters_before_aggregation_and_validates_project_and_range __
+
+studio_stats = (sessionmaker(class_='Session', bind=Engine(sqlite:////private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-...utoflush=True, expire_on_commit=False), 'c6b15684-3334-4529-a481-dd9a5b4e3c05', '5dd734b3-54ed-47f6-a169-05ed6d46cf03')
+
+    def test_statistics_filters_before_aggregation_and_validates_project_and_range(studio_stats):
+        factory, own, _ = studio_stats
+        service = ProjectStatisticsService(factory)
+>       result = service.studio(own, from_=BASE + timedelta(minutes=2), to=BASE + timedelta(minutes=3), status='failed', workflow_id='flow')
+                 ^^^^^^^^^^^^^^
+E       AttributeError: 'ProjectStatisticsService' object has no attribute 'studio'
+
+tests/integration/test_studio_project_statistics.py:74: AttributeError
+_______________ test_statistics_http_contract_and_project_filter _______________
+
+studio_stats = (sessionmaker(class_='Session', bind=Engine(sqlite:////private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-...utoflush=True, expire_on_commit=False), '6ef38e4b-05b8-424f-a6ba-4910f38730d2', '29b6ed6e-b7d8-4081-a066-d5a1114c7d4e')
+
+    def test_statistics_http_contract_and_project_filter(studio_stats):
+        factory, own, other = studio_stats
+        app = FastAPI()
+        install_error_handlers(app)
+        app.include_router(project_statistics_router(ProjectStatisticsService(factory)))
+        with TestClient(app) as client:
+            query = {'from': BASE.isoformat(), 'to': (BASE + timedelta(hours=1)).isoformat(), 'limit': 1}
+            response = client.get(f'/api/v1/projects/{own}/statistics/studio', params=query)
+>           assert response.status_code == 200, response.text
+E           AssertionError: {"detail":"Not Found"}
+E           assert 404 == 200
+E            +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/integration/test_studio_project_statistics.py:101: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.11/site-packages/starlette/testclient.py:53
+  /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/integration/test_studio_project_statistics.py::test_statistics_counts_persisted_executions_once_and_pages_without_foreign_data
+FAILED tests/integration/test_studio_project_statistics.py::test_statistics_filters_before_aggregation_and_validates_project_and_range
+FAILED tests/integration/test_studio_project_statistics.py::test_statistics_http_contract_and_project_filter
+3 failed, 1 warning in 1.32s

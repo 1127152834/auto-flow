@@ -39,6 +39,20 @@ EXPECTED_EXCLUDED = {
     "mongodb_find",
     "mongodb_insert",
     "mongodb_update",
+    "notify_bark",
+    "notify_dingtalk",
+    "notify_discord",
+    "notify_gotify",
+    "notify_matrix",
+    "notify_msteams",
+    "notify_ntfy",
+    "notify_pushbullet",
+    "notify_pushover",
+    "notify_pushplus",
+    "notify_rocketchat",
+    "notify_serverchan",
+    "notify_slack",
+    "notify_wecom",
     "oracle_connect",
     "oracle_delete",
     "oracle_disconnect",
@@ -77,13 +91,13 @@ EXPECTED_EXCLUDED = {
 }
 
 
-def test_runtime_scope_matches_the_227_node_authority() -> None:
+def test_runtime_scope_matches_the_213_node_authority() -> None:
     rows = json.loads(CAPABILITIES.read_text(encoding="utf-8"))
 
     assert APPROVED_NODE_TYPES == frozenset(row["type"] for row in rows)
-    assert len(APPROVED_NODE_TYPES) == 227
+    assert len(APPROVED_NODE_TYPES) == 213
     assert EXCLUDED_LEGACY_NODE_TYPES == EXPECTED_EXCLUDED
-    assert len(EXCLUDED_LEGACY_NODE_TYPES) == 57
+    assert len(EXCLUDED_LEGACY_NODE_TYPES) == 71
     assert APPROVED_NODE_TYPES.isdisjoint(EXCLUDED_LEGACY_NODE_TYPES)
 
 

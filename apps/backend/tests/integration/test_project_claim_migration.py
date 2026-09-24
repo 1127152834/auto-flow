@@ -7,7 +7,7 @@ from alembic.script import ScriptDirectory
 
 from autoflow.infrastructure.database import session as database_session
 
-EXPECTED_HEAD = "pm10_shared_sheet_cursors"
+EXPECTED_HEAD = "0022_merge_studio_pm10"
 
 
 def config_for(database: Path) -> Config:

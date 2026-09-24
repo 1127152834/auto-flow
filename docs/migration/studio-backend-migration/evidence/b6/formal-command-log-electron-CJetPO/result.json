@@ -1,0 +1,56 @@
+{
+  "evidenceId": "BE-B6-command-log-formal-electron",
+  "checkedAt": "2026-09-21T17:28:27.699Z",
+  "gitHead": "bf45d776a0d1d213809851bd68da6f4f0b7db7e7",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflowId": "nXXZJjV3tWG_P012Nb3WM",
+  "profileId": "df677789-d1ef-4de4-a485-ef3db6e83074",
+  "runId": "be34f96e-0c50-4844-8ed9-89ca99c32132",
+  "checks": [
+    "主窗口真实点击打开正式 Studio；动作库为 213，运行配置来自主应用 Profile",
+    "通过画布右键菜单、属性面板和连接手柄完成命令、日志、导出三节点编排",
+    "正式保存接口把三节点、两条连线和字段配置写入临时 SQLite",
+    "真实 worker 执行 POSIX 命令，变量进入打印日志，TXT 产物登记且内容可读取",
+    "纯系统工具流程未启动 CloakBrowser，运行结束后无子进程或浏览器残留"
+  ],
+  "nodes": [
+    {
+      "moduleType": "run_command",
+      "nodeId": "Kxv1xmfPlV8KyW_u_Ck-f",
+      "result": {
+        "output": "AUTOFLOW_B6_COMMAND_77431bde-ff82-4ff5-86a3-fe02f71a8ae4",
+        "return_code": 0
+      }
+    },
+    {
+      "moduleType": "print_log",
+      "nodeId": "M0p1l2qWWj-NVRR5jTnqY",
+      "result": {
+        "level": "info",
+        "message": "命令结果=AUTOFLOW_B6_COMMAND_77431bde-ff82-4ff5-86a3-fe02f71a8ae4"
+      }
+    },
+    {
+      "moduleType": "export_log",
+      "nodeId": "pcTmP0UhkXOy06RlyZFVM",
+      "result": {
+        "output_path": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-studio-b6-command-log-X3Mkiy/workspace/runs/be34f96e-0c50-4844-8ed9-89ca99c32132/outputs/logs/workflow_log_20260921_172825.txt",
+        "log_count": 2,
+        "format": "txt",
+        "file_size": 230
+      },
+      "artifactId": "410577a5-0315-44cd-a47b-5531e3ae2d10"
+    }
+  ],
+  "buildSha256": "464d9a3d31b8bbdf11677ab31923253ab762c532ff46d4fb8a55a9563c09eb48",
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserLaunch": "none",
+    "command": "fixed printf against a random marker; no user input or external shell data",
+    "interaction": "formal Electron via CDP mouse and keyboard; public sidecar APIs only for fixture setup and evidence reads; no Store or page-internal business function access",
+    "platformPending": "Windows cmd/PowerShell and POSIX pwsh remain separately unverified"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "evidenceId": "BE-project-timing-formal-electron",
+  "result": "passed",
+  "checkedAt": "2026-09-23T19:23:20.026Z",
+  "gitHead": "9d524889baab90974fca1e6dfd3a99f260846371",
+  "platform": "darwin-arm64",
+  "entry": "packaged-directory",
+  "projectId": "48d2d06f-64bd-4c66-955f-708f7332fd2e",
+  "workflowId": "Qdoj1xjoxPBjWwG0NWhMB",
+  "batchId": "e1770586-daef-4b1a-8828-c8cf414254ee",
+  "taskId": "43c2caf5-180b-4e03-a5b6-b7988522f441",
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "正式 Studio 真实 UI 配置日期等待、概率及两个分支连线并保存项目流程",
+    "项目任务读取保存图并真实执行定时器和概率路径一；路径二没有日志或执行记录，无浏览器占用"
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "interaction": "formal UI mouse/keyboard; API fixture setup and evidence reads only"
+  }
+}

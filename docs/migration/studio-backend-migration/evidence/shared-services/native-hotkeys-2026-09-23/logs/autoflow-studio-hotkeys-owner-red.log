@@ -1,0 +1,51 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/main/studio-hotkeys.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:27601) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/main/studio-hotkeys.test.ts (31 tests | 1 failed) 12ms
+   × invalidates the original callback when another owner takes over the same accelerator 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/studio-hotkeys.test.ts > invalidates the original callback when another owner takes over the same accelerator
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      "save_workflow",
+    ]
+
+
+Number of calls: 1
+
+ ❯ src/main/studio-hotkeys.test.ts:156:26
+    154|   expect(f.controller.update({ save_workflow: 'Ctrl+R' }, nextOwner)).…
+    155|   oldCallback()
+    156|   expect(f.dispatch).not.toHaveBeenCalled()
+       |                          ^
+    157|   expect(f.unregister).toHaveBeenCalledExactlyOnceWith('Control+R')
+    158|   expect(f.register).toHaveBeenCalledTimes(2)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 30 passed (31)
+   Start at  13:11:48
+   Duration  302ms (transform 148ms, setup 157ms, import 23ms, tests 12ms, environment 0ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/main/studio-hotkeys.test.ts

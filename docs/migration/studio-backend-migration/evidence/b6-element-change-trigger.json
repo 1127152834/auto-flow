@@ -1,0 +1,59 @@
+{
+  "evidenceId": "BE-B6-019-element-change-trigger",
+  "recordedAt": "2026-09-22",
+  "classification": "原版功能迁入 + AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "reference/WebRPA/backend/app/executors/trigger.py#ElementChangeTriggerExecutor"
+    ],
+    "license": "LICENSE.WebRPA"
+  },
+  "nodes": [
+    "element_change_trigger"
+  ],
+  "implemented": [
+    "保留CSS选择器、childList/attributes/characterData观察类型、无限或有限等待及两个结果变量语义",
+    "保留MutationObserver后代监听、首批变化后断开、添加/移除节点摘要、前后子元素数量和mutationCount",
+    "保留最后一个新增元素的ID或nth-child选择器生成、文本摘要和原版变化描述",
+    "复用当前CloakBrowser活动页面或已选择iframe，不建立第二套页面会话",
+    "生产注册声明requires_browser，运行准入继续只允许主应用CloakBrowser Profile"
+  ],
+  "adaptations": [
+    "通过既有BrowserPagePort.evaluate执行浏览器内MutationObserver，参数使用JSON字面量注入以避免扩展公共浏览器协议",
+    "敏感变量参与选择器时不记录解析后的选择器及页面文本",
+    "冻结源码和前端均保留checkInterval字段，但执行器实际不读取；迁入保持原版实时MutationObserver语义"
+  ],
+  "checks": [
+    {
+      "command": "pytest element change differential, executor, production registry, scope preflight, worker protocol and browser session contract",
+      "result": "135 passed, 1 skipped",
+      "covers": "冻结源码缺参和成功差分、MutationObserver结果、变量写回、缺失元素、超时、生产注册、运行协议和浏览器会话回归；跳过项为缺少本机CloakBrowser二进制的真实浏览器用例"
+    },
+    {
+      "command": "Ruff and mypy",
+      "result": "passed",
+      "covers": "迁入执行器、生产注册、差分工具和真实CloakBrowser门槛用例"
+    }
+  ],
+  "boundaries": {
+    "workspace": "pytest temporary directory",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "mockExecutionUsedForBackendEvidence": false,
+    "formalElectronUiTested": true,
+    "realCloakBrowserTest": "passed: development Electron with local CloakBrowser kernel"
+  },
+  "remaining": [
+    "跨域 iframe、Windows、macOS Intel及正式打包入口仍需浏览器平台专项验收"
+  ],
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b6-element-change.mjs",
+    "result": "passed",
+    "platform": "darwin-arm64",
+    "entry": "development-build",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-element-change-electron-M0Oa2t/result.json",
+    "covers": "正式 Studio 真实 UI 配置 open_page、element_change_trigger 和日志节点，CloakBrowser 加载本地页面并观察延迟 MutationObserver 变化，核验新元素选择器、结果日志和清理",
+    "boundary": "本地 file origin、单层主文档、开发入口；跨域 iframe 和打包平台另行验收"
+  }
+}

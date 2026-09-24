@@ -1,0 +1,68 @@
+{
+  "evidenceId": "BE-B6-014-timing-probability-family",
+  "recordedAt": "2026-09-22",
+  "classification": "原版功能迁入 + AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "reference/WebRPA/backend/app/executors/control.py#ScheduledTaskExecutor",
+      "reference/WebRPA/backend/app/executors/probability.py#ProbabilityTriggerExecutor"
+    ],
+    "license": "LICENSE.WebRPA"
+  },
+  "nodes": [
+    "scheduled_task",
+    "probability_trigger"
+  ],
+  "implemented": [
+    "保留指定日期时间、延迟小时/分钟/秒、过期立即执行、格式校验及中文时长消息",
+    "定时等待使用可取消的asyncio调度，停止真实worker后不执行后继节点",
+    "保留0至100概率、Python随机算法、path1/path2分支标识、消息和结果字段",
+    "概率分支接入AutoFlow现有sourceHandle路由，只调度实际选中的后继"
+  ],
+  "adaptations": [
+    "当前时间从ExecutionContext时钟转换为主机本地时间，保留原版本地定时语义并支持确定性测试",
+    "原版add_log调用写入AutoFlow运行日志记录，进度沿用现有ExecutionContext进度入口"
+  ],
+  "checks": [
+    {
+      "command": "pytest timing/probability differential, runtime branch, real worker stop, registry and scope regressions",
+      "result": "98 passed",
+      "covers": "9组冻结源码差分、分支路由、进度和日志、真实进程取消、生产注册与批准范围"
+    },
+    {
+      "command": "Ruff and mypy",
+      "result": "passed",
+      "covers": "迁入执行器、差分工具、真实worker测试和生产注册"
+    }
+  ],
+  "boundaries": {
+    "workspace": "pytest isolated tmp_path",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "mockExecutionUsedForBackendEvidence": false,
+    "formalElectronUiTested": false
+  },
+  "remaining": [
+    "系统休眠或跨时区变化期间的本地日期时间等待需分别记录平台实机结果",
+    "概率 50% 长期分布和跨平台随机源仅保留后端/平台专项记录；本次确定性 100%/0% UI 证据已通过"
+  ],
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b6-scheduled-task.mjs",
+    "result": "passed",
+    "platform": "darwin-arm64",
+    "entry": "development-build",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-scheduled-task-electron-KLgP7F/result.json",
+    "covers": "正式 Studio 真实 UI 编排 scheduled_task 与后续日志，保存到临时 SQLite，使用过期本地日期时间验证立即继续及日志结果，运行后清理完成",
+    "boundary": "本次验证不等待真实长延迟；停止、休眠和时区变化由后端测试与平台专项覆盖，未触碰用户数据库"
+  },
+  "formalElectronProbability": {
+    "command": "node scripts/smoke-studio-backend-b6-probability.mjs",
+    "result": "passed",
+    "platform": "darwin-arm64",
+    "entry": "development-build",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-probability-electron-bzefbQ/result.json",
+    "covers": "正式 Studio 真实 UI 添加 probability_trigger 与两条带 sourceHandle 的路径，先以 100% 运行路径1，再改为 0% 运行路径2；两次未选分支均无日志副作用且运行完成",
+    "boundary": "50% 随机分布、长定时停止由后端测试覆盖；未触碰用户数据库"
+  }
+}

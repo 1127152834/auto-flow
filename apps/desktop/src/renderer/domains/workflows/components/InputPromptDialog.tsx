@@ -12,7 +12,7 @@ import { systemApi } from '../api'
 import { DialogPortal } from './controls/dialog-portal'
 import { useDialogRegistry } from '../hooks/stores/dialogRegistry'
 
-type PromptData = InputPromptRequest
+type PromptData = InputPromptRequest & { commandId?: string | null }
 
 // Both human input and assistant actions use the same literal-value rules.
 function validatePromptValue(data: PromptData, raw: unknown): { value: string } | { error: string } {
@@ -46,7 +46,17 @@ function validatePromptValue(data: PromptData, raw: unknown): { value: string } 
   return { value }
 }
 
-export function InputPromptDialog() {
+type PromptReceipt = { commandId: string; success: boolean; status?: string; error?: string }
+export type PromptCommands = {
+  sendInputResult(requestId: string, value: string | null, commandId?: string): Promise<PromptReceipt>
+  queryInputResult(commandId: string): Promise<PromptReceipt>
+}
+
+export function InputPromptDialog({ request, commands = socketService, paths = systemApi }: {
+  request?: PromptData | null
+  commands?: PromptCommands
+  paths?: Pick<typeof systemApi, 'selectFile' | 'selectFolder'>
+} = {}) {
   const [promptData, setPromptData] = useState<PromptData | null>(null)
   const [inputValue, setInputValue] = useState('')
   const [checkboxValue, setCheckboxValue] = useState(false)
@@ -71,8 +81,9 @@ export function InputPromptDialog() {
     if (activeRequest.current === data.requestId) return
     activeRequest.current = data.requestId
     pathRequest.current++; setSelectingPath(false)
-    deliveryRef.current = null
-    setDelivery(null)
+    const restored: Delivery | null = data.commandId ? { requestId: data.requestId, commandId: data.commandId, status: 'unconfirmed' } : null
+    deliveryRef.current = restored
+    setDelivery(restored)
     try {
       // 归一化默认值为字符串：defaultValue 可能是数字（如 integer 模式配了 8），
       // 若直接存进 inputValue 状态，后续 inputValue.split / inputValue.trim 会因
@@ -127,13 +138,14 @@ export function InputPromptDialog() {
   }, [])
 
   useEffect(() => {
+    if (request !== undefined) { handlePromptRequest(request); return }
     socketService.setInputPromptCallback(handlePromptRequest)
     return () => {
       activeRequest.current = null
       pathRequest.current++
       socketService.setInputPromptCallback(null)
     }
-  }, [handlePromptRequest])
+  }, [handlePromptRequest, request])
 
   const selectPath = async (kind: 'file' | 'folder') => {
     if (!promptData || activeRequest.current !== promptData.requestId || deliveryRef.current || selectingPath) return
@@ -143,8 +155,8 @@ export function InputPromptDialog() {
     setSelectingPath(true); setError('')
     try {
       const result = kind === 'file'
-        ? await systemApi.selectFile(promptData.title || '选择文件')
-        : await systemApi.selectFolder(promptData.title || '选择文件夹')
+        ? await paths.selectFile(promptData.title || '选择文件')
+        : await paths.selectFolder(promptData.title || '选择文件夹')
       if (activeRequest.current !== requestId || pathRequest.current !== sequence || deliveryRef.current || pathEdit.current !== edit) return
       if (!result.success) { setError(result.error || '选择路径失败'); return }
       // Empty selection is cancellation; a successful path must remain a string.
@@ -159,7 +171,7 @@ export function InputPromptDialog() {
     }
   }
 
-  const applyDeliveryResult = (pending: Delivery, result: Awaited<ReturnType<typeof socketService.sendInputResult>>): boolean => {
+  const applyDeliveryResult = (pending: Delivery, result: PromptReceipt): boolean => {
     if (activeRequest.current !== pending.requestId || deliveryRef.current?.commandId !== pending.commandId) return false
     if (result.commandId !== pending.commandId || ('status' in result && result.status === 'unconfirmed')) {
       const uncertain = { ...pending, status: 'unconfirmed' as const }
@@ -179,7 +191,7 @@ export function InputPromptDialog() {
     const pending: Delivery = { requestId: promptData.requestId, commandId: crypto.randomUUID(), status: 'sending' }
     deliveryRef.current = pending; setDelivery(pending); setError('')
     try {
-      return applyDeliveryResult(pending, await socketService.sendInputResult(pending.requestId, value, pending.commandId))
+      return applyDeliveryResult(pending, await commands.sendInputResult(pending.requestId, value, pending.commandId))
     } catch {
       return applyDeliveryResult(pending, { commandId: pending.commandId, success: false, status: 'unconfirmed' })
     }
@@ -190,7 +202,7 @@ export function InputPromptDialog() {
     if (!pending || pending.status !== 'unconfirmed') return
     const querying = { ...pending, status: 'sending' as const }
     deliveryRef.current = querying; setDelivery(querying)
-    try { applyDeliveryResult(querying, await socketService.queryInputResult(pending.commandId)) }
+    try { applyDeliveryResult(querying, await commands.queryInputResult(pending.commandId)) }
     catch { applyDeliveryResult(querying, { commandId: pending.commandId, success: false, status: 'unconfirmed' }) }
   }
 
@@ -356,7 +368,7 @@ export function InputPromptDialog() {
 
   return (
     <DialogPortal>
-    <div className="fixed inset-0 bg-[hsl(217_45%_15%_/_0.55)] backdrop-blur-[3px] flex items-center justify-center p-4 animate-fade-in" style={{ zIndex: 2147483646 }}>
+    <div className="project-interaction-surface fixed inset-0 bg-[hsl(217_45%_15%_/_0.55)] backdrop-blur-[3px] flex items-center justify-center p-4 animate-fade-in" style={{ zIndex: 2147483646 }}>
       <div className="modern-dialog w-full max-w-md max-h-[90vh] overflow-y-auto p-0 animate-scale-in-bounce" role="dialog" aria-modal="true" aria-label={promptData.title || '需要你输入'}>
         <div className="modern-dialog-header">
           <div className="modern-dialog-header-icon">

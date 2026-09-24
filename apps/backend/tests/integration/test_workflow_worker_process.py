@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import sys
+from io import StringIO
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -10,6 +11,11 @@ import pytest
 from autoflow.infrastructure.process.project_workflow_worker import (
     ProjectWorkflowWorkerManager,
     WorkflowWorkerError,
+)
+from autoflow.providers.browser.project_workflow_worker import (
+    MAX_EVENT_JSONL_BYTES,
+    ProtocolFailure,
+    _write,
 )
 
 CHILD = r'''
@@ -24,6 +30,9 @@ def send(type, **data):
  print(json.dumps(value), flush=True)
 send('ready')
 e=dict(eventId='event-1',runId=c['runId'],executionGeneration=c['executionGeneration'],kind='nodeAttempt',nodeId='open',nodeVisitId='visit-1',attempt=1,occurredAt='2026-09-15T00:00:00+00:00',payload={'status':'running'})
+if os.environ.get('MODE')=='large-output':
+ e['kind']='output'
+ e['payload']={'name':'captured','value':['x'*2048]*1024}
 if os.environ.get('MODE')=='wrong-run': e['runId']='other'
 if os.environ.get('MODE')=='unterminated':
  sys.stdout.write(json.dumps(dict(type='event',protocolVersion=1,runId=c['runId'],executionGeneration=c['executionGeneration'],event=e)))
@@ -40,6 +49,8 @@ if os.environ.get('MODE')=='removed-cache':
  import shutil
  shutil.rmtree(os.environ['CLOAKBROWSER_CACHE_DIR'])
 send('finished',status='succeeded',error=None,cleanupConfirmed=True)
+if os.environ.get('MODE')=='wait-control-eof':
+ assert sys.stdin.read()==''
 '''
 
 
@@ -96,6 +107,31 @@ def start(instance, executable, on_event):
 
 
 @pytest.mark.asyncio
+async def test_large_project_output_reaches_durable_callback_before_ack(tmp_path):
+    instance, executable = manager(tmp_path, 'large-output')
+    received = []
+
+    async def persist(event):
+        received.append(event)
+
+    outcome = await start(instance, executable, persist)
+    assert outcome.status == 'succeeded'
+    assert len(received) == 1
+    assert len(received[0]['payload']['value']) == 1024
+    assert all(len(item) == 2048 for item in received[0]['payload']['value'])
+    assert (tmp_path / 'proof').read_text() == 'after-ack'
+    assert not instance.busy()
+
+
+def test_worker_event_limit_accepts_captured_results_but_rejects_unbounded_output():
+    stream = StringIO()
+    _write(stream, {'type': 'event', 'value': 'x' * (2 * 1024 * 1024)})
+    assert len(stream.getvalue()) > 2 * 1024 * 1024
+    with pytest.raises(ProtocolFailure, match='WORKFLOW_OUTPUT_TOO_LARGE'):
+        _write(StringIO(), {'type': 'event', 'value': 'x' * MAX_EVENT_JSONL_BYTES})
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize('kind, status, cleanup, exit_code, error_code', [
     ('finished', 'failed', True, 1, None),
     ('finished', 'cancelled', True, 0, None),
@@ -131,6 +167,36 @@ async def test_pre_ready_terminal_requires_failure_cleanup_and_valid_exit(
     assert events == []
     assert not instance.busy()
     assert not list((tmp_path / 'temp' / 'workflow-runs').glob('*/generation-*'))
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("status", ["failed", "cancelled", "timed_out"])
+async def test_confirmed_failure_waits_for_owned_cleanup_of_native_thread(tmp_path, status):
+    import os
+
+    instance, executable = manager(tmp_path)
+    child = CHILD[:CHILD.index("send('ready')")] + (
+        "from threading import Event, Thread\n"
+        "Thread(target=Event().wait, daemon=False).start()\n"
+        "with open(os.environ['PROOF'],'w') as f: f.write(str(os.getpid()))\n"
+        "send('ready')\n"
+        f"send('finished',status={status!r},cleanupConfirmed=True)\n"
+        "raise SystemExit(1)\n"
+    )
+    instance._command = (sys.executable, '-c', child)
+
+    async def persist(_event):
+        raise AssertionError("terminal-only worker cannot produce node events")
+
+    outcome = await asyncio.wait_for(start(instance, executable, persist), 10)
+    assert outcome.status == status
+    assert outcome.cleanup_confirmed
+    assert not instance.busy()
+    assert not list((tmp_path / 'temp' / 'workflow-runs').glob('*/generation-*'))
+    pid = int((tmp_path / 'proof').read_text())
+    if sys.platform != 'win32':
+        with pytest.raises(ProcessLookupError):
+            os.kill(pid, 0)
 
 
 @pytest.mark.asyncio
@@ -173,6 +239,19 @@ async def test_worker_waits_for_durable_callback_before_ack_and_completion(tmp_p
         if not task.done():
             task.cancel()
         await asyncio.gather(waiting, task, return_exceptions=True)
+
+
+@pytest.mark.asyncio
+async def test_finished_worker_receives_control_eof_before_parent_waits_for_exit(tmp_path):
+    instance, executable = manager(tmp_path, "wait-control-eof")
+
+    async def persist(_event):
+        pass
+
+    result = await start(instance, executable, persist)
+    assert result.status == "succeeded"
+    assert result.cleanup_confirmed
+    assert not instance.busy()
 
 
 @pytest.mark.asyncio
@@ -656,3 +735,27 @@ def test_project_worker_launch_preserves_venv_without_redirector_job(tmp_path):
     prefix, executable = json.loads(completed.stdout)
     assert Path(prefix).resolve() == Path(sys.prefix).resolve()
     assert Path(executable).resolve() == Path(sys.executable).resolve()
+
+
+def test_result_cleanup_is_confined_to_current_generation_artifacts(tmp_path):
+    instance, _ = manager(tmp_path)
+    directory = tmp_path / 'workspace' / 'runs' / 'run' / 'generation-1'
+    result = directory / 'artifacts' / 'nested' / 'capture.png'
+    result.parent.mkdir(parents=True)
+    result.write_bytes(b'png')
+    other = tmp_path / 'other.png'
+    other.write_bytes(b'keep')
+    (directory / 'artifacts' / 'linked.png').symlink_to(other)
+    instance._workers['run'] = SimpleNamespace(
+        run_id='run', generation=1, artifact_directory=directory,
+        relative_artifact_directory='runs/run/generation-1',
+    )
+    for path in ['runs/run/generation-2/artifacts/nested/capture.png',
+                 'runs/run/generation-1/artifacts/linked.png',
+                 'runs/run/generation-1/artifacts/../../../other.png']:
+        instance.discard_uncommitted_artifact('run', 1, 'new-id', path)
+    assert result.read_bytes() == b'png'
+    assert other.read_bytes() == b'keep'
+    instance.discard_uncommitted_artifact('run', 1, 'new-id', 'runs/run/generation-1/artifacts/nested/capture.png')
+    assert not result.exists()
+    assert other.read_bytes() == b'keep'

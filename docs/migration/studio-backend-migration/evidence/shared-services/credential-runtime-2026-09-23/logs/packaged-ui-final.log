@@ -1,0 +1,87 @@
+主应用真实服务在临时工作区创建 CloakBrowser Profile
+主窗口通过真实点击打开正式 Studio，Studio 只读取主应用 Profile
+真实凭据库UI保存本次随机临时字段；不记录明文截图
+通过正式新建入口创建空工作流
+通过画布原生右键菜单逐一添加并配置五个节点，没有直接修改 Store
+通过画布连接手柄建立五节点顺序链
+正式保存经真实 HTTP 写入 SQLite，返回修订 1
+CloakBrowser密码输入使用系统凭据，受控页面只返回正确性标记；明文不进入SSE/快照/结果
+真实UI切换简洁/详细SSE，用户日志保留，普通节点日志完整持久化；续读游标、关窗重开历史和进程清理通过
+凭据通过真实界面删除，运行日志与文档重开保留原引用
+{
+  "evidenceDir": "/Users/zhangtiancheng/Documents/projects/autoflow/docs/migration/studio-backend-migration/evidence/b1/formal-electron-ZMGYx6",
+  "evidenceId": "BE-studio-credential-runtime",
+  "checkedAt": "2026-09-23T06:24:43.746Z",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "packaged-directory",
+  "workflowId": "f7MnIb7m8qXQ5UK5yUu3C",
+  "runId": "14299a65-aee6-466c-94d4-2d7917488e9e",
+  "nodeDurations": [
+    {
+      "nodeId": "pTaG5e_c8Sshidzcfwi4x",
+      "durationMs": 225.14045797288418
+    },
+    {
+      "nodeId": "T1mme0PsBGOIdq0pLCg49",
+      "durationMs": 179.4828749843873
+    },
+    {
+      "nodeId": "SEbU5Jl8BqeO2c3KSeIpg",
+      "durationMs": 43.77295798622072
+    },
+    {
+      "nodeId": "L3uEca14j1V-M6qkIW814",
+      "durationMs": 31.129042035900056
+    },
+    {
+      "nodeId": "imkp4SiVZJ0w3J4aDsL9n",
+      "durationMs": 48.01808297634125
+    }
+  ],
+  "requestedStreams": [
+    {
+      "afterSeq": "0",
+      "verboseLog": "true"
+    },
+    {
+      "afterSeq": "0",
+      "verboseLog": "false"
+    },
+    {
+      "afterSeq": "20",
+      "verboseLog": "true"
+    }
+  ],
+  "checks": [
+    "主应用真实服务在临时工作区创建 CloakBrowser Profile",
+    "主窗口通过真实点击打开正式 Studio，Studio 只读取主应用 Profile",
+    "真实凭据库UI保存本次随机临时字段；不记录明文截图",
+    "通过正式新建入口创建空工作流",
+    "通过画布原生右键菜单逐一添加并配置五个节点，没有直接修改 Store",
+    "通过画布连接手柄建立五节点顺序链",
+    "正式保存经真实 HTTP 写入 SQLite，返回修订 1",
+    "CloakBrowser密码输入使用系统凭据，受控页面只返回正确性标记；明文不进入SSE/快照/结果",
+    "真实UI切换简洁/详细SSE，用户日志保留，普通节点日志完整持久化；续读游标、关窗重开历史和进程清理通过",
+    "凭据通过真实界面删除，运行日志与文档重开保留原引用"
+  ],
+  "packageBoundary": {
+    "resources": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources",
+    "forbiddenReferences": [],
+    "scannedNeedles": [
+      "reference/WebRPA",
+      "127.0.0.1:5175",
+      "StudioMockTools",
+      "api/mock-server"
+    ]
+  },
+  "buildArtifacts": {
+    "appAsarSha256": "0928be5a38460c30588efddf395f6a6228c02f7ef500dbc3964d7104370fab41",
+    "backendExecutableSha256": "ea0a6ea5a1768c9b9cc70280e169bd52cee650804aeb7cd73ed5b66710e38ec4"
+  },
+  "boundaries": {
+    "userDatabaseTouched": false,
+    "workspace": "ephemeral",
+    "interaction": "real UI only; API asserts logs and process cleanup"
+  }
+}

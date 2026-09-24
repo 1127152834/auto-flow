@@ -1,0 +1,51 @@
+{
+  "recordedAt": "2026-09-21",
+  "classification": "原版功能迁入 + AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "path": "reference/WebRPA/backend/app/services/ai_assistant_service.py",
+    "symbols": [
+      "_llm_chat_stream_once",
+      "chat_once"
+    ],
+    "license": "LICENSE.WebRPA"
+  },
+  "implemented": [
+    "OpenAI兼容托管模型启用真实SSE并按增量投影reasoning_partial与content_partial",
+    "按index合并分段tool_calls并在完整JSON后交给LangGraph工具校验",
+    "工具回合在tool_call前投影assistant_partial，保持冻结WebRPA前端的临时消息边界",
+    "所有助手事件复用StudioEventJournal的单调序号、游标补读和现有SSE通道",
+    "取消模型任务会关闭上游HTTP流，不继续写入完成结果",
+    "非流式Anthropic和Gemini保持既有协议，最终完整消息仍通过统一事件与查询返回"
+  ],
+  "checks": [
+    {
+      "command": "uv run --project apps/backend pytest apps/backend/tests/unit/workflows/test_assistant_langgraph.py apps/backend/tests/integration/test_workflow_assistant_service.py apps/backend/tests/unit/test_model_provider.py apps/backend/tests/contract/test_workflow_events_api.py -q",
+      "exitCode": 0,
+      "result": "54 passed, 1 warning",
+      "covers": "真实SSE分块、推理与正文增量、工具参数重组、取消关闭、LangGraph暂停恢复及事件游标"
+    },
+    {
+      "command": "uv run --project apps/backend ruff check <assistant streaming affected files> && uv run --project apps/backend mypy <assistant streaming production modules>",
+      "exitCode": 0,
+      "result": "Ruff and mypy passed"
+    },
+    {
+      "command": "npm test --workspace @autoflow/desktop -- --run src/renderer/domains/workflows/tests/assistant-ui-delivery.test.ts src/renderer/domains/workflows/tests/assistant-action-claim.test.ts src/renderer/domains/workflows/hooks/stores/__tests__/aiAssistantStore.test.ts",
+      "exitCode": 0,
+      "result": "13 passed",
+      "covers": "Studio流式事件消费、客户端动作认领和助手Store"
+    },
+    {
+      "command": "node scripts/smoke-studio-backend-b5-assistant.mjs --executable apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/MacOS/AutoFlow",
+      "exitCode": 0,
+      "result": "packaged Electron formal UI passed",
+      "covers": "主应用模型选择、LangGraph多轮工具暂停恢复、逐项批准/拒绝、流式取消、工作流保存、BrowserWindow正常关闭重开及历史恢复",
+      "evidence": "docs/migration/studio-backend-migration/evidence/b5/formal-assistant-electron-uelQUT/result.json"
+    }
+  ],
+  "remaining": [
+    "真实商业模型供应商调用；本机正式验收使用本地可控OpenAI兼容HTTP服务",
+    "Windows与macOS Intel正式包实机验证"
+  ]
+}

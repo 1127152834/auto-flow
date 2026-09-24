@@ -13,7 +13,7 @@ const stored = new Map<string, string>()
 beforeEach(() => { stored.clear(); vi.stubGlobal('localStorage', { getItem: (key: string) => stored.get(key) ?? null, setItem: (key: string, value: string) => stored.set(key, value), removeItem: (key: string) => stored.delete(key) }) })
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 const automation: Automation = { name: '原名称', description: '', workflowId: 'wf', inputPlan: { inputs: [] }, parameterSchema: [], environmentPolicy: { source: 'newFromProfile' }, runPolicy: { maxTasks: 1, concurrency: 1, maxLiveInstances: 1, continueAfterFailure: false, automaticExecutionTimeoutSeconds: 900, manualDeadlineSeconds: 900 }, automationId: 'a', projectId: 'p', managementRevision: 3, createdAt: '2026-09-01T00:00:00Z', updatedAt: '2026-09-01T00:00:00Z' }
-const resources = (path: string) => path === '/api/v1/workflows' ? { items: [{ workflowId: 'wf', name: '工作流', revision: 1, updatedAt: '', validation: { status: 'ready', runnable: true, issues: [] } }] } : path === '/api/v1/model-providers' ? { items: [], total: 0 } : path === '/api/v1/profiles' ? { items: [], total: 0 } : path === '/api/v1/proxy-options' ? { proxies: [], pools: [] } : path.includes('/tables?') ? { items: [], total: 0, page: 1, pageSize: 200, sort: 'name' } : undefined
+const resources = (path: string) => path.startsWith('/api/v1/workflows') ? { items: [{ workflowId: 'wf', name: '工作流', revision: 1, updatedAt: '', validation: { status: 'ready', runnable: true, issues: [] } }] } : path === '/api/v1/model-providers' ? { items: [], total: 0 } : path === '/api/v1/profiles' ? { items: [], total: 0 } : path === '/api/v1/proxy-options' ? { proxies: [], pools: [] } : path.includes('/tables?') ? { items: [], total: 0, page: 1, pageSize: 200, sort: 'name' } : undefined
 function mount(request: StreamingApiClient['request'], override: Partial<AutomationDetailPageProps> = {}) {
   const cache = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
   const props: AutomationDetailPageProps = { workspaceKey: 'w', instanceId: 'i', projectId: 'p', client: { request, stream: vi.fn(), health: vi.fn() }, disabled: false, readOnly: false, onCreated: vi.fn(), registerLeaveGuard: vi.fn(), ...override }
@@ -40,6 +40,45 @@ it('submits one normalized payload containing values edited across all four tabs
   await waitFor(() => expect(props.onCreated).toHaveBeenCalledWith('a'))
   expect(writes).toHaveLength(1)
   expect(writes[0].body).toMatchObject({ name: '自动运行', workflowId: 'wf', parameterSchema: [{ name: '次数', type: 'number', defaultValue: 12 }], environmentPolicy: { source: 'newFromProfile', proxyOverride: { mode: 'none' } }, runPolicy: { maxTasks: 7, automaticExecutionTimeoutSeconds: 150 } })
+})
+
+it('opens Studio with the saved workflow identity', async () => {
+  const onOpenStudio = vi.fn()
+  const request = vi.fn(async (path: string) => {
+    const found = resources(path); if (found) return found
+    if (path.endsWith('/automations/a')) return automation
+    throw new Error(`unexpected ${path}`)
+  }) as StreamingApiClient['request']
+  mount(request, { automationId: 'a', onOpenStudio })
+  const user = userEvent.setup()
+  await user.click((await screen.findAllByRole('button', { name: '打开 Studio' }))[0]!)
+  expect(onOpenStudio).toHaveBeenCalledWith('wf')
+})
+
+it('opens the workflow selected in a new automation without requiring a prior save', async () => {
+  const onOpenStudio = vi.fn()
+  const request = vi.fn(async (path: string) => resources(path) ?? { items: [] }) as StreamingApiClient['request']
+  mount(request, { onOpenStudio })
+  const user = userEvent.setup()
+  expect(await screen.findByRole('button', { name: '打开 Studio' })).toBeDisabled()
+  await chooseOption(user, screen.getByRole('combobox', { name: '关联工作流' }), 'wf')
+  await user.click(screen.getByRole('button', { name: '打开 Studio' }))
+  expect(onOpenStudio).toHaveBeenCalledWith('wf')
+})
+
+it('does not reuse another project workflow catalog while its own request is pending', async () => {
+  const request = vi.fn(async (path: string) => {
+    if (path.includes('/workflows?projectId=other')) return new Promise(() => {})
+    return resources(path) ?? { items: [] }
+  }) as StreamingApiClient['request']
+  const view = mount(request)
+  const user = userEvent.setup()
+  await chooseOption(user, await screen.findByRole('combobox', { name: '关联工作流' }), 'wf')
+  view.update({ projectId: 'other' })
+  await user.click(screen.getByRole('combobox', { name: '关联工作流' }))
+  expect(screen.queryByRole('option', { name: '工作流' })).not.toBeInTheDocument()
+  expect(view.cache.getQueryData(['w', 'i', 'workflow-catalog', 'p'])).toBeDefined()
+  expect(view.cache.getQueryData(['w', 'i', 'workflow-catalog', 'other'])).toBeUndefined()
 })
 
 it('keeps the edit draft through background refresh and a 409 until latest data is explicitly accepted', async () => {

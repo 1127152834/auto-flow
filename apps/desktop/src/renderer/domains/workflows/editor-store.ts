@@ -6,7 +6,7 @@ import { applyNodeChanges, applyEdgeChanges, addEdge } from '@xyflow/react'
 import type { ModuleType, Variable, LogEntry, ExecutionStatus, ModuleConfig, DataAsset, ImageAsset } from './types/index'
 import { useGlobalConfigStore } from './hooks/stores/globalConfigStore'
 import { layoutGraph } from './lib/elkLayout'
-import { collectNodeVarNames } from './lib/moduleDefaultVars'
+import { collectNodeVarNames, getModuleConfigDefaults, MATH_DEFAULT_VARS } from './lib/moduleDefaultVars'
 import { snapshotKey } from './lib/snapshotKey'
 
 let latestLayoutRequest = 0
@@ -1050,6 +1050,7 @@ export const moduleDefaultTimeouts: Partial<Record<ModuleType, number>> = {
   wait_element: 60,     // 60秒，等待元素可能需要较长时间
   wait_image: 60,       // 60秒，等待图像可能需要较长时间
   wait_page_load: 60,   // 60秒，等待页面加载
+  network_monitor_wait: 30, // 与请求监听执行器的秒单位默认值一致
   page_load_complete: 10, // 10秒，检查页面是否加载完成
   close_page: 10,       // 10秒
   refresh_page: 60,     // 60秒
@@ -1584,16 +1585,13 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       }
     } else if (type === 'ai_chat') {
       defaultData = {
-        apiUrl: globalConfig.ai.apiUrl,
-        apiKey: globalConfig.ai.apiKey,
-        model: globalConfig.ai.model,
         temperature: globalConfig.ai.temperature,
         maxTokens: globalConfig.ai.maxTokens,
         systemPrompt: globalConfig.ai.systemPrompt,
         resultVariable: 'ai_response',
       }
     } else if (type === 'ai_extract' || type === 'ai_classify' || type === 'ai_summarize' || type === 'ai_translate' || type === 'ai_sentiment' || type === 'ai_normalize' || type === 'ai_dedup_semantic' || type === 'ai_route') {
-      // AI 数据处理任务：复用全局 AI 配置（接口/密钥/模型）
+      // AI 数据处理任务：模型由主应用按稳定 modelId 管理。
       const varName = {
         ai_extract: 'extracted_data',
         ai_classify: 'category',
@@ -1606,9 +1604,6 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       }[type] || 'ai_result'
       const lowTemp = ['ai_extract', 'ai_classify', 'ai_sentiment', 'ai_normalize', 'ai_dedup_semantic', 'ai_route']
       defaultData = {
-        apiUrl: globalConfig.ai.apiUrl,
-        apiKey: globalConfig.ai.apiKey,
-        model: globalConfig.ai.model,
         temperature: lowTemp.includes(type) ? 0.2 : 0.5,
         maxTokens: globalConfig.ai.maxTokens,
         variableName: varName,
@@ -1623,24 +1618,13 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     } else if (type === 'ai_smart_scraper') {
       // AI智能爬虫模块默认配置
       defaultData = {
-        llmProvider: globalConfig.aiScraper.llmProvider,
-        apiUrl: globalConfig.aiScraper.apiUrl,
-        llmModel: globalConfig.aiScraper.llmModel,
-        apiKey: globalConfig.aiScraper.apiKey,
-        azureEndpoint: globalConfig.aiScraper.azureEndpoint,
         variableName: 'scraper_result',
-        headless: true,
         verbose: false,
         waitTime: 3,  // 默认等待3秒
       }
     } else if (type === 'ai_element_selector') {
       // AI元素选择器模块默认配置
       defaultData = {
-        llmProvider: globalConfig.aiScraper.llmProvider,
-        apiUrl: globalConfig.aiScraper.apiUrl,
-        llmModel: globalConfig.aiScraper.llmModel,
-        apiKey: globalConfig.aiScraper.apiKey,
-        azureEndpoint: globalConfig.aiScraper.azureEndpoint,
         variableName: 'element_selector',
         verbose: false,
         url: '',  // 添加 URL 字段
@@ -1795,7 +1779,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     } else if (type === 'ocr_captcha') {
       // OCR验证码模块默认变量
       defaultData = {
-        resultVariable: 'captcha_text',
+        variableName: 'captcha_text',
       }
     } else if (type === 'get_clipboard') {
       // 获取剪贴板模块默认变量
@@ -2491,13 +2475,14 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     // 分组节点和便签节点使用特殊的节点类型和默认尺寸
     const isGroup = type === 'group'
     const isNote = type === 'note'
+    const isSubflowHeader = type === 'subflow_header'
     
     // 获取模块默认超时时间
     const defaultTimeout = getModuleDefaultTimeout(type)
     
     const newNode: Node<NodeData> = {
       id: nanoid(),
-      type: isGroup ? 'groupNode' : isNote ? 'noteNode' : 'moduleNode',
+      type: isGroup ? 'groupNode' : isNote ? 'noteNode' : isSubflowHeader ? 'subflowHeaderNode' : 'moduleNode',
       position,
       ...(isGroup ? {
         style: { width: 300, height: 200 },
@@ -2514,7 +2499,9 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         ...(defaultTimeout > 0 ? { timeout: defaultTimeout } : {}),
         ...(isGroup ? { color: '#3b82f6', width: 300, height: 200 } : {}),
         ...(isNote ? { color: '#fef08a', content: '' } : {}),
+        ...MATH_DEFAULT_VARS[type],
         ...defaultData,
+        ...getModuleConfigDefaults(type),
         // 合并额外的配置（优先级最高）
         ...extraConfig,
       },
@@ -2592,6 +2579,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     get().pushHistory()
     const isGroup = type === 'group'
     const isNote = type === 'note'
+    const isSubflowHeader = type === 'subflow_header'
     const nodes = get().nodes
     // 计算插入位置（紧跟在 afterNode 下方，纵向排布）
     const afterNode = afterNodeId ? nodes.find((n) => n.id === afterNodeId) : null
@@ -2601,7 +2589,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     const newId = nanoid()
     const newNode: Node<NodeData> = {
       id: newId,
-      type: isGroup ? 'groupNode' : isNote ? 'noteNode' : 'moduleNode',
+      type: isGroup ? 'groupNode' : isNote ? 'noteNode' : isSubflowHeader ? 'subflowHeaderNode' : 'moduleNode',
       position: { x: baseX, y: baseY },
       ...(isGroup ? { style: { width: 300, height: 200 }, zIndex: -1 } : {}),
       ...(isNote ? { style: { width: 200, height: 120 }, zIndex: -1 } : {}),
@@ -2611,6 +2599,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         ...(defaultTimeout > 0 ? { timeout: defaultTimeout } : {}),
         ...(isGroup ? { color: '#3b82f6', width: 300, height: 200 } : {}),
         ...(isNote ? { color: '#fef08a', content: '' } : {}),
+        ...getModuleConfigDefaults(type),
         ...(extraConfig || {}),
       },
     }

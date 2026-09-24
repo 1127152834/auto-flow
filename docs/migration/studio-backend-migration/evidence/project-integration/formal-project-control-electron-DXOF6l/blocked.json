@@ -1,0 +1,12 @@
+{
+  "checkedAt": "2026-09-23T09:57:52.171Z",
+  "gitHead": "80fc5bfb309c7ff4fb864e7b04398fa657168143",
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "通过模块条真实点击完成初始化、三轮循环、真假分支和汇合后的尾节点",
+    "正式项目批次真实worker执行三轮循环与条件真分支，假分支无副作用；输出、尝试记录和进程清理通过",
+    "正式项目批次真实worker执行列表内嵌条件的真假分支、字典遍历、无限循环退出与两轮跳过；被跳过节点无尝试，最终值为4"
+  ],
+  "observedEvents": [],
+  "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n+   'fdVHpBT4Xn-dWO2zQpv6n',\n    'quKbMtaiKM2HL8rm3Suwr',\n-   'fdVHpBT4Xn-dWO2zQpv6n',\n    'XupODrOZVpFgXxVYnGbL8'\n  ]\n\n    at file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:278:12\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)"
+}

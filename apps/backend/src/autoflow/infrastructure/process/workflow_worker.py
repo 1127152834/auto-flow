@@ -24,6 +24,7 @@ from autoflow.infrastructure.process.browser_processes import (
     process_identity_is_alive,
 )
 from autoflow.infrastructure.process.test_browser_worker import stop_process_tree
+from autoflow.infrastructure.process.workflow_subprocess import workflow_environment
 
 _SAFE_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{0,127}")
 
@@ -155,8 +156,7 @@ class WorkflowWorkerManager:
         registered: asyncio.Event | None = None
         try:
             directory.mkdir(parents=True, exist_ok=False)
-            env = os.environ.copy()
-            env.update(self._worker_env)
+            env = workflow_environment({**os.environ, **self._worker_env})
             env.pop("CLOAKBROWSER_LICENSE_KEY", None)
             if executable is None:
                 env.pop("CLOAKBROWSER_BINARY_PATH", None)
@@ -271,6 +271,8 @@ class WorkflowWorkerManager:
             raise RuntimeError("workflow worker 命令通道已关闭")
         encoded = (json.dumps(command, ensure_ascii=False) + "\n").encode()
         async with worker.write_lock:
+            if command.get("type") == "credential:result" and run_id in self._stopping:
+                return
             stdin.write(encoded)
             await stdin.drain()
 
@@ -362,6 +364,8 @@ class WorkflowWorkerManager:
                     except (json.JSONDecodeError, UnicodeDecodeError):
                         continue
                     if isinstance(event, dict) and self._on_event is not None:
+                        if event.get("type") == "credential:read" and event.get("runId") != run_id:
+                            raise RuntimeError("工作进程凭据请求归属不匹配")
                         callback_result = self._on_event(event)
                         if isawaitable(callback_result):
                             await callback_result

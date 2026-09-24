@@ -330,6 +330,10 @@ const excludedCategories = new Set([
 export const excludedModuleTypes = new Set<ModuleType>([
   ...sourceModuleCategories.filter(c => excludedCategories.has(c.name)).flatMap(c => c.modules),
   'read_excel', 'notify_feishu',
+  'notify_discord', 'notify_dingtalk', 'notify_wecom', 'notify_bark',
+  'notify_slack', 'notify_msteams', 'notify_pushover', 'notify_pushbullet',
+  'notify_gotify', 'notify_serverchan', 'notify_pushplus', 'notify_ntfy',
+  'notify_matrix', 'notify_rocketchat',
 ])
 export const moduleCategories = [{ name: '项目能力', color: 'bg-teal-500', modules: ['project_data', 'project_manual', 'project_end'] as ModuleType[] }, ...sourceModuleCategories
   .filter(c => !excludedCategories.has(c.name))

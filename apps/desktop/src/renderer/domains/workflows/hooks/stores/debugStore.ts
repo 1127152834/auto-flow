@@ -2,6 +2,10 @@
 import { create } from 'zustand'
 import {isDebugPauseContext, type DebugPauseContext} from '../../lib/debugControlContract'
 export interface DebugVariableMeta { scope:'workflow'|'loop'; readOnly:boolean; source?:string }
+export interface DebugExecutionContext {
+  scopes:Array<{kind:string;id:string;name:string}>
+  loops:Array<{nodeId:string;type:string;currentIndex:number;iteration:number}>
+}
 
 /**
  * 可视化调试状态：断点集合 + 暂停态。
@@ -17,14 +21,16 @@ interface DebugState {
   pausedLabel: string | null
   pausedVariables: Record<string, any>
   pausedVariableMeta: Record<string,DebugVariableMeta>
-  pausedReason: 'breakpoint' | 'step' | null
+  pausedExecutionContext: DebugExecutionContext
+  pausedReason: 'breakpoint' | 'step' | 'target' | 'failure' | null
+  pausedError: string | null
 
   toggleBreakpoint: (nodeId: string) => void
   clearBreakpoints: () => void
   hasBreakpoint: (nodeId: string) => boolean
   setStepMode: (v: boolean) => void
 
-  setPaused: (info: { runId?:string; pauseId?:string; controlRevision?:number; nodeId: string; label?: string; variables?: Record<string, any>; variableMeta?:Record<string,DebugVariableMeta>; reason?: 'breakpoint' | 'step' }) => void
+  setPaused: (info: { runId?:string; pauseId?:string; controlRevision?:number; nodeId: string; label?: string; variables?: Record<string, any>; variableMeta?:Record<string,DebugVariableMeta>; executionContext?:DebugExecutionContext; reason?: 'breakpoint' | 'step' | 'target' | 'failure'; error?:string }) => void
   clearPaused: () => void
 }
 
@@ -38,7 +44,9 @@ export const useDebugStore = create<DebugState>((set, get) => ({
   pausedLabel: null,
   pausedVariables: {},
   pausedVariableMeta:{},
+  pausedExecutionContext:{scopes:[],loops:[]},
   pausedReason: null,
+  pausedError: null,
 
   toggleBreakpoint: (nodeId) => set((s) => {
     const next = new Set(s.breakpoints)
@@ -60,8 +68,10 @@ export const useDebugStore = create<DebugState>((set, get) => ({
       pausedLabel:info.label || info.nodeId,
       pausedVariables:info.variables || {},
       pausedVariableMeta:info.variableMeta || {},
+      pausedExecutionContext:info.executionContext || {scopes:[],loops:[]},
       pausedReason:info.reason || 'breakpoint',
+      pausedError:info.error || null,
     }
   }),
-  clearPaused: () => set({ isPaused: false, pauseContext:null, pausedNodeId: null, pausedLabel: null, pausedVariables:{}, pausedVariableMeta:{}, pausedReason: null }),
+  clearPaused: () => set({ isPaused: false, pauseContext:null, pausedNodeId: null, pausedLabel: null, pausedVariables:{}, pausedVariableMeta:{}, pausedExecutionContext:{scopes:[],loops:[]}, pausedReason: null, pausedError:null }),
 }))

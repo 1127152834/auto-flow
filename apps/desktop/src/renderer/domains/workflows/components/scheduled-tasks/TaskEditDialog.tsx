@@ -15,6 +15,7 @@ import { Clock, Zap, Power, Repeat, X, Play, Square, Webhook } from 'lucide-reac
 import { useConfirm } from '../controls/confirm-dialog'
 import { DialogPortal } from '../controls/dialog-portal'
 import { NotificationConfigEditor } from './NotificationConfigEditor'
+import { BrowserProfileSelect } from '../BrowserProfileSelect'
 
 interface TaskEditDialogProps {
   task: ScheduledTask
@@ -36,6 +37,7 @@ export function TaskEditDialog({ task, open, onClose }: TaskEditDialogProps) {
   const [description, setDescription] = useState(task.description || '')
   const [workflowId, setWorkflowId] = useState(task.workflow_id)
   const [workflowName, setWorkflowName] = useState(task.workflow_name || '')
+  const [profileId, setProfileId] = useState(task.profile_id || '')
 
   // 工作流列表
   const [workflows, setWorkflows] = useState<any[]>([])
@@ -104,6 +106,7 @@ export function TaskEditDialog({ task, open, onClose }: TaskEditDialogProps) {
     setDescription(task.description || '')
     setWorkflowId(task.workflow_id)
     setWorkflowName(task.workflow_name || '')
+    setProfileId(task.profile_id || '')
     setTriggerType(task.trigger.type)
     setScheduleType(task.trigger.schedule_type || 'daily')
     setStartDate(task.trigger.start_date || '')
@@ -313,6 +316,7 @@ export function TaskEditDialog({ task, open, onClose }: TaskEditDialogProps) {
   const validate = (): string | null => {
     if (!name.trim()) return '请输入任务名称'
     if (!workflowId) return '请选择工作流'
+    if (!profileId) return '请选择运行浏览器配置'
 
     if (triggerType === 'time') {
       if (scheduleType === 'once') {
@@ -389,6 +393,7 @@ export function TaskEditDialog({ task, open, onClose }: TaskEditDialogProps) {
         description: description.trim() || undefined,
         workflow_id: workflowId,
         workflow_name: workflowName,
+        profile_id: profileId,
         trigger: buildTrigger(),
         open_monitor: openMonitor,
         headless: headless,
@@ -466,6 +471,9 @@ export function TaskEditDialog({ task, open, onClose }: TaskEditDialogProps) {
               </SelectContent>
             </Select>
           </div>
+
+          <BrowserProfileSelect label="运行浏览器配置 *" value={profileId} onChange={setProfileId} disabled={loading} />
+          <p className="text-xs text-gray-500">调度时固定使用此主应用 CloakBrowser Profile；时间按中国标准时间（Asia/Shanghai）计算。</p>
 
           {/* 触发器类型 */}
           <div className="space-y-2">
@@ -710,17 +718,17 @@ export function TaskEditDialog({ task, open, onClose }: TaskEditDialogProps) {
                     <p className="text-sm font-semibold text-green-900 mb-1">使用说明</p>
                     <div className="text-xs text-green-800 space-y-1">
                       <p><strong>1. 路径格式：</strong>必须以 / 开头，只能包含字母、数字、-、_ 和 /</p>
-                      <p><strong>2. 触发方式：</strong>用 GET / POST 等任意方法访问以下地址即可触发（body 可选）</p>
+                      <p><strong>2. 触发方式：</strong>用 GET / POST 等任意方法访问以下地址，并且必须携带 x-autoflow-token 请求头（body 可选）</p>
                       <div className="mt-2 p-2 bg-gray-100 rounded font-mono text-xs break-all">
                         {`${webhookBaseUrl}${webhookPath || '/your-path'}`}
                       </div>
                       <p className="pt-1"><strong>3. 示例：</strong></p>
                       <div className="mt-1 p-2 bg-gray-100 rounded font-mono text-xs break-all">
-                        curl -X POST {`${webhookBaseUrl}${webhookPath || '/your-path'}`}
+                        curl -X POST -H &quot;x-autoflow-token: &lt;AutoFlow 运行令牌&gt;&quot; {`${webhookBaseUrl}${webhookPath || '/your-path'}`}
                       </div>
                       <p className="pt-1 text-[11px] text-green-700">
-                        提示：地址中的端口已自动取当前后端实际端口，可直接复制使用；
-                        在 WebRPA 内用「Webhook 请求」模块调用时也填这个完整地址。
+                        提示：地址中的端口已自动取当前后端实际端口；运行令牌由当前 AutoFlow 实例提供。
+                        在 WebRPA 内用「Webhook 请求」模块调用时也必须传入该请求头。
                       </p>
                       <p className="pt-1"><strong>4. 应用场景：</strong></p>
                       <p className="pl-3">• 接收第三方系统的通知并自动执行任务</p>

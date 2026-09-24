@@ -180,6 +180,7 @@ def capture_processes(
             command = row[3] if len(row) == 4 else ""
             if (str(directory) in command or "--test-browser-worker" in command
                 or "--workflow-worker" in command
+                or "--inspection-worker" in command
                 or "/playwright/driver/" in command) and _belongs_to_run(item, directory, executable):
                 owned.add(item)
     old: set[int] = set()

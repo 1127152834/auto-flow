@@ -38,3 +38,29 @@ def test_diagnostic_page_preserves_source_snake_case_and_new_identity_aliases() 
     ]}).model_dump(by_alias=True)
     assert page["tracking"][0]["variable_name"] == "x"
     assert page["tracking"][0]["largeValues"] == {"new_value": "大对象"}
+
+
+def test_diagnostic_page_accepts_loop_scope_exit() -> None:
+    page = StudioRunVariableTrackingPage.model_validate(
+        {
+            "runId": "run",
+            "total": 1,
+            "throughSequence": 1,
+            "tracking": [
+                {
+                    "sequence": 1,
+                    "executionId": "loop-exit",
+                    "timestamp": "2026-09-22T00:00:00Z",
+                    "variable_name": "item",
+                    "old_value": "乙",
+                    "new_value": None,
+                    "node_id": "repeat",
+                    "node_name": "遍历列表",
+                    "operation": "scope_exit",
+                    "value_type": "null",
+                }
+            ],
+        }
+    )
+
+    assert page.tracking[0].operation == "scope_exit"

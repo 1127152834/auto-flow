@@ -1,9 +1,11 @@
+from collections.abc import Mapping
 from datetime import datetime
-from typing import Protocol
+from typing import Any, Protocol
 
 from .models import (
     DiscoveryResult,
     LocalModel,
+    ModelInvocationResult,
     ModelOptionRecord,
     ModelProvider,
     ModelTestResult,
@@ -19,6 +21,14 @@ class ModelGateway(Protocol):
     async def test_model(
         self, connection: ProviderConnection, secret: str, model_key: str
     ) -> ModelTestResult: ...
+
+    async def invoke(
+        self,
+        connection: ProviderConnection,
+        secret: str,
+        model_key: str,
+        payload: Mapping[str, Any],
+    ) -> ModelInvocationResult: ...
 
 
 class ModelRepository(Protocol):

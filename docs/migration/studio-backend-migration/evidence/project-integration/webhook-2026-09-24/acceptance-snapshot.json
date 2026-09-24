@@ -1,0 +1,52 @@
+{
+  "source": "docs/migration/studio-frontend-completion/capabilities.json",
+  "basis": "现有逐项证据核销，不表示本轮重跑全部节点；独立Studio与项目任务验收分开",
+  "activeNodes": 213,
+  "backendEvidenceStatus": {
+    "已实现且已验收": 204,
+    "已实现待验收": 9
+  },
+  "existingCaseStatus": {
+    "已实现且已验收": 630,
+    "已实现待验收": 9
+  },
+  "backendPending": [
+    "shutdown_system",
+    "lock_screen",
+    "hotkey_trigger",
+    "mouse_trigger",
+    "image_trigger",
+    "sound_trigger",
+    "face_trigger",
+    "gesture_trigger",
+    "printer_call"
+  ],
+  "projectRegistered": 189,
+  "projectUnregistered": [
+    "email_trigger",
+    "face_trigger",
+    "gesture_trigger",
+    "get_clipboard",
+    "group",
+    "hotkey_trigger",
+    "image_trigger",
+    "lock_screen",
+    "mouse_trigger",
+    "note",
+    "notify_telegram",
+    "play_sound",
+    "printer_call",
+    "send_email",
+    "set_clipboard",
+    "share_file",
+    "share_folder",
+    "shutdown_system",
+    "sound_trigger",
+    "start_screen_share",
+    "stop_screen_share",
+    "stop_share",
+    "system_notification",
+    "text_to_speech"
+  ],
+  "platforms": "本批darwin-arm64；Windows/macOS Intel未实测"
+}

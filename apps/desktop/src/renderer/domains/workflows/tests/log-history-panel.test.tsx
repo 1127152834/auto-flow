@@ -64,6 +64,23 @@ it('queries the complete run on the service and prepends older pages', async () 
   await screen.findByText('200/650')
 })
 
+it('keeps ten thousand persisted logs behind the bounded history window', async () => {
+  const query = vi.spyOn(workflowApi, 'getRunLogs')
+  seedMockRunHistory({
+    runId: 'run-history', workflowId: 'workflow-history', documentId: useWorkflowStore.getState().id,
+    logs: Array.from({ length: 10_000 }, (_, index) => ({
+      id: `capacity-${index + 1}`, timestamp: new Date(Date.UTC(2026, 8, 14, 0, 0, index)).toISOString(),
+      level: 'info' as const, nodeId: 'node-a', message: `容量-${String(index + 1).padStart(5, '0')}`,
+    })),
+  })
+  render(<LogPanel />)
+  await screen.findByText('100/10000')
+  expect(query).toHaveBeenLastCalledWith('run-history', expect.objectContaining({ cursor: 0, limit: 100 }))
+  fireEvent.click(screen.getByRole('button', { name: '更早日志' }))
+  await screen.findByText('200/10000')
+  expect(query).toHaveBeenLastCalledWith('run-history', expect.objectContaining({ cursor: 100, limit: 100 }))
+})
+
 it('applies keyword, level and node filters to the service query', async () => {
   const query = vi.spyOn(workflowApi, 'getRunLogs')
   render(<LogPanel />)
@@ -73,7 +90,19 @@ it('applies keyword, level and node filters to the service query', async () => {
   expect(screen.getByText('故障-00601')).toBeDefined()
   fireEvent.click(screen.getByRole('combobox', { name: '按节点筛选日志' }))
   fireEvent.click(await screen.findByRole('option', { name: '点击元素' }))
-  await waitFor(() => expect(query).toHaveBeenLastCalledWith('run-history', expect.objectContaining({ query: '故障-00601', nodeId: 'node-b' })))
+  fireEvent.change(screen.getByRole('textbox', { name: '按执行标识筛选日志' }), { target: { value: 'execution-601' } })
+  await waitFor(() => expect(query).toHaveBeenLastCalledWith('run-history', expect.objectContaining({ query: '故障-00601', nodeId: 'node-b', executionId: 'execution-601' })))
+})
+
+it('exports the same execution identity filter used by the history query', async () => {
+  const exported = vi.spyOn(workflowApi, 'exportRunLogs').mockResolvedValue({success:true,data:new Blob(['{}\n'])})
+  vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:execution')
+  vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+  render(<LogPanel />)
+  await screen.findByText('100/650')
+  fireEvent.change(screen.getByRole('textbox', { name: '按执行标识筛选日志' }), { target: { value: ' execution-601 ' } })
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: '下载' })))
+  await waitFor(() => expect(exported).toHaveBeenCalledWith('run-history', expect.objectContaining({executionId:'execution-601'})))
 })
 
 it('downloads the server export instead of the retained UI window', async () => {
@@ -102,8 +131,8 @@ it('restores the latest persisted run when the live execution identity is absent
 
 it('refreshes the persisted run summary after a lifecycle event',async()=>{
   const list=vi.spyOn(workflowApi,'listRuns')
-    .mockResolvedValueOnce({success:true,data:{items:[{runId:'run-history',workflowId:'workflow-history',documentId:useWorkflowStore.getState().id,workflowName:'状态刷新',status:'running',startedAt:'2026-09-14T00:00:00Z',finishedAt:null,logCount:650}],total:1,nextCursor:null}})
-    .mockResolvedValue({success:true,data:{items:[{runId:'run-history',workflowId:'workflow-history',documentId:useWorkflowStore.getState().id,workflowName:'状态刷新',status:'completed',startedAt:'2026-09-14T00:00:00Z',finishedAt:'2026-09-14T00:00:01Z',logCount:650}],total:1,nextCursor:null}})
+    .mockResolvedValueOnce({success:true,data:{items:[{runId:'run-history',workflowId:'workflow-history',documentId:useWorkflowStore.getState().id,projectId:null,workflowName:'状态刷新',status:'running',startedAt:'2026-09-14T00:00:00Z',finishedAt:null,logCount:650}],total:1,nextCursor:null}})
+    .mockResolvedValue({success:true,data:{items:[{runId:'run-history',workflowId:'workflow-history',documentId:useWorkflowStore.getState().id,projectId:null,workflowName:'状态刷新',status:'completed',startedAt:'2026-09-14T00:00:00Z',finishedAt:'2026-09-14T00:00:01Z',logCount:650}],total:1,nextCursor:null}})
   render(<LogPanel/>);await waitFor(()=>expect(screen.getByRole('combobox',{name:'运行日志记录'}).textContent).toContain('running'))
   window.dispatchEvent(new CustomEvent('studio:run-history-changed',{detail:{runId:'run-history',status:'completed'}}))
   await waitFor(()=>expect(screen.getByRole('combobox',{name:'运行日志记录'}).textContent).toContain('completed'))
@@ -111,7 +140,7 @@ it('refreshes the persisted run summary after a lifecycle event',async()=>{
 })
 
 it('loads older run pages and retains the explicitly selected older run after refresh',async()=>{
- const rows=Array.from({length:1000},(_,index)=>({runId:`paged-${index}`,workflowId:'flow',documentId:'doc',workflowName:`分页运行${index}`,status:'completed' as const,startedAt:new Date().toISOString(),finishedAt:null,logCount:0}))
+ const rows=Array.from({length:1000},(_,index)=>({runId:`paged-${index}`,workflowId:'flow',documentId:'doc',projectId:null,workflowName:`分页运行${index}`,status:'completed' as const,startedAt:new Date().toISOString(),finishedAt:null,logCount:0}))
  const list=vi.spyOn(workflowApi,'listRuns').mockImplementation(async(_doc,cursor=0,limit=50)=>({success:true,data:{items:rows.slice(cursor,cursor+limit),total:1000,nextCursor:cursor+limit<1000?cursor+limit:null}}))
  vi.spyOn(workflowApi,'getRunLogs').mockImplementation(async runId=>({success:true,data:{runId,workflowId:'flow',items:[],total:0,nextCursor:null}}))
  render(<LogPanel/>);fireEvent.click(await screen.findByText('更早运行'))

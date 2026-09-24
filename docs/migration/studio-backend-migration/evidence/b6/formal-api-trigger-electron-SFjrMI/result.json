@@ -1,0 +1,52 @@
+{
+  "evidenceId": "BE-B6-api-trigger-formal-electron",
+  "checkedAt": "2026-09-21T20:06:16.893Z",
+  "gitHead": "bddabd77e12c276b5fb5d6ade92b77f6f1f6af67",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflowId": "IglDI2SrZeE_9KmGDoXmh",
+  "profileId": "0c54a2e3-2e8f-441d-89d0-4167ba374025",
+  "runId": "100e2d33-ec3c-4d9f-8d38-e5fafec3b781",
+  "checks": [
+    "主窗口真实打开正式 Studio；动作库为 213，运行配置来自主应用 Profile",
+    "通过正式 Studio 真实 UI 配置 API 地址、JSONPath 条件、响应变量并连接后续日志节点",
+    "正式保存接口写入 API 触发器配置、响应变量、后续日志节点和连线",
+    "本地 loopback API 返回条件数据，真实 worker 写入响应变量并执行后续日志节点",
+    "无浏览器动作的 API 触发流程完成后无 CloakBrowser、worker 或资源残留"
+  ],
+  "nodes": [
+    {
+      "moduleType": "api_trigger",
+      "nodeId": "jDQG5GaASMMJwK7jfIaBO",
+      "result": {
+        "status": "ready",
+        "marker": "api-fixture"
+      }
+    },
+    {
+      "moduleType": "print_log",
+      "nodeId": "Xcp8mdoG_c9jWkT1H7MmY",
+      "result": {
+        "level": "info",
+        "message": "API触发条件已满足"
+      }
+    }
+  ],
+  "fixture": {
+    "requests": 1,
+    "response": {
+      "status": "ready",
+      "marker": "api-fixture"
+    }
+  },
+  "buildSha256": "464d9a3d31b8bbdf11677ab31923253ab762c532ff46d4fb8a55a9563c09eb48",
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserLaunch": "none",
+    "network": "local loopback only",
+    "interaction": "formal Electron via CDP mouse and keyboard; public sidecar APIs only for fixture setup and evidence reads; no Store or page-internal business function access",
+    "platformPending": "Windows/macOS Intel and packaged-entry reachability remain separately unverified"
+  }
+}

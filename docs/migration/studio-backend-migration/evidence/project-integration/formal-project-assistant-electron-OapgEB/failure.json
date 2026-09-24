@@ -1,0 +1,9 @@
+{
+  "checkedAt": "2026-09-23T09:12:16.765Z",
+  "checks": [
+    "主应用模型管理保存本地受控模型；Studio 仅取得稳定 modelId，未保存第二套地址或密钥",
+    "通过正式 MCP 配置界面保存并重连真实 stdio 服务，发现 echo 工具且秘密不进 SQLite",
+    "通过正式 Toolbar 入口打开小助手，并在真实设置界面选择主应用模型和逐项确认权限"
+  ],
+  "error": "Error: timed out waiting for unobscured textarea[placeholder^=\"告诉我你想做什么\"]: null\n    at waitFor (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/electron-cdp.mjs:99:9)\n    at async setInput (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b5-assistant.mjs:298:13)\n    at async sendMessage (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b5-assistant.mjs:305:3)\n    at async file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b5-assistant.mjs:92:3"
+}

@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import toolCases from '../../../../../../../docs/migration/studio-frontend-completion/evidence/f2-tool-entries/cases.json'
 
@@ -42,10 +42,13 @@ vi.mock('../components/controls/image-path-input', () => ({ ImagePathInput: () =
 vi.mock('../components/controls/coordinate-input', () => ({ CoordinateInput: () => null }))
 vi.mock('../components/controls/dual-coordinate-input', () => ({ DualCoordinateInput: () => null }))
 
+import { modelApi } from '../api'
+import { excludedModuleTypes, moduleCategories } from '../lib/moduleCatalog'
 import { ConfigPanel } from '../components/ConfigPanel'
 import { useWorkflowStore as store } from '../editor-store'
 import type { ModuleType } from '../types/workflow'
 
+const originalScroll = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollIntoView')
 const tools = ['VariableInput', 'VariableNameInput', 'VariableRefInput', 'NumberInput'] as const
 type Tool = (typeof tools)[number]
 type ToolCase = { id: string; capability: string; preconditions: { tool: string } }
@@ -62,17 +65,48 @@ const entrySetup: Record<string, Record<string, unknown>> = {
 }
 
 beforeEach(() => store.getState().clearWorkflow())
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  vi.restoreAllMocks()
+  if (originalScroll) Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', originalScroll)
+  else Reflect.deleteProperty(HTMLElement.prototype, 'scrollIntoView')
+})
 
-it.each(entries)('$id mounts and commits through its actual ConfigPanel consumer', ({ id, type, tool }) => {
+it.each(entries)('$id follows its current ConfigPanel consumer or explicit scope adaptation', async ({ id, type, tool }) => {
+  const managedModel = tool === 'VariableInput' && ['ai_generate_image', 'ai_generate_video'].includes(type)
+  if (managedModel) Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', { configurable: true, value: vi.fn() })
+  if (managedModel) vi.spyOn(modelApi, 'listOptions').mockResolvedValue({ success: true, data: {
+    items: [{ id: 'model-test', providerId: 'provider-test', providerName: '托管供应商', modelKey: 'model', displayName: '主应用测试模型', tagsJson: [] }], total: 1,
+  } })
   store.getState().addNode(type, { x: 0, y: 0 }, entrySetup[id])
   const nodeId = store.getState().nodes[0].id
   render(<ConfigPanel selectedNodeId={nodeId} />)
   const controls = screen.queryAllByTestId(`tool-${tool}`)
-  expect(controls.length, `${id} did not mount a direct ${tool}`).toBeGreaterThan(0)
+  if (excludedModuleTypes.has(type)) {
+    expect(type.startsWith('notify_')).toBe(true)
+    expect(moduleCategories.flatMap(category => category.modules)).not.toContain(type)
+    expect(controls).toHaveLength(0)
+    expect(screen.getAllByRole('status').map(element => element.textContent).join(' ')).toContain('此节点已排除，保留原配置，仅供查看和导出')
+    expect(JSON.parse(store.getState().exportWorkflow()).nodes[0].data).toEqual(store.getState().nodes[0].data)
+    return
+  }
 
   const before = structuredClone(store.getState().nodes[0].data)
-  fireEvent.click(controls[0])
+  if (managedModel) {
+    // These two historical VariableInput entries edited provider URLs/keys;
+    // the approved host adapter now selects a managed model by stable ID.
+    expect(controls).toHaveLength(0)
+    const picker = within(screen.getByText('主应用模型').parentElement!).getByRole('combobox')
+    await waitFor(() => expect(picker.getAttribute('data-disabled')).toBeNull())
+    fireEvent.keyDown(picker, { key: 'ArrowDown' })
+    fireEvent.click(await screen.findByRole('option', { name: '主应用测试模型（托管供应商）' }))
+    expect(store.getState().nodes[0].data.modelId).toBe('model-test')
+    expect(store.getState().nodes[0].data.apiKey).toBeUndefined()
+    expect(store.getState().nodes[0].data.apiBase).toBeUndefined()
+  } else {
+    expect(controls.length, `${id} did not mount a direct ${tool}`).toBeGreaterThan(0)
+    fireEvent.click(controls[0])
+  }
   const after = store.getState().nodes[0].data
   const changed = Object.keys({ ...before, ...after }).filter(key => !Object.is(before[key], after[key]))
   expect(changed, `${id} must write exactly one node field`).toHaveLength(1)

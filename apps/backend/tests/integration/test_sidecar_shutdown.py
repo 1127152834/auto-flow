@@ -23,7 +23,16 @@ async def test_workflow_shutdown_error_still_closes_other_modules(tmp_path, monk
 
     from autoflow.bootstrap.app import create_app
     from autoflow.bootstrap.config import Settings
+    from autoflow.providers.laya.runtime import LayaRuntime
 
+    closed_laya = []
+    original_close = LayaRuntime.close
+
+    def close_laya(runtime):
+        closed_laya.append(runtime)
+        return original_close(runtime)
+
+    monkeypatch.setattr(LayaRuntime, "close", close_laya)
     app = create_app(Settings(data_dir=str(tmp_path / 'shutdown-data'), instance_id='shutdown-fixture'))
     failed = AsyncMock(side_effect=RuntimeError('synthetic workflow cleanup failure'))
     monkeypatch.setattr(app.state.workflow_dispatcher, 'shutdown', failed)
@@ -36,11 +45,13 @@ async def test_workflow_shutdown_error_still_closes_other_modules(tmp_path, monk
     monkeypatch.setattr(app.state.excel_exports, 'shutdown', exports)
     monkeypatch.setattr(app.state.status_batch_coordinator, 'shutdown', batches)
     with pytest.raises(RuntimeError, match='synthetic workflow cleanup failure'):
-        await app.router.on_shutdown[-1]()
+        async with app.router.lifespan_context(app):
+            pass
     browser.assert_awaited_once()
     kernel.assert_awaited_once()
     exports.assert_called_once()
     batches.assert_called_once()
+    assert len(closed_laya) == 1
 
 
 @pytest.mark.parametrize("shutdown", ["host", "signal"])

@@ -1,0 +1,10 @@
+{
+  "checkedAt": "2026-09-23T09:46:12.312Z",
+  "gitHead": "40c68a0c24652dc9b4bec69eece5f133e4fdbf77",
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "通过模块条真实点击完成初始化、三轮循环、真假分支和汇合后的尾节点"
+  ],
+  "observedEvents": [],
+  "error": "Error: timed out waiting for extended project control saved: false\n    at waitFor (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/electron-cdp.mjs:99:9)\n    at async file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:157:5"
+}

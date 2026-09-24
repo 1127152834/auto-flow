@@ -1,0 +1,8 @@
+{
+  "checkedAt": "2026-09-23T07:50:04.457Z",
+  "checks": [
+    "正式项目入口使用主应用第二个模型提供商作为默认值，第一项仍可显式覆盖",
+    "主窗口真实点击打开正式 Studio；动作库为 213，运行配置和模型均来自主应用"
+  ],
+  "error": "Error: timed out waiting for unobscured AI 模型设置: null\n    at waitFor (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/electron-cdp.mjs:99:9)\n    at async click (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b5-ai-tasks.mjs:350:13)\n    at async chooseFirstModel (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b5-ai-tasks.mjs:371:5)\n    at async file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b5-ai-tasks.mjs:110:56"
+}

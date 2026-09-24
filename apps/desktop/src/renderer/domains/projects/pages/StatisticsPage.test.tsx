@@ -254,3 +254,16 @@ it('restores the recorded range and scroll position after returning to the page'
     sessionStorage.clear()
   }
 })
+
+it('opens the Studio statistics entry through its project-bound server contract', async () => {
+  const request = vi.fn(async (path: string) => {
+    if (path.includes('/statistics/studio?')) return { projectId: 'p', totalRuns: 0, byStatus: {}, successRate: null, averageDurationMs: null, nodeExecutionCount: 0, extractionExecutionCount: 0, artifactCount: 0, diagnosticCount: 0, debugCount: 0, recordingCount: null, recordingUnavailableReason: '归属尚未采集', latestActivityAt: null, calculatedAt: payload.calculatedAt, failuresByNode: [], runsByWorkflow: [], byTrigger: {}, items: [], nextCursor: null }
+    if (path.includes('/statistics?')) return payload
+    if (path.includes('/automations')) return { items: [], total: 0 }
+    throw new Error(`unexpected request: ${path}`)
+  })
+  renderPage(request)
+  await userEvent.click(screen.getByText('Studio 运行统计'))
+  expect(await screen.findByText('没有匹配的 Studio 运行')).toBeVisible()
+  expect(request).toHaveBeenCalledWith(expect.stringContaining('/api/v1/projects/p/statistics/studio?'), expect.anything())
+})

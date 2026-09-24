@@ -1,0 +1,70 @@
+{
+  "evidenceId": "BE-B6-mail-formal-electron",
+  "checkedAt": "2026-09-23T10:34:57.756Z",
+  "result": "passed",
+  "gitHead": "75b320f920e9ec82e5fa9427153c0d48e7e356bb",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflows": [
+    {
+      "workflowId": "GULrfP1SLR_ToPzOffPdF",
+      "name": "B6 真实 TLS 发邮件正式闭环",
+      "nodeId": "xNje5bEJU5K4SIVyoLOT1",
+      "type": "send_email"
+    },
+    {
+      "workflowId": "7CwpnrGKV9-AIgwfvB66X",
+      "name": "B6 真实 TLS 收邮件正式闭环",
+      "nodeId": "bNBWV6q9c9ezHRSudVCal",
+      "type": "email_trigger"
+    }
+  ],
+  "runs": [
+    "c4c7a8ad-1dde-485e-95e2-375f4d1b93df",
+    "cae7adbf-2897-4f61-a4b2-dd739d4d7d8d"
+  ],
+  "profileId": "828fe6fb-6e0d-46f7-b36a-d579a1c1cbc4",
+  "checks": [
+    "主窗口真实点击打开 Studio；213 节点和主应用 Profile 已核对",
+    "B6 真实 TLS 发邮件正式闭环：真实 UI 配置、保存、切换、重开并从 SQLite 恢复",
+    "正式 Studio 发送节点使用生产 smtplib，通过真实 TLS SMTP 完成认证、MIME 正文和断开；日志未泄露授权码",
+    "B6 真实 TLS 收邮件正式闭环：真实 UI 配置、保存、切换、重开并从 SQLite 恢复",
+    "正式 Studio 邮件触发器从真实 TLS IMAP 筛选两封，标记已读并在独立 worker 结束前关闭连接"
+  ],
+  "transport": {
+    "smtpCommands": [
+      "EHLO",
+      "AUTH",
+      "MAIL",
+      "RCPT",
+      "DATA",
+      "QUIT"
+    ],
+    "imapCommands": [
+      "CAPABILITY",
+      "LOGIN",
+      "SELECT",
+      "SEARCH",
+      "FETCH",
+      "FETCH",
+      "FETCH",
+      "STORE",
+      "FETCH",
+      "STORE",
+      "CLOSE",
+      "LOGOUT"
+    ],
+    "flags": [
+      "3 +FLAGS (\\Seen)",
+      "4 +FLAGS (\\Seen)"
+    ],
+    "mimeBytes": 220
+  },
+  "boundaries": {
+    "userDatabaseTouched": false,
+    "workspace": "ephemeral",
+    "realTransport": "loopback TLS SMTP/IMAP; production executors and stdlib clients unchanged",
+    "outsideProviderDelivery": "not tested",
+    "platformPending": "macOS Intel, Windows, frozen package"
+  }
+}

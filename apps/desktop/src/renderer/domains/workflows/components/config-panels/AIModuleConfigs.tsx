@@ -1,7 +1,9 @@
 // Source: WebRPA@5ccb900e, components/workflow/config-panels/AIModuleConfigs.tsx; see SOURCE.md for license and adaptation boundaries.
 import type React from 'react'
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { NodeData } from '../../editor-store'
+import type { ModelOptionList } from '../../api'
+import { modelApi } from '../../api'
 import { Label } from '../controls/label'
 import { Checkbox } from '../controls/checkbox'
 import { NumberInput } from '../controls/number-input'
@@ -12,90 +14,126 @@ import { VariableNameInput } from '../controls/variable-name-input'
 import { VariableRefInput } from '../controls/variable-ref-input'
 import { Bot, Cpu } from 'lucide-react'
 import { useGlobalConfigStore } from '../../hooks/stores/globalConfigStore'
+import { getStudioResourceScope } from '../../api/config'
 
 type RenderSelectorInput = (id: string, label: string, placeholder: string) => React.ReactNode
+type ModelOption = ModelOptionList['items'][number]
+type BatchChange = (data: Partial<NodeData>) => void
 
-// 已配置 AI 对话模型的一键选择下拉：选中即把该模型的 地址/密钥/模型名 填入当前模块
-function AIModelPicker({ data, onChange }: { data: NodeData; onChange: (key: string, value: unknown) => void }) {
-  const models = useGlobalConfigStore((s) => s.config.ai?.models) || []
+// 模型凭据只留在主应用；工作流文档仅保存稳定 modelId。
+export function AIModelPicker({ data, onBatchChange }: { data: NodeData; onBatchChange: BatchChange }) {
+  const [models, setModels] = useState<ModelOption[]>([])
+  const [loading, setLoading] = useState(true)
+  const [listError, setListError] = useState('')
+  const [defaultError, setDefaultError] = useState('')
+  const [projectDefaultModelId, setProjectDefaultModelId] = useState('')
+  const requestRef = useRef(0)
   const autoFallback = useGlobalConfigStore((s) => s.config.ai?.autoFallback) ?? false
 
-  // 全局开启「失败自动切换」时，自动把其它已配置模型注入本模块的 fallbackModels（运行时按序回退）；
-  // 关闭时清空。用序列化对比避免无限渲染。
   useEffect(() => {
-    const curUrl = (data.apiUrl as string) || ''
-    const curModel = (data.model as string) || ''
-    const desired = (autoFallback && models.length > 0)
-      ? models
-          .filter((m) => m.apiUrl && m.model && !(m.apiUrl === curUrl && m.model === curModel))
-          .map((m) => ({ apiUrl: m.apiUrl, apiKey: m.apiKey, model: m.model, temperature: m.temperature, maxTokens: m.maxTokens }))
-      : []
-    const prev = (data.fallbackModels as any[]) || []
-    if (JSON.stringify(prev) !== JSON.stringify(desired)) {
-      onChange('fallbackModels', desired.length > 0 ? desired : undefined)
+    let active = true
+    const load = async () => {
+      const request = ++requestRef.current
+      const scope = getStudioResourceScope()
+      setLoading(true)
+      setListError('')
+      setDefaultError('')
+      setProjectDefaultModelId('')
+      const [result, projectDefault] = await Promise.all([
+        modelApi.listOptions(),
+        scope ? modelApi.projectDefault() : Promise.resolve({ success: true as const, data: null }),
+      ])
+      if (!active || request !== requestRef.current || scope !== getStudioResourceScope()) return
+      if (!result.success || !Array.isArray(result.data?.items)) {
+        setListError(`模型列表加载失败：${result.error || '响应格式错误'}`)
+        setModels([])
+      } else {
+        setModels(result.data.items)
+        if (!projectDefault.success) {
+          setDefaultError(projectDefault.error || '项目默认模型读取失败')
+        } else if (projectDefault.data?.modelId) {
+          if (result.data.items.some(model => model.id === projectDefault.data?.modelId)) {
+            setProjectDefaultModelId(projectDefault.data.modelId)
+          } else {
+            setDefaultError('项目默认模型不可用，请显式选择模型')
+          }
+        }
+      }
+      setLoading(false)
     }
+    void load()
+    window.addEventListener('studio:transport-changed', load)
+    window.addEventListener('studio:connection-restored', load)
+    return () => {
+      active = false
+      window.removeEventListener('studio:transport-changed', load)
+      window.removeEventListener('studio:connection-restored', load)
+    }
+  }, [])
 
-  }, [autoFallback, JSON.stringify(models), data.apiUrl, data.model])
+  const explicitModelId = typeof data.modelId === 'string' ? data.modelId : ''
+  const projectDefaultModel = models.find(model => model.id === projectDefaultModelId)
+  const effectiveModelId = explicitModelId || projectDefaultModelId
+  const effectiveModelAvailable = Boolean(effectiveModelId) && models.some(model => model.id === effectiveModelId)
+  const error = listError || (!explicitModelId ? defaultError : '')
+  const emptyLabel = loading
+    ? '正在读取主应用模型…'
+    : projectDefaultModel
+      ? `继承项目默认：${projectDefaultModel.displayName}（${projectDefaultModel.providerName}）`
+      : getStudioResourceScope()
+        ? '项目默认模型不可用，请显式选择模型…'
+        : '请选择模型…'
 
-  if (models.length === 0) return null
-  const current = models.find((m) => (m.model || '') === (data.model as string) && (m.apiUrl || '') === (data.apiUrl as string))
+  useEffect(() => {
+    if (loading || listError || !effectiveModelAvailable) return
+    const desired = autoFallback ? models.filter(model => model.id !== effectiveModelId).map(model => model.id) : []
+    const current = Array.isArray(data.fallbackModelIds) ? data.fallbackModelIds : []
+    if (JSON.stringify(current) !== JSON.stringify(desired)) {
+      onBatchChange({ fallbackModelIds: desired.length ? desired : undefined })
+    }
+  }, [autoFallback, data.fallbackModelIds, effectiveModelAvailable, effectiveModelId, listError, loading, models, onBatchChange])
+
+  const selectedMissing = Boolean(explicitModelId) && !loading && !listError && !models.some(model => model.id === explicitModelId)
   return (
     <div className="space-y-2">
-      <Label className="flex items-center gap-1.5"><Cpu className="w-3.5 h-3.5 text-violet-600" />从已配置模型选择</Label>
+      <Label className="flex items-center gap-1.5"><Cpu className="w-3.5 h-3.5 text-violet-600" />主应用模型</Label>
       <Select
-        value={current?.id || ''}
+        value={(data.modelId as string) || ''}
+        disabled={loading || models.length === 0}
         onChange={(e) => {
-          const m = models.find((x) => x.id === e.target.value)
-          if (!m) return
-          onChange('apiUrl', m.apiUrl || '')
-          onChange('apiKey', m.apiKey || '')
-          onChange('model', m.model || '')
-          if (m.temperature != null) onChange('temperature', m.temperature)
-          if (m.maxTokens != null) onChange('maxTokens', m.maxTokens)
+          const modelId = e.target.value || undefined
+          onBatchChange({
+            modelId,
+            apiUrl: undefined,
+            apiKey: undefined,
+            apiBase: undefined,
+            engineId: undefined,
+            model: undefined,
+            llmProvider: undefined,
+            llmModel: undefined,
+            azureEndpoint: undefined,
+            fallbackModels: undefined,
+          })
         }}
       >
-        <option value="">手动填写 / 选择一个已配置模型…</option>
-        {models.map((m) => (
-          <option key={m.id} value={m.id}>{m.label || m.model}（{m.model}）</option>
+        <option value="">{emptyLabel}</option>
+        {models.map((model) => (
+          <option key={model.id} value={model.id}>{model.displayName}（{model.providerName}）</option>
         ))}
       </Select>
-      <p className="text-xs text-muted-foreground">在「全局配置 → AI对话 → 多模型」中维护模型；选择后会自动填入下方地址/密钥/模型。</p>
+      {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
+      {!loading && !error && models.length === 0 && <p className="text-xs text-amber-700">主应用尚未配置可用模型</p>}
+      {selectedMissing && <p className="text-xs text-amber-700">已选模型不可用，请从主应用模型中重新选择</p>}
+      <p className="text-xs text-muted-foreground">模型地址和密钥由主应用安全管理，不写入工作流文档。</p>
     </div>
   )
 }
 
 // AI大脑配置
-export function AIChatConfig({ data, onChange }: { data: NodeData; onChange: (key: string, value: unknown) => void }) {
+export function AIChatConfig({ data, onChange, onBatchChange }: { data: NodeData; onChange: (key: string, value: unknown) => void; onBatchChange: BatchChange }) {
   return (
     <>
-      <AIModelPicker data={data} onChange={onChange} />
-      <div className="space-y-2">
-        <Label htmlFor="apiUrl">API地址</Label>
-        <VariableInput
-          value={(data.apiUrl as string) || ''}
-          onChange={(v) => onChange('apiUrl', v)}
-          placeholder="https://api.openai.com/v1/chat/completions，支持 {变量名}"
-        />
-        <p className="text-xs text-muted-foreground">
-          支持 OpenAI、智谱、Deepseek 等兼容接口
-        </p>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="apiKey">API密钥</Label>
-        <VariableInput
-          value={(data.apiKey as string) || ''}
-          onChange={(v) => onChange('apiKey', v)}
-          placeholder="sk-xxx 或其他API密钥，支持 {变量名}"
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="model">模型名称</Label>
-        <VariableInput
-          value={(data.model as string) || ''}
-          onChange={(v) => onChange('model', v)}
-          placeholder="gpt-3.5-turbo / glm-4 / deepseek-chat，支持 {变量名}"
-        />
-      </div>
+      <AIModelPicker data={data} onBatchChange={onBatchChange} />
       <div className="space-y-2">
         <Label htmlFor="systemPrompt">系统提示词 (可选)</Label>
         <VariableInput
@@ -154,44 +192,19 @@ export function AIChatConfig({ data, onChange }: { data: NodeData; onChange: (ke
 export function AIVisionConfig({ 
   data, 
   onChange, 
+  onBatchChange,
   renderSelectorInput 
 }: { 
   data: NodeData
   onChange: (key: string, value: unknown) => void
+  onBatchChange: BatchChange
   renderSelectorInput: RenderSelectorInput
 }) {
   const imageSource = (data.imageSource as string) || 'element'
   
   return (
     <>
-      <AIModelPicker data={data} onChange={onChange} />
-      <div className="space-y-2">
-        <Label htmlFor="apiUrl">API地址</Label>
-        <VariableInput
-          value={(data.apiUrl as string) || ''}
-          onChange={(v) => onChange('apiUrl', v)}
-          placeholder="https://open.bigmodel.cn/api/paas/v4/chat/completions，支持 {变量名}"
-        />
-        <p className="text-xs text-muted-foreground">
-          支持 OpenAI、智谱GLM-4V 等视觉模型接口
-        </p>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="apiKey">API密钥</Label>
-        <VariableInput
-          value={(data.apiKey as string) || ''}
-          onChange={(v) => onChange('apiKey', v)}
-          placeholder="API密钥，支持 {变量名}"
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="model">模型名称</Label>
-        <VariableInput
-          value={(data.model as string) || ''}
-          onChange={(v) => onChange('model', v)}
-          placeholder="glm-4v / gpt-4-vision-preview，支持 {变量名}"
-        />
-      </div>
+      <AIModelPicker data={data} onBatchChange={onBatchChange} />
       
       <div className="space-y-2">
         <Label htmlFor="imageSource">图片来源</Label>
@@ -371,357 +384,80 @@ export function ApiRequestConfig({ data, onChange }: { data: NodeData; onChange:
 }
 
 // AI智能爬虫配置
-export function AISmartScraperConfig({ data, onChange }: { data: NodeData; onChange: (key: string, value: unknown) => void }) {
-  const llmProvider = (data.llmProvider as string) || 'ollama'
-  
+export function AISmartScraperConfig({ data, onChange, onBatchChange }: { data: NodeData; onChange: (key: string, value: unknown) => void; onBatchChange: BatchChange }) {
   return (
     <>
       <div className="p-3 bg-red-50 border-2 border-red-300 rounded-lg mb-4">
-        <p className="text-sm text-red-900 font-semibold mb-2">
-          实验性功能 - 不推荐生产使用
-        </p>
-        <p className="text-xs text-red-800 space-y-1">
-          <strong>已知问题：</strong><br />
-          • 速度极慢（10-30秒），成本高（消耗 API 额度）<br />
-          • 准确率低，经常返回错误或无用的分析文本<br />
-          • 对复杂网页效果差，容易理解错误<br />
-          <br />
-          <strong>适用场景：</strong><br />
-          • 仅适合提取文章内容、大段文本<br />
-          • 不适合结构化数据提取<br />
-          • 不适合需要快速响应的场景<br />
-          <br />
-          <strong>推荐：</strong>使用传统的"获取元素列表"等模块，更快更准确
-        </p>
+        <p className="text-sm text-red-900 font-semibold mb-2">实验性功能 - 不推荐生产使用</p>
+        <p className="text-xs text-red-800">适合用自然语言从当前 CloakBrowser 页面提取内容；复杂结构优先使用确定性的元素提取节点。</p>
       </div>
-      
+      <AIModelPicker data={data} onBatchChange={onBatchChange} />
       <div className="space-y-2">
         <Label htmlFor="url">目标网页URL</Label>
-        <VariableInput
-          value={(data.url as string) || ''}
-          onChange={(v) => onChange('url', v)}
-          placeholder="https://example.com，支持 {变量名}"
-        />
+        <VariableInput value={(data.url as string) || ''} onChange={(v) => onChange('url', v)} placeholder="https://example.com，支持 {变量名}" />
       </div>
-      
       <div className="space-y-2">
         <Label htmlFor="prompt">提取提示词</Label>
-        <VariableInput
-          value={(data.prompt as string) || ''}
-          onChange={(v) => onChange('prompt', v)}
-          placeholder='示例：Extract top 10 items. Return JSON: [{"title": "...", "value": 123}]. No explanation.'
-          multiline
-          rows={4}
-        />
-        <p className="text-xs text-muted-foreground">
-          <strong>重要：</strong>必须用英文，明确指定返回格式（JSON数组等），并强调"No explanation"
-        </p>
+        <VariableInput value={(data.prompt as string) || ''} onChange={(v) => onChange('prompt', v)} placeholder='示例：提取前10项并返回JSON数组' multiline rows={4} />
       </div>
-      
       <div className="space-y-2">
         <Label htmlFor="waitTime">页面加载等待时间 (秒)</Label>
-        <NumberInput
-          id="waitTime"
-          value={(data.waitTime as number) ?? 3}
-          onChange={(v) => onChange('waitTime', v)}
-          defaultValue={3}
-          min={0}
-          max={30}
-        />
-        <p className="text-xs text-muted-foreground">
-          访问网页后等待指定秒数再开始爬取，让页面有时间完全加载（推荐 3-5 秒）
-        </p>
+        <NumberInput id="waitTime" value={(data.waitTime as number) ?? 3} onChange={(v) => onChange('waitTime', v)} defaultValue={3} min={0} max={30} />
       </div>
-      
       <div className="space-y-2">
         <Label htmlFor="variableName">存储结果到变量</Label>
-        <VariableNameInput
-          id="variableName"
-          value={(data.variableName as string) || ''}
-          onChange={(v) => onChange('variableName', v)}
-          placeholder="变量名"
-        />
+        <VariableNameInput id="variableName" value={(data.variableName as string) || ''} onChange={(v) => onChange('variableName', v)} placeholder="变量名" />
       </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="llmProvider">LLM提供商</Label>
-        <Select
-          id="llmProvider"
-          value={llmProvider}
-          onChange={(e) => onChange('llmProvider', e.target.value)}
-        >
-          <option value="ollama">Ollama (本地免费)</option>
-          <option value="openai">OpenAI</option>
-          <option value="groq">Groq</option>
-          <option value="gemini">Google Gemini</option>
-          <option value="azure">Azure OpenAI</option>
-          <option value="zhipu">智谱 AI (GLM)</option>
-          <option value="deepseek">Deepseek</option>
-          <option value="custom">自定义</option>
-        </Select>
-      </div>
-      
-      {llmProvider !== 'ollama' && (
-        <div className="space-y-2">
-          <Label htmlFor="apiUrl">API地址</Label>
-          <VariableInput
-            value={(data.apiUrl as string) || ''}
-            onChange={(v) => onChange('apiUrl', v)}
-            placeholder={
-              llmProvider === 'openai' ? 'https://api.openai.com/v1' :
-              llmProvider === 'zhipu' ? 'https://open.bigmodel.cn/api/paas/v4' :
-              llmProvider === 'deepseek' ? 'https://api.deepseek.com' :
-              llmProvider === 'groq' ? 'https://api.groq.com/openai/v1' :
-              llmProvider === 'gemini' ? 'https://generativelanguage.googleapis.com/v1beta' :
-              '自定义API地址，支持 {变量名}'
-            }
-          />
-        </div>
-      )}
-      
-      <div className="space-y-2">
-        <Label htmlFor="llmModel">模型名称</Label>
-        <VariableInput
-          value={(data.llmModel as string) || 'llama3.2'}
-          onChange={(v) => onChange('llmModel', v)}
-          placeholder={llmProvider === 'ollama' ? 'llama3.2' : 'gpt-4o-mini'}
-        />
-        <p className="text-xs text-muted-foreground">
-          {llmProvider === 'ollama' 
-            ? '本地模型，如 llama3.2、qwen2.5 等' 
-            : '云端模型名称'}
-        </p>
-      </div>
-      
-      {llmProvider !== 'ollama' && (
-        <div className="space-y-2">
-          <Label htmlFor="apiKey">API Key</Label>
-          <VariableInput
-            value={(data.apiKey as string) || ''}
-            onChange={(v) => onChange('apiKey', v)}
-            placeholder="sk-xxx，支持 {变量名}"
-          />
-        </div>
-      )}
-      
-      {llmProvider === 'azure' && (
-        <div className="space-y-2">
-          <Label htmlFor="azureEndpoint">Azure Endpoint</Label>
-          <VariableInput
-            value={(data.azureEndpoint as string) || ''}
-            onChange={(v) => onChange('azureEndpoint', v)}
-            placeholder="https://your-resource.openai.azure.com/"
-          />
-        </div>
-      )}
-      
-      <div className="space-y-2">
-        <Label htmlFor="headless">无头模式</Label>
-        <Select
-          id="headless"
-          value={String(data.headless ?? true)}
-          onChange={(e) => onChange('headless', e.target.value === 'true')}
-        >
-          <option value="true">是（后台运行）</option>
-          <option value="false">否（显示浏览器）</option>
-        </Select>
-      </div>
-      
       <div className="space-y-2">
         <Label htmlFor="verbose">详细日志</Label>
-        <Select
-          id="verbose"
-          value={String(data.verbose ?? false)}
-          onChange={(e) => onChange('verbose', e.target.value === 'true')}
-        >
-          <option value="false">否</option>
-          <option value="true">是</option>
+        <Select id="verbose" value={String(data.verbose ?? false)} onChange={(e) => onChange('verbose', e.target.value === 'true')}>
+          <option value="false">否</option><option value="true">是</option>
         </Select>
       </div>
-      
       <div className="bg-[hsl(var(--card))] p-3 border border-purple-200 rounded-lg">
-        <p className="text-xs text-purple-900">
-          <strong className="inline-flex items-center gap-1.5">
-            <Bot className="w-3.5 h-3.5" />
-            AI智能爬虫
-          </strong><br/>
-          • 优点：用自然语言描述即可提取数据，适应网页结构变化<br/>
-          • 缺点：速度比传统爬虫慢，需要LLM支持<br/>
-          • 推荐：使用Ollama本地运行，完全免费
-        </p>
+        <p className="text-xs text-purple-900"><strong className="inline-flex items-center gap-1.5"><Bot className="w-3.5 h-3.5" />AI智能爬虫</strong><br/>使用主应用模型分析 CloakBrowser 已加载的页面，不启动第二套浏览器。</p>
       </div>
     </>
   )
 }
 
 // AI智能元素选择器配置
-export function AIElementSelectorConfig({ data, onChange }: { data: NodeData; onChange: (key: string, value: unknown) => void }) {
-  const llmProvider = (data.llmProvider as string) || 'ollama'
-  
+export function AIElementSelectorConfig({ data, onChange, onBatchChange }: { data: NodeData; onChange: (key: string, value: unknown) => void; onBatchChange: BatchChange }) {
   return (
     <>
       <div className="p-3 bg-red-50 border-2 border-red-300 rounded-lg mb-4">
-        <p className="text-sm text-red-900 font-semibold mb-2">
-          实验性功能 - 不推荐生产使用
-        </p>
-        <p className="text-xs text-red-800 space-y-1">
-          <strong>已知问题：</strong><br />
-          • 准确率极低，经常找不到元素或返回错误选择器<br />
-          • 对复杂网页效果差，容易被页面内容干扰<br />
-          • 速度慢，成本高（消耗 API 额度）<br />
-          <br />
-          <strong>推荐：</strong>使用浏览器开发者工具（F12）手动获取选择器，更快更准确
-        </p>
+        <p className="text-sm text-red-900 font-semibold mb-2">实验性功能 - 不推荐生产使用</p>
+        <p className="text-xs text-red-800">AI 返回的选择器必须再用定位测试验证；稳定页面优先使用元素拾取。</p>
       </div>
-      
+      <AIModelPicker data={data} onBatchChange={onBatchChange} />
       <div className="space-y-2">
         <Label htmlFor="url">目标网页URL</Label>
-        <VariableInput
-          value={(data.url as string) || ''}
-          onChange={(v) => onChange('url', v)}
-          placeholder="https://example.com，支持 {变量名}"
-        />
+        <VariableInput value={(data.url as string) || ''} onChange={(v) => onChange('url', v)} placeholder="https://example.com，支持 {变量名}" />
       </div>
-      
       <div className="space-y-2">
         <Label htmlFor="elementDescription">元素描述</Label>
-        <VariableInput
-          value={(data.elementDescription as string) || ''}
-          onChange={(v) => onChange('elementDescription', v)}
-          placeholder="用自然语言描述要查找的元素，如：登录按钮、搜索输入框"
-          multiline
-          rows={3}
-        />
-        <p className="text-xs text-muted-foreground">
-          用自然语言描述你想找的页面元素（建议用英文，效果更好）
-        </p>
+        <VariableInput value={(data.elementDescription as string) || ''} onChange={(v) => onChange('elementDescription', v)} placeholder="如：登录按钮、搜索输入框" multiline rows={3} />
       </div>
-      
       <div className="space-y-2">
         <Label htmlFor="waitTime">页面加载等待时间 (秒)</Label>
-        <NumberInput
-          id="waitTime"
-          value={(data.waitTime as number) ?? 3}
-          onChange={(v) => onChange('waitTime', v)}
-          defaultValue={3}
-          min={0}
-          max={30}
-        />
-        <p className="text-xs text-muted-foreground">
-          访问网页后等待指定秒数再开始分析，让页面有时间完全加载（推荐 3-5 秒）
-        </p>
+        <NumberInput id="waitTime" value={(data.waitTime as number) ?? 3} onChange={(v) => onChange('waitTime', v)} defaultValue={3} min={0} max={30} />
       </div>
-      
       <div className="space-y-2">
         <Label htmlFor="variableName">存储选择器到变量</Label>
-        <VariableNameInput
-          id="variableName"
-          value={(data.variableName as string) || ''}
-          onChange={(v) => onChange('variableName', v)}
-          placeholder="变量名"
-        />
-        <p className="text-xs text-muted-foreground">
-          AI找到的CSS选择器将保存到此变量
-        </p>
+        <VariableNameInput id="variableName" value={(data.variableName as string) || ''} onChange={(v) => onChange('variableName', v)} placeholder="变量名" />
       </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="llmProvider">LLM提供商</Label>
-        <Select
-          id="llmProvider"
-          value={llmProvider}
-          onChange={(e) => onChange('llmProvider', e.target.value)}
-        >
-          <option value="ollama">Ollama (本地免费)</option>
-          <option value="openai">OpenAI</option>
-          <option value="groq">Groq</option>
-          <option value="gemini">Google Gemini</option>
-          <option value="azure">Azure OpenAI</option>
-          <option value="zhipu">智谱 AI (GLM)</option>
-          <option value="deepseek">Deepseek</option>
-          <option value="custom">自定义</option>
-        </Select>
-      </div>
-      
-      {llmProvider !== 'ollama' && (
-        <div className="space-y-2">
-          <Label htmlFor="apiUrl">API地址</Label>
-          <VariableInput
-            value={(data.apiUrl as string) || ''}
-            onChange={(v) => onChange('apiUrl', v)}
-            placeholder={
-              llmProvider === 'openai' ? 'https://api.openai.com/v1' :
-              llmProvider === 'zhipu' ? 'https://open.bigmodel.cn/api/paas/v4' :
-              llmProvider === 'deepseek' ? 'https://api.deepseek.com' :
-              llmProvider === 'groq' ? 'https://api.groq.com/openai/v1' :
-              llmProvider === 'gemini' ? 'https://generativelanguage.googleapis.com/v1beta' :
-              '自定义API地址，支持 {变量名}'
-            }
-          />
-        </div>
-      )}
-      
-      <div className="space-y-2">
-        <Label htmlFor="llmModel">模型名称</Label>
-        <VariableInput
-          value={(data.llmModel as string) || 'llama3.2'}
-          onChange={(v) => onChange('llmModel', v)}
-          placeholder={llmProvider === 'ollama' ? 'llama3.2' : 'gpt-4o-mini'}
-        />
-        <p className="text-xs text-muted-foreground">
-          {llmProvider === 'ollama' 
-            ? '本地模型，如 llama3.2、qwen2.5 等' 
-            : '云端模型名称'}
-        </p>
-      </div>
-      
-      {llmProvider !== 'ollama' && (
-        <div className="space-y-2">
-          <Label htmlFor="apiKey">API Key</Label>
-          <VariableInput
-            value={(data.apiKey as string) || ''}
-            onChange={(v) => onChange('apiKey', v)}
-            placeholder="sk-xxx，支持 {变量名}"
-          />
-        </div>
-      )}
-      
-      {llmProvider === 'azure' && (
-        <div className="space-y-2">
-          <Label htmlFor="azureEndpoint">Azure Endpoint</Label>
-          <VariableInput
-            value={(data.azureEndpoint as string) || ''}
-            onChange={(v) => onChange('azureEndpoint', v)}
-            placeholder="https://your-resource.openai.azure.com/"
-          />
-        </div>
-      )}
-      
       <div className="space-y-2">
         <Label htmlFor="verbose">详细日志</Label>
-        <Select
-          id="verbose"
-          value={String(data.verbose ?? false)}
-          onChange={(e) => onChange('verbose', e.target.value === 'true')}
-        >
-          <option value="false">否</option>
-          <option value="true">是</option>
+        <Select id="verbose" value={String(data.verbose ?? false)} onChange={(e) => onChange('verbose', e.target.value === 'true')}>
+          <option value="false">否</option><option value="true">是</option>
         </Select>
       </div>
-      
       <div className="bg-[hsl(var(--card))] p-3 border border-blue-200 rounded-lg">
-        <p className="text-xs text-blue-900">
-          <strong>AI智能元素选择器</strong><br/>
-          • 优点：即使网页结构变化，也能准确找到元素<br />
-          • 使用场景：网站频繁改版、选择器不稳定<br />
-          • 工作原理：AI 访问指定 URL，分析页面后返回匹配元素的 CSS 选择器<br />
-          • 推荐：使用Ollama本地运行，完全免费
-        </p>
+        <p className="text-xs text-blue-900"><strong>AI智能元素选择器</strong><br/>使用主应用模型分析 CloakBrowser 已加载页面并返回 CSS 选择器。</p>
       </div>
     </>
   )
 }
-
 
 // Firecrawl AI 单页数据抓取配置
 export function FirecrawlScrapeConfig({ data, onChange }: { data: NodeData; onChange: (key: string, value: unknown) => void }) {
@@ -826,11 +562,11 @@ export function FirecrawlScrapeConfig({ data, onChange }: { data: NodeData; onCh
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="waitFor">等待时间 (毫秒，可选)</Label>
+        <Label htmlFor="waitFor">等待选择器 (可选)</Label>
         <VariableInput
           value={(data.waitFor as string) || ''}
           onChange={(v) => onChange('waitFor', v)}
-          placeholder="3000"
+          placeholder="#content-ready，最多等待 5 秒"
         />
       </div>
       
@@ -1107,39 +843,11 @@ export function FirecrawlCrawlConfig({ data, onChange }: { data: NodeData; onCha
 // AI 数据处理任务（抽取/分类/摘要/翻译/情感）通用配置面板
 // 复用全局 AI 模型选择 + API 字段，按 moduleType 渲染任务专属字段。
 // ============================================================
-function AITaskApiBlock({ data, onChange }: { data: NodeData; onChange: (key: string, value: unknown) => void }) {
-  return (
-    <>
-      <AIModelPicker data={data} onChange={onChange} />
-      <div className="space-y-2">
-        <Label htmlFor="apiUrl">API地址</Label>
-        <VariableInput
-          value={(data.apiUrl as string) || ''}
-          onChange={(v) => onChange('apiUrl', v)}
-          placeholder="https://api.openai.com/v1/chat/completions，支持 {变量名}"
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="apiKey">API密钥</Label>
-        <VariableInput
-          value={(data.apiKey as string) || ''}
-          onChange={(v) => onChange('apiKey', v)}
-          placeholder="sk-xxx，支持 {变量名}"
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="model">模型名称</Label>
-        <VariableInput
-          value={(data.model as string) || ''}
-          onChange={(v) => onChange('model', v)}
-          placeholder="gpt-3.5-turbo / glm-4 / deepseek-chat，支持 {变量名}"
-        />
-      </div>
-    </>
-  )
+function AITaskApiBlock({ data, onBatchChange }: { data: NodeData; onBatchChange: BatchChange }) {
+  return <AIModelPicker data={data} onBatchChange={onBatchChange} />
 }
 
-export function AITaskConfig({ moduleType, data, onChange }: { moduleType: string; data: NodeData; onChange: (key: string, value: unknown) => void }) {
+export function AITaskConfig({ moduleType, data, onChange, onBatchChange }: { moduleType: string; data: NodeData; onChange: (key: string, value: unknown) => void; onBatchChange: BatchChange }) {
   return (
     <div className="space-y-3">
       {moduleType === 'ai_dedup_semantic' ? (
@@ -1277,47 +985,22 @@ export function AITaskConfig({ moduleType, data, onChange }: { moduleType: strin
       </div>
 
       <details className="rounded-lg border border-[hsl(var(--border))] p-2">
-        <summary className="text-sm cursor-pointer select-none text-[hsl(var(--muted-foreground))]">AI 接口设置（默认取全局 AI 配置）</summary>
+        <summary className="text-sm cursor-pointer select-none text-[hsl(var(--muted-foreground))]">AI 模型设置</summary>
         <div className="space-y-2 mt-2">
-          <AITaskApiBlock data={data} onChange={onChange} />
+          <AITaskApiBlock data={data} onBatchChange={onBatchChange} />
         </div>
       </details>
     </div>
   )
 }
 
-// AI视觉操作配置（看屏点选，不依赖选择器）
-export function AIVisionActConfig({ data, onChange }: { data: NodeData; onChange: (key: string, value: unknown) => void }) {
+// AI视觉操作配置（看当前页面点选，不依赖选择器）
+export function AIVisionActConfig({ data, onChange, onBatchChange }: { data: NodeData; onChange: (key: string, value: unknown) => void; onBatchChange: BatchChange }) {
   const action = (data.action as string) || 'click'
   const needButton = action === 'click' || action === 'double'
   return (
     <>
-      <AIModelPicker data={data} onChange={onChange} />
-      <div className="space-y-2">
-        <Label htmlFor="apiUrl">API地址</Label>
-        <VariableInput
-          value={(data.apiUrl as string) || ''}
-          onChange={(v) => onChange('apiUrl', v)}
-          placeholder="https://open.bigmodel.cn/api/paas/v4/chat/completions，支持 {变量名}"
-        />
-        <p className="text-xs text-muted-foreground">需支持坐标定位的视觉模型（如 GLM-4V、UI-TARS、GPT-4o）</p>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="apiKey">API密钥</Label>
-        <VariableInput
-          value={(data.apiKey as string) || ''}
-          onChange={(v) => onChange('apiKey', v)}
-          placeholder="API密钥，支持 {变量名}"
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="model">模型名称</Label>
-        <VariableInput
-          value={(data.model as string) || ''}
-          onChange={(v) => onChange('model', v)}
-          placeholder="glm-4v / ui-tars / gpt-4o，支持 {变量名}"
-        />
-      </div>
+      <AIModelPicker data={data} onBatchChange={onBatchChange} />
 
       <div className="space-y-2">
         <Label htmlFor="instruction">目标描述</Label>
@@ -1328,7 +1011,7 @@ export function AIVisionActConfig({ data, onChange }: { data: NodeData; onChange
           multiline
           rows={3}
         />
-        <p className="text-xs text-muted-foreground">AI 会截取当前屏幕，根据描述定位目标并返回坐标。</p>
+        <p className="text-xs text-muted-foreground">AI 会截取当前浏览器页面，根据描述定位目标并返回坐标。</p>
       </div>
       <div className="space-y-2">
         <Label htmlFor="action">执行动作</Label>
@@ -1380,9 +1063,9 @@ export function AIVisionActConfig({ data, onChange }: { data: NodeData; onChange
       </div>
       <div className="p-3 bg-violet-50 border border-violet-200 rounded-lg">
         <p className="text-xs text-violet-800">
-          <strong>AI视觉操作</strong>让 AI 直接"看屏幕"定位目标并真实点击，无需任何选择器。<br/>
+          <strong>AI视觉操作</strong>让 AI 直接"看页面"定位目标并真实点击，无需任何选择器。<br/>
           • 适合 Canvas、图片按钮、防自动化页面等取不到选择器的场景<br/>
-          • 操作的是整个桌面屏幕（物理鼠标），请确保目标窗口在前台
+          • 操作仅限当前 CloakBrowser 页面，不控制 Windows 桌面
         </p>
       </div>
     </>

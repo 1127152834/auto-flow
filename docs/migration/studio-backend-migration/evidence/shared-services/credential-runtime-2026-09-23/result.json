@@ -1,0 +1,30 @@
+{
+  "evidenceId": "BE.SUPPORT.credentials-integrations.runtime",
+  "status": "verified-macos-arm64-development-and-package",
+  "source": "WebRPA credential_manager.get_field + existing migrated variables.resolve_value",
+  "classification": "AutoFlow必要适配：系统秘密只经所属worker私有通道按字段读取",
+  "developmentEvidence": "docs/migration/studio-backend-migration/evidence/b1/formal-electron-V7sWWS/result.json",
+  "checks": {
+    "regression": 82,
+    "readerAndWriteRace": 5,
+    "realWorker": "Actual production worker, normal/empty/missing and empty name/field references, nested inheritance, blocked native-read cancellation; fixture store separate from native UI evidence",
+    "ruff": "passed",
+    "mypy": "passed",
+    "openapi": "passed",
+    "structure": "passed",
+    "realWorkerCases": 8,
+    "finalFrozenStartup": "passed",
+    "finalUnsignedPackage": "passed"
+  },
+  "boundaries": [
+    "Unit/integration secret store is a fixture; actual development UI used the native system credential store",
+    "Only random temporary test credentials created and deleted; user credentials/database untouched",
+    "Private pipe records are excluded from SQL/SSE/logs/diagnostics",
+    "Source missing/failed reads preserve original placeholder; stop remains cancellation",
+    "Native store thread itself cannot be forcibly cancelled; at most one outstanding read per run, bounded owner wait, daemon and discard after stop",
+    "No project credential ACL introduced; project resource policy question remains pending",
+    "Overall 213 node slots remain 622/17, 14 notifications excluded; Intel/Windows untested"
+  ],
+  "packagedEvidence": "docs/migration/studio-backend-migration/evidence/b1/formal-electron-ZMGYx6/result.json",
+  "priorPackagedEvidence": "docs/migration/studio-backend-migration/evidence/b1/formal-electron-znjbwe/result.json"
+}

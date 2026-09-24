@@ -11,7 +11,7 @@ from autoflow.infrastructure.database import session as database_session
 
 @pytest.mark.parametrize(
     "revision",
-    [None, "0001_browser_resources", "0002_proxy_management", "0002_model_management", "0008_workflow_debug", "pm01_projects", "pm02_schema_drafts"],
+    [None, "0001_browser_resources", "0002_proxy_management", "0002_model_management", "0008_workflow_debug", "pm01_projects", "pm02_schema_drafts", "0021_assistant_project_scope", "pm10_shared_sheet_cursors"],
 )
 def test_merge_upgrade_preserves_each_branch_database(
     tmp_path: Path, revision: str | None
@@ -19,7 +19,7 @@ def test_merge_upgrade_preserves_each_branch_database(
     database = tmp_path / "merged.sqlite3"
     config = Config(str(Path(database_session.__file__).with_name("alembic.ini")))
     config.set_main_option("sqlalchemy.url", f"sqlite:///{database}")
-    assert ScriptDirectory.from_config(config).get_heads() == ["pm10_shared_sheet_cursors"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["0022_merge_studio_pm10"]
     if revision:
         command.upgrade(config, revision)
         with sqlite3.connect(database) as connection:
@@ -40,11 +40,20 @@ def test_merge_upgrade_preserves_each_branch_database(
     database_session.migrate_database(database)
     with sqlite3.connect(database) as connection:
         assert connection.execute("SELECT version_num FROM alembic_version").fetchall() == [
-            ("pm10_shared_sheet_cursors",)
+            ("0022_merge_studio_pm10",)
         ]
         tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         assert {"profiles", "proxy_projections", "proxy_group_details", "model_providers", "models", "kernel_operations", "workflow_documents"} <= tables
         assert {"workflow_runs", "workflow_run_events", "workflow_run_artifacts", "workflow_debug_commands"} <= tables
+        assert {"workflow_assistant_sessions", "workflow_recording_sessions", "project_task_record_cursors"} <= tables
+        assert "project_id" in {
+            row[1] for row in connection.execute("PRAGMA table_info(workflow_assistant_sessions)")
+        }
+        cursor_schema = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE name='project_task_record_cursors'"
+        ).fetchone()[0]
+        assert "uq_project_task_record_cursors_ref" in cursor_schema
+        assert "uq_project_task_record_cursors_lease" not in cursor_schema
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
         if revision:
             assert connection.execute(
@@ -120,7 +129,7 @@ def test_retired_studio_data_survives_application_startup(tmp_path: Path):
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchone() == ("pm10_shared_sheet_cursors",)
+        ).fetchone() == ("0022_merge_studio_pm10",)
         status, sequence, completed_at = connection.execute(
             "SELECT status, last_sequence, completed_at "
             "FROM project_workflow_runs WHERE id='run'"

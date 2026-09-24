@@ -1,0 +1,37 @@
+{
+  "evidenceId": "BE-project-control-flow-formal-electron",
+  "result": "passed",
+  "checkedAt": "2026-09-23T10:10:08.952Z",
+  "gitHead": "80fc5bfb309c7ff4fb864e7b04398fa657168143",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "projectId": "7873b19b-37d9-4516-add4-cae29c514475",
+  "workflowIds": [
+    "xlEbuIQGJX0v_FAS9gVGo",
+    "C_upDrIQ168iAUel5BxZ5",
+    "IrXjS5O5pkJY6dpaPshra"
+  ],
+  "batchIds": [
+    "ed716ecf-66f6-4fd2-a1f6-2808a7aeac9d",
+    "d160077e-6191-4c46-8c8a-56d02a3bcae4",
+    "2406c733-dbbf-4ca7-ac3a-61d6a05a17bd"
+  ],
+  "taskIds": [
+    "8ec2c0f3-4b02-4448-8768-7f28ece2cdbf",
+    "fd091080-a142-48ed-9e34-ccbaea926e4c",
+    "6762db87-6cb6-4e2b-867b-3aec26008056"
+  ],
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "通过模块条真实点击完成初始化、三轮循环、真假分支和汇合后的尾节点",
+    "正式项目批次真实worker执行三轮循环与条件真分支，假分支无副作用；输出、尝试记录和进程清理通过",
+    "正式项目批次真实worker执行列表内嵌条件的真假分支、字典遍历、无限循环退出与两轮跳过；被跳过节点无尝试，最终值为4",
+    "正式项目任务真实执行画布分组子流程，组内导航受控网页，变量传给尾节点输出42；CloakBrowser清理完成"
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserStarted": true,
+    "interaction": "formal Electron mouse/keyboard; API only fixture setup and evidence reads"
+  }
+}

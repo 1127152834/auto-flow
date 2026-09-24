@@ -1,0 +1,62 @@
+........F...                                                             [100%]
+=================================== FAILURES ===================================
+_ test_real_http_two_clients_and_reconnect_have_independent_delivery_and_full_history _
+
+    @pytest.mark.asyncio
+    async def test_real_http_two_clients_and_reconnect_have_independent_delivery_and_full_history():
+        journal = StudioEventJournal()
+        await journal.publish('execution:log', {'log': {'id': 'info', 'level': 'info', 'message': '普通'}})
+        await journal.publish('execution:log', {'log': {'id': 'user', 'level': 'info', 'message': '用户', 'isUserLog': True}})
+        await journal.publish('execution:log_batch', {'logs': [{'id': 'debug', 'level': 'debug'}, {'id': 'error', 'level': 'error'}]})
+        await journal.publish('execution:completed', {'runId': 'r'})
+        app = FastAPI()
+        app.include_router(workflow_events_router(journal))
+        sock = socket.socket()
+        sock.bind(('127.0.0.1', 0))
+        sock.listen()
+        server = uvicorn.Server(uvicorn.Config(app, log_level='error', lifespan='off'))
+        serving = asyncio.create_task(server.serve(sockets=[sock]))
+        try:
+            async with asyncio.timeout(5):
+                while not server.started:
+                    await asyncio.sleep(.01)
+            async with httpx.AsyncClient(base_url=f'http://127.0.0.1:{sock.getsockname()[1]}', timeout=3) as client:
+                async def frames(query):
+                    received = []
+                    async with client.stream('GET', f'/api/events/stream?{query}') as response:
+                        assert response.status_code == 200
+                        frame = {}
+                        async for line in response.aiter_lines():
+                            if line.startswith('id: '): frame['id'] = int(line[4:])
+                            elif line.startswith('event: '): frame['event'] = line[7:]
+                            elif line.startswith('data: '): frame['data'] = json.loads(line[6:])
+                            elif not line and frame:
+                                received.append(frame)
+                                if frame['id'] == 4: break
+                                frame = {}
+                    return received
+>               concise, verbose = await asyncio.gather(frames('verboseLog=false'), frames('verboseLog=true'))
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/contract/test_studio_log_delivery.py:73:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+query = 'verboseLog=false'
+
+    async def frames(query):
+        received = []
+        async with client.stream('GET', f'/api/events/stream?{query}') as response:
+>           assert response.status_code == 200
+E           assert 502 == 200
+E            +  where 502 = <Response [502 Bad Gateway]>.status_code
+
+tests/contract/test_studio_log_delivery.py:62: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.11/site-packages/starlette/testclient.py:53
+  /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/contract/test_studio_log_delivery.py::test_real_http_two_clients_and_reconnect_have_independent_delivery_and_full_history
+1 failed, 11 passed, 1 warning in 0.68s

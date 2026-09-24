@@ -1,4 +1,5 @@
 import { setStudioTransport, type StudioTransport } from './transport'
+import type { StudioOpenContext } from '../../../../shared/automation-studio'
 
 let backendOrigin: string | undefined
 
@@ -20,6 +21,33 @@ export const getBackendPort = () => new URL(getBackendBaseUrl()).port
 export const getFrontendPort = () => location.port
 export const setBackendPort = (_port: number | string) => { throw new Error('Studio connection is managed by AutoFlow') }
 export const preloadConfig = async () => { getBackendBaseUrl() }
+
+export function getStudioOpenContext(): StudioOpenContext {
+  const params = new URLSearchParams(location.search)
+  const context: StudioOpenContext = {}
+  for (const key of ['workspaceKey', 'instanceId', 'projectId', 'workflowId'] as const) {
+    const value = params.get(key)
+    if (value) context[key] = value
+  }
+  return context
+}
+
+/** Resource overrides belong to a workspace/project, and survive its service reconnect. */
+export function getStudioResourceScope(): string | null {
+  const {projectId, workspaceKey} = getStudioOpenContext()
+  return projectId ? JSON.stringify([workspaceKey ?? getBackendBaseUrl(), projectId]) : null
+}
+
+/** Keep document, run, control and event requests on the registered window's project. */
+export function scopeStudioUrl(url: string, projectId = getStudioOpenContext().projectId): string {
+  if (!projectId) return url
+  const scoped = new URL(url)
+  if (/^\/api\/(?:workflows|workflow-runs|events|browser|element-picker|recorder|ai-assistant)(?:\/|$)/.test(scoped.pathname)) {
+    scoped.searchParams.set('projectId', projectId)
+    return scoped.toString()
+  }
+  return url
+}
 
 /** Shared validation for connection composition and authenticated HTTP transport. */
 export function normalizeStudioOrigin(origin: string): string {

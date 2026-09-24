@@ -1,0 +1,219 @@
+F
+=================================== FAILURES ===================================
+_ test_project_recognition_uses_real_models_files_branches_and_cleanup[match] __
+
+fut = <Task cancelled name='Task-3' coro=<WorkflowRunDispatcher.wait_idle() done, defined at /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/src/autoflow/application/workflows/dispatcher.py:395>>
+timeout = 100
+
+    async def wait_for(fut, timeout):
+        """Wait for the single Future or coroutine to complete, with timeout.
+
+        Coroutine will be wrapped in Task.
+
+        Returns result of the Future or coroutine.  When a timeout occurs,
+        it cancels the task and raises TimeoutError.  To avoid the task
+        cancellation, wrap it in shield().
+
+        If the wait is cancelled, the task is also cancelled.
+
+        This function is a coroutine.
+        """
+        loop = events.get_running_loop()
+
+        if timeout is None:
+            return await fut
+
+        if timeout <= 0:
+            fut = ensure_future(fut, loop=loop)
+
+            if fut.done():
+                return fut.result()
+
+            await _cancel_and_wait(fut, loop=loop)
+            try:
+                return fut.result()
+            except exceptions.CancelledError as exc:
+                raise exceptions.TimeoutError() from exc
+
+        waiter = loop.create_future()
+        timeout_handle = loop.call_later(timeout, _release_waiter, waiter)
+        cb = functools.partial(_release_waiter, waiter)
+
+        fut = ensure_future(fut, loop=loop)
+        fut.add_done_callback(cb)
+
+        try:
+            # wait until the future completes or the timeout
+            try:
+                await waiter
+            except exceptions.CancelledError:
+                if fut.done():
+                    return fut.result()
+                else:
+                    fut.remove_done_callback(cb)
+                    # We must ensure that the task is not running
+                    # after wait_for() returns.
+                    # See https://bugs.python.org/issue32751
+                    await _cancel_and_wait(fut, loop=loop)
+                    raise
+
+            if fut.done():
+                return fut.result()
+            else:
+                fut.remove_done_callback(cb)
+                # We must ensure that the task is not running
+                # after wait_for() returns.
+                # See https://bugs.python.org/issue32751
+                await _cancel_and_wait(fut, loop=loop)
+                # In case task cancellation failed with some
+                # exception, we should re-raise it
+                # See https://bugs.python.org/issue40607
+                try:
+>                   return fut.result()
+                           ^^^^^^^^^^^^
+
+../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/tasks.py:500:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <autoflow.application.workflows.dispatcher.WorkflowRunDispatcher object at 0x111cd9390>
+
+    async def wait_idle(self) -> None:
+        task = self._task
+        if task is not None:
+>           await asyncio.shield(task)
+E           asyncio.exceptions.CancelledError
+
+apps/backend/src/autoflow/application/workflows/dispatcher.py:398: CancelledError
+
+The above exception was the direct cause of the following exception:
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-179/test_project_recognition_uses_0')
+scenario = 'match'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize('scenario', ['match', 'no_face', 'missing', 'stop'])
+    async def test_project_recognition_uses_real_models_files_branches_and_cleanup(tmp_path: Path, scenario: str):
+        assert {'image_ocr', 'face_recognition', 'ocr_captcha', 'slider_captcha'} <= runnable_module_types()
+        face, text = _write_fixtures(tmp_path)
+        factory, _, _, coordinator, _, project, automation = setup(tmp_path)
+        source = tmp_path / 'missing.png' if scenario == 'missing' else text if scenario == 'no_face' else face
+        steps = [
+            ('face', 'face_recognition', {'sourceImage': str(source), 'targetImage': str(face), 'timeout': 60}),
+            ('ocr', 'image_ocr', {'imagePath': str(text), 'ocrType': 'general', 'timeout': 60}),
+            ('matched', 'print_log', {'logMessage': '识别文本:{ocr_text}'}),
+            ('empty', 'print_log', {'logMessage': '没有检测到人脸'}),
+        ]
+        document = _studio_payload(automation.workflow_id)
+        document.update(schemaVersion=3,
+            nodes=[{'id': node, 'type': kind, 'position': {'x': i * 160, 'y': 0}, 'data': {'moduleType': kind, 'config': config}}
+                   for i, (node, kind, config) in enumerate(steps)],
+            edges=[{'id': 'yes', 'source': 'face', 'sourceHandle': 'true', 'target': 'ocr'},
+                   {'id': 'no', 'source': 'face', 'sourceHandle': 'false', 'target': 'empty'},
+                   {'id': 'next', 'source': 'ocr', 'target': 'matched'}], variables=[])
+        WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory)).update(
+            automation.workflow_id, document, expected_revision=1, client_request_id=str(uuid4()))
+        runtime = WorkflowRuntimeService(factory, SqlAlchemyWorkflowRepository(factory))
+        coordinator._core = runtime
+        frozen = os.environ.get('AUTOFLOW_TEST_PROJECT_WORKER')
+        worker = ProjectWorkflowWorkerManager(tmp_path / 'recognition-worker',
+            **({'command': (str(Path(frozen).resolve(strict=True)), '--project-workflow-worker')} if frozen else {}))
+        resources = _NoBrowserResources()
+        dispatcher = _dispatcher(factory, worker, resources)
+        try:
+            batch, _, _ = coordinator.start(project.project_id, automation.automation_id, str(uuid4()), start_payload(automation))
+            task = coordinator.list_tasks(project.project_id, batch.batch_id)[0]
+            run = runtime.query_run(run_id=task.run_id)
+            assert run is not None
+            running = await dispatcher.dispatch(run.run_id, expected_status_revision=run.status_revision, execution_generation=run.execution_generation)
+            if scenario == 'stop':
+                async with asyncio.timeout(15):
+                    while True:
+                        with factory() as session:
+                            events = SqlAlchemyWorkflowRuntimeRepository(session).list_events(run.run_id, after_sequence=0, limit=100)
+                        if any(e.kind == 'nodeAttempt' and e.node_id == 'face' for e in events):
+                            break
+                        await asyncio.sleep(.01)
+                started = monotonic()
+                await dispatcher.cancel(run.run_id, expected_status_revision=running.status_revision, execution_generation=running.execution_generation)
+>           await asyncio.wait_for(dispatcher.wait_idle(), 100)
+
+apps/backend/tests/integration/test_project_recognition_worker.py:79:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+fut = <Task cancelled name='Task-3' coro=<WorkflowRunDispatcher.wait_idle() done, defined at /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/src/autoflow/application/workflows/dispatcher.py:395>>
+timeout = 100
+
+    async def wait_for(fut, timeout):
+        """Wait for the single Future or coroutine to complete, with timeout.
+
+        Coroutine will be wrapped in Task.
+
+        Returns result of the Future or coroutine.  When a timeout occurs,
+        it cancels the task and raises TimeoutError.  To avoid the task
+        cancellation, wrap it in shield().
+
+        If the wait is cancelled, the task is also cancelled.
+
+        This function is a coroutine.
+        """
+        loop = events.get_running_loop()
+
+        if timeout is None:
+            return await fut
+
+        if timeout <= 0:
+            fut = ensure_future(fut, loop=loop)
+
+            if fut.done():
+                return fut.result()
+
+            await _cancel_and_wait(fut, loop=loop)
+            try:
+                return fut.result()
+            except exceptions.CancelledError as exc:
+                raise exceptions.TimeoutError() from exc
+
+        waiter = loop.create_future()
+        timeout_handle = loop.call_later(timeout, _release_waiter, waiter)
+        cb = functools.partial(_release_waiter, waiter)
+
+        fut = ensure_future(fut, loop=loop)
+        fut.add_done_callback(cb)
+
+        try:
+            # wait until the future completes or the timeout
+            try:
+                await waiter
+            except exceptions.CancelledError:
+                if fut.done():
+                    return fut.result()
+                else:
+                    fut.remove_done_callback(cb)
+                    # We must ensure that the task is not running
+                    # after wait_for() returns.
+                    # See https://bugs.python.org/issue32751
+                    await _cancel_and_wait(fut, loop=loop)
+                    raise
+
+            if fut.done():
+                return fut.result()
+            else:
+                fut.remove_done_callback(cb)
+                # We must ensure that the task is not running
+                # after wait_for() returns.
+                # See https://bugs.python.org/issue32751
+                await _cancel_and_wait(fut, loop=loop)
+                # In case task cancellation failed with some
+                # exception, we should re-raise it
+                # See https://bugs.python.org/issue40607
+                try:
+                    return fut.result()
+                except exceptions.CancelledError as exc:
+>                   raise exceptions.TimeoutError() from exc
+E                   TimeoutError
+
+../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/tasks.py:502: TimeoutError
+=========================== short test summary info ============================
+FAILED apps/backend/tests/integration/test_project_recognition_worker.py::test_project_recognition_uses_real_models_files_branches_and_cleanup[match]
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed in 101.61s (0:01:41)

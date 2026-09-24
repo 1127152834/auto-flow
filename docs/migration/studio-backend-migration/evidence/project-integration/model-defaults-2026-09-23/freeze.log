@@ -1,0 +1,296 @@
+
+> backend:build
+> node scripts/build-backend.mjs
+
+Resolved 217 packages in 5ms
+Audited 187 packages in 7ms
+51 INFO: PyInstaller: 6.22.2, contrib hooks: 2026.7
+51 INFO: Python: 3.11.13
+66 INFO: Platform: macOS-26.4.1-arm64-arm-64bit
+66 INFO: Python environment: /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv
+/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/face_recognition_models/__init__.py:7: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import resource_filename
+594 WARNING: Failed to collect submodules for 'mediapipe.tasks.python.genai.converter' because importing 'mediapipe.tasks.python.genai.converter' raised: ImportError: JAX, Torch, and SentencePiece are required for the LLM conversions. Please run `pip install torch jax sensetencepiece`.
+10684 INFO: Module search paths (PYTHONPATH):
+['/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python311.zip',
+ '/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11',
+ '/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/lib-dynload',
+ '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages',
+ '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/src',
+ '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/src']
+10866 INFO: Appending 'binaries' from .spec
+10866 INFO: Appending 'datas' from .spec
+10887 INFO: checking Analysis
+11160 INFO: Building because /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/src/autoflow/application/workflows/coordinator.py changed
+11160 INFO: Looking for Python shared library...
+11163 INFO: Using Python shared library: /Users/zhangtiancheng/.local/share/uv/python/cpython-3.11.13-macos-aarch64-none/lib/libpython3.11.dylib
+11163 INFO: Running Analysis Analysis-00.toc
+11163 INFO: Target bytecode optimization level: 0
+11163 INFO: Initializing module dependency graph...
+11164 INFO: Initializing module graph hook caches...
+11174 INFO: Analyzing modules for base_library.zip ...
+11605 INFO: Processing standard module hook 'hook-heapq.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+11657 INFO: Processing standard module hook 'hook-encodings.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+12613 INFO: Processing standard module hook 'hook-math.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+12679 INFO: Processing standard module hook 'hook-pickle.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+13610 INFO: Caching module dependency graph...
+13637 INFO: Analyzing /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/src/autoflow/__main__.py
+13709 INFO: Processing standard module hook 'hook-multiprocessing.util.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+13803 INFO: Processing standard module hook 'hook-xml.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+13968 INFO: Processing standard module hook 'hook-_ctypes.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+14121 INFO: Processing standard module hook 'hook-anyio.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+14305 INFO: Processing pre-safe-import-module hook 'hook-typing_extensions.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks/pre_safe_import_module'
+14306 INFO: SetuptoolsInfo: initializing cached setuptools info...
+15137 INFO: Processing standard module hook 'hook-pydantic.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+15392 INFO: Processing standard module hook 'hook-platform.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+15533 INFO: Processing standard module hook 'hook-rich.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+15917 INFO: Processing standard module hook 'hook-pygments.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+17010 INFO: Processing standard module hook 'hook-sysconfig.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+17018 INFO: Processing standard module hook 'hook-_osx_support.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+17083 INFO: Processing standard module hook 'hook-webbrowser.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+17349 INFO: Processing standard module hook 'hook-zoneinfo.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+18777 INFO: Processing standard module hook 'hook-certifi.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+19211 INFO: Processing standard module hook 'hook-difflib.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+19379 INFO: Processing standard module hook 'hook-cryptography.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+19783 INFO: hook-cryptography: cryptography does not seem to be using dynamically linked OpenSSL.
+19883 INFO: Processing standard module hook 'hook-bcrypt.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+20032 INFO: Processing standard module hook 'hook-nacl.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+20305 INFO: Processing standard module hook 'hook-xml.etree.cElementTree.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+20340 INFO: Processing standard module hook 'hook-sqlalchemy.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+20734 INFO: Processing pre-safe-import-module hook 'hook-importlib_metadata.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks/pre_safe_import_module'
+20750 INFO: Processing standard module hook 'hook-importlib_metadata.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+20764 INFO: Processing pre-safe-import-module hook 'hook-zipp.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks/pre_safe_import_module'
+23117 INFO: Processing standard module hook 'hook-sqlite3.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+23743 INFO: Processing standard module hook 'hook-playwright.sync_api.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/playwright/_impl/__pyinstaller'
+24369 INFO: Processing standard module hook 'hook-playwright.async_api.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/playwright/_impl/__pyinstaller'
+24699 INFO: Processing standard module hook 'hook-PIL.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+24788 INFO: Processing standard module hook 'hook-PIL.Image.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+24932 INFO: Processing standard module hook 'hook-numpy.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+26445 INFO: Processing standard module hook 'hook-charset_normalizer.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+26697 INFO: Processing standard module hook 'hook-xml.dom.domreg.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+26956 INFO: Processing standard module hook 'hook-PIL.ImageFilter.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+27139 INFO: Processing standard module hook 'hook-onnxruntime.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+27229 INFO: Processing standard module hook 'hook-torch.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+786 WARNING: Failed to collect submodules for 'torch.utils.tensorboard' because importing 'torch.utils.tensorboard' raised: ModuleNotFoundError: No module named 'tensorboard'
+W0923 15:51:17.007000 62537 torch/distributed/elastic/multiprocessing/redirects.py:35] NOTE: Redirects are currently not supported in MacOs.
+/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/utils/hooks/__init__.py:665: DeprecationWarning: `torch.distributed._sharding_spec` will be deprecated, use `torch.distributed._shard.sharding_spec` instead
+  __import__(name)
+/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/utils/hooks/__init__.py:665: DeprecationWarning: `torch.distributed._sharded_tensor` will be deprecated, use `torch.distributed._shard.sharded_tensor` instead
+  __import__(name)
+/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/utils/hooks/__init__.py:665: DeprecationWarning: `torch.distributed._shard.checkpoint` will be deprecated, use `torch.distributed.checkpoint` instead
+  __import__(name)
+34580 INFO: Processing standard module hook 'hook-matplotlib.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+34811 INFO: Processing pre-safe-import-module hook 'hook-packaging.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks/pre_safe_import_module'
+35103 INFO: Processing standard module hook 'hook-matplotlib.backend_bases.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+35641 INFO: Processing standard module hook 'hook-jinja2.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+36070 INFO: Processing standard module hook 'hook-matplotlib.backends.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+36126 INFO: Processing standard module hook 'hook-matplotlib.pyplot.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+36211 INFO: Processing standard module hook 'hook-matplotlib.figure.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+36864 INFO: Processing standard module hook 'hook-dateutil.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+36910 INFO: Processing pre-safe-import-module hook 'hook-six.moves.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks/pre_safe_import_module'
+38234 INFO: Processing pre-safe-import-module hook 'hook-gi.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks/pre_safe_import_module'
+38334 INFO: Processing standard module hook 'hook-py.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+38676 INFO: Processing pre-safe-import-module hook 'hook-tomli.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks/pre_safe_import_module'
+38677 INFO: Setuptools: 'tomli' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.tomli'!
+38680 INFO: Processing standard module hook 'hook-setuptools.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+38688 INFO: Processing pre-safe-import-module hook 'hook-distutils.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks/pre_safe_import_module'
+38688 INFO: Processing pre-find-module-path hook 'hook-distutils.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks/pre_find_module_path'
+38841 INFO: Processing standard module hook 'hook-distutils.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+38855 INFO: Processing standard module hook 'hook-distutils.util.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+39108 INFO: Processing pre-safe-import-module hook 'hook-jaraco.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks/pre_safe_import_module'
+39108 INFO: Setuptools: 'jaraco' appears to be a partial setuptools-vendored copy - extending search paths to ['/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/jaraco', '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/setuptools/_vendor/jaraco']!
+39108 INFO: Processing pre-safe-import-module hook 'hook-jaraco.text.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks/pre_safe_import_module'
+39109 INFO: Setuptools: 'jaraco.text' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.jaraco.text'!
+39114 INFO: Processing standard module hook 'hook-setuptools._vendor.jaraco.text.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+39116 INFO: Processing pre-safe-import-module hook 'hook-importlib_resources.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks/pre_safe_import_module'
+39116 INFO: Processing pre-safe-import-module hook 'hook-jaraco.context.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks/pre_safe_import_module'
+39121 INFO: Processing pre-safe-import-module hook 'hook-backports.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks/pre_safe_import_module'
+39122 INFO: Setuptools: 'backports' appears to be a partial setuptools-vendored copy - extending search paths to ['/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/backports', '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/setuptools/_vendor/backports']!
+39122 INFO: Processing pre-safe-import-module hook 'hook-backports.tarfile.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks/pre_safe_import_module'
+39174 INFO: Processing standard module hook 'hook-backports.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+39177 INFO: Processing pre-safe-import-module hook 'hook-jaraco.functools.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks/pre_safe_import_module'
+39184 INFO: Processing pre-safe-import-module hook 'hook-more_itertools.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks/pre_safe_import_module'
+39876 INFO: Processing pre-safe-import-module hook 'hook-wheel.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks/pre_safe_import_module'
+39876 INFO: Setuptools: 'wheel' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.wheel'!
+40221 INFO: Processing standard module hook 'hook-pytest.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+40540 INFO: Processing standard module hook 'hook-pkg_resources.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+40661 INFO: Processing pre-safe-import-module hook 'hook-platformdirs.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks/pre_safe_import_module'
+40662 INFO: Setuptools: 'platformdirs' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.platformdirs'!
+48166 INFO: Processing standard module hook 'hook-scipy.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+48556 INFO: Processing standard module hook 'hook-pycparser.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+48844 INFO: Processing standard module hook 'hook-scipy.linalg.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+54689 INFO: Processing pre-safe-import-module hook 'hook-win32com.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/pre_safe_import_module'
+63330 INFO: Processing standard module hook 'hook-scipy.special._ufuncs.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+63441 INFO: Processing standard module hook 'hook-scipy.special._ellip_harm_2.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+65045 INFO: Processing standard module hook 'hook-scipy.spatial._ckdtree.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+65376 INFO: Processing standard module hook 'hook-scipy.spatial.transform.rotation.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+65972 INFO: Processing standard module hook 'hook-scipy.stats._stats.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+66338 INFO: Processing standard module hook 'hook-scipy.sparse.csgraph.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+69377 INFO: Processing standard module hook 'hook-torchvision.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+69425 INFO: Processing standard module hook 'hook-torchvision.io.image.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+69856 INFO: Processing standard module hook 'hook-scipy.io.matlab.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+78424 INFO: Processing standard module hook 'hook-fsspec.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+78876 INFO: Processing standard module hook 'hook-urllib3.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+81052 INFO: Processing standard module hook 'hook-lxml.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+81200 INFO: Processing standard module hook 'hook-lxml.etree.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+81471 INFO: Processing standard module hook 'hook-orjson.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+86269 INFO: Processing pre-safe-import-module hook 'hook-tensorflow.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/pre_safe_import_module'
+86285 INFO: Processing standard module hook 'hook-cv2.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+86714 INFO: Processing standard module hook 'hook-regex.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+87364 INFO: Processing standard module hook 'hook-sounddevice.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+87689 INFO: Processing standard module hook 'hook-pynput.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+88121 INFO: Processing standard module hook 'hook-easyocr.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+88273 INFO: Processing standard module hook 'hook-skimage.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+88305 INFO: Processing standard module hook 'hook-skimage.io.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+89572 INFO: Processing standard module hook 'hook-skimage.exposure.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+90585 INFO: Processing pre-find-module-path hook 'hook-tkinter.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks/pre_find_module_path'
+90586 INFO: TclTkInfo: initializing cached Tcl/Tk info...
+90737 INFO: Processing standard module hook 'hook-_tkinter.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+90786 INFO: Processing standard module hook 'hook-skimage.color.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+91165 INFO: Processing standard module hook 'hook-shapely.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+91655 INFO: Processing standard module hook 'hook-openpyxl.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+93413 INFO: Processing standard module hook 'hook-keyring.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+94251 INFO: Processing standard module hook 'hook-mako.codegen.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+96684 INFO: Processing standard module hook 'hook-docx.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+100062 INFO: Processing standard module hook 'hook-av.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+101925 INFO: Processing standard module hook 'hook-jsonschema.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+102013 INFO: Processing standard module hook 'hook-jsonschema_specifications.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+102883 INFO: Processing standard module hook 'hook-uvicorn.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+103168 INFO: Processing standard module hook 'hook-websockets.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+104261 INFO: Processing standard module hook 'hook-transformers.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+132337 INFO: Processing standard module hook 'hook-ormsgpack.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/ormsgpack/_pyinstaller'
+134560 INFO: Analyzing hidden import 'keyring.backends.macOS'
+134565 INFO: Analyzing hidden import 'keyring.backends.Windows'
+134569 INFO: Analyzing hidden import 'cloakbrowser.__main__'
+134584 INFO: Analyzing hidden import 'langgraph.func'
+134591 INFO: Analyzing hidden import 'langgraph.graph.ui'
+134594 INFO: Analyzing hidden import 'langgraph.prebuilt'
+134645 INFO: Analyzing hidden import 'langgraph.prebuilt.interrupt'
+134646 INFO: Analyzing hidden import 'langgraph.pregel._config'
+134646 INFO: Analyzing hidden import 'langgraph.pregel._remote_run_stream'
+134653 INFO: Analyzing hidden import 'langgraph.pregel.remote'
+134673 INFO: Analyzing hidden import 'langgraph.pregel.types'
+134674 INFO: Analyzing hidden import 'langgraph.utils'
+134675 INFO: Analyzing hidden import 'langgraph.utils.config'
+134676 INFO: Analyzing hidden import 'langgraph.utils.runnable'
+134677 INFO: Analyzing hidden import 'langgraph.version'
+134677 INFO: Analyzing hidden import 'langgraph.checkpoint.memory'
+134689 INFO: Analyzing hidden import 'easyocr.cli'
+134693 INFO: Analyzing hidden import 'easyocr.export'
+134696 INFO: Analyzing hidden import 'easyocr.model.model'
+134697 INFO: Analyzing hidden import 'easyocr.model.vgg_model'
+134699 INFO: Analyzing hidden import 'face_recognition.face_detection_cli'
+134701 INFO: Analyzing hidden import 'face_recognition.face_recognition_cli'
+134704 INFO: Analyzing hidden import 'faster_whisper.assets'
+134704 INFO: Analyzing hidden import 'mediapipe.tasks.c'
+134705 INFO: Analyzing hidden import 'mediapipe.tasks.python.benchmark'
+134705 INFO: Analyzing hidden import 'mediapipe.tasks.python.benchmark.benchmark_utils'
+134706 INFO: Analyzing hidden import 'mediapipe.tasks.python.benchmark.vision'
+134707 INFO: Analyzing hidden import 'mediapipe.tasks.python.benchmark.vision.benchmark'
+134709 INFO: Analyzing hidden import 'mediapipe.tasks.python.metadata'
+134710 INFO: Analyzing hidden import 'mediapipe.tasks.python.metadata.metadata'
+135584 INFO: Analyzing hidden import 'mediapipe.tasks.python.metadata.metadata_displayer_cli'
+135848 INFO: Analyzing hidden import 'mediapipe.tasks.python.metadata.metadata_writers'
+135849 INFO: Analyzing hidden import 'mediapipe.tasks.python.metadata.metadata_writers.image_classifier'
+135877 INFO: Analyzing hidden import 'mediapipe.tasks.python.metadata.metadata_writers.image_segmenter'
+135883 INFO: Analyzing hidden import 'mediapipe.tasks.python.metadata.metadata_writers.model_asset_bundle_utils'
+135884 INFO: Analyzing hidden import 'mediapipe.tasks.python.metadata.metadata_writers.object_detector'
+135902 INFO: Analyzing hidden import 'mediapipe.tasks.python.metadata.metadata_writers.text_classifier'
+135903 INFO: Analyzing hidden import 'mediapipe.tasks.python.test'
+135904 INFO: Analyzing hidden import 'mediapipe.tasks.python.test.audio'
+135905 INFO: Analyzing hidden import 'mediapipe.tasks.python.test.audio.audio_classifier_test'
+135979 INFO: Analyzing hidden import 'mediapipe.tasks.python.test.text'
+135979 INFO: Analyzing hidden import 'mediapipe.tasks.python.test.text.language_detector_test'
+135985 INFO: Analyzing hidden import 'mediapipe.tasks.python.test.text.text_classifier_test'
+135990 INFO: Analyzing hidden import 'mediapipe.tasks.python.test.text.text_embedder_test'
+135991 INFO: Analyzing hidden import 'mediapipe.tasks.python.test.vision'
+135991 INFO: Analyzing hidden import 'mediapipe.tasks.python.test.vision.face_detector_test'
+136006 INFO: Analyzing hidden import 'mediapipe.tasks.python.test.vision.face_landmarker_test'
+136016 INFO: Analyzing hidden import 'mediapipe.tasks.python.test.vision.hand_landmarker_test'
+136026 INFO: Analyzing hidden import 'mediapipe.tasks.python.test.vision.holistic_landmarker_test'
+136036 INFO: Analyzing hidden import 'mediapipe.tasks.python.test.vision.image_classifier_test'
+136051 INFO: Analyzing hidden import 'mediapipe.tasks.python.test.vision.image_embedder_test'
+136061 INFO: Analyzing hidden import 'mediapipe.tasks.python.test.vision.image_segmenter_test'
+136071 INFO: Analyzing hidden import 'mediapipe.tasks.python.test.vision.image_test'
+136075 INFO: Analyzing hidden import 'mediapipe.tasks.python.test.vision.interactive_segmenter_test'
+136081 INFO: Analyzing hidden import 'mediapipe.tasks.python.test.vision.object_detector_test'
+136091 INFO: Analyzing hidden import 'mediapipe.tasks.python.test.vision.pose_landmarker_test'
+136102 INFO: Analyzing hidden import 'transformers.models.modernbert.modular_modernbert'
+136120 INFO: Processing module hooks (post-graph stage)...
+136175 INFO: Processing standard module hook 'hook-imageio.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+136702 WARNING: Hidden import "torchvision._C" not found!
+142115 WARNING: Hidden import "pycparser.lextab" not found!
+142115 WARNING: Hidden import "pycparser.yacctab" not found!
+144842 INFO: Processing standard module hook 'hook-easyocr.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+144848 WARNING: Hidden import "torchvision.image" not found!
+147367 INFO: Processing standard module hook 'hook-lxml.isoschematron.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+147689 WARNING: Hidden import "scipy.special._cdflib" not found!
+147689 INFO: Processing standard module hook 'hook-_tkinter.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+148076 INFO: Processing standard module hook 'hook-PIL.SpiderImagePlugin.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+148104 INFO: Processing standard module hook 'hook-matplotlib.backends.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+148105 INFO: Matplotlib backend selection method: automatic discovery of used backends
+148161 INFO: Discovered Matplotlib backend(s) via `matplotlib.use()` call in module 'sympy.testing.runtests': ['Agg', 'Agg']
+148293 INFO: Discovered Matplotlib backend(s) via `matplotlib.use()` call in module 'imageio.plugins._tifffile': ['TkAgg']
+148293 INFO: The following Matplotlib backends were discovered by scanning for `matplotlib.use()` calls: ['Agg', 'TkAgg']. If your backend of choice is not in this list, either add a `matplotlib.use()` call to your code, or configure the backend collection via hook options (see: https://pyinstaller.org/en/stable/hooks-config.html#matplotlib-hooks).
+148631 INFO: Selected matplotlib backends: ['Agg', 'TkAgg']
+148631 INFO: Extra dists for selected matplotlib backends: []
+148665 INFO: Processing standard module hook 'hook-sqlalchemy.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+148934 WARNING: Hidden import "pysqlite2" not found!
+148934 WARNING: Hidden import "MySQLdb" not found!
+150351 INFO: Processing standard module hook 'hook-lxml.objectify.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/stdhooks'
+150449 INFO: Performing binary vs. data reclassification (2070 entries)
+151050 INFO: Looking for ctypes DLLs
+151115 WARNING: Library user32 required via ctypes not found
+151179 WARNING: Library libamdhip64.so required via ctypes not found
+151180 WARNING: Library libhiprtc.so required via ctypes not found
+151180 WARNING: Library libcuda.so.1 required via ctypes not found
+151197 WARNING: Library ntdll required via ctypes not found
+151224 WARNING: Library libnvidia-ml.so.1 required via ctypes not found
+151279 WARNING: Ignoring /usr/lib64/libgomp.so.1 imported from /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/torch/_inductor/codecache.py - only basenames are supported with ctypes imports!
+151598 WARNING: Library libc.so.6 required via ctypes not found
+151822 WARNING: Library libcudart.so required via ctypes not found
+151857 WARNING: Library libxcb-errors.so.0 required via ctypes not found
+151876 WARNING: Library libc.so.6 required via ctypes not found
+152161 INFO: Analyzing run-time hooks ...
+152205 INFO: Including run-time hook 'pyi_rth_inspect.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks/rthooks'
+152208 INFO: Including run-time hook 'pyi_rth_pkgutil.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks/rthooks'
+152209 INFO: Including run-time hook 'pyi_rth_multiprocessing.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks/rthooks'
+152211 INFO: Including run-time hook 'pyi_rth_pkgres.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks/rthooks'
+152214 INFO: Including run-time hook 'pyi_rth_setuptools.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks/rthooks'
+152215 INFO: Including run-time hook 'pyi_rth__tkinter.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks/rthooks'
+152216 INFO: Including run-time hook 'pyi_rth_mplconfig.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks/rthooks'
+152216 INFO: Processing pre-find-module-path hook 'hook-_pyi_rth_utils.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks/pre_find_module_path'
+152218 INFO: Processing standard module hook 'hook-_pyi_rth_utils.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/hooks'
+152220 INFO: Including run-time hook 'pyi_rth_cryptography_openssl.py' from '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pyinstaller_hooks_contrib/rthooks'
+152408 INFO: Creating base_library.zip...
+152428 INFO: Looking for dynamic libraries
+153769 INFO: Warnings written to /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/build/autoflow-backend/warn-autoflow-backend.txt
+154234 INFO: Graph cross-reference written to /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/build/autoflow-backend/xref-autoflow-backend.html
+155105 INFO: checking PYZ
+155184 INFO: Building because /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/src/autoflow/application/workflows/coordinator.py changed
+155184 INFO: Building PYZ (ZlibArchive) /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/build/autoflow-backend/PYZ-00.pyz
+165147 INFO: Building PYZ (ZlibArchive) /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/build/autoflow-backend/PYZ-00.pyz completed successfully.
+165544 INFO: EXE target arch: arm64
+165544 INFO: Code signing identity: None
+165546 INFO: checking PKG
+165547 INFO: Building because /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/build/autoflow-backend/PYZ-00.pyz changed
+165547 INFO: Building PKG (CArchive) autoflow-backend.pkg
+165645 INFO: Building PKG (CArchive) autoflow-backend.pkg completed successfully.
+165647 INFO: Bootloader /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/bootloader/Darwin-64bit/run
+165647 INFO: checking EXE
+165649 INFO: Rebuilding EXE-00.toc because pkg is more recent
+165649 INFO: Building EXE from EXE-00.toc
+165655 INFO: Copying bootloader EXE to /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/build/autoflow-backend/autoflow-backend
+165656 INFO: Converting EXE to target arch (arm64)
+165758 INFO: Removing signature(s) from EXE
+165850 INFO: Modifying Mach-O image UUID(s) in EXE
+165966 INFO: Appending PKG archive to EXE
+166059 INFO: Fixing EXE headers for code signing
+166068 INFO: Rewriting the executable's macOS SDK version (26.2.0) to match the SDK version of the Python library (14.2.0) in order to avoid inconsistent behavior and potential UI issues in the frozen application.
+166070 INFO: Re-signing the EXE
+166386 INFO: Building EXE from EXE-00.toc completed successfully.
+166470 INFO: checking COLLECT
+166603 INFO: Removing dir /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/dist/autoflow-backend
+168105 INFO: Building COLLECT COLLECT-00.toc
+175542 INFO: Building COLLECT COLLECT-00.toc completed successfully.
+175647 INFO: Build complete! The results are available in: /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/dist

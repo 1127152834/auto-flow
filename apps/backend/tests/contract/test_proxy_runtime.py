@@ -64,7 +64,14 @@ def test_runtime_mounts_proxies_but_never_publishes_host_contract(runtime):
     assert not any(path.startswith("/internal") for path in document["paths"])
     schemas = document["components"]["schemas"]
     assert schemas["ConnectionCreate"]["properties"]["api_key"]["writeOnly"]
-    assert all("password" not in schema.get("properties", {}) for schema in schemas.values())
+    # Studio accepts a WebDAV password on its configuration write request;
+    # proxy credentials must still never become renderer response fields.
+    password_schemas = {
+        name for name, schema in schemas.items()
+        if "password" in schema.get("properties", {})
+    }
+    assert password_schemas == {"WebDavConfig"}
+    assert schemas["WebDavConfig"]["properties"]["password"]["writeOnly"] is True
 
 
 @pytest.mark.parametrize("headers", [

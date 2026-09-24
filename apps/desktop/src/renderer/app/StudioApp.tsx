@@ -9,9 +9,40 @@ import { WorkflowEditor } from '../domains/workflows/components/WorkflowEditor'
 import { InputPromptDialog } from '../domains/workflows/components/InputPromptDialog'
 import { useStudioIntegration } from '../domains/workflows/hooks/useStudioIntegration'
 import { useWorkflowStore } from '../domains/workflows/editor-store'
+import { workflowApi } from '../domains/workflows/api'
+import { getStudioOpenContext } from '../domains/workflows/api/config'
+import { Button } from '../shared/components/ui/button'
 
 export function StudioApp({ tools }: { tools?: ReactNode }) {
   useStudioIntegration()
+  const [contextError, setContextError] = useState<string | null>(null)
+  const context = getStudioOpenContext()
+  const [loadedWorkflow, setLoadedWorkflow] = useState<string | null>(null)
+  const [loadAttempt, setLoadAttempt] = useState(0)
+  useEffect(() => {
+    if (!context.workflowId || loadedWorkflow === context.workflowId) return
+    let disposed = false
+    let requestVersion = 0
+    const load = async () => {
+      const version = ++requestVersion
+      setContextError(null)
+      try {
+        const result = await workflowApi.get(context.workflowId!)
+        if (disposed || version !== requestVersion) return
+        if (!result.success || !result.data || result.data.id !== context.workflowId || !useWorkflowStore.getState().importWorkflow(result.data)) {
+          setContextError(result.error || '无法读取项目工作流')
+          return
+        }
+        setLoadedWorkflow(context.workflowId!)
+      } catch {
+        if (!disposed && version === requestVersion) setContextError('无法读取项目工作流，请检查服务连接后重试')
+      }
+    }
+    void load()
+    const retry = () => { void load() }
+    window.addEventListener('studio:transport-changed', retry)
+    return () => { disposed = true; window.removeEventListener('studio:transport-changed', retry) }
+  }, [context.workflowId, loadedWorkflow, loadAttempt])
   const transitioningRef=useRef(false)
   const [transitioning,setTransitioning]=useState(false)
   useEffect(()=>{
@@ -37,10 +68,17 @@ export function StudioApp({ tools }: { tools?: ReactNode }) {
     window.addEventListener('beforeunload', beforeUnload)
     return () => { window.removeEventListener('beforeunload', beforeUnload) }
   }, [])
+  if (context.workflowId && loadedWorkflow !== context.workflowId) return <main aria-label="工作流工作台" className="studio-shell">
+    <StudioConnectionNotice />
+    <div className="m-auto grid justify-items-center gap-3 p-6">
+      {contextError ? <><p role="alert" className="text-danger">{contextError}</p><Button onClick={() => setLoadAttempt(value => value + 1)}>重新读取</Button></> : <p role="status">正在读取项目工作流…</p>}
+    </div>
+  </main>
   return <main aria-label="工作流工作台" className="studio-shell" style={{ paddingRight: aiPanelOpen ? aiPanelWidth : 0, transition: 'padding-right 200ms ease' }}>
     {transitioning&&<div role="status" className="fixed inset-0 z-[9999] bg-[hsl(var(--background)/0.9)] grid place-items-center">正在切换工作区，编辑暂时锁定…</div>}
     {tools}
     <StudioConnectionNotice />
+    {contextError ? <div role="alert" className="mx-4 mt-3 rounded-control border border-danger/30 bg-danger/5 px-3 py-2 text-sm text-danger">{contextError}</div> : null}
     <div className="studio-editor @container"><WorkflowEditor /></div>
     <AIAssistantPanel /><InputPromptDialog />
   </main>

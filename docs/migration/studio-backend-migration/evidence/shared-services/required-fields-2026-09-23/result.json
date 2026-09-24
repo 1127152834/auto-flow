@@ -1,0 +1,35 @@
+{
+  "evidenceId": "F1.required-fields.production",
+  "status": "verified-macos-arm64-development-and-local-package",
+  "sourceRevision": "WebRPA@5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+  "approvedNodes": 213,
+  "coveredNodes": 213,
+  "uncoveredNodes": 0,
+  "endpoint": "GET /api/system/module-required-fields",
+  "classification": [
+    "original source rules",
+    "AutoFlow static metadata and authenticated HTTP adaptation"
+  ],
+  "formalDevelopment": "docs/migration/studio-backend-migration/evidence/project-integration/formal-electron-LFZSMd/result.json",
+  "formalPackaged": "docs/migration/studio-backend-migration/evidence/project-integration/formal-electron-lnHkA4/result.json",
+  "checks": {
+    "sourceDifferential": 5,
+    "scriptAndStructure": 9,
+    "backendContract": 17,
+    "frontendServiceAndProtocol": 38,
+    "typecheck": "passed",
+    "ruff": "passed",
+    "mypy": "passed",
+    "eslint": "passed",
+    "openapi": "passed",
+    "frozenBackend": "passed",
+    "unsignedPackage": "passed"
+  },
+  "boundaries": [
+    "Metadata scope is not node execution acceptance",
+    "No SMTP or other external action executed",
+    "Reference code is parsed at generation only; production imports approved static domain data",
+    "14 removed notification nodes excluded",
+    "macOS arm64 UI only; Intel/Windows untested"
+  ]
+}

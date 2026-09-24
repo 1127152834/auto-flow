@@ -1,0 +1,72 @@
+{
+  "evidenceId": "BE-B6-element-change-formal-electron",
+  "checkedAt": "2026-09-21T20:30:20.661Z",
+  "gitHead": "c51a451a7294caf780329d4cdaced554b644591b",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflowId": "4lU9cm3sfk0OuYQ26fayF",
+  "profileId": "3e4c3358-878a-40f4-9d8f-99ff740d400c",
+  "runId": "1a301b11-3cd0-4cd7-b916-5850f383d547",
+  "checks": [
+    "主窗口真实打开正式 Studio；动作库为 213，运行配置来自主应用 Profile",
+    "通过正式 Studio 真实 UI 配置本地网页、元素选择器、输出变量并连接后续日志节点",
+    "正式保存接口写入网页地址、元素变化触发器、日志节点和两条连线",
+    "真实 CloakBrowser 加载本地网页并观察 MutationObserver 变化，写入新元素选择器后执行日志节点",
+    "元素变化流程完成后 CloakBrowser、worker 和资源均清理"
+  ],
+  "nodes": [
+    {
+      "moduleType": "open_page",
+      "nodeId": "nCRC1eEkkP7UngsX9Uwas"
+    },
+    {
+      "moduleType": "element_change_trigger",
+      "nodeId": "azShIOO_UfM_TapRFFALg",
+      "result": {
+        "changeType": "childList",
+        "previousCount": 1,
+        "currentCount": 2,
+        "addedCount": 1,
+        "removedCount": 0,
+        "mutationCount": 1,
+        "changes": [
+          {
+            "type": "childList",
+            "addedCount": 1,
+            "removedCount": 0
+          }
+        ],
+        "addedNodes": [
+          {
+            "tagName": "p",
+            "className": "",
+            "id": "added",
+            "textContent": "新增内容"
+          }
+        ],
+        "removedNodes": [],
+        "newElementText": "新增内容",
+        "timestamp": "2026-09-22T04:30:16.828258",
+        "newElementSelector": "#added"
+      }
+    },
+    {
+      "moduleType": "print_log",
+      "nodeId": "o6iCPKKZfTJyp88HCV39T",
+      "result": {
+        "level": "info",
+        "message": "元素变化已触发"
+      }
+    }
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserLaunch": "real CloakBrowser kernel",
+    "fixture": "local file origin with delayed DOM mutation",
+    "interaction": "formal Electron via CDP mouse and keyboard; public sidecar APIs only for fixture setup and evidence reads; no Store or page-internal business function access",
+    "platformPending": "Windows/macOS Intel and packaged-entry reachability remain separately unverified"
+  },
+  "buildSha256": "464d9a3d31b8bbdf11677ab31923253ab762c532ff46d4fb8a55a9563c09eb48"
+}

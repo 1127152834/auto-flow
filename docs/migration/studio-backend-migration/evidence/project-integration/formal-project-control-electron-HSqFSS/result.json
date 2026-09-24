@@ -1,0 +1,42 @@
+{
+  "evidenceId": "BE-project-control-flow-formal-electron",
+  "result": "passed",
+  "checkedAt": "2026-09-23T11:39:00.446Z",
+  "gitHead": "9b256a2501ad4e5737e565b56ca3316f0bb70218",
+  "platform": "darwin-arm64",
+  "entry": "packaged-directory",
+  "projectId": "94fa63a0-f2ce-4073-b9d1-22303bf6c801",
+  "workflowIds": [
+    "XhgRi_OaejkhDuP9Z6i6X",
+    "rOPKC9-lvn1SLo-8tR6vy",
+    "68JRBkHfqKLldCtms14TE",
+    "l_Zaa5rk57FsFK8ROy124"
+  ],
+  "batchIds": [
+    "e6697949-904e-471a-be88-ea7d80231c64",
+    "1b58f15f-98c1-4c0e-8405-34de728d5bc3",
+    "bac40eca-a7e7-47e5-b003-fdf0a1b41115",
+    "d390b50d-66a6-46cf-a150-4ff499c5c1cd"
+  ],
+  "taskIds": [
+    "81c8454f-5def-4aa2-abec-175741019d1c",
+    "b93baedb-332a-4910-b41c-6a65a80ca9ac",
+    "f00824d6-1f6a-44d5-9be3-d3ce8fb88180",
+    "efa7a857-0d3b-4b48-89b1-a650987acca5"
+  ],
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "通过模块条真实点击完成初始化、三轮循环、真假分支和汇合后的尾节点",
+    "正式项目 Studio 真实界面创建自定义模块、声明输出、拖入项目流程并持久化",
+    "正式项目批次真实worker执行三轮循环与条件真分支，假分支无副作用；输出、尝试记录和进程清理通过",
+    "正式项目批次真实worker执行列表内嵌条件的真假分支、字典遍历、无限循环退出与两轮跳过；被跳过节点无尝试，最终值为4",
+    "正式项目任务真实执行画布分组子流程，组内导航受控网页，变量传给尾节点输出42；CloakBrowser清理完成",
+    "正式项目任务使用冻结自定义模块独立执行，子节点上下文、输出和资源清理持久化"
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserStarted": true,
+    "interaction": "formal Electron mouse/keyboard; API only fixture setup and evidence reads"
+  }
+}

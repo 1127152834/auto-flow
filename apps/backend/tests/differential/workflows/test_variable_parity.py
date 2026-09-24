@@ -67,6 +67,38 @@ def test_execution_context_resolution_matches_frozen_webrpa(value: Any) -> None:
     assert context.resolve_value(value) == _frozen_resolve(variables, value)
 
 
+@pytest.mark.parametrize(
+    ("variables", "value"),
+    [
+        ({"rows": [{"cells": ["甲", "乙"]}], "row": 0, "column": 1}, "{rows[{row}][cells][{column}]}"),
+        ({"items": ["a", "b", "c"]}, "{items[-1]}"),
+        ({"mapping": {"7": "字符串键"}}, "{mapping[7]}"),
+        ({"mapping": {7: "数字键"}}, "{mapping[7]}"),
+        ({"name": "目标", "count": 2}, {"outer": ["{name}", {"deep": ["${count}", "{missing}"]}], "plain": 7}),
+        ({"first": "{second}", "second": "{third}", "third": "完成"}, "{first}"),
+        ({"payload": {"list": [1, True, None], "dict": {"中文": "值"}}}, "payload={payload}"),
+        ({"items": ["a"]}, "{items[9]}"),
+        ({"scalar": "text"}, "{scalar[key]}"),
+        ({"empty": None, "enabled": False, "zero": 0}, ["{empty}", "{enabled}", "{zero}"]),
+    ],
+)
+def test_recursive_variable_matrix_matches_frozen_webrpa(
+    variables: dict[str, Any], value: Any
+) -> None:
+    assert ExecutionContext(variables=variables).resolve_value(value) == _frozen_resolve(
+        variables, value
+    )
+
+
+def test_recursive_tuple_input_keeps_container_type() -> None:
+    value = ("{name}", {"nested": ("{count}", 9)})
+
+    assert ExecutionContext(variables={"name": "目标", "count": 2}).resolve_value(value) == (
+        "目标",
+        {"nested": ("2", 9)},
+    )
+
+
 def test_execution_context_get_variable_accepts_both_reference_forms() -> None:
     context = ExecutionContext(variables={"name": "WebRPA"})
 

@@ -1,0 +1,44 @@
+{
+  "evidenceId": "BE-project-studio-task-bridge",
+  "status": "verified-macos-arm64-development-and-local-package",
+  "date": "2026-09-23",
+  "sourceClassification": "AutoFlow necessary adaptation; existing migrated executors reused",
+  "nodes": [
+    "open_page",
+    "input_text",
+    "click_element",
+    "get_element_info",
+    "screenshot"
+  ],
+  "formalDevelopment": "../formal-electron-A3JoOx/result.json",
+  "formalPackaged": "../formal-electron-6dbukC/result.json",
+  "checks": {
+    "backendRegression": 163,
+    "workerFocused": 42,
+    "frontendSaveAndExport": 65,
+    "frontendProjectEvidence": 18,
+    "types": "passed",
+    "ruff": "passed",
+    "mypy": "passed",
+    "openapi": "passed",
+    "rendererMainPreloadBuild": "passed",
+    "frozenBackend": "passed",
+    "unsignedLocalPackage": "passed"
+  },
+  "boundaries": {
+    "productionUserDatabaseTouched": false,
+    "browser": "CloakBrowser",
+    "nativeClose": "AXCloseButton",
+    "storeMutationInFormalE2E": false,
+    "platformsUntested": [
+      "macOS Intel",
+      "Windows"
+    ],
+    "nodeLedger": "213 nodes / 622 passed slots / 17 pending real execution; unchanged"
+  },
+  "remaining": [
+    "Project tasks admit these five nodes only; other migrated families require their project runtime ports/admission",
+    "Registered field metadata 404, global hotkey 404 and startup command 501 remain tracked",
+    "Project permissions/resources and business table output are not closed by this bridge"
+  ]
+}

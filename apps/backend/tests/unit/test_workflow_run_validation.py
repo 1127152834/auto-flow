@@ -2,21 +2,41 @@ from copy import deepcopy
 
 import pytest
 
+from autoflow.application.workflows.executors.production import (
+    build_production_executor_registry,
+)
 from autoflow.domain.workflows.catalog import node_catalog
 from autoflow.domain.workflows.models import WorkflowError
 from autoflow.domain.workflows.run_validation import prepare_run
+from autoflow.domain.workflows.scope import APPROVED_NODE_TYPES
 from tests.fixtures.workflows import workflow_payload
 
 
-def test_runnable_catalog_includes_project_graph_and_data_nodes():
-    assert {item["moduleType"] for item in node_catalog() if item["runnable"]} == {
+def test_project_catalog_admits_studio_browser_data_and_managed_ai_nodes():
+    runnable = {item["moduleType"] for item in node_catalog() if item["runnable"]}
+    assert {
         "open_page",
         "input_text",
         "click_element",
         "get_element_info",
         "condition", "loop", "foreach", "foreach_dict", "break_loop",
         "continue_loop", "set_variable", "subflow", "project_data", "project_end", "project_manual",
+        "screenshot",
+        "list_reverse",
+        "dict_merge",
+    } <= runnable
+    assert {"ai_chat", "ai_extract", "ai_generate_image", "ai_vision_act"} <= runnable
+    assert "notification" not in runnable
+
+
+def test_project_ai_catalog_matches_approved_scope_and_real_executors():
+    project_ai = {
+        item["moduleType"] for item in node_catalog()
+        if item["moduleType"].startswith("ai_")
     }
+    assert project_ai == {node for node in APPROVED_NODE_TYPES if node.startswith("ai_")}
+    registry = build_production_executor_registry()
+    assert all(registry.get(module_type) is not None for module_type in project_ai)
 
 
 def test_prepared_document_is_projected_and_deeply_frozen_from_input_mutation():
@@ -164,7 +184,7 @@ def test_prepare_accepts_zero_timeout_as_no_limit_for_every_worker_node():
 
 
 @pytest.mark.parametrize(
-    "module_type", ["wait_element", "screenshot", "ai_chat", "group"]
+    "module_type", ["future_node", "group"]
 )
 def test_unimplemented_or_unknown_module_can_be_saved_but_not_run(module_type):
     payload = workflow_payload()
@@ -178,9 +198,45 @@ def test_unimplemented_or_unknown_module_can_be_saved_but_not_run(module_type):
             "nodeId": "open",
             "path": ["content", "nodes", "0", "data", "moduleType"],
             "code": "WORKFLOW_NOT_RUNNABLE",
-            "message": f"服务端尚不支持运行节点 {module_type}",
+            "message": "展示节点不能接入执行链" if module_type == "group" else f"服务端尚不支持运行节点 {module_type}",
         }
     ]
+
+
+def test_migrated_list_export_is_admitted_with_its_real_fields():
+    payload = workflow_payload()
+    payload["content"]["nodes"] = [{
+        "id": "export", "type": "list_export", "position": {"x": 0, "y": 0},
+        "data": {"moduleType": "list_export", "listVariable": "items", "outputPath": "exports/items.txt"},
+    }]
+    payload["content"]["edges"] = []
+    payload["content"]["variables"] = [{"name": "items", "type": "array", "value": ["甲"], "scope": "global"}]
+    prepared = prepare_run(payload)
+    assert prepared.document["content"]["nodes"] == payload["content"]["nodes"]
+    assert prepared.document["content"]["variables"] == payload["content"]["variables"]
+
+
+def test_visual_only_graph_cannot_start_project_run():
+    payload = workflow_payload()
+    payload["content"]["schemaVersion"] = 3
+    payload["content"]["nodes"] = [
+        {"id": "visual", "type": "group", "position": {"x": 0, "y": 0},
+         "data": {"moduleType": "group", "isSubflow": True}}
+    ]
+    payload["content"]["edges"] = []
+    with pytest.raises(WorkflowError) as caught:
+        prepare_run(payload)
+    assert caught.value.code == "WORKFLOW_NOT_RUNNABLE"
+    assert str(caught.value) == "工作流没有可执行节点"
+
+
+def test_condition_without_branch_remains_unrunnable():
+    payload = workflow_payload()
+    payload["content"]["nodes"][0]["type"] = "condition"
+    payload["content"]["nodes"][0]["data"]["moduleType"] = "condition"
+    with pytest.raises(WorkflowError) as caught:
+        prepare_run(payload)
+    assert caught.value.details["issues"][0]["code"] == "INVALID_EXECUTION_GRAPH"
 
 
 def test_frontend_node_type_cannot_impersonate_a_runnable_module():
@@ -408,3 +464,99 @@ def test_prepare_rejects_unsafe_structured_parallel_shapes(mutation):
     elif mutation == 'escape': edges[:] = [e for e in edges if e['source'] != 'left']
     else: nodes[0].update(type='project_manual', data={**nodes[0]['data'], 'moduleType': 'project_manual', 'reason': 'wrong'})
     with pytest.raises(WorkflowError): prepare_run(payload)
+
+
+@pytest.mark.parametrize("mode", ["fullpage", "viewport", "element"])
+def test_screenshot_modes_are_admitted_with_valid_config(mode):
+    payload = workflow_payload()
+    node = payload["content"]["nodes"][3]
+    node["type"] = node["data"]["moduleType"] = "screenshot"
+    node["data"]["screenshotType"] = mode
+    prepared = prepare_run(payload)
+    assert prepared.graph_adapter
+    assert prepared.document == payload
+
+
+@pytest.mark.parametrize("config", [{"screenshotType": "invalid"}, {"screenshotType": "element"}, {"savePath": 42}])
+def test_screenshot_invalid_config_is_not_hidden_by_defaults(config):
+    payload = workflow_payload()
+    node = payload["content"]["nodes"][3]
+    node.update(type="screenshot", data={"moduleType": "screenshot", **config})
+    with pytest.raises(WorkflowError) as caught:
+        prepare_run(payload)
+    assert caught.value.details["issues"][0]["nodeId"] == "read"
+
+
+def test_studio_nested_config_empty_input_and_snapshot_preserved():
+    payload = workflow_payload()
+    payload["content"]["schemaVersion"] = 3
+    for node in payload["content"]["nodes"]:
+        kind = node["data"]["moduleType"]
+        node["data"] = {"moduleType": kind, "config": node["data"]}
+        if kind == "input_text":
+            node["data"]["config"]["text"] = ""
+    prepared = prepare_run(payload)
+    assert prepared.graph_adapter
+    assert prepared.document == payload
+
+
+def test_project_prepare_preserves_condition_and_loop_graph():
+    payload = workflow_payload()
+    payload["content"]["schemaVersion"] = 3
+    payload["content"]["nodes"] = [
+        {
+            "id": node_id,
+            "type": module_type,
+            "position": {"x": index * 150, "y": 0},
+            "data": {"moduleType": module_type, "config": config},
+        }
+        for index, (node_id, module_type, config) in enumerate(
+            [
+                ("gate", "condition", {"conditionType": "boolean", "leftValue": True}),
+                ("repeat", "loop", {"loopType": "count", "loopCount": 3}),
+                ("body", "set_variable", {"variableName": "last", "variableValue": "{index}"}),
+                ("done", "set_variable", {"variableName": "finished", "variableValue": "完成"}),
+                ("skipped", "set_variable", {"variableName": "skipped", "variableValue": "跳过"}),
+            ]
+        )
+    ]
+    payload["content"]["edges"] = [
+        {"id": "gate-true", "source": "gate", "sourceHandle": "true", "target": "repeat"},
+        {"id": "gate-false", "source": "gate", "sourceHandle": "false", "target": "skipped"},
+        {"id": "loop-body", "source": "repeat", "sourceHandle": "loop", "target": "body"},
+        {"id": "loop-done", "source": "repeat", "sourceHandle": "done", "target": "done"},
+    ]
+    prepared = prepare_run(payload)
+    assert prepared.graph_adapter
+    assert prepared.node_ids == ["gate", "repeat", "body", "done", "skipped"]
+    assert prepared.document == payload
+
+
+def test_project_control_catalog_reuses_approved_executors():
+    control = {
+        "condition", "loop", "foreach", "foreach_dict", "infinite_loop",
+        "break_loop", "continue_loop", "set_variable", "increment_decrement",
+    }
+    runnable = {item["moduleType"] for item in node_catalog()}
+    registry = build_production_executor_registry()
+    assert control <= APPROVED_NODE_TYPES & runnable
+    assert all(registry.get(module_type) is not None for module_type in control)
+
+
+def test_project_graph_rejects_cycle_without_an_entry():
+    payload = workflow_payload()
+    payload["content"]["schemaVersion"] = 3
+    payload["content"]["nodes"] = [
+        {
+            "id": name, "type": "set_variable", "position": {"x": index, "y": 0},
+            "data": {"moduleType": "set_variable", "config": {"variableName": name, "variableValue": "1"}},
+        }
+        for index, name in enumerate(("a", "b"))
+    ]
+    payload["content"]["edges"] = [
+        {"id": "ab", "source": "a", "target": "b"},
+        {"id": "ba", "source": "b", "target": "a"},
+    ]
+    with pytest.raises(WorkflowError) as caught:
+        prepare_run(payload)
+    assert caught.value.details["issues"][0]["code"] == "INVALID_EXECUTION_GRAPH"

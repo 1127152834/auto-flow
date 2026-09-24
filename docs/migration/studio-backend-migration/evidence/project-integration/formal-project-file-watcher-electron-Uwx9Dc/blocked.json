@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-09-23T20:27:09.194Z",
+  "gitHead": "3c5cd15e156ba23beea697b40ee72c0b52766e20",
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "正式 Studio 真实 UI 编排监控路径、文件模式、输出变量和后继日志，保存后正常关闭"
+  ],
+  "observedEvents": [],
+  "ui": [],
+  "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert.ok(logs.items.some(item => item.message === '收到文件: 目标.txt'))\n\n    at file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:305:16\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)"
+}

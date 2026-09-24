@@ -1,0 +1,10 @@
+{
+  "checkedAt": "2026-09-23T07:04:34.050Z",
+  "checks": [
+    "主应用真实服务在临时工作区创建 CloakBrowser Profile",
+    "正式项目 UI 新建项目，由项目自动化目录进入 Studio",
+    "Studio 自动采用项目默认 Profile，确认为全局列表第二项"
+  ],
+  "observedEvents": [],
+  "error": "Error: timed out waiting for explicit project Profile override: false\n    at waitFor (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/electron-cdp.mjs:99:9)\n    at async file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b1.mjs:116:5"
+}

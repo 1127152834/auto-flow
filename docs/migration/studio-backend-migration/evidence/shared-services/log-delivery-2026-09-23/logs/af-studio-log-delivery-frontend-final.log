@@ -1,0 +1,28 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/workflows/tests/event-log-preferences.test.ts src/renderer/domains/workflows/tests/log-event-timestamps.test.ts src/renderer/domains/workflows/tests/studio-integration.test.tsx src/renderer/domains/workflows/tests/command-http-recovery.test.ts src/renderer/domains/workflows/tests/event-gap-recovery.test.ts src/renderer/domains/workflows/tests/execution-event-ownership.test.ts src/renderer/domains/workflows/tests/event-listener-isolation.test.ts src/renderer/domains/workflows/tests/event-truncated-recovery.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:82301) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:82300) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:82298) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:82297) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:83550) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:83572) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:83573) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:83575) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  8 passed (8)
+      Tests  46 passed (46)
+   Start at  13:36:08
+   Duration  7.00s (transform 982ms, setup 783ms, import 676ms, tests 15.76s, environment 3.26s)

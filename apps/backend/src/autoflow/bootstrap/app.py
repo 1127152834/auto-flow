@@ -10,12 +10,20 @@ from fastapi.responses import JSONResponse
 from autoflow.adapters.http.android import android_router
 from autoflow.adapters.http.android_fleet import android_fleet_router
 from autoflow.adapters.http.errors import error_response, install_error_handlers
+from autoflow.adapters.http.image_assets import image_assets_router
+from autoflow.adapters.http.laya_lab import laya_lab_router
+from autoflow.adapters.http.local_workflows import local_workflows_router
 from autoflow.adapters.http.openapi import configure_openapi
+from autoflow.adapters.http.studio_credentials import studio_credentials_router
+from autoflow.adapters.http.studio_retention import studio_retention_router
+from autoflow.adapters.http.workflow_bundles import workflow_bundles_router
 from autoflow.adapters.http.workflow_catalog import workflow_catalog_router
+from autoflow.adapters.http.workflow_schedules import workflow_schedules_router
 from autoflow.application.android.console import AndroidConsole
 from autoflow.application.android.fleet import AndroidFleet
 from autoflow.application.environments.service import EnvironmentService
 from autoflow.application.kernels.service import KernelService
+from autoflow.application.lab.service import LayaService
 from autoflow.application.models.service import ModelService
 from autoflow.application.profiles.service import ProfileService
 from autoflow.application.profiles.test_browser import ProfileTestBrowserService
@@ -60,7 +68,17 @@ from autoflow.application.projects.overview import ProjectOverviewService
 from autoflow.application.projects.service import ProjectService
 from autoflow.application.projects.statistics import ProjectStatisticsService
 from autoflow.application.settings.runtime import QuiesceGate, SettingsRuntimeService
+from autoflow.application.workflows.bundles import WorkflowBundleService
+from autoflow.application.workflows.credentials import StudioCredentialService
+from autoflow.application.workflows.image_assets import ImageAssetStore
+from autoflow.application.workflows.local_files import LocalWorkflowFiles
+from autoflow.application.workflows.retention import StudioRetentionService
+from autoflow.application.workflows.schedule_notifications import (
+    WorkflowScheduleNotifier,
+)
+from autoflow.application.workflows.schedules import WorkflowScheduleService
 from autoflow.application.workflows.service import WorkflowService
+from autoflow.application.workflows.webdav import WebDavWorkflowService
 from autoflow.bootstrap.android import CurrentAndroidRunBoundary, android_service
 from autoflow.bootstrap.config import Settings
 from autoflow.bootstrap.http_routes import (
@@ -150,6 +168,13 @@ from autoflow.infrastructure.database.session import (
 from autoflow.infrastructure.database.settings_runtime import (
     SqlAlchemySettingsRuntimeRepository,
 )
+from autoflow.infrastructure.database.studio_credentials import (
+    SqlAlchemyStudioCredentials,
+)
+from autoflow.infrastructure.database.studio_retention import SqlAlchemyStudioRetention
+from autoflow.infrastructure.database.workflow_schedules import (
+    SqlAlchemyWorkflowSchedules,
+)
 from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
 from autoflow.infrastructure.events.kernel_events import KernelEventBroker
 from autoflow.infrastructure.filesystem.environment_store import EnvironmentStore
@@ -175,6 +200,7 @@ from autoflow.providers.kernel.cloakbrowser import (
     CloakBrowserCatalogProvider,
     CloakBrowserLicenseProvider,
 )
+from autoflow.providers.laya.runtime import LayaRuntime
 from autoflow.providers.model.http import HttpModelProvider
 
 
@@ -213,6 +239,7 @@ def create_app(
     )
     kernel_worker_manager.recover_interrupted()
     credentials = LazySystemCredentialStore()
+    active_credentials = credential_store or credentials
     catalog_provider = CloakBrowserCatalogProvider(
         paths.kernels, licensed_catalog=kernel_worker_manager.licensed_catalog
     )
@@ -250,7 +277,7 @@ def create_app(
 
     model_service = ModelService(
         partial(model_repository_transaction, session_factory),
-        credential_store if credential_store is not None else credentials,
+        active_credentials,
         model_gateway or HttpModelProvider(),
         resource_references,
     )
@@ -310,6 +337,10 @@ def create_app(
         license_store.read,
         test_browser_workers,
     )
+    studio_credentials = StudioCredentialService(
+        SqlAlchemyStudioCredentials(session_factory), active_credentials
+    )
+    app.state.studio_credentials = studio_credentials
     workflow_services = build_workflow_services(
         session_factory,
         profiles=profile_service,
@@ -320,8 +351,39 @@ def create_app(
         kernels_root=paths.kernels,
         temp_root=paths.temp,
         artifact_root=paths.workspace,
+        models=model_service,
+        credential_store=active_credentials,
+        resolve_credential=studio_credentials.resolve,
     )
     workflow_services.runs.recover_interrupted()
+    webdav_workflows = WebDavWorkflowService(paths.workspace, active_credentials)
+    app.state.webdav_workflows = webdav_workflows
+    schedule_repository = SqlAlchemyWorkflowSchedules(session_factory)
+    local_workflows = LocalWorkflowFiles(
+        paths.workspace,
+        webdav_workflows,
+        schedule_repository.ensure_workflow_unreferenced,
+    )
+    app.state.local_workflows = local_workflows
+    image_assets = ImageAssetStore(paths.workspace)
+    app.state.image_assets = image_assets
+    workflow_bundles = WorkflowBundleService(workflow_services.modules, image_assets)
+    app.state.workflow_bundles = workflow_bundles
+    studio_retention = StudioRetentionService(
+        SqlAlchemyStudioRetention(session_factory), paths.workspace
+    )
+    app.state.studio_retention = studio_retention
+    workflow_schedules = WorkflowScheduleService(
+        schedule_repository,
+        local_workflows,
+        workflow_services.commands,
+        workflow_services.runs,
+        gate=quiesce_gate,
+        notifier=WorkflowScheduleNotifier(studio_credentials),
+    )
+    app.state.workflow_schedules = workflow_schedules
+    app.router.add_event_handler("startup", studio_retention.startup)
+    app.router.add_event_handler("startup", workflow_schedules.startup)
     android = android_service(session_factory, paths.workspace)
     android_resources = AndroidResourceRepository(session_factory)
     android_runs = CurrentAndroidRunBoundary()
@@ -374,7 +436,7 @@ def create_app(
     sheets_impacts = SqlAlchemySheetsImpacts(session_factory)
     sheets_repository = SqlAlchemyProjectSync(session_factory, sheets_impacts)
     sheets_tokens = google_tokens or HttpxTokenTransport()
-    google_credentials = credential_store or credentials
+    google_credentials = active_credentials
     sheets_access = GoogleAccess(
         sheets_repository,
         google_credentials,
@@ -414,6 +476,8 @@ def create_app(
         gate=quiesce_gate,
         environment_directory=environment_service.run_work_directory,
         environments=environment_service,
+        resolve_credential=studio_credentials.resolve,
+        models=model_service,
     )
     automation_resources = ProjectAutomationResourceQuery(
         SqlAlchemyProjects(session_factory),
@@ -422,6 +486,7 @@ def create_app(
         proxy_options,
         model_service,
         environment_service,
+        workflow_runtime=app.state.project_workflow_runtime,
     )
     project_resource_resolver = ProjectRunResourceResolver(
         automation_resources, app.state.project_workflow_resources, environment_service,
@@ -477,6 +542,7 @@ def create_app(
             ),
             *(["test_browser_process_active"] if test_browser_workers.busy() else []),
             *workflow_services.blockers(),
+            *workflow_schedules.blockers(),
             *(["android_management_active"] if android.management.busy() else []),
             *(["android_console_active"] if android_console.busy() else []),
         ],
@@ -506,6 +572,7 @@ def create_app(
             project_excel.shutdown()
             status_batch_coordinator.shutdown()
             await asyncio.to_thread(status_batch_executor.shutdown, wait=True)
+            await workflow_schedules.shutdown()
 
             async def close_project_workflows() -> None:
                 try:
@@ -515,6 +582,7 @@ def create_app(
                     await project_workflow_dispatcher.shutdown()
 
             results = await asyncio.gather(
+                studio_retention.shutdown(),
                 workflow_services.shutdown(),
                 android.management.shutdown(),
                 android_fleet.shutdown(),
@@ -536,7 +604,10 @@ def create_app(
                 if isawaitable(closing):
                     await closing
             finally:
-                session_factory.dispose()
+                try:
+                    laya_runtime.close()
+                finally:
+                    session_factory.dispose()
 
     app.router.add_event_handler("shutdown", shutdown)
     register_management_routes(
@@ -555,7 +626,15 @@ def create_app(
         api_version=settings.api_version,
         instance_id=settings.instance_id,
     )
-    register_workflow_routes(app, workflow_services)
+    laya_runtime = LayaRuntime(paths.cache)
+    app.include_router(laya_lab_router(LayaService(laya_runtime)))
+    register_workflow_routes(app, workflow_services, project_interactions=project_workflow_dispatcher.interactions)
+    app.include_router(local_workflows_router(local_workflows, webdav_workflows))
+    app.include_router(image_assets_router(image_assets))
+    app.include_router(workflow_bundles_router(workflow_bundles))
+    app.include_router(studio_credentials_router(studio_credentials))
+    app.include_router(studio_retention_router(studio_retention))
+    app.include_router(workflow_schedules_router(workflow_schedules))
     app.include_router(android_router(android))
     app.include_router(android_fleet_router(android_fleet, android_console))
     project_workflow_service = WorkflowService(
@@ -565,6 +644,11 @@ def create_app(
     project_lifecycle_repository = SqlAlchemyProjectLifecycle(
         session_factory, environment_root=environment_store.root,
         run_root=paths.workspace / "runs",
+        workflow_artifact_root=paths.workspace,
+        inspection_blockers=lambda project_id: [
+            *(workflow_services.inspection.project_blockers(project_id) if workflow_services.inspection is not None else []),
+            *(workflow_services.assistant.project_blockers(project_id) if workflow_services.assistant is not None else []),
+        ],
     )
     project_lifecycle_coordinator = ProjectLifecycleCoordinator(
         project_lifecycle_repository, quiesce_gate
@@ -578,6 +662,7 @@ def create_app(
     app.state.project_lifecycle_coordinator = project_lifecycle_coordinator
     app.router.add_event_handler("startup", project_lifecycle_coordinator.startup)
     register_project_routes(app, ProjectHttpServices(
+        run_interactions=project_workflow_dispatcher.interactions,
         run_coordinator=project_run_coordinator,
         run_queries=ProjectRunQueries(session_factory),
         run_evidence=ProjectRunEvidence(session_factory, paths.workspace),
@@ -613,6 +698,7 @@ def create_app(
 
     @app.middleware("http")
     async def authenticate_api(request: Request, call_next):
+        external_webhook = request.url.path.startswith("/api/triggers/webhook/")
         if request.url.path.startswith("/internal/"):
             supplied = request.headers.get("x-autoflow-host-token", "")
             if (
@@ -625,7 +711,7 @@ def create_app(
                     status_code=401,
                     headers={"Cache-Control": "no-store"},
                 )
-        if request.url.path.startswith("/api/") and (
+        if request.url.path.startswith("/api/") and not external_webhook and (
             settings.instance_token is None
             or request.headers.get("x-autoflow-token") != settings.instance_token
         ):
@@ -637,7 +723,7 @@ def create_app(
             or request.url.path.endswith("/models/discover")
         )
         guarded_request = request.url.path.startswith("/api/") and (
-            request.method not in {"GET", "HEAD", "OPTIONS"} or guarded_get
+            request.method not in {"GET", "HEAD", "OPTIONS"} or guarded_get or external_webhook
         )
         if not guarded_request:
             return await call_next(request)

@@ -1,0 +1,8 @@
+{
+  "checkedAt": "2026-09-24T00:28:59.732Z",
+  "checks": [
+    "主窗口真实点击打开正式 Studio；动作库为 213，运行配置来自主应用 Profile",
+    "saved-close-studio-through-native-ui"
+  ],
+  "error": "Error: timed out waiting for unobscured 打开工作流 原生验收 鼠标触发器: null\n    at waitFor (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/electron-cdp.mjs:99:9)\n    at async click (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b6-desktop-platform.mjs:190:13)\n    at async verifyNativeTrigger (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b6-desktop-platform.mjs:289:3)\n    at async file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b6-desktop-platform.mjs:52:24"
+}

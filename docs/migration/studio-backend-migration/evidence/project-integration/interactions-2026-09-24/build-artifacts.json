@@ -1,0 +1,10 @@
+{
+  "status": "build-verified-native-entry-pending",
+  "platform": "darwin-arm64",
+  "signed": false,
+  "sha256": {
+    "apps/backend/dist/autoflow-backend/autoflow-backend": "f0d0687b47da7b0dfd399efab208b2a883c5cbadacabed912fba22fc2caebb3c",
+    "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/backend/autoflow-backend": "f0d0687b47da7b0dfd399efab208b2a883c5cbadacabed912fba22fc2caebb3c",
+    "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/app.asar": "e1373f1fbc2e1cd1475092ace2e1351e258cc37caa34d037ac4cf9404e871966"
+  }
+}

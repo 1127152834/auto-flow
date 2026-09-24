@@ -22,44 +22,27 @@ beforeAll(async () => {
   S = mod.useGlobalConfigStore
 })
 
-describe('globalConfigStore 小助手配置合并（issue 3）', () => {
+describe('globalConfigStore 小助手主应用模型边界', () => {
   beforeEach(() => {
     S.getState().updateAIAssistantConfig({
-      apiUrl: 'https://api.example.com',
-      apiKey: 'k',
-      model: 'gpt-4o-mini',
+      modelId: 'managed-model',
       temperature: 0.7,
-      supportsVision: undefined,
-      isThinking: undefined,
+      enableTools: true,
     })
-  })
-
-  it('设置 supportsVision 不影响其它字段', () => {
-    S.getState().updateAIAssistantConfig({ supportsVision: true })
-    const a = S.getState().config.aiAssistant
-    expect(a.supportsVision).toBe(true)
-    expect(a.model).toBe('gpt-4o-mini')
-    expect(a.apiUrl).toBe('https://api.example.com')
-  })
-
-  it('设置 isThinking 独立生效', () => {
-    S.getState().updateAIAssistantConfig({ isThinking: true })
-    expect(S.getState().config.aiAssistant.isThinking).toBe(true)
-  })
-
-  it('两个开关可分别切换且互不干扰', () => {
-    S.getState().updateAIAssistantConfig({ supportsVision: true, isThinking: true })
-    expect(S.getState().config.aiAssistant.supportsVision).toBe(true)
-    expect(S.getState().config.aiAssistant.isThinking).toBe(true)
-    S.getState().updateAIAssistantConfig({ supportsVision: false })
-    expect(S.getState().config.aiAssistant.supportsVision).toBe(false)
-    expect(S.getState().config.aiAssistant.isThinking).toBe(true)
   })
 
   it('partial 更新保留未提供字段', () => {
     S.getState().updateAIAssistantConfig({ temperature: 0.3 })
     const a = S.getState().config.aiAssistant
     expect(a.temperature).toBe(0.3)
-    expect(a.model).toBe('gpt-4o-mini')
+    expect(a.modelId).toBe('managed-model')
+    expect(a.enableTools).toBe(true)
+  })
+
+  it('导入旧配置时丢弃渲染进程中的供应商密钥', () => {
+    expect(S.getState().importConfig({
+      aiAssistant: { apiUrl: 'https://legacy.invalid', apiKey: 'secret', model: 'legacy' },
+    })).toBe(true)
+    expect(JSON.stringify(S.getState().config.aiAssistant)).not.toMatch(/secret|apiKey|apiUrl/)
   })
 })

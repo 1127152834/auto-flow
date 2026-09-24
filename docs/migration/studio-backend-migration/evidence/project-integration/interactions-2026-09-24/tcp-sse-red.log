@@ -1,0 +1,665 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.11.13, pytest-9.1.1, pluggy-1.6.0 -- /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.15.1, langsmith-0.13.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 15 items / 14 deselected / 1 selected
+
+tests/integration/test_project_interaction_commands.py::test_http_to_real_worker_confirmed_in_same_event_transaction[js_script] FAILED [100%]
+
+=================================== FAILURES ===================================
+___ test_http_to_real_worker_confirmed_in_same_event_transaction[js_script] ____
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-160/test_http_to_real_worker_confi0')
+kind = 'js_script'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("kind", ["input_prompt", "js_script"])
+    async def test_http_to_real_worker_confirmed_in_same_event_transaction(tmp_path, kind):
+        """Real subprocess + SQLite + TCP/SSE; renderer payload is controlled, not UI proof."""
+        import asyncio
+        import socket
+        from types import SimpleNamespace
+
+        import uvicorn
+        from fastapi import FastAPI
+        from httpx import AsyncClient
+
+        from autoflow.adapters.http.errors import install_error_handlers
+        from autoflow.adapters.http.project_run_events import project_run_events_router
+        from autoflow.adapters.http.project_run_interactions import (
+            project_run_interactions_router,
+        )
+        from autoflow.adapters.http.project_schemas import ProjectOperationView
+        from autoflow.adapters.http.projects import _op
+        from autoflow.application.project_runs.events import ProjectRunEvents
+        from autoflow.application.settings.runtime import QuiesceGate
+        from autoflow.application.workflows.dispatcher import WorkflowRunDispatcher
+        from autoflow.infrastructure.database.projects import SqlAlchemyProjects
+        from autoflow.infrastructure.process.project_workflow_worker import (
+            ProjectWorkflowWorkerManager,
+        )
+        from tests.fixtures.workflow_runs import SyntheticResources
+        from tests.integration.test_project_interactive_worker import plan
+
+        factory, project, task, _, _, _, _ = prepare(tmp_path, kind)
+        with factory() as session:
+            session.get(WorkflowRunRow, task.run_id).execution_generation = 1
+            session.commit()
+        manager = ProjectWorkflowWorkerManager(tmp_path / "worker")
+        gate = QuiesceGate()
+
+        async def cleanup(_):
+            pass
+
+        dispatcher = WorkflowRunDispatcher(
+            factory, manager, SyntheticResources(), gate, cleanup
+        )
+        app = FastAPI()
+        install_error_handlers(app)
+        app.include_router(project_run_interactions_router(dispatcher.interactions, gate))
+        app.include_router(project_run_events_router(ProjectRunEvents(factory)))
+        run = dispatcher.query_run(task.run_id)
+        content = SimpleNamespace(execution_plan={"orderedNodeIds": ["request", "after"]})
+        ready = asyncio.Event()
+        request = {}
+
+        async def persist(event):
+            await dispatcher._commit_event(run, content, event)
+            if (
+                event["kind"] == "interaction"
+                and event["payload"]["type"] == f"execution:{kind}"
+            ):
+                request.update(event["payload"])
+                ready.set()
+
+        config = (
+            {
+                "variableName": "answer",
+                "inputMode": "password",
+                "defaultValue": "private-default",
+            }
+            if kind == "input_prompt"
+            else {"code": "function main(vars) { return 7 }", "resultVariable": "answer"}
+        )
+        execution = asyncio.create_task(
+            manager.run(
+                run_id=task.run_id,
+                execution_generation=1,
+                execution_plan=plan(kind, config),
+                parameters={},
+                variables={"count": 1},
+                browser={},
+                executable=None,
+                on_event=persist,
+            )
+        )
+        base = f"/api/v1/projects/{project}/tasks/{task.task_id}"
+        # Same loopback Uvicorn setup as the existing Studio log delivery contract.
+        sock = socket.socket()
+        sock.bind(("127.0.0.1", 0))
+        sock.listen()
+        port = sock.getsockname()[1]
+        server = uvicorn.Server(uvicorn.Config(app, log_level="error", lifespan="off"))
+        serving = asyncio.create_task(server.serve(sockets=[sock]))
+        try:
+            async with asyncio.timeout(5):
+                while not server.started:
+                    await asyncio.sleep(.01)
+            waiting = asyncio.create_task(ready.wait())
+            done, _ = await asyncio.wait(
+                {waiting, execution}, timeout=15, return_when=asyncio.FIRST_COMPLETED
+            )
+            if execution in done:
+                waiting.cancel()
+                await execution
+                pytest.fail("worker ended before requesting input")
+            if waiting not in done:
+                waiting.cancel()
+                pytest.fail("worker did not request input")
+            async with AsyncClient(
+                base_url=f"http://127.0.0.1:{port}", timeout=5, trust_env=False
+            ) as client:
+                page = await client.get(f"{base}/events")
+                assert page.status_code == 200
+                assert (
+                    "private-default" not in page.text and "function main" not in page.text
+                )
+                view = await client.get(
+                    f"{base}/interactions/requests/{request['requestId']}"
+                )
+                assert (
+                    view.status_code == 200 and view.headers["cache-control"] == "no-store"
+                )
+                wrong_project = base.replace(project, str(uuid4()))
+                assert (
+                    await client.get(
+                        f"{wrong_project}/interactions/requests/{request['requestId']}"
+                    )
+                ).status_code == 404
+                command_id = str(uuid4())
+                data = {"requestId": request["requestId"], "value": "private-response"}
+                if kind == "js_script":
+                    claim = {"requestId": request["requestId"], "claimId": str(uuid4())}
+                    response = await client.post(
+                        f"{base}/interactions/commands",
+                        json={
+                            "commandId": str(uuid4()),
+                            "executionGeneration": 1,
+                            "event": "js_script_claim",
+                            "data": claim,
+                        },
+                    )
+                    assert (
+                        response.status_code == 202
+                        and response.json()["status"] == "applied"
+                    )
+                    data = {
+                        **claim,
+                        "success": True,
+                        "result": 7,
+                        "variables": {"count": 2},
+                    }
+                body = {
+                    "commandId": command_id,
+                    "executionGeneration": 1,
+                    "event": f"{kind}_result",
+                    "data": data,
+                }
+                response = await client.post(f"{base}/interactions/commands", json=body)
+                assert response.status_code == 202
+                outcome = await asyncio.wait_for(execution, 15)
+                assert outcome.status == "succeeded" and outcome.cleanup_confirmed
+                receipt = await client.get(f"{base}/interactions/commands/{command_id}")
+                assert receipt.json()["status"] == "applied"
+                assert (
+                    await client.post(f"{base}/interactions/commands", json=body)
+                ).json() == receipt.json()
+                page = await client.get(f"{base}/events")
+                assert page.status_code == 200
+                assert (
+                    "private-response" not in page.text
+                    and "private-default" not in page.text
+                )
+                assert (
+                    sum(
+                        e["payload"].get("commandId") == command_id
+                        for e in page.json()["items"]
+                    )
+                    == 1
+                )
+                assert (
+                    await client.get(f"{base}/interactions/requests/{request['requestId']}")
+                ).status_code == 410
+                persisted = page.json()["items"]
+
+                async def frames(after):
+                    received = []
+                    async with client.stream("GET", f"{base}/events/stream", headers={"Last-Event-ID": str(after)}) as response:
+                        assert response.status_code == 200
+                        async for line in response.aiter_lines():
+                            if line.startswith("data: "):
+                                received.append(json.loads(line[6:]))
+                                if received[-1]["sequence"] == persisted[-1]["sequence"]:
+                                    break
+                    return received
+
+                streamed = await frames(0)
+                resumed = await frames(streamed[0]["sequence"])
+>               assert streamed == persisted and resumed == persisted[1:]
+E               AssertionError: assert ([{'eventId': '7509b9767ad748409add23fa9d83f763', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 1, 'executionGeneration': 1, 'kind': 'nodeAttempt', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:39.931304+00:00', 'payload': {'status': 'started'}}, {'eventId': 'e90b54c4dd464abaacbb56988a6c108f', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 2, 'executionGeneration': 1, 'kind': 'log', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:39.942365+00:00', 'payload': {'message': '开始执行节点', 'level': 'info'}}, {'eventId': '556030f46011470383b0afee1d853075', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 3, 'executionGeneration': 1, 'kind': 'interaction', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:39.954740+00:00', 'payload': {'type': 'execution:js_script', 'requestId': '4350de58-cb7b-4474-b7d6-89c7f7617040'}}, {'eventId': 'e17817c3-22ca-4f46-b4eb-2ae15eb0db89', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 4, 'executionGeneration': 1, 'kind': 'interaction', 'nodeId': None, 'nodeVisitId': None, 'attempt': None, 'occurredAt': '2026-09-23T23:00:40.017816+00:00', 'payload': {'type': 'execution:command_applied', 'commandId': 'e17817c3-22ca-4f46-b4eb-2ae15eb0db89', 'requestId': '4350de58-cb7b-4474-b7d6-89c7f7617040'}}, {'eventId': '4eaa1d47ff4040eeab715142bc8e384f', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 5, 'executionGeneration': 1, 'kind': 'interaction', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.017808+00:00', 'payload': {'type': 'execution:js_script_closed', 'status': 'completed', 'requestId': '4350de58-cb7b-4474-b7d6-89c7f7617040'}}, {'eventId': '8b2c41b3b3fa4a77b734401b2acd05ca', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 6, 'executionGeneration': 1, 'kind': 'output', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.028942+00:00', 'payload': {'value': 7, 'name': 'answer'}}, {'eventId': '02a130b83ec94abb8c4c0cdc674805e3', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 7, 'executionGeneration': 1, 'kind': 'log', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.039820+00:00', 'payload': {'message': 'JS脚本执行成功，返回值: 7', 'level': 'info', 'isUserLog': True}}, {'eventId': '1f42d4da718a42558e81c4ab90c12ae6', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 8, 'executionGeneration': 1, 'kind': 'nodeAttempt', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.050854+00:00', 'payload': {'durationMs': 98, 'status': 'succeeded'}}, {'eventId': 'ad96098b42774618bcd130ca71b29021', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 9, 'executionGeneration': 1, 'kind': 'nodeAttempt', 'nodeId': 'after', 'nodeVisitId': '5c3848f9-e484-48df-87ae-eb47ccb86ca6', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.061971+00:00', 'payload': {'status': 'started'}}, {'eventId': '1d923ac6d4e04114893f90d492dc5822', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 10, 'executionGeneration': 1, 'kind': 'log', 'nodeId': 'after', 'nodeVisitId': '5c3848f9-e484-48df-87ae-eb47ccb86ca6', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.072922+00:00', 'payload': {'message': '开始执行节点', 'level': 'info'}}, {'eventId': '6b81e89dc50846d2b83825e963876f2d', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 11, 'executionGeneration': 1, 'kind': 'log', 'nodeId': 'after', 'nodeVisitId': '5c3848f9-e484-48df-87ae-eb47ccb86ca6', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.084187+00:00', 'payload': {'message': '2:7', 'level': 'info', 'isUserLog': True}}, {'eventId': '038795c96c3d48848b284f05fb2a1676', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 12, 'executionGeneration': 1, 'kind': 'nodeAttempt', 'nodeId': 'after', 'nodeVisitId': '5c3848f9-e484-48df-87ae-eb47ccb86ca6', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.094993+00:00', 'payload': {'durationMs': 22, 'status': 'succeeded'}}] == [{'eventId': '7509b9767ad748409add23fa9d83f763', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 1, 'executionGeneration': 1, 'kind': 'nodeAttempt', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:39.931304Z', 'payload': {'status': 'started'}}, {'eventId': 'e90b54c4dd464abaacbb56988a6c108f', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 2, 'executionGeneration': 1, 'kind': 'log', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:39.942365Z', 'payload': {'message': '开始执行节点', 'level': 'info'}}, {'eventId': '556030f46011470383b0afee1d853075', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 3, 'executionGeneration': 1, 'kind': 'interaction', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:39.954740Z', 'payload': {'type': 'execution:js_script', 'requestId': '4350de58-cb7b-4474-b7d6-89c7f7617040'}}, {'eventId': 'e17817c3-22ca-4f46-b4eb-2ae15eb0db89', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 4, 'executionGeneration': 1, 'kind': 'interaction', 'nodeId': None, 'nodeVisitId': None, 'attempt': None, 'occurredAt': '2026-09-23T23:00:40.017816Z', 'payload': {'type': 'execution:command_applied', 'commandId': 'e17817c3-22ca-4f46-b4eb-2ae15eb0db89', 'requestId': '4350de58-cb7b-4474-b7d6-89c7f7617040'}}, {'eventId': '4eaa1d47ff4040eeab715142bc8e384f', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 5, 'executionGeneration': 1, 'kind': 'interaction', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.017808Z', 'payload': {'type': 'execution:js_script_closed', 'status': 'completed', 'requestId': '4350de58-cb7b-4474-b7d6-89c7f7617040'}}, {'eventId': '8b2c41b3b3fa4a77b734401b2acd05ca', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 6, 'executionGeneration': 1, 'kind': 'output', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.028942Z', 'payload': {'value': 7, 'name': 'answer'}}, {'eventId': '02a130b83ec94abb8c4c0cdc674805e3', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 7, 'executionGeneration': 1, 'kind': 'log', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.039820Z', 'payload': {'message': 'JS脚本执行成功，返回值: 7', 'level': 'info', 'isUserLog': True}}, {'eventId': '1f42d4da718a42558e81c4ab90c12ae6', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 8, 'executionGeneration': 1, 'kind': 'nodeAttempt', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.050854Z', 'payload': {'durationMs': 98, 'status': 'succeeded'}}, {'eventId': 'ad96098b42774618bcd130ca71b29021', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 9, 'executionGeneration': 1, 'kind': 'nodeAttempt', 'nodeId': 'after', 'nodeVisitId': '5c3848f9-e484-48df-87ae-eb47ccb86ca6', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.061971Z', 'payload': {'status': 'started'}}, {'eventId': '1d923ac6d4e04114893f90d492dc5822', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 10, 'executionGeneration': 1, 'kind': 'log', 'nodeId': 'after', 'nodeVisitId': '5c3848f9-e484-48df-87ae-eb47ccb86ca6', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.072922Z', 'payload': {'message': '开始执行节点', 'level': 'info'}}, {'eventId': '6b81e89dc50846d2b83825e963876f2d', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 11, 'executionGeneration': 1, 'kind': 'log', 'nodeId': 'after', 'nodeVisitId': '5c3848f9-e484-48df-87ae-eb47ccb86ca6', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.084187Z', 'payload': {'message': '2:7', 'level': 'info', 'isUserLog': True}}, {'eventId': '038795c96c3d48848b284f05fb2a1676', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 12, 'executionGeneration': 1, 'kind': 'nodeAttempt', 'nodeId': 'after', 'nodeVisitId': '5c3848f9-e484-48df-87ae-eb47ccb86ca6', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.094993Z', 'payload': {'durationMs': 22, 'status': 'succeeded'}}]
+E
+E                 At index 0 diff: {'eventId': '7509b9767ad748409add23fa9d83f763', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 1, 'executionGeneration': 1, 'kind': 'nodeAttempt', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:39.931304+00:00', 'payload': {'status': 'started'}} != {'eventId': '7509b9767ad748409add23fa9d83f763', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 1, 'executionGeneration': 1, 'kind': 'nodeAttempt', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:39.931304Z', 'payload': {'status': 'started'}}
+E
+E                 Full diff:
+E                   [
+E                       {
+E                           'eventId': '7509b9767ad748409add23fa9d83f763',
+E                           'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7',
+E                           'sequence': 1,
+E                           'executionGeneration': 1,
+E                           'kind': 'nodeAttempt',
+E                           'nodeId': 'request',
+E                           'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774',
+E                           'attempt': 1,
+E                 -         'occurredAt': '2026-09-23T23:00:39.931304Z',
+E                 ?                                                  ^
+E                 +         'occurredAt': '2026-09-23T23:00:39.931304+00:00',
+E                 ?                                                  ^^^^^^
+E                           'payload': {
+E                               'status': 'started',
+E                           },
+E                       },
+E                       {
+E                           'eventId': 'e90b54c4dd464abaacbb56988a6c108f',
+E                           'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7',
+E                           'sequence': 2,
+E                           'executionGeneration': 1,
+E                           'kind': 'log',
+E                           'nodeId': 'request',
+E                           'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774',
+E                           'attempt': 1,
+E                 -         'occurredAt': '2026-09-23T23:00:39.942365Z',
+E                 ?                                                  ^
+E                 +         'occurredAt': '2026-09-23T23:00:39.942365+00:00',
+E                 ?                                                  ^^^^^^
+E                           'payload': {
+E                               'message': '开始执行节点',
+E                               'level': 'info',
+E                           },
+E                       },
+E                       {
+E                           'eventId': '556030f46011470383b0afee1d853075',
+E                           'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7',
+E                           'sequence': 3,
+E                           'executionGeneration': 1,
+E                           'kind': 'interaction',
+E                           'nodeId': 'request',
+E                           'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774',
+E                           'attempt': 1,
+E                 -         'occurredAt': '2026-09-23T23:00:39.954740Z',
+E                 ?                                                  ^
+E                 +         'occurredAt': '2026-09-23T23:00:39.954740+00:00',
+E                 ?                                                  ^^^^^^
+E                           'payload': {
+E                               'type': 'execution:js_script',
+E                               'requestId': '4350de58-cb7b-4474-b7d6-89c7f7617040',
+E                           },
+E                       },
+E                       {
+E                           'eventId': 'e17817c3-22ca-4f46-b4eb-2ae15eb0db89',
+E                           'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7',
+E                           'sequence': 4,
+E                           'executionGeneration': 1,
+E                           'kind': 'interaction',
+E                           'nodeId': None,
+E                           'nodeVisitId': None,
+E                           'attempt': None,
+E                 -         'occurredAt': '2026-09-23T23:00:40.017816Z',
+E                 ?                                                  ^
+E                 +         'occurredAt': '2026-09-23T23:00:40.017816+00:00',
+E                 ?                                                  ^^^^^^
+E                           'payload': {
+E                               'type': 'execution:command_applied',
+E                               'commandId': 'e17817c3-22ca-4f46-b4eb-2ae15eb0db89',
+E                               'requestId': '4350de58-cb7b-4474-b7d6-89c7f7617040',
+E                           },
+E                       },
+E                       {
+E                           'eventId': '4eaa1d47ff4040eeab715142bc8e384f',
+E                           'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7',
+E                           'sequence': 5,
+E                           'executionGeneration': 1,
+E                           'kind': 'interaction',
+E                           'nodeId': 'request',
+E                           'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774',
+E                           'attempt': 1,
+E                 -         'occurredAt': '2026-09-23T23:00:40.017808Z',
+E                 ?                                                  ^
+E                 +         'occurredAt': '2026-09-23T23:00:40.017808+00:00',
+E                 ?                                                  ^^^^^^
+E                           'payload': {
+E                               'type': 'execution:js_script_closed',
+E                               'status': 'completed',
+E                               'requestId': '4350de58-cb7b-4474-b7d6-89c7f7617040',
+E                           },
+E                       },
+E                       {
+E                           'eventId': '8b2c41b3b3fa4a77b734401b2acd05ca',
+E                           'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7',
+E                           'sequence': 6,
+E                           'executionGeneration': 1,
+E                           'kind': 'output',
+E                           'nodeId': 'request',
+E                           'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774',
+E                           'attempt': 1,
+E                 -         'occurredAt': '2026-09-23T23:00:40.028942Z',
+E                 ?                                                  ^
+E                 +         'occurredAt': '2026-09-23T23:00:40.028942+00:00',
+E                 ?                                                  ^^^^^^
+E                           'payload': {
+E                               'value': 7,
+E                               'name': 'answer',
+E                           },
+E                       },
+E                       {
+E                           'eventId': '02a130b83ec94abb8c4c0cdc674805e3',
+E                           'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7',
+E                           'sequence': 7,
+E                           'executionGeneration': 1,
+E                           'kind': 'log',
+E                           'nodeId': 'request',
+E                           'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774',
+E                           'attempt': 1,
+E                 -         'occurredAt': '2026-09-23T23:00:40.039820Z',
+E                 ?                                                  ^
+E                 +         'occurredAt': '2026-09-23T23:00:40.039820+00:00',
+E                 ?                                                  ^^^^^^
+E                           'payload': {
+E                               'message': 'JS脚本执行成功，返回值: 7',
+E                               'level': 'info',
+E                               'isUserLog': True,
+E                           },
+E                       },
+E                       {
+E                           'eventId': '1f42d4da718a42558e81c4ab90c12ae6',
+E                           'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7',
+E                           'sequence': 8,
+E                           'executionGeneration': 1,
+E                           'kind': 'nodeAttempt',
+E                           'nodeId': 'request',
+E                           'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774',
+E                           'attempt': 1,
+E                 -         'occurredAt': '2026-09-23T23:00:40.050854Z',
+E                 ?                                                  ^
+E                 +         'occurredAt': '2026-09-23T23:00:40.050854+00:00',
+E                 ?                                                  ^^^^^^
+E                           'payload': {
+E                               'durationMs': 98,
+E                               'status': 'succeeded',
+E                           },
+E                       },
+E                       {
+E                           'eventId': 'ad96098b42774618bcd130ca71b29021',
+E                           'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7',
+E                           'sequence': 9,
+E                           'executionGeneration': 1,
+E                           'kind': 'nodeAttempt',
+E                           'nodeId': 'after',
+E                           'nodeVisitId': '5c3848f9-e484-48df-87ae-eb47ccb86ca6',
+E                           'attempt': 1,
+E                 -         'occurredAt': '2026-09-23T23:00:40.061971Z',
+E                 ?                                                  ^
+E                 +         'occurredAt': '2026-09-23T23:00:40.061971+00:00',
+E                 ?                                                  ^^^^^^
+E                           'payload': {
+E                               'status': 'started',
+E                           },
+E                       },
+E                       {
+E                           'eventId': '1d923ac6d4e04114893f90d492dc5822',
+E                           'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7',
+E                           'sequence': 10,
+E                           'executionGeneration': 1,
+E                           'kind': 'log',
+E                           'nodeId': 'after',
+E                           'nodeVisitId': '5c3848f9-e484-48df-87ae-eb47ccb86ca6',
+E                           'attempt': 1,
+E                 -         'occurredAt': '2026-09-23T23:00:40.072922Z',
+E                 ?                                                  ^
+E                 +         'occurredAt': '2026-09-23T23:00:40.072922+00:00',
+E                 ?                                                  ^^^^^^
+E                           'payload': {
+E                               'message': '开始执行节点',
+E                               'level': 'info',
+E                           },
+E                       },
+E                       {
+E                           'eventId': '6b81e89dc50846d2b83825e963876f2d',
+E                           'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7',
+E                           'sequence': 11,
+E                           'executionGeneration': 1,
+E                           'kind': 'log',
+E                           'nodeId': 'after',
+E                           'nodeVisitId': '5c3848f9-e484-48df-87ae-eb47ccb86ca6',
+E                           'attempt': 1,
+E                 -         'occurredAt': '2026-09-23T23:00:40.084187Z',
+E                 ?                                                  ^
+E                 +         'occurredAt': '2026-09-23T23:00:40.084187+00:00',
+E                 ?                                                  ^^^^^^
+E                           'payload': {
+E                               'message': '2:7',
+E                               'level': 'info',
+E                               'isUserLog': True,
+E                           },
+E                       },
+E                       {
+E                           'eventId': '038795c96c3d48848b284f05fb2a1676',
+E                           'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7',
+E                           'sequence': 12,
+E                           'executionGeneration': 1,
+E                           'kind': 'nodeAttempt',
+E                           'nodeId': 'after',
+E                           'nodeVisitId': '5c3848f9-e484-48df-87ae-eb47ccb86ca6',
+E                           'attempt': 1,
+E                 -         'occurredAt': '2026-09-23T23:00:40.094993Z',
+E                 ?                                                  ^
+E                 +         'occurredAt': '2026-09-23T23:00:40.094993+00:00',
+E                 ?                                                  ^^^^^^
+E                           'payload': {
+E                               'durationMs': 22,
+E                               'status': 'succeeded',
+E                           },
+E                       },
+E                   ])
+
+tests/integration/test_project_interaction_commands.py:348: AssertionError
+=========================== short test summary info ============================
+FAILED tests/integration/test_project_interaction_commands.py::test_http_to_real_worker_confirmed_in_same_event_transaction[js_script] - AssertionError: assert ([{'eventId': '7509b9767ad748409add23fa9d83f763', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 1, 'executionGeneration': 1, 'kind': 'nodeAttempt', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:39.931304+00:00', 'payload': {'status': 'started'}}, {'eventId': 'e90b54c4dd464abaacbb56988a6c108f', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 2, 'executionGeneration': 1, 'kind': 'log', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:39.942365+00:00', 'payload': {'message': '开始执行节点', 'level': 'info'}}, {'eventId': '556030f46011470383b0afee1d853075', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 3, 'executionGeneration': 1, 'kind': 'interaction', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:39.954740+00:00', 'payload': {'type': 'execution:js_script', 'requestId': '4350de58-cb7b-4474-b7d6-89c7f7617040'}}, {'eventId': 'e17817c3-22ca-4f46-b4eb-2ae15eb0db89', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 4, 'executionGeneration': 1, 'kind': 'interaction', 'nodeId': None, 'nodeVisitId': None, 'attempt': None, 'occurredAt': '2026-09-23T23:00:40.017816+00:00', 'payload': {'type': 'execution:command_applied', 'commandId': 'e17817c3-22ca-4f46-b4eb-2ae15eb0db89', 'requestId': '4350de58-cb7b-4474-b7d6-89c7f7617040'}}, {'eventId': '4eaa1d47ff4040eeab715142bc8e384f', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 5, 'executionGeneration': 1, 'kind': 'interaction', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.017808+00:00', 'payload': {'type': 'execution:js_script_closed', 'status': 'completed', 'requestId': '4350de58-cb7b-4474-b7d6-89c7f7617040'}}, {'eventId': '8b2c41b3b3fa4a77b734401b2acd05ca', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 6, 'executionGeneration': 1, 'kind': 'output', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.028942+00:00', 'payload': {'value': 7, 'name': 'answer'}}, {'eventId': '02a130b83ec94abb8c4c0cdc674805e3', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 7, 'executionGeneration': 1, 'kind': 'log', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.039820+00:00', 'payload': {'message': 'JS脚本执行成功，返回值: 7', 'level': 'info', 'isUserLog': True}}, {'eventId': '1f42d4da718a42558e81c4ab90c12ae6', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 8, 'executionGeneration': 1, 'kind': 'nodeAttempt', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.050854+00:00', 'payload': {'durationMs': 98, 'status': 'succeeded'}}, {'eventId': 'ad96098b42774618bcd130ca71b29021', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 9, 'executionGeneration': 1, 'kind': 'nodeAttempt', 'nodeId': 'after', 'nodeVisitId': '5c3848f9-e484-48df-87ae-eb47ccb86ca6', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.061971+00:00', 'payload': {'status': 'started'}}, {'eventId': '1d923ac6d4e04114893f90d492dc5822', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 10, 'executionGeneration': 1, 'kind': 'log', 'nodeId': 'after', 'nodeVisitId': '5c3848f9-e484-48df-87ae-eb47ccb86ca6', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.072922+00:00', 'payload': {'message': '开始执行节点', 'level': 'info'}}, {'eventId': '6b81e89dc50846d2b83825e963876f2d', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 11, 'executionGeneration': 1, 'kind': 'log', 'nodeId': 'after', 'nodeVisitId': '5c3848f9-e484-48df-87ae-eb47ccb86ca6', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.084187+00:00', 'payload': {'message': '2:7', 'level': 'info', 'isUserLog': True}}, {'eventId': '038795c96c3d48848b284f05fb2a1676', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 12, 'executionGeneration': 1, 'kind': 'nodeAttempt', 'nodeId': 'after', 'nodeVisitId': '5c3848f9-e484-48df-87ae-eb47ccb86ca6', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.094993+00:00', 'payload': {'durationMs': 22, 'status': 'succeeded'}}] == [{'eventId': '7509b9767ad748409add23fa9d83f763', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 1, 'executionGeneration': 1, 'kind': 'nodeAttempt', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:39.931304Z', 'payload': {'status': 'started'}}, {'eventId': 'e90b54c4dd464abaacbb56988a6c108f', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 2, 'executionGeneration': 1, 'kind': 'log', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:39.942365Z', 'payload': {'message': '开始执行节点', 'level': 'info'}}, {'eventId': '556030f46011470383b0afee1d853075', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 3, 'executionGeneration': 1, 'kind': 'interaction', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:39.954740Z', 'payload': {'type': 'execution:js_script', 'requestId': '4350de58-cb7b-4474-b7d6-89c7f7617040'}}, {'eventId': 'e17817c3-22ca-4f46-b4eb-2ae15eb0db89', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 4, 'executionGeneration': 1, 'kind': 'interaction', 'nodeId': None, 'nodeVisitId': None, 'attempt': None, 'occurredAt': '2026-09-23T23:00:40.017816Z', 'payload': {'type': 'execution:command_applied', 'commandId': 'e17817c3-22ca-4f46-b4eb-2ae15eb0db89', 'requestId': '4350de58-cb7b-4474-b7d6-89c7f7617040'}}, {'eventId': '4eaa1d47ff4040eeab715142bc8e384f', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 5, 'executionGeneration': 1, 'kind': 'interaction', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.017808Z', 'payload': {'type': 'execution:js_script_closed', 'status': 'completed', 'requestId': '4350de58-cb7b-4474-b7d6-89c7f7617040'}}, {'eventId': '8b2c41b3b3fa4a77b734401b2acd05ca', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 6, 'executionGeneration': 1, 'kind': 'output', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.028942Z', 'payload': {'value': 7, 'name': 'answer'}}, {'eventId': '02a130b83ec94abb8c4c0cdc674805e3', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 7, 'executionGeneration': 1, 'kind': 'log', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.039820Z', 'payload': {'message': 'JS脚本执行成功，返回值: 7', 'level': 'info', 'isUserLog': True}}, {'eventId': '1f42d4da718a42558e81c4ab90c12ae6', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 8, 'executionGeneration': 1, 'kind': 'nodeAttempt', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.050854Z', 'payload': {'durationMs': 98, 'status': 'succeeded'}}, {'eventId': 'ad96098b42774618bcd130ca71b29021', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 9, 'executionGeneration': 1, 'kind': 'nodeAttempt', 'nodeId': 'after', 'nodeVisitId': '5c3848f9-e484-48df-87ae-eb47ccb86ca6', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.061971Z', 'payload': {'status': 'started'}}, {'eventId': '1d923ac6d4e04114893f90d492dc5822', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 10, 'executionGeneration': 1, 'kind': 'log', 'nodeId': 'after', 'nodeVisitId': '5c3848f9-e484-48df-87ae-eb47ccb86ca6', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.072922Z', 'payload': {'message': '开始执行节点', 'level': 'info'}}, {'eventId': '6b81e89dc50846d2b83825e963876f2d', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 11, 'executionGeneration': 1, 'kind': 'log', 'nodeId': 'after', 'nodeVisitId': '5c3848f9-e484-48df-87ae-eb47ccb86ca6', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.084187Z', 'payload': {'message': '2:7', 'level': 'info', 'isUserLog': True}}, {'eventId': '038795c96c3d48848b284f05fb2a1676', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 12, 'executionGeneration': 1, 'kind': 'nodeAttempt', 'nodeId': 'after', 'nodeVisitId': '5c3848f9-e484-48df-87ae-eb47ccb86ca6', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:40.094993Z', 'payload': {'durationMs': 22, 'status': 'succeeded'}}]
+
+  At index 0 diff: {'eventId': '7509b9767ad748409add23fa9d83f763', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 1, 'executionGeneration': 1, 'kind': 'nodeAttempt', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:39.931304+00:00', 'payload': {'status': 'started'}} != {'eventId': '7509b9767ad748409add23fa9d83f763', 'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7', 'sequence': 1, 'executionGeneration': 1, 'kind': 'nodeAttempt', 'nodeId': 'request', 'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774', 'attempt': 1, 'occurredAt': '2026-09-23T23:00:39.931304Z', 'payload': {'status': 'started'}}
+
+  Full diff:
+    [
+        {
+            'eventId': '7509b9767ad748409add23fa9d83f763',
+            'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7',
+            'sequence': 1,
+            'executionGeneration': 1,
+            'kind': 'nodeAttempt',
+            'nodeId': 'request',
+            'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774',
+            'attempt': 1,
+  -         'occurredAt': '2026-09-23T23:00:39.931304Z',
+  ?                                                  ^
+  +         'occurredAt': '2026-09-23T23:00:39.931304+00:00',
+  ?                                                  ^^^^^^
+            'payload': {
+                'status': 'started',
+            },
+        },
+        {
+            'eventId': 'e90b54c4dd464abaacbb56988a6c108f',
+            'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7',
+            'sequence': 2,
+            'executionGeneration': 1,
+            'kind': 'log',
+            'nodeId': 'request',
+            'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774',
+            'attempt': 1,
+  -         'occurredAt': '2026-09-23T23:00:39.942365Z',
+  ?                                                  ^
+  +         'occurredAt': '2026-09-23T23:00:39.942365+00:00',
+  ?                                                  ^^^^^^
+            'payload': {
+                'message': '开始执行节点',
+                'level': 'info',
+            },
+        },
+        {
+            'eventId': '556030f46011470383b0afee1d853075',
+            'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7',
+            'sequence': 3,
+            'executionGeneration': 1,
+            'kind': 'interaction',
+            'nodeId': 'request',
+            'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774',
+            'attempt': 1,
+  -         'occurredAt': '2026-09-23T23:00:39.954740Z',
+  ?                                                  ^
+  +         'occurredAt': '2026-09-23T23:00:39.954740+00:00',
+  ?                                                  ^^^^^^
+            'payload': {
+                'type': 'execution:js_script',
+                'requestId': '4350de58-cb7b-4474-b7d6-89c7f7617040',
+            },
+        },
+        {
+            'eventId': 'e17817c3-22ca-4f46-b4eb-2ae15eb0db89',
+            'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7',
+            'sequence': 4,
+            'executionGeneration': 1,
+            'kind': 'interaction',
+            'nodeId': None,
+            'nodeVisitId': None,
+            'attempt': None,
+  -         'occurredAt': '2026-09-23T23:00:40.017816Z',
+  ?                                                  ^
+  +         'occurredAt': '2026-09-23T23:00:40.017816+00:00',
+  ?                                                  ^^^^^^
+            'payload': {
+                'type': 'execution:command_applied',
+                'commandId': 'e17817c3-22ca-4f46-b4eb-2ae15eb0db89',
+                'requestId': '4350de58-cb7b-4474-b7d6-89c7f7617040',
+            },
+        },
+        {
+            'eventId': '4eaa1d47ff4040eeab715142bc8e384f',
+            'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7',
+            'sequence': 5,
+            'executionGeneration': 1,
+            'kind': 'interaction',
+            'nodeId': 'request',
+            'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774',
+            'attempt': 1,
+  -         'occurredAt': '2026-09-23T23:00:40.017808Z',
+  ?                                                  ^
+  +         'occurredAt': '2026-09-23T23:00:40.017808+00:00',
+  ?                                                  ^^^^^^
+            'payload': {
+                'type': 'execution:js_script_closed',
+                'status': 'completed',
+                'requestId': '4350de58-cb7b-4474-b7d6-89c7f7617040',
+            },
+        },
+        {
+            'eventId': '8b2c41b3b3fa4a77b734401b2acd05ca',
+            'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7',
+            'sequence': 6,
+            'executionGeneration': 1,
+            'kind': 'output',
+            'nodeId': 'request',
+            'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774',
+            'attempt': 1,
+  -         'occurredAt': '2026-09-23T23:00:40.028942Z',
+  ?                                                  ^
+  +         'occurredAt': '2026-09-23T23:00:40.028942+00:00',
+  ?                                                  ^^^^^^
+            'payload': {
+                'value': 7,
+                'name': 'answer',
+            },
+        },
+        {
+            'eventId': '02a130b83ec94abb8c4c0cdc674805e3',
+            'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7',
+            'sequence': 7,
+            'executionGeneration': 1,
+            'kind': 'log',
+            'nodeId': 'request',
+            'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774',
+            'attempt': 1,
+  -         'occurredAt': '2026-09-23T23:00:40.039820Z',
+  ?                                                  ^
+  +         'occurredAt': '2026-09-23T23:00:40.039820+00:00',
+  ?                                                  ^^^^^^
+            'payload': {
+                'message': 'JS脚本执行成功，返回值: 7',
+                'level': 'info',
+                'isUserLog': True,
+            },
+        },
+        {
+            'eventId': '1f42d4da718a42558e81c4ab90c12ae6',
+            'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7',
+            'sequence': 8,
+            'executionGeneration': 1,
+            'kind': 'nodeAttempt',
+            'nodeId': 'request',
+            'nodeVisitId': 'c99aef7a-a805-400f-8c91-a3243df0a774',
+            'attempt': 1,
+  -         'occurredAt': '2026-09-23T23:00:40.050854Z',
+  ?                                                  ^
+  +         'occurredAt': '2026-09-23T23:00:40.050854+00:00',
+  ?                                                  ^^^^^^
+            'payload': {
+                'durationMs': 98,
+                'status': 'succeeded',
+            },
+        },
+        {
+            'eventId': 'ad96098b42774618bcd130ca71b29021',
+            'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7',
+            'sequence': 9,
+            'executionGeneration': 1,
+            'kind': 'nodeAttempt',
+            'nodeId': 'after',
+            'nodeVisitId': '5c3848f9-e484-48df-87ae-eb47ccb86ca6',
+            'attempt': 1,
+  -         'occurredAt': '2026-09-23T23:00:40.061971Z',
+  ?                                                  ^
+  +         'occurredAt': '2026-09-23T23:00:40.061971+00:00',
+  ?                                                  ^^^^^^
+            'payload': {
+                'status': 'started',
+            },
+        },
+        {
+            'eventId': '1d923ac6d4e04114893f90d492dc5822',
+            'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7',
+            'sequence': 10,
+            'executionGeneration': 1,
+            'kind': 'log',
+            'nodeId': 'after',
+            'nodeVisitId': '5c3848f9-e484-48df-87ae-eb47ccb86ca6',
+            'attempt': 1,
+  -         'occurredAt': '2026-09-23T23:00:40.072922Z',
+  ?                                                  ^
+  +         'occurredAt': '2026-09-23T23:00:40.072922+00:00',
+  ?                                                  ^^^^^^
+            'payload': {
+                'message': '开始执行节点',
+                'level': 'info',
+            },
+        },
+        {
+            'eventId': '6b81e89dc50846d2b83825e963876f2d',
+            'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7',
+            'sequence': 11,
+            'executionGeneration': 1,
+            'kind': 'log',
+            'nodeId': 'after',
+            'nodeVisitId': '5c3848f9-e484-48df-87ae-eb47ccb86ca6',
+            'attempt': 1,
+  -         'occurredAt': '2026-09-23T23:00:40.084187Z',
+  ?                                                  ^
+  +         'occurredAt': '2026-09-23T23:00:40.084187+00:00',
+  ?                                                  ^^^^^^
+            'payload': {
+                'message': '2:7',
+                'level': 'info',
+                'isUserLog': True,
+            },
+        },
+        {
+            'eventId': '038795c96c3d48848b284f05fb2a1676',
+            'runId': 'ba61d9a6-ff81-4767-89a1-6e1816c5ccc7',
+            'sequence': 12,
+            'executionGeneration': 1,
+            'kind': 'nodeAttempt',
+            'nodeId': 'after',
+            'nodeVisitId': '5c3848f9-e484-48df-87ae-eb47ccb86ca6',
+            'attempt': 1,
+  -         'occurredAt': '2026-09-23T23:00:40.094993Z',
+  ?                                                  ^
+  +         'occurredAt': '2026-09-23T23:00:40.094993+00:00',
+  ?                                                  ^^^^^^
+            'payload': {
+                'durationMs': 22,
+                'status': 'succeeded',
+            },
+        },
+    ])
+======================= 1 failed, 14 deselected in 4.25s =======================

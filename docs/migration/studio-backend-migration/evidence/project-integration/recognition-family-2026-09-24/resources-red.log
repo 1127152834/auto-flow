@@ -1,0 +1,38 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+________ test_easyocr_default_models_are_owned_resources_not_reference _________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10c222110>
+
+    def test_easyocr_default_models_are_owned_resources_not_reference(monkeypatch):
+        from pathlib import Path
+        from autoflow.application.workflows.executors import media_recognition
+
+        monkeypatch.delenv("AUTOFLOW_EASYOCR_MODEL_DIR", raising=False)
+        models = media_recognition._easyocr_model_dir()
+>       assert models == Path(media_recognition.__file__).resolve().parents[3] / "resources/easyocr"
+E       AssertionError: assert PosixPath('/Users/zhangtiancheng/Documents/projects/autoflow/reference/WebRPA/backend/models/ocr/easyocr') == (PosixPath('/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/src/autoflow') / 'resources/easyocr')
+
+apps/backend/tests/unit/workflows/test_media_recognition_executors.py:253: AssertionError
+______________ test_missing_bundled_models_never_search_reference ______________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10c210bd0>
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-165/test_missing_bundled_models_ne0')
+
+    def test_missing_bundled_models_never_search_reference(monkeypatch, tmp_path):
+        from autoflow.application.workflows.executors import media_recognition
+
+        reference = tmp_path / "reference/WebRPA/backend/models/ocr/easyocr"
+        reference.mkdir(parents=True)
+        module = tmp_path / "src/autoflow/application/workflows/executors/media_recognition.py"
+        module.parent.mkdir(parents=True)
+        monkeypatch.setattr(media_recognition, "__file__", str(module))
+        monkeypatch.delenv("AUTOFLOW_EASYOCR_MODEL_DIR", raising=False)
+>       with pytest.raises(RuntimeError, match="模型资源不存在"):
+E       Failed: DID NOT RAISE RuntimeError
+
+apps/backend/tests/unit/workflows/test_media_recognition_executors.py:266: Failed
+=========================== short test summary info ============================
+FAILED apps/backend/tests/unit/workflows/test_media_recognition_executors.py::test_easyocr_default_models_are_owned_resources_not_reference
+FAILED apps/backend/tests/unit/workflows/test_media_recognition_executors.py::test_missing_bundled_models_never_search_reference
+2 failed, 8 deselected in 0.31s

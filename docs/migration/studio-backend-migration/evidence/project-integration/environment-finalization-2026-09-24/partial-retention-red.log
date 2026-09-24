@@ -1,0 +1,37 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/environments/components/TaskEndPanel.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:23506) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/environments/components/TaskEndPanel.test.tsx (3 tests | 1 failed) 1490ms
+   × sends selected record targets and can repair a partial association 1449ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/environments/components/TaskEndPanel.test.tsx > sends selected record targets and can repair a partial association
+Error: expect(element).toBeDisabled()
+
+Received element is not disabled:
+  <button
+  class="af-button relative inline-flex shrink-0 items-center justify-center gap-2 rounded-control border font-semibold transition-colors [transition-duration:var(--motion-control)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed border-control-border bg-surface text-ink enabled:hover:bg-surface-hover enabled:active:bg-clay-soft h-[var(--control-sm)] px-3 text-xs"
+  type="button"
+/>
+ ❯ src/renderer/domains/environments/components/TaskEndPanel.test.tsx:51:57
+     49|   }))
+     50|   expect(await screen.findByRole('button', { name: '修复关联' })).toBeEnab…
+     51|   expect(screen.getByRole('button', { name: '结束并保留' })).toBeDisabled()
+       |                                                         ^
+     52|   await userEvent.click(screen.getByRole('button', { name: '修复关联' }))
+     53|   expect(request).toHaveBeenCalledWith('/api/v1/projects/p/environment…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed (3)
+   Start at  05:09:27
+   Duration  20.99s (transform 1.21s, setup 1.09s, import 13.68s, tests 1.49s, environment 4.09s)

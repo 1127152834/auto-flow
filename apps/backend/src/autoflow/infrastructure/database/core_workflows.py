@@ -22,8 +22,14 @@ from autoflow.domain.workflows.validation import (
     SOURCE_PRODUCT,
 )
 
+from .projects import guard_project
 from .workflow_core_models import WorkflowDocumentOperationRow
 from .workflow_models import WorkflowDocumentRow
+from .workflow_project_scope import (
+    readable_workflow_project,
+    workflow_project_expression,
+    workflow_project_id,
+)
 
 
 class SqlAlchemyWorkflowRepository:
@@ -32,12 +38,12 @@ class SqlAlchemyWorkflowRepository:
 
     def list(self) -> list[WorkflowRecord]:
         with self._session_factory() as session:
-            rows = session.scalars(
-                select(WorkflowDocumentRow).order_by(
+            rows = session.execute(
+                select(WorkflowDocumentRow, workflow_project_expression()).where(readable_workflow_project()).order_by(
                     WorkflowDocumentRow.updated_at.desc(), WorkflowDocumentRow.id
                 )
             ).all()
-            return [_record(row) for row in rows if _current_document(row.document)]
+            return [_record(row, project_id) for row, project_id in rows if _current_document(row.document)]
 
     def list_legacy(self) -> builtins.list[LegacyWorkflowRecord]:
         with self._session_factory() as session:
@@ -55,7 +61,12 @@ class SqlAlchemyWorkflowRepository:
     def get(self, workflow_id: str) -> WorkflowRecord | None:
         with self._session_factory() as session:
             row = session.get(WorkflowDocumentRow, workflow_id)
-            return _record(row) if row is not None else None
+            if row is None:
+                return None
+            project_id = workflow_project_id(session, workflow_id)
+            if project_id is not None:
+                guard_project(session, project_id, writable=False)
+            return _record(row, project_id)
 
     def get_legacy(self, workflow_id: str) -> LegacyWorkflowRecord | None:
         with self._session_factory() as session:
@@ -75,6 +86,11 @@ class SqlAlchemyWorkflowRepository:
         workflow_id = str(document["id"])
         with self._session_factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
+            project_id = workflow_project_id(session, workflow_id)
+            if project_id is not None:
+                guard_project(session, project_id)
+                document = deepcopy(document)
+                document["content"]["projectId"] = project_id
             existing = session.get(
                 WorkflowDocumentOperationRow, save_operation_id
             )
@@ -139,8 +155,9 @@ class SqlAlchemyWorkflowRepository:
             return _operation(row) if row is not None else None
 
 
-def _record(row: WorkflowDocumentRow) -> WorkflowRecord:
-    if not _current_document(row.document):
+def _record(row: WorkflowDocumentRow, project_id: str | None = None) -> WorkflowRecord:
+    document = _canonical_document(row)
+    if document is None:
         raise WorkflowError(
             "WORKFLOW_LEGACY_DOCUMENT_UNSUPPORTED",
             "旧版工作流不能按当前 Studio 格式打开",
@@ -151,27 +168,21 @@ def _record(row: WorkflowDocumentRow) -> WorkflowRecord:
                 "retryable": False,
             },
         )
-    document = row.document
-    if _studio_document(document):
-        # Project preparation consumes its established envelope; the Studio row
-        # and revision stay authoritative and are never rewritten by this read.
-        content = WorkflowDraft(row.id, row.name, document, row.layout).to_payload()
-        document = {
-            'id': row.id,
-            'source': {'product': SOURCE_PRODUCT, 'commit': SOURCE_COMMIT},
-            'format': {'kind': FORMAT_KIND, 'version': FORMAT_VERSION},
-            'content': content,
-        }
     return WorkflowRecord(
         document,
         row.revision,
         _aware(row.created_at),
         _aware(row.updated_at),
+        project_id or document["content"].get("projectId"),
     )
 
 
 def _current_document(document: object) -> bool:
-    return _studio_document(document) or (
+    return _canonical_document_shape(document) or _studio_document_shape(document)
+
+
+def _canonical_document_shape(document: object) -> bool:
+    return (
         isinstance(document, dict)
         and document.get("source")
         == {"product": SOURCE_PRODUCT, "commit": SOURCE_COMMIT}
@@ -181,15 +192,44 @@ def _current_document(document: object) -> bool:
     )
 
 
-def _studio_document(document: object) -> bool:
+def _studio_document_shape(document: object) -> bool:
     return (
         isinstance(document, dict)
-        and 'format' not in document and 'source' not in document
-        and isinstance(document.get('nodes'), list)
-        and isinstance(document.get('edges'), list)
-        and all(isinstance(node, dict) and isinstance(node.get('data'), dict)
-                and isinstance(node['data'].get('moduleType'), str) for node in document['nodes'])
+        and "format" not in document and "source" not in document
+        and ("schemaVersion" not in document or document["schemaVersion"] == 3)
+        and isinstance(document.get("nodes"), list)
+        and isinstance(document.get("edges"), list)
+        and isinstance(document.get("variables", []), list)
+        and all(
+            isinstance(node, dict)
+            and isinstance(node.get("data"), dict)
+            and isinstance(node["data"].get("moduleType"), str)
+            for node in document["nodes"]
+        )
     )
+
+
+def _canonical_document(row: WorkflowDocumentRow) -> dict[str, Any] | None:
+    """Normalize the direct Studio document at the catalog/runtime boundary.
+
+    Studio and the legacy catalog share the same table but intentionally have
+    different transport shapes. Keep the database value untouched and expose
+    one canonical WebRPA record to existing project/runtime consumers.
+    """
+    raw = row.document
+    if _canonical_document_shape(raw):
+        return deepcopy(raw)
+    if not _studio_document_shape(raw):
+        return None
+    assert isinstance(raw, dict)
+    content = WorkflowDraft(row.id, row.name, raw, row.layout).to_payload()
+    content.setdefault("schemaVersion", 3)
+    return {
+        "id": row.id,
+        "source": {"product": SOURCE_PRODUCT, "commit": SOURCE_COMMIT},
+        "format": {"kind": FORMAT_KIND, "version": FORMAT_VERSION},
+        "content": content,
+    }
 
 
 def _legacy_record(row: WorkflowDocumentRow) -> LegacyWorkflowRecord:
@@ -217,6 +257,7 @@ def _operation_row(
             "revision": record.revision,
             "createdAt": record.created_at.isoformat(),
             "updatedAt": record.updated_at.isoformat(),
+            "projectId": record.project_id,
         },
         created_at=now,
     )
@@ -229,6 +270,7 @@ def _operation(row: WorkflowDocumentOperationRow) -> WorkflowSaveOperation:
         int(result["revision"]),
         datetime.fromisoformat(result["createdAt"]),
         datetime.fromisoformat(result["updatedAt"]),
+        result.get("projectId") or result["document"]["content"].get("projectId"),
     )
     return WorkflowSaveOperation(
         row.save_operation_id,

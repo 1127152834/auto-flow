@@ -138,6 +138,13 @@
         "completedSlice": "B1.3 CloakBrowser页面会话、worker和资源清理；B1.4五节点真实执行；B1.6主应用Profile到worker的运行装配；B1.7正式开发构建和目录包五节点主链",
         "evidencePath": "docs/migration/studio-backend-migration/evidence/b1/formal-electron-9HK0sY/result.json",
         "remaining": "B1共享正常关窗/停止/异常离开矩阵；B2 iframe、拾取、弹窗、网络监听及其余网页节点"
+      },
+      "projectProfileDefaults20260923": {
+        "status": "implemented-development-and-packaged-accepted",
+        "classification": "AutoFlow必要适配",
+        "decision": "项目默认值且允许显式覆盖；不新增资源白名单",
+        "evidence": "docs/migration/studio-backend-migration/evidence/project-integration/profile-defaults-2026-09-23/result.json",
+        "remaining": "模型默认与项目worker凭据/模型上下文独立保留；其他平台未测"
       }
     },
     {
@@ -177,6 +184,13 @@
         "completedSlice": "B1.3 worker和资源清理；B1.5持久状态、幂等、活跃名额和启动恢复；B1.6真实HTTP命令、运行协调和SSE补读合同；B1.7正式主链成功终态清理",
         "evidencePath": "docs/migration/studio-backend-migration/evidence/b1/formal-electron-9HK0sY/result.json",
         "remaining": "B1.7运行中停止、正常关窗和完整离开矩阵；Debug命令在B8"
+      },
+      "projectEnvironmentFinalization20260924": {
+        "status": "verified-source-real-browser-development-and-macos-arm64-package",
+        "classification": "AutoFlow必要适配",
+        "evidence": "docs/migration/studio-backend-migration/evidence/project-integration/environment-finalization-2026-09-24/README.md",
+        "semantics": "终态任务无保留意图才清理工作副本；保存/人工操作与清理互斥；失败保留占用和重试责任；未知旧保存意图保守保留；慢清理不持停止准入锁。",
+        "remaining": "历史iVkaGt/Ie6Ngs偶发interrupted根因未唯一确认；修复后正式取消和清理通过。Windows/macOS Intel未验收。"
       }
     },
     {
@@ -211,6 +225,21 @@
         "completedSlice": "B1.5递增事件、提交后广播、原子文件和归属登记；B1.6日志/结果/PNG分页读取与SSE HTTP合同；B1.7正式主链重开后日志/结果/PNG持久化",
         "evidencePath": "docs/migration/studio-backend-migration/evidence/b1/formal-electron-9HK0sY/result.json",
         "remaining": "B3重复执行索引；B8诊断、筛选和高容量导出"
+      },
+      "deliveryReconciliation20260923": {
+        "status": "verified-macos-arm64-development-and-local-package",
+        "evidence": "docs/migration/studio-backend-migration/evidence/shared-services/log-delivery-2026-09-23/result.json",
+        "remainingTimingGap": "superseded: actual monotonic dispatch timing verified; see durationReconciliation20260923"
+      },
+      "durationReconciliation20260923": {
+        "status": "verified-macos-arm64-development-and-local-package",
+        "evidence": "docs/migration/studio-backend-migration/evidence/shared-services/node-duration-2026-09-23/result.json",
+        "semantics": "实际毫秒；自身/等待子调用断点不计；独立分支及非等待后台流程不影响调用方；循环每轮独立"
+      },
+      "projectScreenshotPurpose20260924": {
+        "status": "verified-development-and-macos-arm64-package",
+        "evidence": "docs/migration/studio-backend-migration/evidence/project-integration/environment-finalization-2026-09-24/README.md",
+        "semantics": "结果截图、失败截图按实际purpose区分；混合截图使用中性标题。"
       }
     },
     {
@@ -326,7 +355,17 @@
         "docs/migration/studio-frontend-completion/mcp-service-contract.md",
         "docs/migration/studio-frontend-completion/ai-model-picker-validation.md"
       ],
-      "risk": "不得复制原版明文或全局配置；AI节点只引用主应用模型标识和后端秘密引用，MCP调用必须服从真实命令状态与权限结果。"
+      "risk": "不得复制原版明文或全局配置；AI节点只引用主应用模型标识和后端秘密引用，MCP调用必须服从真实命令状态与权限结果。",
+      "projectModelDefaults": {
+        "status": "已实现且已验收",
+        "evidence": "docs/migration/studio-backend-migration/evidence/project-integration/model-defaults-2026-09-23/result.json",
+        "liveModelEvidence": "docs/migration/studio-backend-migration/evidence/project-integration/model-defaults-live-2026-09-23/real-model.json",
+        "remaining": [
+          "项目任务worker的模型端口",
+          "小助手后端会话和命令的项目归属"
+        ],
+        "scopeNote": "不据此关闭共享能力全部剩余项或任何未测节点平台"
+      }
     },
     {
       "id": "BE.SUPPORT.assistant-langgraph",
@@ -381,13 +420,23 @@
         "apps/backend/src/autoflow/adapters/http/workflow_resources.py"
       ],
       "classification": "AutoFlow必要适配",
-      "status": "真实后端待迁入",
+      "status": "部分真实验收：凭据系统存储与worker按字段消费已通过；其余集成按节点台账核销",
       "milestone": "B6",
       "contractRefs": [
         "docs/migration/studio-frontend-completion/credential-protocol-contract.md",
         "docs/migration/studio-frontend-completion/path-service-contract.md"
       ],
-      "risk": "各连接器的第三方依赖、平台支持和真实凭据需要逐项探测；秘密不得进入节点文档、日志、SSE、诊断或导出。"
+      "risk": "各连接器的第三方依赖、平台支持和真实凭据需要逐项探测；秘密不得进入节点文档、日志、SSE、诊断或导出。",
+      "evidenceRefs": [
+        "docs/migration/studio-backend-migration/evidence/shared-services/credential-runtime-2026-09-23/result.json"
+      ],
+      "remaining": "第三方及平台节点真实环境仍按17槽位保留；用户已确认项目资源使用默认值且允许显式覆盖，不新增资源白名单。用户删除的14通知节点保持排除。",
+      "projectCredentialRuntime": {
+        "status": "已实现且已验收",
+        "evidence": "docs/migration/studio-backend-migration/evidence/project-integration/credential-runtime-2026-09-23/result.json",
+        "behavior": "复用StudioCredentialService/系统存储及同步私有读取器；项目run/generation/request隔离，停止/超时/清理后不投递迟到值",
+        "remaining": "其他未实测外部集成与平台仍按节点台账保留"
+      }
     },
     {
       "id": "BE.SUPPORT.triggers-schedules",

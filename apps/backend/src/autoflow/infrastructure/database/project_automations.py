@@ -15,7 +15,7 @@ from autoflow.domain.project_automations.models import (
 from autoflow.domain.projects.models import ProjectError, ProjectOperation
 
 from .environment_models import ProjectManualItemRow
-from .models import ProjectOperationRow, ProjectRow
+from .models import ProjectOperationRow
 from .project_automation_models import ProjectAutomationRow
 from .project_data_models import DataImpactRow
 from .project_run_models import (
@@ -28,8 +28,9 @@ from .project_run_models import (
     ProjectTaskRecordReadRow,
     ProjectTaskRow,
 )
-from .projects import _json_dates, _operation, _operation_row
+from .projects import _json_dates, _operation, _operation_row, guard_project
 from .workflow_models import WorkflowDocumentRow
+from .workflow_project_scope import workflow_project_id
 from .workflow_runtime_models import (
     WorkflowPreparedContentRow,
     WorkflowRunArtifactRow,
@@ -67,6 +68,9 @@ class SqlAlchemyProjectAutomations:
                         "retryable": False,
                     },
                 )
+            owner = workflow_project_id(session, record.workflow_id)
+            if owner is not None and owner != record.project_id:
+                raise ProjectError("WORKFLOW_NOT_FOUND", "Workflow was not found", 404)
             try:
                 session.add(_row(record))
                 session.flush()
@@ -302,13 +306,7 @@ class SqlAlchemyProjectAutomations:
 
     @staticmethod
     def _guard_project(session, project_id, writable=True):
-        row = session.get(ProjectRow, project_id)
-        if row is None or row.lifecycle_state == "deleted":
-            raise ProjectError("PROJECT_NOT_FOUND", "Project was not found", 404)
-        if writable and row.lifecycle_state == "closing":
-            raise ProjectError("PROJECT_CLOSING", "Project is closing", 423)
-        if writable and row.lifecycle_state != "active":
-            raise ProjectError("LIFECYCLE_CONFLICT", "Project cannot be edited", 409)
+        guard_project(session, project_id, writable)
 
     @staticmethod
     def _operation_by_key(session, incoming):

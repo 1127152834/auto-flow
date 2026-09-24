@@ -1,0 +1,6 @@
+# 项目任务出站 HTTP 节点（2026-09-24）
+
+- `api_trigger`、`api_request`、`webhook_request`、`notify_webhook` 复用已迁入的冻结 WebRPA 执行器和 AutoFlow 现有 HTTP 网关，接入项目任务目录 150→154。轮询、请求、通知沿用原版字段与结果语义；项目事件登记执行器实际写入的 API 响应，以及 Webhook 的响应体、状态、响应头和 Cookie。
+- [真实项目 worker](../../../../../../apps/backend/tests/integration/test_project_data_worker.py)向本地受控 HTTP 服务发送两次轮询及三个后续请求，核验请求体、顺序、六项变量输出和无浏览器资源；在途请求停止后不产生输出。[原工作流 worker](../../../../../../apps/backend/tests/integration/test_b6_external_http_worker.py)、[冻结 API 触发器差分](../../../../../../apps/backend/tests/differential/workflows/test_b6_api_trigger_parity.py)及集成网关专项复用。关联测试 66 项、Ruff、mypy、OpenAPI、目录和脚本语法检查通过。
+- 正式 Electron [开发入口](../formal-project-http-electron-ZjnVH9/result.json)与[本地未签名 macOS arm64 包](../formal-project-http-electron-BrRnm7/result.json)均经主窗口真实点击进入 Studio，配置四节点、保存并运行项目任务。证据中的 `requestTrace` 记录两次轮询、GET API、POST Webhook 请求和通知，任务页可读取持久输出；没有启动 CloakBrowser。首轮脚本对 JSON 占位符使用无效 CSS 选择器，保留[失败现场](../formal-project-http-electron-JZwjZq/blocked.json)，修正测试定位后同一业务断言通过。
+- 包内 `app.asar` SHA-256：`14f031e677a83b8dc3041589fce3445fe0b9ba7f0d72919c537700eb512ccbbd`；冻结后端：`f8daa18522e1d00a01b630cc289723724d0a3b5071a5c51739340466337d36d4`；Electron：`afa086d829713c1385c6f15999898a8b959af24abb46df949ac324047afc30a7`。被动 `webhook_trigger` 仍依赖项目 worker 的交互触发通道，未纳入本块；Telegram、邮件另需各自服务验收。macOS Intel、Windows 和用户数据库未实测。

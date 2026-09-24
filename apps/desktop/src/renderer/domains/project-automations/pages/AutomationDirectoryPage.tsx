@@ -17,12 +17,12 @@ function readQuery(key: string): AutomationDirectoryQuery {
 }
 export type AutomationDirectoryPageProps = {
   workspaceKey: string; instanceId: string; projectId: string; client: StreamingApiClient; disabled: boolean; readOnly: boolean
-  onOpen(automationId: string): void; onCreate(): void
+  onOpen(automationId: string): void; onCreate(): void; onOpenStudio?(): void
 }
 export function AutomationDirectoryPage(props: AutomationDirectoryPageProps) {
   return <Directory key={JSON.stringify([props.workspaceKey, props.projectId])} {...props} />
 }
-function Directory({ workspaceKey, instanceId, projectId, client, disabled, readOnly, onOpen, onCreate }: AutomationDirectoryPageProps) {
+function Directory({ workspaceKey, instanceId, projectId, client, disabled, readOnly, onOpen, onCreate, onOpenStudio }: AutomationDirectoryPageProps) {
   const key = `autoflow:automations-ui:${JSON.stringify([workspaceKey, projectId])}`
   const [query, setQuery] = useState(() => readQuery(key))
   const [removing, setRemoving] = useState<{ automation: Automation; key: string } | null>(null)
@@ -44,7 +44,7 @@ function Directory({ workspaceKey, instanceId, projectId, client, disabled, read
   return <>
     <AutomationDirectory items={result.data?.items ?? []} total={result.data?.total ?? 0} page={query.page} pageSize={query.pageSize} query={query.query} sort={query.sort} loading={result.isLoading} refreshing={result.isFetching || disabled} readOnly={readOnly} errorMessage={result.error ? safeProjectError(result.error) : undefined}
       onQueryChange={value => setQuery(current => ({ ...current, query: value, page: 1 }))} onSortChange={sort => setQuery(current => ({ ...current, sort, page: 1 }))} onPageChange={page => setQuery(current => ({ ...current, page }))}
-      onOpen={automation => onOpen(automation.automationId)} onEdit={automation => onOpen(automation.automationId)} onDelete={readOnly ? undefined : automation => setRemoving({ automation, key: crypto.randomUUID() })} onCreate={onCreate} onRetry={() => void result.refetch()} />
+      onOpen={automation => onOpen(automation.automationId)} onEdit={automation => onOpen(automation.automationId)} onDelete={readOnly ? undefined : automation => setRemoving({ automation, key: crypto.randomUUID() })} onCreate={onCreate} onOpenStudio={onOpenStudio} onRetry={() => void result.refetch()} />
     <AutomationDeleteDialog open={Boolean(removing)} automation={removing?.automation ?? null} disabled={disabled} onOpenChange={open => { if (!open) setRemoving(null) }} onLoadImpact={() => {
       if (!removing) return Promise.reject(new Error('缺少待删除的自动化'))
       return api.impact(removing.automation.automationId)

@@ -3,6 +3,7 @@ import {requestSessionTransition} from './lib/documentLeave'
 import { checkedRetention } from './lib/retentionContract'
 import {checkedCredentialFields, checkedCredentialWrite} from './lib/credentialContract'
 import {checkedImageWrite} from './lib/imageAssetContract'
+import { nativePathSelection } from './lib/nativePathSelection'
 import {checkedPathSelection} from './lib/pathSelectionContract'
 import {sendDebugControl,sendDebugVariables} from './api/debugControl'
 import { checkedExecutionLogPage, checkedWorkflowRunPage } from './lib/executionLogContract'
@@ -10,7 +11,7 @@ import type {DebugControlRequest,DebugVariablesRequest} from './lib/debugControl
 // Source: WebRPA@5ccb900e, services/api.ts; see SOURCE.md for license and adaptation boundaries.
 import type { components } from '../../shared/api/generated'
 import { getStudioTransportRevision, studioFetch } from './api/transport'
-import { getBackendBaseUrl } from './api/config'
+import { getBackendBaseUrl, getStudioOpenContext, getStudioResourceScope, scopeStudioUrl } from './api/config'
 import { parseApiWireError, type ApiWireError } from '../../shared/api/client'
 
 // 获取后端 API 基础地址
@@ -47,12 +48,14 @@ export interface ApiResponse<T = any> {
 export type WorkflowRunSummary = components['schemas']['StudioWorkflowRunSummary']
 export type WorkflowRunPage = components['schemas']['StudioWorkflowRunPage']
 export type ExecutionLogPage = components['schemas']['StudioExecutionLogPage']
+export type ModelOptionList = components['schemas']['ModelOptionListRead']
 export interface ExecutionLogQuery {
   cursor?: number
   limit?: number
   query?: string
   levels?: string[]
   nodeId?: string
+  executionId?: string
 }
 
 function executionLogSearch(query: ExecutionLogQuery = {}): string {
@@ -62,6 +65,7 @@ function executionLogSearch(query: ExecutionLogQuery = {}): string {
   if (query.query?.trim()) params.set('query', query.query.trim())
   if (query.levels?.length) params.set('levels', query.levels.join(','))
   if (query.nodeId?.trim()) params.set('nodeId', query.nodeId.trim())
+  if (query.executionId?.trim()) params.set('executionId', query.executionId.trim())
   const encoded = params.toString()
   return encoded ? `?${encoded}` : ''
 }
@@ -73,7 +77,7 @@ export async function apiRequest<T = any>(
 ): Promise<ApiResponse<T>> {
   try {
     // 连接在挂载 Studio 前已配置；同步选定地址并发起传输，避免切换连接后错发写请求。
-    const url = `${getApiBase()}${endpoint}`
+    const url = scopeStudioUrl(`${getApiBase()}${endpoint}`)
     const isFormData = options.body instanceof FormData
     const response = await studioFetch(url, {
       ...options,
@@ -139,17 +143,19 @@ export const systemApi = {
       body: JSON.stringify(cfg),
     }),
   selectFolder: async (title?: string, initialDir?: string) =>
-    checkedPathSelection(await apiRequest<unknown>('/system/select-folder', {
+    window.autoflow?.chooseWorkflowPath ? nativePathSelection({ kind: 'folder', title, initialDir }) : checkedPathSelection(await apiRequest<unknown>('/system/select-folder', {
       method: 'POST', body: JSON.stringify({title,initialDir} satisfies Partial<components['schemas']['StudioFolderSelectRequest']>),
     })),
   selectFile: async (title?: string, initialDir?: string, fileTypes?: Array<[string, string]>) =>
-    checkedPathSelection(await apiRequest<unknown>('/system/select-file', {
+    window.autoflow?.chooseWorkflowPath ? nativePathSelection({ kind: 'file', title, initialDir, fileTypes }) : checkedPathSelection(await apiRequest<unknown>('/system/select-file', {
       method: 'POST', body: JSON.stringify({title,initialDir,fileTypes} satisfies Partial<components['schemas']['StudioFileSelectRequest']>),
     })),
   openUrl: (url: string) =>
     apiRequest('/system/open-url', { method: 'POST', body: JSON.stringify({ url }) }),
   setCustomHotkeys: (shortcuts: Record<string, string>) =>
-    apiRequest('/system/custom-hotkeys', { method: 'POST', body: JSON.stringify({ shortcuts }) }),
+    window.autoflow?.setStudioHotkeys
+      ? window.autoflow.setStudioHotkeys(shortcuts)
+      : apiRequest('/system/custom-hotkeys', { method: 'POST', body: JSON.stringify({ shortcuts }) }),
   getMousePosition: () => apiRequest('/system/mouse-position'),
   /** 写入系统剪贴板（焦点无关，供元素选择器自动复制选择器使用） */
   setClipboard: (text: string) =>
@@ -160,6 +166,25 @@ export const systemApi = {
     apiRequest<{ success: boolean; dataUrl?: string; width?: number; height?: number; error?: string }>(
       '/system/screenshot-base64', { method: 'POST', body: '{}' }
     ),
+}
+
+export const modelApi = {
+  listOptions: () => apiRequest<ModelOptionList>('/v1/models/options'),
+  projectDefault: async (): Promise<ApiResponse<{modelId: string} | null>> => {
+    const scope = getStudioResourceScope()
+    if (!scope) return {success: true, data: null}
+    const revision = getStudioTransportRevision()
+    const [defaults, options] = await Promise.all([projectResourceApi.defaults(), modelApi.listOptions()])
+    if (scope !== getStudioResourceScope() || revision !== getStudioTransportRevision()) return {success: false, error: '项目或服务已变更，未采用旧模型配置'}
+    if (!defaults.success) return {success: false, error: defaults.error, httpStatus: defaults.httpStatus}
+    if (!options.success) return {success: false, error: options.error, httpStatus: options.httpStatus}
+    const providerId = defaults.data?.modelProviderId
+    if (!providerId) return {success: false, error: '项目未设置默认模型服务，请显式选择模型', httpStatus: 422}
+    if (!Array.isArray(options.data?.items) || !options.data.items.every(item => item && typeof item.id === 'string' && item.id && typeof item.providerId === 'string')) return {success: false, error: '主应用模型列表响应无效'}
+    const model = options.data.items.find(item => item.providerId === providerId)
+    if (!model) return {success: false, error: '项目默认模型服务没有可用模型，请显式选择模型', httpStatus: 409}
+    return {success: true, data: {modelId: model.id}}
+  },
 }
 
 // ==================== 工作流 API ====================
@@ -197,34 +222,40 @@ function settleWorkflowWrite(key: string, result: ApiResponse<unknown>): void {
 
 export const workflowApi = {
   list: async () => {
-    const result = await apiRequest<any[]>('/workflows')
+    const projectId = getStudioOpenContext().projectId
+    const result = await apiRequest<any[]>(`/workflows${projectId ? `?projectId=${encodeURIComponent(projectId)}` : ''}`)
     result.data?.forEach(item => rememberWorkflow(item, 1))
     return result
   },
   get: async (id: string) => {
-    const result = await apiRequest<any>(`/workflows/${id}`)
+    const projectId = getStudioOpenContext().projectId
+    const result = await apiRequest<any>(`/workflows/${id}${projectId ? `?projectId=${encodeURIComponent(projectId)}` : ''}`)
     if (result.success) rememberWorkflow(result.data, 1)
     return result
   },
   create: async (data: any) => {
-    const key = workflowWriteKey('create', data)
-    const clientRequestId = workflowRequestId(key, data?.clientRequestId)
+    const projectId = getStudioOpenContext().projectId
+    const scopedData = projectId ? { ...data, projectId } : data
+    const key = workflowWriteKey('create', scopedData)
+    const clientRequestId = workflowRequestId(key, scopedData?.clientRequestId)
     const result = await apiRequest<any>('/workflows', {
-      method: 'POST', body: JSON.stringify({...data, clientRequestId}),
+      method: 'POST', body: JSON.stringify({...scopedData, clientRequestId}),
     })
     if (result.success) rememberWorkflow(result.data, 1)
     settleWorkflowWrite(key, result)
     return result
   },
   update: async (id: string, data: any) => {
-    const expectedRevision = Number.isSafeInteger(data?.expectedRevision)
-      ? data.expectedRevision
-      : workflowRevisions.get(id) ?? (Number.isSafeInteger(data?.revision) ? data.revision : 1)
-    const key = workflowWriteKey(`update:${id}:${expectedRevision}`, data)
-    const clientRequestId = workflowRequestId(key, data?.clientRequestId)
+    const projectId = getStudioOpenContext().projectId
+    const scopedData = projectId ? { ...data, projectId } : data
+    const expectedRevision = Number.isSafeInteger(scopedData?.expectedRevision)
+      ? scopedData.expectedRevision
+      : workflowRevisions.get(id) ?? (Number.isSafeInteger(scopedData?.revision) ? scopedData.revision : 1)
+    const key = workflowWriteKey(`update:${id}:${expectedRevision}`, scopedData)
+    const clientRequestId = workflowRequestId(key, scopedData?.clientRequestId)
     const result = await apiRequest<any>(`/workflows/${id}`, {
       method: 'PUT',
-      body: JSON.stringify({...data, expectedRevision, clientRequestId}),
+      body: JSON.stringify({...scopedData, expectedRevision, clientRequestId}),
     })
     if (result.success) rememberWorkflow(result.data, expectedRevision + 1)
     settleWorkflowWrite(key, result)
@@ -234,8 +265,10 @@ export const workflowApi = {
     const expectedRevision = workflowRevisions.get(id) ?? 1
     return apiRequest(`/workflows/${id}?expectedRevision=${expectedRevision}`, { method: 'DELETE' })
   },
-  execute: (id: string, params?: any) =>
-    apiRequest(`/workflows/${id}/execute`, { method: 'POST', body: JSON.stringify(params || {}) }),
+  execute: (id: string, params?: any) => {
+    const projectId = getStudioOpenContext().projectId
+    return apiRequest(`/workflows/${id}/execute`, { method: 'POST', body: JSON.stringify({ ...params, ...(projectId ? { projectId } : {}) }) })
+  },
   stop: (id: string, runId?:string) =>
     apiRequest(`/workflows/${id}/stop`, { method: 'POST', body:JSON.stringify({runId}) }),
   getRun: (runId:string) => apiRequest<components['schemas']['StudioWorkflowRunSummary']>(`/workflow-runs/${encodeURIComponent(runId)}`),
@@ -294,14 +327,14 @@ export const workflowApi = {
   },
   exportRunResults:async(runId:string,throughSequence:number)=>{
     try{
-      const result=await studioFetch(`${getApiBase()}/workflow-runs/${encodeURIComponent(runId)}/results/export?throughSequence=${throughSequence}`)
+      const result=await studioFetch(scopeStudioUrl(`${getApiBase()}/workflow-runs/${encodeURIComponent(runId)}/results/export?throughSequence=${throughSequence}`))
       if(!result.ok)return {success:false,error:`结果导出失败：HTTP ${result.status}`} as ApiResponse<Blob>
       return {success:true,data:await result.blob()} as ApiResponse<Blob>
     }catch(error){return {success:false,error:String(error)} as ApiResponse<Blob>}
   },
   exportRunLogs: async (runId: string, query: Omit<ExecutionLogQuery, 'cursor' | 'limit'> = {}) => {
     try {
-      const response = await studioFetch(`${getApiBase()}/workflow-runs/${encodeURIComponent(runId)}/logs/export${executionLogSearch(query)}`)
+      const response = await studioFetch(scopeStudioUrl(`${getApiBase()}/workflow-runs/${encodeURIComponent(runId)}/logs/export${executionLogSearch(query)}`))
       if (!response.ok) return { success: false, httpStatus: response.status, error: `HTTP ${response.status}: ${response.statusText}` } as ApiResponse<Blob>
       return { success: true, data: await response.blob() } as ApiResponse<Blob>
     } catch (error) {
@@ -394,8 +427,10 @@ export const scheduledTaskApi = {
     apiRequest(`/scheduled-tasks/${id}`, { method: 'DELETE' }),
   toggle: (id: string, enabled: boolean) =>
     apiRequest(`/scheduled-tasks/${id}/toggle`, { method: 'POST', body: JSON.stringify({ enabled }) }),
-  execute: (id: string) =>
-    apiRequest(`/scheduled-tasks/${id}/execute`, { method: 'POST' }),
+  execute: (id: string, commandId: string) =>
+    apiRequest(`/scheduled-tasks/${id}/execute`, { method: 'POST', body: JSON.stringify({ commandId }) }),
+  getCommand: (commandId: string) =>
+    apiRequest(`/scheduled-tasks/commands/${encodeURIComponent(commandId)}`),
   stop: (id: string) =>
     apiRequest(`/scheduled-tasks/${id}/stop`, { method: 'POST' }),
   getTaskLogs: (id: string, limit: number = 100) => 
@@ -436,6 +471,24 @@ async function browserPagesRequest(options?:RequestInit):Promise<ApiResponse<Bro
   return result
 }
 
+/** Existing project defaults are shared by browser and model consumers. Overrides are session-only. */
+export const projectResourceApi = {
+  defaults: async (): Promise<ApiResponse<components['schemas']['ProjectDefaultResources'] | null>> => {
+    useGlobalConfigStore.getState().syncProjectResourceScope()
+    const scope = getStudioResourceScope()
+    if (!scope) return {success: true, data: null}
+    const revision = getStudioTransportRevision()
+    const projectId = getStudioOpenContext().projectId!
+    const result = await apiRequest<components['schemas']['ProjectSummary']>(`/v1/projects/${encodeURIComponent(projectId)}`)
+    if (scope !== getStudioResourceScope() || revision !== getStudioTransportRevision()) return {success: false, error: '项目或服务已变更，未采用旧资源配置'}
+    if (!result.success) return {success: false, error: result.error, httpStatus: result.httpStatus}
+    const defaults = result.data?.defaultResources
+    if (!defaults || ![defaults.profileId, defaults.modelProviderId].every(value => value === null || (typeof value === 'string' && value.length > 0))) return {success: false, error: '项目默认资源响应无效'}
+    useGlobalConfigStore.setState(state => ({projectResources: {...state.projectResources, defaults}}))
+    return {success: true, data: defaults}
+  },
+}
+
 export const browserApi = {
   profiles: async () => {
     const result=await apiRequest<components['schemas']['ProfileList']>('/v1/profiles')
@@ -445,12 +498,15 @@ export const browserApi = {
   },
   resolveProfile: async (requestedId?:string) => {
     const revision=getStudioTransportRevision()
-    const selected=requestedId??useGlobalConfigStore.getState().config.browserProfileId
-    const result=await browserApi.profiles()
-    if(revision!==getStudioTransportRevision())return {success:false,error:'服务已变更，未采用旧配置'} as ApiResponse<components['schemas']['ProfileRead']>
+    const scope=getStudioResourceScope()
+    const [result, defaults]=await Promise.all([browserApi.profiles(), projectResourceApi.defaults()])
+    if(!defaults.success)return {success:false,error:defaults.error,httpStatus:defaults.httpStatus} as ApiResponse<components['schemas']['ProfileRead']>
+    const state=useGlobalConfigStore.getState()
+    const selected=requestedId??(scope ? state.projectResources.profileId??defaults.data?.profileId : state.config.browserProfileId)
+    if(scope!==getStudioResourceScope()||revision!==getStudioTransportRevision())return {success:false,error:'服务已变更，未采用旧配置'} as ApiResponse<components['schemas']['ProfileRead']>
     if(!result.success||!result.data)return {success:false,error:result.error||'浏览器配置读取失败'} as ApiResponse<components['schemas']['ProfileRead']>
-    const profile=selected?result.data.items.find(item=>item.id===selected):result.data.items[0]
-    if(!profile)return {success:false,httpStatus:selected?404:422,error:selected?'所选浏览器配置已不可用，请重新选择':'请先在管理端创建 CloakBrowser 配置'} as ApiResponse<components['schemas']['ProfileRead']>
+    const profile=selected?result.data.items.find(item=>item.id===selected):scope?undefined:result.data.items[0]
+    if(!profile)return {success:false,httpStatus:selected?404:422,error:selected?'所选浏览器配置已不可用，请重新选择':scope?'项目未设置默认浏览器配置，请显式选择 CloakBrowser 配置':'请先在管理端创建 CloakBrowser 配置'} as ApiResponse<components['schemas']['ProfileRead']>
     return {success:true,data:profile} as ApiResponse<components['schemas']['ProfileRead']>
   },
   pages: () => browserPagesRequest(),
@@ -699,6 +755,21 @@ async function recorderRequest<T>(path:string,sessionId:string,options:RequestIn
   return result
 }
 
+async function issueRecorderCommand<T>(sessionId:string,action:'start'|'pause'|'resume'|'stop',afterSeq=0,documentId?:string):Promise<ApiResponse<T>>{
+  const revision=getStudioTransportRevision(),commandId=crypto.randomUUID()
+  const body=action==='start'?{sessionId,commandId,...(documentId?{documentId}:{})}:{sessionId,commandId,afterSeq}
+  const result=await recorderRequest<T>(`/recorder/${action}`,sessionId,{method:'POST',body:JSON.stringify(body)})
+  if(revision!==getStudioTransportRevision()||(result.httpStatus&&result.httpStatus<500&&!result.success)||result.success)return result
+  const lookup=await apiRequest<components['schemas']['StudioRecorderCommandState']>(`/recorder/commands/${encodeURIComponent(commandId)}`)
+  if(revision!==getStudioTransportRevision())return {success:false,error:'录制所属服务连接已变更，响应未应用'}
+  const state=lookup.data
+  if(!lookup.success)return lookup.httpStatus===404||lookup.httpStatus===409?{success:false,error:lookup.error,httpStatus:lookup.httpStatus}:result
+  if(!state||state.commandId!==commandId||state.sessionId!==sessionId||state.action!==action)return result
+  if(state.status==='completed'&&state.result&&typeof state.result==='object')return {success:true,data:state.result as T}
+  if(state.status==='failed')return {success:false,error:state.error||'录制命令失败',httpStatus:state.httpStatus}
+  return {success:false,error:'录制命令尚未确认，请稍后查询原 commandId',outcomeUnknown:true}
+}
+
 async function completeRecorderTail(sessionId:string, first:ApiResponse<components['schemas']['StudioRecorderStopped']>):Promise<ApiResponse<components['schemas']['StudioRecorderStopped']>> {
   if(!first.success || !first.data?.hasMore)return first
   const body=first.data
@@ -716,41 +787,53 @@ async function completeRecorderTail(sessionId:string, first:ApiResponse<componen
   return {...first,data:{...body,nextSeq:cursor,hasMore:false,data:{events}}}
 }
 
+async function completeRecorderControl(sessionId:string, first:ApiResponse<components['schemas']['StudioRecorderControl']>):Promise<ApiResponse<components['schemas']['StudioRecorderControl']>> {
+  if(!first.success || !first.data?.hasMore)return first
+  const body=first.data
+  if(!Array.isArray(body.data?.events) || !Number.isSafeInteger(body.nextSeq) || body.nextSeq<0)return {success:false,error:'录制控制响应结构无效，请重试'}
+  const events=[...body.data.events]
+  let cursor=body.nextSeq,more=body.hasMore
+  while(more){
+    const next=await recorderApi.events(sessionId,cursor)
+    if(!next.success)return {...next,data:undefined}
+    const page=next.data
+    if(!page||!Array.isArray(page.data)||!Number.isSafeInteger(page.nextSeq)||page.nextSeq<=cursor||page.data.length!==page.nextSeq-cursor||page.data.some((event,index)=>event.sequence!==cursor+index+1))return {success:false,error:'录制控制分页不连续，请重试'}
+    events.push(...page.data);cursor=page.nextSeq;more=Boolean(page.hasMore)
+  }
+  return {...first,data:{...body,nextSeq:cursor,hasMore:false,data:{events}}}
+}
+
+async function controlRecorder(sessionId:string,action:'pause'|'resume',afterSeq=0):Promise<ApiResponse<components['schemas']['StudioRecorderControl']>>{
+  if(!validRecorderRequest(sessionId,afterSeq))return invalidRecorderRequest()
+  const result=await issueRecorderCommand<components['schemas']['StudioRecorderControl']>(sessionId,action,afterSeq)
+  if(result.success)return completeRecorderControl(sessionId,result)
+  return result
+}
+
 export const recorderApi = {
   readReview: (documentId:string) => apiRequest<components['schemas']['StudioRecordingReview']>(`/recorder/reviews/${encodeURIComponent(documentId)}`),
   saveReview: (documentId:string,body:components['schemas']['StudioRecordingReviewWrite']) => apiRequest<components['schemas']['StudioRecordingReview']>(`/recorder/reviews/${encodeURIComponent(documentId)}`,{method:'PUT',body:JSON.stringify(body)}),
-  start: async (sessionId: string):Promise<ApiResponse<components['schemas']['StudioRecorderStarted']>> => {
+  start: async (sessionId: string, documentId?: string):Promise<ApiResponse<components['schemas']['StudioRecorderStarted']>> => {
     if(!validRecorderRequest(sessionId))return invalidRecorderRequest()
     const revision=getStudioTransportRevision()
-    const result=await recorderRequest<components['schemas']['StudioRecorderStarted']>('/recorder/start',sessionId,{method:'POST',body:JSON.stringify({sessionId})})
+    const result=await issueRecorderCommand<components['schemas']['StudioRecorderStarted']>(sessionId,'start',0,documentId)
     if(revision!==getStudioTransportRevision())return result
     if(result.success&&result.data?.success===true&&result.data.recording===true&&Number.isSafeInteger(result.data.nextSeq)&&result.data.nextSeq>=0)return result
     if(!result.httpStatus||result.httpStatus>=500){
-      const status=await recorderApi.status(sessionId)
-      if(revision!==getStudioTransportRevision())return {success:false,error:'录制所属服务连接已变更，响应未应用'}
-      if(status.success&&status.data?.recording)return {success:true,data:{...status.data,sessionId,success:true}}
-      if(status.httpStatus===404||status.httpStatus===409)return {success:false,error:status.error,httpStatus:status.httpStatus}
-      if(!status.success)return {success:false,error:result.error||'录制启动尚未确认',outcomeUnknown:true}
+      if(!result.success)return {success:false,error:result.error||'录制启动尚未确认',httpStatus:result.httpStatus,outcomeUnknown:result.outcomeUnknown}
     }
     return {success:false,error:result.error||'服务未确认录制已启动',httpStatus:result.httpStatus}
   },
   stop: async (sessionId: string, afterSeq = 0):Promise<ApiResponse<components['schemas']['StudioRecorderStopped']>> => {
     if(!validRecorderRequest(sessionId,afterSeq))return invalidRecorderRequest()
     const revision=getStudioTransportRevision()
-    const result=await recorderRequest<components['schemas']['StudioRecorderStopped']>('/recorder/stop',sessionId,{method:'POST',body:JSON.stringify({sessionId,afterSeq})})
+    const result=await issueRecorderCommand<components['schemas']['StudioRecorderStopped']>(sessionId,'stop',afterSeq)
     if(revision!==getStudioTransportRevision()||(result.httpStatus&&result.httpStatus<500&&!result.success))return result
     if(result.success)return completeRecorderTail(sessionId,result)
-    const status=await recorderApi.status(sessionId)
-    if(revision!==getStudioTransportRevision())return {success:false,error:'录制所属服务连接已变更，响应未应用'}
-    if(status.success&&status.data&&!status.data.recording){
-      const tail=await recorderApi.events(sessionId,afterSeq)
-      if(tail.success&&tail.data&&Array.isArray(tail.data.data)){
-        const complete=await completeRecorderTail(sessionId,{success:true,data:{...tail.data,data:{events:tail.data.data}}})
-        if(complete.data?.nextSeq===status.data.nextSeq)return complete
-      }
-    }
     return result
   },
+  pause: (sessionId:string,afterSeq=0) => controlRecorder(sessionId,'pause',afterSeq),
+  resume: (sessionId:string,afterSeq=0) => controlRecorder(sessionId,'resume',afterSeq),
   events: (sessionId: string, afterSeq = 0, signal?: AbortSignal) => validRecorderRequest(sessionId, afterSeq)
     ? recorderRequest<components['schemas']['StudioRecorderBatch']>(`/recorder/events?afterSeq=${afterSeq}&sessionId=${encodeURIComponent(sessionId)}`,sessionId,{signal})
     : invalidRecorderRequest(),
@@ -761,9 +844,9 @@ export const recorderApi = {
     if(revision!==getStudioTransportRevision())return {success:false,error:'录制所属服务连接已变更，响应未应用'}
     if(!result.success)return result
     const data=result.data
-    if(!data||data.success!==true||typeof data.recording!=='boolean'||!Number.isSafeInteger(data.nextSeq)||data.nextSeq<0||
+    if(!data||data.success!==true||typeof data.recording!=='boolean'||typeof data.paused!=='boolean'||!Number.isSafeInteger(data.nextSeq)||data.nextSeq<0||
       (data.sessionId!==null&&(typeof data.sessionId!=='string'||!data.sessionId.trim()))||
-      ((data.recording||data.nextSeq>0)&&!data.sessionId)||(sessionId&&data.sessionId!==sessionId))return {success:false,error:'录制状态身份或结构错误'}
+      (data.paused&&!data.recording)||((data.recording||data.nextSeq>0)&&!data.sessionId)||(sessionId&&data.sessionId!==sessionId))return {success:false,error:'录制状态身份或结构错误'}
     return result
   },
 }
@@ -1081,6 +1164,9 @@ export const jsScriptApi = {
 export const speechApi = {
   getState: (requestId: string) => getClaimedRequestState('/events/tts-requests',requestId,'语音'),
 }
+export const desktopActionApi = {
+  getState: (requestId: string) => getClaimedRequestState('/events/desktop-actions', requestId, '平台操作'),
+}
 
 
 export type VariableTrackingRecord = components['schemas']['StudioVariableTrackingRecord']
@@ -1118,7 +1204,7 @@ export const variableTrackingApi = {
   },
   exportRun: async(runId:string,throughSequence:number,filters:RunTrackingQuery={},signal?:AbortSignal)=>{
     try{
-      const result=await studioFetch(`${getApiBase()}/workflow-runs/${encodeURIComponent(runId)}/variable-tracking/export?${trackingQuery({...filters,throughSequence})}`,{signal})
+      const result=await studioFetch(scopeStudioUrl(`${getApiBase()}/workflow-runs/${encodeURIComponent(runId)}/variable-tracking/export?${trackingQuery({...filters,throughSequence})}`),{signal})
       if(!result.ok)return {success:false,error:'变量诊断导出失败'}
       return {success:true,data:await result.blob()}
     }catch(error){return {success:false,error:error instanceof Error?error.message:'变量诊断导出失败'}}

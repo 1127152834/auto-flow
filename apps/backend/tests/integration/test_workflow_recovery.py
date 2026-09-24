@@ -119,6 +119,49 @@ async def test_real_orphan_process_is_terminated_before_removing_cache(tmp_path)
 
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(sys.platform == 'win32', reason='native POSIX ownership test')
+async def test_real_pure_data_orphan_cleanup_preserves_other_run_and_unmarked_process(tmp_path):
+    run_id = str(uuid4())
+    directory = tmp_path / 'workflow-runs' / run_id / 'generation-1'
+    other_directory = tmp_path / 'workflow-runs' / str(uuid4()) / 'generation-1'
+    directory.mkdir(parents=True)
+    other_directory.mkdir(parents=True)
+    keep = other_directory / 'keep'
+    keep.write_text('other run remains')
+    processes = []
+    script = "import time; print('ready',flush=True); time.sleep(60)"
+    try:
+        for marker in (directory, other_directory, None):
+            env = dict(os.environ)
+            env.pop('CLOAKBROWSER_CACHE_DIR', None)
+            if marker is not None:
+                env['CLOAKBROWSER_CACHE_DIR'] = str(marker)
+            process = await asyncio.create_subprocess_exec(
+                sys.executable, '-c', script, '--project-workflow-worker', str(directory),
+                env=env, start_new_session=True, stdout=asyncio.subprocess.PIPE,
+            )
+            processes.append(process)
+            assert await asyncio.wait_for(process.stdout.readline(), 2) == b'ready\n'
+        target, other, unmarked = processes
+        await recover_worker_directories(tmp_path, run_id, None, timeout=.3)
+        await asyncio.wait_for(target.wait(), 2)
+        assert target.returncode is not None
+        assert not directory.exists()
+        assert keep.read_text() == 'other run remains'
+        for process in (other, unmarked):
+            assert process.returncode is None
+            os.kill(process.pid, 0)
+        # A repeated recovery remains idempotent and does not broaden ownership.
+        await recover_worker_directories(tmp_path, run_id, None, timeout=.3)
+        assert all(process.returncode is None for process in (other, unmarked))
+    finally:
+        for process in processes:
+            if process.returncode is None:
+                process.kill()
+            await process.wait()
+
+
+@pytest.mark.asyncio
 async def test_bootstrap_recovery_waits_for_profile_guard_release(tmp_path):
     from fastapi import FastAPI
 

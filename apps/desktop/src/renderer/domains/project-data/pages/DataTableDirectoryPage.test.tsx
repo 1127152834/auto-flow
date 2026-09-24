@@ -239,3 +239,12 @@ it('lets the user discard an explicitly unaccepted command without losing the ed
   expect(screen.getByLabelText('数据表名称')).not.toHaveAttribute('readonly')
   expect(request.mock.calls.filter(([, init]) => init?.method === 'POST')).toHaveLength(1)
 })
+
+it('opens persisted automation assets from the existing project data directory', async () => {
+  const request = vi.fn(async (path: string) => path.includes('/run-assets?') ? { items: [], total: 0, nextCursor: null } : page([]))
+  mount(request as StreamingApiClient['request'])
+  await userEvent.click(screen.getByText('自动化运行数据'))
+  expect(await screen.findByText('没有匹配的运行数据')).toBeVisible()
+  expect(request).toHaveBeenCalledWith('/api/v1/projects/p/run-assets?cursor=0&limit=50', expect.objectContaining({ signal: expect.any(AbortSignal) }))
+  expect(screen.getByRole('button', { name: '新建数据表' })).toBeVisible()
+})

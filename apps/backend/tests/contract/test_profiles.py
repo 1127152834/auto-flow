@@ -73,6 +73,28 @@ def test_profile_crud_and_fingerprint_lifecycle(
     assert client.get(f"/api/v1/profiles/{created['id']}").status_code == 404
 
 
+def test_profile_delete_is_blocked_while_scheduled_task_references_it(
+    client: TestClient, profile_payload: dict[str, Any]
+) -> None:
+    profile = client.post("/api/v1/profiles", json=profile_payload).json()
+    task = client.post(
+        "/api/scheduled-tasks",
+        json={
+            "name": "受保护任务",
+            "workflow_id": "daily.json",
+            "profile_id": profile["id"],
+            "trigger": {"type": "time", "schedule_type": "daily", "daily_time": "08:00:00"},
+        },
+    )
+    assert task.status_code == 201
+
+    blocked = client.delete(f"/api/v1/profiles/{profile['id']}")
+
+    assert blocked.status_code == 409
+    assert blocked.json()["error"]["code"] == "RESOURCE_REFERENCED"
+    assert blocked.json()["error"]["details"]["references"][0]["kind"] == "scheduledTask"
+
+
 def test_profile_test_browser_contract_returns_only_ready_session(
     client: TestClient, profile_payload: dict[str, Any], monkeypatch
 ) -> None:

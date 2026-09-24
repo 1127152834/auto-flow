@@ -16,7 +16,9 @@ afterEach(() => { cleanup(); setStudioTransport(mockRequest); vi.restoreAllMocks
 async function edit() {
   render(<GlobalConfigDialog isOpen onClose={close} />)
   fireEvent.click(screen.getByRole('button', { name: '凭据库' }))
-  fireEvent.click(await screen.findByRole('button', { name: '新增凭据' }))
+  const create = await screen.findByRole('button', { name: '新增凭据' })
+  await waitFor(() => expect(create).toHaveProperty('disabled', false))
+  fireEvent.click(create)
   fireEvent.change(screen.getByPlaceholderText('如：我的邮箱'), { target: { value: 'assistant-close-fixture' } })
 }
 it.each(['取消','放弃修改','保存后继续'])('AI close waits for %s before reporting its result', async choice => {

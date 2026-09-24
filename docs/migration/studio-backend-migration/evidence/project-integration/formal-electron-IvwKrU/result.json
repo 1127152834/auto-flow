@@ -1,0 +1,28 @@
+{
+  "evidenceId": "BE-project-advanced-data",
+  "result": "passed",
+  "checkedAt": "2026-09-23T06:37:52.005Z",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "projectId": "7083dacf-6bc6-4654-9a75-c2da0670037a",
+  "workflowId": "DfncY292TASI_wgs5I35Y",
+  "batchId": "7fd0fdca-9bf7-4bd9-828a-fa19d47a0916",
+  "taskId": "372a427d-0681-4022-b9fd-94b0523a68d5",
+  "checks": [
+    "正式项目 UI 新建项目，由项目自动化目录进入 Studio",
+    "主窗口通过真实点击打开正式 Studio，Studio 只读取主应用 Profile",
+    "通过正式新建入口创建空工作流",
+    "正式Studio真实UI编排四个纯数据节点、连线、保存、原生关闭并重开恢复；无Profile或内核",
+    "项目真实批次无需Profile执行CSV解析→扁平化→反转→CSV生成；四份输出持久化可查，worker清理完成"
+  ],
+  "buildArtifacts": null,
+  "buildSha256": "d98185d9bb04953f502c8620f98572652973b1e3184429a1dda1ad1071cb3775",
+  "boundaries": {
+    "userDatabaseTouched": false,
+    "workspace": "ephemeral",
+    "noProfile": true,
+    "noKernel": true,
+    "realWorker": true,
+    "interaction": "real UI; API assertions only"
+  }
+}

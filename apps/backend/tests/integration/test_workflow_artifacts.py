@@ -463,6 +463,30 @@ async def test_text_export_preserves_overwrite_append_and_utf8_sig_semantics(
 
 @pytest.mark.asyncio
 @requires_posix_output
+async def test_limited_text_append_rejects_oversize_before_replacing_output(
+    artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
+) -> None:
+    store, repository = artifacts
+    writer = store.writer(
+        run_id="run-artifacts", node_id="export", execution_id="limited",
+        purpose="result", max_bytes=3,
+    )
+    target = Path(await writer.write_text(
+        output_path="limited.txt", content="abc", separator="", encoding="utf-8",
+        append=False, mime_type="text/plain",
+    ))
+    with pytest.raises(WorkflowRunError) as error:
+        await writer.write_text(
+            output_path="limited.txt", content="d", separator="", encoding="utf-8",
+            append=True, mime_type="text/plain",
+        )
+    assert error.value.code == "ARTIFACT_TOO_LARGE"
+    assert target.read_text() == "abc"
+    assert len(repository.list_artifacts("run-artifacts", cursor=0, limit=20)) == 1
+
+
+@pytest.mark.asyncio
+@requires_posix_output
 async def test_text_export_empty_utf8_sig_content_still_writes_one_bom(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
 ) -> None:

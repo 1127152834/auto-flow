@@ -1,0 +1,23 @@
+{
+  "evidenceId": "BE-project-control-flow-formal-electron",
+  "result": "passed",
+  "checkedAt": "2026-09-23T09:40:34.572Z",
+  "gitHead": "006a99724e5f48525ed13660c1e81f9dd2d7bd92",
+  "platform": "darwin-arm64",
+  "entry": "packaged-directory",
+  "projectId": "97ba8e10-8d8f-4e84-9b37-8836a330a5cc",
+  "workflowId": "oHEiR0TATln-zZFywU3xG",
+  "batchId": "03ab5f0e-9da4-4513-b873-a0a9beb3ba5e",
+  "taskId": "a7ff5dfe-39f1-4c07-b9f3-d1682a409aeb",
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "通过模块条真实点击完成初始化、三轮循环、真假分支和汇合后的尾节点",
+    "正式项目批次真实worker执行三轮循环与条件真分支，假分支无副作用；输出、尝试记录和进程清理通过"
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "interaction": "formal Electron mouse/keyboard; API only fixture setup and evidence reads"
+  }
+}

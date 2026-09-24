@@ -91,6 +91,59 @@ def write(workflow_id, name="Alpha"):
     }
 
 
+def test_bound_project_workflow_is_visible_and_editable_in_studio(tmp_path):
+    from autoflow.application.workflows.documents import WorkflowDocumentService
+    from autoflow.application.workflows.service import WorkflowService
+    from autoflow.infrastructure.database.workflows import (
+        SqlAlchemyWorkflowDocuments,
+        SqlAlchemyWorkflowRepository,
+    )
+    engine, factory, automations, project_id, workflow_id = setup(tmp_path)
+    with factory() as session:
+        session.get(WorkflowDocumentRow, workflow_id).document = workflow_payload(workflow_id)
+        session.commit()
+    automations.create(project_id, "00000000-0000-0000-0000-000000000001", write(workflow_id))
+    documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory))
+    listed = documents.list_summaries(project_id=project_id)
+    assert [item.id for item in listed.items] == [workflow_id]
+    saved = documents.get(workflow_id)
+    assert saved.to_payload()["projectId"] == project_id
+    catalog = WorkflowService(SqlAlchemyWorkflowRepository(factory))
+    assert catalog.get(workflow_id).project_id == project_id
+    assert catalog.list()[0].project_id == project_id
+    payload = saved.to_payload()
+    payload["name"] = "项目内编辑"
+    updated = documents.update(workflow_id, payload, expected_revision=1, client_request_id="edit")
+    assert updated.to_payload()["projectId"] == project_id
+    assert updated.name == "项目内编辑"
+    from autoflow.domain.workflows.errors import WorkflowDocumentError
+    with pytest.raises(WorkflowDocumentError) as deletion:
+        documents.delete(workflow_id, expected_revision=updated.revision)
+    assert deletion.value.code == "WORKFLOW_IN_USE"
+    assert documents.get(workflow_id).revision == updated.revision
+    with factory() as session:
+        session.get(ProjectRow, project_id).lifecycle_state = "archived"
+        session.commit()
+    with pytest.raises(ProjectError):
+        documents.update(workflow_id, payload, expected_revision=2, client_request_id="archived")
+    engine.dispose()
+
+
+def test_cannot_bind_a_workflow_draft_owned_by_another_project(tmp_path):
+    engine, factory, automations, project_id, workflow_id = setup(tmp_path)
+    with factory() as session:
+        session.get(WorkflowDocumentRow, workflow_id).document = {
+            "projectId": "another-project", "nodes": [], "edges": [], "variables": [],
+        }
+        session.commit()
+    with pytest.raises(ProjectError) as raised:
+        automations.create(project_id, "00000000-0000-0000-0000-000000000001", write(workflow_id))
+    assert raised.value.code == "WORKFLOW_NOT_FOUND"
+    with factory() as session:
+        assert session.scalars(select(ProjectAutomationRow)).all() == []
+    engine.dispose()
+
+
 def test_atomic_idempotent_create_update_cas_and_snapshot(tmp_path):
     _engine, factory, service, project_id, workflow_id = setup(tmp_path)
     created, _, replayed = service.create(

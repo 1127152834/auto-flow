@@ -21,6 +21,10 @@ from autoflow.adapters.http.project_excel_exports import project_excel_exports_r
 from autoflow.adapters.http.project_excel_imports import project_excel_import_router
 from autoflow.adapters.http.project_run_events import project_run_events_router
 from autoflow.adapters.http.project_run_evidence import project_run_evidence_router
+from autoflow.adapters.http.project_run_interactions import (
+    project_pending_interactions_router,
+    project_run_interactions_router,
+)
 from autoflow.adapters.http.project_runs import project_runs_router
 from autoflow.adapters.http.project_sheets import (
     internal_google_authorizations_router,
@@ -46,6 +50,7 @@ from autoflow.application.project_data.tables import DataTableService
 from autoflow.application.project_runs.coordinator import ProjectRunCoordinator
 from autoflow.application.project_runs.events import ProjectRunEvents
 from autoflow.application.project_runs.evidence import ProjectRunEvidence
+from autoflow.application.project_runs.interactions import ProjectRunInteractions
 from autoflow.application.project_runs.queries import ProjectRunQueries
 from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
 from autoflow.application.project_sync.bindings import SheetsBindingService
@@ -62,6 +67,7 @@ from autoflow.application.settings.runtime import QuiesceGate
 
 @dataclass(frozen=True)
 class ProjectHttpServices:
+    run_interactions: ProjectRunInteractions
     run_coordinator: ProjectRunCoordinator
     run_events: ProjectRunEvents
     run_evidence: ProjectRunEvidence
@@ -98,6 +104,8 @@ def register_project_routes(app: FastAPI, services: ProjectHttpServices) -> None
     app.include_router(project_runs_router(services.run_coordinator, services.run_queries, services.run_scheduler, services.gate))
     app.include_router(project_run_evidence_router(services.run_evidence))
     app.include_router(project_run_events_router(services.run_events))
+    app.include_router(project_run_interactions_router(services.run_interactions, services.gate))
+    app.include_router(project_pending_interactions_router(services.run_interactions))
     app.include_router(project_automations_router(services.automations))
     app.include_router(project_records_router(services.records, services.queries))
     app.include_router(project_data_router(services.tables, services.catalog))

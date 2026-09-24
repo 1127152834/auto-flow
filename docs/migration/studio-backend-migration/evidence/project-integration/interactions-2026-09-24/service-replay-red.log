@@ -1,0 +1,9 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_______ test_replayed_persisted_request_cannot_reopen_closed_interaction _______
+tests/integration/test_project_interaction_commands.py:428: in test_replayed_persisted_request_cannot_reopen_closed_interaction
+    with pytest.raises(ProjectRunError) as error:
+E   Failed: DID NOT RAISE ProjectRunError
+=========================== short test summary info ============================
+FAILED tests/integration/test_project_interaction_commands.py::test_replayed_persisted_request_cannot_reopen_closed_interaction
+1 failed, 13 deselected in 1.04s

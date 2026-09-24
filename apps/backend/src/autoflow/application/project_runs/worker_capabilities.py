@@ -122,6 +122,7 @@ class ProjectWorkerCapabilities:
             _authorize_call_path(session, prepared.execution_plan, event)
             in_subflow = any(item.get("kind") == "subflow" for item in event.payload.get("executionContext", {}).get("scopes", []))
             project_id, task_id = task.project_id, task.id
+            browserless = run.resource_request.get("browser") == "none"
             manual_limit = min(config.get('timeoutSeconds', 1800), run.resource_request.get('manualDeadlineSeconds', 1800)) if expected_operation == 'manual' else None
             if request['operation'] == 'inputs':
                 if request.get('arguments') != {}:
@@ -142,7 +143,13 @@ class ProjectWorkerCapabilities:
         if request['operation'] == 'end':
             if set(arguments) != {'retainEnvironment'}:
                 raise _denied()
-            return await _finish_retention(self.end, project_id, task_id, run_id, generation, request, arguments['retainEnvironment'])
+            retain = arguments['retainEnvironment']
+            if browserless:
+                if (request.get('browserClosed') is not True or not isinstance(retain, dict)
+                    or retain.get('enabled') is not False or retain.get('recordTargets', []) != []):
+                    raise _denied()
+                return {'complete': True, 'phase': 'completed'}
+            return await _finish_retention(self.end, project_id, task_id, run_id, generation, request, retain)
         selected = DATA_COMMANDS.get(request['operation'])
         if selected is None:
             raise _denied()

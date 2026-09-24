@@ -4,6 +4,7 @@ from typing import Any
 
 from autoflow.application.models.service import ModelService
 from autoflow.application.profiles.service import ProfileService
+from autoflow.application.workflows.core_runtime import WorkflowRuntimeService
 from autoflow.domain.models.errors import ModelError
 from autoflow.domain.profiles.errors import ProfileNotFound
 from autoflow.domain.profiles.models import Profile
@@ -24,6 +25,7 @@ class ProjectAutomationResourceQuery:
         proxy_options: ProxyOptionsLookup,
         model_service: ModelService,
         environments: Any | None = None,
+        workflow_runtime: WorkflowRuntimeService | None = None,
     ) -> None:
         self._projects = projects
         self._profiles = profiles
@@ -31,6 +33,12 @@ class ProjectAutomationResourceQuery:
         self._proxy_options = proxy_options
         self._model_service = model_service
         self._environments = environments
+        self._workflow_runtime = workflow_runtime
+
+    def requires_browser(self, automation: AutomationRecord) -> bool:
+        return self._workflow_runtime is None or self._workflow_runtime.requires_browser(
+            automation.workflow_id
+        )
 
     def inspect_resources(self, automation: AutomationRecord) -> list[dict[str, Any]]:
         project = self._projects.get(automation.project_id)
@@ -46,6 +54,11 @@ class ProjectAutomationResourceQuery:
             ]
         defaults = project.default_resources
         issues: list[dict[str, Any]] = []
+        if not self.requires_browser(automation):
+            return self._model_issues(automation, defaults) if (
+                self._workflow_runtime is not None
+                and self._workflow_runtime.requires_default_model(automation.workflow_id)
+            ) else []
         profile: Profile | None = None
         policy = automation.environment_policy
         source = policy.get("source")
@@ -132,6 +145,14 @@ class ProjectAutomationResourceQuery:
                     proxy.get("proxyPoolId"),
                 )
             )
+        if self._workflow_runtime is None or self._workflow_runtime.requires_default_model(automation.workflow_id):
+            issues.extend(self._model_issues(automation, defaults))
+        return issues
+
+    def _model_issues(
+        self, automation: AutomationRecord, defaults: dict[str, Any]
+    ) -> list[dict[str, Any]]:
+        issues: list[dict[str, Any]] = []
         if "modelProviderId" in automation.environment_policy:
             model_provider_id = automation.environment_policy["modelProviderId"]
             model_path = ["environmentPolicy", "modelProviderId"]

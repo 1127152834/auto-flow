@@ -20,6 +20,18 @@ const items = [automation('a', '资料整理'), automation('b', '链接采集', 
 const ready: AutomationValidation = { status: 'ready', valid: true, runnable: true, issues: [], capabilityRequirements: [], checkedAt: '2026-09-10T02:01:00Z' }
 const props = () => ({ items, total: 2, page: 1, pageSize: 20, query: '', sort: 'updatedAt' as const, onQueryChange: vi.fn(), onSortChange: vi.fn(), onPageChange: vi.fn(), onCreate: vi.fn(), onOpen: vi.fn(), onEdit: vi.fn(), onRetry: vi.fn() })
 
+it('opens the project Studio before the first automation exists and respects lifecycle restrictions', async () => {
+  const p = props(), user = userEvent.setup(), onOpenStudio = vi.fn()
+  const view = render(<AutomationDirectory {...p} items={[]} total={0} onOpenStudio={onOpenStudio} />)
+  await user.click(screen.getByRole('button', { name: '工作流工作台' }))
+  expect(onOpenStudio).toHaveBeenCalledTimes(1)
+  expect(p.onCreate).not.toHaveBeenCalled()
+  view.rerender(<AutomationDirectory {...p} items={[]} total={0} refreshing onOpenStudio={onOpenStudio} />)
+  expect(screen.getByRole('button', { name: '工作流工作台' })).toBeDisabled()
+  view.rerender(<AutomationDirectory {...p} items={[]} total={0} readOnly onOpenStudio={onOpenStudio} />)
+  expect(screen.queryByRole('button', { name: '工作流工作台' })).toBeNull()
+})
+
 it('renders gallery cards from real automation facts without inventing validation', () => {
   render(<AutomationDirectory {...props()} validationById={{ a: ready }} />)
   expect(screen.getByRole('heading', { name: '自动化 2 个' })).toBeVisible()

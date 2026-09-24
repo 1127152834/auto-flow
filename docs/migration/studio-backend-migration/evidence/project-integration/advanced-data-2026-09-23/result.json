@@ -1,0 +1,93 @@
+{
+  "evidenceId": "BE.project.advanced-data-family",
+  "status": "verified-macos-arm64-development-and-package",
+  "classification": "AutoFlow必要适配：项目任务准入、既有执行器桥及无浏览器资源清理",
+  "sourceEvidence": "docs/migration/studio-backend-migration/evidence/b4/advanced-data-family.json",
+  "approvedTypes": [
+    "csv_generate",
+    "csv_parse",
+    "dict_deep_copy",
+    "dict_filter",
+    "dict_flatten",
+    "dict_get_path",
+    "dict_invert",
+    "dict_map_values",
+    "dict_merge",
+    "dict_sort",
+    "list_cartesian_product",
+    "list_chunk",
+    "list_count",
+    "list_difference",
+    "list_filter",
+    "list_find",
+    "list_flatten",
+    "list_intersection",
+    "list_map",
+    "list_merge",
+    "list_remove_empty",
+    "list_reverse",
+    "list_sample",
+    "list_shuffle",
+    "list_to_string_advanced",
+    "list_union"
+  ],
+  "developmentEvidence": "docs/migration/studio-backend-migration/evidence/project-integration/formal-electron-IvwKrU/result.json",
+  "checks": {
+    "familyRegistrationFieldsOutput": 81,
+    "finalWorkerRecoveryRegression": 106,
+    "broaderProjectRegressionBeforeEnvironmentFix": 194,
+    "environmentAndBatchRegression": 46,
+    "ruff": "passed",
+    "mypy": "passed",
+    "openapi": "passed",
+    "structure": "passed",
+    "finalClosureRegression": 177,
+    "frozenBackend": "passed",
+    "frozenStartup": "passed",
+    "unsignedPackage": "passed",
+    "fiveNodeStopFailureRecovery": "passed"
+  },
+  "foundAndFixed": [
+    {
+      "source": "family tests",
+      "issue": "26 nodes rejected by project catalog; resultVariable outputs absent",
+      "fix": "reuse source registry and preserve output field names"
+    },
+    {
+      "source": "fresh process review",
+      "issue": "core_runtime/runtime compatibility re-export caused circular import",
+      "fix": "defer runtime import at existing method boundary; subprocess import test"
+    },
+    {
+      "source": "real worker review",
+      "issue": "dict_get_path JSON null omitted",
+      "fix": "preserve produced null as explicit output"
+    },
+    {
+      "source": "recovery review",
+      "issue": "pure-data recovery unconditionally required kernel",
+      "fix": "native run-marker process recovery without executable, other runs protected"
+    },
+    {
+      "source": "formal-electron-CJlcax",
+      "issue": "project batch still reserved browser environment for pure data",
+      "fix": "skip environment reservation and attachment only for frozen browser:none requests"
+    },
+    {
+      "source": "formal-electron-DQkSqy",
+      "issue": "UI test dragged cards over earlier card; sampled points obscured",
+      "fix": "real drag helper checks extra exposed edge points; assertions unchanged"
+    }
+  ],
+  "boundaries": [
+    "26 families use existing production source executors, no Mock executor",
+    "Source differential and previous per-node Studio UI evidence retained; project family tests verify all 26 registry/fields/output entries",
+    "Current real project UI chain is CSV parse/flatten/reverse/CSV generate, no Profile or installed browser",
+    "User database and live app untouched; Windows/Intel not tested",
+    "Other project families, business data nodes and 17 real-environment slots remain open; 14 deleted notification nodes excluded",
+    "User confirmed project default Profile/model with explicit overrides; no resource allowlist",
+    "Project worker credential reader/model ports remain a separate shared-context gap; normal Studio worker credential proof does not cover project tasks"
+  ],
+  "packagedEvidence": "docs/migration/studio-backend-migration/evidence/project-integration/formal-electron-V8a98L/result.json",
+  "fiveNodeBrowserRegression": "docs/migration/studio-backend-migration/evidence/project-integration/formal-electron-7k2XEy/result.json"
+}

@@ -1,7 +1,7 @@
 import secrets
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from contextlib import AbstractContextManager
-from dataclasses import replace
+from dataclasses import dataclass, field, replace
 
 from autoflow.domain.credentials import CredentialStore, CredentialStoreUnavailableError
 from autoflow.domain.models.errors import ModelError
@@ -9,6 +9,7 @@ from autoflow.domain.models.models import (
     DiscoveryResult,
     LocalModel,
     LocalModelSpec,
+    ModelInvocationResult,
     ModelOptionRecord,
     ModelProvider,
     ModelTestResult,
@@ -21,6 +22,14 @@ from autoflow.domain.models.validation import validate_connection
 from autoflow.domain.projects.ports import ProjectResourceReferences
 
 Transaction = Callable[[], AbstractContextManager[ModelRepository]]
+
+
+@dataclass(frozen=True, slots=True)
+class ModelExecutionBinding:
+    model_id: str
+    model_key: str
+    connection: ProviderConnection
+    secret: str = field(repr=False)
 
 
 def _new_secret_ref() -> str:
@@ -68,6 +77,53 @@ class ModelService:
     def list_options(self) -> list[ModelOptionRecord]:
         with self._transaction() as repo:
             return repo.list_options()
+
+    def default_model_id(self, provider_id: str) -> str:
+        provider = self.get_provider(provider_id)
+        if not provider.enabled:
+            raise ModelError("MODEL_PROVIDER_DISABLED", "模型供应商已停用", 409)
+        for option in self.list_options():
+            if option.provider_id == provider_id:
+                return option.id
+        raise ModelError(
+            "PROJECT_DEFAULT_MODEL_UNAVAILABLE",
+            "项目默认模型供应商没有已启用的模型",
+            409,
+            {"providerId": provider_id},
+        )
+
+    def execution_binding(self, model_id: str) -> ModelExecutionBinding:
+        with self._transaction() as repo:
+            model = repo.get_model(model_id)
+            if model is None:
+                raise self._model_missing()
+            provider = repo.get_provider(model.provider_id)
+        if provider is None:
+            raise self._provider_missing()
+        if not model.enabled:
+            raise ModelError("MODEL_DISABLED", "所选模型已停用", 409)
+        if not provider.enabled:
+            raise ModelError("MODEL_PROVIDER_DISABLED", "模型供应商已停用", 409)
+        try:
+            secret = _read_secret(self._credentials, provider.secret_ref)
+        except CredentialStoreUnavailableError:
+            raise ModelError(
+                "CREDENTIAL_STORE_UNAVAILABLE", "系统凭据存储当前不可用", 503
+            ) from None
+        return ModelExecutionBinding(
+            model.id,
+            model.model_key,
+            self._connection(provider),
+            secret,
+        )
+
+    async def invoke(
+        self, model_id: str, payload: Mapping[str, object]
+    ) -> ModelInvocationResult:
+        binding = self.execution_binding(model_id)
+        return await self._gateway.invoke(
+            binding.connection, binding.secret, binding.model_key, payload
+        )
 
     async def preview(self, profile: ProviderProfile, secret: str) -> DiscoveryResult:
         connection, _normalized = self._candidate(profile, secret)

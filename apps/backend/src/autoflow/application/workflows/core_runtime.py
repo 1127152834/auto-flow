@@ -9,8 +9,15 @@ from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session, sessionmaker
 
+from autoflow.application.workflows.executors.production import (
+    build_production_executor_registry,
+)
+from autoflow.application.workflows.modules import CustomModuleService
+from autoflow.domain.workflows.errors import WorkflowDocumentError
 from autoflow.domain.workflows.models import WorkflowRepository, canonical_json
+from autoflow.domain.workflows.modules import custom_module_dependencies
 from autoflow.domain.workflows.run_validation import prepare_run as compile_workflow
+from autoflow.domain.workflows.runs import WorkflowRunError
 from autoflow.domain.workflows.runtime import (
     CoreRun,
     CoreRunStatus,
@@ -19,6 +26,7 @@ from autoflow.domain.workflows.runtime import (
 )
 from autoflow.infrastructure.database.core_workflows import _record as workflow_record
 from autoflow.infrastructure.database.workflow_models import WorkflowDocumentRow
+from autoflow.infrastructure.database.workflow_project_scope import workflow_project_id
 from autoflow.infrastructure.database.workflow_runtime import (
     SqlAlchemyWorkflowRuntimeRepository,
     _is_sqlite_contention,
@@ -73,9 +81,127 @@ class WorkflowRuntimeService:
         self,
         session_factory: sessionmaker[Session],
         workflow_repository: WorkflowRepository | None = None,
+        *,
+        modules: CustomModuleService | None = None,
     ) -> None:
         self._session_factory = session_factory
         self._workflow_repository = workflow_repository
+        self._modules = modules
+
+    def _module_snapshots(self, document: dict[str, Any]) -> dict[str, dict[str, object]]:
+        references = custom_module_dependencies(document["content"])
+        if not references:
+            return {}
+        if self._modules is None:
+            raise WorkflowRuntimeError("CUSTOM_MODULES_NOT_READY", "自定义模块服务尚未就绪", 503)
+        try:
+            snapshots = self._modules.freeze_closure(references)
+        except WorkflowDocumentError as error:
+            raise WorkflowRuntimeError(error.code, error.message, error.status, error.details) from error
+        from .runtime import WorkflowRuntime
+
+        runtime = WorkflowRuntime(build_production_executor_registry())
+        for module_id, snapshot in snapshots.items():
+            workflow = snapshot.get("workflow")
+            if not isinstance(workflow, dict):
+                raise WorkflowRuntimeError("CUSTOM_MODULE_WORKFLOW_INVALID", "自定义模块工作流无效", 422, {"moduleId": module_id})
+            issues = runtime.preflight(workflow)
+            if issues:
+                raise WorkflowRuntimeError(
+                    "WORKFLOW_PREFLIGHT_FAILED", "自定义模块包含未获批准或不可运行的节点", 422,
+                    {"moduleId": module_id, "issues": [issue.as_dict() for issue in issues]},
+                )
+        return snapshots
+
+    def _workflow_snapshots(
+        self,
+        document: dict[str, Any],
+        project_id: str | None,
+        modules: dict[str, dict[str, object]],
+    ) -> dict[str, dict[str, Any]]:
+        from autoflow.infrastructure.database.workflows import (
+            SqlAlchemyWorkflowDocuments,
+        )
+
+        from .coordinator import _workflow_dependency_snapshots, _workflow_references
+        from .documents import WorkflowDocumentService
+        from .runtime import WorkflowRuntime
+
+        if not any(
+            _workflow_references(item)
+            for item in [document["content"], *(
+                snapshot["workflow"] for snapshot in modules.values()
+                if isinstance(snapshot.get("workflow"), dict)
+            )]
+        ):
+            return {}
+        try:
+            snapshots = _workflow_dependency_snapshots(
+                WorkflowDocumentService(SqlAlchemyWorkflowDocuments(self._session_factory)),
+                document["content"], modules=self._modules, custom_modules=modules,
+                project_id=project_id, require_resolved=True,
+            )
+        except (WorkflowRunError, WorkflowDocumentError) as error:
+            raise WorkflowRuntimeError(error.code, error.message, error.status, error.details) from error
+        runtime = WorkflowRuntime(build_production_executor_registry())
+        seen: set[str] = set()
+        for key, snapshot in snapshots.items():
+            identity = str(snapshot.get("id") or key)
+            if identity in seen:
+                continue
+            seen.add(identity)
+            issues = runtime.preflight(snapshot)
+            if issues:
+                raise WorkflowRuntimeError(
+                    "WORKFLOW_PREFLIGHT_FAILED", "子工作流包含未获批准或不可运行的节点", 422,
+                    {"workflowId": identity, "issues": [issue.as_dict() for issue in issues]},
+                )
+        for module_id, snapshot in modules.items():
+            workflow = snapshot.get("workflow")
+            if isinstance(workflow, dict):
+                issues = runtime.preflight(workflow)
+                if issues:
+                    raise WorkflowRuntimeError(
+                        "WORKFLOW_PREFLIGHT_FAILED", "自定义模块包含未获批准或不可运行的节点", 422,
+                        {"moduleId": module_id, "issues": [issue.as_dict() for issue in issues]},
+                    )
+        return snapshots
+
+    def requires_browser(self, workflow_id: str) -> bool:
+        from .runtime import WorkflowRuntime
+
+        with self._session_factory() as session:
+            row = session.get(WorkflowDocumentRow, workflow_id)
+            # Missing documents are reported by document validation; resource
+            # inspection must not silently treat them as a pure-data workflow.
+            if row is None:
+                return True
+            document = workflow_record(row).document
+            modules = self._module_snapshots(document)
+            workflows = self._workflow_snapshots(document, workflow_project_id(session, workflow_id), modules)
+            runtime = WorkflowRuntime(build_production_executor_registry())
+            return any(runtime.requires_browser(item) for item in _related_documents(document, modules, workflows))
+
+    def requires_default_model(self, workflow_id: str) -> bool:
+        with self._session_factory() as session:
+            row = session.get(WorkflowDocumentRow, workflow_id)
+            if row is None:
+                return False
+            document = workflow_record(row).document
+            modules = self._module_snapshots(document)
+            workflows = self._workflow_snapshots(document, workflow_project_id(session, workflow_id), modules)
+        documents = _related_documents(document, modules, workflows)
+        for node in (node for item in documents for node in item["nodes"]):
+            data = node.get("data", {})
+            if not str(data.get("moduleType", "")).startswith("ai_"):
+                continue
+            config = data.get("config", data)
+            if isinstance(config, dict) and (
+                config.get("modelId") is None
+                or isinstance(config.get("modelId"), str) and not config["modelId"].strip()
+            ):
+                return True
+        return False
 
     def prepare_content(
         self,
@@ -155,7 +281,17 @@ class WorkflowRuntimeService:
             )
         record = workflow_record(current)
         prepared = compile_workflow(record.document)
-        requirements = ["browser.cloakbrowser"]
+        modules = self._module_snapshots(prepared.document)
+        workflows = self._workflow_snapshots(
+            prepared.document, workflow_project_id(session, workflow_id), modules
+        )
+        from .runtime import WorkflowRuntime
+
+        browser_runtime = WorkflowRuntime(build_production_executor_registry())
+        requirements = (["browser.cloakbrowser"] if any(
+            browser_runtime.requires_browser(item)
+            for item in _related_documents(prepared.document, modules, workflows)
+        ) else [])
         if 'project_data' in prepared.module_types:
             requirements.append('project.data')
         missing = sorted(set(requirements) - set(available_capabilities))
@@ -168,6 +304,12 @@ class WorkflowRuntimeService:
             )
         execution_plan = _execution_plan(prepared.document, prepared.node_ids)
         adapter_version = "webrpa-graph/v2"
+        if prepared.graph_adapter:
+            execution_plan["document"] = prepared.document["content"]
+        if modules:
+            execution_plan["customModuleDependencies"] = modules
+        if workflows:
+            execution_plan["workflowDependencies"] = workflows
         checksum = _digest(
             {
                 "document": prepared.document,
@@ -309,6 +451,18 @@ class WorkflowRuntimeService:
             )
             session.commit()
             return changed
+
+
+def _related_documents(
+    root: dict[str, Any],
+    modules: dict[str, dict[str, object]],
+    workflows: dict[str, dict[str, Any]],
+) -> list[dict[str, Any]]:
+    return [
+        root["content"],
+        *(snapshot["workflow"] for snapshot in modules.values() if isinstance(snapshot.get("workflow"), dict)),
+        *workflows.values(),
+    ]
 
 
 def _execution_plan(document: dict[str, Any], node_ids: list[str]) -> dict[str, Any]:

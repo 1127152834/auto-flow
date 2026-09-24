@@ -199,3 +199,12 @@ it('does not treat pending or failed End lookup as an absent saved result', asyn
   expect(await screen.findByRole('alert')).toHaveTextContent('保留结果读取失败')
   expect(screen.queryByRole('button', { name: '结束并保留' })).not.toBeInTheDocument()
 })
+
+it.each([['cleaned', false], ['active', true]] as const)('does not offer to retain a cleaned copy (%s, %s)', async (state, environmentCleaned) => {
+  const client = { request: vi.fn(async (path: string) => path.endsWith('/end') ? null : { items: [{ ...instance, state }], page: 1, pageSize: 5, total: 1 }) } as unknown as StreamingApiClient
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+    <TaskEndPanel workspaceKey="w" instanceId="i" projectId="p" taskId="task-1" runId="run-1" executionGeneration={1} client={client} disabled={false} environmentCleaned={environmentCleaned}/>
+  </QueryClientProvider>)
+  expect(await screen.findByText('本次浏览器工作副本已清理，不能再次保存本次会话。')).toBeVisible()
+  expect(screen.queryByRole('button', { name: '结束并保留' })).not.toBeInTheDocument()
+})

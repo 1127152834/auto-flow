@@ -1,0 +1,54 @@
+{
+  "id": "BE-project-inspection-recording-scope",
+  "date": "2026-09-23",
+  "status": "passed-targeted-real-ui",
+  "scope": [
+    "project admission and browser lifecycle",
+    "recording project/document ownership",
+    "review and receipt isolation",
+    "recording statistics"
+  ],
+  "migration": {
+    "head": "0020_recording_project_scope",
+    "previous": "0019_recording_commands",
+    "historicalRows": "nullable ownership preserved; no guessed backfill",
+    "userDatabaseTouched": false
+  },
+  "checks": {
+    "existingBackend": 40,
+    "migrationRegression": 65,
+    "frontend": 177,
+    "typecheck": "passed",
+    "eslint": "passed",
+    "ruff": "passed",
+    "mypy": "passed",
+    "openapi": "passed",
+    "rendererMainPreloadBuild": "passed",
+    "projectSqlHttpStatistics": 43,
+    "pyinstaller": "passed",
+    "frozenBackendSmoke": "passed",
+    "macOSArm64Package": "passed"
+  },
+  "formalEvidence": "../formal-recording-electron-eUd5nT/result.json",
+  "studioHtmlSha256": "2a679dd7bf0087d935b507bc5b54b6e3d7b012b19fc4988c404075fb18a26988",
+  "failuresFixed": [
+    "same active recording ID could change its source document",
+    "SQLite recording timestamps lost UTC when read",
+    "start and cleanup were absent from project lifecycle facts"
+  ],
+  "correctedTestContract": "Two explicit stop calls issue different commandIds; assert each exact ID and all 451 steps, plus replay original wire command returns its exact 200-step receipt. Production semantics unchanged.",
+  "boundaries": {
+    "workerProtocolTests": "not browser evidence",
+    "platform": "macOS arm64 development-build real UI",
+    "formalPackage": "macOS arm64 unsigned local package; real UI recording/replay and native close passed",
+    "macOSIntel": "not tested",
+    "Windows": "not tested",
+    "nodeSlots": "622 passed / 17 real-execution pending; unchanged"
+  },
+  "remaining": [
+    "project resource permissions and task/data-table integration",
+    "macOS Intel and Windows not tested",
+    "remaining retained node execution slots"
+  ],
+  "packagedEvidence": "../formal-recording-electron-xIkcrm/result.json"
+}

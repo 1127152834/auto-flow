@@ -85,7 +85,7 @@ def _native_arguments(pid: int) -> tuple[Path, list[str], dict[str, str]] | None
         return None
 
 
-def _belongs_to_run(pid: int, directory: Path, executable: Path) -> bool | None:
+def _belongs_to_run(pid: int, directory: Path, executable: Path | None) -> bool | None:
     native = _native_arguments(pid)
     if native is None:
         return None
@@ -99,6 +99,8 @@ def _belongs_to_run(pid: int, directory: Path, executable: Path) -> bool | None:
     current = _native_arguments(os.getpid())
     if current is not None and actual.resolve() == current[0].resolve():
         return True
+    if executable is None:
+        return False
     if actual.parts[-3:] == ("playwright", "driver", "node") and any(
         arg.endswith("/playwright/driver/package/cli.js") for arg in arguments
     ) and "run-driver" in arguments:
@@ -129,15 +131,18 @@ def capture_processes(
     owned = {item for item, (_, started) in (previous or {}).items() if identities.get(item) == started}
     if birth is not None and identities.get(pid) == birth:
         owned.add(pid)
-    if directory is not None and executable is not None:
-        directory, executable = directory.resolve(), executable.resolve()
+    if directory is not None:
+        directory = directory.resolve()
+        executable = executable.resolve() if executable is not None else None
         for row in rows:
             item = int(row[0])
             # Text is only a cheap candidate filter. Native executable, argv and the
             # inherited per-run marker make the ownership decision below.
             command = row[3] if len(row) == 4 else ""
             if (str(directory) in command or "--test-browser-worker" in command
-                or "--workflow-worker" in command or "/playwright/driver/" in command):
+                or "--workflow-worker" in command or "--inspection-worker" in command
+                or "--project-workflow-worker" in command
+                or "/playwright/driver/" in command):
                 belongs = _belongs_to_run(item, directory, executable)
                 if belongs is None and strict_ownership and _process_exists(item):
                     raise RuntimeError("Candidate browser process ownership is unavailable")

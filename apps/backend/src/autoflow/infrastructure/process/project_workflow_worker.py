@@ -6,9 +6,11 @@ import os
 import shutil
 import subprocess
 import sys
-from collections.abc import Awaitable, Callable
-from dataclasses import dataclass
-from pathlib import Path
+from collections.abc import Awaitable, Callable, Mapping
+from dataclasses import dataclass, field
+from datetime import UTC, datetime
+from pathlib import Path, PurePosixPath
+from threading import Event, Thread
 from typing import Any, Literal, cast
 from uuid import UUID, uuid4
 
@@ -18,8 +20,10 @@ from autoflow.infrastructure.process.project_test_browser_worker import (
     force_process_tree,
     wait_for_cleanup,
 )
+from autoflow.infrastructure.process.workflow_subprocess import workflow_environment
 
 MAX_MESSAGE_BYTES = 1024 * 1024
+MAX_EVENT_BYTES = 16 * 1024 * 1024
 WorkerStatus = Literal["succeeded", "failed", "cancelled", "timed_out"]
 
 
@@ -44,7 +48,7 @@ class _Worker:
     directory: Path
     artifact_directory: Path
     relative_artifact_directory: str
-    executable: Path
+    executable: Path | None
     task: asyncio.Task[Any]
     process: asyncio.subprocess.Process | None = None
     birth: int | None = None
@@ -55,6 +59,8 @@ class _Worker:
     created_directory: bool = False
     ready: bool = False
     capability: asyncio.Future[Any] | None = None
+    write_lock: asyncio.Lock = field(default_factory=asyncio.Lock)
+    credential_read: Event | None = None
 
 
 def project_workflow_worker_command() -> tuple[str, ...]:
@@ -71,6 +77,7 @@ class ProjectWorkflowWorkerManager:
         worker_env: dict[str, str] | None = None, start_timeout: float = 90,
         termination_timeout: float = 3, capacity: int = 1,
         on_capability: Callable[[str, int, dict[str, Any]], Awaitable[Any]] | None = None,
+        resolve_credential: Callable[[str], Mapping[str, str]] | None = None,
     ) -> None:
         self._root = (temp_dir / "workflow-runs").resolve()
         self._artifact_root = (temp_dir.parent / "workspace" / "runs").resolve()
@@ -90,6 +97,7 @@ class ProjectWorkflowWorkerManager:
             raise ValueError("Supported worker capacity is 1 or 2")
         self._capacity = capacity
         self._workers: dict[str, _Worker] = {}
+        self._resolve_credential = resolve_credential
         self._closed = False
         self._lock = asyncio.Lock()
 
@@ -99,8 +107,9 @@ class ProjectWorkflowWorkerManager:
     async def run(
         self, *, run_id: str, execution_generation: int,
         execution_plan: dict[str, Any], parameters: dict[str, Any],
-        variables: dict[str, Any], browser: dict[str, Any], executable: Path,
+        variables: dict[str, Any], browser: dict[str, Any], executable: Path | None,
         on_event: Callable[[dict[str, Any]], Awaitable[None]],
+        model_bindings: list[dict[str, Any]] | None = None,
     ) -> WorkerOutcome:
         if str(UUID(run_id)) != run_id or execution_generation < 1:
             raise _protocol_error()
@@ -116,7 +125,7 @@ class ProjectWorkflowWorkerManager:
                 self._root / run_id / f"generation-{execution_generation}",
                 self._artifact_root / run_id / f"generation-{execution_generation}",
                 f"runs/{run_id}/generation-{execution_generation}",
-                executable.resolve(strict=True), current,
+                executable.resolve(strict=True) if executable is not None else None, current,
             )
             self._workers[run_id] = worker
         try:
@@ -124,11 +133,12 @@ class ProjectWorkflowWorkerManager:
             worker.created_directory = True
             worker.artifact_directory.mkdir(parents=True, exist_ok=True)
             worker.artifact_directory.resolve(strict=True).relative_to(self._artifact_root)
-            env = os.environ.copy()
-            env.update(self._worker_env)
+            env = workflow_environment({**os.environ, **self._worker_env})
             env.pop("CLOAKBROWSER_LICENSE_KEY", None)
+            env.pop("CLOAKBROWSER_BINARY_PATH", None)
+            if worker.executable is not None:
+                env["CLOAKBROWSER_BINARY_PATH"] = str(worker.executable)
             env.update({
-                "CLOAKBROWSER_BINARY_PATH": str(worker.executable),
                 "CLOAKBROWSER_CACHE_DIR": str(worker.directory),
                 "AUTOFLOW_WORKFLOW_ARTIFACT_DIR": str(worker.artifact_directory),
                 "AUTOFLOW_WORKFLOW_ARTIFACT_RELATIVE_DIR": worker.relative_artifact_directory,
@@ -147,7 +157,7 @@ class ProjectWorkflowWorkerManager:
             spawn = asyncio.create_task(asyncio.create_subprocess_exec(
                 *self._command, stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL,
-                env=env, limit=MAX_MESSAGE_BYTES, **group,
+                env=env, limit=MAX_EVENT_BYTES, **group,
             ))
             try:
                 worker.process = await asyncio.shield(spawn)
@@ -163,10 +173,26 @@ class ProjectWorkflowWorkerManager:
                 "executionGeneration": execution_generation,
                 "executionPlan": execution_plan, "parameters": parameters,
                 "variables": variables, "browser": browser,
+                "modelBindings": model_bindings or [],
             })
             outcome = await self._exchange(worker, on_event)
-            assert worker.process is not None
-            await asyncio.wait_for(worker.process.wait(), self._termination_timeout)
+            assert worker.process is not None and worker.process.stdin is not None
+            # No more commands follow the terminal envelope. Release the worker's
+            # sole stdin reader before waiting for interpreter/process shutdown.
+            worker.ready = False
+            worker.process.stdin.close()
+            try:
+                await asyncio.wait_for(worker.process.wait(), self._termination_timeout)
+            except TimeoutError:
+                if outcome.status == "succeeded":
+                    raise
+                if worker.process.returncode is None:
+                    # Failed native to_thread work can outlive asyncio.run. Only
+                    # a still-live process needs forced cleanup; a natural crash
+                    # must retain its unexpected exit code and fail validation.
+                    worker.stop_requested = True
+                    await self._cleanup(worker)
+                    return outcome
             if (worker.process.returncode not in {0, 1}
                 or (outcome.status == "succeeded" and worker.process.returncode != 0)):
                 raise WorkflowWorkerError("WORKFLOW_WORKER_LOST", "执行进程异常退出，需核验运行结果")
@@ -247,6 +273,27 @@ class ProjectWorkflowWorkerManager:
                 # Unknown failures may follow a commit. Fence the run rather than
                 # telling the worker it is safe to execute an error branch.
                 await self._send(worker, reply)
+            elif message.get("type") == "credential:read":
+                request_id, name, field_name = (message.get(key) for key in ("requestId", "name", "field"))
+                if not isinstance(request_id, str) or not request_id or not isinstance(name, str) or not isinstance(field_name, str):
+                    raise _protocol_error()
+                value = await self._read_credential(worker, name, field_name)
+                await self._send(worker, {
+                    "type": "credential:result", "protocolVersion": 1,
+                    "runId": worker.run_id, "executionGeneration": worker.generation,
+                    "requestId": request_id, "value": value,
+                })
+            elif message.get("type") == "execution:command_applied":
+                command_id, request_id = message.get("commandId"), message.get("requestId")
+                if not isinstance(command_id, str) or not command_id or not isinstance(request_id, str) or not request_id:
+                    raise _protocol_error()
+                await on_event({
+                    "eventId": command_id, "runId": worker.run_id,
+                    "executionGeneration": worker.generation, "kind": "interaction",
+                    "nodeId": None, "nodeVisitId": None, "attempt": None,
+                    "occurredAt": datetime.now(UTC).isoformat(),
+                    "payload": {"type": "execution:command_applied", "commandId": command_id, "requestId": request_id},
+                })
             elif message.get("type") == "finished":
                 if message.get("cleanupConfirmed") is not True:
                     raise WorkflowWorkerError("WORKFLOW_CLEANUP_FAILED", "浏览器清理尚未确认")
@@ -286,7 +333,7 @@ class ProjectWorkflowWorkerManager:
             raw = await worker.process.stdout.readline()
             if not raw:
                 raise WorkflowWorkerError("WORKFLOW_WORKER_LOST", "执行进程失联，运行结果待核验")
-            if len(raw) > MAX_MESSAGE_BYTES or not raw.endswith(b"\n"):
+            if len(raw) > MAX_EVENT_BYTES or not raw.endswith(b"\n"):
                 raise _protocol_error()
             value = json.loads(raw)
         except (ValueError, UnicodeError):
@@ -299,7 +346,52 @@ class ProjectWorkflowWorkerManager:
             raise _protocol_error()
         return value
 
+    async def _read_credential(self, worker: _Worker, name: str, field_name: str) -> str | None:
+        resolver = self._resolve_credential
+        if not name or not field_name or resolver is None or worker.stop_requested or (worker.credential_read is not None and not worker.credential_read.is_set()):
+            return None
+        done, discard = Event(), Event()
+        result: list[str] = []
+        worker.credential_read = done
+
+        def read() -> None:
+            try:
+                value = resolver(name).get(field_name)
+                if isinstance(value, str) and not discard.is_set():
+                    result.append(value)
+            except Exception:  # noqa: BLE001 -- source leaves unavailable credential references intact.
+                result.clear()
+            finally:
+                done.set()
+
+        # Match Studio's existing native-keychain boundary: at most one blocked
+        # daemon read per owned run; stop/cleanup never waits for a system prompt.
+        Thread(target=read, daemon=True, name="project-workflow-credential-read").start()
+        try:
+            async with asyncio.timeout(3):
+                while not done.is_set():
+                    if self._workers.get(worker.run_id) is not worker or worker.stop_requested:
+                        return None
+                    await asyncio.sleep(.02)
+            return result[0] if result else None
+        except TimeoutError:
+            return None
+        finally:
+            discard.set()
+            if done.is_set():
+                worker.credential_read = None
+
     async def _send(self, worker: _Worker, message: dict[str, Any]) -> None:
+        async with worker.write_lock:
+            if message.get("type") in {"input_prompt_result", "js_script_result", "webhook_result"} and (
+                self._workers.get(worker.run_id) is not worker or worker.stop_requested or not worker.ready or worker.cleanup is not None
+            ):
+                raise WorkflowWorkerError("WORKFLOW_INTERACTION_UNAVAILABLE", "交互请求已结束或执行代次已失效")
+            if message.get("type") == "credential:result" and (self._workers.get(worker.run_id) is not worker or worker.stop_requested or worker.cleanup is not None):
+                return
+            await self._write(worker, message)
+
+    async def _write(self, worker: _Worker, message: dict[str, Any]) -> None:
         assert worker.process is not None and worker.process.stdin is not None
         if worker.process.returncode is not None:
             raise WorkflowWorkerError("WORKFLOW_WORKER_LOST", "执行进程已退出")
@@ -308,6 +400,19 @@ class ProjectWorkflowWorkerManager:
             raise _protocol_error()
         worker.process.stdin.write(data)
         await worker.process.stdin.drain()
+
+    async def send_command(self, run_id: str, execution_generation: int, command: dict[str, Any]) -> None:
+        worker = self._workers.get(run_id)
+        if (worker is None or worker.run_id != run_id or type(execution_generation) is not int
+            or worker.generation != execution_generation or worker.stop_requested or not worker.ready
+            or worker.cleanup is not None):
+            raise WorkflowWorkerError("WORKFLOW_INTERACTION_UNAVAILABLE", "交互请求已结束或执行代次已失效")
+        if (command.get("type") not in {"input_prompt_result", "js_script_result", "webhook_result"}
+            or not isinstance(command.get("commandId"), str) or not command["commandId"]
+            or not isinstance(command.get("requestId"), str) or not command["requestId"]):
+            raise _protocol_error()
+        await self._send(worker, {**command, "protocolVersion": 1, "runId": run_id,
+                                  "executionGeneration": execution_generation})
 
     async def _send_stop(self, worker: _Worker) -> None:
         await self._send(worker, {"type": "stop", "executionGeneration": worker.generation})
@@ -351,11 +456,20 @@ class ProjectWorkflowWorkerManager:
             worker is None
             or worker.run_id != run_id
             or worker.generation != execution_generation
-            or relative_path
-            != f"{worker.relative_artifact_directory}/{artifact_id}.png"
+
         ):
             return
-        candidate = worker.artifact_directory / f"{artifact_id}.png"
+        relative = PurePosixPath(relative_path)
+        prefix = PurePosixPath(worker.relative_artifact_directory)
+        if relative.as_posix() != relative_path or "\\" in relative_path or ".." in relative.parts or not relative.is_relative_to(prefix):
+            return
+        suffix = relative.relative_to(prefix)
+        legacy = suffix == PurePosixPath(f"{artifact_id}.png")
+        if not legacy and (len(suffix.parts) < 2 or suffix.parts[0] != "artifacts"):
+            return
+        candidate = worker.artifact_directory / Path(*suffix.parts)
+        if candidate.resolve() != candidate.absolute():
+            return
         try:
             info = candidate.lstat()
             if not candidate.is_file() or candidate.is_symlink() or info.st_nlink != 1:
@@ -394,7 +508,7 @@ class ProjectWorkflowWorkerManager:
             await force_process_tree(
                 process, self._termination_timeout,
                 worker.directory, worker.executable, worker.birth,
-                strict_ownership=True,
+                strict_ownership=True, graceful=not worker.stop_requested,
             )
         if worker.capability is not None:
             if not worker.capability.done():

@@ -1,0 +1,24 @@
+{
+  "evidenceId": "BE-project-process-formal-electron",
+  "result": "passed",
+  "checkedAt": "2026-09-23T20:20:16.781Z",
+  "gitHead": "0a9e76ce2f4dc7a29f85b467d5544062ddef376a",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "projectId": "639b5624-5b62-416a-a9b9-53ab15eb5e77",
+  "workflowId": "3ipYEcz6JNl9Nb93HtwRt",
+  "batchId": "026171c1-1e06-49e9-a214-eee879af5328",
+  "taskId": "e36d882d-7ff0-4f66-aca7-39462f732426",
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "正式 Studio 真实 UI 编排命令和内置 Python，代码编辑器输入及保存内容一致，正常关闭工作台",
+    "真实命令输出传入内置 Python；stdout、stderr、退出码和返回对象完整持久化，任务页可查"
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "python": "built-in runtime, no external interpreter path",
+    "interaction": "formal UI mouse/keyboard; API fixture setup and evidence reads only"
+  }
+}

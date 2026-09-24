@@ -12,6 +12,7 @@ import { staticNumberIssues } from '../lib/staticNumberPreflight'
 import { studioFetch, getStudioTransportRevision } from '../api/transport'
 import { useWorkflowStore } from '../editor-store'
 import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
+import { useAIAssistantStore } from '../hooks/stores/aiAssistantStore'
 import { useCustomModuleStore } from '../hooks/stores/customModuleStore'
 import { lazy, Suspense } from 'react'
 import { Button } from './controls/button'
@@ -21,7 +22,7 @@ import { usePasswordPrompt } from './controls/password-prompt'
 import { cn } from '../lib/utils'
 import { browserApi, workflowApi } from '../api'
 import { socketService } from '../events'
-import { getBackendBaseUrl } from '../api/config'
+import { getBackendBaseUrl, getStudioOpenContext } from '../api/config'
 import { GlobalConfigDialog } from './GlobalConfigDialog'
 // 教学文档体积较大（含 mermaid 等依赖），改为 lazy 引入，只有点开"教学文档"才加载
 const DocumentationDialog = lazy(() => import('./documentation/index').then(m => ({ default: m.DocumentationDialog })))
@@ -32,6 +33,7 @@ import { RecorderPanel } from './RecorderPanel'
 import { useDebugStore } from '../hooks/stores/debugStore'
 import { ScheduledTasksDialog } from './scheduled-tasks/ScheduledTasksDialog'
 import { WorkflowOpenDialog } from './WorkflowOpenDialog'
+import { LocalWorkflowDialog } from './LocalWorkflowDialog'
 import { BrowserProfileSelect } from './BrowserProfileSelect'
 import { VariableTrackingPanel } from './VariableTrackingPanel'
 import { ScreenshotNameDialog, ScreenshotErrorDialog } from './ScreenshotNameDialog'
@@ -82,7 +84,11 @@ export function Toolbar() {
   useEffect(() => { mounted.current = true; return () => { mounted.current = false } }, [])
   const diagnosticRunId = useWorkflowStore(state => state.currentExecutionRunId)
   const documentId = useWorkflowStore(state => state.id)
-  const [serverWorkflow, setServerWorkflow] = useState<{documentId: string; id: string} | null>(null)
+  const [serverWorkflow, setServerWorkflow] = useState<{documentId: string; id: string} | null>(() => {
+    // StudioApp mounts the editor only after loading this exact saved document.
+    const id = getStudioOpenContext().workflowId
+    return id && id === documentId ? { documentId, id } : null
+  })
   const workflowId = serverWorkflow?.documentId === documentId ? serverWorkflow.id : null
   const setWorkflowId = useCallback((id: string | null) => {
     setServerWorkflow(id ? {documentId, id} : null)
@@ -108,6 +114,7 @@ export function Toolbar() {
   const [showAutoBrowser, setShowAutoBrowser] = useState(false)
   const [showScheduledTasks, setShowScheduledTasks] = useState(false)
   const [showLocalWorkflow, setShowLocalWorkflow] = useState(false)
+  const [showLocalFiles, setShowLocalFiles] = useState(false)
   const [showVariableTracking, setShowVariableTracking] = useState(false)
   const [showScreenshotNameDialog, setShowScreenshotNameDialog] = useState(false)
   const [screenshotAsset, setScreenshotAsset] = useState<any>(null)
@@ -118,6 +125,8 @@ export function Toolbar() {
   const [editingCustomModuleId, setEditingCustomModuleId] = useState<string | null>(null)
   const [editingCustomModuleName, setEditingCustomModuleName] = useState<string>('')
   const [showRecorder, setShowRecorder] = useState(false)
+  const showAIAssistantButton = useGlobalConfigStore(state => state.config.system.showAIAssistantButton)
+  const toggleAIAssistant = useAIAssistantStore(state => state.togglePanel)
   const [isAutoLayouting, setIsAutoLayouting] = useState(false)
   const { ConfirmDialog } = useConfirm()
   const { promptPassword, passwordDialog } = usePasswordPrompt()
@@ -148,6 +157,33 @@ export function Toolbar() {
   const autoLayoutNodes = useWorkflowStore((state) => state.autoLayoutNodes)
 
   const isRunning = executionStatus === 'running'
+
+  useEffect(() => {
+    let request = 0
+    const reconcileRun = async () => {
+      const sequence = ++request
+      const revision = getStudioTransportRevision()
+      const state = useWorkflowStore.getState()
+      if (state.executionStatus !== 'running' || !state.currentExecutionRunId) return
+      const runId = state.currentExecutionRunId
+      const result = await workflowApi.getRun(runId)
+      if (sequence !== request || revision !== getStudioTransportRevision() || useWorkflowStore.getState().currentExecutionRunId !== runId) return
+      const status = result.data?.status
+      if (!result.success || !status || !['completed', 'failed', 'stopped', 'interrupted'].includes(status)) return
+      useDebugStore.getState().clearPaused()
+      state.setExecutionStatus(status === 'completed' ? 'completed' : status === 'stopped' ? 'stopped' : 'failed')
+      if (status === 'interrupted') state.addLog({ level: 'error', message: '本地服务已重启，本次运行已中断且不会自动重放' })
+      window.dispatchEvent(new CustomEvent('studio:run-history-changed', { detail: { runId, status } }))
+    }
+    void reconcileRun()
+    window.addEventListener('studio:transport-changed', reconcileRun)
+    window.addEventListener('studio:connection-restored', reconcileRun)
+    return () => {
+      request++
+      window.removeEventListener('studio:transport-changed', reconcileRun)
+      window.removeEventListener('studio:connection-restored', reconcileRun)
+    }
+  }, [])
 
   // 处理名称输入框聚焦 - 记录初始名称
   const handleNameFocus = useCallback(() => {
@@ -198,8 +234,8 @@ export function Toolbar() {
   }, [])
 
   // 通用执行函数
-  // startNodeId：可选，从指定节点开始运行（调试用），为空则从默认起始节点运行
-  const executeWorkflow = useCallback(async (headless: boolean, startNodeId?: string) => {
+  // startNodeId 跳过上游；runToNodeId 从真实入口运行并在目标第一次调度前暂停。
+  const executeWorkflow = useCallback(async (headless: boolean, startNodeId?: string, runToNodeId?: string) => {
     if (transitionPending.current || startPending.current || awaitingStart.current || useWorkflowStore.getState().executionStatus === 'running') return
     const source = useWorkflowStore.getState()
     const sourceConnection=getStudioTransportRevision()
@@ -242,6 +278,9 @@ export function Toolbar() {
       const sn = nodes.find(n => n.id === startNodeId)
       startNodeLabel = (sn?.data?.label as string) || startNodeId
     }
+    const runToNodeLabel = runToNodeId
+      ? ((nodes.find(n => n.id === runToNodeId)?.data?.label as string) || runToNodeId)
+      : ''
 
     startPending.current = true
     setStartPhase('preparing')
@@ -250,6 +289,7 @@ export function Toolbar() {
     setBottomPanelTab('logs')  // 切换到日志栏
     addLog({ level: 'info', message: startNodeId
       ? `从指定节点开始执行工作流：${startNodeLabel}`
+      : runToNodeId ? `从流程入口运行至节点：${runToNodeLabel}`
       : `正在准备执行工作流${headless ? '（无头模式）' : ''}...` })
 
     try {
@@ -290,7 +330,8 @@ export function Toolbar() {
         runId,
         documentId: sourceDocumentId,
         document,
-        startNodeId: startNodeId || undefined,
+        ...(startNodeId ? { startNodeId } : {}),
+        ...(runToNodeId ? { runToNodeId } : {}),
       })
       
       if (!executeResult.success) {
@@ -307,6 +348,7 @@ export function Toolbar() {
       // HTTP acceptance is not execution confirmation; SSE owns the running/terminal state.
       addLog({ level: 'info', message: startNodeId
         ? `从指定节点启动请求已接受：${startNodeLabel}`
+        : runToNodeId ? `运行至此请求已接受：${runToNodeLabel}`
         : `启动请求已接受${headless ? '（无头模式）' : ''}` })
     } catch (error) {
       addLog({ level: 'error', message: `执行异常: ${error}` })
@@ -319,6 +361,15 @@ export function Toolbar() {
   // 普通运行（有头模式）
   const handleRun = useCallback(async () => {
     await executeWorkflow(false)
+  }, [executeWorkflow])
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const nodeId = (e as CustomEvent).detail?.nodeId
+      if (nodeId) executeWorkflow(false, undefined, nodeId)
+    }
+    window.addEventListener('run-to-node', handler as EventListener)
+    return () => window.removeEventListener('run-to-node', handler as EventListener)
   }, [executeWorkflow])
 
   // 无头模式运行
@@ -679,8 +730,8 @@ export function Toolbar() {
     offs.push(onAssistantUiEvent('close_global_config', () => { void requestSettingsClose() }))
     offs.push(onAssistantUiEvent('open_scheduled_tasks', () => setShowScheduledTasks(true)))
     offs.push(onAssistantUiEvent('close_scheduled_tasks', () => setShowScheduledTasks(false)))
-    offs.push(onAssistantUiEvent('open_local_workflow', () => setShowLocalWorkflow(true)))
-    offs.push(onAssistantUiEvent('close_local_workflow', () => setShowLocalWorkflow(false)))
+    offs.push(onAssistantUiEvent('open_local_workflow', () => setShowLocalFiles(true)))
+    offs.push(onAssistantUiEvent('close_local_workflow', () => setShowLocalFiles(false)))
     offs.push(onAssistantUiEvent('open_documentation', () => setShowDocumentation(true)))
     offs.push(onAssistantUiEvent('close_documentation', () => setShowDocumentation(false)))
     offs.push(onAssistantUiEvent('open_auto_browser', () => setShowAutoBrowser(true)))
@@ -1490,6 +1541,11 @@ export function Toolbar() {
 
       {/* 右侧操作 - 大屏幕显示部分，小屏幕使用下拉菜单 */}
       <div className="ml-auto flex items-center gap-1 sm:gap-2">
+        {showAIAssistantButton && (
+          <Button variant="outline" size="sm" title="AI 小助手 (Ctrl/Cmd+K)" aria-label="AI 小助手" onClick={toggleAIAssistant}>
+            <Sparkles className="w-4 h-4" /><span className="hidden @[64rem]:inline">小助手</span>
+          </Button>
+        )}
         {/* 工作流仓库 - 紫色（语义：内容/收藏） */}
         
 
@@ -1539,6 +1595,7 @@ export function Toolbar() {
               size="sm" 
               className=""
               title="更多操作"
+              aria-label="更多操作"
             >
               <MoreHorizontal className="w-4 h-4" />
             </Button>
@@ -1553,6 +1610,10 @@ export function Toolbar() {
             <DropdownMenuItem onClick={() => setShowVariableTracking(true)}>
               <Activity className="w-4 h-4 mr-2 text-[hsl(var(--info-500))]" />
               变量追踪
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setShowLocalFiles(true)}>
+              <FolderOpen className="w-4 h-4 mr-2 text-[hsl(var(--warning-500))]" />
+              本地/远程工作流
             </DropdownMenuItem>
             
             
@@ -1633,6 +1694,13 @@ export function Toolbar() {
         isOpen={showLocalWorkflow}
         onClose={() => setShowLocalWorkflow(false)}
         onOpened={id => setServerWorkflow({ documentId: id, id })}
+        onLog={(level, message) => addLog({ level, message })}
+      />
+
+      <LocalWorkflowDialog
+        beforeReplace={confirmLeave}
+        isOpen={showLocalFiles}
+        onClose={() => setShowLocalFiles(false)}
         onLog={(level, message) => addLog({ level, message })}
       />
       

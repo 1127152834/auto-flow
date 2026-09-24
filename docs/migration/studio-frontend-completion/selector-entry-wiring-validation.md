@@ -2,7 +2,7 @@
 
 2026-09-15。仅扩展入口验收，没有修改共享 Store、协议或业务组件。
 
-按现有组件和能力映射，当前 227 个保留节点中共有 24 个节点、26 个字段直接调用 `ConfigPanel.renderSelectorInput`。字段、组件、源码位置和显隐条件见 `evidence/f2-selector-entries/entries.json`。
+按现有组件和能力映射，当前 213 个保留节点中共有 24 个节点、26 个字段直接调用 `ConfigPanel.renderSelectorInput`。字段、组件、源码位置和显隐条件见 `evidence/f2-selector-entries/entries.json`。
 
 本批已核销全部 26 个入口，包括普通网页元素字段、拖拽的源和目标字段、下载点击模式、条件与断言分支、等待和截图模式、AI 图片来源及验证码字段。
 

@@ -1,0 +1,4 @@
+{
+  "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/backend/autoflow-backend": "82a9f538046a5a34a79408a673b8520d889ff5a3938ed3e89847b33fe23857a8",
+  "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/app.asar": "12b4029ffb39c115d546bf65226188623c182cbc91d97d3010d92b3eeb677dd4"
+}

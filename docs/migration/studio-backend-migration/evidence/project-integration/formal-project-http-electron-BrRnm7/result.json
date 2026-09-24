@@ -1,0 +1,56 @@
+{
+  "evidenceId": "BE-project-http-formal-electron",
+  "result": "passed",
+  "checkedAt": "2026-09-23T17:31:06.967Z",
+  "gitHead": "06253e399ff5742c1728c5975a896e92059cfd9d",
+  "platform": "darwin-arm64",
+  "entry": "packaged-directory",
+  "projectId": "7f92912a-39c4-4151-891a-fbbb046a4732",
+  "workflowId": "b8shxDun2G8v5oD5BDhoR",
+  "batchId": "0f63f912-938e-4129-b875-dd5ee6b17668",
+  "taskId": "f0a40df2-1747-469f-8855-8560e74abd9a",
+  "sawCloakBrowser": false,
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "正式项目 Studio 通过真实 UI 配置并保存 API 轮询、HTTP 请求、Webhook 请求与通知流程",
+    "项目真实 worker 轮询本地 API 两次后执行 HTTP、Webhook 请求和通知，输出与服务接收请求一致",
+    "正式项目任务真实调用本地网络服务、持久化两项响应变量及四节点状态，未启动 CloakBrowser"
+  ],
+  "requestTrace": [
+    [
+      "GET",
+      "/poll",
+      null
+    ],
+    [
+      "GET",
+      "/poll",
+      null
+    ],
+    [
+      "GET",
+      "/api",
+      null
+    ],
+    [
+      "POST",
+      "/hook",
+      {
+        "source": "studio"
+      }
+    ],
+    [
+      "POST",
+      "/notify",
+      {
+        "message": "完成"
+      }
+    ]
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "interaction": "formal Electron mouse/keyboard; API only fixture setup and evidence reads"
+  }
+}

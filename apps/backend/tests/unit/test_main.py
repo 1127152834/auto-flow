@@ -40,6 +40,18 @@ def test_main_dispatches_workflow_worker_without_starting_http(monkeypatch):
     assert error.value.code == 17
 
 
+def test_main_dispatches_inspection_worker_without_starting_http(monkeypatch):
+    monkeypatch.setattr(sys, "argv", ["autoflow", "--inspection-worker"])
+    monkeypatch.setattr(
+        "autoflow.bootstrap.inspection_worker.inspection_worker_main", lambda: 19
+    )
+
+    with pytest.raises(SystemExit) as error:
+        main()
+
+    assert error.value.code == 19
+
+
 def test_main_does_not_print_ready_when_app_creation_fails(monkeypatch, tmp_path, capsys):
     monkeypatch.setattr(
         sys,
@@ -73,3 +85,15 @@ def test_app_shutdown_stops_kernel_workers(monkeypatch, tmp_path):
 
     shutdown.assert_awaited_once_with()
     close_proxies.assert_called_once_with()
+
+
+def test_main_runs_python_script_with_arguments_and_local_imports_without_http(monkeypatch, tmp_path):
+    import json
+    output = tmp_path / 'output.json'
+    script = tmp_path / 'script.py'
+    (tmp_path / 'helper.py').write_text('value = 42\n')
+    script.write_text('import sys, json\nfrom helper import value\nfrom pathlib import Path\nPath(sys.argv[1]).write_text(json.dumps([value, sys.argv[2:]]))\n')
+    monkeypatch.setattr(sys, 'argv', ['autoflow', '--python-script', str(script), str(output), '--flag', '甲'])
+    monkeypatch.setattr('autoflow.__main__.create_app', lambda _settings: pytest.fail('script must not start HTTP or migrate a database'))
+    main()
+    assert json.loads(output.read_text()) == [42, ['--flag', '甲']]

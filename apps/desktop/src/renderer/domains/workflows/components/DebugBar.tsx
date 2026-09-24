@@ -15,8 +15,10 @@ export function DebugBar() {
   const isPaused = useDebugStore((s) => s.isPaused)
   const pausedLabel = useDebugStore((s) => s.pausedLabel)
   const pausedReason = useDebugStore((s) => s.pausedReason)
+  const pausedError = useDebugStore((s) => s.pausedError)
   const pausedVariables = useDebugStore((s) => s.pausedVariables)
   const pausedVariableMeta = useDebugStore((s) => s.pausedVariableMeta)
+  const pausedExecutionContext = useDebugStore((s) => s.pausedExecutionContext)
   const wfId = useWorkflowStore((s) => s.currentExecutionWorkflowId)
   const runId = useWorkflowStore((s) => s.currentExecutionRunId)
   const [showVars, setShowVars] = useState(false)
@@ -37,16 +39,21 @@ export function DebugBar() {
   useEffect(() => () => { requestSequence.current++ }, [])
 
   if (!isPaused) return null
+  const failed = pausedReason === 'failure'
+  const contextLabels = [
+    ...pausedExecutionContext.scopes.map(scope=>scope.name||scope.id),
+    ...pausedExecutionContext.loops.map(loop=>`${loop.nodeId} 第 ${loop.iteration} 轮`),
+  ].filter(Boolean)
 
-  const call = async (fn: ((id: string, context:DebugControlRequest) => Promise<ApiResponse>) | ((id:string)=>Promise<ApiResponse>), kind: Exclude<Pending, null> = 'control') => {
-    if (!wfId || (kind==='control' && (!pauseContext || !runId || pauseContext.runId !== runId)) || busyRef.current === 'stop' || (kind === 'control' && busyRef.current)) return
+  const call = async (fn: ((id: string, context:DebugControlRequest) => Promise<ApiResponse>) | typeof workflowApi.stop, kind: Exclude<Pending, null> = 'control') => {
+    if (!wfId || !runId || (kind==='control' && (!pauseContext || pauseContext.runId !== runId)) || busyRef.current === 'stop' || (kind === 'control' && busyRef.current)) return
     const sequence = ++requestSequence.current
     const isCurrent = () => sequence === requestSequence.current && useDebugStore.getState().isPaused && useDebugStore.getState().pauseRevision === pauseRevision && useWorkflowStore.getState().currentExecutionWorkflowId === wfId && useWorkflowStore.getState().currentExecutionRunId === runId
     busyRef.current = kind; setBusy(kind); setError('')
     try {
       const result = kind==='stop'
-        ? await (fn as typeof workflowApi.stop)(wfId)
-        : await fn(wfId,{...pauseContext!,commandId:crypto.randomUUID()})
+        ? await (fn as typeof workflowApi.stop)(wfId,runId)
+        : await (fn as (id: string, context: DebugControlRequest) => Promise<ApiResponse>)(wfId,{...pauseContext!,commandId:crypto.randomUUID()})
       if (!isCurrent()) return
       if (!result.success) {
         if (!result.httpStatus && kind === 'control') {
@@ -120,7 +127,7 @@ export function DebugBar() {
       <div className="flex items-center gap-2 px-4 py-2.5 bg-amber-50 border-b border-amber-200">
         <Bug className="w-4 h-4 text-amber-600" />
         <span className="text-sm font-semibold text-amber-700">
-          {pausedReason === 'step' ? '单步暂停' : '断点暂停'}
+          {failed ? '失败暂停' : pausedReason === 'step' ? '单步暂停' : pausedReason === 'target' ? '运行至此暂停' : '断点暂停'}
         </span>
         <span className="text-xs text-[hsl(var(--muted-foreground))] truncate max-w-[180px]" title={pausedLabel || ''}>
           @ {pausedLabel}
@@ -132,39 +139,42 @@ export function DebugBar() {
           变量 {varEntries.length}
           {showVars ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
         </button>
-        {showVars && !editingVariables && (
+        {showVars && !editingVariables && !failed && (
           <button aria-label="编辑暂停变量" disabled={!pauseContext || !runId || pauseContext.runId!==runId || !!busy} onClick={beginVariableEdit} className="inline-flex items-center gap-1 text-xs text-[hsl(var(--brand-600))] disabled:opacity-50">
             <Pencil className="w-3 h-3" /> 编辑
           </button>
         )}
       </div>
 
+      {contextLabels.length>0&&<div aria-label="调试执行上下文" className="border-b border-amber-200 bg-amber-50/60 px-4 py-1.5 text-[11px] text-amber-800">{contextLabels.join(' / ')}</div>}
+
       <div className="flex items-center gap-2 px-4 py-2.5">
-        <button
+        {!failed && <button
           disabled={!wfId || !runId || !pauseContext || pauseContext.runId !== runId || !!busy}
           onClick={() => call(workflowApi.debugResume)}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600 disabled:opacity-50"
         >
           <Play className="w-3.5 h-3.5 fill-current" /> 继续
-        </button>
-        <button
+        </button>}
+        {!failed && <button
           disabled={!wfId || !runId || !pauseContext || pauseContext.runId !== runId || !!busy}
           onClick={() => call(workflowApi.debugStep)}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[hsl(var(--brand-600))] text-white text-sm font-medium hover:opacity-90 disabled:opacity-50"
         >
           <StepForward className="w-3.5 h-3.5" /> 单步
-        </button>
+        </button>}
         <button
-          disabled={!wfId || busy === 'stop'}
+          disabled={!wfId || !runId || busy === 'stop'}
           onClick={() => call(workflowApi.stop, 'stop')}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-600 text-white text-sm font-medium hover:bg-slate-700 disabled:opacity-50"
         >
-          <Square className="w-3.5 h-3.5 fill-current" /> 停止
+          <Square className="w-3.5 h-3.5 fill-current" /> {failed ? '结束调试' : '停止'}
         </button>
-        <span className="ml-auto text-[11px] text-[hsl(var(--muted-foreground))]">{busy ? '等待执行状态确认' : pausedReason === 'step' ? '单步执行已暂停' : '命中断点已暂停'}</span>
+        <span className="ml-auto text-[11px] text-[hsl(var(--muted-foreground))]">{busy ? '等待执行状态确认' : failed ? '失败现场只读' : pausedReason === 'step' ? '单步执行已暂停' : pausedReason === 'target' ? '已到达调试目标' : '命中断点已暂停'}</span>
       </div>
 
       {!pauseContext && <div role="alert" className="px-4 pb-3 text-sm">服务未提供暂停身份，暂不能继续或单步；仍可停止运行。</div>}
+      {pausedError && <div role="alert" className="px-4 pb-3 text-sm text-[hsl(var(--danger-600))]">{pausedError}</div>}
       {error && <div role="alert" className="px-4 pb-3 text-sm text-[hsl(var(--danger-600))]">{error}</div>}
 
       {showVars && (

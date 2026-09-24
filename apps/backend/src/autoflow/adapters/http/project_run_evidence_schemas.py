@@ -15,6 +15,7 @@ class NodeAttemptView(ApiModel):
     started_at: datetime | None
     completed_at: datetime | None
     error: dict[str, Any] | None
+    execution_context: dict[str, Any] | None = None
 
 
 class NodeAttemptPage(ApiModel):
@@ -34,9 +35,11 @@ class RunLogEntry(ApiModel):
     node_name: str | None = None
     node_visit_id: str | None = None
     attempt: int | None = None
-    level: Literal["debug", "info", "warning", "error"]
+    level: Literal["debug", "info", "success", "warning", "error"]
     message: str
+    is_user_log: bool = False
     occurred_at: datetime
+    execution_context: dict[str, Any] | None = None
 
 
 class RunLogPage(ApiModel):
@@ -58,6 +61,7 @@ class RunOutputView(ApiModel):
     node_visit_id: str | None = None
     attempt: int | None = None
     created_at: datetime
+    execution_context: dict[str, Any] | None = None
 
 
 class RunOutputPage(ApiModel):
@@ -70,15 +74,16 @@ class RunOutputPage(ApiModel):
 
 class RunArtifactView(ApiModel):
     artifact_id: str
-    kind: Literal["screenshot"]
-    purpose: Literal["error"]
+    kind: Literal["screenshot", "image", "file"]
+    purpose: Literal["error", "result"]
     availability: Literal["available", "unavailable"]
     node_id: str
     node_name: str
     node_visit_id: str | None = None
     event_sequence: int
     execution_generation: int
-    media_type: Literal["image/png"] | None = None
+    media_type: str | None = None
+    file_name: str | None = None
     byte_size: int | None = None
     sha256: str | None = None
     created_at: datetime

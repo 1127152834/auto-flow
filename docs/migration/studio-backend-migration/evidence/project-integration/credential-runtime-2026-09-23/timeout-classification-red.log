@@ -1,0 +1,14 @@
+....................F.                                                   [100%]
+=================================== FAILURES ===================================
+_____ test_project_sync_credential_read_obeys_node_timeout_without_output ______
+tests/integration/test_project_credential_worker.py:169: in test_project_sync_credential_read_obeys_node_timeout_without_output
+    assert failures[0].payload["error"]["code"] == "WORKFLOW_NODE_TIMEOUT"
+E   AssertionError: assert 'WORKFLOW_NODE_FAILED' == 'WORKFLOW_NODE_TIMEOUT'
+E
+E     - WORKFLOW_NODE_TIMEOUT
+E     ?               ^ ^ ^^^
+E     + WORKFLOW_NODE_FAILED
+E     ?               ^^ ^ ^
+=========================== short test summary info ============================
+FAILED tests/integration/test_project_credential_worker.py::test_project_sync_credential_read_obeys_node_timeout_without_output
+1 failed, 21 passed in 27.19s

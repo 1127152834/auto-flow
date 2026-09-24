@@ -29,14 +29,18 @@ export interface ChatMessage {
   attachmentNames?: string[]
   /** DeepSeek-Reasoner 等思考模型的内部思考链（用于回传给 LLM，不在 UI 显示） */
   reasoning_content?: string | null
+  contentRef?: string
+  contentArtifact?: { artifactRef: string; mediaType: string; size: number; sha256: string }
+  reasoningContentRef?: string
+  reasoningArtifact?: { artifactRef: string; mediaType: string; size: number; sha256: string }
 }
 
 export interface SessionListItem {
   id: string
   title: string
-  message_count: number
-  updated_at: string
-  last_message_preview: string
+  messageCount: number
+  updatedAt: string
+  lastMessagePreview: string
 }
 
 /** 回滚快照：记录某条用户消息发送「之前」的画布状态，供一键回滚 */
@@ -51,6 +55,8 @@ export interface RollbackSnapshot {
 }
 
 interface AIAssistantState {
+  scope: string | null | undefined
+  activateScope: (scope: string | null) => void
   // 面板可见性
   isPanelOpen: boolean
   setPanelOpen: (open: boolean) => void
@@ -88,6 +94,19 @@ interface AIAssistantState {
 }
 
 export const useAIAssistantStore = create<AIAssistantState>((set, get) => ({
+  scope: undefined,
+  activateScope: (scope) => {
+    if (get().scope === scope) return
+    set({
+      scope,
+      currentSessionId: null,
+      messages: [],
+      sessions: [],
+      liveToolCalls: [],
+      rollbackSnapshots: {},
+      isSending: false,
+    })
+  },
   isPanelOpen: false,
   setPanelOpen: (open) => set({ isPanelOpen: open }),
   togglePanel: () => set({ isPanelOpen: !get().isPanelOpen }),

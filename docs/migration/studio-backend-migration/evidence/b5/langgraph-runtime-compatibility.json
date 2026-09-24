@@ -1,0 +1,42 @@
+{
+  "recordedAt": "2026-09-21",
+  "platform": "macOS arm64",
+  "python": "3.11.13",
+  "dependencies": {
+    "langgraph": "1.2.11",
+    "langgraph-checkpoint-sqlite": "3.1.1"
+  },
+  "checks": [
+    {
+      "command": "LANGGRAPH_STRICT_MSGPACK=true uv run --project apps/backend pytest apps/backend/tests/compatibility/test_langgraph_runtime.py -q",
+      "exitCode": 0,
+      "result": "3 passed",
+      "covers": [
+        "SQLite checkpoint interrupt/resume after graph recreation",
+        "async graph cancellation",
+        "no network connection from the core graph path",
+        "PyInstaller discovery of graph and SQLite checkpoint modules"
+      ]
+    },
+    {
+      "command": "uv run --project apps/backend ruff check apps/backend/tests/compatibility/test_langgraph_runtime.py && uv run --project apps/backend mypy apps/backend/tests/compatibility/test_langgraph_runtime.py",
+      "exitCode": 0,
+      "result": "Ruff and mypy passed"
+    },
+    {
+      "command": "uv run --project apps/backend --group build pyinstaller --noconfirm --clean --workpath <temporary> --distpath <temporary> apps/backend/autoflow-backend.spec",
+      "exitCode": 0,
+      "result": "Frozen arm64 sidecar built with LangGraph and SQLite checkpoint modules"
+    },
+    {
+      "command": "<frozen-sidecar> --instance-id b5-frozen --data-dir <temporary> --port 0; POST /internal/lifecycle/shutdown",
+      "exitCode": 0,
+      "result": "AUTOFLOW_READY emitted and authenticated shutdown completed"
+    }
+  ],
+  "boundaries": {
+    "productionAssistantGraph": "not implemented by this compatibility slice",
+    "frozenGraphPauseResume": "requires the production assistant graph and remains pending",
+    "realModel": "not exercised"
+  }
+}

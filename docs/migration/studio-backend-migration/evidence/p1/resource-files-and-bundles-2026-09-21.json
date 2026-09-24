@@ -1,0 +1,42 @@
+{
+  "recordedAt": "2026-09-21",
+  "scope": [
+    "本地工作流文件服务",
+    "图像资源文件服务",
+    "工作流依赖整包导入导出",
+    "Electron 宿主打开本地目录"
+  ],
+  "status": "implemented_formal_and_packaged_darwin_arm64",
+  "productionEvidence": {
+    "localWorkflows": "真实工作区文件、原子替换、活动目录持久化、自愈设置保留、导入导出和路径防穿越",
+    "imageAssets": "真实图片字节、持久索引、目录树、移动、改名、递归删除、受控文件读取和工作区边界校验",
+    "workflowBundles": "工作流、自定义模块闭包和被引用图片字节打包；导入时恢复资源并重映射模块引用",
+    "openFolder": "后端只解析真实目录，renderer 通过受控 studio-platform open_path IPC 打开"
+  },
+  "checks": [
+    {
+      "command": "uv run pytest tests/contract/test_local_workflows.py tests/contract/test_image_assets.py tests/contract/test_workflow_bundle.py tests/contract/test_studio_image_schemas.py tests/contract/test_custom_modules_api.py -q",
+      "result": "37 passed"
+    },
+    {
+      "command": "npm test -- --run local-workflow-protection image-panel-loading image-asset-preview toolbar-draft-protection document-export-entry",
+      "result": "88 passed"
+    },
+    {
+      "command": "uv run ruff check <P1 changed Python files> && uv run mypy <P1 service and adapter files>",
+      "result": "passed"
+    },
+    {
+      "command": "npm run openapi:check && npm run typecheck",
+      "result": "passed"
+    }
+  ],
+  "remaining": [
+    "正式 Electron 本地模式“打开位置”宿主动作验收",
+    "macOS Intel 与 Windows 实测"
+  ],
+  "formalEvidence": {
+    "development": "formal-platform-electron-FuIpPp/result.json",
+    "packagedDarwinArm64": "formal-platform-electron-vvjkc2/result.json"
+  }
+}

@@ -1,0 +1,21 @@
+真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程
+正式 Studio 真实 UI 编排网页、元素变化监听和后继变量日志，保存后正常关窗
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+0 !== 1
+
+    at file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:305:16
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 0,
+  expected: 1,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v26.7.0

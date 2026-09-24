@@ -186,6 +186,37 @@ def test_browser_worker_can_be_identified_after_initial_birth_probe_was_unavaila
     assert module.capture_processes(700, None, run, executable) == {}
 
 
+def test_pure_data_recovery_requires_native_worker_identity_and_exact_run_marker(monkeypatch, tmp_path):
+    from autoflow.infrastructure.process import project_browser_processes as module
+
+    run = (tmp_path / 'run').resolve()
+    other = (tmp_path / 'other').resolve()
+    monkeypatch.setattr(module.subprocess, 'check_output', lambda *_args, **_kwargs: '\n'.join(
+        f'{pid} 1 {pid} --project-workflow-worker {run}' for pid in range(700, 705)
+    ))
+    monkeypatch.setattr(module, 'process_birth', lambda pid: pid + 10)
+    native = {
+        700: (Path(sys.executable), ['--project-workflow-worker'], {'CLOAKBROWSER_CACHE_DIR': str(run)}),
+        701: (Path(sys.executable), ['--project-workflow-worker'], {'CLOAKBROWSER_CACHE_DIR': str(other)}),
+        702: (Path(sys.executable), ['diagnostic', str(run)], {}),
+        703: (Path('/usr/bin/grep'), ['--project-workflow-worker'], {'CLOAKBROWSER_CACHE_DIR': str(run)}),
+        704: (Path('/opt/playwright/driver/node'), ['/opt/playwright/driver/package/cli.js', 'run-driver'], {'CLOAKBROWSER_CACHE_DIR': str(run)}),
+    }
+    monkeypatch.setattr(module, '_native_arguments', native.get)
+    assert module.capture_processes(0, None, run, None, strict_ownership=True) == {700: (700, 710)}
+
+
+def test_pure_data_recovery_does_not_assume_unreadable_live_candidate_is_gone(monkeypatch, tmp_path):
+    from autoflow.infrastructure.process import project_browser_processes as module
+
+    monkeypatch.setattr(module.subprocess, 'check_output', lambda *_args, **_kwargs: '700 1 700 python --project-workflow-worker\n')
+    monkeypatch.setattr(module, 'process_birth', lambda _pid: 710)
+    monkeypatch.setattr(module, '_native_arguments', lambda _pid: None)
+    monkeypatch.setattr(module, '_process_exists', lambda _pid: True)
+    with pytest.raises(RuntimeError, match='ownership is unavailable'):
+        module.capture_processes(0, None, tmp_path, None, strict_ownership=True)
+
+
 @pytest.mark.asyncio
 async def test_unverified_worker_exit_has_bounded_cleanup_failure(monkeypatch):
     from autoflow.infrastructure.process import test_browser_worker as module
@@ -410,3 +441,30 @@ def test_windows_job_rechecks_exact_membership_when_parent_and_child_join_race(m
         with pytest.raises(OSError):
             invoke()
         assert calls[-1] == ('close', 8001 if side == 'worker' else 9001)
+
+
+@pytest.mark.asyncio
+@pytest.mark.skipif(sys.platform == "win32", reason="POSIX owned process tree; Windows retains native handle/Job cleanup")
+async def test_project_confirmed_cancellation_kills_owned_native_work_without_term_grace(tmp_path):
+    from autoflow.infrastructure.process.project_browser_processes import process_birth
+    from autoflow.infrastructure.process.project_test_browser_worker import (
+        force_process_tree,
+    )
+
+    process = await asyncio.create_subprocess_exec(
+        sys.executable, '-c',
+        'import signal,time; signal.signal(signal.SIGTERM, signal.SIG_IGN); print("ready",flush=True); time.sleep(60)',
+        stdout=asyncio.subprocess.PIPE, start_new_session=True,
+    )
+    birth = process_birth(process.pid)
+    try:
+        assert await asyncio.wait_for(process.stdout.readline(), 3) == b'ready\n'
+        started = time.monotonic()
+        await force_process_tree(process, 3, birth=birth, strict_ownership=True, graceful=False)
+        assert time.monotonic() - started < 1
+        assert process.returncode is not None
+        assert process_birth(process.pid) != birth
+    finally:
+        if process.returncode is None:
+            process.kill()
+            await process.wait()

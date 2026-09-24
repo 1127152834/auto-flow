@@ -1,0 +1,307 @@
+{
+  "evidenceId": "BE-B5-provider-evidence-ledger",
+  "checkedAt": "2026-09-21",
+  "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+  "scope": {
+    "nodeCount": 22,
+    "approvedStudioNodeCount": 227
+  },
+  "classification": "existing evidence reconciliation; no fixture is counted as a real external supplier",
+  "summary": {
+    "productionRegistered": 22,
+    "sourceParityOrBehaviorPassed": 22,
+    "localContractPassed": 22,
+    "realLocalOrControlledWorkerPassed": 22,
+    "externalSupplierWaiting": 15,
+    "formalElectronNodeExecutionPending": 22,
+    "externalSupplierNotApplicable": 7
+  },
+  "globalEvidence": {
+    "providerErrorsAndCancellation": [
+      "apps/backend/tests/unit/test_model_provider.py",
+      "apps/backend/tests/unit/workflows/test_model_gateway.py",
+      "apps/backend/tests/unit/workflows/test_browser_session_contract.py"
+    ],
+    "assistantFormalElectron": "docs/migration/studio-backend-migration/evidence/b5/formal-assistant-electron-uelQUT/result.json",
+    "assistantRedaction": "docs/migration/studio-backend-migration/evidence/b5/assistant-artifacts-redaction.json",
+    "mcp": "docs/migration/studio-backend-migration/evidence/b5/mcp-config-tools.json",
+    "assistantAndMcpPackagedBoundary": "darwin-arm64目录包通过正式UI完成模型选择、MCP配置/调用、权限、取消、保存和正常关窗恢复；不替代22个节点级正式UI执行"
+  },
+  "nodes": [
+    {
+      "nodeType": "ai_chat",
+      "implementation": "passed",
+      "productionRegistration": "passed",
+      "sourceParityOrBehavior": "passed",
+      "localContract": "passed",
+      "controlledExecution": "本地受控 OpenAI 兼容 HTTP 服务真实 worker",
+      "formalElectronNodeExecution": "pending",
+      "externalSupplier": "external_waiting",
+      "remaining": "待真实模型供应商与节点正式 UI",
+      "evidence": "docs/migration/studio-backend-migration/evidence/b5/model-boundary-ai-chat.json"
+    },
+    {
+      "nodeType": "ai_extract",
+      "implementation": "passed",
+      "productionRegistration": "passed",
+      "sourceParityOrBehavior": "passed",
+      "localContract": "passed",
+      "controlledExecution": "本地受控模型服务真实 worker，八节点顺序执行",
+      "formalElectronNodeExecution": "pending",
+      "externalSupplier": "external_waiting",
+      "remaining": "待真实模型供应商与节点正式 UI",
+      "evidence": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json"
+    },
+    {
+      "nodeType": "ai_classify",
+      "implementation": "passed",
+      "productionRegistration": "passed",
+      "sourceParityOrBehavior": "passed",
+      "localContract": "passed",
+      "controlledExecution": "本地受控模型服务真实 worker，八节点顺序执行",
+      "formalElectronNodeExecution": "pending",
+      "externalSupplier": "external_waiting",
+      "remaining": "待真实模型供应商与节点正式 UI",
+      "evidence": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json"
+    },
+    {
+      "nodeType": "ai_summarize",
+      "implementation": "passed",
+      "productionRegistration": "passed",
+      "sourceParityOrBehavior": "passed",
+      "localContract": "passed",
+      "controlledExecution": "本地受控模型服务真实 worker，八节点顺序执行",
+      "formalElectronNodeExecution": "pending",
+      "externalSupplier": "external_waiting",
+      "remaining": "待真实模型供应商与节点正式 UI",
+      "evidence": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json"
+    },
+    {
+      "nodeType": "ai_translate",
+      "implementation": "passed",
+      "productionRegistration": "passed",
+      "sourceParityOrBehavior": "passed",
+      "localContract": "passed",
+      "controlledExecution": "本地受控模型服务真实 worker，八节点顺序执行",
+      "formalElectronNodeExecution": "pending",
+      "externalSupplier": "external_waiting",
+      "remaining": "待真实模型供应商与节点正式 UI",
+      "evidence": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json"
+    },
+    {
+      "nodeType": "ai_sentiment",
+      "implementation": "passed",
+      "productionRegistration": "passed",
+      "sourceParityOrBehavior": "passed",
+      "localContract": "passed",
+      "controlledExecution": "本地受控模型服务真实 worker，八节点顺序执行",
+      "formalElectronNodeExecution": "pending",
+      "externalSupplier": "external_waiting",
+      "remaining": "待真实模型供应商与节点正式 UI",
+      "evidence": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json"
+    },
+    {
+      "nodeType": "ai_normalize",
+      "implementation": "passed",
+      "productionRegistration": "passed",
+      "sourceParityOrBehavior": "passed",
+      "localContract": "passed",
+      "controlledExecution": "本地受控模型服务真实 worker，八节点顺序执行",
+      "formalElectronNodeExecution": "pending",
+      "externalSupplier": "external_waiting",
+      "remaining": "待真实模型供应商与节点正式 UI",
+      "evidence": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json"
+    },
+    {
+      "nodeType": "ai_dedup_semantic",
+      "implementation": "passed",
+      "productionRegistration": "passed",
+      "sourceParityOrBehavior": "passed",
+      "localContract": "passed",
+      "controlledExecution": "本地受控模型服务真实 worker，八节点顺序执行",
+      "formalElectronNodeExecution": "pending",
+      "externalSupplier": "external_waiting",
+      "remaining": "待真实模型供应商与节点正式 UI",
+      "evidence": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json"
+    },
+    {
+      "nodeType": "ai_route",
+      "implementation": "passed",
+      "productionRegistration": "passed",
+      "sourceParityOrBehavior": "passed",
+      "localContract": "passed",
+      "controlledExecution": "本地受控模型服务真实 worker，八节点顺序执行",
+      "formalElectronNodeExecution": "pending",
+      "externalSupplier": "external_waiting",
+      "remaining": "待真实模型供应商与节点正式 UI",
+      "evidence": "docs/migration/studio-backend-migration/evidence/b5/ai-text-task-family.json"
+    },
+    {
+      "nodeType": "ai_vision",
+      "implementation": "passed",
+      "productionRegistration": "passed",
+      "sourceParityOrBehavior": "passed",
+      "localContract": "passed",
+      "controlledExecution": "本地受控多模态模型服务真实 worker（URL 图片）",
+      "formalElectronNodeExecution": "pending",
+      "externalSupplier": "external_waiting",
+      "remaining": "待真实模型供应商、CloakBrowser 截图与节点正式 UI",
+      "evidence": "docs/migration/studio-backend-migration/evidence/b5/ai-vision.json"
+    },
+    {
+      "nodeType": "ai_vision_act",
+      "implementation": "passed",
+      "productionRegistration": "passed",
+      "sourceParityOrBehavior": "passed",
+      "localContract": "passed",
+      "controlledExecution": "冻结源码差分、托管模型与 CloakBrowser 鼠标端口专项",
+      "formalElectronNodeExecution": "pending",
+      "externalSupplier": "external_waiting",
+      "remaining": "待真实模型供应商和节点正式 UI 页面动作",
+      "evidence": "docs/migration/studio-backend-migration/evidence/b5/ai-vision-act.json"
+    },
+    {
+      "nodeType": "ai_smart_scraper",
+      "implementation": "passed",
+      "productionRegistration": "passed",
+      "sourceParityOrBehavior": "passed",
+      "localContract": "passed",
+      "controlledExecution": "冻结源码差分、托管模型与 CloakBrowser 内容端口专项",
+      "formalElectronNodeExecution": "pending",
+      "externalSupplier": "external_waiting",
+      "remaining": "待真实模型供应商和节点正式 UI 页面提取",
+      "evidence": "docs/migration/studio-backend-migration/evidence/b5/ai-scraper-family.json"
+    },
+    {
+      "nodeType": "ai_element_selector",
+      "implementation": "passed",
+      "productionRegistration": "passed",
+      "sourceParityOrBehavior": "passed",
+      "localContract": "passed",
+      "controlledExecution": "冻结源码差分、托管模型与 CloakBrowser 内容端口专项",
+      "formalElectronNodeExecution": "pending",
+      "externalSupplier": "external_waiting",
+      "remaining": "待真实模型供应商和节点正式 UI 页面提取",
+      "evidence": "docs/migration/studio-backend-migration/evidence/b5/ai-scraper-family.json"
+    },
+    {
+      "nodeType": "ai_generate_image",
+      "implementation": "passed",
+      "productionRegistration": "passed",
+      "sourceParityOrBehavior": "passed",
+      "localContract": "passed",
+      "controlledExecution": "本地受控媒体协议真实 worker、产物和取消",
+      "formalElectronNodeExecution": "pending",
+      "externalSupplier": "external_waiting",
+      "remaining": "待真实 OpenAI/Stability/Runway/自定义供应商与节点正式 UI",
+      "evidence": "docs/migration/studio-backend-migration/evidence/b5/ai-media-family.json"
+    },
+    {
+      "nodeType": "ai_generate_video",
+      "implementation": "passed",
+      "productionRegistration": "passed",
+      "sourceParityOrBehavior": "passed",
+      "localContract": "passed",
+      "controlledExecution": "本地受控媒体协议真实 worker、产物和取消",
+      "formalElectronNodeExecution": "pending",
+      "externalSupplier": "external_waiting",
+      "remaining": "待真实 OpenAI/Stability/Runway/自定义供应商与节点正式 UI",
+      "evidence": "docs/migration/studio-backend-migration/evidence/b5/ai-media-family.json"
+    },
+    {
+      "nodeType": "firecrawl_scrape",
+      "implementation": "passed",
+      "productionRegistration": "passed",
+      "sourceParityOrBehavior": "passed",
+      "localContract": "passed",
+      "controlledExecution": "darwin-arm64 CloakBrowser 151 对本地多页站点真实执行",
+      "formalElectronNodeExecution": "pending",
+      "externalSupplier": "not_applicable",
+      "remaining": "待节点正式 UI；macOS Intel/Windows 未测",
+      "evidence": "docs/migration/studio-backend-migration/evidence/b5/firecrawl-family.json"
+    },
+    {
+      "nodeType": "firecrawl_map",
+      "implementation": "passed",
+      "productionRegistration": "passed",
+      "sourceParityOrBehavior": "passed",
+      "localContract": "passed",
+      "controlledExecution": "darwin-arm64 CloakBrowser 151 对本地多页站点真实执行",
+      "formalElectronNodeExecution": "pending",
+      "externalSupplier": "not_applicable",
+      "remaining": "待节点正式 UI；macOS Intel/Windows 未测",
+      "evidence": "docs/migration/studio-backend-migration/evidence/b5/firecrawl-family.json"
+    },
+    {
+      "nodeType": "firecrawl_crawl",
+      "implementation": "passed",
+      "productionRegistration": "passed",
+      "sourceParityOrBehavior": "passed",
+      "localContract": "passed",
+      "controlledExecution": "darwin-arm64 CloakBrowser 151 对本地多页站点真实执行",
+      "formalElectronNodeExecution": "pending",
+      "externalSupplier": "not_applicable",
+      "remaining": "待节点正式 UI；macOS Intel/Windows 未测",
+      "evidence": "docs/migration/studio-backend-migration/evidence/b5/firecrawl-family.json"
+    },
+    {
+      "nodeType": "ocr_captcha",
+      "implementation": "passed",
+      "productionRegistration": "passed",
+      "sourceParityOrBehavior": "passed",
+      "localContract": "passed",
+      "controlledExecution": "darwin-arm64 CloakBrowser 151 对本地验证码页面真实执行",
+      "formalElectronNodeExecution": "pending",
+      "externalSupplier": "not_applicable",
+      "remaining": "待节点正式 UI；macOS Intel/Windows 未测",
+      "evidence": "docs/migration/studio-backend-migration/evidence/b5/captcha-family.json"
+    },
+    {
+      "nodeType": "slider_captcha",
+      "implementation": "passed",
+      "productionRegistration": "passed",
+      "sourceParityOrBehavior": "passed",
+      "localContract": "passed",
+      "controlledExecution": "darwin-arm64 CloakBrowser 151 对本地验证码页面真实执行",
+      "formalElectronNodeExecution": "pending",
+      "externalSupplier": "not_applicable",
+      "remaining": "待节点正式 UI；macOS Intel/Windows 未测",
+      "evidence": "docs/migration/studio-backend-migration/evidence/b5/captcha-family.json"
+    },
+    {
+      "nodeType": "face_recognition",
+      "implementation": "passed",
+      "productionRegistration": "passed",
+      "sourceParityOrBehavior": "passed",
+      "localContract": "passed",
+      "controlledExecution": "真实本地模型 worker 与 macOS arm64 冻结 worker",
+      "formalElectronNodeExecution": "pending",
+      "externalSupplier": "not_applicable",
+      "remaining": "待节点正式 UI、截屏权限；macOS Intel/Windows 未测",
+      "evidence": "docs/migration/studio-backend-migration/evidence/b5/media-recognition-family.json"
+    },
+    {
+      "nodeType": "image_ocr",
+      "implementation": "passed",
+      "productionRegistration": "passed",
+      "sourceParityOrBehavior": "passed",
+      "localContract": "passed",
+      "controlledExecution": "真实本地模型 worker 与 macOS arm64 冻结 worker",
+      "formalElectronNodeExecution": "pending",
+      "externalSupplier": "not_applicable",
+      "remaining": "待节点正式 UI、截屏权限；macOS Intel/Windows 未测",
+      "evidence": "docs/migration/studio-backend-migration/evidence/b5/media-recognition-family.json"
+    }
+  ],
+  "releaseBoundary": [
+    "本地fixture只核销请求、响应、错误、取消和产物合同，不核销真实商业供应商。",
+    "15个依赖模型或媒体供应商的节点保持external_waiting，获得用户提供的真实模型/媒体凭据后逐供应商执行。",
+    "小助手与真实stdio MCP的darwin-arm64目录包正式UI已通过；22个节点的节点级正式Electron运行仍待完成。",
+    "darwin-arm64以外平台未测，不标记通过。"
+  ],
+  "verification": {
+    "command": "uv run --project apps/backend pytest -q apps/backend/tests/unit/test_model_provider.py apps/backend/tests/unit/workflows/test_model_gateway.py apps/backend/tests/unit/workflows/test_ai_executors.py apps/backend/tests/unit/workflows/test_ai_task_executors.py apps/backend/tests/unit/workflows/test_ai_media_executors.py apps/backend/tests/unit/workflows/test_browser_session_contract.py -k 'rate or timeout or cancel or large or secret or fallback or provider or artifact'",
+    "result": "50 passed, 56 deselected",
+    "covers": "provider error and rate-limit mapping, timeout, cancellation, fallback, secret boundaries, media polling and large result artifacts"
+  }
+}

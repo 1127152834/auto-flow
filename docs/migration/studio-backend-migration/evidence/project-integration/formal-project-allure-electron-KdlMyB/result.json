@@ -1,0 +1,25 @@
+{
+  "evidenceId": "BE-project-allure-formal-electron",
+  "result": "passed",
+  "checkedAt": "2026-09-23T18:36:07.229Z",
+  "gitHead": "10978d1e95f517c35aa5c1d1691113ab8d4ddcf7",
+  "platform": "darwin-arm64",
+  "entry": "packaged-directory",
+  "projectId": "07d8aee7-dc92-41a3-9372-b56636fa7fd4",
+  "workflowId": "7SKGWvLLSYwbpODlR9wU4",
+  "batchId": "1306a151-d515-4a06-8d76-fec7eb551579",
+  "taskId": "5317eb62-39a7-4816-94dd-dce2fd1e2a15",
+  "sawCloakBrowser": false,
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "正式项目 Studio 经真实 UI 配置并保存 Allure 六节点、附件与报告目录",
+    "项目 Allure HTML 报告登记为不可变文件，正式内容接口与 SHA-256 和测试附件对应",
+    "正式项目任务页列出可下载 Allure HTML，未启动 CloakBrowser，临时工作区未触碰用户数据"
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "interaction": "formal Electron mouse/keyboard; API only fixture setup and evidence reads"
+  }
+}

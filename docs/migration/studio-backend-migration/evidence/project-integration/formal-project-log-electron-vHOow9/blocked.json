@@ -1,0 +1,12 @@
+{
+  "checkedAt": "2026-09-23T16:43:55.598Z",
+  "gitHead": "566a00c3123b6281346c07ae19bd59b513c683fd",
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "正式项目 Studio 通过真实 UI 配置并保存页面加载等待与状态检查流程",
+    "项目任务日志按成功级别可检索，导出文件及哈希与节点输出对应"
+  ],
+  "observedEvents": [],
+  "ui": [],
+  "error": "Error: [aria-label=\"筛选日志级别\"] could not select 成功\n    at selectNative (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:1436:9)\n    at async file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:295:7"
+}

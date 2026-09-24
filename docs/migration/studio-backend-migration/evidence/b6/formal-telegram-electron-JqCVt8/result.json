@@ -1,0 +1,48 @@
+{
+  "evidenceId": "BE.notify_telegram.real-execution",
+  "checkedAt": "2026-09-23T10:52:25.067Z",
+  "result": "passed",
+  "gitHead": "d9dd59b380b0abfe36c2e47287a6935b2f769458",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflowId": "j3EmM-Yt58PrUx8OguvSB",
+  "nodeId": "Kwuh3xOZULDgNMIBPBBu2",
+  "runs": [
+    "6b88f4c8-4744-45f6-8ae3-1298d190da09",
+    "74428b93-989a-48fb-89c4-762d398681fb"
+  ],
+  "checks": [
+    "主窗口真实打开 Studio，核对 213 节点与主应用 Profile",
+    "真实 UI 配置、保存、切换并从 SQLite 重开 Telegram 节点",
+    "生产 executor 经真实 httpx HTTPS 校验证书、发送 Bot API JSON 一次；节点日志不泄露 Token",
+    "Bot API 返回 ok=false 时运行失败，节点级错误保留且不重复发送"
+  ],
+  "requests": [
+    {
+      "path": "/bot[redacted]/sendMessage",
+      "body": {
+        "chat_id": "fixture-chat",
+        "text": "项目通知中文正文"
+      }
+    },
+    {
+      "path": "/bot[redacted]/sendMessage",
+      "body": {
+        "chat_id": "fixture-chat",
+        "text": "项目通知中文正文"
+      }
+    }
+  ],
+  "boundaries": {
+    "userDatabaseTouched": false,
+    "workspace": "ephemeral",
+    "transport": "local TLS with hostname and certificate verification; production executor/httpx unchanged",
+    "externalTelegramDelivery": "not tested",
+    "platformPending": "macOS Intel, Windows, frozen package"
+  },
+  "cleanup": {
+    "electronExited": true,
+    "fixturePortClosed": true,
+    "runsTerminalAfterWorkerCleanup": true
+  }
+}

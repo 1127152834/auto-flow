@@ -1,0 +1,47 @@
+{
+  "evidenceId": "BE-B6-024-printer-call",
+  "recordedAt": "2026-09-21",
+  "classification": "原版功能迁入 + AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "reference/WebRPA/backend/app/executors/utility_tools.py#PrinterCallExecutor"
+    ],
+    "license": "LICENSE.WebRPA"
+  },
+  "nodes": ["printer_call"],
+  "implemented": [
+    "保留文件、打印机、份数、彩色/灰度、单双面、方向和纸张规格配置",
+    "保留默认打印机、打印机存在性校验、DEVMODE设置、ShellExecute打印及句柄释放",
+    "pywin32只在Windows安装，非Windows执行时返回原版缺少平台依赖错误",
+    "阻塞的打印机API通过worker线程执行，不阻塞异步调度"
+  ],
+  "adaptations": [
+    "pywin32作为带sys_platform条件的正式运行依赖，避免污染macOS和Linux环境",
+    "原版同步打印调用迁入asyncio.to_thread，worker进程继续承担异常隔离"
+  ],
+  "checks": [
+    {
+      "command": "pytest printer unit, frozen-source differential, production registry and real worker regression",
+      "result": "56 passed",
+      "covers": "字段映射、DEVMODE值、默认/缺失打印机、文件校验、句柄释放、生产注册和worker加载"
+    },
+    {
+      "command": "Ruff and mypy",
+      "result": "passed",
+      "covers": "迁入执行器、注册、测试和Windows可选导入"
+    }
+  ],
+  "boundaries": {
+    "workspace": "pytest temporary directory",
+    "userDatabaseTouched": false,
+    "mockExecutionUsedForBackendEvidence": false,
+    "formalElectronUiTested": false,
+    "nativePrintJobSubmitted": false
+  },
+  "remaining": [
+    "Windows正式包连接真实打印机验证各DEVMODE选项和关联应用的print verb",
+    "正式Studio真实UI中配置、保存、重开并提交隔离测试页打印任务",
+    "macOS与Linux按产品限定显示Windows依赖失败，不标记为原生打印通过"
+  ]
+}

@@ -60,6 +60,8 @@ class InputPromptExecutor(ModuleExecutor):
                     data={"cancelled": True, "timeout": timeout > 0},
                 )
             value, value_type = _convert_input(input_mode, user_input)
+            if input_mode == "password":
+                context.mark_sensitive_use()
             context.set_variable(variable_name, value)
             return ModuleResult(
                 success=True,

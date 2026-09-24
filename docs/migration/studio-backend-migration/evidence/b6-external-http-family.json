@@ -1,0 +1,62 @@
+{
+  "evidenceId": "BE-B6-external-http-family",
+  "recordedAt": "2026-09-21",
+  "classification": "原版功能迁入 + AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "reference/WebRPA/backend/app/executors/advanced.py#ApiRequestExecutor",
+      "reference/WebRPA/backend/app/executors/webhook.py#WebhookExecutor",
+      "reference/WebRPA/backend/app/executors/notify_apprise.py#NotifyWebhookExecutor"
+    ],
+    "license": "LICENSE.WebRPA"
+  },
+  "nodes": [
+    "api_request",
+    "webhook_request",
+    "notify_webhook"
+  ],
+  "implemented": [
+    "保留 API 请求的变量解析、JSON/文本请求体、Cookie、任意 HTTP 状态返回和变量写回语义",
+    "保留 Webhook 请求的 JSON/表单/原文分支、重定向、SSL 开关、响应正文/状态/头/Cookie 变量写回及非 2xx 失败语义",
+    "Webhook 通知直接复用 AutoFlow HTTP 端口，不迁入已排除通知渠道的 Apprise 总线",
+    "所有请求进入同一个 8 MiB 有界、无环境代理注入的异步 HTTP provider；超时与连接错误不回显 URL 或秘密",
+    "三个节点进入生产注册表，可在无需 CloakBrowser 的真实 worker 中执行，停止会终止在途 HTTP 和 worker"
+  ],
+  "checks": [
+    {
+      "command": "uv run --project apps/backend pytest -q apps/backend/tests/unit/workflows/test_external_http_executors.py apps/backend/tests/integration/test_b6_external_http_worker.py apps/backend/tests/unit/workflows/test_executor_registry.py apps/backend/tests/integration/test_workflow_worker_protocol.py",
+      "result": "40 passed",
+      "covers": "字段映射、原版状态语义、本地真实 HTTP 请求、三节点顺序 worker、秘密事件扫描、在途停止及通用 worker 回归"
+    },
+    {
+      "command": "uv run --project apps/backend pytest -q apps/backend/tests/unit/workflows/test_scope_preflight.py apps/backend/tests/migration/test_studio_backend_source_mapping.py -k 'api_request or webhook_request or notify_webhook or production or runnable or scope'",
+      "result": "75 passed, 2 deselected",
+      "covers": "批准范围、源码映射与生产可运行预检"
+    },
+    {
+      "command": "ruff affected files; mypy affected production modules",
+      "result": "passed",
+      "covers": "Python 静态检查"
+    }
+  ],
+  "boundaries": {
+    "service": "local ThreadingHTTPServer over real loopback network",
+    "workspace": "pytest temporary directory",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "environmentProxyUsed": false
+  },
+  "remaining": [
+    "HTTP 代理字段尚未进入这三个节点的冻结前端合同；后续网络族统一处理时不得新增隐藏代理回退",
+    "外网目标不需要专项账号；具体用户服务的可用性由用户配置决定"
+  ],
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b6-http-logs.mjs",
+    "exitCode": 0,
+    "result": "passed",
+    "platform": "darwin-arm64",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-http-logs-electron-xWwmeY/result.json",
+    "covers": "正式Studio真实UI配置并运行 api_request、webhook_request、notify_webhook，真实本地HTTP副作用和结果变量均核验，运行后worker清理"
+  }
+}

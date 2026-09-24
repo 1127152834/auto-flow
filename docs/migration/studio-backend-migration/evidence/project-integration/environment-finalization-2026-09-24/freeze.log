@@ -1,0 +1,51 @@
+
+> backend:build
+> node scripts/build-backend.mjs
+
+Resolved 217 packages in 6ms
+Audited 187 packages in 8ms
+44 INFO: PyInstaller: 6.22.2, contrib hooks: 2026.7
+44 INFO: Python: 3.11.13
+55 INFO: Platform: macOS-26.4.1-arm64-arm-64bit
+55 INFO: Python environment: /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv
+/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/face_recognition_models/__init__.py:7: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import resource_filename
+1375 WARNING: Failed to collect submodules for 'mediapipe.tasks.python.genai.converter' because importing 'mediapipe.tasks.python.genai.converter' raised: ImportError: JAX, Torch, and SentencePiece are required for the LLM conversions. Please run `pip install torch jax sensetencepiece`.
+17372 INFO: Module search paths (PYTHONPATH):
+['/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python311.zip',
+ '/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11',
+ '/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/lib-dynload',
+ '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages',
+ '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/src',
+ '/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/src']
+17574 INFO: Appending 'binaries' from .spec
+17574 INFO: Appending 'datas' from .spec
+17594 INFO: checking Analysis
+17891 INFO: checking PYZ
+17892 INFO: Building PYZ because PYZ-00.toc is non existent
+17892 INFO: Building PYZ (ZlibArchive) /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/build/autoflow-backend/PYZ-00.pyz
+62718 INFO: Building PYZ (ZlibArchive) /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/build/autoflow-backend/PYZ-00.pyz completed successfully.
+62926 INFO: EXE target arch: arm64
+62926 INFO: Code signing identity: None
+62932 INFO: checking PKG
+62932 INFO: Building because /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/build/autoflow-backend/PYZ-00.pyz changed
+62932 INFO: Building PKG (CArchive) autoflow-backend.pkg
+63014 INFO: Building PKG (CArchive) autoflow-backend.pkg completed successfully.
+63015 INFO: Bootloader /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/PyInstaller/bootloader/Darwin-64bit/run
+63015 INFO: checking EXE
+63015 INFO: Rebuilding EXE-00.toc because pkg is more recent
+63015 INFO: Building EXE from EXE-00.toc
+63018 INFO: Copying bootloader EXE to /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/build/autoflow-backend/autoflow-backend
+63020 INFO: Converting EXE to target arch (arm64)
+63107 INFO: Removing signature(s) from EXE
+63164 INFO: Modifying Mach-O image UUID(s) in EXE
+63299 INFO: Appending PKG archive to EXE
+63346 INFO: Fixing EXE headers for code signing
+63353 INFO: Rewriting the executable's macOS SDK version (26.2.0) to match the SDK version of the Python library (14.2.0) in order to avoid inconsistent behavior and potential UI issues in the frozen application.
+63354 INFO: Re-signing the EXE
+63548 INFO: Building EXE from EXE-00.toc completed successfully.
+63632 INFO: checking COLLECT
+63728 INFO: Removing dir /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/dist/autoflow-backend
+64842 INFO: Building COLLECT COLLECT-00.toc
+75110 INFO: Building COLLECT COLLECT-00.toc completed successfully.
+75287 INFO: Build complete! The results are available in: /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/dist

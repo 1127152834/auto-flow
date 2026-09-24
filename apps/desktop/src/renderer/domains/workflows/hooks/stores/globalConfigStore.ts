@@ -1,6 +1,8 @@
 // Source: WebRPA@5ccb900e, store/globalConfigStore.ts; see SOURCE.md for license and adaptation boundaries.
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import {getStudioResourceScope} from '../../api/config'
+import type {components} from '../../../../shared/api/generated'
 
 // 浏览器类型
 export type BrowserType = 'msedge' | 'chrome' | 'chromium' | 'firefox'
@@ -64,22 +66,15 @@ export interface GlobalConfig {
   }
   // WebRPA小助手配置
   aiAssistant: {
-    apiUrl: string         // OpenAI 兼容 API 地址（支持基础地址或完整 chat/completions URL）
-    apiKey: string
-    model: string
+    modelId?: string       // 主应用模型管理中的稳定模型 ID
+    fallbackModelIds?: string[]
     temperature: number
     maxTokens: number
     systemPrompt: string   // 用户追加的系统提示词
     enableTools: boolean   // 启用 Skills 工具调用
     autoApprove: boolean   // 自动批准工具调用（不弹确认）
-    // 单模型能力声明（未配置多模型时生效）：是否多模态/思考模型
-    supportsVision?: boolean   // 该模型支持多模态（图片输入）；不填则按模型名自动判断
-    isThinking?: boolean       // 该模型为深度思考/推理模型（如 DeepSeek-Reasoner）
     // 权限模式：approval=逐项确认(每次操作前都要授权) / smart=智能放行(仅高风险才确认) / full=自由执行(完全不拦)
     permissionMode?: 'approval' | 'smart' | 'full'
-    // ===== 多模型支持 =====
-    models?: AIModelProfile[]   // 多模型档案（同/不同厂商均可）
-    activeModelId?: string      // 当前手动选中的模型 id（聊天处上拉栏切换）
     autoFallback?: boolean      // 某模型请求失败时自动切换其它模型重试
     autoSceneRoute?: boolean    // 按问答场景（多模态/深度思考/普通）自动选模型
     maxHealRounds?: number      // 自愈循环最大轮数（默认 5，复杂问题可调高）
@@ -174,6 +169,13 @@ export interface GlobalConfig {
 
 interface GlobalConfigState {
   config: GlobalConfig
+  projectResources: {
+    scope: string | null
+    defaults?: components['schemas']['ProjectDefaultResources']
+    profileId?: string
+    modelId?: string
+  }
+  syncProjectResourceScope: () => void
   updateSystemConfig: (config: Partial<GlobalConfig['system']>) => void
   updateAIConfig: (config: Partial<GlobalConfig['ai']>) => void
   updateAIScraperConfig: (config: Partial<GlobalConfig['aiScraper']>) => void
@@ -188,6 +190,7 @@ interface GlobalConfigState {
   updateQQConfig: (config: Partial<GlobalConfig['qq']>) => void
   updateFeishuConfig: (config: Partial<GlobalConfig['feishu']>) => void
   updateDisplayConfig: (config: Partial<GlobalConfig['display']>) => void
+  setAssistantModelId: (id: string) => void
   setBrowserProfileId: (id: string) => void
   updateBrowserConfig: (config: Partial<GlobalConfig['browser']>) => void
   resetConfig: () => void
@@ -228,9 +231,6 @@ const defaultConfig: GlobalConfig = {
     azureEndpoint: '',
   },
   aiAssistant: {
-    apiUrl: '',
-    apiKey: '',
-    model: '',
     temperature: 0.7,
     maxTokens: 4000,
     systemPrompt: '',
@@ -307,10 +307,36 @@ const defaultConfig: GlobalConfig = {
   },
 }
 
+function assistantConfig(value: unknown): GlobalConfig['aiAssistant'] {
+  const source = value && typeof value === 'object' ? value as Record<string, unknown> : {}
+  const defaults = defaultConfig.aiAssistant
+  return {
+    ...defaults,
+    modelId: typeof source.modelId === 'string' && source.modelId ? source.modelId : undefined,
+    fallbackModelIds: Array.isArray(source.fallbackModelIds)
+      ? source.fallbackModelIds.filter((item): item is string => typeof item === 'string' && !!item)
+      : undefined,
+    temperature: typeof source.temperature === 'number' ? source.temperature : defaults.temperature,
+    maxTokens: typeof source.maxTokens === 'number' ? source.maxTokens : defaults.maxTokens,
+    systemPrompt: typeof source.systemPrompt === 'string' ? source.systemPrompt : defaults.systemPrompt,
+    enableTools: typeof source.enableTools === 'boolean' ? source.enableTools : defaults.enableTools,
+    autoApprove: typeof source.autoApprove === 'boolean' ? source.autoApprove : defaults.autoApprove,
+    permissionMode: source.permissionMode === 'approval' || source.permissionMode === 'full' ? source.permissionMode : 'smart',
+    autoFallback: source.autoFallback === true,
+    autoSceneRoute: source.autoSceneRoute === true,
+    maxHealRounds: typeof source.maxHealRounds === 'number' ? source.maxHealRounds : 5,
+  }
+}
+
 export const useGlobalConfigStore = create<GlobalConfigState>()(
   persist(
     (set, get) => ({
       config: defaultConfig,
+      projectResources: {scope: null},
+      syncProjectResourceScope: () => {
+        const scope = getStudioResourceScope()
+        if (get().projectResources.scope !== scope) set({projectResources: {scope}})
+      },
 
       updateSystemConfig: (systemConfig) => {
         set({
@@ -339,14 +365,23 @@ export const useGlobalConfigStore = create<GlobalConfigState>()(
         })
       },
 
+      setAssistantModelId: (modelId) => {
+        get().syncProjectResourceScope()
+        if (get().projectResources.scope) {
+          set({projectResources: {...get().projectResources, modelId}})
+        } else {
+          get().updateAIAssistantConfig({modelId})
+        }
+      },
+
       updateAIAssistantConfig: (aiAssistantConfig) => {
         set({
           config: {
             ...get().config,
-            aiAssistant: {
+            aiAssistant: assistantConfig({
               ...(get().config.aiAssistant || defaultConfig.aiAssistant),
               ...aiAssistantConfig,
-            },
+            }),
           },
         })
       },
@@ -441,7 +476,12 @@ export const useGlobalConfigStore = create<GlobalConfigState>()(
         })
       },
 
-      setBrowserProfileId: (id) => set({config:{...get().config,browserProfileId:id}}),
+      setBrowserProfileId: (id) => {
+        get().syncProjectResourceScope()
+        const resources = get().projectResources
+        if (resources.scope) set({projectResources: {...resources, profileId: id}})
+        else set({config: {...get().config, browserProfileId: id}})
+      },
       updateBrowserConfig: (browserConfig) => {
         set({
           config: {
@@ -489,6 +529,7 @@ export const useGlobalConfigStore = create<GlobalConfigState>()(
               canvasWidgets: { ...base.system.canvasWidgets, ...(merged.system.canvasWidgets || {}) },
             }
           }
+          merged.aiAssistant = assistantConfig(merged.aiAssistant)
           set({ config: merged as unknown as GlobalConfig })
           return true
         } catch {
@@ -498,6 +539,7 @@ export const useGlobalConfigStore = create<GlobalConfigState>()(
     }),
     {
       name: 'autoflow-studio-mock-global-config',
+      partialize: (state) => ({config: state.config}),
       // 数据迁移：确保旧数据兼容新结构
       merge: (persistedState, currentState) => {
         const persisted = persistedState as GlobalConfigState
@@ -515,7 +557,7 @@ export const useGlobalConfigStore = create<GlobalConfigState>()(
               },
             },
             aiScraper: persisted?.config?.aiScraper || defaultConfig.aiScraper,
-            aiAssistant: persisted?.config?.aiAssistant || defaultConfig.aiAssistant,
+            aiAssistant: assistantConfig(persisted?.config?.aiAssistant),
             workflow: persisted?.config?.workflow || defaultConfig.workflow,
             shortcuts: persisted?.config?.shortcuts || {},
             database: persisted?.config?.database || defaultConfig.database,

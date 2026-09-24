@@ -1,0 +1,45 @@
+{
+  "evidenceId": "BE-P2-scheduled-tasks-formal-electron",
+  "checkedAt": "2026-09-21T08:15:19.338Z",
+  "gitHead": "4ce8e88c850281cc687eb10149fad371f7e10154",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "buildSha256": "8e67ef808ee06d5f9d628a3cab6e83d71f170b13ec2d83552696f09a4f7c5871",
+  "task": {
+    "id": "e3d9c9fb9ae24461bf5d0af39cf0a588",
+    "workflowId": "P2 计划任务真实流程.json",
+    "profileId": "d250fdac-e31b-4dc5-8c9f-f1657be771df",
+    "trigger": {
+      "type": "time",
+      "repeat_enabled": false,
+      "schedule_type": "interval",
+      "interval_seconds": 12
+    }
+  },
+  "execution": {
+    "id": "cbf79dc2234b4b0fa57036a8bf0d2ccd",
+    "runId": "schedule-cbf79dc2234b4b0fa57036a8bf0d2ccd-41baecb3",
+    "triggerType": "time",
+    "status": "success"
+  },
+  "artifact": {
+    "id": "0ae04bfe-fc78-459b-89f0-c88e6ed6512f",
+    "mimeType": "image/png",
+    "sha256": "f5b357dcd6adca8cc39db76649e6adfe4df37a3e545c9e1c1bb76193d335ac36"
+  },
+  "checks": [
+    "通过真实服务在临时工作区创建主应用 CloakBrowser Profile 与本地工作流",
+    "通过正式 Studio 表单绑定本地工作流和主应用 Profile，计划与下次触发时间持久化",
+    "间隔计划自动触发真实 CloakBrowser，五节点执行结果、日志和 PNG 均已持久化",
+    "正式任务日志界面展示成功记录，用户可停用任务阻止后续触发",
+    "计划运行终态后 CloakBrowser 进程树、worker 与资源占用已清理",
+    "完整重启 Electron 与 sidecar 后，计划、停用状态、运行关联和日志从 SQLite 恢复且未重复执行"
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browser": "real CloakBrowser from main-app Profile; no fallback browser",
+    "interaction": "formal Electron through CDP mouse and keyboard; public API only for fixture setup and evidence reads; no Store or page-internal business function access"
+  }
+}

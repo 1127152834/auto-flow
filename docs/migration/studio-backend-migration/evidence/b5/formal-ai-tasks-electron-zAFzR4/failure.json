@@ -1,0 +1,15 @@
+{
+  "checkedAt": "2026-09-23T07:56:52.946Z",
+  "checks": [
+    "正式项目入口使用主应用第二个模型提供商作为默认值，第一项仍可显式覆盖",
+    "主窗口真实点击打开正式 Studio；动作库为 213，运行配置和模型均来自主应用",
+    "通过画布、属性面板和主应用模型选择器完成八个 AI 数据任务、对话、图片视频生成及视觉节点编排",
+    "正式保存 14 个节点及 13 条连线；模型选择仅保存稳定ID或继承空值，不保存地址或密钥",
+    "模型继承与显式覆盖随真实保存、原生关窗和重开恢复；文档节点未被默认解析改写",
+    "真实worker使用项目默认模型执行十次对话，显式模型仅用于AI对话节点；原始运行快照不写回默认值",
+    "真实 worker 经主应用模型绑定完成 11 次对话和两次媒体生成；受控模型服务的页面截图与视觉坐标协议结果逐项匹配",
+    "图片和视频均通过工作区产物边界落盘、登记并可由正式产物接口读取",
+    "AI视觉与视觉操作使用主应用 Profile 启动 CloakBrowser，真实点击受控页面按钮，运行结束后浏览器和worker均已清理"
+  ],
+  "error": "Error: timed out waiting for assistant inherits project model: undefined\n    at waitFor (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/electron-cdp.mjs:99:9)\n    at async file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b5-ai-tasks.mjs:207:5"
+}

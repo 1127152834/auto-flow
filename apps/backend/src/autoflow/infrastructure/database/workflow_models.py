@@ -76,6 +76,34 @@ class WorkflowCustomModuleRequestRow(Base):
     )
 
 
+class StudioCredentialRow(Base):
+    __tablename__ = "studio_credentials"
+
+    name: Mapped[str] = mapped_column(String(120), primary_key=True)
+    description: Mapped[str] = mapped_column(String, nullable=False)
+    field_names: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    revision: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class StudioCredentialStateRow(Base):
+    __tablename__ = "studio_credential_state"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    revision: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class StudioCredentialCommandRow(Base):
+    __tablename__ = "studio_credential_commands"
+
+    id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    request_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    response: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    http_status: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
 class WorkflowRunRow(Base):
     __tablename__ = "workflow_runs"
 
@@ -127,3 +155,136 @@ class WorkflowDebugCommandRow(Base):
     id: Mapped[str] = mapped_column(String(120), primary_key=True)
     request_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class WorkflowAssistantSessionRow(Base):
+    __tablename__ = "workflow_assistant_sessions"
+
+    id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    project_id: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)
+    title: Mapped[str] = mapped_column(String(120), nullable=False)
+    payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    revision: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class WorkflowAssistantCommandRow(Base):
+    __tablename__ = "workflow_assistant_commands"
+
+    id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    session_id: Mapped[str] = mapped_column(
+        String(128), ForeignKey("workflow_assistant_sessions.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    request_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class WorkflowMcpSettingsRow(Base):
+    __tablename__ = "workflow_mcp_settings"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    revision: Mapped[int] = mapped_column(Integer, nullable=False)
+    secret_ref: Mapped[str] = mapped_column(String(180), nullable=False)
+    config_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class WorkflowMcpCommandRow(Base):
+    __tablename__ = "workflow_mcp_commands"
+
+    id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    request_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    http_status: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class WorkflowRecordingSessionRow(Base):
+    __tablename__ = "workflow_recording_sessions"
+    project_id: Mapped[str | None] = mapped_column(String(36), index=True)
+
+    id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    document_id: Mapped[str | None] = mapped_column(String(128), index=True)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+    active_slot: Mapped[int | None] = mapped_column(Integer, unique=True)
+    last_sequence: Mapped[int] = mapped_column(Integer, nullable=False)
+    byte_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class WorkflowRecordingEventRow(Base):
+    __tablename__ = "workflow_recording_events"
+
+    session_id: Mapped[str] = mapped_column(
+        String(128),
+        ForeignKey("workflow_recording_sessions.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    sequence: Mapped[int] = mapped_column(Integer, primary_key=True)
+    payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    size_bytes: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class WorkflowRecordingReviewRow(Base):
+    __tablename__ = "workflow_recording_reviews"
+    project_id: Mapped[str | None] = mapped_column(String(36), index=True)
+
+    document_id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    revision: Mapped[int] = mapped_column(Integer, nullable=False)
+    auto_wait: Mapped[bool] = mapped_column(nullable=False)
+    events: Mapped[list[dict[str, Any]]] = mapped_column(JSON, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class WorkflowRecordingCommandRow(Base):
+    __tablename__ = "workflow_recording_commands"
+    project_id: Mapped[str | None] = mapped_column(String(36), index=True)
+
+    id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    session_id: Mapped[str] = mapped_column(String(128), nullable=False, index=True)
+    action: Mapped[str] = mapped_column(String(20), nullable=False)
+    request_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+    payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    http_status: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class ScheduledTaskRow(Base):
+    __tablename__ = "workflow_scheduled_tasks"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    workflow_id: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    revision: Mapped[int] = mapped_column(Integer, nullable=False)
+    enabled: Mapped[bool] = mapped_column(nullable=False)
+    is_running: Mapped[bool] = mapped_column(nullable=False)
+    next_execution_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class ScheduledTaskExecutionRow(Base):
+    __tablename__ = "workflow_scheduled_task_executions"
+    __table_args__ = (
+        UniqueConstraint("task_id", "occurrence_key", name="uq_scheduled_task_occurrence"),
+        Index("ix_scheduled_task_execution_queue", "status", "due_at", "created_at"),
+        Index("ix_scheduled_task_execution_started", "task_id", "started_at"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    task_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("workflow_scheduled_tasks.id", ondelete="CASCADE"), nullable=False
+    )
+    occurrence_key: Mapped[str] = mapped_column(String(160), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+    due_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

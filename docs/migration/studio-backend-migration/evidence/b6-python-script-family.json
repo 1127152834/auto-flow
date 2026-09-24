@@ -1,0 +1,78 @@
+{
+  "evidenceId": "BE-B6-010-python-script",
+  "recordedAt": "2026-09-22",
+  "classification": "原版功能迁入 + AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "reference/WebRPA/backend/app/executors/python_script.py#PythonScriptExecutor"
+    ],
+    "license": "LICENSE.WebRPA"
+  },
+  "nodes": [
+    "python_script"
+  ],
+  "implemented": [
+    "保留内容脚本和文件脚本、变量代理、参数、工作目录、输出捕获、返回值及变量回写语义",
+    "脚本stdout和stderr继续逐行进入运行进度，并可分别写入工作流变量",
+    "内容脚本使用worker私有临时目录；成功、失败和停止均清理临时文件",
+    "停止运行通过现有worker进程组清理正在运行的Python子进程，已验证不会发生停止后的延迟文件副作用",
+    "脚本收到敏感运行变量时整次节点结果按敏感派生值处理，避免stdout、stderr和返回值进入持久化事件"
+  ],
+  "adaptations": [
+    "WebRPA的内置解释器固定为Windows Python313/python.exe；AutoFlow使用当前冻结sidecar的sys.executable，避免引入第二套Python分发",
+    "继续使用AutoFlow现有workflow worker进程组和停止清理，不增加脚本守护服务或通用RPC"
+  ],
+  "checks": [
+    {
+      "command": "uv run --project apps/backend pytest -q apps/backend/tests/unit/workflows/test_python_script_executor.py apps/backend/tests/differential/workflows/test_b6_python_script_executor_parity.py apps/backend/tests/unit/workflows/test_executor_registry.py",
+      "result": "18 passed",
+      "covers": "冻结源码成功和异常差分、内容/文件模式、变量与输出、NO_PROXY、敏感值及生产注册"
+    },
+    {
+      "command": "uv run --project apps/backend pytest -q apps/backend/tests/integration/test_b6_python_script_worker.py",
+      "result": "2 passed",
+      "covers": "真实worker执行和后续变量、停止时进程树清理及无迟到副作用"
+    },
+    {
+      "command": "uv run --project apps/backend pytest -q apps/backend/tests/unit/workflows/test_python_script_executor.py apps/backend/tests/differential/workflows/test_b6_python_script_executor_parity.py apps/backend/tests/integration/test_b6_python_script_worker.py apps/backend/tests/integration/test_workflow_worker_protocol.py apps/backend/tests/unit/workflows/test_executor_registry.py apps/backend/tests/unit/workflows/test_scope_preflight.py apps/backend/tests/migration/test_studio_backend_source_mapping.py -k 'python_script or production or runnable or scope or worker'",
+      "result": "107 passed, 13 deselected",
+      "covers": "批准范围、源码映射、生产预检和共享worker生命周期回归"
+    },
+    {
+      "command": "npm --workspace @autoflow/desktop test -- --run src/renderer/domains/workflows/tests/ai-code-assistant-entry.test.tsx src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx src/renderer/domains/workflows/tests/path-tool-entry-wiring.test.tsx src/renderer/domains/workflows/tests/catalog-roundtrip.test.ts src/renderer/domains/workflows/tests/catalog-panel-registration.test.tsx",
+      "result": "506 passed",
+      "covers": "Python编辑器、AI代码入口、路径和条件字段、目录往返及面板注册"
+    },
+    {
+      "command": "backend ruff and mypy",
+      "result": "passed",
+      "covers": "Python静态检查"
+    }
+  ],
+  "boundaries": {
+    "executionLocation": "AutoFlow per-run workflow worker child process",
+    "interpreter": "current managed sidecar Python by default",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "mockExecutionUsedForBackendEvidence": false,
+    "sensitiveValuesPersisted": false
+  },
+  "remaining": [
+    "冻结PyInstaller包内的默认解释器路径和子进程启动需在B6集中打包验收中核销",
+    "Windows平台的自定义解释器路径和进程树停止需实机记录",
+    "冻结 PyInstaller 包内默认解释器路径、Windows 自定义解释器和进程树停止仍需平台实机记录"
+  ],
+  "nonBlockingFindings": [
+    "catalog-field-contract.test.ts在并行更新的能力台账中遇到缺失能力ID并于用例收集阶段失败；其余五个Python前端专项506项通过，该台账问题不由本节点实现引入"
+  ],
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b6-scripts.mjs",
+    "result": "passed",
+    "platform": "darwin-arm64",
+    "entry": "development-build",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-scripts-electron-Ig5LHP/result.json",
+    "covers": "正式 Studio 真实 UI 打开代码编辑器、保存脚本、配置结果变量、关闭重开并运行；真实 worker 的脚本结果、变量/输出和后续日志均核验；临时工作区清理完成",
+    "boundary": "未触碰用户数据库；Windows 打包解释器和平台差异仍单独记录为未实测"
+  }
+}

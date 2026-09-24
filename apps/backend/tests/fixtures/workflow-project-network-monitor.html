@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head><meta charset="utf-8"><title>AutoFlow 项目网络监听受控页面</title></head>
+  <body>
+    <button id="request-orders" type="button">请求订单</button>
+    <output id="request-status">idle</output>
+    <script>
+      const requestOrders = () => fetch('/api/orders?token=fixture-secret', {
+        headers: { Authorization: 'Bearer fixture-secret', 'X-Trace': 'fixture-trace' },
+      })
+      document.querySelector('#request-orders').addEventListener('click', async () => {
+        await requestOrders()
+        document.querySelector('#request-status').textContent = 'done'
+        setTimeout(requestOrders, 2000)
+      })
+    </script>
+  </body>
+</html>

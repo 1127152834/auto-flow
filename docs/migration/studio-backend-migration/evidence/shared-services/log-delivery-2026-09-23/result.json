@@ -1,0 +1,41 @@
+{
+  "evidenceId": "BE.SUPPORT.logs-artifacts.delivery",
+  "status": "verified-macos-arm64-development-and-local-package",
+  "sourceRevision": "WebRPA@5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+  "classification": [
+    "原版简洁日志分类迁入",
+    "AutoFlow必要适配：每SSE连接参数与受控宿主替代Socket全局元数据命令",
+    "兼容保留普通节点success日志查询合同"
+  ],
+  "formalDevelopment": "docs/migration/studio-backend-migration/evidence/b1/formal-electron-34nlyy/result.json",
+  "formalPackaged": "docs/migration/studio-backend-migration/evidence/b1/formal-electron-VTa59T/result.json",
+  "priorDevelopment": "docs/migration/studio-backend-migration/evidence/b1/formal-electron-yGjL2z/result.json",
+  "failedFormal": [
+    "formal-electron-RIYCJ6",
+    "formal-electron-YpG5Mp",
+    "formal-electron-jZ4qpZ"
+  ],
+  "checks": {
+    "backendRegression": 97,
+    "frontendRegression": 46,
+    "actualNetwork": "independent concise/verbose clients, ordered replay, full journal retained",
+    "bufferedCancellation": "red then green; cancelled buffered cursor cannot skip logs",
+    "sourceDifferential": "exact approved subset of original important/trigger node sets",
+    "typecheck": "passed",
+    "eslint": "passed",
+    "ruff": "passed",
+    "mypy": "passed",
+    "openapi": "passed",
+    "structure": "passed",
+    "rendererMainPreloadBuild": "passed",
+    "pyinstaller": "passed in 170 seconds",
+    "frozenStartup": "passed",
+    "unsignedPackage": "passed"
+  },
+  "boundaries": [
+    "Actual CloakBrowser six-node execution from UI; no Store mutations",
+    "No user database or external messaging touched",
+    "Duration still needs actual runtime timing; separately registered",
+    "Intel/Windows untested; overall node ledger unchanged 622/17"
+  ]
+}

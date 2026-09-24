@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -8,10 +9,15 @@ from typing import Any
 import pytest
 
 from autoflow.adapters.events.workflows import StudioEventJournal
-from autoflow.application.workflows.coordinator import WorkflowRunCoordinator
+from autoflow.application.models.service import ModelExecutionBinding
+from autoflow.application.workflows.coordinator import (
+    WorkflowRunCoordinator,
+    WorkflowRunError,
+)
 from autoflow.application.workflows.documents import WorkflowDocumentService
 from autoflow.application.workflows.executors.basic import OpenPageExecutor
 from autoflow.application.workflows.executors.input_prompt import InputPromptExecutor
+from autoflow.application.workflows.executors.js_script import JsScriptExecutor
 from autoflow.application.workflows.executors.production import (
     build_production_executor_registry,
 )
@@ -20,6 +26,7 @@ from autoflow.application.workflows.modules import CustomModuleService
 from autoflow.application.workflows.runs import WorkflowRunService
 from autoflow.application.workflows.runtime import WorkflowRuntime
 from autoflow.domain.kernels.models import InstalledKernel
+from autoflow.domain.models import ProviderConnection
 from autoflow.domain.profiles.models import Profile, ProfileSpec
 from autoflow.domain.workflows.browser import WorkflowWorkerSession
 from autoflow.infrastructure.database.session import (
@@ -111,6 +118,103 @@ def _profile() -> Profile:
 
 
 @pytest.mark.asyncio
+async def test_coordinator_resolves_model_id_without_persisting_secret(tmp_path: Path):
+    database = tmp_path / "model-run.sqlite3"
+    migrate_database(database)
+    sessions = create_session_factory(database)
+    documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(sessions))
+    documents.create(
+        {
+            "id": "ai-flow",
+            "name": "模型流程",
+            "nodes": [
+                {
+                    "id": "ask",
+                    "type": "moduleNode",
+                    "data": {
+                        "moduleType": "ai_chat",
+                        "config": {
+                            "modelId": "model-1",
+                            "fallbackModelIds": ["model-2"],
+                            "userPrompt": "问题",
+                        },
+                    },
+                }
+            ],
+            "edges": [],
+            "variables": [],
+        },
+        client_request_id="create-ai-flow",
+    )
+    repository = SqlAlchemyWorkflowRuns(sessions)
+    runs = WorkflowRunService(repository)
+    workers = FakeWorkers()
+    resolved: list[str] = []
+
+    def resolve(model_id: str) -> ModelExecutionBinding:
+        resolved.append(model_id)
+        return ModelExecutionBinding(
+            model_id,
+            f"key-{model_id}",
+            ProviderConnection(
+                "custom-openai-compatible",
+                "openai-compatible",
+                "https://model.example/v1",
+            ),
+            f"secret-{model_id}",
+        )
+
+    coordinator = WorkflowRunCoordinator(
+        documents=documents,
+        runs=runs,
+        run_repository=repository,
+        runtime=WorkflowRuntime(build_production_executor_registry()),
+        profiles=FakeProfiles(_profile()),
+        installed_kernels=list,
+        resolve_proxy=lambda _profile, _run_id: _none(),
+        read_license=lambda: None,
+        workers=workers,
+        resources=FakeResources(),
+        events=StudioEventJournal(),
+        artifact_root=tmp_path / "workspace",
+        resolve_model=resolve,
+    )
+
+    accepted = await coordinator.start(
+        "ai-flow",
+        {
+            "runId": "ai-run",
+            "documentId": "ai-flow",
+            "profileId": "profile-1",
+        },
+    )
+
+    assert accepted["status"] == "running"
+    assert resolved == ["model-1", "model-2"]
+    assert workers.payloads[0]["modelBindings"] == [
+        {
+            "modelId": "model-1",
+            "modelKey": "key-model-1",
+            "presetId": "custom-openai-compatible",
+            "providerKind": "openai-compatible",
+            "baseUrl": "https://model.example/v1",
+            "secret": "secret-model-1",
+        },
+        {
+            "modelId": "model-2",
+            "modelKey": "key-model-2",
+            "presetId": "custom-openai-compatible",
+            "providerKind": "openai-compatible",
+            "baseUrl": "https://model.example/v1",
+            "secret": "secret-model-2",
+        },
+    ]
+    assert "secret-model" not in json.dumps(
+        runs.get("ai-run").document_snapshot, ensure_ascii=False
+    )
+
+
+@pytest.mark.asyncio
 async def test_coordinator_starts_frozen_document_and_finishes_only_after_cleanup(
     tmp_path: Path,
 ) -> None:
@@ -126,6 +230,7 @@ async def test_coordinator_starts_frozen_document_and_finishes_only_after_cleanu
                 {
                     "id": "open",
                     "type": "moduleNode",
+                    "position": {"x": 120, "y": 80},
                     "data": {
                         "moduleType": "open_page",
                         "config": {"url": "https://example.test"},
@@ -163,6 +268,28 @@ async def test_coordinator_starts_frozen_document_and_finishes_only_after_cleanu
         artifact_root=tmp_path / "workspace",
     )
 
+    with pytest.raises(WorkflowRunError, match="不能同时指定"):
+        await coordinator.start(
+            "workflow-1",
+            {
+                "runId": "invalid-debug-start",
+                "documentId": "document-1",
+                "profileId": "profile-1",
+                "startNodeId": "open",
+                "runToNodeId": "open",
+            },
+        )
+    with pytest.raises(WorkflowRunError, match="运行至此目标不存在"):
+        await coordinator.start(
+            "workflow-1",
+            {
+                "runId": "missing-run-to-target",
+                "documentId": "document-1",
+                "profileId": "profile-1",
+                "runToNodeId": "missing",
+            },
+        )
+
     accepted = await coordinator.start(
         "workflow-1",
         {
@@ -188,6 +315,7 @@ async def test_coordinator_starts_frozen_document_and_finishes_only_after_cleanu
     assert len(workers.payloads) == 1
     payload = workers.payloads[0]
     assert payload["document"]["nodes"][0]["id"] == "open"
+    assert payload["document"]["nodes"][0]["position"] == {"x": 120, "y": 80}
     assert payload["headless"] is True
     assert payload["requiresBrowser"] is True
     assert "startUrl" not in payload
@@ -249,7 +377,8 @@ async def test_coordinator_starts_frozen_document_and_finishes_only_after_cleanu
 @pytest.mark.asyncio
 @pytest.mark.parametrize("via_workflow", [False, True])
 async def test_browser_requirement_propagates_from_frozen_custom_module(
-    tmp_path: Path, via_workflow: bool,
+    tmp_path: Path,
+    via_workflow: bool,
 ) -> None:
     database = tmp_path / "custom-module-browser.sqlite3"
     migrate_database(database)
@@ -283,15 +412,32 @@ async def test_browser_requirement_propagates_from_frozen_custom_module(
     )
     if via_workflow:
         documents.create(
-            {"id": "browser-child", "name": "browser-child", **module.definition["workflow"]},
+            {
+                "id": "browser-child",
+                "name": "browser-child",
+                **module.definition["workflow"],
+            },
             client_request_id="create-child",
         )
         module = modules.update(
             module.id,
-            {"workflow": {"nodes": [{"id": "nested", "type": "moduleNode", "data": {
-                "moduleType": "run_workflow_file", "workflowFile": "browser-child"
-            }}], "edges": []}},
-            expected_revision=1, client_request_id="use-child",
+            {
+                "workflow": {
+                    "nodes": [
+                        {
+                            "id": "nested",
+                            "type": "moduleNode",
+                            "data": {
+                                "moduleType": "run_workflow_file",
+                                "workflowFile": "browser-child",
+                            },
+                        }
+                    ],
+                    "edges": [],
+                }
+            },
+            expected_revision=1,
+            client_request_id="use-child",
         )
     documents.create(
         {
@@ -349,7 +495,10 @@ async def test_browser_requirement_propagates_from_frozen_custom_module(
         ("module-browser-run", "profile-1", "public", "145.0.1")
     ]
     assert workers.payloads[0]["requiresBrowser"] is True
-    assert workers.payloads[0]["customModuleDependencies"][module.id]["revision"] == module.revision
+    assert (
+        workers.payloads[0]["customModuleDependencies"][module.id]["revision"]
+        == module.revision
+    )
     if via_workflow:
         assert "browser-child" in workers.payloads[0]["workflowDependencies"]
 
@@ -470,6 +619,253 @@ async def test_input_command_waits_for_worker_ack_and_is_idempotent(
         {"commandId": "command-1", "success": True, "httpStatus": 200},
         200,
     )
+
+
+@pytest.mark.asyncio
+async def test_js_script_claim_and_result_are_owned_idempotent_commands(
+    tmp_path: Path,
+) -> None:
+    database = tmp_path / "js-script.sqlite3"
+    migrate_database(database)
+    sessions = create_session_factory(database)
+    documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(sessions))
+    documents.create(
+        {
+            "id": "js-flow",
+            "name": "真实脚本",
+            "nodes": [
+                {
+                    "id": "script",
+                    "type": "moduleNode",
+                    "data": {
+                        "moduleType": "js_script",
+                        "config": {"code": "return 2", "resultVariable": "answer"},
+                    },
+                }
+            ],
+            "edges": [],
+            "variables": [{"name": "count", "value": 1}],
+        },
+        client_request_id="create-js-flow",
+    )
+    repository = SqlAlchemyWorkflowRuns(sessions)
+    runs = WorkflowRunService(repository)
+    registry = ExecutorRegistry()
+    registry.register(JsScriptExecutor)
+    workers = FakeWorkers()
+    coordinator = WorkflowRunCoordinator(
+        documents=documents,
+        runs=runs,
+        run_repository=repository,
+        runtime=WorkflowRuntime(registry),
+        profiles=FakeProfiles(_profile()),
+        installed_kernels=list,
+        resolve_proxy=lambda _profile, _run_id: _none(),
+        read_license=lambda: None,
+        workers=workers,
+        resources=FakeResources(),
+        events=StudioEventJournal(),
+        artifact_root=tmp_path / "workspace",
+    )
+    await coordinator.start(
+        "js-flow",
+        {"runId": "js-run", "documentId": "js-flow", "profileId": "profile-1"},
+    )
+    await coordinator.on_worker_event(
+        {
+            "type": "execution:js_script",
+            "runId": "js-run",
+            "workflowId": "js-flow",
+            "nodeId": "script",
+            "executionId": "execution-1",
+            "requestId": "request-1",
+            "code": "return 2",
+            "variables": {"count": 1},
+        }
+    )
+
+    claim = {"requestId": "request-1", "claimId": "studio-1"}
+    assert await coordinator.submit_event_command(
+        "claim-1", "js_script_claim", claim
+    ) == (
+        {
+            "commandId": "claim-1",
+            "success": True,
+            "requestId": "request-1",
+        },
+        200,
+    )
+    assert await coordinator.submit_event_command(
+        "claim-1", "js_script_claim", claim
+    ) == (
+        {
+            "commandId": "claim-1",
+            "success": True,
+            "requestId": "request-1",
+        },
+        200,
+    )
+    assert (await coordinator.submit_event_command(
+        "foreign", "js_script_claim", {"requestId": "request-1", "claimId": "other"}
+    ))[1] == 409
+
+    payload = {
+        **claim,
+        "success": True,
+        "result": 2,
+        "variables": {"count": 2, "notDeclared": 99},
+    }
+    completing = asyncio.create_task(
+        coordinator.submit_event_command("result-1", "js_script_result", payload)
+    )
+    for _ in range(100):
+        if workers.commands:
+            break
+        await asyncio.sleep(0)
+    assert workers.commands == [
+        (
+            "js-run",
+            {"type": "js_script_result", "commandId": "result-1", **payload},
+        )
+    ]
+    await coordinator.on_worker_event(
+        {
+            "type": "execution:command_applied",
+            "runId": "js-run",
+            "workflowId": "js-flow",
+            "commandId": "result-1",
+            "requestId": "request-1",
+        }
+    )
+    assert (await completing)[1] == 200
+    assert coordinator.js_script_state("request-1") == {
+        "requestId": "request-1",
+        "workflowId": "js-flow",
+        "nodeId": "script",
+        "status": "completed",
+        "claimId": "studio-1",
+    }
+    assert await coordinator.submit_event_command(
+        "result-1", "js_script_result", payload
+    ) == await completing
+    assert len(workers.commands) == 1
+
+    await coordinator.on_worker_event(
+        {
+            "type": "execution:tts_request",
+            "runId": "js-run",
+            "workflowId": "js-flow",
+            "nodeId": "script",
+            "executionId": "execution-tts",
+            "requestId": "speech-1",
+            "text": "通知",
+            "lang": "zh-CN",
+            "rate": 1.0,
+            "pitch": 1.0,
+            "volume": 1.0,
+        }
+    )
+    speech_claim = {"requestId": "speech-1", "claimId": "studio-1"}
+    assert (await coordinator.submit_event_command(
+        "speech-claim", "tts_claim", speech_claim
+    ))[1] == 200
+    speech_result = {**speech_claim, "success": True}
+    speaking = asyncio.create_task(
+        coordinator.submit_event_command("speech-result", "tts_result", speech_result)
+    )
+    for _ in range(100):
+        if len(workers.commands) == 2:
+            break
+        await asyncio.sleep(0)
+    await coordinator.on_worker_event(
+        {
+            "type": "execution:command_applied",
+            "runId": "js-run",
+            "workflowId": "js-flow",
+            "commandId": "speech-result",
+            "requestId": "speech-1",
+        }
+    )
+    assert (await speaking)[1] == 200
+    assert coordinator.tts_request_state("speech-1") == {
+        "requestId": "speech-1",
+        "workflowId": "js-flow",
+        "nodeId": "script",
+        "status": "completed",
+        "claimId": "studio-1",
+    }
+
+    await coordinator.on_worker_event(
+        {
+            "type": "execution:desktop_action",
+            "runId": "js-run",
+            "workflowId": "js-flow",
+            "nodeId": "script",
+            "executionId": "execution-platform",
+            "requestId": "platform-1",
+            "action": "clipboard_read_text",
+            "payload": {},
+        }
+    )
+    platform_claim = {"requestId": "platform-1", "claimId": "studio-1"}
+    assert (await coordinator.submit_event_command(
+        "platform-claim", "desktop_action_claim", platform_claim
+    ))[1] == 200
+    platform_result = {**platform_claim, "success": True, "value": "原文"}
+    completing_platform = asyncio.create_task(
+        coordinator.submit_event_command(
+            "platform-result", "desktop_action_result", platform_result
+        )
+    )
+    for _ in range(100):
+        if len(workers.commands) == 3:
+            break
+        await asyncio.sleep(0)
+    assert workers.commands[-1] == (
+        "js-run",
+        {
+            "type": "desktop_action_result",
+            "commandId": "platform-result",
+            **platform_result,
+        },
+    )
+    await coordinator.on_worker_event(
+        {
+            "type": "execution:command_applied",
+            "runId": "js-run",
+            "workflowId": "js-flow",
+            "commandId": "platform-result",
+            "requestId": "platform-1",
+        }
+    )
+    assert (await completing_platform)[1] == 200
+    assert coordinator.desktop_action_state("platform-1") == {
+        "requestId": "platform-1",
+        "workflowId": "js-flow",
+        "nodeId": "script",
+        "status": "completed",
+        "claimId": "studio-1",
+    }
+
+    await coordinator.on_worker_event(
+        {
+            "type": "execution:js_script",
+            "runId": "js-run",
+            "workflowId": "js-flow",
+            "nodeId": "script",
+            "executionId": "execution-2",
+            "requestId": "request-2",
+            "code": "return 3",
+            "variables": {"count": 2},
+        }
+    )
+    await coordinator.on_worker_exit("js-run", 17)
+    assert coordinator.js_script_state("request-2")["status"] == "expired"
+    assert (await coordinator.submit_event_command(
+        "late-claim",
+        "js_script_claim",
+        {"requestId": "request-2", "claimId": "late"},
+    ))[1] == 409
 
 
 async def _none() -> None:

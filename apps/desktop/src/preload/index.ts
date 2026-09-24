@@ -4,14 +4,25 @@ import type { SidecarStatus } from '../main/sidecar/supervisor'
 import type { CopyProxyCredentialsRequest } from '../main/ipc/proxy-credentials'
 import type { KernelRef } from '../main/ipc/kernel-paths'
 import type { SettingsBridge, UiPreferences } from '../shared/settings'
-import type { AutomationStudioBridge, StudioLeaveRequest } from '../shared/automation-studio'
+import type { AutomationStudioBridge, StudioLeaveRequest, StudioOpenContext } from '../shared/automation-studio'
 import type { ExternalLinkBridge } from '../shared/external-links'
 import type { ProjectFileBridge } from '../shared/project-files'
 import type { GoogleSheetsBridge } from '../shared/google-sheets'
 import type { DesktopRuntimeContext } from '../shared/runtime'
+import type { StudioPlatformBridge } from '../shared/studio-platform'
 
 const automationStudioBridge: AutomationStudioBridge = {
-  openAutomationStudio: () => ipcRenderer.invoke('autoflow:open-automation-studio'),
+  setStudioHotkeys: shortcuts => ipcRenderer.invoke('autoflow:studio-hotkeys', shortcuts),
+  onStudioHotkey: handler => {
+    const listener = (_event: Electron.IpcRendererEvent, actionId: unknown) => {
+      if (typeof actionId === 'string') handler(actionId)
+    }
+    ipcRenderer.on('autoflow:studio-hotkey', listener)
+    return () => ipcRenderer.removeListener('autoflow:studio-hotkey', listener)
+  },
+  openAutomationStudio: (context?: StudioOpenContext) => context === undefined
+    ? ipcRenderer.invoke('autoflow:open-automation-studio')
+    : ipcRenderer.invoke('autoflow:open-automation-studio', context),
   onStudioTransitionEnd:handler=>{
     const listener=()=>handler()
     ipcRenderer.on('autoflow:studio-transition-end',listener)
@@ -39,6 +50,7 @@ const projectFileBridge: ProjectFileBridge = {
 }
 
 const googleSheetsBridge: GoogleSheetsBridge = { connectGoogleSheets: (projectId, accountLabel) => ipcRenderer.invoke('autoflow:google-sheets:connect', projectId, accountLabel) }
+const studioPlatformBridge:StudioPlatformBridge={showProjectInteraction:()=>ipcRenderer.invoke('autoflow:show-project-interaction'),chooseWorkflowPath:request=>ipcRenderer.invoke('autoflow:workflow-select-path',request),runStudioPlatformAction:request=>ipcRenderer.invoke('autoflow:studio-platform-action',request)}
 
 const settingsBridge: SettingsBridge = {
   getSettings: () => ipcRenderer.invoke('autoflow:settings:get'),
@@ -60,6 +72,7 @@ contextBridge.exposeInMainWorld('autoflow', {
   ...projectFileBridge,
   ...googleSheetsBridge,
   ...externalLinkBridge,
+  ...studioPlatformBridge,
   getRuntimeContext: (): Promise<DesktopRuntimeContext> => ipcRenderer.invoke('autoflow:runtime-context'),
   onRuntimeContextChanged: (handler: (context: DesktopRuntimeContext) => void) => {
     const listener = (_event: Electron.IpcRendererEvent, context: DesktopRuntimeContext) => handler(context)

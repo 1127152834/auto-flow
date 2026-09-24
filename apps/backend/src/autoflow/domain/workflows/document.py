@@ -57,6 +57,11 @@ class WorkflowDraft:
             not isinstance(workflow_id, str) or not workflow_id.strip()
         ):
             raise _problem("INVALID_DOCUMENT", "工作流 ID 无效", "id")
+        project_id = source.get("projectId")
+        if project_id is not None and (
+            not isinstance(project_id, str) or not project_id.strip() or len(project_id) > 200
+        ):
+            raise _problem("INVALID_DOCUMENT", "项目标识无效", "projectId")
         for transport_key in ("revision", "expectedRevision", "clientRequestId"):
             source.pop(transport_key, None)
 
@@ -155,6 +160,7 @@ class SavedWorkflow:
     revision: int
     created_at: datetime
     updated_at: datetime
+    project_id: str | None = None
 
     def to_payload(self) -> dict[str, Any]:
         payload = WorkflowDraft(
@@ -163,6 +169,8 @@ class SavedWorkflow:
         payload["revision"] = self.revision
         payload["createdAt"] = self.created_at.isoformat()
         payload["updatedAt"] = self.updated_at.isoformat()
+        if self.project_id is not None:
+            payload["projectId"] = self.project_id
         return payload
 
 

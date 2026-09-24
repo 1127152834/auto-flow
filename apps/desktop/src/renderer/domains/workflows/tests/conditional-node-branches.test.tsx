@@ -12,7 +12,7 @@ vi.hoisted(() => {
 })
 
 import { ConfigPanel } from '../components/ConfigPanel'
-import { localWorkflowApi } from '../api'
+import { localWorkflowApi, workflowApi } from '../api'
 import { useWorkflowStore as store } from '../editor-store'
 import { useGlobalConfigStore as globalConfig } from '../hooks/stores/globalConfigStore'
 import type { ModuleType } from '../types/workflow'
@@ -75,16 +75,35 @@ it('NODE.download_file.conditional-ui: swaps selector and direct URL without los
   expect(nodeData(id).downloadMode).toBe('url')
 })
 
-it.each([
-  ['browser', '浏览器抓包', '模糊匹配URL', '过滤类型'],
-  ['system', '全局系统抓包', '模糊匹配IP/进程名', '目标进程名（可选）'],
-  ['proxy', '代理抓包（模拟器/手机）', '模糊匹配URL，如: .m3u8', '代理端口'],
-] as const)('NODE.network_capture.conditional-ui: renders %s mode fields', (mode, option, placeholder, marker) => {
-  const { id } = open('network_capture', { captureMode: mode === 'browser' ? 'system' : 'browser' })
-  choose('抓包模式', option)
-  expect(screen.getByPlaceholderText(placeholder)).toBeDefined()
-  expect(screen.getByText(marker)).toBeDefined()
-  expect(nodeData(id).captureMode).toBe(mode)
+it('NODE.network_capture.conditional-ui: configures approved browser mode only', () => {
+  const { id } = open('network_capture')
+  expect(screen.getByPlaceholderText('模糊匹配URL')).toBeDefined()
+  expect(screen.getByText('过滤类型')).toBeDefined()
+  fireEvent.keyDown(screen.getByRole('combobox', { name: '抓包模式' }), { key: 'ArrowDown' })
+  expect(screen.getByRole('option', { name: '浏览器抓包' })).toBeDefined()
+  expect(screen.queryByRole('option', { name: '全局系统抓包' })).toBeNull()
+  expect(screen.queryByRole('option', { name: '代理抓包（模拟器/手机）' })).toBeNull()
+  expect(nodeData(id).captureMode).toBeUndefined()
+})
+
+it.each(['system', 'proxy'] as const)('NODE.network_capture.conditional-ui: legacy %s mode requires explicit browser selection', (mode) => {
+  const { id } = open('network_capture', { captureMode: mode })
+  expect(screen.getByRole('alert').textContent).toContain('不属于当前 Web 自动化范围')
+  expect(screen.queryByText('目标进程名（可选）')).toBeNull()
+  expect(screen.queryByText('代理端口')).toBeNull()
+  choose('抓包模式', '浏览器抓包')
+  expect(nodeData(id).captureMode).toBe('browser')
+})
+
+it('NODE.network_monitor_wait.timeout-ui: uses seconds and flags old millisecond values', () => {
+  const current = open('network_monitor_wait')
+  expect(screen.getByText('超时时间（秒）')).toBeDefined()
+  expect((document.querySelector('#timeout') as HTMLInputElement).value).toBe('30')
+  current.unmount()
+  const legacy = open('network_monitor_wait', { timeout: 30000 })
+  expect(screen.getByRole('alert').textContent).toContain('30000 改为 30')
+  fireEvent.change(document.querySelector('#timeout')!, { target: { value: '30' } })
+  expect(nodeData(legacy.id).timeout).toBe(30)
 })
 
 it('NODE.set_clipboard.conditional-ui: swaps literal text and image picker branches', () => {
@@ -164,6 +183,20 @@ it('NODE.subflow.conditional-ui: lists group and header definitions and stores s
   expect(nodeData(id)).toMatchObject({ subflowGroupId: headerId, subflowName: '函数子流程' })
 })
 
+it('NODE.subflow_header.entry: creates a callable header from both canvas entry points', () => {
+  store.getState().addNode('subflow_header', { x: 0, y: 0 }, { subflowName: '画布函数' })
+  store.getState().blockInsertNode(null, 'subflow_header', { subflowName: '模块条函数' })
+  const [canvasHeader, blockHeader] = store.getState().nodes
+  expect(canvasHeader.type).toBe('subflowHeaderNode')
+  expect(blockHeader.type).toBe('subflowHeaderNode')
+
+  const { id } = open('subflow')
+  choose('选择子流程', '[函数头] 画布函数')
+  expect(nodeData(id)).toMatchObject({ subflowGroupId: canvasHeader.id, subflowName: '画布函数' })
+  choose('选择子流程', '[函数头] 模块条函数')
+  expect(nodeData(id)).toMatchObject({ subflowGroupId: blockHeader.id, subflowName: '模块条函数' })
+})
+
 it('NODE.run_workflow_file.conditional-ui: loads choices and hides dependent result controls when not waiting', async () => {
   vi.spyOn(localWorkflowApi, 'list').mockResolvedValue({
     success: true,
@@ -178,6 +211,25 @@ it('NODE.run_workflow_file.conditional-ui: loads choices and hides dependent res
   expect(screen.queryByText('回收它产生的变量')).toBeNull()
   expect(screen.queryByText('它失败时中断当前工作流')).toBeNull()
   expect(nodeData(id).waitComplete).toBe(false)
+})
+
+it('NODE.run_workflow_file.project: selects only project workflows by stable id', async () => {
+  window.history.replaceState({}, '', '/studio.html?projectId=project-a')
+  const local = vi.spyOn(localWorkflowApi, 'list')
+  vi.spyOn(workflowApi, 'list').mockResolvedValue({
+    success: true,
+    data: [{ id: 'child-a', name: '项目子流程' }],
+  } as Awaited<ReturnType<typeof workflowApi.list>>)
+  try {
+    const { id } = open('run_workflow_file')
+    await waitFor(() => expect(workflowApi.list).toHaveBeenCalled())
+    fireEvent.click(screen.getByRole('combobox', { name: '要运行的工作流' }))
+    fireEvent.click(await screen.findByRole('option', { name: '项目子流程' }))
+    expect(nodeData(id).workflowFile).toBe('child-a')
+    expect(local).not.toHaveBeenCalled()
+  } finally {
+    window.history.replaceState({}, '', '/studio.html')
+  }
 })
 
 it('NODE.string_replace.conditional-ui: changes the search contract for regular expressions', () => {
@@ -207,6 +259,24 @@ it.each([
   const { id } = open('slider_captcha', { targetDistance: 100 })
   fireEvent.change(screen.getByPlaceholderText('滑动像素距离，支持 {变量名}'), { target: { value } })
   expect(nodeData(id).targetDistance).toBe(expected)
+})
+
+it('NODE.ocr_captcha.source-contract: exposes optional fill and submit branches from the frozen executor', () => {
+  const { id } = open('ocr_captcha')
+  expect(screen.getByText('验证码输入框选择器（可选）')).toBeDefined()
+  expect(screen.getByRole('checkbox', { name: '识别后自动提交' })).toBeDefined()
+  expect(screen.queryByText('提交按钮选择器')).toBeNull()
+  expect(nodeData(id).variableName).toBe('captcha_text')
+  fireEvent.click(screen.getByRole('checkbox', { name: '识别后自动提交' }))
+  expect(screen.getByText('提交按钮选择器')).toBeDefined()
+  expect(nodeData(id).autoSubmit).toBe(true)
+})
+
+it('NODE.slider_captcha.source-contract: exposes the background and gap selectors used by automatic matching', () => {
+  open('slider_captcha')
+  expect(screen.getByText('背景图片选择器（可选）')).toBeDefined()
+  expect(screen.getByText('缺口图片选择器（可选）')).toBeDefined()
+  expect(screen.queryByText('滑轨选择器')).toBeNull()
 })
 
 it.each([
@@ -245,16 +315,18 @@ it('NODE.ai_dedup_semantic.conditional-ui: uses a list input instead of the shar
   expect(screen.queryByText('输入文本')).toBeNull()
 })
 
-it.each(['ai_smart_scraper', 'ai_element_selector'] as const)('NODE.%s.conditional-ui: switches local, cloud and Azure provider fields', (type) => {
-  const { id } = open(type)
+it.each(['ai_smart_scraper', 'ai_element_selector'] as const)('NODE.%s.conditional-ui: consumes only main-app managed models', async (type) => {
+  open(type)
+  expect(await screen.findByText('主应用模型')).toBeDefined()
   expect(screen.queryByText('API地址')).toBeNull()
   expect(screen.queryByText('API Key')).toBeNull()
-  choose('LLM提供商', 'OpenAI')
-  expect(screen.getByPlaceholderText('https://api.openai.com/v1')).toBeDefined()
-  expect(screen.getByText('API Key')).toBeDefined()
-  choose('LLM提供商', 'Azure OpenAI')
-  expect(screen.getByText('Azure Endpoint')).toBeDefined()
-  expect(nodeData(id).llmProvider).toBe('azure')
+  expect(screen.queryByText('Azure Endpoint')).toBeNull()
+})
+
+it('NODE.firecrawl_scrape.conditional-ui: labels waitFor with its source selector semantics', () => {
+  open('firecrawl_scrape')
+  expect(screen.getByText('等待选择器 (可选)')).toBeDefined()
+  expect(screen.getByPlaceholderText('#content-ready，最多等待 5 秒')).toBeDefined()
 })
 
 it.each([
@@ -329,12 +401,15 @@ it('NODE.api_trigger.conditional-ui: hydrates defaults and exposes the POST requ
 })
 
 it.each([
-  ['ai_generate_image', { imageApiKey: 'image-key', imageApiBase: 'https://image.fixture.invalid' }, { apiKey: 'image-key', apiBase: 'https://image.fixture.invalid' }],
-  ['ai_generate_video', { videoApiKey: 'video-key', videoApiBase: 'https://video.fixture.invalid' }, { apiKey: 'video-key', apiBase: 'https://video.fixture.invalid' }],
-] as const)('NODE.%s.conditional-ui: hydrates only its matching global media service', async (type, globalValues, expected) => {
+  ['ai_generate_image', { imageApiKey: 'image-key', imageApiBase: 'https://image.fixture.invalid' }],
+  ['ai_generate_video', { videoApiKey: 'video-key', videoApiBase: 'https://video.fixture.invalid' }],
+] as const)('NODE.%s.conditional-ui: ignores legacy media secrets and uses the main model service', async (type, globalValues) => {
   globalConfig.getState().updateAIConfig(globalValues)
   const { id } = open(type)
-  await waitFor(() => expect(nodeData(id)).toMatchObject(expected))
+  expect(screen.getByText('主应用模型')).toBeDefined()
+  await waitFor(() => expect(nodeData(id).apiKey).toBeUndefined())
+  expect(nodeData(id).apiBase).toBeUndefined()
+  expect(screen.getByText('接口协议')).toBeDefined()
 })
 
 it('NODE.ssh_connect.conditional-ui: hydrates host identity without overriding explicit node values', async () => {

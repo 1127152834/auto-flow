@@ -437,15 +437,25 @@ export function OCRCaptchaConfig({
   return (
     <>
       {renderSelectorInput('imageSelector', '验证码图片选择器', 'img.captcha')}
+      {renderSelectorInput('inputSelector', '验证码输入框选择器（可选）', 'input[name="captcha"]')}
       <div className="space-y-2">
         <Label htmlFor="variableName">存储识别结果到变量</Label>
         <VariableNameInput
-          value={(data.variableName as string) || ''}
+          value={(data.variableName as string) || (data.resultVariable as string) || 'captcha_text'}
           onChange={(v) => onChange('variableName', v)}
           placeholder="存储识别出的验证码"
           isStorageVariable={true}
         />
       </div>
+      <div className="flex items-center gap-2">
+        <Checkbox
+          id="autoSubmit"
+          checked={(data.autoSubmit as boolean) ?? false}
+          onCheckedChange={(checked) => onChange('autoSubmit', checked)}
+        />
+        <Label htmlFor="autoSubmit" className="cursor-pointer">识别后自动提交</Label>
+      </div>
+      {data.autoSubmit === true && renderSelectorInput('submitSelector', '提交按钮选择器', 'button[type="submit"]')}
       <p className="text-xs text-muted-foreground">
         使用OCR技术识别图片验证码中的文字
       </p>
@@ -466,7 +476,8 @@ export function SliderCaptchaConfig({
   return (
     <>
       {renderSelectorInput('sliderSelector', '滑块选择器', '.slider-btn')}
-      {renderSelectorInput('trackSelector', '滑轨选择器', '.slider-track')}
+      {renderSelectorInput('backgroundSelector', '背景图片选择器（可选）', '.captcha-background')}
+      {renderSelectorInput('gapSelector', '缺口图片选择器（可选）', '.captcha-gap')}
       <div className="space-y-2">
         <Label htmlFor="targetDistance">滑动距离</Label>
         <VariableInput
@@ -1564,154 +1575,46 @@ export function RenameFileConfig({ data, onChange }: { data: NodeData; onChange:
 
 // 网络抓包配置
 export function NetworkCaptureConfig({ data, onChange }: { data: NodeData; onChange: (key: string, value: unknown) => void }) {
-  const captureMode = (data.captureMode as string) || 'browser'
-  
-  // 获取本机IP的提示
-  const getProxyTip = () => {
-    const port = (data.proxyPort as number) || 8888
-    return `在模拟器/手机的WiFi设置中配置代理：代理地址填写本机IP，端口填写 ${port}`
-  }
-  
+  const unsupportedMode = typeof data.captureMode === 'string' && data.captureMode !== 'browser'
+
   return (
     <>
       <div className="space-y-2">
         <Label htmlFor="captureMode">抓包模式</Label>
         <Select
           id="captureMode"
-          value={captureMode}
+          value={unsupportedMode ? '' : 'browser'}
           onChange={(e) => onChange('captureMode', e.target.value)}
         >
+          {unsupportedMode && <option value="" disabled>请选择浏览器抓包</option>}
           <option value="browser">浏览器抓包</option>
-          <option value="system">全局系统抓包</option>
-          <option value="proxy">代理抓包（模拟器/手机）</option>
         </Select>
-        <p className="text-xs text-muted-foreground">
-          {captureMode === 'browser' && '监听浏览器页面的网络请求，需要先打开网页'}
-          {captureMode === 'system' && '监控整个系统的网络连接，可按进程/端口过滤'}
-          {captureMode === 'proxy' && '通过HTTP代理抓取模拟器/手机APP的网络请求'}
-        </p>
+        {unsupportedMode ? (
+          <p role="alert" className="text-xs text-danger">原配置的抓包模式不属于当前 Web 自动化范围，请选择浏览器抓包后保存。</p>
+        ) : (
+          <p className="text-xs text-muted-foreground">监听浏览器页面的网络请求，需要先打开网页</p>
+        )}
       </div>
-      
-      {/* 代理抓包模式配置 */}
-      {captureMode === 'proxy' && (
-        <>
-          <div className="space-y-2">
-            <Label htmlFor="proxyPort">代理端口</Label>
-            <NumberInput
-              id="proxyPort"
-              value={(data.proxyPort as number) ?? 8888}
-              onChange={(v) => onChange('proxyPort', v)}
-              defaultValue={8888}
-              min={1024}
-              max={65535}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="filterType">过滤类型</Label>
-            <Select
-              id="filterType"
-              value={(data.filterType as string) || 'all'}
-              onChange={(e) => onChange('filterType', e.target.value)}
-            >
-              <option value="all">全部请求</option>
-              <option value="m3u8">仅m3u8（视频流）</option>
-              <option value="media">仅媒体（视频/音频）</option>
-              <option value="img">仅图片</option>
-            </Select>
-          </div>
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg space-y-2">
-            <p className="text-xs font-medium text-blue-800">代理配置说明</p>
-            <p className="text-xs text-blue-700">{getProxyTip()}</p>
-            <p className="text-xs text-blue-600">
-              MuMu模拟器：设置 → WiFi → 长按已连接网络 → 修改网络 → 高级选项 → 代理 → 手动
-            </p>
-            <p className="text-xs text-blue-600">
-              首次使用需要在模拟器/手机浏览器访问 mitm.it 安装证书以支持HTTPS抓包
-            </p>
-          </div>
-        </>
-      )}
-      
-      {/* 浏览器抓包模式配置 */}
-      {captureMode === 'browser' && (
-        <div className="space-y-2">
-          <Label htmlFor="filterType">过滤类型</Label>
-          <Select
-            id="filterType"
-            value={(data.filterType as string) || 'all'}
-            onChange={(e) => onChange('filterType', e.target.value)}
-          >
-            <option value="all">全部请求</option>
-            <option value="img">仅图片</option>
-            <option value="media">仅媒体（视频/音频）</option>
-          </Select>
-        </div>
-      )}
-      
-      {/* 系统抓包模式配置 */}
-      {captureMode === 'system' && (
-        <>
-          <div className="space-y-2">
-            <Label htmlFor="targetProcess">目标进程名（可选）</Label>
-            <VariableInput
-              value={(data.targetProcess as string) || ''}
-              onChange={(v) => onChange('targetProcess', v)}
-              placeholder="如: chrome.exe，支持模糊匹配"
-            />
-            <p className="text-xs text-muted-foreground">
-              留空则监控所有进程
-            </p>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="targetPorts">目标端口（可选）</Label>
-            <VariableInput
-              value={(data.targetPorts as string) || ''}
-              onChange={(v) => onChange('targetPorts', v)}
-              placeholder="如: 80,443,8080 多个用逗号分隔"
-            />
-            <p className="text-xs text-muted-foreground">
-              留空则监控所有端口，常用: 80(HTTP), 443(HTTPS)
-            </p>
-          </div>
-        </>
-      )}
-      
+      <div className="space-y-2">
+        <Label htmlFor="filterType">过滤类型</Label>
+        <Select id="filterType" value={(data.filterType as string) || 'all'} onChange={(e) => onChange('filterType', e.target.value)}>
+          <option value="all">全部请求</option>
+          <option value="img">仅图片</option>
+          <option value="media">仅媒体（视频/音频）</option>
+        </Select>
+      </div>
       <div className="space-y-2">
         <Label htmlFor="searchKeyword">关键词过滤（可选）</Label>
-        <VariableInput
-          value={(data.searchKeyword as string) || ''}
-          onChange={(v) => onChange('searchKeyword', v)}
-          placeholder={
-            captureMode === 'browser' ? "模糊匹配URL" : 
-            captureMode === 'proxy' ? "模糊匹配URL，如: .m3u8" :
-            "模糊匹配IP/进程名"
-          }
-        />
+        <VariableInput value={(data.searchKeyword as string) || ''} onChange={(v) => onChange('searchKeyword', v)} placeholder="模糊匹配URL" />
       </div>
       <div className="space-y-2">
         <Label htmlFor="captureDuration">抓包时长(秒)</Label>
-        <NumberInput
-          id="captureDuration"
-          value={(data.captureDuration as number) ?? 5}
-          onChange={(v) => onChange('captureDuration', v)}
-          defaultValue={5}
-          min={1}
-          step={0.1}
-        />
+        <NumberInput id="captureDuration" value={(data.captureDuration as number) ?? 5} onChange={(v) => onChange('captureDuration', v)} defaultValue={5} min={1} step={0.1} />
       </div>
       <div className="space-y-2">
         <Label htmlFor="variableName">存储结果到变量</Label>
-        <VariableNameInput
-          value={(data.variableName as string) || ''}
-          onChange={(v) => onChange('variableName', v)}
-          placeholder="存储捕获结果的变量名"
-          isStorageVariable={true}
-        />
-        <p className="text-xs text-muted-foreground">
-          {captureMode === 'browser' && '结果为URL列表'}
-          {captureMode === 'proxy' && '结果为URL列表，可配合循环模块遍历处理'}
-          {captureMode === 'system' && '结果为连接信息列表，包含 remote_ip, remote_port, process 等字段'}
-        </p>
+        <VariableNameInput value={(data.variableName as string) || ''} onChange={(v) => onChange('variableName', v)} placeholder="存储捕获结果的变量名" isStorageVariable={true} />
+        <p className="text-xs text-muted-foreground">结果为URL列表</p>
       </div>
     </>
   )
@@ -4189,6 +4092,7 @@ export function NetworkMonitorStartConfig({ data, onChange }: { data: NodeData; 
 
 // 等待API请求配置
 export function NetworkMonitorWaitConfig({ data, onChange }: { data: NodeData; onChange: (key: string, value: unknown) => void }) {
+  const legacyMilliseconds = typeof data.timeout === 'number' && data.timeout >= 1000
   return (
     <div className="space-y-4">
       <div className="space-y-2">
@@ -4216,15 +4120,16 @@ export function NetworkMonitorWaitConfig({ data, onChange }: { data: NodeData; o
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="timeout">超时时间（毫秒）</Label>
+        <Label htmlFor="timeout">超时时间（秒）</Label>
         <NumberInput
           id="timeout"
-          value={(data.timeout as number) ?? 30000}
+          value={(data.timeout as number) ?? 30}
           onChange={(v) => onChange('timeout', v)}
-          defaultValue={30000}
-          min={1000}
-          step={1000}
+          defaultValue={30}
+          min={1}
+          step={1}
         />
+        {legacyMilliseconds && <p role="alert" className="text-xs text-danger">旧文档中的毫秒值需要改为秒，例如 30000 改为 30；保存前请检查。</p>}
         <p className="text-xs text-muted-foreground">
           等待超过此时间未捕获到请求则失败
         </p>

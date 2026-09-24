@@ -1,6 +1,12 @@
 from __future__ import annotations
 
 from .advanced_browser import ADVANCED_BROWSER_EXECUTORS
+from .ai import AIChatExecutor, AIVisionExecutor
+from .ai_media import AI_MEDIA_EXECUTORS
+from .ai_scraper import AI_SCRAPER_EXECUTORS
+from .ai_tasks import AI_TASK_EXECUTORS
+from .ai_vision_act import AIVisionActExecutor
+from .allure import ALLURE_EXECUTORS
 from .base import ModuleExecutor
 from .basic import (
     ClickElementExecutor,
@@ -9,6 +15,7 @@ from .basic import (
     OpenPageExecutor,
     ScreenshotExecutor,
 )
+from .captcha import CAPTCHA_EXECUTORS
 from .control_variable import CONTROL_VARIABLE_EXECUTORS
 from .custom_module import CustomModuleExecutor
 from .data_structure import (
@@ -28,6 +35,7 @@ from .data_structure import (
     StringSubstringExecutor,
     StringTrimExecutor,
 )
+from .desktop_platform import DESKTOP_PLATFORM_EXECUTORS
 from .dict_advanced import (
     DictDeepCopyExecutor,
     DictFilterExecutor,
@@ -38,7 +46,17 @@ from .dict_advanced import (
     DictMergeExecutor,
     DictSortExecutor,
 )
+from .element_change_trigger import ELEMENT_CHANGE_TRIGGER_EXECUTORS
+from .email_trigger import EMAIL_TRIGGER_EXECUTORS
+from .external_http import EXTERNAL_HTTP_EXECUTORS
+from .face_trigger import FACE_TRIGGER_EXECUTORS
+from .file_watcher import FILE_WATCHER_EXECUTORS
+from .firecrawl import FIRECRAWL_EXECUTORS
+from .gesture_trigger import GESTURE_TRIGGER_EXECUTORS
+from .image_trigger import IMAGE_TRIGGER_EXECUTORS
 from .input_prompt import InputPromptExecutor
+from .input_triggers import INPUT_TRIGGER_EXECUTORS
+from .js_script import JsScriptExecutor
 from .list_advanced import (
     ListCartesianProductExecutor,
     ListChunkExecutor,
@@ -56,6 +74,7 @@ from .list_advanced import (
     ListShuffleExecutor,
     ListUnionExecutor,
 )
+from .logging import LOG_EXECUTORS
 from .math_advanced import (
     MathClampExecutor,
     MathExpExecutor,
@@ -84,14 +103,22 @@ from .math_list_ops import (
     MathRoundExecutor,
     MathSqrtExecutor,
 )
+from .media_recognition import MEDIA_RECOGNITION_EXECUTORS
+from .messaging import MESSAGE_EXECUTORS
 from .network_capture import NetworkCaptureExecutor
 from .network_monitor import (
     NetworkMonitorStartExecutor,
     NetworkMonitorStopExecutor,
     NetworkMonitorWaitExecutor,
 )
+from .network_sharing import NETWORK_SHARING_EXECUTORS
 from .page_load import PageLoadCompleteExecutor, WaitPageLoadExecutor
+from .printer import PRINTER_EXECUTORS
+from .python_script import PythonScriptExecutor
 from .registry import ExecutorRegistry
+from .run_command import RunCommandExecutor
+from .sound_trigger import SOUND_TRIGGER_EXECUTORS
+from .ssh import SSH_EXECUTORS
 from .statistics import (
     MedianExecutor,
     ModeExecutor,
@@ -118,6 +145,8 @@ from .table import (
     TableSetCellExecutor,
 )
 from .table_extract import ExtractTableDataExecutor
+from .text_to_speech import TextToSpeechExecutor
+from .timing_probability import TIMING_PROBABILITY_EXECUTORS
 from .utility_tools import (
     HEXToCMYKExecutor,
     MD5EncryptExecutor,
@@ -140,7 +169,37 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     InputTextExecutor,
     GetElementInfoExecutor,
     ScreenshotExecutor,
+    AIChatExecutor,
+    AIVisionExecutor,
+    AIVisionActExecutor,
+    *AI_MEDIA_EXECUTORS,
+    *AI_TASK_EXECUTORS,
+    *AI_SCRAPER_EXECUTORS,
+    *FIRECRAWL_EXECUTORS,
+    *EXTERNAL_HTTP_EXECUTORS,
+    *EMAIL_TRIGGER_EXECUTORS,
+    *ELEMENT_CHANGE_TRIGGER_EXECUTORS,
+    *FACE_TRIGGER_EXECUTORS,
+    *GESTURE_TRIGGER_EXECUTORS,
+    *FILE_WATCHER_EXECUTORS,
+    *LOG_EXECUTORS,
+    *MESSAGE_EXECUTORS,
+    *NETWORK_SHARING_EXECUTORS,
+    *INPUT_TRIGGER_EXECUTORS,
+    *IMAGE_TRIGGER_EXECUTORS,
+    *SSH_EXECUTORS,
+    *SOUND_TRIGGER_EXECUTORS,
+    *CAPTCHA_EXECUTORS,
+    *MEDIA_RECOGNITION_EXECUTORS,
     InputPromptExecutor,
+    JsScriptExecutor,
+    TextToSpeechExecutor,
+    PythonScriptExecutor,
+    *PRINTER_EXECUTORS,
+    RunCommandExecutor,
+    *DESKTOP_PLATFORM_EXECUTORS,
+    *ALLURE_EXECUTORS,
+    *TIMING_PROBABILITY_EXECUTORS,
     RunWorkflowFileExecutor,
     SubflowExecutor,
     WaitPageLoadExecutor,

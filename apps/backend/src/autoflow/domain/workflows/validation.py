@@ -4,7 +4,8 @@ from copy import deepcopy
 from typing import Any, NoReturn
 
 from .models import WorkflowError, WorkflowIssue
-from .references import is_canonical_uuid
+from .references import is_workflow_id
+from .variables import _CREDENTIAL_REFERENCE
 
 SOURCE_PRODUCT = "WebRPA"
 SOURCE_COMMIT = "5ccb900e8dcf1530aae66f676d87593c416c7ebb"
@@ -94,8 +95,8 @@ def project_document(value: object) -> dict[str, Any]:
         _raise_invalid(issues)
     document = value
     workflow_id = document.get("id")
-    if not is_canonical_uuid(workflow_id):
-        issue("INVALID_WORKFLOW_ID", "工作流标识必须是规范 UUID", ["id"])
+    if not is_workflow_id(workflow_id):
+        issue("INVALID_WORKFLOW_ID", "工作流标识必须是 UUID 或 Studio Nano ID", ["id"])
     source_metadata = document.get("source")
     if source_metadata != {"product": SOURCE_PRODUCT, "commit": SOURCE_COMMIT}:
         issue("INVALID_SOURCE", "工作流来源标识不受支持", ["source"])
@@ -236,6 +237,7 @@ def project_document(value: object) -> dict[str, Any]:
         "content": {
             "id": content["id"],
             "name": content["name"],
+            **{key: deepcopy(content[key]) for key in ("schemaVersion", "projectId") if key in content},
             "nodes": projected_nodes,
             "edges": projected_edges,
             "variables": projected_variables,
@@ -282,6 +284,11 @@ def _project_config(
         for key, item in value.items():
             item_path = [*path, str(key)]
             if key in _SECRET_FIELDS:
+                if isinstance(item, str) and (
+                    match := _CREDENTIAL_REFERENCE.fullmatch(item)
+                ) and match.group(1).strip():
+                    projected[key] = item
+                    continue
                 if item not in ("", None):
                     issue(
                         "SECRET_FIELD_FORBIDDEN",

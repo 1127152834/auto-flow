@@ -1,0 +1,53 @@
+{
+  "evidenceId": "BE-B6-network-sharing-formal-electron",
+  "checkedAt": "2026-09-23T10:28:27.246Z",
+  "result": "passed",
+  "gitHead": "e6e016f5c42440e2a6306fb9ee4f0bdb1446c2af",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflows": [
+    {
+      "workflowId": "OdN7bWbmg_fQWza47-xke",
+      "name": "B6 共享启动正式闭环",
+      "nodes": [
+        "UXID2Y8ws1WXmesWarVPs",
+        "6hq6H4BmiKJo3zdaZuw2P",
+        "v75loLEBsuL-oauzGRc80"
+      ]
+    },
+    {
+      "workflowId": "17QhF_tB62HVUvg9a5K26",
+      "name": "B6 共享停止正式闭环",
+      "nodes": [
+        "9wRqANDxYO25V2bQebNE2",
+        "rw4oZkunknIqeSMUJcBJF",
+        "J95xpCzjppRm4tdHAJHWj"
+      ]
+    }
+  ],
+  "runs": [
+    "ddcd8e6a-f85a-441e-a0c2-65943f2ba2b2",
+    "ce4efa18-c124-43d9-bfdf-c6face567ebb"
+  ],
+  "profileId": "93b79992-2edd-4236-beab-2da2ecda1883",
+  "ports": [
+    60505,
+    60506,
+    60507
+  ],
+  "downloadedBytes": 64,
+  "frameBytes": 157256,
+  "checks": [
+    "主窗口真实点击打开正式 Studio；213 节点和主应用 Profile 均已核对",
+    "B6 共享启动正式闭环：真实界面配置、保存、切换并重开，节点与连线已从 SQLite 恢复",
+    "独立 worker 运行结束后，宿主仍提供文件夹列表、原文下载及真实屏幕 JPEG 帧",
+    "B6 共享停止正式闭环：真实界面配置、保存、切换并重开，节点与连线已从 SQLite 恢复",
+    "通过正式 UI 停止两个文件共享与屏幕共享；三个端口均已关闭"
+  ],
+  "boundaries": {
+    "userDatabaseTouched": false,
+    "workspace": "ephemeral",
+    "interaction": "CDP mouse and keyboard; service APIs only for Profile fixture and post-run evidence",
+    "pending": "Windows/macOS Intel, macOS permission denial, and second LAN device remain separately unverified"
+  }
+}

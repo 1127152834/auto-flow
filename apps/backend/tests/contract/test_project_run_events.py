@@ -136,6 +136,28 @@ def test_failure_artifact_event_is_replayable_without_exposing_storage_details(t
     factory.dispose()
 
 
+def test_user_log_identity_survives_event_replay_without_private_fields(tmp_path):
+    client, _, factory, project, task = prepared(tmp_path)
+    with factory.begin() as session:
+        SqlAlchemyWorkflowRuntimeRepository(session).append_event(
+            {
+                "eventId": str(uuid4()), "runId": task.run_id,
+                "executionGeneration": 0, "kind": "log", "nodeId": "open",
+                "nodeVisitId": "visit", "attempt": 1,
+                "occurredAt": NOW.isoformat(),
+                "payload": {"level": "error", "message": "需要人工复核", "isUserLog": True, "privatePath": "/tmp/secret"},
+            }
+        )
+    path = f"/api/v1/projects/{project.project_id}/tasks/{task.task_id}/events"
+    response = client.get(path, params={"afterSequence": 2})
+    assert response.status_code == 200
+    assert response.json()["items"][0]["payload"] == {
+        "level": "error", "message": "需要人工复核", "isUserLog": True,
+    }
+    assert "/tmp/secret" not in response.text
+    factory.dispose()
+
+
 def test_repeated_cursor_is_empty_and_sse_last_event_id_replays_only_the_gap(tmp_path):
     client, _, factory, project, task = prepared(tmp_path)
     path = f"/api/v1/projects/{project.project_id}/tasks/{task.task_id}/events"

@@ -9,10 +9,13 @@ class FakeWindow extends EventEmitter {
   static instances: FakeWindow[] = []
   destroyed = false
   unsaved = false
+  visible = true
   webContents = Object.assign(new EventEmitter(), { id: 10 + FakeWindow.instances.length, mainFrame: {}, setWindowOpenHandler: vi.fn(), setZoomFactor: vi.fn(), send: vi.fn() })
   loadURL = vi.fn(async () => {})
   loadFile = vi.fn(async () => {})
-  show = vi.fn()
+  show = vi.fn(() => { this.visible = true })
+  hide = vi.fn(() => { this.visible = false })
+  isVisible() { return this.visible }
   focus = vi.fn()
   setTitle = vi.fn()
   restore = vi.fn()
@@ -48,7 +51,7 @@ beforeEach(async () => {
     app.emit('before-quit', event)
     if (!event.preventDefault.mock.calls.length) for (const window of FakeWindow.instances) if (!window.destroyed) window.close()
   })
-  vi.doMock('electron', () => ({ app, BrowserWindow: FakeWindow, ipcMain: { handle: (name: string, handler: (event: DesktopIpcEvent, ...args: unknown[]) => unknown) => handlers.set(name, handler), removeHandler: (name: string) => handlers.delete(name) }, clipboard: {}, shell: { openExternal: vi.fn(async () => {}), openPath: vi.fn(), showItemInFolder: vi.fn() }, dialog: { showErrorBox: vi.fn(), showMessageBoxSync: vi.fn(()=>1) } }))
+  vi.doMock('electron', () => ({ app, BrowserWindow: FakeWindow, globalShortcut: { register: vi.fn(() => true), unregister: vi.fn() }, ipcMain: { handle: (name: string, handler: (event: DesktopIpcEvent, ...args: unknown[]) => unknown) => handlers.set(name, handler), removeHandler: (name: string) => handlers.delete(name) }, clipboard: {}, shell: { openExternal: vi.fn(async () => {}), openPath: vi.fn(), showItemInFolder: vi.fn() }, dialog: { showErrorBox: vi.fn(), showMessageBoxSync: vi.fn(()=>1) } }))
   vi.doMock('./settings/controller', () => ({ SettingsController: class {
     constructor(private options: SettingsControllerOptions) {}
     start = async () => {}
@@ -56,6 +59,7 @@ beforeEach(async () => {
     confirmWorkspace = settings.confirmWorkspace
     restart = settings.restart
     getRuntimeContext = () => context
+    getStatus = () => context.sidecar
     getPublicStatus = () => context.sidecar
     getPreferences = () => context.preferences
     getHostStatus = () => ({ state: 'stopped' })
@@ -98,6 +102,12 @@ it('allows registered Studio runtime reads while protecting mutations and gating
   await expect(invoke('autoflow:sidecar-restart', main)).resolves.toEqual(context.sidecar)
   expect(settings.restart).toHaveBeenCalledOnce()
   expect(JSON.stringify(invoke('autoflow:runtime-context', main))).not.toContain('hostToken')
+
+  context = { ...context, sidecar: { state: 'failed', message: 'sidecar exited with code unknown' } }
+  studio.webContents.send.mockClear()
+  await expect(invoke('autoflow:sidecar-restart', main)).resolves.toEqual(context.sidecar)
+  expect(settings.restart).toHaveBeenCalledTimes(2)
+  expect(studio.webContents.send).not.toHaveBeenCalledWith('autoflow:studio-prepare-leave', expect.anything())
 })
 
 it('switches workspace only after Studio acknowledgement and recreates its isolated window', async () => {
@@ -162,12 +172,27 @@ it('does not shut down the sidecar when the user keeps the unsaved Studio open',
   await vi.waitFor(()=>expect(settings.shutdown).toHaveBeenCalledOnce())
 })
 
-it('keeps Studio alive when the main window closes and permits reuse from its replacement', async () => {
+it('retains the hidden main owner while Studio is open and reuses it on activation', async () => {
   const studio = await openStudio()
   const original = FakeWindow.instances[0]!
   original.close()
   expect(studio.destroyed).toBe(false)
+  expect(original.destroyed).toBe(false)
+  expect(original.isVisible()).toBe(false)
   expect(settings.shutdown).not.toHaveBeenCalled()
+  app.emit('activate')
+  await vi.waitFor(() => expect(original.isVisible()).toBe(true))
+  await invoke('autoflow:open-automation-studio', original)
+  expect(FakeWindow.instances).toHaveLength(2)
+  await invoke('autoflow:settings:preferences', original, {})
+  expect(original.webContents.setZoomFactor).toHaveBeenCalledWith(1.25)
+  expect(studio.webContents.setZoomFactor).toHaveBeenCalledWith(1.25)
+})
+
+it('rejects an unexpectedly destroyed main owner after its replacement is created', async () => {
+  const studio = await openStudio()
+  const original = FakeWindow.instances[0]!
+  original.destroy()
   app.emit('activate')
   await vi.waitFor(() => expect(FakeWindow.instances).toHaveLength(3))
   const replacement = FakeWindow.instances[2]!

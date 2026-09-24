@@ -1,0 +1,58 @@
+{
+  "evidenceId": "BE-project-studio-task-bridge",
+  "scenarioBatches": [
+    {
+      "scenario": "stop",
+      "batchId": "1932cc94-2177-499a-aebf-d6004e6eae88",
+      "taskId": "7c0a11b4-fb2e-4fcf-9752-aaf638c80a9e",
+      "status": "cancelled"
+    },
+    {
+      "scenario": "failure",
+      "batchId": "251d19b0-8a64-4564-a7aa-c978c4cba992",
+      "taskId": "01fe7509-cbc4-4283-840f-4855c43841a5",
+      "status": "failed"
+    },
+    {
+      "scenario": "recovered",
+      "batchId": "8678e9c0-0051-4e19-a754-f9e41790f32d",
+      "taskId": "966a17bb-e12f-4978-bca4-7b0cd403acb8",
+      "status": "succeeded"
+    }
+  ],
+  "checkedAt": "2026-09-23T08:15:06.965Z",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "packageBoundary": null,
+  "buildArtifacts": null,
+  "buildSha256": "08ec32a97ab0e3ae48e73a7778fbe1c46d3a76439d43fe9ad469bd915682aeaf",
+  "projectId": "dd251606-b504-4530-a9a1-c8e7e192ee1b",
+  "workflowId": "IYoLKQFhzDma_2C2rmieu",
+  "profileId": "729a0336-c3d4-4808-b395-8b6ef8a8e44e",
+  "batchId": "3981da33-6c13-4085-9878-3a2c1e3a81cb",
+  "taskId": "60e4a2f4-4ba0-44d7-bea9-14daa720f06e",
+  "checks": [
+    "主应用真实服务在临时工作区创建 CloakBrowser Profile",
+    "正式项目 UI 新建项目，由项目自动化目录进入 Studio",
+    "主窗口通过真实点击打开正式 Studio，Studio 只读取主应用 Profile",
+    "真实凭据库UI保存本次随机临时字段；不记录明文截图",
+    "通过正式新建入口创建空工作流",
+    "通过画布原生右键菜单逐一添加并配置五个节点，没有直接修改 Store",
+    "通过画布连接手柄建立五节点顺序链",
+    "正式保存经真实 HTTP 写入 SQLite，返回修订 1",
+    "正式 Studio 原生关闭重开，恢复五节点后关闭窗口返回项目",
+    "项目受管worker从系统凭据读取字段并真实输入网页密码；页面校验成功，公开任务结果和事件无秘密或私有消息",
+    "项目自动化真实 UI 绑定 Studio 文档和主应用 Profile，批次五节点执行、输出和 PNG 展示通过，浏览器已清理",
+    "项目任务 stop 真实 UI 验收完成，后续节点与进程清理符合预期",
+    "项目任务 failure 真实 UI 验收完成，后续节点与进程清理符合预期",
+    "项目任务 recovered 真实 UI 验收完成，后续节点与进程清理符合预期",
+    "项目任务恢复运行后真实UI删除临时凭据；已保存工作流保留引用，用户数据不受影响"
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browser": "CloakBrowser only",
+    "interaction": "real UI mouse/keyboard; APIs only setup Profile and assert evidence"
+  }
+}

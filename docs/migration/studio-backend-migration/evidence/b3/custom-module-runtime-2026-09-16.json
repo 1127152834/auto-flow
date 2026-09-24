@@ -30,6 +30,7 @@
     "backendCustomModuleFamily": "65 passed；覆盖领域、仓储、八个HTTP入口、冻结源码差分、协调器、真实worker、嵌套依赖和浏览器需求传播",
     "migrationAndSourceMapping": "46 passed；覆盖历史revision升级、唯一head、失败回滚、旧数据保留和来源台账",
     "frontendCustomModuleFamily": "51 passed；覆盖创建、编辑、列表、稳定请求ID、响应丢失恢复和Mock合同",
+    "formalElectron": "passed；正式Studio通过真实UI从当前画布创建模块、声明输出、拖入新流程、真实保存并由生产worker隔离执行；证据：formal-control-flow-electron-GwtmUx/result.json",
     "mypy": "395 source files passed",
     "ruff": "自定义模块及直接集成文件通过",
     "typescript": "passed",
@@ -42,15 +43,11 @@
     "运行记录公开保存模块revision、解析内容和SHA-256摘要；启动后编辑模块不改变本次运行",
     "模块参数在隔离变量域执行，只回传声明输出；敏感参数和敏感输出继续保持敏感标记",
     "跨工作流和嵌套自定义模块依赖递归冻结；16层嵌套允许，17层明确拒绝",
-    "模块内部包含网页节点时，CloakBrowser需求向外层运行传播"
+    "模块内部包含网页节点时，CloakBrowser需求向外层运行传播",
+    "正式Studio从当前画布创建含声明输出的模块，拖入新流程后真实保存并执行；外层结果返回module_output=42，内部事件保留customModule作用域"
   ],
-  "remaining": [
-    "正式Electron中通过真实UI完成模块创建、加入画布、保存重开和执行",
-    "与复杂条件、循环、并行及子流程组合的集中B3验收"
-  ],
+  "remaining": [],
   "notClaimed": [
-    "B3里程碑整体完成",
-    "正式Electron自定义模块验收",
     "macOS Intel或Windows实机结果"
   ],
   "userDatabaseModified": false

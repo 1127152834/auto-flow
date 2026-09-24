@@ -2,8 +2,28 @@
   "schemaRevision": "WebRPA@5ccb900e8dcf1530aae66f676d87593c416c7ebb",
   "coveredModules": [
     "ai_chat",
+    "ai_classify",
+    "ai_dedup_semantic",
+    "ai_element_selector",
+    "ai_extract",
+    "ai_generate_image",
+    "ai_generate_video",
+    "ai_normalize",
+    "ai_route",
+    "ai_sentiment",
+    "ai_smart_scraper",
+    "ai_summarize",
+    "ai_translate",
     "ai_vision",
+    "ai_vision_act",
+    "allure_add_attachment",
+    "allure_add_step",
+    "allure_generate_report",
+    "allure_init",
+    "allure_start_test",
+    "allure_stop_test",
     "api_request",
+    "api_trigger",
     "assert_checkpoint",
     "base64",
     "break_loop",
@@ -11,40 +31,130 @@
     "close_page",
     "condition",
     "continue_loop",
+    "csv_generate",
+    "csv_parse",
+    "dict_deep_copy",
+    "dict_filter",
+    "dict_flatten",
     "dict_get",
+    "dict_get_path",
+    "dict_invert",
     "dict_keys",
+    "dict_map_values",
+    "dict_merge",
     "dict_operation",
+    "dict_sort",
     "download_file",
     "drag_element",
+    "element_change_trigger",
+    "element_exists",
+    "element_visible",
+    "email_trigger",
+    "export_log",
     "extract_table_data",
+    "face_recognition",
+    "face_trigger",
+    "file_watcher_trigger",
+    "firecrawl_crawl",
+    "firecrawl_map",
+    "firecrawl_scrape",
     "foreach",
     "foreach_dict",
+    "gesture_trigger",
+    "get_child_elements",
     "get_clipboard",
     "get_element_info",
+    "get_sibling_elements",
     "get_time",
     "go_back",
     "go_forward",
+    "group",
     "handle_dialog",
+    "hex_to_cmyk",
+    "hotkey_trigger",
     "hover_element",
+    "image_ocr",
+    "image_trigger",
     "increment_decrement",
+    "infinite_loop",
     "inject_javascript",
     "input_prompt",
     "input_text",
     "js_script",
     "json_parse",
+    "list_average",
+    "list_cartesian_product",
+    "list_chunk",
+    "list_count",
+    "list_difference",
+    "list_export",
+    "list_filter",
+    "list_find",
+    "list_flatten",
     "list_get",
+    "list_intersection",
     "list_length",
+    "list_map",
+    "list_max",
+    "list_merge",
+    "list_min",
     "list_operation",
+    "list_remove_empty",
+    "list_reverse",
+    "list_sample",
+    "list_shuffle",
+    "list_slice",
+    "list_sort",
+    "list_sum",
+    "list_to_string_advanced",
+    "list_union",
+    "list_unique",
+    "lock_screen",
     "loop",
+    "math_abs",
+    "math_base_convert",
+    "math_clamp",
+    "math_exp",
+    "math_factorial",
+    "math_floor",
+    "math_gcd",
+    "math_lcm",
+    "math_log",
+    "math_modulo",
+    "math_percentage",
+    "math_permutation",
+    "math_power",
+    "math_random_advanced",
+    "math_round",
+    "math_sqrt",
+    "math_trig",
+    "md5_encrypt",
+    "mouse_trigger",
+    "network_capture",
+    "network_monitor_start",
+    "network_monitor_stop",
+    "network_monitor_wait",
+    "note",
+    "notify_telegram",
+    "notify_webhook",
     "ocr_captcha",
     "open_page",
+    "page_load_complete",
     "play_sound",
     "print_log",
+    "printer_call",
+    "probability_trigger",
     "python_script",
     "random_number",
+    "random_password_generator",
     "refresh_page",
     "regex_extract",
+    "rgb_to_cmyk",
+    "rgb_to_hsv",
     "run_command",
+    "run_workflow_file",
+    "save_image",
+    "scheduled_task",
     "screenshot",
     "scroll_page",
     "select_dropdown",
@@ -52,11 +162,35 @@
     "set_checkbox",
     "set_clipboard",
     "set_variable",
+    "sha_encrypt",
+    "share_file",
+    "share_folder",
+    "shutdown_system",
+    "slider_captcha",
+    "sound_trigger",
+    "ssh_connect",
+    "ssh_disconnect",
+    "ssh_download_file",
+    "ssh_execute_command",
+    "ssh_upload_file",
+    "start_screen_share",
+    "stat_median",
+    "stat_mode",
+    "stat_normalize",
+    "stat_percentile",
+    "stat_standardize",
+    "stat_stdev",
+    "stat_variance",
+    "stop_screen_share",
+    "stop_share",
     "stop_workflow",
+    "string_case",
     "string_concat",
     "string_join",
     "string_replace",
     "string_split",
+    "string_substring",
+    "string_trim",
     "subflow",
     "switch_iframe",
     "switch_tab",
@@ -64,49 +198,149 @@
     "system_notification",
     "table_add_column",
     "table_add_row",
+    "table_clear",
+    "table_delete_row",
     "table_export",
+    "table_get_cell",
+    "table_set_cell",
+    "text_to_speech",
+    "timestamp_converter",
     "upload_file",
+    "url_encode_decode",
     "use_opened_page",
+    "uuid_generator",
     "wait",
     "wait_element",
-    "wait_page_load"
+    "wait_page_load",
+    "webhook_request",
+    "webhook_trigger"
   ],
   "requiredFields": {
     "ai_chat": [
       "userPrompt"
     ],
+    "ai_classify": [
+      "inputText",
+      "categories"
+    ],
+    "ai_dedup_semantic": [
+      "inputList"
+    ],
+    "ai_element_selector": [
+      "url"
+    ],
+    "ai_extract": [
+      "inputText",
+      "fields"
+    ],
+    "ai_generate_image": [
+      "prompt"
+    ],
+    "ai_generate_video": [
+      "prompt"
+    ],
+    "ai_normalize": [
+      "inputText"
+    ],
+    "ai_route": [
+      "inputText",
+      "routes"
+    ],
+    "ai_sentiment": [
+      "inputText"
+    ],
+    "ai_smart_scraper": [
+      "url",
+      "prompt"
+    ],
+    "ai_summarize": [
+      "inputText"
+    ],
+    "ai_translate": [
+      "inputText"
+    ],
     "ai_vision": [
       "userPrompt"
     ],
-    "api_request": [
-      "url"
+    "ai_vision_act": [
+      "instruction"
     ],
-    "base64": [
-      "input"
+    "allure_add_attachment": [
+      "filePath"
+    ],
+    "allure_add_step": [
+      "name"
+    ],
+    "allure_start_test": [
+      "name"
+    ],
+    "api_request": [
+      "requestUrl"
     ],
     "click_element": [
       "selector"
     ],
+    "dict_deep_copy": [
+      "dictVariable"
+    ],
+    "dict_filter": [
+      "dictVariable"
+    ],
+    "dict_flatten": [
+      "dictVariable"
+    ],
     "dict_get": [
+      "dictVariable"
+    ],
+    "dict_get_path": [
       "dictVariable",
-      "key"
+      "path"
+    ],
+    "dict_invert": [
+      "dictVariable"
     ],
     "dict_keys": [
       "dictVariable"
     ],
+    "dict_map_values": [
+      "dictVariable"
+    ],
     "dict_operation": [
-      "dictVariable",
-      "operation"
+      "dictVariable"
+    ],
+    "dict_sort": [
+      "dictVariable"
     ],
     "download_file": [
-      "url"
+      "downloadUrl"
     ],
     "drag_element": [
       "sourceSelector",
       "targetSelector"
     ],
-    "extract_table_data": [
+    "element_change_trigger": [
       "selector"
+    ],
+    "element_exists": [
+      "selector"
+    ],
+    "element_visible": [
+      "selector"
+    ],
+    "extract_table_data": [
+      "tableSelector"
+    ],
+    "file_watcher_trigger": [
+      "watchPath"
+    ],
+    "firecrawl_crawl": [
+      "url"
+    ],
+    "firecrawl_map": [
+      "url"
+    ],
+    "firecrawl_scrape": [
+      "url"
     ],
     "foreach": [
       "listVariable"
@@ -114,17 +348,29 @@
     "foreach_dict": [
       "dictVariable"
     ],
+    "get_child_elements": [
+      "parentSelector"
+    ],
     "get_element_info": [
       "selector"
     ],
+    "hotkey_trigger": [
+      "hotkey"
+    ],
     "hover_element": [
       "selector"
+    ],
+    "image_ocr": [
+      "imagePath"
+    ],
+    "image_trigger": [
+      "imagePath"
     ],
     "increment_decrement": [
       "variableName"
     ],
     "inject_javascript": [
-      "script"
+      "javascriptCode"
     ],
     "input_prompt": [
       "variableName"
@@ -137,89 +383,204 @@
       "code"
     ],
     "json_parse": [
-      "jsonText"
+      "sourceVariable"
+    ],
+    "list_average": [
+      "listVariable"
+    ],
+    "list_chunk": [
+      "listVariable"
+    ],
+    "list_count": [
+      "listVariable"
+    ],
+    "list_export": [
+      "listVariable"
+    ],
+    "list_filter": [
+      "listVariable"
+    ],
+    "list_find": [
+      "listVariable"
+    ],
+    "list_flatten": [
+      "listVariable"
     ],
     "list_get": [
-      "listVariable",
-      "index"
+      "listVariable"
     ],
     "list_length": [
       "listVariable"
     ],
+    "list_map": [
+      "listVariable"
+    ],
+    "list_max": [
+      "listVariable"
+    ],
+    "list_min": [
+      "listVariable"
+    ],
     "list_operation": [
-      "listVariable",
-      "operation"
+      "listVariable"
+    ],
+    "list_remove_empty": [
+      "listVariable"
+    ],
+    "list_reverse": [
+      "listVariable"
+    ],
+    "list_sample": [
+      "listVariable"
+    ],
+    "list_shuffle": [
+      "listVariable"
+    ],
+    "list_slice": [
+      "listVariable"
+    ],
+    "list_sort": [
+      "listVariable"
+    ],
+    "list_sum": [
+      "listVariable"
+    ],
+    "list_to_string_advanced": [
+      "listVariable"
+    ],
+    "list_unique": [
+      "listVariable"
+    ],
+    "math_base_convert": [
+      "fromBase",
+      "toBase"
+    ],
+    "math_permutation": [
+      "n",
+      "r"
+    ],
+    "math_power": [
+      "base",
+      "exponent"
+    ],
+    "notify_telegram": [
+      "botToken",
+      "chatId"
     ],
     "open_page": [
       "url"
     ],
-    "play_sound": [
-      "soundFile"
-    ],
     "print_log": [
       "logMessage"
+    ],
+    "printer_call": [
+      "filePath"
     ],
     "python_script": [
       "scriptContent"
     ],
     "regex_extract": [
-      "text",
+      "inputText",
       "pattern"
     ],
     "run_command": [
       "command"
     ],
+    "save_image": [
+      "selector",
+      "savePath"
+    ],
     "select_dropdown": [
       "selector"
     ],
     "send_email": [
-      "to",
-      "subject",
-      "body"
+      "recipientEmail",
+      "emailSubject",
+      "emailContent"
     ],
     "set_checkbox": [
       "selector"
     ],
     "set_clipboard": [
-      "content"
+      "textContent"
     ],
     "set_variable": [
-      "value"
+      "variableName",
+      "variableValue"
+    ],
+    "share_file": [
+      "filePath"
+    ],
+    "share_folder": [
+      "folderPath"
+    ],
+    "slider_captcha": [
+      "sliderSelector"
+    ],
+    "ssh_connect": [
+      "host",
+      "username",
+      "password"
+    ],
+    "ssh_download_file": [
+      "remotePath",
+      "localPath"
+    ],
+    "ssh_execute_command": [
+      "command"
+    ],
+    "ssh_upload_file": [
+      "localPath",
+      "remotePath"
+    ],
+    "stat_median": [
+      "listVariable"
+    ],
+    "stat_mode": [
+      "listVariable"
+    ],
+    "stat_normalize": [
+      "listVariable"
+    ],
+    "stat_percentile": [
+      "listVariable",
+      "percentile"
+    ],
+    "stat_standardize": [
+      "listVariable"
+    ],
+    "stat_stdev": [
+      "listVariable"
+    ],
+    "stat_variance": [
+      "listVariable"
     ],
     "string_concat": [
-      "values"
+      "string1",
+      "string2"
     ],
     "string_join": [
       "listVariable",
       "separator"
     ],
     "string_replace": [
-      "text",
-      "search",
-      "replace"
+      "inputText",
+      "searchValue",
+      "replaceValue"
     ],
     "string_split": [
-      "text",
+      "inputText",
       "separator"
     ],
     "subflow": [
       "subflowName"
     ],
-    "switch_iframe": [
-      "selector"
-    ],
     "system_notification": [
-      "title",
-      "message"
+      "notifyTitle",
+      "notifyMessage"
     ],
-    "table_add_column": [
-      "columnName"
-    ],
-    "table_add_row": [
-      "rowData"
-    ],
-    "table_export": [
-      "savePath"
+    "text_to_speech": [
+      "text"
     ],
     "upload_file": [
       "selector",
@@ -227,15 +588,73 @@
     ],
     "wait_element": [
       "selector"
+    ],
+    "webhook_request": [
+      "url"
     ]
   },
-  "conditionalRequired": {},
+  "conditionalRequired": {
+    "wait": {
+      "field": "waitType",
+      "default": "time",
+      "map": {
+        "time": [],
+        "selector": [
+          "selector"
+        ],
+        "navigation": []
+      }
+    }
+  },
   "fieldLabels": {
     "ai_chat": {
       "userPrompt": "用户提示词，可用 {var} 引用",
       "systemPrompt": "系统提示词（角色设定）",
       "apiUrl/apiKey/model": "通常已在全局配置预填，留空即可",
       "variableName": "保存 AI 回复的变量"
+    },
+    "ai_classify": {
+      "inputText": "待分类文本",
+      "categories": "候选类别，逗号分隔(≥2个)",
+      "variableName": "存储命中的类别名"
+    },
+    "ai_dedup_semantic": {
+      "inputList": "待去重列表(数组变量或JSON数组,≤300项)",
+      "variableName": "存储去重后数组"
+    },
+    "ai_extract": {
+      "inputText": "待抽取文本（支持{变量}）",
+      "fields": "要抽取的字段：逗号分隔或JSON描述",
+      "variableName": "存储抽取出的JSON对象"
+    },
+    "ai_generate_image": {
+      "prompt": "图片描述"
+    },
+    "ai_normalize": {
+      "inputText": "待规整的杂乱值",
+      "normalizeType": "date/money/phone/number/name/address",
+      "targetFormat": "自定义目标格式(可选)"
+    },
+    "ai_route": {
+      "inputText": "待判断内容",
+      "routes": "分支选项：每行 名称:说明，或JSON {名称:说明}",
+      "variableName": "存储命中的分支名"
+    },
+    "ai_sentiment": {
+      "inputText": "待分析文本",
+      "variableName": "存储 {sentiment,score,confidence,reason}"
+    },
+    "ai_smart_scraper": {
+      "prompt": "对网页内容的提问/抓取目标"
+    },
+    "ai_summarize": {
+      "inputText": "待摘要长文本",
+      "maxWords": "摘要最大字数",
+      "style": "风格(可选,如 要点列表/一句话)"
+    },
+    "ai_translate": {
+      "inputText": "待翻译文本",
+      "targetLang": "目标语言，如 英文/日文/中文"
     },
     "ai_vision": {
       "imageSource": "element/screenshot/url/variable",
@@ -244,11 +663,26 @@
       "imageVariable": "imageSource=variable 时填",
       "userPrompt": "对图片提问"
     },
+    "ai_vision_act": {
+      "instruction": "自然语言描述要操作的屏幕目标，如：右上角的登录按钮",
+      "action": "click(单击)/double(双击)/right(右键)/move(仅移动)/locate(仅定位返回坐标)",
+      "button": "action=click/double 时的鼠标按键：left/right/middle",
+      "variableName": "存储定位坐标 {x,y}"
+    },
+    "allure_add_step": {
+      "name": "步骤名称（历史别名 stepName 仍可用，新工作流请用 name）",
+      "status": "步骤结果，取值：passed / failed / skipped / broken"
+    },
+    "allure_start_test": {
+      "name": "测试用例名称（历史别名 testName 仍可用，新工作流请用 name）",
+      "severity": "严重级别，取值：blocker / critical / normal / minor / trivial"
+    },
     "api_request": {
-      "method": "GET/POST/PUT/DELETE/PATCH",
-      "headers": "请求头（dict）",
-      "body": "请求体（JSON 字符串）",
-      "params": "查询参数（dict）"
+      "requestUrl": "请求 URL,支持 {var}",
+      "requestMethod": "GET / POST / PUT / DELETE / PATCH",
+      "requestHeaders": "请求头(JSON 对象字符串,如 {\"Authorization\":\"Bearer xxx\"})",
+      "requestBody": "请求体(JSON 字符串或表单字符串)",
+      "variableName": "响应 JSON 存到这个变量(后续 json_parse 解析)"
     },
     "assert_checkpoint": {
       "checkType": "variable(变量比较)/element(页面元素)/expression(表达式真值)",
@@ -263,8 +697,7 @@
       "variableName": "存储断言结果布尔值"
     },
     "base64": {
-      "operation": "encode/decode",
-      "input": "输入"
+      "operation": "encode/decode"
     },
     "click_element": {
       "selector": "CSS 选择器或 XPath，例如 #search-btn 或 .submit",
@@ -280,22 +713,45 @@
     "dict_get": {
       "defaultValue": "key 不存在时返回的兜底值"
     },
+    "dict_get_path": {
+      "path": "点路径，如 user.address.city"
+    },
     "dict_operation": {
-      "operation": "set/delete/clear/merge"
+      "dictVariable": "目标字典的变量名",
+      "dictAction": "set(写入键) / delete(删除键) / clear(清空)",
+      "dictKey": "键名",
+      "dictValue": "值(set 用)"
+    },
+    "dict_sort": {
+      "sortBy": "key/value"
     },
     "download_file": {
-      "url": "文件 URL",
+      "downloadUrl": "下载 URL",
+      "downloadMode": "url(直接下载) / trigger(点击触发下载)",
       "savePath": "保存目录",
-      "fileName": "文件名"
+      "fileName": "保存文件名(可空,自动从 URL 取)",
+      "triggerSelector": "trigger 模式下的触发按钮选择器",
+      "variableName": "下载完成后的本地路径存到此变量"
     },
     "drag_element": {
       "sourceSelector": "起点元素",
       "targetSelector": "终点元素"
     },
+    "element_change_trigger": {
+      "selector": "监控的父元素 selector"
+    },
     "extract_table_data": {
-      "selector": "<table> 元素选择器",
-      "headerRow": "第一行是否表头",
-      "resultVariable": "结果变量（数组）"
+      "tableSelector": "表格的 CSS/XPath 选择器(例如 table.data-table)",
+      "headerRow": "表头所在行号(1-based)",
+      "exportToExcel": "True 自动导出到 Excel 文件",
+      "excelPath": "导出路径",
+      "variableName": "表格数据存到此变量"
+    },
+    "face_trigger": {
+      "cameraIndex": "摄像头索引"
+    },
+    "file_watcher_trigger": {
+      "watchPath": "监控的文件夹"
     },
     "foreach": {
       "listVariable": "要遍历的变量名（不带 {}）",
@@ -307,37 +763,50 @@
       "keyVariable": "键变量",
       "valueVariable": "值变量"
     },
+    "gesture_trigger": {
+      "timeout": "超时毫秒"
+    },
+    "get_child_elements": {
+      "parentSelector": "父元素 selector",
+      "childSelector": "可选：进一步过滤子元素的 selector"
+    },
     "get_element_info": {
       "selector": "目标元素选择器",
       "attribute": "text(默认)/value/href/src/innerHTML/data-xxx 等任意属性",
-      "multiple": "true=匹配所有元素返回数组",
       "variableName": "结果变量"
     },
     "get_time": {
-      "format": "时间格式串",
       "variableName": "结果变量"
     },
     "handle_dialog": {
-      "action": "accept/dismiss",
-      "text": "如果是 prompt 框，要输入的文本"
+      "dialogAction": "accept(确定) / dismiss(取消) / prompt(填值后确定)",
+      "promptText": "prompt 模式下要填入的文本",
+      "saveMessage": "True 把弹窗 message 存到此变量名"
+    },
+    "hotkey_trigger": {
+      "hotkey": "快捷键组合，如 Ctrl+Shift+A"
     },
     "hover_element": {
       "selector": "CSS / XPath 选择器",
       "timeout": "等待超时秒"
+    },
+    "image_trigger": {
+      "imagePath": "目标图片"
     },
     "increment_decrement": {
       "operation": "increment/decrement",
       "step": "步长"
     },
     "inject_javascript": {
-      "script": "JS 代码，return 的值会保存到 saveResult 变量",
-      "saveResult": "结果变量名"
+      "javascriptCode": "要执行的 JS 代码字符串",
+      "injectMode": "current(当前页面) / url(指定 URL 的标签页) / index(指定标签页索引)",
+      "saveResult": "True 把 JS return 的值存到 saveResult 指定的变量名"
     },
     "input_prompt": {
       "variableName": "**必填**:输入值会存到这个变量名,后续节点用 {variableName} 引用",
       "promptTitle": "弹窗标题",
       "promptMessage": "弹窗正文(提示用户该输入什么)",
-      "inputMode": "single(单行文本) / multiline(多行) / number(数字) / integer(整数) / password / list(每行一项的列表) / file / folder / checkbox / slider_int / slider_float / select_single / select_multiple",
+      "inputMode": "single(单行) / multiline / number / integer / password / list / file / folder / checkbox / slider_int / slider_float / select_single / select_multiple",
       "defaultValue": "默认填入值",
       "minValue": "数字/滑动条模式下的最小值",
       "maxValue": "数字/滑动条模式下的最大值",
@@ -345,80 +814,100 @@
     },
     "input_text": {
       "selector": "输入框的 CSS / XPath 选择器",
-      "text": "要输入的文本，可用 {变量名} 引用变量",
-      "clear": "输入前是否先清空（默认 true）",
-      "delay": "每个字符的间隔毫秒"
+      "text": "要输入的文本，可用 {变量名} 引用变量"
     },
     "js_script": {
       "code": "JavaScript 代码（return 的值会保存到 resultVariable）"
     },
     "json_parse": {
-      "jsonText": "JSON 字符串（常用 {api_response} 引用）",
-      "resultVariable": "结果变量"
+      "sourceVariable": "JSON 字符串变量名(例如 api_response)",
+      "jsonPath": "JSONPath 表达式,如 $.data.items 或 $.users[0].name",
+      "variableName": "解析结果变量名"
+    },
+    "list_flatten": {
+      "depth": "扁平层数"
     },
     "list_get": {
-      "listVariable": "列表变量",
-      "index": "下标（0-based，-1 = 最后一个）"
+      "listVariable": "列表变量"
     },
     "list_length": {
       "listVariable": "列表变量"
     },
     "list_operation": {
-      "listVariable": "列表变量",
-      "operation": "append/prepend/insert/remove/reverse/clear",
-      "item": "项",
-      "index": "插入索引"
+      "listVariable": "目标列表的变量名",
+      "listAction": "append(尾插) / prepend(头插) / pop(尾出) / shift(头出) / remove(按值移除) / clear",
+      "listValue": "要插入/移除的值(append/prepend/remove 用)",
+      "listIndex": "操作位置索引"
+    },
+    "list_sum": {
+      "listVariable": "数字列表变量名"
     },
     "loop": {
       "loopType": "count(固定次数)/while(条件循环)",
       "loopCount": "循环次数",
       "indexVariable": "当前索引变量名"
     },
-    "ocr_captcha": {
-      "imageSource": "element/path/screenshot"
+    "math_base_convert": {
+      "fromBase": "源进制 2/8/10/16",
+      "toBase": "目标进制"
+    },
+    "math_log": {
+      "base": "底数 e/2/10/任意数字"
+    },
+    "math_permutation": {
+      "n": "总数",
+      "r": "选取数"
     },
     "open_page": {
-      "url": "要打开的网页 URL",
-      "timeout": "页面加载超时（秒），默认 30",
-      "headless": "是否无头模式（在工具栏选有头/无头时使用）"
-    },
-    "play_sound": {
-      "soundFile": "音频路径或 system:beep"
+      "url": "要打开的网页 URL"
     },
     "print_log": {
       "logMessage": "日志正文,可用 {var_name} 引用上游变量,例如 '阶乘 = {factorial_result}'",
       "logLevel": "info / warning / error / success / debug"
     },
+    "printer_call": {
+      "printerName": "打印机名（不填用默认）"
+    },
+    "probability_trigger": {
+      "probability": "百分比 0-100，路径1 概率"
+    },
     "python_script": {
-      "scriptContent": "Python 代码字符串。**重要规则**:(1) 用户代码会被自动包装在 `def _user_script():` 函数里,所以可以也建议使用 `return 值` 把结果回传给 resultVariable;(2) 想读取上游工作流变量,**必须用 `vars.变量名`**(例如 `vars.user_input` 而不是直接 `user_input`);(3) 想写入工作流变量,直接 `vars.变量名 = 值`(脚本结束后整套 vars 会自动 sync 回工作流);(4) 不要写 import 在脚本最顶层用问题,一切照常。",
-      "resultVariable": "脚本 return 的值会写入这个工作流变量,后续节点用 {resultVariable} 引用",
+      "scriptContent": "Python 代码字符串。**重要规则**:(1) 用户代码会被自动包装在 def _user_script(): 函数里,所以使用 `return 值` 把结果回传给 resultVariable;(2) 想读取上游工作流变量,**必须用 `vars.变量名`**(例如 `vars.user_input` 而不是直接 `user_input`);(3) 想写入工作流变量,直接 `vars.变量名 = 值`(脚本结束后整套 vars 会自动 sync 回工作流);",
+      "resultVariable": "脚本 return 的值会写入这个工作流变量",
       "scriptMode": "content(直接写代码) 或 file(从文件读取)",
-      "useBuiltinPython": "True 用内置 Python313;False 用系统 Python",
-      "timeout": "超时秒数",
-      "stdoutVariable": "标准输出 print() 的内容写入此变量",
-      "stderrVariable": "stderr 内容写入此变量",
-      "returnCodeVariable": "进程返回码写入此变量"
+      "useBuiltinPython": "True 使用 AutoFlow 随包 Python；False 可通过 pythonPath 指定已安装的 Python",
+      "timeout": "超时秒数"
     },
     "random_number": {
-      "min": "最小值",
-      "max": "最大值",
-      "isFloat": "是否浮点",
       "variableName": "结果变量"
     },
     "regex_extract": {
-      "text": "源文本",
+      "inputText": "要匹配的文本(支持 {var})",
       "pattern": "正则表达式",
-      "mode": "first/all/match",
-      "groupIndex": "捕获组索引"
+      "extractMode": "first(取第一个) / all(全部匹配)",
+      "variableName": "结果变量名"
     },
     "run_command": {
       "command": "命令字符串",
       "shell": "是否走 shell"
     },
+    "run_workflow_file": {
+      "workflowId": "要运行的工作流 id（在下拉里选择）",
+      "workflowPath": "工作流文件路径（用文件方式指定时填）",
+      "waitComplete": "是否等待它执行完再继续",
+      "collectVariables": "是否回收它产生的变量到当前工作流",
+      "passVariables": "是否把当前变量传给它",
+      "timeout": "超时秒数"
+    },
+    "save_image": {
+      "selector": "<img> 选择器",
+      "savePath": "保存绝对路径"
+    },
+    "scheduled_task": {
+      "scheduleType": "interval/cron/specific"
+    },
     "screenshot": {
-      "fileName": "保存的文件名（可选，默认按时间戳）",
       "selector": "可选：只截某个元素",
-      "fullPage": "是否截整个页面（含滚动区）",
       "variableName": "保存截图路径到变量"
     },
     "scroll_page": {
@@ -428,96 +917,100 @@
     },
     "select_dropdown": {
       "selector": "<select> 选择器",
-      "value": "按 value 选",
-      "label": "按显示文本选",
-      "index": "按索引选"
+      "value": "按 value 选"
     },
     "send_email": {
-      "to": "收件人",
-      "subject": "标题",
-      "body": "正文",
-      "attachments": "附件路径数组"
+      "recipientEmail": "收件人邮箱(多个用逗号分隔)",
+      "emailSubject": "邮件主题",
+      "emailContent": "邮件正文(支持 HTML)",
+      "senderEmail": "发件人邮箱(留空用全局配置)",
+      "authCode": "SMTP 授权码(留空用全局配置)"
     },
     "set_checkbox": {
       "selector": "复选框选择器",
       "checked": "true=勾选，false=取消"
     },
     "set_clipboard": {
-      "content": "要复制的内容（可用 {var}）"
+      "textContent": "要写入剪贴板的文本(支持 {var})",
+      "contentType": "text(文本) / image(图片)",
+      "imagePath": "image 模式下的图片路径"
     },
     "set_variable": {
-      "variableName": "变量名",
-      "value": "值（可用 {其他变量} 引用）",
-      "variableType": "string/number/boolean/array/object"
+      "variableName": "变量名(例如 user_name)",
+      "variableValue": "变量值(支持字符串/数字/布尔/JSON 字面量,也支持 {var} 引用其它变量)"
     },
-    "stop_workflow": {
-      "reason": "停止原因"
+    "shutdown_system": {
+      "delay": "延迟秒数"
+    },
+    "stat_percentile": {
+      "percentile": "分位数 0-100"
     },
     "string_concat": {
-      "values": "要拼接的文本（数组或多个字段）"
+      "string1": "字符串 1",
+      "string2": "字符串 2"
     },
     "string_join": {
       "listVariable": "列表变量名",
       "separator": "连接符"
     },
     "string_replace": {
-      "text": "源文本",
-      "search": "查找的内容",
-      "replace": "替换为",
-      "useRegex": "是否当正则"
+      "inputText": "原文本",
+      "searchValue": "要替换的内容",
+      "replaceValue": "替换后的内容",
+      "replaceAll": "是否替换所有匹配"
     },
     "string_split": {
-      "text": "源文本",
-      "separator": "分隔符"
+      "inputText": "原字符串",
+      "separator": "分隔符,例如 , 或 \\n",
+      "maxSplit": "最多分几段(0=不限)"
     },
     "subflow": {
-      "subflowName": "子流程名",
-      "parameterValues": "传入的参数（dict）"
+      "subflowName": "子流程名"
     },
     "switch_iframe": {
-      "selector": "iframe 元素选择器"
+      "locateBy": "selector(选择器) / index(索引) / name(name 属性)",
+      "iframeSelector": "iframe 的 CSS/XPath 选择器",
+      "iframeIndex": "iframe 的索引(0-based)",
+      "iframeName": "iframe 的 name 属性"
     },
     "switch_tab": {
       "index": "按索引切（0 是第一个标签）",
       "urlMatch": "按 URL 包含切"
     },
     "system_notification": {
-      "title": "标题",
-      "message": "正文",
-      "icon": "info/success/warning/error"
+      "notifyTitle": "通知标题",
+      "notifyMessage": "通知正文",
+      "duration": "显示秒数"
     },
-    "table_add_column": {
-      "columnName": "列名（字符串）",
-      "defaultValue": "新增列的默认值，可以用 `{变量}` 引用工作流变量"
+    "text_to_speech": {
+      "rate": "语速 0.1-10",
+      "volume": "音量 0-1"
     },
-    "table_add_row": {
-      "rowData": "**JSON 字符串格式**！不要传 dict 直接 stringify，必须是 JSON 字符串。键为列名，值为单元格内容，可以用 `{变量}` 引用工作流变量。示例：'{\"姓名\":\"{name}\",\"年龄\":\"{age}\"}'"
-    },
-    "table_export": {
-      "savePath": "导出目录绝对路径（不是文件路径！只是目录），示例 D:\\\\Reports\\\\",
-      "exportFormat": "导出格式：'excel' / 'csv' / 'json'，默认 excel",
-      "fileNamePattern": "可选文件名模式，支持 {date}/{time}/{timestamp} 占位符，示例 'report_{date}'",
-      "sheetName": "Excel sheet 名称，默认'数据'",
-      "variableName": "可选，把生成的完整路径存到此变量"
+    "timestamp_converter": {
+      "operation": "to_timestamp / to_datetime"
     },
     "upload_file": {
       "selector": "<input type=file> 选择器",
       "filePath": "本地文件绝对路径"
     },
-    "use_opened_page": {
-      "urlMatch": "可选：URL 包含此字符串的页面才会被使用"
+    "url_encode_decode": {
+      "operation": "encode/decode"
     },
     "wait": {
-      "seconds": "等待秒数"
+      "waitType": "等待类型：time=固定等待秒数 / selector=等待某元素出现或消失 / navigation=等待页面加载完成",
+      "duration": "time 模式：等待秒数（数字，如 2 表示 2 秒）",
+      "selector": "selector 模式：要等待的元素 CSS 选择器",
+      "state": "selector 模式：visible(默认)/hidden/attached/detached"
     },
     "wait_element": {
-      "selector": "等待出现的元素选择器",
-      "timeout": "最大等待秒数",
-      "state": "visible/attached/hidden/detached"
+      "selector": "等待出现的元素选择器"
     },
     "wait_page_load": {
-      "timeout": "最大等待秒",
-      "state": "load/domcontentloaded/networkidle"
+      "timeout": "最大等待秒"
+    },
+    "webhook_trigger": {
+      "method": "GET/POST",
+      "saveToVariable": "保存请求数据的变量"
     }
   }
 }

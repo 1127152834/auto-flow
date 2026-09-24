@@ -1,5 +1,6 @@
 import { parseServerSentEvents } from '../../../shared/api/events'
 import { studioFetch } from './transport'
+import { getStudioOpenContext, scopeStudioUrl } from './config'
 import type { components } from '../../../shared/api/generated'
 
 type StudioCommandReceipt = components['schemas']['StudioCommandReceipt']
@@ -17,9 +18,21 @@ export class StudioEventClient {
   connected = false
   private listeners = new Map<string, Set<Listener>>()
   private controller = new AbortController()
+  private connection: AbortController | undefined
+  private verboseLog: boolean
   private sequence = 0
   private retry: ReturnType<typeof setTimeout> | undefined
-  constructor(private baseUrl: string) { queueMicrotask(() => void this.listen()) }
+  private readonly projectId = getStudioOpenContext().projectId
+  constructor(private baseUrl: string, options: { verboseLog?: boolean } = {}) {
+    this.verboseLog = options.verboseLog ?? true
+    queueMicrotask(() => void this.listen())
+  }
+  setVerboseLog(enabled: boolean) {
+    if (this.verboseLog === enabled || this.controller.signal.aborted) return
+    this.verboseLog = enabled
+    // Change only this stream; keep acknowledged cursor and in-flight commands.
+    this.connection?.abort()
+  }
   on(event: string, listener: Listener) {
     if (!this.listeners.has(event)) this.listeners.set(event, new Set())
     this.listeners.get(event)!.add(listener)
@@ -39,7 +52,7 @@ export class StudioEventClient {
     return this.sendCommand(commandId, event, data)
   }
   async queryCommand(commandId: string): Promise<StudioCommandLookup> {
-    const response = await studioFetch(`${this.baseUrl}/api/events/commands/${encodeURIComponent(commandId)}`, { signal: this.controller.signal })
+    const response = await studioFetch(scopeStudioUrl(`${this.baseUrl}/api/events/commands/${encodeURIComponent(commandId)}`, this.projectId), { signal: this.controller.signal })
     const result: unknown = await response.json()
     if (!response.ok || !isCommandReceipt(result, commandId)
       || typeof result.httpStatus !== 'number' || !Number.isInteger(result.httpStatus) || result.httpStatus < 200 || result.httpStatus > 599) {
@@ -50,7 +63,7 @@ export class StudioEventClient {
   private async sendCommand(commandId: string, event: string, data: unknown): Promise<StudioCommandReceipt> {
     const interrupted = { commandId, success: false, status: 'unconfirmed', error: '连接已中断，命令结果尚未确认' }
     try {
-      const response = await studioFetch(`${this.baseUrl}/api/events/commands`, {
+      const response = await studioFetch(scopeStudioUrl(`${this.baseUrl}/api/events/commands`, this.projectId), {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ commandId, event, data }), signal: this.controller.signal,
       })
@@ -96,15 +109,28 @@ export class StudioEventClient {
   private async listen() {
     if (this.controller.signal.aborted) return
     const connection = new AbortController()
+    this.connection = connection
+    const verboseLog = this.verboseLog
     const abortConnection = () => connection.abort()
     this.controller.signal.addEventListener('abort', abortConnection, { once: true })
     try {
-      const response = await studioFetch(`${this.baseUrl}/api/events/stream?afterSeq=${this.sequence}`, { signal: connection.signal })
-      if (!response.ok || !response.body) throw new Error('Studio event stream unavailable')
+      const query = new URLSearchParams({ afterSeq: String(this.sequence), verboseLog: String(verboseLog) })
+      if (this.projectId) query.set('projectId', this.projectId)
+      const response = await studioFetch(`${this.baseUrl}/api/events/stream?${query}`, { signal: connection.signal })
+      if (!response.ok || !response.body) {
+        if (response.status === 409) {
+          const payload: unknown = await response.json().catch(() => null)
+          if (payload && typeof payload === 'object' && !Array.isArray(payload)
+            && 'error' in payload && payload.error && typeof payload.error === 'object' && !Array.isArray(payload.error)
+            && 'code' in payload.error && payload.error.code === 'EVENT_CURSOR_AHEAD') this.sequence = 0
+        }
+        throw new Error('Studio event stream unavailable')
+      }
       this.connected = true
       this.dispatch('connect')
       for await (const event of parseServerSentEvents(response.body)) {
         if (this.controller.signal.aborted) return
+        if (connection.signal.aborted) break
         const sequence = Number(event.id)
         if (!Number.isSafeInteger(sequence) || sequence < 1) throw new Error('Invalid Studio event sequence')
         if (sequence <= this.sequence) continue
@@ -114,14 +140,15 @@ export class StudioEventClient {
       }
     } catch (error) {
       if (this.controller.signal.aborted) return
-      this.dispatch('connect_error', error)
+      if (verboseLog === this.verboseLog) this.dispatch('connect_error', error)
     } finally {
       connection.abort()
+      this.connection = undefined
       this.controller.signal.removeEventListener('abort', abortConnection)
     }
     this.connected = false
     this.dispatch('disconnect', 'stream interrupted; awaiting replay')
-    if (!this.controller.signal.aborted) this.retry = setTimeout(() => void this.listen(), 1000)
+    if (!this.controller.signal.aborted) this.retry = setTimeout(() => void this.listen(), verboseLog === this.verboseLog ? 1000 : 0)
   }
   disconnect() {
     clearTimeout(this.retry)

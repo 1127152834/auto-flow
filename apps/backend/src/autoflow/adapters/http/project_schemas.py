@@ -128,6 +128,14 @@ class TaskResourceLocator(ApiModel):
     task_id: str
 
 
+class WorkflowInteractionResourceLocator(ApiModel):
+    type: Literal["workflowInteraction"]
+    project_id: str
+    task_id: str
+    request_id: str
+    event: Literal["input_prompt_result", "js_script_claim", "js_script_result"]
+
+
 class SyncResourceLocator(ApiModel):
     type: Literal["sync"]
     project_id: str
@@ -267,6 +275,7 @@ class ProjectOperationView(ApiModel):
         "stopBatch",
         "forceStopBatch",
         "followUpBatch",
+        "workflowInteraction",
         "createTable",
         "updateTable",
         "mutateField",
@@ -310,6 +319,7 @@ class ProjectOperationView(ApiModel):
         | StatusResourceLocator
         | RecordResourceLocator
         | TaskResourceLocator
+        | WorkflowInteractionResourceLocator
         | SheetsConnectionResourceLocator,
         Field(discriminator="type"),
     ]

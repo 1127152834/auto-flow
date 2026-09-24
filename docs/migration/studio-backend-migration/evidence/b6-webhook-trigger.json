@@ -1,0 +1,71 @@
+{
+  "evidenceId": "BE-B6-016-webhook-trigger",
+  "recordedAt": "2026-09-22",
+  "classification": "原版功能迁入 + AutoFlow必要适配 + 已批准安全增强",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "reference/WebRPA/backend/app/executors/trigger.py#WebhookTriggerExecutor",
+      "reference/WebRPA/backend/app/services/trigger_manager.py#TriggerManager",
+      "reference/WebRPA/backend/app/api/triggers.py#trigger_webhook"
+    ],
+    "license": "LICENSE.WebRPA"
+  },
+  "nodes": [
+    "webhook_trigger"
+  ],
+  "implemented": [
+    "保留GET、POST、PUT、DELETE和ANY方法、无限或有限等待、请求数据变量及参数自动展开语义",
+    "保留请求头和查询参数验证、自定义JSON响应正文与状态码、完成和超时注销语义",
+    "外部Webhook使用前端既有/api/triggers/webhook/{webhookId}地址，不要求调用方持有sidecar实例令牌",
+    "sidecar通过现有worker命令通道把请求精确投递到唯一待处理节点，收到worker确认后才向调用方返回成功",
+    "错误验证不消费等待；节点完成、超时、停止或worker退出后入口立即注销",
+    "验证规则值只驻留sidecar内存，持久化日志和SSE仅记录字段名；Authorization、Cookie和API密钥类请求头不写入工作流变量",
+    "外部请求体以流式1 MiB上限读取，避免未认证入口无界占用内存"
+  ],
+  "adaptations": [
+    "原版进程内全局TriggerManager改为AutoFlow sidecar到独立worker的受确认命令投递，服从运行归属、停止和进程清理边界",
+    "修复原版非打包路由先过滤Authorization再执行请求头验证导致验证永远失败的问题：使用原始头验证，过滤后再交给工作流",
+    "修复原版非打包路径忽略自定义HTTP响应的问题，按Studio已迁入的配置合同返回正文和状态码",
+    "同一运行中重复Webhook ID明确失败，避免并行分支静默覆盖等待者"
+  ],
+  "checks": [
+    {
+      "command": "pytest webhook frozen-source differential, executor unit, formal sidecar HTTP contract, registry and worker protocol",
+      "result": "52 passed",
+      "covers": "原版配置和结果差分、真实进程等待/恢复、自定义响应、无sidecar令牌调用、验证拒绝、敏感值扫描、完成和停止注销"
+    },
+    {
+      "command": "pytest coordinator, workflow run API, schema and scope regressions",
+      "result": "94 passed; 2 unrelated schema parity failures",
+      "covers": "运行协调、完整workflow HTTP API和批准范围；失败来自正式应用额外注册MCP路由但schema-only导出未注册，与Webhook变更无关"
+    },
+    {
+      "command": "Ruff and mypy",
+      "result": "passed",
+      "covers": "执行器、domain port、worker命令、协调器、HTTP路由和测试"
+    }
+  ],
+  "boundaries": {
+    "workspace": "pytest isolated tmp_path",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "mockExecutionUsedForBackendEvidence": false,
+    "formalElectronUiTested": false,
+    "unauthenticatedSurface": "/api/triggers/webhook/{webhookId} only; quiesce gate remains active"
+  },
+  "remaining": [
+    "OpenAPI正式应用与schema-only导出仍有既存MCP路由装配差异，需由MCP功能块负责人核销",
+    "平台外部网络可达性按正式打包和防火墙环境分别实测",
+    "正式打包入口和外部防火墙可达性仍需平台专项；Webhook 认证/验证错误继续由后端合同测试覆盖"
+  ],
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b6-webhook-trigger.mjs",
+    "result": "passed",
+    "platform": "darwin-arm64",
+    "entry": "development-build",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-webhook-trigger-electron-Su8cY3/result.json",
+    "covers": "正式 Studio 真实 UI 生成并保存 webhookId，运行后由本地 loopback HTTP 客户端 POST /api/triggers/webhook/{id}，响应 200，worker 继续后续日志并清理",
+    "boundary": "无外部网络和用户数据库；正式打包入口与外部防火墙可达性单独记录"
+  }
+}

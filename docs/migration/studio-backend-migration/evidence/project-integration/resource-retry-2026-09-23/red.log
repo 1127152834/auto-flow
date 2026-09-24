@@ -1,0 +1,203 @@
+FFF...                                                                   [100%]
+=================================== FAILURES ===================================
+_ test_same_request_returns_accepted_run_without_resolving_changed_resources[profile-config] _
+
+retry_harness = <test_run_resource_retry.RetryHarness object at 0x10a871150>
+mutation = 'profile-config'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("mutation", ["profile-config", "model-secret", "model-disabled"])
+    async def test_same_request_returns_accepted_run_without_resolving_changed_resources(
+        retry_harness: RetryHarness, mutation: str
+    ) -> None:
+        harness = retry_harness
+        original_request = copy.deepcopy(harness.request)
+        accepted = await harness.coordinator.start("retry-flow", harness.request)
+        assert accepted["status"] == "running"
+        assert harness.profiles.reads == ["profile-1"]
+        assert harness.model.reads == ["model-1"]
+        frozen_run = harness.runs.get("retry-run")
+        frozen_payload = copy.deepcopy(harness.workers.payloads[0])
+        assert frozen_payload["modelBindings"][0]["secret"] == "first-secret"
+
+        if mutation == "profile-config":
+            profile = harness.profiles.profile
+            harness.profiles.profile = replace(
+                profile, spec=replace(profile.spec, locale="en-US", timezone="UTC")
+            )
+        elif mutation == "model-secret":
+            harness.model.secret = "changed-secret"
+        else:
+            harness.model.enabled = False
+
+>       retried = await harness.coordinator.start("retry-flow", copy.deepcopy(original_request))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/unit/workflows/test_run_resource_retry.py:175:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src/autoflow/application/workflows/coordinator.py:341: in start
+    run = self._runs.start(start)
+          ^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/application/workflows/runs.py:184: in start
+    return self._repository.create(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <autoflow.infrastructure.database.workflow_runs.SqlAlchemyWorkflowRuns object at 0x10a871410>
+start = WorkflowRunStart(run_id='retry-run', workflow_id='retry-flow', document_id='retry-flow', workflow_name='启动重试资源冻结', doc...: None, 'mode': 'run', 'stepMode': False, 'breakpoints': []}}, mode='run', custom_module_snapshots={}, project_id=None)
+request_hash = 'f5ac010b7d985c2668a05a3d34ab8d4d4df1730f483b3438f176dc3e4371fae9'
+now = datetime.datetime(2026, 9, 23, 7, 30, 4, 123480, tzinfo=datetime.timezone.utc)
+
+    def create(
+        self, start: WorkflowRunStart, *, request_hash: str, now: datetime
+    ) -> WorkflowRun:
+        with self._session_factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            previous = session.get(WorkflowRunRow, start.run_id)
+            if previous is not None:
+                if previous.request_hash != request_hash:
+                    session.rollback()
+>                   raise WorkflowRunError(
+                        "RUN_ID_CONFLICT", "运行 ID 已用于不同的请求", 409
+                    )
+E                   autoflow.domain.workflows.runs.WorkflowRunError: 运行 ID 已用于不同的请求
+
+src/autoflow/infrastructure/database/workflow_runs.py:119: WorkflowRunError
+_ test_same_request_returns_accepted_run_without_resolving_changed_resources[model-secret] _
+
+retry_harness = <test_run_resource_retry.RetryHarness object at 0x10b66a750>
+mutation = 'model-secret'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("mutation", ["profile-config", "model-secret", "model-disabled"])
+    async def test_same_request_returns_accepted_run_without_resolving_changed_resources(
+        retry_harness: RetryHarness, mutation: str
+    ) -> None:
+        harness = retry_harness
+        original_request = copy.deepcopy(harness.request)
+        accepted = await harness.coordinator.start("retry-flow", harness.request)
+        assert accepted["status"] == "running"
+        assert harness.profiles.reads == ["profile-1"]
+        assert harness.model.reads == ["model-1"]
+        frozen_run = harness.runs.get("retry-run")
+        frozen_payload = copy.deepcopy(harness.workers.payloads[0])
+        assert frozen_payload["modelBindings"][0]["secret"] == "first-secret"
+
+        if mutation == "profile-config":
+            profile = harness.profiles.profile
+            harness.profiles.profile = replace(
+                profile, spec=replace(profile.spec, locale="en-US", timezone="UTC")
+            )
+        elif mutation == "model-secret":
+            harness.model.secret = "changed-secret"
+        else:
+            harness.model.enabled = False
+
+        retried = await harness.coordinator.start("retry-flow", copy.deepcopy(original_request))
+
+        assert retried == accepted
+>       assert harness.profiles.reads == ["profile-1"], "重试不能再次读取 Profile"
+E       AssertionError: 重试不能再次读取 Profile
+E       assert ['profile-1', 'profile-1'] == ['profile-1']
+E
+E         Left contains one more item: 'profile-1'
+E         Use -v to get more diff
+
+tests/unit/workflows/test_run_resource_retry.py:178: AssertionError
+_ test_same_request_returns_accepted_run_without_resolving_changed_resources[model-disabled] _
+
+self = <test_run_resource_retry.MutableModelBinding object at 0x10bb39bd0>
+model_id = 'model-1'
+
+    def __call__(self, model_id: str) -> ModelExecutionBinding:
+        self.reads.append(model_id)
+        if not self.enabled:
+>           raise ModelError("MODEL_DISABLED", "模型已停用", 409)
+E           autoflow.domain.models.errors.ModelError: 模型已停用
+
+tests/unit/workflows/test_run_resource_retry.py:64: ModelError
+
+The above exception was the direct cause of the following exception:
+
+retry_harness = <test_run_resource_retry.RetryHarness object at 0x10b6c9590>
+mutation = 'model-disabled'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("mutation", ["profile-config", "model-secret", "model-disabled"])
+    async def test_same_request_returns_accepted_run_without_resolving_changed_resources(
+        retry_harness: RetryHarness, mutation: str
+    ) -> None:
+        harness = retry_harness
+        original_request = copy.deepcopy(harness.request)
+        accepted = await harness.coordinator.start("retry-flow", harness.request)
+        assert accepted["status"] == "running"
+        assert harness.profiles.reads == ["profile-1"]
+        assert harness.model.reads == ["model-1"]
+        frozen_run = harness.runs.get("retry-run")
+        frozen_payload = copy.deepcopy(harness.workers.payloads[0])
+        assert frozen_payload["modelBindings"][0]["secret"] == "first-secret"
+
+        if mutation == "profile-config":
+            profile = harness.profiles.profile
+            harness.profiles.profile = replace(
+                profile, spec=replace(profile.spec, locale="en-US", timezone="UTC")
+            )
+        elif mutation == "model-secret":
+            harness.model.secret = "changed-secret"
+        else:
+            harness.model.enabled = False
+
+>       retried = await harness.coordinator.start("retry-flow", copy.deepcopy(original_request))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/unit/workflows/test_run_resource_retry.py:175:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src/autoflow/application/workflows/coordinator.py:311: in start
+    model_bindings = self._resolve_model_bindings(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <autoflow.application.workflows.coordinator.WorkflowRunCoordinator object at 0x10bb56b50>
+document = {'nodes': [{'id': 'open', 'type': 'moduleNode', 'data': {'moduleType': 'open_page', 'config': {'url': 'https://example...: '问题'}}}], 'edges': [{'id': 'open-ask', 'source': 'open', 'target': 'ask'}], 'variables': [], 'name': '启动重试资源冻结', ...}
+workflow_dependencies = {}, custom_module_dependencies = {}
+
+    def _resolve_model_bindings(
+        self,
+        document: Mapping[str, Any],
+        workflow_dependencies: Mapping[str, Mapping[str, Any]],
+        custom_module_dependencies: Mapping[str, Mapping[str, object]],
+    ) -> tuple[ModelExecutionBinding, ...]:
+        references = _model_references(
+            [
+                document,
+                *workflow_dependencies.values(),
+                *(
+                    workflow
+                    for snapshot in custom_module_dependencies.values()
+                    if isinstance((workflow := snapshot.get("workflow")), Mapping)
+                ),
+            ]
+        )
+        if not references:
+            return ()
+        if self._resolve_model is None:
+            raise WorkflowRunError("MODEL_SERVICE_UNAVAILABLE", "模型服务不可用", 503)
+        bindings: dict[str, ModelExecutionBinding] = {}
+        for model_id, node_id, path in references:
+            if model_id in bindings:
+                continue
+            try:
+                bindings[model_id] = self._resolve_model(model_id)
+            except ModelError as error:
+>               raise WorkflowRunError(
+                    error.code,
+                    error.message,
+                    error.status,
+                    {**error.details, "nodeId": node_id, "path": path},
+                ) from error
+E               autoflow.domain.workflows.runs.WorkflowRunError: 模型已停用
+
+src/autoflow/application/workflows/coordinator.py:475: WorkflowRunError
+=========================== short test summary info ============================
+FAILED tests/unit/workflows/test_run_resource_retry.py::test_same_request_returns_accepted_run_without_resolving_changed_resources[profile-config]
+FAILED tests/unit/workflows/test_run_resource_retry.py::test_same_request_returns_accepted_run_without_resolving_changed_resources[model-secret]
+FAILED tests/unit/workflows/test_run_resource_retry.py::test_same_request_returns_accepted_run_without_resolving_changed_resources[model-disabled]
+3 failed, 3 passed in 11.27s

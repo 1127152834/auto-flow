@@ -1,0 +1,61 @@
+{
+  "evidenceId": "BE-studio-log-delivery",
+  "checkedAt": "2026-09-23T05:51:43.862Z",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflowId": "PrNGF2ULNi6DIPCAKczjI",
+  "runId": "47bf0eb0-a9fc-4725-b882-28345ac806c9",
+  "nodeDurations": [
+    {
+      "nodeId": "-i9kqyOE9ZQagmKb11CUL",
+      "durationMs": 207.78329198947176
+    },
+    {
+      "nodeId": "Oodwv0EZtmmX6K-EEzpCb",
+      "durationMs": 130.07741700857878
+    },
+    {
+      "nodeId": "_-bJu4nCxwTJ8LjL2MXl3",
+      "durationMs": 225.06254201289266
+    },
+    {
+      "nodeId": "N3I7xlXSImveZr5aU0I24",
+      "durationMs": 20.405750023201108
+    },
+    {
+      "nodeId": "OaSGUNOfPIAYl6kvAi4j9",
+      "durationMs": 47.438584035262465
+    }
+  ],
+  "requestedStreams": [
+    {
+      "afterSeq": "0",
+      "verboseLog": "true"
+    },
+    {
+      "afterSeq": "0",
+      "verboseLog": "false"
+    },
+    {
+      "afterSeq": "20",
+      "verboseLog": "true"
+    }
+  ],
+  "checks": [
+    "主应用真实服务在临时工作区创建 CloakBrowser Profile",
+    "主窗口通过真实点击打开正式 Studio，Studio 只读取主应用 Profile",
+    "通过正式新建入口创建空工作流",
+    "通过画布原生右键菜单逐一添加并配置五个节点，没有直接修改 Store",
+    "通过画布连接手柄建立五节点顺序链",
+    "正式保存经真实 HTTP 写入 SQLite，返回修订 1",
+    "真实UI切换简洁/详细SSE，用户日志保留，普通节点日志完整持久化；续读游标、关窗重开历史和进程清理通过"
+  ],
+  "packageBoundary": null,
+  "buildArtifacts": null,
+  "boundaries": {
+    "userDatabaseTouched": false,
+    "workspace": "ephemeral",
+    "interaction": "real UI only; API asserts logs and process cleanup"
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "evidenceId": "BE-B6-009-text-to-speech",
+  "recordedAt": "2026-09-22",
+  "classification": "原版功能迁入 + AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "reference/WebRPA/backend/app/executors/basic.py#TextToSpeechExecutor",
+      "reference/WebRPA/frontend/src/services/socket.ts"
+    ],
+    "license": "LICENSE.WebRPA"
+  },
+  "nodes": [
+    "text_to_speech"
+  ],
+  "implemented": [
+    "保留文本、语言、语速、音调、音量默认值及变量解析语义",
+    "真实worker发布execution:tts_request并等待Studio领取、朗读和结果确认，确认成功后才调度后续节点",
+    "请求使用稳定requestId、claimId和commandId；重复命令幂等，其它领取者、过期请求和无效失败结果明确拒绝",
+    "断流后可查询原请求及原命令恢复；worker退出将待处理或已领取请求标为expired",
+    "凭据及敏感变量禁止发送到renderer，避免朗读内容进入SSE和持久化事件"
+  ],
+  "adaptations": [
+    "WebRPA在renderer失败后回退Windows系统朗读；AutoFlow不在后端worker直接调用平台语音，renderer失败按节点失败处理，以遵守Electron和进程边界"
+  ],
+  "checks": [
+    {
+      "command": "uv run --project apps/backend pytest -q apps/backend/tests/differential/workflows/test_b6_text_to_speech_executor_parity.py apps/backend/tests/unit/workflows/test_text_to_speech_executor.py apps/backend/tests/unit/workflows/test_executor_registry.py",
+      "result": "16 passed",
+      "covers": "冻结源码成功语义、默认值、变量解析、服务失败和生产注册"
+    },
+    {
+      "command": "uv run --project apps/backend pytest -q apps/backend/tests/differential/workflows/test_b6_text_to_speech_executor_parity.py apps/backend/tests/unit/workflows/test_text_to_speech_executor.py apps/backend/tests/unit/workflows/test_js_script_executor.py apps/backend/tests/unit/workflows/test_run_coordinator.py apps/backend/tests/integration/test_b6_text_to_speech_worker.py apps/backend/tests/integration/test_b6_js_script_worker.py apps/backend/tests/integration/test_workflow_worker_protocol.py apps/backend/tests/contract/test_workflow_input_command_api.py apps/backend/tests/contract/test_studio_command_envelopes.py apps/backend/tests/contract/test_workflow_runs_api.py apps/backend/tests/unit/workflows/test_executor_registry.py",
+      "result": "86 passed",
+      "covers": "真实worker成功和失败、命令所有权与确认、后续节点停止、退出过期、HTTP查询及共享交互命令回归"
+    },
+    {
+      "command": "npm --workspace @autoflow/desktop test -- --run src/renderer/domains/workflows/tests/speech-command-protocol.test.ts src/renderer/domains/workflows/tests/speech-request-delivery.test.ts src/renderer/domains/workflows/tests/zero-slider-config.test.tsx src/renderer/domains/workflows/tests/specialized-control-entry-wiring.test.tsx",
+      "result": "57 passed",
+      "covers": "真实合同消费、领取与响应丢失恢复、失败和迟到结果、零音量及专用配置入口"
+    },
+    {
+      "command": "uv run --project apps/backend pytest -q apps/backend/tests/unit/workflows/test_scope_preflight.py apps/backend/tests/migration/test_studio_backend_source_mapping.py -k 'text_to_speech or production or runnable or scope'",
+      "result": "75 passed, 2 deselected",
+      "covers": "批准范围、冻结源码映射与生产可运行预检"
+    },
+    {
+      "command": "npm run openapi:check; backend ruff and mypy; desktop typecheck",
+      "result": "passed",
+      "covers": "合同生成、Python与TypeScript静态检查"
+    }
+  ],
+  "boundaries": {
+    "executionLocation": "Studio renderer Web Speech API",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "mockExecutionUsedForBackendEvidence": false,
+    "sensitiveValuesSentToRenderer": false,
+    "formalElectronUiTested": true
+  },
+  "remaining": [
+    "Windows、macOS Intel及正式打包入口的系统语音能力和权限仍需平台专项验收"
+  ],
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b6-text-to-speech.mjs",
+    "result": "passed",
+    "platform": "darwin-arm64",
+    "entry": "development-build",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-text-to-speech-electron-G1Umes/result.json",
+    "covers": "正式 Studio 真实 UI 配置中文文本，保存后由真实 worker 发布语音请求，renderer Web Speech API 返回成功并执行后续日志节点",
+    "boundary": "开发入口、本地 renderer 语音合成，无用户数据库、浏览器或外部网络"
+  }
+}

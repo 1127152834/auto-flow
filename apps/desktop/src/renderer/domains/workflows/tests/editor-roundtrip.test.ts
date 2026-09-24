@@ -1,7 +1,22 @@
 import { beforeEach, expect, it } from 'vitest'
 import { useWorkflowStore } from '../editor-store'
+import { MATH_DEFAULT_VARS } from '../lib/moduleDefaultVars'
 import { snapshotKey } from '../lib/snapshotKey'
 beforeEach(()=>useWorkflowStore.getState().clearWorkflow())
+it('persists the displayed output defaults for all 31 math/list/stat nodes', () => {
+  expect(Object.keys(MATH_DEFAULT_VARS)).toHaveLength(31)
+  for (const [type, defaults] of Object.entries(MATH_DEFAULT_VARS)) {
+    useWorkflowStore.getState().addNode(type as Parameters<ReturnType<typeof useWorkflowStore.getState>['addNode']>[0], { x: 0, y: 0 })
+    expect(useWorkflowStore.getState().nodes.at(-1)?.data.resultVariable).toBe(defaults.resultVariable)
+  }
+  expect(useWorkflowStore.getState().nodes.find(node => node.data.moduleType === 'math_round')?.data.resultVariable).toBe('rounded')
+  const content = useWorkflowStore.getState().exportWorkflow()
+  useWorkflowStore.getState().clearWorkflow()
+  expect(useWorkflowStore.getState().importWorkflow(content)).toBe(true)
+  expect(useWorkflowStore.getState().nodes.map(node => node.data.resultVariable)).toEqual(Object.values(MATH_DEFAULT_VARS).map(defaults => defaults.resultVariable))
+  useWorkflowStore.getState().addNode('math_round', { x: 0, y: 0 }, { resultVariable: 'custom' })
+  expect(useWorkflowStore.getState().nodes.at(-1)?.data.resultVariable).toBe('custom')
+})
 it('keeps source node configuration and positions through copy, undo and JSON roundtrip',()=>{
   const store=useWorkflowStore.getState()
   store.addNode('open_page',{x:100,y:200})

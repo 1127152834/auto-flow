@@ -134,6 +134,8 @@ describe('多类型分支被正确展开', () => {
       { moduleType: 'foreach', field: 'itemVariable', defaultValue: 'item' },
       { moduleType: 'foreach', field: 'indexVariable', defaultValue: 'index' },
       { moduleType: 'set_variable', field: 'variableName', defaultValue: 'my_var' },
+      { moduleType: 'project_data', field: 'variableName', defaultValue: 'task_inputs' },
+      { moduleType: 'ocr_captcha', field: 'variableName', defaultValue: 'captcha_text' },
       { moduleType: 'js_script', field: 'resultVariable', defaultValue: 'js_result' },
       { moduleType: 'ai_smart_scraper', field: 'variableName', defaultValue: 'scraper_result' },
       { moduleType: 'universal_doc_convert', field: 'resultVariable', defaultValue: 'convert_output' },

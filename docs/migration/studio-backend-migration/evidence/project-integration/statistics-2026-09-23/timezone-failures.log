@@ -1,0 +1,46 @@
+...........FF.                                                           [100%]
+=================================== FAILURES ===================================
+___________ test_statistics_pages_mixed_offsets_by_actual_start_time ___________
+
+studio_stats = (sessionmaker(class_='Session', bind=Engine(sqlite:////private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-...utoflush=True, expire_on_commit=False), '27586dc9-10da-4e54-a30d-ea0ac5697035', '63f81cce-8199-4bb0-b3b4-3036cc0459d7')
+
+    def test_statistics_pages_mixed_offsets_by_actual_start_time(studio_stats):
+        factory, own, _ = studio_stats
+        window = _offset_runs(factory, own)
+        service = ProjectStatisticsService(factory)
+        first = service.studio(own, **window, limit=1)
+        second = service.studio(own, **window, limit=1, cursor=first['nextCursor'])
+>       assert first['items'][0]['runId'] == 'newer-utc'
+E       AssertionError: assert 'older-offset' == 'newer-utc'
+E
+E         - newer-utc
+E         + older-offset
+
+tests/integration/test_studio_project_statistics.py:234: AssertionError
+_________ test_statistics_latest_activity_compares_offsets_as_instants _________
+
+studio_stats = (sessionmaker(class_='Session', bind=Engine(sqlite:////private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-...utoflush=True, expire_on_commit=False), '9b4cc24b-db95-4fd7-a8ab-77b64f7c6df8', '15035556-f1a5-4ab3-b951-63451fac982c')
+
+    def test_statistics_latest_activity_compares_offsets_as_instants(studio_stats):
+        factory, own, _ = studio_stats
+        window = _offset_runs(factory, own)
+        service = ProjectStatisticsService(factory)
+        result = service.studio(own, **window)
+>       assert datetime.fromisoformat(result['latestActivityAt']) == BASE - timedelta(hours=2) + timedelta(milliseconds=123)
+E       AssertionError: assert datetime.datetime(2026, 9, 20, 9, 0, 0, 123000, tzinfo=datetime.timezone(datetime.timedelta(seconds=28800))) == ((datetime.datetime(2026, 9, 20, 4, 0, tzinfo=datetime.timezone.utc) - datetime.timedelta(seconds=7200)) + datetime.timedelta(microseconds=123000))
+E        +  where datetime.datetime(2026, 9, 20, 9, 0, 0, 123000, tzinfo=datetime.timezone(datetime.timedelta(seconds=28800))) = <built-in method fromisoformat of type object at 0x102a75820>('2026-09-20T09:00:00.123000+08:00')
+E        +    where <built-in method fromisoformat of type object at 0x102a75820> = datetime.fromisoformat
+E        +  and   datetime.timedelta(seconds=7200) = timedelta(hours=2)
+E        +  and   datetime.timedelta(microseconds=123000) = timedelta(milliseconds=123)
+
+tests/integration/test_studio_project_statistics.py:245: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.11/site-packages/starlette/testclient.py:53
+  /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/integration/test_studio_project_statistics.py::test_statistics_pages_mixed_offsets_by_actual_start_time
+FAILED tests/integration/test_studio_project_statistics.py::test_statistics_latest_activity_compares_offsets_as_instants
+2 failed, 12 passed, 1 warning in 7.53s

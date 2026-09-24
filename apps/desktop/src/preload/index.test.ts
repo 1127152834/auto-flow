@@ -26,6 +26,19 @@ it('exposes the controlled Studio leave subscription without arbitrary editor ac
   expect(ipc.eventNames()).not.toContain('autoflow:studio-transition')
 })
 
+it('exposes named native shortcut registration and a removable live-only action listener', async () => {
+  await bridge.setStudioHotkeys({ save_workflow: 'Ctrl+Alt+S' })
+  expect(ipc.invoke).toHaveBeenCalledWith('autoflow:studio-hotkeys', { save_workflow: 'Ctrl+Alt+S' })
+  const action = vi.fn()
+  const unsubscribe = bridge.onStudioHotkey(action)
+  ipc.emit('autoflow:studio-hotkey', {}, 'save_workflow')
+  ipc.emit('autoflow:studio-hotkey', {}, { actionId: 'save_workflow' })
+  expect(action).toHaveBeenCalledExactlyOnceWith('save_workflow')
+  unsubscribe()
+  ipc.emit('autoflow:studio-hotkey', {}, 'save_workflow')
+  expect(action).toHaveBeenCalledOnce()
+})
+
 it('exposes runtime notifications with a removable listener and synchronizes preferences', () => {
   const listener = vi.fn()
   const unsubscribe = bridge.onRuntimeContextChanged(listener)

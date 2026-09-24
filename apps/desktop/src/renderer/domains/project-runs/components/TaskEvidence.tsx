@@ -21,6 +21,7 @@ const show = (value: unknown): string => {
 const statuses: Record<string, string> = { running: '运行中', succeeded: '成功', failed: '失败' }
 const time = (value: string | null | undefined) => value ? new Date(value).toLocaleString('zh-CN', { hour12: false }) : '—'
 const artifactReasons: Record<string, string> = { SCREENSHOT_CAPTURE_FAILED: '截图捕获失败', SCREENSHOT_PAGE_UNAVAILABLE: '页面已不可用', LEGACY_ARTIFACT_UNAVAILABLE: '旧版证据不可用' }
+const artifactLabel = (item: Artifact) => item.kind === 'file' ? '下载文件' : item.kind === 'image' ? '保存图片' : item.purpose === 'result' ? '节点截图' : '失败截图'
 const size = (value: number | null | undefined) => value === null || value === undefined ? '—' : value < 1024 ? `${value} B` : `${Math.round(value / 1024)} KB`
 const taskNumber = (ordinal: number) => String(ordinal)
 const nodeName = (detail: Detail, nodeId: string | null | undefined, frozen?: string) => nodeId && detail.nodeNames?.[nodeId]?.trim() || frozen?.trim() || '未命名节点'
@@ -153,22 +154,27 @@ function OutputTable({ items, label }: { items: Outputs['items']; label: string 
   </TableScroll>
 }
 
-export function TaskEvidence({ mode, detail, attempts, outputs, artifacts, inlineScreenshotUrl, inlineScreenshotLabel = '失败时页面截图', loading, error, onOpenArtifact, onOpenRecord, onLocateLog, onLoadMoreArtifacts, onLoadMoreAttempts, onLoadMoreOutputs }: TaskEvidenceProps) {
+export function TaskEvidence({ mode, detail, attempts, outputs, artifacts, inlineScreenshotUrl, inlineScreenshotLabel = '页面截图', loading, error, onOpenArtifact, onOpenRecord, onLocateLog, onLoadMoreArtifacts, onLoadMoreAttempts, onLoadMoreOutputs }: TaskEvidenceProps) {
   const names = new Map((detail.parameterDefinitions ?? []).map(item => [item.parameterId, item.name]))
   const failed = attempts?.items.filter(item => item.status === 'failed') ?? [], primary = failed.at(-1)
   const summaryError = primary?.error ?? detail.run.error
   const finalOutputs = outputs?.items.filter(item => !item.nodeId) ?? []
   const nodeOutputs = outputs?.items.filter(item => item.nodeId) ?? []
-  const inlineArtifact = artifacts?.items.find(item => item.availability === 'available')
-  const enlargementLabel = inlineScreenshotLabel.startsWith('失败截图：')
+  const inlineArtifact = artifacts?.items.find(item => item.kind === 'screenshot' && item.availability === 'available')
+  const screenshots = artifacts?.items.filter(item => item.kind === 'screenshot') ?? []
+  const otherArtifacts = artifacts?.items.filter(item => item.kind !== 'screenshot') ?? []
+  const screenshotTitle = screenshots.some(item => item.purpose === 'result')
+    ? screenshots.some(item => item.purpose === 'error') ? '页面截图' : '节点输出截图'
+    : screenshots.length || summaryError ? '失败时页面截图' : '页面截图'
+  const enlargementLabel = /^(失败截图|节点截图)：/.test(inlineScreenshotLabel)
     ? `放大${inlineScreenshotLabel}`
-    : `放大失败截图：${inlineScreenshotLabel}`
+    : `放大${inlineArtifact?.purpose === 'result' ? '节点截图' : '失败截图'}：${inlineScreenshotLabel}`
   const renderArtifacts = (items: Artifact[]) => <div className="grid gap-3">{items.map(item => <article className="rounded-control border border-line p-3" key={item.artifactId}>
     <strong className="block truncate">{nodeName(detail, item.nodeId, item.nodeName)}</strong>
-    <p className="my-1 text-sm text-muted">失败截图 · {time(item.createdAt)} · {size(item.byteSize)}</p>
+    <p className="my-1 text-sm text-muted">{artifactLabel(item)}{item.fileName ? ` · ${item.fileName}` : ''} · {time(item.createdAt)} · {size(item.byteSize)}</p>
     {item.availability === 'available'
-      ? onOpenArtifact ? <Button size="sm" onClick={() => onOpenArtifact(item)} aria-label={`查看失败截图：${nodeName(detail, item.nodeId, item.nodeName)}`}>查看截图</Button> : <span className="text-sm text-muted">截图已保存</span>
-      : <span className="text-sm text-warning">{artifactReasons[item.unavailableReason ?? ''] ?? '截图不可用'}</span>}
+      ? onOpenArtifact ? <Button size="sm" onClick={() => onOpenArtifact(item)} aria-label={`${item.kind === 'file' ? '下载文件' : `查看${artifactLabel(item)}`}：${nodeName(detail, item.nodeId, item.nodeName)}`}>{item.kind === 'file' ? '下载文件' : item.kind === 'image' ? '查看图片' : '查看截图'}</Button> : <span className="text-sm text-muted">产物已保存</span>
+      : <span className="text-sm text-warning">{artifactReasons[item.unavailableReason ?? ''] ?? '产物不可用'}</span>}
   </article>)}</div>
   return <div className="grid min-w-0 items-start gap-4 lg:grid-cols-2">
     {mode === 'evidence' ? <>
@@ -180,16 +186,17 @@ export function TaskEvidence({ mode, detail, attempts, outputs, artifacts, inlin
         </div>
       </section>
       <section className="min-w-0 rounded-card border border-line bg-surface p-5">
-        <h3 className="mt-0">失败时页面截图</h3>
+        <h3 className="mt-0">{screenshotTitle}</h3>
         {inlineScreenshotUrl ? <div className="grid gap-2">
           {inlineArtifact && onOpenArtifact
             ? <button type="button" className="overflow-hidden rounded-control border border-line bg-canvas text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus" aria-label={enlargementLabel} onClick={() => onOpenArtifact(inlineArtifact)}><img className="max-h-[32rem] w-full object-contain" src={inlineScreenshotUrl} alt={inlineScreenshotLabel}/></button>
             : <img className="max-h-[32rem] w-full rounded-control border border-line object-contain" src={inlineScreenshotUrl} alt={inlineScreenshotLabel}/>}
           {inlineArtifact ? <p className="m-0 text-sm text-muted">{nodeName(detail, inlineArtifact.nodeId, inlineArtifact.nodeName)} · {time(inlineArtifact.createdAt)} · {size(inlineArtifact.byteSize)}</p> : null}
-          {artifacts?.items.filter(item => item.artifactId !== inlineArtifact?.artifactId).length ? renderArtifacts(artifacts.items.filter(item => item.artifactId !== inlineArtifact?.artifactId)) : null}
-        </div> : artifacts?.items.length ? renderArtifacts(artifacts.items) : <p className="text-muted">{artifacts ? '本次运行未生成失败截图。' : '失败截图尚未读取。'}</p>}
-        {artifacts && artifacts.items.length < artifacts.total && onLoadMoreArtifacts ? <Button className="mt-3" disabled={loading} onClick={onLoadMoreArtifacts}>加载更多截图</Button> : null}
+          {screenshots.filter(item => item.artifactId !== inlineArtifact?.artifactId).length ? renderArtifacts(screenshots.filter(item => item.artifactId !== inlineArtifact?.artifactId)) : null}
+        </div> : screenshots.length ? renderArtifacts(screenshots) : <p className="text-muted">{artifacts ? '本次运行未生成截图。' : '运行截图尚未读取。'}</p>}
       </section>
+      {otherArtifacts.length ? <section className="min-w-0 rounded-card border border-line bg-surface p-5"><h3 className="mt-0">文件与图片产物</h3>{renderArtifacts(otherArtifacts)}</section> : null}
+      {artifacts && artifacts.items.length < artifacts.total && onLoadMoreArtifacts ? <Button disabled={loading} onClick={onLoadMoreArtifacts}>加载更多产物</Button> : null}
       <div className="grid min-w-0 gap-4">
         <section className="min-w-0 rounded-card border border-line bg-surface p-5"><h3 className="mt-0">错误记录</h3>{failed.length ? <TableScroll label="错误记录表" className="rounded-control border border-line"><Table data-variant="facts"><TableBody>{failed.map(item => <TableRow key={item.nodeVisitId + '-' + item.attempt}><TableHead scope="row" className="w-28">{nodeName(detail, item.nodeId, item.nodeName)}</TableHead><TableCell><span className="block">任务 {taskNumber(detail.task.taskOrdinal)} · 尝试 {item.attempt}</span><span className="text-danger">{errorLabel(item.error)}</span></TableCell></TableRow>)}</TableBody></Table></TableScroll> : <p className="text-muted">{attempts ? '没有节点错误记录。' : '错误记录尚未读取。'}</p>}</section>
         <section className="min-w-0 rounded-card border border-line bg-surface p-5"><h3 className="mt-0">历史尝试</h3>{attempts?.items.length ? <TableScroll label="节点历史尝试" className="rounded-control border border-line"><Table><TableHeader><TableRow><TableHead>节点 / 尝试</TableHead><TableHead>开始 / 结束</TableHead><TableHead>结果</TableHead></TableRow></TableHeader><TableBody>{visits(attempts.items).map(visit => <TableRow key={visit.key + '-' + visit.items[0].nodeVisitId}><TableCell><strong className="block max-w-40 truncate">{nodeName(detail, visit.items[0].nodeId, visit.items[0].nodeName)}</strong><span>访问一次 · 尝试 {visit.items.length} 次</span></TableCell><TableCell><span className="grid gap-1">{visit.items.map(item => <span key={item.nodeVisitId + '-' + item.attempt}>尝试 {item.attempt}：{time(item.startedAt)} – {time(item.completedAt)}</span>)}</span></TableCell><TableCell><span className="grid gap-1">{visit.items.map(item => <span key={item.nodeVisitId + '-' + item.attempt}>{statuses[item.status] ?? item.status}</span>)}</span></TableCell></TableRow>)}</TableBody></Table></TableScroll> : !loading && !error ? <p className="text-muted">{attempts ? '暂无节点尝试' : '尚未读取节点尝试'}</p> : null}{attempts && attempts.items.length < attempts.total ? <Button className="mt-3" disabled={loading} onClick={onLoadMoreAttempts}>加载更多尝试</Button> : null}</section>

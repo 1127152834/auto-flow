@@ -1,0 +1,31 @@
+.......................F
+=================================== FAILURES ===================================
+________ test_external_get_webhook_obeys_quiesce_without_sidecar_token _________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-197/test_external_get_webhook_obey0')
+
+    def test_external_get_webhook_obeys_quiesce_without_sidecar_token(tmp_path):
+        from autoflow.bootstrap.app import create_app
+        from autoflow.bootstrap.config import Settings
+        from fastapi.testclient import TestClient
+
+        app = create_app(Settings(data_dir=str(tmp_path), instance_id='webhook-gate', instance_token='test-only-token'))
+        with TestClient(app) as client:
+            gate = app.state.project_workflow_dispatcher._gate
+>           assert gate.pause(list) == []
+E           AssertionError: assert ['api_mutation_in_progress'] == []
+E
+E             Left contains one more item: 'api_mutation_in_progress'
+E             Use -v to get more diff
+
+apps/backend/tests/integration/test_project_interaction_commands.py:593: AssertionError
+=============================== warnings summary ===============================
+tests/integration/test_project_interaction_commands.py::test_external_get_webhook_obeys_quiesce_without_sidecar_token
+  /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED apps/backend/tests/integration/test_project_interaction_commands.py::test_external_get_webhook_obeys_quiesce_without_sidecar_token
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed, 23 passed, 1 warning in 22.67s

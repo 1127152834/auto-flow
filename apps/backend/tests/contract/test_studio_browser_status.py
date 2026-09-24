@@ -8,7 +8,15 @@ from autoflow.adapters.http.workflow_studio_schemas import StudioBrowserStatus
 @pytest.mark.parametrize("picker_active", [False, True])
 def test_browser_status_preserves_independent_reported_flags(is_open, picker_active):
     value = StudioBrowserStatus.model_validate({"isOpen": is_open, "pickerActive": picker_active})
-    assert value.model_dump(by_alias=True) == {"isOpen": is_open, "pickerActive": picker_active}
+    assert value.model_dump(by_alias=True) == {
+        "isOpen": is_open,
+        "pickerActive": picker_active,
+        "projectId": None,
+        "phase": "closed",
+        "sessionId": None,
+        "profileId": None,
+        "pickerSessionId": None,
+    }
 
 
 @pytest.mark.parametrize("payload", [

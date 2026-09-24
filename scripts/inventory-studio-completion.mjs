@@ -23,7 +23,7 @@ walk(sidebar,node=>{
 })
 if(!categories || !excluded || !extra)throw Error('Catalog structure changed; inventory cannot silently skip it')
 const retained=categories.filter(c=>!excluded.has(c.name)).flatMap(c=>c.types.filter(t=>!extra.has(t)).map(type=>({type,category:c.name})))
-if(retained.length!==227 || new Set(retained.map(n=>n.type)).size!==227)throw Error('Approved 227-node scope changed')
+if(retained.length!==213 || new Set(retained.map(n=>n.type)).size!==213)throw Error('Approved 213-node scope changed')
 const files=fs.readdirSync(path.join(root,domain,'components/config-panels')).filter(f=>f.endsWith('.tsx')).map(f=>`${domain}/components/config-panels/${f}`)
 files.push(`${domain}/components/ConfigPanel.tsx`,`${domain}/editor-store.ts`)
 const evidence=new Map(retained.map(n=>[n.type,[]]))

@@ -1,8 +1,8 @@
 {
   "evidenceId": "BE-B4-math-number-statistics-family-2026-09-16",
-  "recordedAt": "2026-09-16",
-  "gitHead": "64d5dd2",
-  "result": "31 approved nodes passed frozen-source differential, production registration, HTTP admission and browser-free worker execution; formal Electron UI remains pending",
+  "recordedAt": "2026-09-21",
+  "gitHead": "7b4a285a",
+  "result": "31 approved nodes passed frozen-source differential, production registration, HTTP admission, browser-free worker execution and formal Electron UI execution",
   "source": {
     "repository": "reference/WebRPA",
     "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
@@ -91,15 +91,42 @@
       "scope": "B1/B2/B4 differential, artifacts, worker, registry, admission, coordinator and HTTP run contract"
     },
     "formalElectron": {
-      "evidence": "docs/migration/studio-backend-migration/evidence/b4/formal-math-electron-qYxtzO/result.json",
+      "evidence": "docs/migration/studio-backend-migration/evidence/b4/formal-math-electron-XqTnhR/result.json",
       "result": "passed on darwin-arm64 development build",
       "uiExecutedTypes": [
         "list_sum",
+        "list_average",
+        "list_max",
+        "list_min",
+        "list_sort",
+        "list_unique",
+        "list_slice",
         "math_round",
+        "math_base_convert",
+        "math_floor",
+        "math_modulo",
+        "math_abs",
+        "math_sqrt",
+        "math_power",
         "math_log",
-        "stat_median"
+        "math_trig",
+        "math_exp",
+        "math_gcd",
+        "math_lcm",
+        "math_factorial",
+        "math_permutation",
+        "math_percentage",
+        "math_clamp",
+        "math_random_advanced",
+        "stat_median",
+        "stat_mode",
+        "stat_variance",
+        "stat_stdev",
+        "stat_percentile",
+        "stat_normalize",
+        "stat_standardize"
       ],
-      "observed": "The formal Studio UI created, configured, connected, saved and ran the four-node chain. HTTP and SQLite both recorded 32 → 32 → 5 → 6.8, all logs and execution IDs were persisted, cleanup completed, and CloakBrowser was never launched."
+      "observed": "The formal Studio UI created, configured, connected, saved and ran all 31 math/statistics nodes in one workflow. HTTP, SSE and SQLite recorded 31 matching results and 32 logs; cleanup completed and CloakBrowser was never launched."
     }
   },
   "review": {
@@ -117,7 +144,6 @@
     "diffCheck": "passed"
   },
   "notClaimed": [
-    "formal Electron UI execution of the remaining 27 math/statistics nodes",
     "rebuilt packaged sidecar execution",
     "macOS Intel verification",
     "Windows verification",

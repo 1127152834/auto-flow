@@ -1,16 +1,14 @@
 import asyncio
-import json
 from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Header, Query, Request
-from fastapi.encoders import jsonable_encoder
 from fastapi.responses import StreamingResponse
 
 from autoflow.application.project_runs.events import ProjectRunEvents
 from autoflow.domain.project_runs.models import ProjectRunError
 
-from .project_run_events_schemas import ProjectRunEventPage
+from .project_run_events_schemas import ProjectRunEventPage, ProjectRunEventView
 
 
 def project_run_events_router(events: ProjectRunEvents) -> APIRouter:
@@ -43,7 +41,7 @@ def project_run_events_router(events: ProjectRunEvents) -> APIRouter:
             while not await request.is_disconnected():
                 for item in page["items"]:
                     cursor = item["sequence"]
-                    data = json.dumps(jsonable_encoder(item), ensure_ascii=False)
+                    data = ProjectRunEventView.model_validate(item).model_dump_json(by_alias=True)
                     yield f"id: {cursor}\nevent: {item['kind']}\ndata: {data}\n\n"
                 if page["terminal"] and not page["hasMore"]:
                     return

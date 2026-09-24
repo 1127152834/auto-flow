@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 import copy
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any, cast
 
-from sqlalchemy import func, select, text
+from sqlalchemy import String, func, literal, select, text, union_all
+from sqlalchemy import cast as sql_cast
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
+from autoflow.domain.projects.models import ProjectError
 from autoflow.domain.workflows.runs import (
     RunMode,
     RunStatus,
@@ -19,7 +21,19 @@ from autoflow.domain.workflows.runs import (
     WorkflowRunStart,
 )
 
-from .workflow_models import WorkflowRunArtifactRow, WorkflowRunEventRow, WorkflowRunRow
+from .projects import guard_project
+from .workflow_models import (
+    WorkflowDebugCommandRow,
+    WorkflowDocumentRow,
+    WorkflowRunArtifactRow,
+    WorkflowRunEventRow,
+    WorkflowRunRow,
+)
+from .workflow_project_scope import (
+    readable_studio_run_project,
+    studio_run_project_expression,
+    workflow_project_id,
+)
 
 
 def _iso(value: datetime) -> str:
@@ -30,7 +44,7 @@ def _datetime(value: Any) -> datetime | None:
     return datetime.fromisoformat(value) if isinstance(value, str) and value else None
 
 
-def _run(row: WorkflowRunRow) -> WorkflowRun:
+def _run(row: WorkflowRunRow, project_id: str | None = None) -> WorkflowRun:
     value = row.payload
     return WorkflowRun(
         run_id=row.id,
@@ -55,6 +69,7 @@ def _run(row: WorkflowRunRow) -> WorkflowRun:
         custom_module_snapshots=copy.deepcopy(
             value.get("customModuleSnapshots", {})
         ),
+        project_id=value.get("projectId") or project_id,
     )
 
 
@@ -107,6 +122,38 @@ class SqlAlchemyWorkflowRuns:
                 result = _run(previous)
                 session.rollback()
                 return result
+            # Admission and the active slot are committed together. Resolve
+            # saved ownership even when the editor sends only an unsaved graph.
+            project_id = start.project_id
+            snapshot_project = start.document_snapshot.get("projectId")
+            if snapshot_project is not None:
+                if (
+                    not isinstance(snapshot_project, str)
+                    or not snapshot_project.strip()
+                    or len(snapshot_project) > 200
+                ):
+                    raise WorkflowRunError("RUN_REQUEST_INVALID", "项目标识无效", 422)
+                if project_id is not None and project_id != snapshot_project:
+                    raise WorkflowRunError("WORKFLOW_PROJECT_MISMATCH", "工作流不属于当前项目", 404)
+                project_id = snapshot_project
+            owners = {
+                workflow_project_id(session, identifier)
+                for identifier in {start.workflow_id, start.document_id}
+                if session.get(WorkflowDocumentRow, identifier) is not None
+            }
+            if len(owners) > 1 or (
+                owners and project_id is not None and project_id not in owners
+            ):
+                raise WorkflowRunError("WORKFLOW_PROJECT_MISMATCH", "工作流不属于当前项目", 404)
+            if owners:
+                project_id = next(iter(owners))
+            if project_id is not None:
+                try:
+                    guard_project(session, project_id)
+                except ProjectError as error:
+                    raise WorkflowRunError(
+                        error.code, error.message, error.status, error.details
+                    ) from error
             row = WorkflowRunRow(
                 id=start.run_id,
                 workflow_id=start.workflow_id,
@@ -118,6 +165,7 @@ class SqlAlchemyWorkflowRuns:
                 active_slot=2,
                 payload={
                     "documentId": start.document_id,
+                    "projectId": project_id,
                     "workflowName": start.workflow_name,
                     "documentSnapshot": copy.deepcopy(start.document_snapshot),
                     "layoutSnapshot": copy.deepcopy(start.layout_snapshot),
@@ -150,8 +198,10 @@ class SqlAlchemyWorkflowRuns:
 
     def get(self, run_id: str) -> WorkflowRun | None:
         with self._session_factory() as session:
-            row = session.get(WorkflowRunRow, run_id)
-            return _run(row) if row is not None else None
+            record = session.execute(select(WorkflowRunRow, studio_run_project_expression()).where(
+                WorkflowRunRow.id == run_id, readable_studio_run_project(),
+            )).first()
+            return _run(record[0], record[1]) if record is not None else None
 
     @staticmethod
     def _require_run(session: Session, run_id: str) -> WorkflowRunRow:
@@ -159,6 +209,14 @@ class SqlAlchemyWorkflowRuns:
         if row is None:
             raise WorkflowRunError("RUN_NOT_FOUND", "运行记录不存在", 404)
         return row
+
+    def belongs_to_project(self, run_id: str, project_id: str) -> bool:
+        with self._session_factory() as session:
+            return session.scalar(select(WorkflowRunRow.id).where(
+                WorkflowRunRow.id == run_id,
+                studio_run_project_expression() == project_id,
+                readable_studio_run_project(),
+            )) is not None
 
     @staticmethod
     def _next_sequence(session: Session, run_id: str) -> int:
@@ -218,6 +276,50 @@ class SqlAlchemyWorkflowRuns:
             session.commit()
             return _event(event_row)
 
+    def project_assets(
+        self, project_id: str, *, kind: str | None, run_id: str | None,
+        node_id: str | None, cursor: int, limit: int,
+    ) -> tuple[list[dict[str, Any]], int]:
+        run, event, artifact = WorkflowRunRow, WorkflowRunEventRow, WorkflowRunArtifactRow
+        identity = [run.id.label("runId"), run.workflow_id.label("workflowId"),
+                    run.payload["workflowName"].as_string().label("workflowName")]
+        result_rows = select(
+            (literal("result:") + run.id + literal(":") + sql_cast(event.seq, String)).label("assetId"),
+            *identity, literal("result").label("kind"), event.seq.label("sequence"),
+            event.payload["nodeId"].as_string().label("nodeId"),
+            event.payload["executionId"].as_string().label("executionId"),
+            event.payload["occurredAt"].as_string().label("createdAt"),
+            literal(None).label("artifactId"), literal("application/json").label("mimeType"),
+            literal(None).label("size"), literal(None).label("sha256"),
+        ).select_from(run).join(event, event.run_id == run.id).where(
+            event.payload["type"].as_string() == "execution:node-succeeded",
+            event.payload["nodeId"].as_string().is_not(None),
+            func.json_type(event.payload, "$.payload.result.data").not_in(("null",)),
+            studio_run_project_expression() == project_id, readable_studio_run_project(),
+        )
+        from sqlalchemy import case
+
+        file_rows = select(
+            (literal("file:") + run.id + literal(":") + artifact.id).label("assetId"),
+            *identity, case((artifact.purpose == "diagnostic", "diagnostic"), else_="file").label("kind"),
+            artifact.event_seq.label("sequence"), artifact.node_id.label("nodeId"), artifact.execution_id.label("executionId"),
+            func.coalesce(artifact.payload["registeredAt"].as_string(), event.payload["occurredAt"].as_string()).label("createdAt"),
+            artifact.id.label("artifactId"), artifact.payload["mimeType"].as_string().label("mimeType"),
+            artifact.payload["size"].as_integer().label("size"), artifact.payload["sha256"].as_string().label("sha256"),
+        ).select_from(run).join(artifact, artifact.run_id == run.id).outerjoin(
+            event, (event.run_id == run.id) & (event.seq == artifact.event_seq),
+        ).where(studio_run_project_expression() == project_id, readable_studio_run_project())
+        assets = union_all(result_rows, file_rows).subquery()
+        query = select(assets)
+        for column, value in ((assets.c.kind, kind), (assets.c.runId, run_id), (assets.c.nodeId, node_id)):
+            if value is not None:
+                query = query.where(column == value)
+        with self._session_factory() as session:
+            guard_project(session, project_id, writable=False)
+            total = session.scalar(select(func.count()).select_from(query.subquery())) or 0
+            page = session.execute(query.order_by(assets.c.createdAt.desc(), assets.c.assetId).offset(cursor).limit(limit)).mappings()
+            return [{"projectId": project_id, **dict(row)} for row in page], total
+
     def list_events(
         self, run_id: str, after_sequence: int, limit: int
     ) -> tuple[WorkflowRunEvent, ...]:
@@ -234,21 +336,23 @@ class SqlAlchemyWorkflowRuns:
             return tuple(_event(row) for row in rows)
 
     def list_runs(
-        self, *, document_id: str | None, cursor: int, limit: int
+        self, *, document_id: str | None, cursor: int, limit: int,
+        project_id: str | None = None,
     ) -> tuple[tuple[WorkflowRun, ...], int, int | None]:
         with self._session_factory() as session:
-            statement = select(WorkflowRunRow)
+            statement = select(WorkflowRunRow, studio_run_project_expression()).where(readable_studio_run_project())
+            if project_id is not None:
+                statement = statement.where(studio_run_project_expression() == project_id)
             if document_id is not None:
                 statement = statement.where(
                     WorkflowRunRow.payload["documentId"].as_string() == document_id
                 )
-            rows = session.scalars(
-                statement.order_by(WorkflowRunRow.started_at.desc(), WorkflowRunRow.id)
+            total = session.scalar(select(func.count()).select_from(statement.subquery())) or 0
+            page = session.execute(
+                statement.order_by(WorkflowRunRow.started_at.desc(), WorkflowRunRow.id).offset(cursor).limit(limit)
             ).all()
-            total = len(rows)
-            page = rows[cursor : cursor + limit]
             next_cursor = cursor + len(page) if cursor + len(page) < total else None
-            return tuple(_run(row) for row in page), total, next_cursor
+            return tuple(_run(row, owner) for row, owner in page), total, next_cursor
 
     def finish(
         self,
@@ -328,7 +432,7 @@ class SqlAlchemyWorkflowRuns:
             rows = [
                 row
                 for row in candidates
-                if row.payload.get("status") in {"starting", "running", "paused"}
+                if row.payload.get("status") in {"starting", "running", "paused", "failed_paused"}
                 and row.payload.get("cleanupState") == "pending"
             ]
             for run in rows:
@@ -403,6 +507,7 @@ class SqlAlchemyWorkflowRuns:
                 execution_id=execution_id,
                 payload={
                     "relativePath": relative_path,
+                    "registeredAt": _iso(datetime.now(UTC)),
                     "size": size,
                     "sha256": sha256,
                     "mimeType": mime_type,
@@ -436,3 +541,86 @@ class SqlAlchemyWorkflowRuns:
                 {"run_id": run_id, "id": artifact_id},
             )
             return _artifact(row) if row is not None else None
+
+    def save_debug_command(
+        self,
+        run_id: str,
+        command_id: str,
+        *,
+        request_hash: str,
+        receipt: dict[str, Any],
+        http_status: int,
+    ) -> tuple[str, dict[str, Any], int]:
+        with self._session_factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            existing = session.scalar(
+                select(WorkflowDebugCommandRow)
+                .where(WorkflowDebugCommandRow.id == command_id)
+                .order_by(WorkflowDebugCommandRow.run_id)
+            )
+            if existing is not None:
+                result = self._debug_command(existing)
+                session.rollback()
+                return result
+            self._require_run(session, run_id)
+            row = WorkflowDebugCommandRow(
+                run_id=run_id,
+                id=command_id,
+                request_hash=request_hash,
+                payload={
+                    "receipt": copy.deepcopy(receipt),
+                    "httpStatus": http_status,
+                },
+            )
+            session.add(row)
+            session.commit()
+            return self._debug_command(row)
+
+    def get_debug_command(
+        self, command_id: str
+    ) -> tuple[str, dict[str, Any], int] | None:
+        with self._session_factory() as session:
+            row = session.scalar(
+                select(WorkflowDebugCommandRow)
+                .where(WorkflowDebugCommandRow.id == command_id)
+                .order_by(WorkflowDebugCommandRow.run_id)
+            )
+            return self._debug_command(row) if row is not None else None
+
+    def clear_variable_tracking(
+        self, run_id: str, *, now: datetime
+    ) -> WorkflowRunEvent:
+        with self._session_factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            run = self._require_run(session, run_id)
+            sequence = self._next_sequence(session, run_id)
+            row = WorkflowRunEventRow(
+                run_id=run_id,
+                seq=sequence,
+                payload={
+                    "type": "execution:variables_cleared",
+                    "occurredAt": _iso(now),
+                    "payload": {},
+                    "nodeId": None,
+                    "executionId": None,
+                },
+            )
+            session.add(row)
+            value = copy.deepcopy(run.payload)
+            value["eventCount"] = sequence
+            run.payload = value
+            session.commit()
+            return _event(row)
+
+    @staticmethod
+    def _debug_command(
+        row: WorkflowDebugCommandRow,
+    ) -> tuple[str, dict[str, Any], int]:
+        payload = copy.deepcopy(row.payload)
+        receipt = payload.get("receipt")
+        if not isinstance(receipt, dict):
+            receipt = payload
+        status = payload.get("httpStatus")
+        if not isinstance(status, int):
+            status = 200 if receipt.get("success") is True else 409
+        return row.request_hash, receipt, status

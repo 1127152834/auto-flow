@@ -1,0 +1,70 @@
+{
+  "evidenceId": "BE-project-studio-credential-runtime",
+  "scenarioBatches": [
+    {
+      "scenario": "stop",
+      "batchId": "a711655c-6c8d-4d2c-a621-0a69cb6b1fdc",
+      "taskId": "f5fc7d35-3da4-4a89-b6e0-cd2ee46bc025",
+      "status": "cancelled"
+    },
+    {
+      "scenario": "failure",
+      "batchId": "3654b41e-6456-4774-81f8-dea4cc7c6388",
+      "taskId": "33682cbe-3016-458a-8c09-395cde1a59af",
+      "status": "failed"
+    },
+    {
+      "scenario": "recovered",
+      "batchId": "6c0244a0-4e3f-42f5-8d99-ebdf59671935",
+      "taskId": "07be58f3-dfbe-4216-ae7c-60cfb3ac249a",
+      "status": "succeeded"
+    }
+  ],
+  "checkedAt": "2026-09-23T08:24:59.540Z",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "packaged-directory",
+  "packageBoundary": {
+    "resources": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources",
+    "forbiddenReferences": [],
+    "scannedNeedles": [
+      "reference/WebRPA",
+      "127.0.0.1:5175",
+      "StudioMockTools",
+      "api/mock-server"
+    ]
+  },
+  "buildArtifacts": {
+    "appAsarSha256": "5b165e272216753b32a98fc306b2cc69e6197a4bcf980145d2487129124c4f7d",
+    "backendExecutableSha256": "820508b5c826f4e0a8acab065d37a07a8997c2187f4855c7c61f9ebb900d0876"
+  },
+  "buildSha256": "08ec32a97ab0e3ae48e73a7778fbe1c46d3a76439d43fe9ad469bd915682aeaf",
+  "projectId": "80302232-61d8-4547-add8-fc1862d659a7",
+  "workflowId": "oH36aWb9NttZiefwj0sSl",
+  "profileId": "3b2f52b4-9c80-4a3e-adeb-6b4533e3349a",
+  "batchId": "002e8501-ec00-48ad-bff6-137a30981bca",
+  "taskId": "1b100a55-09a3-43a3-be6f-5edf1999320a",
+  "checks": [
+    "主应用真实服务在临时工作区创建 CloakBrowser Profile",
+    "正式项目 UI 新建项目，由项目自动化目录进入 Studio",
+    "主窗口通过真实点击打开正式 Studio，Studio 只读取主应用 Profile",
+    "真实凭据库UI保存本次随机临时字段；不记录明文截图",
+    "通过正式新建入口创建空工作流",
+    "通过画布原生右键菜单逐一添加并配置五个节点，没有直接修改 Store",
+    "通过画布连接手柄建立五节点顺序链",
+    "正式保存经真实 HTTP 写入 SQLite，返回修订 1",
+    "正式 Studio 原生关闭重开，恢复五节点后关闭窗口返回项目",
+    "项目受管worker从系统凭据读取字段并真实输入网页密码；页面校验成功，公开任务结果和事件无秘密或私有消息",
+    "项目自动化真实 UI 绑定 Studio 文档和主应用 Profile，批次五节点执行、输出和 PNG 展示通过，浏览器已清理",
+    "项目任务 stop 真实 UI 验收完成，后续节点与进程清理符合预期",
+    "项目任务 failure 真实 UI 验收完成，后续节点与进程清理符合预期",
+    "项目任务 recovered 真实 UI 验收完成，后续节点与进程清理符合预期",
+    "项目任务恢复运行后真实UI删除临时凭据；已保存工作流保留引用，用户数据不受影响"
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browser": "CloakBrowser only",
+    "interaction": "real UI mouse/keyboard; APIs only setup Profile and assert evidence"
+  }
+}

@@ -313,7 +313,8 @@ def test_formula_metadata_scans_beyond_sample_and_streams_rows(tmp_path: Path) -
         for entry in original.infolist():
             data = original.read(entry)
             if entry.filename == "xl/worksheets/sheet1.xml":
-                data = re.sub(rb"<f>1\+1</f><v\s*/>", b"<f>1+1</f><v>2</v>", data)
+                data, replaced = re.subn(rb"<f>1\+1</f><v(?:\s*/>|>\s*</v>)", b"<f>1+1</f><v>2</v>", data)
+                assert replaced == 1
             output.writestr(entry, data)
     rewritten.replace(source)
 

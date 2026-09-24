@@ -9,7 +9,11 @@ import pytest
 from autoflow.application.models.service import ModelService
 from autoflow.domain.credentials import CredentialStoreUnavailableError
 from autoflow.domain.models.errors import ModelError
-from autoflow.domain.models.models import LocalModelSpec, ProviderProfile
+from autoflow.domain.models.models import (
+    LocalModelSpec,
+    ModelInvocationResult,
+    ProviderProfile,
+)
 from autoflow.infrastructure.database.model_providers import (
     model_repository_transaction,
 )
@@ -391,3 +395,85 @@ async def test_concurrent_provider_delete_maps_to_not_found(tmp_path):
     with pytest.raises(ModelError) as captured:
         racing.delete_provider(provider.id)
     assert captured.value.code == "MODEL_PROVIDER_NOT_FOUND"
+
+
+@pytest.mark.asyncio
+async def test_execution_binding_resolves_stable_model_id_and_secret(tmp_path):
+    store = FakeCredentialStore()
+    service, _factory = _service(tmp_path, store)
+    provider = await service.connect(
+        _profile(),
+        "runtime-secret",
+        [LocalModelSpec.from_values("Model-A", "Model A")],
+    )
+
+    binding = service.execution_binding(provider.models[0].id)
+
+    assert binding.model_id == provider.models[0].id
+    assert binding.model_key == "Model-A"
+    assert binding.connection.provider_kind == "openai"
+    assert binding.secret == "runtime-secret"
+    assert "runtime-secret" not in repr(binding)
+
+
+@pytest.mark.asyncio
+async def test_invoke_uses_managed_model_binding_without_exposing_secret(tmp_path):
+    class InvokeGateway(FakeModelGateway):
+        def __init__(self):
+            super().__init__()
+            self.request = None
+
+        async def invoke(self, connection, secret, model_key, payload):
+            self.request = (connection, secret, model_key, payload)
+            return ModelInvocationResult(model_key, "回复", "", {}, "https://safe.test")
+
+    path = tmp_path / "invoke.db"
+    migrate_database(path)
+    factory = create_session_factory(path)
+    gateway = InvokeGateway()
+    service = ModelService(
+        partial(model_repository_transaction, factory), FakeCredentialStore(), gateway
+    )
+    provider = await service.connect(
+        _profile(),
+        "runtime-secret",
+        [LocalModelSpec.from_values("Model-A", "Model A")],
+    )
+
+    result = await service.invoke(
+        provider.models[0].id, {"messages": [{"role": "user", "content": "问题"}]}
+    )
+
+    assert result.content == "回复"
+    assert gateway.request[1:] == (
+        "runtime-secret",
+        "Model-A",
+        {"messages": [{"role": "user", "content": "问题"}]},
+    )
+
+
+@pytest.mark.asyncio
+async def test_execution_binding_rejects_disabled_model_or_provider(tmp_path):
+    service, _factory = _service(tmp_path)
+    provider = await service.connect(
+        _profile(),
+        "runtime-secret",
+        [LocalModelSpec.from_values("Model-A", "Model A")],
+    )
+    model = provider.models[0]
+    service.update_model(
+        model.id,
+        LocalModelSpec.from_values(model.model_key, model.display_name, enabled=False),
+    )
+    with pytest.raises(ModelError) as model_error:
+        service.execution_binding(model.id)
+    assert model_error.value.code == "MODEL_DISABLED"
+
+    service.update_model(
+        model.id,
+        LocalModelSpec.from_values(model.model_key, model.display_name, enabled=True),
+    )
+    service.update_metadata(provider.id, provider.name, provider.description, False)
+    with pytest.raises(ModelError) as provider_error:
+        service.execution_binding(model.id)
+    assert provider_error.value.code == "MODEL_PROVIDER_DISABLED"

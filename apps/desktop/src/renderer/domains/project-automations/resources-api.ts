@@ -9,7 +9,7 @@ import type { InputTableOption } from './components/InputPlanEditor'
 type Schema = components['schemas']
 export function createAutomationResourcesApi(client: StreamingApiClient, projectId: string) {
   return {
-    workflows: (signal?: AbortSignal) => client.request<Schema['WorkflowCatalogList']>('/api/v1/workflows', { signal }),
+    workflows: (signal?: AbortSignal) => client.request<Schema['WorkflowCatalogList']>(`/api/v1/workflows?projectId=${encodeURIComponent(projectId)}`, { signal }),
     profiles: (signal?: AbortSignal) => client.request<Schema['ProfileList']>('/api/v1/profiles', { signal }),
     models: (signal?: AbortSignal) => client.request<Schema['ModelProviderListRead']>('/api/v1/model-providers', { signal }),
     proxies: (signal?: AbortSignal) => client.request<Schema['ProxyOptionsRead']>('/api/v1/proxy-options', { signal }),

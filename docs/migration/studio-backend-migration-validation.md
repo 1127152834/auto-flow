@@ -1,6 +1,6 @@
 # Studio 后端迁入验收矩阵
 
-状态：B0 实施完成；正式用户数据库副本项外部等待。B1 正式五节点主链及正常关窗保护已通过，异常、应用退出与换区矩阵仍在收尾；B2 的 30 个网页节点已接入生产，B3 的图/变量/21 个批准节点及自定义模块必要配套已接入，B4 的 88 个节点已有生产执行器。正式 CloakBrowser/Electron 的剩余矩阵继续集中验收。日期：2026-09-16。
+状态：B0 实施完成；正式用户数据库副本项外部等待。B1 正式五节点主链及正常关窗保护已通过，异常、应用退出与换区矩阵仍在收尾；B2 的 30 个网页节点已接入生产，基础网页族11节点已完成真实CloakBrowser及正式Electron开发入口闭环，B3 的图/变量/21 个批准节点及自定义模块必要配套已接入，B4 的 88 个节点已完成源码差分、生产接入和正式 Electron 开发入口验收。正式 CloakBrowser/Electron 的剩余矩阵继续集中验收。日期：2026-09-16。
 
 ## 1. 使用方式
 
@@ -55,33 +55,33 @@
 
 | ID | 场景 | 通过标准 | 状态 |
 |---|---|---|---|
-| BE-B2-001 | 35 个网页节点逐项执行全部配置分支 | 每个节点三条逐项用例通过；未迁节点预检失败 | 部分通过：B1 的 5 个基础节点及 B2 的全部 30 个节点已完成冻结源码差分、正式注册及 HTTP 准入，不再有缺少生产执行器的 B2 网页节点。其中 `wait_page_load`、`page_load_complete` 已通过 macOS arm64 真实 CloakBrowser provider 和正式 Electron 开发入口；其余网页动作已接入共享页面、iframe、鼠标、下载、文件选择、请求监听和工作区产物端口，真实 CloakBrowser 用例已建立但本机当前没有隔离测试内核，因此尚未执行完整矩阵。网络抓取只迁入批准范围内的浏览器模式；系统进程及全局代理模式明确排除。目录包仍需重建。[页面加载模块族](studio-backend-migration/evidence/b2/page-load-family.json)、[基础网页模块族](studio-backend-migration/evidence/b2/web-basic-family.json)、[高级网页模块族](studio-backend-migration/evidence/b2/advanced-browser-family.json)、[网络监听模块族](studio-backend-migration/evidence/b2/network-monitor-family.json)、[其余网页模块族](studio-backend-migration/evidence/b2/remaining-browser-family.json)、[页面加载正式 UI](studio-backend-migration/evidence/b2/formal-electron-nE1G3q/result.json) |
+| BE-B2-001 | 35 个网页节点逐项执行全部配置分支 | 每个节点三条逐项用例通过；未迁节点预检失败 | 通过：B1 的 5 个基础节点及 B2 的全部 30 个节点已完成冻结源码差分、正式注册及 HTTP 准入，不再有缺少生产执行器的 B2 网页节点。`wait_page_load`、`page_load_complete`、基础网页族11节点及高级网页族11节点已通过 macOS arm64 真实 CloakBrowser provider 和正式 Electron 开发入口；均由UI保存、正常关闭重开后真实执行。高级网页链进一步覆盖选择、勾选、拖拽、滚动、上传、下载、图片保存、亲属元素查询和存在/可见分支，下载与PNG哈希完整。网络监听3节点及最后的标签切换、表格提取、浏览器抓包也已通过真实动作、脱敏和清理闭环；35个网页执行节点的源码差分、合同和正式UI真实执行证据已齐。网络抓取只迁入批准范围内的浏览器模式；系统进程及全局代理模式明确排除。目录包仍需重建。[页面加载模块族](studio-backend-migration/evidence/b2/page-load-family.json)、[基础网页模块族](studio-backend-migration/evidence/b2/web-basic-family.json)、[基础网页正式 UI](studio-backend-migration/evidence/b2/formal-web-basic-electron-csD29H/result.json)、[高级网页模块族](studio-backend-migration/evidence/b2/advanced-browser-family.json)、[网络监听模块族](studio-backend-migration/evidence/b2/network-monitor-family.json)、[其余网页模块族](studio-backend-migration/evidence/b2/remaining-browser-family.json)、[页面加载正式 UI](studio-backend-migration/evidence/b2/formal-electron-nE1G3q/result.json) |
 | BE-B2-002 | CSS、XPath、多匹配、零匹配、非法语法 | 行为与冻结执行器一致；错误含 nodeId/path | 尚未验收 |
 | BE-B2-003 | 主页、同域/跨域嵌套 iframe、开放 Shadow DOM | 目标身份正确，不回退到其它页面或框架 | 尚未验收 |
-| BE-B2-004 | 弹窗、新标签、刷新、前进/后退、页关闭和下载 | 页面选择和关闭策略与原版一致，丢失当前页明确失败 | 尚未验收 |
+| BE-B2-004 | 弹窗、新标签、刷新、前进/后退、页关闭和下载 | 页面选择和关闭策略与原版一致，丢失当前页明确失败 | 通过：真实CloakBrowser及正式Electron已验证alert弹窗、新标签创建与选择、刷新、前进/后退、页关闭和点击下载；下载内容与登记产物哈希一致。[基础网页正式 UI](studio-backend-migration/evidence/b2/formal-web-basic-electron-csD29H/result.json) |
 | BE-B2-005 | Profile 启动参数、指纹、语言、时区、代理、扩展和无头/可见模式 | 使用冻结快照且不修改 Profile；秘密不落日志 | 尚未验收 |
 | BE-B2-006 | 拾取→定位测试→应用→保存→独立运行 | 独立运行命中同一目标；取消和迟到结果不改文档 | 尚未验收 |
 | BE-B2-007 | 运行、Debug、拾取、录制争用同一工作区 | 取得资源原子互斥，清理前不释放 | 尚未验收 |
-| BE-B2-008 | 1 MiB 提取、下载和截图 | 事件只含摘要/引用，文件大小与哈希完整 | 部分通过：超过 64 KiB 的节点 JSON 结果由 worker 写入登记产物，事件只保留摘要及 artifactIds；下载、图片和表格二进制均通过有界产物端口，取消后清除未登记临时文件。1 MiB 真实 CloakBrowser 下载、截图和提取哈希仍待集中验收。[基础网页模块族](studio-backend-migration/evidence/b2/web-basic-family.json)、[高级网页模块族](studio-backend-migration/evidence/b2/advanced-browser-family.json)、[其余网页模块族](studio-backend-migration/evidence/b2/remaining-browser-family.json) |
+| BE-B2-008 | 1 MiB 提取、下载和截图 | 事件只含摘要/引用，文件大小与哈希完整 | 部分通过：超过 64 KiB 的节点 JSON 结果由 worker写入登记产物，事件只保留摘要及 artifactIds；正式Electron已核对真实下载、PNG图片和Excel表格产物的大小与SHA-256，取消后清除未登记临时文件。1 MiB真实CloakBrowser提取、下载和截图容量矩阵仍待集中验收。[基础网页模块族](studio-backend-migration/evidence/b2/web-basic-family.json)、[基础网页正式 UI](studio-backend-migration/evidence/b2/formal-web-basic-electron-csD29H/result.json)、[高级网页模块族](studio-backend-migration/evidence/b2/advanced-browser-family.json)、[其余网页模块族](studio-backend-migration/evidence/b2/remaining-browser-family.json) |
 
 ## 6. B3 控制流、变量、子流程和模块
 
 | ID | 场景 | 通过标准 | 状态 |
 |---|---|---|---|
-| BE-B3-001 | 起始节点、孤立节点、条件/错误边和汇合 | 与冻结 parser 的选路和副作用一致 | 应用层已通过：冻结解析器差分及运行时合同覆盖空流程、起点、悬空边、条件真假、死路消除、真实汇合、错误边、非法回环与调度上限；错误分支会继续执行但仍保留原失败终态。正式 Electron 组合仍待验收。[解析器差分证据](studio-backend-migration/evidence/b3/graph-parser-differential-2026-09-16.json)、[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json) |
-| BE-B3-002 | 循环、foreach、foreach_dict、infinite_loop、break/continue | 轮次、局部变量和退出路径一致；可停止 | 后端通过、正式 UI 待验收：四类循环入口、列表/字典初值、count/range/while 推进、嵌套最近层 break/continue、总调度上限与每轮主动让出均已验证；真实 worker 的 1,000 轮纯变量循环中途停止后无后继调度或残留进程。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json) |
-| BE-B3-003 | 并行分支 | 验证偏序和结果集合；不为测试稳定改成串行 | 应用层已通过：双分支必须同时进入后才能完成，汇合只执行一次；产物 writer 与敏感值状态按节点任务隔离，没有为测试串行化。正式 worker/Electron 组合仍待验收。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json) |
-| BE-B3-004 | `${name}`、`{name}`、递归列表/字典、表达式和缺失变量 | 与冻结变量测试一致，错误明确 | 部分通过：16 个控制/变量节点的 48 项冻结差分已覆盖模板、表达式、变量写入、JSONPath、时间及错误文本；完整递归变量矩阵与正式 UI 尚未关闭。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json) |
-| BE-B3-005 | 子流程按名称/ID、组几何、无入口回退、循环引用和 32 层限制 | 原算法一致；必要位置和尺寸保存恢复 | 后端通过、正式 UI 待验收：冻结标记语义、名称优先/ID回退、分组几何、subflow_header可达图、定义区主图隔离及循环引用已在真实 worker 通过；32 层成功并保留完整 scope，33 层明确拒绝。正式 Electron 保存恢复仍归 B3.6。[子流程证据](studio-backend-migration/evidence/b3/canvas-subflow-runtime-2026-09-16.json) |
-| BE-B3-006 | 自定义模块更新、依赖缺失、运行中修改 | 运行使用冻结解析内容；缺失依赖启动前拒绝 | 后端与前端合同已通过：八个入口、revision/幂等、名称冲突、依赖缺失/循环、引用删除保护、运行中修改不影响冻结 revision/digest、真实 worker 隔离参数与声明输出、递归深度及浏览器需求传播均有证据。正式 Electron 真实 UI 组合仍待 B3.6 集中验收。[自定义模块证据](studio-backend-migration/evidence/b3/custom-module-runtime-2026-09-16.json) |
-| BE-B3-007 | 同一节点循环/重试多次 | 每次有 executionId，日志与产物不覆盖 | 后端通过、正式 UI 待验收：每次调度产生独立 executionId，同一节点多轮保留顺序及循环轮次；嵌套工作流、自定义模块和画布子流程记录 scope；协调器持久化上下文，日志、结果和产物均按 executionId 关联。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json) |
-| BE-B3-008 | 1,000 轮纯变量流程中停止 | 事件循环可响应，停止后无后续调度或资源泄漏 | 后端通过：真实 worker 在 1,000 轮纯变量循环中途停止，停止后事件数量不再增加，不执行 done 节点、不发布 execution:completed，worker 进程和活跃槽均清空；专项连续运行 3 次通过。正式 Electron 组合仍归 B3.6。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json) |
+| BE-B3-001 | 起始节点、孤立节点、条件/错误边和汇合 | 与冻结 parser 的选路和副作用一致 | 已通过：冻结解析器差分及运行时合同覆盖空流程、起点、悬空边、条件真假、死路消除、真实汇合、错误边、非法回环与调度上限；正式 Electron 组合从两个顶层入口执行，真分支和汇合后尾节点各执行一次，假分支无副作用。[解析器差分证据](studio-backend-migration/evidence/b3/graph-parser-differential-2026-09-16.json)、[正式组合证据](studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json) |
+| BE-B3-002 | 循环、foreach、foreach_dict、infinite_loop、break/continue | 轮次、局部变量和退出路径一致；可停止 | 已通过：后端覆盖四类循环、嵌套最近层 break/continue、调度上限及 1,000 轮停止；正式 Electron 通过真实模块条分别验证次数、列表、字典、无限循环、break 和 continue，轮次、累积结果、跳过节点及 done 路径均与预期一致，并在 1,000 轮纯变量流程中通过真实停止按钮终止运行。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json)、[正式组合证据](studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json) |
+| BE-B3-003 | 并行分支 | 验证偏序和结果集合；不为测试稳定改成串行 | 已通过：双分支必须同时进入后才能完成，汇合只执行一次；正式 Electron 持久化两个顶层入口并由生产调度器并发执行，循环分支不会把轮次上下文泄漏给子流程分支，未为测试串行化。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json)、[正式组合证据](studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json) |
+| BE-B3-004 | `${name}`、`{name}`、递归列表/字典、表达式和缺失变量 | 与冻结变量测试一致，错误明确 | 已通过：16 个控制/变量节点的 48 项冻结差分覆盖模板、表达式、变量写入、JSONPath、时间及错误文本；追加的 30 项递归矩阵覆盖多层列表/字典、动态及负索引、数字键、递归容器、链式模板、缺失/越界路径和 tuple。正式 Electron 通过真实 UI 保存对象初值，并解析列表、字典和嵌套索引变量后完成断言。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json)、[正式组合证据](studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json) |
+| BE-B3-005 | 子流程按名称/ID、组几何、无入口回退、循环引用和 32 层限制 | 原算法一致；必要位置和尺寸保存恢复 | 已通过：名称优先/ID回退、分组几何、subflow_header可达图、定义隔离、循环引用及 32/33 层边界均通过真实 worker；正式 Electron 通过 UI 创建分组定义、组内节点和稳定 ID 调用，保存、正常关闭、重开后独立执行并保留 scope，并通过名称运行另一条已保存工作流。运行布局在 worker 边界重新合并，避免几何定义丢失。[子流程证据](studio-backend-migration/evidence/b3/canvas-subflow-runtime-2026-09-16.json)、[正式组合证据](studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json) |
+| BE-B3-006 | 自定义模块更新、依赖缺失、运行中修改 | 运行使用冻结解析内容；缺失依赖启动前拒绝 | 已通过：八个入口、revision/幂等、名称冲突、依赖缺失/循环、引用删除保护、运行中修改不影响冻结 revision/digest、真实 worker 隔离参数与声明输出、递归深度及浏览器需求传播均有证据；正式 Electron 通过真实 UI 从当前画布创建模块、声明输出、拖入新流程、真实保存并由生产 worker 隔离执行。[自定义模块证据](studio-backend-migration/evidence/b3/custom-module-runtime-2026-09-16.json)、[正式组合证据](studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json) |
+| BE-B3-007 | 同一节点循环/重试多次 | 每次有 executionId，日志与产物不覆盖 | 已通过：每次调度产生独立 executionId；正式 Electron 中同一增减节点运行三轮，结果值为 1/2/3、轮次为 1/2/3，列表和字典循环也分别保留每轮结果；日志和结果均不覆盖。嵌套工作流、自定义模块和画布子流程 scope 由专项覆盖。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json)、[正式组合证据](studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json) |
+| BE-B3-008 | 1,000 轮纯变量流程中停止 | 事件循环可响应，停止后无后续调度或资源泄漏 | 已通过：真实 worker 专项连续运行 3 次；正式 Electron 通过真实 UI 启动 1,000 轮流程并点击停止，停止时已执行 924 条结果，后继节点未调度，300ms 后结果不再增长，SQLite 终态为 `stopped`、`cleanupState=completed` 且活跃槽为空。[控制流证据](studio-backend-migration/evidence/b3/control-variable-runtime-family-2026-09-16.json)、[正式组合证据](studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json) |
 
 ## 7. B4 纯数据与表格
 
 | ID | 场景 | 通过标准 | 状态 |
 |---|---|---|---|
-| BE-B4-001 | 88 个节点的默认值、类型、空值、错误和独有分支 | 所有逐节点 source-parity/contract/real-execution 通过 | 部分通过：88 个批准节点已全部完成冻结源码差分、正式注册、HTTP 准入和无浏览器 worker 接入；未批准的文件比较、目录比较和打印节点没有混入。正式 Electron 开发入口已实测数据结构 5 节点、数学/统计 4 节点、高级数据 4 节点及表格全部 7 节点，共 20 个；其余 68 个逐节点正式 UI 用例仍待执行。[数据结构证据](studio-backend-migration/evidence/b4/data-structure-family.json)、[数学统计证据](studio-backend-migration/evidence/b4/math-number-statistics-family.json)、[实用工具证据](studio-backend-migration/evidence/b4/utility-tools-family.json)、[高级数据证据](studio-backend-migration/evidence/b4/advanced-data-family.json)、[表格证据](studio-backend-migration/evidence/b4/table-family.json) |
+| BE-B4-001 | 88 个节点的默认值、类型、空值、错误和独有分支 | 所有逐节点 source-parity/contract/real-execution 通过 | 已通过：88 个批准节点已全部完成冻结源码差分、正式注册、HTTP 准入和无浏览器 worker 接入；未批准的文件比较、目录比较和打印节点没有混入。正式 Electron 开发入口已实测数据结构全部 15 节点、实用工具全部 9 节点、数学/统计全部 31 节点、高级数据全部 26 节点及表格全部 7 节点，共 88 个；B4 批准节点已全部完成逐节点正式 UI 用例。数据结构族在同一条 15 节点工作流中保存为 14 条连线，全部结果与日志落库，`list_export` 产物内容和 SHA-256 已核对，运行前后均无 CloakBrowser 进程。[数据结构证据](studio-backend-migration/evidence/b4/data-structure-family.json)、[数据结构正式 UI 证据](studio-backend-migration/evidence/b4/formal-electron-e63pS8/result.json)、[数学统计证据](studio-backend-migration/evidence/b4/math-number-statistics-family.json)、[实用工具证据](studio-backend-migration/evidence/b4/utility-tools-family.json)、[高级数据证据](studio-backend-migration/evidence/b4/advanced-data-family.json)、[表格证据](studio-backend-migration/evidence/b4/table-family.json)、[B4 共享回归与关闭证据](studio-backend-migration/evidence/b4/family-closure-2026-09-21.json) |
 | BE-B4-002 | 字符串、正则、JSON、列表、字典、数学和统计边界 | 与原 type_utils/safe_expr/json_safe 行为一致 | 已通过迁入层：基础及高级列表、字典、字符串、正则、数学、统计、CSV、表格与 9 个实用工具节点的正常和错误语义已与冻结源对照；表达式沿用冻结 AST 白名单，并增加容量、取消、凭据派生值、并发写入和非法枚举保护。各族证据同上。 |
 | BE-B4-003 | 表格/CSV 的中文、空单元格、大列表和文件往返 | 值、顺序、编码和哈希一致，不静默截断 | 已通过 darwin-arm64 开发入口：正式 UI 的 8 节点共享表链完成中文值、列补齐、改单元格、读取、删除、清空和 XLSX 往返；HTTP、SSE、SQLite 与 OpenPyXL 核验一致，XLSX 为 5220 bytes，SHA-256 `c439ad33da33ce4a3452ca9d8e204b59a078c9225c49d408cdab1d070b35d77c`。CSV 空值、编码、容量和文件往返由差分及产物集成用例覆盖；表头和值的公式前缀按 AutoFlow 安全边界写为文本，二进制/文本输出以跨进程锁和发布身份阻止并发覆盖。最终独立审查未发现剩余 P0/P1。[正式表格 UI 证据](studio-backend-migration/evidence/b4/formal-table-electron-Dvd2Il/result.json)、[表格迁入与审查证据](studio-backend-migration/evidence/b4/table-family.json) |
 | BE-B4-004 | 无效编码、NaN/Infinity、超大索引和错误类型 | 结构化失败且后续策略按配置执行 | 已通过迁入层：`list_export` 非法编码、数据结构索引及冻结异常文本已通过差分；数学族的 NaN、Infinity 和复数在事件边界结构化失败，排列组合超容量在计算前拒绝；哈希/URL 编码、无效时间戳、HEX、高级数据递归/循环引用、未知枚举及表格无效格式/路径/容量均明确失败。各族证据同上。 |
@@ -91,15 +91,15 @@
 
 | ID | 场景 | 通过标准 | 状态 |
 |---|---|---|---|
-| BE-B5-001 | 22 个 AI 节点逐项使用主应用模型 ID | 不读取第二套配置；请求与模型选择一致 | 尚未验收 |
-| BE-B5-002 | 流式响应、取消、超时、供应商错误、限流和大结果 | 状态、错误和结果引用符合合同；取消不继续写结果 | 尚未验收 |
-| BE-B5-003 | MCP 保存、测试、重载、调用、拒绝和断线 | 修订与命令幂等；权限结果不被绕过 | 尚未验收 |
-| BE-B5-004 | API key、代理密码和 License | 不进入快照、事件、日志、诊断或导出 | 尚未验收 |
-| BE-B5-005 | AI 助手添加/修改节点及权限批准、拒绝、取消 | 排除类型仍拒绝；画布变化与命令确认一致且可撤销 | 尚未验收 |
-| BE-B5-006 | LangGraph 候选版本在 Python 3.11、SQLite 检查点和 PyInstaller 中运行 | 版本被锁定；不默认外发追踪；冻结包启动、暂停和恢复通过 | 尚未验收 |
-| BE-B5-007 | 小助手多轮模型→工具→权限→结果→后续模型 | 实际路径经过 LangGraph；不存在绕过图的完整助手循环；前端确认前不报告画布已改 | 尚未验收 |
-| BE-B5-008 | 权限等待中拒绝、取消、断线、重启和参数变化 | 旧批准不可复用，恢复查询原命令，不重复有副作用工具 | 尚未验收 |
-| BE-B5-009 | 助手检查点、事件、日志与导出秘密扫描 | 工作区隔离；API key、代理密码、License 和完整 Profile 均不出现 | 尚未验收 |
+| BE-B5-001 | 22 个 AI 节点逐项使用主应用模型 ID | 不读取第二套配置；请求与模型选择一致 | 部分通过：22 个节点均已迁入生产注册表。需要模型的 15 节点统一使用主应用 `modelId` 和系统凭据；Firecrawl 与验证码节点复用运行中的 CloakBrowser Profile；图片 OCR 与人脸识别使用随冻结后端提供的本地模型。12 个模型节点已通过本地受控 HTTP 真实 worker；Firecrawl 与验证码节点已在 darwin-arm64 的 CloakBrowser 151 对本地受控站点真实执行；图片 OCR 与人脸识别已通过真实及冻结 worker。集中正式 UI、真实供应商和未测平台仍待验收。[模型边界证据](studio-backend-migration/evidence/b5/model-boundary-ai-chat.json)、[文本任务族](studio-backend-migration/evidence/b5/ai-text-task-family.json)、[视觉节点](studio-backend-migration/evidence/b5/ai-vision.json)、[视觉操作](studio-backend-migration/evidence/b5/ai-vision-act.json)、[网页理解节点](studio-backend-migration/evidence/b5/ai-scraper-family.json)、[Firecrawl网页数据族](studio-backend-migration/evidence/b5/firecrawl-family.json)、[验证码节点族](studio-backend-migration/evidence/b5/captcha-family.json)、[AI媒体节点族](studio-backend-migration/evidence/b5/ai-media-family.json)、[媒体识别节点族](studio-backend-migration/evidence/b5/media-recognition-family.json) |
+| BE-B5-002 | 流式响应、取消、超时、供应商错误、限流和大结果 | 状态、错误和结果引用符合合同；取消不继续写结果 | 部分通过：本地受控 OpenAI 兼容服务已验证真实 SSE 分块、推理/正文增量、工具参数重组、超时、限流、取消关闭上游及大结果引用；正式打包 UI 验证停止后迟到内容不写入。15 个商业供应商节点保持外部等待，22 个节点级正式 UI 仍待核销。[流式证据](studio-backend-migration/evidence/b5/assistant-streaming-events.json)、[供应商台账](studio-backend-migration/evidence/b5/provider-evidence-ledger.json) |
+| BE-B5-003 | MCP 保存、测试、重载、调用、拒绝和断线 | 修订与命令幂等；权限结果不被绕过 | 通过（本地 stdio，macOS arm64）：真实 MCP SDK 完成保存、修订冲突、稳定命令查询、重载、工具发现、权限暂停、批准后调用、拒绝和 sidecar 清理；冻结目录包通过正式 UI。远程 SSE/streamable HTTP 实服保持外部等待。[MCP 证据](studio-backend-migration/evidence/b5/mcp-config-tools.json)、[正式 UI](studio-backend-migration/evidence/b5/formal-assistant-electron-uelQUT/result.json) |
+| BE-B5-004 | API key、代理密码和 License | 不进入快照、事件、日志、诊断或导出 | 通过：需要模型的节点仅从系统 CredentialStore 解析临时绑定，MCP 配置正文同样只存秘密引用；运行快照、事件、日志、产物清单、导出与 LangGraph checkpoint 已用 API key、代理密码和 License canary 扫描。AI 媒体与网页节点没有第二套秘密配置。[模型边界证据](studio-backend-migration/evidence/b5/model-boundary-ai-chat.json)、[脱敏证据](studio-backend-migration/evidence/b5/assistant-artifacts-redaction.json)、[MCP 证据](studio-backend-migration/evidence/b5/mcp-config-tools.json) |
+| BE-B5-005 | AI 助手添加/修改节点及权限批准、拒绝、取消 | 排除类型仍拒绝；画布变化与命令确认一致且可撤销 | 通过（macOS arm64 冻结目录包）：正式 UI 逐轮添加、修改、批准、拒绝和取消；批准前画布不变，排除节点由后端拒绝且不进入权限请求，结果可保存并在正常关窗重开后恢复。[正式 UI](studio-backend-migration/evidence/b5/formal-assistant-electron-uelQUT/result.json) |
+| BE-B5-006 | LangGraph 候选版本在 Python 3.11、SQLite 检查点和 PyInstaller 中运行 | 版本被锁定；不默认外发追踪；冻结包启动、暂停和恢复通过 | 通过（macOS arm64）：LangGraph 1.2.11 与 SQLite checkpoint 3.1.1 已锁定；持久化中断恢复、异步取消、核心路径无网络连接、PyInstaller 收集、sidecar 启停及冻结目录包的生产助手暂停/恢复均通过。[兼容性证据](studio-backend-migration/evidence/b5/langgraph-runtime-compatibility.json)、[正式 UI](studio-backend-migration/evidence/b5/formal-assistant-electron-uelQUT/result.json) |
+| BE-B5-007 | 小助手多轮模型→工具→权限→结果→后续模型 | 实际路径经过 LangGraph；不存在绕过图的完整助手循环；前端确认前不报告画布已改 | 通过（本地受控模型，macOS arm64 冻结目录包）：正式链路实际经过 LangGraph 的模型、结构化工具、权限中断、工具结果和后续模型回合；两轮画布操作与真实 MCP 调用均在批准后发生。[正式 UI](studio-backend-migration/evidence/b5/formal-assistant-electron-uelQUT/result.json) |
+| BE-B5-008 | 权限等待中拒绝、取消、断线、重启和参数变化 | 旧批准不可复用，恢复查询原命令，不重复有副作用工具 | 通过：稳定 commandId、批准修订、动作认领、拒绝、取消、响应丢失查询和正常关窗恢复均通过专项及正式 UI；历史恢复没有重放画布或 MCP 副作用。[流式与恢复证据](studio-backend-migration/evidence/b5/assistant-streaming-events.json)、[正式 UI](studio-backend-migration/evidence/b5/formal-assistant-electron-uelQUT/result.json) |
+| BE-B5-009 | 助手检查点、事件、日志与导出秘密扫描 | 工作区隔离；API key、代理密码、License 和完整 Profile 均不出现 | 通过：大图片/文本/工具结果仅保存工作区产物引用；会话、SSE、命令记录和 LangGraph 检查点通过递归 canary 扫描，模型与 MCP 秘密仍由系统秘密存储持有。[脱敏证据](studio-backend-migration/evidence/b5/assistant-artifacts-redaction.json)、[MCP 证据](studio-backend-migration/evidence/b5/mcp-config-tools.json) |
 
 ## 9. B6 触发器、计划任务和外部能力
 
@@ -107,10 +107,10 @@
 |---|---|---|---|
 | BE-B6-001 | 61 个节点逐项执行正常、失败、取消和不可用平台 | 三条逐节点用例通过；不可用返回 CapabilityUnavailable | 尚未验收 |
 | BE-B6-002 | webhook/API/email/通知使用本地受控服务 | 请求方法、头、正文、代理、超时和次数可核对 | 尚未验收 |
-| BE-B6-003 | SSH 上传/下载/命令和断线 | 本地 SSH fixture 内容与哈希一致；会话关闭 | 尚未验收 |
+| BE-B6-003 | SSH 上传/下载/命令和断线 | 本地 SSH fixture 内容与哈希一致；会话关闭 | 通过 macOS arm64 开发入口：真实 UI 配置五节点、保存、正常关闭重开后运行；回环 SSH 命令输出与退出码、临时磁盘上传/下载内容及哈希一致，连接和命令进程已清理。真实 worker 补充认证失败、缺失文件、断开后执行、命令错误和停止验证。外部主机、Intel/Windows、冻结包及 UI 失败/停止变体待测。[正式 UI](studio-backend-migration/evidence/b6/formal-ssh-electron-nUEoTd/result.json)、[真实 worker](studio-backend-migration/evidence/b6/ssh-local-worker-2026-09-23/result.json) |
 | BE-B6-004 | 文件/屏幕共享启动、访问、停止和端口冲突 | 地址、访问和停止真实；退出后无监听端口 | 尚未验收 |
 | BE-B6-005 | 触发器启动、触发、去重、取消和重启 | 一次事件只启动一次；重启不重放历史动作 | 尚未验收 |
-| BE-B6-006 | 计划任务创建、到点、禁用、错过、日志和删除 | 时区、次数和运行记录可核对；停写时不新启动 | 尚未验收 |
+| BE-B6-006 | 计划任务创建、到点、禁用、错过、日志和删除 | 时区、次数和运行记录可核对；停写时不新启动 | 通过（macOS arm64）：专项测试覆盖中国时区、错过策略、稳定 occurrence 去重、持久队列、重复执行、停写、停止、删除和重启；正式开发入口及冻结目录包通过 UI 创建与停用、真实 CloakBrowser 五节点自动执行、日志/PNG、进程清理和整机重启恢复。[P2 验收索引](studio-backend-migration/evidence/p2/README.md) |
 | BE-B6-007 | shutdown/lock/printer 等平台节点 | 在可控测试适配器验证命令；实机仅在隔离环境按平台记录 | 尚未验收 |
 | BE-B6-008 | JS/Python/输入提示/语音双向请求 | claim/result/cancel 幂等，停止回收在途请求 | 尚未验收 |
 
@@ -130,12 +130,12 @@
 
 | ID | 场景 | 通过标准 | 状态 |
 |---|---|---|---|
-| BE-B8-001 | 条件、循环、并行和子流程中的断点/暂停/单步/继续 | 一次许可只调度一次，未走路径无伪成功 | 尚未验收 |
-| BE-B8-002 | commandId、pauseId、controlRevision 重复/过期/丢响应 | 查询原命令恢复，不多走一步，迟到命令拒绝 | 尚未验收 |
-| BE-B8-003 | 暂停变量查看/修改和循环局部变量 | 值与上下文真实；只读项不变；修改有诊断事件 | 尚未验收 |
-| BE-B8-004 | 日志全文搜索、级别/节点/执行筛选、分页和断流 | 查询覆盖数据库全部记录，游标不丢不重 | 尚未验收 |
-| BE-B8-005 | 1,000 轮、10,000 日志、重复产物和大于 64 KiB 值 | UI 有界加载，导出内容、数量和哈希一致 | 尚未验收 |
-| BE-B8-006 | 失败现场、结束调试、浏览器异常和清理重试 | 原失败保留；清理完成后终态正确；锁不提前释放 | 尚未验收 |
+| BE-B8-001 | 条件、循环、并行和子流程中的断点/暂停/单步/继续 | 一次许可只调度一次，未走路径无伪成功 | 部分通过：正式 Electron 已通过真实 UI 从流程入口运行至循环体首轮前暂停，展示当前轮次，继续后三轮完成且目标不重复暂停；真实 CloakBrowser 顺序网页链也已验证前置动作、目标前暂停和资源清理。真实 worker 专项覆盖条件选中/未选路径、并行暂停阻断及画布子流程作用域。条件与并行的正式 UI 矩阵仍待验收。[复杂调试 UI](studio-backend-migration/evidence/b8/formal-complex-debug-electron-J0ztvf/result.json)、[真实浏览器 UI](studio-backend-migration/evidence/b8/formal-run-to-electron-HqPaNk/result.json)、[专项证据](studio-backend-migration/evidence/b8/debug-control-foundation.json) |
+| BE-B8-002 | commandId、pauseId、controlRevision 重复/过期/丢响应 | 查询原命令恢复，不多走一步，迟到命令拒绝 | 部分通过：调试命令回执已持久化；清除进程内缓存后，单步与变量修改可按原 commandId 查询，同 ID 不同请求返回 409。37 项专项通过；sidecar 崩溃与正式 UI 恢复仍待验收。[证据](studio-backend-migration/evidence/b8/debug-control-foundation.json) |
+| BE-B8-003 | 暂停变量查看/修改和循环局部变量 | 值与上下文真实；只读项不变；修改有诊断事件 | 部分通过：真实 worker 已持久化流程初值、节点写入和人工原子修改，循环局部变量保持只读；暂停事件携带循环轮次与子流程作用域，正式 Studio 已显示首轮循环上下文。支持运行/工作流查询、筛选、分页、完整值读取、导出和清空。循环局部进入/退出的完整变化矩阵仍待验收。[证据](studio-backend-migration/evidence/b8/debug-control-foundation.json)、[正式 UI](studio-backend-migration/evidence/b8/formal-complex-debug-electron-J0ztvf/result.json) |
+| BE-B8-004 | 日志全文搜索、级别/节点/执行筛选、分页和断流 | 查询覆盖数据库全部记录，游标不丢不重 | 部分通过：真实 HTTP 已验证关键词、级别、节点、`executionId`、游标分页及固定截止序号导出；正式 Electron 使用真实 CloakBrowser 运行后，通过 UI 按 `executionId` 查询并与服务端完整持久化结果一致。SSE 断流后的日志补读去重仍待正式组合验收。[证据](studio-backend-migration/evidence/b8/debug-control-foundation.json)、[正式 UI](studio-backend-migration/evidence/b8/formal-run-to-electron-HqPaNk/result.json) |
+| BE-B8-005 | 1,000 轮、10,000 日志、重复产物和大于 64 KiB 值 | UI 有界加载，导出内容、数量和哈希一致 | 部分通过：501 条诊断记录跨页读取通过；大于 64 KiB 的中文值已写入诊断产物，事件和命令回执仅留摘要，完整值读取及固定截止序号 JSONL 导出与原值一致。1,000 轮、10,000 日志及正式 UI 容量验收仍待执行。[证据](studio-backend-migration/evidence/b8/debug-control-foundation.json) |
+| BE-B8-006 | 失败现场、结束调试、浏览器异常和清理重试 | 原失败保留；清理完成后终态正确；锁不提前释放 | 部分通过：正式 Electron 通过真实 UI 设置断点，真实 CloakBrowser 在无效选择器失败后进入 `failed_paused` 并保留变量、原错误和浏览器；“结束调试”携带运行身份完成 worker/浏览器清理后进入 `failed`，原失败节点保持不变且无残留受管进程。浏览器异常和清理失败重试仍待验收。[正式 UI 证据](studio-backend-migration/evidence/b8/formal-failed-pause-electron-94DFD8/result.json) |
 | BE-B8-007 | 同工作区重连、sidecar 崩溃、重开历史 | 普通重连恢复确认状态；崩溃标中断且不重放 | 尚未验收 |
 
 ## 12. B9 正式交付门槛

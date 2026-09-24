@@ -9,7 +9,7 @@ import { safeProjectError } from '../../projects/presentation-error'
 import { createEnvironmentApi, type EnvironmentOperation } from '../api'
 import { bindableRecords, selectedTargets } from '../record-targets'
 
-export function TaskEndPanel({ workspaceKey, instanceId, projectId, taskId, runId, executionGeneration, statusRevision = 0, inputs = [], client, disabled }: {
+export function TaskEndPanel({ workspaceKey, instanceId, projectId, taskId, runId, executionGeneration, statusRevision = 0, inputs = [], client, disabled, environmentCleaned = false }: {
   workspaceKey: string
   instanceId: string
   projectId: string
@@ -20,6 +20,7 @@ export function TaskEndPanel({ workspaceKey, instanceId, projectId, taskId, runI
   inputs?: unknown[]
   client: StreamingApiClient
   disabled: boolean
+  environmentCleaned?: boolean
 }) {
   const api = useMemo(() => createEnvironmentApi(client, projectId), [client, projectId])
   const instance = useQuery({
@@ -107,8 +108,8 @@ export function TaskEndPanel({ workspaceKey, instanceId, projectId, taskId, runI
     <label className="flex items-center gap-2"><Checkbox checked={repairReplaceAllowed} disabled={disabled || repair.isPending} onCheckedChange={checked => setRepairReplaceAllowed(checked === true)} /><span>允许本次修复替换所选记录的现有关联</span></label>
     <Button size="sm" variant="secondary" disabled={disabled || repair.isPending || !persistedEnd.data?.saveOperationId || !repairTargets.length} onClick={() => repair.mutate()}>修复关联</Button>
   </fieldset> : null
-  if (current.state === 'cleaned' || phase === 'saved_unlinked' || phase === 'completed') return <section className="grid gap-3 rounded-control border border-line bg-surface p-4 text-sm" aria-label="环境结束结果">
-    <p role="status" className="m-0">{current.state === 'cleaned' ? '本次浏览器工作副本已清理，不能再次保存本次会话。' : '本次保留结果已记录，不能再次保存本次会话。'}</p>
+  if (environmentCleaned || current.state === 'cleaned' || phase === 'saved_unlinked' || phase === 'completed') return <section className="grid gap-3 rounded-control border border-line bg-surface p-4 text-sm" aria-label="环境结束结果">
+    <p role="status" className="m-0">{environmentCleaned || current.state === 'cleaned' ? '本次浏览器工作副本已清理，不能再次保存本次会话。' : '本次保留结果已记录，不能再次保存本次会话。'}</p>
     {phase === 'completed' && endOutcome?.phase === 'saved_unlinked' ? <p role="status" className="m-0">已修复记录关联，原任务的失败结果保持不变。</p> : null}
     {phase === 'saved_unlinked' ? <>
       <p role="alert" className="m-0 text-warning">环境已保存，记录关联未完成。可用原操作修复，不会重跑网页。</p>

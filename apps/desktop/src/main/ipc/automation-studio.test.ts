@@ -57,11 +57,106 @@ it('opens one independent formal renderer, restores it, and allows reopening aft
   expect(FakeWindow.instances).toHaveLength(2)
 })
 
+it('passes the project workflow context to the isolated renderer', async () => {
+  await studio.open(event(), { workspaceKey: 'workspace', instanceId: 'instance', projectId: 'project', workflowId: 'workflow' })
+  expect(FakeWindow.instances[0]!.loadURL).toHaveBeenCalledWith(
+    'http://localhost:5173/?view=automation-studio&workspaceKey=workspace&instanceId=instance&projectId=project&workflowId=workflow',
+  )
+})
+
+it('uses the existing leave guard before switching the Studio project context', async () => {
+  await studio.open(event())
+  const source = FakeWindow.instances[0]!
+  const sender = { sender: source.webContents, senderFrame: source.webContents.mainFrame }
+  studio.registerLeaveReady(sender)
+  const switching = studio.open(event(), { projectId: 'project', workflowId: 'workflow' })
+  const request = source.webContents.send.mock.calls.find(call => call[0] === 'autoflow:studio-prepare-leave')![1]
+  expect(source.destroyed).toBe(false)
+  studio.completeLeave(sender, { id: request.id, allowed: true })
+  await switching
+  expect(source.destroyed).toBe(true)
+  expect(FakeWindow.instances).toHaveLength(2)
+  expect(FakeWindow.instances[1]!.loadURL).toHaveBeenCalledWith(
+    'http://localhost:5173/?view=automation-studio&projectId=project&workflowId=workflow',
+  )
+})
+
 it('rejects other renderers and subframes without creating a window', async () => {
   for (const unauthorized of [event(8), event(7, {}), event(7, null)]) {
     await expect(studio.open(unauthorized)).rejects.toThrow('此窗口不能打开工作流工作台')
   }
   expect(FakeWindow.instances).toHaveLength(0)
+})
+
+it('delivers shortcuts only to the ready current Studio outside pending leave', async () => {
+  const invalidate = vi.fn()
+  studio = new (await import('./automation-studio')).StudioWindowController({
+    mainSenderId: () => mainId, preferences: () => ({ zoom: 100, motion: 'reduce' }),
+    preloadPath: '/preload/index.js', rendererFile: '/renderer/studio.html', onInvalidated: invalidate,
+  })
+  expect(studio.senderId()).toBeUndefined()
+  await studio.open(event())
+  const window = FakeWindow.instances[0]!
+  const sender = { sender: window.webContents, senderFrame: window.webContents.mainFrame }
+  expect(studio.senderId()).toBe(window.webContents.id)
+  studio.sendHotkey('save_workflow')
+  expect(window.webContents.send).not.toHaveBeenCalledWith('autoflow:studio-hotkey', 'save_workflow')
+  studio.registerLeaveReady(sender)
+  studio.sendHotkey('save_workflow')
+  expect(window.webContents.send).toHaveBeenCalledWith('autoflow:studio-hotkey', 'save_workflow')
+  window.webContents.send.mockClear()
+  const leaving = studio.prepareLeave('close')
+  studio.sendHotkey('run_workflow')
+  expect(window.webContents.send).not.toHaveBeenCalledWith('autoflow:studio-hotkey', 'run_workflow')
+  const request = window.webContents.send.mock.calls[0]![1]
+  studio.completeLeave(sender, { id: request.id, allowed: false })
+  expect(await leaving).toBe(false)
+  studio.sendHotkey('run_workflow')
+  expect(window.webContents.send).toHaveBeenCalledWith('autoflow:studio-hotkey', 'run_workflow')
+  window.webContents.emit('did-start-loading')
+  window.webContents.emit('render-process-gone')
+  window.destroy()
+  expect(invalidate).toHaveBeenCalledTimes(3)
+  expect(studio.senderId()).toBeUndefined()
+})
+
+it('rejects malformed project context instead of silently opening an unscoped window', async () => {
+  for (const context of [null, [], 'project', { projectId: 7 }, { projectId: '' }, { workflowId: ' '.repeat(3) }, { workspaceKey: 'x'.repeat(201) }]) {
+    await expect(studio.open(event(), context)).rejects.toThrow('工作台上下文无效')
+  }
+  expect(FakeWindow.instances).toHaveLength(0)
+})
+
+it('coalesces the same context switch and rejects competing destinations', async () => {
+  await studio.open(event(), { projectId: 'source' })
+  const source = FakeWindow.instances[0]!
+  const sender = { sender: source.webContents, senderFrame: source.webContents.mainFrame }
+  studio.registerLeaveReady(sender)
+  const first = studio.open(event(), { projectId: 'destination' })
+  const repeat = studio.open(event(), { projectId: 'destination' })
+  await expect(studio.open(event(), { projectId: 'other' })).rejects.toThrow('正在切换')
+  const request = source.webContents.send.mock.calls.find(call => call[0] === 'autoflow:studio-prepare-leave')![1]
+  studio.completeLeave(sender, { id: request.id, allowed: true })
+  await Promise.all([first, repeat])
+  expect(FakeWindow.instances).toHaveLength(2)
+  expect(FakeWindow.instances[1]!.isDestroyed()).toBe(false)
+  expect(FakeWindow.instances[1]!.loadURL).toHaveBeenCalledWith('http://localhost:5173/?view=automation-studio&projectId=destination')
+})
+
+it('retains the original project and document when switching is cancelled', async () => {
+  const context = { projectId: 'source', workflowId: 'draft' }
+  await studio.open(event(), context)
+  const source = FakeWindow.instances[0]!
+  const sender = { sender: source.webContents, senderFrame: source.webContents.mainFrame }
+  studio.registerLeaveReady(sender)
+  const switching = studio.open(event(), { projectId: 'destination' })
+  const rejected = expect(switching).rejects.toThrow('未保存修改')
+  const request = source.webContents.send.mock.calls.find(call => call[0] === 'autoflow:studio-prepare-leave')![1]
+  studio.completeLeave(sender, { id: request.id, allowed: false })
+  await rejected
+  await studio.open(event(), context)
+  expect(FakeWindow.instances).toHaveLength(1)
+  expect(source.isDestroyed()).toBe(false)
 })
 
 it('cleans up a failed load so a later click can retry', async () => {
@@ -160,11 +255,25 @@ it('does not treat a crashed renderer as approval to leave',async()=>{
 it('keeps the source window on workspace failure and opens an isolated partition only after success',async()=>{
  let partition='persist:workspace-a'
  const controller=new (await import('./automation-studio')).StudioWindowController({mainSenderId:()=>7,preferences:()=>({zoom:100,motion:'system'}),preloadPath:'/preload',rendererFile:'/studio.html',workspacePartition:()=>partition})
- await controller.open(event());const source=FakeWindow.instances[0]!
+ await controller.open(event(),{workspaceKey:'workspace-a',instanceId:'instance-a',projectId:'project-a',workflowId:'workflow-a'});const source=FakeWindow.instances[0]!
  await controller.finishWorkspaceTransition(false)
  expect(source.destroyed).toBe(false)
  expect(source.webContents.send).toHaveBeenCalledWith('autoflow:studio-transition-end')
+ expect(source.loadFile).toHaveBeenCalledWith('/studio.html',{query:{view:'automation-studio',workspaceKey:'workspace-a',instanceId:'instance-a',projectId:'project-a',workflowId:'workflow-a'}})
  partition='persist:workspace-b';await controller.finishWorkspaceTransition(true)
  expect(source.destroyed).toBe(true)
  expect(FakeWindow.instances[1]!.options.webPreferences).toMatchObject({partition:'persist:workspace-b'})
+ expect(FakeWindow.instances[1]!.loadFile).toHaveBeenCalledWith('/studio.html',{query:{view:'automation-studio'}})
+})
+
+ it('retains the main renderer only while Studio remains open, without blocking app quit', async () => {
+  const { retainMainWindowForStudio } = await import('./automation-studio')
+  const main = { hide: vi.fn() }; const close = { preventDefault: vi.fn() }
+  retainMainWindowForStudio(close, main, undefined, false)
+  expect(close.preventDefault).not.toHaveBeenCalled()
+  retainMainWindowForStudio(close, main, 101, false)
+  expect(close.preventDefault).toHaveBeenCalledOnce()
+  expect(main.hide).toHaveBeenCalledOnce()
+  retainMainWindowForStudio(close, main, 101, true)
+  expect(close.preventDefault).toHaveBeenCalledOnce()
 })

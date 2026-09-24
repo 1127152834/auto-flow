@@ -297,7 +297,11 @@
 **估计：** 开发 15–25 工程日；验证 10–15 工程日；外部等待 0–5 工程日用于 CloakBrowser 平台差异。置信度低。
 
 - [ ] Task B2.1：把 locator、frame/page identity、导航、弹窗、下载、网络监听抽成已有 Browser port 的有限能力；不建通用 RPC。
-- [ ] Task B2.2：按 30 项映射逐个迁入执行器，每项先差分字段与独有分支，再做真实页面证据。
+- [x] Task B2.2：按 30 项映射逐个迁入执行器，每项先差分字段与独有分支，再做真实页面证据。
+  - 2026-09-21：基础网页族 11 节点已完成真实 CloakBrowser 与正式 Electron 开发入口闭环；从 UI 保存、正常关闭重开后执行，弹窗、导航历史、iframe、日志和清理证据见 `evidence/b2/formal-web-basic-electron-csD29H/result.json`。其余网页模块族继续按本任务核销。
+  - 2026-09-21：高级网页族 11 节点已完成真实 CloakBrowser 与正式 Electron 开发入口闭环；从 UI 保存、正常关闭重开后执行，选择、勾选、拖拽、滚动、上传、下载、图片、亲属查询、条件分支、产物哈希和清理证据见 `evidence/b2/formal-advanced-browser-electron-i07XUi/result.json`。
+  - 2026-09-21：网络监听族 3 节点已完成真实 CloakBrowser 与正式 Electron 开发入口闭环；从 UI 保存、正常关闭重开后捕获fetch请求，等待/停止结果、日志、SSE脱敏和清理证据见 `evidence/b2/formal-network-monitor-electron-1kHmyL/result.json`。
+  - 2026-09-21：最后3个网页节点已完成真实 CloakBrowser 与正式 Electron 开发入口闭环；双标签选择、表格提取、Excel产物哈希、浏览器抓包脱敏和清理证据见 `evidence/b2/formal-remaining-browser-electron-peBC4L/result.json`。B2的30个网页执行节点均已有真实执行证据。
 - [ ] Task B2.3：实现 inspection session 仓储、受管 worker 命令、页面列表、拾取、测试、相似元素、取消和幂等查询，接上现有 `/element-picker/*` 与 `/browser/*` 合同。
 - [ ] Task B2.4：真实验证 CSS、XPath、零/一/多匹配、同域/跨域嵌套 iframe、开放 Shadow DOM、页面关闭/导航失效和高亮清理。
 - [ ] Task B2.5：验证运行、Debug、拾取、录制的原子互斥，以及清理失败时资源不提前释放。
@@ -328,7 +332,9 @@
   - 2026-09-20 检查点：循环每轮、嵌套工作流、自定义模块和画布子流程均产生独立执行上下文；协调器将上下文与 executionId 一起写入顺序事件、日志和结果 API，产物继续按 executionId 登记。相关运行时、真实 worker 和 HTTP 合同 37 项通过。
 - [x] Task B3.5：测试并行取消、1,000 轮纯变量停止、空/非法控制流、缺变量和嵌套 32 层；失败位置必须指向 nodeId/path。
   - 2026-09-20 检查点：真实 worker 在 1,000 轮纯变量循环中间停止后不再调度后继、不发布完成事件且清理进程；专项连续运行 3 次通过。冻结解析器和变量差分覆盖空流程、悬空边、非法回环及缺失变量；并行取消不调度后继；画布子流程 32 层成功且最深事件保留 32 层 scope，33 层明确拒绝。集中回归 62 项通过。
-- [ ] Task B3.6：正式 UI 编排包含真假分支、循环、并行和子流程的流程，保存重开并真实执行；关闭 B3 的 63 条节点用例与 `BE-B3-001` 至 `008`。
+- [x] Task B3.6：正式 UI 编排包含真假分支、循环、并行和子流程的流程，保存重开并真实执行；关闭 B3 的 63 条节点用例与 `BE-B3-001` 至 `008`。
+  - 2026-09-20 检查点：正式 Electron 开发入口已通过真实 UI 编排、保存、系统级 Cmd+W 正常关闭、重开和运行；条件、次数循环、设置/增减变量、分组子流程及两个顶层入口的真实并行均有 SQLite、HTTP、日志和结果证据。修复了运行快照未向 worker 合并布局、并行循环上下文串线两个根因。63 条节点用例现为 48 条通过，剩余 15 个节点的正式 Electron real-execution 入口仍需逐项核销，B3.6 暂不关闭。[正式组合证据](../../migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json)
+  - 2026-09-20 续验：15 个剩余节点已全部经正式 Studio UI 配置、真实保存及生产 worker 执行核销，B3 的 63 条节点级用例现为 63 条通过。覆盖列表/字典/无限循环、break/continue、停止、断言、等待、交互输入、跨工作流调用、JSON/Base64/随机数/时间及便签非执行语义，并修复无限循环在两种编辑视图中缺少控制块端口的前端缺口。自定义模块通过正式 UI 完成创建、输出声明、拖入画布、保存和生产 worker 隔离执行；1,000 轮纯变量流程通过真实停止按钮终止，后继未调度、结果停止增长且资源槽释放。递归变量增加 30 项冻结差分，并通过正式 UI 保存对象初值、解析嵌套索引和断言。`BE-B3-001` 至 `008` 全部关闭，B3.6 完成。[完整组合证据](../../migration/studio-backend-migration/evidence/b3/formal-control-flow-electron-GwtmUx/result.json)
 
 **B3 退出门槛：** 图和变量差分无未解释差异；并行没有为测试被串行化；模块运行快照不受运行中编辑影响；停止可中断纯算法循环和网页动作。
 
@@ -346,11 +352,11 @@
 
 **估计：** 开发 10–18 工程日；验证 8–15 工程日；外部等待无。置信度中。
 
-- [ ] Task B4.1：参数化原版纯函数测试，覆盖中文、空值、NaN/Infinity、编码、越界、正则和集合顺序。
-- [ ] Task B4.2：按原模块族迁入 88 节点；标准库可直接使用，不增加新的数据处理框架。
-- [ ] Task B4.3：文件读写通过 Artifact/File port，验证路径归属、CSV 编码、哈希、原子落盘和磁盘失败。
-- [ ] Task B4.4：加入可取消检查点，验证 CPU 密集和大序列化取消后无半份产物。
-- [ ] Task B4.5：逐项核销 264 条节点用例和 `BE-B4-001` 至 `005`，再运行 B1–B3 回归。
+- [x] Task B4.1：参数化原版纯函数测试，覆盖中文、空值、NaN/Infinity、编码、越界、正则和集合顺序。
+- [x] Task B4.2：按原模块族迁入 88 节点；标准库可直接使用，不增加新的数据处理框架。
+- [x] Task B4.3：文件读写通过 Artifact/File port，验证路径归属、CSV 编码、哈希、原子落盘和磁盘失败。
+- [x] Task B4.4：加入可取消检查点，验证 CPU 密集和大序列化取消后无半份产物。
+- [x] Task B4.5：逐项核销 264 条节点用例和 `BE-B4-001` 至 `005`，再运行 B1–B3 回归。
 
 **B4 退出门槛：** 88 节点注册、合同、真实执行全部有证据；源/目标值差异为零或已记录的 AutoFlow IO 适配；性能/取消测试有界。
 
@@ -368,14 +374,19 @@
 
 **估计：** 开发 12–20 工程日；验证 8–15 工程日；外部等待未知，取决于供应商凭据、额度、模型可用性和 MCP server。置信度低。
 
-- [ ] Task B5.1：定义 Model/MCP 窄端口，复用主应用 model ID 和系统秘密存储；不迁入第二套 provider 配置。
-- [ ] Task B5.2：建立 `tests/compatibility/test_langgraph_runtime.py`，验证候选 LangGraph 版本在 Python 3.11 下的图中断、检查点恢复、取消、无默认外部遥测和 PyInstaller 收集；通过后才修改 `apps/backend/pyproject.toml` 与锁文件。
-- [ ] Task B5.3：实现小助手图：上下文→模型→结构化工具校验→权限中断→工具结果→后续模型；`assistantSessionId` 映射受工作区隔离的 thread/checkpoint，恢复查询原 commandId，不重放副作用。
-- [ ] Task B5.4：把模型文本、工具请求、权限状态、结果、错误和结束投影到现有 SSE/查询合同；服务端重复检查 227 范围、工具开关、参数和批准修订。
+- [x] Task B5.1：定义 Model/MCP 窄端口，复用主应用 model ID 和系统秘密存储；不迁入第二套 provider 配置。
+  - 2026-09-21：复用 `ExecutionContext.models`，父进程按稳定 `modelId` 从主应用 ModelService/系统 CredentialStore 解析临时绑定，经既有 stdin 通道交给 worker；运行快照、事件和结果不含密钥。首个 `ai_chat` 已通过真实 worker + 本地受控模型 HTTP 服务，见 `evidence/b5/model-boundary-ai-chat.json`。MCP 窄端口的具体服务接入仍归 B5.6，不在此任务虚构实现。
+- [x] Task B5.2：建立 `tests/compatibility/test_langgraph_runtime.py`，验证候选 LangGraph 版本在 Python 3.11 下的图中断、检查点恢复、取消、无默认外部遥测和 PyInstaller 收集；通过后才修改 `apps/backend/pyproject.toml` 与锁文件。
+  - 2026-09-21：锁定 LangGraph 1.2.11 与 SQLite checkpoint 3.1.1；Python 3.11 的持久化中断恢复、异步取消、核心路径无网络连接、PyInstaller 收集、隔离冻结构建及 sidecar 启停均通过。生产助手图的冻结暂停/恢复已随 B5.3–B5.4 关闭，兼容性证据见 `evidence/b5/langgraph-runtime-compatibility.json`。
+- [x] Task B5.3：实现小助手图：上下文→模型→结构化工具校验→权限中断→工具结果→后续模型；`assistantSessionId` 映射受工作区隔离的 thread/checkpoint，恢复查询原 commandId，不重放副作用。
+- [x] Task B5.4：把模型文本、工具请求、权限状态、结果、错误和结束投影到现有 SSE/查询合同；服务端重复检查 227 范围、工具开关、参数和批准修订。
 - [ ] Task B5.5：用本地可控 HTTP/MCP fixture 迁入 22 节点，验证请求形状、流式分块、取消、超时、限流和错误映射。
-- [ ] Task B5.6：实现现有 MCP 保存、测试、重载和调用合同，写操作带 revision/commandId，MCP 工具不能绕过小助手权限。
-- [ ] Task B5.7：大图像/视频/文本经 artifact 引用传输；日志、SSE、诊断、LangGraph 检查点和导出扫描不得出现 API key、代理密码或 License。
-- [ ] Task B5.8：正式 UI 验证小助手多轮添加/修改节点、批准/拒绝/取消、断线重连及历史；排除节点请求必须拒绝，页面确认前不得宣称草稿已修改。
+  - 2026-09-21：22 个节点已全部进入生产注册表；最后两个 `image_ocr`、`face_recognition` 保留冻结源码结果结构并复用 AutoFlow 文件边界，EasyOCR、人脸模型及 torchvision 原生库随冻结后端提供。冻结源码差分、真实 worker、macOS arm64 冻结 worker 通过，见 `evidence/b5/media-recognition-family.json`。本任务仍需集中完成流式/限流错误矩阵、正式 UI 和真实供应商核销。
+  - 2026-09-21：`ai_generate_image`、`ai_generate_video` 已按冻结源码迁入 OpenAI、Stability、Runway 和自定义接口分支；节点只引用主应用 `modelId`，协议选择仍保留，密钥与地址由系统模型绑定提供。差分输出、真实 worker、产物落盘、轮询取消及秘密扫描通过；第三方真实供应商与正式 Electron 验收仍为外部等待，见 `evidence/b5/ai-media-family.json`。
+- [x] Task B5.6：实现现有 MCP 保存、测试、重载和调用合同，写操作带 revision/commandId，MCP 工具不能绕过小助手权限。
+- [x] Task B5.7：大图像/视频/文本经 artifact 引用传输；日志、SSE、诊断、LangGraph 检查点和导出扫描不得出现 API key、代理密码或 License。
+- [x] Task B5.8：正式 UI 验证小助手多轮添加/修改节点、批准/拒绝/取消、断线重连及历史；排除节点请求必须拒绝，页面确认前不得宣称草稿已修改。
+  - 2026-09-21：LangGraph 多轮工具、稳定命令恢复、流式 SSE、附件/语音、大值产物、递归秘密脱敏和真实 stdio MCP 均已进入生产链路。macOS arm64 冻结目录包通过正式 UI 完成模型选择、MCP 保存/重连、逐项批准/拒绝、排除节点拒绝、流式取消、工作流保存及正常关窗历史恢复，证据见 `evidence/b5/formal-assistant-electron-uelQUT/result.json`、`assistant-streaming-events.json`、`mcp-config-tools.json` 与 `assistant-artifacts-redaction.json`。真实商业模型、远程 MCP 及另外两平台继续单列外部等待。
 - [ ] Task B5.9：核销本地合同和真实供应商证据；没有凭据的供应商保持“外部等待”，不能用 fixture 核销 real-execution。
 
 **B5 退出门槛：** 66 条节点用例和 `BE-B5-001` 至 `005` 有证据；小助手确实通过 LangGraph 完成多轮工具与权限闭环，重启/重连不重复副作用，正式包可加载图和检查点；真实供应商未测项明确列出并阻止对应节点最终完成，不阻止其它已独立验收节点进入 B6。
@@ -396,7 +407,8 @@
 
 - [ ] Task B6.1：建立本地 HTTP、SMTP、SSH、webhook、文件监视和通知 fixture；可观测请求次数、字节、时区和关闭状态。
 - [ ] Task B6.2：按依赖族迁入 61 节点；网络统一使用 timeout/取消/代理/脱敏端口，平台命令使用能力探测。
-- [ ] Task B6.3：实现触发器与计划任务持久化、去重、停写和重启语义；历史事件不得在重启后重放。
+- [x] Task B6.3：实现触发器与计划任务持久化、去重、停写和重启语义；历史事件不得在重启后重放。
+  - 2026-09-21：P2 计划任务已完成 SQLite/Alembic 持久队列、时间/启动/热键/Webhook 触发、重复执行、稳定命令幂等、停写准入、重启恢复、Profile/工作流引用保护及通知凭据边界。macOS arm64 开发入口和冻结目录包均通过正式 UI 创建、真实 CloakBrowser 五节点自动执行、日志/PNG、停用、清理和整机重启恢复；证据见 `evidence/p2/README.md`。外部通知供应商及未测平台继续按 B6 单列，不影响本任务的生产实现关闭。
 - [ ] Task B6.4：实现输入、JS/Python、语音和路径等双向请求的 claim/result/cancel/query 幂等，停止回收所有在途请求。
 - [ ] Task B6.5：验证分享/屏幕服务端口冲突、停止和进程退出；监听 socket 关闭后才报告成功。
 - [ ] Task B6.6：平台节点在隔离适配器和对应实机分别记账；无真实设备的平台保持未验收，不能假成功。
@@ -442,10 +454,15 @@
 **估计：** 开发 12–20 工程日；验证 10–16 工程日；外部等待无。置信度中低。
 
 - [ ] Task B8.1：实现 pausing/paused/failed_paused 状态、pauseId/controlRevision/commandId、节点前边界暂停和可中断心跳。
+  - 2026-09-21：节点调度前暂停、停止优先及失败暂停已进入生产链路；并行分支现共享调试边界锁，一个分支暂停后其他分支不会继续调度新节点。正式 UI 已验证循环体首轮暂停和继续执行。
 - [ ] Task B8.2：实现断点、继续、一次调度单步、顶层直接起跑和嵌套运行至此；未选分支不伪造命中。
+  - 2026-09-21：运行至此已接入正式前后端合同和节点入口；正式 Electron 真实点击验证前置网页动作、循环首轮目标前暂停、轮次展示、继续后只命中一次及资源清理。真实 worker 已覆盖条件选中/未选、并行暂停阻断和画布子流程作用域；条件与并行正式 UI 矩阵仍待关闭。证据见 `evidence/b8/formal-run-to-electron-HqPaNk/result.json`、`evidence/b8/formal-complex-debug-electron-J0ztvf/result.json`。
 - [ ] Task B8.3：实现变量检查点、差量变化、大值诊断文件和暂停时原子修改；循环局部变量只读。
-- [ ] Task B8.4：失败暂停保留浏览器；结束调试清理后仍记 failed，普通暂停停止记 cancelled。
+  - 2026-09-21：暂停事件已携带循环轮次与子流程作用域，Studio 调试条展示当前上下文；真实 worker 与正式 UI 已验证循环局部只读及首轮轮次。循环局部进入/退出的完整变化矩阵仍待关闭。
+- [x] Task B8.4：失败暂停保留浏览器；结束调试清理后仍记 failed，普通暂停停止记 cancelled。
+  - 2026-09-21：正式 Electron 通过真实 UI 设置断点；真实 CloakBrowser 在节点失败后保留现场，结束调试携带稳定运行身份完成 worker、浏览器和占用清理，并保持 `failed` 原错误。证据见 `evidence/b8/formal-failed-pause-electron-94DFD8/result.json`。
 - [ ] Task B8.5：实现日志全文搜索、级别/节点/executionId 筛选、游标分页、SSE 补读和固定截止序号导出。
+  - 2026-09-21：关键词、级别、节点、`executionId`、分页及固定截止序号导出已完成生产合同和前端接入；正式 Electron 已按真实运行的 `executionId` 查询完整持久化日志并与服务端结果核对。SSE 断流后的日志补读去重仍待组合验收，证据见 `evidence/b8/formal-run-to-electron-HqPaNk/result.json`。
 - [ ] Task B8.6：验证 1,000 轮、10,000 日志、64 KiB 以上变量、响应丢失、迟到命令、停止竞争、sidecar 崩溃与重连。
 - [ ] Task B8.7：正式 UI 完成复杂调试闭环并重开历史，关闭 `BE-B8-001` 至 `007`。
 

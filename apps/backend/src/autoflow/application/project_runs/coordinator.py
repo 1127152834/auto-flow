@@ -99,7 +99,7 @@ class ProjectRunCoordinator:
         return [
             {
                 "capability": "browser.cloakbrowser",
-                "required": True,
+                "required": self._core.requires_browser(workflow_id),
                 "available": "browser.cloakbrowser" in self._capabilities,
                 "reason": "本地浏览器执行能力"
                 if "browser.cloakbrowser" in self._capabilities
@@ -660,7 +660,7 @@ class ProjectRunCoordinator:
                 )
             )
             session.flush()
-            if self._environments is not None:
+            if self._environments is not None and resources.get("browser") != "none":
                 self._environments.reserve_task_instance(
                     session, project_id, task_id, run.run_id, policy
                 )
@@ -679,7 +679,7 @@ class ProjectRunCoordinator:
             # SQLAlchemy marks it inactive. Never return that connection to the pool.
             session.invalidate()
             raise
-        if self._environments is not None:
+        if self._environments is not None and resources.get("browser") != "none":
             for task_id, run_id in created_tasks:
                 self._environments.attach_task_instance(
                     project_id, task_id, run_id, policy

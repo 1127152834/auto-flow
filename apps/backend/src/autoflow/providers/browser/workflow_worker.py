@@ -9,25 +9,35 @@ from collections.abc import Mapping
 from contextvars import ContextVar
 from pathlib import Path
 from threading import Event, Lock, Thread
+from time import monotonic
 from typing import Any, TextIO
 from uuid import uuid4
 
 from autoflow.application.workflows.executors.production import (
     build_production_executor_registry,
 )
-from autoflow.application.workflows.runtime import WorkflowRuntime
+from autoflow.application.workflows.runtime import (
+    WorkflowRuntime,
+    execution_context_snapshot,
+)
 from autoflow.domain.workflows.canvas_subflows import CanvasSubflowGraph, _node_data
 from autoflow.domain.workflows.execution import (
     CustomModuleResult,
+    DesktopActionResult,
     ExecutionContext,
     InputPromptRequest,
+    JsScriptResult,
     NestedWorkflowResult,
+    SpeechResult,
 )
 from autoflow.domain.workflows.runs import WorkflowArtifact
 from autoflow.infrastructure.filesystem.workflow_artifacts import WorkflowArtifactStore
 from autoflow.infrastructure.filesystem.workflow_table_workbook import (
     OpenpyxlTableWorkbookRenderer,
 )
+from autoflow.infrastructure.process.workflow_subprocess import terminate_subprocess
+from autoflow.providers.integrations import WorkflowIntegrationGateway
+from autoflow.providers.model import WorkflowModelGateway
 
 from .workflow_session import launch_workflow_session
 
@@ -104,11 +114,18 @@ async def _run_in_session(
         if not artifact_root.is_absolute():
             raise ValueError("artifactRoot must be absolute")
         artifacts = _WorkerArtifactRepository(stdout)
+        integrations = WorkflowIntegrationGateway()
         context = ExecutionContext(
+            process_cleanup=terminate_subprocess,
             variables=_initial_variables(document),
             browser=browser,
             cancellation=_ThreadCancellation(stopped),
             table_workbooks=OpenpyxlTableWorkbookRenderer(),
+            models=WorkflowModelGateway(_model_bindings(command)),
+            external_integrations=integrations,
+            debug=command_bus.debug,
+            credentials=command_bus.credentials,
+            variable_tracking_enabled=bool(command.get("debug")),
         )
         sink = _WorkerEventSink(
             stdout,
@@ -119,7 +136,27 @@ async def _run_in_session(
             artifact_root=artifact_root,
         )
         context.events = sink
-        context.input_prompts = command_bus.for_context(context)
+        if context.variable_tracking_enabled:
+            for name, value in context.variables.items():
+                await sink.publish(
+                    {
+                        "type": "execution:variable_changed",
+                        "nodeId": "__start__",
+                        "executionId": f"{run_id}:initial",
+                        "variable_name": name,
+                        "old_value": None,
+                        "new_value": copy.deepcopy(value),
+                        "node_name": "流程初值",
+                        "operation": "create",
+                        "value_type": _variable_value_type(value),
+                    }
+                )
+        interactive = command_bus.for_context(context)
+        context.input_prompts = interactive
+        context.browser_scripts = interactive
+        context.speech = interactive
+        context.desktop_actions = interactive
+        context.webhook_triggers = interactive
         registry = build_production_executor_registry()
         nested = _WorkerNestedWorkflows(
             command.get("workflowDependencies"),
@@ -148,10 +185,49 @@ async def _run_in_session(
             nested_workflows=nested,
         )
         context.canvas_subflows = canvas_subflows
-        result = await WorkflowRuntime(registry).execute(
-            canvas_subflows.top_level_document(), context
-        )
-        await nested.drain()
+        try:
+            result = await WorkflowRuntime(registry).execute(
+                canvas_subflows.top_level_document(),
+                context,
+                start_node_id=(
+                    str(command["startNodeId"])
+                    if isinstance(command.get("startNodeId"), str)
+                    and command["startNodeId"]
+                    else None
+                ),
+            )
+            await nested.drain()
+            if result.success and command_bus.debug.pending_target_node_id:
+                await sink.publish(
+                    {
+                        "type": "execution:log",
+                        "level": "warning",
+                        "message": "本次执行路径未到达调试目标节点",
+                        "nodeId": command_bus.debug.pending_target_node_id,
+                    }
+                )
+            if bool(command.get("debug")) and not result.success:
+                await command_bus.debug.failure_pause(
+                    context,
+                    node_id=result.failed_node_id or context.current_node_id or "unknown",
+                    error=(
+                        result.node_result.error
+                        if result.node_result and result.node_result.error
+                        else "工作流执行失败"
+                    ),
+                    executed_nodes=len(result.executed_node_ids),
+                    issues=[
+                        {
+                            "nodeId": issue.node_id,
+                            "path": issue.path,
+                            "code": issue.code,
+                            "message": issue.message,
+                        }
+                        for issue in result.issues
+                    ],
+                )
+        finally:
+            await integrations.close()
         terminal = "execution:completed" if result.success else "execution:failed"
         _write(
             stdout,
@@ -179,6 +255,13 @@ async def _run_in_session(
     return 0
 
 
+def _model_bindings(command: dict[str, Any]) -> list[Mapping[str, Any]]:
+    raw = command.pop("modelBindings", [])
+    if not isinstance(raw, list) or not all(isinstance(item, Mapping) for item in raw):
+        raise ValueError("modelBindings must be a list")
+    return raw
+
+
 class _ThreadCancellation:
     def __init__(self, stopped: Event) -> None:
         self._stopped = stopped
@@ -198,6 +281,7 @@ class _WorkerArtifactRepository:
         self._lock = Lock()
         self._ordinal = 0
         self._by_execution: dict[str, list[str]] = {}
+        self._by_path: dict[str, WorkflowArtifact] = {}
 
     def register_artifact(
         self,
@@ -214,7 +298,7 @@ class _WorkerArtifactRepository:
     ) -> WorkflowArtifact:
         with self._lock:
             self._ordinal += 1
-            if execution_id:
+            if execution_id and purpose == "result":
                 self._by_execution.setdefault(execution_id, []).append(artifact_id)
             _write(
                 self._stdout,
@@ -231,7 +315,7 @@ class _WorkerArtifactRepository:
                     "purpose": purpose,
                 },
             )
-            return WorkflowArtifact(
+            artifact = WorkflowArtifact(
                 run_id=run_id,
                 artifact_id=artifact_id,
                 ordinal=self._ordinal,
@@ -244,10 +328,15 @@ class _WorkerArtifactRepository:
                 purpose=purpose,
                 event_sequence=0,
             )
+            self._by_path[relative_path] = artifact
+            return artifact
 
     def take(self, execution_id: str) -> tuple[str, ...]:
         with self._lock:
             return tuple(self._by_execution.pop(execution_id, ()))
+
+    def by_path(self, relative_path: str) -> WorkflowArtifact:
+        return self._by_path[relative_path]
 
 
 class _WorkerEventSink:
@@ -267,6 +356,7 @@ class _WorkerEventSink:
         self._context = context
         self._artifacts = artifacts
         self._artifact_root = artifact_root
+        self._artifact_store = WorkflowArtifactStore(artifact_root, artifacts)
 
     def for_context(self, context: ExecutionContext) -> _WorkerEventSink:
         return _WorkerEventSink(
@@ -280,16 +370,14 @@ class _WorkerEventSink:
 
     async def publish(self, event: Mapping[str, Any]) -> None:
         event = dict(event)
+        await self._externalize_large_diagnostics(event)
         node_id = event.get("nodeId")
         execution_id = event.get("executionId")
         if isinstance(node_id, str) and isinstance(execution_id, str):
             self._context.current_node_id = node_id
             self._context.current_execution_id = execution_id
             if event.get("type") == "execution:node_start":
-                self._context.artifacts = WorkflowArtifactStore(
-                    self._artifact_root,
-                    self._artifacts,
-                ).writer(
+                self._context.artifacts = self._artifact_store.writer(
                     run_id=self._run_id,
                     node_id=node_id,
                     execution_id=execution_id,
@@ -299,6 +387,19 @@ class _WorkerEventSink:
             elif event.get("type") == "execution:node_complete":
                 await self._externalize_large_result(event, execution_id)
                 event["artifactIds"] = list(self._artifacts.take(execution_id))
+                self._context.log_records.append(
+                    {
+                        "timestamp": self._context.clock.now().isoformat(),
+                        "level": event.get("logLevel") or ("error" if not event.get("success") else "info"),
+                        "message": event.get("message") or event.get("error") or "",
+                        "duration": event.get("duration") or 0,
+                        "nodeId": node_id,
+                    }
+                )
+        for key in ("message", "error"):
+            value = event.get(key)
+            if isinstance(value, str) and len(value.encode("utf-8")) > 4096:
+                event[key] = value[:1000] + "…"
         _write(
             self._stdout,
             {
@@ -307,6 +408,55 @@ class _WorkerEventSink:
                 "workflowId": self._workflow_id,
             },
         )
+
+    async def _externalize_large_diagnostics(self, event: dict[str, Any]) -> None:
+        event_type = event.get("type")
+        targets: list[tuple[dict[str, Any], str]] = []
+        if event_type in {"execution:paused", "execution:failed_paused"} and isinstance(
+            event.get("variables"), dict
+        ):
+            targets.extend(
+                (event["variables"], str(name)) for name in event["variables"]
+            )
+        elif event_type == "execution:variable_changed":
+            targets.extend((event, key) for key in ("old_value", "new_value"))
+        if not targets:
+            return
+        node_id = str(event.get("nodeId") or event.get("node_id") or "__debug__")
+        execution_id = str(event.get("executionId") or f"debug:{uuid4()}")
+        writer = self._artifact_store.writer(
+            run_id=self._run_id,
+            node_id=node_id,
+            execution_id=execution_id,
+            purpose="diagnostic",
+            cancellation=self._context.cancellation,
+        )
+        for container, key in targets:
+            value = container.get(key)
+            encoded = json.dumps(
+                value, ensure_ascii=False, allow_nan=False, separators=(",", ":")
+            ).encode()
+            if len(encoded) <= _MAX_INLINE_RESULT_BYTES:
+                continue
+            target = await writer.write_bytes(
+                name=f"diagnostics/{uuid4().hex}.json",
+                content=encoded,
+                mime_type="application/json",
+            )
+            relative_path = Path(target).resolve().relative_to(
+                self._artifact_root.resolve()
+            ).as_posix()
+            artifact = self._artifacts.by_path(relative_path)
+            preview = encoded[:90].decode(errors="replace")
+            if len(encoded) > 180:
+                preview += "…" + encoded[-90:].decode(errors="replace")
+            container[key] = {
+                "externalized": True,
+                "artifactId": artifact.artifact_id,
+                "size": artifact.size,
+                "sha256": artifact.sha256,
+                "preview": preview,
+            }
 
     async def _externalize_large_result(
         self, event: dict[str, Any], execution_id: str
@@ -353,7 +503,7 @@ class _WorkerNestedWorkflows:
         registry: Any,
         parent: ExecutionContext,
         sink: _WorkerEventSink,
-        command_bus: _WorkerCommandBus,
+        command_bus: _WorkerCommandBus | None,
     ) -> None:
         self._snapshots = (
             {str(key): copy.deepcopy(value) for key, value in snapshots.items()}
@@ -370,6 +520,14 @@ class _WorkerNestedWorkflows:
         self._background: set[asyncio.Task[NestedWorkflowResult]] = set()
         self.custom_modules: _WorkerCustomModules | None = None
 
+    def for_context(
+        self, parent: ExecutionContext, sink: _WorkerEventSink
+    ) -> _WorkerNestedWorkflows:
+        scoped = copy.copy(self)
+        scoped._parent = parent
+        scoped._sink = sink
+        return scoped
+
     async def run_workflow(
         self,
         reference: str,
@@ -381,7 +539,7 @@ class _WorkerNestedWorkflows:
         name = str(snapshot.get("name") or canonical)
         if not wait_complete:
             task = asyncio.create_task(
-                self._execute(snapshot, canonical, variables),
+                self._execute(snapshot, canonical, variables, detached=True),
                 name=f"nested-workflow:{canonical}",
             )
             self._background.add(task)
@@ -416,6 +574,8 @@ class _WorkerNestedWorkflows:
         snapshot: dict[str, Any],
         canonical: str,
         variables: Mapping[str, Any],
+        *,
+        detached: bool = False,
     ) -> NestedWorkflowResult:
         stack = self._stack.get()
         name = str(snapshot.get("name") or canonical)
@@ -453,13 +613,23 @@ class _WorkerNestedWorkflows:
             credentials=self._parent.credentials,
             models=self._parent.models,
             external_integrations=self._parent.external_integrations,
+            process_cleanup=self._parent.process_cleanup,
+            log_records=self._parent.log_records,
             cancellation=self._parent.cancellation,
+            node_boundary=self._parent.node_boundary,
+            debug=self._parent.debug,
             clock=self._parent.clock,
         )
         child_sink = self._sink.for_context(child)
         child.events = child_sink
-        child.input_prompts = self._command_bus.for_context(child)
-        child.nested_workflows = self
+        if self._command_bus is not None:
+            interactive = self._command_bus.for_context(child)
+            child.input_prompts = interactive
+            child.browser_scripts = interactive
+            child.speech = interactive
+            child.desktop_actions = interactive
+            child.webhook_triggers = interactive
+        child.nested_workflows = self.for_context(child, child_sink)
         if self.custom_modules is not None:
             child.custom_modules = self.custom_modules.for_context(child, child_sink)
         canvas_subflows = _WorkerCanvasSubflows(
@@ -468,7 +638,7 @@ class _WorkerNestedWorkflows:
             parent=child,
             sink=child_sink,
             command_bus=self._command_bus,
-            nested_workflows=self,
+            nested_workflows=child.nested_workflows,
         )
         child.canvas_subflows = canvas_subflows
         await child_sink.publish(
@@ -482,7 +652,7 @@ class _WorkerNestedWorkflows:
         )
         try:
             result = await WorkflowRuntime(self._registry).execute(
-                canvas_subflows.top_level_document(), child
+                canvas_subflows.top_level_document(), child, detached=detached
             )
             nested = NestedWorkflowResult(
                 reference=reference,
@@ -516,8 +686,8 @@ class _WorkerCustomModules:
         registry: Any,
         parent: ExecutionContext,
         sink: _WorkerEventSink,
-        command_bus: _WorkerCommandBus,
-        nested_workflows: _WorkerNestedWorkflows,
+        command_bus: _WorkerCommandBus | None,
+        nested_workflows: _WorkerNestedWorkflows | None,
         stack: ContextVar[tuple[str, ...]] | None = None,
     ) -> None:
         self._snapshots = (
@@ -541,7 +711,10 @@ class _WorkerCustomModules:
             parent=context,
             sink=sink,
             command_bus=self._command_bus,
-            nested_workflows=self._nested_workflows,
+            nested_workflows=(
+                self._nested_workflows.for_context(context, sink)
+                if self._nested_workflows is not None else None
+            ),
             stack=self._stack,
         )
 
@@ -620,13 +793,26 @@ class _WorkerCustomModules:
             credentials=self._parent.credentials,
             models=self._parent.models,
             external_integrations=self._parent.external_integrations,
+            process_cleanup=self._parent.process_cleanup,
+            log_records=self._parent.log_records,
             cancellation=self._parent.cancellation,
+            node_boundary=self._parent.node_boundary,
+            debug=self._parent.debug,
             clock=self._parent.clock,
         )
         child_sink = self._sink.for_context(child)
         child.events = child_sink
-        child.input_prompts = self._command_bus.for_context(child)
-        child.nested_workflows = self._nested_workflows
+        if self._command_bus is not None:
+            interactive = self._command_bus.for_context(child)
+            child.input_prompts = interactive
+            child.browser_scripts = interactive
+            child.speech = interactive
+            child.desktop_actions = interactive
+            child.webhook_triggers = interactive
+        child.nested_workflows = (
+            self._nested_workflows.for_context(child, child_sink)
+            if self._nested_workflows is not None else None
+        )
         child.custom_modules = self.for_context(child, child_sink)
         canvas_subflows = _WorkerCanvasSubflows(
             document,
@@ -634,7 +820,7 @@ class _WorkerCustomModules:
             parent=child,
             sink=child_sink,
             command_bus=self._command_bus,
-            nested_workflows=self._nested_workflows,
+            nested_workflows=child.nested_workflows,
         )
         child.canvas_subflows = canvas_subflows
         try:
@@ -695,7 +881,10 @@ class _WorkerCanvasSubflows(CanvasSubflowGraph):
             parent=parent,
             sink=sink,
             command_bus=self._command_bus,
-            nested_workflows=self._nested_workflows,
+            nested_workflows=(
+                self._nested_workflows.for_context(parent, sink)
+                if self._nested_workflows is not None else None
+            ),
             stack=self._stack,
         )
 
@@ -750,14 +939,26 @@ class _WorkerCanvasSubflows(CanvasSubflowGraph):
             credentials=self._parent.credentials,
             models=self._parent.models,
             external_integrations=self._parent.external_integrations,
+            process_cleanup=self._parent.process_cleanup,
+            log_records=self._parent.log_records,
             cancellation=self._parent.cancellation,
             node_boundary=self._parent.node_boundary,
+            debug=self._parent.debug,
             clock=self._parent.clock,
         )
         child_sink = self._sink.for_context(child)
         child.events = child_sink
-        child.input_prompts = self._command_bus.for_context(child) if self._command_bus else None
-        child.nested_workflows = self._nested_workflows
+        if self._command_bus is not None:
+            interactive = self._command_bus.for_context(child)
+            child.input_prompts = interactive
+            child.browser_scripts = interactive
+            child.speech = interactive
+            child.desktop_actions = interactive
+            child.webhook_triggers = interactive
+        child.nested_workflows = (
+            self._nested_workflows.for_context(child, child_sink)
+            if self._nested_workflows is not None else None
+        )
         if isinstance(self._parent.custom_modules, _WorkerCustomModules):
             child.custom_modules = self._parent.custom_modules.for_context(
                 child, child_sink
@@ -792,6 +993,331 @@ def _read_command(stdin: TextIO) -> dict[str, Any]:
     return value
 
 
+class _WorkerDebugController:
+    def __init__(
+        self,
+        stopped: Event,
+        *,
+        step_mode: bool,
+        breakpoints: set[str],
+        run_to_node_id: str | None = None,
+    ) -> None:
+        self._stopped = stopped
+        self._pause_next = step_mode
+        self._breakpoints = breakpoints
+        self._run_to_node_id = run_to_node_id
+        self._revision = 0
+        self._pause: dict[str, Any] | None = None
+        self._boundary_lock = asyncio.Lock()
+
+    async def before_node(
+        self, context: ExecutionContext, *, node_id: str, label: str
+    ) -> None:
+        async with self._boundary_lock:
+            await self._before_node(context, node_id=node_id, label=label)
+
+    async def _before_node(
+        self, context: ExecutionContext, *, node_id: str, label: str
+    ) -> None:
+        reached_target = node_id == self._run_to_node_id
+        if not self._pause_next and node_id not in self._breakpoints and not reached_target:
+            return
+        reason = "step" if self._pause_next else "target" if reached_target else "breakpoint"
+        self._pause_next = False
+        if reached_target:
+            self._run_to_node_id = None
+        self._revision += 1
+        release = asyncio.Event()
+        pause_id = str(uuid4())
+        self._pause = {
+            "pauseId": pause_id,
+            "controlRevision": self._revision,
+            "release": release,
+            "action": None,
+            "context": context,
+            "nodeId": node_id,
+            "label": label,
+            "reason": reason,
+        }
+        if context.events is None:
+            raise RuntimeError("调试事件服务不可用")
+        loop_variables = {
+            str(name)
+            for frame in context.loop_stack
+            for key in ("index_variable", "item_variable", "key_variable", "value_variable")
+            if isinstance((name := frame.get(key)), str) and name
+        }
+        await context.events.publish(
+            self._pause_payload(context, loop_variables=loop_variables)
+        )
+        while not release.is_set():
+            if self._stopped.is_set():
+                raise asyncio.CancelledError
+            try:
+                await asyncio.wait_for(release.wait(), timeout=0.1)
+            except TimeoutError:
+                continue
+        if self._stopped.is_set():
+            self._pause = None
+            raise asyncio.CancelledError
+        pause = self._pause
+        if pause is None or pause["pauseId"] != pause_id:
+            raise asyncio.CancelledError
+        action = pause["action"]
+        self._pause = None
+        self._pause_next = action == "step"
+        await context.events.publish(
+            {
+                "type": "execution:resumed",
+                "pauseId": pause_id,
+                "controlRevision": self._revision,
+            }
+        )
+
+    @property
+    def pending_target_node_id(self) -> str | None:
+        return self._run_to_node_id
+
+    async def failure_pause(
+        self,
+        context: ExecutionContext,
+        *,
+        node_id: str,
+        error: str,
+        executed_nodes: int,
+        issues: list[dict[str, Any]],
+    ) -> None:
+        self._revision += 1
+        release = asyncio.Event()
+        self._pause = {
+            "pauseId": str(uuid4()),
+            "controlRevision": self._revision,
+            "release": release,
+            "action": None,
+            "context": context,
+            "nodeId": node_id,
+            "label": node_id,
+            "reason": "failure",
+            "error": error,
+            "executedNodes": executed_nodes,
+            "issues": copy.deepcopy(issues),
+        }
+        if context.events is None:
+            raise RuntimeError("调试事件服务不可用")
+        await context.events.publish(self._pause_payload(context))
+        while not release.is_set() and not self._stopped.is_set():
+            try:
+                await asyncio.wait_for(release.wait(), timeout=0.1)
+            except TimeoutError:
+                continue
+        self._pause = None
+
+    def apply_variables(self, command: Mapping[str, Any]) -> str | None:
+        pause = self._pause
+        if (
+            pause is None
+            or command.get("pauseId") != pause["pauseId"]
+            or command.get("controlRevision") != pause["controlRevision"]
+        ):
+            return "暂停标识或控制修订已失效"
+        if pause["reason"] == "failure":
+            return "失败现场变量只读"
+        context = pause["context"]
+        assert isinstance(context, ExecutionContext)
+        changes = command.get("changes")
+        if not isinstance(changes, list):
+            return "变量修改内容无效"
+        loop_variables = self._loop_variables(context)
+        if any(
+            not isinstance(change, Mapping)
+            or not isinstance(change.get("name"), str)
+            or change["name"] in loop_variables
+            for change in changes
+        ):
+            return "循环局部变量只读"
+        if self._stopped.is_set():
+            return "运行正在停止"
+        tracking_token = context.begin_variable_tracking(
+            node_id=str(pause["nodeId"]),
+            node_name=str(pause["label"]),
+            execution_id=f"debug:{pause['pauseId']}",
+        )
+        for change in changes:
+            name = str(change["name"])
+            context.set_variable(
+                name,
+                copy.deepcopy(change.get("value")),
+                sensitive=name in context.sensitive_variables,
+            )
+        pause["variableChanges"] = context.end_variable_tracking(tracking_token)
+        self._revision += 1
+        pause["controlRevision"] = self._revision
+        return None
+
+    def replace_breakpoints(self, values: Any) -> bool:
+        if not isinstance(values, list) or not all(
+            isinstance(item, str) and item for item in values
+        ):
+            return False
+        self._breakpoints = set(values)
+        return True
+
+    async def republish_pause(self) -> None:
+        pause = self._pause
+        if pause is None:
+            return
+        context = pause["context"]
+        assert isinstance(context, ExecutionContext)
+        if context.events is None:
+            raise RuntimeError("调试事件服务不可用")
+        for change in pause.pop("variableChanges", []):
+            await context.events.publish(
+                {"type": "execution:variable_changed", **change}
+            )
+        await context.events.publish(self._pause_payload(context))
+
+    def _pause_payload(
+        self,
+        context: ExecutionContext,
+        *,
+        loop_variables: set[str] | None = None,
+    ) -> dict[str, Any]:
+        pause = self._pause
+        assert pause is not None
+        local_names = loop_variables or self._loop_variables(context)
+        payload = {
+            "type": "execution:failed_paused" if pause["reason"] == "failure" else "execution:paused",
+            "node_id": pause["nodeId"],
+            "label": pause["label"],
+            "pauseId": pause["pauseId"],
+            "controlRevision": pause["controlRevision"],
+            "variables": {
+                name: "***" if name in context.sensitive_variables else copy.deepcopy(value)
+                for name, value in context.variables.items()
+            },
+            "variableMeta": {
+                name: {
+                    "scope": "loop" if name in local_names else "workflow",
+                    "readOnly": name in local_names,
+                }
+                for name in context.variables
+            },
+            "reason": pause["reason"],
+            "executionContext": execution_context_snapshot(context),
+        }
+        if pause["reason"] == "failure":
+            payload.update(
+                {
+                    "error": pause["error"],
+                    "failedNodeId": pause["nodeId"],
+                    "executedNodes": pause["executedNodes"],
+                    "issues": copy.deepcopy(pause["issues"]),
+                }
+            )
+        return payload
+
+    @staticmethod
+    def _loop_variables(context: ExecutionContext) -> set[str]:
+        return {
+            str(name)
+            for frame in context.loop_stack
+            for key in ("index_variable", "item_variable", "key_variable", "value_variable")
+            if isinstance((name := frame.get(key)), str) and name
+        }
+
+    def apply(self, command: Mapping[str, Any]) -> bool:
+        pause = self._pause
+        if (
+            pause is None
+            or command.get("pauseId") != pause["pauseId"]
+            or command.get("controlRevision") != pause["controlRevision"]
+            or command.get("type") not in {"debug_resume", "debug_step"}
+            or pause["reason"] == "failure"
+        ):
+            return False
+        pause["action"] = "step" if command["type"] == "debug_step" else "resume"
+        pause["release"].set()
+        return True
+
+    def close(self) -> None:
+        pause = self._pause
+        if pause is not None:
+            pause["release"].set()
+
+
+class _CredentialDeadlineExceeded(BaseException):
+    """Node timeout must not become an unmatched reference in the source parser."""
+
+
+class _WorkerCredentialReader:
+    """Private sidecar replies wake the stdin thread, never wait on this event loop."""
+
+    def __init__(self, stopped: Event, stdout: TextIO, run_id: str, *, protocol_metadata: Mapping[str, Any] | None = None) -> None:
+        self._stopped = stopped
+        self._stdout = stdout
+        self._run_id = run_id
+        self._protocol_metadata = dict(protocol_metadata or {})
+        self.deadline: ContextVar[float | None] = ContextVar("credential_node_deadline", default=None)
+        self._lock = Lock()
+        self._pending: dict[str, tuple[Event, dict[str, Any]]] = {}
+        self._closed = False
+
+    def get_field(self, name: str, field: str) -> str | None:
+        request_id = str(uuid4())
+        ready = Event()
+        result: dict[str, Any] = {}
+        with self._lock:
+            if self._closed or self._stopped.is_set():
+                raise asyncio.CancelledError
+            node_deadline = self.deadline.get()
+            if node_deadline is not None and monotonic() >= node_deadline:
+                raise _CredentialDeadlineExceeded
+            self._pending[request_id] = (ready, result)
+        try:
+            _write(self._stdout, {
+                **self._protocol_metadata,
+                "type": "credential:read", "runId": self._run_id,
+                "requestId": request_id, "name": name, "field": field,
+            })
+            deadline = monotonic() + 5
+            while True:
+                if self._stopped.is_set() or self._closed:
+                    raise asyncio.CancelledError
+                node_deadline = self.deadline.get()
+                if node_deadline is not None and monotonic() >= node_deadline:
+                    raise _CredentialDeadlineExceeded
+                if ready.is_set():
+                    break
+                if monotonic() >= deadline:
+                    raise TimeoutError("凭据读取超时")
+                ready.wait(min(.05, max(0, node_deadline - monotonic())) if node_deadline is not None else .05)
+            if self._stopped.is_set() or self._closed:
+                raise asyncio.CancelledError
+            value = result.get("value")
+            return value if isinstance(value, str) else None
+        finally:
+            with self._lock:
+                self._pending.pop(request_id, None)
+
+    def receive(self, command: Mapping[str, Any]) -> None:
+        if self._protocol_metadata and (
+            command.get("runId") != self._run_id
+            or any(type(command.get(key)) is not type(value) or command.get(key) != value for key, value in self._protocol_metadata.items())
+        ):
+            return
+        with self._lock:
+            pending = self._pending.get(str(command.get("requestId") or ""))
+            if pending is not None and not pending[0].is_set():
+                pending[1]["value"] = command.get("value")
+                pending[0].set()
+
+    def close(self) -> None:
+        with self._lock:
+            self._closed = True
+            for ready, _result in self._pending.values():
+                ready.set()
+
+
 class _WorkerCommandBus:
     def __init__(
         self,
@@ -799,23 +1325,63 @@ class _WorkerCommandBus:
         stopped: Event,
         stdout: TextIO,
         command: dict[str, Any],
+        *, protocol_metadata: Mapping[str, Any] | None = None,
     ) -> None:
         self._loop = loop
         self._stopped = stopped
         self._stdout = stdout
+        self._protocol_metadata = dict(protocol_metadata or {})
         self._run_id = _required_string(command, "runId")
+        self.credentials = _WorkerCredentialReader(stopped, stdout, self._run_id)
         workflow_id = command.get("workflowId")
         self._workflow_id = workflow_id if isinstance(workflow_id, str) else ""
+        raw_breakpoints = command.get("breakpoints", [])
+        breakpoints = (
+            {item for item in raw_breakpoints if isinstance(item, str) and item}
+            if isinstance(raw_breakpoints, list)
+            else set()
+        )
+        self.debug = _WorkerDebugController(
+            stopped,
+            step_mode=bool(command.get("stepMode")),
+            breakpoints=breakpoints,
+            run_to_node_id=(
+                str(command["runToNodeId"])
+                if isinstance(command.get("runToNodeId"), str)
+                and command["runToNodeId"]
+                else None
+            ),
+        )
         self._pending: dict[str, asyncio.Future[str | None]] = {}
+        self._pending_scripts: dict[str, asyncio.Future[JsScriptResult]] = {}
+        self._pending_speech: dict[str, asyncio.Future[SpeechResult]] = {}
+        self._pending_desktop_actions: dict[
+            str, asyncio.Future[DesktopActionResult]
+        ] = {}
+        self._pending_webhooks: dict[str, asyncio.Future[Mapping[str, Any]]] = {}
+        self._webhook_ids: set[str] = set()
+
+    def _write_command(self, message: dict[str, Any]) -> None:
+        _write(self._stdout, {**message, **self._protocol_metadata})
 
     def for_context(self, context: ExecutionContext) -> _BoundInputPrompts:
         return _BoundInputPrompts(self, context)
 
     def receive(self, command: dict[str, Any]) -> None:
+        if self._protocol_metadata and (
+            command.get("runId") != self._run_id
+            or any(type(command.get(key)) is not type(value) or command.get(key) != value
+                   for key, value in self._protocol_metadata.items())
+        ):
+            return
+        if command.get("type") == "credential:result":
+            self.credentials.receive(command)
+            return
         if not self._loop.is_closed():
             self._loop.call_soon_threadsafe(self._apply, command)
 
     def close(self) -> None:
+        self.credentials.close()
         if not self._loop.is_closed():
             self._loop.call_soon_threadsafe(self._cancel_pending)
 
@@ -852,8 +1418,243 @@ class _WorkerCommandBus:
                     }
                 )
 
+    async def request_script(
+        self,
+        context: ExecutionContext,
+        code: str,
+        variables: Mapping[str, Any],
+        *,
+        timeout_seconds: float,
+    ) -> JsScriptResult:
+        request_id = str(uuid4())
+        future: asyncio.Future[JsScriptResult] = self._loop.create_future()
+        self._pending_scripts[request_id] = future
+        if context.events is None:
+            raise RuntimeError("脚本请求事件服务不可用")
+        await context.events.publish(
+            {
+                "type": "execution:js_script",
+                "requestId": request_id,
+                "nodeId": context.current_node_id,
+                "executionId": context.current_execution_id,
+                "code": code,
+                "variables": copy.deepcopy(dict(variables)),
+            }
+        )
+        status = "expired"
+        try:
+            result = await asyncio.wait_for(future, timeout_seconds)
+            status = "completed" if result.success else "failed"
+            return result
+        finally:
+            self._pending_scripts.pop(request_id, None)
+            if context.events is not None:
+                await context.events.publish(
+                    {
+                        "type": "execution:js_script_closed",
+                        "requestId": request_id,
+                        "nodeId": context.current_node_id,
+                        "executionId": context.current_execution_id,
+                        "status": status,
+                    }
+                )
+
+    async def request_speech(
+        self,
+        context: ExecutionContext,
+        text: str,
+        *,
+        lang: str,
+        rate: float,
+        pitch: float,
+        volume: float,
+        timeout_seconds: float,
+    ) -> SpeechResult:
+        request_id = str(uuid4())
+        future: asyncio.Future[SpeechResult] = self._loop.create_future()
+        self._pending_speech[request_id] = future
+        if context.events is None:
+            raise RuntimeError("语音请求事件服务不可用")
+        await context.events.publish(
+            {
+                "type": "execution:tts_request",
+                "requestId": request_id,
+                "nodeId": context.current_node_id,
+                "executionId": context.current_execution_id,
+                "text": text,
+                "lang": lang,
+                "rate": rate,
+                "pitch": pitch,
+                "volume": volume,
+            }
+        )
+        status = "expired"
+        try:
+            result = await asyncio.wait_for(future, timeout_seconds)
+            status = "completed" if result.success else "failed"
+            return result
+        finally:
+            self._pending_speech.pop(request_id, None)
+            if context.events is not None:
+                await context.events.publish(
+                    {
+                        "type": "execution:tts_request_closed",
+                        "requestId": request_id,
+                        "nodeId": context.current_node_id,
+                        "executionId": context.current_execution_id,
+                        "status": status,
+                    }
+                )
+
+    async def request_desktop_action(
+        self,
+        context: ExecutionContext,
+        action: str,
+        payload: Mapping[str, Any],
+        *,
+        timeout_seconds: float,
+    ) -> DesktopActionResult:
+        if context.events is None:
+            raise RuntimeError("平台操作事件服务不可用")
+        request_id = str(uuid4())
+        future: asyncio.Future[DesktopActionResult] = self._loop.create_future()
+        self._pending_desktop_actions[request_id] = future
+        await context.events.publish(
+            {
+                "type": "execution:desktop_action",
+                "requestId": request_id,
+                "nodeId": context.current_node_id,
+                "executionId": context.current_execution_id,
+                "action": action,
+                "payload": dict(payload),
+            }
+        )
+        status = "expired"
+        try:
+            result = await asyncio.wait_for(future, timeout_seconds)
+            status = "completed" if result.success else "failed"
+            return result
+        finally:
+            self._pending_desktop_actions.pop(request_id, None)
+            await context.events.publish(
+                {
+                    "type": "execution:desktop_action_closed",
+                    "requestId": request_id,
+                    "nodeId": context.current_node_id,
+                    "executionId": context.current_execution_id,
+                    "status": status,
+                }
+            )
+
+    async def wait_for_webhook(
+        self,
+        context: ExecutionContext,
+        *,
+        webhook_id: str,
+        method: str,
+        validate_headers: Mapping[str, Any],
+        validate_params: Mapping[str, Any],
+        response_body: Any,
+        response_status: int,
+        timeout_seconds: float,
+    ) -> Mapping[str, Any]:
+        if context.events is None:
+            raise RuntimeError("Webhook触发事件服务不可用")
+        if webhook_id in self._webhook_ids:
+            raise RuntimeError("Webhook ID已在当前运行中使用")
+        request_id = str(uuid4())
+        future: asyncio.Future[Mapping[str, Any]] = self._loop.create_future()
+        self._webhook_ids.add(webhook_id)
+        self._pending_webhooks[request_id] = future
+        await context.events.publish(
+            {
+                "type": "execution:webhook_waiting",
+                "requestId": request_id,
+                "nodeId": context.current_node_id,
+                "executionId": context.current_execution_id,
+                "webhookId": webhook_id,
+                "method": method,
+                "validateHeaders": dict(validate_headers),
+                "validateParams": dict(validate_params),
+                "responseBody": copy.deepcopy(response_body),
+                "responseStatus": response_status,
+            }
+        )
+        status = "expired"
+        try:
+            data = (
+                await asyncio.wait_for(future, timeout_seconds)
+                if timeout_seconds > 0
+                else await future
+            )
+            status = "triggered"
+            return data
+        finally:
+            self._pending_webhooks.pop(request_id, None)
+            self._webhook_ids.discard(webhook_id)
+            await context.events.publish(
+                {
+                    "type": "execution:webhook_closed",
+                    "requestId": request_id,
+                    "nodeId": context.current_node_id,
+                    "executionId": context.current_execution_id,
+                    "webhookId": webhook_id,
+                    "status": status,
+                }
+            )
+
     def _apply(self, command: dict[str, Any]) -> None:
-        if command.get("type") != "input_prompt_result":
+        command_type = command.get("type")
+        if command_type == "debug_breakpoints":
+            command_id = command.get("commandId")
+            if (
+                self.debug is not None
+                and isinstance(command_id, str)
+                and command_id
+                and self.debug.replace_breakpoints(command.get("breakpoints"))
+            ):
+                self._write_debug_result(command_id)
+            return
+        if command_type == "debug_variables":
+            command_id = command.get("commandId")
+            if self.debug is None or not isinstance(command_id, str) or not command_id:
+                return
+            error = self.debug.apply_variables(command)
+            if error is not None:
+                self._write_debug_result(command_id, error=error)
+                return
+            self._loop.create_task(self._confirm_debug_variables(command_id))
+            return
+        if command_type in {"debug_resume", "debug_step"}:
+            command_id = command.get("commandId")
+            if (
+                self.debug is not None
+                and isinstance(command_id, str)
+                and command_id
+                and self.debug.apply(command)
+            ):
+                self._write_command(
+                    {
+                        "type": "execution:command_applied",
+                        "runId": self._run_id,
+                        "workflowId": self._workflow_id,
+                        "commandId": command_id,
+                    },
+                )
+            return
+        if command_type == "desktop_action_result":
+            self._apply_desktop_action_result(command)
+            return
+        if command_type == "webhook_result":
+            self._apply_webhook_result(command)
+            return
+        if command_type == "tts_result":
+            self._apply_speech_result(command)
+            return
+        if command_type == "js_script_result":
+            self._apply_script_result(command)
+            return
+        if command_type != "input_prompt_result":
             return
         request_id = command.get("requestId")
         command_id = command.get("commandId")
@@ -864,8 +1665,155 @@ class _WorkerCommandBus:
         if value is not None and not isinstance(value, str):
             return
         future.set_result(value)
-        _write(
-            self._stdout,
+        self._write_command(
+            {
+                "type": "execution:command_applied",
+                "runId": self._run_id,
+                "workflowId": self._workflow_id,
+                "commandId": command_id,
+                "requestId": request_id,
+            },
+        )
+
+    async def _confirm_debug_variables(self, command_id: str) -> None:
+        assert self.debug is not None
+        self._write_debug_result(command_id)
+        await self.debug.republish_pause()
+
+    def _write_debug_result(self, command_id: str, *, error: str | None = None) -> None:
+        self._write_command(
+            {
+                "type": (
+                    "execution:command_rejected"
+                    if error is not None
+                    else "execution:command_applied"
+                ),
+                "runId": self._run_id,
+                "workflowId": self._workflow_id,
+                "commandId": command_id,
+                **({"error": error} if error is not None else {}),
+            },
+        )
+
+    def _apply_speech_result(self, command: dict[str, Any]) -> None:
+        request_id = command.get("requestId")
+        command_id = command.get("commandId")
+        future = (
+            self._pending_speech.get(request_id)
+            if isinstance(request_id, str)
+            else None
+        )
+        if future is None or future.done() or not isinstance(command_id, str):
+            return
+        success = command.get("success")
+        error = command.get("error")
+        if not isinstance(success, bool):
+            return
+        if not success and (not isinstance(error, str) or not error.strip()):
+            return
+        future.set_result(
+            SpeechResult(success, error if isinstance(error, str) else None)
+        )
+        self._write_command(
+            {
+                "type": "execution:command_applied",
+                "runId": self._run_id,
+                "workflowId": self._workflow_id,
+                "commandId": command_id,
+                "requestId": request_id,
+            },
+        )
+
+    def _apply_desktop_action_result(self, command: dict[str, Any]) -> None:
+        request_id = command.get("requestId")
+        command_id = command.get("commandId")
+        future = (
+            self._pending_desktop_actions.get(request_id)
+            if isinstance(request_id, str)
+            else None
+        )
+        if future is None or future.done() or not isinstance(command_id, str):
+            return
+        success = command.get("success")
+        error = command.get("error")
+        if not isinstance(success, bool):
+            return
+        if not success and (not isinstance(error, str) or not error.strip()):
+            return
+        future.set_result(
+            DesktopActionResult(
+                success=success,
+                value=command.get("value"),
+                error=error if isinstance(error, str) else None,
+            )
+        )
+        self._write_command(
+            {
+                "type": "execution:command_applied",
+                "runId": self._run_id,
+                "workflowId": self._workflow_id,
+                "commandId": command_id,
+                "requestId": request_id,
+            },
+        )
+
+    def _apply_script_result(self, command: dict[str, Any]) -> None:
+        request_id = command.get("requestId")
+        command_id = command.get("commandId")
+        future = (
+            self._pending_scripts.get(request_id)
+            if isinstance(request_id, str)
+            else None
+        )
+        if future is None or future.done() or not isinstance(command_id, str):
+            return
+        success = command.get("success")
+        variables = command.get("variables")
+        error = command.get("error")
+        if not isinstance(success, bool):
+            return
+        if success and not isinstance(variables, Mapping):
+            return
+        if not success and (not isinstance(error, str) or not error.strip()):
+            return
+        future.set_result(
+            JsScriptResult(
+                success=success,
+                result=copy.deepcopy(command.get("result")),
+                variables=copy.deepcopy(dict(variables))
+                if isinstance(variables, Mapping)
+                else None,
+                error=error if isinstance(error, str) else None,
+            )
+        )
+        self._write_command(
+            {
+                "type": "execution:command_applied",
+                "runId": self._run_id,
+                "workflowId": self._workflow_id,
+                "commandId": command_id,
+                "requestId": request_id,
+            },
+        )
+
+    def _apply_webhook_result(self, command: dict[str, Any]) -> None:
+        request_id = command.get("requestId")
+        command_id = command.get("commandId")
+        data = command.get("data")
+        future = (
+            self._pending_webhooks.get(request_id)
+            if isinstance(request_id, str)
+            else None
+        )
+        if (
+            future is None
+            or future.done()
+            or not isinstance(command_id, str)
+            or not isinstance(data, Mapping)
+        ):
+            return
+        future.set_result(copy.deepcopy(dict(data)))
+        self._write_command(
             {
                 "type": "execution:command_applied",
                 "runId": self._run_id,
@@ -876,9 +1824,23 @@ class _WorkerCommandBus:
         )
 
     def _cancel_pending(self) -> None:
+        if self.debug is not None:
+            self.debug.close()
         for future in self._pending.values():
             if not future.done():
                 future.cancel()
+        for script_future in self._pending_scripts.values():
+            if not script_future.done():
+                script_future.cancel()
+        for speech_future in self._pending_speech.values():
+            if not speech_future.done():
+                speech_future.cancel()
+        for desktop_future in self._pending_desktop_actions.values():
+            if not desktop_future.done():
+                desktop_future.cancel()
+        for webhook_future in self._pending_webhooks.values():
+            if not webhook_future.done():
+                webhook_future.cancel()
 
 
 class _BoundInputPrompts:
@@ -891,6 +1853,76 @@ class _BoundInputPrompts:
     ) -> str | None:
         return await self._bus.request_input(
             self._context, request, timeout_seconds=timeout_seconds
+        )
+
+    async def request_script(
+        self,
+        code: str,
+        variables: Mapping[str, Any],
+        *,
+        timeout_seconds: float,
+    ) -> JsScriptResult:
+        return await self._bus.request_script(
+            self._context,
+            code,
+            variables,
+            timeout_seconds=timeout_seconds,
+        )
+
+    async def speak(
+        self,
+        text: str,
+        *,
+        lang: str,
+        rate: float,
+        pitch: float,
+        volume: float,
+        timeout_seconds: float,
+    ) -> SpeechResult:
+        return await self._bus.request_speech(
+            self._context,
+            text,
+            lang=lang,
+            rate=rate,
+            pitch=pitch,
+            volume=volume,
+            timeout_seconds=timeout_seconds,
+        )
+
+    async def perform(
+        self,
+        action: str,
+        payload: Mapping[str, Any],
+        *,
+        timeout_seconds: float,
+    ) -> DesktopActionResult:
+        return await self._bus.request_desktop_action(
+            self._context,
+            action,
+            payload,
+            timeout_seconds=timeout_seconds,
+        )
+
+    async def wait_for_webhook(
+        self,
+        *,
+        webhook_id: str,
+        method: str,
+        validate_headers: Mapping[str, Any],
+        validate_params: Mapping[str, Any],
+        response_body: Any,
+        response_status: int,
+        timeout_seconds: float,
+    ) -> Mapping[str, Any]:
+        return await self._bus.wait_for_webhook(
+            self._context,
+            webhook_id=webhook_id,
+            method=method,
+            validate_headers=validate_headers,
+            validate_params=validate_params,
+            response_body=response_body,
+            response_status=response_status,
+            timeout_seconds=timeout_seconds,
         )
 
 
@@ -952,6 +1984,20 @@ def _required_environment(key: str) -> str:
     if not value:
         raise TypeError(f"{key} must be a string")
     return value
+
+
+def _variable_value_type(value: Any) -> str:
+    if value is None:
+        return "null"
+    if isinstance(value, bool):
+        return "boolean"
+    if isinstance(value, (int, float)):
+        return "number"
+    if isinstance(value, list):
+        return "array"
+    if isinstance(value, dict):
+        return "object"
+    return "string"
 
 
 def _write(stdout: TextIO, event: dict[str, object]) -> None:

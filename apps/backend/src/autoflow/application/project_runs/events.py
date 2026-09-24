@@ -73,9 +73,10 @@ def _begin_snapshot(session: Session) -> None:
 def _public(event: RunEvent) -> dict[str, Any]:
     kind = "runStatus" if event.kind == "status" else event.kind
     allowed = {
+        "interaction": {"type", "requestId", "commandId", "status", "executionContext"},
         "runStatus": {"status", "statusRevision"},
         "nodeAttempt": {"status", "durationMs", "error"},
-        "log": {"level", "message"},
+        "log": {"level", "message", "isUserLog"},
         "output": {"name", "value"},
         "artifact": {"artifactId", "kind", "purpose", "availability"},
         "checkpoint": {"manualItemId", "checkpointRevision"},

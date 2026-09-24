@@ -1,3 +1,4 @@
+import asyncio
 import json
 
 import httpx
@@ -62,12 +63,8 @@ async def test_openrouter_validates_key_before_discovery_and_keeps_metadata():
             },
         )
 
-    result = await HttpModelProvider(
-        transport=httpx.MockTransport(handler)
-    ).discover(
-        connection(
-            preset="openrouter", url="https://gateway.example/api/v1"
-        ),
+    result = await HttpModelProvider(transport=httpx.MockTransport(handler)).discover(
+        connection(preset="openrouter", url="https://gateway.example/api/v1"),
         "secret",
     )
 
@@ -244,6 +241,365 @@ async def test_client_security_and_timeout_options_are_explicit():
     assert [
         (item["trust_env"], item["follow_redirects"], item["timeout"]) for item in seen
     ] == [(False, False, 15), (False, False, 30)]
+
+
+@pytest.mark.asyncio
+async def test_workflow_invocation_uses_managed_connection_and_normalizes_result():
+    async def handler(request):
+        assert str(request.url) == "https://api.example/v1/chat/completions"
+        assert request.headers["authorization"] == "Bearer managed-secret"
+        payload = json.loads(request.content)
+        assert payload == {
+            "model": "managed-model",
+            "messages": [
+                {"role": "system", "content": "系统"},
+                {"role": "user", "content": "问题"},
+            ],
+            "temperature": 0.25,
+            "max_tokens": 321,
+            "stream": False,
+        }
+        return httpx.Response(
+            200,
+            json={
+                "choices": [
+                    {
+                        "message": {
+                            "content": "回答",
+                            "reasoning_content": "推理",
+                        }
+                    }
+                ],
+                "usage": {"total_tokens": 12},
+            },
+        )
+
+    result = await HttpModelProvider(transport=httpx.MockTransport(handler)).invoke(
+        connection(),
+        "managed-secret",
+        "managed-model",
+        {
+            "messages": [
+                {"role": "system", "content": "系统"},
+                {"role": "user", "content": "问题"},
+            ],
+            "temperature": 0.25,
+            "maxTokens": 321,
+        },
+    )
+
+    assert result.content == "回答"
+    assert result.reasoning == "推理"
+    assert result.usage == {"total_tokens": 12}
+    assert result.endpoint == "https://api.example/v1/chat/completions"
+
+
+@pytest.mark.asyncio
+async def test_workflow_invocation_preserves_openai_tool_calls_for_assistant():
+    tools = [
+        {
+            "type": "function",
+            "function": {
+                "name": "client_action",
+                "parameters": {"type": "object"},
+            },
+        }
+    ]
+
+    async def handler(request):
+        payload = json.loads(request.content)
+        assert payload["tools"] == tools
+        assert payload["tool_choice"] == "auto"
+        return httpx.Response(
+            200,
+            json={
+                "choices": [
+                    {
+                        "message": {
+                            "content": "",
+                            "tool_calls": [
+                                {
+                                    "id": "tool-1",
+                                    "type": "function",
+                                    "function": {
+                                        "name": "client_action",
+                                        "arguments": '{"action":"fit_view","payload":{}}',
+                                    },
+                                }
+                            ],
+                        }
+                    }
+                ]
+            },
+        )
+
+    result = await HttpModelProvider(transport=httpx.MockTransport(handler)).invoke(
+        connection(),
+        "managed-secret",
+        "managed-model",
+        {
+            "messages": [{"role": "user", "content": "适应画布"}],
+            "tools": tools,
+            "toolChoice": "auto",
+        },
+    )
+
+    assert result.content == ""
+    assert result.tool_calls == (
+        {
+            "id": "tool-1",
+            "name": "client_action",
+            "arguments": {"action": "fit_view", "payload": {}},
+        },
+    )
+
+
+@pytest.mark.asyncio
+async def test_workflow_invocation_streams_openai_text_reasoning_and_tool_calls():
+    chunks = [
+        {"choices": [{"delta": {"reasoning_content": "思"}}]},
+        {
+            "choices": [
+                {
+                    "delta": {
+                        "reasoning_content": "考",
+                        "content": "完",
+                        "tool_calls": [
+                            {
+                                "index": 0,
+                                "id": "tool-1",
+                                "function": {
+                                    "name": "client_action",
+                                    "arguments": '{"action":"fit',
+                                },
+                            }
+                        ],
+                    }
+                }
+            ]
+        },
+        {
+            "choices": [
+                {
+                    "delta": {
+                        "content": "成",
+                        "tool_calls": [
+                            {
+                                "index": 0,
+                                "function": {"arguments": '_view","payload":{}}'},
+                            }
+                        ],
+                    }
+                }
+            ],
+            "usage": {"total_tokens": 9},
+        },
+    ]
+
+    async def handler(request):
+        assert json.loads(request.content)["stream"] is True
+        body = (
+            "".join(
+                f"data: {json.dumps(chunk, ensure_ascii=False)}\n\n" for chunk in chunks
+            )
+            + "data: [DONE]\n\n"
+        )
+        return httpx.Response(
+            200, text=body, headers={"content-type": "text/event-stream"}
+        )
+
+    updates = []
+
+    async def on_chunk(kind, delta, full):
+        updates.append((kind, delta, full))
+
+    result = await HttpModelProvider(transport=httpx.MockTransport(handler)).invoke(
+        connection(),
+        "managed-secret",
+        "managed-model",
+        {
+            "messages": [{"role": "user", "content": "适应画布"}],
+            "tools": [
+                {
+                    "type": "function",
+                    "function": {
+                        "name": "client_action",
+                        "parameters": {"type": "object"},
+                    },
+                }
+            ],
+            "_onChunk": on_chunk,
+        },
+    )
+
+    assert updates == [
+        ("reasoning", "思", "思"),
+        ("reasoning", "考", "思考"),
+        ("content", "完", "完"),
+        ("content", "成", "完成"),
+    ]
+    assert result.content == "完成"
+    assert result.reasoning == "思考"
+    assert result.usage == {"total_tokens": 9}
+    assert result.tool_calls == (
+        {
+            "id": "tool-1",
+            "name": "client_action",
+            "arguments": {"action": "fit_view", "payload": {}},
+        },
+    )
+
+
+@pytest.mark.asyncio
+async def test_cancelling_openai_stream_closes_the_provider_response():
+    class BlockingStream(httpx.AsyncByteStream):
+        def __init__(self) -> None:
+            self.started = asyncio.Event()
+            self.closed = asyncio.Event()
+
+        async def __aiter__(self):
+            self.started.set()
+            yield b'data: {"choices":[{"delta":{"content":"part"}}]}\n\n'
+            await asyncio.Future()
+
+        async def aclose(self) -> None:
+            self.closed.set()
+
+    stream = BlockingStream()
+
+    async def handler(_request):
+        return httpx.Response(
+            200, stream=stream, headers={"content-type": "text/event-stream"}
+        )
+
+    async def on_chunk(_kind, _delta, _full):
+        return None
+
+    task = asyncio.create_task(
+        HttpModelProvider(transport=httpx.MockTransport(handler)).invoke(
+            connection(),
+            "managed-secret",
+            "managed-model",
+            {
+                "messages": [{"role": "user", "content": "开始"}],
+                "_onChunk": on_chunk,
+            },
+        )
+    )
+    await asyncio.wait_for(stream.started.wait(), 1)
+    task.cancel()
+
+    with pytest.raises(asyncio.CancelledError):
+        await task
+    assert stream.closed.is_set()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("kind", ["anthropic", "gemini"])
+async def test_workflow_invocation_adapts_managed_provider_protocol(kind):
+    async def handler(request):
+        payload = json.loads(request.content)
+        if kind == "anthropic":
+            assert request.url.path == "/v1/messages"
+            assert request.headers["x-api-key"] == "managed-secret"
+            assert payload["system"] == "系统"
+            assert payload["messages"] == [{"role": "user", "content": "问题"}]
+            return httpx.Response(
+                200,
+                json={
+                    "content": [{"type": "text", "text": "Claude回答"}],
+                    "usage": {"input_tokens": 2},
+                },
+            )
+        assert request.url.path == "/v1/models/gemini-pro:generateContent"
+        assert request.url.params["key"] == "managed-secret"
+        assert payload["systemInstruction"] == {"parts": [{"text": "系统"}]}
+        assert payload["contents"] == [{"role": "user", "parts": [{"text": "问题"}]}]
+        return httpx.Response(
+            200,
+            json={
+                "candidates": [{"content": {"parts": [{"text": "Gemini回答"}]}}],
+                "usage": {"promptTokenCount": 2},
+            },
+        )
+
+    result = await HttpModelProvider(transport=httpx.MockTransport(handler)).invoke(
+        ProviderConnection(kind, kind, "https://model.example/v1"),
+        "managed-secret",
+        "claude" if kind == "anthropic" else "gemini-pro",
+        {
+            "messages": [
+                {"role": "system", "content": "系统"},
+                {"role": "user", "content": "问题"},
+            ],
+            "temperature": 0.1,
+            "maxTokens": 99,
+        },
+    )
+
+    assert result.content == ("Claude回答" if kind == "anthropic" else "Gemini回答")
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("kind", ["anthropic", "gemini"])
+async def test_workflow_invocation_adapts_managed_vision_content(kind):
+    async def handler(request):
+        payload = json.loads(request.content)
+        if kind == "anthropic":
+            assert payload["messages"] == [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type": "image/png",
+                                "data": "UE5H",
+                            },
+                        },
+                        {"type": "text", "text": "识别"},
+                    ],
+                }
+            ]
+            return httpx.Response(
+                200, json={"content": [{"type": "text", "text": "识别结果"}]}
+            )
+        assert payload["contents"] == [
+            {
+                "role": "user",
+                "parts": [
+                    {"inlineData": {"mimeType": "image/png", "data": "UE5H"}},
+                    {"text": "识别"},
+                ],
+            }
+        ]
+        return httpx.Response(
+            200,
+            json={"candidates": [{"content": {"parts": [{"text": "识别结果"}]}}]},
+        )
+
+    result = await HttpModelProvider(transport=httpx.MockTransport(handler)).invoke(
+        ProviderConnection(kind, kind, "https://model.example/v1"),
+        "managed-secret",
+        "vision-model",
+        {
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image_url",
+                            "image_url": {"url": "data:image/png;base64,UE5H"},
+                        },
+                        {"type": "text", "text": "识别"},
+                    ],
+                }
+            ]
+        },
+    )
+
+    assert result.content == "识别结果"
 
 
 @pytest.mark.asyncio

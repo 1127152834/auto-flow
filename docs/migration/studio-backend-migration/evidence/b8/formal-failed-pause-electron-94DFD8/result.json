@@ -1,0 +1,28 @@
+{
+  "evidenceId": "BE-B8-failed-pause-formal-electron",
+  "checkedAt": "2026-09-21T09:59:18.618Z",
+  "gitHead": "ed2a5597eae69fcd84dd79ce3cf60a0bce12bfec",
+  "buildSha256": "b11eb0eb4b169f5d3458bf50c808cf1aee6201488eff81bb50220097f779a7a8",
+  "workflowId": "UKAzQz62oiasj3GdhxjG2",
+  "profileId": "a8ee9fb0-ac05-42c3-9965-90f91a74870f",
+  "failedRunId": "dbca97fd-f3d8-4690-a752-802e56202b23",
+  "result": "passed",
+  "checks": [
+    "主应用真实服务在临时工作区创建 CloakBrowser Profile",
+    "主窗口通过真实点击打开正式 Studio，Studio 只读取主应用 Profile",
+    "通过正式新建入口创建空工作流",
+    "通过画布原生右键菜单逐一添加并配置五个节点，没有直接修改 Store",
+    "通过画布连接手柄建立五节点顺序链",
+    "正式保存经真实 HTTP 写入 SQLite，返回修订 1",
+    "真实 Debug 在无效选择器失败后保留可见 CloakBrowser、变量和失败节点，继续与单步入口不可用",
+    "结束失败调试后保持 failed 终态和原失败节点；浏览器、worker 与运行占用完成清理"
+  ],
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browser": "CloakBrowser only",
+    "interaction": "CDP mouse and keyboard; no Store access"
+  }
+}

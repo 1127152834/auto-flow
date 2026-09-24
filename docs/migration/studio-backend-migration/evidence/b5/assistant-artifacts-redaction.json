@@ -1,0 +1,52 @@
+{
+  "task": "B5.7",
+  "date": "2026-09-21",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "reference/WebRPA/backend/app/api/ai_assistant.py",
+      "reference/WebRPA/backend/app/services/ai_assistant_service.py"
+    ]
+  },
+  "classification": [
+    "原版功能迁入：助手图片、文件与工具结果继续支持多轮模型调用和前端展示",
+    "AutoFlow必要适配：大值使用工作区内SHA-256引用，读取经过受控认证传输",
+    "已批准增强：结构化秘密脱敏覆盖会话、SSE、命令记录和LangGraph检查点"
+  ],
+  "behavior": [
+    "图片会话仅保存assistant-attachment引用，不回填base64",
+    "超过64KiB的助手文本和工具结果原子写入assistant/artifacts，会话、事件及检查点只保存引用与摘要",
+    "模型提供方调用前按需恢复引用；client_action执行前由前端受控传输恢复引用",
+    "API key、代理密码、License及常见令牌字段在进入会话、事件和检查点前递归脱敏"
+  ],
+  "verification": [
+    {
+      "command": "uv run --project apps/backend pytest <assistant, MCP, event, model and redaction affected suites> -q",
+      "result": "117 passed",
+      "covers": "大工具结果引用、模型边界恢复、图片引用下载、命令幂等、MCP权限、持久化和秘密canary扫描"
+    },
+    {
+      "command": "npm test --workspace @autoflow/desktop -- --run <assistant and MCP affected suites>",
+      "result": "155 passed",
+      "covers": "认证产物读取、递归恢复、消息展示、SSE消费、权限认领和MCP配置"
+    },
+    {
+      "command": "uv run --project apps/backend ruff check <affected files> && uv run --project apps/backend mypy <production files>",
+      "result": "passed"
+    },
+    {
+      "command": "npx eslint <affected files> && npm run typecheck --workspace @autoflow/desktop && npm run openapi:check --workspace @autoflow/desktop",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build && uv run --directory apps/backend --group build pyinstaller --clean --noconfirm autoflow-backend.spec && npm run smoke:sidecar -- --executable apps/backend/dist/autoflow-backend/autoflow-backend",
+      "result": "passed",
+      "covers": "Electron main/preload/renderer构建、macOS arm64干净冻结及临时工作区启动/健康检查/清理"
+    }
+  ],
+  "externalWaits": [
+    "正式Electron真实UI的大图片与大文本按需打开",
+    "真实供应商响应的大值与供应商错误脱敏",
+    "Windows和macOS Intel正式包"
+  ]
+}

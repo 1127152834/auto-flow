@@ -8,6 +8,7 @@ import { SearchInput } from '../../../shared/components/ui/search-input'
 import { Pagination } from '../../../shared/components/ui/pagination'
 import { Select } from '../../../shared/components/ui/select'
 import { createProjectDataApi, DataCommandUncertain, type DataTable, type DirectoryQuery, type TableCreate, type TablePatch } from '../api'
+import { ProjectRunAssets } from '../components/ProjectRunAssets'
 import { DataTableDirectory } from '../components/DataTableDirectory'
 import { DataTableFormDialog } from '../components/DataTableFormDialog'
 import { ExcelImportWizard } from '../components/ExcelImportWizard'
@@ -45,6 +46,7 @@ export function DataTableDirectoryPage(props: DataTableDirectoryPageProps) {
 function Directory({ workspaceKey, instanceId, projectId, client, disabled, readonly, onOpen, registerLeaveGuard }: DataTableDirectoryPageProps) {
   const key = storageKey(workspaceKey, projectId)
   const [query, setQuery] = useState(() => readQuery(key))
+  const [assetsOpen, setAssetsOpen] = useState(false)
   const [editor, setEditor] = useState<Editor | null>(null)
   const [excelSession, setExcelSession] = useState<string | null>(null)
   const [recoveryPending, setRecoveryPending] = useState(false)
@@ -164,6 +166,7 @@ function Directory({ workspaceKey, instanceId, projectId, client, disabled, read
   const savingChanged = useCallback((value: boolean) => { busy.current = value }, [])
   return <section className="grid min-w-0 gap-4" aria-label="项目数据">
     {disabled ? <p role="status" className="text-sm text-muted">正在恢复服务连接，暂时无法保存。</p> : null}
+    <details open={assetsOpen} onToggle={event => setAssetsOpen(event.currentTarget.open)}><summary className="cursor-pointer py-2 font-medium">自动化运行数据</summary>{assetsOpen ? <ProjectRunAssets workspaceKey={workspaceKey} instanceId={instanceId} projectId={projectId} client={client} disabled={disabled} /> : null}</details>
     <DataTableDirectory totalCount={directory.data?.total} toolbar={<div className="flex min-w-0 flex-wrap items-center gap-3 [--control-md:48px]">
       <SearchInput className="w-60 max-w-full" aria-label="搜索数据表" placeholder="搜索数据表名称或用途" value={query.query} onClear={() => setQuery({ ...query, query: '', page: 1 })} onChange={event => setQuery({ ...query, query: event.target.value, page: 1 })} />
       <Select className="w-32" aria-label="数据来源" clearable={false} value={query.sourceKind ?? 'all'} options={sources} onValueChange={value => setQuery({ ...query, sourceKind: value === 'all' || value === null ? undefined : value as DirectoryQuery['sourceKind'], page: 1 })} />

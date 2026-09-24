@@ -1,0 +1,53 @@
+{
+  "evidenceId": "BE-B6-020-input-trigger-family",
+  "recordedAt": "2026-09-21",
+  "classification": "原版功能迁入 + AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "reference/WebRPA/backend/app/executors/trigger.py#HotkeyTriggerExecutor",
+      "reference/WebRPA/backend/app/executors/trigger.py#MouseTriggerExecutor",
+      "reference/WebRPA/backend/app/services/trigger_manager.py#TriggerManager._normalize_hotkey",
+      "reference/WebRPA/backend/app/services/mouse_gesture_service.py"
+    ],
+    "license": "LICENSE.WebRPA"
+  },
+  "nodes": ["hotkey_trigger", "mouse_trigger"],
+  "implemented": [
+    "保留热键别名、特殊键和F1-F12的pynput标准化，以及无限/有限等待语义",
+    "保留左中右键释放、上下滚轮、移动距离触发和mouse_event结果变量",
+    "保留鼠标按键手势、八方向识别、连续同方向去重、最小距离、绘制超时和5000点上限",
+    "监听器在成功、超时、取消和异常路径统一停止；真实worker失败或停止后不执行后继节点",
+    "生产依赖显式加入pynput 1.x，运行时仍按平台加载对应原生后端"
+  ],
+  "adaptations": [
+    "原版进程全局热键和鼠标手势单例改为单节点、单worker监听器，服从AutoFlow一次运行生命周期",
+    "pynput回调来自后台线程，使用event-loop call_soon_threadsafe唤醒协程，避免原版跨线程直接设置asyncio.Event",
+    "原版取消路径可能遗留监听器，迁入使用finally保证清理；监听初始化失败形成明确节点失败"
+  ],
+  "checks": [
+    {
+      "command": "pytest input trigger unit and differential, real worker cleanup, registry, scope, worker protocol, worker manager and packaging compatibility",
+      "result": "142 passed",
+      "covers": "热键标准化和触发、三类普通鼠标事件、手势算法与回调、变量结果、清理、生产注册及共享worker回归"
+    },
+    {
+      "command": "uv lock --check, Ruff and mypy",
+      "result": "passed",
+      "covers": "新增pynput依赖锁、执行器、生产注册、差分工具和worker测试"
+    }
+  ],
+  "boundaries": {
+    "workspace": "pytest temporary directory",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "mockExecutionUsedForBackendEvidence": false,
+    "formalElectronUiTested": false,
+    "nativeMacInput": "not passed: Quartz import did not complete and was interrupted"
+  },
+  "remaining": [
+    "macOS授予正式AutoFlow辅助功能权限后，通过真实UI运行并实际按键、点击、滚动、移动和绘制手势",
+    "Windows分别验证全局热键名称映射、DPI缩放坐标和进程清理",
+    "正式Electron中验证配置保存、关闭重开、触发日志和运行终态"
+  ]
+}

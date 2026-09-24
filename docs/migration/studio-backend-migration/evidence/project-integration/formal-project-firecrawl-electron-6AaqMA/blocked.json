@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-09-23T19:40:32.615Z",
+  "gitHead": "732984a420f0d3820fc6a1714385b60a6bec0cd9",
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "正式 Studio 真实 UI 配置三类网页采集，保存到项目并正常关闭工作台"
+  ],
+  "observedEvents": [],
+  "ui": [],
+  "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n    'http://127.0.0.1:63581/crawl/child',\n-   'http://127.0.0.1:63581/crawl/from-map'\n  ]\n\n    at file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:299:12\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)"
+}

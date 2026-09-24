@@ -1,0 +1,59 @@
+{
+  "recordedAt": "2026-09-21",
+  "classification": "原版功能迁入 + AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "path": "reference/WebRPA/backend/app/executors/ai.py",
+    "symbol": "AIVisionExecutor",
+    "license": "LICENSE.WebRPA"
+  },
+  "implemented": [
+    "保留元素截图、页面截图、HTTP图片、本地文件和变量图片五种来源",
+    "保留图片来源校验、变量写回、回复摘要和原版错误语义",
+    "按图片来源动态判断是否需要启动CloakBrowser",
+    "模型连接改为主应用modelId和CredentialStore边界",
+    "OpenAI兼容、Anthropic和Gemini托管模型协议支持多模态消息",
+    "生产执行器注册和真实worker事件链"
+  ],
+  "checks": [
+    {
+      "command": "uv run --project apps/backend pytest apps/backend/tests/differential/workflows/test_b5_ai_vision_parity.py -q",
+      "exitCode": 0,
+      "result": "1 passed",
+      "covers": "冻结源码与迁入实现的URL图片输出、消息、数据和变量变化"
+    },
+    {
+      "command": "uv run --project apps/backend pytest apps/backend/tests/integration/test_b5_ai_vision_worker.py -q",
+      "exitCode": 0,
+      "result": "1 passed",
+      "covers": "真实worker、受控模型HTTP服务、多模态请求、结果事件和秘密扫描"
+    },
+    {
+      "command": "uv run --project apps/backend pytest apps/backend/tests/unit/test_model_provider.py apps/backend/tests/unit/workflows/test_ai_executors.py apps/backend/tests/unit/workflows/test_ai_task_executors.py apps/backend/tests/unit/workflows/test_run_coordinator.py apps/backend/tests/unit/workflows/test_executor_registry.py apps/backend/tests/integration/test_b5_ai_task_worker.py apps/backend/tests/integration/test_b5_ai_vision_worker.py apps/backend/tests/integration/test_workflow_worker_protocol.py apps/backend/tests/differential/workflows/test_b5_ai_task_executor_parity.py apps/backend/tests/differential/workflows/test_b5_ai_vision_parity.py -q",
+      "exitCode": 0,
+      "result": "119 passed"
+    },
+    {
+      "command": "uv run --project apps/backend ruff check <AI vision affected files> && uv run --project apps/backend mypy <AI vision production modules>",
+      "exitCode": 0,
+      "result": "Ruff and mypy passed"
+    }
+  ],
+  "remaining": [
+    "元素截图来源和真实页面拾取联动",
+    "真实第三方视觉模型调用",
+    "其他未实测平台"
+  ],
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b5-ai-tasks.mjs",
+    "exitCode": 0,
+    "result": "passed",
+    "platform": "darwin-arm64",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-ai-tasks-electron-LLZGv4/result.json",
+    "covers": "正式Studio真实UI配置打开网页与图像识别，CloakBrowser页面截图进入托管视觉模型，结果变量回写和运行后资源清理"
+  },
+  "externalWaiting": [
+    "真实第三方视觉模型调用",
+    "其他未实测平台"
+  ]
+}

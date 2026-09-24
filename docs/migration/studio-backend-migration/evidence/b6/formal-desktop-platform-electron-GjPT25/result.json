@@ -1,0 +1,84 @@
+{
+  "evidenceId": "BE-mouse_trigger-formal-native",
+  "result": "partial-negative-paths-only",
+  "checkedAt": "2026-09-24T00:48:59.557Z",
+  "platform": "darwin-arm64",
+  "entry": "packaged-directory",
+  "nodeId": "DfXLuYPb9Z2ulKFqeje27",
+  "workflowId": "X2gXr1fuacqGn39TPyJ9c",
+  "workerPids": [
+    17833
+  ],
+  "checks": [
+    "主窗口真实点击打开正式 Studio；动作库为 213，运行配置来自主应用 Profile",
+    "真实 UI 配置与保存，节点和连线已写入 SQLite",
+    "saved-close-studio-through-native-ui",
+    "原生正常关窗后通过主窗口重开，保存的节点与配置完整恢复",
+    "timeout-do-not-send-input",
+    "实际节点超时失败，后继节点未执行",
+    "真实 UI 停止后进入 stopped，后继未执行，已捕获的 worker 进程全部退出"
+  ],
+  "runs": [
+    {
+      "runId": "db6015d4-24d1-4727-8844-e3542e7d37bb",
+      "status": "failed",
+      "logs": [
+        {
+          "sequence": 4,
+          "id": "db6015d4-24d1-4727-8844-e3542e7d37bb-4",
+          "timestamp": "2026-09-24T00:48:54.412758+00:00",
+          "level": "error",
+          "message": "鼠标触发器超时（2秒）",
+          "nodeId": "DfXLuYPb9Z2ulKFqeje27",
+          "executionId": "6681cf6b-7400-4906-8a8a-7e3370f750f7",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "duration": 2201.281999998173,
+          "details": null
+        },
+        {
+          "sequence": 5,
+          "id": "db6015d4-24d1-4727-8844-e3542e7d37bb-5",
+          "timestamp": "2026-09-24T00:48:55.071298+00:00",
+          "level": "error",
+          "message": "执行失败，共执行 1 个节点，失败 1 个",
+          "nodeId": null,
+          "executionId": null,
+          "executionContext": null,
+          "duration": null,
+          "details": null
+        }
+      ],
+      "results": []
+    },
+    {
+      "runId": "271ccdf3-4387-40d9-a228-d0a7de037e96",
+      "status": "stopped",
+      "logs": [
+        {
+          "sequence": 4,
+          "id": "271ccdf3-4387-40d9-a228-d0a7de037e96-4",
+          "timestamp": "2026-09-24T00:48:58.893289+00:00",
+          "level": "info",
+          "message": "执行已停止，共执行 0 个节点，失败 0 个",
+          "nodeId": null,
+          "executionId": null,
+          "executionContext": null,
+          "duration": null,
+          "details": null
+        }
+      ],
+      "results": []
+    }
+  ],
+  "boundaries": {
+    "positiveTriggerVerified": false,
+    "realNativeInput": false,
+    "realScreenCapture": false,
+    "runtimeMock": false,
+    "userDatabaseTouched": false,
+    "windowsTested": false
+  }
+}

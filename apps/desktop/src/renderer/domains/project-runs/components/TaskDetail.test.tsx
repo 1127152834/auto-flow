@@ -2,12 +2,14 @@ import '@testing-library/jest-dom/vitest'
 import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, it, vi } from 'vitest'
+import { choiceTestEnvironment, chooseOption } from '../../../shared/testing/choice-user'
 import { TaskDetail } from './TaskDetail'
 
+choiceTestEnvironment()
 afterEach(cleanup)
 const detail = { automationName: '链接采集', batchStartedAt: '2026-09-15T00:59:00Z', nodeNames: { 'node-03': '读取页面' }, parameterDefinitions: [{ parameterId: 'p0', name: '零', description: '', type: 'number' as const, required: true }, { parameterId: 'pf', name: '开关', description: '', type: 'boolean' as const, required: true }, { parameterId: 'pn', name: '空值', description: '', type: 'string' as const, required: false }], task: { taskId: 'task-1', taskOrdinal: 49, projectId: 'project-1', batchId: 'batch-1', runId: 'run-1', runRequestId: 'request-1', status: 'failed', statusRevision: 2, inputSnapshotId: 'snapshot-1', createdAt: '2026-09-15T01:00:00Z', completedAt: '2026-09-15T01:01:00Z' }, inputSnapshot: { inputSnapshotId: 'snapshot-1', taskId: 'task-1', batchId: 'batch-1', parameters: { p0: 0, pf: false, pn: null }, inputs: [], capturedAt: '2026-09-15T01:00:00Z' }, run: { runId: 'run-1', runRequestId: 'request-1', status: 'failed', statusRevision: 2, executionGeneration: 1, preparedContentId: 'content-1', capabilityBindings: [], resourceRequest: {}, lastSequence: 4, terminal: true, error: { code: 'E_PAGE_TIMEOUT', message: '读取页面超时' }, startedAt: '2026-09-15T01:00:00Z', finishedAt: '2026-09-15T01:01:00Z' }, cleanup: { status: 'notRequired' as const, operationId: null, message: null } }
 const attempts = { items: [{ nodeVisitId: 'visit-1', nodeId: 'node-03', nodeName: '读取页面', attempt: 2, status: 'failed' as const, startedAt: '2026-09-15T01:00:20Z', completedAt: '2026-09-15T01:01:00Z', error: { code: 'E_PAGE_TIMEOUT' } }], page: 1, pageSize: 50, total: 1, sort: 'createdAt' }
-const logs = { items: [{ runId: 'run-1', sequence: 3, eventId: 'event-3', executionGeneration: 1, nodeId: 'node-03', nodeVisitId: 'visit-1', attempt: 2, level: 'error' as const, message: '页面读取超时', occurredAt: '2026-09-15T01:01:00Z' }], afterSequence: 3, lastSequence: 4, hasMore: false }
+const logs = { items: [{ runId: 'run-1', sequence: 3, eventId: 'event-3', executionGeneration: 1, nodeId: 'node-03', nodeVisitId: 'visit-1', attempt: 2, level: 'error' as const, message: '页面读取超时', isUserLog: false, occurredAt: '2026-09-15T01:01:00Z' }], afterSequence: 3, lastSequence: 4, hasMore: false }
 const outputs = { items: [{ outputId: 'out-1', kind: 'value' as const, name: '计数', value: 0, runId: 'run-1', sequence: 2, nodeId: 'node-03', nodeVisitId: 'visit-1', attempt: 1, createdAt: '2026-09-15T01:00:10Z' }], page: 1, pageSize: 50, total: 1, sort: 'createdAt' }
 const props = { detail, attempts, logs, outputs, selectedNode: null, level: null, query: '', loading: false, onTabChange: vi.fn(), onNodeChange: vi.fn(), onLevelChange: vi.fn(), onQueryChange: vi.fn(), onLoadMoreLogs: vi.fn(), onLoadMoreAttempts: vi.fn(), onLoadMoreOutputs: vi.fn(), onRetry: vi.fn(), onBack: vi.fn() }
 
@@ -24,6 +26,35 @@ it('shows the task header, persisted attempts and logs', () => {
   expect(screen.getByText('读取页面')).toBeVisible()
   expect(screen.queryByText('node-03')).not.toBeInTheDocument()
   expect(screen.getByText('日志按持久序号连续读取。')).toBeVisible()
+})
+
+it('shows and filters the recorded success log level in Chinese', async () => {
+  const onLevelChange = vi.fn()
+  render(<TaskDetail {...props} selectedTab="logs" onLevelChange={onLevelChange}
+    logs={{ ...logs, items: [{ ...logs.items[0], level: 'success', message: '业务完成' }] }}/>)
+  expect(screen.getByText('业务完成')).toBeVisible()
+  expect(screen.getByText('成功')).toHaveAttribute('data-table-status', 'success')
+  await chooseOption(userEvent.setup(), screen.getByRole('combobox', { name: '筛选日志级别' }), 'success')
+  expect(onLevelChange).toHaveBeenCalledWith('success')
+})
+
+it('shows user-authored error logs without claiming the node failed', () => {
+  render(<TaskDetail {...props} selectedTab="logs"
+    logs={{ ...logs, items: [{ ...logs.items[0], isUserLog: true, message: '业务校验未通过' }] }}/>)
+  expect(screen.getByText('业务校验未通过')).toBeVisible()
+  expect(screen.queryByText('节点执行失败，请查看异常与证据。')).not.toBeInTheDocument()
+})
+
+it('shows the frozen module and loop context beside nested task events', () => {
+  const executionContext = {
+    scopes: [{ kind: 'customModule', id: 'module-1', name: '采集模块' }],
+    loops: [{ nodeId: 'loop-1', type: 'count', currentIndex: 1, iteration: 2 }],
+  }
+  render(<TaskDetail {...props} selectedTab="logs"
+    attempts={{ ...attempts, items: [{ ...attempts.items[0], executionContext }] }}
+    logs={{ ...logs, items: [{ ...logs.items[0], executionContext }] }}/>)
+  expect(screen.getByText('尝试 2 · 采集模块 / 第 2 轮')).toBeVisible()
+  expect(screen.getByText('采集模块 / 第 2 轮')).toBeVisible()
 })
 
 it('applies log search only on submit and clears it immediately', async () => {
@@ -137,4 +168,13 @@ it('uses the required ordinal and frozen unnamed-node label without exposing the
   render(<TaskDetail {...props} attempts={{ ...attempts, items: [{ ...attempts.items[0], nodeName: '未命名节点' }] }} detail={{ ...detail, nodeNames: {}, task: { ...detail.task, taskOrdinal: 1 } }} selectedTab="logs"/>)
   expect(screen.getByRole('heading', { name: '任务 1' })).toBeVisible()
   expect(screen.getByText('未命名节点')).toBeVisible()
+})
+
+it('labels a successful node screenshot as an output rather than failure evidence', () => {
+  render(<TaskDetail {...props} selectedTab="evidence"
+    detail={{ ...detail, task: { ...detail.task, status: 'succeeded' }, run: { ...detail.run, status: 'succeeded', error: null } }}
+    attempts={{ ...attempts, items: [], total: 0 }}
+    artifacts={{ items: [{ artifactId: 'png-1', kind: 'screenshot', purpose: 'result', availability: 'available', nodeId: 'shot', nodeName: '网页截图', eventSequence: 1, executionGeneration: 1, byteSize: 42, createdAt: '2026-09-24T00:00:00Z' }], total: 1, page: 1, pageSize: 100, sort: 'createdAt' }}/>)
+  expect(screen.getByRole('heading', { name: '节点输出截图' })).toBeVisible()
+  expect(screen.queryByRole('heading', { name: '失败时页面截图' })).not.toBeInTheDocument()
 })

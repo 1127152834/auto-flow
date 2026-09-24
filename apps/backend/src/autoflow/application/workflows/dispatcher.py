@@ -12,7 +12,11 @@ from uuid import uuid4
 from sqlalchemy import select
 from sqlalchemy.orm import Session, sessionmaker
 
+from autoflow.application.models.service import ModelExecutionBinding
+from autoflow.application.project_runs.interactions import ProjectRunInteractions
 from autoflow.application.settings.runtime import QuiesceGate
+from autoflow.application.workflows.coordinator import _model_references
+from autoflow.domain.models.errors import ModelError
 from autoflow.domain.workflows.runtime import (
     TERMINAL_STATUSES,
     CoreRun,
@@ -24,7 +28,10 @@ from autoflow.infrastructure.database.workflow_runtime import (
     SqlAlchemyWorkflowRuntimeRepository,
 )
 from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
-from autoflow.infrastructure.process.project_workflow_worker import WorkerOutcome
+from autoflow.infrastructure.process.project_workflow_worker import (
+    WorkerOutcome,
+    WorkflowWorkerError,
+)
 
 
 class WorkerPort(Protocol):
@@ -39,10 +46,12 @@ class WorkerPort(Protocol):
         parameters: dict[str, Any],
         variables: dict[str, Any],
         browser: dict[str, Any],
-        executable: Path,
+        executable: Path | None,
         on_event: Callable[[dict[str, Any]], Awaitable[None]],
+        model_bindings: list[dict[str, Any]],
     ) -> WorkerOutcome: ...
 
+    async def send_command(self, run_id: str, execution_generation: int, command: dict[str, Any]) -> None: ...
     async def stop(self, run_id: str) -> None: ...
     async def force_stop(self, run_id: str) -> None: ...
     def discard_uncommitted_artifact(
@@ -100,15 +109,20 @@ class WorkflowRunDispatcher:
         *,
         on_fenced: Callable[[str], None] = lambda _run_id: None,
         capacity: int = 1,
+        resolve_model: Callable[[str], ModelExecutionBinding] | None = None,
+        resolve_default_model: Callable[[str], str] | None = None,
         force_stop_grace: timedelta = timedelta(seconds=30),
         now: Callable[[], datetime] = lambda: datetime.now(UTC),
     ) -> None:
         self._sessions = session_factory
         self._worker = worker
+        self.interactions = ProjectRunInteractions(session_factory, self._send_interaction)
         self._resources = resources
         self._gate = gate
         self._recover_orphan = recover_orphan
         self._on_fenced = on_fenced
+        self._resolve_model = resolve_model
+        self._resolve_default_model = resolve_default_model
         self._force_stop_grace = force_stop_grace
         self._now = now
         if type(capacity) is not int or capacity not in {1, 2}:
@@ -120,6 +134,14 @@ class WorkflowRunDispatcher:
         self._lock = asyncio.Lock()
         self._control = asyncio.Lock()
         self._idle_listeners: set[Callable[[], None]] = set()
+
+    async def _send_interaction(self, run_id: str, generation: int, command: dict[str, Any]) -> None:
+        try:
+            await self._worker.send_command(run_id, generation, command)
+        except (WorkflowWorkerError, OSError) as error:
+            raise WorkflowRuntimeError(
+                "INTERACTION_UNCONFIRMED", "交互命令尚未确认，请查询原命令结果", 503
+            ) from error
 
     @property
     def capacity(self) -> int:
@@ -431,17 +453,33 @@ class WorkflowRunDispatcher:
                         "WORKFLOW_ADMISSION_CLOSED", "运行准入已关闭", 503
                     )
                 content = self._prepared(dispatched.prepared_content_id)
-                lease = await self._resources.acquire(
-                    dispatched.resource_request, dispatched.run_request_id
-                )
-                owner.lease = lease
+                execution_plan = thaw_json(content.execution_plan)
+                try:
+                    model_bindings = self._model_bindings(
+                        execution_plan, dispatched.resource_request
+                    )
+                except ModelError as error:
+                    current = self._get_run(dispatched.run_id)
+                    if current.status == "stopping":
+                        self._transition_current(current.run_id, current.execution_generation, "cancelled")
+                    elif current.status == "running":
+                        finishing = self._transition(current, "finishing")
+                        self._transition_current(
+                            finishing.run_id, finishing.execution_generation, "failed",
+                            error={"code": error.code, "message": error.message},
+                        )
+                    return
+                if "browser.cloakbrowser" in content.capability_requirements:
+                    lease = await self._resources.acquire(
+                        dispatched.resource_request, dispatched.run_request_id
+                    )
+                    owner.lease = lease
                 current = self._get_run(dispatched.run_id)
                 if (
                     current.status != "running"
                     or current.execution_generation != dispatched.execution_generation
                 ):
-                    lease.release()
-                    owner.lease = None
+                    self._release_lease(owner)
                     if current.status == "stopping":
                         self._transition_current(
                             current.run_id, current.execution_generation, "cancelled"
@@ -457,14 +495,15 @@ class WorkflowRunDispatcher:
                         outcome = await self._worker.run(
                             run_id=current.run_id,
                             execution_generation=current.execution_generation,
-                            execution_plan=thaw_json(content.execution_plan),
+                            execution_plan=execution_plan,
                             parameters=thaw_json(current.parameters),
                             variables=self._variables(content, current),
-                            browser=dict(lease.browser),
-                            executable=lease.executable,
+                            browser=dict(lease.browser) if lease else {},
+                            executable=lease.executable if lease else None,
                             on_event=lambda event: self._commit_event(
                                 current, content, event
                             ),
+                            model_bindings=model_bindings,
                         )
                 except TimeoutError:
                     if not timeout.expired():
@@ -481,8 +520,7 @@ class WorkflowRunDispatcher:
                     )
             if self._worker.busy(dispatched.run_id) or not outcome.cleanup_confirmed:
                 raise RuntimeError("worker cleanup unconfirmed")
-            lease.release()
-            owner.lease = None
+            self._release_lease(owner)
             current = self._get_run(dispatched.run_id)
             if (
                 current.execution_generation != dispatched.execution_generation
@@ -537,6 +575,7 @@ class WorkflowRunDispatcher:
         finally:
             owner.automatic_timeout = None
             owner.automatic_remaining = None
+            self.interactions.forget_run(dispatched.run_id)
             async with self._lock:
                 if owner.task is asyncio.current_task():
                     if not cancelled and not unhandled:
@@ -551,6 +590,64 @@ class WorkflowRunDispatcher:
             for listener in tuple(self._idle_listeners):
                 listener()
 
+    def _model_bindings(
+        self, plan: dict[str, Any], resource_request: Mapping[str, Any]
+    ) -> list[dict[str, Any]]:
+        document = plan.get("document")
+        if not isinstance(document, dict):
+            document = {"nodes": [
+                {"id": node["nodeId"], "data": node["data"]}
+                for node in plan["nodes"]
+            ]}
+        documents = [document]
+        for snapshot in plan.get("customModuleDependencies", {}).values():
+            if isinstance(snapshot, dict) and isinstance(snapshot.get("workflow"), dict):
+                documents.append(snapshot["workflow"])
+        documents.extend(
+            snapshot for snapshot in plan.get("workflowDependencies", {}).values()
+            if isinstance(snapshot, dict)
+        )
+        default_model_id: str | None = None
+        for node in (node for item in documents for node in item["nodes"]):
+            data = node["data"]
+            if not str(data.get("moduleType", "")).startswith("ai_"):
+                continue
+            config = data.get("config", data)
+            if not isinstance(config, dict):
+                continue
+            model_id = config.get("modelId")
+            if model_id is not None and not isinstance(model_id, str):
+                raise ModelError("MODEL_ID_INVALID", "模型标识必须是字符串", 422)
+            if isinstance(model_id, str) and model_id.strip():
+                continue
+            provider_id = resource_request.get("modelProviderId")
+            if not isinstance(provider_id, str) or not provider_id:
+                raise ModelError("PROJECT_DEFAULT_MODEL_MISSING", "项目未设置默认模型服务，请显式选择模型", 422)
+            if self._resolve_default_model is None:
+                raise ModelError("MODEL_SERVICE_UNAVAILABLE", "模型服务不可用", 503)
+            if default_model_id is None:
+                default_model_id = self._resolve_default_model(provider_id)
+            config["modelId"] = default_model_id
+        references = _model_references(documents)
+        if references and self._resolve_model is None:
+            raise ModelError("MODEL_SERVICE_UNAVAILABLE", "模型服务不可用", 503)
+        bindings: dict[str, ModelExecutionBinding] = {}
+        for model_id, _node_id, _path in references:
+            if model_id not in bindings:
+                assert self._resolve_model is not None
+                bindings[model_id] = self._resolve_model(model_id)
+        return [
+            {
+                "modelId": binding.model_id,
+                "modelKey": binding.model_key,
+                "presetId": binding.connection.preset_id,
+                "providerKind": binding.connection.provider_kind,
+                "baseUrl": binding.connection.base_url,
+                "secret": binding.secret,
+            }
+            for binding in bindings.values()
+        ]
+
     async def _commit_event(
         self, run: CoreRun, content: Any, event: dict[str, Any]
     ) -> None:
@@ -562,14 +659,29 @@ class WorkflowRunDispatcher:
             raise WorkflowRuntimeError("EXECUTION_GENERATION_REVOKED", "执行代次已失效")
         node_id = event.get("nodeId")
         known = set(content.execution_plan.get("orderedNodeIds", ()))
+        for snapshot in content.execution_plan.get("customModuleDependencies", {}).values():
+            if isinstance(snapshot, Mapping) and isinstance(snapshot.get("workflow"), Mapping):
+                known.update(
+                    node["id"] for node in snapshot["workflow"].get("nodes", ())
+                    if isinstance(node, Mapping) and isinstance(node.get("id"), str)
+                )
+        for snapshot in content.execution_plan.get("workflowDependencies", {}).values():
+            if isinstance(snapshot, Mapping):
+                known.update(
+                    node["id"] for node in snapshot.get("nodes", ())
+                    if isinstance(node, Mapping) and isinstance(node.get("id"), str)
+                )
         if node_id is not None and node_id not in known:
             raise WorkflowRuntimeError("RUN_EVENT_NODE_UNKNOWN", "事件引用了未知节点")
-        value = dict(event)
+        value = self.interactions.public_event(dict(event))
         value.pop("sequence", None)
         try:
             with self._sessions() as session:
-                SqlAlchemyWorkflowRuntimeRepository(session).append_event(value)
+                persisted = SqlAlchemyWorkflowRuntimeRepository(session).append_event(value)
+                self.interactions.confirm(session, value)
                 session.commit()  # returning is the worker manager's ACK boundary
+            if persisted.sequence > current.last_sequence:
+                self.interactions.observe(event)
         except Exception:
             self._discard_uncommitted_artifact(run, event)
             raise
@@ -590,9 +702,10 @@ class WorkflowRunDispatcher:
             return
         try:
             with self._sessions() as session:
-                committed = SqlAlchemyWorkflowRuntimeRepository(session).get_artifact(
-                    run.run_id, artifact_id
-                )
+                repository = SqlAlchemyWorkflowRuntimeRepository(session)
+                committed = repository.get_artifact(run.run_id, artifact_id)
+                if repository.artifact_path_is_registered(run.run_id, relative_path):
+                    return
         except Exception:  # noqa: BLE001 - unknown fact checks must preserve evidence.
             return
         if committed is None:
@@ -639,6 +752,7 @@ class WorkflowRunDispatcher:
             if before is not None and changed.status_revision != before.status_revision:
                 repository.append_event(self._status_event(changed))
                 changed = repository.get_run(run_id=run_id) or changed
+            self.interactions.finish(session, changed)
             session.commit()
             if changed.status == "reconciling":
                 self._on_fenced(run_id)
@@ -670,6 +784,7 @@ class WorkflowRunDispatcher:
             if changed.status_revision != current.status_revision:
                 repository.append_event(self._status_event(changed))
                 changed = repository.get_run(run_id=run_id) or changed
+            self.interactions.finish(session, changed)
             session.commit()
             if changed.status == "reconciling":
                 self._on_fenced(run_id)

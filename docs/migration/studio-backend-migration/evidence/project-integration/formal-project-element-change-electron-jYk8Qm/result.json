@@ -1,0 +1,37 @@
+{
+  "evidenceId": "BE-project-element-change-formal-electron",
+  "result": "passed",
+  "checkedAt": "2026-09-23T21:46:59.034Z",
+  "gitHead": "5dd816d9b7aef9eebbbe29c405564b75a827fcf2",
+  "platform": "darwin-arm64",
+  "entry": "packaged-directory",
+  "projectId": "83b60865-3961-4a1e-af20-9299846ee540",
+  "workflowId": "ulfvI_45XvGI6KXLYXoY0",
+  "tasks": [
+    {
+      "action": "mutation",
+      "batchId": "34a1b25e-4ffb-4015-b2a4-aab0458ea1a7",
+      "taskId": "7b71c1a5-ba93-40f3-8f5c-dad85628c714",
+      "environmentInstanceId": "0bef14bd-65ed-4d08-a4c5-d83bb7add565",
+      "cleanup": "succeeded"
+    },
+    {
+      "action": "stop",
+      "batchId": "cebf8f4b-49b9-4ab6-91d0-c183458c6d10",
+      "taskId": "64ddb85f-c59d-4b20-9b17-edd7a4b74ac0",
+      "environmentInstanceId": "89cc4c71-a2d4-45de-9018-69b09e705644",
+      "cleanup": "succeeded"
+    }
+  ],
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "正式 Studio 真实 UI 编排网页、元素变化监听和后继变量日志，保存后正常关窗",
+    "项目真实 CloakBrowser 监听 DOM 变化并持久化双输出和后继日志；再次运行监听中真实 UI 停止、无后继且浏览器清理"
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browser": "real CloakBrowser, project default Profile",
+    "interaction": "formal UI mouse/keyboard; local controlled page; API setup and evidence reads only"
+  }
+}

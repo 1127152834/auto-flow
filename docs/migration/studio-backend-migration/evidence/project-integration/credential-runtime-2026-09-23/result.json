@@ -1,0 +1,40 @@
+{
+  "capabilityId": "BE.SUPPORT.credentials-integrations",
+  "slice": "project-task-private-credential-reader",
+  "classification": "AutoFlow必要适配",
+  "status": "passed",
+  "development": "../formal-electron-Cy7fmp/result.json",
+  "failedDevelopment": "../formal-electron-1iu9Wz/failure.json",
+  "failedDevelopmentReason": "画布搜索控件遮住打开网页节点中心；测试点击改为实际可见的节点内部位置，保留全部业务断言",
+  "regressions": [
+    "空凭据name/field应保留源占位符，不能变为进程协议错误",
+    "同步凭据读取必须响应节点预算；超时分类通过布尔标记保留，不泄漏凭据派生错误文本"
+  ],
+  "boundaries": {
+    "browser": "CloakBrowser only",
+    "secretStorage": "existing StudioCredentialService and SystemCredentialStore",
+    "secretTransport": "owned worker private stdin/stdout only; run/generation/request identity",
+    "userDatabaseTouched": false,
+    "scope": 213,
+    "executionSlots": "622/17 unchanged",
+    "projectTaskModels": "pending separate port integration",
+    "assistantProjectOwnership": "pending separate integration",
+    "platform": "darwin-arm64",
+    "otherPlatforms": "untested"
+  },
+  "checks": {
+    "backendRelated": {
+      "passed": 95,
+      "evidence": "regression-final.log"
+    },
+    "ruff": "passed",
+    "mypy": "passed",
+    "openapi": "passed",
+    "structure": "passed",
+    "scripts": 98,
+    "freeze": "passed",
+    "package": "passed"
+  },
+  "packaged": "../formal-electron-vBd3bn/result.json",
+  "developmentBoundary": "开发Cy7fmp覆盖真实凭据、五节点、停止失败恢复与删除；后续节点预算修复由真实worker回归及最终vBd3bn包再次验证"
+}

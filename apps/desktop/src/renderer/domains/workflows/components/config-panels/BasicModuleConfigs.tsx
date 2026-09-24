@@ -1262,8 +1262,8 @@ return output_data
 #
 # 3. 标准输出：print() 的内容会保存到"标准输出变量"（如果配置了）
 #
-# 4. 内置库：可以使用Python 3.13的所有标准库
-#    以及WebRPA内置的第三方库（requests、pandas等）
+# 4. 内置库：使用随 AutoFlow 打包的 Python 和依赖
+#    如需其他依赖，可选择已安装的 Python 环境
 #
 # 5. 简单易用：就像写普通Python脚本一样，无需复杂配置
 # ========================================
@@ -1349,7 +1349,7 @@ export function PythonScriptConfig({ data, onChange }: { data: NodeData; onChang
             onCheckedChange={(checked) => onChange('useBuiltinPython', checked)}
           />
           <Label htmlFor="useBuiltinPython" className="cursor-pointer font-normal">
-            使用内置Python 3.13
+            使用内置 Python
           </Label>
         </div>
       </div>
@@ -1468,10 +1468,10 @@ export function PythonScriptConfig({ data, onChange }: { data: NodeData; onChang
       <div className="p-3 bg-green-50 border border-green-200 rounded-lg space-y-2">
         <p className="text-xs font-medium text-green-800">使用说明：</p>
         <ul className="text-xs text-green-700 space-y-1 list-disc list-inside">
-          <li>默认使用WebRPA内置的Python 3.13环境</li>
+          <li>默认使用随 AutoFlow 打包的 Python 环境</li>
           <li>系统自动注入所有工作流变量，通过 vars.变量名 直接访问</li>
           <li>使用 return 返回任意类型的数据（字符串、数字、列表、字典等）</li>
-          <li>可以使用所有Python标准库和WebRPA内置的第三方库</li>
+          <li>如需其他依赖，可指定已安装的 Python 环境</li>
           <li>代码编辑器中有详细的使用教程和示例代码</li>
         </ul>
       </div>

@@ -1,0 +1,355 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/project-runs/pages/TaskDetailPage.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:82018) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/project-runs/pages/TaskDetailPage.test.tsx (8 tests | 1 failed) 4322ms
+   × refreshes cleanup after the run is terminal until the copy is removed 3544ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/project-runs/pages/TaskDetailPage.test.tsx > refreshes cleanup after the run is terminal until the copy is removed
+TestingLibraryElementError: Unable to find an element with the text: 已清理. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mstyle[39m=[32m""[39m
+[36m>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33mclass[39m=[32m"rounded-control border border-line bg-surface p-4 text-sm text-muted"[39m
+    [36m>[39m
+      [0m当前任务还没有可保留的环境实例。[0m
+    [36m</section>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"min-w-0"[39m
+      [33mdata-orientation[39m=[32m"horizontal"[39m
+      [33mdir[39m=[32m"ltr"[39m
+    [36m>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"grid min-w-0 gap-4"[39m
+      [36m>[39m
+        [36m<header[39m
+          [33mclass[39m=[32m"overflow-hidden rounded-card border border-line bg-surface"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-wrap items-start gap-4 p-5"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"af-button relative inline-flex shrink-0 items-center justify-center gap-2 rounded-control border border-transparent font-semibold transition-colors [transition-duration:var(--motion-control)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed text-muted enabled:hover:bg-surface-hover enabled:hover:text-ink enabled:active:bg-clay-soft h-[var(--control-md)] px-4 text-sm"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"grid min-w-0"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2"[39m
+                [36m>[39m
+                  [0m← 返回批次[0m
+                [36m</span>[39m
+              [36m</span>[39m
+            [36m</button>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"grid size-14 shrink-0 place-items-center rounded-control border border-clay/10 bg-clay/5 text-clay"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33mfill[39m=[32m"currentColor"[39m
+                [33mheight[39m=[32m"28"[39m
+                [33mviewBox[39m=[32m"0 0 256 256"[39m
+                [33mwidth[39m=[32m"28"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M80,64a8,8,0,0,1,8-8H216a8,8,0,0,1,0,16H88A8,8,0,0,1,80,64Zm136,56H88a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Zm0,64H88a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16ZM44,52A12,12,0,1,0,56,64,12,12,0,0,0,44,52Zm0,64a12,12,0,1,0,12,12A12,12,0,0,0,44,116Zm0,64a12,12,0,1,0,12,12A12,12,0,0,0,44,180Z"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"min-w-52 flex-1"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-wrap items-center gap-3"[39m
+              [36m>[39m
+                [36m<h2[39m
+                  [33mclass[39m=[32m"m-0 text-2xl"[39m
+                [36m>[39m
+                  [0m任务 [0m
+                  [0m1[0m
+                [36m</h2>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"af-table-status"[39m
+                  [33mdata-table-status[39m=[32m"success"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"af-table-status-dot"[39m
+                  [36m/>[39m
+                  [0m成功[0m
+                [36m</span>[39m
+              [36m</div>[39m
+              [36m<dl[39m
+                [33mclass[39m=[32m"mb-0 mt-2 flex flex-wrap gap-x-5 gap-y-1 text-sm"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex gap-2"[39m
+                [36m>[39m
+                  [36m<dt[39m
+                    [33mclass[39m=[32m"text-muted"[39m
+                  [36m>[39m
+                    [0m自动化[0m
+                  [36m</dt>[39m
+                  [36m<dd[39m
+                    [33mclass[39m=[32m"m-0"[39m
+                  [36m>[39m
+                    [0m链接采集[0m
+                  [36m</dd>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex gap-2"[39m
+                [36m>[39m
+                  [36m<dt[39m
+                    [33mclass[39m=[32m"text-muted"[39m
+                  [36m>[39m
+                    [0m所属批次[0m
+                  [36m</dt>[39m
+                  [36m<dd[39m
+                    [33mclass[39m=[32m"m-0"[39m
+                  [36m>[39m
+                    [0m批次资料暂不可用[0m
+                  [36m</dd>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex gap-2"[39m
+                [36m>[39m
+                  [36m<dt[39m
+                    [33mclass[39m=[32m"text-muted"[39m
+                  [36m>[39m
+                    [0m输入标识[0m
+                  [36m</dt>[39m
+                  [36m<dd[39m
+                    [33mclass[39m=[32m"m-0"[39m
+                  [36m>[39m
+                    [0m参数任务[0m
+                  [36m</dd>[39m
+                [36m</div>[39m
+              [36m</dl>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"mb-0 mt-2 flex flex-wrap items-center gap-2 text-sm"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"text-muted"[39m
+                [36m>[39m
+                  [0m环境清理[0m
+                [36m</span>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"af-table-status"[39m
+                  [33mdata-table-status[39m=[32m"neutral"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"af-table-status-dot"[39m
+                  [36m/>[39m
+                  [0m待清理[0m
+                [36m</span>[39m
+              [36m</p>[39m
+            [36m</div>[39m
+            [36m<dl[39m
+              [33mclass[39m=[32m"m-0 grid min-w-[28rem] grid-cols-3 divide-x divide-line"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"px-4"[39m
+              [36m>[39m
+                [36m<dt[39m
+                  [33mclass[39m=[32m"text-xs text-muted"[39m
+                [36m>[39m
+                  [0m开始时间[0m
+                [36m</dt>[39m
+                [36m<dd[39m
+                  [33mclass[39m=[32m"m-0 mt-1"[39m
+                [36m>[39m
+                  [36m<time[39m
+                    [33mdatetime[39m=[32m"2026-09-15T01:00:00Z"[39m
+                  [36m>[39m
+                    [0m2026/9/15 09:00:00...
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mstyle[39m=[32m""[39m
+[36m>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33mclass[39m=[32m"rounded-control border border-line bg-surface p-4 text-sm text-muted"[39m
+    [36m>[39m
+      [0m当前任务还没有可保留的环境实例。[0m
+    [36m</section>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"min-w-0"[39m
+      [33mdata-orientation[39m=[32m"horizontal"[39m
+      [33mdir[39m=[32m"ltr"[39m
+    [36m>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"grid min-w-0 gap-4"[39m
+      [36m>[39m
+        [36m<header[39m
+          [33mclass[39m=[32m"overflow-hidden rounded-card border border-line bg-surface"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-wrap items-start gap-4 p-5"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"af-button relative inline-flex shrink-0 items-center justify-center gap-2 rounded-control border border-transparent font-semibold transition-colors [transition-duration:var(--motion-control)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed text-muted enabled:hover:bg-surface-hover enabled:hover:text-ink enabled:active:bg-clay-soft h-[var(--control-md)] px-4 text-sm"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"grid min-w-0"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2"[39m
+                [36m>[39m
+                  [0m← 返回批次[0m
+                [36m</span>[39m
+              [36m</span>[39m
+            [36m</button>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"grid size-14 shrink-0 place-items-center rounded-control border border-clay/10 bg-clay/5 text-clay"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33mfill[39m=[32m"currentColor"[39m
+                [33mheight[39m=[32m"28"[39m
+                [33mviewBox[39m=[32m"0 0 256 256"[39m
+                [33mwidth[39m=[32m"28"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M80,64a8,8,0,0,1,8-8H216a8,8,0,0,1,0,16H88A8,8,0,0,1,80,64Zm136,56H88a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Zm0,64H88a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16ZM44,52A12,12,0,1,0,56,64,12,12,0,0,0,44,52Zm0,64a12,12,0,1,0,12,12A12,12,0,0,0,44,116Zm0,64a12,12,0,1,0,12,12A12,12,0,0,0,44,180Z"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"min-w-52 flex-1"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-wrap items-center gap-3"[39m
+              [36m>[39m
+                [36m<h2[39m
+                  [33mclass[39m=[32m"m-0 text-2xl"[39m
+                [36m>[39m
+                  [0m任务 [0m
+                  [0m1[0m
+                [36m</h2>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"af-table-status"[39m
+                  [33mdata-table-status[39m=[32m"success"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"af-table-status-dot"[39m
+                  [36m/>[39m
+                  [0m成功[0m
+                [36m</span>[39m
+              [36m</div>[39m
+              [36m<dl[39m
+                [33mclass[39m=[32m"mb-0 mt-2 flex flex-wrap gap-x-5 gap-y-1 text-sm"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex gap-2"[39m
+                [36m>[39m
+                  [36m<dt[39m
+                    [33mclass[39m=[32m"text-muted"[39m
+                  [36m>[39m
+                    [0m自动化[0m
+                  [36m</dt>[39m
+                  [36m<dd[39m
+                    [33mclass[39m=[32m"m-0"[39m
+                  [36m>[39m
+                    [0m链接采集[0m
+                  [36m</dd>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex gap-2"[39m
+                [36m>[39m
+                  [36m<dt[39m
+                    [33mclass[39m=[32m"text-muted"[39m
+                  [36m>[39m
+                    [0m所属批次[0m
+                  [36m</dt>[39m
+                  [36m<dd[39m
+                    [33mclass[39m=[32m"m-0"[39m
+                  [36m>[39m
+                    [0m批次资料暂不可用[0m
+                  [36m</dd>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex gap-2"[39m
+                [36m>[39m
+                  [36m<dt[39m
+                    [33mclass[39m=[32m"text-muted"[39m
+                  [36m>[39m
+                    [0m输入标识[0m
+                  [36m</dt>[39m
+                  [36m<dd[39m
+                    [33mclass[39m=[32m"m-0"[39m
+                  [36m>[39m
+                    [0m参数任务[0m
+                  [36m</dd>[39m
+                [36m</div>[39m
+              [36m</dl>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"mb-0 mt-2 flex flex-wrap items-center gap-2 text-sm"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"text-muted"[39m
+                [36m>[39m
+                  [0m环境清理[0m
+                [36m</span>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"af-table-status"[39m
+                  [33mdata-table-status[39m=[32m"neutral"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"af-table-status-dot"[39m
+                  [36m/>[39m
+                  [0m待清理[0m
+                [36m</span>[39m
+              [36m</p>[39m
+            [36m</div>[39m
+            [36m<dl[39m
+              [33mclass[39m=[32m"m-0 grid min-w-[28rem] grid-cols-3 divide-x divide-line"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"px-4"[39m
+              [36m>[39m
+                [36m<dt[39m
+                  [33mclass[39m=[32m"text-xs text-muted"[39m
+                [36m>[39m
+                  [0m开始时间[0m
+                [36m</dt>[39m
+                [36m<dd[39m
+                  [33mclass[39m=[32m"m-0 mt-1"[39m
+                [36m>[39m
+                  [36m<time[39m
+                    [33mdatetime[39m=[32m"2026-09-15T01:00:00Z"[39m
+                  [36m>[39m
+                    [0m2026/9/15 09:00:00...
+ ❯ waitForWrapper ../../node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/renderer/domains/project-runs/pages/TaskDetailPage.test.tsx:192:23
+    190|   renderPage(request as StreamingApiClient['request'])
+    191|   expect(await screen.findByText('待清理')).toBeVisible()
+    192|   expect(await screen.findByText('已清理', {}, { timeout: 3500 })).toBeVi…
+       |                       ^
+    193| })
+    194|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 passed (8)
+   Start at  04:56:23
+   Duration  7.40s (transform 341ms, setup 169ms, import 2.02s, tests 4.32s, environment 771ms)

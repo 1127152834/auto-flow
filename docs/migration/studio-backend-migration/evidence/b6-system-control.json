@@ -1,0 +1,54 @@
+{
+  "evidenceId": "BE-B6-023-system-control",
+  "recordedAt": "2026-09-21",
+  "classification": "原版功能迁入 + AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "reference/WebRPA/backend/app/executors/advanced.py#ShutdownSystemExecutor",
+      "reference/WebRPA/backend/app/executors/advanced.py#LockScreenExecutor"
+    ],
+    "license": "LICENSE.WebRPA"
+  },
+  "nodes": ["shutdown_system", "lock_screen"],
+  "implemented": [
+    "保留关机、重启、注销、休眠、睡眠、延迟和强制参数及原版成功/失败消息",
+    "保留锁定屏幕动作，并将两个节点注册到正式生产执行器",
+    "节点通过既有DesktopAction幂等领取、结果确认、取消和恢复合同请求Electron",
+    "Electron主进程仅接受已登记Studio主frame，并以无shell参数数组执行Windows命令"
+  ],
+  "adaptations": [
+    "原版在workflow worker内直接执行Windows命令；迁入按AutoFlow进程边界交给受控Electron主进程",
+    "非Windows平台明确返回原版能力的Windows限定错误，不尝试不等价的跨平台回退",
+    "平台动作增加OpenAPI枚举、renderer验证、preload类型和主进程参数校验"
+  ],
+  "checks": [
+    {
+      "command": "pytest desktop platform source differential, unit, worker, API contract and coordinator regression",
+      "result": "62 passed",
+      "covers": "字段映射、原版结果、生产注册、worker协议、幂等命令、停止和结果确认"
+    },
+    {
+      "command": "vitest Studio platform IPC, command mapping, renderer execution and delivery",
+      "result": "19 passed",
+      "covers": "窗口权限、参数拒绝、Windows命令映射、响应丢失查询、取消和Electron桥接"
+    },
+    {
+      "command": "TypeScript, ESLint, Ruff, mypy, OpenAPI check and Electron build",
+      "result": "passed",
+      "covers": "前后端合同和正式main/preload/renderer构建"
+    }
+  ],
+  "boundaries": {
+    "userDatabaseTouched": false,
+    "mockExecutionUsedForBackendEvidence": false,
+    "formalElectronUiTested": false,
+    "destructiveNativeCommandExecuted": false,
+    "testedPlatform": "macOS arm64 build and deterministic adapter tests"
+  },
+  "remaining": [
+    "Windows正式Electron实机验证锁屏、延迟关机取消策略、重启、注销、休眠和睡眠",
+    "破坏性系统动作需要安排隔离Windows验收机，不能在当前开发主机执行",
+    "正式Studio真实UI中保存、重开并运行两个节点"
+  ]
+}

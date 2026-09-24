@@ -133,6 +133,19 @@ def test_empty_ui_secret_placeholders_are_removed_instead_of_persisted():
     }
 
 
+def test_secret_field_preserves_only_an_exact_managed_credential_reference():
+    payload = workflow_payload()
+    payload["content"]["nodes"][0]["data"]["config"] = {
+        "password": "{{cred:SSH测试.password}}"
+    }
+    projected = project_document(payload)
+    assert projected["content"]["nodes"][0]["data"]["config"]["password"] == "{{cred:SSH测试.password}}"
+    payload["content"]["nodes"][0]["data"]["config"]["password"] += "extra"
+    with pytest.raises(WorkflowError) as caught:
+        project_document(payload)
+    assert caught.value.details["issues"][0]["code"] == "SECRET_FIELD_FORBIDDEN"
+
+
 def test_sensitive_variable_value_keys_and_credential_variable_names_are_rejected():
     nested = workflow_payload()
     nested["content"]["variables"][0]["value"] = {

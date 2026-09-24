@@ -57,7 +57,7 @@ def test_status_upgrade_preserves_records_and_enforces_active_names(tmp_path, ex
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
 
-        ).fetchone() == ("pm10_shared_sheet_cursors",)
+        ).fetchone() == ("0022_merge_studio_pm10",)
 
         assert (
             connection.execute(
@@ -155,4 +155,4 @@ def test_downgrade_preserves_live_data_but_refuses_to_resurrect_deleted_status(
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
 
-        ).fetchone() == ("pm10_shared_sheet_cursors",)
+        ).fetchone() == ("0022_merge_studio_pm10",)

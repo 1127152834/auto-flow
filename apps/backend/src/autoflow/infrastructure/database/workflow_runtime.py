@@ -417,7 +417,16 @@ class SqlAlchemyWorkflowRuntimeRepository:
 
     def get_artifact(self, run_id: str, artifact_id: str) -> RunArtifact | None:
         row = self._session.get(WorkflowRunArtifactRow, (run_id, artifact_id))
-        return _artifact(row) if row is not None and row.purpose == "error" else None
+        return _artifact(row) if row is not None and row.purpose in {"error", "result"} else None
+
+    def artifact_path_is_registered(self, run_id: str, relative_path: str) -> bool:
+        # Also protect a committed file when a conflicting event names another ID.
+        return self._session.scalar(
+            select(WorkflowRunArtifactRow.id).where(
+                WorkflowRunArtifactRow.run_id == run_id,
+                WorkflowRunArtifactRow.payload["relativePath"].as_string() == relative_path,
+            ).limit(1)
+        ) is not None
 
     def list_artifacts(
         self, run_id: str, *, offset: int, limit: int
@@ -427,14 +436,14 @@ class SqlAlchemyWorkflowRuntimeRepository:
             .select_from(WorkflowRunArtifactRow)
             .where(
                 WorkflowRunArtifactRow.run_id == run_id,
-                WorkflowRunArtifactRow.purpose == "error",
+                WorkflowRunArtifactRow.purpose.in_(["error", "result"]),
             )
         )
         rows = self._session.scalars(
             select(WorkflowRunArtifactRow)
             .where(
                 WorkflowRunArtifactRow.run_id == run_id,
-                WorkflowRunArtifactRow.purpose == "error",
+                WorkflowRunArtifactRow.purpose.in_(["error", "result"]),
             )
             .order_by(WorkflowRunArtifactRow.ordinal)
             .offset(offset)
@@ -650,7 +659,7 @@ def _artifact(row: WorkflowRunArtifactRow) -> RunArtifact:
             ordinal=max(row.ordinal, 1),
             node_id=row.node_id or "legacy",
             node_visit_id=row.execution_id,
-            purpose="error",
+            purpose=row.purpose if row.purpose in {"error", "result"} else "error",
             event_sequence=max(row.event_seq, 1),
             execution_generation=0,
             kind="screenshot",

@@ -1,0 +1,111 @@
+{
+  "evidenceId": "BE-all-node-acceptance-2026-09-24",
+  "recordedAt": "2026-09-24T00:50:06.760391+00:00",
+  "gitHead": "dd93a80b27088115368402a8308b1506050512a7",
+  "scope": {
+    "approvedNodes": 213,
+    "excludedNotificationNodes": 14,
+    "nodesPreviouslyAccepted": 204,
+    "nodesStillAwaitingFullNativeAcceptance": 9,
+    "acceptanceCases": 639,
+    "acceptedCases": 630
+  },
+  "checks": [
+    {
+      "command": "pytest apps/backend/tests/unit/workflows apps/backend/tests/differential/workflows -q",
+      "result": "1462 passed in 165.92s",
+      "evidence": "node-families.txt"
+    },
+    {
+      "command": "pytest nine remaining nodes unit/differential/worker selections",
+      "result": "52 passed in 18.90s",
+      "evidence": "nine-node-regression.txt"
+    },
+    {
+      "command": "pytest test_studio_backend_source_mapping.py test_scope_preflight.py -q",
+      "result": "77 passed in 1.78s",
+      "evidence": "mapping-scope.txt"
+    },
+    {
+      "command": "pytest test_executor_registry.py -q",
+      "result": "12 passed in 0.44s",
+      "evidence": "registry.txt"
+    },
+    {
+      "command": "pytest apps/backend/tests/migration/test_studio_backend_source_mapping.py -q (after ledger update)",
+      "result": "3 passed in 1.72s",
+      "evidence": "ledger-recheck.txt"
+    },
+    {
+      "command": "node --check scripts/smoke-studio-backend-b6-desktop-platform.mjs; git diff --check (scoped files)",
+      "result": "passed"
+    }
+  ],
+  "formalPackagedNegativePaths": {
+    "image_trigger": "docs/migration/studio-backend-migration/evidence/b6/formal-desktop-platform-electron-UPhEVj/result.json",
+    "hotkey_trigger": "docs/migration/studio-backend-migration/evidence/b6/formal-desktop-platform-electron-M920se/result.json",
+    "mouse_trigger": "docs/migration/studio-backend-migration/evidence/b6/formal-desktop-platform-electron-GjPT25/result.json"
+  },
+  "retainedUnsuccessfulAttempts": {
+    "hotkey_trigger": [
+      "docs/migration/studio-backend-migration/evidence/b6/formal-desktop-platform-electron-WOnLnl/failure.json"
+    ],
+    "mouse_trigger": [
+      "docs/migration/studio-backend-migration/evidence/b6/formal-desktop-platform-electron-tGka9w/failure.json",
+      "docs/migration/studio-backend-migration/evidence/b6/formal-desktop-platform-electron-b2Rpv3/failure.json"
+    ],
+    "image_trigger": [
+      "docs/migration/studio-backend-migration/evidence/b6/formal-desktop-platform-electron-ezTLEk/failure.json",
+      "docs/migration/studio-backend-migration/evidence/b6/formal-desktop-platform-electron-yRy2lC/failure.json",
+      "docs/migration/studio-backend-migration/evidence/b6/formal-desktop-platform-electron-m1bPWl/failure.json",
+      "docs/migration/studio-backend-migration/evidence/b6/formal-desktop-platform-electron-rMkPCw/failure.json"
+    ]
+  },
+  "screenExecutorProbe": {
+    "entry": "source production ImageTriggerExecutor.execute; not formal Electron success",
+    "imageFixture": "docs/migration/studio-backend-migration/evidence/b6/formal-desktop-platform-electron-rMkPCw/visible-target.png",
+    "success": true,
+    "data": {
+      "x": 716,
+      "y": 502,
+      "confidence": 0.9825196862220764
+    },
+    "variable": "image_event",
+    "variableMatchesData": true,
+    "capture": "Pillow ImageGrab real screen; no mocked capture or match"
+  },
+  "remaining": {
+    "hotkey_trigger": "正式包保存/原生正常关窗重开/2秒超时/UI停止通过；正向等待90秒超时。独立可信pynput监听器对本次CUA应用定向输入记录0事件，不能据此断定实体键盘故障；待实体组合键触发。",
+    "mouse_trigger": "正式包保存/原生正常关窗重开/2秒超时/UI停止通过，已确认所捕获worker PID退出。正向左键等待90秒超时；独立可信监听器未收到CUA事件，实体点击、滚轮、移动及手势仍待验收。",
+    "image_trigger": "真实生产执行器通过Pillow屏幕采集/OpenCV匹配命中静态PNG，置信度0.9825196862220764且image_event变量正确。正式包保存/关窗重开/2秒超时/UI停止通过；正式包正向目标显示前置条件未成立，四次超时保留；区域、多显示器及成功E2E仍待验收。",
+    "shutdown_system": "原版Windows关机行为的正式实机验证待隔离Windows环境；本Mac不执行关机，也不以不支持错误替代成功。",
+    "lock_screen": "原版Windows锁屏行为的正式实机验证待隔离Windows环境；本Mac不执行锁屏，也不以不支持错误替代成功。",
+    "sound_trigger": "原版pycaw系统扬声器输出峰值监听需要Windows真实音频环境；不是麦克风触发；当前Mac不具备此验收环境。",
+    "printer_call": "原版Windows pywin32 DEVMODE/ShellExecute打印需Windows及打印设备；当前未具备。",
+    "face_trigger": "真实摄像头匹配仍需授权目标照片、镜头前目标及正式包摄像头权限；当前仅发现摄像头设备，不代表完成采集。",
+    "gesture_trigger": "真实摄像头手势识别仍需指定手势目标及正式包摄像头权限；模型/算法用例通过不替代实机手势。"
+  },
+  "hostConstraints": {
+    "platform": "darwin-arm64",
+    "windowsEnvironment": "No local VM application/QEMU found; Docker daemon unavailable. Linux KVM recipe is inapplicable to this Mac.",
+    "inputProbe": "Trusted pynput listeners ran25seconds;0keyEvents/0mouseEvents/0hotkeyMatches duringCUA app-bound actions. Counts only;no user keystrokes recorded.",
+    "camera": "FaceTime and OBS virtual devices enumerated;no camera capture or permission change performed."
+  },
+  "boundaries": {
+    "allNodesAccepted": false,
+    "newNativePositiveNodesAccepted": 0,
+    "productionCodeChanged": false,
+    "userDatabaseTouched": false,
+    "runtimeMockUsedForNativeEvidence": false,
+    "windowsTested": false,
+    "macosIntelTested": false
+  },
+  "cleanup": {
+    "ownedMouseWorkerPids": [
+      17833
+    ],
+    "allAbsentAfterStop": true,
+    "testPreviewWindowsClosed": true,
+    "temporaryWorkspaceCleanup": "existing harness finally block removed its own temporary workspaces"
+  }
+}

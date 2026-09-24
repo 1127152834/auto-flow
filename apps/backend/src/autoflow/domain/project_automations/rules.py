@@ -13,6 +13,7 @@ from autoflow.domain.project_data.query import (
     validate_order,
 )
 from autoflow.domain.projects.models import ProjectError
+from autoflow.domain.workflows.references import is_workflow_id
 
 
 def validate_write(
@@ -34,7 +35,8 @@ def validate_write(
     result = dict(payload)
     result["name"] = _text(result["name"], "name", required=True, maximum=80)
     result["description"] = _text(result["description"], "description", maximum=1000)
-    result["workflowId"] = _uuid(result["workflowId"], "workflowId")
+    if not is_workflow_id(result["workflowId"]):
+        raise validation_error("workflowId", "Must be a UUID or Studio Nano ID")
     result["inputPlan"] = _input_plan(result["inputPlan"], project_id)
     result["parameterSchema"] = _parameters(result["parameterSchema"])
     result["environmentPolicy"] = _environment(result["environmentPolicy"])

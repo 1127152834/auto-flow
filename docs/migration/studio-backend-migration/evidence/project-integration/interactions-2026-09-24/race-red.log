@@ -1,0 +1,9 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+______ test_stop_cancels_project_prompt_without_starting_next_node[True] _______
+tests/integration/test_project_interactive_worker.py:109: in test_stop_cancels_project_prompt_without_starting_next_node
+    with pytest.raises(WorkflowWorkerError, match="交互请求已结束"):
+E   Failed: DID NOT RAISE WorkflowWorkerError
+=========================== short test summary info ============================
+FAILED tests/integration/test_project_interactive_worker.py::test_stop_cancels_project_prompt_without_starting_next_node[True]
+1 failed, 4 deselected in 5.63s

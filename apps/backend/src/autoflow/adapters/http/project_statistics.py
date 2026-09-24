@@ -5,14 +5,28 @@ from uuid import UUID
 from fastapi import APIRouter, Query
 
 from autoflow.application.projects.statistics import ProjectStatisticsService
+from autoflow.domain.workflows.runs import RunStatus
 
 from .errors import browser_error_responses
 from .project_run_schemas import TaskPage
-from .project_statistics_schemas import ProjectStatistics
+from .project_statistics_schemas import ProjectStatistics, StudioProjectStatistics
 
 
 def project_statistics_router(statistics: ProjectStatisticsService) -> APIRouter:
     router = APIRouter(prefix="/api/v1/projects/{projectId}")
+
+    @router.get("/statistics/studio", response_model=StudioProjectStatistics,
+                responses=browser_error_responses(401, 404, 422))
+    def studio_statistics(
+        projectId: UUID,
+        from_: Annotated[datetime | None, Query(alias="from")] = None,
+        to: datetime | None = None,
+        workflowId: str | None = None,
+        status: RunStatus | None = None,
+        cursor: int = Query(0, ge=0), limit: int = Query(50, ge=1, le=200),
+    ):
+        return statistics.studio(str(projectId), from_=from_, to=to,
+                                 workflow_id=workflowId, status=status, cursor=cursor, limit=limit)
 
     @router.get(
         "/statistics",

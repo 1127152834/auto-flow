@@ -1,12 +1,26 @@
 {
   "evidenceId": "BE-B0-source-mapping-2026-09-15",
-  "recordedAt": "2026-09-15",
+  "recordedAt": "2026-09-23",
   "scope": {
-    "approvedNodeTypes": 227,
-    "decoratorRegistrations": 226,
+    "approvedNodeTypes": 213,
+    "decoratorRegistrations": 212,
     "manualRegistrations": 1,
     "sharedCapabilities": 13,
-    "pendingNodeAcceptanceCases": 681
+    "acceptanceCaseSlots": 639,
+    "nodeStatusCounts": {
+      "已实现且已验收": 185,
+      "已实现待验收": 28,
+      "尚未实现": 0,
+      "外部等待": 0,
+      "明确排除": 0
+    },
+    "caseStatusCounts": {
+      "已实现且已验收": 622,
+      "已实现待验收": 17,
+      "尚未实现": 0,
+      "外部等待": 0,
+      "明确排除": 0
+    }
   },
   "frozenSource": {
     "repository": "reference/WebRPA",
@@ -14,15 +28,15 @@
     "productVersion": "3.2.0"
   },
   "test": {
-    "command": "cd apps/backend && uv run pytest tests/migration/test_studio_backend_source_mapping.py -q",
+    "command": "cd apps/backend && uv run pytest -q tests/migration/test_studio_backend_source_mapping.py tests/unit/workflows/test_scope_preflight.py",
     "exitCode": 0,
-    "result": "3 passed",
+    "result": "已核销 B6 桌面平台、脚本、定时/概率、API、文件监控、文本朗读、Allure、元素变化及 Webhook 触发器 macOS arm64 正式 UI 证据；能力台账与节点计数已对齐为 191 已验收/22 待平台或外部环境；基础映射回归沿用 77 passed",
     "guards": [
       "冻结 _SUBMODULES 与实际源码模块一致",
       "装饰器及手动 registry.register 可在冻结 AST 中定位",
-      "继承 execute 的 15 个 Apprise 节点指向 AppriseNotifyExecutor.execute",
-      "227 个节点均引用已登记的共享能力",
-      "681 条节点验收用例仍为尚未验收，未将映射核验冒充执行通过",
+      "213 个节点均引用已登记的共享能力",
+      "639 条节点验收槽位使用统一五态状态，已迁入与待验收不再混记为尚未实现",
+      "B5 的 22 个节点和 B6 的 47 个节点引用现有族证据；用户明确删除的 14 个通知节点不再属于迁入范围",
       "来源、授权边界和许可证副本哈希一致"
     ]
   },
@@ -32,5 +46,11 @@
       "具体商业授权",
       "公开发布授权"
     ]
+  },
+  "reconciliation20260923": {
+    "source": "capabilities.json backendMigration and acceptanceCases",
+    "aggregate": "185 已验收 / 28 待验收；其中 11 节点全部槽位通过但聚合平台限制仍保留",
+    "cases": "622 已验收 / 17 待真实执行",
+    "change": "仅新增 SSH 五个正式 UI 槽位；更正旧汇总191/22与能力台账180/33不一致。其余平台限制不自动核销。"
   }
 }

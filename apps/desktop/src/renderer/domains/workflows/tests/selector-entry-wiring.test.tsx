@@ -35,8 +35,11 @@ const entries: Array<{ type: ModuleType; field: string; label: string; extra?: R
   { type: 'element_change_trigger', field: 'selector', label: '元素选择器' },
   { type: 'ai_vision', field: 'imageSelector', label: '图片元素选择器', extra: { imageSource: 'element' } },
   { type: 'ocr_captcha', field: 'imageSelector', label: '验证码图片选择器' },
+  { type: 'ocr_captcha', field: 'inputSelector', label: '验证码输入框选择器（可选）' },
+  { type: 'ocr_captcha', field: 'submitSelector', label: '提交按钮选择器', extra: { autoSubmit: true } },
   { type: 'slider_captcha', field: 'sliderSelector', label: '滑块选择器' },
-  { type: 'slider_captcha', field: 'trackSelector', label: '滑轨选择器' },
+  { type: 'slider_captcha', field: 'backgroundSelector', label: '背景图片选择器（可选）' },
+  { type: 'slider_captcha', field: 'gapSelector', label: '缺口图片选择器（可选）' },
 ]
 beforeEach(() => {
   vi.useFakeTimers(); store.getState().clearWorkflow()

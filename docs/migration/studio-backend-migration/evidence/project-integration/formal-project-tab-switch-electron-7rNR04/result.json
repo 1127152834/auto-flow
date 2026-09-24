@@ -1,0 +1,24 @@
+{
+  "evidenceId": "BE-project-tab-switch-formal-electron",
+  "result": "passed",
+  "checkedAt": "2026-09-23T15:47:27.869Z",
+  "gitHead": "c534f55186cd8c94d0cca4d9f354cbfe49c544f7",
+  "platform": "darwin-arm64",
+  "entry": "packaged-directory",
+  "projectId": "53f4ed7b-a504-4030-adc1-a8d3136d4aa6",
+  "workflowId": "qANdNBa4Tj5hemMeooODy",
+  "batchId": "46bba6cb-971f-48f1-80e3-9e2c660ec9a0",
+  "taskId": "f8b3173e-105e-456c-8120-4e9f19a2d0e8",
+  "sawCloakBrowser": true,
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "正式项目 Studio 通过真实 UI 配置并保存打开两个页面、按标题和最后一页切换、分别提取元素的流程",
+    "正式项目任务使用默认 Profile 在真实 CloakBrowser 切换标签页，分别读取元素并清理进程"
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserStarted": true,
+    "interaction": "formal Electron mouse/keyboard; API only fixture setup and evidence reads"
+  }
+}

@@ -26,35 +26,53 @@ async def test_real_cloakbrowser_runs_web_basic_family(
     monkeypatch.setenv("CLOAKBROWSER_BINARY_PATH", str(executable))
     monkeypatch.setenv("CLOAKBROWSER_CACHE_DIR", str(tmp_path / "cloak-cache"))
 
+    fixture_dir = Path(__file__).parents[1] / "fixtures"
+    first_page = fixture_dir.joinpath("workflow-page.html").resolve().as_uri()
+    second_page = (
+        fixture_dir.joinpath("workflow-b2-web-actions.html").resolve().as_uri()
+    )
     module_types = [
         "open_page",
+        "use_opened_page",
         "wait_element",
         "hover_element",
         "inject_javascript",
+        "handle_dialog",
+        "refresh_page",
+        "open_page",
+        "go_back",
+        "go_forward",
+        "go_back",
         "switch_iframe",
         "wait_element",
         "switch_to_main",
+        "close_page",
     ]
     configs = [
         {
-            "url": Path(__file__)
-            .parents[1]
-            .joinpath("fixtures", "workflow-page.html")
-            .resolve()
-            .as_uri(),
+            "url": first_page,
             "openMode": "current_tab",
         },
+        {"pageIdentifier": "AutoFlow B1 受控页面", "matchMode": "title"},
         {"selector": "#workflow-input", "waitCondition": "visible"},
         {"selector": "#workflow-submit", "hoverDuration": 0},
         {
             "javascriptCode": (
-                "return document.querySelector('#click-count').textContent"
+                "setTimeout(() => alert('AutoFlow dialog'), 100); "
+                "return document.title"
             ),
             "injectMode": "current",
-            "saveResult": "click_count",
+            "saveResult": "injected_title",
         },
+        {"dialogAction": "accept", "saveMessage": "dialog_message"},
+        {"waitUntil": "load"},
+        {"url": second_page, "openMode": "current_tab"},
+        {"waitUntil": "load"},
+        {"waitUntil": "load"},
+        {"waitUntil": "load"},
         {"locateBy": "selector", "iframeSelector": "#workflow-frame"},
         {"selector": "#frame-value", "waitCondition": "visible"},
+        {},
         {},
     ]
     document = {
@@ -102,4 +120,5 @@ async def test_real_cloakbrowser_runs_web_basic_family(
     assert result.executed_node_ids == tuple(
         f"node-{index}" for index in range(len(module_types))
     )
-    assert context.variables["click_count"] == "0"
+    assert context.variables["injected_title"] == "AutoFlow B1 受控页面"
+    assert context.variables["dialog_message"] == "AutoFlow dialog"

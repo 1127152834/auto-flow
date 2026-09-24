@@ -1,0 +1,97 @@
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:44979) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:44977) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:44976) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:44978) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/recorder-review-protocol.test.ts (6 tests | 2 failed) 194ms
+     × reads recordings in bounded pages and assembles all confirmed stop-tail pages 26ms
+     × reads recordings in bounded pages and assembles all confirmed stop-tail pages 38ms
+(node:44980) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:44984) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:44985) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:44989) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:44990) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45032) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45084) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45294) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45285) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45461) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45486) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/recorder-review-protocol.test.ts > recording review service memory > reads recordings in bounded pages and assembles all confirmed stop-tail pages
+AssertionError: expected { success: true, …(5) } to deeply equal { success: true, …(5) }
+
+- Expected
++ Received
+
+@@ -1,7 +1,7 @@
+  {
+-   "commandId": "4e22d770-63d5-493a-a6dc-f667ed3b9743",
++   "commandId": "b849f294-fd64-4195-9b7e-2af0aab7e0c6",
+    "data": {
+      "events": [
+        {
+          "selector": "#0",
+          "sequence": 1,
+
+ ❯ src/renderer/domains/workflows/tests/recorder-review-protocol.test.ts:32:73
+     30|   expect(stopped.success).toBe(true);expect(stopped.data?.data.events)…
+     31|   expect(stopped.data?.nextSeq).toBe(451);expect(stopped.data?.hasMore…
+     32|   const retry=await recorderApi.stop('paged-review');expect(retry.data…
+       |                                                                         ^
+     33|  })
+     34|  it('preserves confirmed review after module restart of the persistent…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/recorder-review-protocol.test.ts > recording review service http > reads recordings in bounded pages and assembles all confirmed stop-tail pages
+AssertionError: expected { success: true, …(5) } to deeply equal { success: true, …(5) }
+
+- Expected
++ Received
+
+@@ -1,7 +1,7 @@
+  {
+-   "commandId": "9f00b41d-3f53-4156-81e6-079f7e1c926a",
++   "commandId": "8c320dcb-b0de-4858-8477-6d450ef4738a",
+    "data": {
+      "events": [
+        {
+          "selector": "#0",
+          "sequence": 1,
+
+ ❯ src/renderer/domains/workflows/tests/recorder-review-protocol.test.ts:32:73
+     30|   expect(stopped.success).toBe(true);expect(stopped.data?.data.events)…
+     31|   expect(stopped.data?.nextSeq).toBe(451);expect(stopped.data?.hasMore…
+     32|   const retry=await recorderApi.stop('paged-review');expect(retry.data…
+       |                                                                         ^
+     33|  })
+     34|  it('preserves confirmed review after module restart of the persistent…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 14 passed (15)
+      Tests  2 failed | 175 passed (177)
+   Start at  12:04:02
+   Duration  8.47s (transform 3.55s, setup 1.20s, import 8.34s, tests 8.71s, environment 8.36s)
+

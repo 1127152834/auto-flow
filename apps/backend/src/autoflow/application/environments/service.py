@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 from datetime import UTC, datetime
 from threading import Lock, RLock
 from typing import Any
@@ -319,10 +320,29 @@ class EnvironmentService:
             instance = self.quiesce_instance(project_id, instance_id)
             if environment_id != instance.environment_id:
                 raise environment_error("INSTANCE_OWNERSHIP_UNKNOWN", "环境实例归属不一致", 409)
+            self.environments.set_instance_state(instance_id, "cleaning")
+            try:
+                self.store.close_instance(instance_id)
+            except OSError:
+                self.environments.set_instance_state(instance_id, "cleanup_failed")
+                raise
             if environment_id:
                 self.environments.release_occupancy(environment_id, instance_id)
-            self.store.close_instance(instance_id)
             self.environments.set_instance_state(instance_id, "cleaned")
+
+    def cleanup_terminal_tasks(self) -> None:
+        for candidate in self.environments.disposable_task_instances():
+            with self._lifecycle_lock(candidate.instance_id):
+                # A save/End may have been accepted since the candidate scan.
+                if not self.environments.disposable_task_instances(candidate.instance_id):
+                    continue
+                try:
+                    self.close_instance(candidate.project_id, candidate.instance_id, candidate.environment_id)
+                except (OSError, ProjectError):
+                    self.environments.set_instance_state(candidate.instance_id, "cleanup_failed")
+                    logging.getLogger(__name__).exception(
+                        "Task environment cleanup deferred: %s", candidate.instance_id,
+                    )
 
     def quiesce_instance(self, project_id: str, instance_id: str) -> EnvironmentInstance:
         with self._lifecycle_lock(instance_id):
@@ -504,17 +524,23 @@ class EnvironmentService:
         )
 
     def save(self, project_id: str, key: str, payload: dict[str, Any]):
-        with self._lifecycle_lock(payload['instanceId']):
+        with self._lifecycle_lock(payload["instanceId"]):
             return save_environment(self, project_id, key, payload)
 
     def repair(self, project_id: str, key: str, save_operation_id: str, payload: dict[str, Any]):
         return repair_association(self, project_id, key, save_operation_id, payload)
 
     def end(self, project_id: str, key: str, payload: dict[str, Any]):
-        with self._lifecycle_lock(payload['instanceId']):
+        with self._lifecycle_lock(payload["instanceId"]):
             return end_task(self, project_id, key, payload)
 
     def open_manual(self, project_id: str, payload: dict[str, Any]):
+        if payload.get("instanceId"):
+            with self._lifecycle_lock(payload["instanceId"]):
+                instance = self.environments.get_instance(project_id, payload["instanceId"])
+                if instance.state in {"cleaning", "cleaned"}:
+                    raise environment_error("ENVIRONMENT_UNAVAILABLE", "任务环境已清理，无法转入人工处理", 409)
+                return open_manual(self, project_id, payload)
         return open_manual(self, project_id, payload)
 
     def list_manual(self, project_id: str, **query):
@@ -709,6 +735,14 @@ def _operation(key, kind, project_id, environment_id, canonical, now):
             canonical, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False
         ).encode()
     ).hexdigest()
+    resource = {"type": "environment", "projectId": project_id, "environmentId": environment_id}
+    if kind == "saveEnvironment":
+        request = canonical.get("request") or {}
+        resource["instanceId"] = canonical.get("instanceId") or request.get("instanceId")
+        resource["retainEnvironment"] = (
+            canonical.get("scope") == "environmentSave"
+            or bool((request.get("retainEnvironment") or {}).get("enabled"))
+        )
     return ProjectOperation(
         str(uuid4()),
         project_id,
@@ -717,7 +751,7 @@ def _operation(key, kind, project_id, environment_id, canonical, now):
         digest,
         "running",
         1,
-        {"type": "environment", "projectId": project_id, "environmentId": environment_id},
+        resource,
         None,
         None,
         now,

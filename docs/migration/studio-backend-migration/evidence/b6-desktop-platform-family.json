@@ -1,0 +1,71 @@
+{
+  "evidenceId": "BE-B6-012-desktop-platform-family",
+  "recordedAt": "2026-09-22",
+  "classification": "原版功能迁入 + AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "reference/WebRPA/backend/app/executors/advanced.py#SetClipboardExecutor",
+      "reference/WebRPA/backend/app/executors/advanced.py#GetClipboardExecutor",
+      "reference/WebRPA/backend/app/executors/basic.py#PlaySoundExecutor",
+      "reference/WebRPA/backend/app/executors/basic.py#SystemNotificationExecutor"
+    ],
+    "license": "LICENSE.WebRPA"
+  },
+  "nodes": [
+    "set_clipboard",
+    "get_clipboard",
+    "play_sound",
+    "system_notification"
+  ],
+  "implemented": [
+    "保留文本或图片剪贴板、剪贴板文本读取、提示音次数与间隔、系统通知标题/正文/时长/声音的原版默认值和校验语义；提示音按次调用原生能力，间隔中可立即停止",
+    "平台动作由真实worker发布execution:desktop_action，经Studio稳定requestId/claimId/commandId领取和确认，再进入仅限已登记Studio主frame的Electron IPC",
+    "Electron使用clipboard、nativeImage、shell.beep和Notification原生能力；不在Python worker直接调用Windows API，也不引入第二套桌面RPC",
+    "断流后查询原请求和原命令，响应丢失不重复执行平台副作用；worker退出将待处理请求标为expired",
+    "读取剪贴板结果按敏感变量处理；敏感输入禁止进入SSE。修复了带取消令牌的节点无法把子任务敏感标记汇回调度器的问题"
+  ],
+  "checks": [
+    {
+      "command": "uv run --project apps/backend pytest -q desktop platform differential/unit/worker/coordinator/contract/runtime tests",
+      "result": "19 passed",
+      "covers": "冻结源码默认值和校验差分、四节点字段映射、真实worker等待、命令所有权、HTTP状态查询及敏感事件脱敏"
+    },
+    {
+      "command": "npm desktop vitest platform action IPC/execution/delivery tests",
+      "result": "14 passed",
+      "covers": "Electron适配器权限、参数边界、内存与HTTP/SSE消费、领取与结果响应丢失恢复、取消后迟到响应"
+    },
+    {
+      "command": "pytest executor registry/scope/source mapping filtered regression",
+      "result": "76 passed, 13 deselected",
+      "covers": "四节点生产注册、批准范围、冻结源码映射及可运行预检"
+    },
+    {
+      "command": "ruff; mypy; ESLint; TypeScript; OpenAPI check; Electron build; main IPC regression",
+      "result": "passed; main IPC regression 14 passed",
+      "covers": "静态合同、生成类型、main/preload/renderer构建及既有主进程IPC回归"
+    }
+  ],
+  "boundaries": {
+    "platform": "Electron main process native APIs",
+    "workspace": "pytest/vitest isolated fixtures",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "mockExecutionUsedForBackendEvidence": false,
+    "sensitiveValuesPersisted": false
+  },
+  "remaining": [
+    "Windows 原生剪贴板、通知展示和提示音仍需 Windows 实机验收；本次 macOS arm64 证据不跨平台推定通过",
+    "Allure 报告自动打开若仍在批准范围，后续复用同一受控平台边界，不扩展通用桌面 RPC"
+  ],
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b6-desktop-platform.mjs",
+    "result": "passed",
+    "platform": "darwin-arm64",
+    "entry": "development-build",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-desktop-platform-electron-Tj2qOw/result.json",
+    "covers": "正式 Studio 真实 UI 添加、配置、保存并运行 set_clipboard、get_clipboard、play_sound、system_notification；原生剪贴板回读、提示音和系统通知均核验；敏感值未进入结果/日志；运行后无 CloakBrowser 或 worker 残留",
+    "boundary": "未触碰用户数据库；Windows 平台仍单独记录为未实测"
+  }
+}

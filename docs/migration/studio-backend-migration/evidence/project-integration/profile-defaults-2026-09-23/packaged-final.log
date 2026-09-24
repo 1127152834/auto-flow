@@ -1,0 +1,86 @@
+主应用真实服务在临时工作区创建 CloakBrowser Profile
+正式项目 UI 新建项目，由项目自动化目录进入 Studio
+Studio 自动采用项目默认 Profile，确认为全局列表第二项
+真实键盘选择其他 Profile，刷新仍保留显式覆盖
+自动化浏览器使用同一显式 Profile，真实启动并清理后再编排运行
+主窗口通过真实点击打开正式 Studio，Studio 只读取主应用 Profile
+通过正式新建入口创建空工作流
+通过画布原生右键菜单逐一添加并配置五个节点，没有直接修改 Store
+通过画布连接手柄建立五节点顺序链
+正式保存经真实 HTTP 写入 SQLite，返回修订 1
+通过 macOS 原生窗口关闭按钮触发正常关窗离开协调；取消后窗口、草稿和已保存修订均保持不变
+再次正常关闭并选择保存后继续；保存成功后窗口才关闭，SQLite 修订递增
+正常关闭并重开正式窗口后，从 SQLite 恢复名称、节点、配置和连线
+正式 UI 启动真实 CloakBrowser：输入、首个匹配点击、提取值、PNG 与终态均已持久化
+运行终态后 CloakBrowser 进程树和临时会话均已清理
+真实 Debug 在无效选择器失败后保留可见 CloakBrowser、变量和失败节点，继续与单步入口不可用
+结束失败调试后保持 failed 终态和原失败节点；浏览器、worker 与运行占用完成清理
+活跃运行与未保存草稿并存时取消正常关窗，浏览器运行、窗口、草稿和已保存文档均保持原状态
+成功、失败调试及停止运行均持久化同一个项目归属
+放弃草稿并结束活跃运行后，先确认 stopped 与清理完成，再关闭 Studio；保存修订未被草稿覆盖
+从正式 UI 触发内核缺失启动失败：未创建运行、未启动浏览器且未遗留资源占用
+目录包未携带冻结源码路径、Mock 服务或 Vite 开发地址
+正式 UI 的原项目可查三次运行；进入第二项目后历史列表与回放日志均不泄露原项目运行，原记录仍持久化
+{
+  "evidenceDir": "/Users/zhangtiancheng/Documents/projects/autoflow/docs/migration/studio-backend-migration/evidence/project-integration/formal-electron-UxcAqm",
+  "evidenceId": "BE-B1-formal-electron",
+  "checkedAt": "2026-09-23T07:34:05.543Z",
+  "gitHead": "63639cab0b074fa046f02f19c99a893c0e848a64",
+  "buildGitHead": null,
+  "sourceTreeSha256": null,
+  "buildSha256": "574188fbddaae8b19625d5b420f177f5a0cdc52ef75fe6053f54db65858bffaf",
+  "buildArtifacts": {
+    "appAsarSha256": "574188fbddaae8b19625d5b420f177f5a0cdc52ef75fe6053f54db65858bffaf",
+    "backendExecutableSha256": "7592853e30d325e10c1fc3f1621d704ba9e3be040f9b1d2e8c42f3b7fffa2137"
+  },
+  "projectId": "0043e00e-fa73-43c9-876b-a8636950d718",
+  "workflowId": "Zr8v00NMnoJVu5dO8cGKd",
+  "profileId": "0e6ca7f5-981c-4820-baeb-fb1a4b25fa8c",
+  "runId": "df12f825-b5fa-4e3f-879c-a775a13ee464",
+  "failedRunId": "01ff5ff0-9f14-443c-9b7c-3b2336c251ee",
+  "stoppedRunId": "0d008e6c-377b-4fff-b9a6-02c012ad9bbf",
+  "result": "passed",
+  "checks": [
+    "主应用真实服务在临时工作区创建 CloakBrowser Profile",
+    "正式项目 UI 新建项目，由项目自动化目录进入 Studio",
+    "Studio 自动采用项目默认 Profile，确认为全局列表第二项",
+    "真实键盘选择其他 Profile，刷新仍保留显式覆盖",
+    "自动化浏览器使用同一显式 Profile，真实启动并清理后再编排运行",
+    "主窗口通过真实点击打开正式 Studio，Studio 只读取主应用 Profile",
+    "通过正式新建入口创建空工作流",
+    "通过画布原生右键菜单逐一添加并配置五个节点，没有直接修改 Store",
+    "通过画布连接手柄建立五节点顺序链",
+    "正式保存经真实 HTTP 写入 SQLite，返回修订 1",
+    "通过 macOS 原生窗口关闭按钮触发正常关窗离开协调；取消后窗口、草稿和已保存修订均保持不变",
+    "再次正常关闭并选择保存后继续；保存成功后窗口才关闭，SQLite 修订递增",
+    "正常关闭并重开正式窗口后，从 SQLite 恢复名称、节点、配置和连线",
+    "正式 UI 启动真实 CloakBrowser：输入、首个匹配点击、提取值、PNG 与终态均已持久化",
+    "运行终态后 CloakBrowser 进程树和临时会话均已清理",
+    "真实 Debug 在无效选择器失败后保留可见 CloakBrowser、变量和失败节点，继续与单步入口不可用",
+    "结束失败调试后保持 failed 终态和原失败节点；浏览器、worker 与运行占用完成清理",
+    "活跃运行与未保存草稿并存时取消正常关窗，浏览器运行、窗口、草稿和已保存文档均保持原状态",
+    "成功、失败调试及停止运行均持久化同一个项目归属",
+    "放弃草稿并结束活跃运行后，先确认 stopped 与清理完成，再关闭 Studio；保存修订未被草稿覆盖",
+    "从正式 UI 触发内核缺失启动失败：未创建运行、未启动浏览器且未遗留资源占用",
+    "目录包未携带冻结源码路径、Mock 服务或 Vite 开发地址",
+    "正式 UI 的原项目可查三次运行；进入第二项目后历史列表与回放日志均不泄露原项目运行，原记录仍持久化"
+  ],
+  "platform": "darwin-arm64",
+  "entry": "packaged-directory",
+  "packageBoundary": {
+    "resources": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources",
+    "forbiddenReferences": [],
+    "scannedNeedles": [
+      "reference/WebRPA",
+      "127.0.0.1:5175",
+      "StudioMockTools",
+      "api/mock-server"
+    ]
+  },
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browser": "CloakBrowser only",
+    "interaction": "CDP mouse and keyboard plus macOS native window close button; no Store access"
+  }
+}

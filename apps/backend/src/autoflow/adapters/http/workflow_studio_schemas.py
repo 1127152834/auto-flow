@@ -235,8 +235,9 @@ class StudioWorkflowRunSummary(ApiModel):
     run_id: str = Field(min_length=1, pattern=r"\S")
     workflow_id: str = Field(min_length=1, pattern=r"\S")
     document_id: str = Field(min_length=1, pattern=r"\S")
+    project_id: str | None = None
     workflow_name: str
-    status: Literal["starting", "running", "paused", "completed", "failed", "stopped", "interrupted"]
+    status: Literal["starting", "running", "paused", "failed_paused", "completed", "failed", "stopped", "interrupted"]
     started_at: str = Field(min_length=1, pattern=r"\S")
     finished_at: str | None = None
     log_count: int = Field(ge=0, le=9007199254740991)
@@ -494,8 +495,13 @@ class StudioBrowserPageCommand(ApiModel):
 class StudioBrowserStatus(ApiModel):
     model_config = ConfigDict(extra="allow", strict=True)
 
+    project_id: str | None = None
+    phase: Literal["starting", "ready", "closing", "closed"] = "closed"
     is_open: bool
     picker_active: bool
+    session_id: str | None = None
+    profile_id: str | None = None
+    picker_session_id: str | None = None
 
 
 class StudioJsScriptRequest(ApiModel):
@@ -565,6 +571,41 @@ class StudioSpeechResult(StudioRequestClaim):
         return self
 
 
+class StudioDesktopActionState(StudioClaimedRequestState):
+    pass
+
+
+class StudioDesktopActionRequest(ApiModel):
+    model_config = ConfigDict(strict=True, allow_inf_nan=False)
+
+    request_id: str = Field(min_length=1, pattern=r"\S")
+    workflow_id: str = Field(min_length=1, pattern=r"\S")
+    node_id: str = Field(min_length=1, pattern=r"\S")
+    action: Literal[
+        "clipboard_write_text",
+        "clipboard_write_image",
+        "clipboard_read_text",
+        "beep",
+        "notification",
+        "open_path",
+        "system_control",
+        "lock_screen",
+    ]
+    payload: dict[str, JsonValue]
+
+
+class StudioDesktopActionResult(StudioRequestClaim):
+    success: bool = Field(strict=True)
+    value: JsonValue = None
+    error: str | None = None
+
+    @model_validator(mode="after")
+    def validate_error(self) -> Self:
+        if not self.success and not (self.error and self.error.strip()):
+            raise ValueError("失败结果必须包含错误")
+        return self
+
+
 class StudioJsScriptResult(StudioJsScriptClaim):
     success: bool = Field(strict=True)
     result: JsonValue = None
@@ -590,7 +631,7 @@ class StudioVariableTrackingRecord(ApiModel):
     new_value: JsonValue
     node_id: str
     node_name: str
-    operation: Literal["create", "update"]
+    operation: Literal["create", "update", "scope_exit"]
     value_type: str
 
 
@@ -760,8 +801,14 @@ class StudioMcpConfig(ApiModel):
         return self
 
 
+class StudioMcpConfigResponse(StudioMcpConfig):
+    revision: int = Field(ge=0, le=9007199254740991)
+
+
 class StudioMcpSaveRequest(ApiModel):
     model_config = ConfigDict(extra="forbid", strict=True)
+    command_id: str = Field(min_length=1, max_length=128, pattern=r"\S")
+    expected_revision: int = Field(ge=0, le=9007199254740991)
     config: StudioMcpConfig
 
 
@@ -769,6 +816,8 @@ class StudioMcpSaved(ApiModel):
     model_config = ConfigDict(extra="allow", strict=True)
     success: Literal[True]
     saved: Literal[True]
+    command_id: str = Field(min_length=1, max_length=128, pattern=r"\S")
+    revision: int = Field(ge=1, le=9007199254740991)
 
     @field_validator("success", "saved", mode="before")
     @classmethod
@@ -822,6 +871,20 @@ class StudioMcpReloaded(ApiModel):
     failed: list[StudioMcpFailed]
     disabled: list[str]
     total_servers: int = Field(alias="total_servers", ge=0, le=9007199254740991)
+    command_id: str = Field(min_length=1, max_length=128, pattern=r"\S")
+    revision: int = Field(ge=0, le=9007199254740991)
+
+
+class StudioMcpReloadRequest(ApiModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    command_id: str = Field(min_length=1, max_length=128, pattern=r"\S")
+    expected_revision: int = Field(ge=0, le=9007199254740991)
+
+
+class StudioMcpCommandLookup(ApiModel):
+    model_config = ConfigDict(extra="allow", strict=True)
+    command_id: str = Field(min_length=1, max_length=128, pattern=r"\S")
+    http_status: int = Field(ge=200, le=599)
 
 
 class StudioDebugPauseContext(ApiModel):
@@ -952,7 +1015,9 @@ class StudioPathSelectionResult(ApiModel):
 
 class StudioRecorderStartRequest(ApiModel):
     model_config = ConfigDict(extra="forbid", strict=True)
+    document_id: str | None = Field(default=None, min_length=1, max_length=128)
     session_id: str = Field(min_length=1, pattern=r"\S")
+    command_id: str = Field(min_length=1, max_length=128, pattern=r"\S")
 
 
 class StudioRecorderReadRequest(StudioRecorderStartRequest):
@@ -969,8 +1034,10 @@ class StudioRecorderEvent(ApiModel):
 class StudioRecorderStarted(ApiModel):
     model_config = ConfigDict(extra="allow", strict=True)
     success: bool
+    command_id: str = Field(min_length=1, max_length=128, pattern=r"\S")
     session_id: str = Field(min_length=1, pattern=r"\S")
     recording: bool
+    paused: bool = False
     next_seq: int = Field(ge=0, le=9007199254740991)
 
 
@@ -980,12 +1047,15 @@ class StudioRecorderStatus(ApiModel):
     success: Literal[True]
     session_id: str | None = Field(default=None, min_length=1, pattern=r"\S")
     recording: bool
+    paused: bool = False
     next_seq: int = Field(ge=0, le=9007199254740991)
 
     @model_validator(mode="after")
     def validate_session(self) -> Self:
         if (self.recording or self.next_seq > 0) and self.session_id is None:
             raise ValueError("录制状态和已确认步骤必须归属明确会话")
+        if self.paused and not self.recording:
+            raise ValueError("已暂停状态必须属于活跃录制")
         return self
 
 
@@ -1012,6 +1082,7 @@ class StudioRecorderStopped(ApiModel):
     has_more: bool = False
     model_config = ConfigDict(extra="allow", strict=True)
     success: bool
+    command_id: str = Field(min_length=1, max_length=128, pattern=r"\S")
     session_id: str = Field(min_length=1, pattern=r"\S")
     next_seq: int = Field(ge=0, le=9007199254740991)
     data: StudioRecorderTail
@@ -1019,6 +1090,40 @@ class StudioRecorderStopped(ApiModel):
     @model_validator(mode="after")
     def validate_sequence(self) -> Self:
         validate_recorder_tail(self.data.events, self.next_seq)
+        return self
+
+
+class StudioRecorderControl(StudioRecorderStatus):
+    command_id: str = Field(min_length=1, max_length=128, pattern=r"\S")
+    has_more: bool = False
+    data: StudioRecorderTail
+
+    @model_validator(mode="after")
+    def validate_sequence(self) -> Self:
+        validate_recorder_tail(self.data.events, self.next_seq)
+        return self
+
+
+class StudioRecorderCommandState(ApiModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    success: Literal[True]
+    command_id: str = Field(min_length=1, max_length=128, pattern=r"\S")
+    session_id: str = Field(min_length=1, pattern=r"\S")
+    action: Literal["start", "pause", "resume", "stop"]
+    status: Literal["pending", "completed", "failed"]
+    result: dict[str, Any] | None = None
+    error: str | None = None
+    error_code: str | None = None
+    http_status: int = Field(ge=100, le=599)
+
+    @model_validator(mode="after")
+    def validate_outcome(self) -> Self:
+        if self.status == "completed" and self.result is None:
+            raise ValueError("已完成录制命令必须包含结果")
+        if self.status == "failed" and not self.error:
+            raise ValueError("失败录制命令必须包含错误")
+        if self.status == "pending" and (self.result is not None or self.error):
+            raise ValueError("待确认录制命令不能包含终态结果")
         return self
 
 
@@ -1043,3 +1148,27 @@ class StudioRecordingReview(ApiModel):
     revision: int = Field(ge=1, le=9007199254740991)
     auto_wait: bool
     events: list[StudioRecorderEvent]
+
+
+class StudioProjectRunAsset(ApiModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    asset_id: str
+    project_id: str
+    run_id: str
+    workflow_id: str
+    workflow_name: str
+    kind: Literal["result", "file", "diagnostic"]
+    sequence: int
+    node_id: str
+    execution_id: str | None
+    created_at: str | None
+    artifact_id: str | None
+    mime_type: str
+    size: int | None
+    sha256: str | None
+
+
+class StudioProjectRunAssetPage(ApiModel):
+    items: list[StudioProjectRunAsset]
+    total: int
+    next_cursor: int | None

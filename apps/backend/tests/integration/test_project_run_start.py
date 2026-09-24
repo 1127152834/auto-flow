@@ -122,6 +122,7 @@ def test_environment_reservation_failure_rolls_back_task_run_and_acceptance(tmp_
         row = session.get(ProjectRow, project.project_id)
         row.default_resources = {**row.default_resources, "profileId": str(uuid4())}
         session.commit()
+    coordinator._resolve_resources = lambda _automation, defaults: {"browser": "newFromProfile", "profileId": defaults["profileId"]}
     coordinator._environments = EnvironmentService(
         projects, SqlAlchemyEnvironments(factory), EnvironmentStore(tmp_path / "environments"),
         max_live_instances=1,
@@ -157,6 +158,7 @@ def test_environment_reservation_commits_with_task_and_replay_reuses_instance(tm
         projects, SqlAlchemyEnvironments(factory), EnvironmentStore(tmp_path / "environments"),
         max_live_instances=1,
     )
+    coordinator._resolve_resources = lambda _automation, defaults: {"browser": "newFromProfile", "profileId": defaults["profileId"]}
     coordinator._environments = environment_service
     key = str(uuid4())
     batch, operation, replayed = coordinator.start(

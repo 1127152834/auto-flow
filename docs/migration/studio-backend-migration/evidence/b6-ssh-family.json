@@ -1,0 +1,72 @@
+{
+  "evidenceId": "BE-B6-003-ssh-family",
+  "recordedAt": "2026-09-21",
+  "classification": "原版功能迁入 + AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "reference/WebRPA/backend/app/executors/ssh.py#SSHConnectExecutor",
+      "reference/WebRPA/backend/app/executors/ssh.py#SSHExecuteCommandExecutor",
+      "reference/WebRPA/backend/app/executors/ssh.py#SSHUploadFileExecutor",
+      "reference/WebRPA/backend/app/executors/ssh.py#SSHDownloadFileExecutor",
+      "reference/WebRPA/backend/app/executors/ssh.py#SSHDisconnectExecutor"
+    ],
+    "license": "LICENSE.WebRPA"
+  },
+  "nodes": [
+    "ssh_connect",
+    "ssh_execute_command",
+    "ssh_upload_file",
+    "ssh_download_file",
+    "ssh_disconnect"
+  ],
+  "implemented": [
+    "保留命名连接、密码或密钥认证、端口、超时、命令输出/错误/退出码变量及显式断开语义",
+    "SSH连接由worker级共享Provider持有，嵌套流程复用同一命名会话；成功、失败和停止退出均统一关闭残留连接",
+    "上传输入和下载输出通过WorkflowArtifactStore，不向节点开放任意本地文件系统；单文件上限64 MiB",
+    "远程命令和SFTP均使用Paramiko真实协议；连接替换时先关闭旧连接，禁止环境SSH agent和默认密钥回退",
+    "认证、连接和传输错误转换为安全中文错误，不在worker事件中回显密码或密钥内容"
+  ],
+  "checks": [
+    {
+      "command": "uv run --project apps/backend pytest -q apps/backend/tests/integration/test_b6_ssh_worker.py",
+      "result": "2 passed",
+      "covers": "本地真实SSH密码认证、命令、SFTP上传/下载、显式断开、失败终态、残留连接回收和秘密事件扫描"
+    },
+    {
+      "command": "uv run --project apps/backend pytest -q apps/backend/tests/unit/workflows/test_ssh_executors.py apps/backend/tests/unit/workflows/test_ssh_integration_gateway.py apps/backend/tests/unit/workflows/test_external_integration_gateway.py apps/backend/tests/unit/workflows/test_executor_registry.py",
+      "result": "17 passed",
+      "covers": "五节点字段映射、变量写回、产物边界、命名会话、64 MiB上限、共享外部服务回归和生产注册"
+    },
+    {
+      "command": "uv run --project apps/backend pytest -q apps/backend/tests/unit/workflows/test_scope_preflight.py apps/backend/tests/migration/test_studio_backend_source_mapping.py -k 'ssh or production or runnable or scope'",
+      "result": "75 passed, 2 deselected",
+      "covers": "批准范围、冻结源码映射与生产可运行预检"
+    },
+    {
+      "command": "ruff affected files; mypy affected production modules",
+      "result": "passed",
+      "covers": "Python静态检查"
+    }
+  ],
+  "boundaries": {
+    "service": "Paramiko local SSH and in-memory SFTP over real loopback TCP",
+    "workspace": "pytest temporary directory",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "externalCredentialUsed": false,
+    "arbitraryLocalFilesystemExposed": false
+  },
+  "remaining": [
+    "真实外部SSH主机的网络、主机密钥策略和供应商错误尚未验收；本地受控服务证据不冒充外部环境通过",
+    "macOS Intel与Windows冻结包中的Paramiko原生依赖尚未实机验证",
+    "正式 Electron 失败/停止变体尚未专项验证；后端真实 worker 已有对应证据。"
+  ],
+  "followup20260923": {
+    "formalElectron": "docs/migration/studio-backend-migration/evidence/b6/formal-ssh-electron-nUEoTd/result.json",
+    "realWorker": "docs/migration/studio-backend-migration/evidence/b6/ssh-local-worker-2026-09-23/result.json",
+    "checks": "真实 UI 五节点配置/保存/原生关闭重开/运行；命令 stdout、文件 59 bytes SHA-256 往返、全部节点日志及连接清理通过；独立真实 worker 失败和停止测试通过。",
+    "entry": "darwin-arm64 development-build",
+    "notClaimed": "Windows/macOS Intel、冻结包、外部主机/主机密钥策略及正式窗口失败/停止变体"
+  }
+}

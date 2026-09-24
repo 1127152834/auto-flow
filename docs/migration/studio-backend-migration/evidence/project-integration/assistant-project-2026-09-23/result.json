@@ -1,0 +1,51 @@
+{
+  "capabilityId": "BE.SUPPORT.models-ai-mcp",
+  "slice": "project-assistant-session-ownership",
+  "classification": "AutoFlow必要适配",
+  "status": "backend-contract-and-macos-arm64-formal-ui-passed",
+  "scope": 213,
+  "sourceReuse": [
+    "迁入的LangGraph小助手、会话及工具命令协议",
+    "AutoFlow项目归属检查与项目生命周期预检",
+    "现有Studio请求项目绑定和事件游标"
+  ],
+  "checks": {
+    "relatedBackend": "31 passed: assistant repository, HTTP, service, contract and event API",
+    "relatedFrontend": "21 passed: assistant store, project request binding, artifact transport and panel entry",
+    "mypy": "8 changed source files passed",
+    "ruff": "changed source and test files passed",
+    "typescript": "passed",
+    "eslint": "changed frontend files passed",
+    "openapi": "generated and check passed",
+    "desktopBuild": "renderer, main and preload passed",
+    "frozenBackend": "PyInstaller build and packaged sidecar startup passed",
+    "formalElectron": "development and local unsigned macOS arm64 package passed",
+    "diffCheck": "passed"
+  },
+  "actualEvidence": [
+    "项目甲的会话、图片附件与工具命令不能由项目乙或独立入口读取、修改、确认或删除；甲项目仍可恢复",
+    "共享事件序号对外项目只投递studio:cursor，不包含原小助手事件数据",
+    "等待工具确认的小助手阻止项目归档预检；完成后阻塞自动消失",
+    "0020到0021真实增量迁移保留旧会话为独立入口，不改写旧会话",
+    "前端会话Store在项目切换时清空，取消待审批操作并中止旧请求；附件和小助手API沿用宿主项目参数",
+    "正式Electron开发和本次unsigned包从项目页打开Studio，真实点击批准/拒绝AI工具、调用MCP、停止慢回答、保存及正常关窗重开恢复",
+    "正式Electron在独立入口读取会话列表为空；测试项目默认模型由公开项目接口设为夹具前置条件",
+    "未使用用户数据库，仅用临时SQLite及受控模型夹具"
+  ],
+  "formalEvidence": {
+    "development": "formal-project-assistant-electron-ikTmQy/result.json",
+    "packaged": "formal-project-assistant-electron-CRnZ1x/result.json",
+    "priorFailures": [
+      "formal-project-assistant-electron-OapgEB/failure.json: 测试夹具缺项目默认模型，发送前被正确阻止",
+      "formal-project-assistant-electron-JfZdcM/failure.json: 测试脚本在被遮挡位置定位模型切换按钮失败"
+    ],
+    "packagedAppAsarSha256": "fdf9939f917f5221b58610188dd9ef5c2ea42566c958a63b68eb2f6f812992f2",
+    "frozenBackendExecutableSha256": "30f32d608f3fee3a9c45e7528cedfb531fc80c57b0c720da9ef15be27859f9f3"
+  },
+  "notYetAccepted": [
+    "本批模型调用为受控本地夹具，不冒充真实外部模型",
+    "本批正式UI通过公开项目接口设置默认模型作为测试前置条件；项目设置界面操作仍由其他项目能力验收承担",
+    "项目管理其余节点族、业务数据桥、macOS Intel及Windows仍按各自台账保留"
+  ],
+  "nodeExecutionLedger": "213 approved, 622 of 639 execution slots passed, 17 pending; assistant project ownership does not relabel node slots"
+}

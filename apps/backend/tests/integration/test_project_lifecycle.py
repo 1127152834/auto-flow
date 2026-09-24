@@ -6,6 +6,7 @@ services; nothing here re-implements the rules it verifies.
 
 from __future__ import annotations
 
+import hashlib
 import shutil
 from datetime import UTC, datetime
 from uuid import uuid4
@@ -21,7 +22,9 @@ from autoflow.application.projects.lifecycle import (
 )
 from autoflow.application.projects.service import ProjectService
 from autoflow.application.settings.runtime import QuiesceGate
+from autoflow.application.workflows.runs import WorkflowRunService
 from autoflow.domain.projects.models import ProjectError
+from autoflow.domain.workflows.runs import WorkflowRunStart
 from autoflow.infrastructure.database.environment_models import (
     ProjectEnvironmentInstanceRow,
     ProjectManualItemRow,
@@ -47,14 +50,57 @@ from autoflow.infrastructure.database.session import (
     create_session_factory,
     migrate_database,
 )
+from autoflow.infrastructure.database.workflow_models import (
+    WorkflowDebugCommandRow,
+    WorkflowDocumentRequestRow,
+    WorkflowDocumentRow,
+    WorkflowRunArtifactRow,
+    WorkflowRunEventRow,
+)
+from autoflow.infrastructure.database.workflow_models import (
+    WorkflowRunRow as StudioRunRow,
+)
+from autoflow.infrastructure.database.workflow_runs import SqlAlchemyWorkflowRuns
 
 
 def key() -> str:
     return str(uuid4())
 
 
+@pytest.mark.parametrize("status", ["starting", "running", "paused", "failed_paused"])
+def test_archive_waits_for_studio_run_cleanup(tmp_path, status):
+    ctx = Context(tmp_path)
+    repository = SqlAlchemyWorkflowRuns(ctx.factory)
+    runs = WorkflowRunService(repository)
+    runs.start(WorkflowRunStart("studio-run", "draft", "draft", "Studio 活跃流程", {"nodes": []}, {}, "profile", {}, "debug", project_id=ctx.project_id))
+    repository.append_event("studio-run", "execution:state", {}, now=datetime.now(UTC), run_patch={"status": status})
+    impact = ctx.service.impact(ctx.project_id, "archive")
+    assert any(row["code"] == "STUDIO_RUN_ACTIVE" and row["state"] == status for row in impact["blockers"])
+    ctx.archive()
+    ctx.repository.advance(ctx.project_id)
+    assert ctx.state() == "closing"
+    runs.finish("studio-run", status="stopped", cleanup_completed=True)
+    ctx.repository.advance(ctx.project_id)
+    assert ctx.state() == "archived"
+
+
+def test_archive_resolves_older_active_studio_run_through_saved_document(tmp_path):
+    ctx = Context(tmp_path)
+    now = datetime.now(UTC)
+    with ctx.factory() as session:
+        session.add(WorkflowDocumentRow(id="old-document", name="旧项目流程", document={"projectId": ctx.project_id}, layout={}, revision=1, created_at=now, updated_at=now))
+        session.add(StudioRunRow(id="old-run", workflow_id="old-document", request_hash="old-hash", started_at=now.isoformat(), active_slot=2, payload={"status": "paused", "workflowName": "旧项目流程", "cleanupState": "pending"}))
+        session.commit()
+    impact = ctx.service.impact(ctx.project_id, "archive")
+    assert any(row["code"] == "STUDIO_RUN_ACTIVE" for row in impact["blockers"])
+    with ctx.factory() as session:
+        assert "projectId" not in session.get(StudioRunRow, "old-run").payload
+
+
 class Context:
-    def __init__(self, tmp_path, *, name="生命周期项目", environment_root=None):
+    def __init__(
+        self, tmp_path, *, name="生命周期项目", environment_root=None, workspace_root=None
+    ):
         self.database = tmp_path / "lifecycle.sqlite3"
         migrate_database(self.database)
         self.factory = create_session_factory(self.database)
@@ -65,7 +111,8 @@ class Context:
         self.project_id = self.record.project_id
         self.environment_root = environment_root
         self.repository = SqlAlchemyProjectLifecycle(
-            self.factory, environment_root=environment_root
+            self.factory, environment_root=environment_root,
+            **({"workflow_artifact_root": workspace_root} if workspace_root is not None else {}),
         )
         self.coordinator = ProjectLifecycleCoordinator(self.repository, QuiesceGate())
         self.service = ProjectLifecycleService(
@@ -456,6 +503,157 @@ def test_delete_purges_only_this_project_and_keeps_external_files(tmp_path):
     # The tombstone frees the name for a fresh project.
     recreated, _, _ = context.projects.create(key(), {"name": context.record.name})
     assert recreated.name == context.record.name
+
+
+def _studio_history(context, workspace_root, run_id, project_id, *, external=None):
+    repository = SqlAlchemyWorkflowRuns(context.factory)
+    service = WorkflowRunService(repository)
+    service.start(WorkflowRunStart(
+        run_id, f"document-{run_id}", f"document-{run_id}", "删除验收流程",
+        {"nodes": []}, {}, "profile", {}, "debug", project_id=project_id,
+    ))
+    relative = f"runs/{run_id}/artifacts/output.json"
+    artifact = workspace_root / relative
+    artifact.parent.mkdir(parents=True)
+    content = b'{"value":42}'
+    artifact.write_bytes(content)
+    repository.register_artifact(
+        run_id=run_id, artifact_id="output", node_id="node", execution_id="visit",
+        relative_path=relative, size=len(content), sha256=hashlib.sha256(content).hexdigest(),
+        mime_type="application/json", purpose="result",
+    )
+    repository.append_event(
+        run_id, "execution:node-succeeded",
+        {"result": {"success": True, "data": {"outputPath": str(external) if external else "output.json"}}},
+        now=datetime.now(UTC), node_id="node", execution_id="visit", artifact_ids=("output",),
+    )
+    repository.save_debug_command(
+        run_id, f"command-{run_id}", request_hash=f"hash-{run_id}",
+        receipt={"status": "applied"}, http_status=200,
+    )
+    service.finish(run_id, status="completed", cleanup_completed=True)
+    now = datetime.now(UTC)
+    document_id = f"document-{run_id}"
+    with context.factory() as session:
+        document = {"projectId": project_id} if project_id is not None else {}
+        session.add(WorkflowDocumentRow(
+            id=document_id, name="保存的项目流程", document=document,
+            layout={}, revision=1, created_at=now, updated_at=now,
+        ))
+        session.add(WorkflowDocumentRequestRow(
+            id=f"save-{run_id}", request_digest=f"digest-{run_id}", kind="save",
+            workflow_id=document_id, response={"id": document_id, "revision": 1}, created_at=now,
+        ))
+        session.commit()
+    return artifact.parent.parent
+
+
+def _assert_studio_history(session, run_id, *, present):
+    assert (session.get(StudioRunRow, run_id) is not None) is present
+    assert (session.get(WorkflowRunArtifactRow, (run_id, "output")) is not None) is present
+    assert (session.get(WorkflowDebugCommandRow, (run_id, f"command-{run_id}")) is not None) is present
+    assert bool(session.scalar(select(func.count()).select_from(WorkflowRunEventRow).where(WorkflowRunEventRow.run_id == run_id))) is present
+    assert (session.get(WorkflowDocumentRow, f"document-{run_id}") is not None) is present
+    assert (session.get(WorkflowDocumentRequestRow, f"save-{run_id}") is not None) is present
+
+
+@pytest.mark.parametrize("legacy_owner", [False, True])
+def test_delete_cleans_only_owned_studio_history_and_managed_files(tmp_path, legacy_owner):
+    workspace_root = tmp_path / "workspace"
+    context = Context(tmp_path, workspace_root=workspace_root)
+    other, _, _ = context.projects.create(key(), {"name": "另一个项目"})
+    external = tmp_path / "user-output" / "chosen.json"
+    external.parent.mkdir()
+    external.write_bytes(b"user-chosen-output")
+    owned = _studio_history(context, workspace_root, "owned-studio", context.project_id, external=external)
+    other_dir = _studio_history(context, workspace_root, "other-studio", other.project_id)
+    unbound_dir = _studio_history(context, workspace_root, "unbound-studio", None)
+    if legacy_owner:
+        with context.factory() as session:
+            row = session.get(StudioRunRow, "owned-studio")
+            row.payload = {k: v for k, v in row.payload.items() if k != "projectId"}
+            session.commit()
+    context.archive_to_settled()
+    operation = context.delete()
+    context.repository.advance(context.project_id)
+
+    assert context.state() == "deleted"
+    assert context.projects.workspace_operation(operation.idempotency_key).result["deleted"] is True
+    assert not owned.exists()
+    assert (other_dir / "artifacts/output.json").read_bytes() == b'{"value":42}'
+    assert (unbound_dir / "artifacts/output.json").read_bytes() == b'{"value":42}'
+    assert external.read_bytes() == b"user-chosen-output"
+    with context.factory() as session:
+        _assert_studio_history(session, "owned-studio", present=False)
+        _assert_studio_history(session, "other-studio", present=True)
+        _assert_studio_history(session, "unbound-studio", present=True)
+        assert session.get(ProjectRow, other.project_id).lifecycle_state == "active"
+
+
+def test_delete_studio_cleanup_failure_keeps_indexes_until_retry(tmp_path):
+    workspace_root = tmp_path / "workspace"
+    context = Context(tmp_path, workspace_root=workspace_root)
+    work_dir = _studio_history(context, workspace_root, "failed-cleanup-studio", context.project_id)
+    context.archive_to_settled()
+    operation = context.delete()
+    container = workspace_root / "runs"
+    container.chmod(0o500)
+    try:
+        context.repository.advance(context.project_id)
+    finally:
+        container.chmod(0o755)
+
+    assert context.state() == "deleting"
+    saved = context.operation(operation.operation_id)
+    assert saved.status == "failed"
+    assert saved.error["code"] == "DELETE_CLEANUP_FAILED"
+    assert saved.error["details"]["retryable"] is True
+    assert str(work_dir) in saved.error["details"]["cleanup"]["residue"]
+    assert work_dir.exists()
+    with context.factory() as session:
+        _assert_studio_history(session, "failed-cleanup-studio", present=True)
+
+    retry = context.delete()
+    context.repository.advance(context.project_id)
+    assert context.state() == "deleted"
+    assert context.projects.workspace_operation(retry.idempotency_key).result["deleted"] is True
+    assert not work_dir.exists()
+    with context.factory() as session:
+        _assert_studio_history(session, "failed-cleanup-studio", present=False)
+
+
+def test_delete_studio_symlink_keeps_external_files_and_indexes_until_retry(tmp_path):
+    workspace_root = tmp_path / "workspace"
+    context = Context(tmp_path, workspace_root=workspace_root)
+    work_dir = _studio_history(context, workspace_root, "linked-studio", context.project_id)
+    external = tmp_path / "user-owned-directory"
+    work_dir.rename(external)
+    work_dir.symlink_to(external, target_is_directory=True)
+    context.archive_to_settled()
+    operation = context.delete()
+    context.repository.advance(context.project_id)
+
+    assert context.state() == "deleting"
+    saved = context.operation(operation.operation_id)
+    assert saved.status == "failed"
+    assert saved.error["code"] == "DELETE_CLEANUP_FAILED"
+    assert saved.error["details"]["retryable"] is True
+    assert saved.error["details"]["cleanup"]["residue"] == [
+        "Studio 运行目录边界无效：linked-studio"
+    ]
+    assert work_dir.is_symlink()
+    assert (external / "artifacts/output.json").read_bytes() == b'{"value":42}'
+    with context.factory() as session:
+        _assert_studio_history(session, "linked-studio", present=True)
+
+    work_dir.unlink()
+    retry = context.delete()
+    context.repository.advance(context.project_id)
+    assert context.state() == "deleted"
+    assert context.projects.workspace_operation(retry.idempotency_key).result["deleted"] is True
+    assert (external / "artifacts/output.json").read_bytes() == b'{"value":42}'
+    with context.factory() as session:
+        _assert_studio_history(session, "linked-studio", present=False)
 
 
 def test_delete_cleanup_failure_keeps_the_project_deleting_with_residue(tmp_path, monkeypatch):

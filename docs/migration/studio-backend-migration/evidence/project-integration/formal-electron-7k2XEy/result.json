@@ -1,0 +1,67 @@
+{
+  "evidenceId": "BE-project-studio-task-bridge",
+  "scenarioBatches": [
+    {
+      "scenario": "stop",
+      "batchId": "e18392ce-ba1a-4c04-ad82-e16eebf14e37",
+      "taskId": "8330a47e-6af2-417e-91e3-854303ea4223",
+      "status": "cancelled"
+    },
+    {
+      "scenario": "failure",
+      "batchId": "f5ccf2e2-01ab-4e29-b502-8cc9a3eb22c1",
+      "taskId": "950855a0-926d-4263-b4e4-5586f412d11b",
+      "status": "failed"
+    },
+    {
+      "scenario": "recovered",
+      "batchId": "e89ee482-e768-42cd-8570-812569594798",
+      "taskId": "ad2623c9-7086-48dd-9963-71b18dea5317",
+      "status": "succeeded"
+    }
+  ],
+  "checkedAt": "2026-09-23T06:46:26.370Z",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "packaged-directory",
+  "packageBoundary": {
+    "resources": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources",
+    "forbiddenReferences": [],
+    "scannedNeedles": [
+      "reference/WebRPA",
+      "127.0.0.1:5175",
+      "StudioMockTools",
+      "api/mock-server"
+    ]
+  },
+  "buildArtifacts": {
+    "appAsarSha256": "0928be5a38460c30588efddf395f6a6228c02f7ef500dbc3964d7104370fab41",
+    "backendExecutableSha256": "7592853e30d325e10c1fc3f1621d704ba9e3be040f9b1d2e8c42f3b7fffa2137"
+  },
+  "buildSha256": "d98185d9bb04953f502c8620f98572652973b1e3184429a1dda1ad1071cb3775",
+  "projectId": "5489bea8-3fa2-4652-b751-3f72915a6b1a",
+  "workflowId": "VSg1xaxpIoS-wWXjf0Szt",
+  "profileId": "a6f39d13-6700-4b65-905f-27b0b3785977",
+  "batchId": "a4ac9bca-48e1-426c-96af-1d693e1b744f",
+  "taskId": "39087b8f-1e4f-40d5-b8ab-8d680ed39107",
+  "checks": [
+    "主应用真实服务在临时工作区创建 CloakBrowser Profile",
+    "正式项目 UI 新建项目，由项目自动化目录进入 Studio",
+    "主窗口通过真实点击打开正式 Studio，Studio 只读取主应用 Profile",
+    "通过正式新建入口创建空工作流",
+    "通过画布原生右键菜单逐一添加并配置五个节点，没有直接修改 Store",
+    "通过画布连接手柄建立五节点顺序链",
+    "正式保存经真实 HTTP 写入 SQLite，返回修订 1",
+    "正式 Studio 原生关闭重开，恢复五节点后关闭窗口返回项目",
+    "项目自动化真实 UI 绑定 Studio 文档和主应用 Profile，批次五节点执行、输出和 PNG 展示通过，浏览器已清理",
+    "项目任务 stop 真实 UI 验收完成，后续节点与进程清理符合预期",
+    "项目任务 failure 真实 UI 验收完成，后续节点与进程清理符合预期",
+    "项目任务 recovered 真实 UI 验收完成，后续节点与进程清理符合预期"
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browser": "CloakBrowser only",
+    "interaction": "real UI mouse/keyboard; APIs only setup Profile and assert evidence"
+  }
+}

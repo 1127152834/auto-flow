@@ -1,0 +1,52 @@
+{
+  "evidenceId": "BE-B6-018-email-trigger",
+  "recordedAt": "2026-09-21",
+  "classification": "原版功能迁入 + AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "reference/WebRPA/backend/app/executors/trigger.py#EmailTriggerExecutor",
+      "reference/WebRPA/backend/app/services/trigger_manager.py#TriggerManager._email_monitor_loop"
+    ],
+    "license": "LICENSE.WebRPA"
+  },
+  "nodes": ["email_trigger"],
+  "implemented": [
+    "保留IMAP SSL服务器、端口、账号授权码、发件人和主题包含过滤、轮询间隔、无限或有限等待及结果变量语义",
+    "保留UNSEEN检索、RFC822解析、编码主题解码、首个纯文本正文提取、匹配邮件标记已读和同轮最后一封匹配邮件结果",
+    "同步IMAP调用经既有WorkflowIntegrationGateway在线程中执行，不阻塞worker事件循环",
+    "邮件结果包含from、subject、date、body和timestamp；成功后可继续后继节点",
+    "临时连接错误继续轮询；停止阻塞连接中的真实worker会终止进程且不执行后继节点"
+  ],
+  "adaptations": [
+    "原版进程全局TriggerManager改为节点内有界轮询，避免跨运行共享监听器状态",
+    "IMAP连接增加最长30秒的套接字超时，有限节点超时时进一步收窄，确保AutoFlow停止和进程清理具有上界",
+    "密码只在worker内存和integration payload中使用，不写入运行事件；敏感变量参与配置时不记录解析后的服务器、账号和过滤条件"
+  ],
+  "checks": [
+    {
+      "command": "pytest email trigger differential, IMAP provider, executor, real worker stop, production registry, existing triggers, worker protocol and scope preflight",
+      "result": "130 passed",
+      "covers": "冻结源码缺参和成功差分、MIME解析、过滤、标记已读、失败重试、超时、生产注册、阻塞IMAP中的真实worker停止及既有触发器回归"
+    },
+    {
+      "command": "Ruff and mypy",
+      "result": "passed",
+      "covers": "迁入执行器、integration provider、生产注册、差分工具和worker测试"
+    }
+  ],
+  "boundaries": {
+    "imapProtocol": "deterministic provider substitute plus real worker TCP blocking/cleanup",
+    "workspace": "pytest temporary directory",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "mockExecutionUsedForBackendEvidence": false,
+    "formalElectronUiTested": false,
+    "externalMailboxTested": false
+  },
+  "remaining": [
+    "正式Electron真实UI中配置、保存、关闭重开并运行邮件触发器",
+    "使用用户提供的外部IMAP测试账号验证服务器认证、收信、已读标记和网络错误；当前没有可用账号，属于外部等待",
+    "macOS和Windows分别记录外部网络、证书和停止延迟的实机结果"
+  ]
+}

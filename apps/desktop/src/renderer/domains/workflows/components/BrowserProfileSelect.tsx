@@ -1,28 +1,37 @@
 import {useEffect,useState} from 'react'
 import type {components} from '../../../shared/api/generated'
-import {browserApi} from '../api'
+import {browserApi, projectResourceApi} from '../api'
+import {getStudioResourceScope} from '../api/config'
 import {getStudioTransportRevision} from '../api/transport'
 import {useGlobalConfigStore} from '../hooks/stores/globalConfigStore'
 
 /** AutoFlow host adaptation: choose managed Profiles; never edit launch parameters here. */
-export function BrowserProfileSelect({label='浏览器配置',disabled=false}:{label?:string;disabled?:boolean}) {
-  const profileId=useGlobalConfigStore(state=>state.config.browserProfileId)
-  const select=useGlobalConfigStore(state=>state.setBrowserProfileId)
+export function BrowserProfileSelect({label='浏览器配置',disabled=false,value,onChange}:{label?:string;disabled?:boolean;value?:string;onChange?:(profileId:string)=>void}) {
+  const globalProfileId=useGlobalConfigStore(state=>state.config.browserProfileId)
+  const selectGlobal=useGlobalConfigStore(state=>state.setBrowserProfileId)
+  const resources=useGlobalConfigStore(state=>state.projectResources)
+  const scope=getStudioResourceScope()
+  const profileId=value??(scope ? resources.scope===scope ? resources.profileId??resources.defaults?.profileId??'' : '' : globalProfileId)
+  const select=onChange??selectGlobal
   const [profiles,setProfiles]=useState<components['schemas']['ProfileRead'][]>([])
   const [loading,setLoading]=useState(true),[error,setError]=useState(''),[attempt,setAttempt]=useState(0)
   useEffect(()=>{
     let active=true
     const connection=getStudioTransportRevision()
     setLoading(true);setError('')
-    void browserApi.profiles().then(result=>{
-      if(!active||connection!==getStudioTransportRevision())return
+    void Promise.all([browserApi.profiles(), projectResourceApi.defaults()]).then(([result, defaults])=>{
+      if(!active||connection!==getStudioTransportRevision()||scope!==getStudioResourceScope())return
       setLoading(false)
+      if(!defaults.success){setProfiles([]);setError(defaults.error||'项目默认资源读取失败');return}
       if(!result.success||!result.data){setProfiles([]);setError(result.error||'浏览器配置读取失败');return}
       setProfiles(result.data.items)
-      if(!useGlobalConfigStore.getState().config.browserProfileId&&result.data.items.length)select(result.data.items[0].id)
+      // Read the latest selection: a refresh must not overwrite an explicit choice.
+      if(onChange){
+        if(!value){const initial=scope?defaults.data?.profileId:result.data.items[0]?.id;if(initial)onChange(initial)}
+      } else if(!scope&&!useGlobalConfigStore.getState().config.browserProfileId&&result.data.items.length)select(result.data.items[0].id)
     })
     return()=>{active=false}
-  },[attempt,select])
+  },[attempt,select,scope,onChange,value])
   useEffect(()=>{
     const reload=()=>{setProfiles([]);setAttempt(value=>value+1)}
     window.addEventListener('studio:transport-changed',reload);window.addEventListener('studio:connection-restored',reload)

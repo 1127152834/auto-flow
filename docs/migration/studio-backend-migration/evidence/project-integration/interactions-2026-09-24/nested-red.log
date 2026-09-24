@@ -1,0 +1,11 @@
+F
+=================================== FAILURES ===================================
+_ test_project_worker_reuses_source_interaction_and_ack[True-input_prompt-42-42] _
+tests/integration/test_project_interactive_worker.py:58: in test_project_worker_reuses_source_interaction_and_ack
+    assert request["executionContext"]["scopes"] == [{"kind": "workflow", "id": "child", "name": "子流程"}]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'executionContext'
+=========================== short test summary info ============================
+FAILED tests/integration/test_project_interactive_worker.py::test_project_worker_reuses_source_interaction_and_ack[True-input_prompt-42-42]
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed, 5 deselected in 2.77s

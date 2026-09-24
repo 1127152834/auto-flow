@@ -1,0 +1,17 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/main/studio-hotkeys.test.ts src/main/scheduled-hotkeys.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:29369) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:29370) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  2 passed (2)
+      Tests  34 passed (34)
+   Start at  13:12:10
+   Duration  348ms (transform 302ms, setup 325ms, import 39ms, tests 77ms, environment 0ms)
+

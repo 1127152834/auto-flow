@@ -1,0 +1,64 @@
+{
+  "evidenceId": "BE-B2-network-monitor-formal-electron",
+  "checkedAt": "2026-09-20T16:56:45.542Z",
+  "gitHead": "92435ac03b85116285ae004123add6831765cfd2",
+  "buildSha256": "1937f29695ad15e48420b2decd391c0c5cb3e67f91dfbbc9f90fbc0776edcf9f",
+  "workflowId": "GFylRvt8pwFkFkLDtM9rW",
+  "profileId": "17b9cf3d-9dcc-4afa-bc4e-b7cc6f2dfcd4",
+  "runId": "554a60ca-9f8b-42c7-8e14-d8150038eaa9",
+  "result": "passed",
+  "checks": [
+    "真实 sidecar 在临时工作区创建 CloakBrowser Profile",
+    "主窗口通过真实点击打开正式 Studio，并选择真实 sidecar Profile",
+    "通过正式 Studio UI 添加并配置网络监听开始、等待、停止节点",
+    "通过画布连接手柄建立打开页面、开始监听、触发请求、等待及停止链",
+    "真实 HTTP/SQLite 保存网络过滤、监听身份、等待模式和输出变量配置",
+    "通过 BrowserWindow.close 正常关闭并重开 Studio，节点、配置和连线从 SQLite 恢复",
+    "真实 CloakBrowser 捕获fetch请求；等待与停止结果、日志和SSE持久化且秘密已脱敏",
+    "运行终态后CloakBrowser进程树和监听资源释放"
+  ],
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "networkMonitor": {
+    "familyTypes": [
+      "network_monitor_start",
+      "network_monitor_wait",
+      "network_monitor_stop"
+    ],
+    "moduleTypes": [
+      "open_page",
+      "network_monitor_start",
+      "click_element",
+      "network_monitor_wait",
+      "network_monitor_stop"
+    ],
+    "nodeIds": [
+      "ZZVlIBiOZX3sOBgb6is2g",
+      "-Yb10BnfmvIducnZn_E4v",
+      "-tSzP3cRd26xod-Uch1WS",
+      "FY1b8wvu9ZCU54WF_sI9H",
+      "xWxcfiHMoWSIvrSGcCwAn"
+    ],
+    "resultCount": 3,
+    "logCount": 6,
+    "observedRequestCount": 3,
+    "secretRedaction": true,
+    "cloakBrowserProcessesObserved": [
+      "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-studio-b2-network-monitor-Tr8d0F/data/kernels/chromium-145.0.7632.109.2/Chromium.app/Contents/MacOS/Chromium --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --no-sandbox --no-sandbox --fingerprint=78826 --fingerprint-platform=macos --ignore-gpu-blocklist --accept-lang=zh-CN --fingerprint-timezone=Asia/Shanghai --lang=zh-CN --fingerprint-locale=zh-CN --user-data-dir=/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-studio-b2-network-monitor-Tr8d0F/tmp/workflow-worker/715ae11456bd4d1e88a120f59747441c/554a60ca-9f8b-42c7-8e14-d8150038eaa9/playwright_chromiumdev_profile-68buNp --remote-debugging-pipe --no-startup-window"
+    ]
+  },
+  "directoryPackage": {
+    "status": "needs-rebuild",
+    "backend": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/backend/autoflow-backend",
+    "backendModifiedAt": "2026-09-20T10:55:49.048Z",
+    "newestB2Source": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/src/autoflow/bootstrap/workflows.py",
+    "newestB2SourceModifiedAt": "2026-09-20T13:15:55.902Z",
+    "reason": "目录包后端早于 B2 执行器/注册/接线路径，不能作为 B2 通过证据"
+  },
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browser": "CloakBrowser only",
+    "interaction": "CDP mouse and keyboard through the formal Studio UI; BrowserWindow.close used for a normal close event; no Store access"
+  }
+}

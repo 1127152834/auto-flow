@@ -11,7 +11,7 @@ class ProjectRunEventView(ApiModel):
     run_id: str
     sequence: int
     execution_generation: int
-    kind: Literal["runStatus", "nodeAttempt", "log", "output", "artifact", "checkpoint"]
+    kind: Literal["runStatus", "nodeAttempt", "log", "output", "artifact", "checkpoint", "interaction"]
     node_id: str | None = None
     node_visit_id: str | None = None
     attempt: int | None = None

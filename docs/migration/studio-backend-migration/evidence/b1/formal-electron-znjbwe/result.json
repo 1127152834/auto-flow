@@ -1,0 +1,76 @@
+{
+  "evidenceId": "BE-studio-credential-runtime",
+  "checkedAt": "2026-09-23T06:15:45.416Z",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "packaged-directory",
+  "workflowId": "ObWOuApkeTAHX1HrgEp6F",
+  "runId": "3ba044ee-fed6-450a-baf4-574f5af02ee0",
+  "nodeDurations": [
+    {
+      "nodeId": "w6h80l85trKKXxv00pUxk",
+      "durationMs": 117.42129101185128
+    },
+    {
+      "nodeId": "08v4GRkhgmsm7aZmwb3MT",
+      "durationMs": 123.19487502099946
+    },
+    {
+      "nodeId": "Q0cr6f5CpLJ-ApCO1edWT",
+      "durationMs": 27.823249984066933
+    },
+    {
+      "nodeId": "DSztv-WhPaNYANs_yRzss",
+      "durationMs": 10.173249989748001
+    },
+    {
+      "nodeId": "ZitRSWJWGbn5EwQUh0HNV",
+      "durationMs": 37.23583300597966
+    }
+  ],
+  "requestedStreams": [
+    {
+      "afterSeq": "0",
+      "verboseLog": "true"
+    },
+    {
+      "afterSeq": "0",
+      "verboseLog": "false"
+    },
+    {
+      "afterSeq": "20",
+      "verboseLog": "true"
+    }
+  ],
+  "checks": [
+    "主应用真实服务在临时工作区创建 CloakBrowser Profile",
+    "主窗口通过真实点击打开正式 Studio，Studio 只读取主应用 Profile",
+    "真实凭据库UI保存本次随机临时字段；不记录明文截图",
+    "通过正式新建入口创建空工作流",
+    "通过画布原生右键菜单逐一添加并配置五个节点，没有直接修改 Store",
+    "通过画布连接手柄建立五节点顺序链",
+    "正式保存经真实 HTTP 写入 SQLite，返回修订 1",
+    "CloakBrowser密码输入使用系统凭据，受控页面只返回正确性标记；明文不进入SSE/快照/结果",
+    "真实UI切换简洁/详细SSE，用户日志保留，普通节点日志完整持久化；续读游标、关窗重开历史和进程清理通过",
+    "凭据通过真实界面删除，运行日志与文档重开保留原引用"
+  ],
+  "packageBoundary": {
+    "resources": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources",
+    "forbiddenReferences": [],
+    "scannedNeedles": [
+      "reference/WebRPA",
+      "127.0.0.1:5175",
+      "StudioMockTools",
+      "api/mock-server"
+    ]
+  },
+  "buildArtifacts": {
+    "appAsarSha256": "0928be5a38460c30588efddf395f6a6228c02f7ef500dbc3964d7104370fab41",
+    "backendExecutableSha256": "356e78ad3cf0a6690ea192857513f19b99dad5b05d5c14ae755df329a4d4a98f"
+  },
+  "boundaries": {
+    "userDatabaseTouched": false,
+    "workspace": "ephemeral",
+    "interaction": "real UI only; API asserts logs and process cleanup"
+  }
+}

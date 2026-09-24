@@ -12,6 +12,16 @@ const storage = new Map<string, string>()
 beforeEach(() => { storage.clear(); vi.stubGlobal('sessionStorage', { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => storage.set(key, value), clear: () => storage.clear() }) })
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
+it('forwards the Studio entry from an empty project without creating an automation', async () => {
+  const client = { request: vi.fn().mockResolvedValue({ ...page, items: [], total: 0 }), stream: vi.fn(), health: vi.fn() }
+  const onOpenStudio = vi.fn(), onCreate = vi.fn()
+  render(<QueryClientProvider client={new QueryClient()}><AutomationDirectoryPage workspaceKey="one" instanceId="i" projectId="p" client={client} disabled={false} readOnly={false} onOpen={vi.fn()} onCreate={onCreate} onOpenStudio={onOpenStudio}/></QueryClientProvider>)
+  await screen.findByText('还没有自动化')
+  await userEvent.click(screen.getByRole('button', { name: '工作流工作台' }))
+  expect(onOpenStudio).toHaveBeenCalledTimes(1)
+  expect(onCreate).not.toHaveBeenCalled()
+})
+
 it('isolates and restores controlled directory queries by workspace and project', async () => {
   const request = vi.fn().mockResolvedValue(page) as StreamingApiClient['request']
   const client = { request, stream: vi.fn(), health: vi.fn() }

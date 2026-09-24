@@ -15,9 +15,21 @@ def _config(database: Path) -> Config:
 def test_studio_backend_history_has_one_merged_head(tmp_path: Path) -> None:
     scripts = ScriptDirectory.from_config(_config(tmp_path / "heads.sqlite3"))
 
-    assert scripts.get_heads() == ["pm10_shared_sheet_cursors"]
+    assert scripts.get_heads() == ["0022_merge_studio_pm10"]
+    assert scripts.get_revision("0022_merge_studio_pm10").down_revision == (
+        "0021_assistant_project_scope", "pm10_shared_sheet_cursors",
+    )
+    assert scripts.get_revision("0021_assistant_project_scope").down_revision == "0020_recording_project_scope"
     assert scripts.get_revision("pm10_shared_sheet_cursors").down_revision == "pm09_shared_sheet_identity"
     assert scripts.get_revision("pm09_shared_sheet_identity").down_revision == "pm08_project_sync"
+
+    assert scripts.get_revision("0020_recording_project_scope").down_revision == "0019_recording_commands"
+    assert scripts.get_revision("0019_recording_commands").down_revision == (
+        "0018_scheduled_tasks"
+    )
+    assert scripts.get_revision("0018_scheduled_tasks").down_revision == (
+        "0017_studio_credentials"
+    )
     assert scripts.get_revision("pm08_project_sync").down_revision == (
         "pm07_environments"
     )

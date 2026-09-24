@@ -1,0 +1,93 @@
+{
+  "evidenceId": "BE-B5-scraper-firecrawl-formal-electron",
+  "checkedAt": "2026-09-21T19:13:12.732Z",
+  "gitHead": "e24c355ce3f6fa0ffaf299ab9ebb5a92a5841c6a",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflowId": "oisICMpW43KrUY7xgl4X0",
+  "profileId": "f680b348-5411-427e-8d92-fb3f07ae66b4",
+  "modelId": "ebe759ae-f307-42a0-b316-eb14459dedd9",
+  "runId": "6bb0edcd-ebf9-4ea7-b95b-e57e29ae88e7",
+  "checks": [
+    "主窗口真实点击打开正式 Studio；动作库为 213，Profile 和模型均来自主应用",
+    "通过正式画布和属性面板配置 AI 智能爬虫、元素选择器及三个 Firecrawl 节点",
+    "正式保存接口写入六节点和模型稳定 ID，不保存模型地址或密钥",
+    "真实 worker 经主应用模型完成页面提取和 CSS 选择器生成，Firecrawl 完成单页、链接映射、全站抓取和 PNG 产物",
+    "运行结束后 CloakBrowser、临时页和 worker 均已清理"
+  ],
+  "nodes": [
+    {
+      "moduleType": "open_page",
+      "nodeId": "QYXacEtHy18KkKSKsAtF-"
+    },
+    {
+      "moduleType": "ai_smart_scraper",
+      "nodeId": "Izg3OinkRRpwRBzPaZiuS",
+      "result": {
+        "value": "{\n  \"title\": \"Controlled page\",\n  \"items\": [\n    \"Page A\"\n  ]\n}"
+      }
+    },
+    {
+      "moduleType": "ai_element_selector",
+      "nodeId": "4kkJfc522xmWalGqgjq7I",
+      "result": {
+        "value": "main h1"
+      }
+    },
+    {
+      "moduleType": "firecrawl_scrape",
+      "nodeId": "UkhkpsOJ7ngVo5tA_pmm7",
+      "result": {
+        "url": "http://127.0.0.1:59399/docs/start",
+        "title": "",
+        "markdown": "# Controlled page\n\n[A](http://127.0.0.1:59399/docs/a)[Outside](http://127.0.0.1:59399/outside)\n",
+        "metadata": {
+          "title": "",
+          "description": "",
+          "language": ""
+        },
+        "screenshot": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-studio-b5-scraper-8nlm1R/workspace/runs/6bb0edcd-ebf9-4ea7-b95b-e57e29ae88e7/artifacts/firecrawl-d0e055d5-0058-4d02-adab-2fa39be60ff4.png"
+      }
+    },
+    {
+      "moduleType": "firecrawl_map",
+      "nodeId": "khh-NM-AjlBb4lVyYqnfe",
+      "result": {
+        "value": [
+          "http://127.0.0.1:59399/docs/a"
+        ]
+      }
+    },
+    {
+      "moduleType": "firecrawl_crawl",
+      "nodeId": "1FOPHSyDhUGFa9ddrhl4m",
+      "result": {
+        "value": [
+          {
+            "url": "http://127.0.0.1:59399/docs/start",
+            "title": "",
+            "markdown": "# Controlled page\n\n[A](http://127.0.0.1:59399/docs/a)[Outside](http://127.0.0.1:59399/outside)\n"
+          },
+          {
+            "url": "http://127.0.0.1:59399/docs/a",
+            "title": "",
+            "markdown": "# Page A\n"
+          }
+        ]
+      }
+    }
+  ],
+  "artifactIds": [
+    "52d988f4-8755-4a3f-950b-8073ab63762d"
+  ],
+  "buildSha256": "464d9a3d31b8bbdf11677ab31923253ab762c532ff46d4fb8a55a9563c09eb48",
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserLaunch": "CloakBrowser via selected main-application Profile",
+    "model": "local controlled OpenAI-compatible HTTP fixture configured through main application model management",
+    "interaction": "formal Electron via CDP mouse and keyboard; public sidecar APIs only for fixture setup and evidence reads; no Store or page-internal business function access",
+    "externalWaiting": "third-party model providers and Windows/macOS Intel remain separately unverified"
+  }
+}

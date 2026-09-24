@@ -8,12 +8,14 @@ vi.hoisted(() => {
 const confirm = vi.hoisted(() => vi.fn(async () => false))
 vi.mock('../components/controls/confirm-dialog', async importOriginal => ({ ...(await importOriginal<typeof import('../components/controls/confirm-dialog')>()), useConfirm: () => ({ confirm, alert: vi.fn(), ConfirmDialog: () => null }) }))
 import { Toolbar } from '../components/Toolbar'
+import { workflowApi } from '../api'
 import { useWorkflowStore } from '../editor-store'
 import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
 vi.mock('../hooks/stores/aiPermissionStore', () => ({ actionNeedsApproval: () => false, requestApproval: async () => true }))
 import { executeClientAction, emitAssistantUiEvent } from '../api/aiAssistantSkills'
 import { setStudioTransport } from '../api/transport'
 import { mockRequest } from '../api/mock-server'
+import { registerDocumentLeaveResource } from '../lib/documentLeave'
 let saved: Record<string, unknown>[]
 const isDocumentCreate = (input: RequestInfo | URL, init?: RequestInit) =>
   new URL(String(input)).pathname === '/api/workflows' && init?.method === 'POST'
@@ -29,6 +31,43 @@ beforeEach(() => {
   })
 })
 afterEach(() => { cleanup(); setStudioTransport(mockRequest) })
+it.each([false, true])('rechecks a naturally finished run without discarding a dirty draft (%s)', async dirty => {
+  const state = useWorkflowStore.getState()
+  if (!dirty) state.markAsSaved()
+  state.setCurrentExecutionWorkflowId('completed-before-open')
+  state.setCurrentExecutionRunId('completed-before-open-run')
+  state.setExecutionStatus('running')
+  render(<Toolbar />)
+  fireEvent.click(screen.getByRole('button', { name: '新建' }))
+  expect(await screen.findByRole('dialog', { name: '结束活跃会话后离开？' })).toBeTruthy()
+  await act(async () => useWorkflowStore.getState().setExecutionStatus('stopped'))
+  if (dirty) {
+    expect(screen.getByRole('dialog', { name: '结束活跃会话后离开？' })).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: '取消' }))
+    expect(useWorkflowStore.getState().variables[0].value).toBe('keep')
+    expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(true)
+  } else {
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+    expect(useWorkflowStore.getState().variables).toEqual([])
+  }
+  expect(saved).toEqual([])
+})
+it('keeps the leave decision while another session remains active', async () => {
+  useWorkflowStore.getState().markAsSaved()
+  useWorkflowStore.getState().setExecutionStatus('running')
+  const release = vi.fn(async () => true)
+  const unregister = registerDocumentLeaveResource(() => ({ id: 'inspection-still-active', label: '拾取', release }))
+  try {
+    render(<Toolbar />)
+    fireEvent.click(screen.getByRole('button', { name: '新建' }))
+    expect(await screen.findByRole('dialog', { name: '结束活跃会话后离开？' })).toBeTruthy()
+    await act(async () => useWorkflowStore.getState().setExecutionStatus('stopped'))
+    expect(screen.getByRole('dialog', { name: '结束活跃会话后离开？' })).toBeTruthy()
+    expect(release).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: '取消' }))
+    expect(useWorkflowStore.getState().variables[0].value).toBe('keep')
+  } finally { unregister() }
+})
 it('saves a variable-only document without requiring a canvas node', async () => {
   render(<Toolbar />)
   fireEvent.click(screen.getByRole('button', { name: '保存' }))
@@ -161,6 +200,16 @@ it.each(['new_workflow', 'load_workflow_from_data'])('the actual AI %s command w
 it('rejects direct AI document replacement without a mounted editor', async () => {
   expect((await executeClientAction('new_workflow')).success).toBe(false)
   expect(useWorkflowStore.getState().variables[0].value).toBe('keep')
+})
+it.each(['menu', 'assistant'])('opens the local and WebDAV workflow browser through the %s entry', async entry => {
+  render(<Toolbar />)
+  if (entry === 'menu') {
+    fireEvent.pointerDown(screen.getByRole('button', { name: '更多操作' }), { button: 0, ctrlKey: false })
+    fireEvent.click(await screen.findByText('本地/远程工作流'))
+  } else {
+    expect((await executeClientAction('open_local_workflow_dialog')).success).toBe(true)
+  }
+  expect(await screen.findByText('打开本地工作流')).toBeTruthy()
 })
 it('AI file loading keeps all saved variables after an explicit discard decision', async () => {
   const content = { name: 'loaded variables', nodes: [], edges: [], variables: [{ name: 'restored', type: 'string', value: 'from file', scope: 'global' }] }
@@ -329,4 +378,35 @@ it.each([{ id: 1, revision: 1 }, { id: 'draft' }, { id: 'draft', revision: '1' }
   render(<Toolbar />); fireEvent.click(screen.getByRole('button', { name: '保存' }))
   await waitFor(() => expect(useWorkflowStore.getState().logs.some(log => log.level === 'error')).toBe(true))
   expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(true)
+})
+
+
+it('updates the saved project workflow loaded by the host instead of creating it again', async () => {
+  const previous = location.href
+  try {
+    const created = await workflowApi.create({ id: 'host-loaded-workflow', name: '宿主打开的流程', nodes: [], edges: [], variables: [] })
+    expect(created.success).toBe(true)
+    const fetched = await workflowApi.get('host-loaded-workflow')
+    expect(fetched.success).toBe(true)
+    expect(useWorkflowStore.getState().importWorkflow(fetched.data)).toBe(true)
+    history.replaceState({}, '', '?workflowId=host-loaded-workflow')
+    saved = []
+    render(<Toolbar />)
+    fireEvent.change(screen.getByPlaceholderText('工作流名称'), { target: { value: '宿主流程修改后' } })
+    fireEvent.blur(screen.getByPlaceholderText('工作流名称'))
+    fireEvent.click(screen.getByRole('button', { name: '保存' }))
+    await waitFor(() => expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(false))
+    expect(saved).toEqual([])
+    const reloaded = await workflowApi.get('host-loaded-workflow')
+    expect(reloaded.data?.name).toBe('宿主流程修改后')
+    expect(reloaded.data?.revision).toBe(2)
+    fireEvent.click(screen.getByRole('button', { name: '新建' }))
+    await waitFor(() => expect(useWorkflowStore.getState().id).not.toBe('host-loaded-workflow'))
+    fireEvent.change(screen.getByPlaceholderText('工作流名称'), { target: { value: '新的项目草稿' } })
+    fireEvent.blur(screen.getByPlaceholderText('工作流名称'))
+    fireEvent.click(screen.getByRole('button', { name: '保存' }))
+    await waitFor(() => expect(saved).toHaveLength(1))
+    expect(saved[0].id).not.toBe('host-loaded-workflow')
+    expect((await workflowApi.get('host-loaded-workflow')).data?.revision).toBe(2)
+  } finally { history.replaceState({}, '', previous) }
 })

@@ -1,0 +1,65 @@
+{
+  "evidenceId": "BE-B6-ssh-formal-electron",
+  "checkedAt": "2026-09-23T02:54:51.940Z",
+  "result": "passed",
+  "gitHead": "1aceed608c197685a7f9e9ad422dc9f450c6c889",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflowId": "V_I-AyvjATL7eja-WZomO",
+  "runId": "49e17da6-7005-4e71-9484-c13811103e18",
+  "profileId": "dc1fe837-ec12-4cb8-ac1a-8816c210c188",
+  "checks": [
+    "主窗口真实点击进入 Studio；213 节点范围及主应用 Profile 就绪",
+    "五节点通过画布添加、真实输入、四条手柄连线和保存完成；没有 API 注入流程",
+    "真实点击原生关闭按钮后重开 Studio，从持久文档恢复五节点和四条连线",
+    "真实独立 worker 完成 SSH 握手、命令子进程、磁盘 SFTP 往返和断开；日志持久化且连接已清理"
+  ],
+  "server": {
+    "port": 61443,
+    "closed": false,
+    "connections": 1,
+    "activeConnections": 0,
+    "commands": [
+      0
+    ]
+  },
+  "nodes": [
+    {
+      "moduleType": "ssh_connect",
+      "nodeId": "mlFcVZwxqCxc8DBL6QAcV"
+    },
+    {
+      "moduleType": "ssh_execute_command",
+      "nodeId": "l4r4UXgyil0u9W7vT-pjr"
+    },
+    {
+      "moduleType": "ssh_upload_file",
+      "nodeId": "mivxeGTQQ35FZk__vWxB7"
+    },
+    {
+      "moduleType": "ssh_download_file",
+      "nodeId": "pLE_RrKNkdaDl-rqeRkl9"
+    },
+    {
+      "moduleType": "ssh_disconnect",
+      "nodeId": "y7vZhI-WI18rjMDAxgGNm"
+    }
+  ],
+  "commandResult": {
+    "output": "ok\n",
+    "error": "",
+    "exit_code": 0
+  },
+  "file": {
+    "bytes": 59,
+    "sha256": "53867010752607d9501c148a7878c2ae472b11ef046f63d628e30f4cccc585bd"
+  },
+  "buildSha256": "15c47b6330a2ce98e1e1ec130badaf1723a1fc3e014b42099a255f393b72e383",
+  "boundaries": {
+    "userDatabaseTouched": false,
+    "workspace": "ephemeral",
+    "server": "real loopback SSH/SFTP with temporary disk files and allowlisted command subprocess",
+    "interaction": "CDP clicks/typing/edge drag; APIs only Profile fixture creation and evidence reads; no Store writes",
+    "pending": "Electron failure/stop variants, Windows, macOS Intel; backend failure/stop evidence lives in test_b6_ssh_worker.py"
+  }
+}

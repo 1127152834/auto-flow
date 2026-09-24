@@ -1,0 +1,110 @@
+{
+  "evidenceId": "BE-B2-web-basic-formal-electron",
+  "checkedAt": "2026-09-20T16:38:24.483Z",
+  "gitHead": "3a46c009141c6ded24df28a4eacc43d6b766cb3a",
+  "buildSha256": "1937f29695ad15e48420b2decd391c0c5cb3e67f91dfbbc9f90fbc0776edcf9f",
+  "workflowId": "gV4zNjv5JhGFflVStvg_I",
+  "profileId": "2d31349a-b812-4ab2-aba8-10313f8efac8",
+  "runId": "a2e02f9f-9717-4856-8153-f8cca9a6cc8b",
+  "result": "passed",
+  "checks": [
+    "真实 sidecar 在临时工作区创建 CloakBrowser Profile",
+    "主窗口通过真实点击打开正式 Studio，并选择真实 sidecar Profile",
+    "通过正式 Studio UI 添加并配置 11 类基础网页节点及 4 个导航/iframe 支撑实例",
+    "通过画布节点与连接手柄建立真实页面、导航历史、弹窗和 iframe 顺序链",
+    "连线完成后通过 Monaco 代码编辑器写入弹窗脚本，避免编辑器关闭重置画布视口",
+    "真实 HTTP/SQLite 保存完整基础网页配置，包含代码编辑器、弹窗变量和 iframe 选择器",
+    "通过 BrowserWindow.close 正常关闭并重开 Studio，修订 1 的节点、配置和连线从 SQLite 恢复；系统级 Cmd+W 由 B1 独立证据覆盖",
+    "真实 CloakBrowser 执行全部 11 类基础网页节点；弹窗、导航历史和 iframe 结果均已持久化",
+    "关闭网页后运行仍完成统一清理，CloakBrowser 进程树与资源占用释放"
+  ],
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "webBasic": {
+    "familyTypes": [
+      "use_opened_page",
+      "close_page",
+      "refresh_page",
+      "go_back",
+      "go_forward",
+      "switch_iframe",
+      "switch_to_main",
+      "hover_element",
+      "handle_dialog",
+      "inject_javascript",
+      "wait_element"
+    ],
+    "moduleTypes": [
+      "open_page",
+      "use_opened_page",
+      "wait_element",
+      "hover_element",
+      "inject_javascript",
+      "handle_dialog",
+      "refresh_page",
+      "open_page",
+      "go_back",
+      "go_forward",
+      "go_back",
+      "switch_iframe",
+      "wait_element",
+      "switch_to_main",
+      "close_page"
+    ],
+    "nodeIds": [
+      "5t-hW13purnp8_HKsNOYj",
+      "zPEau3QAt91uqVVveBXj4",
+      "jGfe-Sb_aYqd5VbgXEUkg",
+      "Qn-yxbEchtS_Z3lC6tuhA",
+      "dicgMRH9-I6nTA75_0XqP",
+      "D4GUUmGK66UASBlKbFSdC",
+      "axEUkjmALiH8fsanJ02tY",
+      "pR9dMSYLRt5npndikVbtj",
+      "UHPB44OUFWQ1ZjR8heZnY",
+      "4SOBr07ami1y9oZUd7OV8",
+      "o08sbxzjW_4swraTgACl7",
+      "nlcXDxe_fLgF5BFPzIGAE",
+      "7elefSKN8HtFe6_iew6hs",
+      "KUf15yzLEs8T3h0iTxRdL",
+      "0u7ojP5FdHc2L8oPsw2cq"
+    ],
+    "resultCount": 5,
+    "logCount": 16,
+    "injectResult": {
+      "mode": "current",
+      "total": 1,
+      "success": 1,
+      "results": [
+        {
+          "index": 0,
+          "url": "[已隐藏的URL]",
+          "title": "AutoFlow B1 受控页面",
+          "result": "AutoFlow B1 受控页面",
+          "success": true
+        }
+      ]
+    },
+    "dialogResult": {
+      "handled": true,
+      "message": "AutoFlow dialog",
+      "type": "alert"
+    },
+    "cloakBrowserProcessesObserved": [
+      "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-studio-b2-web-basic-nX59Gb/data/kernels/chromium-145.0.7632.109.2/Chromium.app/Contents/MacOS/Chromium --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --no-sandbox --no-sandbox --fingerprint=14100 --fingerprint-platform=macos --ignore-gpu-blocklist --accept-lang=zh-CN --fingerprint-timezone=Asia/Shanghai --lang=zh-CN --fingerprint-locale=zh-CN --user-data-dir=/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-studio-b2-web-basic-nX59Gb/tmp/workflow-worker/a330830c773b403292e500e693c75343/a2e02f9f-9717-4856-8153-f8cca9a6cc8b/playwright_chromiumdev_profile-RuNhmQ --remote-debugging-pipe --no-startup-window"
+    ]
+  },
+  "directoryPackage": {
+    "status": "needs-rebuild",
+    "backend": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/backend/autoflow-backend",
+    "backendModifiedAt": "2026-09-20T10:55:49.048Z",
+    "newestB2Source": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/src/autoflow/bootstrap/workflows.py",
+    "newestB2SourceModifiedAt": "2026-09-20T13:15:55.902Z",
+    "reason": "目录包后端早于 B2 执行器/注册/接线路径，不能作为 B2 通过证据"
+  },
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browser": "CloakBrowser only",
+    "interaction": "CDP mouse and keyboard through the formal Studio UI; no Store access"
+  }
+}

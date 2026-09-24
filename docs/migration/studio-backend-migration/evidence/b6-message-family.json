@@ -1,0 +1,44 @@
+{
+  "evidenceId": "BE-B6-message-family",
+  "recordedAt": "2026-09-21",
+  "classification": "原版功能迁入 + AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "reference/WebRPA/backend/app/executors/notify_apprise.py#NotifyTelegramExecutor",
+      "reference/WebRPA/backend/app/executors/advanced.py#SendEmailExecutor"
+    ],
+    "license": "LICENSE.WebRPA"
+  },
+  "nodes": ["notify_telegram", "send_email"],
+  "implemented": [
+    "Telegram 保留 Bot Token、Chat ID、标题和消息语义，使用官方 Bot API，不迁入已排除渠道的 Apprise 总线",
+    "邮件保留冻结源码的 QQ SMTP SSL 端点、发件人授权码、收件人、主题和 UTF-8 正文语义",
+    "节点通过 ExecutionContext 外部服务窄端口调用，凭据引用由现有 CredentialStore 解析并标记敏感",
+    "供应商错误使用安全中文错误，不把 Token、授权码或目标 URL 写入节点结果",
+    "两个节点已进入生产执行器注册表；取消与进程清理复用现有 worker 生命周期"
+  ],
+  "checks": [
+    {
+      "command": "uv run --project apps/backend pytest -q apps/backend/tests/unit/workflows/test_message_executors.py apps/backend/tests/unit/workflows/test_external_integration_gateway.py apps/backend/tests/unit/workflows/test_external_http_executors.py apps/backend/tests/integration/test_b6_external_http_worker.py apps/backend/tests/unit/workflows/test_executor_registry.py apps/backend/tests/integration/test_workflow_worker_protocol.py",
+      "result": "44 passed",
+      "covers": "节点字段与变量解析、敏感标记、Telegram 请求形状、QQ SMTP 邮件内容、共享 HTTP 和 worker 回归"
+    },
+    {
+      "command": "ruff affected files; mypy affected production modules",
+      "result": "passed",
+      "covers": "Python 静态检查"
+    }
+  ],
+  "boundaries": {
+    "userDatabaseTouched": false,
+    "realTelegramSent": false,
+    "realEmailSent": false,
+    "secretsPersistedByNode": false
+  },
+  "externalWaiting": [
+    "真实 Telegram Bot Token 与 Chat ID；需验证实际消息、限流和供应商错误",
+    "真实 QQ 邮箱地址与 SMTP 授权码；需验证认证、投递和供应商错误",
+    "正式 Electron 中通过真实 UI 保存、运行、停止并查看脱敏日志"
+  ]
+}

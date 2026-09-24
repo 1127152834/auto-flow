@@ -123,7 +123,11 @@ async def test_success_uses_frozen_plan_typed_parameters_and_commits_event_befor
     assert running.status == "running" and running.execution_generation == 1
     assert running.last_sequence == 1
     call = worker.calls[0]
-    assert call["execution_plan"] == {"orderedNodeIds": ["open"], "frozen": True}
+    assert call["execution_plan"] == {
+        "orderedNodeIds": ["open"], "frozen": True,
+        "nodes": [{"nodeId": "open", "moduleType": "open_page",
+                   "data": {"moduleType": "open_page", "url": "https://example.test"}}],
+    }
     assert call["parameters"] == {"count": 0, "enabled": False, "name": "测试"}
     assert isinstance(call["parameters"]["count"], int)
     assert isinstance(call["parameters"]["enabled"], bool)

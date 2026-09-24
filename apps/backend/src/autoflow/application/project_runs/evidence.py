@@ -114,7 +114,7 @@ class ProjectRunEvidence:
         page_size: int = 50,
     ) -> dict[str, Any]:
         _cursor(after_sequence, page_size)
-        if level is not None and level not in {"debug", "info", "warning", "error"}:
+        if level is not None and level not in {"debug", "info", "success", "warning", "error"}:
             raise _field("level", "未知日志级别")
         normalized_query = query.strip().casefold() if query else None
         with self._factory() as session:
@@ -195,6 +195,7 @@ class ProjectRunEvidence:
                         "startedAt": None,
                         "completedAt": None,
                         "error": None,
+                        "executionContext": _execution_context(payload),
                     },
                 )
                 if status == "started":
@@ -211,6 +212,7 @@ class ProjectRunEvidence:
                     item["status"] = status
                     item["completedAt"] = event.occurred_at
                     item["error"] = payload.get("error")
+                    item["executionContext"] = _execution_context(payload)
             ordered = sorted(
                 attempts.values(),
                 key=lambda item: (
@@ -295,6 +297,7 @@ def _log(event: RunEvent, node_names: dict[str, str]) -> dict[str, Any]:
     if payload.get("level") not in {
         "debug",
         "info",
+        "success",
         "warning",
         "error",
     } or not isinstance(payload.get("message"), str):
@@ -312,7 +315,9 @@ def _log(event: RunEvent, node_names: dict[str, str]) -> dict[str, Any]:
         "attempt": event.attempt,
         "level": payload["level"],
         "message": payload["message"],
+        "isUserLog": payload.get("isUserLog") is True,
         "occurredAt": event.occurred_at,
+        "executionContext": _execution_context(payload),
     }
 
 
@@ -334,7 +339,15 @@ def _output(event: RunEvent, node_names: dict[str, str]) -> dict[str, Any]:
         "nodeVisitId": event.node_visit_id,
         "attempt": event.attempt,
         "createdAt": event.occurred_at,
+        "executionContext": _execution_context(payload),
     }
+
+
+def _execution_context(payload: dict[str, Any]) -> dict[str, Any] | None:
+    value = payload.get("executionContext")
+    if value is not None and not isinstance(value, dict):
+        raise _history_unavailable()
+    return value
 
 
 def _node_names(

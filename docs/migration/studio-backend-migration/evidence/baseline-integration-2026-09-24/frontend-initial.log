@@ -1,0 +1,1356 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/studio-baseline-integration/autoflow/apps/desktop
+
+(node:4084) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:4081) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:4082) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:4083) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/lib/__tests__/helpers/addNodeDefaults.test.ts (15 tests | 1 failed) 11ms
+     × 逐字段分布与共用基线一致（只比总数会漏掉互相抵消的偏差） 5ms
+ ❯ src/renderer/domains/workflows/tests/documentation-loading.test.ts (18 tests | 1 failed) 188ms
+   × removes unsupported features from every searchable and downloadable teaching article 78ms
+(node:4278) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:4426) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5033) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx (326 tests | 16 failed) 8846ms
+   × 'NODE.ai_generate_image.tool.VariableI…' mounts and commits through its actual ConfigPanel consumer 28ms
+   × 'NODE.ai_generate_video.tool.VariableI…' mounts and commits through its actual ConfigPanel consumer 17ms
+   × 'NODE.notify_discord.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer 10ms
+   × 'NODE.notify_dingtalk.tool.VariableInp…' mounts and commits through its actual ConfigPanel consumer 9ms
+   × 'NODE.notify_wecom.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer 12ms
+   × 'NODE.notify_bark.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer 9ms
+   × 'NODE.notify_slack.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer 12ms
+   × 'NODE.notify_msteams.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer 9ms
+   × 'NODE.notify_pushover.tool.VariableInp…' mounts and commits through its actual ConfigPanel consumer 8ms
+   × 'NODE.notify_pushbullet.tool.VariableI…' mounts and commits through its actual ConfigPanel consumer 8ms
+   × 'NODE.notify_gotify.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer 12ms
+   × 'NODE.notify_serverchan.tool.VariableI…' mounts and commits through its actual ConfigPanel consumer 10ms
+   × 'NODE.notify_pushplus.tool.VariableInp…' mounts and commits through its actual ConfigPanel consumer 10ms
+   × 'NODE.notify_ntfy.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer 13ms
+   × 'NODE.notify_matrix.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer 9ms
+   × 'NODE.notify_rocketchat.tool.VariableI…' mounts and commits through its actual ConfigPanel consumer 8ms
+(node:6985) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:6986) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:6988) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:7914) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:8011) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:10279) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:11330) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:11345) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:11346) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:11352) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:11633) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:11952) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:12316) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:13664) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:15758) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:16095) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:16173) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:16179) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:17147) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:19244) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:19589) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:20102) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:20556) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:20557) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:20871) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:21343) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:21389) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:21516) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22457) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22479) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22484) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22486) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22993) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22992) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:23613) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:23770) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:23907) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:25157) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:25282) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:25588) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:26485) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:26957) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:27276) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:27331) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:27531) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:29069) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:29088) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:29102) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:29227) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:29952) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:30135) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:30319) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:32340) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:32790) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:33058) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:33226) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:33289) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:33290) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:34178) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:34390) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:34665) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:34684) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:35462) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:35473) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:35534) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:35614) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:35943) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:36294) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:36677) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:36760) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:36874) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/settings-assistant-close.test.tsx (9 tests | 1 failed) 1391ms
+   × AI close waits for 保存后继续 before reporting its result 131ms
+(node:37153) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:37353) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:37697) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:37816) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:37911) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:38022) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:38023) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:38024) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:38029) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:38031) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:38032) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:38064) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:38708) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:38994) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:39293) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:39411) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:39414) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:39415) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:39416) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:39650) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:39848) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:39881) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:39884) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:39885) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:39886) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:39887) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:40139) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:40588) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:40663) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:40810) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:40811) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:40812) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:40814) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:40815) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:41244) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:41278) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:41340) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:41432) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:41712) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:41743) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:41744) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:41745) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:41746) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:41750) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:42701) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:42759) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:43153) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:43154) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:43156) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:43163) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:43615) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:43695) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:43764) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:44636) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45013) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45019) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45021) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45391) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45879) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45940) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45947) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45954) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45955) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45959) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45960) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45964) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45968) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45970) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45971) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45976) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45977) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45985) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:46245) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:46238) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:46426) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:46589) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:46748) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:46800) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:46924) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:46934) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:46935) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:46974) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:46976) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:46979) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:46982) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:46984) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:46985) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:46986) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:46987) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:46991) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:47115) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:47309) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:47319) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:47424) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:47902) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:47929) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:47937) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:48052) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:48120) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:48193) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:48576) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:48617) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:48802) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:48976) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:49332) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:49344) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:49349) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:49351) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:49352) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:49354) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:49394) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:49451) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:49486) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:49614) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:49825) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:49828) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:49837) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:49836) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:49838) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:49905) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:50278) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:50730) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:50761) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:50764) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:50848) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:51137) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:51222) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:51223) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:51249) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:51250) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:51392) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:51431) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:51824) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:51849) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:51950) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:52576) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/main/index.test.ts (10 tests | 3 failed) 462ms
+   × switches workspace only after Studio acknowledgement and recreates its isolated window 25ms
+   × keeps Studio alive when the main window closes and permits reuse from its replacement 12ms
+   × uses the same renderer storage partition for aliases of the same workspace 5ms
+(node:52669) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:52680) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:52683) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:52685) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:52694) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:52695) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:52822) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:52931) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:53375) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:53849) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:53875) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:54097) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:54098) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:54126) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:54325) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:54376) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:54475) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:54560) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:54562) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:54564) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:54565) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:54611) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:54701) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:54963) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:55033) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:55036) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:55037) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:55038) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:55039) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:55041) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:55042) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:55045) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:55157) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:55179) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:55524) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:55593) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:55596) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:55674) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:55991) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56002) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56056) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56058) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56060) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56061) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56062) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56063) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56064) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56065) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56068) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56069) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56112) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56207) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56263) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56405) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56538) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56539) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56540) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56541) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56542) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56543) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56546) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56547) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56551) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56549) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56550) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56553) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56554) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56555) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56582) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56816) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56873) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56917) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:56934) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:57027) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:57076) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:57091) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:57113) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:57378) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:57411) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:57444) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:57506) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:57507) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:57511) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:57512) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:57513) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:57664) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:57702) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:57765) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:57792) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:57992) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:57996) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:58000) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:58003) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:58005) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:58011) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:58023) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:58024) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:58025) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:58029) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:58026) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:58027) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:58028) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:58030) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:58033) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:58032) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:58034) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:58389) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:58280) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:58423) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:58607) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:58708) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:59336) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:59412) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:59205) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:59392) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:59396) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:59427) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:59424) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:59428) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:59476) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:59537) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:59745) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:59802) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:59886) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:59889) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:59890) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:59891) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:59892) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:59893) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:59894) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:59897) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:59930) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:59966) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:60009) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:60186) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:60273) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:60382) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:60434) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:60708) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:60722) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:60776) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:60798) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:60911) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:60898) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:61047) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:61016) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:61171) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:61248) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:61313) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:61305) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:61318) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:61317) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:61319) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:61320) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:61322) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:61364) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:61467) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:61493) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:61490) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:61602) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:61705) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:61762) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:61804) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:61882) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62063) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62084) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62119) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62144) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62410) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62490) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62501) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62606) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62668) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62736) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62737) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62745) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62742) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62743) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62746) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62744) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62747) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62748) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62749) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62750) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62751) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62752) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62753) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62755) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62769) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62853) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62923) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:63002) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:63015) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:63101) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:63164) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:63392) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:63221) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:63237) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:63313) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:63455) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:63480) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:63579) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:63646) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:63685) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:63689) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:63957) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:63766) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:63874) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:63949) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:64044) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:64061) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:64206) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:64164) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:64195) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:64205) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:64213) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:64214) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 22 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/index.test.ts > switches workspace only after Studio acknowledgement and recreates its isolated window
+AssertionError: expected { ok: false, error: { …(2) } } to match object { ok: true }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
++   "ok": false,
+  }
+
+ ❯ src/main/index.test.ts:114:77
+    112|   const studio = await openStudio()
+    113|   answerLeave(studio)
+    114|   await expect(invoke('autoflow:settings:confirm-workspace', main, 'ch…
+       |                                                                             ^
+    115|   expect(settings.confirmWorkspace).toHaveBeenCalledWith('choice')
+    116|   expect(main.webContents.send).toHaveBeenLastCalledWith('autoflow:run…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/22]⎯
+
+ FAIL  src/main/index.test.ts > keeps Studio alive when the main window closes and permits reuse from its replacement
+TypeError: window.hide is not a function
+ ❯ retainMainWindowForStudio src/main/ipc/automation-studio.ts:200:10
+    198|   if (studioSenderId === undefined || quitting) return
+    199|   event.preventDefault()
+    200|   window.hide()
+       |          ^
+    201| }
+    202|
+ ❯ FakeWindow.<anonymous> src/main/index.ts:190:36
+ ❯ FakeWindow.close src/main/index.test.ts:22:222
+ ❯ src/main/index.test.ts:175:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/22]⎯
+
+ FAIL  src/main/index.test.ts > uses the same renderer storage partition for aliases of the same workspace
+TypeError: mainWindow.isVisible is not a function
+ ❯ Object.onClosed src/main/index.ts:49:95
+     47| const studio = new StudioWindowController({
+     48|   onInvalidated: () => studioHotkeys?.clear(),
+     49|   onClosed: () => { if (!isQuitting && mainWindow && !mainWindow.isDes…
+       |                                                                                               ^
+     50|   mainSenderId: () => mainWindow?.webContents.id,
+     51|   workspacePartition:()=>{
+ ❯ FakeWindow.<anonymous> src/main/ipc/automation-studio.ts:84:20
+ ❯ FakeWindow.destroy src/main/index.test.ts:21:43
+ ❯ src/main/index.test.ts:208:8
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/22]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/documentation-loading.test.ts > removes unsupported features from every searchable and downloadable teaching article
+AssertionError: notify-guide: notify_discord: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/documentation-loading.test.ts:54:93
+     52|     expect(content, id).not.toMatch(/读取Excel|Excel自动处理|QQ自动化|微信自动化|飞书配…
+     53|     const identifiers = new Set(content.match(/\b[a-z]+(?:_[a-z0-9]+)+…
+     54|     for (const type of excludedModuleTypes) expect(identifiers.has(typ…
+       |                                                                                             ^
+     55|     for (const link of content.matchAll(/\]\(([a-z][a-z-]+)\)/g)) {
+     56|       expect(ids.has(link[1]), `${id}: broken link ${link[1]}`).toBe(t…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/22]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/settings-assistant-close.test.tsx > AI close waits for 保存后继续 before reporting its result
+TestingLibraryElementError: Unable to find an element with the placeholder text of: 如：我的邮箱
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+  [36m<div[39m
+    [33mclass[39m=[32m"fixed inset-0 bg-[hsl(217_45%_15%_/_0.55)] backdrop-blur-[3px] flex items-center justify-center p-4 animate-fade-in"[39m
+    [33mdata-testid[39m=[32m"global-config-backdrop"[39m
+    [33mstyle[39m=[32m"z-index: 2147483646;"[39m
+  [36m>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"modern-dialog w-full max-w-4xl flex flex-col animate-scale-in-bounce"[39m
+      [33mstyle[39m=[32m"max-height: calc(100vh - 32px);"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"modern-dialog-header"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"modern-dialog-header-icon"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-settings w-5 h-5"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2.2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"[39m
+            [36m/>[39m
+            [36m<circle[39m
+              [33mcx[39m=[32m"12"[39m
+              [33mcy[39m=[32m"12"[39m
+              [33mr[39m=[32m"3"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex-1"[39m
+        [36m>[39m
+          [36m<h3[39m
+            [33mclass[39m=[32m"modern-dialog-title"[39m
+          [36m>[39m
+            [0m全局默认配置[0m
+          [36m</h3>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"modern-dialog-subtitle"[39m
+          [36m>[39m
+            [0m在这里调整 WebRPA 的工作行为与默认参数[0m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<button[39m
+          [33maria-label[39m=[32m"关闭全局配置"[39m
+          [33mclass[39m=[32m"p-1.5 rounded-[7px] text-[hsl(var(--slate-500))] hover:bg-[hsl(var(--danger-50))] hover:text-[hsl(var(--danger-600))] hover:border-[hsl(var(--danger-500)/0.3)] border border-transparent transition-all duration-150 active:scale-90"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-x w-4 h-4"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M18 6 6 18"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m6 6 12 12"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-1 min-h-0"[39m
+      [36m>[39m
+        [36m<nav[39m
+          [33mclass[39m=[32m"w-44 flex-shrink-0 border-r border-[hsl(var(--border))] bg-[hsl(var(--slate-50)/0.5)] overflow-y-auto p-2 space-y-0.5"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[8px] text-[12.5px] font-medium transition-[background-color,color,border-color,box-shadow] duration-150 ease-out border !bg-transparent !text-[hsl(var(--slate-700))] !border-transparent hover:!bg-[hsl(var(--card))] hover:!text-[hsl(var(--brand-700))] hover:!border-[hsl(var(--border))] hover:shadow-xs"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"icon-chip icon-chip-brand !w-7 !h-7"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-settings w-3.5 h-3.5"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"[39m
+                [36m/>[39m
+                [36m<circle[39m
+                  [33mcx[39m=[32m"12"[39m
+                  [33mcy[39m=[32m"12"[39m
+                  [33mr[39m=[32m"3"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</span>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"flex-1 text-left "[39m
+            [36m>[39m
+              [0m系统[0m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[8px] text-[12.5px] font-medium transition-[background-color,color,border-color,box-shadow] duration-150 ease-out border !bg-transparent !text-[hsl(var(--slate-700))] !border-transparent hover:!bg-[hsl(var(--card))] hover:!text-[hsl(var(--brand-700))] hover:!border-[hsl(var(--border))] hover:shadow-xs"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"icon-chip icon-chip-violet !w-7 !h-7"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-brain w-3.5 h-3.5"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33m...
+ ❯ Object.getElementError ../../../../../../Documents/projects/autoflow/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../../../../../Documents/projects/autoflow/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../../../../../Documents/projects/autoflow/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../../../../../Documents/projects/autoflow/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ edit src/renderer/domains/workflows/tests/settings-assistant-close.test.tsx:20:27
+     18|   fireEvent.click(screen.getByRole('button', { name: '凭据库' }))
+     19|   fireEvent.click(await screen.findByRole('button', { name: '新增凭据' }))
+     20|   fireEvent.change(screen.getByPlaceholderText('如：我的邮箱'), { target: { …
+       |                           ^
+     21| }
+     22| it.each(['取消','放弃修改','保存后继续'])('AI close waits for %s before reporting…
+ ❯ src/renderer/domains/workflows/tests/settings-assistant-close.test.tsx:23:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/22]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.ai_generate_image.tool.VariableI…' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.ai_generate_image.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   const managedModel = tool === 'VariableInput' && ['ai_generate_image…
+     71|   if (managedModel) vi.spyOn(modelApi, 'listOptions').mockResolvedValu…
+     72|     items: [{ id: 'model-test', providerId: 'provider-test', providerN…
+       |                                                                   ^
+     73|   } })
+     74|   store.getState().addNode(type, { x: 0, y: 0 }, entrySetup[id])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/22]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.ai_generate_video.tool.VariableI…' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.ai_generate_video.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   const managedModel = tool === 'VariableInput' && ['ai_generate_image…
+     71|   if (managedModel) vi.spyOn(modelApi, 'listOptions').mockResolvedValu…
+     72|     items: [{ id: 'model-test', providerId: 'provider-test', providerN…
+       |                                                                   ^
+     73|   } })
+     74|   store.getState().addNode(type, { x: 0, y: 0 }, entrySetup[id])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/22]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.notify_discord.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.notify_discord.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   const managedModel = tool === 'VariableInput' && ['ai_generate_image…
+     71|   if (managedModel) vi.spyOn(modelApi, 'listOptions').mockResolvedValu…
+     72|     items: [{ id: 'model-test', providerId: 'provider-test', providerN…
+       |                                                                   ^
+     73|   } })
+     74|   store.getState().addNode(type, { x: 0, y: 0 }, entrySetup[id])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/22]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.notify_dingtalk.tool.VariableInp…' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.notify_dingtalk.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   const managedModel = tool === 'VariableInput' && ['ai_generate_image…
+     71|   if (managedModel) vi.spyOn(modelApi, 'listOptions').mockResolvedValu…
+     72|     items: [{ id: 'model-test', providerId: 'provider-test', providerN…
+       |                                                                   ^
+     73|   } })
+     74|   store.getState().addNode(type, { x: 0, y: 0 }, entrySetup[id])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/22]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.notify_wecom.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.notify_wecom.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   const managedModel = tool === 'VariableInput' && ['ai_generate_image…
+     71|   if (managedModel) vi.spyOn(modelApi, 'listOptions').mockResolvedValu…
+     72|     items: [{ id: 'model-test', providerId: 'provider-test', providerN…
+       |                                                                   ^
+     73|   } })
+     74|   store.getState().addNode(type, { x: 0, y: 0 }, entrySetup[id])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/22]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.notify_bark.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.notify_bark.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   const managedModel = tool === 'VariableInput' && ['ai_generate_image…
+     71|   if (managedModel) vi.spyOn(modelApi, 'listOptions').mockResolvedValu…
+     72|     items: [{ id: 'model-test', providerId: 'provider-test', providerN…
+       |                                                                   ^
+     73|   } })
+     74|   store.getState().addNode(type, { x: 0, y: 0 }, entrySetup[id])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/22]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.notify_slack.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.notify_slack.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   const managedModel = tool === 'VariableInput' && ['ai_generate_image…
+     71|   if (managedModel) vi.spyOn(modelApi, 'listOptions').mockResolvedValu…
+     72|     items: [{ id: 'model-test', providerId: 'provider-test', providerN…
+       |                                                                   ^
+     73|   } })
+     74|   store.getState().addNode(type, { x: 0, y: 0 }, entrySetup[id])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/22]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.notify_msteams.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.notify_msteams.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   const managedModel = tool === 'VariableInput' && ['ai_generate_image…
+     71|   if (managedModel) vi.spyOn(modelApi, 'listOptions').mockResolvedValu…
+     72|     items: [{ id: 'model-test', providerId: 'provider-test', providerN…
+       |                                                                   ^
+     73|   } })
+     74|   store.getState().addNode(type, { x: 0, y: 0 }, entrySetup[id])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/22]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.notify_pushover.tool.VariableInp…' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.notify_pushover.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   const managedModel = tool === 'VariableInput' && ['ai_generate_image…
+     71|   if (managedModel) vi.spyOn(modelApi, 'listOptions').mockResolvedValu…
+     72|     items: [{ id: 'model-test', providerId: 'provider-test', providerN…
+       |                                                                   ^
+     73|   } })
+     74|   store.getState().addNode(type, { x: 0, y: 0 }, entrySetup[id])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/22]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.notify_pushbullet.tool.VariableI…' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.notify_pushbullet.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   const managedModel = tool === 'VariableInput' && ['ai_generate_image…
+     71|   if (managedModel) vi.spyOn(modelApi, 'listOptions').mockResolvedValu…
+     72|     items: [{ id: 'model-test', providerId: 'provider-test', providerN…
+       |                                                                   ^
+     73|   } })
+     74|   store.getState().addNode(type, { x: 0, y: 0 }, entrySetup[id])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/22]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.notify_gotify.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.notify_gotify.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   const managedModel = tool === 'VariableInput' && ['ai_generate_image…
+     71|   if (managedModel) vi.spyOn(modelApi, 'listOptions').mockResolvedValu…
+     72|     items: [{ id: 'model-test', providerId: 'provider-test', providerN…
+       |                                                                   ^
+     73|   } })
+     74|   store.getState().addNode(type, { x: 0, y: 0 }, entrySetup[id])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/22]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.notify_serverchan.tool.VariableI…' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.notify_serverchan.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   const managedModel = tool === 'VariableInput' && ['ai_generate_image…
+     71|   if (managedModel) vi.spyOn(modelApi, 'listOptions').mockResolvedValu…
+     72|     items: [{ id: 'model-test', providerId: 'provider-test', providerN…
+       |                                                                   ^
+     73|   } })
+     74|   store.getState().addNode(type, { x: 0, y: 0 }, entrySetup[id])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/22]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.notify_pushplus.tool.VariableInp…' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.notify_pushplus.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   const managedModel = tool === 'VariableInput' && ['ai_generate_image…
+     71|   if (managedModel) vi.spyOn(modelApi, 'listOptions').mockResolvedValu…
+     72|     items: [{ id: 'model-test', providerId: 'provider-test', providerN…
+       |                                                                   ^
+     73|   } })
+     74|   store.getState().addNode(type, { x: 0, y: 0 }, entrySetup[id])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/22]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.notify_ntfy.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.notify_ntfy.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   const managedModel = tool === 'VariableInput' && ['ai_generate_image…
+     71|   if (managedModel) vi.spyOn(modelApi, 'listOptions').mockResolvedValu…
+     72|     items: [{ id: 'model-test', providerId: 'provider-test', providerN…
+       |                                                                   ^
+     73|   } })
+     74|   store.getState().addNode(type, { x: 0, y: 0 }, entrySetup[id])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/22]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.notify_matrix.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.notify_matrix.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   const managedModel = tool === 'VariableInput' && ['ai_generate_image…
+     71|   if (managedModel) vi.spyOn(modelApi, 'listOptions').mockResolvedValu…
+     72|     items: [{ id: 'model-test', providerId: 'provider-test', providerN…
+       |                                                                   ^
+     73|   } })
+     74|   store.getState().addNode(type, { x: 0, y: 0 }, entrySetup[id])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/22]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.notify_rocketchat.tool.VariableI…' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.notify_rocketchat.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   const managedModel = tool === 'VariableInput' && ['ai_generate_image…
+     71|   if (managedModel) vi.spyOn(modelApi, 'listOptions').mockResolvedValu…
+     72|     items: [{ id: 'model-test', providerId: 'provider-test', providerN…
+       |                                                                   ^
+     73|   } })
+     74|   store.getState().addNode(type, { x: 0, y: 0 }, entrySetup[id])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/22]⎯
+
+ FAIL  src/renderer/domains/workflows/lib/__tests__/helpers/addNodeDefaults.test.ts > addNode 默认变量字段提取器 > 逐字段分布与共用基线一致（只比总数会漏掉互相抵消的偏差）
+AssertionError: expected { variableName: 16, …(8) } to deeply equal { resultVariable: 115, …(8) }
+
+- Expected
++ Received
+
+  {
+    "appVariable": 15,
+    "controlVariable": 14,
+    "indexVariable": 2,
+    "itemVariable": 1,
+-   "resultVariable": 115,
++   "resultVariable": 114,
+    "saveChangeInfo": 1,
+    "saveNewElementSelector": 1,
+    "saveToVariable": 24,
+-   "variableName": 15,
++   "variableName": 16,
+  }
+
+ ❯ src/renderer/domains/workflows/lib/__tests__/helpers/addNodeDefaults.test.ts:89:20
+     87|     const actual: Record<string, number> = {}
+     88|     for (const f of VAR_FIELDS) actual[f.field] = (actual[f.field] ?? …
+     89|     expect(actual).toEqual(BASELINE.fieldDistribution)
+       |                    ^
+     90|   })
+     91|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/22]⎯
+
+
+ Test Files  5 failed | 426 passed (431)
+      Tests  22 failed | 5627 passed (5649)
+   Start at  11:51:22
+   Duration  268.38s (transform 15.42s, setup 18.22s, import 373.26s, tests 408.75s, environment 215.57s)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/.codex/worktrees/studio-baseline-integration/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/.codex/worktrees/studio-baseline-integration/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run

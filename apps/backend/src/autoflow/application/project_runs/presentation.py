@@ -11,7 +11,22 @@ def prepared_node_names(prepared: PreparedContent | None) -> dict[str, str]:
         return {}
     result: dict[str, str] = {}
     catalog = {item["moduleType"]: item["title"] for item in node_catalog()}
-    for item in prepared.execution_plan.get("nodes", ()):
+    items = list(prepared.execution_plan.get("nodes", ()))
+    for snapshot in prepared.execution_plan.get("customModuleDependencies", {}).values():
+        if isinstance(snapshot, Mapping) and isinstance(snapshot.get("workflow"), Mapping):
+            items.extend(
+                {"nodeId": node.get("id"), "data": node.get("data")}
+                for node in snapshot["workflow"].get("nodes", ())
+                if isinstance(node, Mapping)
+            )
+    for snapshot in prepared.execution_plan.get("workflowDependencies", {}).values():
+        if isinstance(snapshot, Mapping):
+            items.extend(
+                {"nodeId": node.get("id"), "data": node.get("data")}
+                for node in snapshot.get("nodes", ())
+                if isinstance(node, Mapping)
+            )
+    for item in items:
         if not isinstance(item, Mapping):
             continue
         node_id, data = item.get("nodeId"), item.get("data")

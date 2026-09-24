@@ -26,19 +26,34 @@ def real_cloak_page():
         pytest.skip('set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable')
     executable = Path(configured).resolve(strict=True)
     page = Path(__file__).parents[1] / 'fixtures' / 'project-management' / 'index.html'
+    network_page = Path(__file__).parents[1] / 'fixtures' / 'workflow-project-network-monitor.html'
     requests = []
 
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self):
             requests.append(self.path)
-            content = page.read_bytes()
+            if self.path == '/crawl/unavailable':
+                self.close_connection = True
+                return
+            if self.path.startswith('/api/orders'):
+                content, content_type = b'{"ok":true}', 'application/json'
+            elif self.path == '/sitemap.xml':
+                content = f'<urlset><url><loc>http://127.0.0.1:{self.server.server_port}/crawl/from-map</loc></url></urlset>'.encode()
+                content_type = 'application/xml'
+            elif self.path.startswith('/crawl/'):
+                content = (page.parents[1] / 'workflow-project-crawl.html').read_bytes()
+                content_type = 'text/html; charset=utf-8'
+            elif self.path.startswith('/network-monitor'):
+                content, content_type = network_page.read_bytes(), 'text/html; charset=utf-8'
+            else:
+                content, content_type = page.read_bytes(), 'text/html; charset=utf-8'
             if self.path == '/account':
                 signed_in = 'pm9-login=verified' in self.headers.get('Cookie', '')
                 content = f'<output id=auth>{"signed-in" if signed_in else "signed-out"}</output>'.encode()
             self.send_response(200)
             if self.path == '/login':
                 self.send_header('Set-Cookie', 'pm9-login=verified; Path=/; HttpOnly; Max-Age=3600; SameSite=Lax')
-            self.send_header('Content-Type', 'text/html; charset=utf-8')
+            self.send_header('Content-Type', content_type)
             self.send_header('Content-Length', str(len(content)))
             self.end_headers()
             self.wfile.write(content)

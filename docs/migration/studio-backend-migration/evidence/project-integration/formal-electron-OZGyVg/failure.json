@@ -1,0 +1,680 @@
+{
+  "checkedAt": "2026-09-23T07:27:57.981Z",
+  "checks": [
+    "主应用真实服务在临时工作区创建 CloakBrowser Profile",
+    "正式项目 UI 新建项目，由项目自动化目录进入 Studio",
+    "Studio 自动采用项目默认 Profile，确认为全局列表第二项",
+    "真实键盘选择其他 Profile，刷新仍保留显式覆盖",
+    "自动化浏览器使用同一显式 Profile，真实启动并清理后再编排运行",
+    "主窗口通过真实点击打开正式 Studio，Studio 只读取主应用 Profile",
+    "通过正式新建入口创建空工作流",
+    "通过画布原生右键菜单逐一添加并配置五个节点，没有直接修改 Store",
+    "通过画布连接手柄建立五节点顺序链",
+    "正式保存经真实 HTTP 写入 SQLite，返回修订 1",
+    "通过 macOS 原生窗口关闭按钮触发正常关窗离开协调；取消后窗口、草稿和已保存修订均保持不变",
+    "再次正常关闭并选择保存后继续；保存成功后窗口才关闭，SQLite 修订递增",
+    "正常关闭并重开正式窗口后，从 SQLite 恢复名称、节点、配置和连线",
+    "正式 UI 启动真实 CloakBrowser：输入、首个匹配点击、提取值、PNG 与终态均已持久化",
+    "运行终态后 CloakBrowser 进程树和临时会话均已清理",
+    "真实 Debug 在无效选择器失败后保留可见 CloakBrowser、变量和失败节点，继续与单步入口不可用",
+    "结束失败调试后保持 failed 终态和原失败节点；浏览器、worker 与运行占用完成清理"
+  ],
+  "observedEvents": [
+    {
+      "id": 1,
+      "name": "execution:started",
+      "data": {
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "runId": "3bae75a1-ff3d-4c2a-b389-baeccdf536a8",
+        "documentId": "cuvuFBFx7MXmmojHB0PsX"
+      }
+    },
+    {
+      "id": 2,
+      "name": "execution:node_start",
+      "data": {
+        "runId": "3bae75a1-ff3d-4c2a-b389-baeccdf536a8",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "nodeId": "UUieUvwUTFzaOU_4S788G",
+        "executionId": "18cd14db-0750-4001-b384-3ff0018add22",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "sequence": 2
+      }
+    },
+    {
+      "id": 3,
+      "name": "execution:node_complete",
+      "data": {
+        "runId": "3bae75a1-ff3d-4c2a-b389-baeccdf536a8",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "nodeId": "UUieUvwUTFzaOU_4S788G",
+        "executionId": "18cd14db-0750-4001-b384-3ff0018add22",
+        "success": true,
+        "sequence": 3,
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        }
+      }
+    },
+    {
+      "id": 4,
+      "name": "execution:log",
+      "data": {
+        "runId": "3bae75a1-ff3d-4c2a-b389-baeccdf536a8",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "log": {
+          "sequence": 4,
+          "id": "3bae75a1-ff3d-4c2a-b389-baeccdf536a8-4",
+          "timestamp": "2026-09-23T07:26:56.670715+00:00",
+          "level": "success",
+          "message": "已打开网页: [已隐藏的URL]",
+          "isUserLog": false,
+          "isSystemLog": false,
+          "duration": 499.3785420083441,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "nodeId": "UUieUvwUTFzaOU_4S788G",
+          "executionId": "18cd14db-0750-4001-b384-3ff0018add22"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "name": "execution:node_start",
+      "data": {
+        "runId": "3bae75a1-ff3d-4c2a-b389-baeccdf536a8",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "nodeId": "TCnA9HAfHA9ZVhgwxyQMJ",
+        "executionId": "8f4099c2-ef83-496b-ae3a-be5f70ac0ed6",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "sequence": 5
+      }
+    },
+    {
+      "id": 6,
+      "name": "execution:node_complete",
+      "data": {
+        "runId": "3bae75a1-ff3d-4c2a-b389-baeccdf536a8",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "nodeId": "TCnA9HAfHA9ZVhgwxyQMJ",
+        "executionId": "8f4099c2-ef83-496b-ae3a-be5f70ac0ed6",
+        "success": true,
+        "sequence": 6,
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        }
+      }
+    },
+    {
+      "id": 7,
+      "name": "execution:log",
+      "data": {
+        "runId": "3bae75a1-ff3d-4c2a-b389-baeccdf536a8",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "log": {
+          "sequence": 7,
+          "id": "3bae75a1-ff3d-4c2a-b389-baeccdf536a8-7",
+          "timestamp": "2026-09-23T07:26:57.143454+00:00",
+          "level": "success",
+          "message": "已输入文本到: #workflow-input",
+          "isUserLog": false,
+          "isSystemLog": false,
+          "duration": 562.6474169548601,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "nodeId": "TCnA9HAfHA9ZVhgwxyQMJ",
+          "executionId": "8f4099c2-ef83-496b-ae3a-be5f70ac0ed6"
+        }
+      }
+    },
+    {
+      "id": 8,
+      "name": "execution:node_start",
+      "data": {
+        "runId": "3bae75a1-ff3d-4c2a-b389-baeccdf536a8",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "nodeId": "XtYWJG22mEY1-MBqU8Mnp",
+        "executionId": "ff15510b-6896-44bd-8541-f14fbcb2ffed",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "sequence": 8
+      }
+    },
+    {
+      "id": 9,
+      "name": "execution:node_complete",
+      "data": {
+        "runId": "3bae75a1-ff3d-4c2a-b389-baeccdf536a8",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "nodeId": "XtYWJG22mEY1-MBqU8Mnp",
+        "executionId": "ff15510b-6896-44bd-8541-f14fbcb2ffed",
+        "success": true,
+        "sequence": 9,
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        }
+      }
+    },
+    {
+      "id": 10,
+      "name": "execution:log",
+      "data": {
+        "runId": "3bae75a1-ff3d-4c2a-b389-baeccdf536a8",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "log": {
+          "sequence": 10,
+          "id": "3bae75a1-ff3d-4c2a-b389-baeccdf536a8-10",
+          "timestamp": "2026-09-23T07:26:57.247098+00:00",
+          "level": "success",
+          "message": "已点击元素: .workflow-action",
+          "isUserLog": false,
+          "isSystemLog": false,
+          "duration": 103.16762502770871,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "nodeId": "XtYWJG22mEY1-MBqU8Mnp",
+          "executionId": "ff15510b-6896-44bd-8541-f14fbcb2ffed"
+        }
+      }
+    },
+    {
+      "id": 11,
+      "name": "execution:node_start",
+      "data": {
+        "runId": "3bae75a1-ff3d-4c2a-b389-baeccdf536a8",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "nodeId": "LShebd6tqNb-MB1N2dyMp",
+        "executionId": "d65bb29b-7cff-4482-9077-98aaa7811f5e",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "sequence": 11
+      }
+    },
+    {
+      "id": 12,
+      "name": "execution:node_complete",
+      "data": {
+        "runId": "3bae75a1-ff3d-4c2a-b389-baeccdf536a8",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "nodeId": "LShebd6tqNb-MB1N2dyMp",
+        "executionId": "d65bb29b-7cff-4482-9077-98aaa7811f5e",
+        "success": true,
+        "sequence": 12,
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        }
+      }
+    },
+    {
+      "id": 13,
+      "name": "execution:log",
+      "data": {
+        "runId": "3bae75a1-ff3d-4c2a-b389-baeccdf536a8",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "log": {
+          "sequence": 13,
+          "id": "3bae75a1-ff3d-4c2a-b389-baeccdf536a8-13",
+          "timestamp": "2026-09-23T07:26:57.300565+00:00",
+          "level": "success",
+          "message": "已获取元素信息: 真实 CloakBrowser 五节点",
+          "isUserLog": false,
+          "isSystemLog": false,
+          "duration": 47.9193750070408,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "nodeId": "LShebd6tqNb-MB1N2dyMp",
+          "executionId": "d65bb29b-7cff-4482-9077-98aaa7811f5e"
+        }
+      }
+    },
+    {
+      "id": 14,
+      "name": "execution:node_start",
+      "data": {
+        "runId": "3bae75a1-ff3d-4c2a-b389-baeccdf536a8",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "nodeId": "AbYpInepWfcHAoUROAFoo",
+        "executionId": "d2e4283d-f612-4137-a5f6-da6a7669d710",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "sequence": 14
+      }
+    },
+    {
+      "id": 15,
+      "name": "execution:node_complete",
+      "data": {
+        "runId": "3bae75a1-ff3d-4c2a-b389-baeccdf536a8",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "nodeId": "AbYpInepWfcHAoUROAFoo",
+        "executionId": "d2e4283d-f612-4137-a5f6-da6a7669d710",
+        "success": true,
+        "sequence": 15,
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        }
+      }
+    },
+    {
+      "id": 16,
+      "name": "execution:log",
+      "data": {
+        "runId": "3bae75a1-ff3d-4c2a-b389-baeccdf536a8",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "log": {
+          "sequence": 16,
+          "id": "3bae75a1-ff3d-4c2a-b389-baeccdf536a8-16",
+          "timestamp": "2026-09-23T07:26:57.404811+00:00",
+          "level": "success",
+          "message": "已保存截图: /private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-studio-b1-01lG7e/workspace/runs/3bae75a1-ff3d-4c2a-b389-baeccdf536a8/artifacts/screenshot_20260923_072657.png",
+          "isUserLog": false,
+          "isSystemLog": false,
+          "duration": 92.50304196029902,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "nodeId": "AbYpInepWfcHAoUROAFoo",
+          "executionId": "d2e4283d-f612-4137-a5f6-da6a7669d710"
+        }
+      }
+    },
+    {
+      "id": 17,
+      "name": "execution:completed",
+      "data": {
+        "runId": "3bae75a1-ff3d-4c2a-b389-baeccdf536a8",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "result": {
+          "status": "completed",
+          "executedNodes": 5,
+          "failedNodes": 0
+        }
+      }
+    },
+    {
+      "id": 18,
+      "name": "execution:started",
+      "data": {
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "runId": "2b337844-98df-4018-919a-d28f5e8160b1",
+        "documentId": "cuvuFBFx7MXmmojHB0PsX"
+      }
+    },
+    {
+      "id": 19,
+      "name": "execution:variable_changed",
+      "data": {
+        "runId": "2b337844-98df-4018-919a-d28f5e8160b1",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "nodeId": "__start__",
+        "executionId": "2b337844-98df-4018-919a-d28f5e8160b1:initial",
+        "variable_name": "element_value",
+        "old_value": null,
+        "new_value": null,
+        "node_name": "流程初值",
+        "operation": "create",
+        "value_type": "null",
+        "sequence": 2
+      }
+    },
+    {
+      "id": 20,
+      "name": "execution:variable_changed",
+      "data": {
+        "runId": "2b337844-98df-4018-919a-d28f5e8160b1",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "nodeId": "__start__",
+        "executionId": "2b337844-98df-4018-919a-d28f5e8160b1:initial",
+        "variable_name": "screenshot_path",
+        "old_value": null,
+        "new_value": null,
+        "node_name": "流程初值",
+        "operation": "create",
+        "value_type": "null",
+        "sequence": 3
+      }
+    },
+    {
+      "id": 21,
+      "name": "execution:node_start",
+      "data": {
+        "runId": "2b337844-98df-4018-919a-d28f5e8160b1",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "nodeId": "UUieUvwUTFzaOU_4S788G",
+        "executionId": "d3b01bfa-8427-4898-a199-ce0b30138741",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "sequence": 4
+      }
+    },
+    {
+      "id": 22,
+      "name": "execution:node_complete",
+      "data": {
+        "runId": "2b337844-98df-4018-919a-d28f5e8160b1",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "nodeId": "UUieUvwUTFzaOU_4S788G",
+        "executionId": "d3b01bfa-8427-4898-a199-ce0b30138741",
+        "success": true,
+        "sequence": 5,
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        }
+      }
+    },
+    {
+      "id": 23,
+      "name": "execution:log",
+      "data": {
+        "runId": "2b337844-98df-4018-919a-d28f5e8160b1",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "log": {
+          "sequence": 6,
+          "id": "2b337844-98df-4018-919a-d28f5e8160b1-6",
+          "timestamp": "2026-09-23T07:27:29.832014+00:00",
+          "level": "success",
+          "message": "已打开网页: [已隐藏的URL]",
+          "isUserLog": false,
+          "isSystemLog": false,
+          "duration": 800.0425419886597,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "nodeId": "UUieUvwUTFzaOU_4S788G",
+          "executionId": "d3b01bfa-8427-4898-a199-ce0b30138741"
+        }
+      }
+    },
+    {
+      "id": 24,
+      "name": "execution:node_start",
+      "data": {
+        "runId": "2b337844-98df-4018-919a-d28f5e8160b1",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "nodeId": "TCnA9HAfHA9ZVhgwxyQMJ",
+        "executionId": "9da73b7a-da7b-49a5-ad38-f0af5f09365b",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "sequence": 7
+      }
+    },
+    {
+      "id": 25,
+      "name": "execution:node_complete",
+      "data": {
+        "runId": "2b337844-98df-4018-919a-d28f5e8160b1",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "nodeId": "TCnA9HAfHA9ZVhgwxyQMJ",
+        "executionId": "9da73b7a-da7b-49a5-ad38-f0af5f09365b",
+        "success": true,
+        "sequence": 8,
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        }
+      }
+    },
+    {
+      "id": 26,
+      "name": "execution:log",
+      "data": {
+        "runId": "2b337844-98df-4018-919a-d28f5e8160b1",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "log": {
+          "sequence": 9,
+          "id": "2b337844-98df-4018-919a-d28f5e8160b1-9",
+          "timestamp": "2026-09-23T07:27:29.981081+00:00",
+          "level": "success",
+          "message": "已输入文本到: #workflow-input",
+          "isUserLog": false,
+          "isSystemLog": false,
+          "duration": 147.78812503209338,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "nodeId": "TCnA9HAfHA9ZVhgwxyQMJ",
+          "executionId": "9da73b7a-da7b-49a5-ad38-f0af5f09365b"
+        }
+      }
+    },
+    {
+      "id": 27,
+      "name": "execution:paused",
+      "data": {
+        "runId": "2b337844-98df-4018-919a-d28f5e8160b1",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "node_id": "XtYWJG22mEY1-MBqU8Mnp",
+        "label": "点击元素",
+        "pauseId": "13a18515-66df-46f4-b411-e69e9e209c87",
+        "controlRevision": 1,
+        "variables": {
+          "element_value": null,
+          "screenshot_path": null
+        },
+        "variableMeta": {
+          "element_value": {
+            "scope": "workflow",
+            "readOnly": false
+          },
+          "screenshot_path": {
+            "scope": "workflow",
+            "readOnly": false
+          }
+        },
+        "reason": "breakpoint",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "sequence": 10
+      }
+    },
+    {
+      "id": 28,
+      "name": "execution:resumed",
+      "data": {
+        "runId": "2b337844-98df-4018-919a-d28f5e8160b1",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "pauseId": "13a18515-66df-46f4-b411-e69e9e209c87",
+        "controlRevision": 1,
+        "sequence": 11
+      }
+    },
+    {
+      "id": 29,
+      "name": "execution:node_start",
+      "data": {
+        "runId": "2b337844-98df-4018-919a-d28f5e8160b1",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "nodeId": "XtYWJG22mEY1-MBqU8Mnp",
+        "executionId": "6f726853-f64e-4b2a-a6c4-391a09480847",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "sequence": 12
+      }
+    },
+    {
+      "id": 30,
+      "name": "execution:node_complete",
+      "data": {
+        "runId": "2b337844-98df-4018-919a-d28f5e8160b1",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "nodeId": "XtYWJG22mEY1-MBqU8Mnp",
+        "executionId": "6f726853-f64e-4b2a-a6c4-391a09480847",
+        "success": false,
+        "sequence": 13,
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        }
+      }
+    },
+    {
+      "id": 31,
+      "name": "execution:log",
+      "data": {
+        "runId": "2b337844-98df-4018-919a-d28f5e8160b1",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "log": {
+          "sequence": 14,
+          "id": "2b337844-98df-4018-919a-d28f5e8160b1-14",
+          "timestamp": "2026-09-23T07:27:30.256513+00:00",
+          "level": "error",
+          "message": "点击元素失败: : Unexpected token \"\" while parsing css selector \"[\". Did you mean to CSS.escape it?\nCall log:\n  - waiting for [ >> nth=0 to be visible\n",
+          "isUserLog": true,
+          "isSystemLog": false,
+          "duration": 131.95433298824355,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "nodeId": "XtYWJG22mEY1-MBqU8Mnp",
+          "executionId": "6f726853-f64e-4b2a-a6c4-391a09480847"
+        }
+      }
+    },
+    {
+      "id": 32,
+      "name": "execution:failed_paused",
+      "data": {
+        "runId": "2b337844-98df-4018-919a-d28f5e8160b1",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "node_id": "XtYWJG22mEY1-MBqU8Mnp",
+        "label": "XtYWJG22mEY1-MBqU8Mnp",
+        "pauseId": "6a02e88d-599f-4834-9781-814cb5bc99d4",
+        "controlRevision": 2,
+        "variables": {
+          "element_value": null,
+          "screenshot_path": null
+        },
+        "variableMeta": {
+          "element_value": {
+            "scope": "workflow",
+            "readOnly": false
+          },
+          "screenshot_path": {
+            "scope": "workflow",
+            "readOnly": false
+          }
+        },
+        "reason": "failure",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "error": "点击元素失败: : Unexpected token \"\" while parsing css selector \"[\". Did you mean to CSS.escape it?\nCall log:\n  - waiting for [ >> nth=0 to be visible\n",
+        "failedNodeId": "XtYWJG22mEY1-MBqU8Mnp",
+        "executedNodes": 3,
+        "issues": [],
+        "sequence": 15
+      }
+    },
+    {
+      "id": 33,
+      "name": "execution:completed",
+      "data": {
+        "runId": "2b337844-98df-4018-919a-d28f5e8160b1",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "result": {
+          "status": "failed",
+          "executedNodes": 3,
+          "failedNodes": 1
+        }
+      }
+    },
+    {
+      "id": 34,
+      "name": "execution:started",
+      "data": {
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "runId": "b73db24d-fea5-4a30-8d26-569b780dcdb6",
+        "documentId": "cuvuFBFx7MXmmojHB0PsX"
+      }
+    },
+    {
+      "id": 35,
+      "name": "execution:variable_changed",
+      "data": {
+        "runId": "b73db24d-fea5-4a30-8d26-569b780dcdb6",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "nodeId": "__start__",
+        "executionId": "b73db24d-fea5-4a30-8d26-569b780dcdb6:initial",
+        "variable_name": "element_value",
+        "old_value": null,
+        "new_value": null,
+        "node_name": "流程初值",
+        "operation": "create",
+        "value_type": "null",
+        "sequence": 2
+      }
+    },
+    {
+      "id": 36,
+      "name": "execution:variable_changed",
+      "data": {
+        "runId": "b73db24d-fea5-4a30-8d26-569b780dcdb6",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "nodeId": "__start__",
+        "executionId": "b73db24d-fea5-4a30-8d26-569b780dcdb6:initial",
+        "variable_name": "screenshot_path",
+        "old_value": null,
+        "new_value": null,
+        "node_name": "流程初值",
+        "operation": "create",
+        "value_type": "null",
+        "sequence": 3
+      }
+    },
+    {
+      "id": 37,
+      "name": "execution:node_start",
+      "data": {
+        "runId": "b73db24d-fea5-4a30-8d26-569b780dcdb6",
+        "workflowId": "cuvuFBFx7MXmmojHB0PsX",
+        "nodeId": "UUieUvwUTFzaOU_4S788G",
+        "executionId": "9e7e648d-152f-4f4a-bff8-a95d3dcdfcac",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "sequence": 4
+      }
+    }
+  ],
+  "error": "Error: timed out waiting for second active run: null\n    at waitForValue (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b1.mjs:1031:9)\n    at async file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b1.mjs:617:22"
+}

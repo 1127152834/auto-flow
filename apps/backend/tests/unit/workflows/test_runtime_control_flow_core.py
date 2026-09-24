@@ -147,6 +147,65 @@ async def test_parallel_fork_runs_concurrently_and_waits_before_join() -> None:
 
 
 @pytest.mark.asyncio
+async def test_parallel_root_does_not_inherit_sibling_loop_context() -> None:
+    events: list[dict[str, Any]] = []
+    loop_started = asyncio.Event()
+
+    class Sink:
+        async def publish(self, event: dict[str, Any]) -> None:
+            events.append(event)
+
+    async def loop(
+        _self: ModuleExecutor, _config: dict[str, Any], context: ExecutionContext
+    ) -> ModuleResult:
+        state = {"type": "count", "count": 1, "current_index": 0}
+        context.loop_stack.append(state)
+        loop_started.set()
+        return ModuleResult(success=True, data=state)
+
+    async def wait_for_loop(
+        _self: ModuleExecutor, _config: dict[str, Any], _context: ExecutionContext
+    ) -> ModuleResult:
+        await loop_started.wait()
+        return ModuleResult(success=True)
+
+    async def success(
+        _self: ModuleExecutor, _config: dict[str, Any], _context: ExecutionContext
+    ) -> ModuleResult:
+        return ModuleResult(success=True)
+
+    registry = ExecutorRegistry()
+    registry.register(_executor("loop", loop))
+    registry.register(_executor("set_variable", success))
+    registry.register(_executor("string_concat", wait_for_loop))
+    document = {
+        "nodes": [
+            _node("loop", "loop"),
+            _node("body", "set_variable"),
+            _node("parallel", "string_concat"),
+            _node("parallel-tail", "set_variable"),
+        ],
+        "edges": [
+            _edge("body", "loop", "body", "loop"),
+            _edge("parallel-tail", "parallel", "parallel-tail"),
+        ],
+    }
+
+    result = await WorkflowRuntime(registry).execute(
+        document, ExecutionContext(events=Sink())
+    )
+
+    assert result.success is True
+    tail_start = next(
+        event
+        for event in events
+        if event["type"] == "execution:node_start"
+        and event["nodeId"] == "parallel-tail"
+    )
+    assert tail_start["executionContext"]["loops"] == []
+
+
+@pytest.mark.asyncio
 async def test_error_edge_handles_failure_without_running_normal_successor() -> None:
     calls: list[str] = []
 
@@ -188,7 +247,9 @@ async def test_error_edge_handles_failure_without_running_normal_successor() -> 
 
 
 @pytest.mark.asyncio
-async def test_count_loop_repeats_body_and_runs_done_branch_once() -> None:
+async def test_count_loop_repeats_body_and_runs_done_branch_once(monkeypatch: pytest.MonkeyPatch) -> None:
+    clock = [0.0]
+    monkeypatch.setattr("autoflow.application.workflows.runtime.perf_counter", lambda: clock[0])
     calls: list[int] = []
     events: list[dict[str, Any]] = []
 
@@ -213,6 +274,7 @@ async def test_count_loop_repeats_body_and_runs_done_branch_once() -> None:
         _self: ModuleExecutor, _config: dict[str, Any], context: ExecutionContext
     ) -> ModuleResult:
         calls.append(context.variables["index"])
+        clock[0] += (context.variables["index"] + 1) / 10
         return ModuleResult(success=True)
 
     async def done(
@@ -251,6 +313,9 @@ async def test_count_loop_repeats_body_and_runs_done_branch_once() -> None:
         if event["type"] == "execution:node_start" and event["nodeId"] == "body"
     ]
     assert len({event["executionId"] for event in body_starts}) == 3
+    body_completions = [event for event in events if event["type"] == "execution:node_complete" and event["nodeId"] == "body"]
+    assert [event["duration"] for event in body_completions] == pytest.approx([100, 200, 300])
+    assert [event["executionId"] for event in body_completions] == [event["executionId"] for event in body_starts]
     assert [event["executionContext"]["loops"] for event in body_starts] == [
         [
             {

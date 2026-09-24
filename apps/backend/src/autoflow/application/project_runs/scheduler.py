@@ -180,6 +180,20 @@ class ProjectBatchScheduler:
                 pass
 
     async def tick(self) -> None:
+        if self._closed:
+            return
+        if self._environments is not None:
+            with self._factory() as session:
+                active = session.scalar(select(WorkflowRunRow.id).where(
+                    WorkflowRunRow.status.not_in(TERMINAL_STATUSES | {"queued"}),
+                ).limit(1))
+            # Cleanup can wait for a browser/filesystem. Do not delay another
+            # active run's cancellation or hold the stop-admission lock.
+            if active is None:
+                with self._gate.mutation() as admitted:
+                    if not admitted:
+                        return
+                    await asyncio.to_thread(self._environments.cleanup_terminal_tasks)
         async with self._lock:
             if self._closed:
                 return
@@ -617,6 +631,8 @@ class ProjectBatchScheduler:
                     if isinstance(item, dict) and item.get("inputId"):
                         inputs[item["inputId"]] = item
             frozen = batch.frozen_request or {}
+            if frozen.get("resourceRequest", {}).get("browser") == "none":
+                return
             policy = frozen.get("resourceRequest", {}).get("environmentPolicy") or frozen.get("environmentOverride") or frozen.get("automation", {}).get(
                 "environmentPolicy"
             )
@@ -920,7 +936,7 @@ class ProjectBatchScheduler:
                 )
             )
             session.flush()
-            if environments is not None:
+            if environments is not None and resource_request.get("browser") != "none":
                 environments.reserve_task_instance(
                     session, project_id, task_id, run.run_id, policy,
                     {item["inputId"]: item for item in inputs if item.get("inputId")},

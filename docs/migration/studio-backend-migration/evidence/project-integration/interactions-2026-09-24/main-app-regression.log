@@ -1,0 +1,19 @@
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/app/App.test.tsx src/renderer/app/App.projects.test.tsx src/renderer/domains/workflows/tests/input-delivery-http.test.tsx src/renderer/domains/workflows/tests/path-service-contract.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:4110) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:4111) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:4113) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:4115) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  4 passed (4)
+      Tests  51 passed (51)
+   Start at  06:44:00
+   Duration  15.55s (transform 7.05s, setup 1.60s, import 22.38s, tests 11.22s, environment 5.02s)

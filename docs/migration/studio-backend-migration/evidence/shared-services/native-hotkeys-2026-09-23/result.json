@@ -1,0 +1,24 @@
+{
+  "evidenceId": "F5.studio-native-hotkeys.production",
+  "status": "verified-macos-arm64-development-and-local-package",
+  "sourceRevision": "WebRPA@5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+  "classification": "AutoFlow必要适配：原版九项动作保留，Electron globalShortcut及受控主frame IPC代替Windows后端热键注册；不持久化或重放按键",
+  "formalDevelopment": "docs/migration/studio-backend-migration/evidence/project-integration/formal-electron-Lg6un9/result.json",
+  "formalPackaged": "docs/migration/studio-backend-migration/evidence/project-integration/formal-electron-3Jp5q2/result.json",
+  "checks": {
+    "relatedTests": 78,
+    "typecheck": "passed",
+    "eslint": "passed",
+    "rendererMainPreloadBuild": "passed",
+    "unsignedPackage": "passed",
+    "nativeKeys": "macOS Ctrl+Alt+F9 foreground/background each increases saved revision exactly once",
+    "lifecycle": "native AXClose unregisters, reopen restores without replay, clear unregisters",
+    "ownerTakeover": "red then green: stale callback cannot dispatch into new window/service"
+  },
+  "boundaries": [
+    "No user database touched; isolated workspace and main-app Profile",
+    "Intel/Windows untested",
+    "hotkey_trigger node execution remains separate pending evidence",
+    "Two startup event commands remain next block; no claim of full backend completion"
+  ]
+}

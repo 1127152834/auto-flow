@@ -1,0 +1,72 @@
+{
+  "evidenceId": "BE-B6-http-logs-formal-electron",
+  "checkedAt": "2026-09-21T19:21:54.393Z",
+  "gitHead": "a92f0688f206d4339ff4468c1871f3ccdd6816dc",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflowId": "oS7bF5f_QGxSPqk-Hag99",
+  "profileId": "6e0e0ef3-35ba-4986-9637-65cb841d4213",
+  "runId": "23214d27-838e-46f2-8076-7c10b2223c61",
+  "checks": [
+    "正式 Studio 和主应用 Profile 就绪，动作库为 213",
+    "通过正式画布和属性面板配置打印日志、HTTP请求、Webhook请求、保留的Webhook通知及导出日志",
+    "正式保存接口写入五节点及四条连线",
+    "真实 worker 完成 HTTP 请求、Webhook 请求、保留的 Webhook 通知及日志导出，产物内容可读",
+    "无浏览器动作的 B6 工作流完成后 worker 和资源均清理"
+  ],
+  "nodes": [
+    {
+      "moduleType": "print_log",
+      "nodeId": "ORNPHxADmhvAzAO1uTg5e",
+      "result": {
+        "level": "info",
+        "message": "B6 HTTP日志验收"
+      }
+    },
+    {
+      "moduleType": "api_request",
+      "nodeId": "Y13sBQS06ApJ9z92lMccg",
+      "result": {
+        "status_code": 200,
+        "response": {
+          "ok": true,
+          "value": "api-fixture"
+        }
+      }
+    },
+    {
+      "moduleType": "webhook_request",
+      "nodeId": "jtiJ6R4j4xX_dW8hXC-K7",
+      "result": {
+        "status_code": 200,
+        "response": null
+      }
+    },
+    {
+      "moduleType": "notify_webhook",
+      "nodeId": "DCykNeIHTd3PUmddRWmQc"
+    },
+    {
+      "moduleType": "export_log",
+      "nodeId": "kUNaaS9LsqdRSczItusXm",
+      "result": {
+        "output_path": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-studio-b6-http-CUnuLg/workspace/runs/23214d27-838e-46f2-8076-7c10b2223c61/outputs/logs/workflow_log_20260921_192152.txt",
+        "log_count": 4,
+        "format": "txt",
+        "file_size": 300
+      }
+    }
+  ],
+  "artifactIds": [
+    "702a0bdd-64c6-4366-971a-f2f3c4a2667e"
+  ],
+  "buildSha256": "464d9a3d31b8bbdf11677ab31923253ab762c532ff46d4fb8a55a9563c09eb48",
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserLaunch": "none; this module family does not require browser",
+    "interaction": "formal Electron via CDP mouse and keyboard; public sidecar APIs only for fixture setup and evidence reads; no Store or page-internal business function access",
+    "externalWaiting": "Windows/macOS Intel and external notification providers remain separately unverified"
+  }
+}
