@@ -1,0 +1,24 @@
+真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程
+真实UI编排保存重开，主窗口输入21；原JS Worker只执行一次，正常关主窗口期间继续，输出42和持久日志，关Studio后主窗口恢复
+{
+  "evidenceDir": "/Users/zhangtiancheng/Documents/projects/autoflow/docs/migration/studio-backend-migration/evidence/project-integration/formal-project-interaction-electron-u5TFvu",
+  "evidenceId": "BE-project-interaction-formal-electron",
+  "result": "passed",
+  "checkedAt": "2026-09-24T00:07:02.694Z",
+  "gitHead": "0b64f2df6f116726ab7b8a871be256bda1e1107b",
+  "platform": "darwin-arm64",
+  "entry": "packaged-directory",
+  "projectId": "7845a6d3-9567-4358-a400-5ba315702088",
+  "workflowId": "k0qjxBo_OwlngRw3Bpm76",
+  "taskId": "724fd826-c675-46ec-8f6b-00cba3d090dc",
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "真实UI编排保存重开，主窗口输入21；原JS Worker只执行一次，正常关主窗口期间继续，输出42和持久日志，关Studio后主窗口恢复"
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "interaction": "real UI mouse/keyboard; original renderer JS Worker; API fixtures and evidence reads only"
+  }
+}

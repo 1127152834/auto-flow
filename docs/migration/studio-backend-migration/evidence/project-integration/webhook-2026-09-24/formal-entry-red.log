@@ -1,0 +1,12 @@
+真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+Error: timed out waiting for unobscured 工作流工作台: null
+    at waitFor (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/electron-cdp.mjs:99:9)
+    at async click (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:2215:13)
+    at async openStudioFromMain (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:2062:3)
+    at async file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:199:14
+
+Node.js v26.7.0

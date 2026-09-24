@@ -67,3 +67,9 @@
 最终生产源码冻结158.49秒、macOS arm64目录包生成成功（没有签名证书，未签名）。`verify_frozen.py`逐模块比较11个完整模块的字节码/常量/名称，冻结目录及正式包内后端均匹配，见 `frozen-code.log`、`packaged-code.log`；哈希见 `build-artifacts.json`。这证明打包内容，**不证明锁屏状态下未执行的正式包UI入口**。Ruff/4文件mypy最终通过，见final-ruff/final-mypy。没有因此关闭任何正式UI门槛。
 
 证据日志仅去除行尾/文件尾空白以通过仓库diff检查，失败内容与断言全部保留；原始命令输出仍在本机/tmp。
+
+### 锁屏解除后的正式包核心链路验收（2026-09-24）
+
+用户要求快速集中验收后，CUA确认机器解锁；[正式包结果](../formal-project-interaction-electron-u5TFvu/result.json)通过真实UI创建/保存/重开、输入21、JS返回42/计数1、正常关主窗口继续脚本、持久日志及关Studio恢复主窗口。此前“正常关窗和renderer JS未实测”的核心结论由本结果替代；原生文件/目录选择和取消/停止全矩阵仍未因本次通过而关闭。
+
+保留两次失败：xzQzvh旧入口名，BZSuSe未声明count；依据冻结WebRPA basic.py只同步已有变量的规则，仅修测试前置数据和真实UI按钮定位，未修改产品实现或放宽断言。包内容身份见同级webhook-2026-09-24/build-artifacts.json。

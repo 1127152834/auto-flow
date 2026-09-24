@@ -1,0 +1,6 @@
+{
+  "status": "blocked",
+  "source": "cua.getState",
+  "message": "The Mac is locked and automatic unlock could not unlock it.",
+  "boundary": "没有执行正式项目Webhook UI，不以TCP/worker或窗口destroy替代。"
+}

@@ -167,6 +167,8 @@ try {
     const name = '项目输入与JS交互验收'
     const code = 'function main(vars) { const end = Date.now() + 4000; while(Date.now() < end) {} vars.count = (vars.count || 0) + 1; return Number(vars.answer) * 2; }'
     await newWorkflow(studio, name)
+    // WebRPA only writes back existing variables. Declare the counter through UI.
+    await addGlobalVariable(studio, 'count', 'number', '0')
     await showBlockView(studio)
     await addBlock(studio, '添加模块', '用户输入')
     await selectNative(studio, '#inputMode', '整数')
@@ -187,6 +189,7 @@ try {
     const saved = await waitForValue(async () => (await api(runtime, `/workflows?projectId=${projectId}`)).find(item => item.name === name), 'interaction workflow saved', 15_000)
     assert.deepEqual(saved.nodes.map(node => node.data.moduleType), ['input_prompt', 'js_script', 'print_log'])
     assert.equal(saved.nodes[1].data.code, code)
+    assert.ok(saved.variables.some(variable => variable.name === 'count' && variable.type === 'number' && variable.value === 0))
     await closeWindowThroughOs()
     studio.close(); studio = undefined
     await waitForNoStudio(desktop.debugOrigin)
@@ -195,8 +198,8 @@ try {
     await selectAutomationWorkflow(main, name, saved.id)
     await click(main, '保存配置')
     await waitFor(main, "document.body?.innerText.includes('自动化已创建')", 'interaction automation')
-    // Reopen via the real UI: keep Studio alive while the main window is closed.
-    studio = await openStudioFromMain(main, desktop.debugOrigin)
+    // The saved automation detail owns the linked Studio entry.
+    studio = await openStudioFromMain(main, desktop.debugOrigin, '打开 Studio')
     await click(main, '启动运行')
     await click(main, '启动 1 个任务')
     await waitFor(main, "document.querySelector('[role=dialog]')?.innerText.includes('项目交互实测')", 'project input request', 30_000)
@@ -215,7 +218,7 @@ try {
     assert.equal(outputs.items.find(item => item.name === 'answer')?.value, 21)
     assert.equal(outputs.items.find(item => item.name === 'doubled')?.value, 42)
     const logs = await api(runtime, `/v1/projects/${projectId}/tasks/${task.taskId}/logs?pageSize=100`)
-    assert.ok(logs.items.some(item => item.message === '交互完成:21:42:1'))
+    assert.ok(logs.items.some(item => item.message === '交互完成:21:42:1'), JSON.stringify(logs))
     assert.deepEqual(await api(runtime, '/v1/project-run-interactions'), [])
     await closeWindowThroughOs()
     studio.close(); studio = undefined
@@ -2058,8 +2061,8 @@ async function collectEvents(runtime, signal, output) {
   } catch (error) { if (!signal.aborted) output.push({ name: 'collector:error', data: String(error) }) }
 }
 
-async function openStudioFromMain(cdp, origin) {
-  await click(cdp, '工作流工作台')
+async function openStudioFromMain(cdp, origin, label = '工作流工作台') {
+  await click(cdp, label)
   const target = await waitForValue(async () => {
     const targets = await (await fetch(`${origin}/json/list`)).json()
     return targets.find(item => item.type === 'page' && item.url.includes('studio.html')) ?? null

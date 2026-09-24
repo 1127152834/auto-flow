@@ -233,3 +233,12 @@ Studio 的 Profile／模型沿用项目 `defaultResources`，允许任务显式�
 普通持久事件仅含身份、状态及执行上下文，不含脚本、变量、密码或解析后的默认值。脚本/输入详情随请求结束清空；worker/sidecar退出不恢复执行。列表与SSE使用同一现有事件DTO。文件与目录选择复用登记窗口main-frame校验的Electron IPC，返回时复核工作区身份。
 
 项目默认Profile/模型＋显式覆盖的用户确认继续有效，无资源白名单。新增2个项目目录入口已接入，正式UI及原生门槛未关闭；[当前证据与阻塞](../studio-backend-migration/evidence/project-integration/interactions-2026-09-24/README.md)是权威状态，不能沿用旧Studio通过记录核销项目集成。
+
+
+## 项目任务 Webhook 接入（2026-09-24，正式项目 UI 待验收）
+
+复用 `POST/PUT/GET/DELETE /api/triggers/webhook/{webhookId}`；按当前等待者投递给原 Studio 或项目 worker，双方同名或多个项目等待同名返回 `409 WEBHOOK_AMBIGUOUS`。未登记/已投递返回404；请求头/查询验证失败403；body超过1MiB返回413；传输失败、等待ACK超时或停止竞争未确认时返回 `503 WEBHOOK_DELIVERY_UNCONFIRMED`，不会自动重发。自定义成功响应仅在实际worker确认且持久回执提交后返回。GET触发同样受现有停写门槛保护，保留外部Webhook原有节点验证方式。
+
+命令继续复用项目持久回执和run/generation/request作用范围，无新管理API、OpenAPI变更或迁移。Webhook等待不是Renderer对话框，不在input/js请求列表暴露配置。标准认证头沿用原过滤；普通用户请求数据仍是节点结果。默认 `webhook_data`、参数前缀、参数自动写入及覆盖行为由原版执行器负责。子流程命令与事件沿真实执行上下文关联。
+
+[证据及未通过门槛](../studio-backend-migration/evidence/project-integration/webhook-2026-09-24/README.md)。真实项目TCP/SSE/SQLite/worker、原Studio回归和源码差分通过；原生正式项目UI因本机锁定仍未完成。没有将Mock、包内worker或现有独立Studio UI证据替代正式项目入口。本轮遵循已确认的项目默认资源＋显式覆盖，无白名单。

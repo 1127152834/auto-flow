@@ -1,0 +1,19 @@
+F
+=================================== FAILURES ===================================
+_______ test_project_webhook_real_network_delivery_and_cleanup[deliver] ________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-194/test_project_webhook_real_netw0')
+scenario = 'deliver'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize('scenario', ['deliver', 'stop', 'timeout'])
+    async def test_project_webhook_real_network_delivery_and_cleanup(tmp_path: Path, scenario: str):
+>       assert 'webhook_trigger' in runnable_module_types()
+E       AssertionError: assert 'webhook_trigger' in frozenset({'ai_chat', 'ai_classify', 'ai_dedup_semantic', 'ai_element_selector', 'ai_extract', 'ai_generate_image', ...})
+E        +  where frozenset({'ai_chat', 'ai_classify', 'ai_dedup_semantic', 'ai_element_selector', 'ai_extract', 'ai_generate_image', ...}) = runnable_module_types()
+
+apps/backend/tests/integration/test_project_webhook.py:36: AssertionError
+=========================== short test summary info ============================
+FAILED apps/backend/tests/integration/test_project_webhook.py::test_project_webhook_real_network_delivery_and_cleanup[deliver]
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed in 1.51s

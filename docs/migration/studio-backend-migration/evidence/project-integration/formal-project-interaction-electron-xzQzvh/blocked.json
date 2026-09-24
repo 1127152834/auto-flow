@@ -1,0 +1,10 @@
+{
+  "checkedAt": "2026-09-24T00:04:12.621Z",
+  "gitHead": "0b64f2df6f116726ab7b8a871be256bda1e1107b",
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程"
+  ],
+  "observedEvents": [],
+  "ui": [],
+  "error": "Error: timed out waiting for unobscured 工作流工作台: null\n    at waitFor (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/electron-cdp.mjs:99:9)\n    at async click (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:2215:13)\n    at async openStudioFromMain (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:2062:3)\n    at async file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:199:14"
+}

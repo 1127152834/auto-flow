@@ -1,0 +1,10 @@
+autoflow.adapters.http.workflow_runs: complete packaged code matches source
+autoflow.application.project_runs.interactions: complete packaged code matches source
+autoflow.application.workflows.coordinator: complete packaged code matches source
+autoflow.application.workflows.webhooks: complete packaged code matches source
+autoflow.bootstrap.app: complete packaged code matches source
+autoflow.bootstrap.workflows: complete packaged code matches source
+autoflow.domain.workflows.catalog: complete packaged code matches source
+autoflow.infrastructure.process.project_workflow_worker: complete packaged code matches source
+autoflow.providers.browser.project_graph: complete packaged code matches source
+autoflow.providers.browser.project_workflow_worker: complete packaged code matches source
