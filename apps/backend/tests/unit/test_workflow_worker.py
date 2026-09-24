@@ -734,7 +734,7 @@ async def test_late_ack_only_confirms_original_event_after_action_timeout() -> N
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize('scenario', ['navigate', 'second-initialize', 'current-without-instance', 'skipped-branch'])
+@pytest.mark.parametrize('scenario', ['navigate', 'second-initialize', 'current-without-instance', 'skipped-branch', 'shared-profile', 'different-profile', 'different-proxy', 'different-kernel'])
 async def test_node_browser_starts_only_at_authorized_initialization(monkeypatch, tmp_path, scenario):
     from uuid import uuid4
     context, output, starts, commands = Context(), io.StringIO(), [], []
@@ -754,6 +754,11 @@ async def test_node_browser_starts_only_at_authorized_initialization(monkeypatch
     granted = {**payload['browser'], 'userDataDir': str(tmp_path / 'instance')}
     payload.update(runId=str(uuid4()), browser={})
     declarations = [{'source': 'newFromProfile'}, {'source': 'current'}]
+    if scenario in {'shared-profile', 'different-profile', 'different-proxy', 'different-kernel'}:
+        declarations = [{'source': 'profile', 'profileId': 'one'}, {'source': 'profile', 'profileId': 'one', 'proxy': {'mode': 'sourceDefault'}, 'kernel': None}]
+        if scenario == 'different-profile': declarations[1]['profileId'] = 'two'
+        if scenario == 'different-proxy': declarations[1]['proxy'] = {'mode': 'none'}
+        if scenario == 'different-kernel': declarations[1]['kernel'] = {'edition': 'public', 'version': 'other'}
     if scenario == 'second-initialize': declarations[1] = {'source': 'newFromProfile'}
     if scenario == 'current-without-instance': declarations = [{'source': 'current'}]
     nodes = [{'id': f'open-{index}', 'type': 'open_page', 'position': {'x': 0, 'y': index * 100}, 'data': {'moduleType': 'open_page', 'url': 'https://one', 'browserEnvironment': declaration}} for index, declaration in enumerate(declarations)]
@@ -779,8 +784,8 @@ async def test_node_browser_starts_only_at_authorized_initialization(monkeypatch
     terminal = json.loads(output.getvalue().splitlines()[-1])
     expected_starts = 0 if scenario in {'current-without-instance', 'skipped-branch'} else 1
     assert len(starts) == len(commands) == expected_starts
-    assert terminal['status'] == ('succeeded' if scenario in {'navigate', 'skipped-branch'} else 'failed'), output.getvalue()
+    assert terminal['status'] == ('succeeded' if scenario in {'navigate', 'skipped-branch', 'shared-profile'} else 'failed'), output.getvalue()
     if starts:
         assert starts[0]['user_data_dir'] == str(tmp_path / 'instance')
         assert context.closed
-        assert len(context.pages) == (2 if scenario == 'navigate' else 1)
+        assert len(context.pages) == (2 if scenario in {'navigate', 'shared-profile'} else 1)

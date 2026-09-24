@@ -18,6 +18,10 @@ def document(configuration):
 
 @pytest.mark.parametrize('configuration', [
     {'source': 'current', 'profileId': 'hidden-template'},
+    {'source': []},
+    {'source': {}},
+    {'source': 'profile', 'profileId': 'one', 'proxy': {'mode': []}},
+    {'source': 'profile', 'profileId': 'one', 'proxy': {'mode': {}}},
     {'source': 'fixedEnvironment', 'environmentId': 'environment', 'proxy': {'mode': 'none'}},
     {'source': 'newFromProfile', 'proxy': {'mode': 'fixed', 'proxyId': ''}},
     {'source': 'newFromProfile', 'kernel': {'edition': 'external', 'version': '1'}},
@@ -88,3 +92,23 @@ async def test_delayed_browser_failure_captures_actual_current_page():
     await graph.publish({'type':'execution:node_start','nodeId':'open','executionId':'visit'})
     await graph.publish({'type':'execution:node_complete','nodeId':'open','executionId':'visit','success':False,'error':'navigation failed'})
     assert captured == [raw_page]
+
+
+def test_explicit_profile_contract_requires_selection_and_freezes_without_project_fallback(tmp_path, valid_profile_values):
+    from autoflow.application.workflows.node_browser_resources import (
+        freeze_node_browser_resources,
+    )
+    from autoflow.domain.workflows.browser_environment import node_browser_environments
+    from tests.unit.test_workflow_browser_resources import resources
+    browser, state, profile = resources(tmp_path, valid_profile_values)
+    for invalid in ({'source': 'profile'}, {'source': 'profile', 'profileId': ''},
+                    {'source': 'profile', 'profileId': profile.id, 'proxy': {'mode': 'pool', 'proxyPoolId': 'pool'}},
+                    {'source': 'profile', 'profileId': profile.id, 'proxy': {'mode': 'projectDefault'}}):
+        with pytest.raises(WorkflowError):
+            prepare_run(document(invalid))
+    nodes = node_browser_environments(document({'source': 'profile', 'profileId': profile.id}))
+    frozen = freeze_node_browser_resources(browser, None, None, nodes, {'profileId': 'wrong-profile', 'proxy': {'mode': 'fixed', 'proxyId': 'wrong-proxy'}})
+    assert frozen['open']['profileId'] == profile.id
+    assert frozen['open']['frozenConfiguration']['profileSpec']['proxy_mode'] == profile.spec.proxy_mode
+    assert frozen['open']['environmentPolicy'] == {'source': 'newFromProfile', 'profileId': profile.id}
+    assert state['holds'] == 0

@@ -110,7 +110,7 @@ class WorkflowInspectionService:
             frozen = None
             if browser_environment is not None:
                 declarations = node_browser_environments({'schemaVersion':3, 'browserEnvironmentVersion':1, 'nodes':[{'id':'inspection','data':{'moduleType':'open_page','browserEnvironment':browser_environment}}]})
-                if browser_environment.get('source') not in {'newFromProfile','fixedEnvironment'} or self._node_browser_resources is None:
+                if browser_environment.get('source') not in {'profile','newFromProfile','fixedEnvironment'} or self._node_browser_resources is None:
                     raise WorkflowRunError('BROWSER_INITIALIZATION_REQUIRED', '请选择新建实例或固定环境的打开网页节点', 422)
                 defaults = self._node_environments.projects.get(project_id).default_resources if project_id else {}
                 frozen = freeze_node_browser_resources(self._node_browser_resources, self._node_environments, project_id, declarations, defaults or {})['inspection']

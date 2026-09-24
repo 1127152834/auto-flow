@@ -1575,7 +1575,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     let defaultData: Partial<NodeData> = {}
     
     if (type === 'open_page' && get().browserEnvironmentVersion === 1) {
-      defaultData = {browserEnvironment: {source: get().nodes.some(node=>node.data.moduleType === 'open_page' && (node.data.browserEnvironment as BrowserEnvironment|undefined)?.source !== 'current') ? 'current' : 'newFromProfile'}}
+      defaultData = {browserEnvironment: {source: 'profile'}}
     } else if (type === 'project_end') {
       defaultData = { retainEnvironment: { enabled: false, mode: 'saveAs', recordTargets: [] } }
     } else if (type === 'project_manual') {
@@ -3171,7 +3171,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     if (!state.nodes.some(node=>node.id===nodeId && node.data.moduleType==='open_page')) return
     state.pushHistory()
     set({browserEnvironmentVersion:1, hasUnsavedChanges:true, nodes:state.nodes.map(node=>node.data.moduleType==='open_page'
-      ? {...node,data:{...node.data,browserEnvironment:node.id===nodeId?structuredClone(configuration):{source:'current'}}} : node)})
+      ? {...node,data:{...node.data,browserEnvironment:node.id===nodeId||configuration.source==='profile'?structuredClone(configuration):{source:'current'}}} : node)})
   },
 
   clearWorkflow: () => {

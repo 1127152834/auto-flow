@@ -93,20 +93,7 @@
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
         "line": 1577,
         "condition": "type === 'open_page'",
-        "fields": [
-          "browserEnvironment",
-          "moduleType"
-        ],
-        "components": []
-      },
-      {
-        "kind": "reference",
-        "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1578,
-        "condition": "node.data.moduleType === 'open_page'",
-        "fields": [
-          "moduleType"
-        ],
+        "fields": [],
         "components": []
       },
       {
@@ -147,7 +134,6 @@
         "apps/desktop/src/renderer/domains/workflows/components/config-panels/BasicModuleConfigs.tsx#OpenPageConfig",
         "apps/desktop/src/renderer/domains/workflows/components/config-panels/BrowserEnvironmentFields.tsx#BrowserEnvironmentFields",
         "apps/desktop/src/renderer/domains/workflows/components/controls/button.tsx#Button",
-        "apps/desktop/src/renderer/domains/workflows/components/controls/input.tsx#Input",
         "apps/desktop/src/renderer/domains/workflows/components/controls/label.tsx#Label",
         "apps/desktop/src/renderer/domains/workflows/components/controls/select-native.tsx#SelectNative",
         "apps/desktop/src/renderer/domains/workflows/components/controls/url-input.tsx#UrlInput",
@@ -169,8 +155,6 @@
         "@radix-ui/react-select#Viewport",
         "lucide-react#Check",
         "lucide-react#ChevronDown",
-        "lucide-react#Eye",
-        "lucide-react#EyeOff",
         "lucide-react#Link",
         "react#Fragment"
       ]

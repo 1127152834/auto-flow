@@ -11,15 +11,15 @@ def freeze_node_browser_resources(browser, environments, project_id, nodes, proj
         source = declaration['source']
         if source == 'current':
             continue
-        if source == 'newFromProfile':
-            profile_id = declaration.get('profileId') or project_defaults.get('profileId')
+        if source in {'newFromProfile', 'profile'}:
+            profile_id = declaration.get('profileId') or (project_defaults.get('profileId') if source == 'newFromProfile' else None)
             if not profile_id:
-                raise _node_error(f'nodes.{node_id}.profileId', '请选择浏览器模板')
-            proxy = declaration.get('proxy', {'mode': 'projectDefault'})
+                raise _node_error(f'nodes.{node_id}.profileId', '请选择浏览器配置')
+            proxy = declaration.get('proxy', {'mode': 'sourceDefault' if source == 'profile' else 'projectDefault'})
             if proxy['mode'] == 'projectDefault':
                 proxy = project_defaults.get('proxy', {'mode': 'sourceDefault'})
             request = browser.freeze(profile_id, proxy=None if proxy['mode'] == 'sourceDefault' else proxy, kernel=declaration.get('kernel'), model_provider_id=model_provider_id)
-            selected_policy = {'source': source, 'profileId': profile_id}
+            selected_policy = {'source': 'newFromProfile', 'profileId': profile_id}
         elif source == 'inputEnvironment':
             frozen[node_id] = {'environmentResolution': 'atTaskStart', 'environmentPolicy': dict(declaration)}
             continue

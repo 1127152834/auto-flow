@@ -700,7 +700,7 @@ export interface Variable {
 // 工作流
 export type BrowserEnvironment =
   | {source:'current'}
-  | {source:'newFromProfile';profileId?:string|null;proxy?:components['schemas']['ProjectDefaultResources']['proxy']|{mode:'projectDefault'};kernel?:{edition:'public'|'licensed';version:string}|null}
+  | {source:'newFromProfile'|'profile';profileId?:string|null;proxy?:components['schemas']['ProjectDefaultResources']['proxy']|{mode:'projectDefault'};kernel?:{edition:'public'|'licensed';version:string}|null}
   | {source:'fixedEnvironment';environmentId:string}
   | {source:'inputEnvironment';inputId:string}
 

@@ -22671,292 +22671,169 @@
   {
     "component": "BrowserEnvironmentFields",
     "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/BrowserEnvironmentFields.tsx",
-    "line": 16,
+    "line": 14,
     "fields": [
       "browserEnvironment"
     ],
     "tools": [
       "Button",
-      "Input",
       "Label",
       "Select"
     ],
     "conditions": [
       {
-        "line": 21,
+        "line": 18,
         "expression": "version===1"
       },
       {
-        "line": 22,
+        "line": 19,
+        "expression": "saved?.source==='profile'||saved?.source==='newFromProfile'"
+      },
+      {
+        "line": 20,
         "expression": "version===1"
       },
       {
-        "line": 32,
+        "line": 29,
         "expression": "controller.signal.aborted||revision!==getStudioTransportRevision()"
       },
       {
-        "line": 34,
+        "line": 31,
         "expression": "!p.success||!k.success||!x.success"
       },
       {
         "line": 36,
-        "expression": "projectId"
+        "expression": "value.source==='newFromProfile'"
       },
       {
         "line": 40,
-        "expression": "controller.signal.aborted||revision!==getStudioTransportRevision()"
-      },
-      {
-        "line": 41,
-        "expression": "!result.success||!result.data"
+        "expression": "oldProxy"
       },
       {
         "line": 43,
-        "expression": "items.length>=result.data.total||!result.data.items.length"
-      },
-      {
-        "line": 50,
-        "expression": "value?.source==='newFromProfile'"
-      },
-      {
-        "line": 53,
-        "expression": "source==='current'"
-      },
-      {
-        "line": 53,
-        "expression": "source==='newFromProfile'"
-      },
-      {
-        "line": 53,
-        "expression": "source==='fixedEnvironment'"
-      },
-      {
-        "line": 53,
-        "expression": "source==='inputEnvironment'"
-      },
-      {
-        "line": 58,
-        "expression": "projectId"
-      },
-      {
-        "line": 60,
         "expression": "mode==='fixed'"
       },
       {
-        "line": 60,
-        "expression": "mode==='pool'"
+        "line": 43,
+        "expression": "mode==='sourceDefault'||mode==='none'"
       },
       {
-        "line": 60,
-        "expression": "mode==='projectDefault'||mode==='sourceDefault'||mode==='none'"
-      },
-      {
-        "line": 65,
+        "line": 48,
         "expression": "value.kernel"
       },
       {
-        "line": 65,
+        "line": 48,
         "expression": "kernel"
       },
       {
-        "line": 66,
+        "line": 49,
         "expression": "k.edition==='public'"
       },
       {
-        "line": 72,
-        "expression": "nodeId&&value"
+        "line": 51,
+        "expression": "nodeId&&value.profileId"
       }
     ],
     "bindings": [
       {
-        "line": 53,
-        "attribute": "value",
-        "expression": "{value?.source??''}"
-      },
-      {
-        "line": 53,
-        "attribute": "onChange",
-        "expression": "{event=>{const source=event.target.value;if(source==='current')change({source});if(source==='newFromProfile')change({source});if(source==='fixedEnvironment')change({source,environmentId:''});if(source==='inputEnvironment')change({source,inputId:''})}}"
-      },
-      {
-        "line": 54,
-        "attribute": "value",
-        "expression": "\"\""
-      },
-      {
-        "line": 54,
-        "attribute": "value",
-        "expression": "\"newFromProfile\""
-      },
-      {
-        "line": 54,
-        "attribute": "value",
-        "expression": "\"current\""
-      },
-      {
-        "line": 54,
-        "attribute": "value",
-        "expression": "\"fixedEnvironment\""
-      },
-      {
-        "line": 54,
-        "attribute": "value",
-        "expression": "\"inputEnvironment\""
-      },
-      {
-        "line": 57,
+        "line": 40,
         "attribute": "value",
         "expression": "{value.profileId??''}"
       },
       {
-        "line": 57,
+        "line": 40,
         "attribute": "onChange",
-        "expression": "{event=>change({...value,profileId:event.target.value||null})}"
+        "expression": "{event=>change({...value,profileId:event.target.value||null,...(oldProxy?{proxy:{mode:'sourceDefault' as const}}:{})})}"
       },
       {
-        "line": 58,
+        "line": 41,
         "attribute": "value",
         "expression": "\"\""
       },
       {
-        "line": 58,
+        "line": 41,
         "attribute": "value",
         "expression": "{value.profileId}"
       },
       {
-        "line": 58,
+        "line": 41,
         "attribute": "value",
         "expression": "{p.id}"
       },
       {
-        "line": 60,
+        "line": 43,
         "attribute": "value",
-        "expression": "{proxy?.mode}"
+        "expression": "{proxy.mode}"
       },
       {
-        "line": 60,
+        "line": 43,
         "attribute": "onChange",
-        "expression": "{event=>{const mode=event.target.value;if(mode==='fixed')change({...value,proxy:{mode,proxyId:''}});else if(mode==='pool')change({...value,proxy:{mode,proxyPoolId:''}});else if(mode==='projectDefault'||mode==='sourceDefault'||mode==='none')change({...value,proxy:{mode}})}}"
+        "expression": "{event=>{const mode=event.target.value;if(mode==='fixed')change({...value,proxy:{mode,proxyId:''}});else if(mode==='sourceDefault'||mode==='none')change({...value,proxy:{mode}})}}"
       },
       {
-        "line": 61,
+        "line": 44,
         "attribute": "value",
-        "expression": "\"projectDefault\""
+        "expression": "{proxy.mode}"
       },
       {
-        "line": 61,
+        "line": 45,
         "attribute": "value",
         "expression": "\"sourceDefault\""
       },
       {
-        "line": 61,
+        "line": 45,
         "attribute": "value",
         "expression": "\"none\""
       },
       {
-        "line": 61,
+        "line": 45,
         "attribute": "value",
         "expression": "\"fixed\""
       },
       {
-        "line": 61,
-        "attribute": "value",
-        "expression": "\"pool\""
-      },
-      {
-        "line": 63,
+        "line": 47,
         "attribute": "value",
         "expression": "{proxy.proxyId??''}"
       },
       {
-        "line": 63,
+        "line": 47,
         "attribute": "onChange",
         "expression": "{event=>change({...value,proxy:{mode:'fixed',proxyId:event.target.value}})}"
       },
       {
-        "line": 63,
+        "line": 47,
         "attribute": "value",
         "expression": "\"\""
       },
       {
-        "line": 63,
+        "line": 47,
         "attribute": "value",
         "expression": "{p.id}"
       },
       {
-        "line": 64,
-        "attribute": "value",
-        "expression": "{proxy.proxyPoolId??''}"
-      },
-      {
-        "line": 64,
-        "attribute": "onChange",
-        "expression": "{event=>change({...value,proxy:{mode:'pool',proxyPoolId:event.target.value}})}"
-      },
-      {
-        "line": 64,
-        "attribute": "value",
-        "expression": "\"\""
-      },
-      {
-        "line": 64,
-        "attribute": "value",
-        "expression": "{p.id}"
-      },
-      {
-        "line": 65,
+        "line": 48,
         "attribute": "value",
         "expression": "{value.kernel?`${value.kernel.edition}:${value.kernel.version}`:''}"
       },
       {
-        "line": 65,
+        "line": 48,
         "attribute": "onChange",
         "expression": "{event=>{const kernel=kernels.find(k=>`${k.edition}:${k.version}`===event.target.value);change({...value,kernel:kernel?{edition:kernel.edition,version:kernel.version}:null})}}"
       },
       {
-        "line": 66,
+        "line": 49,
         "attribute": "value",
         "expression": "\"\""
       },
       {
-        "line": 66,
+        "line": 49,
         "attribute": "value",
         "expression": "{`${value.kernel.edition}:${value.kernel.version}`}"
       },
       {
-        "line": 66,
+        "line": 49,
         "attribute": "value",
         "expression": "{`${k.edition}:${k.version}`}"
-      },
-      {
-        "line": 69,
-        "attribute": "value",
-        "expression": "{value.environmentId}"
-      },
-      {
-        "line": 69,
-        "attribute": "onChange",
-        "expression": "{event=>change({...value,environmentId:event.target.value})}"
-      },
-      {
-        "line": 69,
-        "attribute": "value",
-        "expression": "\"\""
-      },
-      {
-        "line": 69,
-        "attribute": "value",
-        "expression": "{e.ref.environmentId}"
-      },
-      {
-        "line": 70,
-        "attribute": "value",
-        "expression": "{value.inputId}"
-      },
-      {
-        "line": 70,
-        "attribute": "onChange",
-        "expression": "{event=>change({...value,inputId:event.target.value})}"
       }
     ],
     "lazyImports": []

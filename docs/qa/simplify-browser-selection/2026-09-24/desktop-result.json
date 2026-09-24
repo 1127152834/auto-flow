@@ -1,0 +1,16 @@
+{
+  "status": "passed",
+  "date": "2026-09-24T12:16:50.443Z",
+  "checks": [
+    "Environment page has editable defaults and no sidebar cards",
+    "Node template/proxy/kernel configured in actual Studio UI and persisted by production HTTP",
+    "UI run completes through real sidecar and worker with two matching nodes sharing a browser; template unchanged"
+  ],
+  "runId": "f03ee207-2438-49c6-ae29-816b63ee9ae1",
+  "platform": "darwin",
+  "arch": "arm64",
+  "kernelVersion": "145.0.7632.109.2",
+  "limits": [
+    "source build; no signing/notarization or Windows/Intel physical-device proof"
+  ]
+}

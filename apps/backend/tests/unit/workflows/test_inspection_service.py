@@ -552,7 +552,8 @@ async def _none():
     return None
 
 @pytest.mark.asyncio
-async def test_inspection_uses_node_proxy_and_kernel_without_mutating_template(tmp_path, valid_profile_values):
+@pytest.mark.parametrize("source", ["newFromProfile", "profile"])
+async def test_inspection_uses_node_proxy_and_kernel_without_mutating_template(tmp_path, valid_profile_values, source):
     from autoflow.domain.profiles.models import ProfileBrowserProxy
     from tests.unit.test_workflow_browser_resources import (
         resources as browser_resources,
@@ -573,7 +574,7 @@ async def test_inspection_uses_node_proxy_and_kernel_without_mutating_template(t
         resolve_proxy=resolve, read_license=lambda: None, resources=resources, workers=workers)
     workers.service = service
     service.configure_node_browser_environments(browser, None)
-    declaration = {'source':'newFromProfile', 'profileId':selected.id, 'proxy':{'mode':'fixed','proxyId':'node-proxy'}, 'kernel':{'edition':selected.spec.browser_edition,'version':selected.spec.browser_version}}
+    declaration = {'source':source, 'profileId':selected.id, 'proxy':{'mode':'fixed','proxyId':'node-proxy'}, 'kernel':{'edition':selected.spec.browser_edition,'version':selected.spec.browser_version}}
     opened = await service.open(profile_id=None, browser_environment=declaration)
     assert observed[0].spec.proxy_id == 'node-proxy'
     assert selected.spec.proxy_id != 'node-proxy'
