@@ -79,7 +79,8 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
     [profileDraft, setProfileDraft] = useState<Profile | null>(null)
   const [management, setManagement] = useState<{ device: AndroidDevice; action: string; operationId?: string; requestId?: string } | null>(null),
     [name, setName] = useState(''),
-    [deleteData, setDeleteData] = useState(false)
+    [deleteData, setDeleteData] = useState(false),
+    [allowUnknownDiskEstimate, setAllowUnknownDiskEstimate] = useState(false)
   const pendingManagement = useRef<DeviceCommand | null>(null),
     pendingOpen = useRef<{ deviceId: string; requestId: string } | null>(null),
     openingEpoch = useRef(0),
@@ -373,6 +374,7 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
     setManagement({ device: d, action, operationId, requestId })
     setName(d.name)
     setDeleteData(false)
+    setAllowUnknownDiskEstimate(false)
     pendingManagement.current = null
   }
   const endControl = async (deviceId: string, sessionId: string) => {
@@ -409,8 +411,13 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
           requestId: crypto.randomUUID(),
           action: (management.action === 'verify' ? 'recover' : management.action) as DeviceCommand['action'],
           deleteData,
+          allowUnknownDiskEstimate: management.action === 'restore' && allowUnknownDiskEstimate,
         }
-        await api.operate(management.device.deviceId, pendingManagement.current)
+        try { await api.operate(management.device.deviceId, pendingManagement.current) }
+        catch (cause) {
+          if (cause instanceof ApiClientError && cause.status === 409 && ['ANDROID_DISK_SPACE_INSUFFICIENT', 'ANDROID_DISK_PROBE_FAILED', 'ANDROID_DISK_ESTIMATE_UNKNOWN'].includes(cause.code ?? '')) pendingManagement.current = null
+          throw cause
+        }
       }
       setManagement(null)
     })
@@ -505,7 +512,7 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
       <Dialog
         open={Boolean(management)}
         onOpenChange={(v) => {
-          if (!v) setManagement(null)
+          if (!v && !(management?.action === 'restore' && pendingManagement.current)) setManagement(null)
         }}
         busy={busy}
       >
@@ -542,13 +549,14 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
                 同时永久删除此实例的应用和数据
               </label>
             )}
+            {management?.action === 'restore' && <label><input type="checkbox" disabled={busy || Boolean(pendingManagement.current)} checked={allowUnknownDiskEstimate} onChange={(event) => setAllowUnknownDiskEstimate(event.target.checked)} />最终磁盘占用无法可靠估计；我确认继续恢复保留数据。</label>}
             {error && (
               <p role="alert" className="ad-error">
                 {error}
               </p>
             )}
             <div className="flex justify-end gap-3 mt-5">
-              <Action disabled={busy} onClick={() => setManagement(null)}>
+              <Action disabled={busy || Boolean(management?.action === 'restore' && pendingManagement.current)} onClick={() => setManagement(null)}>
                 取消
               </Action>
               <Action primary disabled={busy} onClick={() => void confirmManage()}>

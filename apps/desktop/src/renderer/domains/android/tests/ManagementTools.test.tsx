@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom/vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, it, vi } from 'vitest'
 import { BulkActions } from '../components/BulkActions'
@@ -319,6 +319,35 @@ it('describes private local storage and restore limits before either action', as
   render(<QueryClientProvider client={new QueryClient()}><BackupPanel api={api} deviceId="d1" revision={2} runtimeState="stopped" control="idle" hasControlSession={false} stale={false} /></QueryClientProvider>)
   expect(screen.getByRole('button', { name: '创建停机备份' })).toHaveAccessibleDescription(/本机.*未加密.*账号.*私密数据/)
   expect(await screen.findByRole('button', { name: '恢复为新实例' })).toHaveAccessibleDescription(/新实例.*应用数据.*不保证登录状态.*DRM.*私有密钥/)
+  expect(screen.getByRole('checkbox', { name: /最终磁盘占用无法可靠估计/ })).not.toBeChecked()
+})
+
+it('sends the current restore confirmation and freezes it while the receipt is unknown', async () => {
+  const record = { id: 'b1', deviceId: 'd1', bytes: 3, imageId: 'img', sha256: 'digest', formatVersion: 1, state: 'available', createdAt: '' }
+  const restoreBackup = vi.fn().mockRejectedValueOnce(new Error('响应丢失'))
+  const api = { backups: vi.fn(async () => [record]), backup: vi.fn(), restoreBackup, operationByRequest: vi.fn().mockResolvedValue({ state: 'needs_verification', stageLabel: '待核实' }) }
+  render(<QueryClientProvider client={new QueryClient()}><BackupPanel api={api} deviceId="d1" revision={2} runtimeState="stopped" control="idle" hasControlSession={false} stale={false} /></QueryClientProvider>)
+  const consent = await screen.findByRole('checkbox', { name: /最终磁盘占用无法可靠估计/ })
+  await userEvent.click(consent)
+  await userEvent.click(await screen.findByRole('button', { name: '恢复为新实例' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('响应丢失')
+  expect(consent).toBeDisabled()
+  expect(restoreBackup).toHaveBeenCalledWith('b1', expect.objectContaining({ allowUnknownDiskEstimate: true }))
+})
+
+it('does not carry disk confirmation to another backup target', async () => {
+  const records = ['b1', 'b2'].map(id => ({ id, deviceId: 'd1', bytes: 3, imageId: 'img', sha256: 'digest', formatVersion: 1, state: 'available', createdAt: '' }))
+  const restored = { operationId: 'op', requestId: 'r', targetId: 'd2', deviceId: 'd2', backupId: 'b2', state: 'restored' }
+  let resolveRestore!: (value: typeof restored) => void
+  const restoreBackup = vi.fn(() => new Promise<typeof restored>(resolve => { resolveRestore = resolve }))
+  const api = { backups: vi.fn(async () => records), backup: vi.fn(), restoreBackup, operationByRequest: vi.fn() }
+  render(<QueryClientProvider client={new QueryClient()}><BackupPanel api={api} deviceId="d1" revision={2} runtimeState="stopped" control="idle" hasControlSession={false} stale={false} /></QueryClientProvider>)
+  const checkboxes = await screen.findAllByRole('checkbox', { name: /最终磁盘占用无法可靠估计/ })
+  await userEvent.click(checkboxes[0])
+  await userEvent.click(screen.getAllByRole('button', { name: '恢复为新实例' })[1])
+  await waitFor(() => expect(restoreBackup).toHaveBeenCalledWith('b2', expect.objectContaining({ allowUnknownDiskEstimate: false })))
+  expect(checkboxes[0]).not.toBeChecked()
+  resolveRestore(restored)
 })
 
 it('keeps backup request retryable and refreshes after restore', async () => {
@@ -337,6 +366,7 @@ it('keeps backup request retryable and refreshes after restore', async () => {
   await vi.waitFor(() => expect(operationByRequest).toHaveBeenCalled())
   await userEvent.click(screen.getByRole('button', { name: '恢复为新实例' }))
   await vi.waitFor(() => expect(restoreBackup).toHaveBeenCalledTimes(1))
+  expect(restoreBackup).toHaveBeenCalledWith('b1', expect.objectContaining({ allowUnknownDiskEstimate: false }))
   expect(backups).toHaveBeenCalledTimes(3)
 })
 

@@ -1,5 +1,5 @@
 import { ApiClientError } from '../../../shared/api/client'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ArrowLeft, CaretDown, CheckCircle, Info, Laptop } from '@phosphor-icons/react'
 import type { AndroidDevice, AndroidEnvironment } from '../api'
 import type { BatchRequest, Profile } from '../fleet-api'
@@ -59,6 +59,8 @@ export function CreateInstances({
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(''),
     pending = useRef<BatchRequest | null>(null)
+  const [allowUnknownDiskEstimate, setAllowUnknownDiskEstimate] = useState(false)
+  useEffect(() => { setAllowUnknownDiskEstimate(false) }, [name, quantity, profileId, resolution, start, locale, timezone, copySourceDeviceId])
   const clearSourceCopy = () => {
     if (!copySourceDeviceId) return
     setCopySourceDeviceId(undefined)
@@ -90,6 +92,7 @@ export function CreateInstances({
       instanceType: 'persistent',
       locale,
       timezone,
+      allowUnknownDiskEstimate,
     }
     try {
       await onSubmit(pending.current!)
@@ -228,6 +231,7 @@ export function CreateInstances({
                   <span>启动完成且 Android 就绪后才可操作。</span>
                 </div>
               </div>
+              <label className="ad-form-row"><input type="checkbox" checked={allowUnknownDiskEstimate} onChange={(e) => setAllowUnknownDiskEstimate(e.target.checked)} />最终磁盘占用无法可靠估计；我确认继续创建。</label>
             </section>
           </fieldset>
           {error && (

@@ -44,6 +44,6 @@ export const androidManagementApi = (client: StreamingApiClient) => ({
   diagnostics: (body: { requestId: string; deviceIds: string[]; includeAdvancedLogs?: boolean; advancedLogsConsent?: boolean }) => client.request<Diagnostic>(`${base}/diagnostics`, { method: 'POST', body }),
   backups: () => client.request<Backup[]>(`${base}/backups`, { timeoutMs: 20000 }),
   backup: (body: { requestId: string; deviceId: string; expectedRevision: number }) => client.request<Backup>(`${base}/backups`, { method: 'POST', body, timeoutMs: 120000 }),
-  restoreBackup: (id: string, body: { requestId: string; newName: string }) => client.request<BackupRestore>(`${base}/backups/${id}/restore`, { method: 'POST', body, timeoutMs: 120000 }),
+  restoreBackup: (id: string, body: { requestId: string; newName: string; allowUnknownDiskEstimate: boolean }) => client.request<BackupRestore>(`${base}/backups/${id}/restore`, { method: 'POST', body, timeoutMs: 120000 }),
 })
 export type AndroidManagementApi = ReturnType<typeof androidManagementApi>

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { ArrowLeft, Desktop, CheckCircle, Info } from '@phosphor-icons/react'
 import { ApiClientError } from '../../../shared/api/client'
@@ -8,10 +8,16 @@ import { Select } from '../../../shared/components/ui/select'
 import { Switch } from '../../../shared/components/ui/switch'
 import type { AndroidApi, AndroidCreate, AndroidDevice, AndroidEnvironment } from '../api'
 
-type Values = { name: string; imageId: string; width: number; height: number; dpi: number; cpu: number; memoryMb: number; start: boolean }
+type Values = { name: string; imageId: string; width: number; height: number; dpi: number; cpu: number; memoryMb: number; start: boolean; allowUnknownDiskEstimate: boolean }
 export function CreateDeviceForm({ environment, source, api, onCreated, onCancel, disabled }: { environment: AndroidEnvironment; source?: AndroidDevice; api: AndroidApi; onCreated(device: AndroidDevice): void; onCancel(): void; disabled: boolean }) {
-  const form = useForm<Values>({ defaultValues: { name: source ? `${source.name} 副本` : '测试设备', imageId: source?.imageId ?? environment.images?.[0]?.id ?? '', width: source?.width ?? 720, height: source?.height ?? 1280, dpi: source?.dpi ?? 320, cpu: source?.cpu ?? 1, memoryMb: source?.memoryMb ?? 1536, start: true } })
+  const form = useForm<Values>({ defaultValues: { name: source ? `${source.name} 副本` : '测试设备', imageId: source?.imageId ?? environment.images?.[0]?.id ?? '', width: source?.width ?? 720, height: source?.height ?? 1280, dpi: source?.dpi ?? 320, cpu: source?.cpu ?? 1, memoryMb: source?.memoryMb ?? 1536, start: true, allowUnknownDiskEstimate: false } })
   const values = form.watch()
+  useEffect(() => {
+    const subscription = form.watch((_, { name }) => {
+      if (name && name !== 'allowUnknownDiskEstimate') form.setValue('allowUnknownDiskEstimate', false)
+    })
+    return () => subscription.unsubscribe()
+  }, [form])
   const pending = useRef<AndroidCreate | null>(null)
   const [uncertain, setUncertain] = useState(false)
   const [error, setError] = useState('')
@@ -50,7 +56,7 @@ export function CreateDeviceForm({ environment, source, api, onCreated, onCancel
           </div></details>
           {(errors.cpu || errors.memoryMb || errors.dpi) && <p role="alert" className="text-sm text-red-700">请填写配置范围内的数值。</p>}
         </section>
-        <section className="space-y-5 py-4"><h2 className="flex items-center gap-3 text-lg font-semibold"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-clay text-sm text-white">3</span>数据与启动</h2><div className="rounded-control border border-clay bg-clay-soft/40 p-4"><h3 className="text-sm font-medium">持久实例</h3><p className="mt-1 text-xs text-muted">停止和结束工作流都会保留应用与数据。</p></div><div className="flex items-center gap-3"><Switch id="device-start" checked={values.start} onCheckedChange={value => form.setValue('start', value, { shouldDirty: true })} /><label htmlFor="device-start" className="text-sm">创建后启动</label></div></section>
+        <section className="space-y-5 py-4"><h2 className="flex items-center gap-3 text-lg font-semibold"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-clay text-sm text-white">3</span>数据与启动</h2><div className="rounded-control border border-clay bg-clay-soft/40 p-4"><h3 className="text-sm font-medium">持久实例</h3><p className="mt-1 text-xs text-muted">停止和结束工作流都会保留应用与数据。</p></div><div className="flex items-center gap-3"><Switch id="device-start" checked={values.start} onCheckedChange={value => form.setValue('start', value, { shouldDirty: true })} /><label htmlFor="device-start" className="text-sm">创建后启动</label></div><label className="flex items-start gap-2 text-sm"><input type="checkbox" {...form.register('allowUnknownDiskEstimate')} />最终磁盘占用无法可靠估计；我确认继续创建。</label></section>
       </fieldset>
       <aside className="rounded-card border border-line bg-surface p-6"><h2 className="border-b border-line pb-4 font-semibold">创建预览</h2><dl className="space-y-5 py-6 text-sm">{[['名称', values.name || '未命名'], ['数量', '1 台'], ['系统', environment.images?.find(image => image.id === values.imageId)?.name ?? '系统版本待核实'], ['分辨率', `${values.width} × ${values.height}`], ['资源', `${values.cpu} CPU · ${values.memoryMb} MiB`], ['数据', '独立持久保存']].map(([label, value]) => <div key={label} className="grid grid-cols-[72px_1fr] gap-3"><dt className="text-muted">{label}</dt><dd className="break-words">{value}</dd></div>)}</dl><div className="space-y-4 border-t border-line pt-5 text-sm"><h3 className="font-medium">运行环境</h3><p className="flex items-center gap-3"><Desktop size={20} />Mac 本机</p><p className="flex items-center gap-3 text-sage-strong"><CheckCircle size={20} />{environment.available ? '运行环境已连接' : '环境尚未就绪'}</p><p className="text-xs text-muted">VM：{environment.cpuCount ?? '—'} CPU · {environment.memoryMb ?? '—'} MiB</p><p className="flex gap-2 text-xs text-muted"><Info size={16} className="shrink-0" />启动前会核对内存预算；容器启动后还需等待 Android 就绪。</p></div></aside>
     </div>

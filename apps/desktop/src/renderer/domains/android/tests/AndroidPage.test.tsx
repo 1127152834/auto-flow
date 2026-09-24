@@ -406,8 +406,35 @@ it('submits retained-volume restoration through the public device operation', as
   render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
   await userEvent.click(await screen.findByRole('button', { name: '恢复实例' }))
   expect(screen.getByRole('heading', { name: '恢复保留数据' })).toBeVisible()
+  const consent = screen.getByRole('checkbox', { name: /最终磁盘占用无法可靠估计/ })
+  expect(consent).not.toBeChecked()
+  await userEvent.click(consent)
   await userEvent.click(screen.getByRole('button', { name: '确认操作' }))
-  await waitFor(() => expect(mocks.client.request).toHaveBeenCalledWith(`/api/v1/android/devices/${retained.deviceId}/operations`, expect.objectContaining({ body: expect.objectContaining({ action: 'restore', deleteData: false }) })))
+  await waitFor(() => expect(mocks.client.request).toHaveBeenCalledWith(`/api/v1/android/devices/${retained.deviceId}/operations`, expect.objectContaining({ body: expect.objectContaining({ action: 'restore', deleteData: false, allowUnknownDiskEstimate: true }) })))
+})
+
+it('keeps the retained restore confirmation and request ID after a lost response', async () => {
+  const retained = { ...devices[0], androidStatus: 'retained', dataRetained: true }
+  const fallback = mocks.client.request.getMockImplementation()!
+  let sent = 0
+  mocks.client.request.mockImplementation((path: string, init?: { method?: string }) => {
+    if (path === '/api/v1/android/management/devices?limit=50') return Promise.resolve({ items: [{ deviceId: retained.deviceId, revision: retained.generation, name: retained.name, runtimeState: 'retained', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: retained, latestOperation: null, allowedActions: ['restore'], blockedReasons: {} }], total: 1, nextCursor: null })
+    if (path === '/api/v1/android/devices') return Promise.resolve([retained])
+    if (path.endsWith('/operations') && init?.method === 'POST') return ++sent === 1 ? Promise.reject(new Error('响应丢失')) : Promise.resolve(retained)
+    return fallback(path, init)
+  })
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: '恢复实例' }))
+  const consent = screen.getByRole('checkbox', { name: /最终磁盘占用无法可靠估计/ })
+  await userEvent.click(consent)
+  await userEvent.click(screen.getByRole('button', { name: '确认操作' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('响应丢失')
+  expect(consent).toBeDisabled()
+  expect(screen.getByRole('button', { name: '取消' })).toBeDisabled()
+  await userEvent.click(screen.getByRole('button', { name: '确认操作' }))
+  await waitFor(() => expect(sent).toBe(2))
+  const bodies = mocks.client.request.mock.calls.filter(([path, init]) => path.endsWith('/operations') && init?.method === 'POST').map(([, init]) => init.body)
+  expect(bodies[1]).toEqual(bodies[0])
 })
 it('cleanup preview includes registered backups while diagnostics remain device scoped', async () => {
   const backup = { id: 'backup-1', deviceId: devices[0].deviceId, bytes: 12, imageId: profile.imageId, sha256: 'digest', formatVersion: 1, state: 'ready', createdAt: '' }
@@ -449,21 +476,38 @@ it('defaults to one persistent instance and preserves the batch id after an unkn
   const submit = vi.fn().mockRejectedValue(new Error('连接中断'))
   render(<CreateInstances profiles={[profile]} environment={environment} onBack={noop} onProfiles={noop} onSubmit={submit} />)
   expect(screen.getByRole('spinbutton', { name: '数量' })).toHaveValue(1)
+  const consent = screen.getByRole('checkbox', { name: /最终磁盘占用无法可靠估计/ })
+  expect(consent).not.toBeChecked()
+  await userEvent.click(consent)
   await userEvent.click(screen.getByRole('button', { name: '创建并启动' }))
+  expect(consent).toBeDisabled()
   await userEvent.click(await screen.findByRole('button', { name: '按原编号核实创建' }))
   expect(submit.mock.calls[0][0]).toEqual(submit.mock.calls[1][0])
-  expect(submit.mock.calls[0][0]).toMatchObject({ quantity: 1, instanceType: 'persistent' })
+  expect(submit.mock.calls[0][0]).toMatchObject({ quantity: 1, instanceType: 'persistent', allowUnknownDiskEstimate: true })
+})
+
+it('resets batch disk confirmation after changing the target configuration', async () => {
+  const submit = vi.fn(async (_value: BatchRequest): Promise<void> => {})
+  render(<CreateInstances profiles={[profile]} environment={environment} onBack={noop} onProfiles={noop} onSubmit={submit} />)
+  const consent = screen.getByRole('checkbox', { name: /最终磁盘占用无法可靠估计/ })
+  await userEvent.click(consent)
+  await userEvent.clear(screen.getByRole('textbox', { name: '实例名称' }))
+  await userEvent.type(screen.getByRole('textbox', { name: '实例名称' }), '新设备')
+  expect(consent).not.toBeChecked()
+  await userEvent.click(screen.getByRole('button', { name: '创建并启动' }))
+  await waitFor(() => expect(submit).toHaveBeenCalled())
+  expect(submit.mock.calls[0][0]).toMatchObject({ allowUnknownDiskEstimate: false })
 })
 
 it('hides archived profiles while copying the source configuration snapshot', async () => {
   const archived = { ...profile, id: 'archived-profile', name: '已归档环境', archived: true }
   const submit = vi.fn(async (_value: BatchRequest): Promise<void> => {})
-  render(<CreateInstances profiles={[archived, profile]} source={devices[0]} sourceSnapshot={{ profileId: profile.id, profileRevision: 7, width: 1080, height: 1920, locale: 'en-US', timezone: 'UTC' }} environment={environment} onBack={noop} onProfiles={noop} onSubmit={submit} />)
+  render(<CreateInstances profiles={[archived, profile]} source={devices[0]} sourceSnapshot={{ profileId: profile.id, profileRevision: 7, width: 1080, height: 1920, locale: 'en-US', timezone: 'UTC', allowUnknownDiskEstimate: true }} environment={environment} onBack={noop} onProfiles={noop} onSubmit={submit} />)
   expect(screen.queryByRole('option', { name: '已归档环境' })).not.toBeInTheDocument()
   expect(screen.getByLabelText('分辨率')).toHaveValue('1080x1920')
   await userEvent.click(screen.getByRole('button', { name: '创建并启动' }))
   await waitFor(() => expect(submit).toHaveBeenCalled())
-  expect(submit.mock.calls[0][0]).toMatchObject({ sourceDeviceId: devices[0].deviceId, profileRevision: 7, width: 1080, height: 1920, locale: 'en-US', timezone: 'UTC' })
+  expect(submit.mock.calls[0][0]).toMatchObject({ sourceDeviceId: devices[0].deviceId, profileRevision: 7, width: 1080, height: 1920, locale: 'en-US', timezone: 'UTC', allowUnknownDiskEstimate: false })
 })
 
 it('keeps an archived source snapshot selectable and blocks creation after editing without an active template', async () => {
