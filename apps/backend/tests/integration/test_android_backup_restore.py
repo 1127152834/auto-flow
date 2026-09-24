@@ -378,6 +378,9 @@ class _Runtime:
     async def inspect(self, _device):
         return {"androidStatus": "stopped"}
 
+    async def estimate_backup_bytes(self, _device):
+        return len(self.payload)
+
     async def backup_volume(self, _device):
         return self.payload
 

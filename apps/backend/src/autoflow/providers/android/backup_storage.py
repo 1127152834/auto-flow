@@ -98,6 +98,25 @@ class BackupStorage:
         self.staging = self.root / "staging"
         self.final = self.root / "final"
 
+    def require_space(self, archive_bytes: int, manifest_bytes: int) -> None:
+        if type(archive_bytes) is not int or archive_bytes <= 0:
+            raise AndroidError("ANDROID_DISK_ESTIMATE_UNKNOWN", "无法估计备份所需空间，归档尚未写入", 409)
+        target = self.staging
+        while not target.exists():
+            target = target.parent
+        try:
+            free = shutil.disk_usage(target).free
+            block = os.statvfs(target).f_frsize
+            if type(free) is not int or free < 0 or type(block) is not int or block <= 0:
+                raise ValueError("invalid filesystem capacity")
+        except (OSError, ValueError) as error:
+            raise AndroidError("ANDROID_DISK_PROBE_FAILED", "无法核实备份目录可用空间，归档尚未写入", 409) from error
+        # ponytail: one block per new directory is an estimate; retain ENOSPC cleanup for metadata growth and external writers.
+        directory_blocks = 1 + sum(not path.exists() for path in (self.root, self.staging, self.final))
+        required = sum((size + block - 1) // block * block for size in (archive_bytes, manifest_bytes)) + block * directory_blocks
+        if free < required:
+            raise AndroidError("ANDROID_DISK_SPACE_INSUFFICIENT", f"备份目录空间不足：预计需要 {required} 字节，可用 {free} 字节", 409)
+
     @contextmanager
     def lock(self):
         lock = ExclusiveFileLock(self.root.parent / "android-backups.lock")

@@ -1,0 +1,296 @@
+FFFFFFFFF                                                                [100%]
+=================================== FAILURES ===================================
+_ test_backup_disk_admission_blocks_before_archive_and_staging[None-1000000000-False-ANDROID_DISK_ESTIMATE_UNKNOWN] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-199/test_backup_disk_admission_blo0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10c12c390>
+estimate = None, free = 1000000000, probe_error = False
+code = 'ANDROID_DISK_ESTIMATE_UNKNOWN'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(("estimate", "free", "probe_error", "code"), [
+        (None, 10**9, False, "ANDROID_DISK_ESTIMATE_UNKNOWN"),
+        (-1, 10**9, False, "ANDROID_DISK_ESTIMATE_UNKNOWN"),
+        (10240, 0, False, "ANDROID_DISK_SPACE_INSUFFICIENT"),
+        (10240, 12288, False, "ANDROID_DISK_SPACE_INSUFFICIENT"),
+        (10240, 10**9, True, "ANDROID_DISK_PROBE_FAILED"),
+    ])
+    async def test_backup_disk_admission_blocks_before_archive_and_staging(tmp_path, monkeypatch, estimate, free, probe_error, code):
+        from types import SimpleNamespace
+        from autoflow.providers.android import backup_storage
+
+        runtime = _Runtime(b"unused")
+        runtime.estimate_backup_bytes = AsyncMock(return_value=estimate)
+        runtime.backup_volume = AsyncMock(return_value=b"unused")
+        resources = _Resources()
+        service = AndroidBackupService(resources, tmp_path)
+        device = {"deviceId": "device", "imageId": "image", "control": "idle", "creationConfig": {"name": "test"}}
+        probe = Mock(side_effect=OSError("unavailable") if probe_error else None, return_value=SimpleNamespace(free=free))
+        monkeypatch.setattr(backup_storage.shutil, "disk_usage", probe)
+        monkeypatch.setattr(backup_storage.os, "statvfs", lambda _path: SimpleNamespace(f_frsize=4096))
+        with pytest.raises(AndroidError) as error:
+            await service.create_with_runtime(device, {"androidStatus": "stopped"}, runtime)
+>       assert error.value.code == code
+E       AssertionError: assert 'ANDROID_BACKUP_INCOMPATIBLE' == 'ANDROID_DISK...IMATE_UNKNOWN'
+E
+E         - ANDROID_DISK_ESTIMATE_UNKNOWN
+E         + ANDROID_BACKUP_INCOMPATIBLE
+
+apps/backend/tests/unit/test_android_backup.py:459: AssertionError
+_ test_backup_disk_admission_blocks_before_archive_and_staging[-1-1000000000-False-ANDROID_DISK_ESTIMATE_UNKNOWN] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-199/test_backup_disk_admission_blo1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10c11df10>
+estimate = -1, free = 1000000000, probe_error = False
+code = 'ANDROID_DISK_ESTIMATE_UNKNOWN'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(("estimate", "free", "probe_error", "code"), [
+        (None, 10**9, False, "ANDROID_DISK_ESTIMATE_UNKNOWN"),
+        (-1, 10**9, False, "ANDROID_DISK_ESTIMATE_UNKNOWN"),
+        (10240, 0, False, "ANDROID_DISK_SPACE_INSUFFICIENT"),
+        (10240, 12288, False, "ANDROID_DISK_SPACE_INSUFFICIENT"),
+        (10240, 10**9, True, "ANDROID_DISK_PROBE_FAILED"),
+    ])
+    async def test_backup_disk_admission_blocks_before_archive_and_staging(tmp_path, monkeypatch, estimate, free, probe_error, code):
+        from types import SimpleNamespace
+        from autoflow.providers.android import backup_storage
+
+        runtime = _Runtime(b"unused")
+        runtime.estimate_backup_bytes = AsyncMock(return_value=estimate)
+        runtime.backup_volume = AsyncMock(return_value=b"unused")
+        resources = _Resources()
+        service = AndroidBackupService(resources, tmp_path)
+        device = {"deviceId": "device", "imageId": "image", "control": "idle", "creationConfig": {"name": "test"}}
+        probe = Mock(side_effect=OSError("unavailable") if probe_error else None, return_value=SimpleNamespace(free=free))
+        monkeypatch.setattr(backup_storage.shutil, "disk_usage", probe)
+        monkeypatch.setattr(backup_storage.os, "statvfs", lambda _path: SimpleNamespace(f_frsize=4096))
+        with pytest.raises(AndroidError) as error:
+            await service.create_with_runtime(device, {"androidStatus": "stopped"}, runtime)
+>       assert error.value.code == code
+E       AssertionError: assert 'ANDROID_BACKUP_INCOMPATIBLE' == 'ANDROID_DISK...IMATE_UNKNOWN'
+E
+E         - ANDROID_DISK_ESTIMATE_UNKNOWN
+E         + ANDROID_BACKUP_INCOMPATIBLE
+
+apps/backend/tests/unit/test_android_backup.py:459: AssertionError
+_ test_backup_disk_admission_blocks_before_archive_and_staging[10240-0-False-ANDROID_DISK_SPACE_INSUFFICIENT] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-199/test_backup_disk_admission_blo2')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10c13aed0>
+estimate = 10240, free = 0, probe_error = False
+code = 'ANDROID_DISK_SPACE_INSUFFICIENT'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(("estimate", "free", "probe_error", "code"), [
+        (None, 10**9, False, "ANDROID_DISK_ESTIMATE_UNKNOWN"),
+        (-1, 10**9, False, "ANDROID_DISK_ESTIMATE_UNKNOWN"),
+        (10240, 0, False, "ANDROID_DISK_SPACE_INSUFFICIENT"),
+        (10240, 12288, False, "ANDROID_DISK_SPACE_INSUFFICIENT"),
+        (10240, 10**9, True, "ANDROID_DISK_PROBE_FAILED"),
+    ])
+    async def test_backup_disk_admission_blocks_before_archive_and_staging(tmp_path, monkeypatch, estimate, free, probe_error, code):
+        from types import SimpleNamespace
+        from autoflow.providers.android import backup_storage
+
+        runtime = _Runtime(b"unused")
+        runtime.estimate_backup_bytes = AsyncMock(return_value=estimate)
+        runtime.backup_volume = AsyncMock(return_value=b"unused")
+        resources = _Resources()
+        service = AndroidBackupService(resources, tmp_path)
+        device = {"deviceId": "device", "imageId": "image", "control": "idle", "creationConfig": {"name": "test"}}
+        probe = Mock(side_effect=OSError("unavailable") if probe_error else None, return_value=SimpleNamespace(free=free))
+        monkeypatch.setattr(backup_storage.shutil, "disk_usage", probe)
+        monkeypatch.setattr(backup_storage.os, "statvfs", lambda _path: SimpleNamespace(f_frsize=4096))
+        with pytest.raises(AndroidError) as error:
+            await service.create_with_runtime(device, {"androidStatus": "stopped"}, runtime)
+>       assert error.value.code == code
+E       AssertionError: assert 'ANDROID_BACKUP_INCOMPATIBLE' == 'ANDROID_DISK..._INSUFFICIENT'
+E
+E         - ANDROID_DISK_SPACE_INSUFFICIENT
+E         + ANDROID_BACKUP_INCOMPATIBLE
+
+apps/backend/tests/unit/test_android_backup.py:459: AssertionError
+_ test_backup_disk_admission_blocks_before_archive_and_staging[10240-12288-False-ANDROID_DISK_SPACE_INSUFFICIENT] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-199/test_backup_disk_admission_blo3')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10c2a8f50>
+estimate = 10240, free = 12288, probe_error = False
+code = 'ANDROID_DISK_SPACE_INSUFFICIENT'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(("estimate", "free", "probe_error", "code"), [
+        (None, 10**9, False, "ANDROID_DISK_ESTIMATE_UNKNOWN"),
+        (-1, 10**9, False, "ANDROID_DISK_ESTIMATE_UNKNOWN"),
+        (10240, 0, False, "ANDROID_DISK_SPACE_INSUFFICIENT"),
+        (10240, 12288, False, "ANDROID_DISK_SPACE_INSUFFICIENT"),
+        (10240, 10**9, True, "ANDROID_DISK_PROBE_FAILED"),
+    ])
+    async def test_backup_disk_admission_blocks_before_archive_and_staging(tmp_path, monkeypatch, estimate, free, probe_error, code):
+        from types import SimpleNamespace
+        from autoflow.providers.android import backup_storage
+
+        runtime = _Runtime(b"unused")
+        runtime.estimate_backup_bytes = AsyncMock(return_value=estimate)
+        runtime.backup_volume = AsyncMock(return_value=b"unused")
+        resources = _Resources()
+        service = AndroidBackupService(resources, tmp_path)
+        device = {"deviceId": "device", "imageId": "image", "control": "idle", "creationConfig": {"name": "test"}}
+        probe = Mock(side_effect=OSError("unavailable") if probe_error else None, return_value=SimpleNamespace(free=free))
+        monkeypatch.setattr(backup_storage.shutil, "disk_usage", probe)
+        monkeypatch.setattr(backup_storage.os, "statvfs", lambda _path: SimpleNamespace(f_frsize=4096))
+        with pytest.raises(AndroidError) as error:
+            await service.create_with_runtime(device, {"androidStatus": "stopped"}, runtime)
+>       assert error.value.code == code
+E       AssertionError: assert 'ANDROID_BACKUP_INCOMPATIBLE' == 'ANDROID_DISK..._INSUFFICIENT'
+E
+E         - ANDROID_DISK_SPACE_INSUFFICIENT
+E         + ANDROID_BACKUP_INCOMPATIBLE
+
+apps/backend/tests/unit/test_android_backup.py:459: AssertionError
+_ test_backup_disk_admission_blocks_before_archive_and_staging[10240-1000000000-True-ANDROID_DISK_PROBE_FAILED] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-199/test_backup_disk_admission_blo4')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10c108810>
+estimate = 10240, free = 1000000000, probe_error = True
+code = 'ANDROID_DISK_PROBE_FAILED'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(("estimate", "free", "probe_error", "code"), [
+        (None, 10**9, False, "ANDROID_DISK_ESTIMATE_UNKNOWN"),
+        (-1, 10**9, False, "ANDROID_DISK_ESTIMATE_UNKNOWN"),
+        (10240, 0, False, "ANDROID_DISK_SPACE_INSUFFICIENT"),
+        (10240, 12288, False, "ANDROID_DISK_SPACE_INSUFFICIENT"),
+        (10240, 10**9, True, "ANDROID_DISK_PROBE_FAILED"),
+    ])
+    async def test_backup_disk_admission_blocks_before_archive_and_staging(tmp_path, monkeypatch, estimate, free, probe_error, code):
+        from types import SimpleNamespace
+        from autoflow.providers.android import backup_storage
+
+        runtime = _Runtime(b"unused")
+        runtime.estimate_backup_bytes = AsyncMock(return_value=estimate)
+        runtime.backup_volume = AsyncMock(return_value=b"unused")
+        resources = _Resources()
+        service = AndroidBackupService(resources, tmp_path)
+        device = {"deviceId": "device", "imageId": "image", "control": "idle", "creationConfig": {"name": "test"}}
+        probe = Mock(side_effect=OSError("unavailable") if probe_error else None, return_value=SimpleNamespace(free=free))
+        monkeypatch.setattr(backup_storage.shutil, "disk_usage", probe)
+        monkeypatch.setattr(backup_storage.os, "statvfs", lambda _path: SimpleNamespace(f_frsize=4096))
+        with pytest.raises(AndroidError) as error:
+            await service.create_with_runtime(device, {"androidStatus": "stopped"}, runtime)
+>       assert error.value.code == code
+E       AssertionError: assert 'ANDROID_BACKUP_INCOMPATIBLE' == 'ANDROID_DISK_PROBE_FAILED'
+E
+E         - ANDROID_DISK_PROBE_FAILED
+E         + ANDROID_BACKUP_INCOMPATIBLE
+
+apps/backend/tests/unit/test_android_backup.py:459: AssertionError
+_ test_backup_size_estimate_counts_guest_tar_with_same_metadata_options[20480\n] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-199/test_backup_size_estimate_coun0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10ae5b050>
+result = b'20480\n'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("result", [b"20480\n", b"", b"unknown\n", b"-1\n"])
+    async def test_backup_size_estimate_counts_guest_tar_with_same_metadata_options(tmp_path, monkeypatch, result):
+        runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
+        runtime._owned_volume_mount = AsyncMock(return_value="/var/lib/docker/volumes/owned/_data")
+        guest = AsyncMock(return_value=result)
+        monkeypatch.setattr(mac, "run", guest)
+        monkeypatch.setattr(mac, "run_file", AsyncMock())
+        if result == b"20480\n":
+>           assert await runtime.estimate_backup_bytes({"deviceId": "owned"}) == 20480
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'MacAndroidRuntime' object has no attribute 'estimate_backup_bytes'
+
+apps/backend/tests/unit/test_android_runtime.py:760: AttributeError
+___ test_backup_size_estimate_counts_guest_tar_with_same_metadata_options[] ____
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-199/test_backup_size_estimate_coun1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10ae5b490>
+result = b''
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("result", [b"20480\n", b"", b"unknown\n", b"-1\n"])
+    async def test_backup_size_estimate_counts_guest_tar_with_same_metadata_options(tmp_path, monkeypatch, result):
+        runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
+        runtime._owned_volume_mount = AsyncMock(return_value="/var/lib/docker/volumes/owned/_data")
+        guest = AsyncMock(return_value=result)
+        monkeypatch.setattr(mac, "run", guest)
+        monkeypatch.setattr(mac, "run_file", AsyncMock())
+        if result == b"20480\n":
+            assert await runtime.estimate_backup_bytes({"deviceId": "owned"}) == 20480
+            command = guest.await_args.args[0]
+            assert command[:6] == ["limactl", "shell", "--workdir=/tmp", mac.VM, "sudo", "python3"]
+            assert command[8:] == runtime._backup_argv("/var/lib/docker/volumes/owned/_data")[5:]
+        else:
+            with pytest.raises(AndroidError) as error:
+>               await runtime.estimate_backup_bytes({"deviceId": "owned"})
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               AttributeError: 'MacAndroidRuntime' object has no attribute 'estimate_backup_bytes'
+
+apps/backend/tests/unit/test_android_runtime.py:766: AttributeError
+_ test_backup_size_estimate_counts_guest_tar_with_same_metadata_options[unknown\n] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-199/test_backup_size_estimate_coun2')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10c2844d0>
+result = b'unknown\n'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("result", [b"20480\n", b"", b"unknown\n", b"-1\n"])
+    async def test_backup_size_estimate_counts_guest_tar_with_same_metadata_options(tmp_path, monkeypatch, result):
+        runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
+        runtime._owned_volume_mount = AsyncMock(return_value="/var/lib/docker/volumes/owned/_data")
+        guest = AsyncMock(return_value=result)
+        monkeypatch.setattr(mac, "run", guest)
+        monkeypatch.setattr(mac, "run_file", AsyncMock())
+        if result == b"20480\n":
+            assert await runtime.estimate_backup_bytes({"deviceId": "owned"}) == 20480
+            command = guest.await_args.args[0]
+            assert command[:6] == ["limactl", "shell", "--workdir=/tmp", mac.VM, "sudo", "python3"]
+            assert command[8:] == runtime._backup_argv("/var/lib/docker/volumes/owned/_data")[5:]
+        else:
+            with pytest.raises(AndroidError) as error:
+>               await runtime.estimate_backup_bytes({"deviceId": "owned"})
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               AttributeError: 'MacAndroidRuntime' object has no attribute 'estimate_backup_bytes'
+
+apps/backend/tests/unit/test_android_runtime.py:766: AttributeError
+_ test_backup_size_estimate_counts_guest_tar_with_same_metadata_options[-1\n] __
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-199/test_backup_size_estimate_coun3')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10c359690>
+result = b'-1\n'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("result", [b"20480\n", b"", b"unknown\n", b"-1\n"])
+    async def test_backup_size_estimate_counts_guest_tar_with_same_metadata_options(tmp_path, monkeypatch, result):
+        runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
+        runtime._owned_volume_mount = AsyncMock(return_value="/var/lib/docker/volumes/owned/_data")
+        guest = AsyncMock(return_value=result)
+        monkeypatch.setattr(mac, "run", guest)
+        monkeypatch.setattr(mac, "run_file", AsyncMock())
+        if result == b"20480\n":
+            assert await runtime.estimate_backup_bytes({"deviceId": "owned"}) == 20480
+            command = guest.await_args.args[0]
+            assert command[:6] == ["limactl", "shell", "--workdir=/tmp", mac.VM, "sudo", "python3"]
+            assert command[8:] == runtime._backup_argv("/var/lib/docker/volumes/owned/_data")[5:]
+        else:
+            with pytest.raises(AndroidError) as error:
+>               await runtime.estimate_backup_bytes({"deviceId": "owned"})
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               AttributeError: 'MacAndroidRuntime' object has no attribute 'estimate_backup_bytes'
+
+apps/backend/tests/unit/test_android_runtime.py:766: AttributeError
+=========================== short test summary info ============================
+FAILED apps/backend/tests/unit/test_android_backup.py::test_backup_disk_admission_blocks_before_archive_and_staging[None-1000000000-False-ANDROID_DISK_ESTIMATE_UNKNOWN]
+FAILED apps/backend/tests/unit/test_android_backup.py::test_backup_disk_admission_blocks_before_archive_and_staging[-1-1000000000-False-ANDROID_DISK_ESTIMATE_UNKNOWN]
+FAILED apps/backend/tests/unit/test_android_backup.py::test_backup_disk_admission_blocks_before_archive_and_staging[10240-0-False-ANDROID_DISK_SPACE_INSUFFICIENT]
+FAILED apps/backend/tests/unit/test_android_backup.py::test_backup_disk_admission_blocks_before_archive_and_staging[10240-12288-False-ANDROID_DISK_SPACE_INSUFFICIENT]
+FAILED apps/backend/tests/unit/test_android_backup.py::test_backup_disk_admission_blocks_before_archive_and_staging[10240-1000000000-True-ANDROID_DISK_PROBE_FAILED]
+FAILED apps/backend/tests/unit/test_android_runtime.py::test_backup_size_estimate_counts_guest_tar_with_same_metadata_options[20480\n]
+FAILED apps/backend/tests/unit/test_android_runtime.py::test_backup_size_estimate_counts_guest_tar_with_same_metadata_options[]
+FAILED apps/backend/tests/unit/test_android_runtime.py::test_backup_size_estimate_counts_guest_tar_with_same_metadata_options[unknown\n]
+FAILED apps/backend/tests/unit/test_android_runtime.py::test_backup_size_estimate_counts_guest_tar_with_same_metadata_options[-1\n]
+9 failed, 92 deselected in 0.46s

@@ -746,3 +746,23 @@ async def test_explicit_recovery_refuses_indeterminate_app_marker(tmp_path, monk
     assert error.value.code == "ANDROID_RECOVERY_REQUIRED"
     assert device["pendingCommand"] == marker
     command.assert_awaited_once_with("exec", "container", "cat", marker, timeout=5)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("result", [b"20480\n", b"", b"unknown\n", b"-1\n"])
+async def test_backup_size_estimate_counts_guest_tar_with_same_metadata_options(tmp_path, monkeypatch, result):
+    runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
+    runtime._owned_volume_mount = AsyncMock(return_value="/var/lib/docker/volumes/owned/_data")
+    guest = AsyncMock(return_value=result)
+    monkeypatch.setattr(mac, "run", guest)
+    monkeypatch.setattr(mac, "run_file", AsyncMock())
+    if result == b"20480\n":
+        assert await runtime.estimate_backup_bytes({"deviceId": "owned"}) == 20480
+        command = guest.await_args.args[0]
+        assert command[:6] == ["limactl", "shell", "--workdir=/tmp", mac.VM, "sudo", "python3"]
+        assert command[8:] == runtime._backup_argv("/var/lib/docker/volumes/owned/_data")[5:]
+    else:
+        with pytest.raises(AndroidError) as error:
+            await runtime.estimate_backup_bytes({"deviceId": "owned"})
+        assert error.value.code == "ANDROID_DISK_ESTIMATE_UNKNOWN"
+    mac.run_file.assert_not_awaited()

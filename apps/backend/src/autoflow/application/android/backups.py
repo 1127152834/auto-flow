@@ -119,6 +119,7 @@ class AndroidBackupService:
             if operation.state in {"running", "needs_verification", "failed", "cancelled"}:
                 raise AndroidError("ANDROID_BACKUP_REQUEST_REPLAYED", "备份请求已处理，请先核实操作结果", 409)
             operation = self.operations.transition(operation.operation_id, "queued", "running", {"stage_code": "checking"})
+        write_started = False
         try:
             with self.storage.lock(), self._runtime_lock(runtime):
                 if hasattr(runtime, "inspect"):
@@ -128,7 +129,18 @@ class AndroidBackupService:
                     raise AndroidError("ANDROID_BACKUP_REQUIRES_STOPPED", "备份前必须停止实例并释放控制会话", 409)
                 if not hasattr(runtime, "backup_volume") and not hasattr(runtime, "backup_volume_to_path"):
                     raise AndroidError("ANDROID_BACKUP_UNAVAILABLE", "运行时尚未提供数据卷归档适配器", 503)
+                estimate = getattr(runtime, "estimate_backup_bytes", None)
+                if not callable(estimate):
+                    raise AndroidError("ANDROID_DISK_ESTIMATE_UNKNOWN", "运行时无法估计备份所需空间，归档尚未写入", 409)
+                try:
+                    archive_bytes = await estimate(device)
+                except (OSError, TimeoutError) as error:
+                    raise AndroidError("ANDROID_DISK_ESTIMATE_UNKNOWN", "无法估计备份所需空间，归档尚未写入", 409) from error
+                manifest = {"formatVersion": 1, "deviceId": device["deviceId"], "imageId": device["imageId"], "config": device.get("creationConfig", {})}
+                manifest_text = json.dumps(manifest, ensure_ascii=False)
+                self.storage.require_space(archive_bytes, len(manifest_text.encode("utf-8")))
                 backup_id = str(uuid4())
+                write_started = True
                 staged = self.storage.stage(backup_id)
                 try:
                     data_path = staged / "data.tar"
@@ -138,9 +150,8 @@ class AndroidBackupService:
                         data_path.write_bytes(await runtime.backup_volume(device))
                     self._validate_archive(data_path)
                     os.chmod(data_path, 0o600)
-                    manifest = {"formatVersion": 1, "deviceId": device["deviceId"], "imageId": device["imageId"], "config": device.get("creationConfig", {})}
                     manifest_path = staged / "manifest.json"
-                    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False), encoding="utf-8")
+                    manifest_path.write_text(manifest_text, encoding="utf-8")
                     os.chmod(manifest_path, 0o600)
                     digest = hashlib.sha256()
                     size = 0
@@ -195,7 +206,10 @@ class AndroidBackupService:
             self._complete(operation, "needs_verification", code="BACKUP_RESULT_UNKNOWN", message=str(error))
             raise AndroidError("ANDROID_BACKUP_RESULT_UNKNOWN", "备份结果未知，请先核实后重试", 503) from error
         except asyncio.CancelledError:
-            self._complete(operation, "needs_verification", code="BACKUP_RESULT_UNKNOWN", message="请求已取消，备份结果未知")
+            if write_started:
+                self._complete(operation, "needs_verification", code="BACKUP_RESULT_UNKNOWN", message="请求已取消，备份结果未知")
+            else:
+                self._complete(operation, "failed", code="BACKUP_PREFLIGHT_CANCELLED", message="备份预检已取消，归档尚未写入")
             raise
         except Exception as error:
             self._complete(operation, "failed", code=getattr(error, "code", "ANDROID_BACKUP_FAILED"), message=str(error))

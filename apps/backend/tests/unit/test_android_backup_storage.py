@@ -118,3 +118,21 @@ def test_post_rename_sync_failure_does_not_leave_a_published_backup(tmp_path, mo
     with pytest.raises(OSError, match="fsync failure"):
         storage.finalize("backup")
     assert not (storage.final / "backup").exists()
+
+
+def test_first_backup_space_budget_includes_all_missing_directories(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+
+    from autoflow.domain.android.ports import AndroidError
+    from autoflow.providers.android import backup_storage
+
+    storage = backup_storage.BackupStorage(tmp_path / "backups")
+    free = 16384  # Two archive blocks, one manifest block and only one directory block.
+    monkeypatch.setattr(backup_storage.shutil, "disk_usage", lambda _path: SimpleNamespace(free=free))
+    monkeypatch.setattr(backup_storage.os, "statvfs", lambda _path: SimpleNamespace(f_frsize=4096))
+    with pytest.raises(AndroidError) as rejected:
+        storage.require_space(8192, 100)
+    assert rejected.value.code == "ANDROID_DISK_SPACE_INSUFFICIENT"
+    free = 28672  # Plus all four initially missing directories.
+    storage.require_space(8192, 100)
+    assert not storage.root.exists()

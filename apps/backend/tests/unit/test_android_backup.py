@@ -214,6 +214,9 @@ class _Resources:
 
 class _Runtime:
     def __init__(self, payload: bytes): self.payload = payload
+    async def estimate_backup_bytes(self, _device):
+        return len(self.payload)
+
     async def backup_volume(self, _device): return self.payload
 
 
@@ -431,3 +434,35 @@ async def test_direct_restore_rejects_existing_or_wrong_backup_target(tmp_path: 
         await service.restore_data(record["id"], target, runtime)
     assert error.value.code == "ANDROID_RESTORE_TARGET_INVALID"
     runtime.restore_volume.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(("estimate", "free", "probe_error", "code"), [
+    (None, 10**9, False, "ANDROID_DISK_ESTIMATE_UNKNOWN"),
+    (-1, 10**9, False, "ANDROID_DISK_ESTIMATE_UNKNOWN"),
+    (10240, 0, False, "ANDROID_DISK_SPACE_INSUFFICIENT"),
+    (10240, 12288, False, "ANDROID_DISK_SPACE_INSUFFICIENT"),
+    (10240, 10**9, True, "ANDROID_DISK_PROBE_FAILED"),
+])
+async def test_backup_disk_admission_blocks_before_archive_and_staging(tmp_path, monkeypatch, estimate, free, probe_error, code):
+    from types import SimpleNamespace
+
+    from autoflow.providers.android import backup_storage
+
+    runtime = _Runtime(b"unused")
+    runtime.estimate_backup_bytes = AsyncMock(return_value=estimate)
+    runtime.backup_volume = AsyncMock(return_value=b"unused")
+    resources = _Resources()
+    service = AndroidBackupService(resources, tmp_path)
+    device = {"deviceId": "device", "imageId": "image", "control": "idle", "creationConfig": {"name": "test"}}
+    probe = Mock(side_effect=OSError("unavailable") if probe_error else None, return_value=SimpleNamespace(free=free))
+    monkeypatch.setattr(backup_storage.shutil, "disk_usage", probe)
+    monkeypatch.setattr(backup_storage.os, "statvfs", lambda _path: SimpleNamespace(f_frsize=4096))
+    with pytest.raises(AndroidError) as error:
+        await service.create_with_runtime(device, {"androidStatus": "stopped"}, runtime)
+    assert error.value.code == code
+    runtime.backup_volume.assert_not_awaited()
+    assert not service.storage.staging.exists()
+    assert not resources.items
+    if estimate and estimate > 0:
+        probe.assert_called_once_with(tmp_path)

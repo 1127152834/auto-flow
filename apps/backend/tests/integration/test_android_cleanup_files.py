@@ -152,6 +152,9 @@ async def test_runtime_backup_and_restore_hold_the_cleanup_lease(tmp_path, actio
         async def inspect(self, _device):
             return {"androidStatus": "stopped"}
 
+        async def estimate_backup_bytes(self, _device):
+            return len(stream.getvalue())
+
         async def backup_volume(self, _device):
             if self.blocked:
                 entered.set()

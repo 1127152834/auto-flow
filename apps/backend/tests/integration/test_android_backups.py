@@ -36,7 +36,7 @@ async def test_backup_is_persisted_and_same_request_does_not_rearchive(
     replay = await service.create_with_runtime(device, None, runtime, "backup-1", 3)
 
     assert replay["id"] == first["id"]
-    assert runtime.backup_calls == 1
+    assert runtime.backup_calls == runtime.estimate_calls == 1
     assert (
         operations.by_request(str(tmp_path.resolve()), "backup-1").state == "succeeded"
     )
@@ -127,6 +127,7 @@ class _Runtime:
         self.payload = payload
         self.backup_error = backup_error
         self.backup_calls = 0
+        self.estimate_calls = 0
         self.locked = 0
 
     def lock(self):
@@ -137,6 +138,10 @@ class _Runtime:
 
     async def inspect(self, _device):
         return {"androidStatus": "stopped"}
+
+    async def estimate_backup_bytes(self, _device):
+        self.estimate_calls += 1
+        return len(self.payload)
 
     async def backup_volume(self, _device):
         self.backup_calls += 1
@@ -312,4 +317,62 @@ async def test_unverifiable_commit_preserves_archive_and_blocks_replay(tmp_path,
     with pytest.raises(AndroidError, match="已处理"):
         await fresh.create_with_runtime(_device(), None, runtime, "unverifiable", 3)
     assert runtime.backup_calls == 1
+    sessions.dispose()
+
+
+@pytest.mark.asyncio
+async def test_preflight_rejection_is_durable_and_failed_request_does_not_reestimate(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+
+    from autoflow.providers.android import backup_storage
+
+    sessions = _sessions(tmp_path)
+    resources = AndroidResourceRepository(sessions)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    service = AndroidBackupService(resources, tmp_path, operations)
+    runtime = _Runtime(_tar(b"preserved"))
+    monkeypatch.setattr(backup_storage.shutil, "disk_usage", lambda _path: SimpleNamespace(free=0))
+    with pytest.raises(AndroidError) as rejected:
+        await service.create_with_runtime(_device(), None, runtime, "no-disk", 1)
+    assert rejected.value.code == "ANDROID_DISK_SPACE_INSUFFICIENT"
+    fresh_operations = SqlAlchemyAndroidOperationRepository(sessions)
+    record = fresh_operations.by_request(str(tmp_path.resolve()), "no-disk")
+    assert record.state == "failed" and record.result_code == rejected.value.code
+    fresh_service = AndroidBackupService(AndroidResourceRepository(sessions), tmp_path, fresh_operations)
+    with pytest.raises(AndroidError) as replay:
+        await fresh_service.create_with_runtime(_device(), None, runtime, "no-disk", 1)
+    assert replay.value.code == "ANDROID_BACKUP_REQUEST_REPLAYED"
+    assert runtime.estimate_calls == 1 and runtime.backup_calls == 0
+    assert resources.list("backup") == []
+    assert not service.storage.staging.exists()
+    sessions.dispose()
+
+
+@pytest.mark.asyncio
+async def test_cancelled_backup_estimation_records_no_write_and_releases_for_new_request(tmp_path):
+    sessions = _sessions(tmp_path)
+    resources = AndroidResourceRepository(sessions)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    service = AndroidBackupService(resources, tmp_path, operations)
+    runtime = _Runtime(_tar(b"preserved"))
+    entered = asyncio.Event()
+    original_estimate = runtime.estimate_backup_bytes
+
+    async def suspended_estimate(_device):
+        entered.set()
+        await asyncio.Event().wait()
+
+    runtime.estimate_backup_bytes = suspended_estimate
+    task = asyncio.create_task(service.create_with_runtime(_device(), None, runtime, "cancel-estimate", 1))
+    await asyncio.wait_for(entered.wait(), 2)
+    task.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await task
+    record = operations.by_request(str(tmp_path.resolve()), "cancel-estimate")
+    assert record.state == "failed" and record.result_code == "BACKUP_PREFLIGHT_CANCELLED"
+    assert runtime.backup_calls == 0 and runtime.locked == 0
+    assert not service.storage.staging.exists()
+    runtime.estimate_backup_bytes = original_estimate
+    backup = await service.create_with_runtime(_device(), None, runtime, "new-estimate", 1)
+    assert backup["state"] == "available" and runtime.backup_calls == 1
     sessions.dispose()

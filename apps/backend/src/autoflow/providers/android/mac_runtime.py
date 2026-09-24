@@ -260,6 +260,22 @@ class MacAndroidRuntime:
                 "--format=posix", "--xattrs", "--xattrs-include=*", "--acls", "--selinux", "--numeric-owner",
                 "--transform=s@^_data@data@S", "-C", os.path.dirname(mountpoint), "-cf", "-", "_data"]
 
+    async def estimate_backup_bytes(self, device: dict[str, Any]) -> int:
+        mountpoint = await self._owned_volume_mount(device)
+        # Count the same metadata-preserving tar stream inside Lima; no host archive or helper container.
+        script = ("import subprocess,sys\n"
+                  "with subprocess.Popen(sys.argv[1:], stdout=subprocess.PIPE) as process:\n"
+                  " size = sum(len(chunk) for chunk in iter(lambda: process.stdout.read(1024 * 1024), b''))\n"
+                  " if process.wait(): raise SystemExit(1)\n"
+                  " print(size)\n")
+        try:
+            result = await run(["limactl", "shell", "--workdir=/tmp", VM, "sudo", "python3", "-c", script, *self._backup_argv(mountpoint)[5:]], 600)
+            if not re.fullmatch(rb"[0-9]+\s*", result) or int(result) <= 0:
+                raise ValueError("invalid archive size")
+            return int(result)
+        except (AndroidError, OSError, TimeoutError, ValueError) as error:
+            raise AndroidError("ANDROID_DISK_ESTIMATE_UNKNOWN", "无法估计备份所需空间，归档尚未写入，请检查运行环境后重试", 409) from error
+
     async def backup_volume_to_path(self, device: dict[str, Any], path: Path) -> None:
         mountpoint = await self._owned_volume_mount(device)
         try:

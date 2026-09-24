@@ -447,3 +447,49 @@ it('distinguishes admitted batch work from an unknown outcome without releasing 
   expect(screen.getByRole('button', { name: '开始新批次' })).toBeDisabled()
   expect(screen.getByRole('button', { name: '提交批量操作' })).toBeDisabled()
 })
+
+it.each(['ANDROID_DISK_SPACE_INSUFFICIENT', 'ANDROID_DISK_PROBE_FAILED', 'ANDROID_DISK_ESTIMATE_UNKNOWN'])('allows a fresh backup after confirmed preflight rejection %s', async (code) => {
+  const backup = vi.fn().mockRejectedValueOnce(new ApiClientError('备份尚未写入，请处理磁盘空间', 409, code)).mockResolvedValueOnce({ id: 'new-backup' })
+  const api = { backups: vi.fn(async () => []), backup, restoreBackup: vi.fn(), operationByRequest: vi.fn() }
+  render(<QueryClientProvider client={new QueryClient()}><BackupPanel api={api} deviceId="d1" revision={2} runtimeState="stopped" control="idle" hasControlSession={false} stale={false} /></QueryClientProvider>)
+  await userEvent.click(screen.getByRole('button', { name: '创建停机备份' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('备份尚未写入')
+  await userEvent.click(screen.getByRole('button', { name: '创建停机备份' }))
+  await vi.waitFor(() => expect(backup).toHaveBeenCalledTimes(2))
+  expect(backup.mock.calls[1][0].requestId).not.toBe(backup.mock.calls[0][0].requestId)
+  expect(api.operationByRequest).not.toHaveBeenCalled()
+})
+
+it('releases a failed backup only after reading its original durable result', async () => {
+  const backup = vi.fn().mockRejectedValueOnce(new Error('响应丢失')).mockResolvedValueOnce({ id: 'new-backup' })
+  const operationByRequest = vi.fn(async () => ({ operationId: 'op', requestId: 'original', targetId: 'd1', action: 'backup', state: 'failed', stageCode: 'failed', stageLabel: '预检已取消，未写入', resultCode: 'BACKUP_PREFLIGHT_CANCELLED', attempt: 1, createdAt: '' }))
+  const api = { backups: vi.fn(async () => []), backup, restoreBackup: vi.fn(), operationByRequest }
+  render(<QueryClientProvider client={new QueryClient()}><BackupPanel api={api} deviceId="d1" revision={2} runtimeState="stopped" control="idle" hasControlSession={false} stale={false} /></QueryClientProvider>)
+  await userEvent.click(screen.getByRole('button', { name: '创建停机备份' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('响应丢失')
+  const original = backup.mock.calls[0][0].requestId
+  await userEvent.click(screen.getByRole('button', { name: '核实原请求' }))
+  expect(operationByRequest).toHaveBeenCalledWith(original)
+  expect(await screen.findByRole('alert')).toHaveTextContent('预检已取消，未写入')
+  await userEvent.click(screen.getByRole('button', { name: '创建停机备份' }))
+  await vi.waitFor(() => expect(backup).toHaveBeenCalledTimes(2))
+  expect(backup.mock.calls[1][0].requestId).not.toBe(original)
+})
+
+it.each(['create', 'restore'])('keeps the original unknown %s receipt when another backup action is clicked', async (kind) => {
+  const record = { id: 'b1', deviceId: 'd1', bytes: 3, imageId: 'img', sha256: 'digest', formatVersion: 1, state: 'available', createdAt: '' }
+  const api = { backups: vi.fn(async () => [record]), backup: vi.fn().mockRejectedValue(new Error('响应丢失')), restoreBackup: vi.fn().mockRejectedValue(new Error('响应丢失')), operationByRequest: vi.fn().mockResolvedValue({ state: 'needs_verification', stageLabel: '待核实' }) }
+  render(<QueryClientProvider client={new QueryClient()}><BackupPanel api={api} deviceId="d1" revision={2} runtimeState="stopped" control="idle" hasControlSession={false} stale={false} /></QueryClientProvider>)
+  const create = screen.getByRole('button', { name: '创建停机备份' })
+  const restore = await screen.findByRole('button', { name: '恢复为新实例' })
+  await userEvent.click(kind === 'create' ? create : restore)
+  expect(await screen.findByRole('alert')).toHaveTextContent('响应丢失')
+  const requestId = kind === 'create' ? api.backup.mock.calls[0][0].requestId : api.restoreBackup.mock.calls[0][1].requestId
+  expect(create).toBeDisabled()
+  expect(restore).toBeDisabled()
+  await userEvent.click(kind === 'create' ? restore : create)
+  await userEvent.click(screen.getByRole('button', { name: '核实原请求' }))
+  expect(api.operationByRequest).toHaveBeenCalledWith(requestId)
+  expect(api.backup).toHaveBeenCalledTimes(kind === 'create' ? 1 : 0)
+  expect(api.restoreBackup).toHaveBeenCalledTimes(kind === 'restore' ? 1 : 0)
+})

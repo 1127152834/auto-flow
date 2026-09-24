@@ -1,4 +1,4 @@
-"""Opt-in real Mac backup ENOSPC and in-flight cancellation on a private disk."""
+"""Opt-in real Mac backup disk admission and cancellation on a private 64 MiB disk."""
 
 import argparse
 import asyncio
@@ -53,6 +53,23 @@ async def exercise(archive: Path):
         operations = SqlAlchemyAndroidOperationRepository(sessions)
         runtime = MacAndroidRuntime(android_runtime_root(), paths.workspace)
         service = AndroidBackupService(resources, paths.workspace, operations)
+        estimates = []
+        archive_calls = 0
+        original_estimate = runtime.estimate_backup_bytes
+        original_archive = runtime.backup_volume_to_path
+
+        async def counted_estimate(device):
+            size = await original_estimate(device)
+            estimates.append(size)
+            return size
+
+        async def counted_archive(device, path):
+            nonlocal archive_calls
+            archive_calls += 1
+            await original_archive(device, path)
+
+        runtime.estimate_backup_bytes = counted_estimate
+        runtime.backup_volume_to_path = counted_archive
         report.update(deviceId=device["deviceId"], imageId=device["imageId"])
         containers, volumes = await verify(device, runtime.workspace_id)
         assert len(containers) == len(volumes) == 1
@@ -96,10 +113,13 @@ async def exercise(archive: Path):
             await service.create_with_runtime(device, None, runtime, request_id, revision)
         except AndroidError as error:
             report["backupFailureCode"] = error.code
+            assert error.code == "ANDROID_DISK_SPACE_INSUFFICIENT", error.code
         else:
             raise AssertionError("Backup unexpectedly succeeded on the full private disk")
         operation = operations.by_request(service.workspace_identity, request_id)
-        assert operation.state in {"failed", "needs_verification"}, operation.state
+        assert operation.state == "failed", operation.state
+        assert archive_calls == 0 and len(estimates) == 1
+        report.update(archiveCallsBeforeAdmission=archive_calls, requiredArchiveBytes=estimates[0])
         assert resources.list("backup") == []
         assert not list(service.storage.final.glob("*"))
         assert not list(service.storage.staging.glob("*"))
@@ -111,7 +131,11 @@ async def exercise(archive: Path):
             assert error.code == "ANDROID_BACKUP_REQUEST_REPLAYED", error.code
         else:
             raise AssertionError("Failed request replay was not protected")
+        assert len(estimates) == 1 and archive_calls == 0
         backup = await service.create_with_runtime(device, None, runtime, str(uuid4()), revision)
+        actual = (Path(backup["path"]) / "data.tar").stat().st_size
+        assert actual == estimates[-1] and archive_calls == 1
+        report.update(estimatedArchiveBytes=estimates[-1], actualArchiveBytes=actual, admissionThenArchiveCalls=archive_calls)
         assert backup["state"] == "available" and backup["bytes"] > report["freeBytesBeforeBackup"]
         report.update(replayProtected=True, newRequestBackupBytes=backup["bytes"], backupId=backup["id"])
         service.delete(backup["id"])

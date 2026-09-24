@@ -27,3 +27,5 @@ cd apps/backend && uv run pytest tests/contract/test_android_backups.py tests/un
 ## 清理目录增量
 
 [2026-09-23 清理验收](2026-09-23-cleanup-verification.md)记录目录查询、显式选择、内容指纹、文件锁和真实HTTP证据；本次未声称完成APK遗留文件或恢复中断验收。
+
+- 2026-09-24 最快验收（confirmed，整体不通过/partial）：当前Android后端477项、前端177项、迁移6项及工程门禁通过；真实备份磁盘预检零写入拒绝、释放后估计=实际18595840字节、传输取消及自有资源清理通过。最终限时审查新增备份跨动作未知编号覆盖已RED→GREEN关闭；创建/拉取磁盘准入和宿主/VM数值展示仍Important。Mac已解锁，最终构建首页/无效拉取恢复输入实机通过，其余完整UI改记not_run；十台/GApps仍blocked。最后候选全仓全量未重跑，旧数字不代替；见[完整验收命令及输出](2026-09-24-final-acceptance.md)。
