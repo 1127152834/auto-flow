@@ -501,9 +501,10 @@ export const browserApi = {
       const value=node.data.browserEnvironment as BrowserEnvironment|undefined
       const fail=(message:string)=>({success:false,error:message,data:{nodeId:node.id}})
       if(!value)return fail('请在打开网页节点配置浏览器环境')
-      if(value.source==='newFromProfile'){
-        const id=value.profileId||defaults.data?.profileId
-        if(!id||!profiles.data?.items.some(p=>p.id===id))return fail('请选择可用浏览器模板或设置项目默认模板')
+      if(value.source==='newFromProfile'||value.source==='profile'){
+        const id=value.profileId||(value.source==='newFromProfile'?defaults.data?.profileId:undefined)
+        if(!id||!profiles.data?.items.some(p=>p.id===id))return fail('请选择可用浏览器配置')
+        if(value.source==='profile'&&(value.proxy?.mode==='pool'||value.proxy?.mode==='projectDefault'))return fail('请重新选择代理设置')
         if(value.proxy?.mode==='fixed'&&!value.proxy.proxyId)return fail('请选择指定代理')
         if(value.proxy?.mode==='pool'&&!value.proxy.proxyPoolId)return fail('请选择代理池')
       }
@@ -516,14 +517,14 @@ export const browserApi = {
     if(browserSession?.profileId&&!browserSession.unconfirmed)return {success:true,data:{profileId:browserSession.profileId}}
     const state=useWorkflowStore.getState(),node=state.nodes.find(n=>n.id===state.selectedNodeId)
     const value=node?.data.browserEnvironment as BrowserEnvironment|undefined
-    if(state.browserEnvironmentVersion!==1||node?.data.moduleType!=='open_page'||!value||value.source==='current'||value.source==='inputEnvironment')return {success:false,error:'请先选择配置了新建实例或固定环境的打开网页节点，再打开浏览器进行录制或拾取'}
+    if(state.browserEnvironmentVersion!==1||node?.data.moduleType!=='open_page'||!value||value.source==='current'||value.source==='inputEnvironment')return {success:false,error:'请先在打开网页节点选择浏览器配置，再进行录制或拾取'}
     if(value.source==='fixedEnvironment')return {success:true,data:{profileId:'',browserEnvironment:structuredClone(value)}}
     const revision=getStudioTransportRevision()
     const [profiles,defaults]=await Promise.all([browserApi.profiles(),projectResourceApi.defaults()])
     if(state.id!==useWorkflowStore.getState().id||state.selectedNodeId!==useWorkflowStore.getState().selectedNodeId||JSON.stringify(value)!==JSON.stringify(useWorkflowStore.getState().nodes.find(n=>n.id===state.selectedNodeId)?.data.browserEnvironment)||revision!==getStudioTransportRevision())return {success:false,error:'文档、节点或服务已变更，请重新启动'}
     if(!profiles.success||!defaults.success)return {success:false,error:profiles.error||defaults.error,httpStatus:profiles.httpStatus||defaults.httpStatus}
-    const profileId=value.profileId||defaults.data?.profileId
-    if(!profileId)return {success:false,error:'请在打开网页节点选择浏览器模板'}
+    const profileId=value.profileId||(value.source==='newFromProfile'?defaults.data?.profileId:undefined)
+    if(!profileId)return {success:false,error:'请在打开网页节点选择浏览器配置'}
     if(!profiles.data?.items.some(profile=>profile.id===profileId))return {success:false,error:'所选模板不存在或已不可用，请在节点重新选择',httpStatus:404}
     return {success:true,data:{profileId,browserEnvironment:structuredClone(value)}}
   },

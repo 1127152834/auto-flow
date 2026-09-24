@@ -305,6 +305,7 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
 
     session = None
     initialized_visit = None
+    initialized_configuration = None
 
     async def launch_browser(payload, options):
         nonlocal context
@@ -339,7 +340,8 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
         context.set_default_navigation_timeout(0)
 
     async def initialize_browser(execution, declaration):
-        nonlocal session, initialized_visit
+        nonlocal session, initialized_visit, initialized_configuration
+        from autoflow.domain.workflows.browser_environment import same_shared_browser
         from autoflow.domain.workflows.runtime import WorkflowRuntimeError
         from autoflow.providers.browser.workflow_session import (
             CloakBrowserWorkflowSession,
@@ -348,6 +350,10 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
             if session is None:
                 raise WorkflowRuntimeError('BROWSER_INSTANCE_REQUIRED', '请先执行创建或加载环境的打开网页节点', 409)
             return session
+        if session is not None and same_shared_browser(declaration, initialized_configuration):
+            return session
+        if session is not None and declaration.get('source') == 'profile':
+            raise WorkflowRuntimeError('BROWSER_CONFIGURATION_MISMATCH', '本次运行已打开浏览器，请保持浏览器配置、代理和内核一致', 409)
         if initialized_visit is not None and initialized_visit != execution.current_execution_id:
             raise WorkflowRuntimeError('BROWSER_INSTANCE_ALREADY_INITIALIZED', '任务已有浏览器实例，请使用当前实例', 409)
         if session is not None:
@@ -368,6 +374,7 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
         options['proxy'] = {'server': relay.url} if relay else None
         await launch_browser(payload, options)
         session = CloakBrowserWorkflowSession(context)
+        initialized_configuration = declaration.copy()
         return session
 
     result: dict[str, object] = {"status": "failed", "error": {"code": "WORKFLOW_WORKER_FAILED", "message": "工作流执行进程失败"}}

@@ -21,7 +21,10 @@ from autoflow.application.workflows.runtime import (
     WorkflowRuntime,
     execution_context_snapshot,
 )
-from autoflow.domain.workflows.browser_environment import node_browser_environments
+from autoflow.domain.workflows.browser_environment import (
+    node_browser_environments,
+    same_shared_browser,
+)
 from autoflow.domain.workflows.canvas_subflows import CanvasSubflowGraph, _node_data
 from autoflow.domain.workflows.execution import (
     CustomModuleResult,
@@ -84,13 +87,18 @@ async def _run(
         async with AsyncExitStack() as sessions:
             initialized = None
             initialized_visit = None
+            initialized_configuration = None
             async def initialize(context, declaration):
-                nonlocal initialized, initialized_visit
+                nonlocal initialized, initialized_visit, initialized_configuration
                 if declaration['source'] == 'current':
                     if initialized is None:
                         raise WorkflowRuntimeError('BROWSER_INSTANCE_REQUIRED', '当前没有浏览器实例，请先执行初始化节点')
                     return initialized
                 if initialized is not None:
+                    if same_shared_browser(declaration, initialized_configuration):
+                        return initialized
+                    if declaration['source'] == 'profile':
+                        raise WorkflowRuntimeError('BROWSER_CONFIGURATION_MISMATCH', '本次运行已打开浏览器，请保持浏览器配置、代理和内核一致')
                     if initialized_visit != context.current_execution_id:
                         raise WorkflowRuntimeError('BROWSER_INSTANCE_ALREADY_INITIALIZED', '已有浏览器实例，请使用当前实例')
                     return initialized
@@ -103,6 +111,7 @@ async def _run(
                 os.environ['CLOAKBROWSER_CACHE_DIR'] = str(cache)
                 initialized = await sessions.enter_async_context(launch_workflow_session(payload['browser']))
                 initialized_visit = context.current_execution_id
+                initialized_configuration = declaration.copy()
                 return initialized
             return await _run_in_session(command, stopped, stdout, None, command_bus, initialize)
 

@@ -289,9 +289,9 @@ async def test_real_picker_and_runtime_share_nested_cross_origin_frame_target(
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("node_mode", [False, True])
+@pytest.mark.parametrize("node_mode", [False, "newFromProfile", "profile"])
 async def test_real_inspection_worker_owns_profile_and_cleans_process_tree(
-    tmp_path: Path, node_mode: bool,
+    tmp_path: Path, node_mode: bool | str,
 ) -> None:
     configured = os.environ.get("AUTOFLOW_B1_CLOAK_EXECUTABLE")
     if not configured:
@@ -370,7 +370,7 @@ async def test_real_inspection_worker_owns_profile_and_cleans_process_tree(
         )
         browser = WorkflowBrowserResources(Profiles(), service._installed, service._resolve_proxy, lambda: None, Usage(), lambda _: nullcontext())
         service.configure_node_browser_environments(browser, None)
-        opened = await service.open(profile_id=None, url=fixture.as_uri(), browser_environment={'source':'newFromProfile','profileId':profile.id,'proxy':{'mode':'none'},'kernel':{'edition':'public','version':profile.spec.browser_version}})
+        opened = await service.open(profile_id=None, url=fixture.as_uri(), browser_environment={'source':node_mode,'profileId':profile.id,'proxy':{'mode':'none'},'kernel':{'edition':'public','version':profile.spec.browser_version}})
     else:
         opened = await service.open(profile_id=profile.id, url=fixture.as_uri())
     assert opened["isOpen"] is True

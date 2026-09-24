@@ -27,7 +27,7 @@ def node_browser_environments(document: Mapping[str, Any]) -> dict[str, dict[str
         if not enabled and value is None:
             continue
         if not enabled or not _valid(value):
-            issues.append(WorkflowIssue(node['id'], ['nodes', str(index), 'browserEnvironment'], 'BROWSER_ENVIRONMENT_INVALID', '请选择合法环境来源及其适用配置，并明确启用节点浏览器版本'))
+            issues.append(WorkflowIssue(node['id'], ['nodes', str(index), 'browserEnvironment'], 'BROWSER_ENVIRONMENT_INVALID', '请选择浏览器配置并检查代理、内核设置'))
         else:
             result[node['id']] = deepcopy(value)
     if enabled and result and any('parallel' in node.get('data', {}).get('config', node.get('data', {})) for node in content.get('nodes', ())):
@@ -45,24 +45,38 @@ def _valid(value: Any) -> bool:
     if not isinstance(value, dict):
         return False
     source = value.get('source')
+    if not isinstance(source, str):
+        return False
     if source == 'current':
         return set(value) == {'source'}
     if source == 'fixedEnvironment':
         return set(value) == {'source', 'environmentId'} and _text(value['environmentId'])
     if source == 'inputEnvironment':
         return set(value) == {'source', 'inputId'} and _text(value['inputId'])
-    if source != 'newFromProfile' or set(value) - {'source', 'profileId', 'proxy', 'kernel'}:
+    if source not in {'newFromProfile', 'profile'} or set(value) - {'source', 'profileId', 'proxy', 'kernel'}:
+        return False
+    if source == 'profile' and not _text(value.get('profileId')):
         return False
     if value.get('profileId') is not None and not _text(value['profileId']):
         return False
-    proxy = value.get('proxy', {'mode': 'projectDefault'})
+    proxy = value.get('proxy', {'mode': 'sourceDefault' if source == 'profile' else 'projectDefault'})
     if not isinstance(proxy, dict):
         return False
     mode = proxy.get('mode')
     allowed = {'projectDefault': {'mode'}, 'sourceDefault': {'mode'}, 'none': {'mode'}, 'fixed': {'mode', 'proxyId'}, 'pool': {'mode', 'proxyPoolId'}}
+    if source == 'profile' and (not isinstance(mode, str) or mode not in {'sourceDefault', 'none', 'fixed'}):
+        return False
     if not isinstance(mode, str) or set(proxy) != allowed.get(mode):
         return False
     if any(not _text(proxy[key]) for key in set(proxy) - {'mode'}):
         return False
     kernel = value.get('kernel')
     return kernel is None or (isinstance(kernel, dict) and set(kernel) == {'edition', 'version'} and kernel['edition'] in ('public', 'licensed') and _text(kernel['version']))
+
+
+def same_shared_browser(left: Mapping[str, Any], right: Mapping[str, Any] | None) -> bool:
+    """Only explicitly selected profiles opt into reuse; old declarations stay unchanged."""
+    return (right is not None and left.get('source') == right.get('source') == 'profile'
+            and left.get('profileId') == right.get('profileId')
+            and left.get('proxy', {'mode': 'sourceDefault'}) == right.get('proxy', {'mode': 'sourceDefault'})
+            and left.get('kernel') == right.get('kernel'))

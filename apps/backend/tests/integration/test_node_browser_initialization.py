@@ -88,7 +88,8 @@ from tests.integration.test_workflow_real_cloakbrowser import (
 
 
 @pytest.mark.asyncio
-async def test_real_worker_delayed_browser_keeps_cookie_in_one_task(capability_context, tmp_path, real_cloak_page):
+@pytest.mark.parametrize("shared_profile", [False, True])
+async def test_real_worker_delayed_browser_keeps_cookie_in_one_task(capability_context, tmp_path, real_cloak_page, shared_profile):
     import asyncio
     from contextlib import nullcontext
 
@@ -120,6 +121,9 @@ async def test_real_worker_delayed_browser_keeps_cookie_in_one_task(capability_c
         {'id': 'read', 'type': 'get_element_info', 'data': {'moduleType': 'get_element_info', 'selector': '#auth', 'attribute': 'text', 'variableName': 'signedIn', 'timeout': 5}},
         {'id': 'end', 'type': 'project_end', 'data': {'moduleType': 'project_end', 'retainEnvironment': {'enabled': True, 'mode': 'saveAs', 'name': 'node-account'}}},
     ]
+    if shared_profile:
+        for node in nodes[:2]:
+            node['data']['browserEnvironment'] = {'source': 'profile', 'profileId': profile.id}
     plan = {'document': {'schemaVersion': 3, 'browserEnvironmentVersion': 1, 'nodes': nodes, 'edges': [{'id': 'a', 'source': 'login', 'target': 'account'}, {'id': 'b', 'source': 'account', 'target': 'read'}, {'id': 'c', 'source': 'read', 'target': 'end'}]}, 'nodes': [{'nodeId': node['id'], 'moduleType': node['type'], 'data': node['data']} for node in nodes]}
     with factory.begin() as session:
         run = session.get(WorkflowRunRow, task.run_id)
@@ -154,7 +158,8 @@ async def test_real_worker_delayed_browser_keeps_cookie_in_one_task(capability_c
         dispatcher._release_lease(owner)
 
 @pytest.mark.asyncio
-async def test_real_studio_node_browser_without_global_profile(tmp_path, real_cloak_page):
+@pytest.mark.parametrize("shared_profile", [False, True])
+async def test_real_studio_node_browser_without_global_profile(tmp_path, real_cloak_page, shared_profile):
     import asyncio
     from contextlib import nullcontext
 
@@ -196,6 +201,9 @@ async def test_real_studio_node_browser_without_global_profile(tmp_path, real_cl
         {'id': 'account', 'type': 'moduleNode', 'data': {'moduleType': 'open_page', 'config': {'url': base + '/account', 'browserEnvironment': {'source': 'current'}}}},
         {'id': 'read', 'type': 'moduleNode', 'data': {'moduleType': 'get_element_info', 'config': {'selector': '#auth', 'attribute': 'text', 'variableName': 'signedIn'}}},
     ]
+    if shared_profile:
+        for node in nodes[:2]:
+            node['data']['config']['browserEnvironment'] = {'source': 'profile', 'profileId': profile.id}
     documents.create({'id': 'studio-node-flow', 'name': 'node', 'schemaVersion': 3, 'browserEnvironmentVersion': 1, 'nodes': nodes, 'edges': [{'id': 'a', 'source': 'login', 'target': 'account'}, {'id': 'b', 'source': 'account', 'target': 'read'}], 'variables': []}, client_request_id='studio-node-create')
     repository = SqlAlchemyWorkflowRuns(factory)
     runs = WorkflowRunService(repository)
