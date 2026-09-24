@@ -8,6 +8,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from autoflow.adapters.http.android_fleet import android_fleet_router
 from autoflow.adapters.http.android_management import android_management_router
 from autoflow.adapters.http.errors import install_error_handlers
 from autoflow.application.android.devices import AndroidDeviceService
@@ -25,6 +26,52 @@ from autoflow.infrastructure.database.session import (
 IMAGE_A = "sha256:" + "a" * 64
 IMAGE_B = "sha256:" + "b" * 64
 PROFILE_ID = "22222222-2222-4222-8222-222222222222"
+
+
+@pytest.mark.parametrize("instance_type", ["persistent", "temporary"])
+@pytest.mark.parametrize("source", [{}, {"sourceDeviceId": None}, {"sourceDeviceId": "11111111-1111-4111-8111-111111111111"}])
+def test_persisted_batch_request_replays_through_current_http(tmp_path: Path, instance_type, source) -> None:
+    sessions = _database(tmp_path)
+    resources = AndroidResourceRepository(sessions)
+    profile = {**_profile(), "revision": 1}
+    profile.pop("archived")
+    # a92f0688's BatchCreate dump had all these fields, quantity default 3,
+    # and neither sourceDeviceId nor allowUnknownDiskEstimate.
+    request = {**_batch_request(profile), "quantity": 3, "instanceType": instance_type, **source}
+    saved = {
+        "id": request["batchId"],
+        "createdAt": "2026-09-21T12:00:00+00:00",
+        "request": request,
+        "profile": profile,
+        "items": [{"deviceId": str(uuid4()), "name": f"快照实例 {i + 1:02d}", "state": "succeeded", "error": None} for i in range(3)],
+        "state": "succeeded",
+    }
+    resources.save("batch", saved)
+    sessions.dispose()
+    sessions = create_session_factory(tmp_path / "android-images-templates.sqlite3")
+    resources = AndroidResourceRepository(sessions)
+    app = FastAPI()
+    install_error_handlers(app)
+    app.include_router(android_fleet_router(AndroidFleet(None, resources, None, None), None))
+    try:
+        with TestClient(app) as client:
+            for replay_request in (request, {**request, "allowUnknownDiskEstimate": False}):
+                replay = client.post("/api/v1/android/batches", json=replay_request)
+                assert replay.status_code == 202, replay.text
+                assert replay.json()["id"] == saved["id"]
+                assert replay.json()["items"] == saved["items"]
+                assert replay.json()["state"] == "succeeded"
+            changed_source = None if source.get("sourceDeviceId") else "11111111-1111-4111-8111-111111111111"
+            for change in ({"sourceDeviceId": changed_source}, {"allowUnknownDiskEstimate": True}):
+                conflict = client.post("/api/v1/android/batches", json={**request, **change})
+                assert conflict.status_code == 409
+                assert conflict.json()["error"]["code"] == "ANDROID_REQUEST_CONFLICT"
+            new_temporary = client.post("/api/v1/android/batches", json={**request, "batchId": str(uuid4()), "instanceType": "temporary"})
+            assert new_temporary.status_code == 409
+            assert new_temporary.json()["error"]["code"] == "ANDROID_TEMPORARY_DISABLED"
+        assert resources.list("batch") == [saved]
+    finally:
+        sessions.dispose()
 
 
 def test_image_and_pull_receipt_publish_in_one_sqlite_transaction(tmp_path: Path) -> None:

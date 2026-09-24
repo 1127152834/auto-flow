@@ -138,7 +138,12 @@ class AndroidFleet:
             if error.status == 404:
                 return None
             raise
-        if existing["request"] != request:
+        previous_request = existing["request"]
+        if kind == "batch":
+            # Historical batches predate sourceDeviceId; missing and null mean no source.
+            previous_request = {"sourceDeviceId": None, **previous_request}
+            request = {"sourceDeviceId": None, **request}
+        if previous_request != request:
             raise AndroidError("ANDROID_REQUEST_CONFLICT", "请求编号已用于不同内容")
         return existing
 
