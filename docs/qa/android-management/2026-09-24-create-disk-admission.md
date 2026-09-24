@@ -1,5 +1,7 @@
 # 创建、复制与恢复磁盘准入验收
 
+本文件保留Task4候选ef0af03f证据；后续最终修复候选78bf8c92的全量与实机结果见[最终验收汇总](2026-09-24-final-acceptance.md)。
+
 2026-09-24，confirmed真实后端及自动化证据，整体partial。最终产品候选ef0af03f（前端b744666d）；[源码哈希](2026-09-24-create-disk-admission/candidate-source-hashes.json)。Task4独立规格与质量审查通过，无Critical/Important；完整分支审查另行执行。真实新UI仍因Mac锁屏blocked，不宣称完整验收通过。
 
 ## 真实Mac/Lima结果

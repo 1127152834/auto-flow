@@ -7,3 +7,5 @@
 - 最终真实复跑验证单实例、保留卷恢复、备份恢复、模板批量、配置复制与未确认批次retry仍失败；八条自建记录及备份均已清理。四个确认入口的组件测试通过，真实新UI因Mac锁屏blocked，二者不得混用。
 - Task3与Task4独立审查Approved。最终全分支审查和完整后端结果见当前QA报告更新；Node本轮26.7.0，全前端424文件/5683项已通过，不能沿用旧Node22运行标签。
 - 本记录supersedes project-context中“创建/拉取磁盘准入未实现”的历史进度；历史真实证据及剩余外部条件保持有效。无新增数据库字段，唯一迁移head仍am01_management_operations。
+
+- 后续最终候选78bf8c92（confirmed）：额外五项全分支审查问题已修复，独立复审C/I均0，后端4118passed/26skipped/2warnings、前端5689passed及规定门禁全部通过；真实Mac增加永久删源后备份恢复并读回，9条自建记录均清理。当前完整签收仍partial，见[最终报告](../../docs/qa/android-management/2026-09-24-final-acceptance.md)。

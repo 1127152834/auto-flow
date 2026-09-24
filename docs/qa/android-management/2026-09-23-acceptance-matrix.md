@@ -27,8 +27,8 @@
 | AM-AC20 | `passed`（真实与自动化） | [真实恢复](2026-09-23-persistent-metadata-verification.md)覆盖新 ID/卷、1792 持久条目及启动读回；[写入后发布前 SIGKILL](2026-09-23-restore-hard-interruption-verification.md)后隔离与新请求恢复通过。[审查修复](2026-09-23-final-review-remediation.md)加入自定义镜像固定 ID 核实和文件流真实读回。[真实解包在途中 SIGKILL](2026-09-24-restore-transfer-interruption.md)已补，重启隔离、拦截和新请求恢复通过；[真实损坏归档](2026-09-24-restore-cancel-and-disk-full.md)也返回409且目标卷为空；镜像不符/越界拒绝为自动化，[真实目标 ENOSPC 和请求任务取消](2026-09-24-restore-cancel-and-disk-full.md)已补，源/目标数据与源备份文件摘要均核对。 |
 | AM-AC21 | `passed`（真实与自动化） | 预览后指纹/引用变化 409、外部路径/标签保护及真实 HTTP 清理见[清理验收](2026-09-23-cleanup-verification.md)。[最终审查](2026-09-24-final-branch-review.md)补异步设备删除后的父 Operation 汇合与多候选部分落盘不得假成功；[真实多对象硬中断](2026-09-24-cleanup-interruption.md)后保持待核实，未执行对象不被自动重放删除；显式新预览可继续。 |
 | AM-AC22 | `passed`（自动化及真实高级日志） | 默认诊断字段白名单排除输入、账号、原始日志、截图和数据；受限 IPC 本地保存且无自动上传。[高级日志实测](2026-09-24-advanced-logs-and-capacity.md)补单次确认、归属校验、5 分钟/64 KiB/200 行边界；真实 ReDroid 返回 196 条仅含时间与级别的元数据，消息/tag 均不导出。 |
-| AM-AC23 | `passed`（ef0af03f软件门禁） | [当前候选完整输出](2026-09-24-create-disk-admission.md)：后端4099passed/26skipped/2warnings（794.17s），Node26.7.0前端424文件/5683项（351.96s），类型/lint/OpenAPI/构建/Ruff/compile、迁移6/结构4/脚本95均exit0。全分支审查仍发现未覆盖缺陷，后续修复必须复跑；此项不代表完整模块验收通过。 |
-| AM-AC24 | `partial` | [当前验收汇总](2026-09-24-final-acceptance.md)：AM-R12创建/拉取/复制/恢复准入软件缺口已关闭，Task3/Task4独立审查通过，真实后端与桌面批次/拉取核实已验。完整分支审查新发现历史核实覆盖新状态及前端入口/心跳问题，正在修复；新确认UI锁屏、十台规模与GApps条件仍blocked，剩余真实矩阵未完成。 |
+| AM-AC23 | `passed`（78bf8c92规定软件门禁） | [最终命令与结果](2026-09-24-final-acceptance.md)：后端4118passed/26skipped/2warnings（782.24s），Node26.7.0前端424文件/5689项（357.04s），类型/lint/OpenAPI/构建/Ruff/compile、迁移6/结构4/脚本95均exit0。源码/测试2046文件在启动至完成期间哈希未变。额外Python mypy有6条已在修复前基线复现的诊断，未冒称该扫描通过；跳过项不计通过。 |
+| AM-AC24 | `partial` | [最终汇总](2026-09-24-final-acceptance.md)：AM-R12软件缺口已补，完整分支审查五项Important经78bf8c92修复与[独立复审](2026-09-24-final-review-fixes/review.md)全部关闭，C/I均0。真实Mac新增永久删源后恢复新ID/卷与探针读回通过，9条自建记录全部清理；新确认/维护UI及长期隐藏心跳因锁屏仍未实测，十台和GApps外部条件、其余列明故障矩阵未完成。 |
 
 当前软件或验证缺口是 隐藏页实测（暂停读取软件已补）、旧temporary历史实例真实兼容同链（契约已验）、T09镜像内容删除桌面链和拉取断线核实、T12阶段停用与向前回退演练，T14/T16 的桌面隐藏页与前台交互（1/5台后台计数已补），T20 的完整真实负向矩阵；无持久归属标记的旧卷文件继续按安全边界排除，不能把它们视作可自动删除对象。十台实测因本机 Lima 内存预算不足标记 `blocked`，不计软件通过。外部阻塞主要为 AM-AC14 的专用谷歌镜像与账号/网络条件；本地测试 APK 已用于自建实例，不代表商店下载链。真实备份与恢复实验只清理本轮自建资源，已有外部卷和实例不纳入删除范围。
 
@@ -36,4 +36,4 @@
 
 2026-09-24后续校准：拉取磁盘准入18b75c49已完成实现与真实零pull拒绝/确认后中断核实，独立审查进行中；创建/复制/恢复准入待Task4，AM-AC24继续partial。见[当前证据](2026-09-24-pull-disk-and-bulk.md)。
 
-2026-09-24 最新校准（supersedes前述“创建/拉取尚未实现/审查进行中”的历史进度）：Task3与Task4均独立审查Approved，最终准入真实Mac复跑通过，详见[创建/复制/恢复](2026-09-24-create-disk-admission.md)。Mac再次锁屏，新确认入口与隐藏页实测blocked。完整分支审查发现此前未覆盖的核实并发、心跳与入口问题，相关AC的既有passed只代表表列场景，不可用来宣称当前整体通过；修复和复验前AC24保持partial。
+2026-09-24 最终校准（supersedes前述“准入未实现/审查修复中”的历史进度）：78bf8c92已完成五项最终审查修复、独立复审C/I均0、完整门禁及真实Mac复跑通过，见[最终汇总](2026-09-24-final-acceptance.md)。新确认与维护入口、长期隐藏心跳仍锁屏blocked；其余明确列出的not_run和外部条件未关闭，AC24保持partial。

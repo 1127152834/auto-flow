@@ -1,0 +1,141 @@
+F...F                                                                    [100%]
+=================================== FAILURES ===================================
+_ test_verification_preserves_current_operation_and_pending_isolation[changes0] _
+
+repository = <autoflow.infrastructure.database.android_operations.SqlAlchemyAndroidOperationRepository object at 0x10e38a950>
+changes = {'operation': None}
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize('changes', [
+        {'operation': None},
+        {'operation': {'id': 'newer-operation'}},
+        {'pendingCommand': {'requestId': 'app-unknown'}},
+        {'restoreState': 'pending'},
+        {'restoreRequestId': 'restore-unknown'},
+    ])
+    async def test_verification_preserves_current_operation_and_pending_isolation(repository, changes):
+        from autoflow.application.android.devices import AndroidDeviceService
+        from autoflow.application.android.verification import verify_lifecycle_operation
+    
+        devices = SqlAlchemyDeviceRepository(repository.sessions)
+        operation = repository.accept('ws', 'verify-isolation', 'd', 'start', 'digest', {})
+        repository.transition(operation.operation_id, 'queued', 'running', {})
+        operation = repository.transition(operation.operation_id, 'running', 'needs_verification', {})
+        original = {'deviceId': 'd', 'generation': 2, 'control': 'recovery_required',
+                    'operation': {'id': operation.operation_id, 'state': 'needs_verification'}} | changes
+        devices.save(original)
+    
+        class Runtime:
+            async def inspect(self, device):
+                return {'androidStatus': 'ready'}
+    
+        with pytest.raises(AndroidError) as error:
+>           await verify_lifecycle_operation(repository, AndroidDeviceService(devices, Runtime()), operation, workspace_identity='ws')
+
+apps/backend/tests/integration/test_android_management_operations.py:177: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+operations = <autoflow.infrastructure.database.android_operations.SqlAlchemyAndroidOperationRepository object at 0x10e38a950>
+devices = <autoflow.application.android.devices.AndroidDeviceService object at 0x10e305e90>
+record = <autoflow.infrastructure.database.android_operations.OperationRecord object at 0x10e3a1090>
+workspace_identity = 'ws'
+
+    async def verify_lifecycle_operation(
+        operations: Any,
+        devices: Any,
+        record: Any,
+        *,
+        workspace_identity: str,
+    ) -> Any:
+        """Verify a lifecycle result without replaying the lifecycle command.
+    
+        A missing repository/runtime observation is deliberately inconclusive. The
+        caller must keep the durable operation in ``needs_verification`` until a
+        concrete, owned runtime state is observed.
+        """
+        if devices is None or not hasattr(devices, "runtime"):
+            raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "尚未接入运行时核实，操作保持待核实", 503)
+        try:
+            device = devices.get(record.target_id)
+        except (AndroidError, KeyError, LookupError, OSError, TimeoutError) as error:
+            raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "设备记录不存在，操作结果仍无法核实", 503) from error
+        if not isinstance(device, dict):
+            raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "设备记录不存在，操作结果仍无法核实", 503)
+    
+        runtime_workspace = getattr(devices.runtime, "workspace_id", None)
+        if runtime_workspace is not None and device.get("workspaceId") != runtime_workspace:
+            raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "设备归属无法核实，操作保持待核实", 503)
+        if runtime_workspace is None and device.get("workspaceId") not in {None, workspace_identity}:
+            raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "设备归属无法核实，操作保持待核实", 503)
+    
+        try:
+            verifier = getattr(devices.runtime, "verify_deleted", None) if record.action == "delete" else None
+            observed = await (verifier(device) if callable(verifier) else devices.runtime.inspect(device))
+        except (AndroidError, TimeoutError, OSError) as error:
+            raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "设备状态仍无法核实", 503) from error
+        except Exception as error:
+            raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "设备状态仍无法核实", 503) from error
+        status = observed.get("androidStatus") if isinstance(observed, dict) else None
+        expected = {"start": {"ready"}, "restart": {"ready"}, "stop": {"stopped", "retained"}}.get(record.action)
+        if record.action == "delete":
+            expected = {"missing"} if (record.payload or {}).get("deleteData") else {"retained", "missing"}
+        if expected is None or status not in expected:
+            raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "设备状态与操作结果不一致，请继续核实", 503)
+    
+        expected_device = deepcopy(device)
+        device = deepcopy(device)
+        device["androidStatus"] = status
+        if record.action == "delete":
+            device["deleted"] = status == "missing"
+            device["dataRetained"] = status == "retained"
+        device["control"] = "idle"
+        device["lastError"] = None
+>       device.setdefault("operation", {}).update(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            id=record.operation_id,
+            action=record.action,
+            state="succeeded",
+            stage="已核实",
+            error=None,
+            finishedAt=datetime.now(UTC).isoformat(),
+        )
+E       AttributeError: 'NoneType' object has no attribute 'update'
+
+apps/backend/src/autoflow/application/android/verification.py:60: AttributeError
+_ test_verification_preserves_current_operation_and_pending_isolation[changes4] _
+
+repository = <autoflow.infrastructure.database.android_operations.SqlAlchemyAndroidOperationRepository object at 0x10e38ad10>
+changes = {'restoreRequestId': 'restore-unknown'}
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize('changes', [
+        {'operation': None},
+        {'operation': {'id': 'newer-operation'}},
+        {'pendingCommand': {'requestId': 'app-unknown'}},
+        {'restoreState': 'pending'},
+        {'restoreRequestId': 'restore-unknown'},
+    ])
+    async def test_verification_preserves_current_operation_and_pending_isolation(repository, changes):
+        from autoflow.application.android.devices import AndroidDeviceService
+        from autoflow.application.android.verification import verify_lifecycle_operation
+    
+        devices = SqlAlchemyDeviceRepository(repository.sessions)
+        operation = repository.accept('ws', 'verify-isolation', 'd', 'start', 'digest', {})
+        repository.transition(operation.operation_id, 'queued', 'running', {})
+        operation = repository.transition(operation.operation_id, 'running', 'needs_verification', {})
+        original = {'deviceId': 'd', 'generation': 2, 'control': 'recovery_required',
+                    'operation': {'id': operation.operation_id, 'state': 'needs_verification'}} | changes
+        devices.save(original)
+    
+        class Runtime:
+            async def inspect(self, device):
+                return {'androidStatus': 'ready'}
+    
+>       with pytest.raises(AndroidError) as error:
+E       Failed: DID NOT RAISE AndroidError
+
+apps/backend/tests/integration/test_android_management_operations.py:176: Failed
+=========================== short test summary info ============================
+FAILED apps/backend/tests/integration/test_android_management_operations.py::test_verification_preserves_current_operation_and_pending_isolation[changes0]
+FAILED apps/backend/tests/integration/test_android_management_operations.py::test_verification_preserves_current_operation_and_pending_isolation[changes4]
+2 failed, 3 passed, 8 deselected in 1.14s

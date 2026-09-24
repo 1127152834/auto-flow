@@ -1,0 +1,11 @@
+{
+  "date": "2026-09-24",
+  "command": "limactl shell autoflow-redroid -- sh -c 'getconf _NPROCESSORS_ONLN; awk \"/^MemTotal:/ {print}\" /proc/meminfo'",
+  "exit": 0,
+  "stdout": "6\nMemTotal:        8111968 kB\n",
+  "cpu": 6,
+  "memoryBytes": 8306655232,
+  "memoryMiB": 7921.84375,
+  "tenInstanceMinimumMiB": 8192,
+  "status": "blocked"
+}

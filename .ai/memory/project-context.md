@@ -190,3 +190,5 @@ proposed：本轮完整规格尚未确认，6组补图未生成；参数定义�
 2026-09-24后续confirmed：真实Electron重启发现未知pull、核实前拒绝新请求、显式核实succeeded并清空历史、改引用撤销确认已验；自有登记已撤销。c4b6159d修复202/failed重放误报已接受，187前端回归通过，独立复审进行中。
 
 2026-09-24 当前准入状态（confirmed，整体partial；supersedes以上创建/拉取未完成的进度快照）：Task3及Task4已完成API/OpenAPI/provider/四UI入口并独立审查通过，最终真实Mac创建/保留卷恢复/备份恢复/模板批量/复制/拒绝后重试通过，8条自建记录已清理。严格当前请求确认、来源确认不继承、实际宿主Lima磁盘与VM检查、恢复写前重检见[事实记录](../knowledge/2026-09-24-android-disk-admission.md)。新确认UI仍因Mac再次锁屏blocked，最终全分支与完整门禁以[验收报告](../../docs/qa/android-management/2026-09-24-create-disk-admission.md)为准，不套用历史数字。
+
+2026-09-24 最终审查修复（confirmed软件/真实后端，整体partial）：78bf8c92关闭五项Important：旧核实投影覆盖新代次/owner、镜像核实复活墓碑、隐藏时TanStack停心跳、停机与删源备份维护不可达、当前recover误接历史verify。534项Android后端和199项Android前端通过；独立复审C/I均0。[修复后真实Mac](../../docs/qa/android-management/2026-09-24-final-review-fixes/real-mac.json)含永久删源后恢复新ID/卷与原探针读回，9条自建记录全部清理。最终完整前端5689项、后端4118passed/26skipped/2warnings及规定工程门禁通过，见[当前验收汇总](../../docs/qa/android-management/2026-09-24-final-acceptance.md)。实际Electron长隐藏/新入口锁屏blocked，Node本轮26.7.0；额外mypy6条既存诊断与修复前基线一致。

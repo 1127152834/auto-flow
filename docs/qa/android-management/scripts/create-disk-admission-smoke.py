@@ -147,6 +147,18 @@ async def exercise(output):
         source = await operation(source_id, 'start')
         assert (await docker('exec', source['containerId'], 'cat', probe)).decode() == value
         report['checks'].append('source probe preserved after backup restore and configuration copies')
+        deleted_source = await operation(source_id, 'delete', delete_data=True)
+        containers, volumes = await verify(deleted_source, runtime.workspace_id)
+        assert not containers and not volumes and deleted_source['deleted']
+        catalog = expect(await client.get(BASE + '/backups'), 200)
+        assert any(item['id'] == backup['id'] for item in catalog)
+        orphan_restore = expect(await client.post(BASE + f"/backups/{backup['id']}/restore", json={'requestId': str(uuid4()), 'newName': 'Deleted source restore', 'allowUnknownDiskEstimate': True}), 202)
+        orphan_target = await operation(orphan_restore['deviceId'], 'start')
+        assert orphan_target['deviceId'] != source_id and orphan_target['volumeId'] != retained_volume
+        assert (await docker('exec', orphan_target['containerId'], 'cat', probe)).decode() == value
+        assert hashes == {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in backup_dir.iterdir()}
+        report['checks'].append('after permanent source deletion workspace backup catalog remains available; restore creates new device and volume with matching probe and unchanged archive')
+        report['deletedSourceRestoreId'] = orphan_target['deviceId']
         report['sourceId'], report['restoredId'] = source_id, target['deviceId']
         report['status'] = 'passed'
     except BaseException as error:

@@ -111,3 +111,23 @@ Task3已完成18b75c49+c4b6159d，独立复审与真实HTTP/桌面核实通过�
 2026-09-24 最终候选校准（supersedes上文“Task2未实施/创建拉取未实现”的历史进度）：18b75c49+c4b6159d完成拉取，b744666d+ef0af03f完成四入口创建/复制/恢复；Task3/Task4规格与质量审查Approved。真实Mac创建/恢复/复制/失败重试及自建资源清理通过。全前端5683项及类型/lint/OpenAPI/build/迁移通过；全后端及完整分支审查正在收尾。新确认UI因Mac锁屏blocked，保留对应最终真实验收复选框未关闭。
 
 Task4实现切片完成：b744666d+ef0af03f，独立审查Approved，完整自动化与真实后端通过。完整分支最终审查发现另外的并发核实与UI可达缺陷，必须作为一次修复批次处理并复验；本计划最终整体验收仍未关闭。
+
+## Task 5：最终全分支审查修复（一次有界批次）
+
+基线产品ef0af03f，证据提交9f9e3ff9；来源：[完整审查及定向复现](../../qa/android-management/2026-09-24-create-disk-admission/final-branch-review.md)。0 Critical、5 Important。此前全量GREEN没有覆盖这些缺陷，不能替代新的RED。
+
+| 关联 | 共享边界与约束 |
+| --- | --- |
+| I1 / I5 | 生命周期核实写投影与设备recover入口；旧回执核实不能覆盖新generation/owner，当前recover不能解除pending app/restore隔离 |
+| I2 / 原镜像登记删除 | 同一运行时写锁和镜像生命周期；验证不能复活墓碑或覆盖删除回执 |
+| I3 / I4 / I5 | 同一AndroidPage装配，由单个实现者顺序修改；心跳与展示轮询分离，维护不申请控制 |
+| I4 / Task4 | 全局备份恢复重用当前请求确认；源已删除也能恢复，不继承备份内旧确认 |
+
+- [x] I1 RED→GREEN：延迟核实不能覆盖新代次、占用或当前操作，事务内条件重验，普通当前核实仍成功。
+- [x] I2 RED→GREEN：墓碑/删除中状态拒绝元数据验证，probe与删除交错保持删除回执。
+- [x] I3 RED→GREEN：隐藏期间必要心跳继续，展示读取暂停。
+- [x] I4 RED→GREEN：从首页到停机备份和全局备份恢复可达，源删除不妨碍恢复，不隐式启动/claim。
+- [x] I5 RED→GREEN：当前设备核实走recover，历史回执仍按原编号verify；pending restore/app继续隔离。
+- [x] 一次修复波的独立范围复审、完整回归与工程门禁；实际Mac备份删源后恢复读回；锁屏下新正式UI仍记录blocked。
+
+最终软件候选78bf8c92：完整后端4118passed/26skipped/2warnings，前端5689passed，规定工程门禁通过；9条自建实例记录清理完成。五项审查问题独立复审全部关闭。Task2b最后整体实机签收仍因新确认UI锁屏未闭合，保留未勾选；完整AM1–AM4目标仍partial，不能以自动化替代真实条件。

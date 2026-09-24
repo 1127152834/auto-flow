@@ -1,0 +1,161 @@
+[
+  {
+    "name": "backend-ruff",
+    "argv": [
+      "uv",
+      "run",
+      "--project",
+      "apps/backend",
+      "ruff",
+      "check",
+      "apps/backend/src",
+      "apps/backend/tests"
+    ],
+    "exit": 0,
+    "seconds": 0.06
+  },
+  {
+    "name": "backend-compile",
+    "argv": [
+      "uv",
+      "run",
+      "--project",
+      "apps/backend",
+      "python",
+      "-m",
+      "compileall",
+      "-q",
+      "apps/backend/src/autoflow"
+    ],
+    "exit": 0,
+    "seconds": 0.1
+  },
+  {
+    "name": "migrations",
+    "argv": [
+      "uv",
+      "run",
+      "--project",
+      "apps/backend",
+      "pytest",
+      "apps/backend/tests/integration/test_android_m4_migration.py",
+      "apps/backend/tests/integration/test_migration_heads.py",
+      "-q"
+    ],
+    "exit": 0,
+    "seconds": 1.76
+  },
+  {
+    "name": "typecheck",
+    "argv": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "exit": 0,
+    "seconds": 23.88
+  },
+  {
+    "name": "lint",
+    "argv": [
+      "npm",
+      "run",
+      "lint"
+    ],
+    "exit": 0,
+    "seconds": 8.79
+  },
+  {
+    "name": "openapi",
+    "argv": [
+      "npm",
+      "run",
+      "openapi:check"
+    ],
+    "exit": 0,
+    "seconds": 4.94
+  },
+  {
+    "name": "structure",
+    "argv": [
+      "npm",
+      "run",
+      "test:structure"
+    ],
+    "exit": 0,
+    "seconds": 0.31
+  },
+  {
+    "name": "scripts",
+    "argv": [
+      "npm",
+      "run",
+      "test:scripts"
+    ],
+    "exit": 0,
+    "seconds": 1.93
+  },
+  {
+    "name": "build",
+    "argv": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "exit": 0,
+    "seconds": 34.24
+  },
+  {
+    "name": "frontend-full",
+    "cwd": "apps/desktop",
+    "argv": [
+      "npm",
+      "test",
+      "--",
+      "--maxWorkers=2"
+    ],
+    "exit": 0,
+    "files": 424,
+    "testsPassed": 5689,
+    "seconds": 357.04,
+    "node": "26.7.0",
+    "candidate": "78bf8c92"
+  },
+  {
+    "name": "real-mac",
+    "argv": [
+      "uv",
+      "run",
+      "--project",
+      "apps/backend",
+      "python",
+      "docs/qa/android-management/scripts/create-disk-admission-smoke.py",
+      "--allow-device-mutation",
+      "--output",
+      "/private/tmp/android-final-review-real.json"
+    ],
+    "exit": 0,
+    "status": "passed",
+    "cleanedDeviceRecords": 9,
+    "remainingOwnedContainersAndVolumes": 0,
+    "remainingOwnedBackups": 0,
+    "candidate": "78bf8c92"
+  },
+  {
+    "name": "backend-full",
+    "cwd": "apps/backend",
+    "argv": [
+      "uv",
+      "run",
+      "pytest",
+      "-x",
+      "-q"
+    ],
+    "exit": 0,
+    "testsPassed": 4118,
+    "skipped": 26,
+    "warnings": 2,
+    "seconds": 782.24,
+    "candidate": "78bf8c92"
+  }
+]
