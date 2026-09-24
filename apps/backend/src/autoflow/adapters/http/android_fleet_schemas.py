@@ -47,6 +47,7 @@ class BatchCreate(AndroidRename):
     quantity: int = Field(default=1, ge=1, le=20, strict=True)
     instance_type: Literal["persistent", "temporary"] = "persistent"
     start: bool = True
+    allow_unknown_disk_estimate: bool = Field(default=False, strict=True)
     width: int = Field(default=720, ge=320, le=1920, strict=True)
     height: int = Field(default=1280, ge=320, le=2560, strict=True)
     locale: str = Field(default="zh-CN", pattern=r"^[a-z]{2,3}(-[A-Z]{2})?$")

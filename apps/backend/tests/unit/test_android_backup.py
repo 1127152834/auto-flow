@@ -319,13 +319,14 @@ async def test_restore_writes_the_exact_bytes_that_passed_digest_validation(tmp_
         return original_read(path)
 
     monkeypatch.setattr(Path, "read_bytes", changing_read)
-    runtime = type("Runtime", (), {"restore_volume": AsyncMock()})()
+    runtime = type("Runtime", (), {"restore_volume": AsyncMock(), "require_vm_disk_space": AsyncMock()})()
     operations = Mock()
     service.operations = operations
     await service.restore_data(record["id"], {"deviceId": "new", "imageId": "image", "generation": 1, "restoreState": "pending", "restoreRequestId": "request", "restoreBackupId": record["id"], "creationConfig": {"restoreRequestId": "request", "restoreBackupId": record["id"], "start": False}}, runtime)
     assert runtime.restore_volume.await_args.args[1] == payload.getvalue()
     assert reads == 1
     operations.verify_restore_target.assert_called_once()
+    runtime.require_vm_disk_space.assert_awaited_once_with(allow_unknown_disk_estimate=False)
 
 
 @pytest.mark.asyncio

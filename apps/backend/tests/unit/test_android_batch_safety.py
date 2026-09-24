@@ -242,3 +242,55 @@ def test_batch_copy_uses_runtime_workspace_identity_when_management_uses_path():
     }
     fleet = AndroidFleet(devices, _Resources(), None, None)
     assert fleet.batch(BatchCreate.model_validate(request).model_dump(by_alias=True))["state"] == "queued"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("confirmed", [False, True])
+async def test_retry_after_proven_create_disk_rejection_rechecks_without_inheriting_new_confirmation(confirmed):
+    calls = []
+    device = {"deviceId": "target", "control": "idle", "androidStatus": "missing", "operation": {"id": "create-op", "action": "create", "state": "failed"}}
+
+    class Runtime:
+        async def inspect(self, _device):
+            return {"androidStatus": "missing"}
+
+    fleet = AndroidFleet(SimpleNamespace(
+        repository=SimpleNamespace(get=lambda _identifier: device),
+        runtime=Runtime(),
+        management=SimpleNamespace(
+            operate=lambda identifier, request: calls.append((identifier, request)),
+            workspace_identity="workspace-a",
+            operations=SimpleNamespace(get=lambda identifier, workspace: SimpleNamespace(operation_id=identifier, workspace_identity=workspace, target_id="target", action="create", state="failed", result_code="ANDROID_DISK_ESTIMATE_UNKNOWN")),
+        ),
+    ), None, None, None)
+    batch = {"request": {"start": False, "allowUnknownDiskEstimate": confirmed}}
+    item = {"deviceId": "target", "state": "waiting_create", "error": None}
+
+    await fleet._device_step(batch, item)
+
+    assert item["state"] == "creating"
+    assert calls[0][0] == "target"
+    assert calls[0][1]["action"] == "create"
+    assert calls[0][1]["retryOf"] == "create-op"
+    assert calls[0][1]["retryEmptyCreate"] is True
+    assert calls[0][1].get("allowUnknownDiskEstimate", False) is confirmed
+
+
+@pytest.mark.asyncio
+async def test_missing_container_after_prior_success_cannot_be_rebuilt_by_batch_retry():
+    calls = []
+    device = {"deviceId": "target", "control": "idle", "androidStatus": "missing", "operation": {"id": "old-op", "action": "create", "state": "succeeded"}}
+
+    class Runtime:
+        async def inspect(self, _device):
+            return {"androidStatus": "missing"}
+
+    fleet = AndroidFleet(SimpleNamespace(
+        repository=SimpleNamespace(get=lambda _identifier: device),
+        runtime=Runtime(),
+        management=SimpleNamespace(operate=lambda identifier, request: calls.append((identifier, request))),
+    ), None, None, None)
+    with pytest.raises(AndroidError) as caught:
+        await fleet._device_step({"request": {"start": False}}, {"deviceId": "target", "state": "waiting_create"})
+    assert caught.value.code == "ANDROID_DATA_MISSING"
+    assert calls == []

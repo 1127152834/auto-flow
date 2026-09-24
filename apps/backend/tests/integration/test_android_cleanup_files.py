@@ -149,6 +149,9 @@ async def test_runtime_backup_and_restore_hold_the_cleanup_lease(tmp_path, actio
     class Runtime:
         blocked = False
 
+        async def require_vm_disk_space(self, *, allow_unknown_disk_estimate=False):
+            assert allow_unknown_disk_estimate is False
+
         async def inspect(self, _device):
             return {"androidStatus": "stopped"}
 

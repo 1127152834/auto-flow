@@ -111,6 +111,33 @@ async def test_archive_increments_revision_and_archived_profile_cannot_create_ba
     sessions.dispose()
 
 
+@pytest.mark.asyncio
+async def test_batch_confirmation_is_frozen_and_source_confirmation_is_not_inherited(tmp_path: Path) -> None:
+    sessions = _database(tmp_path)
+    resources = AndroidResourceRepository(sessions)
+    repository = SqlAlchemyDeviceRepository(sessions)
+    devices = AndroidDeviceService(repository, _ScenarioRuntime())
+    fleet = AndroidFleet(devices, resources, None, None)
+    profile = fleet.save_profile(_profile())
+    source = devices.runtime.new_device({**_batch_request(profile), "deviceId": str(uuid4()), "imageId": IMAGE_A})
+    source["creationConfig"] = {**_batch_request(profile), "imageId": IMAGE_A, "dpi": 320, "cpu": 1, "memoryMb": 1536, "allowUnknownDiskEstimate": True}
+    repository.save(source)
+
+    plain = fleet.batch({**_batch_request(profile), "sourceDeviceId": source["deviceId"]})
+    confirmed = fleet.batch({**_batch_request(profile), "allowUnknownDiskEstimate": True})
+    with pytest.raises(AndroidError) as conflict:
+        fleet.batch({**plain["request"], "allowUnknownDiskEstimate": True})
+    assert conflict.value.code == "ANDROID_REQUEST_CONFLICT"
+    await fleet.tick()
+    await _wait_management(devices)
+    await fleet.tick()
+    await _wait_management(devices)
+
+    assert "allowUnknownDiskEstimate" not in repository.get(plain["items"][0]["deviceId"])["creationConfig"]
+    assert repository.get(confirmed["items"][0]["deviceId"])["creationConfig"]["allowUnknownDiskEstimate"] is True
+    sessions.dispose()
+
+
 def _database(tmp_path: Path):
     path = tmp_path / "android-images-templates.sqlite3"
     migrate_database(path)

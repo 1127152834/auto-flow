@@ -657,6 +657,8 @@ def android_management_router(check_service: EnvironmentCheckService, operations
             raise AndroidError("ANDROID_BACKUP_NOT_FOUND", "备份不存在或不可恢复", 404)
         new_device_id = str(uuid5(NAMESPACE_URL, f"{workspace}/android-restore/{body.request_id}"))
         payload = {"backupId": identifier, "newName": body.new_name, "newDeviceId": new_device_id}
+        if body.allow_unknown_disk_estimate:
+            payload["allowUnknownDiskEstimate"] = True
         operation = None
         if operations is not None:
             digest = hashlib.sha256(json.dumps({"action": "restore", **payload}, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()).hexdigest()
@@ -670,6 +672,7 @@ def android_management_router(check_service: EnvironmentCheckService, operations
                 raise AndroidError("ANDROID_RESTORE_REQUEST_REPLAYED", "恢复请求已处理，请先核实操作结果", 409)
             operation = operations.transition(operation.operation_id, "queued", "running", {"stage_code": "creating"})
         config = dict(record.get("config") or {})
+        config.pop("allowUnknownDiskEstimate", None)
         if any(key not in config for key in ("width", "height", "dpi", "cpu", "memoryMb")):
             if operation is not None:
                 operations.transition(operation.operation_id, "running", "failed", {"stage_code": "failed", "result_code": "ANDROID_BACKUP_INCOMPATIBLE", "message": "备份缺少可恢复的实例配置快照"})
@@ -715,6 +718,8 @@ def android_management_router(check_service: EnvironmentCheckService, operations
                 operations.transition(operation.operation_id, "running", "failed", {"stage_code": "failed", "result_code": "ANDROID_BACKUP_IMAGE_MISSING", "message": "备份所需的精确镜像当前不可用"})
             raise AndroidError("ANDROID_BACKUP_IMAGE_MISSING", "备份所需的精确镜像当前不可用", 409)
         config.update(deviceId=new_device_id, name=body.new_name, imageId=record["imageId"], instanceType="persistent", start=False, restoreRequestId=body.request_id, restoreBackupId=identifier, restoreOperationId=operation.operation_id if operation else None)
+        if body.allow_unknown_disk_estimate:
+            config["allowUnknownDiskEstimate"] = True
         try:
             created = devices.management.create(config)
             task = devices.management.task
@@ -722,6 +727,10 @@ def android_management_router(check_service: EnvironmentCheckService, operations
                 await asyncio.shield(task)
             created = devices.repository.get(new_device_id)
             if created.get("deleted") or created.get("control") == "recovery_required" or created.get("androidStatus") in {"ready", "running"} or created.get("operation", {}).get("state") in {"failed", "needs_verification", "interrupted"}:
+                if created.get("operation", {}).get("state") == "failed" and operations is not None:
+                    child = operations.by_request(workspace, new_device_id)
+                    if child is not None and child.result_code in {"ANDROID_DISK_ESTIMATE_UNKNOWN", "ANDROID_DISK_SPACE_INSUFFICIENT", "ANDROID_DISK_PROBE_FAILED", "ANDROID_DISK_PREFLIGHT_CANCELLED"}:
+                        raise AndroidError(child.result_code, child.message or "磁盘预检失败，尚未开始创建目标实例", 409)
                 raise AndroidError("ANDROID_BACKUP_RESTORE_CREATE_FAILED", "恢复目标实例创建未完成，未写入数据卷", 503)
             await backups.restore_data(identifier, created, devices.runtime)
             created.update(dataRetained=False, restoreState="restored", control="idle", lastError=None)

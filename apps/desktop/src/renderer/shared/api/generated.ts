@@ -5662,6 +5662,11 @@ export type components = {
              * @default true
              */
             start: boolean;
+            /**
+             * Allowunknowndiskestimate
+             * @default false
+             */
+            allowUnknownDiskEstimate: boolean;
         };
         /** AndroidDeviceCommand */
         AndroidDeviceCommand: {
@@ -5680,6 +5685,11 @@ export type components = {
              * @default false
              */
             deleteData: boolean;
+            /**
+             * Allowunknowndiskestimate
+             * @default false
+             */
+            allowUnknownDiskEstimate: boolean;
         };
         /** AndroidDeviceRead */
         AndroidDeviceRead: {
@@ -6349,6 +6359,11 @@ export type components = {
             requestId: string;
             /** Newname */
             newName: string;
+            /**
+             * Allowunknowndiskestimate
+             * @default false
+             */
+            allowUnknownDiskEstimate: boolean;
         };
         /** BackupRestoreRead */
         BackupRestoreRead: {
@@ -6407,6 +6422,11 @@ export type components = {
              * @default true
              */
             start: boolean;
+            /**
+             * Allowunknowndiskestimate
+             * @default false
+             */
+            allowUnknownDiskEstimate: boolean;
             /**
              * Width
              * @default 720

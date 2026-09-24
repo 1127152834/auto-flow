@@ -6,7 +6,12 @@ from typing import Any
 
 from autoflow.domain.android.management_models import public_device_revision
 from autoflow.domain.android.management_rules import require_restored, restore_pending
-from autoflow.domain.android.ports import AndroidError, AndroidRuntime, DeviceRepository
+from autoflow.domain.android.ports import (
+    AndroidDiskPreflightCancelled,
+    AndroidError,
+    AndroidRuntime,
+    DeviceRepository,
+)
 
 
 def now() -> str:
@@ -32,6 +37,7 @@ class AndroidManagement:
         self.runtime.lock()
 
     def create(self, config: dict[str, Any]) -> dict[str, Any]:
+        config = {key: value for key, value in config.items() if key != "allowUnknownDiskEstimate" or value is True}
         if config.get("restoreRequestId") and config.get("start", True):
             require_restored(config)
         try:
@@ -45,6 +51,8 @@ class AndroidManagement:
             return existing
         self._admit()
         request = {"requestId": str(config["deviceId"]), "action": "create", "deleteData": False}
+        if config.get("allowUnknownDiskEstimate") is True:
+            request["allowUnknownDiskEstimate"] = True
         durable = None
         try:
             durable = self._accept_operation(str(config["deviceId"]), request)
@@ -71,6 +79,7 @@ class AndroidManagement:
             raise
 
     def operate(self, device_id: str, request: dict[str, Any]) -> dict[str, Any]:
+        request = {key: value for key, value in request.items() if key != "allowUnknownDiskEstimate" or value is True}
         device = self.repository.get(device_id)
         prior = device.get("operationReceipts", {}).get(request["requestId"])
         if prior is not None:
@@ -190,6 +199,10 @@ class AndroidManagement:
             device.update(control="idle", lastError=None)
             device["operation"].update(state="succeeded", stage="已完成", finishedAt=now())
             finish("succeeded", {"stage_code": "completed"})
+        except AndroidDiskPreflightCancelled:
+            device.update(control="idle", lastError="磁盘预检取消，尚未开始写入")
+            device["operation"].update(state="failed", stage="预检已取消", error=device["lastError"], finishedAt=now())
+            finish("failed", {"stage_code": "failed", "result_code": "ANDROID_DISK_PREFLIGHT_CANCELLED", "message": device["lastError"]})
         except asyncio.CancelledError:
             device.update(control="recovery_required", lastError="操作中断，请核实实际设备状态")
             device["operation"].update(state="interrupted", stage="等待核实", error=device["lastError"], finishedAt=now())
@@ -199,7 +212,8 @@ class AndroidManagement:
             device["operation"].update(state="needs_verification", stage="等待核实", error=device["lastError"], finishedAt=now())
             finish("needs_verification", {"stage_code": "verify", "result_code": "RESULT_UNKNOWN", "message": str(error)[:480]})
         except Exception as error:  # noqa: BLE001 -- persist a reviewable failed operation, never raw shell diagnostics.
-            device.update(control="recovery_required", lastError=error.message if isinstance(error, AndroidError) else "设备操作未完成，请核实实际状态")
+            disk_preflight_failed = isinstance(error, AndroidError) and error.code in {"ANDROID_DISK_ESTIMATE_UNKNOWN", "ANDROID_DISK_SPACE_INSUFFICIENT", "ANDROID_DISK_PROBE_FAILED"}
+            device.update(control="idle" if disk_preflight_failed else "recovery_required", lastError=error.message if isinstance(error, AndroidError) else "设备操作未完成，请核实实际状态")
             device["operation"].update(state="failed", stage="需要处理", error=device["lastError"], finishedAt=now())
             finish("failed", {"stage_code": "failed", "result_code": getattr(error, "code", "ANDROID_OPERATION_FAILED"), "message": str(error)[:480]})
         finally:

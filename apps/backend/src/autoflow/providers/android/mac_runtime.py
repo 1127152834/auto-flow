@@ -385,7 +385,7 @@ class MacAndroidRuntime:
         if host_free == 0 or vm_free == 0:
             raise AndroidError("ANDROID_DISK_SPACE_INSUFFICIENT", "Lima 磁盘文件所在宿主文件系统或 Docker 数据盘空间已耗尽，尚未开始写入", 409)
         if not allow_unknown_disk_estimate:
-            raise AndroidError("ANDROID_DISK_ESTIMATE_UNKNOWN", "镜像最终占用空间无法可靠估计，尚未开始拉取；确认未知占用后可重试", 409)
+            raise AndroidError("ANDROID_DISK_ESTIMATE_UNKNOWN", "最终磁盘占用空间无法可靠估计，尚未开始写入；确认未知占用后可重试", 409)
 
     async def pull_image(self, reference: str, *, allow_unknown_disk_estimate: bool = False) -> None:
         await self.require_vm_disk_space(allow_unknown_disk_estimate=allow_unknown_disk_estimate)

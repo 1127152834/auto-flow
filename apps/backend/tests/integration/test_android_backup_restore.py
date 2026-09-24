@@ -15,7 +15,7 @@ from autoflow.adapters.http.errors import install_error_handlers
 from autoflow.application.android.backups import AndroidBackupService
 from autoflow.application.android.devices import AndroidDeviceService
 from autoflow.application.android.diagnostics import EnvironmentCheckService
-from autoflow.domain.android.ports import AndroidError
+from autoflow.domain.android.ports import AndroidDiskPreflightCancelled, AndroidError
 from autoflow.infrastructure.database.android import SqlAlchemyDeviceRepository
 from autoflow.infrastructure.database.android_operations import (
     SqlAlchemyAndroidOperationRepository,
@@ -61,6 +61,71 @@ async def test_restore_streams_validated_archive_without_loading_bytes(tmp_path:
 
     assert response.status_code == 202, response.text
     assert runtime.restore_calls == 1
+    assert runtime.disk_checks == [False]
+    sessions.dispose()
+
+
+@pytest.mark.asyncio
+async def test_restore_does_not_inherit_source_disk_confirmation_and_preserves_known_rejection(tmp_path: Path) -> None:
+    sessions = _sessions(tmp_path)
+    resources = AndroidResourceRepository(sessions)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    repository = SqlAlchemyDeviceRepository(sessions)
+    runtime = _Runtime(_tar(b"source"), IMAGE)
+    devices = AndroidDeviceService(repository, runtime)
+    devices.management.workspace_identity = str(tmp_path.resolve())
+    backups = AndroidBackupService(resources, tmp_path, operations)
+    source = {"deviceId": "source", "imageId": IMAGE, "control": "idle", "ownerRunId": None, "generation": 1,
+              "creationConfig": {"width": 720, "height": 1280, "dpi": 320, "cpu": 1, "memoryMb": 1536, "allowUnknownDiskEstimate": True}}
+    repository.save(source)
+    backup = await backups.create_with_runtime(source, None, runtime, "backup-source", 1)
+    app = FastAPI()
+    install_error_handlers(app)
+    app.include_router(android_management_router(EnvironmentCheckService(runtime), operations, backups=backups, devices=devices))
+    runtime.disk_error = AndroidError("ANDROID_DISK_ESTIMATE_UNKNOWN", "最终占用未知", 409)
+
+    with TestClient(app) as client:
+        rejected = client.post(f"/api/v1/android/management/backups/{backup['id']}/restore", json={"requestId": "unconfirmed", "newName": "copy"})
+        replay_conflict = client.post(f"/api/v1/android/management/backups/{backup['id']}/restore", json={"requestId": "unconfirmed", "newName": "copy", "allowUnknownDiskEstimate": True})
+
+    assert rejected.status_code == 409, rejected.text
+    assert rejected.json()["error"]["code"] == "ANDROID_DISK_ESTIMATE_UNKNOWN"
+    assert replay_conflict.status_code == 409
+    assert operations.by_request(str(tmp_path.resolve()), "unconfirmed").result_code == "ANDROID_DISK_ESTIMATE_UNKNOWN"
+    assert runtime.restore_calls == 0
+    target_id = operations.by_request(str(tmp_path.resolve()), "unconfirmed").target_id
+    assert "allowUnknownDiskEstimate" not in repository.get(target_id)["creationConfig"]
+    assert runtime.disk_checks == [False]
+    assert repository.get("source")["creationConfig"]["allowUnknownDiskEstimate"] is True
+    sessions.dispose()
+
+
+@pytest.mark.asyncio
+async def test_cancelled_restore_disk_recheck_keeps_created_target_unknown(tmp_path: Path) -> None:
+    sessions = _sessions(tmp_path)
+    resources = AndroidResourceRepository(sessions)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    repository = SqlAlchemyDeviceRepository(sessions)
+    runtime = _Runtime(_tar(b"source"), IMAGE)
+    devices = AndroidDeviceService(repository, runtime)
+    devices.management.workspace_identity = str(tmp_path.resolve())
+    backups = AndroidBackupService(resources, tmp_path, operations)
+    source = {"deviceId": "source", "imageId": IMAGE, "control": "idle", "ownerRunId": None, "generation": 1,
+              "creationConfig": {"width": 720, "height": 1280, "dpi": 320, "cpu": 1, "memoryMb": 1536}}
+    repository.save(source)
+    backup = await backups.create_with_runtime(source, None, runtime, "backup-source", 1)
+    app = FastAPI()
+    install_error_handlers(app)
+    app.include_router(android_management_router(EnvironmentCheckService(runtime), operations, backups=backups, devices=devices))
+    runtime.disk_error = AndroidDiskPreflightCancelled()
+
+    with TestClient(app) as client, pytest.raises(CancelledError):
+        client.post(f"/api/v1/android/management/backups/{backup['id']}/restore", json={"requestId": "cancel-recheck", "newName": "copy", "allowUnknownDiskEstimate": True})
+
+    operation = operations.by_request(str(tmp_path.resolve()), "cancel-recheck")
+    assert operation.state == "needs_verification"
+    assert repository.get(operation.target_id)["restoreState"] == "pending"
+    assert runtime.restore_calls == 0
     sessions.dispose()
 
 
@@ -368,6 +433,13 @@ class _Runtime:
         self.locked = 0
         self.restore_calls = 0
         self.environment_error: BaseException | None = None
+        self.disk_error: BaseException | None = None
+        self.disk_checks: list[bool] = []
+
+    async def require_vm_disk_space(self, *, allow_unknown_disk_estimate: bool = False):
+        self.disk_checks.append(allow_unknown_disk_estimate)
+        if self.disk_error is not None:
+            raise self.disk_error
 
     def lock(self):
         self.locked += 1

@@ -179,6 +179,7 @@ class BackupCreate(ApiModel):
 class BackupRestore(ApiModel):
     request_id: str = Field(min_length=1, max_length=128)
     new_name: str = Field(min_length=1, max_length=80)
+    allow_unknown_disk_estimate: bool = Field(default=False, strict=True)
 
 
 class BackupRestoreRead(ApiModel):

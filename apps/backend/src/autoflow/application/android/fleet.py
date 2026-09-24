@@ -186,6 +186,7 @@ class AndroidFleet:
         }
 
     def batch(self, request: dict[str, Any]) -> dict[str, Any]:
+        request = {key: value for key, value in request.items() if key != "allowUnknownDiskEstimate" or value is True}
         existing = self._existing("batch", request["batchId"], request)
         if existing:
             return existing
@@ -418,6 +419,8 @@ class AndroidFleet:
                 locale=profile["locale"],
                 timezone=profile["timezone"],
             )
+            if request.get("allowUnknownDiskEstimate") is True:
+                config["allowUnknownDiskEstimate"] = True
             self.devices.management.create(config)
             item["state"] = "creating"
             return
@@ -441,7 +444,26 @@ class AndroidFleet:
             raise AndroidError(
                 "ANDROID_BATCH_ITEM_DELETED", "实例已删除，不能重用原编号"
             )
+        if (device.get("operation") or {}).get("state") == "failed" and (device.get("operation") or {}).get("action") == "create":
+            if item["state"] != "waiting_create":
+                raise AndroidError("ANDROID_BATCH_ITEM_FAILED", device.get("lastError") or "实例创建失败")
+            operations = getattr(self.devices.management, "operations", None)
+            prior_id = device["operation"].get("id")
+            prior = operations.get(prior_id, self.devices.management.workspace_identity) if operations is not None and prior_id else None
+            if (prior is None or prior.target_id != device["deviceId"] or prior.action != "create" or prior.state != "failed"
+                    or prior.result_code not in {"ANDROID_DISK_ESTIMATE_UNKNOWN", "ANDROID_DISK_SPACE_INSUFFICIENT", "ANDROID_DISK_PROBE_FAILED", "ANDROID_DISK_PREFLIGHT_CANCELLED"}):
+                raise AndroidError("ANDROID_DATA_MISSING", "旧创建结果不能证明零写入，禁止空白重建", 409)
+            retry = {"requestId": str(uuid4()), "action": "create", "deleteData": False, "retryOf": prior.operation_id, "retryEmptyCreate": True}
+            if batch["request"].get("allowUnknownDiskEstimate") is True:
+                retry["allowUnknownDiskEstimate"] = True
+            self.devices.management.operate(device["deviceId"], retry)
+            item["state"] = "creating"
+            return
         observation = await self.devices.runtime.inspect(device)
+        if observation["androidStatus"] == "missing":
+            raise AndroidError("ANDROID_DATA_MISSING", "实例容器或数据卷丢失，不能空白重建", 409)
+        if not batch["request"]["start"] and observation["androidStatus"] not in {"stopped", "ready"}:
+            raise AndroidError("ANDROID_BATCH_ITEM_FAILED", "实例状态尚未核实，不能报告成功")
         if not batch["request"]["start"] or observation["androidStatus"] == "ready":
             item.update(state="succeeded", error=None)
             return

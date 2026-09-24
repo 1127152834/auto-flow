@@ -242,8 +242,16 @@ async def _manage(runtime: "MacAndroidRuntime", device: dict[str, Any], request:
     if action == "create" or not containers:
         stage("检查镜像与配置")
         await _admit_image(runtime, device["imageId"])
+        if action == "create" and request.get("retryEmptyCreate") and (containers or volumes):
+            raise AndroidError("ANDROID_DATA_MISSING", "创建重试前发现实例或数据卷已存在，不能空白重建", 409)
         if action != "create" and not volumes:
             raise AndroidError("ANDROID_DATA_MISSING", "原数据卷不存在，不能以空白数据冒充恢复；请新建实例", 409)
+        await runtime.require_vm_disk_space(
+            allow_unknown_disk_estimate=(
+                device.get("creationConfig", {}).get("allowUnknownDiskEstimate") is True
+                if action == "create" else request.get("allowUnknownDiskEstimate") is True
+            )
+        )
         if not volumes:
             stage("创建独立数据")
             await mutation(device, save, "volume", "create", "--label", LABEL + "=" + runtime.workspace_id, "--label", "io.autoflow.android.device=" + device["deviceId"], device["volumeId"])

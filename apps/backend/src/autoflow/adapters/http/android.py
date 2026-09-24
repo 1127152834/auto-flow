@@ -86,6 +86,7 @@ class AndroidCreate(AndroidRename):
     cpu: int = Field(default=1, ge=1, le=8, strict=True)
     memory_mb: int = Field(default=1536, ge=768, le=8192, strict=True)
     start: bool = True
+    allow_unknown_disk_estimate: bool = Field(default=False, strict=True)
 
     @model_validator(mode="after")
     def even_dimensions(self) -> "AndroidCreate":
@@ -98,6 +99,7 @@ class AndroidDeviceCommand(ApiModel):
     request_id: UUID
     action: Literal["start", "stop", "restart", "restore", "delete", "recover"]
     delete_data: bool = False
+    allow_unknown_disk_estimate: bool = Field(default=False, strict=True)
 
     @model_validator(mode="after")
     def deletion_scope(self) -> "AndroidDeviceCommand":

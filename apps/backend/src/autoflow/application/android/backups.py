@@ -325,6 +325,7 @@ class AndroidBackupService:
                 if self.operations is None:
                     raise AndroidError("ANDROID_RESTORE_TARGET_INVALID", "恢复目标操作无法核实，禁止写入数据卷", 409)
                 self.operations.verify_restore_target(self.workspace_identity, backup_id, device)
+                await runtime.require_vm_disk_space(allow_unknown_disk_estimate=config.get("allowUnknownDiskEstimate") is True)
                 if hasattr(runtime, "restore_volume_from_path"):
                     await runtime.restore_volume_from_path(device, data_path)
                 else:
