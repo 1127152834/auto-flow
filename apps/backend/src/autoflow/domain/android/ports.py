@@ -1,3 +1,4 @@
+import asyncio
 from collections.abc import Awaitable, Callable
 from typing import Any, Protocol
 
@@ -8,6 +9,10 @@ class AndroidError(Exception):
     def __init__(self, code: str, message: str, status: int = 409) -> None:
         super().__init__(message)
         self.code, self.message, self.status = code, message, status
+
+
+class AndroidDiskPreflightCancelled(asyncio.CancelledError):
+    """Cancellation before a Docker write was dispatched."""
 
 
 class DeviceRepository(Protocol):

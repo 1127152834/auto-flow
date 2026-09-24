@@ -791,3 +791,102 @@ async def test_backup_size_estimate_counts_guest_tar_with_same_metadata_options(
             await runtime.estimate_backup_bytes({"deviceId": "owned"})
         assert error.value.code == "ANDROID_DISK_ESTIMATE_UNKNOWN"
     mac.run_file.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(("vm_free", "host_free", "confirmed", "expected"), [
+    (0, 100, True, "ANDROID_DISK_SPACE_INSUFFICIENT"),
+    (100, 0, True, "ANDROID_DISK_SPACE_INSUFFICIENT"),
+    (100, 100, False, "ANDROID_DISK_ESTIMATE_UNKNOWN"),
+])
+async def test_pull_disk_preflight_blocks_before_docker_pull(tmp_path, monkeypatch, vm_free, host_free, confirmed, expected):
+    import json
+    from types import SimpleNamespace
+
+    vm_dir = tmp_path / "vm"
+    vm_dir.mkdir()
+    (vm_dir / "disk").touch()
+    listing = {"name": mac.VM, "status": "Running", "dir": str(vm_dir), "vmType": "vz", "config": {"vmType": "vz"}}
+    commands = []
+
+    async def fake_run(argv, timeout=15, input_data=None):
+        commands.append(argv)
+        if argv[:3] == ["limactl", "list", "--json"]:
+            return json.dumps(listing).encode()
+        return str(vm_free).encode()
+
+    async def fake_docker(*args, **kwargs):
+        commands.append(args)
+        return b"/var/lib/docker\n"
+
+    monkeypatch.setattr(mac, "run", fake_run)
+    monkeypatch.setattr(mac, "docker", fake_docker)
+    monkeypatch.setattr(mac.shutil, "disk_usage", lambda _path: SimpleNamespace(free=host_free))
+    with pytest.raises(AndroidError) as error:
+        await mac.MacAndroidRuntime(tmp_path, tmp_path).pull_image("redroid/redroid:13", allow_unknown_disk_estimate=confirmed)
+    assert error.value.code == expected
+    assert ("pull", "redroid/redroid:13") not in commands
+
+
+@pytest.mark.asyncio
+async def test_pull_disk_preflight_uses_resolved_disk_file_and_rejects_unknown_layout(tmp_path, monkeypatch):
+    import json
+    from types import SimpleNamespace
+
+    vm_dir = tmp_path / "vm"
+    vm_dir.mkdir()
+    real_disk = tmp_path / "other-volume" / "disk"
+    real_disk.parent.mkdir()
+    real_disk.touch()
+    (vm_dir / "disk").symlink_to(real_disk)
+    listing = {"name": mac.VM, "status": "Running", "dir": str(vm_dir), "vmType": "vz", "config": {"vmType": "vz"}}
+    measured = []
+    pulls = []
+
+    async def fake_run(argv, timeout=15, input_data=None):
+        if argv[:3] == ["limactl", "list", "--json"]:
+            return json.dumps(listing).encode()
+        return b"100\n"
+
+    async def fake_docker(*args, **kwargs):
+        if args[0] == "pull":
+            pulls.append(args)
+        return b"/var/lib/docker\n"
+
+    monkeypatch.setattr(mac, "run", fake_run)
+    monkeypatch.setattr(mac, "docker", fake_docker)
+    monkeypatch.setattr(mac.shutil, "disk_usage", lambda path: measured.append(path) or SimpleNamespace(free=100))
+    runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
+    await runtime.pull_image("redroid/redroid:13", allow_unknown_disk_estimate=True)
+    assert measured == [real_disk]
+    assert pulls == [("pull", "redroid/redroid:13")]
+    listing["config"]["additionalDisks"] = [{"name": "extra"}]
+    with pytest.raises(AndroidError) as error:
+        await runtime.pull_image("redroid/redroid:13", allow_unknown_disk_estimate=True)
+    assert error.value.code == "ANDROID_DISK_PROBE_FAILED"
+    assert pulls == [("pull", "redroid/redroid:13")]
+
+
+@pytest.mark.asyncio
+async def test_pull_disk_preflight_wraps_unresolvable_disk_symlink(tmp_path, monkeypatch):
+    import json
+
+    vm_dir = tmp_path / "vm"
+    vm_dir.mkdir()
+    (vm_dir / "disk").symlink_to("disk")
+    listing = {"name": mac.VM, "status": "Running", "dir": str(vm_dir), "vmType": "vz", "config": {"vmType": "vz"}}
+    pulls = []
+
+    async def fake_run(argv, timeout=15, input_data=None):
+        return json.dumps(listing).encode()
+
+    async def fake_docker(*args, **kwargs):
+        pulls.append(args)
+        return b""
+
+    monkeypatch.setattr(mac, "run", fake_run)
+    monkeypatch.setattr(mac, "docker", fake_docker)
+    with pytest.raises(AndroidError) as error:
+        await mac.MacAndroidRuntime(tmp_path, tmp_path).pull_image("redroid/redroid:13", allow_unknown_disk_estimate=True)
+    assert error.value.code == "ANDROID_DISK_PROBE_FAILED"
+    assert pulls == []

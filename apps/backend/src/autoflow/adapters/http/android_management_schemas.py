@@ -134,6 +134,7 @@ class ImageRegister(ApiModel):
 class ImagePullCreate(ApiModel):
     request_id: str = Field(min_length=1, max_length=128)
     reference: str = Field(min_length=1, max_length=255)
+    allow_unknown_disk_estimate: bool = Field(default=False, strict=True)
 
     @field_validator("reference")
     @classmethod

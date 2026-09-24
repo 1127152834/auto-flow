@@ -41,7 +41,7 @@ async def test_pull_rejects_disallowed_reference_before_network_side_effect(refe
     pulled: list[str] = []
 
     class Runtime:
-        async def pull_image(self, reference: str) -> None:
+        async def pull_image(self, reference: str, *, allow_unknown_disk_estimate: bool = False) -> None:
             pulled.append(reference)
 
     with pytest.raises(AndroidError) as error:
@@ -57,7 +57,7 @@ async def test_pull_accepts_approved_redroid_repository(reference: str) -> None:
     pulled: list[str] = []
 
     class Runtime:
-        async def pull_image(self, value: str) -> None:
+        async def pull_image(self, value: str, *, allow_unknown_disk_estimate: bool = False) -> None:
             pulled.append(value)
 
         async def inspect_image(self, _value: str) -> dict[str, str]:
@@ -66,3 +66,18 @@ async def test_pull_accepts_approved_redroid_repository(reference: str) -> None:
     await ImageCatalog(Runtime()).pull(reference)
 
     assert pulled == [reference]
+
+
+@pytest.mark.asyncio
+async def test_pull_passes_explicit_disk_confirmation_to_runtime_after_source_validation() -> None:
+    confirmations: list[bool] = []
+
+    class Runtime:
+        async def pull_image(self, _reference: str, *, allow_unknown_disk_estimate: bool = False) -> None:
+            confirmations.append(allow_unknown_disk_estimate)
+
+        async def inspect_image(self, _reference: str) -> dict[str, str]:
+            return {"imageId": "sha256:" + "b" * 64, "architecture": "arm64", "os": "linux"}
+
+    await ImageCatalog(Runtime()).pull("redroid/redroid:13", allow_unknown_disk_estimate=True)
+    assert confirmations == [True]

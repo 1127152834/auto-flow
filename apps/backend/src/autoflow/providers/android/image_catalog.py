@@ -38,10 +38,10 @@ class ImageCatalog:
             google_components=metadata.get("googleComponents", "unknown"),
         )
 
-    async def pull(self, reference: str) -> ImageMetadata:
+    async def pull(self, reference: str, *, allow_unknown_disk_estimate: bool = False) -> ImageMetadata:
         self._validate_reference(reference)
         if reference.split("@", 1)[0].split(":", 1)[0] not in _PULL_REPOSITORIES:
             raise AndroidError("ANDROID_IMAGE_SOURCE_NOT_ALLOWED", "镜像来源未获准拉取", 422)
         if self.runtime is not None and hasattr(self.runtime, "pull_image"):
-            await self.runtime.pull_image(reference)
+            await self.runtime.pull_image(reference, allow_unknown_disk_estimate=allow_unknown_disk_estimate)
         return await self.inspect(reference)

@@ -155,7 +155,7 @@ async def test_image_pull_holds_runtime_lock_through_catalog_publication():
     resources = _Resources()
 
     class Catalog(_CatalogFor):
-        async def pull(self, reference):
+        async def pull(self, reference, *, allow_unknown_disk_estimate=False):
             assert runtime.locked, "content deletion could race a completed pull"
             return await self.inspect(reference)
 

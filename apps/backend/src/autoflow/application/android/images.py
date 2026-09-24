@@ -147,6 +147,7 @@ class AndroidImageService:
             "googleComponents": metadata["googleComponents"],
             "references": [{"kind": "source", "id": image_id, "name": str(request["reference"])}],
             "requestId": request.get("requestId"),
+            "allowUnknownDiskEstimate": bool(request.get("allowUnknownDiskEstimate", False)),
             "createdAt": datetime.now(UTC).isoformat(),
             "workspaceId": self._workspace(),
         }
@@ -164,8 +165,8 @@ class AndroidImageService:
             self.resources.save("image_pull_receipt", receipt)
 
     @staticmethod
-    def _pull_receipt(workspace: str | None, request_id: str, reference: str, image_id: str) -> dict[str, Any]:
-        return {
+    def _pull_receipt(workspace: str | None, request_id: str, reference: str, image_id: str, *, allow_unknown_disk_estimate: bool = False) -> dict[str, Any]:
+        receipt: dict[str, Any] = {
             "id": str(uuid5(NAMESPACE_URL, f"{workspace}/android-image-pull/{request_id}")),
             "workspaceId": workspace,
             "requestId": request_id,
@@ -173,6 +174,9 @@ class AndroidImageService:
             "imageId": image_id,
             "createdAt": datetime.now(UTC).isoformat(),
         }
+        if allow_unknown_disk_estimate:
+            receipt["allowUnknownDiskEstimate"] = True
+        return receipt
 
     async def register(self, request: dict[str, Any]) -> dict[str, Any]:
         image_id = request["id"]
@@ -191,14 +195,14 @@ class AndroidImageService:
                 )
             return self._persist_registered(request, metadata)
 
-    async def pull(self, request_id: str, reference: str) -> dict[str, Any]:
+    async def pull(self, request_id: str, reference: str, *, allow_unknown_disk_estimate: bool = False) -> dict[str, Any]:
         if self.catalog is None:
             raise AndroidError("ANDROID_IMAGE_PULL_UNAVAILABLE", "镜像拉取适配器尚未配置", 503)
         with self._runtime_lock():
             workspace = self._workspace()
             receipt = next((item for item in self.resources.list("image_pull_receipt") if item.get("requestId") == request_id and item.get("workspaceId") == workspace), None)
             if receipt is not None:
-                if receipt["reference"] != reference:
+                if receipt["reference"] != reference or bool(receipt.get("allowUnknownDiskEstimate", False)) != allow_unknown_disk_estimate:
                     raise AndroidError("ANDROID_REQUEST_CONFLICT", "请求编号已用于其他镜像拉取", 409)
                 image = next((item for item in self.list() if item["imageId"] == receipt["imageId"]), None)
                 if image is None:
@@ -206,19 +210,20 @@ class AndroidImageService:
                 return self._public(image)
             existing = next((item for item in self.list() if item.get("requestId") == request_id), None)
             if existing is not None:
-                if existing.get("reference") != reference:
+                if existing.get("reference") != reference or bool(existing.get("allowUnknownDiskEstimate", False)) != allow_unknown_disk_estimate:
                     raise AndroidError("ANDROID_REQUEST_CONFLICT", "请求编号已用于其他镜像拉取", 409)
-                self.resources.save("image_pull_receipt", self._pull_receipt(workspace, request_id, reference, existing["imageId"]))
+                self.resources.save("image_pull_receipt", self._pull_receipt(workspace, request_id, reference, existing["imageId"], allow_unknown_disk_estimate=allow_unknown_disk_estimate))
                 return self._public(existing)
-            metadata = await (self.catalog.pull(reference) if hasattr(self.catalog, "pull") else self.catalog.inspect(reference))
+            metadata = await (self.catalog.pull(reference, allow_unknown_disk_estimate=allow_unknown_disk_estimate) if hasattr(self.catalog, "pull") else self.catalog.inspect(reference))
             metadata = self._normalise_metadata(metadata)
             self._validate_metadata(metadata)
-            receipt = self._pull_receipt(workspace, request_id, reference, metadata["imageId"])
+            receipt = self._pull_receipt(workspace, request_id, reference, metadata["imageId"], allow_unknown_disk_estimate=allow_unknown_disk_estimate)
             image = self._persist_registered({
                 "id": metadata["imageId"],
                 "name": reference,
                 "reference": reference,
                 "requestId": request_id,
+                "allowUnknownDiskEstimate": allow_unknown_disk_estimate,
                 "sourceDigest": metadata["sourceDigest"],
                 "architecture": metadata["architecture"],
                 "os": metadata["os"],

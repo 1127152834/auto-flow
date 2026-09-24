@@ -30,6 +30,7 @@ export function ImageManager({ api, instanceId }: Props) {
   const [imageId, setImageId] = useState('')
   const [reference, setReference] = useState('')
   const [pullReference, setPullReference] = useState('')
+  const [allowUnknownDiskEstimate, setAllowUnknownDiskEstimate] = useState(false)
   const [operation, setOperation] = useState<Operation | null>(null)
   const [deleteDraft, setDeleteDraft] = useState<DeleteDraft | null>(null)
   const [verifyDraft, setVerifyDraft] = useState<VerifyDraft | null>(null)
@@ -39,14 +40,15 @@ export function ImageManager({ api, instanceId }: Props) {
   const [message, setMessage] = useState('')
   const registerBody = useRef<{ id: string; name: string; reference: string } | null>(null)
   const verifyRequest = useRef<string | null>(null)
-  const pullRequest = useRef<{ requestId: string; reference: string } | null>(null)
+  const pullRequest = useRef<{ requestId: string; reference: string; allowUnknownDiskEstimate: boolean } | null>(null)
 
   const run = async (action: typeof errorAction, fn: () => Promise<void>) => {
     if (busy) return
     setBusy(true); setError(''); setMessage(''); setErrorAction(action)
     try { await fn(); setErrorAction(null) }
     catch (cause) {
-      const conflict = cause instanceof ApiClientError && cause.status === 409
+      const diskPreflight = action === 'pull' && cause instanceof ApiClientError && cause.status === 409 && ['ANDROID_DISK_SPACE_INSUFFICIENT', 'ANDROID_DISK_PROBE_FAILED', 'ANDROID_DISK_ESTIMATE_UNKNOWN'].includes(cause.code ?? '')
+      const conflict = cause instanceof ApiClientError && cause.status === 409 && !diskPreflight
       if (action === 'delete' && cause instanceof ApiClientError && cause.code === 'ANDROID_IMAGE_DELETE_RESULT_UNKNOWN') setErrorAction('verifyDelete')
       setError(conflict ? '镜像引用或版本发生冲突，请重新读取后重试' : cause instanceof Error ? cause.message : '镜像操作结果尚未确认，请按原请求重试')
     }
@@ -61,7 +63,7 @@ export function ImageManager({ api, instanceId }: Props) {
 
   const pull = () => {
     if (!pullRequest.current && (!pulls.data || pulls.isError || pulls.isFetching || pulls.data.total > 0)) return
-    pullRequest.current ??= { requestId: crypto.randomUUID(), reference: pullReference.trim() }
+    pullRequest.current ??= { requestId: crypto.randomUUID(), reference: pullReference.trim(), allowUnknownDiskEstimate }
     const request = pullRequest.current
     return run('pull', async () => {
       try {
@@ -70,7 +72,7 @@ export function ImageManager({ api, instanceId }: Props) {
         if (['succeeded', 'failed', 'cancelled'].includes(next.state)) pullRequest.current = null
         setMessage(`拉取操作已接受：${request.requestId}`)
       } catch (cause) {
-        if (cause instanceof ApiClientError && cause.status === 422 && cause.code === 'VALIDATION_ERROR' && pullRequest.current?.requestId === request.requestId) pullRequest.current = null
+        if (cause instanceof ApiClientError && ((cause.status === 422 && cause.code === 'VALIDATION_ERROR') || (cause.status === 409 && ['ANDROID_DISK_SPACE_INSUFFICIENT', 'ANDROID_DISK_PROBE_FAILED', 'ANDROID_DISK_ESTIMATE_UNKNOWN'].includes(cause.code ?? ''))) && pullRequest.current?.requestId === request.requestId) pullRequest.current = null
         throw cause
       }
     })
@@ -131,7 +133,8 @@ export function ImageManager({ api, instanceId }: Props) {
       </form>
       <form aria-label="拉取镜像" className="grid gap-2 rounded-control border border-line p-3" onSubmit={(event) => { event.preventDefault(); void pull() }}>
         <h3 className="font-medium">受限拉取</h3>
-        <label>镜像引用<input aria-label="拉取镜像引用" value={pullReference} disabled={busy || !!pullRequest.current} onChange={(event) => { pullRequest.current = null; setPullReference(event.target.value); setOperation(null) }} placeholder="redroid/redroid:13 或 redroid/redroid@sha256:…" /></label>
+        <label>镜像引用<input aria-label="拉取镜像引用" value={pullReference} disabled={busy || !!pullRequest.current} onChange={(event) => { pullRequest.current = null; setPullReference(event.target.value); setAllowUnknownDiskEstimate(false); setOperation(null) }} placeholder="redroid/redroid:13 或 redroid/redroid@sha256:…" /></label>
+        <label className="text-xs"><input type="checkbox" checked={allowUnknownDiskEstimate} disabled={busy || !!pullRequest.current} onChange={(event) => setAllowUnknownDiskEstimate(event.target.checked)} />我确认镜像最终占用未知，允许在空间探测通过后拉取</label>
         <button type="submit" disabled={busy || !!pullRequest.current || !pullReference.trim() || !pulls.data || pulls.isError || pulls.isFetching || pulls.data.total > 0}>开始拉取</button>
         {operation && <div role="status" className="text-xs">拉取操作：{operation.stageLabel} · {operation.state} · {operation.requestId}<button type="button" disabled={busy} onClick={() => void verifyOperation()}>按原编号核实拉取</button></div>}
       </form>
@@ -151,7 +154,7 @@ export function ImageManager({ api, instanceId }: Props) {
         <div className="mt-2 flex flex-wrap gap-3"><button type="button" aria-label="上一页拉取记录" disabled={busy || pulls.isError || pulls.isFetching || !previous.length} onClick={() => { setCursor(previous[previous.length - 1]); setPrevious(previous.slice(0, -1)) }}>上一页</button><span>第 {previous.length + 1} 页 · 共 {pulls.data.total} 项待核实</span><button type="button" aria-label="下一页拉取记录" disabled={busy || pulls.isError || pulls.isFetching || !pulls.data.nextCursor} onClick={() => { setPrevious([...previous, cursor]); setCursor(pulls.data?.nextCursor ?? '') }}>下一页</button></div>
       </>}
     </section>
-    {error && <p role="alert" className="mt-3 text-sm text-danger">{error}{errorAction && <button type="button" disabled={busy} onClick={retry}>{errorAction === 'verifyDelete' ? '核实删除结果' : errorAction === 'pull' || errorAction === 'verifyOperation' ? '按原编号重试' : '按原请求重试'}</button>}</p>}
+    {error && <p role="alert" className="mt-3 text-sm text-danger">{error}{errorAction && <button type="button" disabled={busy} onClick={retry}>{errorAction === 'verifyDelete' ? '核实删除结果' : errorAction === 'pull' ? pullRequest.current ? '按原编号重试' : '新编号重试' : errorAction === 'verifyOperation' ? '按原编号重试' : '按原请求重试'}</button>}</p>}
     {message && <p role="status" className="mt-3 text-sm">{message}</p>}
     <div className="mt-4 grid gap-2">{page.items.map((image) => {
       const verification = String(image.verification?.state ?? 'not_tested')

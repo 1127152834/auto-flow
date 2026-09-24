@@ -1,5 +1,10 @@
+import asyncio
+import hashlib
+import json
 from types import SimpleNamespace
+from uuid import NAMESPACE_URL, uuid5
 
+import httpx
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -19,6 +24,8 @@ from autoflow.infrastructure.database.session import (
     create_session_factory,
     migrate_database,
 )
+from autoflow.providers.android import mac_runtime as mac
+from autoflow.providers.android.image_catalog import ImageCatalog
 
 
 def test_operation_routes_expose_idempotent_receipts_and_verification(tmp_path):
@@ -230,7 +237,7 @@ def test_image_pull_uses_a_stable_uuid_target_that_fits_operation_schema(tmp_pat
     class Catalog:
         calls = 0
 
-        async def pull(self, _reference):
+        async def pull(self, _reference, *, allow_unknown_disk_estimate=False):
             self.calls += 1
             return SimpleNamespace(
                 image_id="sha256:" + "a" * 64,
@@ -270,6 +277,152 @@ def test_image_pull_uses_a_stable_uuid_target_that_fits_operation_schema(tmp_pat
     assert first_operation.target_id != "image"
     assert first_operation.target_id == second.json()["targetId"]
     assert catalog.calls == 1
+    sessions.dispose()
+
+
+def test_pull_disk_confirmation_is_persisted_and_replay_does_not_repeat_preflight(tmp_path):
+    database = tmp_path / "image-pull-disk.sqlite3"
+    migrate_database(database)
+    sessions = create_session_factory(database)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    resources = AndroidResourceRepository(sessions)
+
+    class Catalog:
+        def __init__(self):
+            self.calls = []
+
+        async def pull(self, _reference, *, allow_unknown_disk_estimate=False):
+            self.calls.append(allow_unknown_disk_estimate)
+            if not allow_unknown_disk_estimate:
+                raise AndroidError("ANDROID_DISK_ESTIMATE_UNKNOWN", "最终镜像占用未知，尚未开始拉取", 409)
+            return SimpleNamespace(image_id="sha256:" + "a" * 64, source_digest=None, architecture="arm64", os="linux", android_version="13", google_components="none")
+
+    class Devices:
+        def list(self):
+            return []
+
+    catalog = Catalog()
+    images = AndroidImageService(resources, Devices(), catalog)
+    app = FastAPI()
+    install_error_handlers(app)
+    app.include_router(android_management_router(EnvironmentCheckService(None), operations, images=images))
+    url = "/api/v1/android/management/image-pulls"
+    base = {"requestId": "unconfirmed", "reference": "redroid/redroid:13"}
+    unknown_payload = {"reference": "redroid/redroid:13", "allowUnknownDiskEstimate": True}
+    unknown_digest = hashlib.sha256(json.dumps(unknown_payload, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+    unknown_target = str(uuid5(NAMESPACE_URL, "default/android-image-pull/unknown"))
+    unknown = operations.accept("default", "unknown", unknown_target, "pull", unknown_digest, unknown_payload)
+    operations.transition(unknown.operation_id, "queued", "running", {})
+    operations.transition(unknown.operation_id, "running", "needs_verification", {})
+    with TestClient(app) as client:
+        rejected = client.post(url, json=base)
+        replay = client.post(url, json={**base, "allowUnknownDiskEstimate": False})
+        conflict = client.post(url, json={**base, "allowUnknownDiskEstimate": True})
+        approved = client.post(url, json={**base, "requestId": "confirmed", "allowUnknownDiskEstimate": True})
+        approved_replay = client.post(url, json={**base, "requestId": "confirmed", "allowUnknownDiskEstimate": True})
+        approved_conflict = client.post(url, json={**base, "requestId": "confirmed"})
+        unknown_replay = client.post(url, json={**base, "requestId": "unknown", "allowUnknownDiskEstimate": True})
+        unknown_conflict = client.post(url, json={**base, "requestId": "unknown"})
+        invalid = client.post(url, json={**base, "requestId": "invalid", "allowUnknownDiskEstimate": "yes"})
+
+    assert rejected.status_code == 409 and rejected.json()["error"]["code"] == "ANDROID_DISK_ESTIMATE_UNKNOWN"
+    assert replay.status_code == 202 and replay.json()["state"] == "failed"
+    assert conflict.status_code == 409 and conflict.json()["error"]["code"] == "ANDROID_OPERATION_IDEMPOTENCY_CONFLICT"
+    assert approved.status_code == approved_replay.status_code == 202
+    assert approved.json()["state"] == approved_replay.json()["state"] == "succeeded"
+    assert approved_conflict.status_code == 409 and approved_conflict.json()["error"]["code"] == "ANDROID_OPERATION_IDEMPOTENCY_CONFLICT"
+    assert unknown_replay.status_code == 202 and unknown_replay.json()["state"] == "needs_verification"
+    assert unknown_conflict.status_code == 409 and unknown_conflict.json()["error"]["code"] == "ANDROID_OPERATION_IDEMPOTENCY_CONFLICT"
+    assert invalid.status_code == 422
+    assert catalog.calls == [False, True]
+    assert operations.by_request("default", "unconfirmed").payload == {"reference": "redroid/redroid:13"}
+    assert operations.by_request("default", "confirmed").payload == {"reference": "redroid/redroid:13", "allowUnknownDiskEstimate": True}
+    sessions.dispose()
+
+
+@pytest.mark.asyncio
+async def test_cancelled_disk_preflight_fails_persistent_pull_without_starting_docker(tmp_path, monkeypatch):
+    database = tmp_path / "cancel-preflight.sqlite3"
+    migrate_database(database)
+    sessions = create_session_factory(database)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    resources = AndroidResourceRepository(sessions)
+    entered = asyncio.Event()
+    never = asyncio.Event()
+    docker_calls = []
+
+    async def fake_run(argv, timeout=15, input_data=None):
+        entered.set()
+        await never.wait()
+        return b""
+
+    async def fake_docker(*args, **kwargs):
+        docker_calls.append(args)
+        return b""
+
+    monkeypatch.setattr(mac, "run", fake_run)
+    monkeypatch.setattr(mac, "docker", fake_docker)
+    runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
+
+    class Devices:
+        def list(self):
+            return []
+
+    images = AndroidImageService(resources, Devices(), ImageCatalog(runtime))
+    app = FastAPI()
+    install_error_handlers(app)
+    app.include_router(android_management_router(EnvironmentCheckService(None), operations, images=images))
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
+        task = asyncio.create_task(client.post("/api/v1/android/management/image-pulls", json={"requestId": "cancel-before-pull", "reference": "redroid/redroid:13", "allowUnknownDiskEstimate": True}))
+        await asyncio.wait_for(entered.wait(), 2)
+        task.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await task
+        replay = await client.post("/api/v1/android/management/image-pulls", json={"requestId": "cancel-before-pull", "reference": "redroid/redroid:13", "allowUnknownDiskEstimate": True})
+    record = operations.by_request("default", "cancel-before-pull")
+    assert record.state == replay.json()["state"] == "failed"
+    assert record.result_code == "ANDROID_DISK_PREFLIGHT_CANCELLED"
+    assert docker_calls == []
+    sessions.dispose()
+
+
+@pytest.mark.asyncio
+async def test_cancelled_started_pull_still_requires_verification(tmp_path, monkeypatch):
+    database = tmp_path / "cancel-pull.sqlite3"
+    migrate_database(database)
+    sessions = create_session_factory(database)
+    operations = SqlAlchemyAndroidOperationRepository(sessions)
+    resources = AndroidResourceRepository(sessions)
+    started = asyncio.Event()
+    never = asyncio.Event()
+
+    async def admitted(_self, *, allow_unknown_disk_estimate=False):
+        return None
+
+    async def fake_docker(*args, **kwargs):
+        if args[0] == "pull":
+            started.set()
+            await never.wait()
+        return b""
+
+    monkeypatch.setattr(mac.MacAndroidRuntime, "require_vm_disk_space", admitted)
+    monkeypatch.setattr(mac, "docker", fake_docker)
+    runtime = mac.MacAndroidRuntime(tmp_path, tmp_path)
+
+    class Devices:
+        def list(self):
+            return []
+
+    app = FastAPI()
+    install_error_handlers(app)
+    app.include_router(android_management_router(EnvironmentCheckService(None), operations, images=AndroidImageService(resources, Devices(), ImageCatalog(runtime))))
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
+        task = asyncio.create_task(client.post("/api/v1/android/management/image-pulls", json={"requestId": "cancel-after-pull", "reference": "redroid/redroid:13", "allowUnknownDiskEstimate": True}))
+        await asyncio.wait_for(started.wait(), 2)
+        task.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await task
+    assert operations.by_request("default", "cancel-after-pull").state == "needs_verification"
     sessions.dispose()
 
 

@@ -27,7 +27,7 @@ from autoflow.domain.android.management_models import (
     public_device_revision,
 )
 from autoflow.domain.android.management_rules import policy_for, restore_pending
-from autoflow.domain.android.ports import AndroidError
+from autoflow.domain.android.ports import AndroidDiskPreflightCancelled, AndroidError
 
 from .android_fleet_schemas import EnvironmentProfile
 from .android_management_schemas import (
@@ -540,14 +540,20 @@ def android_management_router(check_service: EnvironmentCheckService, operations
         if operations is None:
             raise AndroidError("ANDROID_OPERATION_UNAVAILABLE", "操作记录服务尚未配置", 503)
         workspace = workspace_identity()
-        digest = hashlib.sha256(json.dumps({"reference": body.reference}, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+        payload: dict[str, Any] = {"reference": body.reference}
+        if body.allow_unknown_disk_estimate:
+            payload["allowUnknownDiskEstimate"] = True
+        digest = hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
         target_id = str(uuid5(NAMESPACE_URL, f"{workspace}/android-image-pull/{body.request_id}"))
-        record = operations.accept(workspace, body.request_id, target_id, "pull", digest, {"reference": body.reference})
+        record = operations.accept(workspace, body.request_id, target_id, "pull", digest, payload)
         if record.state != "queued":
             return _operation_response(record)
         record = operations.transition(record.operation_id, "queued", "running", {"stage_code": "pulling"})
         try:
-            result = await images.pull(body.request_id, body.reference)
+            result = await images.pull(body.request_id, body.reference, allow_unknown_disk_estimate=body.allow_unknown_disk_estimate)
+        except AndroidDiskPreflightCancelled:
+            operations.transition(record.operation_id, "running", "failed", {"stage_code": "failed", "result_code": "ANDROID_DISK_PREFLIGHT_CANCELLED", "message": "磁盘预检取消，尚未开始拉取"})
+            raise
         except asyncio.CancelledError:
             operations.transition(record.operation_id, "running", "needs_verification", {"stage_code": "verify", "result_code": "IMAGE_PULL_CANCELLED", "message": "请求已取消，拉取结果未知"})
             raise

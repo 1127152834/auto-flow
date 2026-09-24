@@ -8679,6 +8679,11 @@ export type components = {
             requestId: string;
             /** Reference */
             reference: string;
+            /**
+             * Allowunknowndiskestimate
+             * @default false
+             */
+            allowUnknownDiskEstimate: boolean;
         };
         /** ImageRead */
         ImageRead: {

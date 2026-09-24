@@ -21,7 +21,7 @@ from typing import Any
 from uuid import uuid4
 
 from autoflow.domain.android.management_rules import require_restored
-from autoflow.domain.android.ports import AndroidError
+from autoflow.domain.android.ports import AndroidDiskPreflightCancelled, AndroidError
 from autoflow.infrastructure.filesystem.locking import ExclusiveFileLock
 from autoflow.infrastructure.process.browser_processes import process_birth
 from autoflow.infrastructure.process.test_browser_worker import _wait_for_spawn
@@ -347,7 +347,48 @@ class MacAndroidRuntime:
         labels = item.get("Config", {}).get("Labels") or {}
         return {"imageId": item.get("Id"), "sourceDigest": source_digest, "architecture": item.get("Architecture"), "os": item.get("Os"), "androidVersion": labels.get("org.opencontainers.image.version"), "googleComponents": labels.get("autoflow.google-components", "unknown")}
 
-    async def pull_image(self, reference: str) -> None:
+    async def require_vm_disk_space(self, *, allow_unknown_disk_estimate: bool = False) -> None:
+        """Check both filesystems that can fill while Docker grows the Lima disk."""
+        try:
+            listing = json.loads(await run(["limactl", "list", "--json", VM], 5))
+            if (not isinstance(listing, dict) or listing.get("name") != VM
+                    or listing.get("status") != "Running" or listing.get("vmType") != "vz"
+                    or not isinstance(listing.get("config"), dict)
+                    or listing["config"].get("vmType") != "vz"
+                    or listing["config"].get("additionalDisks")
+                    or not isinstance(listing.get("dir"), str)):
+                raise ValueError("Lima 虚拟机身份或磁盘布局无法核实")
+            vm_dir = Path(listing["dir"])
+            if not vm_dir.is_absolute() or any((vm_dir / name).exists() or (vm_dir / name).is_symlink() for name in ("diffdisk", "basedisk")):
+                raise ValueError("Lima 虚拟机磁盘布局无法核实")
+            disk = (vm_dir / "disk").resolve(strict=True)
+            if not disk.is_file():
+                raise ValueError("Lima 虚拟机磁盘文件无法核实")
+            host_free = shutil.disk_usage(disk).free
+            docker_root = (await docker("info", "--format", "{{.DockerRootDir}}", timeout=5)).decode().strip()
+            if not docker_root.startswith("/") or "\0" in docker_root:
+                raise ValueError("Docker 数据目录无法核实")
+            raw = (await run([
+                "limactl", "shell", "--workdir=/tmp", VM, "sudo", "python3", "-c",
+                "import os,sys; s=os.statvfs(sys.argv[1]); print(s.f_bavail*s.f_frsize)",
+                docker_root,
+            ], 5)).strip()
+            if not raw.isdigit():
+                raise ValueError("Docker 数据盘可用空间无法核实")
+            vm_free = int(raw)
+            if type(host_free) is not int or host_free < 0:
+                raise ValueError("Lima 磁盘宿主可用空间无法核实")
+        except asyncio.CancelledError as error:
+            raise AndroidDiskPreflightCancelled() from error
+        except (AndroidError, TimeoutError, OSError, ValueError, TypeError, KeyError, RuntimeError) as error:
+            raise AndroidError("ANDROID_DISK_PROBE_FAILED", "无法核实 Lima 磁盘文件或 Docker 数据盘可用空间，尚未开始写入", 409) from error
+        if host_free == 0 or vm_free == 0:
+            raise AndroidError("ANDROID_DISK_SPACE_INSUFFICIENT", "Lima 磁盘文件所在宿主文件系统或 Docker 数据盘空间已耗尽，尚未开始写入", 409)
+        if not allow_unknown_disk_estimate:
+            raise AndroidError("ANDROID_DISK_ESTIMATE_UNKNOWN", "镜像最终占用空间无法可靠估计，尚未开始拉取；确认未知占用后可重试", 409)
+
+    async def pull_image(self, reference: str, *, allow_unknown_disk_estimate: bool = False) -> None:
+        await self.require_vm_disk_space(allow_unknown_disk_estimate=allow_unknown_disk_estimate)
         await docker("pull", reference, timeout=900)
 
     async def delete_image(self, image_id: str) -> None:
