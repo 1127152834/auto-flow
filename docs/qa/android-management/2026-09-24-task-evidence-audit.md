@@ -74,7 +74,7 @@
 | <a id="t06"></a>T06 | `passed`（所列步骤） | [桌面链](2026-09-23-desktop-ui-verification.md)已验创建/生命周期；[精确窗口与焦点](2026-09-24-desktop-apps-layout.md)补1280×800/1440×900、100%/200%、长名、真实不可达旧快照与恢复。旧 temporary 自动化覆盖拒绝/旧编号重放，历史实例真实同链未验，保留风险。 |
 | <a id="t07"></a>T07 | `not_run` | `scripts/smoke-android-management.py` 与 AM1 QA 已有自建实例、APK/中文输入/数据/双实例删除隔离；[真实APK中断](2026-09-24-app-interruption.md)补ADB断线/HTTP进程树强杀及重启安全核实、应用数据保留；T07.3通过，T07.2历史RED缺证保留。 |
 | <a id="t08"></a>T08 | `passed` | [AM2](am2-verification.md)固定基础 imageId、真实登记与按摘要删除；引用变化自动化有明确保护。 |
-| <a id="t09"></a>T09 | `not_run` | [AM2](am2-verification.md)真实固定摘要网络 pull、认证 HTTP 内容删除；[真实桌面重启未知拉取核实](2026-09-24-pull-disk-and-bulk.md)已验，内容删除桌面链与下载在途中断网仍未验。 |
+| <a id="t09"></a>T09 | `not_run` | [AM2](am2-verification.md)真实固定摘要网络 pull、认证 HTTP 内容删除；[真实桌面重启未知拉取核实](2026-09-24-pull-disk-and-bulk.md)已验，[真实下载中断及恢复](2026-09-24-network-interruption.md)已passed；内容删除桌面链仍受锁屏阻塞。 |
 | <a id="t10"></a>T10 | `passed` | 后端生命周期集成与[桌面标准模板](2026-09-23-desktop-ui-verification.md)；已有实例固定快照由集成测试证明。 |
 | <a id="t11"></a>T11 | `blocked` | [GApps](gapps-validation.md)：缺专用镜像/账号/商店下载链；本地 APK 已可用，不能再称测试 APK 缺失。 |
 | <a id="t12"></a>T12 | `not_run` | 基础镜像/模板链已验；[可启动自定义候选](2026-09-24-custom-image.md)及固定ID重启/备份恢复/引用阻删通过；[旧版本SQLite/真实temporary升级](2026-09-24-legacy-upgrade.md)已passed并修复历史批次重放409；同发布停用/重启入口组合链及历史RED缺证仍未关闭。 |

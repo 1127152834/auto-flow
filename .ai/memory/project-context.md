@@ -194,3 +194,5 @@ proposed：本轮完整规格尚未确认，6组补图未生成；参数定义�
 2026-09-24 最终审查修复（confirmed软件/真实后端，整体partial）：78bf8c92关闭五项Important：旧核实投影覆盖新代次/owner、镜像核实复活墓碑、隐藏时TanStack停心跳、停机与删源备份维护不可达、当前recover误接历史verify。534项Android后端和199项Android前端通过；独立复审C/I均0。[修复后真实Mac](../../docs/qa/android-management/2026-09-24-final-review-fixes/real-mac.json)含永久删源后恢复新ID/卷与原探针读回，9条自建记录全部清理。最终完整前端5689项、后端4118passed/26skipped/2warnings及规定工程门禁通过，见[当前验收汇总](../../docs/qa/android-management/2026-09-24-final-acceptance.md)。实际Electron长隐藏/新入口锁屏blocked，Node本轮26.7.0；额外mypy6条既存诊断与修复前基线一致。
 
 2026-09-24补充真实验收（confirmed）：旧后端a92f0688真实创建的SQLite0019/temporary实例向前升级am01，身份/卷/配置/数据保留；发现原批次缺sourceDeviceId而当前默认null导致重放409，0f6f8fac仅比较时归一化后真实重放202，新temporary仍拒绝。真实备份目录权限拒绝也已通过，未知结果不自动重放，源数据和清理核实通过。见knowledge/2026-09-24-android-legacy-upgrade.md及最终验收报告；同发布入口组合桌面链仍未验，整体partial。
+
+2026-09-24镜像网络故障补验（confirmed）：独立Docker/containerd、相同overlayfs后端，经真实TLS代理在下载层落盘3MiB后断开；生产HTTP失败回执/同编号重放/重启保持，恢复网络新编号拉取成功且固定imageId一致，全部自有测试运行时清理、原资源未变。详见knowledge/2026-09-24-android-network-interruption.md。桌面仍锁屏；没有修改生产代码或改变整体partial结论。

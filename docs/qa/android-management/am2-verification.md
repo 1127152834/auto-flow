@@ -36,3 +36,5 @@ cd apps/backend && uv run pytest tests/contract/test_android_{images,templates}.
 2026-09-24：[入口停用/恢复补丁演练](2026-09-24-forward-entry.md)完成临时checkout组件RED→GREEN、停用和恢复两版类型/build及内容核对；无DB或设备访问，不等于同一发布链的真实数据保留或桌面验收，T12.4继续partial。
 
 - 2026-09-24 持久拉取恢复（confirmed 软件/真实HTTP，桌面blocked）：重启后按工作区分页发现未知拉取、原编号显式核实、新拉取冻结及422前置拒绝恢复输入已实现；后端34项、Android171项及类型/lint/OpenAPI/build通过，增量审查无C/I。真实强杀重启列表total1→核实→0，pull仅1次，基础镜像保留；未创建用户设备。AM-R12磁盘预检仍待实现，不能归为外部blocked。见[证据](2026-09-24-persistent-pull.md)。
+
+2026-09-24网络故障补验（confirmed，supersedes此前“下载中断未验”）：[真实镜像层传输中断与恢复](2026-09-24-network-interruption.md)passed，3MiB落盘后断开测试连接，失败回执/重启/同编号重放保持，新编号恢复下载成功，独立镜像/守护进程清理完成。桌面内容删除仍锁屏blocked；原AM-R12磁盘缺口已修复，最新产品门禁见最终验收报告。
