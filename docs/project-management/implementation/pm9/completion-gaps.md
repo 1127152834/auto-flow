@@ -1,5 +1,12 @@
 # PM9 剩余工作复核
 
+2026-09-24 联合场景及外部验收推进（confirmed，本机子范围）：DATA-E2E-05复用真实worker和生产ASGI HTTP/SQLite，新增pending/unknown两例，串联归档、后端重启、恢复、显式放弃/核验、换源；旧Task/意图不重投，同键新代次不继承旧状态或环境关联，原快照/操作可解释。5项联合/归档检查和52项同步恢复回归、104脚本、Ruff、4映射/251引用通过。首轮1失败为abandon返回200而测试写202，修正测试后通过，无生产修复。仅DATA-E2E-05升partial，251为213partial/38planned/0verified；重叠缺口241生产/19实现/8测试/24外部不变。
+
+实网准备：复用qa-pm6-google-live.mjs，增加--executable和--output-dir，允许现有服务账号实网流程指向隔离安装的PM9包；仅参数检查通过，尚未运行当前实网。需授权测试凭据路径和可写测试表；OAuth另需桌面客户端及交互授权，系统UUID/增列/完整业务联合链也仍待实网。历史PM6服务账号/系统凭据实网证据继续有效。没有采用模拟结果抵扣实网。
+
+当前ee2524af生产输出重新生成ARM DMG，校验、只读挂载、隔离复制、卸载镜像、真实包内sidecar健康和父进程退出清理通过，临时应用副本已删除。asar与backend hash匹配上一轮完整回归，不重复全量；安装镜像hash见joint-external-acceptance.json。本机0有效代码签名身份，仅ad-hoc且TeamIdentifier未设；spctl虽然exit0，但明确override=security disabled，不能算Gatekeeper/签名/公证通过。Apple/Windows签名资源和Windows/Intel实机入口仍需提供；既有Actions继续运行，不重复流水线。当前新增联合测试尚未包含于旧运行。releaseAccepted=false。
+
+
 2026-09-24 End结果恢复收口（confirmed本机完整回归/新包，三平台in_progress）：生产ee2524af以现有账本恢复原End/child保存ID、原目标与当前关联阶段，明确替换授权、累计冲突版本，父结果未落定或读取未知时也不允许重复保存。25后端/14前端定向及两项P2的RED→GREEN/独立复审通过；最终后端3506 passed/90 skipped/2依赖警告（741.38秒）、前端5481 passed/409文件（180.77秒）、103脚本、Ruff/mypy408、类型/lint/OpenAPI、4映射/251引用通过。显式build后未签名ARM完整桌面26截图通过并目视核对End修复/刷新：真实输入环境g1/session1→End更新同环境g2/session9→第三Task恢复，新关联修复不重跑/不重复保存/不改失败历史；Profile未改，不解决I1–I3。首次旧前端打包失败、中断回归和夹具错误均保留。新三平台push35935288512@d19d120e运行中，同仓库draft PR重复矩阵跳过；dispatch401仍在。251为212partial/39planned/0verified，249有断言/2未定位，73缺预定路径有子范围映射，重叠缺口241生产/19实现/8测试/24外部不变；releaseAccepted=false。见end-link-repair-follow-through.json。
 
 2026-09-24 DATA-E2E-03人工版本/部分失败联合补证（confirmed本机源码子范围）：FX-04初始业务夹具7/3/2，真实TCP HTTP/SQLite/worker/CloakBrowser两链分别证明任务写内容7→8、状态3→4和游标8/4/2，以及人工窗口PATCH到内容8后旧字段/旧内容状态写均REVISION_CONFLICT、游标仍7/3/2且原输入不变；声明人工分支继续不吸收人工新值。两链先前createRecord均保留，后续真实缺失元素超时失败后完整记录快照不变，公开写入摘要只含成功提交，End未执行，两条lease/目录/容量回收。最终2 passed/24.56秒，相关15 passed/4.36秒，Ruff通过；首轮三操作合并grant被422拒绝，修正为各节点精确授权，未改生产。CI选择collect2/53非执行，fresh CLI401；打包UI/Sheets出站联合/新三平台仍待验。仅E2E-03 planned→partial，WRITE-05/08/09补映射；251为210partial/41planned/0verified、249有断言/2未定位，缺口241生产/19实现/8测试/24外部不变。生产仍a7059dc6，不重跑无变化全量/构建；releaseAccepted=false。见manual-write-conflict-follow-through.json。

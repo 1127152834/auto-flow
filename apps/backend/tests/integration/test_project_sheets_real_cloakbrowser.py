@@ -39,7 +39,7 @@ def wait_for(check, label, timeout=90):
     raise AssertionError(f"Timeout waiting for {label}: {last}")
 
 
-def start_real(bound, profile, url, label, status_id=None, *, input_key="title", record_title=None, retain_environment=False):
+def start_real(bound, profile, url, label, status_id=None, *, input_key="title", record_title=None, retain_environment=False, link_input=False):
     def node(identity, kind, data):
         return {"id": identity, "type": kind, "position": {"x": 0, "y": 0}, "data": {"moduleType": kind, **data}}
     nodes = [
@@ -51,7 +51,7 @@ def start_real(bound, profile, url, label, status_id=None, *, input_key="title",
                             "operations": ["updateRecord"], "fieldIds": [bound.field_id("title")], "readPurposes": ["workflow"]},
              "arguments": {"recordRef": "{frozen[0]['recordRef']}",
                            "changes": {bound.field_id("title"): label}, "expectedContentRevision": "{frozen[0]['contentRevision']}"}}),
-        node("end", "project_end", {"retainEnvironment": {"enabled": True, "mode": "saveAs", "name": label, "recordTargets": []} if retain_environment else {"enabled": False}}),
+        node("end", "project_end", {"retainEnvironment": {"enabled": True, "mode": "saveAs", "name": label, "recordTargets": [{"recordRef": "{frozen[0]['recordRef']}", "expectedLinkRevision": "{frozen[0]['linkRevision']}", "replaceAllowed": False}] if link_input else []} if retain_environment else {"enabled": False}}),
     ]
     document = workflow_payload(uid())
     document["content"]["nodes"] = nodes
@@ -450,6 +450,114 @@ def test_real_archive_waits_for_run_save_and_unknown_sheet_outcome(
         assert transport.grid('数据')[3] == ['C', 'save-before']
         assert app.state.project_run_scheduler.blockers() == []
         assert app.state.project_lifecycle_coordinator.blockers() == []
+
+
+@pytest.mark.parametrize("outcome", ["pending", "unknown"])
+def test_real_archive_restore_disposition_rebind_isolates_history(
+    tmp_path, valid_profile_values, real_cloak_page, outcome,
+):
+    from dataclasses import replace
+
+    from autoflow.providers.data.google_sheets import SheetsApiError
+    from tests.fixtures.model_management import FakeCredentialStore
+    from tests.fixtures.sheets import binding_impact
+    from tests.integration.test_project_sheets_recovery import reconnect, restarted
+    from tests.integration.test_project_sheets_sync import push, sync_operations
+
+    executable, url, requests = real_cloak_page
+    source = next(parent for parent in executable.parents if parent.name.startswith('chromium-'))
+    shutil.copytree(source, tmp_path / 'data' / 'kernels' / source.name, symlinks=True)
+    transport = FakeSheetsTransport({
+        '数据': [['编号', '标题'], ['A', 'old source']],
+        '新来源': [['编号', '标题'], ['A', 'new source']],
+    })
+    credentials = FakeCredentialStore()
+    with open_sheets_table(tmp_path, transport, [('code', '编号', 'string'), ('title', '标题', 'string')], credentials=credentials) as bound:
+        pull(bound)
+        client, app = bound.client, bound.client.app
+        prefix = f'/api/v1/projects/{bound.project}'
+        status = client.post(bound.url('/statuses'), headers=new_key(), json={
+            'name': 'old state', 'color': '#123456', 'order': 1, 'expectedTableRevision': bound.table_revision(),
+        })
+        assert status.status_code == 201, status.text
+        status_id = status.json()['statusId']
+        changed = client.put(bound.url('/records/QQ/status'), headers=new_key(), json={
+            'datasetGeneration': bound.dataset_generation(), 'recordKeyType': 'text',
+            'statusId': status_id, 'expectedStatusRevision': 1,
+        })
+        assert changed.status_code == 200, changed.text
+        profile = app.state.profile_service.create(ProfileSpec.from_values({
+            **valid_profile_values, 'headless': True, 'browser_version': source.name.removeprefix('chromium-'),
+        }))
+        batch = start_real(bound, profile, url, 'local committed', status_id, retain_environment=True, link_input=True)
+        item = wait_for(lambda: manual_item(bound), 'archive/rebind worker checkpoint')
+        resume(bound, item)
+        wait_for(lambda: batch_detail(bound, batch)['batch']['status'] == 'completed', 'archive/rebind worker completion')
+        assert batch_detail(bound, batch)['statusCounts']['succeeded'] == 1
+        old, = bound.records()
+        assert old['statusId'] == status_id and old['currentEnvironmentId']
+        generation, epoch = bound.dataset_generation(), bound.binding['bindingEpoch']
+        if outcome == 'unknown':
+            transport.fail_writes.append(SheetsApiError(0, 'timeout', 'injected unknown send'))
+            sent = push(bound)
+            assert sent.status_code == 202, sent.text
+        intent, = sync_operations(bound, outcome)
+        snapshot = client.get(prefix + f"/tasks/{item['taskId']}").json()['inputSnapshot']
+        tasks = client.get(prefix + '/tasks').json()['items']
+        writes = transport.changes()
+        impact = client.get(prefix + '/lifecycle-impact', params={'action': 'archive'}).json()
+        archived = client.post(prefix + '/archive', headers=new_key(), json={
+            'expectedManagementRevision': client.get(prefix).json()['managementRevision'], 'impactRevision': impact['impactRevision'],
+        })
+        assert archived.status_code == 202, archived.text
+        if outcome == 'unknown':
+            assert client.get(prefix).json()['lifecycleState'] == 'closing'
+            reconciled = client.post(bound.url(f"/sync-operations/{intent['syncOperationId']}/reconcile"), headers=new_key(), json={'expectedStatusRevision': intent['statusRevision']})
+            assert reconciled.status_code == 202, reconciled.text
+            assert reconciled.json()['operation']['result']['evidence']['outcome'] == 'notMatched'
+        app.state.project_lifecycle.repository.advance(bound.project)
+        wait_for(lambda: client.get(prefix).json()['lifecycleState'] == 'archived', 'archive after explicit reconciliation')
+
+    with restarted(reconnect(tmp_path, transport, credentials)) as client:
+        bound = replace(bound, client=client)
+        restored = client.post(prefix + '/restore', headers=new_key(), json={'expectedManagementRevision': client.get(prefix).json()['managementRevision']})
+        assert restored.status_code in {200, 202}, restored.text
+        client.portal.call(client.app.state.project_run_scheduler.tick)
+        assert bound.records() == [old]
+        assert client.get(prefix + '/tasks').json()['items'] == tasks
+        if outcome == 'pending':
+            assert sync_operations(bound, 'pending') == [intent]
+            abandoned = client.post(bound.url(f"/sync-operations/{intent['syncOperationId']}/abandon"), headers=new_key(), json={'expectedStatusRevision': intent['statusRevision'], 'reason': 'explicit source replacement'})
+            assert abandoned.status_code == 200, abandoned.text
+            assert abandoned.json()['error']['code'] == 'SYNC_ABANDONED'
+        settled = sync_operations(bound)
+        assert not sync_operations(bound, 'pending') and not sync_operations(bound, 'unknown')
+        body = {
+            'connectionId': bound.connection, 'spreadsheetId': transport.spreadsheet_id,
+            'sheetId': transport.ids['新来源'], 'identityStrategy': {'kind': 'column', 'columnId': 'A'},
+            'mapping': bound.binding['mapping'], 'expectedTableRevision': bound.table_revision(), 'expectedBindingEpoch': epoch,
+        }
+        rebound = client.put(bound.url('/sheets/binding'), headers=new_key(), json=binding_impact(client, bound.project, bound.table, body))
+        assert rebound.status_code == 202, rebound.text
+        bound.binding = rebound.json()['operation']['result']
+        assert bound.binding['bindingEpoch'] == epoch + 1 and bound.dataset_generation() != generation
+        assert bound.records() == []
+        assert push(bound, epoch=epoch).status_code == 412
+        assert push(bound, mode='allPending').status_code == 202
+        pull(bound)
+        fresh, = bound.records()
+        assert fresh['ref']['recordKey'] == old['ref']['recordKey']
+        assert fresh['ref']['datasetGeneration'] != old['ref']['datasetGeneration']
+        assert fresh['statusId'] is None and fresh['currentEnvironmentId'] is None
+        assert next(cell['value'] for cell in fresh['values'] if cell['fieldId'] == bound.field_id('title')) == 'new source'
+        assert sync_operations(bound) == settled
+        assert client.get(prefix + '/tasks').json()['items'] == tasks
+        assert client.get(prefix + f"/tasks/{item['taskId']}").json()['inputSnapshot'] == snapshot
+        assert client.get(prefix + f"/environments/{old['currentEnvironmentId']}").status_code == 200
+        assert requests.count('/fixture') == 1 and transport.changes() == writes
+        assert transport.grid('数据')[1] == ['A', 'old source']
+        assert transport.grid('新来源')[1] == ['A', 'new source']
+        assert not client.app.state.project_workflow_worker_manager.busy()
 
 
 def test_real_loop_keeps_two_sheet_intents_when_third_write_fails(

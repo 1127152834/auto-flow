@@ -6,6 +6,7 @@
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
   "branch": "codex/project-management-pm9-runtime",
   "remaining": [
+    "DATA-E2E-05 local real-worker/ASGI archive/restart/restore/disposition/rebind chain now passed with pending/unknown cases. Packaged/live-Google/native combination remains pending. Current ARM DMG isolated installation/start/exit passed; only ad-hoc signature, and Gatekeeper security disabled means spctl accepted is not signing acceptance. See joint-external-acceptance.json.",
     "Confirmed persistent identity defect from cb040daf ARM package remains: identity implementation unchanged in ee2524af; fixed/input restore login but use edited Profile UA/locale/timezone/seed. I1-I3 await approval. Maintenance source-confirmed only; see persistent-identity-audit.json.",
     "DATA-E2E-01/CLAIM-12 source Excel progression/reuse and DATA-CLAIM-14 unlimited5success+public-stop now passed in local scope; packaged/native picker, unlimited warning/counts/stop UI and current three-platform evidence remain pending.",
     "DATA-E2E-03/WRITE-05/08/09 source real-worker version progress, manual field/status conflict and subsequent browser-failure retention passed in local scope; packaged UI/current three-platform and Sheets outbox combined acceptance remain pending.",
@@ -13,7 +14,7 @@
     "XE-C06/XE-G02: POSIX real-worker controlled ownership-proof failure/recovery now passes; Windows Job proof-unavailable public batch and packaged UI reconciliation/timing remain unverified.",
     "Current production ee2524af full local backend/frontend and reviewed ARM package pass; all-platform push35935288512@d19d120e in_progress. CLI dispatch401 persists, public reads do not establish auth recovery; historical CI cannot substitute this candidate.",
     "Implementation proposals awaiting approval: G1-G3 finite-group atomic writes; L1-L3 verified-principal reauthorization/sender isolation; M1-M3 remote Sheets rows/formulas; S4 Windows existing-file overwrite/append (still501); FR1-FR3 new-field result authorization; AD1-AD3 persistent Run file deletion; W1-W3 including W1c project Studio session/docking/binding destination; separate AU-08 project-owned workflow ownership; P1-P3 frozen proxy membership/endpoints. See implementationGaps and completion-gaps.md for contracts and evidence.",
-    "251 requirements remain212 partially_verified/39 planned/0 verified. DATA-LIFE-01 and DATA-SH-03 have no located assertion. Overlapping unique gaps remain241 production/19 implementation/8 tests/24 external; scoped checks do not satisfy complete exit conditions.",
+    "251 requirements remain213 partially_verified/38 planned/0 verified. DATA-LIFE-01 and DATA-SH-03 have no located assertion. Overlapping unique gaps remain241 production/19 implementation/8 tests/24 external; scoped checks do not satisfy complete exit conditions.",
     "C1-C4, R1/R2/R5/R3/R4 and approved D1 are implemented with scoped tests. Public peer unbind/rebind/outage and opposing-write scenarios use controlled Google transport; current packaged live-Google full business chains remain pending.",
     "Historical PM6 service-account Sheets/system-credential real-network evidence remains valid. Current PM9 packaged Sheets/system UUID/remote-column/OAuth acceptance requires current authorized resources; do not reinterpret historical evidence as absent.",
     "Current ee2524af ARM app is unsigned. Historical c16532d7 ARM DMG isolated install and Intel image verification remain scoped; Finder/Gatekeeper, Windows/Intel physical installation, signing/notarization/full native acceptance remain external.",
@@ -47,7 +48,8 @@
     "startupFailure": "startup-failure-follow-through.json",
     "excelMultiInput": "excel-multi-input-follow-through.json",
     "unlimitedReclaim": "unlimited-reclaim-follow-through.json",
-    "manualWriteConflict": "manual-write-conflict-follow-through.json"
+    "manualWriteConflict": "manual-write-conflict-follow-through.json",
+    "jointExternal": "joint-external-acceptance.json"
   },
   "platforms": {
     "win32-x64": {
@@ -763,5 +765,6 @@
     "nativeDispatch": "Fresh gh api user returns401; current matrix not dispatched; no substitution of old35902129697 evidence",
     "additionalCounterexample": "Persistent identity remains unresolved; identity implementation unchanged from confirmed cb040daf counterexample. This protocol fix does not resolve I1-I3."
   },
-  "endLinkRepairFollowThrough": "end-link-repair-follow-through.json"
+  "endLinkRepairFollowThrough": "end-link-repair-follow-through.json",
+  "jointExternalAcceptance": "joint-external-acceptance.json"
 }

@@ -5243,8 +5243,10 @@
       "primary_package": "PM9-A",
       "planned_test_file": "apps/backend/tests/integration/test_project_full_scenarios.py",
       "release_regression": "PM9",
-      "status": "planned",
-      "evidence": [],
+      "status": "partially_verified",
+      "evidence": [
+        "docs/project-management/implementation/pm9/joint-external-acceptance.json"
+      ],
       "owner": "verification",
       "acceptance_methods": [
         "automated_rule_or_integration",
@@ -5271,19 +5273,25 @@
         "PM9-C"
       ],
       "testMapping": {
-        "reviewedAt": "2026-09-21",
+        "reviewedAt": "2026-09-24",
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_sheets_recovery.py",
             "symbol": "test_a_rebind_retires_the_previous_epochs_intent",
             "scope": "重绑后旧 bindingEpoch 意图不再发送",
             "level": "automated_integration"
+          },
+          {
+            "file": "apps/backend/tests/integration/test_project_sheets_real_cloakbrowser.py",
+            "symbol": "test_real_archive_restore_disposition_rebind_isolates_history",
+            "scope": "真实worker+生产ASGI HTTP/SQLite，pending/unknown归档→重启→恢复→显式处置→换源；旧Task/意图不重投，新代次不继承状态/环境，同键历史仍可解释；Google/凭据受控夹具。",
+            "level": "automated_integration"
           }
         ],
         "gaps": [
           {
             "kind": "production_evidence_missing",
-            "detail": "归档/恢复与换来源组合生产链需补齐"
+            "detail": "本机真实worker/ASGI联合链已通过；当前打包Electron及授权实网Google同链、Windows/Intel组合证据仍待验收。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -17787,5 +17795,5 @@
     "verification": "平台与全链验收负责人；逐平台记录证据"
   },
   "pm1_plan": "docs/superpowers/plans/2026-09-13-project-management-pm1.md",
-  "pm9_note": "2026-09-24 End结果恢复收口（confirmed本机完整回归/新包，三平台in_progress）：生产ee2524af以现有账本恢复原End/child保存ID、原目标与当前关联阶段，明确替换授权、累计冲突版本，父结果未落定或读取未知时也不允许重复保存。25后端/14前端定向及两项P2的RED→GREEN/独立复审通过；最终后端3506 passed/90 skipped/2依赖警告（741.38秒）、前端5481 passed/409文件（180.77秒）、103脚本、Ruff/mypy408、类型/lint/OpenAPI、4映射/251引用通过。显式build后未签名ARM完整桌面26截图通过并目视核对End修复/刷新：真实输入环境g1/session1→End更新同环境g2/session9→第三Task恢复，新关联修复不重跑/不重复保存/不改失败历史；Profile未改，不解决I1–I3。首次旧前端打包失败、中断回归和夹具错误均保留。新三平台push35935288512@d19d120e运行中，同仓库draft PR重复矩阵跳过；dispatch401仍在。251为212partial/39planned/0verified，249有断言/2未定位，73缺预定路径有子范围映射，重叠缺口241生产/19实现/8测试/24外部不变；releaseAccepted=false。见end-link-repair-follow-through.json。"
+  "pm9_note": "2026-09-24 DATA-E2E-05本机真实worker/ASGI联合链补证：pending和unknown归档、重启、恢复、显式处置、换源，旧任务/意图不重投，同键新代次不继承旧状态/环境，历史快照保留。相关5项及同步恢复52项通过、104脚本/Ruff通过；仅该条planned→partial，251为213partial/38planned/0verified。当前ARM DMG校验/隔离安装/启动/父退出清理通过，包内hash与ee2524af上一轮完整回归一致；仅ad-hoc签名且Gatekeeper security disabled，不是签名验收。当前Google/OAuth需授权资源，Windows/Intel需实机；原生矩阵35935288512仍运行，本轮新增测试未包含于该运行。历史PM6实网证据有效；releaseAccepted=false。见joint-external-acceptance.json；此前End完整回归见end-link-repair-follow-through.json。"
 }

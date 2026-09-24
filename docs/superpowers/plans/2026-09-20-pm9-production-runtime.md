@@ -16,7 +16,9 @@
 
 当前End切片：ee2524af实现持久结果恢复、原目标与显式授权、累计冲突版本和禁止重复保存；DATA-E2E-02/XE-C10/XE-C18已补实际断言，最终本机全量/审查后打包与d19d120e三平台结果继续收集。旧独立断言与审查前包的通过均保留原范围，持久身份I1–I3未改变。
 
-下一可执行切片DATA-E2E-05（有界验证，已批准生命周期/来源契约内）：先核对test_project_sheets_recovery及真实Sheets/归档案例，复用现有TCP HTTP、受控Google传输、SQLite和真实worker，串联待推送或结果未知→归档→恢复→公开显式处置→更换来源。断言旧Task/命令不重跑、未核验旧意图不自动重投、旧bindingEpoch不写新来源、新datasetGeneration不继承旧业务状态或环境关联、历史输入/操作仍可解释。输入仅为隔离测试来源，输出为独立专项报告和范围映射；先跑相关恢复/生命周期合同，再运行新增真实联合场景。保持当前已发起矩阵，不为无生产变动重复打包或重启流水线；实网Google、持久身份和待批准重授权架构不纳入本片。
+DATA-E2E-05本机子切片已完成（2026-09-24）：按现有契约完成pending/unknown归档→后端重启→恢复→显式处置→换源联合测试。实际复用TestClient生产ASGI HTTP、SQLite、受控Google传输/凭据及真实CloakBrowser worker，未采用原拟TCP服务测试夹具；不把ASGI调用说成TCP/Electron或实网。5项归档联合及52项同步恢复通过，原任务/意图不重投、旧epoch不写新源、新generation不继承状态/环境、历史事实保留。证据joint-external-acceptance.json，DATA-E2E-05仅partial。
+
+后续按用户顺序执行：1）当前打包实网，已有脚本新增--executable/--output-dir，取得授权服务账号/测试表后执行原读写及凭据删除链；OAuth、UUID/增列和完整业务联合链分别补证。2）签名/公证：取得Apple Developer ID+公证授权、Windows签名服务/证书资源后，使用现有electron-builder签名配置构建并验签；不得将ad-hoc或关闭安全策略当通过。3）实机：本机ARM当前DMG校验/隔离安装/健康/父退出已通过；Finder、启用Gatekeeper下启动、原生专项/卸载补验；Windows/Intel待连接入口。无需重复询问已授权范围；仅缺外部资源时保留待验收，持续完成可执行项。
 
 日期：2026-09-20；状态：in_progress；来源：用户明确确认 R1–R4 规格。规格：`../specs/2026-09-20-pm9-production-runtime-integration.md`。基点 `88d812a2`。
 

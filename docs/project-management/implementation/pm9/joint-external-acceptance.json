@@ -1,0 +1,112 @@
+{
+  "date": "2026-09-24",
+  "status": "local_joint_and_arm_install_subscopes_passed_external_resources_pending",
+  "releaseAccepted": false,
+  "codeCandidate": "ee2524af36657a09719995dfe20b86da90c410df",
+  "startingHead": "023766a1f0c38087693414e3ec3c0301e281bee9",
+  "productionChanges": false,
+  "joint": {
+    "requirement": "DATA-E2E-05",
+    "test": "apps/backend/tests/integration/test_project_sheets_real_cloakbrowser.py::test_real_archive_restore_disposition_rebind_isolates_history",
+    "testFileSha256": "45814fd7c08e137d2f6fa34271baa65636b10c8752b468fc8e85757fe4976408",
+    "cases": [
+      "pending",
+      "unknown"
+    ],
+    "scope": "Production ASGI HTTP routes via TestClient, SQLite, real child workflow worker and CloakBrowser; Google transport and credential store are controlled fixtures. The browser fixture uses localhost TCP; the service HTTP calls are in-process ASGI, not TCP or Electron.",
+    "assertions": [
+      "Real worker saves and links environment and changes local data with an outbound intent; existing non-null business status is retained.",
+      "Unknown send blocks archive until explicit read-only reconciliation proves notMatched; no blind resend.",
+      "Archive and backend restart preserve old rows, task list, saved environment and frozen input snapshot.",
+      "Restore plus scheduler tick does not restart tasks or send pending intents.",
+      "Explicit abandon of pending intent or reconciliation of unknown intent precedes source replacement.",
+      "Fresh impact-checked rebind increments bindingEpoch and changes datasetGeneration; stale push returns412 and new allPending does not write old intents.",
+      "Same key in new source has new generation, source values, null status and null environment association.",
+      "Old operation facts and task snapshots stay readable; exactly one fixture navigation and no source writes."
+    ],
+    "initialAttempt": "1 failed/1 passed in22.00s: test expected202 but abandon contract correctly returns200; test corrected, no production defect or guard bypass.",
+    "checks": [
+      {
+        "command": "AUTOFLOW_TEST_CLOAKBROWSER=<installed pinned145 executable> uv run --directory apps/backend pytest tests/integration/test_project_sheets_real_cloakbrowser.py -k archive tests/integration/test_project_sheets_recovery.py tests/integration/test_project_sheets_sync.py -q --tb=short",
+        "result": "5 passed/59 deselected/2 dependency warnings in37.73s",
+        "log": ".tmp-tests/pm9-joint-external-2026-09-24/joint.log"
+      },
+      {
+        "command": "uv run --directory apps/backend pytest tests/integration/test_project_sheets_recovery.py tests/integration/test_project_sheets_sync.py -q --tb=short",
+        "result": "52 passed/2 dependency warnings in59.47s",
+        "log": ".tmp-tests/pm9-joint-external-2026-09-24/sync-regression.log"
+      }
+    ]
+  },
+  "liveGoogle": {
+    "status": "not_run_resource_pending",
+    "prepared": "Existing qa-pm6-google-live.mjs now accepts --executable and --output-dir to target an installed PM9 package; parser checks passed. Runtime live path not validated this round.",
+    "required": [
+      "Authorized service-account config path plus expendable Google spreadsheet/sheet/gid with permitted test writes.",
+      "OAuth desktop client config and interactive account consent for separate OAuth acceptance."
+    ],
+    "historicalEvidence": "PM6 real service-account Sheets and OS credential evidence remains valid. This round does not replace or invalidate it.",
+    "remaining": "Current packaged full business chain, system UUID and remote-column operations plus OAuth need current live execution."
+  },
+  "signing": {
+    "status": "not_run_identity_pending",
+    "preflight": "security find-identity -v -p codesigning found0 valid identities; relevant credential/signing environment-variable names were absent. CI secret contents not inspected.",
+    "required": [
+      "Apple Developer ID Application identity and notarization authorization on the build host/CI.",
+      "Windows signing identity/service and CI secret references."
+    ],
+    "gatekeeperWarning": "spctl exit0 reported override=security disabled; NOT accepted Gatekeeper/signing/notarization evidence."
+  },
+  "armPhysicalHost": {
+    "checkedAt": "2026-09-24T00:16:45.726391+00:00",
+    "installerSha256": "a572dff7d0512ce143b57503b90429ba74a85830a9123fe37308133f4f4b14f5",
+    "installedPath": "/Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow/.tmp-tests/pm9-joint-external-2026-09-24/installed/AutoFlow.app",
+    "asarSha256": "b6c6599ea02c34ad868a3afa180890157308e12627a95167827cf10e793849b2",
+    "backendSha256": "d664accc1fe926468e88d9e58159d906bcbd3fb98319d440016f96ce0277f5ec",
+    "imageVerified": true,
+    "mountedCopiedDetached": true,
+    "signature": {
+      "exitCode": 0,
+      "output": "Executable=/Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow/.tmp-tests/pm9-joint-external-2026-09-24/installed/AutoFlow.app/Contents/MacOS/AutoFlow\nIdentifier=Electron\nFormat=app bundle with Mach-O thin (arm64)\nCodeDirectory v=20400 size=392 flags=0x20002(adhoc,linker-signed) hashes=9+0 location=embedded\nSignature=adhoc\nInfo.plist=not bound\nTeamIdentifier=not set\nSealed Resources=none\nInternal requirements=none\n"
+    },
+    "gatekeeper": {
+      "exitCode": 0,
+      "output": "/Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow/.tmp-tests/pm9-joint-external-2026-09-24/installed/AutoFlow.app: accepted\noverride=security disabled\n"
+    },
+    "status": "passed_isolated_install_launch_subscope",
+    "checks": [
+      "DMG built from existing validated production output",
+      "hdiutil verify",
+      "read-only mount and isolated ditto application copy",
+      "image detached",
+      "installed app real authenticated packaged sidecar health",
+      "sidecar exits after desktop host termination",
+      "owned application copy removed after smoke"
+    ],
+    "cleaned": true,
+    "excluded": [
+      "Finder install UX",
+      "enforced Gatekeeper",
+      "Developer ID signing/notarization",
+      "current native file-panel and full uninstall acceptance",
+      "live Google/OAuth",
+      "Windows/Intel physical machines"
+    ]
+  },
+  "otherPlatforms": {
+    "status": "physical_resources_pending",
+    "required": "Windows x64 and macOS Intel machine/remote access; hosted CI alone does not establish user physical installer acceptance."
+  },
+  "checks": {
+    "scripts": "104 passed/0failed",
+    "ruff": "passed for changed integration test",
+    "mapping": "4 passed;251 references valid;not release acceptance",
+    "build": "ARM DMG succeeded; runtime source and asar/backend hashes unchanged from full local regression, no redundant full build/regression."
+  },
+  "ci": {
+    "runId": 35935288512,
+    "head": "d19d120e6f18f941a3719333c58c2de34903a850",
+    "status": "in_progress_at_inspection",
+    "scope": "Contains current production ee2524af; does not include the newly added joint test. No duplicate workflow requested."
+  }
+}

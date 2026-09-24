@@ -1,5 +1,12 @@
 # PM9 assertion mapping review
 
+2026-09-24 联合场景及外部验收推进（confirmed，本机子范围）：DATA-E2E-05复用真实worker和生产ASGI HTTP/SQLite，新增pending/unknown两例，串联归档、后端重启、恢复、显式放弃/核验、换源；旧Task/意图不重投，同键新代次不继承旧状态或环境关联，原快照/操作可解释。5项联合/归档检查和52项同步恢复回归、104脚本、Ruff、4映射/251引用通过。首轮1失败为abandon返回200而测试写202，修正测试后通过，无生产修复。仅DATA-E2E-05升partial，251为213partial/38planned/0verified；重叠缺口241生产/19实现/8测试/24外部不变。
+
+实网准备：复用qa-pm6-google-live.mjs，增加--executable和--output-dir，允许现有服务账号实网流程指向隔离安装的PM9包；仅参数检查通过，尚未运行当前实网。需授权测试凭据路径和可写测试表；OAuth另需桌面客户端及交互授权，系统UUID/增列/完整业务联合链也仍待实网。历史PM6服务账号/系统凭据实网证据继续有效。没有采用模拟结果抵扣实网。
+
+当前ee2524af生产输出重新生成ARM DMG，校验、只读挂载、隔离复制、卸载镜像、真实包内sidecar健康和父进程退出清理通过，临时应用副本已删除。asar与backend hash匹配上一轮完整回归，不重复全量；安装镜像hash见joint-external-acceptance.json。本机0有效代码签名身份，仅ad-hoc且TeamIdentifier未设；spctl虽然exit0，但明确override=security disabled，不能算Gatekeeper/签名/公证通过。Apple/Windows签名资源和Windows/Intel实机入口仍需提供；既有Actions继续运行，不重复流水线。当前新增联合测试尚未包含于旧运行。releaseAccepted=false。
+
+
 2026-09-24 XE-A09不自动保存与界面修复（confirmed本机新包子范围）：真实固定环境cookie1→工作副本9且End不保留→新Task恢复1；来源g1/元数据/环境总数1不变，两实例cleaned且实际目录不存在。旧包截图暴露cleaned仍提供保存表单，7b896163修复为已清理说明，保留仅修复关联并在完成后移除入口。组件RED→8项相关通过，最终前端5475/409、类型/lint/脚本102、构建和未签名ARM完整桌面24截图通过，新界面已目视检查；后端cb040daf及既有3497回归范围不变。XE-A09仅planned→partial；251合计207partial/44planned/0verified，缺口241生产/19实现/8测试/24外部不变。输入环境、身份漂移I1–I3、新三平台/外部验收保留；releaseAccepted=false。见no-auto-save-follow-through.json。
 
 2026-09-24 AU-08已有绑定去向勘误（confirmed实现缺失，W1c proposed）：HTTP/真实SQLite诊断证明重复关联409且仅保留原自动化，但错误未给出原projectId/automationId，前端也无定位入口；不是只有缺测试。既有11项契约/仓库测试通过（2依赖警告/1.62秒）不证明该条件。新增可重复诊断、错误分类及W1c契约/界面/并发与失效目标验收切片，随现有W方案等待确认；未修改生产代码，不重跑全量/打包/流水线。251条状态、241生产/19实现/8测试/24外部计数不变，releaseAccepted=false。见binding-destination-audit.json。
