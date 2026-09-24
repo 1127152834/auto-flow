@@ -38,7 +38,7 @@ it('matches the four-tab prototype structure and renders only authorized actions
   expect(screen.getAllByRole('tab').map(tab => tab.textContent)).toEqual(['基本信息', '输入与参数', '资源与环境', '运行设置'])
   expect(screen.getByLabelText('自动化名称')).toBeVisible()
   expect(screen.getByText('关联建立后不能通过普通编辑替换工作流')).toBeVisible()
-  expect(screen.getAllByRole('button', { name: '打开 Studio' })).toHaveLength(2)
+  expect(screen.getAllByRole('button', { name: '打开 Studio' })).toHaveLength(1)
   expect(screen.queryByRole('button', { name: '启动运行' })).not.toBeInTheDocument()
   expect(screen.getAllByText('最多 10 个任务')).toHaveLength(2)
 })

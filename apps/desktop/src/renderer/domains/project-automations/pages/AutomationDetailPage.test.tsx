@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom/vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { ApiClientError, type ApiRequestInit, type StreamingApiClient } from '../../../shared/api/client'
@@ -60,10 +60,33 @@ it('opens the workflow selected in a new automation without requiring a prior sa
   const request = vi.fn(async (path: string) => resources(path) ?? { items: [] }) as StreamingApiClient['request']
   mount(request, { onOpenStudio })
   const user = userEvent.setup()
-  expect(await screen.findByRole('button', { name: '打开 Studio' })).toBeDisabled()
+  const open = await screen.findByRole('button', { name: '打开 Studio' })
+  expect(open).toBeEnabled()
+  expect(within(screen.getByRole('group', { name: '工作流关联' })).getByRole('button', { name: '打开 Studio' })).toBe(open)
+  await user.type(screen.getByLabelText('自动化名称'), '尚未保存的自动化')
+  await user.click(open)
+  expect(onOpenStudio).toHaveBeenLastCalledWith(undefined)
+  expect(screen.getByLabelText('自动化名称')).toHaveValue('尚未保存的自动化')
   await chooseOption(user, screen.getByRole('combobox', { name: '关联工作流' }), 'wf')
   await user.click(screen.getByRole('button', { name: '打开 Studio' }))
   expect(onOpenStudio).toHaveBeenCalledWith('wf')
+})
+
+it('refreshes saved Studio workflows on return without resetting the automation draft', async () => {
+  let saved = false
+  const request = vi.fn(async (path: string) => {
+    if (path.startsWith('/api/v1/workflows')) return saved ? resources(path) : { items: [] }
+    return resources(path) ?? { items: [] }
+  }) as StreamingApiClient['request']
+  mount(request, { onOpenStudio: vi.fn() })
+  const user = userEvent.setup()
+  await user.type(await screen.findByLabelText('自动化名称'), '保留我的草稿')
+  await waitFor(() => expect(request).toHaveBeenCalledWith('/api/v1/workflows?projectId=p', expect.anything()))
+  saved = true
+  fireEvent(window, new Event('focus'))
+  await chooseOption(user, screen.getByRole('combobox', { name: '关联工作流' }), 'wf')
+  expect(screen.getByRole('combobox', { name: '关联工作流' })).toHaveTextContent('工作流')
+  expect(screen.getByLabelText('自动化名称')).toHaveValue('保留我的草稿')
 })
 
 it('does not reuse another project workflow catalog while its own request is pending', async () => {

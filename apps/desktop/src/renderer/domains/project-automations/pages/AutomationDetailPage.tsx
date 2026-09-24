@@ -25,7 +25,7 @@ export type AutomationDetailPageProps = {
   /** Leaving the editor after this automation stopped existing. */
   onDeleted?(): void
   onBatchCreated?(batchId: string): void
-  onOpenStudio?(workflowId: string): void
+  onOpenStudio?(workflowId?: string): void
   registerLeaveGuard(guard: (() => Promise<boolean>) | null): void
 }
 type Baseline = { value: AutomationWrite; revision: number; resetKey: string }
@@ -39,6 +39,13 @@ function Detail({ projectDefaults, workspaceKey, instanceId, projectId, automati
   const cache = useQueryClient()
   const result = useQuery({ queryKey: [...prefix, 'detail', automationId], queryFn: ({ signal }) => api.get(automationId!, signal), enabled: Boolean(automationId) && !disabled })
   const workflows = useQuery({ queryKey: [workspaceKey, instanceId, 'workflow-catalog', projectId], queryFn: ({ signal }) => resources.workflows(signal), enabled: !disabled })
+  const refreshWorkflows = workflows.refetch
+  useEffect(() => {
+    if (disabled) return
+    const refresh = () => { void refreshWorkflows() }
+    window.addEventListener('focus', refresh)
+    return () => window.removeEventListener('focus', refresh)
+  }, [disabled, refreshWorkflows])
   const profiles = useQuery({ queryKey: [workspaceKey, instanceId, 'automation-profiles'], queryFn: ({ signal }) => resources.profiles(signal), enabled: !disabled })
   const proxies = useQuery({ queryKey: [workspaceKey, instanceId, 'automation-proxies'], queryFn: ({ signal }) => resources.proxies(signal), enabled: !disabled })
   const models = useQuery({ queryKey: [workspaceKey, instanceId, 'automation-models'], queryFn: ({ signal }) => resources.models(signal), enabled: !disabled })
