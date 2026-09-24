@@ -271,6 +271,27 @@ it.each(['ANDROID_DISK_SPACE_INSUFFICIENT', 'ANDROID_DISK_PROBE_FAILED', 'ANDROI
   expect(pullImage.mock.calls[1][0].requestId).not.toBe(pullImage.mock.calls[0][0].requestId)
 })
 
+it.each(['ANDROID_DISK_SPACE_INSUFFICIENT', 'ANDROID_DISK_PROBE_FAILED', 'ANDROID_DISK_ESTIMATE_UNKNOWN'])('shows a replayed failed disk preflight and starts the next pull with a new id %s', async (code) => {
+  const pullImage = vi.fn()
+    .mockRejectedValueOnce(new Error('连接中断'))
+    .mockImplementationOnce(async (body: { requestId: string }) => ({ operationId: 'rejected', requestId: body.requestId, state: 'failed', stageLabel: '失败', resultCode: code, message: '磁盘预检已拒绝写入' }))
+    .mockImplementationOnce(async (body: { requestId: string }) => ({ operationId: 'accepted', requestId: body.requestId, state: 'running', stageLabel: '正在拉取' }))
+  renderManager({ pullImage })
+  const form = await screen.findByRole('form', { name: '拉取镜像' })
+  const input = within(form).getByLabelText('拉取镜像引用')
+  await userEvent.type(input, 'redroid/redroid:13')
+  await userEvent.click(within(form).getByRole('button', { name: '开始拉取' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('连接中断')
+  await userEvent.click(screen.getByRole('button', { name: '按原编号重试' }))
+  await vi.waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('磁盘预检已拒绝写入'))
+  expect(input).toBeEnabled()
+  expect(screen.queryByText(/拉取操作已接受/)).not.toBeInTheDocument()
+  expect(pullImage.mock.calls[1][0].requestId).toBe(pullImage.mock.calls[0][0].requestId)
+  await userEvent.click(within(form).getByRole('button', { name: '开始拉取' }))
+  await vi.waitFor(() => expect(pullImage).toHaveBeenCalledTimes(3))
+  expect(pullImage.mock.calls[2][0].requestId).not.toBe(pullImage.mock.calls[0][0].requestId)
+})
+
 
 it('returns to the first page after a verification invalidates the pagination cursor', async () => {
   const record = { operationId: 'newer-op', requestId: 'newer-request', action: 'pull', state: 'needs_verification', stageLabel: '待核实' }

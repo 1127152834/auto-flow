@@ -11,6 +11,7 @@ type DeleteDraft = { id: string; content: boolean; requestId: string; revision: 
 type VerifyDraft = { id: string; check: string; evidence: string }
 
 const verificationLabels: Record<string, string> = { passed: '通过', failed: '失败', blocked: '阻塞', not_tested: '未测试', unknown: '未知' }
+const diskPreflightCodes = new Set(['ANDROID_DISK_SPACE_INSUFFICIENT', 'ANDROID_DISK_PROBE_FAILED', 'ANDROID_DISK_ESTIMATE_UNKNOWN'])
 
 function display(value: unknown): string {
   if (Array.isArray(value)) return value.join('、')
@@ -47,7 +48,7 @@ export function ImageManager({ api, instanceId }: Props) {
     setBusy(true); setError(''); setMessage(''); setErrorAction(action)
     try { await fn(); setErrorAction(null) }
     catch (cause) {
-      const diskPreflight = action === 'pull' && cause instanceof ApiClientError && cause.status === 409 && ['ANDROID_DISK_SPACE_INSUFFICIENT', 'ANDROID_DISK_PROBE_FAILED', 'ANDROID_DISK_ESTIMATE_UNKNOWN'].includes(cause.code ?? '')
+      const diskPreflight = action === 'pull' && cause instanceof ApiClientError && cause.status === 409 && diskPreflightCodes.has(cause.code ?? '')
       const conflict = cause instanceof ApiClientError && cause.status === 409 && !diskPreflight
       if (action === 'delete' && cause instanceof ApiClientError && cause.code === 'ANDROID_IMAGE_DELETE_RESULT_UNKNOWN') setErrorAction('verifyDelete')
       setError(conflict ? '镜像引用或版本发生冲突，请重新读取后重试' : cause instanceof Error ? cause.message : '镜像操作结果尚未确认，请按原请求重试')
@@ -69,10 +70,11 @@ export function ImageManager({ api, instanceId }: Props) {
       try {
         const next = await api.pullImage(request)
         setOperation(next)
+        if (next.state === 'failed' && diskPreflightCodes.has(next.resultCode ?? '')) throw new ApiClientError(next.message || '磁盘预检被拒绝', 409, next.resultCode)
         if (['succeeded', 'failed', 'cancelled'].includes(next.state)) pullRequest.current = null
         setMessage(`拉取操作已接受：${request.requestId}`)
       } catch (cause) {
-        if (cause instanceof ApiClientError && ((cause.status === 422 && cause.code === 'VALIDATION_ERROR') || (cause.status === 409 && ['ANDROID_DISK_SPACE_INSUFFICIENT', 'ANDROID_DISK_PROBE_FAILED', 'ANDROID_DISK_ESTIMATE_UNKNOWN'].includes(cause.code ?? ''))) && pullRequest.current?.requestId === request.requestId) pullRequest.current = null
+        if (cause instanceof ApiClientError && ((cause.status === 422 && cause.code === 'VALIDATION_ERROR') || (cause.status === 409 && diskPreflightCodes.has(cause.code ?? ''))) && pullRequest.current?.requestId === request.requestId) pullRequest.current = null
         throw cause
       }
     })
