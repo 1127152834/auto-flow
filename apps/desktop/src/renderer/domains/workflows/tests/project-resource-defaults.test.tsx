@@ -1,3 +1,5 @@
+import userEvent from '@testing-library/user-event'
+import { choiceTestEnvironment, chooseOption, choiceValue } from '../../../shared/testing/choice-user'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -19,6 +21,8 @@ import { AutoBrowserDialog } from '../components/AutoBrowserDialog'
 import { BrowserProfileSelect } from '../components/BrowserProfileSelect'
 import { TaskCreateDialog } from '../components/scheduled-tasks/TaskCreateDialog'
 import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
+
+choiceTestEnvironment()
 
 Element.prototype.scrollIntoView = vi.fn()
 Element.prototype.hasPointerCapture = vi.fn(() => false)
@@ -110,7 +114,7 @@ describe('Studio project browser resource defaults', () => {
     render(<BrowserProfileSelect />)
 
     await waitFor(() => {
-      expect(screen.getByRole<HTMLSelectElement>('combobox', { name: '浏览器配置' }).value).toBe(profiles[1].id)
+      expect(choiceValue(screen.getByRole('combobox', { name: '浏览器配置' }))).toBe(profiles[1].id)
     })
     await expect(browserApi.resolveProfile()).resolves.toMatchObject({
       success: true,
@@ -126,14 +130,14 @@ describe('Studio project browser resource defaults', () => {
       responseFor({ 'project-a': profiles[1].id }, []),
     )
     render(<BrowserProfileSelect />)
-    const select = screen.getByRole<HTMLSelectElement>('combobox', { name: '浏览器配置' })
-    await waitFor(() => expect(select.value).toBe(profiles[1].id))
+    const select = screen.getByRole<HTMLButtonElement>('combobox', { name: '浏览器配置' })
+    await waitFor(() => expect(choiceValue(select)).toBe(profiles[1].id))
 
-    fireEvent.change(select, { target: { value: profiles[0].id } })
-    expect(select.value).toBe(profiles[0].id)
+    await chooseOption(userEvent.setup(), select, profiles[0].id)
+    expect(choiceValue(select)).toBe(profiles[0].id)
     fireEvent.click(screen.getByRole('button', { name: '刷新配置' }))
 
-    await waitFor(() => expect(select.value).toBe(profiles[0].id))
+    await waitFor(() => expect(choiceValue(select)).toBe(profiles[0].id))
     await expect(browserApi.resolveProfile()).resolves.toMatchObject({
       success: true,
       data: { id: profiles[0].id },
@@ -149,8 +153,13 @@ describe('Studio project browser resource defaults', () => {
 
     render(<BrowserProfileSelect />)
 
+    const control = screen.getByRole('combobox', { name: '浏览器配置' })
+    await waitFor(() => expect(control.hasAttribute('disabled')).toBe(false))
+    control.focus()
+    await userEvent.setup().keyboard('{ArrowDown}')
     await screen.findByRole('option', { name: '全局列表第一项' })
-    expect(screen.getByRole<HTMLSelectElement>('combobox', { name: '浏览器配置' }).value).toBe('')
+    await userEvent.setup().keyboard('{Escape}')
+    expect(choiceValue(screen.getByRole('combobox', { name: '浏览器配置' }))).toBe('')
     await expect(browserApi.resolveProfile()).resolves.toMatchObject({
       success: false,
       httpStatus: 422,
@@ -167,8 +176,8 @@ describe('Studio project browser resource defaults', () => {
 
     render(<BrowserProfileSelect />)
 
-    expect((await screen.findByRole<HTMLOptionElement>('option', { name: '所选配置已不可用，请重新选择' })).value).toBe(deletedProfileId)
-    expect(screen.getByRole<HTMLSelectElement>('combobox', { name: '浏览器配置' }).value).toBe(deletedProfileId)
+    await screen.findByText('所选配置已不可用，请重新选择')
+    expect(choiceValue(screen.getByRole('combobox', { name: '浏览器配置' }))).toBe(deletedProfileId)
     await expect(browserApi.resolveProfile()).resolves.toMatchObject({
       success: false,
       httpStatus: 404,
@@ -194,7 +203,7 @@ describe('Studio project browser resource defaults', () => {
     render(<BrowserProfileSelect />)
 
     expect((await screen.findByRole('alert')).textContent).toContain('项目默认资源暂不可用')
-    expect(screen.getByRole<HTMLSelectElement>('combobox', { name: '浏览器配置' }).value).toBe('')
+    expect(choiceValue(screen.getByRole('combobox', { name: '浏览器配置' }))).toBe('')
     await expect(browserApi.open('about:blank')).resolves.toMatchObject({
       success: false,
       httpStatus: 503,
@@ -213,10 +222,10 @@ describe('Studio project browser resource defaults', () => {
       responseFor({ 'project-a': profiles[1].id }, []),
     )
     render(<BrowserProfileSelect />)
-    const select = screen.getByRole<HTMLSelectElement>('combobox', { name: '浏览器配置' })
-    await waitFor(() => expect(select.value).toBe(profiles[1].id))
+    const select = screen.getByRole<HTMLButtonElement>('combobox', { name: '浏览器配置' })
+    await waitFor(() => expect(choiceValue(select)).toBe(profiles[1].id))
 
-    fireEvent.change(select, { target: { value: profiles[0].id } })
+    await chooseOption(userEvent.setup(), select, profiles[0].id)
 
     expect(useGlobalConfigStore.getState().projectResources.profileId).toBe(profiles[0].id)
     expect(useGlobalConfigStore.getState().config.browserProfileId).toBe(profiles[2].id)
@@ -231,10 +240,10 @@ describe('Studio project browser resource defaults', () => {
       responseFor({ 'project-a': profiles[1].id }, []),
     )
     render(<BrowserProfileSelect />)
-    const select = screen.getByRole<HTMLSelectElement>('combobox', { name: '浏览器配置' })
-    await waitFor(() => expect(select.value).toBe(profiles[1].id))
-    fireEvent.change(select, { target: { value: profiles[0].id } })
-    expect(select.value).toBe(profiles[0].id)
+    const select = screen.getByRole<HTMLButtonElement>('combobox', { name: '浏览器配置' })
+    await waitFor(() => expect(choiceValue(select)).toBe(profiles[1].id))
+    await chooseOption(userEvent.setup(), select, profiles[0].id)
+    expect(choiceValue(select)).toBe(profiles[0].id)
 
     restoreConnection()
     restoreConnection = configureStudioConnection(
@@ -242,7 +251,7 @@ describe('Studio project browser resource defaults', () => {
       responseFor({ 'project-a': profiles[1].id }, []),
     )
 
-    await waitFor(() => expect(select.value).toBe(profiles[0].id))
+    await waitFor(() => expect(choiceValue(select)).toBe(profiles[0].id))
     await expect(browserApi.resolveProfile()).resolves.toMatchObject({
       success: true,
       data: { id: profiles[0].id },
@@ -257,9 +266,9 @@ describe('Studio project browser resource defaults', () => {
       responseFor({ 'project-a': profiles[1].id }, []),
     )
     render(<BrowserProfileSelect label="计划任务浏览器配置" value={profiles[2].id} onChange={onChange} />)
-    const select = screen.getByRole<HTMLSelectElement>('combobox', { name: '计划任务浏览器配置' })
-    await screen.findByRole('option', { name: profiles[1].name })
-    expect(select.value).toBe(profiles[2].id)
+    const select = screen.getByRole<HTMLButtonElement>('combobox', { name: '计划任务浏览器配置' })
+    await waitFor(() => expect(select.textContent).toContain(profiles[2].name))
+    expect(choiceValue(select)).toBe(profiles[2].id)
     expect(onChange).not.toHaveBeenCalled()
 
     restoreConnection()
@@ -268,7 +277,7 @@ describe('Studio project browser resource defaults', () => {
       responseFor({ 'project-a': profiles[0].id }, []),
     )
 
-    await waitFor(() => expect(select.value).toBe(profiles[2].id))
+    await waitFor(() => expect(choiceValue(select)).toBe(profiles[2].id))
     expect(onChange).not.toHaveBeenCalled()
   })
 
@@ -309,14 +318,15 @@ describe('Studio project browser resource defaults', () => {
     )
     const onClose = vi.fn()
     render(<TaskCreateDialog open onClose={onClose} />)
-    const profileSelect = screen.getByRole<HTMLSelectElement>('combobox', { name: '运行浏览器配置 *' })
+    const profileSelect = screen.getByRole<HTMLButtonElement>('combobox', { name: '运行浏览器配置 *' })
 
-    await waitFor(() => expect(profileSelect.value).toBe(profiles[1].id))
-    expect(profileSelect.value).not.toBe(profiles[2].id)
-    fireEvent.change(profileSelect, { target: { value: profiles[0].id } })
+    await waitFor(() => expect(choiceValue(profileSelect)).toBe(profiles[1].id))
+    expect(choiceValue(profileSelect)).not.toBe(profiles[2].id)
+    await waitFor(() => expect(profileSelect.disabled).toBe(false))
+    await chooseOption(userEvent.setup(), profileSelect, profiles[0].id)
     fireEvent.change(screen.getByLabelText('任务名称 *'), { target: { value: '项目计划任务' } })
 
-    const workflowSelect = screen.getAllByRole('combobox').find(control => control.tagName === 'BUTTON')
+    const workflowSelect = screen.getAllByRole('combobox').find(control => control.tagName === 'BUTTON' && control !== profileSelect)
     expect(workflowSelect).toBeDefined()
     fireEvent.keyDown(workflowSelect!, { key: 'ArrowDown' })
     fireEvent.click(await screen.findByRole('option', { name: '项目流程' }))
@@ -356,9 +366,9 @@ describe('Studio project browser resource defaults', () => {
       },
     )
     render(<AutoBrowserDialog isOpen onClose={vi.fn()} onLog={vi.fn()} />)
-    const select = screen.getByRole<HTMLSelectElement>('combobox', { name: '浏览器配置' })
-    await waitFor(() => expect(select.value).toBe(profiles[1].id))
-    fireEvent.change(select, { target: { value: profiles[0].id } })
+    const select = screen.getByRole<HTMLButtonElement>('combobox', { name: '浏览器配置' })
+    await waitFor(() => expect(choiceValue(select)).toBe(profiles[1].id))
+    await chooseOption(userEvent.setup(), select, profiles[0].id)
 
     fireEvent.click(screen.getByRole('button', { name: '打开浏览器' }))
 
@@ -376,15 +386,15 @@ describe('Studio project browser resource defaults', () => {
       }, []),
     )
     render(<BrowserProfileSelect />)
-    const select = screen.getByRole<HTMLSelectElement>('combobox', { name: '浏览器配置' })
-    await waitFor(() => expect(select.value).toBe(profiles[1].id))
-    fireEvent.change(select, { target: { value: profiles[0].id } })
-    expect(select.value).toBe(profiles[0].id)
+    const select = screen.getByRole<HTMLButtonElement>('combobox', { name: '浏览器配置' })
+    await waitFor(() => expect(choiceValue(select)).toBe(profiles[1].id))
+    await chooseOption(userEvent.setup(), select, profiles[0].id)
+    expect(choiceValue(select)).toBe(profiles[0].id)
 
     window.history.replaceState({}, '', '/studio.html?projectId=project-b')
     act(() => window.dispatchEvent(new Event('studio:transport-changed')))
 
-    await waitFor(() => expect(select.value).toBe(profiles[2].id))
+    await waitFor(() => expect(choiceValue(select)).toBe(profiles[2].id))
     await expect(browserApi.resolveProfile()).resolves.toMatchObject({
       success: true,
       data: { id: profiles[2].id },
@@ -412,14 +422,14 @@ describe('Studio project browser resource defaults', () => {
 
     window.history.replaceState({}, '', '/studio.html?projectId=project-b')
     act(() => window.dispatchEvent(new Event('studio:transport-changed')))
-    const select = screen.getByRole<HTMLSelectElement>('combobox', { name: '浏览器配置' })
-    await waitFor(() => expect(select.value).toBe(profiles[2].id))
+    const select = screen.getByRole<HTMLButtonElement>('combobox', { name: '浏览器配置' })
+    await waitFor(() => expect(choiceValue(select)).toBe(profiles[2].id))
 
     await act(async () => {
       projectA.resolve(Response.json(project('project-a', profiles[1].id)))
       await projectA.promise
     })
-    expect(select.value).toBe(profiles[2].id)
+    expect(choiceValue(select)).toBe(profiles[2].id)
     await expect(browserApi.resolveProfile()).resolves.toMatchObject({
       success: true,
       data: { id: profiles[2].id },
@@ -436,7 +446,7 @@ describe('Studio project browser resource defaults', () => {
     render(<BrowserProfileSelect />)
 
     await waitFor(() => {
-      expect(screen.getByRole<HTMLSelectElement>('combobox', { name: '浏览器配置' }).value).toBe(profiles[0].id)
+      expect(choiceValue(screen.getByRole('combobox', { name: '浏览器配置' }))).toBe(profiles[0].id)
     })
     await expect(browserApi.resolveProfile()).resolves.toMatchObject({
       success: true,
