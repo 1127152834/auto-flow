@@ -85,7 +85,7 @@
 | <a id="t17"></a>T17 | `passed`（已列功能） | [真实磁盘不足与传输取消](2026-09-24-backup-failure-verification.md)补足 AC19；归档/权限/摘要/发布回归通过。[传输中进程树 SIGKILL](2026-09-24-restore-cancel-and-disk-full.md)已补；[真实权限拒绝](2026-09-24-backup-permission.md)扩展故障已passed，未知结果不重放、源数据保留及清理均通过。 |
 | <a id="t18"></a>T18 | `passed`（已列功能） | [新卷属性读回](2026-09-23-persistent-metadata-verification.md)与[写入后硬中断](2026-09-23-restore-hard-interruption-verification.md)通过；[真实解包中 SIGKILL](2026-09-24-restore-transfer-interruption.md)已验；[目标 ENOSPC/取消恢复](2026-09-24-restore-cancel-and-disk-full.md)已验，源与备份保留，进程树回收通过。 |
 | <a id="t19"></a>T19 | `passed`（已列功能） | [真实清理](2026-09-23-cleanup-verification.md)、[高级诊断](2026-09-24-advanced-logs-and-capacity.md)通过；[多对象清理硬中断](2026-09-24-cleanup-interruption.md)已验；无归属记录的旧文件保持排除，不据此推断可删除。 |
-| <a id="t20"></a>T20 | `not_run` | 实际服务/实例/源数据保护和全量门禁有证据；上述具备条件的剩余故障及桌面链未全部运行，不能整体完成。 |
+| <a id="t20"></a>T20 | `not_run` | 实际服务/实例/源数据保护和全量门禁有证据；可独立执行的权限拒绝、旧版本升级和下载断网恢复已补；剩余桌面/十实例/GApps条件不足，历史RED缺证保留，不能整体完成。 |
 
 ## 校准取舍
 

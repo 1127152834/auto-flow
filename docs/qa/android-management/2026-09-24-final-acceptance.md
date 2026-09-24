@@ -37,9 +37,18 @@ Task3和Task4独立规格/质量审查通过，无Critical/Important。完整分
 - **blocked：Mac再次锁屏。** 控制工具实际报告无法自动解锁；新增确认、维护和设备恢复入口UI，以及隐藏页/前台性能未完成真实桌面验证。此前解锁期间完成的批次/未知拉取桌面证据仍有效，但不能覆盖新入口。
 - **blocked：十实例容量。** 最低配置含预留需要8192MiB，当前Lima实际约7922MiB、6CPU。没有降低规格或占用用户外部实例来伪造通过。
 - **blocked：GApps。** 专用镜像、测试账号及商店下载链缺失；没有以普通APK测试代替。
-- **not_run：**镜像内容删除的完整桌面链；[下载途中真实断网及恢复](2026-09-24-network-interruption.md)已passed；同一发布停用/重新启用入口的完整组合链；[旧版本数据库与真实temporary实例升级](2026-09-24-legacy-upgrade.md)已通过；部分T14/T16桌面指标和历史缺失的RED原始输出。历史GREEN不能追认RED，后台HTTP耗时不能冒充桌面交互耗时。
+- **not_run（桌面锁屏阻塞）：**镜像内容删除、新确认/维护/恢复入口、同一发布停用/重新启用入口组合链、长期隐藏心跳及T14/T16前台性能指标。下载途中真实断网/恢复及旧版本数据库/temporary实例升级已passed。
+- **历史证据缺口：**10个原步骤的独立RED输出未找到，不能把现有GREEN或后续缺陷的RED追认为历史证据。后台HTTP耗时不能冒充桌面交互耗时。
 - 磁盘预检不能保证其他进程随后占满空间，既有失败清理与needs_verification继续生效。本轮Node26实验警告、两条既有后端警告及旧默认四worker不稳定记录均保留。额外Python mypy扫描有6条既有诊断，已在修复前包布局基线复现，不能声称mypy全绿。顶层旧smoke脚本额外Ruff扫描既有I001/BLE001已在HEAD基线复现；规定的后端src/tests检查通过。
 
 隐藏心跳的35秒fake-clock回归仅证明React/TanStack行为；实际Electron长期最小化仍待验证。[Electron官方文档](https://www.electronjs.org/docs/latest/api/browser-window#page-visibility)说明背景节流会影响计时器和可见性，未为绕过测试而全局关闭节流。
 
 本报告不宣布AM1–AM4完整目标完成；原最终审查五项Critical/Important已修复并独立复审关闭；新增旧批次修复也已独立复审通过；实际环境和证据缺口关闭前，不宣布完整签收。分支与隔离工作区保留，未合并或发布。
+
+## 续行阻塞审计
+
+2026-09-24（confirmed）：本轮HEAD f0e94a37；最后产品改动0f6f8fac。连续至少三个目标轮均实际确认同一Mac锁屏条件；其间已继续完成独立的旧版本升级、备份权限和下载网络故障验收，当前没有未结束的本任务测试进程需要等待。
+
+本轮`cua.getState()`仍返回“The Mac is locked and automatic unlock could not unlock it.”。`limactl shell --workdir=/tmp autoflow-redroid sh -c 'grep MemTotal /proc/meminfo; getconf _NPROCESSORS_ONLN'`返回MemTotal8111968kB和6，即7921.84375MiB。只读镜像清单为基础ReDroid、既有magisk及demo-manager，没有获得新的GApps测试账号/来源材料。未更改现有VM配置或用户设备。
+
+执行目标转为blocked，验收保持partial，不标记complete。解除条件：手动解锁Mac后继续真实Electron页面与长期隐藏/前台性能链；为十实例提供满足至少8192MiB实际内存预算及其他准入条件的测试运行时；提供GApps候选固定身份/来源与测试账号并完成登录交互。历史RED缺证继续单列，除非找到真实原记录。完整自动化命令与实际输出见上表，不因本次文档校准重复运行。

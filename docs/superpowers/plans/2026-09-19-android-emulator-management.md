@@ -661,7 +661,7 @@ assert source_data_digest_after == source_data_digest_before
 ```
 
 - [x] 再测磁盘不足、损坏备份、恢复中断、引用阻止镜像删除、诊断隐私，确认失败不会发布假成功备份或清理外部资源。（状态：passed；真实备份/恢复 ENOSPC、取消、在途硬中断、损坏包与多对象清理已验；引用和脱敏保护包含本轮451项回归，高级日志有真实证据；[证据 T20.2](../../qa/android-management/2026-09-24-task-evidence-audit.md#t20)）
-- [ ] 运行1.4节全部发布命令与真实设备回归；逐项填写规格24个验收项，无法执行的项目单列blocked。（状态：not_run；软件门禁已通过，24 项均有说明；仍有具备条件的真实项尚未运行；[证据 T20.3](../../qa/android-management/2026-09-24-task-evidence-audit.md#t20)）
+- [ ] 运行1.4节全部发布命令与真实设备回归；逐项填写规格24个验收项，无法执行的项目单列blocked。（状态：not_run；软件门禁已通过，24项均有说明；权限拒绝、旧版本升级及下载断网恢复已补，剩余真实桌面/十实例/GApps受明确外部条件阻塞，历史RED缺证保留；[证据 T20.3](../../qa/android-management/2026-09-24-task-evidence-audit.md#t20)）
 - [x] 检查向前回退策略，无破坏性downgrade、旧迁移篡改或新工作流执行器；更新证据索引但保留历史事实。（状态：passed；迁移头/旧迁移字节与业务回归通过；回退策略为关闭新入口并向前修复，实操演练另列 T12；[证据 T20.4](../../qa/android-management/2026-09-24-task-evidence-audit.md#t20)）
 - [x] 提交 `test(android): complete management recovery and maintenance acceptance`；报告实际完成和限制，不自动接入工作流。（状态：passed；30eb0926 已交付代码/证据并报告 partial；整体目标仍 active；[证据 T20.5](../../qa/android-management/2026-09-24-task-evidence-audit.md#t20)）
 

@@ -1,14 +1,14 @@
 # Google/GApps 镜像验证
 
-状态：`blocked`；验证结果必须保持 `not_tested`/`blocked`，不能因为发现包名而写入 `passed`。
+2026-09-24状态：`blocked`（confirmed）；验证结果必须保持 `not_tested`/`blocked`，不能因为发现包名而写入 `passed`。
 
 ## 当前证据
 
 - `summarize_verification([])` 返回 `not_tested`。
 - 包检测、登录条件缺失和必需检查失败的归并逻辑已有 unit 测试。
 - [全分支审查修复](2026-09-23-final-review-remediation.md)后，API 的 `verification.state` 只表示技术元数据核验，独立 `validation` 表示谷歌组件验收；前端分别显示。一次元数据通过返回 `validation=not_tested`，请求当前不支持的登录核验返回 `validation=blocked`，不会把组件声明或元数据通过写成 GApps `passed`。
-- 本轮没有可用的 Google/GApps 专用镜像、网络、测试账号、商店访问条件或可分发测试 APK。
-- 因此以下检查均未执行：启动、商店、登录、免费测试应用下载/启动、停机重启、第二实例隔离。
+- 早期“缺普通网络和测试APK”的描述已superseded：官方镜像网络拉取/故障恢复和本地测试APK已实测。当前缺少可追溯来源及构建说明的GApps专用候选、测试账号和商店完整访问/下载验证条件；现有magisk镜像名称本身不是GApps证据。
+- 因此以下GApps专用链检查均未执行：启动、商店、登录、免费测试应用下载/启动、停机重启、第二实例隔离。普通ReDroid基础启动、APK和双实例隔离的已通过证据不受影响。
 
 ## 验收边界
 
