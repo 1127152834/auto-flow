@@ -1,5 +1,7 @@
 # PM9 剩余工作复核
 
+2026-09-24 baseline集成状态订正（confirmed）：用户明确授权代码合并，PM9@90d77acd已无冲突快进到codex/architecture-baseline；不授权发布。最新三平台35935288512已全部failure：Windows/ARM真实worker验收步骤、Intel安装包构建步骤；失败日志接口403，根因未确认。此前in_progress为历史快照，不能继续作为当前状态。合并后4映射/251引用通过，生产tree与源相同，主目录Studio未触碰。releaseAccepted=false；详见verification.json及.ai/sessions/2026-09-24-pm9-baseline-integration.md。
+
 2026-09-24 联合场景及外部验收推进（confirmed，本机子范围）：DATA-E2E-05复用真实worker和生产ASGI HTTP/SQLite，新增pending/unknown两例，串联归档、后端重启、恢复、显式放弃/核验、换源；旧Task/意图不重投，同键新代次不继承旧状态或环境关联，原快照/操作可解释。5项联合/归档检查和52项同步恢复回归、104脚本、Ruff、4映射/251引用通过。首轮1失败为abandon返回200而测试写202，修正测试后通过，无生产修复。仅DATA-E2E-05升partial，251为213partial/38planned/0verified；重叠缺口241生产/19实现/8测试/24外部不变。
 
 实网准备：复用qa-pm6-google-live.mjs，增加--executable和--output-dir，允许现有服务账号实网流程指向隔离安装的PM9包；仅参数检查通过，尚未运行当前实网。需授权测试凭据路径和可写测试表；OAuth另需桌面客户端及交互授权，系统UUID/增列/完整业务联合链也仍待实网。历史PM6服务账号/系统凭据实网证据继续有效。没有采用模拟结果抵扣实网。

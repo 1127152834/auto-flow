@@ -1,11 +1,12 @@
 {
   "date": "2026-09-24",
-  "status": "local_full_and_reviewed_packaged_passed_native_in_progress",
+  "status": "baseline_integrated_local_passed_latest_native_ci_failed_release_incomplete",
   "releaseAccepted": false,
   "confidence": "high",
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
   "branch": "codex/project-management-pm9-runtime",
   "remaining": [
+    "Latest native CI35935288512 completed failure on all three platforms: Windows/ARM real-worker acceptance step; Intel installer build step. Logs returned403; causes unconfirmed. Earlier in_progress notes are historical. User requested baseline integration, not release acceptance.",
     "DATA-E2E-05 local real-worker/ASGI archive/restart/restore/disposition/rebind chain now passed with pending/unknown cases. Packaged/live-Google/native combination remains pending. Current ARM DMG isolated installation/start/exit passed; only ad-hoc signature, and Gatekeeper security disabled means spctl accepted is not signing acceptance. See joint-external-acceptance.json.",
     "Confirmed persistent identity defect from cb040daf ARM package remains: identity implementation unchanged in ee2524af; fixed/input restore login but use edited Profile UA/locale/timezone/seed. I1-I3 await approval. Maintenance source-confirmed only; see persistent-identity-audit.json.",
     "DATA-E2E-01/CLAIM-12 source Excel progression/reuse and DATA-CLAIM-14 unlimited5success+public-stop now passed in local scope; packaged/native picker, unlimited warning/counts/stop UI and current three-platform evidence remain pending.",
@@ -18,7 +19,7 @@
     "C1-C4, R1/R2/R5/R3/R4 and approved D1 are implemented with scoped tests. Public peer unbind/rebind/outage and opposing-write scenarios use controlled Google transport; current packaged live-Google full business chains remain pending.",
     "Historical PM6 service-account Sheets/system-credential real-network evidence remains valid. Current PM9 packaged Sheets/system UUID/remote-column/OAuth acceptance requires current authorized resources; do not reinterpret historical evidence as absent.",
     "Current ee2524af ARM app is unsigned. Historical c16532d7 ARM DMG isolated install and Intel image verification remain scoped; Finder/Gatekeeper, Windows/Intel physical installation, signing/notarization/full native acceptance remain external.",
-    "No merge or release is authorized. Do not add cross-process manual recovery or all Studio nodes. releaseAccepted=false."
+    "Baseline code integration authorized on2026-09-24; no release authorized. Do not add cross-process manual recovery or all Studio nodes. releaseAccepted=false."
   ],
   "pullRequest": "https://github.com/1127152834/auto-flow/pull/1",
   "followThrough": {
@@ -598,7 +599,7 @@
     "runId": 35935288512,
     "headSha": "d19d120e6f18f941a3719333c58c2de34903a850",
     "url": "https://github.com/1127152834/auto-flow/actions/runs/35935288512",
-    "status": "in_progress",
+    "status": "completed",
     "event": "push",
     "duplicateDraftPR": {
       "runId": 35935293541,
@@ -606,7 +607,14 @@
     },
     "scope": "Current three-platform checks unchanged; only same-repository draft PR duplicate skipped. Ready and fork PR checks remain.",
     "productionSource": "ee2524af36657a09719995dfe20b86da90c410df",
-    "report": "end-link-repair-follow-through.json"
+    "report": "end-link-repair-follow-through.json",
+    "conclusion": "failure",
+    "jobs": {
+      "windows-2022": "failure: Verify real worker recovery, shared Sheets claims and manual expiry race",
+      "macos-15-intel": "failure: Build installer artifact",
+      "macos-15": "failure: Verify real worker recovery, shared Sheets claims and manual expiry race"
+    },
+    "failureLogAccess": "gh run view --log-failed returned403 Must have admin rights to Repository; root causes not confirmed."
   },
   "parallelPackagedFollowThrough": "parallel-packaged-follow-through.json",
   "sourceOutageFollowThrough": {
@@ -766,5 +774,14 @@
     "additionalCounterexample": "Persistent identity remains unresolved; identity implementation unchanged from confirmed cb040daf counterexample. This protocol fix does not resolve I1-I3."
   },
   "endLinkRepairFollowThrough": "end-link-repair-follow-through.json",
-  "jointExternalAcceptance": "joint-external-acceptance.json"
+  "jointExternalAcceptance": "joint-external-acceptance.json",
+  "baselineIntegration": {
+    "date": "2026-09-24",
+    "authorization": "用户明确要求：代码合并到 baseline 分支。此前不合并约束仅对此次代码集成被替代；未授权发布。",
+    "target": "codex/architecture-baseline",
+    "previousBaseline": "8e5564e0f5624afd429171de53b5b1039199513a",
+    "source": "90d77acdd64d20b133aff6ace9eb445fa20e06c6",
+    "method": "fast-forward;183 source commits;no conflicts",
+    "scope": "Only PM9 runtime branch. Main Studio working tree and other branches untouched. Source branch and evidence worktree retained."
+  }
 }
