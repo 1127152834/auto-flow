@@ -159,8 +159,8 @@ class EnvironmentBrowserLauncher:
         try:
             if self._resource_provider is not None:
                 lease = await self._resource_provider().acquire({
-                    **request, "identityPackage": instance.identity_package, "userDataDir": str(directory),
-                }, f"maintenance:{instance.instance_id}")
+                    **request, "identityPackage": instance.identity_package,
+                }, f"maintenance:{instance.instance_id}", work_directory=directory)
                 command = {**lease.browser, "headless": False, "executablePath": str(lease.executable)}
                 upstream = command.pop("proxy", None)
                 if upstream is not None:

@@ -66,11 +66,11 @@
 
 **Interfaces:** 新版工作流持久化版本标记；open_page.browserEnvironment 来源为 current/newFromProfile/fixedEnvironment/inputEnvironment。初始化参数使用已有引用类型；PreparedContent/Run 存每个初始化节点的无秘密冻结资源。Runtime 的浏览器初始化通过现有命令总线，返回受控启动信息；命令身份含 Run、执行代次和节点执行身份。
 
-- [ ] 测试配置严格校验、无浏览器流程、分支未进入零启动、当前实例缺失、第二初始化拒绝、导航失败后重试只建一次。
-- [ ] 运行新增 `tests/unit/test_node_browser_environment.py` 与现有 dispatcher/worker 测试，先确认新增断言失败。
-- [ ] 准备阶段冻结模板默认值；执行阶段由宿主预约和授权实例，worker 才启动浏览器。保留现有所有权和停止门禁；旧模式继续原提前启动路径。
-- [ ] 初始化成功后 context.browser 指向唯一实例；后续节点 current 直接导航。失败、取消和人工处理沿用原资源生命周期。并行初始化/共享页面未隔离时明确拒绝，不扩大准入。
-- [ ] 真实 HTTP/SQLite/worker 验证 Cookie 连续、代理/内核实际启动值、响应丢失、取消与无泄漏，保存日志与结果后提交。
+- [x] 测试配置严格校验、无浏览器流程、分支未进入零启动、当前实例缺失、第二初始化拒绝、导航失败后重试只建一次。
+- [x] 运行新增 `tests/unit/test_node_browser_environment.py` 与现有 dispatcher/worker 测试，先确认新增断言失败。
+- [x] 准备阶段冻结模板默认值；执行阶段由宿主预约和授权实例，worker 才启动浏览器。保留现有所有权和停止门禁；旧模式继续原提前启动路径。
+- [x] 初始化成功后 context.browser 指向唯一实例；后续节点 current 直接导航。失败、取消和人工处理沿用原资源生命周期。并行初始化/共享页面未隔离时明确拒绝，不扩大准入。
+- [x] 真实 HTTP/SQLite/worker 验证 Cookie 连续、代理/内核实际启动值、响应丢失、取消与无泄漏，保存日志与结果后提交。
 
 ### Task 5: Studio 入口切换、迁移和联合验收
 
@@ -78,13 +78,16 @@
 
 **Interfaces:** OpenPageConfig 维护上述来源和三个属性；Toolbar 新模式只传文档资源，不再 resolve 全局 Profile。旧文档显式迁移写节点且持久化新版标记；已有 PreparedContent 不变。录制/拾取消费所选初始化节点或当前实例。
 
-- [ ] 组件测试先断言节点三个属性往返、来源显隐、顶部选择器消失，以及未配置时运行定位节点；录制/调试不回退旧全局值。
-- [ ] 对接真实资源目录与执行契约，再删除顶部选择器；更新自动化配置的来源说明，保留旧文档兼容逻辑。
-- [ ] 显式迁移界面先展示将写入的入口，多个入口不猜测；保存/导出不受未迁移影响。记录节点内部 schema 与原文档版本的往返结果。
-- [ ] 针对性测试通过后执行 `npm test`、`npm run typecheck`、`npm run lint`、`npm run build`、`npm run openapi:check`；后端完整 pytest、ruff/mypy，保留失败/跳过事实。
-- [ ] 隔离 Electron/真实后端/worker 联合验收，再对稳定候选发起一次现有三平台 CI（认证受阻则记录条件，不宣称通过）。检查最新代码、截图和实例持久事实，而非仅测试数量。
-- [ ] 完整分支独立审查；修正重要问题并补回归；提交代码、文档与 `.ai`。未满足条件仍保持 releaseAccepted=false，不自动合并。
+- [x] 组件测试先断言节点三个属性往返、来源显隐、顶部选择器消失，以及未配置时运行定位节点；录制/调试不回退旧全局值。
+- [x] 对接真实资源目录与执行契约，再删除顶部选择器；更新自动化配置的来源说明，保留旧文档兼容逻辑。
+- [x] 显式迁移界面先展示将写入的入口，多个入口不猜测；保存/导出不受未迁移影响。记录节点内部 schema 与原文档版本的往返结果。
+- [x] 针对性测试通过后执行 `npm test`、`npm run typecheck`、`npm run lint`、`npm run build`、`npm run openapi:check`；后端完整 pytest、ruff/mypy，保留失败/跳过事实。
+- [x] 隔离 Electron/真实后端/worker 联合验收，再对稳定候选发起一次现有三平台 CI（认证受阻则记录条件，不宣称通过）。检查最新代码、截图和实例持久事实，而非仅测试数量。
+- [x] 完整分支独立审查；修正重要问题并补回归；提交代码、文档与 `.ai`。未满足条件仍保持 releaseAccepted=false，不自动合并。
 
 ## 执行记录
 
 详细进度、判断与验证命令写入本计划对应 `.superpowers/sdd/` ledger；完成切片同步持久 `.ai` 会话，避免只存在会话上下文。
+
+
+2026-09-24 实施与本地验证已执行；勾选表示步骤已执行，不表示所有发布门禁通过。完整结果见 `docs/qa/node-browser-environments/2026-09-24/verification.json`。现有 Android mypy 与 OCR 停止耗时失败保留；三平台候选待运行结果，不合并、不发布。

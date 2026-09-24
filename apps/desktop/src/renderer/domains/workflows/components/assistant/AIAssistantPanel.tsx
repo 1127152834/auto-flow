@@ -358,6 +358,8 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
                   // 异步触发，不阻塞 socket 事件循环
                   void executeClientAction('load_workflow_from_data', {
                     name: built.name || '小助手生成的工作流',
+                    browserEnvironmentVersion: built.browserEnvironmentVersion,
+                    variables: built.variables,
                     nodes: built.nodes,
                     edges: built.edges,
                     animate: true,  // 启用可视化逐步搭建
@@ -1013,6 +1015,8 @@ export function AIAssistantPanel({ standalone = false }: { standalone?: boolean 
           if (Array.isArray(built?.nodes) && Array.isArray(built?.edges)) {
             await executeClientAction('load_workflow_from_data', {
               name: built.name || '小助手生成的工作流',
+                    browserEnvironmentVersion: built.browserEnvironmentVersion,
+                    variables: built.variables,
               nodes: built.nodes,
               edges: built.edges,
             })

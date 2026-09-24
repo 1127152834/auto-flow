@@ -227,3 +227,14 @@ async def test_persistent_without_identity_is_not_restored_from_current_template
         await service.acquire(request, 'legacy-run')
     assert caught.value.code == 'ENVIRONMENT_IDENTITY_UNVERIFIED'
     assert state['holds'] == 0
+
+@pytest.mark.asyncio
+async def test_studio_private_directory_does_not_query_project_task_identity(tmp_path, valid_profile_values):
+    service, _, profile = resources(tmp_path, valid_profile_values)
+    def project_directory(_request):
+        raise AssertionError('Studio has no Project Task run identity')
+    service._environment_directory = project_directory
+    directory = tmp_path / 'owned-studio-worker' / 'preview'
+    lease = await service.acquire(service.freeze(profile.id), 'studio-run', work_directory=directory)
+    assert lease.browser['userDataDir'] == str(directory)
+    lease.release()

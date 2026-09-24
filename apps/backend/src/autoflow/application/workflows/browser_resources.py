@@ -148,7 +148,7 @@ class WorkflowBrowserResources:
             },
         }
 
-    async def acquire(self, request: Mapping[str, Any], run_request_id: str) -> BrowserLease:
+    async def acquire(self, request: Mapping[str, Any], run_request_id: str, *, work_directory: Path | None = None) -> BrowserLease:
         if request.get("browser") not in {"newFromProfile", "persistent"}:
             raise WorkflowRuntimeError("WORKFLOW_RESOURCE_UNSUPPORTED", "当前运行需要浏览器配置", 422)
         if request.get("browser") == "persistent":
@@ -171,8 +171,8 @@ class WorkflowBrowserResources:
                 raise LicenseInvalid
             browser = browser_worker_payload(run_request_id, profile, proxy, license_key)
             browser['headless'] = profile.spec.headless
-            user_data_dir = request.get("userDataDir")
-            if self._environment_directory is not None:
+            user_data_dir = str(work_directory) if work_directory is not None else request.get("userDataDir")
+            if work_directory is None and self._environment_directory is not None:
                 directory = self._environment_directory(run_request_id)
                 if directory is not None:
                     user_data_dir = str(directory)

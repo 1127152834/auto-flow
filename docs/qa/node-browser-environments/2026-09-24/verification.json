@@ -1,0 +1,59 @@
+{
+  "date": "2026-09-24",
+  "implementationStatus": "implemented",
+  "releaseAccepted": false,
+  "frontend": {
+    "files": 445,
+    "passed": 5859,
+    "failed": 0
+  },
+  "backend": {
+    "collected": 5213,
+    "initialFullRun": {
+      "passed": 5083,
+      "failed": 3,
+      "skipped": 127
+    },
+    "followup": {
+      "test_project_run_start.py": "16 passed; two old incomplete-resource fixtures replaced with real frozen resources"
+    },
+    "remainingFailure": "test_project_recognition_uses_real_models_files_branches_and_cleanup[ocr_stop] <3s: current ~3.3s, clean baseline ~3.27s"
+  },
+  "checks": {
+    "typecheck": "passed",
+    "lint": "passed",
+    "build": "passed",
+    "openapi": "passed",
+    "scripts": "108 passed",
+    "ruff": "passed",
+    "scopedMypy": "45 changed source files passed",
+    "fullMypy": "65 existing Android errors; same count reproduced on clean 15088ecb"
+  },
+  "desktop": {
+    "result": "desktop-result.json",
+    "status": "passed"
+  },
+  "independentReview": {
+    "range": "15088ecb..1527848e",
+    "findings": 2,
+    "fixed": 2
+  },
+  "ci": {
+    "status": "pending_remote_candidate",
+    "platforms": [
+      "windows-2022",
+      "macos-15-intel",
+      "macos-15"
+    ],
+    "fullPipelineExpectedBlocker": "existing Android mypy errors"
+  },
+  "limits": [
+    "No signing/notarization/OAuth or Windows/Intel physical-device proof",
+    "Cross-kernel migration of saved instances refused without compatibility evidence",
+    "Subflow uses initialized parent browser; no first initialization inside subflow"
+  ],
+  "nativeChain": {
+    "passed": 5,
+    "scope": "real PM/Studio worker initialization, cookie continuity, save/restore with and without End"
+  }
+}

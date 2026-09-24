@@ -68,3 +68,23 @@ def test_preparation_freezes_node_defaults_and_kernel_without_opening_browser(tm
     assert state['holds'] == 0
     assert 'proxy_profile' not in state
     assert 'license' not in str(frozen).lower()
+
+@pytest.mark.asyncio
+async def test_delayed_browser_failure_captures_actual_current_page():
+    from types import SimpleNamespace
+
+    from autoflow.providers.browser.project_graph import ProjectGraphExecutor
+    raw_page = object()
+    session = SimpleNamespace(current_page=lambda: SimpleNamespace(_raw=raw_page))
+    captured = []
+    async def emit(*_): pass
+    async def capture(page, *_):
+        captured.append(page)
+        return {'status':'captured'}
+    graph = ProjectGraphExecutor(None, {}, emit, lambda: False, capture_failure=capture)
+    graph.graph_adapter = True
+    graph.context.browser = session
+    graph.nodes = {'open': {'moduleType':'open_page'}}
+    await graph.publish({'type':'execution:node_start','nodeId':'open','executionId':'visit'})
+    await graph.publish({'type':'execution:node_complete','nodeId':'open','executionId':'visit','success':False,'error':'navigation failed'})
+    assert captured == [raw_page]

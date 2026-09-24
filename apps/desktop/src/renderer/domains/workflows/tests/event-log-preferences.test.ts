@@ -39,7 +39,7 @@ it.each(['memory', 'http'])('changes per-connection log delivery without resetti
     client.setVerboseLog(true)
     await vi.waitFor(() => expect(received).toEqual([1, 2]))
     expect(streams.map(item => [item.after, item.verbose])).toEqual([['0', 'false'], ['1', 'true']])
-    expect(streams[0].signal?.aborted).toBe(true)
+    await vi.waitFor(()=>expect(streams[0].signal?.aborted).toBe(true))
     expect(errors).not.toHaveBeenCalled()
     confirm!()
     expect(await pending).toEqual({ commandId: 'original', success: true })

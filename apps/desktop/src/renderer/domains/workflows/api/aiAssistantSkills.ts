@@ -403,6 +403,7 @@ export async function executeClientAction(
         const rawNodes = (payload.nodes as any[]) || []
         let edges = (payload.edges as any[]) || []
         const name = (payload.name as string) || '未命名工作流'
+        const browserEnvironmentVersion = payload.browserEnvironmentVersion as number | undefined
         const animate = payload.animate !== false  // 默认开启可视化逐步搭建动画
         // 🛡️ 过滤掉不存在的模块，绝不把虚构模块装入画布
         const { valid: nodes, invalidTypes } = partitionValidAiNodes(rawNodes)
@@ -421,6 +422,7 @@ export async function executeClientAction(
         if (!animate) {
           // 兼容老调用方式：一次性装入
           store.loadWorkflow({
+            browserEnvironmentVersion,
             nodes: xyNodes as any,
             edges: edges as any,
             name,
@@ -432,7 +434,7 @@ export async function executeClientAction(
 
         // === 可视化逐步搭建：让用户亲眼看着 AI 把节点一个个画出来 ===
         // 1) 先清空画布、设置工作流名
-        store.loadWorkflow({ nodes: [], edges: [], name, variables: Array.isArray(payload.variables) ? payload.variables : [] })
+        store.loadWorkflow({ browserEnvironmentVersion, nodes: [], edges: [], name, variables: Array.isArray(payload.variables) ? payload.variables : [] })
         useWorkflowStore.setState({ hasUnsavedChanges: true })
 
         // 2) 节点排序：先便签（zIndex=-1），再按 position 从左上到右下

@@ -439,7 +439,7 @@ class ProjectGraphExecutor:
         await emit('nodeAttempt', payload)
         if not success and self.capture_failure is not None:
             try:
-                page = self.browser.current_page()._raw if self.graph_adapter and self.browser is not None else self.legacy.page
+                page = getattr(current.browser.current_page(), '_raw', None) if self.graph_adapter and current.browser is not None else self.legacy.page
             except Exception:  # noqa: BLE001 -- absence of a page is valid failure evidence.
                 page = None
             await emit('artifact', await self.capture_failure(page, node_id, visit))

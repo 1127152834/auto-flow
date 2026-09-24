@@ -163,20 +163,21 @@ class WorkflowRunCoordinator:
                     raise WorkflowRunError('BROWSER_INITIALIZATION_DENIED', '节点没有冻结的浏览器配置', 409)
                 directory = self._workers.browser_directory(run_id)
                 directory.mkdir(parents=True, exist_ok=True)
-                request = {**frozen, 'userDataDir': str(directory / 'preview' / 'instances' / 'browser')}
-                lease = await self._node_browser_resources.acquire(request, run_id)
+                work_directory = directory / 'preview' / 'instances' / 'browser'
+                lease = await self._node_browser_resources.acquire(frozen, run_id, work_directory=work_directory)
                 # Pin the lease before any further await; worker exit is its only release.
                 self._node_browser_leases[run_id] = lease
                 current = self._runs.get(run_id)
                 if current.stop_requested or current.status not in {'starting', 'running'}:
                     raise WorkflowRunError('BROWSER_INITIALIZATION_DENIED', '运行已停止', 409)
                 if frozen.get('environmentRef'):
-                    self._node_environments.prepare_studio_copy(frozen, Path(request['userDataDir']))
+                    self._node_environments.prepare_studio_copy(frozen, work_directory)
                 value = {'browser': {**lease.browser, 'headless': bool(run.profile_snapshot.get('runOptions', {}).get('headless'))}, 'executablePath': str(lease.executable), 'cacheDirectory': str(directory)}
                 self._node_browser_initializations[run_id] = (visit, value)
                 reply.update(value)
         except Exception as error:  # noqa: BLE001 -- never expose provider credentials across the pipe error boundary.
-            reply['error'] = {'code': getattr(error, 'code', 'BROWSER_INITIALIZATION_FAILED'), 'message': '浏览器初始化未完成，请检查节点资源与运行状态'}
+            code = getattr(error, 'code', type(error).__name__)
+            reply['error'] = {'code': code, 'message': f'浏览器初始化未完成（{code}），请检查节点资源与运行状态'}
             if run_id in self._node_browser_leases and run_id not in self._node_browser_initializations:
                 self._node_browser_initializations[run_id] = (visit, {'error': reply['error']})
         await self._workers.send_command(run_id, reply)

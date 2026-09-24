@@ -1,6 +1,6 @@
 # 节点浏览器环境实施
 
-- 日期：2026-09-24；状态：in_progress，未整体交付。
+- 日期：2026-09-24；状态：implemented，完整发布验收未通过；以下逐片记录按时间保留，最新结论见末尾。
 - 来源：用户已批准 15088ecb 的书面规格并明确开始实施；分支 codex/node-browser-environments。
 - 计划：docs/superpowers/plans/2026-09-24-node-browser-environments.md；对应 .superpowers/sdd ledger 保存测试日志与步骤。
 - 切片 1 已接入：可空持久身份列及单一迁移 head；实例保存/恢复实际 Profile 快照、seed、内核；任务及维护恢复不再采用后来模板值。已有环境不应用项目默认代理；占用和内容/身份代次竞争受同一事务守卫。
@@ -42,3 +42,17 @@
 - 录制／拾取沿用真实 worker、资源授权和私有工作目录；固定环境复制冻结内容，启动重试复用原会话配置。自动化的新模式资源表单保留模型配置，浏览器由节点维护。
 - 验证：新增组件与模块/草稿保护 77 passed；旧入口协议适配后 116 passed；真实 inspection worker 两种模式 2 passed；HTTP/inspection 29 passed。typecheck、lint、build 通过。完整回归和隔离 Electron 正在执行，结果尚未声明通过。
 - CI 新增三平台节点初始化真实 worker 检查，内核版本与平台实际安装版本一致。未改 releaseAccepted，不合并发布。
+
+## 最终本地验收（2026-09-24，confirmed）
+
+- 前述“未完成”切片内容均由后续切片及本节取代，不再代表当前实现状态。代码完成节点资源入口、独立实例、实例设置、项目默认值和界面调整。
+- 真实隔离 Electron＋sidecar＋worker：项目默认模板通过界面保存回读，节点模板/代理/内核保存回读，UI Run completed，模板不被修改。截图、机器结果与范围见 docs/qa/node-browser-environments/2026-09-24/。
+- 全量前端 445 文件 / 5859 passed；scripts 108 passed；typecheck、lint、build、OpenAPI、Ruff 通过；45 个变更后端文件 scoped mypy 通过。
+- 完整后端按四组执行共 5213：初次 5083 passed / 3 failed / 127 skipped。两处预约测试仍提供旧的不完整资源快照，已改用真实 freeze，整个文件重跑 16 passed；剩余 OCR stop 耗时失败约 3.3 秒，干净 baseline 15088ecb 复验约 3.27 秒同样失败。未改变 3 秒断言。
+- 全仓库 mypy 65 项 Android 错误，在干净 15088ecb 也复现 65 项；这是既有 baseline 问题，未修改主目录 Android/Studio 工作。
+- 独立审查 2 项 P2 均修复并反例验证：失败截图使用当前 context.browser；AI 装载传递版本。桌面发现的 Studio/维护目录误用 Task 校验也已修复；项目任务权限校验未削弱。
+- 架构边界保留：跨内核实例迁移须兼容性证据，旧缺失身份不猜测恢复，子流程首次初始化未开放，禁用远程协作不扩展，模板原引用可用性仍检查。
+- 三平台 CI 将在候选分支验证；完整门禁预计仍受上述既有类型错误阻断。OAuth、签名、Windows/Intel 实机不由本轮源码验收替代，releaseAccepted=false。
+- 远端 codex/architecture-baseline 仍为 c6e02427，本地 baseline 已是 1bc6b24d；本分支继承已在本地完成的合并历史。只推送功能分支，不擅自推送或改写共享 baseline；草稿 PR 须注明本轮实现审查范围从 15088ecb 开始。
+
+- 最终真实浏览器链：节点初始化及持久登录态保存恢复 5 passed（17.58 秒），覆盖直接保存与 End 保存。

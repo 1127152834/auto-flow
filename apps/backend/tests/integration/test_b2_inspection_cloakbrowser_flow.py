@@ -363,8 +363,11 @@ async def test_real_inspection_worker_owns_profile_and_cleans_process_tree(
     fixture = Path(__file__).parents[1] / "fixtures" / "workflow-page.html"
 
     if node_mode:
-        from autoflow.application.workflows.browser_resources import WorkflowBrowserResources
         from contextlib import nullcontext
+
+        from autoflow.application.workflows.browser_resources import (
+            WorkflowBrowserResources,
+        )
         browser = WorkflowBrowserResources(Profiles(), service._installed, service._resolve_proxy, lambda: None, Usage(), lambda _: nullcontext())
         service.configure_node_browser_environments(browser, None)
         opened = await service.open(profile_id=None, url=fixture.as_uri(), browser_environment={'source':'newFromProfile','profileId':profile.id,'proxy':{'mode':'none'},'kernel':{'edition':'public','version':profile.spec.browser_version}})
