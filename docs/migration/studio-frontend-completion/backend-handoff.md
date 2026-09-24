@@ -242,3 +242,7 @@ Studio 的 Profile／模型沿用项目 `defaultResources`，允许任务显式�
 命令继续复用项目持久回执和run/generation/request作用范围，无新管理API、OpenAPI变更或迁移。Webhook等待不是Renderer对话框，不在input/js请求列表暴露配置。标准认证头沿用原过滤；普通用户请求数据仍是节点结果。默认 `webhook_data`、参数前缀、参数自动写入及覆盖行为由原版执行器负责。子流程命令与事件沿真实执行上下文关联。
 
 [证据及未通过门槛](../studio-backend-migration/evidence/project-integration/webhook-2026-09-24/README.md)。真实项目TCP/SSE/SQLite/worker、原Studio回归和源码差分通过；原生正式项目UI因本机锁定仍未完成。没有将Mock、包内worker或现有独立Studio UI证据替代正式项目入口。本轮遵循已确认的项目默认资源＋显式覆盖，无白名单。
+
+## 2026-09-24 全节点验收增量
+
+[213节点本轮核销与原生验收证据](../studio-backend-migration/evidence/b6/native-acceptance-2026-09-24/README.md)：节点族1,462项回归通过，映射/范围77项及注册12项通过；正式macOS arm64包新增热键、鼠标、图像的保存/正常关窗重开/超时/停止证据。204节点已有验收、9节点仍缺完整原生正向链路，详见原capabilities.json各节点gap；没有把源码探针、工具事件或平台拒绝当作实机成功。Windows设备、实体输入及摄像头目标仍需环境配合。

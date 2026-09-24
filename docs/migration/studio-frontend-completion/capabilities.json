@@ -7787,7 +7787,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "生产执行器已注册且有模块族证据；本节点正式 Electron 实际执行仍待验收，未测平台按证据单列。",
+      "gap": "原版Windows关机行为的正式实机验证待隔离Windows环境；本Mac不执行关机，也不以不支持错误替代成功。",
       "risk": "平台或第三方依赖需逐项探测；秘密、路径、取消、超时和部分失败不能按原全局状态直接复制。",
       "acceptanceCases": [
         {
@@ -7824,7 +7824,7 @@
           ],
           "operation": "经Studio真实UI添加和配置 shutdown_system，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：关机/重启模块执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6-system-control.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/native-acceptance-2026-09-24/result.json"
         }
       ],
       "evidenceConfidence": "高：入口、注册、配置读取及子图解析均已完成冻结源差分和真实worker验证；正式Electron仍待集中验收。",
@@ -7937,7 +7937,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "生产执行器已注册且有模块族证据；本节点正式 Electron 实际执行仍待验收，未测平台按证据单列。",
+      "gap": "原版Windows锁屏行为的正式实机验证待隔离Windows环境；本Mac不执行锁屏，也不以不支持错误替代成功。",
       "risk": "平台或第三方依赖需逐项探测；秘密、路径、取消、超时和部分失败不能按原全局状态直接复制。",
       "acceptanceCases": [
         {
@@ -7974,7 +7974,7 @@
           ],
           "operation": "经Studio真实UI添加和配置 lock_screen，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：锁定屏幕模块执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6-system-control.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/native-acceptance-2026-09-24/result.json"
         }
       ],
       "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
@@ -12299,7 +12299,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "生产执行器已注册且有模块族证据；本节点正式 Electron 实际执行仍待验收，未测平台按证据单列。",
+      "gap": "正式包保存/原生正常关窗重开/2秒超时/UI停止通过；正向等待90秒超时。独立可信pynput监听器对本次CUA应用定向输入记录0事件，不能据此断定实体键盘故障；待实体组合键触发。",
       "risk": "长期监听必须服从工作区停写、重连和退出；服务崩溃后不得重放一次性动作。",
       "acceptanceCases": [
         {
@@ -12336,7 +12336,7 @@
           ],
           "operation": "经Studio真实UI添加和配置 hotkey_trigger，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：热键触发器执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6-input-trigger-family.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/native-acceptance-2026-09-24/result.json"
         }
       ],
       "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
@@ -13489,7 +13489,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "生产执行器已注册且有模块族证据；本节点正式 Electron 实际执行仍待验收，未测平台按证据单列。",
+      "gap": "正式包保存/原生正常关窗重开/2秒超时/UI停止通过，已确认所捕获worker PID退出。正向左键等待90秒超时；独立可信监听器未收到CUA事件，实体点击、滚轮、移动及手势仍待验收。",
       "risk": "长期监听必须服从工作区停写、重连和退出；服务崩溃后不得重放一次性动作。",
       "acceptanceCases": [
         {
@@ -13526,7 +13526,7 @@
           ],
           "operation": "经Studio真实UI添加和配置 mouse_trigger，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：鼠标触发器执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6-input-trigger-family.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/native-acceptance-2026-09-24/result.json"
         }
       ],
       "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
@@ -13779,7 +13779,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "生产执行器已注册且有模块族证据；本节点正式 Electron 实际执行仍待验收，未测平台按证据单列。",
+      "gap": "真实生产执行器通过Pillow屏幕采集/OpenCV匹配命中静态PNG，置信度0.9825196862220764且image_event变量正确。正式包保存/关窗重开/2秒超时/UI停止通过；正式包正向目标显示前置条件未成立，四次超时保留；区域、多显示器及成功E2E仍待验收。",
       "risk": "长期监听必须服从工作区停写、重连和退出；服务崩溃后不得重放一次性动作。",
       "acceptanceCases": [
         {
@@ -13816,7 +13816,7 @@
           ],
           "operation": "经Studio真实UI添加和配置 image_trigger，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：图像触发器执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6-image-trigger.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/native-acceptance-2026-09-24/result.json"
         }
       ],
       "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
@@ -14006,7 +14006,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "生产执行器已注册且有模块族证据；本节点正式 Electron 实际执行仍待验收，未测平台按证据单列。",
+      "gap": "原版pycaw系统扬声器输出峰值监听需要Windows真实音频环境；不是麦克风触发；当前Mac不具备此验收环境。",
       "risk": "长期监听必须服从工作区停写、重连和退出；服务崩溃后不得重放一次性动作。",
       "acceptanceCases": [
         {
@@ -14043,7 +14043,7 @@
           ],
           "operation": "经Studio真实UI添加和配置 sound_trigger，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：声音触发器执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6-sound-trigger.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/native-acceptance-2026-09-24/result.json"
         }
       ],
       "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
@@ -14275,7 +14275,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "生产执行器已注册且有模块族证据；本节点正式 Electron 实际执行仍待验收，未测平台按证据单列。",
+      "gap": "真实摄像头匹配仍需授权目标照片、镜头前目标及正式包摄像头权限；当前仅发现摄像头设备，不代表完成采集。",
       "risk": "长期监听必须服从工作区停写、重连和退出；服务崩溃后不得重放一次性动作。",
       "acceptanceCases": [
         {
@@ -14312,7 +14312,7 @@
           ],
           "operation": "经Studio真实UI添加和配置 face_trigger，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：人脸触发器执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6-face-trigger.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/native-acceptance-2026-09-24/result.json"
         }
       ],
       "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
@@ -14581,7 +14581,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "生产执行器已注册且有模块族证据；本节点正式 Electron 实际执行仍待验收，未测平台按证据单列。",
+      "gap": "真实摄像头手势识别仍需指定手势目标及正式包摄像头权限；模型/算法用例通过不替代实机手势。",
       "risk": "长期监听必须服从工作区停写、重连和退出；服务崩溃后不得重放一次性动作。",
       "acceptanceCases": [
         {
@@ -14618,7 +14618,7 @@
           ],
           "operation": "经Studio真实UI添加和配置 gesture_trigger，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：手势触发器执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6-gesture-trigger.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/native-acceptance-2026-09-24/result.json"
         }
       ],
       "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",
@@ -46700,7 +46700,7 @@
         "docs/migration/studio-frontend-completion/required-field-service-contract.md",
         "docs/migration/studio-frontend-completion/log-identity-contract.md"
       ],
-      "gap": "生产执行器已注册且有模块族证据；本节点正式 Electron 实际执行仍待验收，未测平台按证据单列。",
+      "gap": "原版Windows pywin32 DEVMODE/ShellExecute打印需Windows及打印设备；当前未具备。",
       "risk": "平台或第三方依赖需逐项探测；秘密、路径、取消、超时和部分失败不能按原全局状态直接复制。",
       "acceptanceCases": [
         {
@@ -46737,7 +46737,7 @@
           ],
           "operation": "经Studio真实UI添加和配置 printer_call，保存、关闭重开、运行或触发，再检查真实结果和清理",
           "expected": "Studio显示与真实副作用一致，日志可定位到本节点；停止/失败/退出后无遗留资源。业务目标：打印机调用模块执行器",
-          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6-printer-call.json"
+          "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/native-acceptance-2026-09-24/result.json"
         }
       ],
       "evidenceConfidence": "高：入口、注册方式和配置读取来自冻结源码AST；运行时行为仍须真实差分验收。",

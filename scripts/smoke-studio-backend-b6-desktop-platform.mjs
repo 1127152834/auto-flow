@@ -9,6 +9,9 @@ import { connectCdp, launchElectron, wait, waitFor } from './electron-cdp.mjs'
 import { stop } from './smoke-sidecar.mjs'
 
 const root = resolve(import.meta.dirname, '..')
+const nativeTrigger = process.env.AUTOFLOW_NATIVE_TRIGGER
+const nativeNegativeOnly = process.env.AUTOFLOW_NATIVE_NEGATIVE_ONLY === '1'
+class NativeComplete extends Error {}
 const sourceKernel = process.env.AUTOFLOW_B1_KERNEL_DIR
   ?? '/Users/zhangtiancheng/Library/Application Support/@autoflow/desktop/data/kernels/chromium-145.0.7632.109.2'
 const kernelVersion = basename(sourceKernel).replace(/^chromium-/, '')
@@ -46,6 +49,8 @@ try {
   await waitFor(studio, "document.body?.innerText.includes('模块库') && document.body.innerText.includes('213')", 'formal Studio', 30_000)
   await waitFor(studio, `document.querySelector('[aria-label="运行浏览器配置"]')?.value === ${JSON.stringify(profile.id)}`, 'managed Profile selection')
   checkpoint('主窗口真实点击打开正式 Studio；动作库为 213，运行配置来自主应用 Profile')
+
+  if (nativeTrigger) { await verifyNativeTrigger(runtime); throw new NativeComplete() }
 
   await click(studio, '新建')
   await setInput(studio, 'input[placeholder="工作流名称"]', workflowName)
@@ -134,9 +139,11 @@ try {
   await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
   console.log(JSON.stringify({ evidenceDir, ...report }, null, 2))
 } catch (error) {
-  if (studio) await capture(studio, join(evidenceDir, 'failure.png')).catch(() => undefined)
-  await writeFile(join(evidenceDir, 'failure.json'), JSON.stringify({ checkedAt: new Date().toISOString(), checks, error: error instanceof Error ? error.stack : String(error) }, null, 2) + '\n')
-  throw error
+  if (!(error instanceof NativeComplete)) {
+    if (studio) await capture(studio, join(evidenceDir, 'failure.png')).catch(() => undefined)
+    await writeFile(join(evidenceDir, 'failure.json'), JSON.stringify({ checkedAt: new Date().toISOString(), checks, error: error instanceof Error ? error.stack : String(error) }, null, 2) + '\n')
+    throw error
+  }
 } finally {
   studio?.close(); main?.close(); await stop(desktop?.child)
   await rm(userData, { recursive: true, force: true })
@@ -248,4 +255,117 @@ async function buildHash() {
   const hash = createHash('sha256')
   for (const file of (await readdir(join(root, 'apps/desktop/out'), { recursive: true })).filter(file => /\.(js|css|html)$/.test(file)).sort()) hash.update(file).update(await readFile(join(root, 'apps/desktop/out', file)))
   return hash.digest('hex')
+}
+
+
+// Existing UI harness. Global input needs hardware events; app-targeted UI events may bypass OS listeners.
+async function verifyNativeTrigger(runtime) {
+  const labels = { hotkey_trigger: '热键触发器', mouse_trigger: '鼠标触发器', image_trigger: '图像触发器' }
+  assert.ok(labels[nativeTrigger], 'Only non-destructive input triggers are accepted here')
+  const name = `原生验收 ${labels[nativeTrigger]}`
+  const imagePath = join(evidenceDir, 'visible-target.png')
+  const absentPath = join(evidenceDir, 'absent-target.png')
+  if (nativeTrigger === 'image_trigger') {
+    execFileSync(join(root, 'apps/backend/.venv/bin/python'), ['-c', `from PIL import Image
+import random,sys
+for index,path in enumerate(sys.argv[1:]):
+ rng=random.Random(20260924+index)
+ image=Image.new('RGB',(48,48)); image.putdata([(rng.randrange(256),)*3 for _ in range(48*48)])
+ image.resize((192,192),Image.Resampling.NEAREST).save(path)
+`, imagePath, absentPath])
+  }
+  const handoff = async phase => {
+    await writeFile('/tmp/autoflow-native-node-acceptance.json', JSON.stringify({ phase, node: nativeTrigger, pid: desktop.child.pid, executable: desktop.child.spawnfile, evidenceDir }))
+    checkpoint(phase)
+  }
+  await click(studio, '新建')
+  await setInput(studio, 'input[placeholder="工作流名称"]', name)
+  const nodeId = await addNode(studio, 0, labels[nativeTrigger], nativeTrigger)
+  if (nativeTrigger === 'hotkey_trigger') await setInput(studio, '[placeholder="如: ctrl+shift+f1"]', 'ctrl+alt+k')
+  if (nativeTrigger === 'image_trigger') await setInput(studio, '[placeholder="输入图片路径或从资源选择"]', imagePath)
+  await setInput(studio, '#timeout', '90')
+  const tailId = await addNode(studio, 1, '打印日志', 'print_log')
+  await setInput(studio, '[placeholder="要打印的日志信息"]', `${nativeTrigger}:native-triggered`)
+  await connectNodes(studio, nodeId, tailId)
+  await click(studio, '保存')
+  await waitFor(studio, `document.body.innerText.includes(${JSON.stringify('工作流已保存: ' + name)})`, 'native workflow saved')
+  const saved = (await api(runtime, '/workflows')).find(item => item.name === name)
+  assert.deepEqual(saved.nodes.map(node => node.data.moduleType), [nativeTrigger, 'print_log'])
+  assert.equal(saved.edges.length, 1)
+  checkpoint('真实 UI 配置与保存，节点和连线已写入 SQLite')
+  await handoff('saved-close-studio-through-native-ui')
+  await waitForValue(async () => !(await (await fetch(`${desktop.debugOrigin}/json/list`)).json()).some(item => item.type === 'page' && item.url.includes('studio.html')), 'normal native Studio close', 120_000)
+  studio.close()
+  await wait(800) // Let the native close click finish before creating a new window.
+  studio = await openStudioFromMain(main, desktop.debugOrigin)
+  await studio.command('Emulation.setDeviceMetricsOverride', { width: 2560, height: 1600, deviceScaleFactor: 1, mobile: false })
+  await waitFor(studio, "document.body.innerText.includes('模块库')", 'reopened Studio')
+  await waitFor(studio, `document.querySelector('[aria-label="运行浏览器配置"]')?.value`, 'reopened runtime connected')
+  await wait(500) // Renderer layout settles after the native window is recreated.
+  await click(studio, '打开')
+  await click(studio, `打开工作流 ${name}`, '[role="button"]')
+  await waitFor(studio, "document.querySelectorAll('.react-flow__node').length===2", 'saved graph restored')
+  assert.deepEqual((await api(runtime, `/workflows/${saved.id}`)).nodes, saved.nodes)
+  checkpoint('原生正常关窗后通过主窗口重开，保存的节点与配置完整恢复')
+  const runs = []
+  async function start() {
+    const previous = new Set((await api(runtime, `/workflow-runs?documentId=${saved.id}&limit=50`)).items.map(run => run.runId))
+    await click(studio, '运行 (F5)', '[aria-label="运行 (F5)"]')
+    await click(studio, '运行 (F5)', '[role="menuitem"]')
+    return waitForValue(async () => (await api(runtime, `/workflow-runs?documentId=${saved.id}&limit=50`)).items.find(run => !previous.has(run.runId)), 'new native run', 20_000)
+  }
+  async function terminal(run, status) {
+    const result = await waitForValue(async () => {
+      const value = await api(runtime, `/workflow-runs/${run.runId}`)
+      return ['completed', 'failed', 'stopped', 'interrupted'].includes(value.status) ? value : null
+    }, 'native terminal', 115_000)
+    const logs = await api(runtime, `/workflow-runs/${run.runId}/logs?limit=100`)
+    assert.equal(result.status, status, JSON.stringify({ result, logs }))
+    const results = await api(runtime, `/workflow-runs/${run.runId}/results?limit=100`)
+    runs.push({ runId: run.runId, status, logs: logs.items, results: results.items })
+    return logs.items
+  }
+  if (!nativeNegativeOnly) {
+    const first = await start()
+    await handoff('running-await-native-event')
+    const logs = await terminal(first, 'completed')
+    assert.ok(logs.some(row => row.nodeId === tailId && row.message === `${nativeTrigger}:native-triggered`))
+    if (['mouse_trigger', 'image_trigger'].includes(nativeTrigger)) {
+      assert.ok(runs[0].results.some(row => row.nodeId === nodeId && Number.isFinite(row.values?.x) && Number.isFinite(row.values?.y)))
+    }
+    await capture(studio, join(evidenceDir, 'native-success.png'))
+  }
+  // All input-trigger failure/cleanup paths use the same saved node; no Store injection.
+  await selectNode(studio, nodeId, nativeTrigger)
+  if (nativeTrigger === 'image_trigger') await setInput(studio, '[placeholder="输入图片路径或从资源选择"]', absentPath)
+  await setInput(studio, '#timeout', '2')
+  await click(studio, '保存')
+  const timeout = await start()
+  await handoff('timeout-do-not-send-input')
+  const timeoutLogs = await terminal(timeout, 'failed')
+  assert.ok(timeoutLogs.some(row => row.message.includes('超时')))
+  assert.ok(!timeoutLogs.some(row => row.nodeId === tailId))
+  checkpoint('实际节点超时失败，后继节点未执行')
+  await selectNode(studio, nodeId, nativeTrigger)
+  await setInput(studio, '#timeout', '0')
+  await click(studio, '保存')
+  const cancel = await start()
+  const workerPids = await waitForValue(async () => {
+    const rows = execFileSync('ps', ['-axo', 'pid=,ppid=,command='], { encoding: 'utf8' }).split('\n').map(line => line.trim().match(/^(\d+)\s+(\d+)\s+(.+)$/)).filter(Boolean)
+    const owned = new Set([desktop.child.pid])
+    for (let previous = -1; previous !== owned.size;) { previous = owned.size; for (const row of rows) if (owned.has(Number(row[2]))) owned.add(Number(row[1])) }
+    const workers = rows.filter(row => owned.has(Number(row[1])) && row[3].includes('--workflow-worker')).map(row => Number(row[1]))
+    return workers.length ? workers : null
+  }, 'owned workflow worker before cancellation', 15_000)
+  await waitFor(studio, "document.body.innerText.includes('停止')", 'stop control visible')
+  await click(studio, '停止')
+  const stoppedLogs = await terminal(cancel, 'stopped')
+  assert.ok(!stoppedLogs.some(row => row.nodeId === tailId))
+  await waitForValue(async () => workerPids.every(pid => { try { process.kill(pid, 0); return false } catch (error) { if (error.code === 'ESRCH') return true; throw error } }), 'owned worker exited after stop', 10_000)
+  checkpoint('真实 UI 停止后进入 stopped，后继未执行，已捕获的 worker 进程全部退出')
+  assert.deepEqual(cloakProcesses(userData), [])
+  const report = { evidenceId: `BE-${nativeTrigger}-formal-native`, result: nativeNegativeOnly ? 'partial-negative-paths-only' : 'passed', checkedAt: new Date().toISOString(), platform: `${process.platform}-${process.arch}`, entry: desktop.packaged ? 'packaged-directory' : 'development-build', nodeId, workflowId: saved.id, workerPids, checks, runs, boundaries: { positiveTriggerVerified: !nativeNegativeOnly, realNativeInput: !nativeNegativeOnly && nativeTrigger !== 'image_trigger', realScreenCapture: nativeTrigger === 'image_trigger', runtimeMock: false, userDatabaseTouched: false, windowsTested: false } }
+  await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2)+'\n')
+  console.log(JSON.stringify({ evidenceDir, ...report }, null, 2))
+  await handoff('completed')
 }
