@@ -1,22 +1,22 @@
 {
   "date": "2026-09-24",
-  "status": "review_fixes_passed_full_regression_and_final_package_pending",
+  "status": "local_full_and_reviewed_packaged_passed_native_in_progress",
   "releaseAccepted": false,
   "confidence": "high",
   "baseline": "8e5564e0f5624afd429171de53b5b1039199513a",
   "branch": "codex/project-management-pm9-runtime",
   "remaining": [
-    "Confirmed persistent identity defect from cb040daf ARM package remains: identity implementation unchanged in a7059dc6; fixed/input restore login but use edited Profile UA/locale/timezone/seed. I1-I3 await approval. Maintenance source-confirmed only; see persistent-identity-audit.json.",
+    "Confirmed persistent identity defect from cb040daf ARM package remains: identity implementation unchanged in ee2524af; fixed/input restore login but use edited Profile UA/locale/timezone/seed. I1-I3 await approval. Maintenance source-confirmed only; see persistent-identity-audit.json.",
     "DATA-E2E-01/CLAIM-12 source Excel progression/reuse and DATA-CLAIM-14 unlimited5success+public-stop now passed in local scope; packaged/native picker, unlimited warning/counts/stop UI and current three-platform evidence remain pending.",
     "DATA-E2E-03/WRITE-05/08/09 source real-worker version progress, manual field/status conflict and subsequent browser-failure retention passed in local scope; packaged UI/current three-platform and Sheets outbox combined acceptance remain pending.",
     "DATA-CLAIM-03 local real child fail→same record recovery verified in scope; packaged startup-failure UI, Windows/Intel new candidate and systemic-resource blocked-vs-exhausted combination remain pending.",
     "XE-C06/XE-G02: POSIX real-worker controlled ownership-proof failure/recovery now passes; Windows Job proof-unavailable public batch and packaged UI reconciliation/timing remain unverified.",
-    "Current End recovery production fixes require final full local regression/post-review ARM package and new three-platform workflow; CLI Actions read access restored on2026-09-24. Historical35902129697 does not cover them.",
+    "Current production ee2524af full local backend/frontend and reviewed ARM package pass; all-platform push35935288512@d19d120e in_progress. CLI dispatch401 persists, public reads do not establish auth recovery; historical CI cannot substitute this candidate.",
     "Implementation proposals awaiting approval: G1-G3 finite-group atomic writes; L1-L3 verified-principal reauthorization/sender isolation; M1-M3 remote Sheets rows/formulas; S4 Windows existing-file overwrite/append (still501); FR1-FR3 new-field result authorization; AD1-AD3 persistent Run file deletion; W1-W3 including W1c project Studio session/docking/binding destination; separate AU-08 project-owned workflow ownership; P1-P3 frozen proxy membership/endpoints. See implementationGaps and completion-gaps.md for contracts and evidence.",
     "251 requirements remain212 partially_verified/39 planned/0 verified. DATA-LIFE-01 and DATA-SH-03 have no located assertion. Overlapping unique gaps remain241 production/19 implementation/8 tests/24 external; scoped checks do not satisfy complete exit conditions.",
     "C1-C4, R1/R2/R5/R3/R4 and approved D1 are implemented with scoped tests. Public peer unbind/rebind/outage and opposing-write scenarios use controlled Google transport; current packaged live-Google full business chains remain pending.",
     "Historical PM6 service-account Sheets/system-credential real-network evidence remains valid. Current PM9 packaged Sheets/system UUID/remote-column/OAuth acceptance requires current authorized resources; do not reinterpret historical evidence as absent.",
-    "Current a7059dc6 ARM app is unsigned. Historical c16532d7 ARM DMG isolated install and Intel image verification remain scoped; Finder/Gatekeeper, Windows/Intel physical installation, signing/notarization/full native acceptance remain external.",
+    "Current ee2524af ARM app is unsigned. Historical c16532d7 ARM DMG isolated install and Intel image verification remain scoped; Finder/Gatekeeper, Windows/Intel physical installation, signing/notarization/full native acceptance remain external.",
     "No merge or release is authorized. Do not add cross-process manual recovery or all Studio nodes. releaseAccepted=false."
   ],
   "pullRequest": "https://github.com/1127152834/auto-flow/pull/1",
@@ -33,7 +33,7 @@
     "latestReport": "runtime-capabilities-follow-through.json",
     "remainingDataSpec": "docs/superpowers/specs/2026-09-21-pm9-remaining-data-capabilities.md"
   },
-  "codeCandidate": "a7059dc6bfa19fb80c8fe9de5f173eacb3dce3bc",
+  "codeCandidate": "ee2524af36657a09719995dfe20b86da90c410df",
   "checks": {
     "currentLocal": "startup-failure-follow-through.json",
     "priorFixes": "follow-through.json",
@@ -181,7 +181,7 @@
     "status": "Historical C/R/D1 candidate passed its matrix; current production source and selected real-worker scenarios passed three-platform finalCICandidate. Full release gates remain open."
   },
   "sharedDataFollowThrough": "shared-data-follow-through.json",
-  "workingCandidate": "Uncommitted End recovery slice from abd8afaf; final local full regression/post-review ARM package pending.",
+  "workingCandidate": "ee2524af production: local full backend3506/90skip/2warnings, frontend5481/409 and rebuilt unsigned ARM desktop26screens passed. Native CI35935288512@d19d120e in_progress.",
   "finalCICandidate": {
     "codeCandidate": "c16532d79fe8db87a8f9b371d9045a02fb89e362",
     "productionSourceCommit": "c16532d79fe8db87a8f9b371d9045a02fb89e362",
@@ -553,7 +553,7 @@
   ],
   "automationDeletionFollowThrough": "automation-deletion-follow-through.json",
   "currentCandidateValidation": {
-    "status": "review_fixes_passed_full_regression_and_final_package_pending",
+    "status": "local_full_and_reviewed_packaged_passed_native_in_progress",
     "testedBaseCommit": "abd8afafa568d1029b7ef0a9de37ec3fa8ba5a78",
     "report": "end-link-repair-follow-through.json",
     "productionChanged": true,
@@ -562,12 +562,18 @@
       "backendContract": "25 passed, 2 warnings in 7.67s",
       "frontendRelated": "14 passed in 2 files; review-fixes-final.log",
       "typesLint": "passed; typecheck-final.log and lint-final.log",
-      "fullBackend": "running; backend-full-final.log",
-      "fullFrontend": "pending",
+      "fullBackend": "3506 passed,90 skipped,2 dependency deprecation warnings in741.38s; skipped is not acceptance",
+      "fullFrontend": "5481 passed,409 files in180.77s",
       "review": "Independent read-only review found 2 P2; both reproduced RED and fixed. Focused re-review found no new P1/P2; separate page fixture was corrected for the new GET.",
-      "initialPackagedDesktop": "passed 26 screenshots, but precedes final two review fixes; final package rerun pending",
-      "nativeCI": "GitHub CLI Actions access restored; new candidate matrix not yet dispatched"
-    }
+      "initialPackagedDesktop": "Passed26screens before review fixes; final post-review proof is separate",
+      "nativeCI": "Push35935288512@d19d120e in_progress; same-head draft PR35935293541 skipped, no duplicate matrix. API dispatch401 persisted; public reads were never proof of auth recovery.",
+      "scripts": "103 passed; original YAML parsed and seven draft/ready/fork/push/dispatch/probe cases exercised",
+      "mypy": "default and win32:408 source files passed",
+      "finalPackagedDesktop": "Post-review frontend explicitly rebuilt/packaged; complete production desktop smoke passed,26 valid PNG screenshots; End repair and reloaded result visually inspected",
+      "mapping": "4 reference-validator tests passed;251 references valid, not complete acceptance",
+      "build": "PyInstaller backend, frontend electron-vite build, unsigned ARM package:dir passed; actual packaged frontend markers and backend hash verified"
+    },
+    "source": "ee2524af36657a09719995dfe20b86da90c410df"
   },
   "standaloneStudioFollowThrough": "standalone-studio-follow-through.json",
   "previousCandidateValidation": {
@@ -587,13 +593,18 @@
   "subflowPackagedFollowThrough": "subflow-packaged-follow-through.json",
   "resourceFreezeFollowThrough": "resource-freeze-follow-through.json",
   "currentCICandidate": {
-    "productionSource": "51e8991e198f782030b678e8decce9a424decaf5",
-    "testAndHarnessCandidate": "a317e1f87c9b775940a8faa45713c884007ce6ad",
-    "runId": "35902129697",
-    "url": "https://github.com/1127152834/auto-flow/actions/runs/35902129697",
-    "status": "all_three_jobs_success_artifacts_not_reinspected",
-    "report": "source-outage-follow-through.json",
-    "scope": "Historical source51e8991e only; excludes1c676965 andcb040daf. Public API confirms Windows/Intel/ARM job success; completed log download403. No new artifact inspection."
+    "runId": 35935288512,
+    "headSha": "d19d120e6f18f941a3719333c58c2de34903a850",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35935288512",
+    "status": "in_progress",
+    "event": "push",
+    "duplicateDraftPR": {
+      "runId": 35935293541,
+      "conclusion": "skipped"
+    },
+    "scope": "Current three-platform checks unchanged; only same-repository draft PR duplicate skipped. Ready and fork PR checks remain.",
+    "productionSource": "ee2524af36657a09719995dfe20b86da90c410df",
+    "report": "end-link-repair-follow-through.json"
   },
   "parallelPackagedFollowThrough": "parallel-packaged-follow-through.json",
   "sourceOutageFollowThrough": {

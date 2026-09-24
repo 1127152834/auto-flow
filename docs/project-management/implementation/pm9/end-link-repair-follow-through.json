@@ -1,6 +1,6 @@
 {
   "date": "2026-09-24",
-  "status": "review_fixes_passed_full_regression_and_final_package_pending",
+  "status": "local_full_and_reviewed_packaged_passed_native_in_progress",
   "releaseAccepted": false,
   "testedBaseCommit": "abd8afafa568d1029b7ef0a9de37ec3fa8ba5a78",
   "productionChanged": true,
@@ -21,11 +21,16 @@
     "backendContract": "25 passed, 2 warnings in 7.67s",
     "frontendRelated": "14 passed in 2 files; review-fixes-final.log",
     "typesLint": "passed; typecheck-final.log and lint-final.log",
-    "fullBackend": "running; backend-full-final.log",
-    "fullFrontend": "pending",
+    "fullBackend": "3506 passed,90 skipped,2 dependency deprecation warnings in741.38s; skipped is not acceptance",
+    "fullFrontend": "5481 passed,409 files in180.77s",
     "review": "Independent read-only review found 2 P2; both reproduced RED and fixed. Focused re-review found no new P1/P2; separate page fixture was corrected for the new GET.",
-    "initialPackagedDesktop": "passed 26 screenshots, but precedes final two review fixes; final package rerun pending",
-    "nativeCI": "GitHub CLI Actions access restored; new candidate matrix not yet dispatched"
+    "initialPackagedDesktop": "Passed26screens but precedes final two review fixes; retained as pre-review evidence, final result is separate",
+    "nativeCI": "Push35935288512@d19d120e in_progress; same-head draft PR35935293541 skipped, no duplicate matrix. API dispatch401 persisted; public reads were never proof of auth recovery.",
+    "scripts": "103 passed; original YAML parsed and seven draft/ready/fork/push/dispatch/probe cases exercised",
+    "mypy": "default and win32:408 source files passed",
+    "finalPackagedDesktop": "Post-review frontend explicitly rebuilt/packaged; complete production desktop smoke passed,26 valid PNG screenshots; End repair and reloaded result visually inspected",
+    "mapping": "4 reference-validator tests passed;251 references valid, not complete acceptance",
+    "build": "PyInstaller backend, frontend electron-vite build, unsigned ARM package:dir passed; actual packaged frontend markers and backend hash verified"
   },
   "preReviewPackagedObservations": {
     "status": "passed",
@@ -212,7 +217,7 @@
     "desktop/project-desktop.json failed with stale bundled frontend because package:dir does not compile it. Explicit build before packaging plus actual asar inspection fixed the build sequence; original evidence retained."
   ],
   "remaining": [
-    "Final full source regression, final post-review rebuilt ARM package and new three-platform workflow results pending.",
+    "Current three-platform run35935288512@d19d120e remains in_progress; local full checks and final rebuilt ARM package passed. No claim of current Windows/Intel completion.",
     "End save-failure/unknown-response recovery and repair refresh between successive multi-target conflicts require separate production evidence; current group-version proof is component-level.",
     "Current package uses local data with unchanged Profile. Persistent identity I1-I3 remains an implementation gap; no native signing/physical install or current live-Google acceptance claim.",
     "All unrelated PM9 gaps remain; releaseAccepted=false."
@@ -220,6 +225,362 @@
   "artifacts": {
     "root": ".tmp-tests/pm9-end-link-repair-2026-09-24",
     "preReviewDesktop": "desktop-final/project-desktop.json",
-    "preReviewPackage": "package-final-inspection.json"
-  }
+    "preReviewPackage": "package-final-inspection.json",
+    "finalDesktop": "desktop-reviewed/project-desktop.json",
+    "finalPackage": "package-review-inspection.json",
+    "screenshots": [
+      {
+        "file": ".tmp-tests/pm9-end-link-repair-2026-09-24/desktop-reviewed/project-automation-delete-busy.png",
+        "sha256": "3c72d6e90f9ca1c309b2e141e5b73f6cb292a8545c974b191372e5b17114d893"
+      },
+      {
+        "file": ".tmp-tests/pm9-end-link-repair-2026-09-24/desktop-reviewed/project-automation-delete-ready.png",
+        "sha256": "72352824e5169db32fce750a53b31216edbb4c254724e9f8c4deec3c8e180037"
+      },
+      {
+        "file": ".tmp-tests/pm9-end-link-repair-2026-09-24/desktop-reviewed/project-automation-delete-stale.png",
+        "sha256": "4c8a89597e3c8b7c9e8c9836196850fb57ba15be542f537702edf873bdb9a19f"
+      },
+      {
+        "file": ".tmp-tests/pm9-end-link-repair-2026-09-24/desktop-reviewed/project-automation-unlinked.png",
+        "sha256": "c5660b2b3c916832a27e880572c61954747d66f7365f096999480cbc2ce12f86"
+      },
+      {
+        "file": ".tmp-tests/pm9-end-link-repair-2026-09-24/desktop-reviewed/project-end-repair-reloaded.png",
+        "sha256": "e737d5a4fa9f0433396641c0b9d59c0e4170bb0962c77ee849f04886f4d5f4fe"
+      },
+      {
+        "file": ".tmp-tests/pm9-end-link-repair-2026-09-24/desktop-reviewed/project-end-saved-unlinked.png",
+        "sha256": "b68f600c1d279efaa3b3913748ac50342b35bf821e48561cc5535bbc67ca1a3d"
+      },
+      {
+        "file": ".tmp-tests/pm9-end-link-repair-2026-09-24/desktop-reviewed/project-manual-declared-input.png",
+        "sha256": "3707be169ed77bc8a049dff90e373c1e39c9e045fea2752ea8951c1ebdda1834"
+      },
+      {
+        "file": ".tmp-tests/pm9-end-link-repair-2026-09-24/desktop-reviewed/project-project-delete-unlinked.png",
+        "sha256": "cd2f644b71c1c7a692b61ce1a4faa9b2352577f53faceb4a48e46a2d9bcf745b"
+      },
+      {
+        "file": ".tmp-tests/pm9-end-link-repair-2026-09-24/desktop-reviewed/project-restarted.png",
+        "sha256": "67fabd313d2575f3c3ebae61f9c657bb3a7f5531adf8f2a8d2b1a8920b75e903"
+      },
+      {
+        "file": ".tmp-tests/pm9-end-link-repair-2026-09-24/desktop-reviewed/project-session-not-saved.png",
+        "sha256": "ab13e562f4fbf3e43f066137628cc7f99e87ae695bbf84d2ba8e89b87ac002fc"
+      },
+      {
+        "file": ".tmp-tests/pm9-end-link-repair-2026-09-24/desktop-reviewed/project-studio-capability-refused.png",
+        "sha256": "7d208edf45e53b972c94de45ae1ed215f3506fcf03442a8840948ef9dd2922de"
+      },
+      {
+        "file": ".tmp-tests/pm9-end-link-repair-2026-09-24/desktop-reviewed/project-studio-close-dirty.png",
+        "sha256": "d5888f0affa4191b6afc9102d66447630ba95bb0a7f1db749f8c97cfd8cbc42d"
+      },
+      {
+        "file": ".tmp-tests/pm9-end-link-repair-2026-09-24/desktop-reviewed/project-studio-independent-run.png",
+        "sha256": "01908113130a6a6b6529a146d8785b1d5204e1f2c7669435d20f6c04c5d0a852"
+      },
+      {
+        "file": ".tmp-tests/pm9-end-link-repair-2026-09-24/desktop-reviewed/project-studio-project-context.png",
+        "sha256": "22b84a4935dfef26cf3b2e9a2b2da1a14b903c8010c42381b09a6ded71689b04"
+      },
+      {
+        "file": ".tmp-tests/pm9-end-link-repair-2026-09-24/desktop-reviewed/project-studio-project-document-saved.png",
+        "sha256": "9c1ae75fae3d6b2eb7ce0f6f25796cbd3390de7f50028b3bb4863d3f5685de19"
+      },
+      {
+        "file": ".tmp-tests/pm9-end-link-repair-2026-09-24/desktop-reviewed/project-studio-reopened-compact.png",
+        "sha256": "10358f7c89b3902489ab48cf4da81c05e31ee005ecc177033198821493c6fb24"
+      },
+      {
+        "file": ".tmp-tests/pm9-end-link-repair-2026-09-24/desktop-reviewed/project-studio-reopened-document.png",
+        "sha256": "7ae3e6d234236ff99fc69b172c61f956edfb316684cecef3534394e3b042f620"
+      },
+      {
+        "file": ".tmp-tests/pm9-end-link-repair-2026-09-24/desktop-reviewed/project-studio-required-url.png",
+        "sha256": "6c181a1924454a56340ce0573039c530135a5a30c25405b25ec0da5b606e80a9"
+      },
+      {
+        "file": ".tmp-tests/pm9-end-link-repair-2026-09-24/desktop-reviewed/project-volume.png",
+        "sha256": "22015c2242317ec17b19f7643a7910c2fae9b7c6dfed3f875862ee441fc0b144"
+      },
+      {
+        "file": ".tmp-tests/pm9-end-link-repair-2026-09-24/desktop-reviewed/project-zoom-200.png",
+        "sha256": "a8d5c56a477c280b943570e9d86bbaf3dec876299c92e290b4b95379400d5d8b"
+      },
+      {
+        "file": ".tmp-tests/pm9-end-link-repair-2026-09-24/desktop-reviewed/project-数据.png",
+        "sha256": "8740d8711756d2c2fe758febd981fd8941c4d43d7b1d7573d979a49871510d40"
+      },
+      {
+        "file": ".tmp-tests/pm9-end-link-repair-2026-09-24/desktop-reviewed/project-概览.png",
+        "sha256": "108a20acc0de1390aa24eec19edc11825581348201b04816cf13befd5e106775"
+      },
+      {
+        "file": ".tmp-tests/pm9-end-link-repair-2026-09-24/desktop-reviewed/project-环境.png",
+        "sha256": "7ebf16b12680aff30bc77ee9b7f4debb3179ad95cf3a22799a4be9c869403d2c"
+      },
+      {
+        "file": ".tmp-tests/pm9-end-link-repair-2026-09-24/desktop-reviewed/project-统计.png",
+        "sha256": "5fbc944319efe80c13d39922d77522ccc1f61f93ab90a377e40d0ec70708d2c2"
+      },
+      {
+        "file": ".tmp-tests/pm9-end-link-repair-2026-09-24/desktop-reviewed/project-自动化.png",
+        "sha256": "4e7afa65211055b40bf696d2e328d100d8de9ad92b3455e888b6df3659c20075"
+      },
+      {
+        "file": ".tmp-tests/pm9-end-link-repair-2026-09-24/desktop-reviewed/project-运行记录.png",
+        "sha256": "ab820e82fa1977b1b616a36597182188cde6d4b947bb206c439798fb9dc3e795"
+      }
+    ]
+  },
+  "productionSource": "ee2524af36657a09719995dfe20b86da90c410df",
+  "package": {
+    "source": "ee2524af36657a09719995dfe20b86da90c410df",
+    "recoveryAssets": [
+      "/out/renderer/assets/main-qU37ZYZd.js"
+    ],
+    "hashes": {
+      "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/app.asar": "b6c6599ea02c34ad868a3afa180890157308e12627a95167827cf10e793849b2",
+      "apps/backend/dist/autoflow-backend/autoflow-backend": "d664accc1fe926468e88d9e58159d906bcbd3fb98319d440016f96ce0277f5ec",
+      "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/backend/autoflow-backend": "d664accc1fe926468e88d9e58159d906bcbd3fb98319d440016f96ce0277f5ec"
+    }
+  },
+  "ci": {
+    "runId": 35935288512,
+    "headSha": "d19d120e6f18f941a3719333c58c2de34903a850",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35935288512",
+    "status": "in_progress",
+    "event": "push",
+    "duplicateDraftPR": {
+      "runId": 35935293541,
+      "conclusion": "skipped"
+    },
+    "scope": "Current three-platform checks unchanged; only same-repository draft PR duplicate skipped. Ready and fork PR checks remain."
+  },
+  "finalPackagedObservations": {
+    "status": "passed",
+    "failedTaskId": "565e537c-7abf-4ce7-9e10-f05fb4da02c2",
+    "endOperationId": "9ee88a5f-f0d2-4282-8f42-1e299b674178",
+    "saveOperationId": "f600a86d-9366-40b8-90c4-5398be16456c",
+    "savedEnvironmentId": "88bc031e-4cec-5fb4-bb7a-362b0742a72d",
+    "originalEndStatus": "failed",
+    "associationPhase": "completed",
+    "repairThroughDesktop": true,
+    "updatedTaskId": "f46d8d59-3830-4979-8143-d331d0307cba",
+    "restoredTaskId": "378f89b5-c6e6-4697-aaf9-5ef1b608daf1",
+    "staleTaskId": "9af0958c-f215-40b9-8b88-df655b7beb66",
+    "beforeGeneration": 1,
+    "publishedGeneration": 2,
+    "restoredGeneration": 2,
+    "restoredLogin": "signed-in",
+    "beforeSession": "1",
+    "restoredSession": "9",
+    "record": {
+      "ref": {
+        "projectId": "e48ee581-d68d-4d23-ad2e-397fcd94b3c7",
+        "tableId": "8fcb735e-ffdd-4a63-a728-ad92bece0abf",
+        "datasetGeneration": "51818693-fc71-4014-8287-3644f756eadf",
+        "recordKey": {
+          "type": "uuid",
+          "value": "7442ffa5-f87b-400e-abb6-3912eb243c8c"
+        }
+      },
+      "values": [
+        {
+          "fieldId": "62c17959-2626-4cc0-9d00-a6b484d21fe9",
+          "value": "task-second",
+          "source": "local",
+          "readable": true
+        }
+      ],
+      "validationIssues": [],
+      "recordSlots": [],
+      "statusId": "8be4d253-ae1e-4631-ad11-d78847ff8e02",
+      "currentEnvironmentId": "88bc031e-4cec-5fb4-bb7a-362b0742a72d",
+      "contentRevision": 9,
+      "statusRevision": 3,
+      "linkRevision": 3,
+      "deleted": false,
+      "createdAt": "2026-09-23T23:54:33.456280Z",
+      "updatedAt": "2026-09-23T23:56:09.755500Z"
+    },
+    "scope": "real End association failure, original save-only repair, record-derived login update and next-generation restore; Profile unchanged, no persistent identity acceptance claim"
+  },
+  "finalPackagedMetrics": {
+    "logLoad": {
+      "logCount": 1004,
+      "logPages": 6,
+      "elapsedMs": 31892,
+      "logsPerMinute": 1889,
+      "scope": "real worker throughput and server pagination; no renderer memory claim"
+    },
+    "volume": {
+      "synthetic": {
+        "samples": [
+          {
+            "received": 83,
+            "logReadMs": 12,
+            "pageMs": 218,
+            "heapBytes": 11451568
+          },
+          {
+            "received": 183,
+            "logReadMs": 14,
+            "pageMs": 214,
+            "heapBytes": 11484312
+          },
+          {
+            "received": 300,
+            "logReadMs": 16,
+            "pageMs": 220,
+            "heapBytes": 11522380
+          },
+          {
+            "received": 400,
+            "logReadMs": 15,
+            "pageMs": 221,
+            "heapBytes": 11568632
+          },
+          {
+            "received": 500,
+            "logReadMs": 6,
+            "pageMs": 215,
+            "heapBytes": 11593748
+          },
+          {
+            "received": 600,
+            "logReadMs": 8,
+            "pageMs": 218,
+            "heapBytes": 11646180
+          },
+          {
+            "received": 716,
+            "logReadMs": 7,
+            "pageMs": 217,
+            "heapBytes": 11683488
+          },
+          {
+            "received": 816,
+            "logReadMs": 7,
+            "pageMs": 215,
+            "heapBytes": 11717792
+          },
+          {
+            "received": 916,
+            "logReadMs": 7,
+            "pageMs": 214,
+            "heapBytes": 11754988
+          },
+          {
+            "received": 1000,
+            "logReadMs": 7,
+            "pageMs": 215,
+            "heapBytes": 11796008
+          }
+        ],
+        "received": 1000,
+        "scope": "60-second synthetic repository input; real HTTP pagination and renderer interaction during ingestion, not worker throughput or long-duration leak proof",
+        "producer": {
+          "targetLogsPerMinute": 1000,
+          "seconds": 60,
+          "emitted": 1000,
+          "elapsedMs": 60019,
+          "maxBatchLagMs": 46
+        }
+      },
+      "concurrentWrites": {
+        "status": "passed",
+        "producers": 5,
+        "records": 10000,
+        "busyRetries": 0
+      },
+      "records": 10000,
+      "seedMode": "five concurrent single-record HTTP writers",
+      "renderedRecordRows": 50,
+      "logRows": 1004,
+      "seedMs": 37536,
+      "logPageMs": [
+        237,
+        209,
+        208,
+        207,
+        207
+      ],
+      "recordPageMs": [
+        218,
+        215,
+        216,
+        215,
+        216,
+        216,
+        215,
+        216,
+        214,
+        213
+      ],
+      "twoFramesMs": 7,
+      "heapBytes": {
+        "before": 7292948,
+        "withLogs": 12567620,
+        "recordPageSamples": [
+          10416260,
+          11158432,
+          11422056
+        ],
+        "recordPageGrowth": 1005796
+      },
+      "scope": "one disposable production Electron run; retained query pages included, no sustained-load or leak-free claim"
+    }
+  },
+  "verificationCommands": [
+    {
+      "command": "uv run --directory apps/backend pytest -q",
+      "log": "backend-full-final.log",
+      "exitCode": 0
+    },
+    {
+      "command": "npm test",
+      "log": "frontend-full-final.log",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run typecheck && npm run lint",
+      "logs": [
+        "typecheck-final.log",
+        "lint-final.log"
+      ],
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:scripts",
+      "log": "scripts-final.log",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/verify-pm9-coverage.mjs",
+      "log": "mapping-final.log",
+      "exitCode": 0
+    },
+    {
+      "command": "uv run --directory apps/backend mypy src",
+      "log": "mypy-final.log",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run backend:build; npm run build; npm run package:dir",
+      "logs": [
+        "backend-build.log",
+        "frontend-build-review.log",
+        "package-review.log"
+      ],
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/smoke-project-management-desktop.mjs --executable apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/MacOS/AutoFlow --runtime-kernel .tmp-tests/pm9-browser-cache/chromium-145.0.7632.109.2/Chromium.app/Contents/MacOS/Chromium --output-dir .tmp-tests/pm9-end-link-repair-2026-09-24/desktop-reviewed",
+      "log": "desktop-reviewed.log",
+      "exitCode": 0
+    }
+  ]
 }

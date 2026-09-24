@@ -1,6 +1,6 @@
 # 项目上下文
 
-2026-09-24 End结果恢复切片（本机子范围confirmed，最终回归进行中）：GET恢复原End/child保存身份、原目标及当前关联phase；界面明确替换授权并累计冲突版本，已保存或查询未知时禁止重复保存。25后端/14前端相关通过，两项P2已RED→GREEN并复审；初次新ARM完整桌面26图通过输入环境g1/session1→End更新g2/session9→第三Task恢复及仅修复不重跑。最终审查后包/全量及新三平台继续，GitHub认证已恢复；首次漏前端build和中断全量保留。仅E2E-02/XE-C10 planned→partial，XE-C18补映射；251为212partial/39planned/0verified，249有断言/2未定位，缺口241生产/19实现/8测试/24外部不变。持久身份及其他提案未改变，releaseAccepted=false。见end-link-repair-follow-through.json。
+2026-09-24 End结果恢复收口（confirmed本机完整回归/新包，三平台in_progress）：生产ee2524af以现有账本恢复原End/child保存ID、原目标与当前关联阶段，明确替换授权、累计冲突版本，父结果未落定或读取未知时也不允许重复保存。25后端/14前端定向及两项P2的RED→GREEN/独立复审通过；最终后端3506 passed/90 skipped/2依赖警告（741.38秒）、前端5481 passed/409文件（180.77秒）、103脚本、Ruff/mypy408、类型/lint/OpenAPI、4映射/251引用通过。显式build后未签名ARM完整桌面26截图通过并目视核对End修复/刷新：真实输入环境g1/session1→End更新同环境g2/session9→第三Task恢复，新关联修复不重跑/不重复保存/不改失败历史；Profile未改，不解决I1–I3。首次旧前端打包失败、中断回归和夹具错误均保留。新三平台push35935288512@d19d120e运行中，同仓库draft PR重复矩阵跳过；dispatch401仍在。251为212partial/39planned/0verified，249有断言/2未定位，73缺预定路径有子范围映射，重叠缺口241生产/19实现/8测试/24外部不变；releaseAccepted=false。见end-link-repair-follow-through.json。
 
 2026-09-24 XE-A09不自动保存与界面修复（confirmed本机新包子范围）：真实固定环境cookie1→工作副本9且End不保留→新Task恢复1；来源g1/元数据/环境总数1不变，两实例cleaned且实际目录不存在。旧包截图暴露cleaned仍提供保存表单，7b896163修复为已清理说明，保留仅修复关联并在完成后移除入口。组件RED→8项相关通过，最终前端5475/409、类型/lint/脚本102、构建和未签名ARM完整桌面24截图通过，新界面已目视检查；后端cb040daf及既有3497回归范围不变。XE-A09仅planned→partial；251合计207partial/44planned/0verified，缺口241生产/19实现/8测试/24外部不变。输入环境、身份漂移I1–I3、新三平台/外部验收保留；releaseAccepted=false。见no-auto-save-follow-through.json。
 

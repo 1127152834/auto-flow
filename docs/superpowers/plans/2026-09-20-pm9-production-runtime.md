@@ -1,6 +1,6 @@
 # PM9 生产运行时实施卡
 
-2026-09-24 End结果恢复切片（本机子范围confirmed，最终回归进行中）：GET恢复原End/child保存身份、原目标及当前关联phase；界面明确替换授权并累计冲突版本，已保存或查询未知时禁止重复保存。25后端/14前端相关通过，两项P2已RED→GREEN并复审；初次新ARM完整桌面26图通过输入环境g1/session1→End更新g2/session9→第三Task恢复及仅修复不重跑。最终审查后包/全量及新三平台继续，GitHub认证已恢复；首次漏前端build和中断全量保留。仅E2E-02/XE-C10 planned→partial，XE-C18补映射；251为212partial/39planned/0verified，249有断言/2未定位，缺口241生产/19实现/8测试/24外部不变。持久身份及其他提案未改变，releaseAccepted=false。见end-link-repair-follow-through.json。
+2026-09-24 End结果恢复收口（confirmed本机完整回归/新包，三平台in_progress）：生产ee2524af以现有账本恢复原End/child保存ID、原目标与当前关联阶段，明确替换授权、累计冲突版本，父结果未落定或读取未知时也不允许重复保存。25后端/14前端定向及两项P2的RED→GREEN/独立复审通过；最终后端3506 passed/90 skipped/2依赖警告（741.38秒）、前端5481 passed/409文件（180.77秒）、103脚本、Ruff/mypy408、类型/lint/OpenAPI、4映射/251引用通过。显式build后未签名ARM完整桌面26截图通过并目视核对End修复/刷新：真实输入环境g1/session1→End更新同环境g2/session9→第三Task恢复，新关联修复不重跑/不重复保存/不改失败历史；Profile未改，不解决I1–I3。首次旧前端打包失败、中断回归和夹具错误均保留。新三平台push35935288512@d19d120e运行中，同仓库draft PR重复矩阵跳过；dispatch401仍在。251为212partial/39planned/0verified，249有断言/2未定位，73缺预定路径有子范围映射，重叠缺口241生产/19实现/8测试/24外部不变；releaseAccepted=false。见end-link-repair-follow-through.json。
 
 2026-09-24 DATA-E2E-03人工版本/部分失败联合补证（confirmed本机源码子范围）：FX-04初始业务夹具7/3/2，真实TCP HTTP/SQLite/worker/CloakBrowser两链分别证明任务写内容7→8、状态3→4和游标8/4/2，以及人工窗口PATCH到内容8后旧字段/旧内容状态写均REVISION_CONFLICT、游标仍7/3/2且原输入不变；声明人工分支继续不吸收人工新值。两链先前createRecord均保留，后续真实缺失元素超时失败后完整记录快照不变，公开写入摘要只含成功提交，End未执行，两条lease/目录/容量回收。最终2 passed/24.56秒，相关15 passed/4.36秒，Ruff通过；首轮三操作合并grant被422拒绝，修正为各节点精确授权，未改生产。CI选择collect2/53非执行，fresh CLI401；打包UI/Sheets出站联合/新三平台仍待验。仅E2E-03 planned→partial，WRITE-05/08/09补映射；251为210partial/41planned/0verified、249有断言/2未定位，缺口241生产/19实现/8测试/24外部不变。生产仍a7059dc6，不重跑无变化全量/构建；releaseAccepted=false。见manual-write-conflict-follow-through.json。
 
@@ -14,7 +14,9 @@
 
 已执行切片 DATA-E2E-03（本机源码通过，见顶部专项）：先核对已有人工反向冲突与部分失败断言，再用同一真实worker串联任务自身版本推进、人工新值冲突、后续节点失败后已成功修改仍保留；只补缺失联合条件，不批量升级状态。
 
-下一可执行切片：核对现有End saved_unlinked/仅修复关联的实际断言与DATA-E2E-02、XE-C10映射；复用已有真实worker与桌面脚本补缺失联合证据，不把现有独立通过误写成从未验收，不改变待确认持久身份架构。
+当前End切片：ee2524af实现持久结果恢复、原目标与显式授权、累计冲突版本和禁止重复保存；DATA-E2E-02/XE-C10/XE-C18已补实际断言，最终本机全量/审查后打包与d19d120e三平台结果继续收集。旧独立断言与审查前包的通过均保留原范围，持久身份I1–I3未改变。
+
+下一可执行切片DATA-E2E-05（有界验证，已批准生命周期/来源契约内）：先核对test_project_sheets_recovery及真实Sheets/归档案例，复用现有TCP HTTP、受控Google传输、SQLite和真实worker，串联待推送或结果未知→归档→恢复→公开显式处置→更换来源。断言旧Task/命令不重跑、未核验旧意图不自动重投、旧bindingEpoch不写新来源、新datasetGeneration不继承旧业务状态或环境关联、历史输入/操作仍可解释。输入仅为隔离测试来源，输出为独立专项报告和范围映射；先跑相关恢复/生命周期合同，再运行新增真实联合场景。保持当前已发起矩阵，不为无生产变动重复打包或重启流水线；实网Google、持久身份和待批准重授权架构不纳入本片。
 
 日期：2026-09-20；状态：in_progress；来源：用户明确确认 R1–R4 规格。规格：`../specs/2026-09-20-pm9-production-runtime-integration.md`。基点 `88d812a2`。
 

@@ -5053,8 +5053,9 @@
           "report": "docs/project-management/implementation/pm9/end-link-repair-follow-through.json",
           "scope": "真实输入记录关联环境g1，浏览器读取session1→改为9→End更新同环境g2→第三Task按原记录恢复g2/session9；稳定RecordRef/完整业务记录不变，旧g1发布被拒绝。",
           "platform": "macOS arm64",
-          "limitations": "desktop-final已通过但早于最终两项审查修复；最终包/三平台待结果，Profile未改不证明持久身份。",
-          "user_acceptance": "pending"
+          "limitations": "最终审查后未签名ARM包通过；当前三平台in_progress。Profile未改，不证明持久身份；保存失败/响应未知等完整恢复组合另验。",
+          "user_acceptance": "pending",
+          "testedCommit": "ee2524af36657a09719995dfe20b86da90c410df"
         }
       ],
       "owner": "verification",
@@ -5101,7 +5102,7 @@
         "gaps": [
           {
             "kind": "production_evidence_missing",
-            "detail": "本机ARM真实打包End关联失败/仅修复/输入记录环境g1→g2及刷新已补；最终审查修复包和当前三平台待验。保存失败/响应未知恢复及数据来源完整组合仍须分别核对，不把成功链外推全部合同。"
+            "detail": "最终本机ARM真实包End关联失败/仅修复/刷新、输入记录环境g1→g2→恢复已补；当前三平台仍in_progress。保存失败/响应未知恢复和数据来源完整组合须分别核对，不外推全部合同。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -15728,8 +15729,9 @@
           "report": "docs/project-management/implementation/pm9/end-link-repair-follow-through.json",
           "scope": "实际worker End保存成功但初始/新建目标组冲突；桌面恢复原目标和child身份，明确授权后仅修复，原输入/失败Run/环境代次不改。",
           "platform": "macOS arm64",
-          "limitations": "desktop-final已通过但早于最终两项审查修复；最终包/三平台待结果，Profile未改不证明持久身份。",
-          "user_acceptance": "pending"
+          "limitations": "最终审查后未签名ARM包通过；当前三平台in_progress。Profile未改，不证明持久身份；保存失败/响应未知等完整恢复组合另验。",
+          "user_acceptance": "pending",
+          "testedCommit": "ee2524af36657a09719995dfe20b86da90c410df"
         }
       ],
       "primary_package": "PM5-B",
@@ -15784,7 +15786,7 @@
         "gaps": [
           {
             "kind": "production_evidence_missing",
-            "detail": "本机ARM真实打包End关联失败/仅修复/输入记录环境g1→g2及刷新已补；最终审查修复包和当前三平台待验。保存失败/响应未知恢复及数据来源完整组合仍须分别核对，不把成功链外推全部合同。"
+            "detail": "最终本机ARM真实包End关联失败/仅修复/刷新、输入记录环境g1→g2→恢复已补；当前三平台仍in_progress。保存失败/响应未知恢复和数据来源完整组合须分别核对，不外推全部合同。"
           }
         ],
         "statusBeforeReview": "planned"
@@ -16259,8 +16261,9 @@
           "report": "docs/project-management/implementation/pm9/end-link-repair-follow-through.json",
           "scope": "实际worker失败End可在新开Task页按child save ID修复；刷新后phase完成而原失败结果保留，环境总数/代次/节点次数不增。",
           "platform": "macOS arm64",
-          "limitations": "desktop-final已通过但早于最终两项审查修复；最终包/三平台待结果，Profile未改不证明持久身份。",
-          "user_acceptance": "pending"
+          "limitations": "最终审查后未签名ARM包通过；当前三平台in_progress。Profile未改，不证明持久身份；保存失败/响应未知等完整恢复组合另验。",
+          "user_acceptance": "pending",
+          "testedCommit": "ee2524af36657a09719995dfe20b86da90c410df"
         }
       ],
       "primary_package": "PM5-B",
@@ -16315,7 +16318,7 @@
         "gaps": [
           {
             "kind": "production_evidence_missing",
-            "detail": "本机ARM真实打包End关联失败/仅修复/输入记录环境g1→g2及刷新已补；最终审查修复包和当前三平台待验。保存失败/响应未知恢复及数据来源完整组合仍须分别核对，不把成功链外推全部合同。"
+            "detail": "最终本机ARM真实包End关联失败/仅修复/刷新、输入记录环境g1→g2→恢复已补；当前三平台仍in_progress。保存失败/响应未知恢复和数据来源完整组合须分别核对，不外推全部合同。"
           }
         ],
         "statusBeforeReview": "partially_verified"
@@ -17784,5 +17787,5 @@
     "verification": "平台与全链验收负责人；逐平台记录证据"
   },
   "pm1_plan": "docs/superpowers/plans/2026-09-13-project-management-pm1.md",
-  "pm9_note": "2026-09-24 End结果恢复切片（本机子范围confirmed，最终回归进行中）：GET恢复原End/child保存身份、原目标及当前关联phase；界面明确替换授权并累计冲突版本，已保存或查询未知时禁止重复保存。25后端/14前端相关通过，两项P2已RED→GREEN并复审；初次新ARM完整桌面26图通过输入环境g1/session1→End更新g2/session9→第三Task恢复及仅修复不重跑。最终审查后包/全量及新三平台继续，GitHub认证已恢复；首次漏前端build和中断全量保留。仅E2E-02/XE-C10 planned→partial，XE-C18补映射；251为212partial/39planned/0verified，249有断言/2未定位，缺口241生产/19实现/8测试/24外部不变。持久身份及其他提案未改变，releaseAccepted=false。见end-link-repair-follow-through.json。"
+  "pm9_note": "2026-09-24 End结果恢复收口（confirmed本机完整回归/新包，三平台in_progress）：生产ee2524af以现有账本恢复原End/child保存ID、原目标与当前关联阶段，明确替换授权、累计冲突版本，父结果未落定或读取未知时也不允许重复保存。25后端/14前端定向及两项P2的RED→GREEN/独立复审通过；最终后端3506 passed/90 skipped/2依赖警告（741.38秒）、前端5481 passed/409文件（180.77秒）、103脚本、Ruff/mypy408、类型/lint/OpenAPI、4映射/251引用通过。显式build后未签名ARM完整桌面26截图通过并目视核对End修复/刷新：真实输入环境g1/session1→End更新同环境g2/session9→第三Task恢复，新关联修复不重跑/不重复保存/不改失败历史；Profile未改，不解决I1–I3。首次旧前端打包失败、中断回归和夹具错误均保留。新三平台push35935288512@d19d120e运行中，同仓库draft PR重复矩阵跳过；dispatch401仍在。251为212partial/39planned/0verified，249有断言/2未定位，73缺预定路径有子范围映射，重叠缺口241生产/19实现/8测试/24外部不变；releaseAccepted=false。见end-link-repair-follow-through.json。"
 }
