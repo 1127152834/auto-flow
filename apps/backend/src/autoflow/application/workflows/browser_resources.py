@@ -4,6 +4,7 @@ from collections.abc import Awaitable, Callable, Iterator, Mapping, Sequence
 from contextlib import AbstractContextManager, ExitStack, contextmanager, nullcontext
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
+from threading import RLock
 from typing import Any, cast
 
 from autoflow.application.profiles.service import ProfileService
@@ -68,31 +69,34 @@ class WorkflowBrowserResources:
         self._environment_directory = environment_directory
         self._group_guard = group_guard
         self._license_guard = license_guard
+        self._sharing_lock = RLock()
         self._shared: dict[tuple[str, str], _SharedGuard] = {}
 
     @contextmanager
     def _share(self, key: tuple[str, str], create: Callable[[], AbstractContextManager[None]]) -> Iterator[None]:
         # All guard operations are synchronous on the dispatcher's event loop;
         # reference sharing is internal, the original OS exclusion stays held.
-        guard = self._shared.get(key)
-        if guard is None:
-            guard = _SharedGuard(create())
-            guard.context.__enter__()
-            self._shared[key] = guard
-        if guard.failed:
-            raise WorkflowRuntimeError('WORKFLOW_CLEANUP_FAILED', '资源锁清理尚未确认')
-        guard.users += 1
+        with self._sharing_lock:
+            guard = self._shared.get(key)
+            if guard is None:
+                guard = _SharedGuard(create())
+                guard.context.__enter__()
+                self._shared[key] = guard
+            if guard.failed:
+                raise WorkflowRuntimeError('WORKFLOW_CLEANUP_FAILED', '资源锁清理尚未确认')
+            guard.users += 1
         try:
             yield
         finally:
-            guard.users -= 1
-            # An unknown native lock pins the workspace even if its owner is
-            # the final user; other confirmed Run leases can still finish.
-            pinned = key == ('workspace', '') and any(value.failed for identity, value in self._shared.items() if identity != key)
-            if not guard.users and not pinned:
-                guard.failed = True
-                guard.context.__exit__(None, None, None)
-                self._shared.pop(key)
+            with self._sharing_lock:
+                guard.users -= 1
+                # An unknown native lock pins the workspace even if its owner is
+                # the final user; other confirmed Run leases can still finish.
+                pinned = key == ('workspace', '') and any(value.failed for identity, value in self._shared.items() if identity != key)
+                if not guard.users and not pinned:
+                    guard.failed = True
+                    guard.context.__exit__(None, None, None)
+                    self._shared.pop(key)
 
 
     @contextmanager

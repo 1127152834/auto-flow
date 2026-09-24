@@ -55,7 +55,9 @@ class EnvironmentService:
         opener=None,
         closer=None,
         execution_generation_lookup=None,
+        validate_browser_configuration=None,
     ):
+        self._validate_browser_configuration = validate_browser_configuration
         self.manual_runtime: Any = None
         self.projects = projects
         self.environments = environments
@@ -161,6 +163,10 @@ class EnvironmentService:
 
     def patch(self, project_id: str, environment_id: str, key: str, payload: dict[str, Any]):
         self._writable(project_id)
+        if "browserConfiguration" in payload:
+            from .configuration import patch_browser_configuration
+            with self._lifecycle_lock(environment_id):
+                return patch_browser_configuration(self, project_id, environment_id, key, payload)
         expected = payload.get("expectedMetadataRevision")
         if type(expected) is not int or expected < 1:
             raise environment_error(
@@ -747,6 +753,8 @@ def _operation(key, kind, project_id, environment_id, canonical, now):
         ).encode()
     ).hexdigest()
     resource = {"type": "environment", "projectId": project_id, "environmentId": environment_id}
+    if canonical.get("scope") == "environmentConfiguration":
+        resource["browserConfigurationChange"] = True
     if kind == "saveEnvironment":
         request = canonical.get("request") or {}
         resource["instanceId"] = canonical.get("instanceId") or request.get("instanceId")

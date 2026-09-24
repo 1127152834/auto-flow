@@ -59,3 +59,39 @@ def request_from_identity(identity: Any) -> dict[str, Any]:
         raise WorkflowRuntimeError("WORKFLOW_RESOURCE_INVALID", "环境身份资料无效", 422)
     normalized = identity_from_request(identity)
     return {"browser": "persistent", **{key: value for key, value in normalized.items() if key != "schemaVersion"}}
+
+
+def browser_configuration(identity: Any) -> dict[str, Any] | None:
+    try:
+        spec = profile_from_request(request_from_identity(identity)).spec
+    except WorkflowRuntimeError:
+        return None
+    proxy: dict[str, Any] = {"mode": "none"}
+    if spec.proxy_mode == "proxy":
+        proxy = {"mode": "fixed", "proxyId": spec.proxy_id}
+    elif spec.proxy_mode == "pool":
+        proxy = {"mode": "pool", "proxyPoolId": spec.proxy_pool_id}
+    return {"proxy": proxy, "kernel": {"edition": spec.browser_edition, "version": spec.browser_version}}
+
+
+def update_browser_configuration(identity: Any, configuration: Any) -> dict[str, Any]:
+    request = request_from_identity(identity)
+    if not isinstance(configuration, dict) or set(configuration) != {"proxy", "kernel"}:
+        raise WorkflowRuntimeError("VALIDATION_ERROR", "请指定实例代理和内核", 422)
+    proxy, kernel = configuration["proxy"], configuration["kernel"]
+    if not isinstance(proxy, dict) or not isinstance(kernel, dict) or set(kernel) != {"edition", "version"}:
+        raise WorkflowRuntimeError("VALIDATION_ERROR", "实例配置字段无效", 422)
+    allowed = {"none": {"mode"}, "fixed": {"mode", "proxyId"}, "pool": {"mode", "proxyPoolId"}}
+    if not isinstance(proxy.get("mode"), str) or set(proxy) != allowed.get(proxy["mode"]):
+        raise WorkflowRuntimeError("VALIDATION_ERROR", "实例代理策略无效", 422)
+    field = {"fixed": "proxyId", "pool": "proxyPoolId"}.get(proxy["mode"])
+    if field and (not isinstance(proxy[field], str) or not proxy[field].strip()):
+        raise WorkflowRuntimeError("VALIDATION_ERROR", "请选择有效代理", 422)
+    values = request["frozenConfiguration"]["profileSpec"]
+    if (kernel["edition"], kernel["version"]) != (values["browser_edition"], values["browser_version"]):
+        raise WorkflowRuntimeError("KERNEL_MIGRATION_UNSUPPORTED", "已有登录态的跨内核迁移尚未验证，请用目标内核新建环境", 422)
+    values.update(proxy_mode={"none": "none", "fixed": "proxy", "pool": "pool"}[proxy["mode"]],
+                  proxy_id=proxy.get("proxyId"), proxy_pool_id=proxy.get("proxyPoolId"),
+                  browser_edition=kernel["edition"], browser_version=kernel["version"])
+    request["kernelId"] = f"{kernel['edition']}:{kernel['version']}"
+    return identity_from_request(request)

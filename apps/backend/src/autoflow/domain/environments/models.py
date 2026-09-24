@@ -4,6 +4,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Literal
 
+from .identity import browser_configuration
+
 PersistentEnvironmentState = Literal["ready", "unavailable", "deleting", "deleted"]
 InstanceState = Literal[
     "reserved",
@@ -91,6 +93,7 @@ class PersistentEnvironment:
             "updatedAt": self.updated_at,
             "createdFromSource": self.created_from_source,
             "createdFromTaskId": self.created_from_task_id,
+            "browserConfiguration": browser_configuration(self.identity_package),
         }
 
 

@@ -449,7 +449,8 @@ def create_app(
         installed_kernel_lookup or catalog_provider, "installed", None
     ) or catalog_provider.installed
     environment_browser = EnvironmentBrowserLauncher(
-        profile_service, kernel_inventory, environment_store
+        profile_service, kernel_inventory, environment_store,
+        resource_provider=lambda: app.state.project_workflow_resources,
     )
     environment_service = EnvironmentService(
         ProjectService(SqlAlchemyProjects(session_factory)),
@@ -458,6 +459,7 @@ def create_app(
         opener=environment_browser.opener,
         closer=environment_browser.closer,
         execution_generation_lookup=_run_execution_generation,
+        validate_browser_configuration=profile_service.validate_resources,
     )
     app.state.environment_browser = environment_browser
     app.state.environment_service = environment_service

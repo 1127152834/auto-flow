@@ -8271,6 +8271,12 @@ export type components = {
             /** Port */
             port: number;
         };
+        /** EnvironmentBrowserConfiguration */
+        EnvironmentBrowserConfiguration: {
+            /** Proxy */
+            proxy: components["schemas"]["NoProxy"] | components["schemas"]["FixedProxy"] | components["schemas"]["PoolProxy"];
+            kernel: components["schemas"]["EnvironmentKernel"];
+        };
         /** EnvironmentCheckCommand */
         EnvironmentCheckCommand: {
             /** Requestid */
@@ -8387,6 +8393,16 @@ export type components = {
              */
             updatedAt: string;
         };
+        /** EnvironmentKernel */
+        EnvironmentKernel: {
+            /**
+             * Edition
+             * @enum {string}
+             */
+            edition: "public" | "licensed";
+            /** Version */
+            version: string;
+        };
         /** EnvironmentOpenRequest */
         EnvironmentOpenRequest: {
             /** Expectedusegeneration */
@@ -8470,6 +8486,9 @@ export type components = {
             name?: string | null;
             /** Notes */
             notes?: string | null;
+            browserConfiguration?: components["schemas"]["EnvironmentBrowserConfiguration"] | null;
+            /** Expectedcontentgeneration */
+            expectedContentGeneration?: number | null;
         };
         /** EnvironmentProfile */
         EnvironmentProfile: {
@@ -8627,6 +8646,7 @@ export type components = {
              * @default 0
              */
             linkedRecordCount: number;
+            browserConfiguration?: components["schemas"]["EnvironmentBrowserConfiguration"] | null;
         };
         /** ErrorResponse */
         ErrorResponse: {

@@ -1417,3 +1417,97 @@ def test_manual_deadline_round_trips_utc_in_detail_and_list(tmp_path):
     for result in [detail, listed]:
         assert datetime.fromisoformat(result['expiresAt']) == deadline
         assert datetime.fromisoformat(result['createdAt']).tzinfo is not None
+
+
+def test_browser_configuration_patch_preserves_login_and_recovers_original_command(tmp_path):
+    client, projects, service = make(tmp_path)
+    service._validate_browser_configuration = lambda _spec: None
+    project_id = _project(projects)
+    instance = _closed_instance(service, project_id, b'unchanged-login')
+    saved = service.publish_new(project_id, name='editable', notes='', profile_id=PROFILE, instance_id=instance.instance_id)
+    url = f'/api/v1/projects/{project_id}/environments/{saved.ref.environment_id}'
+    key = str(uuid4())
+    body = {'expectedMetadataRevision': 1, 'expectedContentGeneration': 1,
+            'browserConfiguration': {'proxy': {'mode': 'fixed', 'proxyId': 'proxy-2'},
+                                     'kernel': {'edition': 'public', 'version': PROFILE_KERNEL}}}
+    response = client.patch(url, headers={'Idempotency-Key': key}, json=body)
+    assert response.status_code == 200, response.text
+    assert response.json()['browserConfiguration']['proxy'] == {'mode': 'fixed', 'proxyId': 'proxy-2'}
+    assert response.json()['ref']['contentGeneration'] == 2
+    assert response.json()['ref']['metadataRevision'] == 2
+    replay = client.patch(url, headers={'Idempotency-Key': key}, json=body)
+    assert replay.status_code == 200
+    assert replay.json()['ref']['contentGeneration'] == 2
+    for generation in (1, 2):
+        assert (service.store.generation_dir(saved.ref.environment_id, generation) / 'Default' / 'Cookies').read_bytes() == b'unchanged-login'
+    assert service.store.generation_identity(saved.ref.environment_id, 1)['frozenConfiguration']['profileSpec']['proxy_mode'] == 'none'
+    assert client.patch(url, headers={'Idempotency-Key': str(uuid4())}, json=body).status_code == 409
+
+
+def test_browser_configuration_patch_refuses_active_instance(tmp_path):
+    client, projects, service = make(tmp_path)
+    service._validate_browser_configuration = lambda _spec: None
+    project_id = _project(projects)
+    instance = _closed_instance(service, project_id, b'login')
+    saved = service.publish_new(project_id, name='busy', notes='', profile_id=PROFILE, instance_id=instance.instance_id)
+    source = service.resolve(project_id, {'source': 'fixedEnvironment', 'environmentId': saved.ref.environment_id})
+    active = service.reserve(project_id, source, task_id=str(uuid4()), run_id=str(uuid4()), holder_kind='task', holder_id=str(uuid4()))
+    response = client.patch(f'/api/v1/projects/{project_id}/environments/{saved.ref.environment_id}', headers={'Idempotency-Key': str(uuid4())}, json={
+        'expectedMetadataRevision': 1, 'expectedContentGeneration': 1,
+        'browserConfiguration': {'proxy': {'mode': 'none'}, 'kernel': {'edition': 'public', 'version': PROFILE_KERNEL}},
+    })
+    assert response.status_code == 423, response.text
+    assert service.get_instance(project_id, active.instance_id).state == 'active'
+    assert service.get(project_id, saved.ref.environment_id)[0].ref.content_generation == 1
+
+
+def test_configuration_recovers_publication_before_database_commit(tmp_path, monkeypatch):
+    client, projects, service = make(tmp_path)
+    service._validate_browser_configuration = lambda _spec: None
+    project_id = _project(projects)
+    instance = _closed_instance(service, project_id, b'login')
+    saved = service.publish_new(project_id, name='recover', notes='', profile_id=PROFILE, instance_id=instance.instance_id)
+    url = f'/api/v1/projects/{project_id}/environments/{saved.ref.environment_id}'
+    key = str(uuid4())
+    body = {'expectedMetadataRevision': 1, 'expectedContentGeneration': 1,
+            'browserConfiguration': {'proxy': {'mode': 'none'}, 'kernel': {'edition': 'public', 'version': PROFILE_KERNEL}}}
+    original = service.store.publish
+    def interrupted(*args):
+        original(*args)
+        raise OSError('response lost after directory publication')
+    monkeypatch.setattr(service.store, 'publish', interrupted)
+    with pytest.raises(OSError):
+        client.patch(url, headers={'Idempotency-Key': key}, json=body)
+    # A different writer must not consume the unpublished candidate as its own.
+    rename = client.patch(url, headers={'Idempotency-Key': str(uuid4())}, json={'expectedMetadataRevision': 1, 'name': 'changed'})
+    assert rename.status_code == 423
+    monkeypatch.setattr(service.store, 'publish', original)
+    result = client.patch(url, headers={'Idempotency-Key': key}, json=body)
+    assert result.status_code == 200, result.text
+    assert result.json()['ref']['contentGeneration'] == 2
+    assert len(list(service.store.generation_dir(saved.ref.environment_id, 1).parent.iterdir())) == 2
+
+
+@pytest.mark.parametrize('failure', ['proxy', 'kernel', 'migration'])
+def test_invalid_instance_configuration_does_not_leave_pending_lock(tmp_path, failure):
+    from autoflow.domain.profiles.errors import KernelNotInstalled, ProxyUnavailable
+    client, projects, service = make(tmp_path)
+    project_id = _project(projects)
+    instance = _closed_instance(service, project_id, b'login')
+    saved = service.publish_new(project_id, name='valid', notes='', profile_id=PROFILE, instance_id=instance.instance_id)
+    def validate(_spec):
+        if failure == 'proxy':
+            raise ProxyUnavailable
+        if failure == 'kernel':
+            raise KernelNotInstalled
+    service._validate_browser_configuration = validate
+    url = f'/api/v1/projects/{project_id}/environments/{saved.ref.environment_id}'
+    body = {'expectedMetadataRevision': 1, 'expectedContentGeneration': 1,
+            'browserConfiguration': {'proxy': {'mode': 'none'}, 'kernel': {'edition': 'public', 'version': '999.0.0' if failure == 'migration' else PROFILE_KERNEL}}}
+    key = str(uuid4())
+    response = client.patch(url, headers={'Idempotency-Key': key}, json=body)
+    assert response.status_code == 422, response.text
+    assert client.patch(url, headers={'Idempotency-Key': key}, json=body).status_code == 422
+    renamed = client.patch(url, headers={'Idempotency-Key': str(uuid4())}, json={'expectedMetadataRevision': 1, 'name': 'still-editable'})
+    assert renamed.status_code == 200, renamed.text
+    assert renamed.json()['ref']['contentGeneration'] == 1

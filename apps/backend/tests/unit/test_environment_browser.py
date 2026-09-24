@@ -409,3 +409,34 @@ def test_maintenance_without_identity_does_not_guess_template(tmp_path):
         launcher.opener(None, instance)
     assert caught.value.code == 'ENVIRONMENT_IDENTITY_UNVERIFIED'
     assert calls == []
+
+
+def test_maintenance_uses_guarded_instance_proxy_until_browser_close(tmp_path, valid_profile_values):
+    from autoflow.domain.environments.identity import identity_from_request
+    from autoflow.domain.profiles.models import ProfileBrowserProxy
+    from tests.unit.test_workflow_browser_resources import resources
+
+    resource_service, state, profile = resources(tmp_path, valid_profile_values)
+    async def resolve_proxy(_profile, _request):
+        return ProfileBrowserProxy('http://127.0.0.1:9', 'synthetic-user', 'synthetic-password')
+    resource_service._resolve_proxy = resolve_proxy
+    launcher, store, calls, contexts = _launcher(tmp_path, profile)
+    launcher._resource_provider = lambda: resource_service
+    launcher._installed_kernels = lambda: [InstalledKernel(profile.spec.browser_edition, profile.spec.browser_version, tmp_path / "CloakBrowser", 1)]
+    instance = replace(_instance(profile, str(uuid4()), str(uuid4())), identity_package=identity_from_request(resource_service.freeze(profile.id)))
+    store.prepare_instance(instance.instance_id)
+    try:
+        launcher.opener(None, instance)
+        assert state['holds'] == 2
+        assert calls[0][1]['proxy']['server'].startswith('http://127.0.0.1:')
+        assert calls[0][1]['proxy']['server'] != 'http://127.0.0.1:9'
+        assert 'synthetic-password' not in repr(calls)
+        contexts[0].fail = True
+        with pytest.raises(ProjectError):
+            launcher.closer(None, instance)
+        assert state['holds'] == 2
+        contexts[0].fail = False
+        launcher.closer(None, instance)
+        assert state['holds'] == 0
+    finally:
+        launcher.shutdown()
