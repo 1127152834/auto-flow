@@ -103,3 +103,7 @@
 - 2026-09-24 最快验收（confirmed，整体不通过/partial）：当前Android后端477项、前端177项、迁移6项及工程门禁通过；真实备份磁盘预检零写入拒绝、释放后估计=实际18595840字节、传输取消及自有资源清理通过。最终限时审查新增备份跨动作未知编号覆盖已RED→GREEN关闭；创建/拉取磁盘准入和宿主/VM数值展示仍Important。Mac已解锁，最终构建首页/无效拉取恢复输入实机通过，其余完整UI改记not_run；十台/GApps仍blocked。最后候选全仓全量未重跑，旧数字不代替；见[完整验收命令及输出](../../docs/qa/android-management/2026-09-24-final-acceptance.md)。
 
 - 2026-09-24 磁盘观测（confirmed，整体partial）：宿主workspace与VM实际DockerRootDir可用字节分别透传HTTP/OpenAPI并展示，0与unknown分开；真实Mac只读路由及最终构建页面刷新通过。创建/拉取准入仍未实现，不能以两侧数值展示代替。证据：[验证报告](../../docs/qa/android-management/2026-09-24-disk-observation.md)。 最终本候选完整后端4069passed/26skipped/2warnings（880.33s）、前端424文件/5670项（213.55s）、Android后端485/前端180、迁移6及类型/lint/OpenAPI/结构4/脚本95/build通过；增量审查无新增C/I。
+
+- 2026-09-24（confirmed，整体partial）：18b75c49镜像拉取磁盘准入、严格未知确认和请求冻结已实现；真实未确认0pull、确认后强杀/重启/核实1pull通过。真实Electron批量筛选选择保留、目标冻结、取消未开始项、新批次通过，AC15关闭；两台自建资源已清理。创建/复制/恢复准入与最终全仓验证待Task4，不能沿用旧完整结果当本候选通过。见[验收证据](../../docs/qa/android-management/2026-09-24-pull-disk-and-bulk.md)。
+
+2026-09-24后续confirmed：真实Electron重启发现未知pull、核实前拒绝新请求、显式核实succeeded并清空历史、改引用撤销确认已验；自有登记已撤销。c4b6159d修复202/failed重放误报已接受，187前端回归通过，独立复审进行中。

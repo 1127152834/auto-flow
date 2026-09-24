@@ -1,0 +1,20 @@
+{
+  "kind": "autoflow-owned-desktop-bulk-v1",
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-desktop-bulk-rjmmkzqz",
+  "devices": [
+    "82e7b719-1efc-49f6-8865-83adec14e860",
+    "eedfe939-1e94-4d13-82e8-c5b658db7945"
+  ],
+  "status": "cleaned",
+  "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "cleanup": [
+    {
+      "deviceId": "82e7b719-1efc-49f6-8865-83adec14e860",
+      "runtimeState": "missing"
+    },
+    {
+      "deviceId": "eedfe939-1e94-4d13-82e8-c5b658db7945",
+      "runtimeState": "missing"
+    }
+  ]
+}

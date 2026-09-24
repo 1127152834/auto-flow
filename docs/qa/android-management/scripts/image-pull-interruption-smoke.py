@@ -21,17 +21,18 @@ HELPERS = runpy.run_path(str(ROOT / 'docs/qa/android-management/scripts/restore-
 def worker():
     from autoflow.__main__ import main
     from autoflow.application.android.images import AndroidImageService
-    from autoflow.providers.android.image_catalog import ImageCatalog
+    from autoflow.providers.android import mac_runtime
 
     original_save = AndroidImageService._save_registration
-    original_pull = ImageCatalog.pull
+    original_docker = mac_runtime.docker
     marker = Path(os.environ['AUTOFLOW_QA_MARKER'])
     calls = Path(os.environ['AUTOFLOW_QA_PULL_CALLS'])
 
-    def counted_pull(self, reference):
-        with calls.open('a') as stream:
-            stream.write(reference + '\n')
-        return original_pull(self, reference)
+    def counted_docker(*args, **kwargs):
+        if args[:1] == ('pull',):
+            with calls.open('a') as stream:
+                stream.write(args[1] + '\n')
+        return original_docker(*args, **kwargs)
 
     def save_then_pause(self, image, receipt):
         original_save(self, image, receipt)
@@ -41,7 +42,7 @@ def worker():
             pending.replace(marker)
             Event().wait(180)  # Supervisor kills this owned process at the persisted boundary.
 
-    ImageCatalog.pull = counted_pull
+    mac_runtime.docker = counted_docker
     AndroidImageService._save_registration = save_then_pause
     sys.argv.remove('--worker')
     main()
@@ -75,7 +76,7 @@ async def start(workspace, request_id, pause):
         raise
 
 
-async def exercise(output):
+async def exercise(output, leave_pending_for_desktop=False):
     workspace = Path(tempfile.mkdtemp(prefix='autoflow-image-pull-interruption-'))
     request_id = str(uuid4())
     metadata = json.loads(await docker('image', 'inspect', 'redroid/redroid:13.0.0_64only-latest'))[0]
@@ -86,7 +87,19 @@ async def exercise(output):
     expect = HELPERS['expect']
     try:
         process, client = await start(workspace, request_id, True)
-        body = {'requestId': request_id, 'reference': reference}
+        refused_id = str(uuid4())
+        refused_body = {'requestId': refused_id, 'reference': reference}
+        refused = expect(await client.post('/api/v1/android/management/image-pulls', json=refused_body), 409)
+        assert refused['error']['code'] == 'ANDROID_DISK_ESTIMATE_UNKNOWN', refused
+        refused_record = expect(await client.get(f'/api/v1/android/management/operations/by-request/{refused_id}'), 200)
+        assert refused_record['state'] == 'failed' and refused_record['resultCode'] == 'ANDROID_DISK_ESTIMATE_UNKNOWN', refused_record
+        assert not (workspace / 'pull-calls.txt').exists(), 'Unconfirmed preflight dispatched docker pull'
+        refused_replay = expect(await client.post('/api/v1/android/management/image-pulls', json=refused_body), 202)
+        assert refused_replay['state'] == 'failed' and refused_replay['operationId'] == refused_record['operationId'], refused_replay
+        changed_confirmation = expect(await client.post('/api/v1/android/management/image-pulls', json={**refused_body, 'allowUnknownDiskEstimate': True}), 409)
+        assert changed_confirmation['error']['code'] == 'ANDROID_OPERATION_IDEMPOTENCY_CONFLICT', changed_confirmation
+        report['unconfirmedPreflight'] = {'state': refused_record['state'], 'resultCode': refused_record['resultCode'], 'actualDockerPullCalls': 0, 'replayPreserved': True, 'changedConfirmationRejected': True}
+        body = {'requestId': request_id, 'reference': reference, 'allowUnknownDiskEstimate': True}
         transfer = asyncio.create_task(client.post('/api/v1/android/management/image-pulls', json=body))
         async with asyncio.timeout(150):
             while not (workspace / 'receipt.json').exists():
@@ -109,6 +122,12 @@ async def exercise(output):
         report['discoveredAfterRestart'] = history
         replay = expect(await client.post('/api/v1/android/management/image-pulls', json=body), 202)
         assert replay['operationId'] == record['operationId'] and replay['state'] == 'needs_verification'
+        if leave_pending_for_desktop:
+            assert (workspace / 'pull-calls.txt').read_text().splitlines() == [reference]
+            report['actualDockerPullCalls'] = 1
+            report['status'] = 'pending_desktop_verification'
+            report['cleanup'] = 'Owned registration intentionally retained for desktop verification; no devices or image content created.'
+            return
         verified = expect(await client.post(f"/api/v1/android/management/operations/{record['operationId']}/verify", json={'requestId': request_id}), 200)
         assert verified['state'] == 'succeeded' and verified['resultCode'] == 'IMAGE_PULL_VERIFIED', verified
         report['verified'] = verified
@@ -116,7 +135,7 @@ async def exercise(output):
         assert history['total'] == 0 and not history['items'], history
         report['unknownHistoryAfterVerify'] = history
         assert (workspace / 'pull-calls.txt').read_text().splitlines() == [reference]
-        report['actualCatalogPullCalls'] = 1
+        report['actualDockerPullCalls'] = 1
         after = json.loads(await docker('image', 'inspect', 'redroid/redroid:13.0.0_64only-latest'))[0]['Id']
         assert after == image
         report['originalTagUnchanged'] = True
@@ -145,8 +164,9 @@ if __name__ == '__main__':
         parser = argparse.ArgumentParser()
         parser.add_argument('--allow-image-pull', action='store_true')
         parser.add_argument('--output', type=Path, required=True)
+        parser.add_argument('--leave-pending-for-desktop', action='store_true')
         args = parser.parse_args()
         if not args.allow_image_pull:
             parser.error('--allow-image-pull is required for the owned-workspace real pull')
         args.output.parent.mkdir(parents=True, exist_ok=True)
-        asyncio.run(exercise(args.output))
+        asyncio.run(exercise(args.output, args.leave_pending_for_desktop))

@@ -92,3 +92,5 @@
 - 2026-09-24 最快验收（confirmed，整体不通过/partial）：当前Android后端477项、前端177项、迁移6项及工程门禁通过；真实备份磁盘预检零写入拒绝、释放后估计=实际18595840字节、传输取消及自有资源清理通过。最终限时审查新增备份跨动作未知编号覆盖已RED→GREEN关闭；创建/拉取磁盘准入和宿主/VM数值展示仍Important。Mac已解锁，最终构建首页/无效拉取恢复输入实机通过，其余完整UI改记not_run；十台/GApps仍blocked。最后候选全仓全量未重跑，旧数字不代替；见[完整验收命令及输出](2026-09-24-final-acceptance.md)。
 
 - 2026-09-24 磁盘观测（confirmed，整体partial）：宿主workspace与VM实际DockerRootDir可用字节分别透传HTTP/OpenAPI并展示，0与unknown分开；真实Mac只读路由及最终构建页面刷新通过。创建/拉取准入仍未实现，不能以两侧数值展示代替。证据：[验证报告](2026-09-24-disk-observation.md)。 最终本候选完整后端4069passed/26skipped/2warnings（880.33s）、前端424文件/5670项（213.55s）、Android后端485/前端180、迁移6及类型/lint/OpenAPI/结构4/脚本95/build通过；增量审查无新增C/I。
+
+- 2026-09-24 拉取准入与桌面批量增量（confirmed，整体partial）：真实未确认零pull拒绝、原回执/确认冲突、确认后强杀重启核实且仅一次pull通过；真实Electron筛选保留选择、冻结目标、取消未开始项、终态新批次通过，两台自建设备已核实清理。创建准入与最终全仓门禁仍待后续，见[证据与命令](2026-09-24-pull-disk-and-bulk.md)。

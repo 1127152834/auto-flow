@@ -44,3 +44,5 @@ T13/T14/T16 后续[五实例真实链](2026-09-23-final-review-remediation.md)�
 本轮最终完整门禁：后端4048passed/26skipped/2warnings（981.16s），前端424文件/5650项（802.11s），Ruff/compileall/类型/lint/OpenAPI/build全部exit0；前端采用Node22和单worker，未提高超时。真实UI仍blocked，完整阶段不因软件门禁转为完成。
 
 - 2026-09-24 规格复核修复（confirmed软件定向，真实桌面blocked）：原T13.4逐项结果证据范围过宽，本轮直接渲染冻结result.items的全部状态/错误/重试来源，accepted不再误报未知但继续冻结；镜像未知拉取补现有POST核实、原编号重试及A成功/B响应丢失的身份栅栏。4项初始RED加1项连续请求RED后，Android166项/类型/lint通过，最终增量复审无Critical/Important；完整前端424文件/5656项通过（750.46s），类型/lint/OpenAPI/build均exit0，真实UI仍受Mac锁屏阻塞。见[实际证据](2026-09-24-item-results-image-recovery.md)。
+
+2026-09-24解除上述桌面批次入口未验范围：[真实Electron双实例](2026-09-24-pull-disk-and-bulk.md)已验证搜索0/2后保留选择、执行中冻结、停止批次第一项完成/第二项取消、终态开始新批次。真实持久记录与UI一致，资源已清理。T14/T16完整桌面性能仍not_run，不以批次验收关闭AM3全阶段。

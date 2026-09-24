@@ -55,3 +55,54 @@ uv run --project apps/backend ruff check apps/backend/src/autoflow/providers/and
 
 
 Task2b 调用链校准（2026-09-24，confirmed 源码阅读，尚未实施）：单实例 `AndroidCreate → AndroidManagement.create → provider.management.manage`；批量和配置复制由 `AndroidFleet._device_step` 汇入相同 create；备份恢复 HTTP 创建同样进入该链。拉取由 `ImagePullCreate → AndroidImageService.pull → ImageCatalog.pull → MacAndroidRuntime.pull_image`。准入必须在两条共享写入路径生效，放在所有权/固定镜像校验后、首次 volume/create/pull 前；成功幂等回执不能重新触发探测。无法估计时采用现有规格允许的显式拒绝或原请求绑定确认，不能使用任意固定阈值。数据恢复创建与后续解包应分别校验真实目标文件系统，不把宿主工作区可用量当作 Lima 虚拟磁盘宿主文件可用量。
+
+## Task 3：镜像拉取磁盘准入（Task2b 的完整拉取切片）
+
+基线126ac28b。保持原全目标范围，创建链在下一任务接入同一provider检查。本任务须贯通API/幂等/provider/UI/测试，而非只新增探测函数。
+
+约束：Mac/Lima/ReDroid、设备归属/独占控制、generation/sequence、requestId、needs_verification 与未知结果保护不变；不接入退役工作流。规格 AM-R12 允许无法估计时明确阻塞或人工确认。不能用压缩镜像尺寸或任意常数伪装所需空间。
+
+接口与行为：
+- `ImagePullCreate.allow_unknown_disk_estimate: bool = Field(default=False, strict=True)`，JSON `allowUnknownDiskEstimate`。缺省拒绝不能可靠估计的写入；界面默认未勾选，明确说明最终占用未知，用户勾选才允许继续。
+- 字段贯通 AndroidImageService.pull、ImageCatalog.pull、MacAndroidRuntime.pull_image，使用默认false的关键字参数。运行时新增共享 `require_vm_disk_space(*, allow_unknown_disk_estimate=False)`，后续创建可复用。
+- 执行受限来源校验后、实际docker pull之前，探测Docker实际DockerRootDir可用字节及Lima VM磁盘文件所在宿主文件系统。`limactl list --json autoflow-redroid`实际提供name/status/dir/vmType/config；本机VZ磁盘为dir下`disk`（不是diffdisk）。支持已核实的固定单磁盘布局；不支持/含额外盘/身份不符/探测失败必须明确失败，不能猜路径。宿主使用实际磁盘文件，正确跟随symlink到其文件系统，不能复用workspace可用量。
+- 已知可用0返回ANDROID_DISK_SPACE_INSUFFICIENT；无法读取容量返回ANDROID_DISK_PROBE_FAILED；最终占用无可靠估计且未确认返回ANDROID_DISK_ESTIMATE_UNKNOWN，均409且发生在docker pull前。确认仅豁免估计未知，不豁免前两种失败。探测超时/OSError包装为明确预检错误；真正pull启动后的未知/取消保护保持。
+- 预检期间取消且docker pull尚未派发时，持久failed并标记明确预检取消原因、零pull，同时继续传播取消。真正pull派发后的取消仍needs_verification。不能靠镜像是否存在推断执行结果，也不能用跨请求共享可变flag；以边界内可证明事实分类。
+- HTTP操作payload及digest绑定确认值；缺省/false保留旧reference-only摘要兼容，true写入payload。旧已完成/needs_verification回执重放先返回、不得重新探测或拉取；相同requestId改变确认值必须冲突。
+- UI确认进入冻结请求；改变镜像引用重置确认；busy/未知期间不可改请求。三个明确预检错误应显示真实原因，释放已失败请求，让修复条件后用新编号尝试；普通409仍按原规则核实，不能误释放未知结果。组件既有422恢复、A成功/B丢响应、持久未知列表保护不倒退。
+
+执行：
+- [x] RED：真实服务/持久仓库覆盖缺省阻塞、已确认放行、已知不足/探测失败仍拒绝、拒绝无pull、回执重放/确认值冲突；provider独立主机/VM探测；UI默认不确认、冻结、引用变化重置、明确拒绝后新请求。
+- [x] GREEN：最小实现；更新全部受影响fake签名/调用和生成OpenAPI，不删除旧语义断言。新增无依赖，无DB字段则不建迁移。
+- [x] 验证：完整Android后端/前端、Ruff/类型/lint/OpenAPI/build；完整仓库门禁由主任务统一跑一次；实现者不要重复跑全仓长套件。
+- [x] 实现者提交仅自身产品/测试/生成类型；写任务报告列有效RED、GREEN命令/实际结果、源码范围和风险。主任务另做真实拉取/未确认零拉取/原回执及实机UI，并独立任务审查。
+
+本任务不要修改docs/qa脚本、共同.ai记录或这份计划；它们由主任务维护。严禁stage任何docs/migration/studio-frontend-completion文件。历史三份脏文件保留。
+
+
+Task3已完成18b75c49+c4b6159d，独立复审与真实HTTP/桌面核实通过；全仓验证仍留待Task4。
+
+## Task 4：创建、配置复制与恢复磁盘准入（Task2b 剩余切片）
+
+基于Task3独立审查后的HEAD顺序执行，共享provider检查不可另建替代探测。此任务覆盖首次新卷/容器创建、保留数据重建容器，以及备份恢复写入前的磁盘准入。
+
+接口/安全约束：
+- 复用 `MacAndroidRuntime.require_vm_disk_space`，不把环境workspace free当实际Lima磁盘free，不使用镜像大小或固定阈值冒充预估。未知最终占用默认拒绝；严格默认false的 `allowUnknownDiskEstimate` 仅允许明确确认未知，零可用量/探测失败仍拒绝。
+- 字段贯通单实例AndroidCreate、BatchCreate（含配置复制）、BackupRestore及AndroidDeviceCommand保留数据restore入口；共享management.manage在固定镜像/所有权核对后且首次volume/create之前检查。旧已完成请求重放必须先返回，不重新检查/写入；请求确认改变必须冲突。
+- 创建同步返回202后异步预检失败允许持久failed；不能将failed伪装成功，前端必须看到真实错误。受影响成功测试显式确认或注入真实边界fake，拒绝测试必须断言零volume/create。
+- false与缺省规范化为历史请求结构，保留原幂等回执兼容；true进入creationConfig、operation payload/digest、batch frozen request、restore payload/digest。不得原地修改调用方dict。
+- 一次创建的确认不能被源模板/配置复制/备份配置或后续恢复隐式继承。备份恢复必须剔除来源creationConfig里的确认，以当前恢复请求为准；保留数据重建以当前operate请求为准。无需重建的start/stop等操作不得因新增确认要求被阻止。
+- 备份恢复在创建目标后的实际restore_volume写入前再校验当前实际磁盘（复用同一确认，不能认为创建前的检查永久有效），归档路径/摘要/清单/镜像/归属校验及失败后源不可变规则保持。
+- 已知预检失败保留明确错误码；取消预检与实际写入取消以可证明边界区分，写入已派发后的needs_verification绝不能降级。特别避免把创建已成功、恢复阶段才取消误标为零副作用。
+
+前端：
+- CreateDeviceForm（单/配置副本）、CreateInstances（模板批量/源快照）、BackupPanel恢复新实例、AndroidPage保留数据恢复对话框均提供明确的默认未勾选确认，文案指出最终磁盘占用无法可靠估计。原请求未知/进行中冻结确认与参数；原编号重试使用原值。修改影响写入的配置或目标重置确认。
+- 继续使用既有组件/请求ref/错误样式，不引入依赖、不做无关重构。已有控制会话、generation/sequence、idempotency、保护包/恢复源保护及未知结果都不可退化；不接入已退役工作流。
+
+执行与验收：
+- [ ] RED：共享provider未确认/0/探测失败零写入；确认放行；单/批/副本/保留数据重建/备份恢复字段贯通与拒绝；旧false回放、改变确认冲突；来源确认不继承；恢复写入前再次检查；事件驱动取消边界；前端四入口默认未选、冻结、参数变化重置与原编号重试。
+- [ ] GREEN：最小跨层实现+受影响fake/调用更新+OpenAPI生成，无数据库结构变化则无需迁移。
+- [ ] Android后端和前端全套、Ruff、compile、类型、lint、OpenAPI、build；根任务统一执行全仓长套件，不重复。
+- [ ] 自有代码提交+task-4-report记录有效RED/GREEN、实际命令输出、风险；主任务真实Mac创建/恢复验收与独立审查。
+
+文件由实现者追踪真实调用链选择，预期涉及backend android.py/android_fleet_schemas.py/android_management_schemas.py/android_management.py、application/android/{management,fleet,backups}.py、providers/android/{management,mac_runtime}.py、上述前端四入口与生成类型/测试。根任务独占docs/qa、.ai与本计划；不得stage Studio脏文件。实现者不得更改任何QA脚本或其他代理提交。
