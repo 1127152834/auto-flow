@@ -125,6 +125,8 @@ def test_delete_verification_uses_owned_container_and_volume_after_crash(tmp_pat
     device = {"deviceId": "device-delete-crashed", "name": "delete target", "workspaceId": "default", "control": "recovery_required", "generation": 2, "androidStatus": "unknown", "dataRetained": False, "deleted": False}
     repository.save(device)
     record = operations.accept("default", f"delete-crashed-{delete_data}", device["deviceId"], "delete", "digest", {"deleteData": delete_data})
+    device["operation"] = {"id": record.operation_id, "action": "delete", "state": "needs_verification"}
+    repository.save(device)
     operations.transition(record.operation_id, "queued", "running", {})
     operations.transition(record.operation_id, "running", "needs_verification", {})
     app = FastAPI()
@@ -740,6 +742,8 @@ def test_verify_lifecycle_commits_operation_and_device_projection_atomically(tmp
     }
     repository.save(device)
     record = operations.accept("default", "start-unknown", device["deviceId"], "start", "start-digest", {})
+    device["operation"]["id"] = record.operation_id
+    repository.save(device)
     operations.transition(record.operation_id, "queued", "running", {})
     operations.transition(record.operation_id, "running", "needs_verification", {})
     app = FastAPI()
@@ -794,6 +798,8 @@ def test_verify_delete_accepts_the_observed_post_delete_state(tmp_path, delete_d
         "delete-digest",
         {"deleteData": delete_data},
     )
+    device["operation"]["id"] = record.operation_id
+    repository.save(device)
     operations.transition(record.operation_id, "queued", "running", {})
     operations.transition(record.operation_id, "running", "needs_verification", {})
 

@@ -269,7 +269,7 @@ it('does not execute operational actions for unknown or stale devices', async ()
   expect(await screen.findByRole('button', { name: '启动设备' })).toBeDisabled()
   expect(screen.getByRole('button', { name: '核实状态' })).toBeEnabled()
   await userEvent.click(screen.getByRole('button', { name: '核实状态' }))
-  expect(onManage).toHaveBeenCalledWith('d', 'verify', undefined, undefined)
+  expect(onManage).toHaveBeenCalledWith('d', 'recover', undefined, undefined)
 })
 
 

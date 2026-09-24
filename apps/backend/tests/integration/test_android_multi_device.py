@@ -7,6 +7,7 @@ import pytest
 
 from autoflow.application.android.bulk import AndroidBulkService
 from autoflow.domain.android.ports import AndroidError
+from autoflow.infrastructure.database.android import SqlAlchemyDeviceRepository
 from autoflow.infrastructure.database.android_operations import (
     SqlAlchemyAndroidOperationRepository,
 )
@@ -136,12 +137,15 @@ async def test_bulk_verify_reconciles_unknown_item_without_replaying_operation(t
     operation = operations.get(operation_id, "ws")
     operations.transition(operation.operation_id, "running", "needs_verification", {})
     devices.items["d1"]["control"] = "recovery_required"
+    devices.repository = SqlAlchemyDeviceRepository(sessions)
+    devices.repository.save(devices.items["d1"])
+    devices.get = devices.repository.get
 
     result = await service.verify(batch["id"], "ws")
 
     assert result["items"][0]["state"] == "succeeded"
     assert operations.get(operation_id, "ws").state == "succeeded"
-    assert devices.items["d1"].get("control") == "idle"
+    assert devices.repository.get("d1")["control"] == "idle"
     assert len(devices.requests) == 1
     sessions.dispose()
 
@@ -218,6 +222,10 @@ async def test_verification_preserves_cancellation_recorded_while_runtime_read_i
     await service.tick()
     batch = service.get(batch["id"])
     operations.transition(batch["items"][0]["operationId"], "running", "needs_verification", {})
+    devices.repository = SqlAlchemyDeviceRepository(sessions)
+    for device in devices.items.values():
+        devices.repository.save(device)
+    devices.get = devices.repository.get
     verify = asyncio.create_task(service.verify(batch["id"], "ws"))
     try:
         await asyncio.wait_for(entered.wait(), 2)

@@ -65,7 +65,7 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
     managementApi = useMemo(() => androidManagementApi(client), [client]),
     fleet = useMemo(() => fleetApi(client), [client])
   const queryClient = useQueryClient()
-  const [page, setPage] = useState<'board' | 'create' | 'detail'>('board'),
+  const [page, setPage] = useState<'board' | 'create' | 'detail' | 'maintenance'>('board'),
     [selected, setSelected] = useState<string | null>(null),
     [source, setSource] = useState<AndroidDevice>()
   const [session, setSession] = useState<ConsoleSession | null>(null),
@@ -154,6 +154,7 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
     enabled: Boolean(connected && !sessionChanging && page === 'detail' && session?.state === 'connected'),
     retry: false,
     refetchInterval: 5000,
+    refetchIntervalInBackground: true,
   })
   useEffect(() => {
     if (sessionStatus.data && !sessionChanging)
@@ -409,7 +410,7 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
       else {
         pendingManagement.current ??= {
           requestId: crypto.randomUUID(),
-          action: (management.action === 'verify' ? 'recover' : management.action) as DeviceCommand['action'],
+          action: management.action as DeviceCommand['action'],
           deleteData,
           allowUnknownDiskEstimate: management.action === 'restore' && allowUnknownDiskEstimate,
         }
@@ -454,6 +455,22 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
             refresh()
           }}
         />
+      ) : page === 'maintenance' && device ? (
+        <div className="space-y-5">
+          <Action onClick={() => setPage('board')}>返回资源看板</Action>
+          <h1>{device.name} · 数据维护</h1>
+          <BackupPanel
+            key={device.deviceId}
+            api={managementApi}
+            deviceId={device.deviceId}
+            revision={device.generation}
+            runtimeState={managementRecord?.runtimeState ?? device.androidStatus}
+            control={device.control}
+            hasControlSession={managementRecord?.owner.kind !== 'none'}
+            stale={Boolean(managementDevices.isError || managementRecord?.stale || device.androidStatus === 'unknown')}
+            restorePending={managementRecord?.restoreState === 'pending'}
+          />
+        </div>
       ) : page === 'detail' && device ? (
         <>
         <DeviceConsole
@@ -482,7 +499,8 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
           runtimeState={managementRecord?.runtimeState ?? device.androidStatus}
           control={device.control}
           hasControlSession={Boolean(session?.deviceId === device.deviceId && session.state !== 'closed')}
-          stale={Boolean(managementRecord?.stale || device.androidStatus === 'unknown')}
+          stale={Boolean(managementDevices.isError || managementRecord?.stale || device.androidStatus === 'unknown')}
+          restorePending={managementRecord?.restoreState === 'pending'}
         />
         </>
       ) : (
@@ -500,6 +518,7 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
               setError('实例详情暂不可用，请刷新后重试')
             }).catch((cause) => setError(cause instanceof Error ? cause.message : '实例详情暂不可用，请刷新后重试'))
           }}
+          onMaintain={(id) => { setSelected(id); setPage('maintenance') }}
           onEndControl={(id, sessionId) => { void endControl(id, sessionId) }}
           onManage={(id, action, operationId, requestId) => {
             void loadDevice(id).then((target) => {
@@ -507,7 +526,7 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
               setError('实例详情暂不可用，请刷新后重试')
             }).catch((cause) => setError(cause instanceof Error ? cause.message : '实例详情暂不可用，请刷新后重试'))
           }}
-        /><ImageManager key={instanceId} instanceId={instanceId} api={managementApi} /><TemplateManager api={{ ...fleet, images: managementApi.images, archiveProfile: managementApi.archiveProfile }} /><DataMaintenance api={managementApi} saveDiagnostic={saveAndroidDiagnostic} resourceIds={[...all.map((item) => item.deviceId), ...(backups.data ?? []).map((item) => item.id)]} diagnosticDeviceIds={all.map((item) => item.deviceId)} /></div>
+        /><ImageManager key={instanceId} instanceId={instanceId} api={managementApi} /><TemplateManager api={{ ...fleet, images: managementApi.images, archiveProfile: managementApi.archiveProfile }} /><BackupPanel key={instanceId} api={managementApi} /><DataMaintenance api={managementApi} saveDiagnostic={saveAndroidDiagnostic} resourceIds={[...all.map((item) => item.deviceId), ...(backups.data ?? []).map((item) => item.id)]} diagnosticDeviceIds={all.map((item) => item.deviceId)} /></div>
       )}
       <Dialog
         open={Boolean(management)}

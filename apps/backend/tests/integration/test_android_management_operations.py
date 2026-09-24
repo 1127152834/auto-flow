@@ -76,3 +76,127 @@ def test_transition_with_device_commits_operation_and_projection_together(reposi
 
     assert running.state == "running"
     assert device_repository.get("d-atomic")["operation"]["state"] == "running"
+
+
+@pytest.mark.asyncio
+async def test_old_verification_cannot_overwrite_recovered_device_and_new_session(repository):
+    import asyncio
+
+    from autoflow.application.android.devices import AndroidDeviceService
+    from autoflow.application.android.verification import verify_lifecycle_operation
+
+    devices_repo = SqlAlchemyDeviceRepository(repository.sessions)
+    old = repository.accept("ws", "old-start", "device", "start", "digest", {})
+    repository.transition(old.operation_id, "queued", "running", {})
+    old = repository.transition(old.operation_id, "running", "needs_verification", {})
+    devices_repo.save({"deviceId": "device", "workspaceId": "ws", "generation": 2,
+                       "ownerRunId": None, "control": "recovery_required", "androidStatus": "unknown",
+                       "operation": {"id": old.operation_id, "action": "start", "state": "needs_verification"}})
+    inspecting, release = asyncio.Event(), asyncio.Event()
+
+    class Runtime:
+        workspace_id = "ws"
+        locked = False
+
+        def lock(self):
+            if self.locked:
+                raise AndroidError("ANDROID_RUNTIME_BUSY", "busy", 409)
+            self.locked = True
+
+        def unlock(self):
+            self.locked = False
+
+        async def manage(self, device, request, stage, save):
+            device["androidStatus"] = "ready"
+
+        async def inspect(self, device):
+            inspecting.set()
+            await release.wait()
+            return {"androidStatus": "ready"}
+
+    devices = AndroidDeviceService(devices_repo, Runtime())
+    devices.management.operations = repository
+    devices.management.workspace_identity = "ws"
+    verification = asyncio.create_task(verify_lifecycle_operation(repository, devices, old, workspace_identity="ws"))
+    await inspecting.wait()
+    devices.operate("device", {"requestId": "new-recover", "action": "recover", "deleteData": False})
+    await devices.management.task
+    current = devices_repo.claim("device", "new-session")
+    current["control"] = "manual"
+    devices_repo.save(current)
+    release.set()
+    try:
+        await verification
+    except AndroidError as error:
+        assert error.status == 409
+    assert devices_repo.get("device") == current
+    assert current["generation"] == 4
+    assert repository.get(old.operation_id).state == "needs_verification"
+
+
+def test_verification_transaction_rejects_changed_device_snapshot(repository):
+    devices = SqlAlchemyDeviceRepository(repository.sessions)
+    operation = repository.accept("ws", "verify-cas", "d", "start", "digest", {})
+    repository.transition(operation.operation_id, "queued", "running", {})
+    repository.transition(operation.operation_id, "running", "needs_verification", {})
+    original = {"deviceId": "d", "generation": 2, "control": "recovery_required"}
+    devices.save(original | {"generation": 3, "control": "manual", "ownerRunId": "new-session"})
+    with pytest.raises(AndroidError) as error:
+        repository.transition_with_device(operation.operation_id, "needs_verification", "succeeded", {},
+                                          original | {"control": "idle"}, expected_device=original)
+    assert error.value.status == 409
+    assert devices.get("d")["ownerRunId"] == "new-session"
+    assert repository.get(operation.operation_id).state == "needs_verification"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('changes', [
+    {'operation': None},
+    {'operation': {'id': 'newer-operation'}},
+    {'pendingCommand': {'requestId': 'app-unknown'}},
+    {'restoreState': 'pending'},
+    {'restoreRequestId': 'restore-unknown'},
+])
+async def test_verification_preserves_current_operation_and_pending_isolation(repository, changes):
+    from autoflow.application.android.devices import AndroidDeviceService
+    from autoflow.application.android.verification import verify_lifecycle_operation
+
+    devices = SqlAlchemyDeviceRepository(repository.sessions)
+    operation = repository.accept('ws', 'verify-isolation', 'd', 'start', 'digest', {})
+    repository.transition(operation.operation_id, 'queued', 'running', {})
+    operation = repository.transition(operation.operation_id, 'running', 'needs_verification', {})
+    original = {'deviceId': 'd', 'generation': 2, 'control': 'recovery_required',
+                'operation': {'id': operation.operation_id, 'state': 'needs_verification'}} | changes
+    devices.save(original)
+
+    class Runtime:
+        async def inspect(self, device):
+            return {'androidStatus': 'ready'}
+
+    with pytest.raises(AndroidError) as error:
+        await verify_lifecycle_operation(repository, AndroidDeviceService(devices, Runtime()), operation, workspace_identity='ws')
+    assert error.value.status == 409
+    assert devices.get('d') == original
+    assert repository.get(operation.operation_id).state == 'needs_verification'
+
+
+@pytest.mark.asyncio
+async def test_verification_allows_confirmed_permanent_disposal_of_pending_restore(repository):
+    from autoflow.application.android.devices import AndroidDeviceService
+    from autoflow.application.android.verification import verify_lifecycle_operation
+
+    devices = SqlAlchemyDeviceRepository(repository.sessions)
+    operation = repository.accept('ws', 'delete-pending', 'd', 'delete', 'digest', {'deleteData': True})
+    repository.transition(operation.operation_id, 'queued', 'running', {})
+    operation = repository.transition(operation.operation_id, 'running', 'needs_verification', {})
+    devices.save({'deviceId': 'd', 'generation': 2, 'control': 'recovery_required', 'restoreState': 'pending',
+                  'operation': {'id': operation.operation_id, 'state': 'needs_verification'}})
+
+    class Runtime:
+        async def verify_deleted(self, device):
+            return {'androidStatus': 'missing'}
+
+    result = await verify_lifecycle_operation(repository, AndroidDeviceService(devices, Runtime()), operation, workspace_identity='ws')
+    assert result.state == 'succeeded'
+    assert devices.get('d')['deleted'] is True
+    assert devices.get('d')['restoreState'] == 'pending'

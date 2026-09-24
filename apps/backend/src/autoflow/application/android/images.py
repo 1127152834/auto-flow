@@ -346,47 +346,50 @@ class AndroidImageService:
         The client observation remains a check label and explanation.  Its result
         is deliberately ignored so a caller cannot manufacture a passed image.
         """
-        image = self.resources.get("image", identifier)
-        check = str(observation.get("check", ""))
-        evidence: dict[str, Any] = {"source": "server", "reference": image.get("reference")}
-        if check not in {"image_metadata", "runtime_image"}:
-            result = "blocked"
-            evidence["code"] = "ANDROID_IMAGE_CHECK_UNSUPPORTED"
-        else:
-            try:
-                observed = await self._server_probe(image)
-            except AndroidError as error:
-                result = "failed" if error.status == 404 or error.code in {"ANDROID_IMAGE_UNTRUSTED", "ANDROID_IMAGE_ID_INVALID"} else "blocked"
-                evidence.update(code=error.code, message=error.message[:240])
-            except (TimeoutError, OSError) as error:
+        with self._runtime_lock():
+            image = self.resources.get("image", identifier)
+            if image.get("state") not in {"registered", "verified"}:
+                raise AndroidError("ANDROID_IMAGE_STATE_CONFLICT", "镜像未登记或删除结果待核实，请先处理原操作", 409)
+            check = str(observation.get("check", ""))
+            evidence: dict[str, Any] = {"source": "server", "reference": image.get("reference")}
+            if check not in {"image_metadata", "runtime_image"}:
                 result = "blocked"
-                evidence.update(code="ANDROID_IMAGE_VERIFICATION_UNKNOWN", message=str(error)[:240])
+                evidence["code"] = "ANDROID_IMAGE_CHECK_UNSUPPORTED"
             else:
-                evidence.update({key: value for key, value in observed.items() if value is not None})
-                required = (observed.get("imageId"), observed.get("architecture"), observed.get("os"))
-                source_known = bool(observed.get("sourceDigest")) or str(image.get("reference", "")).startswith("local:")
-                if not source_known:
+                try:
+                    observed = await self._server_probe(image)
+                except AndroidError as error:
+                    result = "failed" if error.status == 404 or error.code in {"ANDROID_IMAGE_UNTRUSTED", "ANDROID_IMAGE_ID_INVALID"} else "blocked"
+                    evidence.update(code=error.code, message=error.message[:240])
+                except (TimeoutError, OSError) as error:
                     result = "blocked"
-                    evidence["code"] = "ANDROID_IMAGE_SOURCE_UNKNOWN"
-                elif required[0] != image.get("imageId") or required[1] not in {"arm64", "aarch64"} or required[2] != "linux":
-                    result = "failed"
-                    evidence["code"] = "ANDROID_IMAGE_METADATA_MISMATCH"
+                    evidence.update(code="ANDROID_IMAGE_VERIFICATION_UNKNOWN", message=str(error)[:240])
                 else:
-                    result = "passed"
-        verification = deepcopy(image.get("verification") or {"state": "not_tested", "records": []})
-        records = list(verification.get("records") or [])
-        records.append({"check": check, "result": result, "source": "server", "evidence": evidence, "recordedAt": datetime.now(UTC).isoformat()})
-        verification["records"] = records
-        results = {record.get("result") for record in records if record.get("check") in {"image_metadata", "runtime_image"}}
-        verification["state"] = "failed" if "failed" in results else "blocked" if "blocked" in results else "passed" if results and results == {"passed"} else "not_tested"
-        image["verification"] = verification
-        image["validation"] = summarize_verification([
-            {"checkId": record["check"], "status": record["result"]}
-            for record in records if record.get("check") in REQUIRED_CHECKS
-        ]).status
-        image["state"] = "verified" if verification["state"] == "passed" else "registered"
-        self.resources.save("image", image)
-        return self._public(image)
+                    evidence.update({key: value for key, value in observed.items() if value is not None})
+                    required = (observed.get("imageId"), observed.get("architecture"), observed.get("os"))
+                    source_known = bool(observed.get("sourceDigest")) or str(image.get("reference", "")).startswith("local:")
+                    if not source_known:
+                        result = "blocked"
+                        evidence["code"] = "ANDROID_IMAGE_SOURCE_UNKNOWN"
+                    elif required[0] != image.get("imageId") or required[1] not in {"arm64", "aarch64"} or required[2] != "linux":
+                        result = "failed"
+                        evidence["code"] = "ANDROID_IMAGE_METADATA_MISMATCH"
+                    else:
+                        result = "passed"
+            verification = deepcopy(image.get("verification") or {"state": "not_tested", "records": []})
+            records = list(verification.get("records") or [])
+            records.append({"check": check, "result": result, "source": "server", "evidence": evidence, "recordedAt": datetime.now(UTC).isoformat()})
+            verification["records"] = records
+            results = {record.get("result") for record in records if record.get("check") in {"image_metadata", "runtime_image"}}
+            verification["state"] = "failed" if "failed" in results else "blocked" if "blocked" in results else "passed" if results and results == {"passed"} else "not_tested"
+            image["verification"] = verification
+            image["validation"] = summarize_verification([
+                {"checkId": record["check"], "status": record["result"]}
+                for record in records if record.get("check") in REQUIRED_CHECKS
+            ]).status
+            image["state"] = "verified" if verification["state"] == "passed" else "registered"
+            self.resources.save("image", image)
+            return self._public(image)
 
     async def verify_delete_content(self, identifier: str, request_id: str) -> dict[str, Any]:
         """Reconcile an interrupted image deletion without issuing another delete."""

@@ -170,7 +170,7 @@ class SqlAlchemyAndroidOperationRepository:
             session.refresh(row)
             return OperationRecord(row)
 
-    def transition_with_device(self, operation_id: str, expected_state: str, next_state: str, changes: dict[str, Any], device: dict[str, Any]) -> OperationRecord:
+    def transition_with_device(self, operation_id: str, expected_state: str, next_state: str, changes: dict[str, Any], device: dict[str, Any], *, expected_device: dict[str, Any] | None = None) -> OperationRecord:
         """Commit an operation transition and its device projection in one SQLite transaction."""
         if next_state not in _TRANSITIONS.get(expected_state, set()):
             raise AndroidError("ANDROID_OPERATION_STATE_INVALID", "操作状态无效", 422)
@@ -191,6 +191,10 @@ class SqlAlchemyAndroidOperationRepository:
             result = session.execute(update(AndroidOperationRow).where(AndroidOperationRow.id == operation_id, AndroidOperationRow.state == expected_state).values(**values))
             if cast(CursorResult, result).rowcount != 1:
                 raise AndroidError("ANDROID_OPERATION_STATE_CONFLICT", "操作状态已变化，请先核实", 409)
+            if expected_device is not None:
+                stored = session.get(AndroidDeviceRow, row.target_id)
+                if stored is None or row.target_id != device["deviceId"] or stored.payload != expected_device:
+                    raise AndroidError("ANDROID_OPERATION_STATE_CONFLICT", "设备版本或归属已变化，请先核实", 409)
             if row.action == "restore" and row.payload.get("backupId"):
                 stored = session.get(AndroidDeviceRow, row.target_id)
                 prior = stored.payload if stored is not None else {}

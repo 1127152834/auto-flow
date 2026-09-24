@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom/vitest'
-import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider, focusManager } from '@tanstack/react-query'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { devices, environment, profile, fixtureSession, images, allocations, runs } from './prototype-fixtures'
 import { ResourceBoard } from '../components/ResourceBoard'
@@ -617,4 +617,93 @@ it('keeps endpoint transitions scoped to the backend and session that started th
   await act(async () => { await queryClient.invalidateQueries({ queryKey: ['android', 'replacement', 'session'] }) })
   expect(heartbeats()).toBe(count)
   await act(async () => { finishNew({ ...replacement, endpoint: 'native', generation: 2 }); await newSwitch })
+})
+
+
+it('keeps embedded heartbeats alive beyond the hidden lease window while display polling pauses', async () => {
+  vi.useFakeTimers()
+  const fallback = mocks.client.request.getMockImplementation()!
+  mocks.client.request.mockImplementation((path: string, init?: { method?: string }) =>
+    path.endsWith('/input') ? Promise.resolve(fixtureSession(true)) : fallback(path, init))
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  try {
+    render(<QueryClientProvider client={queryClient}><AndroidPage /></QueryClientProvider>)
+    await act(async () => { await vi.advanceTimersByTimeAsync(10) })
+    fireEvent.click(screen.getByRole('button', { name: /打开测试设备 01/ }))
+    await act(async () => { await vi.advanceTimersByTimeAsync(10) })
+    expect(screen.getByRole('heading', { name: '手动控制中' })).toBeVisible()
+    const count = (suffix: string) => mocks.client.request.mock.calls.filter(([path]) => path.endsWith(suffix)).length
+    const beats = count('/heartbeat'), apps = count('/apps'), snapshots = count('/management/devices?limit=50')
+    focusManager.setFocused(false)
+    await act(async () => { await vi.advanceTimersByTimeAsync(35_000) })
+    expect(count('/heartbeat') - beats).toBeGreaterThanOrEqual(6)
+    expect(count('/apps')).toBe(apps)
+    expect(count('/management/devices?limit=50')).toBe(snapshots)
+    focusManager.setFocused(true)
+    await act(async () => { await vi.advanceTimersByTimeAsync(10) })
+    fireEvent.click(screen.getByRole('button', { name: '主页' }))
+    await act(async () => { await vi.advanceTimersByTimeAsync(10) })
+    expect(mocks.client.request).toHaveBeenCalledWith('/api/v1/android/sessions/fixture/input', expect.objectContaining({ body: expect.objectContaining({ kind: 'key', keycode: 3 }) }))
+    expect(mocks.client.request.mock.calls.filter(([path, init]) => path.endsWith('/sessions') && init?.method === 'POST')).toHaveLength(1)
+  } finally {
+    cleanup()
+    queryClient.clear()
+    focusManager.setFocused(undefined)
+    vi.useRealTimers()
+  }
+})
+
+it('creates a stopped backup through device maintenance without starting or claiming control', async () => {
+  const fallback = mocks.client.request.getMockImplementation()!
+  mocks.client.request.mockImplementation((path: string, init?: { method?: string }) => {
+    if (path === '/api/v1/android/management/devices?limit=50') return Promise.resolve({ items: [{ deviceId: devices[0].deviceId, revision: 7, name: devices[0].name, runtimeState: 'stopped', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: devices[0], latestOperation: null, allowedActions: ['start', 'delete'], blockedReasons: {} }], total: 1, nextCursor: null })
+    if (path.endsWith('/backups') && init?.method === 'POST') return Promise.resolve({ id: 'backup-stopped' })
+    return fallback(path, init)
+  })
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: `维护${devices[0].name}` }))
+  await userEvent.click(screen.getByRole('button', { name: '创建停机备份' }))
+  await screen.findByText('备份已创建')
+  expect(mocks.client.request).toHaveBeenCalledWith('/api/v1/android/management/backups', expect.objectContaining({ body: expect.objectContaining({ deviceId: devices[0].deviceId, expectedRevision: 7 }) }))
+  expect(mocks.client.request.mock.calls.filter(([path, init]) => init?.method === 'POST' && (path.endsWith('/sessions') || path.endsWith('/operations')))).toEqual([])
+})
+
+it('restores a workspace backup after its source device has been deleted', async () => {
+  const fallback = mocks.client.request.getMockImplementation()!
+  mocks.client.request.mockImplementation((path: string, init?: { method?: string }) => {
+    if (path === '/api/v1/android/management/devices?limit=50') return Promise.resolve({ items: [], total: 0, nextCursor: null })
+    if (path.endsWith('/backups') && !init?.method) return Promise.resolve([{ id: 'orphan-backup', deviceId: 'deleted-source', bytes: 123, state: 'ready', imageId: profile.imageId, sha256: 'digest', formatVersion: 1, createdAt: '' }])
+    if (path.endsWith('/backups/orphan-backup/restore')) return Promise.resolve({ operationId: 'restore-new' })
+    return fallback(path, init)
+  })
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: '恢复为新实例' }))
+  await screen.findByText(/恢复已提交，操作 restore-new/)
+  expect(mocks.client.request).toHaveBeenCalledWith('/api/v1/android/management/backups/orphan-backup/restore', expect.objectContaining({ body: expect.objectContaining({ newName: '恢复实例', allowUnknownDiskEstimate: false }) }))
+  expect(mocks.client.request.mock.calls.filter(([path, init]) => init?.method === 'POST' && (path.endsWith('/sessions') || path.endsWith('/operations')))).toEqual([])
+})
+
+it.each(['failed lifecycle', 'unknown without operation', 'pending restore'])('recovers current device state for %s without rewriting a historical receipt', async (scenario) => {
+  const pendingRestore = scenario === 'pending restore'
+  let recovered = false
+  const fallback = mocks.client.request.getMockImplementation()!
+  mocks.client.request.mockImplementation((path: string, init?: { method?: string; body?: { action?: string } }) => {
+    if (path === '/api/v1/android/management/devices?limit=50') return Promise.resolve({ items: [{ deviceId: devices[0].deviceId, revision: recovered ? 8 : 7, name: devices[0].name, runtimeState: recovered || pendingRestore ? 'stopped' : 'unknown', owner: { kind: 'none', id: null }, observedAt: null, stale: !recovered && !pendingRestore, restoreState: pendingRestore ? 'pending' : undefined, specSnapshot: devices[0], latestOperation: recovered ? { operationId: 'recover-current', action: 'recover', state: 'succeeded' } : scenario === 'unknown without operation' ? null : { operationId: 'historical-failed', requestId: 'old-request', action: pendingRestore ? 'restore' : 'start', state: 'failed' }, allowedActions: recovered ? pendingRestore ? ['verify', 'delete'] : ['start', 'delete'] : ['verify'], blockedReasons: pendingRestore ? { start: '数据恢复尚未完成或核实', backup: '数据恢复尚未完成或核实' } : {} }], total: 1, nextCursor: null })
+    if (path === `/api/v1/android/devices/${devices[0].deviceId}/operations` && init?.body?.action === 'recover') { recovered = true; return Promise.resolve(devices[0]) }
+    if (path === '/api/v1/android/management/operations/historical-failed') return Promise.resolve({ requestId: 'old-request', state: 'failed' })
+    return fallback(path, init)
+  })
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: '核实状态' }))
+  await userEvent.click(screen.getByRole('button', { name: '确认操作' }))
+  await waitFor(() => expect(mocks.client.request).toHaveBeenCalledWith(`/api/v1/android/devices/${devices[0].deviceId}/operations`, expect.objectContaining({ body: expect.objectContaining({ action: 'recover' }) })))
+  expect(mocks.client.request.mock.calls.some(([path]) => path.includes('/management/operations/historical-failed/verify'))).toBe(false)
+  await screen.findByRole('button', { name: '删除实例' })
+  if (pendingRestore) {
+    expect(screen.queryByRole('button', { name: '启动设备' })).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: `维护${devices[0].name}` }))
+    expect(screen.getByRole('button', { name: '创建停机备份' })).toBeDisabled()
+  } else {
+    expect(screen.getByRole('button', { name: '启动设备' })).toBeEnabled()
+  }
 })

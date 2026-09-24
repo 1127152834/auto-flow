@@ -245,3 +245,64 @@ class _ScenarioRuntime:
 
     async def inspect(self, device: dict[str, Any]) -> dict[str, Any]:
         return {"androidStatus": "stopped", "dockerStatus": "stopped", "imageId": device["imageId"]}
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('state', ['unregistered', 'deleted', 'delete_pending', 'delete_blocked', 'delete_needs_verification'])
+@pytest.mark.parametrize('check', ['image_metadata', 'unsupported'])
+async def test_metadata_verification_preserves_image_lifecycle(tmp_path, state, check):
+    sessions = _database(tmp_path)
+    resources = AndroidResourceRepository(sessions)
+    image = {'id': 'image', 'imageId': IMAGE_A, 'reference': 'local:fixture', 'state': state,
+             'revision': 2, 'deleteRequestId': 'delete-original', 'workspaceId': 'workspace'}
+    resources.save('image', image)
+    service = AndroidImageService(resources, AndroidDeviceService(SqlAlchemyDeviceRepository(sessions), _ScenarioRuntime()), _ScenarioCatalog([IMAGE_A]))
+    try:
+        await service.verify_server('image', {'check': check})
+    except AndroidError as error:
+        assert error.code == 'ANDROID_IMAGE_STATE_CONFLICT'
+    assert resources.get('image', 'image') == image
+    sessions.dispose()
+
+
+@pytest.mark.asyncio
+async def test_metadata_probe_serializes_with_delete_and_keeps_delete_receipt(tmp_path):
+    import asyncio
+
+    sessions = _database(tmp_path)
+    resources = AndroidResourceRepository(sessions)
+    started, release = asyncio.Event(), asyncio.Event()
+
+    class Runtime(_ScenarioRuntime):
+        def lock(self):
+            if self.locked:
+                raise AndroidError('ANDROID_RUNTIME_BUSY', 'busy', 409)
+            self.locked = 1
+
+    class Catalog(_ScenarioCatalog):
+        async def inspect(self, reference):
+            started.set()
+            await release.wait()
+            return await super().inspect(reference)
+
+    runtime = Runtime()
+    service = AndroidImageService(resources, AndroidDeviceService(SqlAlchemyDeviceRepository(sessions), runtime), Catalog([IMAGE_A]))
+    resources.save('image', {'id': 'image', 'imageId': IMAGE_A, 'reference': 'local:fixture', 'state': 'registered', 'revision': 1})
+    task = asyncio.create_task(service.verify_server('image', {'check': 'image_metadata'}))
+    await started.wait()
+    blocked = False
+    try:
+        service.delete('image', request_id='delete-original', expected_revision=1)
+    except AndroidError as error:
+        assert error.code == 'ANDROID_RUNTIME_BUSY'
+        blocked = True
+    release.set()
+    await task
+    if blocked:
+        service.delete('image', request_id='delete-original', expected_revision=1)
+    persisted = resources.get('image', 'image')
+    assert persisted['state'] == 'unregistered'
+    assert persisted['revision'] == 2
+    assert persisted['deleteRequestId'] == 'delete-original'
+    assert runtime.locked == 0
+    sessions.dispose()
