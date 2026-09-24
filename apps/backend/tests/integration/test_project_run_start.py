@@ -116,7 +116,6 @@ def test_environment_reservation_failure_rolls_back_task_run_and_acceptance(tmp_
     )
     from autoflow.infrastructure.database.environments import SqlAlchemyEnvironments
     from autoflow.infrastructure.filesystem.environment_store import EnvironmentStore
-
     from tests.unit.test_workflow_browser_resources import resources
 
     browser, _, profile = resources(tmp_path, valid_profile_values)
@@ -151,7 +150,6 @@ def test_environment_reservation_commits_with_task_and_replay_reuses_instance(tm
     )
     from autoflow.infrastructure.database.environments import SqlAlchemyEnvironments
     from autoflow.infrastructure.filesystem.environment_store import EnvironmentStore
-
     from tests.unit.test_workflow_browser_resources import resources
 
     browser, _, profile = resources(tmp_path, valid_profile_values)
