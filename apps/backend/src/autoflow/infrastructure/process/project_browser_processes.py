@@ -137,7 +137,8 @@ def capture_processes(
             # inherited per-run marker make the ownership decision below.
             command = row[3] if len(row) == 4 else ""
             if (str(directory) in command or "--test-browser-worker" in command
-                or "--workflow-worker" in command or "/playwright/driver/" in command):
+                or "--workflow-worker" in command or "--inspection-worker" in command
+                or "/playwright/driver/" in command):
                 belongs = _belongs_to_run(item, directory, executable)
                 if belongs is None and strict_ownership and _process_exists(item):
                     raise RuntimeError("Candidate browser process ownership is unavailable")

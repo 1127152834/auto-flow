@@ -1,7 +1,8 @@
-import { inputPromptApi, jsScriptApi, speechApi } from './api'
+import { desktopActionApi, inputPromptApi, jsScriptApi, speechApi } from './api'
 import type { components } from '../../shared/api/generated'
 import { isSpeechRequest, runSpeech } from './lib/runSpeech'
 import { runJsScript } from './lib/runJsScript'
+import { isPlatformActionRequest, runPlatformAction } from './lib/runPlatformAction'
 import type { InputPromptRequest } from './types/workflow'
 // Source: WebRPA@5ccb900e, services/socket.ts; see SOURCE.md for license and adaptation boundaries.
 import { StudioEventClient as Socket } from './api/event-client'
@@ -150,6 +151,11 @@ class SocketService {
     }
   }
 
+  command(event: string, data: unknown, commandId: string) {
+    if (this.socket) return this.socket.command(event, data, commandId)
+    return Promise.resolve({ commandId, success: false, error: '服务未连接，命令尚未提交' })
+  }
+
   private speechRequests = new Map<string, {fingerprint:string;controller:AbortController;workflowId:string}>()
 
   private cancelSpeech(workflowId?: string) {
@@ -204,6 +210,55 @@ class SocketService {
   }
 
   private jsRequests = new Map<string, { fingerprint: string; controller: AbortController; workflowId: string }>()
+
+  private platformRequests = new Map<string, { fingerprint: string; controller: AbortController; workflowId: string }>()
+
+  private cancelPlatformActions(workflowId?: string) {
+    for (const [id, request] of this.platformRequests) {
+      if (!workflowId || request.workflowId === workflowId) { request.controller.abort(); this.platformRequests.delete(id) }
+    }
+  }
+
+  private async executePlatformAction(data: components['schemas']['StudioDesktopActionRequest']) {
+    const socket = this.socket
+    if (!socket || !isPlatformActionRequest(data)) {
+      useWorkflowStore.getState().addLog({ level: 'error', message: '平台操作请求缺少有效身份或参数，未执行' })
+      return
+    }
+    const fingerprint = JSON.stringify(data)
+    const previous = this.platformRequests.get(data.requestId)
+    if (previous) {
+      if (previous.fingerprint !== fingerprint) useWorkflowStore.getState().addLog({ level: 'error', message: '平台操作请求标识冲突，未重新执行' })
+      return
+    }
+    const controller = new AbortController()
+    this.platformRequests.set(data.requestId, { fingerprint, controller, workflowId: data.workflowId })
+    const isCurrent = () => !controller.signal.aborted && this.socket === socket
+    try {
+      let state = await desktopActionApi.getState(data.requestId)
+      while (isCurrent() && !state.success && (!state.httpStatus || state.httpStatus >= 500)) {
+        await this.waitRequestRetry(controller.signal)
+        if (!isCurrent()) return
+        state = await desktopActionApi.getState(data.requestId)
+      }
+      if (!isCurrent()) return
+      if (!state.success || !state.data) throw new Error(state.error || '无法确认平台操作请求')
+      if (state.data.workflowId !== data.workflowId || state.data.nodeId !== data.nodeId) throw new Error('平台操作请求目标不匹配')
+      if (['completed', 'failed', 'expired'].includes(state.data.status)) return
+      if (state.data.status !== 'pending') throw new Error('平台操作已被领取，无法安全重放；请停止本次运行')
+      const claimId = crypto.randomUUID()
+      const claim = await this.confirmInteractiveCommand(socket, 'desktop_action_claim', { requestId: data.requestId, claimId }, controller.signal)
+      if (!isCurrent()) return
+      if (!claim.success) throw new Error('平台操作领取尚未确认，未执行')
+      const result = await runPlatformAction(data, controller.signal)
+      if (!isCurrent()) return
+      const receipt = await this.confirmInteractiveCommand(socket, 'desktop_action_result', { ...result, requestId: data.requestId, claimId }, controller.signal)
+      if (!isCurrent()) return
+      if (!receipt.success) throw new Error('平台操作结果尚未确认；保留原命令记录，不重新执行')
+    } catch (error) {
+      if (isCurrent()) useWorkflowStore.getState().addLog({ level: 'error', message: `平台操作失败: ${error instanceof Error ? error.message : String(error)}` })
+    }
+  }
 
   private cancelJsScripts(workflowId?: string) {
     for (const [id, request] of this.jsRequests) {
@@ -373,9 +428,13 @@ class SocketService {
     })
 
     // 调试：命中断点/单步 → 暂停
-    this.socket.on('execution:paused', (data: { workflowId: string; runId?: string; pauseId?:string; controlRevision?:number; node_id: string; label?: string; variables?: Record<string, any>; variableMeta?:Record<string,{scope:'workflow'|'loop';readOnly:boolean;source?:string}>; reason?: 'breakpoint' | 'step' }) => {
+    this.socket.on('execution:paused', (data: { workflowId: string; runId?: string; pauseId?:string; controlRevision?:number; node_id: string; label?: string; variables?: Record<string, any>; variableMeta?:Record<string,{scope:'workflow'|'loop';readOnly:boolean;source?:string}>; executionContext?:{scopes:Array<{kind:string;id:string;name:string}>;loops:Array<{nodeId:string;type:string;currentIndex:number;iteration:number}>}; reason?: 'breakpoint' | 'step' | 'target' }) => {
       if (!belongsToCurrentExecution(data.workflowId, data.runId)) return
-      useDebugStore.getState().setPaused({ runId:data.runId, pauseId:data.pauseId, controlRevision:data.controlRevision, nodeId: data.node_id, label: data.label, variables: data.variables, variableMeta:data.variableMeta, reason: data.reason })
+      useDebugStore.getState().setPaused({ runId:data.runId, pauseId:data.pauseId, controlRevision:data.controlRevision, nodeId: data.node_id, label: data.label, variables: data.variables, variableMeta:data.variableMeta, executionContext:data.executionContext, reason: data.reason })
+    })
+    this.socket.on('execution:failed_paused', (data: { workflowId: string; runId?: string; pauseId?:string; controlRevision?:number; node_id: string; label?: string; variables?: Record<string, any>; variableMeta?:Record<string,{scope:'workflow'|'loop';readOnly:boolean;source?:string}>; executionContext?:{scopes:Array<{kind:string;id:string;name:string}>;loops:Array<{nodeId:string;type:string;currentIndex:number;iteration:number}>}; error?:string }) => {
+      if (!belongsToCurrentExecution(data.workflowId, data.runId)) return
+      useDebugStore.getState().setPaused({ runId:data.runId, pauseId:data.pauseId, controlRevision:data.controlRevision, nodeId:data.node_id, label:data.label, variables:data.variables, variableMeta:data.variableMeta, executionContext:data.executionContext, reason:'failure', error:data.error })
     })
     // 调试：恢复
     this.socket.on('execution:resumed', (data: {workflowId: string; runId?: string; pauseId?:string}) => {
@@ -545,6 +604,10 @@ class SocketService {
       void this.executeJsScript(data)
     })
 
+    this.socket.on('execution:desktop_action', (data: components['schemas']['StudioDesktopActionRequest']) => {
+      void this.executePlatformAction(data)
+    })
+
     // 播放音乐请求
     this.socket.on('execution:play_music', (data: {
       requestId: string
@@ -588,6 +651,7 @@ class SocketService {
     }) => {
       this.cancelJsScripts(data.workflowId)
       this.cancelSpeech(data.workflowId)
+      this.cancelPlatformActions(data.workflowId)
       console.log('[Socket] 收到 execution:completed 事件 - 后端执行完成！', data)
       if (this.pendingInputPrompt?.workflowId === data.workflowId && data.result.status !== 'completed') {
         this.inputPromptSequence++
@@ -685,6 +749,7 @@ class SocketService {
     this.socket.on('execution:stopped', (data: { workflowId: string; runId?: string }) => {
       this.cancelJsScripts(data.workflowId)
       this.cancelSpeech(data.workflowId)
+      this.cancelPlatformActions(data.workflowId)
       if (!belongsToCurrentExecution(data.workflowId, data.runId)) return
       isExecuting = false  // 停止接收实时数据行
       useDebugStore.getState().clearPaused()
@@ -745,6 +810,7 @@ class SocketService {
     this.releaseLogBuffer = null
     this.cancelJsScripts()
     this.cancelSpeech()
+    this.cancelPlatformActions()
     this.jsRequests.clear()
     this.inputPromptSequence++
     clearTimeout(this.inputPromptRetry)
@@ -843,6 +909,7 @@ class SocketService {
   // 发送停止执行请求
   stopExecution(workflowId: string, runId?:string) {
     if (!this.cancelSpeech(workflowId)) this.stopAllAudio()
+    this.cancelPlatformActions(workflowId)
     if (this.socket?.connected) {
       this.socket.emit('execution_stop', { workflowId,runId })
     }

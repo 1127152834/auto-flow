@@ -166,7 +166,7 @@
       "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
       "sourcePath": "reference/WebRPA/backend/app/services/browser_manager.py",
       "targetPath": "apps/backend/src/autoflow/providers/browser/workflow_worker.py",
-      "changeSummary": "迁入一次运行一个浏览器会话的生命周期入口；限定为CloakBrowser和受控stdin/stdout协议，错误不回传秘密或底层异常文本。",
+      "changeSummary": "迁入一次运行一个浏览器会话的生命周期入口；限定为CloakBrowser和受控stdin/stdout协议，错误不回传秘密或底层异常文本；大结果写入登记产物并对事件消息生成有界摘要。",
       "retainedDependencies": [
         "AutoFlow parent watcher",
         "CloakBrowserWorkflowSession"
@@ -803,6 +803,51 @@
         "生产运行时reference目录读取",
         "CUSTOM_MODULES_DIR",
         "直接JSON文件加载"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/services/element_picker/script.py",
+      "targetPath": "apps/backend/src/autoflow/providers/browser/element_picker_script.py",
+      "changeSummary": "直接迁入悬停高亮、稳定选择器、相似元素采样、页面动作拦截和停止清理脚本；增加macOS Command点击与Ctrl点击等价适配，并通过composedPath保留开放Shadow DOM中的真实目标。",
+      "retainedDependencies": [
+        "浏览器DOM与CSS选择器标准"
+      ],
+      "removedDependencies": [],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/services/element_picker/picker.py",
+      "targetPath": "apps/backend/src/autoflow/application/workflows/inspection.py",
+      "changeSummary": "保留拾取启动、结果查询、停止和进程隔离语义；接入AutoFlow稳定会话身份、CloakBrowser Profile、资源锁、受管worker和非消费式重连查询。",
+      "retainedDependencies": [
+        "WorkflowWorkerManager",
+        "WorkflowResourceCoordinator",
+        "主应用CloakBrowser Profile"
+      ],
+      "removedDependencies": [
+        "WebRPA全局picker实例",
+        "Edge/Chrome多浏览器分支",
+        "消费后清空结果"
+      ],
+      "licenseRecord": "LICENSE.WebRPA"
+    },
+    {
+      "sourceCommit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+      "sourcePath": "reference/WebRPA/backend/app/services/element_picker/picker_process.py",
+      "targetPath": "apps/backend/src/autoflow/providers/browser/inspection_worker.py",
+      "changeSummary": "保留独立拾取进程与浏览器脚本注入行为；复用AutoFlow CloakBrowser会话，增加页面列表、显式目标页、定位测试、修订校验、跨frame最新结果选择及受控命令响应。",
+      "retainedDependencies": [
+        "CloakBrowserWorkflowSession",
+        "冻结元素拾取脚本",
+        "AutoFlow worker命令协议"
+      ],
+      "removedDependencies": [
+        "Playwright自带浏览器启动",
+        "Edge/Chrome/Firefox选择",
+        "原始stderr错误透传"
       ],
       "licenseRecord": "LICENSE.WebRPA"
     }

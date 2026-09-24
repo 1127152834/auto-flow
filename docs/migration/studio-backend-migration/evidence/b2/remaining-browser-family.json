@@ -1,8 +1,8 @@
 {
   "evidenceId": "BE-B2-remaining-browser-family-2026-09-16",
-  "recordedAt": "2026-09-16",
+  "recordedAt": "2026-09-21",
   "implementationCommit": "c5319eba",
-  "result": "最后3个批准的B2网页节点已完成冻结源码差分、生产注册、真实HTTP协调器准入和受影响回归；B2的30个节点均已具备生产入口。真实CloakBrowser和正式Electron集中矩阵仍待执行。",
+  "result": "最后3个批准的B2网页节点已完成冻结源码差分、生产注册、真实HTTP协调器准入、macOS arm64真实CloakBrowser执行及正式Electron UI闭环；B2的30个节点均已具备真实执行证据。",
   "source": {
     "repository": "reference/WebRPA",
     "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
@@ -40,12 +40,22 @@
       "networkCapture": "10 passed"
     },
     "affectedRegression": {
-      "result": "272 passed",
-      "coverage": "最后3节点、11基础网页、表格共享渲染器、浏览器端口、生产注册、HTTP准入和产物持久化"
+      "command": "cd apps/backend && AUTOFLOW_B1_CLOAK_EXECUTABLE=<CloakBrowser> uv run pytest -q tests/differential/workflows/test_b2_switch_tab_executor_parity.py tests/differential/workflows/test_b2_table_extract_executor_parity.py tests/differential/workflows/test_b2_network_capture_executor_parity.py tests/unit/workflows/test_browser_session_contract.py tests/unit/workflows/test_executor_registry.py tests/contract/test_workflow_runs_api.py tests/integration/test_b2_remaining_browser_cloakbrowser_flow.py",
+      "result": "98 passed, 2 dependency deprecation warnings"
     },
     "quality": {
       "ruff": "passed",
-      "mypy": "passed"
+      "mypy": "passed",
+      "nodeCheck": "passed",
+      "visualInspection": "passed"
+    },
+    "realCloakBrowser": {
+      "test": "apps/backend/tests/integration/test_b2_remaining_browser_cloakbrowser_flow.py",
+      "result": "真实CloakBrowser双标签切换、HTML表格提取和浏览器请求抓取通过；请求URL秘密已脱敏"
+    },
+    "formalElectron": {
+      "evidence": "docs/migration/studio-backend-migration/evidence/b2/formal-remaining-browser-electron-peBC4L/result.json",
+      "result": "正式Studio UI添加配置、保存、正常关闭重开并执行；标签结果、表格数据、Excel产物哈希、抓包结果、日志及清理通过"
     }
   },
   "productionFiles": {
@@ -55,10 +65,10 @@
     "production.py": "440c0a8111965f7636d5c25dd82b98d3daebccc10c96bf60b37fe5a87442a83a"
   },
   "notClaimed": [
-    "真实CloakBrowser最后3节点矩阵",
-    "正式Electron UI执行",
-    "重建目录包执行",
-    "macOS Intel或Windows验证"
+    "重建后的Electron目录包执行",
+    "macOS Intel或Windows验证",
+    "B2拾取、定位和会话互斥验收",
+    "1 MiB真实浏览器容量矩阵"
   ],
   "userDatabaseModified": false
 }

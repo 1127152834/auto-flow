@@ -1,6 +1,7 @@
 import {createHash} from 'node:crypto'
+import { execFile } from 'node:child_process'
 import { realpathSync } from 'node:fs'
-import { app, BrowserWindow, clipboard, dialog, ipcMain, shell } from 'electron'
+import { app, BrowserWindow, clipboard, dialog, globalShortcut, ipcMain, nativeImage, Notification, shell } from 'electron'
 import { join } from 'node:path'
 import { SidecarSupervisor } from './sidecar/supervisor'
 import { resolvePackagedSidecarPath, resolvePlatformPaths } from './platform/paths'
@@ -8,15 +9,25 @@ import { createCopyProxyCredentialsHandler } from './ipc/proxy-credentials'
 import { createOpenExternalLinkHandler } from './ipc/external-links'
 import { createConnectGoogleSheetsHandler } from './google-desktop'
 import { createRevealKernelHandler } from './ipc/kernel-paths'
+import { createStudioPlatformActionHandler } from './ipc/studio-platform'
+import { createSystemControlActions } from './platform/system-control'
 import { isWindowMainFrame, StudioWindowController, type DesktopIpcEvent } from './ipc/automation-studio'
 import { protectSettingsHandler } from './ipc/settings'
 import { DesktopSettingsStore, SettingsError } from './settings/store'
 import { ProjectFilesController } from './project-files/controller'
 import { SettingsController } from './settings/controller'
 import type { UiPreferences } from '../shared/settings'
+import { ScheduledHotkeyController } from './scheduled-hotkeys'
 
 let mainWindow: BrowserWindow | undefined
 let settings: SettingsController | undefined
+let scheduledHotkeys: ScheduledHotkeyController | undefined
+
+function runSystemCommand(file:string,args:string[]):Promise<string>{
+  return new Promise(resolve=>execFile(file,args,{windowsHide:true},error=>resolve(error?.message??'')))
+}
+
+const systemControl=createSystemControlActions(process.platform,runSystemCommand)
 /**
  * Development-only: the exact config file an automated run hands to the Google
  * authorization handler instead of a native picker. A packaged build always
@@ -117,6 +128,18 @@ async function createWindow(): Promise<void> {
     request: fetch,
     showItemInFolder: path => shell.showItemInFolder(path),
   }))
+  ipcMain.removeHandler('autoflow:studio-platform-action')
+  ipcMain.handle('autoflow:studio-platform-action',createStudioPlatformActionHandler({
+    allowed:event=>studio.isStudioSender(event),
+    writeText:value=>clipboard.writeText(value),
+    readText:()=>clipboard.readText(),
+    writeImage:path=>{const image=nativeImage.createFromPath(path);if(image.isEmpty())return false;clipboard.writeImage(image);return true},
+    beep:()=>shell.beep(),
+    notify:request=>{const notification=new Notification({title:request.title,body:request.message,silent:!request.playSound});notification.show();setTimeout(()=>notification.close(),request.duration*1000)},
+    openPath:path=>shell.openPath(path),
+    systemControl:request=>systemControl.execute(request),
+    lockScreen:()=>systemControl.lock(),
+  }))
   const actions: Record<string, (...args: unknown[]) => Promise<unknown>> = {
     'get': () => settings!.snapshot(),
     'preferences': value => settings!.setPreferences(value),
@@ -133,6 +156,7 @@ async function createWindow(): Promise<void> {
     'open-directory': directory => settings!.openDirectory(directory),
     'preview-diagnostics': includeLogs => settings!.previewDiagnostics(includeLogs),
     'save-diagnostics': id => settings!.saveDiagnostics(id),
+    'save-android-diagnostic': id => settings!.saveAndroidDiagnostic(id),
     'quit': async () => { setTimeout(() => app.quit(), 0); return { quitting: true } },
   }
   for (const [name, action] of Object.entries(actions)) {
@@ -143,7 +167,9 @@ async function createWindow(): Promise<void> {
   ipcMain.removeHandler('autoflow:sidecar-restart')
   ipcMain.handle('autoflow:sidecar-restart', async event => {
     requireRuntimeSender(event)
-    if(!await studio.prepareLeave('restart'))throw new Error('请先结束工作台的活跃会话，再重启服务')
+    // A dead sidecar cannot release the stale renderer resource. The new
+    // sidecar reconciles persisted active runs as interrupted during startup.
+    if(settings!.getStatus().state==='ready'&&!await studio.prepareLeave('restart'))throw new Error('请先结束工作台的活跃会话，再重启服务')
     try { return await settings!.restart() } catch (error) { throw new Error(error instanceof SettingsError ? error.message : '本地服务重启失败，请重试') } finally { publishRuntimeContext() }
   })
   mainWindow.webContents.on('did-finish-load', () => { if (settings) applyPreferences(settings.getPreferences()) })
@@ -187,6 +213,11 @@ app.whenReady().then(async () => {
     applyPreferences,
   })
   void settings.start().catch(() => undefined)
+  scheduledHotkeys = new ScheduledHotkeyController({
+    shortcuts: globalShortcut,
+    getSidecarStatus: () => settings?.getPublicStatus() ?? { state: 'stopped' },
+  })
+  scheduledHotkeys.start()
 
   ipcMain.handle('autoflow:open-automation-studio', event => studio.open(event))
   ipcMain.handle('autoflow:studio-leave-ready',event=>studio.registerLeaveReady(event))
@@ -211,11 +242,13 @@ app.on('before-quit', event => {
   void (async () => {
     try {
       if (!await studio.closeForQuit()) { isQuitting = false; return }
+      scheduledHotkeys?.stop()
       await settings?.shutdown()
       stoppedForQuit = true
       app.quit()
     } catch {
       isQuitting = false
+      scheduledHotkeys?.start()
       dialog.showErrorBox('暂未退出 AutoFlow', '本地服务未能停止，请重试退出。')
     }
   })()

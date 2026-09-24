@@ -1,0 +1,46 @@
+{
+  "recordedAt": "2026-09-21",
+  "classification": "原版功能迁入 + AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "path": "reference/WebRPA/backend/app/api/ai_assistant.py",
+    "symbols": ["api_extract_file", "api_transcribe"],
+    "license": "LICENSE.WebRPA"
+  },
+  "implemented": [
+    "接通前端既有extract-file接口，支持文本、PDF、DOCX、XLSX、XLS及旧DOC明确拒绝",
+    "保留冻结源码的PDF前50页、表格前500行和30000字符显式截断行为",
+    "图片按SHA-256保存到当前工作区assistant/attachments，业务数据库和LangGraph检查点只保存引用",
+    "模型调用和历史查询在受控边界按需还原图片，远程URL、非法data URL和超限附件明确拒绝",
+    "接通前端既有transcribe接口，使用本地faster-whisper CPU int8模型并复用已加载实例",
+    "语音临时文件位于工作区assistant/tmp并在成功或失败后删除；macOS包声明麦克风用途",
+    "PyInstaller正式sidecar收集faster-whisper资源、CTranslate2动态库和必要包元数据"
+  ],
+  "checks": [
+    {
+      "command": "uv run --project apps/backend pytest <assistant affected suite> -q",
+      "exitCode": 0,
+      "result": "63 passed, 1 warning",
+      "covers": "图片引用持久化与还原、附件提取、语音模型缓存、LangGraph、HTTP与事件合同"
+    },
+    {
+      "command": "npm test --workspace @autoflow/desktop -- --run <assistant event/store suite> && npm run typecheck --workspace @autoflow/desktop && npm run openapi:check --workspace @autoflow/desktop",
+      "exitCode": 0,
+      "result": "13 passed; TypeScript and OpenAPI check passed"
+    },
+    {
+      "command": "uv run --group build pyinstaller --clean --noconfirm autoflow-backend.spec && ./dist/autoflow-backend/autoflow-backend --help",
+      "exitCode": 0,
+      "result": "macOS arm64 frozen sidecar built and started; faster_whisper assets, tokenizers and CTranslate2 extension/dylib present"
+    },
+    {
+      "command": "uv run --project apps/backend ruff check <assistant attachment affected files> && uv run --project apps/backend mypy <assistant attachment production modules>",
+      "exitCode": 0,
+      "result": "Ruff and mypy passed"
+    }
+  ],
+  "remaining": [
+    "正式Electron中通过真实麦克风录音并完成本地模型首次下载与转写",
+    "Windows与macOS Intel冻结包实机验证"
+  ]
+}

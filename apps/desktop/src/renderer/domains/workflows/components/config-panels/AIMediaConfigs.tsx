@@ -7,69 +7,38 @@ import { PathInput } from '../controls/path-input'
 import { ImagePathInput } from '../controls/image-path-input'
 import { VariableNameInput } from '../controls/variable-name-input'
 import { NumberInput } from '../controls/number-input'
-import { useGlobalConfigStore } from '../../hooks/stores/globalConfigStore'
-import { useEffect } from 'react'
 import type { NodeData } from '../../editor-store'
+import { AIModelPicker } from './AIModuleConfigs'
 
 interface ConfigProps {
   data: NodeData
   onChange: (key: string, value: unknown) => void
 }
 
+interface MediaConfigProps extends ConfigProps {
+  onBatchChange: (data: Partial<NodeData>) => void
+}
+
 // AI生图配置
-export function AIGenerateImageConfig({ data, onChange }: ConfigProps) {
-  const { config } = useGlobalConfigStore()
-
-  useEffect(() => {
-    if (!data.apiKey && config.ai?.imageApiKey) {
-      onChange('apiKey', config.ai.imageApiKey)
-    }
-    if (!data.apiBase && config.ai?.imageApiBase) {
-      onChange('apiBase', config.ai.imageApiBase)
-    }
-  }, [])
-
+export function AIGenerateImageConfig({ data, onChange, onBatchChange }: MediaConfigProps) {
   return (
     <div className="space-y-4">
+      <AIModelPicker data={data} onBatchChange={onBatchChange} />
+
       <div className="space-y-2">
-        <Label>AI提供商</Label>
-        <Select
-          value={(data.provider as string) || 'openai'}
-          onValueChange={(v) => onChange('provider', v)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="选择AI提供商" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="openai">OpenAI DALL-E</SelectItem>
-            <SelectItem value="stability">Stability AI</SelectItem>
-          </SelectContent>
+        <Label>接口协议</Label>
+        <Select value={(data.provider as string) || 'openai'} onValueChange={(v) => onChange('provider', v)}>
+          <SelectTrigger><SelectValue placeholder="选择接口协议" /></SelectTrigger>
+          <SelectContent><SelectItem value="openai">OpenAI Images</SelectItem><SelectItem value="stability">Stability AI</SelectItem></SelectContent>
         </Select>
       </div>
 
       <div className="space-y-2">
-        <Label>API Key</Label>
-        <VariableInput
-          value={(data.apiKey as string) || ''}
-          onChange={(v) => onChange('apiKey', v)}
-          placeholder="sk-..."
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label>API Base URL（可选）</Label>
-        <VariableInput
-          value={(data.apiBase as string) || ''}
-          onChange={(v) => onChange('apiBase', v)}
-          placeholder="https://api.openai.com/v1"
-        />
-      </div>
-
-      <div className="space-y-2">
         <Label>提示词</Label>
-        <Textarea
+        <VariableInput
           value={(data.prompt as string) || ''}
-          onChange={(e) => onChange('prompt', e.target.value)}
+          onChange={(value) => onChange('prompt', value)}
+          multiline
           placeholder="一只可爱的猫咪在花园里玩耍"
           rows={4}
         />
@@ -85,57 +54,22 @@ export function AIGenerateImageConfig({ data, onChange }: ConfigProps) {
         />
       </div>
 
-      {(data.provider as string) === 'openai' && (
-        <>
-          <div className="space-y-2">
-            <Label>模型</Label>
-            <Select
-              value={(data.model as string) || 'dall-e-3'}
-              onValueChange={(v) => onChange('model', v)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="选择模型" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="dall-e-2">DALL-E 2</SelectItem>
-                <SelectItem value="dall-e-3">DALL-E 3</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label>质量</Label>
-            <Select
-              value={(data.quality as string) || 'standard'}
-              onValueChange={(v) => onChange('quality', v)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="选择质量" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="standard">标准</SelectItem>
-                <SelectItem value="hd">高清</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label>风格</Label>
-            <Select
-              value={(data.style as string) || 'vivid'}
-              onValueChange={(v) => onChange('style', v)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="选择风格" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="vivid">生动</SelectItem>
-                <SelectItem value="natural">自然</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </>
-      )}
+      {(data.provider as string) !== 'stability' && <>
+        <div className="space-y-2">
+          <Label>质量</Label>
+          <Select value={(data.quality as string) || 'standard'} onValueChange={(v) => onChange('quality', v)}>
+            <SelectTrigger><SelectValue placeholder="选择质量" /></SelectTrigger>
+            <SelectContent><SelectItem value="standard">标准</SelectItem><SelectItem value="hd">高清</SelectItem></SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label>风格</Label>
+          <Select value={(data.style as string) || 'vivid'} onValueChange={(v) => onChange('style', v)}>
+            <SelectTrigger><SelectValue placeholder="选择风格" /></SelectTrigger>
+            <SelectContent><SelectItem value="vivid">生动</SelectItem><SelectItem value="natural">自然</SelectItem></SelectContent>
+          </Select>
+        </div>
+      </>}
 
       <div className="space-y-2">
         <Label>图片尺寸</Label>
@@ -189,72 +123,25 @@ export function AIGenerateImageConfig({ data, onChange }: ConfigProps) {
 }
 
 // AI生视频配置
-export function AIGenerateVideoConfig({ data, onChange }: ConfigProps) {
-  const { config } = useGlobalConfigStore()
-
-  useEffect(() => {
-    if (!data.apiKey && config.ai?.videoApiKey) {
-      onChange('apiKey', config.ai.videoApiKey)
-    }
-    if (!data.apiBase && config.ai?.videoApiBase) {
-      onChange('apiBase', config.ai.videoApiBase)
-    }
-  }, [])
-
+export function AIGenerateVideoConfig({ data, onChange, onBatchChange }: MediaConfigProps) {
   return (
     <div className="space-y-4">
+      <AIModelPicker data={data} onBatchChange={onBatchChange} />
+
       <div className="space-y-2">
-        <Label>AI提供商</Label>
-        <Select
-          value={(data.provider as string) || 'runway'}
-          onValueChange={(v) => onChange('provider', v)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="选择AI提供商" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="runway">Runway</SelectItem>
-            <SelectItem value="custom">自定义API</SelectItem>
-          </SelectContent>
+        <Label>接口协议</Label>
+        <Select value={(data.provider as string) || 'runway'} onValueChange={(v) => onChange('provider', v)}>
+          <SelectTrigger><SelectValue placeholder="选择接口协议" /></SelectTrigger>
+          <SelectContent><SelectItem value="runway">Runway 异步接口</SelectItem><SelectItem value="custom">通用同步接口</SelectItem></SelectContent>
         </Select>
       </div>
 
       <div className="space-y-2">
-        <Label>API Key</Label>
-        <VariableInput
-          value={(data.apiKey as string) || ''}
-          onChange={(v) => onChange('apiKey', v)}
-          placeholder="请输入API Key"
-        />
-      </div>
-
-      {(data.provider as string) === 'custom' && (
-        <div className="space-y-2">
-          <Label>API URL</Label>
-          <VariableInput
-            value={(data.apiUrl as string) || ''}
-            onChange={(v) => onChange('apiUrl', v)}
-            placeholder="https://api.example.com/generate-video"
-          />
-        </div>
-      )}
-
-      {(data.provider as string) !== 'custom' && (
-        <div className="space-y-2">
-          <Label>API Base URL（可选）</Label>
-          <VariableInput
-            value={(data.apiBase as string) || ''}
-            onChange={(v) => onChange('apiBase', v)}
-            placeholder="https://api.runwayml.com/v1"
-          />
-        </div>
-      )}
-
-      <div className="space-y-2">
         <Label>提示词</Label>
-        <Textarea
+        <VariableInput
           value={(data.prompt as string) || ''}
-          onChange={(e) => onChange('prompt', e.target.value)}
+          onChange={(value) => onChange('prompt', value)}
+          multiline
           placeholder="一只猫咪在草地上奔跑"
           rows={4}
         />

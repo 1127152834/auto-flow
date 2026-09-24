@@ -1,0 +1,49 @@
+{
+  "evidenceId": "BE-B6-017-file-watcher-trigger",
+  "recordedAt": "2026-09-21",
+  "classification": "原版功能迁入 + AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "reference/WebRPA/backend/app/executors/trigger.py#FileWatcherTriggerExecutor",
+      "reference/WebRPA/backend/app/services/trigger_manager.py#TriggerManager._file_watcher_loop"
+    ],
+    "license": "LICENSE.WebRPA"
+  },
+  "nodes": ["file_watcher_trigger"],
+  "implemented": [
+    "保留文件或目录路径、created/modified/deleted/any类型、文件名通配符、无限或有限等待及结果变量语义",
+    "保留递归目录快照、1秒检查间隔、修改时间判断和同轮最后一个匹配事件结果",
+    "事件结果包含eventType、filePath、fileName和本地时间戳，真实worker可继续执行后继节点",
+    "等待使用asyncio调度并把目录扫描移到工作线程；停止worker会立即取消等待且不执行后继节点",
+    "节点进入生产注册表，无需CloakBrowser"
+  ],
+  "adaptations": [
+    "原版进程全局TriggerManager改为节点内有界生命周期轮询，避免跨运行监听器和清理状态",
+    "文件扫描通过asyncio.to_thread执行，避免大目录同步阻塞worker事件循环",
+    "扫描异常直接形成节点失败，不保留原版后台任务静默退出后无限等待的故障模式"
+  ],
+  "checks": [
+    {
+      "command": "pytest file watcher differential, change rules, real worker, registry, worker protocol and scope preflight",
+      "result": "114 passed",
+      "covers": "冻结源码配置和创建事件差分、四类变化和通配符、真实文件创建、后继调度、等待中停止、生产注册与批准范围"
+    },
+    {
+      "command": "Ruff and mypy",
+      "result": "passed",
+      "covers": "迁入执行器、生产注册、差分工具和真实worker测试"
+    }
+  ],
+  "boundaries": {
+    "workspace": "pytest isolated tmp_path",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "mockExecutionUsedForBackendEvidence": false,
+    "formalElectronUiTested": false
+  },
+  "remaining": [
+    "正式Electron真实UI中选择路径、保存、关闭重开、运行并触发四种文件事件",
+    "macOS和Windows对文件修改时间精度、权限错误和大目录停止延迟分别记录实机结果"
+  ]
+}

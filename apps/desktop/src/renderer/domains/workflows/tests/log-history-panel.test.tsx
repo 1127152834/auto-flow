@@ -64,6 +64,23 @@ it('queries the complete run on the service and prepends older pages', async () 
   await screen.findByText('200/650')
 })
 
+it('keeps ten thousand persisted logs behind the bounded history window', async () => {
+  const query = vi.spyOn(workflowApi, 'getRunLogs')
+  seedMockRunHistory({
+    runId: 'run-history', workflowId: 'workflow-history', documentId: useWorkflowStore.getState().id,
+    logs: Array.from({ length: 10_000 }, (_, index) => ({
+      id: `capacity-${index + 1}`, timestamp: new Date(Date.UTC(2026, 8, 14, 0, 0, index)).toISOString(),
+      level: 'info' as const, nodeId: 'node-a', message: `容量-${String(index + 1).padStart(5, '0')}`,
+    })),
+  })
+  render(<LogPanel />)
+  await screen.findByText('100/10000')
+  expect(query).toHaveBeenLastCalledWith('run-history', expect.objectContaining({ cursor: 0, limit: 100 }))
+  fireEvent.click(screen.getByRole('button', { name: '更早日志' }))
+  await screen.findByText('200/10000')
+  expect(query).toHaveBeenLastCalledWith('run-history', expect.objectContaining({ cursor: 100, limit: 100 }))
+})
+
 it('applies keyword, level and node filters to the service query', async () => {
   const query = vi.spyOn(workflowApi, 'getRunLogs')
   render(<LogPanel />)
@@ -73,7 +90,19 @@ it('applies keyword, level and node filters to the service query', async () => {
   expect(screen.getByText('故障-00601')).toBeDefined()
   fireEvent.click(screen.getByRole('combobox', { name: '按节点筛选日志' }))
   fireEvent.click(await screen.findByRole('option', { name: '点击元素' }))
-  await waitFor(() => expect(query).toHaveBeenLastCalledWith('run-history', expect.objectContaining({ query: '故障-00601', nodeId: 'node-b' })))
+  fireEvent.change(screen.getByRole('textbox', { name: '按执行标识筛选日志' }), { target: { value: 'execution-601' } })
+  await waitFor(() => expect(query).toHaveBeenLastCalledWith('run-history', expect.objectContaining({ query: '故障-00601', nodeId: 'node-b', executionId: 'execution-601' })))
+})
+
+it('exports the same execution identity filter used by the history query', async () => {
+  const exported = vi.spyOn(workflowApi, 'exportRunLogs').mockResolvedValue({success:true,data:new Blob(['{}\n'])})
+  vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:execution')
+  vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+  render(<LogPanel />)
+  await screen.findByText('100/650')
+  fireEvent.change(screen.getByRole('textbox', { name: '按执行标识筛选日志' }), { target: { value: ' execution-601 ' } })
+  await act(async () => fireEvent.click(screen.getByRole('button', { name: '下载' })))
+  await waitFor(() => expect(exported).toHaveBeenCalledWith('run-history', expect.objectContaining({executionId:'execution-601'})))
 })
 
 it('downloads the server export instead of the retained UI window', async () => {

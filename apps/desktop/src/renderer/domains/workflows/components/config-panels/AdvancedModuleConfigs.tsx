@@ -437,15 +437,25 @@ export function OCRCaptchaConfig({
   return (
     <>
       {renderSelectorInput('imageSelector', '验证码图片选择器', 'img.captcha')}
+      {renderSelectorInput('inputSelector', '验证码输入框选择器（可选）', 'input[name="captcha"]')}
       <div className="space-y-2">
         <Label htmlFor="variableName">存储识别结果到变量</Label>
         <VariableNameInput
-          value={(data.variableName as string) || ''}
+          value={(data.variableName as string) || (data.resultVariable as string) || 'captcha_text'}
           onChange={(v) => onChange('variableName', v)}
           placeholder="存储识别出的验证码"
           isStorageVariable={true}
         />
       </div>
+      <div className="flex items-center gap-2">
+        <Checkbox
+          id="autoSubmit"
+          checked={(data.autoSubmit as boolean) ?? false}
+          onCheckedChange={(checked) => onChange('autoSubmit', checked)}
+        />
+        <Label htmlFor="autoSubmit" className="cursor-pointer">识别后自动提交</Label>
+      </div>
+      {data.autoSubmit === true && renderSelectorInput('submitSelector', '提交按钮选择器', 'button[type="submit"]')}
       <p className="text-xs text-muted-foreground">
         使用OCR技术识别图片验证码中的文字
       </p>
@@ -466,7 +476,8 @@ export function SliderCaptchaConfig({
   return (
     <>
       {renderSelectorInput('sliderSelector', '滑块选择器', '.slider-btn')}
-      {renderSelectorInput('trackSelector', '滑轨选择器', '.slider-track')}
+      {renderSelectorInput('backgroundSelector', '背景图片选择器（可选）', '.captcha-background')}
+      {renderSelectorInput('gapSelector', '缺口图片选择器（可选）', '.captcha-gap')}
       <div className="space-y-2">
         <Label htmlFor="targetDistance">滑动距离</Label>
         <VariableInput

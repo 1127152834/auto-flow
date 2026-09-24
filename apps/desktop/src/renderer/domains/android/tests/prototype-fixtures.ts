@@ -20,6 +20,7 @@ export const profile: Profile = {
   timezone: 'Asia/Shanghai',
   shellRoot: 'available',
   applicationRoot: 'unknown',
+  archived: false,
 }
 export const devices: AndroidDevice[] = [
   '测试设备 01',

@@ -1,0 +1,162 @@
+{
+  "evidenceId": "BE-B5-ai-task-chat-media-formal-electron",
+  "checkedAt": "2026-09-21T18:14:13.923Z",
+  "gitHead": "e185bbfe4f2f317ab3fa5e51fe8b167e5c12420f",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflowId": "Z3PIqBZW55hdpTYma5zkP",
+  "profileId": "f036202c-6bda-4d50-9bc0-7e7940dc1bfb",
+  "modelId": "a27aad57-15b6-4307-892e-51b40de787a5",
+  "runId": "96011db1-e1ed-4005-856f-c79762a28105",
+  "checks": [
+    "主窗口真实点击打开正式 Studio；动作库为 213，运行配置和模型均来自主应用",
+    "通过画布、属性面板和主应用模型选择器完成八个 AI 数据任务、对话、图片视频生成及视觉节点编排",
+    "正式保存接口只写稳定 modelId，十三节点和十二条连线进入临时 SQLite，不保存模型地址或密钥",
+    "真实 worker 经主应用模型绑定完成十次对话和两次媒体生成，页面截图进入视觉模型且各节点结果逐项匹配",
+    "图片和视频均通过工作区产物边界落盘、登记并可由正式产物接口读取",
+    "AI视觉使用主应用 Profile 启动 CloakBrowser 并截取受控页面，运行结束后浏览器和worker均已清理"
+  ],
+  "nodes": [
+    {
+      "moduleType": "ai_extract",
+      "nodeId": "AW4DqTQY0hC5nUGZIF2y-",
+      "result": {
+        "result": {
+          "姓名": "张三"
+        }
+      }
+    },
+    {
+      "moduleType": "ai_classify",
+      "nodeId": "up2Onn7-jD_IHhihk8KBs",
+      "result": {
+        "category": "退款",
+        "detail": {
+          "category": "退款"
+        }
+      }
+    },
+    {
+      "moduleType": "ai_summarize",
+      "nodeId": "yyot5dVsALXipm0-eVWTV",
+      "result": {
+        "summary": "简短摘要"
+      }
+    },
+    {
+      "moduleType": "ai_translate",
+      "nodeId": "GD4Tg5qMoi6M_KJKodpMA",
+      "result": {
+        "translation": "Hello",
+        "targetLang": "英文"
+      }
+    },
+    {
+      "moduleType": "ai_sentiment",
+      "nodeId": "ZBEi6WgaULIe-XOSippWZ",
+      "result": {
+        "sentiment": "正面",
+        "detail": {
+          "sentiment": "正面"
+        }
+      }
+    },
+    {
+      "moduleType": "ai_normalize",
+      "nodeId": "T_QJgV1Io0MJo0rL0y3xc",
+      "result": {
+        "result": "2026-09-21",
+        "type": "date"
+      }
+    },
+    {
+      "moduleType": "ai_dedup_semantic",
+      "nodeId": "MiA1V4Bw6wOHyAL8d7Vsk",
+      "result": {
+        "result": [
+          "苹果",
+          "香蕉"
+        ],
+        "removed": 1
+      }
+    },
+    {
+      "moduleType": "ai_route",
+      "nodeId": "OhKR1jEodC1bIE88A4-X3",
+      "result": {
+        "route": "退款",
+        "detail": {
+          "route": "退款"
+        },
+        "routes": [
+          "退款",
+          "咨询"
+        ]
+      }
+    },
+    {
+      "moduleType": "ai_chat",
+      "nodeId": "jV2eQloDcY4oO_utPCLnh",
+      "result": {
+        "response": "对话验收通过",
+        "reasoning": null,
+        "model": "ai-task-fixture",
+        "modelId": "a27aad57-15b6-4307-892e-51b40de787a5",
+        "usage": {}
+      }
+    },
+    {
+      "moduleType": "ai_generate_image",
+      "nodeId": "lJghbsmzLhForSkDVseVo",
+      "result": {
+        "urls": [],
+        "paths": [
+          "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-studio-b5-ai-tasks-RofEg7/workspace/runs/96011db1-e1ed-4005-856f-c79762a28105/outputs/generated/image.png"
+        ],
+        "model": "ai-task-fixture",
+        "modelId": "a27aad57-15b6-4307-892e-51b40de787a5"
+      }
+    },
+    {
+      "moduleType": "ai_generate_video",
+      "nodeId": "eh8MENw22TTZqOkWUht4A",
+      "result": {
+        "url": "http://127.0.0.1:53457/media.mp4",
+        "model": "ai-task-fixture",
+        "modelId": "a27aad57-15b6-4307-892e-51b40de787a5",
+        "path": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-studio-b5-ai-tasks-RofEg7/workspace/runs/96011db1-e1ed-4005-856f-c79762a28105/outputs/generated/video.mp4"
+      }
+    },
+    {
+      "moduleType": "open_page",
+      "nodeId": "WFt5iBq7t5x166dOraBqk"
+    },
+    {
+      "moduleType": "ai_vision",
+      "nodeId": "iPT2XnbBNiNOpSr_9LLW6",
+      "result": {
+        "response": "视觉识别通过",
+        "reasoning": null,
+        "model": "ai-task-fixture",
+        "modelId": "a27aad57-15b6-4307-892e-51b40de787a5",
+        "image_source": "screenshot",
+        "usage": {}
+      }
+    }
+  ],
+  "providerRequestCount": 15,
+  "artifactIds": [
+    "a3baf510-f2da-4095-91e1-443a33abd414",
+    "09fdca67-9b8d-4ece-8f59-2d3455c0cb57"
+  ],
+  "buildSha256": "464d9a3d31b8bbdf11677ab31923253ab762c532ff46d4fb8a55a9563c09eb48",
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserLaunch": "CloakBrowser via selected main-application Profile for open_page and ai_vision",
+    "model": "local controlled OpenAI-compatible HTTP fixture configured through main application model management",
+    "interaction": "formal Electron via CDP mouse and keyboard; public sidecar APIs only for fixture setup and evidence reads; no Store or page-internal business function access",
+    "externalWaiting": "third-party production model providers remain separately unverified"
+  }
+}

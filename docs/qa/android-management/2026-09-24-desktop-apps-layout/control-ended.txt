@@ -1,0 +1,19 @@
+The following is a diff from the previous accessibility tree for Window: "AutoFlow" with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.
+Removed element IDs: 21-22, 25, 29-31, 40, 45-46, 58-67, 103
+~						18 按钮 返回资源看板
++						124 按钮 打开设备
+~						38 标题 只读预览, Value: 2
++							125 图像
+~							39 文本 只读预览
+~						41 弹出式按钮 Description: 画面显示方式, Value: 查看画面
++						126 container
++							127 文本 尚未连接设备
++							128 按钮 连接设备
++						129 图像
++						130 文本 取得控制权后才能点击、输入或安装应用。
++						131 按钮 截图
++							132 图像
++							133 文本 截图
+~							76 文本输入区 (disabled) Description: 文本发送, Placeholder: 输入要发送的文本
++						134 文本 画面未连接 · 输入已锁定
+The focused UI element is 3 HTML 内容 AutoFlow, URL: file:///Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/out/renderer/index.html#/android

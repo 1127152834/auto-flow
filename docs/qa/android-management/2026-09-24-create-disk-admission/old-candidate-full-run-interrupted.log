@@ -1,0 +1,265 @@
+........................................................................ [  1%]
+........................................................................ [  3%]
+
+=============================== warnings summary ===============================
+.venv/lib/python3.11/site-packages/starlette/testclient.py:53
+  /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+144 passed, 1 warning in 78.14s (0:01:18)
+Traceback (most recent call last):
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/main.py", line 330, in wrap_session
+    session.exitstatus = doit(config, session) or 0
+                         ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/main.py", line 384, in _main
+    config.hook.pytest_runtestloop(session=session)
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_hooks.py", line 512, in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_manager.py", line 120, in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 167, in _multicall
+    raise exception
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 139, in _multicall
+    teardown.throw(exception)
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/logging.py", line 816, in pytest_runtestloop
+    return (yield)  # Run all the tests.
+            ^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 139, in _multicall
+    teardown.throw(exception)
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/terminal.py", line 708, in pytest_runtestloop
+    result = yield
+             ^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 121, in _multicall
+    res = hook_impl.function(*args)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/main.py", line 408, in pytest_runtestloop
+    item.config.hook.pytest_runtest_protocol(item=item, nextitem=nextitem)
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_hooks.py", line 512, in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_manager.py", line 120, in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 167, in _multicall
+    raise exception
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 139, in _multicall
+    teardown.throw(exception)
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/warnings.py", line 90, in pytest_runtest_protocol
+    return (yield)
+            ^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 139, in _multicall
+    teardown.throw(exception)
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/assertion/__init__.py", line 205, in pytest_runtest_protocol
+    return (yield)
+            ^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 139, in _multicall
+    teardown.throw(exception)
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/unittest.py", line 612, in pytest_runtest_protocol
+    return (yield)
+            ^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 139, in _multicall
+    teardown.throw(exception)
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/faulthandler.py", line 102, in pytest_runtest_protocol
+    return (yield)
+            ^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 121, in _multicall
+    res = hook_impl.function(*args)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/runner.py", line 118, in pytest_runtest_protocol
+    runtestprotocol(item, nextitem=nextitem)
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/runner.py", line 139, in runtestprotocol
+    reports.append(call_and_report(item, "call", log))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/runner.py", line 249, in call_and_report
+    call = CallInfo.from_call(
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/runner.py", line 361, in from_call
+    result: TResult | None = func()
+                             ^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/runner.py", line 250, in <lambda>
+    lambda: runtest_hook(item=item, **kwds),
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_hooks.py", line 512, in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_manager.py", line 120, in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 167, in _multicall
+    raise exception
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 139, in _multicall
+    teardown.throw(exception)
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/logging.py", line 865, in pytest_runtest_call
+    yield
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 139, in _multicall
+    teardown.throw(exception)
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/capture.py", line 900, in pytest_runtest_call
+    return (yield)
+            ^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 139, in _multicall
+    teardown.throw(exception)
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 53, in run_old_style_hookwrapper
+    return result.get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_result.py", line 103, in get_result
+    raise exc.with_traceback(tb)
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 38, in run_old_style_hookwrapper
+    res = yield
+          ^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 139, in _multicall
+    teardown.throw(exception)
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/skipping.py", line 268, in pytest_runtest_call
+    return (yield)
+            ^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 121, in _multicall
+    res = hook_impl.function(*args)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/runner.py", line 184, in pytest_runtest_call
+    item.runtest()
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/python.py", line 1707, in runtest
+    self.ihook.pytest_pyfunc_call(pyfuncitem=self)
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_hooks.py", line 512, in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_manager.py", line 120, in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 167, in _multicall
+    raise exception
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 139, in _multicall
+    teardown.throw(exception)
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 53, in run_old_style_hookwrapper
+    return result.get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_result.py", line 103, in get_result
+    raise exc.with_traceback(tb)
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 38, in run_old_style_hookwrapper
+    res = yield
+          ^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 121, in _multicall
+    res = hook_impl.function(*args)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/python.py", line 167, in pytest_pyfunc_call
+    result = testfunction(**testargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/tests/contract/test_profiles.py", line 161, in test_profile_test_browser_status_and_idempotent_close_contract
+    schema = client.get("/openapi.json").json()["components"]["schemas"]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py", line 483, in get
+    return super().get(
+           ^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/httpx2/_client.py", line 1113, in get
+    return self.request(
+           ^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py", line 455, in request
+    return super().request(
+           ^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/httpx2/_client.py", line 797, in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/httpx2/_client.py", line 980, in send
+    response = self._send_handling_auth(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/httpx2/_client.py", line 1008, in _send_handling_auth
+    response = self._send_handling_redirects(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/httpx2/_client.py", line 1043, in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/httpx2/_client.py", line 1076, in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py", line 354, in handle_request
+    raise exc
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py", line 351, in handle_request
+    portal.call(self.app, scope, receive, send)
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/anyio/from_thread.py", line 340, in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/concurrent/futures/_base.py", line 451, in result
+    self._condition.wait(timeout)
+  File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/threading.py", line 327, in wait
+    waiter.acquire()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/bin/pytest", line 10, in <module>
+    sys.exit(_console_main())
+             ^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/config/__init__.py", line 253, in _console_main
+    code = _main(prog=_get_prog_name(sys.argv))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/config/__init__.py", line 229, in _main
+    ret: ExitCode | int = config.hook.pytest_cmdline_main(config=config)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_hooks.py", line 512, in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_manager.py", line 120, in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 167, in _multicall
+    raise exception
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 121, in _multicall
+    res = hook_impl.function(*args)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/main.py", line 377, in pytest_cmdline_main
+    return wrap_session(config, _main)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/main.py", line 344, in wrap_session
+    config.hook.pytest_keyboard_interrupt(excinfo=excinfo)
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_hooks.py", line 512, in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_manager.py", line 120, in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 167, in _multicall
+    raise exception
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 121, in _multicall
+    res = hook_impl.function(*args)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/terminal.py", line 1012, in pytest_keyboard_interrupt
+    self._keyboardinterrupt_memo = excinfo.getrepr(funcargs=True)
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/_code/code.py", line 774, in getrepr
+    return fmt.repr_excinfo(self)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/_code/code.py", line 1224, in repr_excinfo
+    reprtraceback = self.repr_traceback(excinfo_)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/_code/code.py", line 1149, in repr_traceback
+    entries = [
+              ^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/_code/code.py", line 1150, in <listcomp>
+    self.repr_traceback_entry(entry, excinfo if last == entry else None)
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/_code/code.py", line 1080, in repr_traceback_entry
+    source = self._getentrysource(entry)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/_code/code.py", line 916, in _getentrysource
+    source = entry.getsource(self.astcache)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/_code/code.py", line 292, in getsource
+    source = self.frame.code.fullsource
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/_code/code.py", line 105, in fullsource
+    full, _ = findsource(self.raw)
+              ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/_pytest/_code/source.py", line 127, in findsource
+    sourcelines, lineno = inspect.findsource(obj)
+                          ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/inspect.py", line 1071, in findsource
+    module = getmodule(object, file)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/inspect.py", line 997, in getmodule
+    os.path.realpath(f)] = module.__name__
+    ^^^^^^^^^^^^^^^^^^^
+  File "<frozen posixpath>", line 416, in realpath
+  File "<frozen posixpath>", line 483, in _joinrealpath
+  File "<frozen posixpath>", line 460, in _joinrealpath
+KeyboardInterrupt

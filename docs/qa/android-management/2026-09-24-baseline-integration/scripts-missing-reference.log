@@ -1,0 +1,154 @@
+
+> test:scripts
+> node --test scripts/*.test.mjs
+
+✔ CI avoids duplicate same-repository draft matrices but preserves ready, fork and probe checks (10.690458ms)
+✔ click waits for an uncovered stable target and dispatches once at its final position (308.652292ms)
+✔ retains the approved scope and resolves an imported alias to its actual component file (1.372458ms)
+✔ excludes database and DP nodes from the delivery inventory (0.138125ms)
+✔ follows lazy imports into actual code tools and their editor dependency (0.114458ms)
+✔ does not silently discard dynamically selected icon components or reconciled node evidence (0.688041ms)
+✔ history output guard resolves symlinks before any nested directory is created (15.016291ms)
+✔ containment handles Windows separators and sibling prefixes (0.328917ms)
+✔ failure logs retain the error while excluding startup metadata and service tokens (0.136875ms)
+✔ live Sheets acceptance can target an installed package and separate evidence (0.864583ms)
+✔ R1 acceptance tools refuse paths outside the marked disposable root (12.57425ms)
+✔ R2 wrapper reuses the exported R1 harness (4.179292ms)
+✔ record-pages mode records required evidence levels and leaves visual review pending (1.481791ms)
+✔ R3 runner exposes automatic and retained manual modes (0.985583ms)
+✔ R3 evidence matrix names every required real interaction (0.127292ms)
+✔ R3 runner uses the real desktop harness and never auto-approves visual review (4.750625ms)
+✔ R3 visual fixtures use UI states and label the synthetic file selection (2.384333ms)
+✔ self-test accepts only a marker-owned workspace below its owner (80.735417ms)
+✔ arguments reject missing kernel paths before launching Electron (97.2665ms)
+✔ arguments reject unknown switches before launching Electron (96.746125ms)
+✔ scenario selection is validated before any workspace or Electron launch (165.699625ms)
+✔ PM4 QA arguments keep V1 automatic and preparation modes explicit (2.021875ms)
+✔ PM4 workspace ownership requires both marker and containment (0.296083ms)
+✔ V1 plan names every user-visible step and real fact (0.161584ms)
+✔ runner uses only UI for business object creation and labels fake executor boundary (5.198166ms)
+✔ PM6 QA arguments keep automatic and manual modes explicit (1.201291ms)
+✔ PM6 workspace ownership requires both marker and containment (0.180667ms)
+✔ the QA service-account fixture only carries the frozen Google shape (39.232833ms)
+✔ PM6 steps name every user-visible stage of the management chain (0.117584ms)
+✔ the runner drives business objects through the UI and labels its stand-ins (21.514833ms)
+✔ the QA sidecar swaps only the two declared ports and keeps a real bootstrap (7.075542ms)
+✔ PM7 QA arguments keep manual, preparation and cleanup modes explicit (1.231292ms)
+✔ PM7 workspace ownership requires both marker and containment (0.174625ms)
+✔ every PM7 end-to-end step and fault injection is named (0.172417ms)
+✔ runner drives the product through the renderer and labels the executor boundary (4.495041ms)
+✔ fault injection only exists in the QA sidecar and never in production modules (6.715417ms)
+✔ PM8 QA arguments keep manual, preparation and cleanup modes explicit (1.318875ms)
+✔ PM8 workspace ownership requires both marker and containment (0.18375ms)
+✔ every PM8 end-to-end step and fault injection is named (0.192209ms)
+✔ manual injections expose the executor faults the hand-test plan needs (0.121792ms)
+✔ runner drives the product through the renderer and labels the executor boundary (4.701542ms)
+✔ lifecycle fault injection only exists in the QA sidecar and never in production modules (4.25725ms)
+✔ reports a known full system UUID in visible text and perceptible attributes (4.747917ms)
+✔ reports a known eight-character system prefix without scanning arbitrary UUIDs (1.863209ms)
+✔ keeps a user-owned UUID visible and excludes its shared prefix from prefix checks (0.355833ms)
+✔ does not inspect DOM value, href, hash, data attributes, or hidden implementation state (0.224458ms)
+✔ checkCdpPage sends a self-contained audit to evaluate and rejects missing business UUIDs (1.948292ms)
+✔ checkCdpPage audit expression executes without module bindings in the renderer (0.556458ms)
+✔ a business UUID sharing a prefix does not hide a separate technical short ID (0.148292ms)
+✔ cleanup rejects an unmarked or wrongly marked workspace (9.102417ms)
+✔ cleanup removes only a marked temporary workspace and returns the preserved evidence path (5.31525ms)
+✔ browser management smoke accepts an explicit packaged sidecar (1.215583ms)
+✔ browser management smoke creates the platform kernel layout (0.181541ms)
+✔ profile test browser smoke parses kernel and sidecar paths (1.233042ms)
+✔ profile test browser smoke validates a public kernel directory (51.61125ms)
+✔ profile test browser smoke finds a session below the manager root (18.290958ms)
+✔ Windows kernels do not require POSIX executable bits (4.912083ms)
+✔ smoke-project-management.mjs rejects invalid arguments before launching: --output-dir --dev (91.79925ms)
+✔ smoke-project-management.mjs rejects invalid arguments before launching: --output-dir (84.818083ms)
+✔ smoke-project-management.mjs rejects invalid arguments before launching: --unknown (78.704958ms)
+✔ smoke-project-management.mjs rejects invalid arguments before launching: --executable (89.240584ms)
+✔ smoke-project-management.mjs rejects invalid arguments before launching: --executable     (97.46625ms)
+✔ smoke-project-management.mjs rejects invalid arguments before launching: --output-dir /tmp/a --output-dir /tmp/b (113.919875ms)
+✔ smoke-project-management-desktop.mjs rejects invalid arguments before launching: --output-dir --dev (104.072709ms)
+✔ smoke-project-management-desktop.mjs rejects invalid arguments before launching: --output-dir (91.655416ms)
+✔ smoke-project-management-desktop.mjs rejects invalid arguments before launching: --unknown (96.090334ms)
+✔ smoke-project-management-desktop.mjs rejects invalid arguments before launching: --executable (150.361125ms)
+✔ smoke-project-management-desktop.mjs rejects invalid arguments before launching: --executable     (106.986291ms)
+✔ smoke-project-management-desktop.mjs rejects invalid arguments before launching: --output-dir /tmp/a --output-dir /tmp/b (87.694167ms)
+✔ smoke-project-management.mjs rejects fake sidecar environment before launch (99.671083ms)
+✔ smoke-project-management-desktop.mjs rejects fake sidecar environment before launch (85.52475ms)
+✔ concurrent writes retry declared busy responses with the original command identity (1028.931542ms)
+✔ packaged smoke cannot silently select external health mode (1.414708ms)
+✔ cleanup rejects after the final deadline if the child never exits (12.661333ms)
+✔ cleanup observes close without requiring exit (0.5215ms)
+✔ cleanup rejects a child process error (0.332709ms)
+✔ required path exists: apps/desktop/package.json (0.93275ms)
+✔ required path exists: apps/backend/pyproject.toml (0.189875ms)
+✔ root scripts expose the foundation checks (0.610542ms)
+✔ renderer table headers never nest a <td> inside <thead> (275.362166ms)
+(node:20285) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/zhangtiancheng/.codex/worktrees/android-baseline-integration/autoflow/apps/desktop/src/renderer/domains/workflows/lib/moduleCatalog.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/zhangtiancheng/.codex/worktrees/android-baseline-integration/autoflow/apps/desktop/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Studio Chinese documentation audit covers exactly the retained catalog (14.556458ms)
+✔ production Studio entry keeps preview mocks behind the Vite development boundary (0.700584ms)
+✖ frozen required-field data regenerates exactly without executing source modules (132.834708ms)
+✔ coverage accounts for every retained node and excludes removed nodes (12.800458ms)
+✔ resource upload keeps multipart body and generated response type in the handoff inventory (0.728083ms)
+✔ transport forwarding is marked dynamic instead of inventing a GET contract (0.180166ms)
+✔ the matrix registers every discovered service and event without treating registration as runtime backend proof (3.307166ms)
+✔ every service family is assigned to the frozen frontend contract matrix (0.728708ms)
+✔ inventory and matrix regenerate deterministically (931.43375ms)
+✔ direct apiRequest helpers outside Api objects remain visible in the contract inventory (0.185875ms)
+✔ plain Event emissions are recorded alongside CustomEvent emissions (0.126375ms)
+✔ MCP requests nested in validation helpers keep explicit endpoints and consumers (0.280709ms)
+✔ checks sources without inventing application or visual acceptance (11.705875ms)
+✔ rejects source hash drift, dimensions and unknown mapped sources (4.598625ms)
+✔ does not allow a passed page without real evidence or missing required states (10.968625ms)
+✔ rejects duplicate source and page identities and evidence traversal (8.793583ms)
+✔ requires actual evidence files instead of an existing directory or blank path (6.095125ms)
+✔ PM2 static coverage does not certify pending business or real application acceptance (2.228959ms)
+✔ PM2 rejects lost requirement identifiers and invented evidence paths (1.154417ms)
+✔ a green machine report cannot substitute for real application evidence (0.320917ms)
+✔ every PM9 requirement names reviewed assertions or a specific missing-test gap (0.742542ms)
+✔ rejects broken references, invalid classifications and unsupported promotions (136.663541ms)
+✔ all current references resolve without upgrading acceptance (76.527875ms)
+✔ resolves literal named UI assertions and rejects missing or skipped cases (227.347209ms)
+ℹ tests 104
+ℹ suites 0
+ℹ pass 103
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2665.64675
+
+✖ failing tests:
+
+test at scripts/studio-required-fields.test.mjs:6:1
+✖ frozen required-field data regenerates exactly without executing source modules (132.834708ms)
+  AssertionError [ERR_ASSERTION]: Traceback (most recent call last):
+    File "/Users/zhangtiancheng/.codex/worktrees/android-baseline-integration/autoflow/scripts/export-studio-required-fields.py", line 50, in <module>
+      result, manifest = extract()
+                         ~~~~~~~^^
+    File "/Users/zhangtiancheng/.codex/worktrees/android-baseline-integration/autoflow/scripts/export-studio-required-fields.py", line 16, in extract
+      raw = SOURCE.read_bytes()
+    File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py", line 625, in read_bytes
+      with self.open(mode='rb') as f:
+           ~~~~~~~~~^^^^^^^^^^^
+    File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py", line 537, in open
+      return io.open(self, mode, buffering, encoding, errors, newline)
+             ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  FileNotFoundError: [Errno 2] No such file or directory: '/Users/zhangtiancheng/.codex/worktrees/android-baseline-integration/autoflow/reference/WebRPA/backend/app/services/ai_assistant_module_schemas.py'
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///Users/zhangtiancheng/.codex/worktrees/android-baseline-integration/autoflow/scripts/studio-required-fields.test.mjs:8:9)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.start (node:internal/test_runner/test:1257:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

@@ -1,0 +1,72 @@
+{
+  "evidenceId": "BE-B6-011-run-command",
+  "recordedAt": "2026-09-22",
+  "classification": "原版功能迁入 + AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "reference/WebRPA/backend/app/executors/advanced.py#RunCommandExecutor"
+    ],
+    "license": "LICENSE.WebRPA"
+  },
+  "nodes": [
+    "run_command"
+  ],
+  "implemented": [
+    "保留命令、shell、超时、输出变量、退出码、输出摘要及失败语义",
+    "Windows继续使用cmd /c或powershell -Command；POSIX将CMD入口映射为/bin/sh -c，PowerShell要求已安装pwsh",
+    "命令读取敏感变量时，输出变量和节点结果按敏感派生值处理，不写入持久化日志",
+    "真实worker停止会清理命令进程树，已验证停止后不会发生延迟文件副作用"
+  ],
+  "checks": [
+    {
+      "command": "uv run --project apps/backend pytest -q apps/backend/tests/unit/workflows/test_run_command_executor.py apps/backend/tests/differential/workflows/test_b6_run_command_executor_parity.py apps/backend/tests/unit/workflows/test_executor_registry.py",
+      "result": "19 passed",
+      "covers": "冻结源码成功和非零退出差分、输出变量、超时、空命令、敏感值、平台命令选择及生产注册"
+    },
+    {
+      "command": "uv run --project apps/backend pytest -q apps/backend/tests/integration/test_b6_run_command_worker.py",
+      "result": "2 passed",
+      "covers": "真实worker执行、后续变量和停止时进程树清理"
+    },
+    {
+      "command": "uv run --project apps/backend pytest -q apps/backend/tests/unit/workflows/test_run_command_executor.py apps/backend/tests/differential/workflows/test_b6_run_command_executor_parity.py apps/backend/tests/integration/test_b6_run_command_worker.py apps/backend/tests/integration/test_workflow_worker_protocol.py apps/backend/tests/unit/workflows/test_executor_registry.py apps/backend/tests/unit/workflows/test_scope_preflight.py apps/backend/tests/migration/test_studio_backend_source_mapping.py -k 'run_command or production or runnable or scope or worker'",
+      "result": "108 passed, 13 deselected",
+      "covers": "批准范围、源码映射、生产预检和共享worker生命周期回归"
+    },
+    {
+      "command": "desktop shared-control, conditional, roundtrip and panel tests filtered to run_command",
+      "result": "5 passed",
+      "covers": "命令、shell、超时和输出变量的真实前端控件接入、目录注册与往返"
+    },
+    {
+      "command": "backend ruff and mypy",
+      "result": "passed",
+      "covers": "Python静态检查"
+    }
+  ],
+  "boundaries": {
+    "executionLocation": "AutoFlow per-run workflow worker child process",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "mockExecutionUsedForBackendEvidence": false,
+    "sensitiveValuesPersisted": false
+  },
+  "remaining": [
+    "Windows 实机核对 CMD、PowerShell、非 UTF-8 输出和进程树停止",
+    "macOS 或 Linux 安装 pwsh 后核对 PowerShell 分支"
+  ],
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b6-command-log.mjs",
+    "result": "passed on macOS arm64 development build",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-command-log-electron-CJetPO/result.json",
+    "covers": [
+      "Studio真实点击与键盘",
+      "正式SQLite保存",
+      "真实worker执行",
+      "变量传递",
+      "日志和产物持久化",
+      "进程清理"
+    ]
+  }
+}

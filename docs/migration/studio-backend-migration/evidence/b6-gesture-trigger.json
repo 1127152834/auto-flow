@@ -1,0 +1,75 @@
+{
+  "evidenceId": "BE-B6-027-gesture-trigger",
+  "recordedAt": "2026-09-21",
+  "classification": "原版功能迁入 + AutoFlow必要适配 + 已批准增强",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "reference/WebRPA/backend/app/executors/trigger.py#GestureTriggerExecutor",
+      "reference/WebRPA/backend/app/services/gesture_recognition_service.py",
+      "reference/WebRPA/backend/app/api/triggers.py#gesture",
+      "reference/WebRPA/backend/data/mediapipe_models/hand_landmarker.task"
+    ],
+    "license": "LICENSE.WebRPA",
+    "modelSha256": "fbc2a30080c3c557093b5ddfc334698132eb341044ccee322ccf8bcf3607cde1"
+  },
+  "nodes": ["gesture_trigger"],
+  "implemented": [
+    "保留21点手部坐标腕部归一化、欧氏距离指数衰减、最佳候选和置信度阈值算法",
+    "保留自定义手势录制、列表、覆盖、删除、摄像头索引、调试窗口、超时和变量写回语义",
+    "现有前端使用的custom、status、record和delete四个接口已接真实工作区服务",
+    "工作流worker直接加载工作区定义和随包模型，不读取reference目录；停止和终态释放摄像头、OpenCV窗口及MediaPipe landmarker",
+    "模型、MediaPipe数据、动态库和元数据进入PyInstaller正式产物"
+  ],
+  "adaptations": [
+    "手势定义写入当前工作区并使用原子替换及跨进程文件锁，不写WebRPA源码目录或用户数据库",
+    "工作流识别在独立worker内运行并逐帧检查取消，避免sidecar回调阻塞停止命令",
+    "识别和录制使用同一摄像头互斥锁；跨进程状态文件供前端查询，并清除失效PID状态",
+    "前端遗留timeout字段大于等于1000时按毫秒转换，60000保持为60秒；小值继续按原版秒语义",
+    "录制接口实际执行前端已传递的30秒上限，避免原版忽略timeout后无限占用摄像头"
+  ],
+  "checks": [
+    {
+      "command": "pytest gesture service, executor, HTTP contract, frozen-source differential, real worker and shared workflow regression",
+      "result": "21 targeted passed; 85 shared passed",
+      "covers": "存储校验、相似度、字段映射、毫秒兼容、接口、源码差分、worker定义读取、生产注册、协调器和协议"
+    },
+    {
+      "command": "real MediaPipe hand landmarker probe on blank 64x64 RGB image",
+      "result": "passed with zero detected hands",
+      "covers": "真实7.8MB模型解析、Metal/CPU运行时和MediaPipe Tasks API"
+    },
+    {
+      "command": "PyInstaller build and frozen --workflow-worker gesture run",
+      "result": "passed",
+      "covers": "macOS arm64冻结产物、模型哈希、MediaPipe动态库、真实模型初始化、0.1秒超时、终态事件和进程退出"
+    },
+    {
+      "command": "Ruff, mypy and OpenAPI route comparison",
+      "result": "passed for gesture changes",
+      "covers": "类型、格式及四条路由在schema-export与正式app一致"
+    }
+  ],
+  "knownExternalFailure": {
+    "test": "test_schema_export_matches_the_formal_application",
+    "result": "85 passed, 1 failed in expanded batch",
+    "reason": "并行工作树已有4条MCP路由只存在正式app、未加入schema-export；手势路由集合一致",
+    "blockingGestureDelivery": false
+  },
+  "boundaries": {
+    "workspace": "pytest temporary directory",
+    "userDatabaseTouched": false,
+    "mockExecutionUsedForBackendEvidence": false,
+    "nativeModelTested": true,
+    "frozenWorkerTested": true,
+    "formalElectronUiTested": false,
+    "nativeCameraGestureMatchTested": false,
+    "windowsTested": false
+  },
+  "remaining": [
+    "macOS正式Electron中授予摄像头权限，真实录制手势并执行节点命中",
+    "验证拒绝摄像头权限、录制取消、运行中停止和应用退出后的系统设备释放",
+    "Windows正式包验证摄像头索引、OpenCV窗口、MediaPipe动态库及停止清理",
+    "并行MCP工作线补齐schema-export后重跑全量OpenAPI一致性测试"
+  ]
+}

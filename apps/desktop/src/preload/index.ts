@@ -9,6 +9,7 @@ import type { ExternalLinkBridge } from '../shared/external-links'
 import type { ProjectFileBridge } from '../shared/project-files'
 import type { GoogleSheetsBridge } from '../shared/google-sheets'
 import type { DesktopRuntimeContext } from '../shared/runtime'
+import type { StudioPlatformBridge } from '../shared/studio-platform'
 
 const automationStudioBridge: AutomationStudioBridge = {
   openAutomationStudio: () => ipcRenderer.invoke('autoflow:open-automation-studio'),
@@ -39,6 +40,7 @@ const projectFileBridge: ProjectFileBridge = {
 }
 
 const googleSheetsBridge: GoogleSheetsBridge = { connectGoogleSheets: (projectId, accountLabel) => ipcRenderer.invoke('autoflow:google-sheets:connect', projectId, accountLabel) }
+const studioPlatformBridge:StudioPlatformBridge={runStudioPlatformAction:request=>ipcRenderer.invoke('autoflow:studio-platform-action',request)}
 
 const settingsBridge: SettingsBridge = {
   getSettings: () => ipcRenderer.invoke('autoflow:settings:get'),
@@ -48,6 +50,7 @@ const settingsBridge: SettingsBridge = {
   openSettingsDirectory: directory => ipcRenderer.invoke('autoflow:settings:open-directory', directory),
   previewDiagnostics: includeLogs => ipcRenderer.invoke('autoflow:settings:preview-diagnostics', includeLogs),
   saveDiagnostics: id => ipcRenderer.invoke('autoflow:settings:save-diagnostics', id),
+  saveAndroidDiagnostic: id => ipcRenderer.invoke('autoflow:settings:save-android-diagnostic', id),
   quitApplication: () => ipcRenderer.invoke('autoflow:settings:quit'),
 }
 ipcRenderer.on('autoflow:preferences-changed', (_event, preferences: UiPreferences) => {
@@ -60,6 +63,7 @@ contextBridge.exposeInMainWorld('autoflow', {
   ...projectFileBridge,
   ...googleSheetsBridge,
   ...externalLinkBridge,
+  ...studioPlatformBridge,
   getRuntimeContext: (): Promise<DesktopRuntimeContext> => ipcRenderer.invoke('autoflow:runtime-context'),
   onRuntimeContextChanged: (handler: (context: DesktopRuntimeContext) => void) => {
     const listener = (_event: Electron.IpcRendererEvent, context: DesktopRuntimeContext) => handler(context)

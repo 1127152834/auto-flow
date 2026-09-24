@@ -314,6 +314,10 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
     }
   }, [selectedNodeId, updateNodeData])
 
+  const handleBatchChange = useCallback((data: Partial<NodeData>) => {
+    if (selectedNodeId) updateNodeData(selectedNodeId, data)
+  }, [selectedNodeId, updateNodeData])
+
   const handleDelete = () => {
     if (selectedNodeId) {
       deleteNode(selectedNodeId)
@@ -738,7 +742,7 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
             size="icon"
             onClick={() => handleTestSelector(id)}
             title="测试定位：在当前浏览器页面验证选择器是否命中并高亮"
-            disabled={testingField === id || !rawValue}
+            disabled={isPicking || testingField === id || !rawValue}
           >
             {testingField === id ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -759,7 +763,7 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
     if (excludedModuleTypes.has(nodeData.moduleType)) {
       return <div role="status">此节点已排除，保留原配置，仅供查看和导出<pre className="whitespace-pre-wrap break-all text-xs">{JSON.stringify(nodeData, null, 2)}</pre></div>
     }
-    const props = { data: nodeData, onChange: handleChange, renderSelectorInput }
+    const props = { data: nodeData, onChange: handleChange, onBatchChange: handleBatchChange, renderSelectorInput }
 
 
     switch (nodeData.moduleType) {
@@ -887,7 +891,7 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
       case 'network_capture':
         return <NetworkCaptureConfig data={nodeData} onChange={handleChange} />
       case 'ai_chat':
-        return <AIChatConfig data={nodeData} onChange={handleChange} />
+        return <AIChatConfig data={nodeData} onChange={handleChange} onBatchChange={handleBatchChange} />
       case 'ai_extract':
       case 'ai_classify':
       case 'ai_summarize':
@@ -896,15 +900,15 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
       case 'ai_normalize':
       case 'ai_dedup_semantic':
       case 'ai_route':
-        return <AITaskConfig moduleType={String(nodeData.moduleType)} data={nodeData} onChange={handleChange} />
+        return <AITaskConfig moduleType={String(nodeData.moduleType)} data={nodeData} onChange={handleChange} onBatchChange={handleBatchChange} />
       case 'ai_vision':
         return <AIVisionConfig {...props} />
       case 'ai_vision_act':
-        return <AIVisionActConfig data={nodeData} onChange={handleChange} />
+        return <AIVisionActConfig data={nodeData} onChange={handleChange} onBatchChange={handleBatchChange} />
       case 'ai_smart_scraper':
-        return <AISmartScraperConfig data={nodeData} onChange={handleChange} />
+        return <AISmartScraperConfig data={nodeData} onChange={handleChange} onBatchChange={handleBatchChange} />
       case 'ai_element_selector':
-        return <AIElementSelectorConfig data={nodeData} onChange={handleChange} />
+        return <AIElementSelectorConfig data={nodeData} onChange={handleChange} onBatchChange={handleBatchChange} />
       case 'firecrawl_scrape':
         return <FirecrawlScrapeConfig data={nodeData} onChange={handleChange} />
       case 'firecrawl_map':
@@ -1365,9 +1369,9 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
       
       // AI生图生视频模块
       case 'ai_generate_image':
-        return <AIGenerateImageConfig data={nodeData} onChange={handleChange} />
+        return <AIGenerateImageConfig data={nodeData} onChange={handleChange} onBatchChange={handleBatchChange} />
       case 'ai_generate_video':
-        return <AIGenerateVideoConfig data={nodeData} onChange={handleChange} />
+        return <AIGenerateVideoConfig data={nodeData} onChange={handleChange} onBatchChange={handleBatchChange} />
       
       // 概率触发器模块
       case 'probability_trigger':

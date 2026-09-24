@@ -19,6 +19,7 @@ from autoflow.domain.projects.models import ResourceReferenced
 from .models import ProfileRow, ProjectRow
 from .project_automation_models import ProjectAutomationRow
 from .proxy_models import ProxyProjectionRow
+from .workflow_models import ScheduledTaskRow
 
 # Resource type -> the key that names it, and the proxy selection key it uses.
 _PLAIN_KEYS = {"profile": "profileId", "modelProvider": "modelProviderId"}
@@ -62,7 +63,27 @@ class SqlAlchemyProjectResourceReferences:
             automations = list(session.scalars(select(ProjectAutomationRow)))
             if resource_type == "kernel":
                 return _kernel_references(session, projects, automations, resource_id)
-        return _owner_references(projects, automations, resource_type, resource_id)
+            scheduled = _scheduled_task_references(session, resource_type, resource_id)
+        return _owner_references(projects, automations, resource_type, resource_id) + scheduled
+
+
+def _scheduled_task_references(
+    session: Session, resource_type: str, resource_id: str
+) -> list[dict[str, Any]]:
+    if resource_type != "profile":
+        return []
+    found: list[dict[str, Any]] = []
+    for task in session.scalars(select(ScheduledTaskRow)):
+        if task.payload.get("profile_id") == resource_id:
+            found.append(
+                {
+                    "kind": "scheduledTask",
+                    "taskId": task.id,
+                    "taskName": task.payload.get("name") or task.id,
+                    "path": ["profile_id"],
+                }
+            )
+    return found
 
 
 def _owner_references(

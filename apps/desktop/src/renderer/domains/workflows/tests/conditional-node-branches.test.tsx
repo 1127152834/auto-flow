@@ -164,6 +164,20 @@ it('NODE.subflow.conditional-ui: lists group and header definitions and stores s
   expect(nodeData(id)).toMatchObject({ subflowGroupId: headerId, subflowName: '函数子流程' })
 })
 
+it('NODE.subflow_header.entry: creates a callable header from both canvas entry points', () => {
+  store.getState().addNode('subflow_header', { x: 0, y: 0 }, { subflowName: '画布函数' })
+  store.getState().blockInsertNode(null, 'subflow_header', { subflowName: '模块条函数' })
+  const [canvasHeader, blockHeader] = store.getState().nodes
+  expect(canvasHeader.type).toBe('subflowHeaderNode')
+  expect(blockHeader.type).toBe('subflowHeaderNode')
+
+  const { id } = open('subflow')
+  choose('选择子流程', '[函数头] 画布函数')
+  expect(nodeData(id)).toMatchObject({ subflowGroupId: canvasHeader.id, subflowName: '画布函数' })
+  choose('选择子流程', '[函数头] 模块条函数')
+  expect(nodeData(id)).toMatchObject({ subflowGroupId: blockHeader.id, subflowName: '模块条函数' })
+})
+
 it('NODE.run_workflow_file.conditional-ui: loads choices and hides dependent result controls when not waiting', async () => {
   vi.spyOn(localWorkflowApi, 'list').mockResolvedValue({
     success: true,
@@ -209,6 +223,24 @@ it.each([
   expect(nodeData(id).targetDistance).toBe(expected)
 })
 
+it('NODE.ocr_captcha.source-contract: exposes optional fill and submit branches from the frozen executor', () => {
+  const { id } = open('ocr_captcha')
+  expect(screen.getByText('验证码输入框选择器（可选）')).toBeDefined()
+  expect(screen.getByRole('checkbox', { name: '识别后自动提交' })).toBeDefined()
+  expect(screen.queryByText('提交按钮选择器')).toBeNull()
+  expect(nodeData(id).variableName).toBe('captcha_text')
+  fireEvent.click(screen.getByRole('checkbox', { name: '识别后自动提交' }))
+  expect(screen.getByText('提交按钮选择器')).toBeDefined()
+  expect(nodeData(id).autoSubmit).toBe(true)
+})
+
+it('NODE.slider_captcha.source-contract: exposes the background and gap selectors used by automatic matching', () => {
+  open('slider_captcha')
+  expect(screen.getByText('背景图片选择器（可选）')).toBeDefined()
+  expect(screen.getByText('缺口图片选择器（可选）')).toBeDefined()
+  expect(screen.queryByText('滑轨选择器')).toBeNull()
+})
+
 it.each([
   ['append', '追加元素', true, false, false],
   ['insert', '插入元素', true, true, false],
@@ -245,16 +277,18 @@ it('NODE.ai_dedup_semantic.conditional-ui: uses a list input instead of the shar
   expect(screen.queryByText('输入文本')).toBeNull()
 })
 
-it.each(['ai_smart_scraper', 'ai_element_selector'] as const)('NODE.%s.conditional-ui: switches local, cloud and Azure provider fields', (type) => {
-  const { id } = open(type)
+it.each(['ai_smart_scraper', 'ai_element_selector'] as const)('NODE.%s.conditional-ui: consumes only main-app managed models', async (type) => {
+  open(type)
+  expect(await screen.findByText('主应用模型')).toBeDefined()
   expect(screen.queryByText('API地址')).toBeNull()
   expect(screen.queryByText('API Key')).toBeNull()
-  choose('LLM提供商', 'OpenAI')
-  expect(screen.getByPlaceholderText('https://api.openai.com/v1')).toBeDefined()
-  expect(screen.getByText('API Key')).toBeDefined()
-  choose('LLM提供商', 'Azure OpenAI')
-  expect(screen.getByText('Azure Endpoint')).toBeDefined()
-  expect(nodeData(id).llmProvider).toBe('azure')
+  expect(screen.queryByText('Azure Endpoint')).toBeNull()
+})
+
+it('NODE.firecrawl_scrape.conditional-ui: labels waitFor with its source selector semantics', () => {
+  open('firecrawl_scrape')
+  expect(screen.getByText('等待选择器 (可选)')).toBeDefined()
+  expect(screen.getByPlaceholderText('#content-ready，最多等待 5 秒')).toBeDefined()
 })
 
 it.each([
@@ -329,12 +363,15 @@ it('NODE.api_trigger.conditional-ui: hydrates defaults and exposes the POST requ
 })
 
 it.each([
-  ['ai_generate_image', { imageApiKey: 'image-key', imageApiBase: 'https://image.fixture.invalid' }, { apiKey: 'image-key', apiBase: 'https://image.fixture.invalid' }],
-  ['ai_generate_video', { videoApiKey: 'video-key', videoApiBase: 'https://video.fixture.invalid' }, { apiKey: 'video-key', apiBase: 'https://video.fixture.invalid' }],
-] as const)('NODE.%s.conditional-ui: hydrates only its matching global media service', async (type, globalValues, expected) => {
+  ['ai_generate_image', { imageApiKey: 'image-key', imageApiBase: 'https://image.fixture.invalid' }],
+  ['ai_generate_video', { videoApiKey: 'video-key', videoApiBase: 'https://video.fixture.invalid' }],
+] as const)('NODE.%s.conditional-ui: ignores legacy media secrets and uses the main model service', async (type, globalValues) => {
   globalConfig.getState().updateAIConfig(globalValues)
   const { id } = open(type)
-  await waitFor(() => expect(nodeData(id)).toMatchObject(expected))
+  expect(screen.getByText('主应用模型')).toBeDefined()
+  await waitFor(() => expect(nodeData(id).apiKey).toBeUndefined())
+  expect(nodeData(id).apiBase).toBeUndefined()
+  expect(screen.getByText('接口协议')).toBeDefined()
 })
 
 it('NODE.ssh_connect.conditional-ui: hydrates host identity without overriding explicit node values', async () => {

@@ -40,6 +40,18 @@ def test_main_dispatches_workflow_worker_without_starting_http(monkeypatch):
     assert error.value.code == 17
 
 
+def test_main_dispatches_inspection_worker_without_starting_http(monkeypatch):
+    monkeypatch.setattr(sys, "argv", ["autoflow", "--inspection-worker"])
+    monkeypatch.setattr(
+        "autoflow.bootstrap.inspection_worker.inspection_worker_main", lambda: 19
+    )
+
+    with pytest.raises(SystemExit) as error:
+        main()
+
+    assert error.value.code == 19
+
+
 def test_main_does_not_print_ready_when_app_creation_fails(monkeypatch, tmp_path, capsys):
     monkeypatch.setattr(
         sys,

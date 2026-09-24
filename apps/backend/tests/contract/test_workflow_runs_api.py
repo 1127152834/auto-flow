@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import time
 from pathlib import Path
 from typing import Any
@@ -150,6 +151,491 @@ def test_real_http_input_command_resumes_the_actual_worker(
     ).json()["status"] == "answered"
     results = client.get("/api/workflow-runs/input-http-run/results").json()
     assert results["items"][0]["values"] == {"value": 42}
+
+
+def test_real_http_debug_step_and_resume_control_the_actual_worker(
+    client: TestClient, profile_payload: dict[str, object]
+) -> None:
+    workflow = client.post(
+        "/api/workflows",
+        json={
+            "id": "debug-http-flow",
+            "name": "调试 HTTP 闭环",
+            "nodes": [
+                {
+                    "id": "first",
+                    "type": "moduleNode",
+                    "position": {"x": 0, "y": 0},
+                    "data": {
+                        "moduleType": "set_variable",
+                        "config": {"variableName": "count", "variableValue": "1"},
+                    },
+                },
+                {
+                    "id": "second",
+                    "type": "moduleNode",
+                    "position": {"x": 200, "y": 0},
+                    "data": {
+                        "moduleType": "set_variable",
+                        "config": {"variableName": "count", "variableValue": "2"},
+                    },
+                },
+            ],
+            "edges": [{"id": "edge", "source": "first", "target": "second"}],
+            "variables": [{"name": "count", "value": 0}],
+            "clientRequestId": "create-debug-http",
+        },
+    ).json()
+    profile = client.post("/api/v1/profiles", json=profile_payload).json()
+    execute = client.post(
+        f"/api/workflows/{workflow['id']}/execute",
+        json={
+            "runId": "debug-http-run",
+            "documentId": workflow["id"],
+            "profileId": profile["id"],
+            "stepMode": True,
+        },
+    )
+    assert execute.status_code == 202, execute.text
+
+    def pause_events() -> list[dict[str, Any]]:
+        return [
+            event.data
+            for event in client.app.state.workflow_services.events.replay(
+                after_sequence=0
+            )
+            if event.event == "execution:paused"
+        ]
+
+    pauses: list[dict[str, Any]] = []
+    for _ in range(200):
+        pauses = pause_events()
+        if pauses:
+            break
+        time.sleep(0.01)
+    assert pauses[-1]["node_id"] == "first"
+    assert client.get("/api/workflow-runs/debug-http-run").json()["status"] == "paused"
+    breakpoints = client.post(
+        f"/api/workflows/{workflow['id']}/debug/breakpoints",
+        json={"breakpoints": ["second"]},
+    )
+    assert breakpoints.status_code == 200, breakpoints.text
+    assert breakpoints.json()["breakpoints"] == ["second"]
+
+    first = pauses[-1]
+    stepped = client.post(
+        f"/api/workflows/{workflow['id']}/debug/step",
+        json={
+            "commandId": "debug-step-1",
+            "runId": "debug-http-run",
+            "pauseId": first["pauseId"],
+            "controlRevision": first["controlRevision"],
+        },
+    )
+    assert stepped.status_code == 200, stepped.text
+    assert stepped.json()["success"] is True
+    repeated_step = client.post(
+        f"/api/workflows/{workflow['id']}/debug/step",
+        json={
+            "commandId": "debug-step-1",
+            "runId": "debug-http-run",
+            "pauseId": first["pauseId"],
+            "controlRevision": first["controlRevision"],
+        },
+    )
+    assert repeated_step.status_code == 200
+    assert repeated_step.json() == stepped.json()
+
+    for _ in range(200):
+        pauses = pause_events()
+        if len(pauses) == 2:
+            break
+        time.sleep(0.01)
+    assert [pause["node_id"] for pause in pauses] == ["first", "second"]
+    assert pauses[-1]["variables"]["count"] == 1
+
+    stale = client.post(
+        f"/api/workflows/{workflow['id']}/debug/resume",
+        json={
+            "commandId": "debug-stale-1",
+            "runId": "debug-http-run",
+            "pauseId": first["pauseId"],
+            "controlRevision": first["controlRevision"],
+        },
+    )
+    assert stale.status_code == 409
+    assert stale.json()["success"] is False
+
+    second = pauses[-1]
+    large_debug_value = "起" + "中" * 70_000 + "末尾可检索"
+    changed = client.post(
+        f"/api/workflows/{workflow['id']}/debug/variables",
+        json={
+            "commandId": "debug-variables-1",
+            "runId": "debug-http-run",
+            "pauseId": second["pauseId"],
+            "controlRevision": second["controlRevision"],
+            "changes": [
+                {"name": "count", "value": 7},
+                {"name": "manual", "value": {"ready": True}},
+                {"name": "large", "value": large_debug_value},
+            ],
+        },
+    )
+    assert changed.status_code == 200, changed.text
+    assert changed.json()["success"] is True
+    for _ in range(200):
+        pauses = pause_events()
+        if len(pauses) == 3:
+            break
+        time.sleep(0.01)
+    second = pauses[-1]
+    assert second["node_id"] == "second"
+    assert second["controlRevision"] == 3
+    assert second["variables"]["count"] == 7
+    assert second["variables"]["manual"] == {"ready": True}
+    assert second["variables"]["large"]["externalized"] is True
+    assert second["variables"]["large"]["size"] == len(
+        json.dumps(large_debug_value, ensure_ascii=False, separators=(",", ":")).encode()
+    )
+    assert second["variables"]["large"]["artifactId"]
+    assert second["variables"]["large"]["sha256"]
+    assert "末尾可检索" in second["variables"]["large"]["preview"]
+    large_debug_size = len(
+        json.dumps(large_debug_value, ensure_ascii=False, separators=(",", ":")).encode()
+    )
+    summarized_large_change = {
+        "name": "large",
+        "value": {
+            "externalized": True,
+            "size": large_debug_size,
+            "preview": second["variables"]["large"]["preview"],
+        },
+    }
+    variable_lookup = client.get("/api/events/commands/debug-variables-1")
+    assert variable_lookup.status_code == 200
+    assert variable_lookup.json()["changes"] == [
+        {"name": "count", "value": 7},
+        {"name": "manual", "value": {"ready": True}},
+        summarized_large_change,
+    ]
+
+    resumed = client.post(
+        f"/api/workflows/{workflow['id']}/debug/resume",
+        json={
+            "commandId": "debug-resume-1",
+            "runId": "debug-http-run",
+            "pauseId": second["pauseId"],
+            "controlRevision": second["controlRevision"],
+        },
+    )
+    assert resumed.status_code == 200, resumed.text
+    for _ in range(200):
+        run = client.get("/api/workflow-runs/debug-http-run").json()
+        if run["status"] == "completed":
+            break
+        time.sleep(0.01)
+    assert run["status"] == "completed"
+    assert client.get("/api/events/commands/debug-step-1").json()["action"] == "step"
+    assert client.get("/api/events/commands/debug-resume-1").json()["action"] == "resume"
+    tracking = client.get(
+        "/api/workflow-runs/debug-http-run/variable-tracking?variable=count"
+    )
+    assert tracking.status_code == 200, tracking.text
+    tracking_body = tracking.json()
+    assert [row["new_value"] for row in tracking_body["tracking"]] == [0, 1, 7, 2]
+    assert [row["operation"] for row in tracking_body["tracking"]] == [
+        "create",
+        "update",
+        "update",
+        "update",
+    ]
+    tracked_sequence = tracking_body["tracking"][2]["sequence"]
+    tracked_value = client.get(
+        "/api/workflow-runs/debug-http-run/variable-tracking/values",
+        params={"sequence": tracked_sequence, "side": "new_value"},
+    )
+    assert tracked_value.json() == {
+        "runId": "debug-http-run",
+        "sequence": tracked_sequence,
+        "key": "new_value",
+        "value": 7,
+    }
+    exported_tracking = client.get(
+        "/api/workflow-runs/debug-http-run/variable-tracking/export",
+        params={"throughSequence": tracking_body["throughSequence"]},
+    )
+    assert exported_tracking.status_code == 200
+    exported_tracking_rows = [
+        json.loads(line) for line in exported_tracking.text.splitlines() if line
+    ]
+    assert len(exported_tracking_rows) == 6
+    assert next(
+        row["new_value"]
+        for row in exported_tracking_rows
+        if row["variable_name"] == "large"
+    ) == large_debug_value
+    large_tracking = client.get(
+        "/api/workflow-runs/debug-http-run/variable-tracking?variable=large"
+    ).json()["tracking"][0]
+    assert large_tracking["new_value"] is None
+    assert "new_value" in large_tracking["largeValues"]
+    assert client.get(
+        "/api/workflow-runs/debug-http-run/variable-tracking/values",
+        params={"sequence": large_tracking["sequence"], "side": "new_value"},
+    ).json()["value"] == large_debug_value
+    diagnostic_artifacts = [
+        artifact
+        for artifact in client.get(
+            "/api/workflow-runs/debug-http-run/artifacts"
+        ).json()["items"]
+        if artifact["purpose"] == "diagnostic"
+    ]
+    assert len(diagnostic_artifacts) >= 2
+    assert all(artifact["size"] == large_debug_size for artifact in diagnostic_artifacts)
+    assert all(artifact["sha256"] for artifact in diagnostic_artifacts)
+    workflow_tracking = client.get(
+        f"/api/workflows/{workflow['id']}/variable-tracking"
+    )
+    assert workflow_tracking.status_code == 200
+    assert workflow_tracking.json()["count"] == 6
+
+    started_at_second = client.post(
+        f"/api/workflows/{workflow['id']}/execute",
+        json={
+            "runId": "debug-start-node-run",
+            "documentId": workflow["id"],
+            "profileId": profile["id"],
+            "startNodeId": "second",
+        },
+    )
+    assert started_at_second.status_code == 202, started_at_second.text
+    start_pause: dict[str, Any] | None = None
+    for _ in range(200):
+        start_pause = next(
+            (
+                event.data
+                for event in client.app.state.workflow_services.events.replay(
+                    after_sequence=0
+                )
+                if event.event == "execution:paused"
+                and event.data.get("runId") == "debug-start-node-run"
+            ),
+            None,
+        )
+        if start_pause is not None:
+            break
+        time.sleep(0.01)
+    assert start_pause is not None
+    assert start_pause["node_id"] == "second"
+    finish_from_second = client.post(
+        f"/api/workflows/{workflow['id']}/debug/resume",
+        json={
+            "commandId": "debug-start-node-resume",
+            "runId": "debug-start-node-run",
+            "pauseId": start_pause["pauseId"],
+            "controlRevision": start_pause["controlRevision"],
+        },
+    )
+    assert finish_from_second.status_code == 200, finish_from_second.text
+    for _ in range(200):
+        start_run = client.get("/api/workflow-runs/debug-start-node-run").json()
+        if start_run["status"] == "completed":
+            break
+        time.sleep(0.01)
+    assert start_run["status"] == "completed"
+    start_results = client.get(
+        "/api/workflow-runs/debug-start-node-run/results"
+    ).json()
+    assert start_results["total"] == 1
+    assert start_results["items"][0]["nodeId"] == "second"
+    exported_logs = client.get(
+        "/api/workflow-runs/debug-start-node-run/logs/export?levels=success&nodeId=second"
+    )
+    assert exported_logs.status_code == 200
+    assert exported_logs.headers["content-type"].startswith("application/x-ndjson")
+    assert int(exported_logs.headers["x-through-sequence"]) > 0
+    exported_lines = [
+        json.loads(line) for line in exported_logs.text.splitlines() if line
+    ]
+    assert len(exported_lines) == 1
+    assert exported_lines[0]["nodeId"] == "second"
+    client.app.state.workflow_services.commands._command_receipts.clear()
+    restored_command = client.get("/api/events/commands/debug-step-1")
+    assert restored_command.status_code == 200
+    assert restored_command.json()["action"] == "step"
+    restored_variables = client.get("/api/events/commands/debug-variables-1")
+    assert restored_variables.status_code == 200
+    assert restored_variables.json()["changes"] == [
+        {"name": "count", "value": 7},
+        {"name": "manual", "value": {"ready": True}},
+        summarized_large_change,
+    ]
+    conflicting_retry = client.post(
+        f"/api/workflows/{workflow['id']}/debug/step",
+        json={
+            "commandId": "debug-step-1",
+            "runId": "debug-http-run",
+            "pauseId": "different-pause",
+            "controlRevision": 999,
+        },
+    )
+    assert conflicting_retry.status_code == 409
+    assert conflicting_retry.json()["error"] == "commandId 已用于不同请求"
+    cleared_tracking = client.delete(
+        "/api/workflow-runs/debug-http-run/variable-tracking"
+    )
+    assert cleared_tracking.json()["runId"] == "debug-http-run"
+    assert client.get(
+        "/api/workflow-runs/debug-http-run/variable-tracking",
+        params={"throughSequence": tracking_body["throughSequence"]},
+    ).json()["tracking"] == []
+    workflow_clear = client.delete(
+        f"/api/workflows/{workflow['id']}/variable-tracking"
+    )
+    assert workflow_clear.json()["message"] == "变量追踪记录已清空"
+    assert client.get(f"/api/workflows/{workflow['id']}/variable-tracking").json()[
+        "tracking"
+    ] == []
+
+
+def test_external_webhook_resumes_real_worker_without_sidecar_token(
+    client: TestClient, profile_payload: dict[str, object]
+) -> None:
+    workflow = client.post(
+        "/api/workflows",
+        json={
+            "id": "webhook-http-flow",
+            "name": "Webhook HTTP 闭环",
+            "nodes": [
+                {
+                    "id": "hook",
+                    "type": "moduleNode",
+                    "position": {"x": 0, "y": 0},
+                    "data": {
+                        "moduleType": "webhook_trigger",
+                        "config": {
+                            "webhookId": "contract-hook",
+                            "method": "POST",
+                            "validateHeaders": '{"Authorization":"Bearer hook-secret"}',
+                            "validateParams": '{"token":"query-secret"}',
+                            "responseBody": '{"accepted":true}',
+                            "responseStatus": 202,
+                            "saveToVariable": "request",
+                            "autoSetParams": True,
+                            "paramPrefix": "hook_",
+                            "timeout": 5,
+                        },
+                    },
+                }
+            ],
+            "edges": [],
+            "variables": [],
+            "clientRequestId": "create-webhook-http",
+        },
+    ).json()
+    profile = client.post("/api/v1/profiles", json=profile_payload).json()
+    started = client.post(
+        f"/api/workflows/{workflow['id']}/execute",
+        json={
+            "runId": "webhook-http-run",
+            "documentId": workflow["id"],
+            "profileId": profile["id"],
+        },
+    )
+    assert started.status_code == 202, started.text
+
+    waiting = None
+    for _ in range(200):
+        waiting = next(
+            (
+                event
+                for event in client.app.state.workflow_services.events.replay(
+                    after_sequence=0
+                )
+                if event.event == "execution:webhook_waiting"
+            ),
+            None,
+        )
+        if waiting is not None:
+            break
+        time.sleep(0.01)
+    assert waiting is not None
+    assert "hook-secret" not in str(waiting.data)
+    assert "query-secret" not in str(waiting.data)
+
+    rejected = client.post(
+        "/api/triggers/webhook/contract-hook?token=query-secret",
+        headers={"x-autoflow-token": "", "authorization": "wrong"},
+        json={"action": "ignored"},
+    )
+    assert rejected.status_code == 403
+
+    triggered = client.post(
+        "/api/triggers/webhook/contract-hook?token=query-secret",
+        headers={
+            "x-autoflow-token": "",
+            "authorization": "Bearer hook-secret",
+            "x-source": "contract",
+        },
+        json={"action": "sync"},
+    )
+    assert triggered.status_code == 202, triggered.text
+    assert triggered.json() == {"accepted": True}
+
+    for _ in range(200):
+        run = client.get("/api/workflow-runs/webhook-http-run").json()
+        if run["status"] == "completed":
+            break
+        time.sleep(0.01)
+    assert run["status"] == "completed"
+    results = client.get("/api/workflow-runs/webhook-http-run/results").json()
+    values = results["items"][0]["values"]
+    assert values["method"] == "POST"
+    assert values["query"] == {"token": "query-secret"}
+    assert values["body"] == {"action": "sync"}
+    assert "authorization" not in values["headers"]
+    assert client.post(
+        "/api/triggers/webhook/contract-hook?token=query-secret",
+        headers={"x-autoflow-token": "", "authorization": "Bearer hook-secret"},
+        json={},
+    ).status_code == 404
+
+    restarted = client.post(
+        f"/api/workflows/{workflow['id']}/execute",
+        json={
+            "runId": "webhook-stop-run",
+            "documentId": workflow["id"],
+            "profileId": profile["id"],
+        },
+    )
+    assert restarted.status_code == 202, restarted.text
+    for _ in range(200):
+        active = next(
+            (
+                event
+                for event in client.app.state.workflow_services.events.replay(
+                    after_sequence=0
+                )
+                if event.event == "execution:webhook_waiting"
+                and event.data.get("runId") == "webhook-stop-run"
+            ),
+            None,
+        )
+        if active is not None:
+            break
+        time.sleep(0.01)
+    assert active is not None
+    stopped = client.post(
+        f"/api/workflows/{workflow['id']}/stop", json={"runId": "webhook-stop-run"}
+    )
+    assert stopped.status_code == 202, stopped.text
+    assert stopped.json()["status"] == "stopped"
+    assert client.post(
+        "/api/triggers/webhook/contract-hook?token=query-secret",
+        headers={"x-autoflow-token": "", "authorization": "Bearer hook-secret"},
+        json={},
+    ).status_code == 404
 
 
 def test_real_http_run_freezes_and_executes_saved_workflow_dependency(
@@ -1070,6 +1556,69 @@ def test_execute_accepts_an_unsaved_document_snapshot_without_creating_a_workflo
     assert client.get("/api/workflows/editor-document").status_code == 404
     assert workers.payload is not None
     assert workers.payload["document"]["nodes"][0]["id"] == "open"
+
+
+def test_failed_debug_run_keeps_worker_for_inspection_until_ended(
+    client: TestClient, profile_payload: dict[str, object]
+) -> None:
+    workflow = client.post(
+        "/api/workflows",
+        json={
+            "id": "debug-failure-http-flow",
+            "name": "调试失败现场",
+            "nodes": [
+                {"id": "fail", "type": "moduleNode", "position": {"x": 0, "y": 0}, "data": {"moduleType": "list_get", "config": {"listVariable": "items", "listIndex": "0", "variableName": "item"}}},
+                {"id": "never", "type": "moduleNode", "position": {"x": 200, "y": 0}, "data": {"moduleType": "set_variable", "config": {"variableName": "reached", "variableValue": True}}},
+            ],
+            "edges": [{"id": "edge", "source": "fail", "target": "never"}],
+            "variables": [{"name": "items", "value": []}, {"name": "reached", "value": False}],
+            "clientRequestId": "create-debug-failure-http",
+        },
+    ).json()
+    profile = client.post("/api/v1/profiles", json=profile_payload).json()
+    execute = client.post(
+        f"/api/workflows/{workflow['id']}/execute",
+        json={"runId": "debug-failure-http-run", "documentId": workflow["id"], "profileId": profile["id"], "debug": True},
+    )
+    assert execute.status_code == 202, execute.text
+
+    run: dict[str, Any] = {}
+    failed_pause: dict[str, Any] | None = None
+    for _ in range(200):
+        run = client.get("/api/workflow-runs/debug-failure-http-run").json()
+        failed_pause = next((event.data for event in client.app.state.workflow_services.events.replay(after_sequence=0) if event.event == "execution:failed_paused"), None)
+        if run.get("status") == "failed_paused" and failed_pause is not None:
+            break
+        time.sleep(0.01)
+
+    assert run["status"] == "failed_paused"
+    assert run["error"] == {"code": "WORKFLOW_EXECUTION_FAILED", "message": "列表为空", "nodeId": "fail"}
+    assert failed_pause is not None
+    assert failed_pause["node_id"] == "fail"
+    assert failed_pause["reason"] == "failure"
+    assert failed_pause["variables"] == {"items": [], "reached": False}
+    assert client.app.state.workflow_services.workers.busy() is True
+
+    for path, body in (
+        ("resume", {"commandId": "resume-failed-debug"}),
+        ("variables", {"commandId": "variables-failed-debug", "changes": [{"name": "reached", "value": True}]}),
+    ):
+        rejected = client.post(
+            f"/api/workflows/{workflow['id']}/debug/{path}",
+            json={**body, "runId": "debug-failure-http-run", "pauseId": failed_pause["pauseId"], "controlRevision": failed_pause["controlRevision"]},
+        )
+        assert rejected.status_code == 409
+        assert rejected.json()["success"] is False
+
+    stopped = client.post(f"/api/workflows/{workflow['id']}/stop", json={"runId": "debug-failure-http-run"})
+    assert stopped.status_code == 202, stopped.text
+    assert stopped.json()["status"] == "failed"
+    terminal = client.get("/api/workflow-runs/debug-failure-http-run").json()
+    assert terminal["error"] == run["error"]
+    assert client.app.state.workflow_services.workers.busy() is False
+    persisted_events = client.app.state.workflow_services.runs.events("debug-failure-http-run", after_sequence=0, limit=100)
+    assert [event.node_id for event in persisted_events if event.type == "execution:node-failed"] == ["fail"]
+    assert all(event.node_id != "never" for event in persisted_events)
 
 
 async def _no_proxy(_profile: Any, _run_id: str) -> None:

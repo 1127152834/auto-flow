@@ -1,0 +1,25 @@
+{
+  "pid": 92141,
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-final-ui-ir_ycen2",
+  "electronApp": "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/node_modules/electron/dist/Electron.app",
+  "status": "partial",
+  "finalBuildReload": true,
+  "environment": "运行环境可用 · autoflow-redroid",
+  "visibleSections": [
+    "运行环境诊断",
+    "实例管理",
+    "批量操作",
+    "镜像管理",
+    "待核实的镜像拉取",
+    "设备模板",
+    "数据维护"
+  ],
+  "invalidReference": "redroid/redroid:bad value",
+  "observedError": "Request validation failed",
+  "correctedInput": "redroid/redroid:13",
+  "correctedReferenceNotSubmitted": true,
+  "deviceRows": 0,
+  "operationRows": 0,
+  "ownedElectronExited": true,
+  "automation": "cua_repl native AX; no mocked HTTP"
+}

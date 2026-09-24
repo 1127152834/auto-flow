@@ -1,0 +1,597 @@
+{
+  "evidenceId": "BE-B3-formal-control-flow-electron",
+  "checkedAt": "2026-09-20T15:02:09.000Z",
+  "gitHead": "4f89858cce27b4a09d1f0b2b41f31f8b9f0427ab",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflowId": "vzu1J7NIMwwHVzqNFMOO-",
+  "profileId": "fc77f344-4e5e-4983-84eb-407d52c89b66",
+  "runId": "6c4042b3-a8b5-4a9b-902b-1b64cc9f2463",
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "通过模块条真实点击完成初始化、三轮循环、真假分支和汇合后的尾节点",
+    "通过流程图真实右键入口创建子流程分组、组内步骤和独立调用；调用按稳定节点 ID 绑定",
+    "真实 HTTP/SQLite 文档包含条件双分支、循环双出口、子流程定义与独立调用",
+    "macOS Cmd+W 正常关闭后从主窗口重开，节点、结构和配置全部恢复",
+    "真实 worker 完成三轮循环、真分支和子流程；假分支无副作用，结果按 executionId、轮次与作用域持久化",
+    "正式 UI 保存对象初值，并解析列表、字典和嵌套索引变量后通过断言",
+    "正式 UI 完成 JSON、Base64、随机数、时间、断言、等待、用户输入、运行其它工作流和便签的保存与真实执行",
+    "正式模块条完成列表和字典循环；两类循环各执行两轮并累积到 4",
+    "正式模块条完成无限循环、跳出循环和循环完成路径；退出后尾节点只执行一次",
+    "正式模块条完成跳过当前循环；每轮剩余节点均未执行，循环完成路径继续执行",
+    "正式模块条完成强制停止；停止原因持久化，后续节点没有执行",
+    "正式 UI 从当前画布创建自定义模块、声明输出、拖入新流程并由生产 worker 隔离执行",
+    "正式 UI 在 1,000 轮纯变量流程中点击停止；后继未调度、结果停止增长且资源清理完成"
+  ],
+  "workflowPersistence": {
+    "revision": 1,
+    "nodeCount": 11,
+    "edgeCount": 8
+  },
+  "execution": {
+    "status": "completed",
+    "resultCount": 11,
+    "logCount": 12
+  },
+  "assertions": {
+    "loopValues": [
+      1,
+      2,
+      3
+    ],
+    "loopIterations": [
+      1,
+      2,
+      3
+    ],
+    "selectedBranch": "true",
+    "skippedBranchNodeId": "8VROE2OutVMOmOaBf_-v0",
+    "subflowScope": [
+      {
+        "kind": "subflow",
+        "id": "uBBsxLUZVcY4PX_mmX3QA",
+        "name": "正式子流程"
+      }
+    ],
+    "parallelStartNodes": [
+      "jz6sbYqt9xVqGHkXpKz25",
+      "uT6pw68SPs2io1o_FSKQ1"
+    ]
+  },
+  "httpEvidence": {
+    "results": [
+      {
+        "sequence": 4,
+        "nodeId": "jz6sbYqt9xVqGHkXpKz25",
+        "executionId": "de51c7cf-ad24-40b5-af29-8682888a9623",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "value": 0
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 8,
+        "nodeId": "Ms75bJ0GTGXNt6jXS4CPj",
+        "executionId": "7ea31644-b6de-4cdf-b19e-f2058fb17637",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "type": "count",
+          "count": 3,
+          "condition": "",
+          "max_iterations": 1000,
+          "index_variable": "loop_index",
+          "current_index": 0,
+          "start_value": 1,
+          "end_value": 10,
+          "step_value": 1
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 10,
+        "nodeId": "10JpeHEaQWHbogjK66eiS",
+        "executionId": "4ae62a16-6e01-4601-88e8-5ceb2d17626a",
+        "executionContext": {
+          "scopes": [
+            {
+              "kind": "subflow",
+              "id": "uBBsxLUZVcY4PX_mmX3QA",
+              "name": "正式子流程"
+            }
+          ],
+          "loops": []
+        },
+        "values": {
+          "value": 42
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 13,
+        "nodeId": "uT6pw68SPs2io1o_FSKQ1",
+        "executionId": "4aa70a2f-cddc-4431-95f1-fb6dda08df61",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "subflow": "正式子流程",
+          "executed_nodes": 1,
+          "failed_nodes": 0
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 16,
+        "nodeId": "I3DzStOj1ZpbzLZSNHSOM",
+        "executionId": "b9651271-100d-4020-9c01-170f90858f20",
+        "executionContext": {
+          "scopes": [],
+          "loops": [
+            {
+              "nodeId": "Ms75bJ0GTGXNt6jXS4CPj",
+              "type": "count",
+              "currentIndex": 0,
+              "iteration": 1
+            }
+          ]
+        },
+        "values": {
+          "variable": "total",
+          "old_value": 0,
+          "new_value": 1,
+          "step": 1
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 18,
+        "nodeId": "Ro16Z71m9CmTfT6nLVPL0",
+        "executionId": "26585d25-a4aa-4469-b892-484b0ff380ec",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "value": 1
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 21,
+        "nodeId": "I3DzStOj1ZpbzLZSNHSOM",
+        "executionId": "afd66d6f-9ab0-4bed-9e2b-81b4a7b8fc4c",
+        "executionContext": {
+          "scopes": [],
+          "loops": [
+            {
+              "nodeId": "Ms75bJ0GTGXNt6jXS4CPj",
+              "type": "count",
+              "currentIndex": 1,
+              "iteration": 2
+            }
+          ]
+        },
+        "values": {
+          "variable": "total",
+          "old_value": 1,
+          "new_value": 2,
+          "step": 1
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 24,
+        "nodeId": "I3DzStOj1ZpbzLZSNHSOM",
+        "executionId": "c7c6a311-4757-4f07-b115-3b12487376b6",
+        "executionContext": {
+          "scopes": [],
+          "loops": [
+            {
+              "nodeId": "Ms75bJ0GTGXNt6jXS4CPj",
+              "type": "count",
+              "currentIndex": 2,
+              "iteration": 3
+            }
+          ]
+        },
+        "values": {
+          "variable": "total",
+          "old_value": 2,
+          "new_value": 3,
+          "step": 1
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 27,
+        "nodeId": "c3a9R_XQ_R5SxaPcx9ob4",
+        "executionId": "cdae62c4-6cc3-4de7-aabf-89ce5fb91388",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "value": true
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 30,
+        "nodeId": "u8TJzWz3XE5wlH_ralL95",
+        "executionId": "f9f63b7b-87f1-4859-9046-5b1c1e9500f7",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "value": "passed"
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 33,
+        "nodeId": "ajyRb0uuHOT1hU3XHXG6R",
+        "executionId": "80cba812-ca93-46b1-a00f-2be16068ded0",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "value": 1
+        },
+        "largeValues": {}
+      }
+    ],
+    "logs": [
+      {
+        "sequence": 5,
+        "id": "6c4042b3-a8b5-4a9b-902b-1b64cc9f2463-5",
+        "timestamp": "2026-09-20T15:01:19.162460+00:00",
+        "level": "success",
+        "message": "已设置变量 total = 0",
+        "nodeId": "jz6sbYqt9xVqGHkXpKz25",
+        "executionId": "de51c7cf-ad24-40b5-af29-8682888a9623",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 9,
+        "id": "6c4042b3-a8b5-4a9b-902b-1b64cc9f2463-9",
+        "timestamp": "2026-09-20T15:01:19.171435+00:00",
+        "level": "success",
+        "message": "开始循环 (类型: count, 次数: 3)",
+        "nodeId": "Ms75bJ0GTGXNt6jXS4CPj",
+        "executionId": "7ea31644-b6de-4cdf-b19e-f2058fb17637",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 11,
+        "id": "6c4042b3-a8b5-4a9b-902b-1b64cc9f2463-11",
+        "timestamp": "2026-09-20T15:01:19.175421+00:00",
+        "level": "success",
+        "message": "已设置变量 inside = 42",
+        "nodeId": "10JpeHEaQWHbogjK66eiS",
+        "executionId": "4ae62a16-6e01-4601-88e8-5ceb2d17626a",
+        "executionContext": {
+          "scopes": [
+            {
+              "kind": "subflow",
+              "id": "uBBsxLUZVcY4PX_mmX3QA",
+              "name": "正式子流程"
+            }
+          ],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 14,
+        "id": "6c4042b3-a8b5-4a9b-902b-1b64cc9f2463-14",
+        "timestamp": "2026-09-20T15:01:19.181176+00:00",
+        "level": "success",
+        "message": "子流程 [正式子流程] 执行完成",
+        "nodeId": "uT6pw68SPs2io1o_FSKQ1",
+        "executionId": "4aa70a2f-cddc-4431-95f1-fb6dda08df61",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 17,
+        "id": "6c4042b3-a8b5-4a9b-902b-1b64cc9f2463-17",
+        "timestamp": "2026-09-20T15:01:19.186420+00:00",
+        "level": "success",
+        "message": "自增: total = 0 → 1 (步长: 1)",
+        "nodeId": "I3DzStOj1ZpbzLZSNHSOM",
+        "executionId": "b9651271-100d-4020-9c01-170f90858f20",
+        "executionContext": {
+          "scopes": [],
+          "loops": [
+            {
+              "nodeId": "Ms75bJ0GTGXNt6jXS4CPj",
+              "type": "count",
+              "currentIndex": 0,
+              "iteration": 1
+            }
+          ]
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 19,
+        "id": "6c4042b3-a8b5-4a9b-902b-1b64cc9f2463-19",
+        "timestamp": "2026-09-20T15:01:19.190999+00:00",
+        "level": "success",
+        "message": "已设置变量 subflow_finished = 1",
+        "nodeId": "Ro16Z71m9CmTfT6nLVPL0",
+        "executionId": "26585d25-a4aa-4469-b892-484b0ff380ec",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 22,
+        "id": "6c4042b3-a8b5-4a9b-902b-1b64cc9f2463-22",
+        "timestamp": "2026-09-20T15:01:19.196189+00:00",
+        "level": "success",
+        "message": "自增: total = 1 → 2 (步长: 1)",
+        "nodeId": "I3DzStOj1ZpbzLZSNHSOM",
+        "executionId": "afd66d6f-9ab0-4bed-9e2b-81b4a7b8fc4c",
+        "executionContext": {
+          "scopes": [],
+          "loops": [
+            {
+              "nodeId": "Ms75bJ0GTGXNt6jXS4CPj",
+              "type": "count",
+              "currentIndex": 1,
+              "iteration": 2
+            }
+          ]
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 25,
+        "id": "6c4042b3-a8b5-4a9b-902b-1b64cc9f2463-25",
+        "timestamp": "2026-09-20T15:01:19.202156+00:00",
+        "level": "success",
+        "message": "自增: total = 2 → 3 (步长: 1)",
+        "nodeId": "I3DzStOj1ZpbzLZSNHSOM",
+        "executionId": "c7c6a311-4757-4f07-b115-3b12487376b6",
+        "executionContext": {
+          "scopes": [],
+          "loops": [
+            {
+              "nodeId": "Ms75bJ0GTGXNt6jXS4CPj",
+              "type": "count",
+              "currentIndex": 2,
+              "iteration": 3
+            }
+          ]
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 28,
+        "id": "6c4042b3-a8b5-4a9b-902b-1b64cc9f2463-28",
+        "timestamp": "2026-09-20T15:01:19.209358+00:00",
+        "level": "success",
+        "message": "条件判断结果: True",
+        "nodeId": "c3a9R_XQ_R5SxaPcx9ob4",
+        "executionId": "cdae62c4-6cc3-4de7-aabf-89ce5fb91388",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 31,
+        "id": "6c4042b3-a8b5-4a9b-902b-1b64cc9f2463-31",
+        "timestamp": "2026-09-20T15:01:19.215875+00:00",
+        "level": "success",
+        "message": "已设置变量 outcome = passed",
+        "nodeId": "u8TJzWz3XE5wlH_ralL95",
+        "executionId": "f9f63b7b-87f1-4859-9046-5b1c1e9500f7",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 34,
+        "id": "6c4042b3-a8b5-4a9b-902b-1b64cc9f2463-34",
+        "timestamp": "2026-09-20T15:01:19.222593+00:00",
+        "level": "success",
+        "message": "已设置变量 finished = 1",
+        "nodeId": "ajyRb0uuHOT1hU3XHXG6R",
+        "executionId": "80cba812-ca93-46b1-a00f-2be16068ded0",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 35,
+        "id": "6c4042b3-a8b5-4a9b-902b-1b64cc9f2463-35",
+        "timestamp": "2026-09-20T15:01:19.626206+00:00",
+        "level": "success",
+        "message": "执行完成，共执行 10 个节点，失败 0 个",
+        "nodeId": null,
+        "executionId": null,
+        "executionContext": null,
+        "duration": null,
+        "details": null
+      }
+    ]
+  },
+  "sqliteEvidence": {
+    "document": [
+      {
+        "id": "vzu1J7NIMwwHVzqNFMOO-",
+        "revision": 2,
+        "nodeCount": 11,
+        "edgeCount": 8
+      }
+    ],
+    "run": [
+      {
+        "runId": "6c4042b3-a8b5-4a9b-902b-1b64cc9f2463",
+        "status": "completed",
+        "cleanupState": "completed",
+        "activeSlot": null
+      }
+    ]
+  },
+  "additionalEvidence": {
+    "childWorkflowId": "bn4pBY-3MZokj98zMw2T1",
+    "utilityWorkflowId": "Rxb9Ym5Mj0QQAX664LpC4",
+    "utilityRunId": "87067dc1-4a4b-4c0c-b3b9-62b409433977",
+    "utilityNodeIds": {
+      "json_parse": "-ZOCk2N33wik9g2a3i85G",
+      "base64": "JdOoHZx4TuYiWP0V1X4j3",
+      "random_number": "pVrRsqv8O7CHyVF0d3Wl-",
+      "get_time": "aWhZb7OO-9gT2raOW_E4T",
+      "assert_checkpoint": "c0VdEeeTaWdgtCrz59Taz",
+      "wait": "jvtVKZnEiKgD5jpSMuBRO",
+      "input_prompt": "A0-6nDTyG2RVlSqcz22ax",
+      "run_workflow_file": "glPtT0uVUn7fwzuPpRujt",
+      "note": "2NBRJpnkSIGHBQXXjjZ3A"
+    },
+    "utilityResultCount": 8,
+    "foreach": {
+      "workflowId": "6Du61ePvAC8Ynkgrt76M7",
+      "runId": "ccf736ba-331a-4fbc-b0da-626e4f8790ad",
+      "nodeIds": {
+        "listFirst": "rz4JJJdck9IPdmpvtdkCE",
+        "listSecond": "lZH9UFxxrYn562k32OZqP",
+        "dictFirst": "L4h3RF1WKitmek6-5huoc",
+        "dictSecond": "5_6aFbaKoX2GI4f0OgQAq",
+        "initialize": "GEt8RYNOjUUQhZ8GzeYbd",
+        "foreach": "xiIWpqtg3A_R1I5sA0Ovj",
+        "foreachIncrement": "Q0B4_Y3oyTiSadhFjzk5-",
+        "foreachDict": "EMxrr5Zwoz-jIS27AqZkW",
+        "dictIncrement": "Gmrfmx6V10cMXn2RyekyS",
+        "assert": "K06czpCbXA3gi4lh49waN"
+      }
+    },
+    "breakLoop": {
+      "workflowId": "MF8xXBHle3wh8P0YS_ttg",
+      "runId": "c1afe7d3-0af3-442e-9b5f-e2945e86eab7",
+      "nodeIds": {
+        "loop": "azR_6qnf9tqBOotbeiPQS",
+        "break": "Nq5CHm_0o-t-45RhIUiAb",
+        "tail": "20JYx7eATUtLSxqvAZ2Ch"
+      }
+    },
+    "continueLoop": {
+      "workflowId": "laKjVnCot_qOR-sHdjB9j",
+      "runId": "8c9bd1ce-21f1-4946-af65-c0d1295e34af",
+      "nodeIds": {
+        "initialize": "YspibcUUdFNvNF-PF8vki",
+        "loop": "WVzBtQgnhqGrboG1xKtkp",
+        "continue": "FhsaoPnlWMapaX535-43j",
+        "skipped": "8MfEThsllNEVJx5G2vSon",
+        "tail": "o7lvPaQEy3WQLm1qYMAGS"
+      }
+    },
+    "stopWorkflow": {
+      "workflowId": "Qzw3aVq7Myx1lbNeZS_8f",
+      "runId": "59d4987b-a100-47be-8731-6ae90118ec63",
+      "nodeIds": {
+        "stop": "6d4UFHrnZTxByeqpn5goZ",
+        "tail": "-R3Ogye9XxJzo3CqP6nqt"
+      }
+    },
+    "recursiveVariables": {
+      "workflowId": "rFe_G5-qqaNuzVaRNNB0H",
+      "runId": "0a809891-7722-48d8-8e7a-f66773fdc537",
+      "nodeIds": {
+        "resolve": "LiWN8_pyUbkn36e6-wUzM",
+        "assert": "KZU_3YpFstRRRZK3o_UnS"
+      }
+    },
+    "customModule": {
+      "moduleId": "custom_b3_formal_custom_module_8d728516",
+      "workflowId": "FtjoddLWDEifeOmNpYccB",
+      "runId": "bb79c0cb-10ce-4122-b4d7-02890f875a07",
+      "nodeId": "qcA3rf0RLSAqPhhwjcNxI"
+    },
+    "uiStop": {
+      "workflowId": "vBJg8sanDcdx8gQuwN2K2",
+      "runId": "50a7eb83-e1e8-48da-ae7d-9483f9a0bab4",
+      "nodeIds": {
+        "initialize": "UeflKbFBMwMBSrjieP6e9",
+        "loop": "TRzEhVT3dxWqXCG5Czigu",
+        "increment": "Or82skrwfiKpLOGlul5u2",
+        "increment2": "v3T7a2ba22vx3JvaG0q6U",
+        "increment3": "p3AI5WcZhNG-Zf_lsqUpu",
+        "increment4": "NTrEGjy3d4NDpG1X6ewyi",
+        "increment5": "0EBWoMTZ4kvV08u-bWVex",
+        "tail": "Z5yIHPLVhkuYYAbumPLVr"
+      },
+      "resultCount": 572,
+      "sqlite": {
+        "document": [
+          {
+            "id": "vBJg8sanDcdx8gQuwN2K2",
+            "revision": 1,
+            "nodeCount": 8,
+            "edgeCount": 7
+          }
+        ],
+        "run": [
+          {
+            "runId": "50a7eb83-e1e8-48da-ae7d-9483f9a0bab4",
+            "status": "stopped",
+            "cleanupState": "completed",
+            "activeSlot": null
+          }
+        ]
+      }
+    }
+  },
+  "browserEvidence": {
+    "cloakBrowserProcessesAfter": []
+  },
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserLaunch": "none (pure data)",
+    "interaction": "main window and formal Studio UI through CDP mouse/keyboard plus macOS Cmd+W; public APIs and SQLite only read evidence after UI actions; no Store or page-internal business function access",
+    "parallelMeaning": "the persisted graph has separate top-level control-flow and subflow-call entry nodes; the production scheduler executes start nodes concurrently"
+  }
+}

@@ -1,0 +1,672 @@
+{
+  "evidenceId": "BE-B4-utility-tools-formal-electron",
+  "checkedAt": "2026-09-20T15:35:08.622Z",
+  "gitHead": "a80ea75a457b7311ccaea7e7b69a8b438bbe471b",
+  "buildSha256": "1937f29695ad15e48420b2decd391c0c5cb3e67f91dfbbc9f90fbc0776edcf9f",
+  "workflowId": "9rJtcRh7_YmRmz3kpOwxK",
+  "profileId": "701d014f-14bc-41d8-9782-a76a00e53ad5",
+  "runId": "b6027a82-3d2c-4311-94ae-2a945a724a93",
+  "result": "passed",
+  "checks": [
+    "真实 sidecar 在临时工作区创建 Profile；运行前无 CloakBrowser 进程",
+    "主窗口通过真实点击打开正式 Studio；未直接访问 Store 或页面内部函数",
+    "通过画布原生右键菜单和配置面板添加并配置 9 个实用工具节点",
+    "通过画布拖拽节点与连接手柄建立密码、编码、哈希、时间、颜色与 UUID 纯数据链",
+    "真实 UI 保存经正式 HTTP 写入 SQLite，9 个实用工具节点配置与 8 条边和输入一致",
+    "9 个实用工具节点均产生持久化结果与日志，且纯数据运行没有伪造文件产物",
+    "纯数据链在已满足 Profile 前置条件的工作区完成，运行前后均无 CloakBrowser 进程"
+  ],
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflowPersistence": {
+    "revision": 1,
+    "nodeCount": 9,
+    "edgeCount": 8
+  },
+  "execution": {
+    "status": "completed",
+    "resultCount": 9,
+    "logCount": 10,
+    "artifactCount": 0,
+    "observedEvents": [
+      {
+        "id": 1,
+        "name": "execution:started",
+        "data": {
+          "workflowId": "9rJtcRh7_YmRmz3kpOwxK",
+          "runId": "b6027a82-3d2c-4311-94ae-2a945a724a93",
+          "documentId": "9rJtcRh7_YmRmz3kpOwxK"
+        }
+      },
+      {
+        "id": 2,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "b6027a82-3d2c-4311-94ae-2a945a724a93",
+          "workflowId": "9rJtcRh7_YmRmz3kpOwxK",
+          "nodeId": "cEBS8g-JRHYLd6sEnB4Hi",
+          "executionId": "5f34243c-72a0-476c-a352-0d08e3578e5d",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 2
+        }
+      },
+      {
+        "id": 3,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "b6027a82-3d2c-4311-94ae-2a945a724a93",
+          "workflowId": "9rJtcRh7_YmRmz3kpOwxK",
+          "nodeId": "cEBS8g-JRHYLd6sEnB4Hi",
+          "executionId": "5f34243c-72a0-476c-a352-0d08e3578e5d",
+          "success": true,
+          "sequence": 3,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 4,
+        "name": "execution:log",
+        "data": {
+          "runId": "b6027a82-3d2c-4311-94ae-2a945a724a93",
+          "workflowId": "9rJtcRh7_YmRmz3kpOwxK",
+          "log": {
+            "sequence": 4,
+            "id": "b6027a82-3d2c-4311-94ae-2a945a724a93-4",
+            "timestamp": "2026-09-20T15:35:06.839770+00:00",
+            "level": "success",
+            "message": "已生成12位随机密码",
+            "nodeId": "cEBS8g-JRHYLd6sEnB4Hi",
+            "executionId": "5f34243c-72a0-476c-a352-0d08e3578e5d",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 5,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "b6027a82-3d2c-4311-94ae-2a945a724a93",
+          "workflowId": "9rJtcRh7_YmRmz3kpOwxK",
+          "nodeId": "EmyHS114hmeGr7nFnTgh5",
+          "executionId": "81f22724-9853-44d0-81da-4f2e5d1cc789",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 5
+        }
+      },
+      {
+        "id": 6,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "b6027a82-3d2c-4311-94ae-2a945a724a93",
+          "workflowId": "9rJtcRh7_YmRmz3kpOwxK",
+          "nodeId": "EmyHS114hmeGr7nFnTgh5",
+          "executionId": "81f22724-9853-44d0-81da-4f2e5d1cc789",
+          "success": true,
+          "sequence": 6,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 7,
+        "name": "execution:log",
+        "data": {
+          "runId": "b6027a82-3d2c-4311-94ae-2a945a724a93",
+          "workflowId": "9rJtcRh7_YmRmz3kpOwxK",
+          "log": {
+            "sequence": 7,
+            "id": "b6027a82-3d2c-4311-94ae-2a945a724a93-7",
+            "timestamp": "2026-09-20T15:35:06.845527+00:00",
+            "level": "success",
+            "message": "URL编码完成",
+            "nodeId": "EmyHS114hmeGr7nFnTgh5",
+            "executionId": "81f22724-9853-44d0-81da-4f2e5d1cc789",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 8,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "b6027a82-3d2c-4311-94ae-2a945a724a93",
+          "workflowId": "9rJtcRh7_YmRmz3kpOwxK",
+          "nodeId": "FyVvhvi6w8fJr7qGo5VUI",
+          "executionId": "355a92dc-b21c-448d-8e8c-b5867e3f2d3b",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 8
+        }
+      },
+      {
+        "id": 9,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "b6027a82-3d2c-4311-94ae-2a945a724a93",
+          "workflowId": "9rJtcRh7_YmRmz3kpOwxK",
+          "nodeId": "FyVvhvi6w8fJr7qGo5VUI",
+          "executionId": "355a92dc-b21c-448d-8e8c-b5867e3f2d3b",
+          "success": true,
+          "sequence": 9,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 10,
+        "name": "execution:log",
+        "data": {
+          "runId": "b6027a82-3d2c-4311-94ae-2a945a724a93",
+          "workflowId": "9rJtcRh7_YmRmz3kpOwxK",
+          "log": {
+            "sequence": 10,
+            "id": "b6027a82-3d2c-4311-94ae-2a945a724a93-10",
+            "timestamp": "2026-09-20T15:35:06.852387+00:00",
+            "level": "success",
+            "message": "MD5加密完成 (hex格式)",
+            "nodeId": "FyVvhvi6w8fJr7qGo5VUI",
+            "executionId": "355a92dc-b21c-448d-8e8c-b5867e3f2d3b",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 11,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "b6027a82-3d2c-4311-94ae-2a945a724a93",
+          "workflowId": "9rJtcRh7_YmRmz3kpOwxK",
+          "nodeId": "-4N5vEL9zVfJT80GgmDkW",
+          "executionId": "401a8fa9-3b3b-4d46-a05d-9dea320b8ce4",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 11
+        }
+      },
+      {
+        "id": 12,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "b6027a82-3d2c-4311-94ae-2a945a724a93",
+          "workflowId": "9rJtcRh7_YmRmz3kpOwxK",
+          "nodeId": "-4N5vEL9zVfJT80GgmDkW",
+          "executionId": "401a8fa9-3b3b-4d46-a05d-9dea320b8ce4",
+          "success": true,
+          "sequence": 12,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 13,
+        "name": "execution:log",
+        "data": {
+          "runId": "b6027a82-3d2c-4311-94ae-2a945a724a93",
+          "workflowId": "9rJtcRh7_YmRmz3kpOwxK",
+          "log": {
+            "sequence": 13,
+            "id": "b6027a82-3d2c-4311-94ae-2a945a724a93-13",
+            "timestamp": "2026-09-20T15:35:06.858506+00:00",
+            "level": "success",
+            "message": "SHA256加密完成 (hex格式)",
+            "nodeId": "-4N5vEL9zVfJT80GgmDkW",
+            "executionId": "401a8fa9-3b3b-4d46-a05d-9dea320b8ce4",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 14,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "b6027a82-3d2c-4311-94ae-2a945a724a93",
+          "workflowId": "9rJtcRh7_YmRmz3kpOwxK",
+          "nodeId": "vA_4Hk9WDR8aqmpoG8XM-",
+          "executionId": "f0a16b37-b329-4e15-aa01-6b5ae31be9c1",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 14
+        }
+      },
+      {
+        "id": 15,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "b6027a82-3d2c-4311-94ae-2a945a724a93",
+          "workflowId": "9rJtcRh7_YmRmz3kpOwxK",
+          "nodeId": "vA_4Hk9WDR8aqmpoG8XM-",
+          "executionId": "f0a16b37-b329-4e15-aa01-6b5ae31be9c1",
+          "success": true,
+          "sequence": 15,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 16,
+        "name": "execution:log",
+        "data": {
+          "runId": "b6027a82-3d2c-4311-94ae-2a945a724a93",
+          "workflowId": "9rJtcRh7_YmRmz3kpOwxK",
+          "log": {
+            "sequence": 16,
+            "id": "b6027a82-3d2c-4311-94ae-2a945a724a93-16",
+            "timestamp": "2026-09-20T15:35:06.865807+00:00",
+            "level": "success",
+            "message": "已转换为时间戳 (seconds)",
+            "nodeId": "vA_4Hk9WDR8aqmpoG8XM-",
+            "executionId": "f0a16b37-b329-4e15-aa01-6b5ae31be9c1",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 17,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "b6027a82-3d2c-4311-94ae-2a945a724a93",
+          "workflowId": "9rJtcRh7_YmRmz3kpOwxK",
+          "nodeId": "q6GA5Pw0ggol1JMiboYGi",
+          "executionId": "3543631f-69d3-45aa-b2e7-777f4387ea1b",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 17
+        }
+      },
+      {
+        "id": 18,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "b6027a82-3d2c-4311-94ae-2a945a724a93",
+          "workflowId": "9rJtcRh7_YmRmz3kpOwxK",
+          "nodeId": "q6GA5Pw0ggol1JMiboYGi",
+          "executionId": "3543631f-69d3-45aa-b2e7-777f4387ea1b",
+          "success": true,
+          "sequence": 18,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 19,
+        "name": "execution:log",
+        "data": {
+          "runId": "b6027a82-3d2c-4311-94ae-2a945a724a93",
+          "workflowId": "9rJtcRh7_YmRmz3kpOwxK",
+          "log": {
+            "sequence": 19,
+            "id": "b6027a82-3d2c-4311-94ae-2a945a724a93-19",
+            "timestamp": "2026-09-20T15:35:06.871543+00:00",
+            "level": "success",
+            "message": "RGB(255,128,64) → HSV(20, 74%, 100%)",
+            "nodeId": "q6GA5Pw0ggol1JMiboYGi",
+            "executionId": "3543631f-69d3-45aa-b2e7-777f4387ea1b",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 20,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "b6027a82-3d2c-4311-94ae-2a945a724a93",
+          "workflowId": "9rJtcRh7_YmRmz3kpOwxK",
+          "nodeId": "hCYIf0iHMy-h1uRbyO7jf",
+          "executionId": "9f658b6b-90f0-4ffc-8247-252a3c0eefc6",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 20
+        }
+      },
+      {
+        "id": 21,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "b6027a82-3d2c-4311-94ae-2a945a724a93",
+          "workflowId": "9rJtcRh7_YmRmz3kpOwxK",
+          "nodeId": "hCYIf0iHMy-h1uRbyO7jf",
+          "executionId": "9f658b6b-90f0-4ffc-8247-252a3c0eefc6",
+          "success": true,
+          "sequence": 21,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 22,
+        "name": "execution:log",
+        "data": {
+          "runId": "b6027a82-3d2c-4311-94ae-2a945a724a93",
+          "workflowId": "9rJtcRh7_YmRmz3kpOwxK",
+          "log": {
+            "sequence": 22,
+            "id": "b6027a82-3d2c-4311-94ae-2a945a724a93-22",
+            "timestamp": "2026-09-20T15:35:06.877915+00:00",
+            "level": "success",
+            "message": "RGB(12,34,56) → CMYK(78%, 39%, 0%, 78%)",
+            "nodeId": "hCYIf0iHMy-h1uRbyO7jf",
+            "executionId": "9f658b6b-90f0-4ffc-8247-252a3c0eefc6",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 23,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "b6027a82-3d2c-4311-94ae-2a945a724a93",
+          "workflowId": "9rJtcRh7_YmRmz3kpOwxK",
+          "nodeId": "RMDWYmrHrp_BkKEjyk3Gq",
+          "executionId": "0b387488-fc7f-43d7-a01a-ec3009b83e58",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 23
+        }
+      },
+      {
+        "id": 24,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "b6027a82-3d2c-4311-94ae-2a945a724a93",
+          "workflowId": "9rJtcRh7_YmRmz3kpOwxK",
+          "nodeId": "RMDWYmrHrp_BkKEjyk3Gq",
+          "executionId": "0b387488-fc7f-43d7-a01a-ec3009b83e58",
+          "success": true,
+          "sequence": 24,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 25,
+        "name": "execution:log",
+        "data": {
+          "runId": "b6027a82-3d2c-4311-94ae-2a945a724a93",
+          "workflowId": "9rJtcRh7_YmRmz3kpOwxK",
+          "log": {
+            "sequence": 25,
+            "id": "b6027a82-3d2c-4311-94ae-2a945a724a93-25",
+            "timestamp": "2026-09-20T15:35:06.884356+00:00",
+            "level": "success",
+            "message": "#336699 → CMYK(66%, 33%, 0%, 40%)",
+            "nodeId": "RMDWYmrHrp_BkKEjyk3Gq",
+            "executionId": "0b387488-fc7f-43d7-a01a-ec3009b83e58",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 26,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "b6027a82-3d2c-4311-94ae-2a945a724a93",
+          "workflowId": "9rJtcRh7_YmRmz3kpOwxK",
+          "nodeId": "Xr7wgG_Yf28Ggx-RH0mSY",
+          "executionId": "d7bdefe6-5ae6-4e33-8846-15291be79629",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 26
+        }
+      },
+      {
+        "id": 27,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "b6027a82-3d2c-4311-94ae-2a945a724a93",
+          "workflowId": "9rJtcRh7_YmRmz3kpOwxK",
+          "nodeId": "Xr7wgG_Yf28Ggx-RH0mSY",
+          "executionId": "d7bdefe6-5ae6-4e33-8846-15291be79629",
+          "success": true,
+          "sequence": 27,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 28,
+        "name": "execution:log",
+        "data": {
+          "runId": "b6027a82-3d2c-4311-94ae-2a945a724a93",
+          "workflowId": "9rJtcRh7_YmRmz3kpOwxK",
+          "log": {
+            "sequence": 28,
+            "id": "b6027a82-3d2c-4311-94ae-2a945a724a93-28",
+            "timestamp": "2026-09-20T15:35:06.889762+00:00",
+            "level": "success",
+            "message": "已生成UUID v4",
+            "nodeId": "Xr7wgG_Yf28Ggx-RH0mSY",
+            "executionId": "d7bdefe6-5ae6-4e33-8846-15291be79629",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 29,
+        "name": "execution:completed",
+        "data": {
+          "runId": "b6027a82-3d2c-4311-94ae-2a945a724a93",
+          "workflowId": "9rJtcRh7_YmRmz3kpOwxK",
+          "result": {
+            "status": "completed",
+            "executedNodes": 9,
+            "failedNodes": 0
+          }
+        }
+      }
+    ]
+  },
+  "approvedFamilySize": 9,
+  "uiExecutedTypes": [
+    "random_password_generator",
+    "url_encode_decode",
+    "md5_encrypt",
+    "sha_encrypt",
+    "timestamp_converter",
+    "rgb_to_hsv",
+    "rgb_to_cmyk",
+    "hex_to_cmyk",
+    "uuid_generator"
+  ],
+  "notUiExecutedTypes": [],
+  "uiNodes": [
+    {
+      "moduleType": "random_password_generator",
+      "label": "随机密码生成",
+      "status": "executed-through-ui",
+      "nodeId": "cEBS8g-JRHYLd6sEnB4Hi",
+      "result": {
+        "value": "=7Lt.LprP6Yt"
+      },
+      "logs": [
+        "已生成12位随机密码"
+      ]
+    },
+    {
+      "moduleType": "url_encode_decode",
+      "label": "URL编解码",
+      "status": "executed-through-ui",
+      "nodeId": "EmyHS114hmeGr7nFnTgh5",
+      "result": {
+        "value": "Auto%20Flow%2F%E4%B8%AD%E6%96%87"
+      },
+      "logs": [
+        "URL编码完成"
+      ]
+    },
+    {
+      "moduleType": "md5_encrypt",
+      "label": "MD5加密",
+      "status": "executed-through-ui",
+      "nodeId": "FyVvhvi6w8fJr7qGo5VUI",
+      "result": {
+        "value": "6ed91a6aa028e2eb2366da4eb20f97fc"
+      },
+      "logs": [
+        "MD5加密完成 (hex格式)"
+      ]
+    },
+    {
+      "moduleType": "sha_encrypt",
+      "label": "SHA加密",
+      "status": "executed-through-ui",
+      "nodeId": "-4N5vEL9zVfJT80GgmDkW",
+      "result": {
+        "value": "ed1a42cbd8e31915b57927e0dc7498b9ea89ecc78b9ef7184ec62c8a57d3c8fa"
+      },
+      "logs": [
+        "SHA256加密完成 (hex格式)"
+      ]
+    },
+    {
+      "moduleType": "timestamp_converter",
+      "label": "时间戳转换",
+      "status": "executed-through-ui",
+      "nodeId": "vA_4Hk9WDR8aqmpoG8XM-",
+      "result": {
+        "value": 1704081600
+      },
+      "logs": [
+        "已转换为时间戳 (seconds)"
+      ]
+    },
+    {
+      "moduleType": "rgb_to_hsv",
+      "label": "RGB转HSV",
+      "status": "executed-through-ui",
+      "nodeId": "q6GA5Pw0ggol1JMiboYGi",
+      "result": {
+        "h": 20,
+        "s": 74,
+        "v": 100,
+        "string": "HSV(20, 74%, 100%)"
+      },
+      "logs": [
+        "RGB(255,128,64) → HSV(20, 74%, 100%)"
+      ]
+    },
+    {
+      "moduleType": "rgb_to_cmyk",
+      "label": "RGB转CMYK",
+      "status": "executed-through-ui",
+      "nodeId": "hCYIf0iHMy-h1uRbyO7jf",
+      "result": {
+        "c": 78,
+        "m": 39,
+        "y": 0,
+        "k": 78,
+        "string": "CMYK(78%, 39%, 0%, 78%)"
+      },
+      "logs": [
+        "RGB(12,34,56) → CMYK(78%, 39%, 0%, 78%)"
+      ]
+    },
+    {
+      "moduleType": "hex_to_cmyk",
+      "label": "HEX转CMYK",
+      "status": "executed-through-ui",
+      "nodeId": "RMDWYmrHrp_BkKEjyk3Gq",
+      "result": {
+        "c": 66,
+        "m": 33,
+        "y": 0,
+        "k": 40,
+        "string": "CMYK(66%, 33%, 0%, 40%)"
+      },
+      "logs": [
+        "#336699 → CMYK(66%, 33%, 0%, 40%)"
+      ]
+    },
+    {
+      "moduleType": "uuid_generator",
+      "label": "UUID生成器",
+      "status": "executed-through-ui",
+      "nodeId": "Xr7wgG_Yf28Ggx-RH0mSY",
+      "result": {
+        "value": "36e99cd5-5070-4773-8d9c-c99d90e8dcb2"
+      },
+      "logs": [
+        "已生成UUID v4"
+      ]
+    }
+  ],
+  "browserEvidence": {
+    "installedKernelEntries": [
+      "chromium-145.0.7632.109.2"
+    ],
+    "cloakBrowserProcessesBefore": [],
+    "cloakBrowserProcessesAfter": []
+  },
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserLaunch": "none (pure data)",
+    "interaction": "CDP mouse and keyboard through the main window and formal Studio UI; public sidecar APIs used only for setup and evidence reads; no Store or page-internal function access",
+    "claim": "9 of 9 approved utility-tool nodes executed through the formal UI; the remaining 0 are explicitly not claimed by this run"
+  }
+}

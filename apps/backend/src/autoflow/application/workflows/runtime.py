@@ -81,13 +81,28 @@ class WorkflowRuntime:
         return False
 
     async def execute(
-        self, document: Mapping[str, Any], context: ExecutionContext
+        self,
+        document: Mapping[str, Any],
+        context: ExecutionContext,
+        *,
+        start_node_id: str | None = None,
     ) -> WorkflowRuntimeResult:
         issues = self.preflight(document)
         if issues:
             return WorkflowRuntimeResult(False, (), issues)
         _, graph = parse_workflow(document)
-        return await _WorkflowScheduler(self._registry, graph, context).run()
+        if start_node_id is not None and graph.get_node(start_node_id) is None:
+            issue = WorkflowScopeIssue(
+                start_node_id,
+                "startNodeId",
+                "START_NODE_NOT_FOUND",
+                "调试起点不存在于运行快照",
+                "",
+            )
+            return WorkflowRuntimeResult(False, (), (issue,))
+        return await _WorkflowScheduler(self._registry, graph, context).run(
+            [start_node_id] if start_node_id is not None else None
+        )
 
 
 class _BranchBoundary:
@@ -164,9 +179,14 @@ class _WorkflowScheduler:
     halted: bool = False
     failed_node_id: str | None = None
     failed_result: ModuleResult | None = None
+    loop_local_restores: dict[int, dict[str, tuple[bool, Any, bool]]] = field(
+        default_factory=dict
+    )
 
-    async def run(self) -> WorkflowRuntimeResult:
-        await self._execute_parallel(self.graph.get_start_nodes())
+    async def run(self, start_nodes: list[str] | None = None) -> WorkflowRuntimeResult:
+        await self._execute_parallel(
+            self.graph.get_start_nodes() if start_nodes is None else start_nodes
+        )
         return WorkflowRuntimeResult(
             success=self.failed_result is None,
             executed_node_ids=tuple(self.executed_order),
@@ -189,7 +209,7 @@ class _WorkflowScheduler:
             return
 
         tasks = [
-            asyncio.create_task(self._execute_claimed(node_id)) for node_id in claimed
+            asyncio.create_task(self._execute_branch(node_id)) for node_id in claimed
         ]
         try:
             await asyncio.gather(*tasks)
@@ -199,6 +219,13 @@ class _WorkflowScheduler:
                     task.cancel()
             await asyncio.gather(*tasks, return_exceptions=True)
             raise
+
+    async def _execute_branch(self, node_id: str) -> None:
+        token = self.context.bind_branch_loop_stack()
+        try:
+            await self._execute_claimed(node_id)
+        finally:
+            self.context.reset_branch_loop_stack(token)
 
     async def _execute_claimed(self, node_id: str) -> None:
         node = self.graph.get_node(node_id)
@@ -283,8 +310,26 @@ class _WorkflowScheduler:
             self._remember_failure(node.id, result)
             return result
 
+        if self.context.debug is not None:
+            await self.context.debug.before_node(
+                self.context,
+                node_id=node.id,
+                label=str(node.data.get("label") or node.type),
+            )
+
         execution_id = str(uuid4())
-        execution_context = _execution_context(self.context)
+        node_label = str(node.data.get("label") or node.type)
+        execution_context = execution_context_snapshot(self.context)
+        variables_before_loop = (
+            dict(self.context.variables)
+            if node.type in _LOOP_NODE_TYPES
+            else None
+        )
+        sensitive_before_loop = (
+            set(self.context.sensitive_variables)
+            if node.type in _LOOP_NODE_TYPES
+            else set()
+        )
         async with self.event_binding_lock:
             self.context.current_node_id = node.id
             self.context.current_execution_id = execution_id
@@ -298,6 +343,11 @@ class _WorkflowScheduler:
                 },
             )
             self.context.bind_node_artifacts()
+        tracking_token = self.context.begin_variable_tracking(
+            node_id=node.id,
+            node_name=node_label,
+            execution_id=execution_id,
+        )
         raw_config = node.data.get("config")
         config = (
             dict(raw_config) if isinstance(raw_config, Mapping) else dict(node.data)
@@ -307,6 +357,20 @@ class _WorkflowScheduler:
             executor.execute(config, self.context), self.context
         )
         if (
+            result.success
+            and node.type in _LOOP_NODE_TYPES
+            and isinstance(result.data, dict)
+            and variables_before_loop is not None
+        ):
+            self.loop_local_restores[id(result.data)] = {
+                name: (
+                    name in variables_before_loop,
+                    copy.deepcopy(variables_before_loop.get(name)),
+                    name in sensitive_before_loop,
+                )
+                for name in _active_loop_variable_names(result.data)
+            }
+        if (
             node.type == "custom_module"
             and result.success
             and self.context.custom_modules is not None
@@ -314,9 +378,7 @@ class _WorkflowScheduler:
         ):
             module_id = str(result.data.get("module_id") or "")
             raw_parameters = result.data.get("parameter_mappings", {})
-            parameters = (
-                raw_parameters if isinstance(raw_parameters, Mapping) else {}
-            )
+            parameters = raw_parameters if isinstance(raw_parameters, Mapping) else {}
             custom_result = await self.context.custom_modules.run_custom_module(
                 module_id=module_id,
                 parameter_values=parameters,
@@ -385,6 +447,16 @@ class _WorkflowScheduler:
                 result = fork_result
         if not _is_json_value(result.data):
             result = ModuleResult(success=False, error="节点结果包含无法序列化的数据")
+        for change in self.context.end_variable_tracking(tracking_token):
+            await _publish(
+                self.context,
+                {
+                    "type": "execution:variable_changed",
+                    "nodeId": node.id,
+                    "executionId": execution_id,
+                    **change,
+                },
+            )
         reported_result = _reported_result(result, self.context)
         await _publish(
             self.context,
@@ -397,6 +469,8 @@ class _WorkflowScheduler:
                 "message": reported_result.message,
                 "error": reported_result.error,
                 "data": reported_result.data,
+                "logLevel": reported_result.log_level,
+                "duration": reported_result.duration,
             },
         )
         return reported_result if self.context.node_uses_sensitive_values else result
@@ -407,7 +481,7 @@ class _WorkflowScheduler:
         children: dict[str, ExecutionContext] = {}
         tasks: dict[asyncio.Task[WorkflowRuntimeResult], str] = {}
         for root, members in fork.branches.items():
-            child = replace(self.context, variables=copy.deepcopy(self.context.variables), sensitive_variables=set(self.context.sensitive_variables), loop_stack=copy.deepcopy(self.context.loop_stack), current_row=copy.deepcopy(self.context.current_row), current_node_id=None, current_execution_id=None, should_break=False, should_continue=False, stop_workflow=False, stop_reason='', node_boundary=boundary, execution_scopes=(*self.context.execution_scopes, {'kind': 'parallel', 'id': node.id, 'callNodeId': node.id, 'callVisitId': visit, 'branchNodeId': root, 'joinNodeId': fork.join_id}))
+            child = replace(self.context, variables=copy.deepcopy(self.context.variables), sensitive_variables=set(self.context.sensitive_variables), loop_stack=copy.deepcopy(list(self.context.loop_stack)), current_row=copy.deepcopy(self.context.current_row), current_node_id=None, current_execution_id=None, should_break=False, should_continue=False, stop_workflow=False, stop_reason='', node_boundary=boundary, execution_scopes=(*self.context.execution_scopes, {'kind': 'parallel', 'id': node.id, 'callNodeId': node.id, 'callVisitId': visit, 'branchNodeId': root, 'joinNodeId': fork.join_id}))
             sink_factory = getattr(self.context.events, 'for_context', None)
             if sink_factory:
                 child.events = sink_factory(child)
@@ -469,13 +543,14 @@ class _WorkflowScheduler:
                 self.context.should_break = False
                 break
             self.context.should_continue = False
-            self._advance_loop(loop_state)
+            await self._advance_loop(loop_node, loop_state)
             await asyncio.sleep(0)
 
         if self.context.loop_stack and self.context.loop_stack[-1] is loop_state:
             self.context.loop_stack.pop()
         self.executed.add(loop_node.id)
         self.executing.discard(loop_node.id)
+        await self._exit_loop_scope(loop_node, loop_state)
         if done_nodes and not self.halted and not self.context.stop_workflow:
             await self._notify_successors(done_nodes, loop_node.id)
 
@@ -507,7 +582,15 @@ class _WorkflowScheduler:
             return bool(resolved)
         return False
 
-    def _advance_loop(self, state: dict[str, Any]) -> None:
+    async def _advance_loop(
+        self, loop_node: WorkflowNode, state: dict[str, Any]
+    ) -> None:
+        execution_id = str(uuid4())
+        tracking_token = self.context.begin_variable_tracking(
+            node_id=loop_node.id,
+            node_name=str(loop_node.data.get("label") or loop_node.type),
+            execution_id=execution_id,
+        )
         loop_type = state.get("type")
         step = state.get("step_value", 1) if loop_type == "range" else 1
         state["current_index"] = state.get("current_index", 0) + step
@@ -528,6 +611,43 @@ class _WorkflowScheduler:
                 self.context.set_variable(key_variable, key)
             if isinstance(value_variable, str) and value_variable:
                 self.context.set_variable(value_variable, value)
+        await self._publish_variable_changes(tracking_token)
+
+    async def _exit_loop_scope(
+        self, loop_node: WorkflowNode, state: dict[str, Any]
+    ) -> None:
+        restore = self.loop_local_restores.pop(id(state), {})
+        if not restore:
+            return
+        execution_id = str(uuid4())
+        tracking_token = self.context.begin_variable_tracking(
+            node_id=loop_node.id,
+            node_name=str(loop_node.data.get("label") or loop_node.type),
+            execution_id=execution_id,
+        )
+        for name, (existed, value, sensitive) in restore.items():
+            if existed:
+                self.context.set_variable(
+                    name,
+                    copy.deepcopy(value),
+                    sensitive=sensitive,
+                    operation="scope_exit",
+                )
+            else:
+                self.context.delete_variable(name, operation="scope_exit")
+        await self._publish_variable_changes(tracking_token)
+
+    async def _publish_variable_changes(self, tracking_token: Any) -> None:
+        for change in self.context.end_variable_tracking(tracking_token):
+            await _publish(
+                self.context,
+                {
+                    "type": "execution:variable_changed",
+                    "nodeId": change["node_id"],
+                    "executionId": change["executionId"],
+                    **change,
+                },
+            )
 
     async def _reset_nodes(self, node_ids: set[str]) -> None:
         async with self.lock:
@@ -659,7 +779,7 @@ def _reported_result(result: ModuleResult, context: ExecutionContext) -> ModuleR
     )
 
 
-def _execution_context(context: ExecutionContext) -> dict[str, Any]:
+def execution_context_snapshot(context: ExecutionContext) -> dict[str, Any]:
     loops: list[dict[str, Any]] = []
     for state in context.loop_stack:
         current = _integer(state.get("current_index"))
@@ -699,6 +819,23 @@ def _is_json_value(value: Any) -> bool:
 async def _publish(context: ExecutionContext, event: dict[str, Any]) -> None:
     if context.events is not None:
         await context.events.publish(event)
+
+
+def _active_loop_variable_names(state: Mapping[str, Any]) -> tuple[str, ...]:
+    if state.get("type") in {"foreach", "foreach_dict"} and not state.get("data"):
+        return ()
+    return tuple(
+        dict.fromkeys(
+            name
+            for key in (
+                "index_variable",
+                "item_variable",
+                "key_variable",
+                "value_variable",
+            )
+            if isinstance((name := state.get(key)), str) and name
+        )
+    )
 
 
 async def _execute_with_cancellation(

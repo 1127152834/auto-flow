@@ -1,0 +1,5 @@
+						32 文本 Target discovery settings
+							34 文本栏 (settable) Value: localhost:9222, Placeholder: IP address and port
+							36 文本栏 (settable) Value: localhost:9229, Placeholder: IP address and port
+						40 复选框 Enable port forwarding, Value: 0
+						41 按钮 Done

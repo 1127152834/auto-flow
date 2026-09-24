@@ -85,9 +85,11 @@ export function configureMockBrowserPages(pages:components['schemas']['StudioBro
 }
 
 let recording = false
+let recordingPaused = false
 let recorded: ObjectValue[] = []
 let recordingSessionId: string | null = null
 const retiredRecordings = new Set<string>()
+const recordingCommands = new Map<string,{fingerprint:string;state:ObjectValue;result:ObjectValue}>()
 let picking = false
 let pickerSessionId: string | null = null
 let pickerRequestFingerprint: string | null = null
@@ -96,7 +98,8 @@ let picked: ObjectValue | null = null
 let similarPicked: ObjectValue | null = null
 const speechRequests = new Map<string, components['schemas']['StudioSpeechState']>()
 const jsRequests = new Map<string, components['schemas']['StudioJsScriptState']>()
-let run: { pauseId:string|null; controlRevision:number; tts?: {requestId:string;nodeId:string}; js?: { requestId: string; nodeId: string; resultVariable: string }; id: string; runId: string; documentId: string; nodes: ObjectValue[]; index: number; paused: boolean; step: boolean; breakpoints: string[]; nodeIds: string[]; variables: ObjectValue; input?: { requestId: string; nodeId: string; variableName: string; mode: string }; timer?: ReturnType<typeof setTimeout> } | null = null
+const platformRequests = new Map<string, components['schemas']['StudioDesktopActionState']>()
+let run: { pauseId:string|null; controlRevision:number; runToNodeId?:string; platform?: {requestId:string;nodeId:string;variableName:string}; tts?: {requestId:string;nodeId:string}; js?: { requestId: string; nodeId: string; resultVariable: string }; id: string; runId: string; documentId: string; nodes: ObjectValue[]; index: number; paused: boolean; step: boolean; breakpoints: string[]; nodeIds: string[]; variables: ObjectValue; input?: { requestId: string; nodeId: string; variableName: string; mode: string }; timer?: ReturnType<typeof setTimeout> } | null = null
 const inputRequests = new Map<string, { requestId: string; workflowId: string; nodeId: string; status: 'pending' | 'answered' | 'cancelled' | 'expired' }>()
 type CommandRecord = { fingerprint:string; response:ObjectValue; status:number }
 const commandResults = new Map<string, CommandRecord>()
@@ -164,7 +167,7 @@ export function configureMock(options: { failNextRequiredFields?: boolean; scrip
     streams.clear()
   }
 }
-export function mockSnapshot() { return { offline, browser, recording, picking, pickerSessionId, url, run: run?.id ?? null, pause:run?.paused&&run.pauseId?{runId:run.runId,pauseId:run.pauseId,controlRevision:run.controlRevision}:null, sequence: events.length } }
+export function mockSnapshot() { return { offline, browser, recording, recordingPaused, picking, pickerSessionId, url, run: run?.id ?? null, pause:run?.paused&&run.pauseId?{runId:run.runId,pauseId:run.pauseId,controlRevision:run.controlRevision}:null, sequence: events.length } }
 export function seedMockRunHistory(options: { runId: string; workflowId: string; documentId: string; workflowName?: string; logs: Array<Omit<StoredExecutionLog, 'sequence'>> }) {
   const startedAt = new Date().toISOString()
   const logs = options.logs.map((log, index) => ({ ...structuredClone(log), sequence: index + 1 }))
@@ -180,7 +183,20 @@ export function seedMockRunHistory(options: { runId: string; workflowId: string;
 }
 export function addMockRecordingEvent(event: ObjectValue) {
   if (!recording) throw new Error('请先在录制面板开始录制')
+  if (recordingPaused) throw new Error('录制已暂停')
   recorded.push({ ...event, ts: Date.now(), sequence: recorded.length + 1 })
+}
+function recorderCommand(body:ObjectValue,action:string,result?:ObjectValue){
+  const commandId=typeof body.commandId==='string'&&body.commandId.trim()?body.commandId:null
+  const sessionId=typeof body.sessionId==='string'&&body.sessionId.trim()?body.sessionId:null
+  if(!commandId||!sessionId)return {error:failure('录制命令标识无效',422)}
+  const fingerprint=JSON.stringify({action,sessionId,afterSeq:Number(body.afterSeq||0)})
+  const previous=recordingCommands.get(commandId)
+  if(previous)return previous.fingerprint===fingerprint?{result:previous.result}:{error:failure('commandId 已用于不同录制命令',409)}
+  if(!result)return {commandId,sessionId,fingerprint}
+  const confirmed={...result,commandId}
+  recordingCommands.set(commandId,{fingerprint,state:{success:true,commandId,sessionId,action,status:'completed',result:confirmed,error:null,errorCode:null,httpStatus:200},result:confirmed})
+  return {result:confirmed}
 }
 /** Explicit result fixture; does not derive or execute automation actions. */
 export function seedMockRunResults(runId:string, rows:components['schemas']['StudioRunResultRow'][]) {
@@ -221,6 +237,7 @@ function finish(status: string) {
   if (run.input) { const request = inputRequests.get(run.input.requestId); if (request) request.status = 'expired' }
   if (run.js) { const request = jsRequests.get(run.js.requestId); if (request && ['pending', 'claimed'].includes(request.status)) request.status = 'expired' }
   if (run.tts) { const request = speechRequests.get(run.tts.requestId); if (request && ['pending','claimed'].includes(request.status)) request.status = 'expired' }
+  if (run.platform) { const request = platformRequests.get(run.platform.requestId); if (request && ['pending','claimed'].includes(request.status)) request.status = 'expired' }
   const terminalStatus = status === 'completed' ? 'completed' : status === 'failed' ? 'failed' : 'stopped'
   const record = db.runs[run.runId]
   if (record) persist({ ...db, runs: { ...db.runs, [run.runId]: { ...record, status: terminalStatus, finishedAt: new Date().toISOString() } } })
@@ -351,9 +368,27 @@ function submitSpeech(event: string, data: Json | undefined): Response {
   else finish('failed')
   return response({success:true,requestId:data.requestId})
 }
+function submitPlatform(event:string,data:Json|undefined):Response {
+  if(!data||typeof data!=='object'||Array.isArray(data)||typeof data.requestId!=='string'||typeof data.claimId!=='string'||!data.claimId.trim())return failure('平台操作请求及领取标识无效',422)
+  const pending=run?.platform,state=platformRequests.get(data.requestId)
+  if(!run||!pending||pending.requestId!==data.requestId||!state)return failure('平台操作请求不存在或已结束',409)
+  if(event==='desktop_action_claim'){
+    if(state.status==='claimed'&&state.claimId===data.claimId)return response({success:true,requestId:data.requestId})
+    if(state.status!=='pending')return failure('平台操作已由其它客户端领取',409)
+    state.status='claimed';state.claimId=data.claimId;return response({success:true,requestId:data.requestId})
+  }
+  if(state.status!=='claimed'||state.claimId!==data.claimId)return failure('平台操作结果不属于当前领取者',409)
+  if(typeof data.success!=='boolean'||(!data.success&&(typeof data.error!=='string'||!data.error.trim())))return failure('平台操作结果格式无效',422)
+  clearTimeout(run.timer);state.status=data.success?'completed':'failed'
+  emitMockEvent('execution:node_complete',{workflowId:run.id,runId:run.runId,nodeId:pending.nodeId,success:data.success})
+  if(!data.success){finish('failed');return response({success:true,requestId:data.requestId})}
+  if(pending.variableName)writeRunVariable(pending.variableName,data.value??'',pending.nodeId,'[Mock] 平台操作结果')
+  run.platform=undefined;run.index++;tick();return response({success:true,requestId:data.requestId})
+}
 function applyCommand(event: string, data: Json | undefined): Response {
   if (event === 'tts_claim' || event === 'tts_result') return submitSpeech(event,data)
   if (event === 'js_script_claim' || event === 'js_script_result') return submitJs(event, data)
+  if(event==='desktop_action_claim'||event==='desktop_action_result')return submitPlatform(event,data)
   if (event === 'input_prompt_result') return submitInput(data)
   const payload = data && typeof data === 'object' && !Array.isArray(data) ? data : {}
   if (event === 'execution_stop') return stopRun(payload.workflowId,payload.runId)
@@ -376,13 +411,15 @@ function tick(skipBreakpoint = false) {
   const node = current.nodes[current.index]
   const nodeId = String(node.id)
   const data = node.data as ObjectValue | undefined
-  if (!skipBreakpoint && (current.step || current.breakpoints.includes(nodeId))) {
+  const reachedTarget = current.runToNodeId === nodeId
+  if (!skipBreakpoint && (current.step || current.breakpoints.includes(nodeId) || reachedTarget)) {
+    if (reachedTarget) current.runToNodeId = undefined
     current.paused = true
     current.pauseId = crypto.randomUUID()
     current.controlRevision++
     const record=db.runs[current.runId]
     if(record)persist({...db,runs:{...db.runs,[current.runId]:{...record,status:'paused'}}})
-    emitMockEvent('execution:paused', { workflowId: current.id, runId:current.runId, pauseId:current.pauseId, controlRevision:current.controlRevision, node_id: nodeId, label: data?.label ?? node.type, variables: current.variables, variableMeta:currentVariableMeta(current), reason: current.step ? 'step' : 'breakpoint' })
+    emitMockEvent('execution:paused', { workflowId: current.id, runId:current.runId, pauseId:current.pauseId, controlRevision:current.controlRevision, node_id: nodeId, label: data?.label ?? node.type, variables: current.variables, variableMeta:currentVariableMeta(current), reason: current.step ? 'step' : reachedTarget ? 'target' : 'breakpoint' })
     return
   }
   current.paused = false
@@ -423,6 +460,20 @@ function tick(skipBreakpoint = false) {
         emitRunLog(current, {id:crypto.randomUUID(),timestamp:new Date().toISOString(),nodeId,level:'error',message:'[Mock] 等待语音结果超过60秒',isSystemLog:true})
         finish('failed')
       },60000)
+      return
+    }
+    if (['set_clipboard','get_clipboard','play_sound','system_notification'].includes(String(node.type))) {
+      const requestId=crypto.randomUUID(),moduleType=String(node.type)
+      const action=moduleType==='set_clipboard'?(data?.contentType==='image'?'clipboard_write_image':'clipboard_write_text')
+        :moduleType==='get_clipboard'?'clipboard_read_text':moduleType==='play_sound'?'beep':'notification'
+      const payload:ObjectValue=action==='clipboard_write_image'?{path:data?.imagePath??''}
+        :action==='clipboard_write_text'?{text:data?.textContent??''}
+          :action==='beep'?{count:data?.beepCount??1,interval:data?.beepInterval??0.3}
+            :{title:data?.notifyTitle??'WebRPA通知',message:data?.notifyMessage??'',duration:data?.duration??5,playSound:data?.playSound??true}
+      current.platform={requestId,nodeId,variableName:moduleType==='get_clipboard'&&typeof data?.variableName==='string'?data.variableName:''}
+      platformRequests.set(requestId,{requestId,workflowId:current.id,nodeId,status:'pending',claimId:null})
+      emitMockEvent('execution:desktop_action',{requestId,workflowId:current.id,nodeId,action,payload})
+      current.timer=setTimeout(()=>{if(run!==current||current.platform?.requestId!==requestId)return;finish('failed')},60000)
       return
     }
     if (String(node.type) === 'input_prompt') {
@@ -501,6 +552,8 @@ function startRun(id: string, doc: ObjectValue | undefined, body: ObjectValue): 
         const nodeIds = sourceNodes.map(node => String(node.id))
         const breakpoints = body.breakpoints === undefined ? [] : body.breakpoints
         if (!validBreakpoints(breakpoints, nodeIds)) return failure('断点必须是运行快照中的节点标识数组', 422)
+        if (body.startNodeId && body.runToNodeId) return failure('不能同时指定调试起点和运行至此目标', 422)
+        if (body.runToNodeId && !nodeIds.includes(String(body.runToNodeId))) return failure('运行至此目标不存在于运行快照', 422)
         if (findExcludedModuleType(nodes, moduleId => {
           const children = (db.modules[moduleId]?.workflow as ObjectValue | undefined)?.nodes
           return Array.isArray(children) ? children : undefined
@@ -524,7 +577,7 @@ function startRun(id: string, doc: ObjectValue | undefined, body: ObjectValue): 
           runLogs: { ...db.runLogs, [runId]: [] },
           runTracking:{...db.runTracking,[runId]:initialRecords},runTrackingSequence:{...db.runTrackingSequence,[runId]:initialRecords.length},
         })
-        run = { id, runId, documentId, nodes, index, pauseId:null, controlRevision:0, paused: false, step: body.stepMode === true, breakpoints: [...breakpoints], nodeIds, variables }
+        run = { id, runId, documentId, nodes, index, pauseId:null, controlRevision:0, paused: false, step: body.stepMode === true, breakpoints: [...breakpoints], nodeIds, variables, ...(body.runToNodeId ? {runToNodeId:String(body.runToNodeId)} : {}) }
         tracking.set(id,initialRecords)
         run.timer = setTimeout(() => {
           if (run?.id !== id || run.runId !== runId) return
@@ -595,6 +648,12 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       if (method !== 'GET') return failure('脚本状态查询只接受 GET', 405)
       const state = jsRequests.get(decodeURIComponent(jsQuery[1]))
       return state ? response(state) : failure('脚本请求不存在', 404)
+    }
+    const platformQuery = path.match(/^\/events\/desktop-actions\/([^/]+)$/)
+    if (platformQuery) {
+      if (method !== 'GET') return failure('平台操作状态查询只接受 GET', 405)
+      const state = platformRequests.get(decodeURIComponent(platformQuery[1]))
+      return state ? response(state) : failure('平台操作请求不存在', 404)
     }
     const inputQuery = path.match(/^\/events\/input-prompts\/([^/]+)$/)
     if (inputQuery) {
@@ -896,7 +955,7 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       if(target){target.url=url;browserPageRevision++}
       return response({success:true,isOpen:true,url,mock:true})
     }
-    if (path === '/browser/close') { if(body.sessionId!==undefined&&body.sessionId!==browserSessionId)return failure('浏览器会话已变化',409);invalidateMockScriptTests(true); browser = false; browserPages=[];targetPageId=null;browserPageRevision++;closePickerSession(); recording = false; return response({success:true}) }
+    if (path === '/browser/close') { if(body.sessionId!==undefined&&body.sessionId!==browserSessionId)return failure('浏览器会话已变化',409);invalidateMockScriptTests(true); browser = false; browserPages=[];targetPageId=null;browserPageRevision++;closePickerSession(); recording = false; recordingPaused = false; return response({success:true}) }
     if (path === '/browser/get-selector') return response({success:true,selector:'#submit',mock:true})
     if (path === '/browser/url') return response({ url })
     const recordingReview = path.match(/^\/recorder\/reviews\/([^/]+)$/)
@@ -911,20 +970,42 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       persist({...db,recordingReviews:{...db.recordingReviews,[id]:saved}})
       return response(saved)
     }
+    const recordingCommand = path.match(/^\/recorder\/commands\/([^/]+)$/)
+    if(recordingCommand){
+      if(method!=='GET')return failure('录制命令查询仅支持 GET',405)
+      const value=recordingCommands.get(decodeURIComponent(recordingCommand[1]))
+      return value?response(value.state):failure('录制命令不存在',404)
+    }
     if (path === '/recorder/start') {
       if(method!=='POST')return failure('启动录制仅支持 POST',405)
       const sessionId = typeof body.sessionId === 'string' && body.sessionId.trim() ? body.sessionId : null
-      if(!sessionId||Object.keys(body).some(key=>key!=='sessionId'))return failure('录制启动参数无效',422)
+      const command=recorderCommand(body,'start');if(command.error)return command.error;if(command.result)return response(command.result)
+      if(!sessionId||Object.keys(body).some(key=>!['sessionId','commandId'].includes(key)))return failure('录制启动参数无效',422)
       if (retiredRecordings.has(sessionId)) return failure('Recording session expired', 409)
-      if (sessionId === recordingSessionId) return response({ success: true, sessionId, recording, nextSeq: recorded.length })
+      if (sessionId === recordingSessionId) return response(recorderCommand(body,'start',{ success: true, sessionId, recording, paused:recordingPaused, nextSeq: recorded.length }).result)
       if (!browser || run || picking || recording || mockScriptTestBusy()) return failure('请先打开空闲的 Mock 浏览器', 409)
       if (recordingSessionId) retiredRecordings.add(recordingSessionId)
-      recordingSessionId = sessionId; recording = true; recorded = []
-      return response({ success: true, sessionId, recording: true, nextSeq: 0 })
+      recordingSessionId = sessionId; recording = true; recordingPaused = false; recorded = []
+      return response(recorderCommand(body,'start',{ success: true, sessionId, recording: true, paused:false, nextSeq: 0 }).result)
+    }
+    if (path === '/recorder/pause' || path === '/recorder/resume') {
+      if(method!=='POST')return failure('录制暂停与恢复仅支持 POST',405)
+      const action=path==='/recorder/pause'?'pause':'resume'
+      const command=recorderCommand(body,action);if(command.error)return command.error;if(command.result)return response(command.result)
+      const sessionId=typeof body.sessionId==='string'&&body.sessionId.trim()?body.sessionId:null
+      const afterSeq=Number(body.afterSeq||0)
+      if(!sessionId||sessionId!==recordingSessionId||!recording)return failure('录制会话不存在或已过期',409)
+      if(!Number.isSafeInteger(afterSeq)||afterSeq<0||afterSeq>recorded.length)return failure('Invalid recording cursor',400)
+      recordingPaused=path==='/recorder/pause'
+      const data=recorded.filter(event=>Number(event.sequence)>afterSeq).slice(0,200)
+      const nextSeq=data.length?Number(data.at(-1)?.sequence):afterSeq
+      return response(recorderCommand(body,action,{success:true,sessionId,recording:true,paused:recordingPaused,nextSeq,hasMore:nextSeq<recorded.length,data:{events:data}}).result)
     }
     if (path === '/recorder/events' || path === '/recorder/stop') {
       if(method!==(path==='/recorder/events'?'GET':'POST'))return failure('录制操作 HTTP 方法错误',405)
       const requestedSession = method === 'POST' ? body.sessionId : target.searchParams.get('sessionId')
+      const command=method==='POST'?recorderCommand(body,'stop'):null
+      if(command?.error)return command.error;if(command?.result)return response(command.result)
       if(typeof requestedSession!=='string'||!requestedSession.trim())return failure('缺少录制会话标识',422)
       if (requestedSession !== recordingSessionId) return failure('Recording session expired', 409)
       const afterSeq = Number(method === 'POST' ? body.afterSeq || 0 : target.searchParams.get('afterSeq') || 0)
@@ -934,7 +1015,7 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       const data = recorded.filter(event => Number(event.sequence) > afterSeq).slice(0,limit)
       const nextSeq=data.length?Number(data.at(-1)?.sequence):afterSeq
       const hasMore=nextSeq<recorded.length
-      if (path === '/recorder/stop') { recording = false; return response({ success: true, sessionId: recordingSessionId, nextSeq, hasMore, data: { events: data } }) }
+      if (path === '/recorder/stop') { recording = false; recordingPaused = false; return response(recorderCommand(body,'stop',{ success: true, sessionId: recordingSessionId, nextSeq, hasMore, data: { events: data } }).result) }
       return response({ success: true, sessionId: recordingSessionId, nextSeq, hasMore, data })
     }
     if (path === '/recorder/status') {
@@ -942,7 +1023,7 @@ export async function mockRequest(input: RequestInfo | URL, init: RequestInit = 
       const requested=target.searchParams.get('sessionId')
       if(requested!==null&&!requested.trim())return failure('录制会话标识无效',422)
       if(requested&&requested!==recordingSessionId)return failure('录制会话不存在或已过期',409)
-      return response({success:true,recording,isRecording:recording,sessionId:recordingSessionId,nextSeq:recorded.length})
+      return response({success:true,recording,paused:recordingPaused,isRecording:recording,sessionId:recordingSessionId,nextSeq:recorded.length})
     }
     if (path === '/element-picker/start') {
       if (method !== 'POST') return failure('启动拾取仅支持 POST', 405)

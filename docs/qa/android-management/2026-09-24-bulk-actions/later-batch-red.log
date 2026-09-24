@@ -1,0 +1,44 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___ test_tick_rereads_later_batch_cancelled_during_an_earlier_capacity_probe ___
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-134/test_tick_rereads_later_batch_0')
+
+    @pytest.mark.asyncio
+    async def test_tick_rereads_later_batch_cancelled_during_an_earlier_capacity_probe(tmp_path: Path):
+        database = tmp_path / "cancel-later-batch.sqlite3"
+        migrate_database(database)
+        sessions = create_session_factory(database)
+        resources = AndroidResourceRepository(sessions)
+        operations = SqlAlchemyAndroidOperationRepository(sessions)
+        devices = _Devices(operations)
+        entered, release = asyncio.Event(), asyncio.Event()
+        probed = []
+
+        async def capacity(device):
+            probed.append(device["deviceId"])
+            entered.set()
+            await release.wait()
+            raise AndroidError("ANDROID_MEMORY_BUDGET", "full")
+
+        devices.runtime.capacity = capacity
+        service = AndroidBulkService(resources, devices)
+        service.create("ws", "earlier", "start", [{"deviceId": "d1", "expectedRevision": 2}], False)
+        later = service.create("ws", "later", "start", [{"deviceId": "d2", "expectedRevision": 2}], False)
+        tick = asyncio.create_task(service.tick())
+        try:
+            await asyncio.wait_for(entered.wait(), 2)
+            service.action(later["id"], "cancelPending", "cancel-later")
+            release.set()
+            await tick
+            saved = service.get(later["id"])
+>           assert saved["state"] == "cancelled"
+E           AssertionError: assert 'running' == 'cancelled'
+E
+E             - cancelled
+E             + running
+
+apps/backend/tests/integration/test_android_multi_device.py:266: AssertionError
+=========================== short test summary info ============================
+FAILED apps/backend/tests/integration/test_android_multi_device.py::test_tick_rereads_later_batch_cancelled_during_an_earlier_capacity_probe
+1 failed, 8 deselected in 1.09s

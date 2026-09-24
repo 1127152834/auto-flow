@@ -14,11 +14,13 @@ import {
   RotateCcw,
   FileText,
   Undo2,
+  Download,
 } from 'lucide-react'
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { marked } from 'marked'
 import { renderSafeMarkdown } from '../../lib/safeMarkdown'
 import type { ChatMessage, ToolCall } from '../../hooks/stores/aiAssistantStore'
+import { readAssistantArtifact } from '../../api/assistantArtifacts'
 import '../../styles/table-system.css'
 
 // marked 配置 - 启用 GFM (GitHub 风格 Markdown：表格/任务列表/删除线/换行)
@@ -285,6 +287,73 @@ function MarkdownContent({ content }: { content: string }) {
   )
 }
 
+function AssistantImage({ source, index }: { source: string; index: number }) {
+  const [url, setUrl] = useState(source.startsWith('assistant-attachment://') ? '' : source)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (!source.startsWith('assistant-attachment://')) {
+      setUrl(source)
+      return
+    }
+    let active = true
+    let objectUrl = ''
+    readAssistantArtifact(source)
+      .then((blob) => {
+        if (!active) return
+        objectUrl = URL.createObjectURL(blob)
+        setUrl(objectUrl)
+      })
+      .catch((cause) => active && setError(cause instanceof Error ? cause.message : '图片读取失败'))
+    return () => {
+      active = false
+      if (objectUrl) URL.revokeObjectURL(objectUrl)
+    }
+  }, [source])
+
+  if (error) return <span className="text-[11px] text-[hsl(var(--danger-700))]">{error}</span>
+  if (!url) return <Loader2 aria-label={`正在读取附图${index + 1}`} className="w-4 h-4 animate-spin" />
+  return (
+    <img
+      src={url}
+      alt={`附图${index + 1}`}
+      className="max-w-[160px] max-h-[160px] rounded-card border border-[hsl(var(--border))] object-cover cursor-zoom-in"
+      onClick={() => window.open(url, '_blank')}
+    />
+  )
+}
+
+function AssistantArtifactText({ reference }: { reference: string }) {
+  const [content, setContent] = useState<string | null>(null)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const load = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      setContent(await (await readAssistantArtifact(reference)).text())
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : '产物读取失败')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (content !== null) return <MarkdownContent content={content} />
+  return (
+    <button
+      type="button"
+      onClick={() => void load()}
+      disabled={loading}
+      className="mt-2 inline-flex items-center gap-1 text-[12px] font-medium text-[hsl(var(--brand-700))] disabled:opacity-60"
+    >
+      {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+      {error || '读取完整内容'}
+    </button>
+  )
+}
+
 function ToolCallCard({ tc }: { tc: ToolCall }) {
   const [expanded, setExpanded] = useState(false)
   const { label, sublabel, isMcp } = getToolLabel(tc)
@@ -332,6 +401,9 @@ function ToolCallCard({ tc }: { tc: ToolCall }) {
 
   const hasArgs = tc.arguments && Object.keys(tc.arguments).length > 0
   const hasResult = tc.result !== undefined && tc.status === 'success'
+  const resultReference = tc.result && typeof tc.result === 'object' && typeof tc.result.artifactRef === 'string'
+    ? tc.result.artifactRef
+    : undefined
 
   return (
     <div
@@ -385,9 +457,13 @@ function ToolCallCard({ tc }: { tc: ToolCall }) {
               <div className="text-[10px] text-[hsl(var(--muted-foreground))] uppercase tracking-wider font-semibold mb-1.5">
                 结果
               </div>
-              <pre className="text-[11px] p-2.5 rounded-control bg-[hsl(var(--slate-900))] text-[hsl(var(--slate-100))] overflow-x-auto whitespace-pre-wrap break-words max-h-56 shadow-soft">
+              {resultReference ? (
+                <AssistantArtifactText reference={resultReference} />
+              ) : (
+                <pre className="text-[11px] p-2.5 rounded-control bg-[hsl(var(--slate-900))] text-[hsl(var(--slate-100))] overflow-x-auto whitespace-pre-wrap break-words max-h-56 shadow-soft">
 {typeof tc.result === 'string' ? tc.result : JSON.stringify(tc.result, null, 2)}
-              </pre>
+                </pre>
+              )}
             </div>
           )}
           {tc.error && (
@@ -410,10 +486,12 @@ function ReasoningCard({
   content,
   isThinking,
   durationSec,
+  contentRef,
 }: {
   content: string
   isThinking: boolean
   durationSec?: number
+  contentRef?: string
 }) {
   // 用户是否手动操作过（true=主动展开，false=主动收起，null=未操作）
   const [userExpanded, setUserExpanded] = useState<boolean | null>(null)
@@ -467,6 +545,7 @@ function ReasoningCard({
           className="px-3 pb-3 pt-1 text-[12.5px] leading-relaxed text-[hsl(var(--slate-600))] whitespace-pre-wrap break-words border-t border-[hsl(var(--brand-500)/0.1)] max-h-[400px] overflow-y-auto"
         >
           {content || '（暂无思考内容）'}
+          {contentRef && <AssistantArtifactText reference={contentRef} />}
         </div>
       )}
     </div>
@@ -502,6 +581,7 @@ export function MessageBubble({ message, onResend, onEdit, onRollback, canRollba
               content={message.reasoning_content}
               isThinking={!message.content && !(message.tool_calls && message.tool_calls.length > 0)}
               durationSec={(message as any).thinking_duration_sec}
+              contentRef={message.reasoningContentRef}
             />
           )}
           {message.content && (
@@ -517,6 +597,7 @@ export function MessageBubble({ message, onResend, onEdit, onRollback, canRollba
               ) : (
                 <MarkdownContent content={message.content} />
               )}
+              {message.contentRef && <AssistantArtifactText reference={message.contentRef} />}
             </div>
           )}
           {/* 用户消息附带的文档附件芯片 */}
@@ -538,13 +619,7 @@ export function MessageBubble({ message, onResend, onEdit, onRollback, canRollba
           {isUser && message.images && message.images.length > 0 && (
             <div className="flex flex-wrap gap-1.5 justify-end">
               {message.images.map((src, i) => (
-                <img
-                  key={i}
-                  src={src}
-                  alt={`附图${i + 1}`}
-                  className="max-w-[160px] max-h-[160px] rounded-card border border-[hsl(var(--border))] object-cover cursor-zoom-in"
-                  onClick={() => window.open(src, '_blank')}
-                />
+                <AssistantImage key={i} source={src} index={i} />
               ))}
             </div>
           )}

@@ -1,0 +1,54 @@
+{
+  "evidenceId": "BE-B6-022-face-trigger",
+  "recordedAt": "2026-09-21",
+  "classification": "原版功能迁入 + AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "reference/WebRPA/backend/app/executors/trigger.py#FaceTriggerExecutor"
+    ],
+    "license": "LICENSE.WebRPA"
+  },
+  "nodes": ["face_trigger"],
+  "implemented": [
+    "保留目标人脸图片、容差、检查间隔、摄像头索引、无限或有限等待及face_event变量",
+    "保留首个目标编码、逐帧人脸定位、距离阈值、置信度和人脸坐标结果",
+    "目标加载、摄像头读帧和人脸识别在worker线程执行，并在成功、失败和取消路径释放摄像头",
+    "结果时间戳使用工作流时钟，运行变量仍与文档声明隔离"
+  ],
+  "adaptations": [
+    "摄像头和CPU密集识别通过asyncio.to_thread执行，避免阻塞工作流事件循环",
+    "超时使用monotonic clock，取消在每次读帧前检查",
+    "共享worker生命周期负责进程级异常清理，节点finally负责正常设备释放"
+  ],
+  "checks": [
+    {
+      "command": "pytest face trigger unit, frozen-source differential, trigger registry and shared worker regression",
+      "result": "79 passed",
+      "covers": "字段校验、目标无人脸、摄像头打开失败、匹配坐标、置信度、变量写回、设备释放、生产注册和worker协议"
+    },
+    {
+      "command": "real face_recognition blank PNG load probe",
+      "result": "passed",
+      "covers": "安装依赖、模型资源加载和无脸结果"
+    },
+    {
+      "command": "Ruff and mypy",
+      "result": "passed",
+      "covers": "迁入执行器、生产注册和差分工具"
+    }
+  ],
+  "boundaries": {
+    "workspace": "pytest temporary directory",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "mockExecutionUsedForBackendEvidence": false,
+    "formalElectronUiTested": false,
+    "nativeCameraTested": false
+  },
+  "remaining": [
+    "macOS授予正式AutoFlow摄像头权限后验证真实人脸匹配、超时、停止延迟和设备释放",
+    "Windows验证摄像头索引、冻结包中的OpenCV和face_recognition模型资源",
+    "正式Electron真实UI中配置、保存、关闭重开并执行人脸触发器"
+  ]
+}

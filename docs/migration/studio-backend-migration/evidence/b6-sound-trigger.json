@@ -1,0 +1,46 @@
+{
+  "evidenceId": "BE-B6-025-sound-trigger",
+  "recordedAt": "2026-09-21",
+  "classification": "原版功能迁入 + AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "reference/WebRPA/backend/app/executors/trigger.py#SoundTriggerExecutor"
+    ],
+    "license": "LICENSE.WebRPA"
+  },
+  "nodes": ["sound_trigger"],
+  "implemented": [
+    "保留系统输出峰值、音量阈值、检查间隔、无限或有限等待及sound_event变量",
+    "保留pycaw默认扬声器和IAudioMeterInformation峰值读取语义",
+    "轮询每轮检查停止信号，超时使用monotonic clock",
+    "pycaw及其comtypes依赖仅在Windows安装"
+  ],
+  "adaptations": [
+    "数值字段使用AutoFlow统一变量解析，非法值回退冻结默认值",
+    "生产worker负责隔离COM和设备错误；非Windows明确返回初始化失败，不提供伪音频输入"
+  ],
+  "checks": [
+    {
+      "command": "pytest sound trigger unit, frozen-source differential, trigger family and worker regression",
+      "result": "65 passed",
+      "covers": "阈值、百分比截断、变量写回、超时、生产注册和共享worker协议"
+    },
+    {
+      "command": "Ruff and mypy",
+      "result": "passed",
+      "covers": "迁入执行器、Windows可选依赖、生产注册和差分工具"
+    }
+  ],
+  "boundaries": {
+    "userDatabaseTouched": false,
+    "mockExecutionUsedForBackendEvidence": false,
+    "formalElectronUiTested": false,
+    "nativeWindowsAudioMeterTested": false
+  },
+  "remaining": [
+    "Windows正式包验证真实默认输出设备的静音、阈值命中、超时和停止",
+    "正式Studio真实UI中配置、保存、重开并执行声音触发器",
+    "macOS与Linux按原版平台边界显示初始化失败，不标记为原生声音触发通过"
+  ]
+}

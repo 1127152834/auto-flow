@@ -1,0 +1,59 @@
+{
+  "evidenceId": "BE-B8-formal-complex-debug-electron",
+  "checkedAt": "2026-09-21T16:48:51.250Z",
+  "gitHead": "9a250a9e76acfee2826127eaf305f41d88b01d8e",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "packaged-directory",
+  "workflowId": "Q7RQ3-U08Y1iDloE0iYpv",
+  "profileId": "5f1303a7-2484-4e00-b172-3837858e58e9",
+  "runIds": [
+    "dbbacac2-74da-47ef-b63b-7a0122b1f3f2",
+    "a85bbf78-0eea-4879-a190-b9526dd66df3",
+    "6f8ddaeb-b562-4c07-8e85-07343f560b07",
+    "2eb5fa02-834c-463c-bb2e-c4222e6eec44"
+  ],
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "通过模块条真实点击完成初始化、三轮循环、真假分支和汇合后的尾节点",
+    "通过流程图真实右键入口创建子流程分组、组内步骤和独立调用；调用按稳定节点 ID 绑定",
+    "真实 HTTP/SQLite 文档包含条件双分支、循环双出口、子流程定义与独立调用",
+    "macOS Cmd+W 正常关闭后从主窗口重开，节点、结构和配置全部恢复",
+    "正式 UI 运行至循环体首轮前暂停，显示轮次上下文；继续后三轮完成且目标不重复暂停",
+    "正式 UI 在条件真分支目标前暂停；继续后仅真分支执行，假分支无结果和副作用",
+    "正式 UI 在条件假分支目标前暂停；继续后仅假分支执行，真分支无结果和副作用",
+    "正式 UI 的两个并行起点均设置断点；首个暂停时零节点已执行，继续后仅首节点完成且第二节点暂停，再继续后两节点完成"
+  ],
+  "assertions": {
+    "loopTarget": "GuLolYWOoFedWi9Ht2zAc",
+    "loopIterations": [
+      1,
+      2,
+      3
+    ],
+    "conditionTrue": {
+      "target": "qiAGiPa0ZIlyEvOr5CJEA",
+      "skipped": "_sDkX0FOxTgB2aGCtbPwq"
+    },
+    "conditionFalse": {
+      "target": "1cRH2Ff_duhVruVir3T20",
+      "skipped": "JHIg7GGf6t_TWAvc1UhB8"
+    },
+    "parallel": {
+      "nodes": [
+        "zf6fxo7Mxf9InkvjPaZyf",
+        "1CBHal517MrluPT4zgQdH"
+      ],
+      "pauseOrder": [
+        "zf6fxo7Mxf9InkvjPaZyf",
+        "1CBHal517MrluPT4zgQdH"
+      ]
+    }
+  },
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserLaunch": "none (pure data)",
+    "interaction": "formal Studio UI through CDP mouse and keyboard plus macOS Cmd+W; no Store access"
+  }
+}

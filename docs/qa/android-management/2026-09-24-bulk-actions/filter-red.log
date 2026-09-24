@@ -1,0 +1,169 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/android/tests/ManagementOverview.test.tsx -t retains batch controls
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+
+ ❯ src/renderer/domains/android/tests/ManagementOverview.test.tsx (20 tests | 2 failed | 18 skipped) 256ms
+   × retains batch controls for running when runtime changes remove every target from the active filter 191ms
+   × retains batch controls for needs_verification when runtime changes remove every target from the active filter 64ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/android/tests/ManagementOverview.test.tsx > retains batch controls for running when runtime changes remove every target from the active filter
+ FAIL  src/renderer/domains/android/tests/ManagementOverview.test.tsx > retains batch controls for needs_verification when runtime changes remove every target from the active filter
+TestingLibraryElementError: Unable to find a label with the text of: 批次结果
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33maria-label[39m=[32m"安卓管理实例"[39m
+      [33mclass[39m=[32m"rounded-card border border-line bg-surface p-5"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"flex items-center justify-between gap-3"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<h2[39m
+            [33mclass[39m=[32m"font-semibold"[39m
+          [36m>[39m
+            [0m实例管理[0m
+          [36m</h2>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-1 text-sm text-muted"[39m
+          [36m>[39m
+            [0m显示 [0m
+            [0m0[0m
+            [0m / [0m
+            [0m1[0m
+            [0m 台实例 · 快照读取不触发运行时探测[0m
+          [36m</p>[39m
+        [36m</div>[39m
+      [36m</header>[39m
+      [36m<div[39m
+        [33maria-label[39m=[32m"实例统计"[39m
+        [33mclass[39m=[32m"mt-4 grid grid-cols-2 gap-2 text-sm md:grid-cols-4"[39m
+      [36m>[39m
+        [36m<span>[39m
+          [0m总数 [0m
+          [0m1[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m运行中 [0m
+          [0m1[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m已停止 [0m
+          [0m0[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m需处理 [0m
+          [0m0[0m
+        [36m</span>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mt-4 flex flex-wrap gap-2"[39m
+      [36m>[39m
+        [36m<input[39m
+          [33maria-label[39m=[32m"搜索实例"[39m
+          [33mplaceholder[39m=[32m"搜索实例"[39m
+          [33mvalue[39m=[32m""[39m
+        [36m/>[39m
+        [36m<select[39m
+          [33maria-label[39m=[32m"筛选状态"[39m
+        [36m>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m""[39m
+          [36m>[39m
+            [0m全部状态[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"ready"[39m
+          [36m>[39m
+            [0m已就绪[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"stopped"[39m
+          [36m>[39m
+            [0m已停止[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"retained"[39m
+          [36m>[39m
+            [0m数据已保留[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"unknown"[39m
+          [36m>[39m
+            [0m待核实[0m
+          [36m</option>[39m
+        [36m</select>[39m
+        [36m<select[39m
+          [33maria-label[39m=[32m"筛选模板"[39m
+        [36m>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m""[39m
+          [36m>[39m
+            [0m全部模板[0m
+          [36m</option>[39m
+        [36m</select>[39m
+        [36m<select[39m
+          [33maria-label[39m=[32m"筛选数据"[39m
+        [36m>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m""[39m
+          [36m>[39m
+            [0m全部数据[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"retained"[39m
+          [36m>[39m
+            [0m数据已保留[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"not-retained"[39m
+          [36m>[39m
+            [0m未保留数据[0m
+          [36m</option>[39m
+        [36m</select>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3"[39m
+      [36m/>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"mt-4 text-sm text-muted"[39m
+      [36m>[39m
+        [0m没有匹配的实例。[0m
+      [36m</p>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ getAllByLabelText ../../node_modules/@testing-library/dom/dist/queries/label-text.js:111:38
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/domains/android/tests/ManagementOverview.test.tsx:306:17
+    304|   await client.invalidateQueries({ queryKey: ['android-management', 'd…
+    305|   await screen.findByText('没有匹配的实例。')
+    306|   expect(screen.getByLabelText('批次结果')).toHaveTextContent(state === 'r…
+       |                 ^
+    307|   expect(screen.getByRole('button', { name: '开始新批次' })).toBeDisabled()
+    308|   await userEvent.click(screen.getByRole('button', { name: button }))
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 18 skipped (20)
+   Start at  06:19:40
+   Duration  1.20s (transform 222ms, setup 182ms, import 191ms, tests 256ms, environment 462ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/android/tests/ManagementOverview.test.tsx -t 'retains batch controls'

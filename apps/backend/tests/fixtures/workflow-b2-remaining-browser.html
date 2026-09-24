@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head><meta charset="utf-8"><title>AutoFlow B2 数据页</title></head>
+  <body>
+    <table id="orders-table">
+      <thead><tr><th>订单</th><th>金额</th></tr></thead>
+      <tbody><tr><td>A-001</td><td>88</td></tr><tr><td>A-002</td><td>99</td></tr></tbody>
+    </table>
+    <script>
+      setInterval(() => fetch('/api/remaining?token=fixture-secret'), 100)
+    </script>
+  </body>
+</html>

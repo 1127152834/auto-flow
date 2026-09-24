@@ -1,0 +1,23 @@
+{
+  "appReceipts": {
+    "8afb369d-f726-4d60-83ea-2fed0de3f2b8": {
+      "request": {
+        "generation": 5,
+        "operation": "launch",
+        "value": "moe.shizuku.privileged.api"
+      },
+      "state": "succeeded",
+      "commandMarker": "/data/local/tmp/autoflow-operation-e23eff77a8894f8d938a1d39aa315fef"
+    },
+    "294a6a3a-d29c-4b3c-9e66-a963f6c7237c": {
+      "request": {
+        "generation": 5,
+        "operation": "stop",
+        "value": "moe.shizuku.privileged.api"
+      },
+      "state": "succeeded",
+      "commandMarker": "/data/local/tmp/autoflow-operation-b6c8ce43c5e44b1d9909e5e01db110ea"
+    }
+  },
+  "runtime": "3d819343-8b92-4e66-9db1-4dfd468b54c5"
+}

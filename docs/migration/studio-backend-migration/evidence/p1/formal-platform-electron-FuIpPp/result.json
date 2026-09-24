@@ -1,0 +1,42 @@
+{
+  "evidenceId": "BE-P1-platform-formal-electron",
+  "checkedAt": "2026-09-21T05:48:05.385Z",
+  "gitHead": "97d74ea17fa1bb8e31817c4df0564d4107ad5484",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "buildSha256": "ea619ee520ea7f7fc731afaa0ec4fb7b9a5b8a0aff43edf52dbef84f646d040c",
+  "checks": [
+    "通过正式凭据库界面写入系统凭据，服务只返回字段名和打码值",
+    "通过正式留存界面保存策略并执行一次真实工作区清理",
+    "通过正式存储界面连接本地真实 WebDAV；配置文件不含密码且请求使用系统凭据",
+    "通过正式图像资源面板和原生文件选择输入上传 PNG，文件及索引写入临时工作区",
+    "正式界面保存的 WebDAV 配置驱动真实远程保存、列表与读取；未回退本地目录",
+    "通过正式工具栏入口列出并打开 WebDAV 工作流，草稿替换经过共享离开保护",
+    "正式导出界面下载工作流整包，并携带已引用图像资源",
+    "正式导入入口恢复工作流及已删除图像资源，未直接调用页面 Store 或业务函数",
+    "临时凭据通过正式删除确认清理，系统凭据和元数据同步移除",
+    "正常关闭并重开 Studio 后，留存与 WebDAV 配置恢复，密码字段保持为空"
+  ],
+  "webdavRequestCount": 7,
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "webdav": "local controlled real HTTP WebDAV fixture",
+    "credentialStore": "native OS backend with UI-created temporary credential deleted before shutdown",
+    "interaction": "formal Electron through CDP mouse/keyboard, download and file chooser; public API only for fixture setup, cleanup between bundle operations and evidence reads; no Store or page-internal business function access"
+  },
+  "sourceState": "working-tree",
+  "testedSourceSha256": {
+    "Toolbar.tsx": "2f54de751f955ff4c4dba6130813b3034e3b30e92fdd6559f05ecfec7b63d118",
+    "toolbar-draft-protection.test.tsx": "03e22b9544667fd1f91a0fd3eee7dbac9747143e8953c31aeb56bd6c682f91e2",
+    "smoke-studio-backend-p1-platform.mjs": "66eabb2f6e50690f2a9cb6affd3f71fe8779e6897571f268cdebc0d2c3d6be2d"
+  },
+  "commands": [
+    "npm --workspace @autoflow/desktop test -- --run src/renderer/domains/workflows/tests/toolbar-draft-protection.test.tsx src/renderer/domains/workflows/tests/local-workflow-protection.test.tsx",
+    "npm run typecheck",
+    "node --check scripts/smoke-studio-backend-p1-platform.mjs",
+    "npm run build",
+    "node scripts/smoke-studio-backend-p1-platform.mjs"
+  ]
+}

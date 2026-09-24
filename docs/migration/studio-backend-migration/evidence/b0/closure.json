@@ -37,7 +37,7 @@
     ],
     "formalUserDatabaseCopyStatus": "外部等待",
     "nodeAcceptanceCasesPassed": 0,
-    "nodeAcceptanceCasesPending": 681,
+    "nodeAcceptanceCasesPending": 639,
     "sourceAuthorizationBlocking": false
   },
   "nextGate": "B1 five-node real vertical slice"

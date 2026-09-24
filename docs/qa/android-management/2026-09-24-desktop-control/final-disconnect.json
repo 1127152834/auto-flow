@@ -1,0 +1,16 @@
+{
+  "deviceId": "bf8fe420-30c6-4996-8255-98c59a44742e",
+  "containerId": "c49d387afb97e454981b7b72bc117727a8726abb27dd29531d9fc0d8280046dc",
+  "sessionId": "89b7271e-7b6b-41ee-87a0-b4ebe778a2a3",
+  "generation": 12,
+  "pid": 10362,
+  "embeddedPid": 10369,
+  "remoteFile": "/data/local/tmp/autoflow-44f5dd5af2d74f7fad428a5054ad6727.jar",
+  "birthVerified": true,
+  "signal": "SIGTERM",
+  "time": "2026-09-23T20:00:50.445850+00:00",
+  "remoteFileRemoved": true,
+  "ownerReleased": true,
+  "control": "idle",
+  "remainingProcesses": {}
+}

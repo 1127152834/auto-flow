@@ -87,6 +87,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
   const [logLevelFilters, setLogLevelFilters] = useState<Set<LogLevel>>(new Set(['debug', 'info', 'success', 'warning', 'error']))
   const [showFilterDropdown, setShowFilterDropdown] = useState(false)
   const [logNodeFilter, setLogNodeFilter] = useState('')
+  const [logExecutionFilter, setLogExecutionFilter] = useState('')
   const [historyLogs, setHistoryLogs] = useState<LogEntry[] | null>(null)
   const [historyRunId, setHistoryRunId] = useState('')
   const [historyTotal, setHistoryTotal] = useState(0)
@@ -178,6 +179,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
       query: logSearchQuery,
       levels: Array.from(logLevelFilters).sort(),
       nodeId: logNodeFilter || undefined,
+      executionId: logExecutionFilter.trim() || undefined,
     })
     if (request !== historyRequest.current || transportRevision !== getStudioTransportRevision() || effectiveRunId !== selectedRunRef.current) return
     setHistoryLoading(false)
@@ -201,7 +203,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
     setHistoryTotal(result.data.total)
     setHistoryNextCursor(result.data.nextCursor ?? null)
     setHistoryError('')
-  }, [effectiveRunId, logLevelFilters, logNodeFilter, logSearchQuery, maxLogCount])
+  }, [effectiveRunId, logExecutionFilter, logLevelFilters, logNodeFilter, logSearchQuery, maxLogCount])
 
   const loadRecentRuns = useCallback(async (cursor=0) => {
     const request = ++runHistoryRequest.current
@@ -300,6 +302,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
           query: logSearchQuery,
           levels: Array.from(logLevelFilters).sort(),
           nodeId: logNodeFilter || undefined,
+          executionId: logExecutionFilter.trim() || undefined,
         })
       setHistoryLoading(false)
       if (!result.success || !result.data) {
@@ -991,6 +994,13 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
                     <option key={node.id} value={node.id}>{String(node.data.label || node.id)}</option>
                   ))}
                 </Select>
+                <Input
+                  aria-label="按执行标识筛选日志"
+                  value={logExecutionFilter}
+                  onChange={(event) => setLogExecutionFilter(event.target.value)}
+                  placeholder="执行标识"
+                  className="!h-7 !text-[11px] !w-28"
+                />
                 {matchingHistory && historyNextCursor !== null && (
                   <Button
                     variant="outline"

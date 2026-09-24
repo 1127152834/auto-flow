@@ -1,0 +1,105 @@
+{
+  "sourceDeviceId": "30490d8a-197f-48f2-a85c-252b51173c63",
+  "workspaceId": "83ba40288b688f10c2d825640f0f6a8f664464cdfa4da0f5baaa681b66927f8d",
+  "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "cleanup": [
+    {
+      "deviceId": "30490d8a-197f-48f2-a85c-252b51173c63",
+      "containers": 0,
+      "volumes": 0,
+      "deleted": true
+    },
+    {
+      "deviceId": "ea99d205-af43-473a-b709-05e5592aff3e",
+      "containers": 0,
+      "volumes": 0,
+      "deleted": true
+    }
+  ],
+  "backupId": "046f6788-c820-4f5a-90d3-46641c2e8d31",
+  "backupBytes": 17545388,
+  "sourceMetadata": {
+    "data/local/tmp/autoflow-metadata/absolute": {
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o777",
+      "type": "2",
+      "link": "/data/local/tmp/autoflow-metadata/file",
+      "content": null
+    },
+    "data/local/tmp/autoflow-metadata/file": {
+      "uid": 10001,
+      "gid": 2000,
+      "mode": "0o640",
+      "type": "0",
+      "link": "",
+      "content": "metadata-proof"
+    },
+    "data/local/tmp/autoflow-metadata/hard": {
+      "uid": 10001,
+      "gid": 2000,
+      "mode": "0o640",
+      "type": "1",
+      "link": "data/local/tmp/autoflow-metadata/file",
+      "content": null
+    },
+    "data/local/tmp/autoflow-metadata/relative": {
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o777",
+      "type": "2",
+      "link": "file",
+      "content": null
+    }
+  },
+  "cleanupInventoryKinds": [
+    "backup",
+    "backup-orphan",
+    "backup-staging"
+  ],
+  "changedPreviewStatus": 409,
+  "temporaryCleanup": {
+    "state": "succeeded",
+    "selectedRemoved": 2,
+    "registeredBackupPreserved": true
+  },
+  "targetDeviceId": "ea99d205-af43-473a-b709-05e5592aff3e",
+  "cleanupDuringRestore": "ANDROID_BACKUP_BUSY",
+  "restoredMetadata": {
+    "data/local/tmp/autoflow-metadata/absolute": {
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o777",
+      "type": "2",
+      "link": "/data/local/tmp/autoflow-metadata/file",
+      "content": null
+    },
+    "data/local/tmp/autoflow-metadata/file": {
+      "uid": 10001,
+      "gid": 2000,
+      "mode": "0o640",
+      "type": "0",
+      "link": "",
+      "content": "metadata-proof"
+    },
+    "data/local/tmp/autoflow-metadata/hard": {
+      "uid": 10001,
+      "gid": 2000,
+      "mode": "0o640",
+      "type": "1",
+      "link": "data/local/tmp/autoflow-metadata/file",
+      "content": null
+    },
+    "data/local/tmp/autoflow-metadata/relative": {
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o777",
+      "type": "2",
+      "link": "file",
+      "content": null
+    }
+  },
+  "bootedReadback": "metadata-proofmetadata-proofmetadata-proof",
+  "sourceUnchanged": true,
+  "status": "passed"
+}

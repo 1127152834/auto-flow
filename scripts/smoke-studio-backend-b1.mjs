@@ -14,8 +14,12 @@ const root = resolve(import.meta.dirname, '..')
 const sourceKernel = process.env.AUTOFLOW_B1_KERNEL_DIR
   ?? '/Users/zhangtiancheng/Library/Application Support/@autoflow/desktop/data/kernels/chromium-145.0.7632.109.2'
 const kernelVersion = basename(sourceKernel).replace(/^chromium-/, '')
-const evidenceRoot = join(root, 'docs/migration/studio-backend-migration/evidence/b1')
-const evidenceDir = await mkdtemp(join(evidenceRoot, 'formal-electron-'))
+const failedPauseOnly = process.env.AUTOFLOW_B8_FAILED_PAUSE_ONLY === '1'
+const runToOnly = process.env.AUTOFLOW_B8_RUN_TO_ONLY === '1'
+const b8Only = failedPauseOnly || runToOnly
+const evidenceRoot = join(root, `docs/migration/studio-backend-migration/evidence/${b8Only ? 'b8' : 'b1'}`)
+const evidencePrefix = failedPauseOnly ? 'formal-failed-pause-electron-' : runToOnly ? 'formal-run-to-electron-' : 'formal-electron-'
+const evidenceDir = await mkdtemp(join(evidenceRoot, evidencePrefix))
 const userData = await mkdtemp(join(tmpdir(), 'autoflow-studio-b1-'))
 const pageUrl = pathToFileURL(join(root, 'apps/backend/tests/fixtures/workflow-page.html')).href
 const slowServer = createServer(() => undefined)
@@ -111,6 +115,33 @@ try {
   assert.equal(saved.edges.length, 4)
   checkpoint('正式保存经真实 HTTP 写入 SQLite，返回修订 1')
 
+  if (runToOnly) {
+    const runId = await verifyRunToTarget({
+      studio, runtime, saved, nodeIds, userData, evidenceDir, observedEvents,
+    })
+    const report = {
+      evidenceId: 'BE-B8-run-to-formal-electron', checkedAt: new Date().toISOString(),
+      gitHead: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
+      buildSha256: await buildHash(), workflowId: saved.id, profileId: profile.id, runId,
+      result: 'passed', checks, platform: `${process.platform}-${process.arch}`, entry: 'development-build',
+      boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browser: 'CloakBrowser only', interaction: 'CDP mouse and keyboard; no Store access' },
+    }
+    await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
+    console.log(JSON.stringify({ evidenceDir, ...report }, null, 2))
+  } else if (failedPauseOnly) {
+    const failedRunId = await verifyFailedPause({
+      studio, runtime, saved, nodeId: nodeIds[2], priorRunIds: [], userData, evidenceDir, observedEvents,
+    })
+    const report = {
+      evidenceId: 'BE-B8-failed-pause-formal-electron', checkedAt: new Date().toISOString(),
+      gitHead: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
+      buildSha256: await buildHash(), workflowId: saved.id, profileId: profile.id, failedRunId,
+      result: 'passed', checks, platform: `${process.platform}-${process.arch}`, entry: 'development-build',
+      boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browser: 'CloakBrowser only', interaction: 'CDP mouse and keyboard; no Store access' },
+    }
+    await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
+    console.log(JSON.stringify({ evidenceDir, ...report }, null, 2))
+  } else {
   await setInput(studio, 'input[placeholder="工作流名称"]', 'B1 五节点正式闭环 · 关窗保存')
   await closeWindowThroughOs(desktop.child.pid)
   await waitFor(studio, "document.body?.innerText.includes('保存当前工作流？')", 'normal-close draft prompt')
@@ -171,26 +202,9 @@ try {
   assert.deepEqual(leaked, [])
   checkpoint('运行终态后 CloakBrowser 进程树和临时会话均已清理')
 
-  await click(studio, '', `.react-flow__node[data-id=${JSON.stringify(nodeIds[2])}]`)
-  await setInput(studio, '[placeholder="例如: #button, .submit"]', '[')
-  await click(studio, '运行 (F5)', '[aria-label="运行 (F5)"]')
-  await click(studio, '运行 (F5)', '[role="menuitem"]')
-  const failedRun = await waitForValue(async () => {
-    const page = await api(runtime, `/workflow-runs?documentId=${encodeURIComponent(saved.id)}&cursor=0&limit=20`)
-    return page.items.find(item => item.runId !== runId) ?? null
-  }, 'invalid-selector run', 20_000)
-  const failedTerminal = await waitForValue(async () => {
-    const value = await api(runtime, `/workflow-runs/${encodeURIComponent(failedRun.runId)}`)
-    return value.status === 'failed' ? value : null
-  }, 'invalid-selector failed terminal', 30_000)
-  assert.equal(failedTerminal.status, 'failed')
-  await waitForValue(async () => observedEvents.find(event => event.name === 'execution:completed' && event.data?.runId === failedRun.runId && event.data?.result?.status === 'failed') ?? null, 'raw SSE failed terminal event', 10_000)
-  await waitForValue(async () => {
-    const processes = execFileSync('ps', ['-axo', 'command='], { encoding: 'utf8' }).split('\n').filter(line => line.includes(userData) && /Chromium|CloakBrowser/.test(line))
-    return processes.length === 0 ? true : null
-  }, 'failed run browser cleanup', 10_000)
-  await setInput(studio, '[placeholder="例如: #button, .submit"]', '.workflow-action')
-  checkpoint('无效选择器导致真实运行失败；失败事件持久化后浏览器、worker 与运行占用均已清理')
+  const failedRunId = await verifyFailedPause({
+    studio, runtime, saved, nodeId: nodeIds[2], priorRunIds: [runId], userData, evidenceDir, observedEvents,
+  })
 
   await click(studio, '', `.react-flow__node[data-id=${JSON.stringify(nodeIds[0])}]`)
   await setInput(studio, '[placeholder="https://example.com"]', slowUrl)
@@ -198,7 +212,7 @@ try {
   await click(studio, '运行 (F5)', '[role="menuitem"]')
   const stoppedRun = await waitForValue(async () => {
     const page = await api(runtime, `/workflow-runs?documentId=${encodeURIComponent(saved.id)}&cursor=0&limit=20`)
-    const candidate = page.items.find(item => item.runId !== runId && item.runId !== failedRun.runId)
+    const candidate = page.items.find(item => item.runId !== runId && item.runId !== failedRunId)
     if (!candidate) return null
     const detail = await api(runtime, `/workflow-runs/${encodeURIComponent(candidate.runId)}`)
     return detail.status === 'running' ? detail : null
@@ -259,13 +273,14 @@ try {
     buildGitHead: process.env.AUTOFLOW_B1_BUILD_GIT_HEAD ?? null,
     sourceTreeSha256: process.env.AUTOFLOW_B1_SOURCE_TREE_SHA256 ?? null,
     buildSha256: buildArtifacts?.appAsarSha256 ?? await buildHash(), buildArtifacts,
-    workflowId: saved.id, profileId: profile.id, runId, stoppedRunId: stoppedRun.runId,
+    workflowId: saved.id, profileId: profile.id, runId, failedRunId, stoppedRunId: stoppedRun.runId,
     result: 'passed', checks, platform: `${process.platform}-${process.arch}`,
     entry: desktop.packaged ? 'packaged-directory' : 'development-build', packageBoundary,
     boundaries: { workspace: 'ephemeral', userDatabaseTouched: false, browser: 'CloakBrowser only', interaction: 'CDP mouse and keyboard plus macOS system-level Command-W close shortcut; no Store access' },
   }
   await writeFile(join(evidenceDir, 'result.json'), JSON.stringify(report, null, 2) + '\n')
   console.log(JSON.stringify({ evidenceDir, ...report }, null, 2))
+  }
 } catch (error) {
   if (studio) await capture(studio, join(evidenceDir, 'failure.png')).catch(() => undefined)
   await writeFile(join(evidenceDir, 'failure.json'), JSON.stringify({ checkedAt: new Date().toISOString(), checks, observedEvents, error: error instanceof Error ? error.stack : String(error) }, null, 2) + '\n')
@@ -279,6 +294,101 @@ try {
 }
 
 function checkpoint(message) { checks.push(message); console.log(message) }
+
+async function verifyRunToTarget({ studio, runtime, saved, nodeIds, userData, evidenceDir, observedEvents }) {
+  const targetId = nodeIds[2]
+  const nodePoint = await point(studio, `.react-flow__node[data-id=${JSON.stringify(targetId)}]`)
+  await studio.command('Input.dispatchMouseEvent', { type: 'mouseMoved', ...nodePoint })
+  await wait(150)
+  const button = await waitFor(studio, `(()=>{const e=document.querySelector('.react-flow__node[data-id=${JSON.stringify(targetId)}] button[data-tip="运行至此节点（保留前置上下文）"]');if(!e)return null;const r=e.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}})()`, 'run-to-target button')
+  await studio.command('Input.dispatchMouseEvent', { type: 'mouseMoved', ...button })
+  await studio.command('Input.dispatchMouseEvent', { type: 'mousePressed', ...button, button: 'left', clickCount: 1 })
+  await studio.command('Input.dispatchMouseEvent', { type: 'mouseReleased', ...button, button: 'left', clickCount: 1 })
+  const started = await waitForValue(async () => {
+    const page = await api(runtime, `/workflow-runs?documentId=${encodeURIComponent(saved.id)}&cursor=0&limit=20`)
+    return page.items[0] ?? null
+  }, 'run-to-target run', 20_000)
+  const paused = await waitForValue(async () => {
+    const value = await api(runtime, `/workflow-runs/${encodeURIComponent(started.runId)}`)
+    return value.status === 'paused' ? value : null
+  }, 'run-to-target pause', 30_000)
+  assert.equal(paused.profileSnapshot.runOptions.runToNodeId, targetId)
+  await waitFor(studio, "document.body?.innerText.includes('运行至此暂停') && document.body.innerText.includes('已到达调试目标')", 'rendered target pause', 10_000)
+  const beforeTarget = observedEvents.filter(event => event.data?.runId === started.runId)
+  assert.deepEqual(beforeTarget.filter(event => event.name === 'execution:node_start').map(event => event.data.nodeId), nodeIds.slice(0, 2))
+  assert.equal(beforeTarget.some(event => event.name === 'execution:node_start' && event.data.nodeId === targetId), false)
+  checkpoint('通过节点悬停入口真实执行前置网页动作，并在目标节点首次调度前暂停')
+  await capture(studio, join(evidenceDir, 'run-to-target-paused.png'))
+  await click(studio, '继续')
+  const terminal = await waitForValue(async () => {
+    const value = await api(runtime, `/workflow-runs/${encodeURIComponent(started.runId)}`)
+    return value.status === 'completed' ? value : null
+  }, 'run-to-target completion', 120_000)
+  assert.equal(terminal.status, 'completed')
+  const targetPauses = observedEvents.filter(event => event.name === 'execution:paused' && event.data?.runId === started.runId && event.data?.reason === 'target')
+  assert.equal(targetPauses.length, 1)
+  const allLogs = await api(runtime, `/workflow-runs/${encodeURIComponent(started.runId)}/logs?cursor=0&limit=500`)
+  const targetLog = allLogs.items.find(item => item.nodeId === targetId && item.executionId)
+  assert.ok(targetLog?.executionId)
+  const filteredLogs = await api(runtime, `/workflow-runs/${encodeURIComponent(started.runId)}/logs?cursor=0&limit=500&executionId=${encodeURIComponent(targetLog.executionId)}`)
+  assert.ok(filteredLogs.total > 0)
+  assert.equal(filteredLogs.items.every(item => item.executionId === targetLog.executionId), true)
+  await setInput(studio, '[aria-label="按执行标识筛选日志"]', targetLog.executionId)
+  await waitFor(studio, `(()=>{const value=document.querySelector('[aria-label="按执行标识筛选日志"]')?.value;return value===${JSON.stringify(targetLog.executionId)}&&document.body.innerText.includes(${JSON.stringify(`${filteredLogs.total}/${filteredLogs.total}`)})})()`, 'execution identity log filter')
+  checkpoint('正式日志面板按 executionId 查询完整持久化记录，并与服务端筛选结果一致')
+  await capture(studio, join(evidenceDir, 'execution-log-filter.png'))
+  await waitForValue(async () => {
+    const processes = execFileSync('ps', ['-axo', 'command='], { encoding: 'utf8' }).split('\n').filter(line => line.includes(userData) && /Chromium|CloakBrowser/.test(line))
+    return processes.length === 0 ? true : null
+  }, 'run-to-target browser cleanup', 10_000)
+  checkpoint('继续后目标只暂停一次，剩余节点完成，CloakBrowser 与 worker 完成清理')
+  return started.runId
+}
+
+async function verifyFailedPause({ studio, runtime, saved, nodeId, priorRunIds, userData, evidenceDir, observedEvents }) {
+  await click(studio, '', `.react-flow__node[data-id=${JSON.stringify(nodeId)}]`)
+  await setInput(studio, '[placeholder="例如: #button, .submit"]', '[')
+  const nodePoint = await point(studio, `.react-flow__node[data-id=${JSON.stringify(nodeId)}]`)
+  await studio.command('Input.dispatchMouseEvent', { type: 'mouseMoved', ...nodePoint })
+  await wait(150)
+  const breakpointPoint = await waitFor(studio, `(()=>{const e=document.querySelector('.react-flow__node[data-id=${JSON.stringify(nodeId)}] button[data-tip="设置断点（运行到此暂停）"]');if(!e)return null;const r=e.getBoundingClientRect();return{x:r.right-2,y:r.y+r.height/2}})()`, 'breakpoint button edge')
+  await studio.command('Input.dispatchMouseEvent', { type: 'mouseMoved', ...breakpointPoint })
+  await studio.command('Input.dispatchMouseEvent', { type: 'mousePressed', ...breakpointPoint, button: 'left', clickCount: 1 })
+  await studio.command('Input.dispatchMouseEvent', { type: 'mouseReleased', ...breakpointPoint, button: 'left', clickCount: 1 })
+  await wait(100)
+  await waitFor(studio, `Boolean(document.querySelector('.react-flow__node[data-id=${JSON.stringify(nodeId)}] button[data-tip="移除断点"]'))`, 'breakpoint activation')
+  await click(studio, '运行 (F5)', '[aria-label="运行 (F5)"]')
+  await click(studio, '运行 (F5)', '[role="menuitem"]')
+  const failedRun = await waitForValue(async () => {
+    const page = await api(runtime, `/workflow-runs?documentId=${encodeURIComponent(saved.id)}&cursor=0&limit=20`)
+    return page.items.find(item => !priorRunIds.includes(item.runId)) ?? null
+  }, 'invalid-selector debug run', 20_000)
+  await waitFor(studio, "document.body?.innerText.includes('断点暂停')", 'debug breakpoint before invalid selector', 30_000)
+  await click(studio, '继续')
+  const failedPaused = await waitForValue(async () => {
+    const value = await api(runtime, `/workflow-runs/${encodeURIComponent(failedRun.runId)}`)
+    return value.status === 'failed_paused' ? value : null
+  }, 'invalid-selector failed pause', 30_000)
+  assert.equal(failedPaused.error.nodeId, nodeId)
+  await waitFor(studio, "document.body?.innerText.includes('失败暂停') && document.body.innerText.includes('失败现场只读')", 'rendered failed debug inspection', 10_000)
+  assert.ok(execFileSync('ps', ['-axo', 'command='], { encoding: 'utf8' }).split('\n').some(line => line.includes(userData) && /Chromium|CloakBrowser/.test(line)))
+  checkpoint('真实 Debug 在无效选择器失败后保留可见 CloakBrowser、变量和失败节点，继续与单步入口不可用')
+  await capture(studio, join(evidenceDir, 'failed-paused.png'))
+  await click(studio, '结束调试')
+  const failedTerminal = await waitForValue(async () => {
+    const value = await api(runtime, `/workflow-runs/${encodeURIComponent(failedRun.runId)}`)
+    return value.status === 'failed' ? value : null
+  }, 'invalid-selector failed terminal after debug cleanup', 30_000)
+  assert.equal(failedTerminal.error.nodeId, nodeId)
+  await waitForValue(async () => observedEvents.find(event => event.name === 'execution:completed' && event.data?.runId === failedRun.runId && event.data?.result?.status === 'failed') ?? null, 'raw SSE failed terminal event', 10_000)
+  await waitForValue(async () => {
+    const processes = execFileSync('ps', ['-axo', 'command='], { encoding: 'utf8' }).split('\n').filter(line => line.includes(userData) && /Chromium|CloakBrowser/.test(line))
+    return processes.length === 0 ? true : null
+  }, 'failed debug browser cleanup', 10_000)
+  await setInput(studio, '[placeholder="例如: #button, .submit"]', '.workflow-action')
+  checkpoint('结束失败调试后保持 failed 终态和原失败节点；浏览器、worker 与运行占用完成清理')
+  return failedRun.runId
+}
 
 async function api(runtime, path, options = {}) {
   const response = await fetch(`${runtime.sidecar.baseUrl}/api${path}`, {

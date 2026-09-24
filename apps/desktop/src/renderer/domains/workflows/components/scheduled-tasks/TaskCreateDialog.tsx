@@ -14,6 +14,7 @@ import { getBackendBaseUrl } from '../../api/config'
 import { Clock, Zap, Power, Repeat, X, Webhook } from 'lucide-react'
 import { DialogPortal } from '../controls/dialog-portal'
 import { NotificationConfigEditor } from './NotificationConfigEditor'
+import { BrowserProfileSelect } from '../BrowserProfileSelect'
 
 interface TaskCreateDialogProps {
   open: boolean
@@ -22,6 +23,7 @@ interface TaskCreateDialogProps {
 
 export function TaskCreateDialog({ open, onClose }: TaskCreateDialogProps) {
   const { createTask } = useScheduledTaskStore()
+  const globalProfileId = useGlobalConfigStore(state => state.config.browserProfileId)
   // Webhook 触发地址前缀：取当前后端真实地址（历史上写死 localhost:8000，与实际端口 5241 不符导致用户按说明调用必失败）
   const webhookBaseUrl = `${getBackendBaseUrl()}/api/scheduled-tasks/webhook`
 
@@ -30,6 +32,7 @@ export function TaskCreateDialog({ open, onClose }: TaskCreateDialogProps) {
   const [description, setDescription] = useState('')
   const [workflowId, setWorkflowId] = useState('')
   const [workflowName, setWorkflowName] = useState('')
+  const [profileId, setProfileId] = useState(globalProfileId)
   // 自愈固化（健康基线）：开启后定时运行遇元素失效会自动修复并固化工作流（下次零 AI）
   const [selfHeal, setSelfHeal] = useState(false)
   const [selfHealBusy, setSelfHealBusy] = useState(false)
@@ -81,9 +84,10 @@ export function TaskCreateDialog({ open, onClose }: TaskCreateDialogProps) {
   // 加载工作流列表
   useEffect(() => {
     if (open) {
+      if (!profileId) setProfileId(globalProfileId)
       loadWorkflows()
     }
-  }, [open])
+  }, [open, globalProfileId])
 
   const loadWorkflows = async () => {
     setLoadingWorkflows(true)
@@ -274,6 +278,7 @@ export function TaskCreateDialog({ open, onClose }: TaskCreateDialogProps) {
   const validate = (): string | null => {
     if (!name.trim()) return '请输入任务名称'
     if (!workflowId) return '请选择工作流'
+    if (!profileId) return '请先选择运行浏览器配置'
 
     if (triggerType === 'time') {
       if (scheduleType === 'once') {
@@ -318,6 +323,7 @@ export function TaskCreateDialog({ open, onClose }: TaskCreateDialogProps) {
         description: description.trim() || undefined,
         workflow_id: workflowId,
         workflow_name: workflowName,
+        profile_id: profileId,
         trigger: buildTrigger(),
         enabled: true,
         open_monitor: openMonitor,
@@ -434,6 +440,9 @@ export function TaskCreateDialog({ open, onClose }: TaskCreateDialogProps) {
               </SelectContent>
             </Select>
           </div>
+
+          <BrowserProfileSelect label="运行浏览器配置 *" value={profileId} onChange={setProfileId} disabled={loading} />
+          <p className="text-xs text-gray-500">调度时固定使用此主应用 CloakBrowser Profile；时间按中国标准时间（Asia/Shanghai）计算。</p>
 
           {/* 自愈固化（健康基线）—— 这就是比影刀强的地方 */}
           {workflowId && (
@@ -693,17 +702,17 @@ export function TaskCreateDialog({ open, onClose }: TaskCreateDialogProps) {
                     <p className="text-sm font-semibold text-green-900 mb-1">使用说明</p>
                     <div className="text-xs text-green-800 space-y-1">
                       <p><strong>1. 路径格式：</strong>必须以 / 开头，只能包含字母、数字、-、_ 和 /</p>
-                      <p><strong>2. 触发方式：</strong>用 GET / POST 等任意方法访问以下地址即可触发（body 可选）</p>
+                      <p><strong>2. 触发方式：</strong>用 GET / POST 等任意方法访问以下地址，并且必须携带 x-autoflow-token 请求头（body 可选）</p>
                       <div className="mt-2 p-2 bg-gray-100 rounded font-mono text-xs break-all">
                         {`${webhookBaseUrl}${webhookPath || '/your-path'}`}
                       </div>
                       <p className="pt-1"><strong>3. 示例：</strong></p>
                       <div className="mt-1 p-2 bg-gray-100 rounded font-mono text-xs break-all">
-                        curl -X POST {`${webhookBaseUrl}${webhookPath || '/your-path'}`}
+                        curl -X POST -H &quot;x-autoflow-token: &lt;AutoFlow 运行令牌&gt;&quot; {`${webhookBaseUrl}${webhookPath || '/your-path'}`}
                       </div>
                       <p className="pt-1 text-[11px] text-green-700">
-                        提示：地址中的端口已自动取当前后端实际端口，可直接复制使用；
-                        在 WebRPA 内用「Webhook 请求」模块调用时也填这个完整地址。
+                        提示：地址中的端口已自动取当前后端实际端口；运行令牌由当前 AutoFlow 实例提供。
+                        在 WebRPA 内用「Webhook 请求」模块调用时也必须传入该请求头。
                       </p>
                       <p className="pt-1"><strong>4. 应用场景：</strong></p>
                       <p className="pl-3">• 接收第三方系统的通知并自动执行任务</p>

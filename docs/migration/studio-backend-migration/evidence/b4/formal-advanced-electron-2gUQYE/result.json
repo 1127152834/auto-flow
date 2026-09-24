@@ -1,0 +1,4191 @@
+{
+  "evidenceId": "BE-B4-advanced-data-formal-electron",
+  "checkedAt": "2026-09-20T15:57:05.323Z",
+  "gitHead": "347c5f90aab2fd7c97f17f75f85efa6196e71388",
+  "buildSha256": "1937f29695ad15e48420b2decd391c0c5cb3e67f91dfbbc9f90fbc0776edcf9f",
+  "workflowId": "VO5sesNDv8qRjGutVqs20",
+  "profileId": "367c1500-3ff2-402a-9b4a-cd9b6b2fd51f",
+  "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+  "result": "passed",
+  "checks": [
+    "生产执行器注册表对 32 节点文档计算 requiresBrowser=false",
+    "真实 sidecar 在临时工作区创建 Profile；运行前无 CloakBrowser 进程",
+    "主窗口通过真实点击打开正式 Studio；未直接访问 Store 或页面内部函数",
+    "通过画布原生右键菜单和配置面板添加并配置全部 26 个高级数据节点及 6 个数据准备节点",
+    "通过画布拖拽节点与连接手柄建立 32 节点、31 条边的完整数据依赖链",
+    "真实 UI 保存经正式 HTTP 写入 SQLite；32 个节点配置、数据变量引用和 31 条边均与输入一致",
+    "HTTP 精确核对 32 个结果；集合和随机分支按不变量验证，且全部节点的持久化日志完整",
+    "直接读取临时 autoflow.sqlite3，文档、终态、事件、结果与日志均和正式 HTTP 响应一致",
+    "requiresBrowser=false 的纯数据链运行前、运行中和完成后均无 CloakBrowser；运行槽已释放且 sidecar 清理完成"
+  ],
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflowPersistence": {
+    "revision": 1,
+    "nodeCount": 32,
+    "edgeCount": 31,
+    "variables": [
+      {
+        "name": "split_result",
+        "type": "string",
+        "scope": "global"
+      },
+      {
+        "name": "list_item",
+        "type": "string",
+        "scope": "global"
+      },
+      {
+        "name": "dict_result",
+        "type": "string",
+        "scope": "global"
+      }
+    ]
+  },
+  "execution": {
+    "status": "completed",
+    "cleanupState": "completed",
+    "resultCount": 32,
+    "logCount": 33,
+    "observedEvents": [
+      {
+        "id": 1,
+        "name": "execution:started",
+        "data": {
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "documentId": "VO5sesNDv8qRjGutVqs20"
+        }
+      },
+      {
+        "id": 2,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "j0fNlRU-qGzSJU0ARml4S",
+          "executionId": "e459aea3-b905-43eb-856e-f5fc2adeb2f9",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 2
+        }
+      },
+      {
+        "id": 3,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "j0fNlRU-qGzSJU0ARml4S",
+          "executionId": "e459aea3-b905-43eb-856e-f5fc2adeb2f9",
+          "success": true,
+          "sequence": 3,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 4,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 4,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-4",
+            "timestamp": "2026-09-20T15:57:03.598258+00:00",
+            "level": "success",
+            "message": "分割为 5 个部分",
+            "nodeId": "j0fNlRU-qGzSJU0ARml4S",
+            "executionId": "e459aea3-b905-43eb-856e-f5fc2adeb2f9",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 5,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "HXWfY502SqiIV2MyhBByK",
+          "executionId": "17dfb37e-0ade-43d3-ac77-37900ea5382d",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 5
+        }
+      },
+      {
+        "id": 6,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "HXWfY502SqiIV2MyhBByK",
+          "executionId": "17dfb37e-0ade-43d3-ac77-37900ea5382d",
+          "success": true,
+          "sequence": 6,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 7,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 7,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-7",
+            "timestamp": "2026-09-20T15:57:03.607011+00:00",
+            "level": "success",
+            "message": "列表已反转，共 5 个元素",
+            "nodeId": "HXWfY502SqiIV2MyhBByK",
+            "executionId": "17dfb37e-0ade-43d3-ac77-37900ea5382d",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 8,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "bXLKHw93uKtaWjy-ALMrJ",
+          "executionId": "f81d0196-88fe-4eec-8ba0-f83ae86b0ef5",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 8
+        }
+      },
+      {
+        "id": 9,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "bXLKHw93uKtaWjy-ALMrJ",
+          "executionId": "f81d0196-88fe-4eec-8ba0-f83ae86b0ef5",
+          "success": true,
+          "sequence": 9,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 10,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 10,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-10",
+            "timestamp": "2026-09-20T15:57:03.615535+00:00",
+            "level": "success",
+            "message": "找到元素，索引为 1",
+            "nodeId": "bXLKHw93uKtaWjy-ALMrJ",
+            "executionId": "f81d0196-88fe-4eec-8ba0-f83ae86b0ef5",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 11,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "6ZIOa4tifPKuyAXVRgn9q",
+          "executionId": "e5f00879-fff8-4290-ae50-7f05a8895bc2",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 11
+        }
+      },
+      {
+        "id": 12,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "6ZIOa4tifPKuyAXVRgn9q",
+          "executionId": "e5f00879-fff8-4290-ae50-7f05a8895bc2",
+          "success": true,
+          "sequence": 12,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 13,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 13,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-13",
+            "timestamp": "2026-09-20T15:57:03.622968+00:00",
+            "level": "success",
+            "message": "元素出现 2 次",
+            "nodeId": "6ZIOa4tifPKuyAXVRgn9q",
+            "executionId": "e5f00879-fff8-4290-ae50-7f05a8895bc2",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 14,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "vG4kco_I-1ngYngtC2zPB",
+          "executionId": "d34e55cc-2452-4358-a4e8-d5533683de4f",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 14
+        }
+      },
+      {
+        "id": 15,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "vG4kco_I-1ngYngtC2zPB",
+          "executionId": "d34e55cc-2452-4358-a4e8-d5533683de4f",
+          "success": true,
+          "sequence": 15,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 16,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 16,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-16",
+            "timestamp": "2026-09-20T15:57:03.631502+00:00",
+            "level": "success",
+            "message": "过滤完成，得到 4 个元素",
+            "nodeId": "vG4kco_I-1ngYngtC2zPB",
+            "executionId": "d34e55cc-2452-4358-a4e8-d5533683de4f",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 17,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "aU_0b8c1qtPE7gpWj8UQX",
+          "executionId": "391549e5-c577-4960-af95-f48a8722be8d",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 17
+        }
+      },
+      {
+        "id": 18,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "aU_0b8c1qtPE7gpWj8UQX",
+          "executionId": "391549e5-c577-4960-af95-f48a8722be8d",
+          "success": true,
+          "sequence": 18,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 19,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 19,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-19",
+            "timestamp": "2026-09-20T15:57:03.639370+00:00",
+            "level": "success",
+            "message": "映射完成，处理 4 个元素",
+            "nodeId": "aU_0b8c1qtPE7gpWj8UQX",
+            "executionId": "391549e5-c577-4960-af95-f48a8722be8d",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 20,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "FoVC2AD4yzCZJOZK84zvf",
+          "executionId": "e3e63ccc-26b8-48b4-95ae-02491e69783a",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 20
+        }
+      },
+      {
+        "id": 21,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "FoVC2AD4yzCZJOZK84zvf",
+          "executionId": "e3e63ccc-26b8-48b4-95ae-02491e69783a",
+          "success": true,
+          "sequence": 21,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 22,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 22,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-22",
+            "timestamp": "2026-09-20T15:57:03.647414+00:00",
+            "level": "success",
+            "message": "获取列表[0] = alpha",
+            "nodeId": "FoVC2AD4yzCZJOZK84zvf",
+            "executionId": "e3e63ccc-26b8-48b4-95ae-02491e69783a",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 23,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "ue7kCmSjmiauq88q77f02",
+          "executionId": "ee3987ec-bdc0-4762-b0ba-8beb0ff1155f",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 23
+        }
+      },
+      {
+        "id": 24,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "ue7kCmSjmiauq88q77f02",
+          "executionId": "ee3987ec-bdc0-4762-b0ba-8beb0ff1155f",
+          "success": true,
+          "sequence": 24,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 25,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 25,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-25",
+            "timestamp": "2026-09-20T15:57:03.655735+00:00",
+            "level": "success",
+            "message": "获取列表[4] = gamma",
+            "nodeId": "ue7kCmSjmiauq88q77f02",
+            "executionId": "ee3987ec-bdc0-4762-b0ba-8beb0ff1155f",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 26,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "hZOjFnE7CEoom-qNQxwpV",
+          "executionId": "eb760ab1-f81b-488e-bf18-3dfdc53dbb98",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 26
+        }
+      },
+      {
+        "id": 27,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "hZOjFnE7CEoom-qNQxwpV",
+          "executionId": "eb760ab1-f81b-488e-bf18-3dfdc53dbb98",
+          "success": true,
+          "sequence": 27,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 28,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 28,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-28",
+            "timestamp": "2026-09-20T15:57:03.664475+00:00",
+            "level": "success",
+            "message": "已设置 score = 2",
+            "nodeId": "hZOjFnE7CEoom-qNQxwpV",
+            "executionId": "eb760ab1-f81b-488e-bf18-3dfdc53dbb98",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 29,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "f55OCFwCgXN7_XHqyFO_I",
+          "executionId": "1ab537d2-0f81-49ec-8c05-15c73ace598d",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 29
+        }
+      },
+      {
+        "id": 30,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "f55OCFwCgXN7_XHqyFO_I",
+          "executionId": "1ab537d2-0f81-49ec-8c05-15c73ace598d",
+          "success": true,
+          "sequence": 30,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 31,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 31,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-31",
+            "timestamp": "2026-09-20T15:57:03.673551+00:00",
+            "level": "success",
+            "message": "已设置 name = alpha",
+            "nodeId": "f55OCFwCgXN7_XHqyFO_I",
+            "executionId": "1ab537d2-0f81-49ec-8c05-15c73ace598d",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 32,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "-UAkPCopC5xibCfuG7HU9",
+          "executionId": "0ff7027f-5f28-421b-bb8e-bdd2457489fb",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 32
+        }
+      },
+      {
+        "id": 33,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "-UAkPCopC5xibCfuG7HU9",
+          "executionId": "0ff7027f-5f28-421b-bb8e-bdd2457489fb",
+          "success": true,
+          "sequence": 33,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 34,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 34,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-34",
+            "timestamp": "2026-09-20T15:57:03.682323+00:00",
+            "level": "success",
+            "message": "已设置 extra = gamma",
+            "nodeId": "-UAkPCopC5xibCfuG7HU9",
+            "executionId": "0ff7027f-5f28-421b-bb8e-bdd2457489fb",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 35,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "pkLO2fVCfm95T9G9qy3sm",
+          "executionId": "198e4901-4f44-45c2-8a91-f63a83b63322",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 35
+        }
+      },
+      {
+        "id": 36,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "pkLO2fVCfm95T9G9qy3sm",
+          "executionId": "198e4901-4f44-45c2-8a91-f63a83b63322",
+          "success": true,
+          "sequence": 36,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 37,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 37,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-37",
+            "timestamp": "2026-09-20T15:57:03.690605+00:00",
+            "level": "success",
+            "message": "合并完成，共 9 个元素",
+            "nodeId": "pkLO2fVCfm95T9G9qy3sm",
+            "executionId": "198e4901-4f44-45c2-8a91-f63a83b63322",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 38,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "TvQtPvFQv_HP2XwichsSP",
+          "executionId": "2154c280-2a4a-4ace-adfc-467e8d4c4822",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 38
+        }
+      },
+      {
+        "id": 39,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "TvQtPvFQv_HP2XwichsSP",
+          "executionId": "2154c280-2a4a-4ace-adfc-467e8d4c4822",
+          "success": true,
+          "sequence": 39,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 40,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 40,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-40",
+            "timestamp": "2026-09-20T15:57:03.698259+00:00",
+            "level": "success",
+            "message": "分组完成，共 3 组",
+            "nodeId": "TvQtPvFQv_HP2XwichsSP",
+            "executionId": "2154c280-2a4a-4ace-adfc-467e8d4c4822",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 41,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "g9KgLrp1tPMsfHnTC3MgX",
+          "executionId": "40d92452-a279-4989-889f-444492cdd4c6",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 41
+        }
+      },
+      {
+        "id": 42,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "g9KgLrp1tPMsfHnTC3MgX",
+          "executionId": "40d92452-a279-4989-889f-444492cdd4c6",
+          "success": true,
+          "sequence": 42,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 43,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 43,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-43",
+            "timestamp": "2026-09-20T15:57:03.706037+00:00",
+            "level": "success",
+            "message": "扁平化完成，共 5 个元素",
+            "nodeId": "g9KgLrp1tPMsfHnTC3MgX",
+            "executionId": "40d92452-a279-4989-889f-444492cdd4c6",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 44,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "88rgmh-nOKWFElCbIGL0o",
+          "executionId": "f6e4464e-67ac-4cf1-9258-a62dc5eaf9c2",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 44
+        }
+      },
+      {
+        "id": 45,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "88rgmh-nOKWFElCbIGL0o",
+          "executionId": "f6e4464e-67ac-4cf1-9258-a62dc5eaf9c2",
+          "success": true,
+          "sequence": 45,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 46,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 46,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-46",
+            "timestamp": "2026-09-20T15:57:03.714125+00:00",
+            "level": "success",
+            "message": "去空完成，移除 1 个空值",
+            "nodeId": "88rgmh-nOKWFElCbIGL0o",
+            "executionId": "f6e4464e-67ac-4cf1-9258-a62dc5eaf9c2",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 47,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "wXpb_ChVyQEjCYGGWLyAP",
+          "executionId": "d67ca5c2-bf31-4a40-bd7f-211edb4e824f",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 47
+        }
+      },
+      {
+        "id": 48,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "wXpb_ChVyQEjCYGGWLyAP",
+          "executionId": "d67ca5c2-bf31-4a40-bd7f-211edb4e824f",
+          "success": true,
+          "sequence": 48,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 49,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 49,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-49",
+            "timestamp": "2026-09-20T15:57:03.722082+00:00",
+            "level": "success",
+            "message": "交集完成，共 3 个元素",
+            "nodeId": "wXpb_ChVyQEjCYGGWLyAP",
+            "executionId": "d67ca5c2-bf31-4a40-bd7f-211edb4e824f",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 50,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "o_9fuF4-CHJdnH8calhOc",
+          "executionId": "d591cf8b-a0da-42b0-9874-bccba52fa134",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 50
+        }
+      },
+      {
+        "id": 51,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "o_9fuF4-CHJdnH8calhOc",
+          "executionId": "d591cf8b-a0da-42b0-9874-bccba52fa134",
+          "success": true,
+          "sequence": 51,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 52,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 52,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-52",
+            "timestamp": "2026-09-20T15:57:03.730774+00:00",
+            "level": "success",
+            "message": "并集完成，共 4 个元素",
+            "nodeId": "o_9fuF4-CHJdnH8calhOc",
+            "executionId": "d591cf8b-a0da-42b0-9874-bccba52fa134",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 53,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "QjC48_QyeEIZSe7jqyI_Y",
+          "executionId": "58a3df92-de06-473b-ba55-d9782cc5ca78",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 53
+        }
+      },
+      {
+        "id": 54,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "QjC48_QyeEIZSe7jqyI_Y",
+          "executionId": "58a3df92-de06-473b-ba55-d9782cc5ca78",
+          "success": true,
+          "sequence": 54,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 55,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 55,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-55",
+            "timestamp": "2026-09-20T15:57:03.738811+00:00",
+            "level": "success",
+            "message": "差集完成，共 1 个元素",
+            "nodeId": "QjC48_QyeEIZSe7jqyI_Y",
+            "executionId": "58a3df92-de06-473b-ba55-d9782cc5ca78",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 56,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "uO-q342nRMfxi2GmsmpVN",
+          "executionId": "848c7e0a-047e-4d3a-a374-6bd5545d4903",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 56
+        }
+      },
+      {
+        "id": 57,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "uO-q342nRMfxi2GmsmpVN",
+          "executionId": "848c7e0a-047e-4d3a-a374-6bd5545d4903",
+          "success": true,
+          "sequence": 57,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 58,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 58,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-58",
+            "timestamp": "2026-09-20T15:57:03.746641+00:00",
+            "level": "success",
+            "message": "笛卡尔积完成，共 20 个组合",
+            "nodeId": "uO-q342nRMfxi2GmsmpVN",
+            "executionId": "848c7e0a-047e-4d3a-a374-6bd5545d4903",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 59,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "PODpRrglE4SbTSPuEKQCB",
+          "executionId": "a76438dd-048f-4d78-bd3c-86b40d61b496",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 59
+        }
+      },
+      {
+        "id": 60,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "PODpRrglE4SbTSPuEKQCB",
+          "executionId": "a76438dd-048f-4d78-bd3c-86b40d61b496",
+          "success": true,
+          "sequence": 60,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 61,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 61,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-61",
+            "timestamp": "2026-09-20T15:57:03.754506+00:00",
+            "level": "success",
+            "message": "列表已随机打乱，共 5 个元素",
+            "nodeId": "PODpRrglE4SbTSPuEKQCB",
+            "executionId": "a76438dd-048f-4d78-bd3c-86b40d61b496",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 62,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "xERkTJfanrUtg_F5GeTAz",
+          "executionId": "729a8d7c-a6ee-4d00-8803-735ab771d55b",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 62
+        }
+      },
+      {
+        "id": 63,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "xERkTJfanrUtg_F5GeTAz",
+          "executionId": "729a8d7c-a6ee-4d00-8803-735ab771d55b",
+          "success": true,
+          "sequence": 63,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 64,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 64,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-64",
+            "timestamp": "2026-09-20T15:57:03.763541+00:00",
+            "level": "success",
+            "message": "采样完成，抽取 2 个元素",
+            "nodeId": "xERkTJfanrUtg_F5GeTAz",
+            "executionId": "729a8d7c-a6ee-4d00-8803-735ab771d55b",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 65,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "UgrZNpB1pugxa1H3pg4X0",
+          "executionId": "2e58e148-615c-437a-b15d-27f86d2e13d6",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 65
+        }
+      },
+      {
+        "id": 66,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "UgrZNpB1pugxa1H3pg4X0",
+          "executionId": "2e58e148-615c-437a-b15d-27f86d2e13d6",
+          "success": true,
+          "sequence": 66,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 67,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 67,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-67",
+            "timestamp": "2026-09-20T15:57:03.771269+00:00",
+            "level": "success",
+            "message": "字典合并完成，共 3 个键",
+            "nodeId": "UgrZNpB1pugxa1H3pg4X0",
+            "executionId": "2e58e148-615c-437a-b15d-27f86d2e13d6",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 68,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "drpGXf2HT7u6M6OYEx4sk",
+          "executionId": "85090bd1-af01-4949-bdd7-61947f7185bd",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 68
+        }
+      },
+      {
+        "id": 69,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "drpGXf2HT7u6M6OYEx4sk",
+          "executionId": "85090bd1-af01-4949-bdd7-61947f7185bd",
+          "success": true,
+          "sequence": 69,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 70,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 70,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-70",
+            "timestamp": "2026-09-20T15:57:03.779501+00:00",
+            "level": "success",
+            "message": "过滤完成，保留 2 个键",
+            "nodeId": "drpGXf2HT7u6M6OYEx4sk",
+            "executionId": "85090bd1-af01-4949-bdd7-61947f7185bd",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 71,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "wZXzYFM7C-HG2kEFnw2-5",
+          "executionId": "f4899dda-b35b-4fb4-ba23-6fa95ecc1232",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 71
+        }
+      },
+      {
+        "id": 72,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "wZXzYFM7C-HG2kEFnw2-5",
+          "executionId": "f4899dda-b35b-4fb4-ba23-6fa95ecc1232",
+          "success": true,
+          "sequence": 72,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 73,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 73,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-73",
+            "timestamp": "2026-09-20T15:57:03.860821+00:00",
+            "level": "success",
+            "message": "映射完成，处理 2 个键值对",
+            "nodeId": "wZXzYFM7C-HG2kEFnw2-5",
+            "executionId": "f4899dda-b35b-4fb4-ba23-6fa95ecc1232",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 74,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "QCeI2AGX8yRd-Y2xu58H0",
+          "executionId": "90d82d74-d1fa-4c1a-9abd-5fe48c44d260",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 74
+        }
+      },
+      {
+        "id": 75,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "QCeI2AGX8yRd-Y2xu58H0",
+          "executionId": "90d82d74-d1fa-4c1a-9abd-5fe48c44d260",
+          "success": true,
+          "sequence": 75,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 76,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 76,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-76",
+            "timestamp": "2026-09-20T15:57:03.869869+00:00",
+            "level": "success",
+            "message": "字典反转完成，共 2 个键值对",
+            "nodeId": "QCeI2AGX8yRd-Y2xu58H0",
+            "executionId": "90d82d74-d1fa-4c1a-9abd-5fe48c44d260",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 77,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "x6iIMHkWYP6CQrehtnyIE",
+          "executionId": "2906e136-18c7-4c2d-a2f5-d736efaad8b1",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 77
+        }
+      },
+      {
+        "id": 78,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "x6iIMHkWYP6CQrehtnyIE",
+          "executionId": "2906e136-18c7-4c2d-a2f5-d736efaad8b1",
+          "success": true,
+          "sequence": 78,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 79,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 79,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-79",
+            "timestamp": "2026-09-20T15:57:03.878296+00:00",
+            "level": "success",
+            "message": "按值降序排序完成",
+            "nodeId": "x6iIMHkWYP6CQrehtnyIE",
+            "executionId": "2906e136-18c7-4c2d-a2f5-d736efaad8b1",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 80,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "PZzUyqsixreem0-4BZFij",
+          "executionId": "166c85d6-6532-4e26-8d51-5d38180d7790",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 80
+        }
+      },
+      {
+        "id": 81,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "PZzUyqsixreem0-4BZFij",
+          "executionId": "166c85d6-6532-4e26-8d51-5d38180d7790",
+          "success": true,
+          "sequence": 81,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 82,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 82,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-82",
+            "timestamp": "2026-09-20T15:57:03.886450+00:00",
+            "level": "success",
+            "message": "字典深拷贝完成",
+            "nodeId": "PZzUyqsixreem0-4BZFij",
+            "executionId": "166c85d6-6532-4e26-8d51-5d38180d7790",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 83,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "FuEU4BV81UmfDJ42Ki5Gd",
+          "executionId": "2da133cd-b494-4ecf-89dd-7afd56e5b987",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 83
+        }
+      },
+      {
+        "id": 84,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "FuEU4BV81UmfDJ42Ki5Gd",
+          "executionId": "2da133cd-b494-4ecf-89dd-7afd56e5b987",
+          "success": true,
+          "sequence": 84,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 85,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 85,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-85",
+            "timestamp": "2026-09-20T15:57:03.894251+00:00",
+            "level": "success",
+            "message": "路径取值完成: score",
+            "nodeId": "FuEU4BV81UmfDJ42Ki5Gd",
+            "executionId": "2da133cd-b494-4ecf-89dd-7afd56e5b987",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 86,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "PBmMV0cbksGw5C461xPFF",
+          "executionId": "f2747915-6f80-49f9-b90f-e3113bcc77e6",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 86
+        }
+      },
+      {
+        "id": 87,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "PBmMV0cbksGw5C461xPFF",
+          "executionId": "f2747915-6f80-49f9-b90f-e3113bcc77e6",
+          "success": true,
+          "sequence": 87,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 88,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 88,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-88",
+            "timestamp": "2026-09-20T15:57:03.901592+00:00",
+            "level": "success",
+            "message": "字典扁平化完成，共 3 个键",
+            "nodeId": "PBmMV0cbksGw5C461xPFF",
+            "executionId": "f2747915-6f80-49f9-b90f-e3113bcc77e6",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 89,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "kpmDS5YhABp6zaPZo-CgC",
+          "executionId": "427dcd91-2a6d-471c-a463-2a1c49afebe2",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 89
+        }
+      },
+      {
+        "id": 90,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "kpmDS5YhABp6zaPZo-CgC",
+          "executionId": "427dcd91-2a6d-471c-a463-2a1c49afebe2",
+          "success": true,
+          "sequence": 90,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 91,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 91,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-91",
+            "timestamp": "2026-09-20T15:57:03.909241+00:00",
+            "level": "success",
+            "message": "CSV解析完成，共 1 行",
+            "nodeId": "kpmDS5YhABp6zaPZo-CgC",
+            "executionId": "427dcd91-2a6d-471c-a463-2a1c49afebe2",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 92,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "YtvoY6NTEEZtozQ6YEAYC",
+          "executionId": "a64a1511-0538-443c-86ca-8362df22ef97",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 92
+        }
+      },
+      {
+        "id": 93,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "YtvoY6NTEEZtozQ6YEAYC",
+          "executionId": "a64a1511-0538-443c-86ca-8362df22ef97",
+          "success": true,
+          "sequence": 93,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 94,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 94,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-94",
+            "timestamp": "2026-09-20T15:57:03.916381+00:00",
+            "level": "success",
+            "message": "CSV生成完成",
+            "nodeId": "YtvoY6NTEEZtozQ6YEAYC",
+            "executionId": "a64a1511-0538-443c-86ca-8362df22ef97",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 95,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "A5hkEvZb2bFrM92lXYcRR",
+          "executionId": "6ac5bca0-c2d6-401a-82fa-c9d584d1db9f",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 95
+        }
+      },
+      {
+        "id": 96,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "nodeId": "A5hkEvZb2bFrM92lXYcRR",
+          "executionId": "6ac5bca0-c2d6-401a-82fa-c9d584d1db9f",
+          "success": true,
+          "sequence": 96,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 97,
+        "name": "execution:log",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "log": {
+            "sequence": 97,
+            "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-97",
+            "timestamp": "2026-09-20T15:57:03.924497+00:00",
+            "level": "success",
+            "message": "列表转字符串完成",
+            "nodeId": "A5hkEvZb2bFrM92lXYcRR",
+            "executionId": "6ac5bca0-c2d6-401a-82fa-c9d584d1db9f",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 98,
+        "name": "execution:completed",
+        "data": {
+          "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+          "workflowId": "VO5sesNDv8qRjGutVqs20",
+          "result": {
+            "status": "completed",
+            "executedNodes": 32,
+            "failedNodes": 0
+          }
+        }
+      }
+    ]
+  },
+  "sourceFamilies": {
+    "list_advanced.py": [
+      "list_reverse",
+      "list_find",
+      "list_count",
+      "list_filter",
+      "list_map",
+      "list_merge",
+      "list_flatten",
+      "list_chunk",
+      "list_remove_empty",
+      "list_intersection",
+      "list_union",
+      "list_difference",
+      "list_cartesian_product",
+      "list_shuffle",
+      "list_sample"
+    ],
+    "dict_advanced.py": [
+      "dict_merge",
+      "dict_filter",
+      "dict_map_values",
+      "dict_invert",
+      "dict_sort",
+      "dict_deep_copy",
+      "dict_get_path",
+      "dict_flatten"
+    ],
+    "string_convert.py": [
+      "csv_parse",
+      "csv_generate",
+      "list_to_string_advanced"
+    ]
+  },
+  "sourceFileHashes": {
+    "reference/WebRPA/backend/app/executors/list_advanced.py": "452c025f24c6ec86c2ea1d25addf4056f8ca12eb283596fd77aeb7330c48f9a4",
+    "reference/WebRPA/backend/app/executors/dict_advanced.py": "87a5e3dd065e4b21b6c0c78c31de867f4c99ff7f8bb527045990c5f6878bb707",
+    "reference/WebRPA/backend/app/executors/string_convert.py": "5e9cd026ffdf5692cbf5d39f25c2fad949f9140f5ef34872e37906429c54c131",
+    "reference/WebRPA/backend/app/utils/safe_expr.py": "7b7640e5b9b8fd8ffc5ec625162663e317f88da9629fb7ad55df3159d608793d",
+    "apps/backend/src/autoflow/application/workflows/executors/list_advanced.py": "2c4d0d248f56bdf6199507c037a247aac4928cefd9267fad9d9d8170ece8dcf0",
+    "apps/backend/src/autoflow/application/workflows/executors/dict_advanced.py": "31a8560d3a39319f7c2bf8de287d0ec56761c4092e4acf472daa5b3b4ed4248d",
+    "apps/backend/src/autoflow/application/workflows/executors/string_convert.py": "55b89f518986a4afe3800750b7870e2da145a564f5f28fbcaea8b90883f9ef5d",
+    "apps/backend/src/autoflow/application/workflows/executors/safe_expr.py": "b8f22ae9fe753e616f85b7fb3d67e0992c9abe5e8d249443dc8630547e738a03"
+  },
+  "targetSourceDirtyFiles": [],
+  "approvedFamilySize": 26,
+  "uiExecutedTypes": [
+    "list_reverse",
+    "list_find",
+    "list_count",
+    "list_filter",
+    "list_map",
+    "list_merge",
+    "list_chunk",
+    "list_flatten",
+    "list_remove_empty",
+    "list_intersection",
+    "list_union",
+    "list_difference",
+    "list_cartesian_product",
+    "list_shuffle",
+    "list_sample",
+    "dict_merge",
+    "dict_filter",
+    "dict_map_values",
+    "dict_invert",
+    "dict_sort",
+    "dict_deep_copy",
+    "dict_get_path",
+    "dict_flatten",
+    "csv_parse",
+    "csv_generate",
+    "list_to_string_advanced"
+  ],
+  "supportTypes": [
+    "string_split",
+    "list_get",
+    "list_get",
+    "dict_operation",
+    "dict_operation",
+    "dict_operation"
+  ],
+  "notUiExecutedTypes": [],
+  "uiNodes": [
+    {
+      "moduleType": "list_reverse",
+      "sourceFile": "list_advanced.py",
+      "label": "列表反转",
+      "status": "executed-through-ui",
+      "nodeId": "HXWfY502SqiIV2MyhBByK",
+      "config": {
+        "listVariable": "base_list",
+        "resultVariable": "reversed_ui"
+      },
+      "result": {
+        "value": [
+          "gamma",
+          "",
+          "alpha",
+          "beta",
+          "alpha"
+        ]
+      },
+      "logs": [
+        "列表已反转，共 5 个元素"
+      ]
+    },
+    {
+      "moduleType": "list_find",
+      "sourceFile": "list_advanced.py",
+      "label": "列表查找",
+      "status": "executed-through-ui",
+      "nodeId": "bXLKHw93uKtaWjy-ALMrJ",
+      "config": {
+        "listVariable": "base_list",
+        "searchValue": "beta",
+        "resultVariable": "found_index_ui"
+      },
+      "result": {
+        "value": 1
+      },
+      "logs": [
+        "找到元素，索引为 1"
+      ]
+    },
+    {
+      "moduleType": "list_count",
+      "sourceFile": "list_advanced.py",
+      "label": "列表计数",
+      "status": "executed-through-ui",
+      "nodeId": "6ZIOa4tifPKuyAXVRgn9q",
+      "config": {
+        "listVariable": "base_list",
+        "searchValue": "alpha",
+        "resultVariable": "alpha_count_ui"
+      },
+      "result": {
+        "value": 2
+      },
+      "logs": [
+        "元素出现 2 次"
+      ]
+    },
+    {
+      "moduleType": "list_filter",
+      "sourceFile": "list_advanced.py",
+      "label": "列表过滤",
+      "status": "executed-through-ui",
+      "nodeId": "vG4kco_I-1ngYngtC2zPB",
+      "config": {
+        "listVariable": "base_list",
+        "condition": "x != ''",
+        "resultVariable": "clean_list_ui"
+      },
+      "result": {
+        "value": [
+          "alpha",
+          "beta",
+          "alpha",
+          "gamma"
+        ]
+      },
+      "logs": [
+        "过滤完成，得到 4 个元素"
+      ]
+    },
+    {
+      "moduleType": "list_map",
+      "sourceFile": "list_advanced.py",
+      "label": "列表映射",
+      "status": "executed-through-ui",
+      "nodeId": "aU_0b8c1qtPE7gpWj8UQX",
+      "config": {
+        "listVariable": "clean_list_ui",
+        "expression": "x.upper()",
+        "resultVariable": "upper_list_ui"
+      },
+      "result": {
+        "value": [
+          "ALPHA",
+          "BETA",
+          "ALPHA",
+          "GAMMA"
+        ]
+      },
+      "logs": [
+        "映射完成，处理 4 个元素"
+      ]
+    },
+    {
+      "moduleType": "list_merge",
+      "sourceFile": "list_advanced.py",
+      "label": "列表合并",
+      "status": "executed-through-ui",
+      "nodeId": "pkLO2fVCfm95T9G9qy3sm",
+      "config": {
+        "list1": "base_list",
+        "list2": "clean_list_ui",
+        "resultVariable": "merged_list_ui"
+      },
+      "result": {
+        "value": [
+          "alpha",
+          "beta",
+          "alpha",
+          "",
+          "gamma",
+          "alpha",
+          "beta",
+          "alpha",
+          "gamma"
+        ]
+      },
+      "logs": [
+        "合并完成，共 9 个元素"
+      ]
+    },
+    {
+      "moduleType": "list_flatten",
+      "sourceFile": "list_advanced.py",
+      "label": "列表扁平化",
+      "status": "executed-through-ui",
+      "nodeId": "g9KgLrp1tPMsfHnTC3MgX",
+      "config": {
+        "listVariable": "chunked_list_ui",
+        "depth": 2,
+        "resultVariable": "flattened_list_ui"
+      },
+      "result": {
+        "value": [
+          "alpha",
+          "beta",
+          "alpha",
+          "",
+          "gamma"
+        ]
+      },
+      "logs": [
+        "扁平化完成，共 5 个元素"
+      ]
+    },
+    {
+      "moduleType": "list_chunk",
+      "sourceFile": "list_advanced.py",
+      "label": "列表分组",
+      "status": "executed-through-ui",
+      "nodeId": "TvQtPvFQv_HP2XwichsSP",
+      "config": {
+        "listVariable": "base_list",
+        "chunkSize": "2",
+        "resultVariable": "chunked_list_ui"
+      },
+      "result": {
+        "value": [
+          [
+            "alpha",
+            "beta"
+          ],
+          [
+            "alpha",
+            ""
+          ],
+          [
+            "gamma"
+          ]
+        ]
+      },
+      "logs": [
+        "分组完成，共 3 组"
+      ]
+    },
+    {
+      "moduleType": "list_remove_empty",
+      "sourceFile": "list_advanced.py",
+      "label": "列表去空",
+      "status": "executed-through-ui",
+      "nodeId": "88rgmh-nOKWFElCbIGL0o",
+      "config": {
+        "listVariable": "base_list",
+        "resultVariable": "nonempty_list_ui"
+      },
+      "result": {
+        "value": [
+          "alpha",
+          "beta",
+          "alpha",
+          "gamma"
+        ]
+      },
+      "logs": [
+        "去空完成，移除 1 个空值"
+      ]
+    },
+    {
+      "moduleType": "list_intersection",
+      "sourceFile": "list_advanced.py",
+      "label": "列表交集",
+      "status": "executed-through-ui",
+      "nodeId": "wXpb_ChVyQEjCYGGWLyAP",
+      "config": {
+        "list1": "base_list",
+        "list2": "clean_list_ui",
+        "resultVariable": "intersection_ui"
+      },
+      "result": {
+        "value": [
+          "beta",
+          "alpha",
+          "gamma"
+        ]
+      },
+      "logs": [
+        "交集完成，共 3 个元素"
+      ]
+    },
+    {
+      "moduleType": "list_union",
+      "sourceFile": "list_advanced.py",
+      "label": "列表并集",
+      "status": "executed-through-ui",
+      "nodeId": "o_9fuF4-CHJdnH8calhOc",
+      "config": {
+        "list1": "base_list",
+        "list2": "clean_list_ui",
+        "resultVariable": "union_ui"
+      },
+      "result": {
+        "value": [
+          "beta",
+          "alpha",
+          "",
+          "gamma"
+        ]
+      },
+      "logs": [
+        "并集完成，共 4 个元素"
+      ]
+    },
+    {
+      "moduleType": "list_difference",
+      "sourceFile": "list_advanced.py",
+      "label": "列表差集",
+      "status": "executed-through-ui",
+      "nodeId": "QjC48_QyeEIZSe7jqyI_Y",
+      "config": {
+        "list1": "base_list",
+        "list2": "clean_list_ui",
+        "resultVariable": "difference_ui"
+      },
+      "result": {
+        "value": [
+          ""
+        ]
+      },
+      "logs": [
+        "差集完成，共 1 个元素"
+      ]
+    },
+    {
+      "moduleType": "list_cartesian_product",
+      "sourceFile": "list_advanced.py",
+      "label": "列表笛卡尔积",
+      "status": "executed-through-ui",
+      "nodeId": "uO-q342nRMfxi2GmsmpVN",
+      "config": {
+        "list1": "base_list",
+        "list2": "clean_list_ui",
+        "resultVariable": "cartesian_ui"
+      },
+      "result": {
+        "value": [
+          [
+            "alpha",
+            "alpha"
+          ],
+          [
+            "alpha",
+            "beta"
+          ],
+          [
+            "alpha",
+            "alpha"
+          ],
+          [
+            "alpha",
+            "gamma"
+          ],
+          [
+            "beta",
+            "alpha"
+          ],
+          [
+            "beta",
+            "beta"
+          ],
+          [
+            "beta",
+            "alpha"
+          ],
+          [
+            "beta",
+            "gamma"
+          ],
+          [
+            "alpha",
+            "alpha"
+          ],
+          [
+            "alpha",
+            "beta"
+          ],
+          [
+            "alpha",
+            "alpha"
+          ],
+          [
+            "alpha",
+            "gamma"
+          ],
+          [
+            "",
+            "alpha"
+          ],
+          [
+            "",
+            "beta"
+          ],
+          [
+            "",
+            "alpha"
+          ],
+          [
+            "",
+            "gamma"
+          ],
+          [
+            "gamma",
+            "alpha"
+          ],
+          [
+            "gamma",
+            "beta"
+          ],
+          [
+            "gamma",
+            "alpha"
+          ],
+          [
+            "gamma",
+            "gamma"
+          ]
+        ]
+      },
+      "logs": [
+        "笛卡尔积完成，共 20 个组合"
+      ]
+    },
+    {
+      "moduleType": "list_shuffle",
+      "sourceFile": "list_advanced.py",
+      "label": "列表随机打乱",
+      "status": "executed-through-ui",
+      "nodeId": "PODpRrglE4SbTSPuEKQCB",
+      "config": {
+        "listVariable": "base_list",
+        "resultVariable": "shuffled_ui"
+      },
+      "result": {
+        "value": [
+          "",
+          "beta",
+          "alpha",
+          "alpha",
+          "gamma"
+        ]
+      },
+      "logs": [
+        "列表已随机打乱，共 5 个元素"
+      ]
+    },
+    {
+      "moduleType": "list_sample",
+      "sourceFile": "list_advanced.py",
+      "label": "列表采样",
+      "status": "executed-through-ui",
+      "nodeId": "xERkTJfanrUtg_F5GeTAz",
+      "config": {
+        "listVariable": "clean_list_ui",
+        "sampleSize": "2",
+        "resultVariable": "sample_ui"
+      },
+      "result": {
+        "value": [
+          "alpha",
+          "alpha"
+        ]
+      },
+      "logs": [
+        "采样完成，抽取 2 个元素"
+      ]
+    },
+    {
+      "moduleType": "dict_merge",
+      "sourceFile": "dict_advanced.py",
+      "label": "字典合并",
+      "status": "executed-through-ui",
+      "nodeId": "UgrZNpB1pugxa1H3pg4X0",
+      "config": {
+        "dict1": "base_dict_ui",
+        "dict2": "second_dict_ui",
+        "resultVariable": "merged_dict_ui"
+      },
+      "result": {
+        "score": "2",
+        "name": "alpha",
+        "extra": "gamma"
+      },
+      "logs": [
+        "字典合并完成，共 3 个键"
+      ]
+    },
+    {
+      "moduleType": "dict_filter",
+      "sourceFile": "dict_advanced.py",
+      "label": "字典过滤",
+      "status": "executed-through-ui",
+      "nodeId": "drpGXf2HT7u6M6OYEx4sk",
+      "config": {
+        "dictVariable": "merged_dict_ui",
+        "condition": "k != 'extra'",
+        "resultVariable": "filtered_dict_ui"
+      },
+      "result": {
+        "score": "2",
+        "name": "alpha"
+      },
+      "logs": [
+        "过滤完成，保留 2 个键"
+      ]
+    },
+    {
+      "moduleType": "dict_map_values",
+      "sourceFile": "dict_advanced.py",
+      "label": "字典映射值",
+      "status": "executed-through-ui",
+      "nodeId": "wZXzYFM7C-HG2kEFnw2-5",
+      "config": {
+        "dictVariable": "filtered_dict_ui",
+        "expression": "str(v)",
+        "resultVariable": "mapped_dict_ui"
+      },
+      "result": {
+        "score": "2",
+        "name": "alpha"
+      },
+      "logs": [
+        "映射完成，处理 2 个键值对"
+      ]
+    },
+    {
+      "moduleType": "dict_invert",
+      "sourceFile": "dict_advanced.py",
+      "label": "字典反转",
+      "status": "executed-through-ui",
+      "nodeId": "QCeI2AGX8yRd-Y2xu58H0",
+      "config": {
+        "dictVariable": "mapped_dict_ui",
+        "resultVariable": "inverted_dict_ui"
+      },
+      "result": {
+        "2": "score",
+        "alpha": "name"
+      },
+      "logs": [
+        "字典反转完成，共 2 个键值对"
+      ]
+    },
+    {
+      "moduleType": "dict_sort",
+      "sourceFile": "dict_advanced.py",
+      "label": "字典排序",
+      "status": "executed-through-ui",
+      "nodeId": "x6iIMHkWYP6CQrehtnyIE",
+      "config": {
+        "dictVariable": "mapped_dict_ui",
+        "sortBy": "value",
+        "order": "desc",
+        "resultVariable": "sorted_dict_ui"
+      },
+      "result": {
+        "name": "alpha",
+        "score": "2"
+      },
+      "logs": [
+        "按值降序排序完成"
+      ]
+    },
+    {
+      "moduleType": "dict_deep_copy",
+      "sourceFile": "dict_advanced.py",
+      "label": "字典深拷贝",
+      "status": "executed-through-ui",
+      "nodeId": "PZzUyqsixreem0-4BZFij",
+      "config": {
+        "dictVariable": "merged_dict_ui",
+        "resultVariable": "copied_dict_ui"
+      },
+      "result": {
+        "score": "2",
+        "name": "alpha",
+        "extra": "gamma"
+      },
+      "logs": [
+        "字典深拷贝完成"
+      ]
+    },
+    {
+      "moduleType": "dict_get_path",
+      "sourceFile": "dict_advanced.py",
+      "label": "字典路径取值",
+      "status": "executed-through-ui",
+      "nodeId": "FuEU4BV81UmfDJ42Ki5Gd",
+      "config": {
+        "dictVariable": "merged_dict_ui",
+        "path": "score",
+        "defaultValue": "missing",
+        "resultVariable": "path_value_ui"
+      },
+      "result": {
+        "value": "2"
+      },
+      "logs": [
+        "路径取值完成: score"
+      ]
+    },
+    {
+      "moduleType": "dict_flatten",
+      "sourceFile": "dict_advanced.py",
+      "label": "字典扁平化",
+      "status": "executed-through-ui",
+      "nodeId": "PBmMV0cbksGw5C461xPFF",
+      "config": {
+        "dictVariable": "merged_dict_ui",
+        "separator": "/",
+        "resultVariable": "flat_dict_ui"
+      },
+      "result": {
+        "score": "2",
+        "name": "alpha",
+        "extra": "gamma"
+      },
+      "logs": [
+        "字典扁平化完成，共 3 个键"
+      ]
+    },
+    {
+      "moduleType": "csv_parse",
+      "sourceFile": "string_convert.py",
+      "label": "CSV解析",
+      "status": "executed-through-ui",
+      "nodeId": "kpmDS5YhABp6zaPZo-CgC",
+      "config": {
+        "csvContent": "alice;10",
+        "delimiter": ";",
+        "hasHeader": "false",
+        "resultVariable": "csv_rows_ui"
+      },
+      "result": {
+        "value": [
+          [
+            "alice",
+            "10"
+          ]
+        ]
+      },
+      "logs": [
+        "CSV解析完成，共 1 行"
+      ]
+    },
+    {
+      "moduleType": "csv_generate",
+      "sourceFile": "string_convert.py",
+      "label": "CSV生成",
+      "status": "executed-through-ui",
+      "nodeId": "YtvoY6NTEEZtozQ6YEAYC",
+      "config": {
+        "dataVariable": "csv_rows_ui",
+        "delimiter": "|",
+        "resultVariable": "csv_text_ui"
+      },
+      "result": {
+        "value": "alice|10\r\n"
+      },
+      "logs": [
+        "CSV生成完成"
+      ]
+    },
+    {
+      "moduleType": "list_to_string_advanced",
+      "sourceFile": "string_convert.py",
+      "label": "列表转字符串（高级）",
+      "status": "executed-through-ui",
+      "nodeId": "A5hkEvZb2bFrM92lXYcRR",
+      "config": {
+        "listVariable": "clean_list_ui",
+        "separator": "|",
+        "prefix": "[",
+        "suffix": "]",
+        "resultVariable": "summary_text_ui"
+      },
+      "result": {
+        "value": "[alpha|beta|alpha|gamma]"
+      },
+      "logs": [
+        "列表转字符串完成"
+      ]
+    }
+  ],
+  "httpEvidence": {
+    "results": [
+      {
+        "sequence": 3,
+        "nodeId": "j0fNlRU-qGzSJU0ARml4S",
+        "executionId": "e459aea3-b905-43eb-856e-f5fc2adeb2f9",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "value": [
+            "alpha",
+            "beta",
+            "alpha",
+            "",
+            "gamma"
+          ]
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 6,
+        "nodeId": "HXWfY502SqiIV2MyhBByK",
+        "executionId": "17dfb37e-0ade-43d3-ac77-37900ea5382d",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "value": [
+            "gamma",
+            "",
+            "alpha",
+            "beta",
+            "alpha"
+          ]
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 9,
+        "nodeId": "bXLKHw93uKtaWjy-ALMrJ",
+        "executionId": "f81d0196-88fe-4eec-8ba0-f83ae86b0ef5",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "value": 1
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 12,
+        "nodeId": "6ZIOa4tifPKuyAXVRgn9q",
+        "executionId": "e5f00879-fff8-4290-ae50-7f05a8895bc2",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "value": 2
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 15,
+        "nodeId": "vG4kco_I-1ngYngtC2zPB",
+        "executionId": "d34e55cc-2452-4358-a4e8-d5533683de4f",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "value": [
+            "alpha",
+            "beta",
+            "alpha",
+            "gamma"
+          ]
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 18,
+        "nodeId": "aU_0b8c1qtPE7gpWj8UQX",
+        "executionId": "391549e5-c577-4960-af95-f48a8722be8d",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "value": [
+            "ALPHA",
+            "BETA",
+            "ALPHA",
+            "GAMMA"
+          ]
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 21,
+        "nodeId": "FoVC2AD4yzCZJOZK84zvf",
+        "executionId": "e3e63ccc-26b8-48b4-95ae-02491e69783a",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "value": "alpha"
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 24,
+        "nodeId": "ue7kCmSjmiauq88q77f02",
+        "executionId": "ee3987ec-bdc0-4762-b0ba-8beb0ff1155f",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "value": "gamma"
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 27,
+        "nodeId": "hZOjFnE7CEoom-qNQxwpV",
+        "executionId": "eb760ab1-f81b-488e-bf18-3dfdc53dbb98",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "dict": {
+            "score": "2"
+          },
+          "keys": [
+            "score"
+          ]
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 30,
+        "nodeId": "f55OCFwCgXN7_XHqyFO_I",
+        "executionId": "1ab537d2-0f81-49ec-8c05-15c73ace598d",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "dict": {
+            "score": "2",
+            "name": "alpha"
+          },
+          "keys": [
+            "score",
+            "name"
+          ]
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 33,
+        "nodeId": "-UAkPCopC5xibCfuG7HU9",
+        "executionId": "0ff7027f-5f28-421b-bb8e-bdd2457489fb",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "dict": {
+            "extra": "gamma"
+          },
+          "keys": [
+            "extra"
+          ]
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 36,
+        "nodeId": "pkLO2fVCfm95T9G9qy3sm",
+        "executionId": "198e4901-4f44-45c2-8a91-f63a83b63322",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "value": [
+            "alpha",
+            "beta",
+            "alpha",
+            "",
+            "gamma",
+            "alpha",
+            "beta",
+            "alpha",
+            "gamma"
+          ]
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 39,
+        "nodeId": "TvQtPvFQv_HP2XwichsSP",
+        "executionId": "2154c280-2a4a-4ace-adfc-467e8d4c4822",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "value": [
+            [
+              "alpha",
+              "beta"
+            ],
+            [
+              "alpha",
+              ""
+            ],
+            [
+              "gamma"
+            ]
+          ]
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 42,
+        "nodeId": "g9KgLrp1tPMsfHnTC3MgX",
+        "executionId": "40d92452-a279-4989-889f-444492cdd4c6",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "value": [
+            "alpha",
+            "beta",
+            "alpha",
+            "",
+            "gamma"
+          ]
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 45,
+        "nodeId": "88rgmh-nOKWFElCbIGL0o",
+        "executionId": "f6e4464e-67ac-4cf1-9258-a62dc5eaf9c2",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "value": [
+            "alpha",
+            "beta",
+            "alpha",
+            "gamma"
+          ]
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 48,
+        "nodeId": "wXpb_ChVyQEjCYGGWLyAP",
+        "executionId": "d67ca5c2-bf31-4a40-bd7f-211edb4e824f",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "value": [
+            "beta",
+            "alpha",
+            "gamma"
+          ]
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 51,
+        "nodeId": "o_9fuF4-CHJdnH8calhOc",
+        "executionId": "d591cf8b-a0da-42b0-9874-bccba52fa134",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "value": [
+            "beta",
+            "alpha",
+            "",
+            "gamma"
+          ]
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 54,
+        "nodeId": "QjC48_QyeEIZSe7jqyI_Y",
+        "executionId": "58a3df92-de06-473b-ba55-d9782cc5ca78",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "value": [
+            ""
+          ]
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 57,
+        "nodeId": "uO-q342nRMfxi2GmsmpVN",
+        "executionId": "848c7e0a-047e-4d3a-a374-6bd5545d4903",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "value": [
+            [
+              "alpha",
+              "alpha"
+            ],
+            [
+              "alpha",
+              "beta"
+            ],
+            [
+              "alpha",
+              "alpha"
+            ],
+            [
+              "alpha",
+              "gamma"
+            ],
+            [
+              "beta",
+              "alpha"
+            ],
+            [
+              "beta",
+              "beta"
+            ],
+            [
+              "beta",
+              "alpha"
+            ],
+            [
+              "beta",
+              "gamma"
+            ],
+            [
+              "alpha",
+              "alpha"
+            ],
+            [
+              "alpha",
+              "beta"
+            ],
+            [
+              "alpha",
+              "alpha"
+            ],
+            [
+              "alpha",
+              "gamma"
+            ],
+            [
+              "",
+              "alpha"
+            ],
+            [
+              "",
+              "beta"
+            ],
+            [
+              "",
+              "alpha"
+            ],
+            [
+              "",
+              "gamma"
+            ],
+            [
+              "gamma",
+              "alpha"
+            ],
+            [
+              "gamma",
+              "beta"
+            ],
+            [
+              "gamma",
+              "alpha"
+            ],
+            [
+              "gamma",
+              "gamma"
+            ]
+          ]
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 60,
+        "nodeId": "PODpRrglE4SbTSPuEKQCB",
+        "executionId": "a76438dd-048f-4d78-bd3c-86b40d61b496",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "value": [
+            "",
+            "beta",
+            "alpha",
+            "alpha",
+            "gamma"
+          ]
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 63,
+        "nodeId": "xERkTJfanrUtg_F5GeTAz",
+        "executionId": "729a8d7c-a6ee-4d00-8803-735ab771d55b",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "value": [
+            "alpha",
+            "alpha"
+          ]
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 66,
+        "nodeId": "UgrZNpB1pugxa1H3pg4X0",
+        "executionId": "2e58e148-615c-437a-b15d-27f86d2e13d6",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "score": "2",
+          "name": "alpha",
+          "extra": "gamma"
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 69,
+        "nodeId": "drpGXf2HT7u6M6OYEx4sk",
+        "executionId": "85090bd1-af01-4949-bdd7-61947f7185bd",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "score": "2",
+          "name": "alpha"
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 72,
+        "nodeId": "wZXzYFM7C-HG2kEFnw2-5",
+        "executionId": "f4899dda-b35b-4fb4-ba23-6fa95ecc1232",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "score": "2",
+          "name": "alpha"
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 75,
+        "nodeId": "QCeI2AGX8yRd-Y2xu58H0",
+        "executionId": "90d82d74-d1fa-4c1a-9abd-5fe48c44d260",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "2": "score",
+          "alpha": "name"
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 78,
+        "nodeId": "x6iIMHkWYP6CQrehtnyIE",
+        "executionId": "2906e136-18c7-4c2d-a2f5-d736efaad8b1",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "name": "alpha",
+          "score": "2"
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 81,
+        "nodeId": "PZzUyqsixreem0-4BZFij",
+        "executionId": "166c85d6-6532-4e26-8d51-5d38180d7790",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "score": "2",
+          "name": "alpha",
+          "extra": "gamma"
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 84,
+        "nodeId": "FuEU4BV81UmfDJ42Ki5Gd",
+        "executionId": "2da133cd-b494-4ecf-89dd-7afd56e5b987",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "value": "2"
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 87,
+        "nodeId": "PBmMV0cbksGw5C461xPFF",
+        "executionId": "f2747915-6f80-49f9-b90f-e3113bcc77e6",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "score": "2",
+          "name": "alpha",
+          "extra": "gamma"
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 90,
+        "nodeId": "kpmDS5YhABp6zaPZo-CgC",
+        "executionId": "427dcd91-2a6d-471c-a463-2a1c49afebe2",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "value": [
+            [
+              "alice",
+              "10"
+            ]
+          ]
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 93,
+        "nodeId": "YtvoY6NTEEZtozQ6YEAYC",
+        "executionId": "a64a1511-0538-443c-86ca-8362df22ef97",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "value": "alice|10\r\n"
+        },
+        "largeValues": {}
+      },
+      {
+        "sequence": 96,
+        "nodeId": "A5hkEvZb2bFrM92lXYcRR",
+        "executionId": "6ac5bca0-c2d6-401a-82fa-c9d584d1db9f",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "value": "[alpha|beta|alpha|gamma]"
+        },
+        "largeValues": {}
+      }
+    ],
+    "logs": [
+      {
+        "sequence": 4,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-4",
+        "timestamp": "2026-09-20T15:57:03.598258+00:00",
+        "level": "success",
+        "message": "分割为 5 个部分",
+        "nodeId": "j0fNlRU-qGzSJU0ARml4S",
+        "executionId": "e459aea3-b905-43eb-856e-f5fc2adeb2f9",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 7,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-7",
+        "timestamp": "2026-09-20T15:57:03.607011+00:00",
+        "level": "success",
+        "message": "列表已反转，共 5 个元素",
+        "nodeId": "HXWfY502SqiIV2MyhBByK",
+        "executionId": "17dfb37e-0ade-43d3-ac77-37900ea5382d",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 10,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-10",
+        "timestamp": "2026-09-20T15:57:03.615535+00:00",
+        "level": "success",
+        "message": "找到元素，索引为 1",
+        "nodeId": "bXLKHw93uKtaWjy-ALMrJ",
+        "executionId": "f81d0196-88fe-4eec-8ba0-f83ae86b0ef5",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 13,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-13",
+        "timestamp": "2026-09-20T15:57:03.622968+00:00",
+        "level": "success",
+        "message": "元素出现 2 次",
+        "nodeId": "6ZIOa4tifPKuyAXVRgn9q",
+        "executionId": "e5f00879-fff8-4290-ae50-7f05a8895bc2",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 16,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-16",
+        "timestamp": "2026-09-20T15:57:03.631502+00:00",
+        "level": "success",
+        "message": "过滤完成，得到 4 个元素",
+        "nodeId": "vG4kco_I-1ngYngtC2zPB",
+        "executionId": "d34e55cc-2452-4358-a4e8-d5533683de4f",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 19,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-19",
+        "timestamp": "2026-09-20T15:57:03.639370+00:00",
+        "level": "success",
+        "message": "映射完成，处理 4 个元素",
+        "nodeId": "aU_0b8c1qtPE7gpWj8UQX",
+        "executionId": "391549e5-c577-4960-af95-f48a8722be8d",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 22,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-22",
+        "timestamp": "2026-09-20T15:57:03.647414+00:00",
+        "level": "success",
+        "message": "获取列表[0] = alpha",
+        "nodeId": "FoVC2AD4yzCZJOZK84zvf",
+        "executionId": "e3e63ccc-26b8-48b4-95ae-02491e69783a",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 25,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-25",
+        "timestamp": "2026-09-20T15:57:03.655735+00:00",
+        "level": "success",
+        "message": "获取列表[4] = gamma",
+        "nodeId": "ue7kCmSjmiauq88q77f02",
+        "executionId": "ee3987ec-bdc0-4762-b0ba-8beb0ff1155f",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 28,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-28",
+        "timestamp": "2026-09-20T15:57:03.664475+00:00",
+        "level": "success",
+        "message": "已设置 score = 2",
+        "nodeId": "hZOjFnE7CEoom-qNQxwpV",
+        "executionId": "eb760ab1-f81b-488e-bf18-3dfdc53dbb98",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 31,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-31",
+        "timestamp": "2026-09-20T15:57:03.673551+00:00",
+        "level": "success",
+        "message": "已设置 name = alpha",
+        "nodeId": "f55OCFwCgXN7_XHqyFO_I",
+        "executionId": "1ab537d2-0f81-49ec-8c05-15c73ace598d",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 34,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-34",
+        "timestamp": "2026-09-20T15:57:03.682323+00:00",
+        "level": "success",
+        "message": "已设置 extra = gamma",
+        "nodeId": "-UAkPCopC5xibCfuG7HU9",
+        "executionId": "0ff7027f-5f28-421b-bb8e-bdd2457489fb",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 37,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-37",
+        "timestamp": "2026-09-20T15:57:03.690605+00:00",
+        "level": "success",
+        "message": "合并完成，共 9 个元素",
+        "nodeId": "pkLO2fVCfm95T9G9qy3sm",
+        "executionId": "198e4901-4f44-45c2-8a91-f63a83b63322",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 40,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-40",
+        "timestamp": "2026-09-20T15:57:03.698259+00:00",
+        "level": "success",
+        "message": "分组完成，共 3 组",
+        "nodeId": "TvQtPvFQv_HP2XwichsSP",
+        "executionId": "2154c280-2a4a-4ace-adfc-467e8d4c4822",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 43,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-43",
+        "timestamp": "2026-09-20T15:57:03.706037+00:00",
+        "level": "success",
+        "message": "扁平化完成，共 5 个元素",
+        "nodeId": "g9KgLrp1tPMsfHnTC3MgX",
+        "executionId": "40d92452-a279-4989-889f-444492cdd4c6",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 46,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-46",
+        "timestamp": "2026-09-20T15:57:03.714125+00:00",
+        "level": "success",
+        "message": "去空完成，移除 1 个空值",
+        "nodeId": "88rgmh-nOKWFElCbIGL0o",
+        "executionId": "f6e4464e-67ac-4cf1-9258-a62dc5eaf9c2",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 49,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-49",
+        "timestamp": "2026-09-20T15:57:03.722082+00:00",
+        "level": "success",
+        "message": "交集完成，共 3 个元素",
+        "nodeId": "wXpb_ChVyQEjCYGGWLyAP",
+        "executionId": "d67ca5c2-bf31-4a40-bd7f-211edb4e824f",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 52,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-52",
+        "timestamp": "2026-09-20T15:57:03.730774+00:00",
+        "level": "success",
+        "message": "并集完成，共 4 个元素",
+        "nodeId": "o_9fuF4-CHJdnH8calhOc",
+        "executionId": "d591cf8b-a0da-42b0-9874-bccba52fa134",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 55,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-55",
+        "timestamp": "2026-09-20T15:57:03.738811+00:00",
+        "level": "success",
+        "message": "差集完成，共 1 个元素",
+        "nodeId": "QjC48_QyeEIZSe7jqyI_Y",
+        "executionId": "58a3df92-de06-473b-ba55-d9782cc5ca78",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 58,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-58",
+        "timestamp": "2026-09-20T15:57:03.746641+00:00",
+        "level": "success",
+        "message": "笛卡尔积完成，共 20 个组合",
+        "nodeId": "uO-q342nRMfxi2GmsmpVN",
+        "executionId": "848c7e0a-047e-4d3a-a374-6bd5545d4903",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 61,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-61",
+        "timestamp": "2026-09-20T15:57:03.754506+00:00",
+        "level": "success",
+        "message": "列表已随机打乱，共 5 个元素",
+        "nodeId": "PODpRrglE4SbTSPuEKQCB",
+        "executionId": "a76438dd-048f-4d78-bd3c-86b40d61b496",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 64,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-64",
+        "timestamp": "2026-09-20T15:57:03.763541+00:00",
+        "level": "success",
+        "message": "采样完成，抽取 2 个元素",
+        "nodeId": "xERkTJfanrUtg_F5GeTAz",
+        "executionId": "729a8d7c-a6ee-4d00-8803-735ab771d55b",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 67,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-67",
+        "timestamp": "2026-09-20T15:57:03.771269+00:00",
+        "level": "success",
+        "message": "字典合并完成，共 3 个键",
+        "nodeId": "UgrZNpB1pugxa1H3pg4X0",
+        "executionId": "2e58e148-615c-437a-b15d-27f86d2e13d6",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 70,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-70",
+        "timestamp": "2026-09-20T15:57:03.779501+00:00",
+        "level": "success",
+        "message": "过滤完成，保留 2 个键",
+        "nodeId": "drpGXf2HT7u6M6OYEx4sk",
+        "executionId": "85090bd1-af01-4949-bdd7-61947f7185bd",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 73,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-73",
+        "timestamp": "2026-09-20T15:57:03.860821+00:00",
+        "level": "success",
+        "message": "映射完成，处理 2 个键值对",
+        "nodeId": "wZXzYFM7C-HG2kEFnw2-5",
+        "executionId": "f4899dda-b35b-4fb4-ba23-6fa95ecc1232",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 76,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-76",
+        "timestamp": "2026-09-20T15:57:03.869869+00:00",
+        "level": "success",
+        "message": "字典反转完成，共 2 个键值对",
+        "nodeId": "QCeI2AGX8yRd-Y2xu58H0",
+        "executionId": "90d82d74-d1fa-4c1a-9abd-5fe48c44d260",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 79,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-79",
+        "timestamp": "2026-09-20T15:57:03.878296+00:00",
+        "level": "success",
+        "message": "按值降序排序完成",
+        "nodeId": "x6iIMHkWYP6CQrehtnyIE",
+        "executionId": "2906e136-18c7-4c2d-a2f5-d736efaad8b1",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 82,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-82",
+        "timestamp": "2026-09-20T15:57:03.886450+00:00",
+        "level": "success",
+        "message": "字典深拷贝完成",
+        "nodeId": "PZzUyqsixreem0-4BZFij",
+        "executionId": "166c85d6-6532-4e26-8d51-5d38180d7790",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 85,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-85",
+        "timestamp": "2026-09-20T15:57:03.894251+00:00",
+        "level": "success",
+        "message": "路径取值完成: score",
+        "nodeId": "FuEU4BV81UmfDJ42Ki5Gd",
+        "executionId": "2da133cd-b494-4ecf-89dd-7afd56e5b987",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 88,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-88",
+        "timestamp": "2026-09-20T15:57:03.901592+00:00",
+        "level": "success",
+        "message": "字典扁平化完成，共 3 个键",
+        "nodeId": "PBmMV0cbksGw5C461xPFF",
+        "executionId": "f2747915-6f80-49f9-b90f-e3113bcc77e6",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 91,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-91",
+        "timestamp": "2026-09-20T15:57:03.909241+00:00",
+        "level": "success",
+        "message": "CSV解析完成，共 1 行",
+        "nodeId": "kpmDS5YhABp6zaPZo-CgC",
+        "executionId": "427dcd91-2a6d-471c-a463-2a1c49afebe2",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 94,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-94",
+        "timestamp": "2026-09-20T15:57:03.916381+00:00",
+        "level": "success",
+        "message": "CSV生成完成",
+        "nodeId": "YtvoY6NTEEZtozQ6YEAYC",
+        "executionId": "a64a1511-0538-443c-86ca-8362df22ef97",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 97,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-97",
+        "timestamp": "2026-09-20T15:57:03.924497+00:00",
+        "level": "success",
+        "message": "列表转字符串完成",
+        "nodeId": "A5hkEvZb2bFrM92lXYcRR",
+        "executionId": "6ac5bca0-c2d6-401a-82fa-c9d584d1db9f",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "duration": null,
+        "details": null
+      },
+      {
+        "sequence": 98,
+        "id": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0-98",
+        "timestamp": "2026-09-20T15:57:04.172925+00:00",
+        "level": "success",
+        "message": "执行完成，共执行 32 个节点，失败 0 个",
+        "nodeId": null,
+        "executionId": null,
+        "executionContext": null,
+        "duration": null,
+        "details": null
+      }
+    ]
+  },
+  "sqliteEvidence": {
+    "document": [
+      {
+        "id": "VO5sesNDv8qRjGutVqs20",
+        "name": "B4 高级数据正式闭环",
+        "revision": 1,
+        "nodeCount": 32,
+        "edgeCount": 31,
+        "variableCount": 3
+      }
+    ],
+    "run": [
+      {
+        "runId": "cbb44ca9-fe9e-4ad6-bba5-702e317e84b0",
+        "workflowId": "VO5sesNDv8qRjGutVqs20",
+        "status": "completed",
+        "cleanupState": "completed",
+        "activeSlot": null,
+        "eventCount": 99,
+        "logCount": 33
+      }
+    ],
+    "eventTypes": [
+      {
+        "type": "execution:completed",
+        "count": 1
+      },
+      {
+        "type": "execution:log",
+        "count": 33
+      },
+      {
+        "type": "execution:node-succeeded",
+        "count": 32
+      },
+      {
+        "type": "execution:node_start",
+        "count": 32
+      },
+      {
+        "type": "execution:running",
+        "count": 1
+      }
+    ],
+    "results": [
+      {
+        "sequence": 3,
+        "nodeId": "j0fNlRU-qGzSJU0ARml4S",
+        "value": [
+          "alpha",
+          "beta",
+          "alpha",
+          "",
+          "gamma"
+        ]
+      },
+      {
+        "sequence": 6,
+        "nodeId": "HXWfY502SqiIV2MyhBByK",
+        "value": [
+          "gamma",
+          "",
+          "alpha",
+          "beta",
+          "alpha"
+        ]
+      },
+      {
+        "sequence": 9,
+        "nodeId": "bXLKHw93uKtaWjy-ALMrJ",
+        "value": 1
+      },
+      {
+        "sequence": 12,
+        "nodeId": "6ZIOa4tifPKuyAXVRgn9q",
+        "value": 2
+      },
+      {
+        "sequence": 15,
+        "nodeId": "vG4kco_I-1ngYngtC2zPB",
+        "value": [
+          "alpha",
+          "beta",
+          "alpha",
+          "gamma"
+        ]
+      },
+      {
+        "sequence": 18,
+        "nodeId": "aU_0b8c1qtPE7gpWj8UQX",
+        "value": [
+          "ALPHA",
+          "BETA",
+          "ALPHA",
+          "GAMMA"
+        ]
+      },
+      {
+        "sequence": 21,
+        "nodeId": "FoVC2AD4yzCZJOZK84zvf",
+        "value": "alpha"
+      },
+      {
+        "sequence": 24,
+        "nodeId": "ue7kCmSjmiauq88q77f02",
+        "value": "gamma"
+      },
+      {
+        "sequence": 27,
+        "nodeId": "hZOjFnE7CEoom-qNQxwpV",
+        "value": {
+          "dict": {
+            "score": "2"
+          },
+          "keys": [
+            "score"
+          ]
+        }
+      },
+      {
+        "sequence": 30,
+        "nodeId": "f55OCFwCgXN7_XHqyFO_I",
+        "value": {
+          "dict": {
+            "score": "2",
+            "name": "alpha"
+          },
+          "keys": [
+            "score",
+            "name"
+          ]
+        }
+      },
+      {
+        "sequence": 33,
+        "nodeId": "-UAkPCopC5xibCfuG7HU9",
+        "value": {
+          "dict": {
+            "extra": "gamma"
+          },
+          "keys": [
+            "extra"
+          ]
+        }
+      },
+      {
+        "sequence": 36,
+        "nodeId": "pkLO2fVCfm95T9G9qy3sm",
+        "value": [
+          "alpha",
+          "beta",
+          "alpha",
+          "",
+          "gamma",
+          "alpha",
+          "beta",
+          "alpha",
+          "gamma"
+        ]
+      },
+      {
+        "sequence": 39,
+        "nodeId": "TvQtPvFQv_HP2XwichsSP",
+        "value": [
+          [
+            "alpha",
+            "beta"
+          ],
+          [
+            "alpha",
+            ""
+          ],
+          [
+            "gamma"
+          ]
+        ]
+      },
+      {
+        "sequence": 42,
+        "nodeId": "g9KgLrp1tPMsfHnTC3MgX",
+        "value": [
+          "alpha",
+          "beta",
+          "alpha",
+          "",
+          "gamma"
+        ]
+      },
+      {
+        "sequence": 45,
+        "nodeId": "88rgmh-nOKWFElCbIGL0o",
+        "value": [
+          "alpha",
+          "beta",
+          "alpha",
+          "gamma"
+        ]
+      },
+      {
+        "sequence": 48,
+        "nodeId": "wXpb_ChVyQEjCYGGWLyAP",
+        "value": [
+          "beta",
+          "alpha",
+          "gamma"
+        ]
+      },
+      {
+        "sequence": 51,
+        "nodeId": "o_9fuF4-CHJdnH8calhOc",
+        "value": [
+          "beta",
+          "alpha",
+          "",
+          "gamma"
+        ]
+      },
+      {
+        "sequence": 54,
+        "nodeId": "QjC48_QyeEIZSe7jqyI_Y",
+        "value": [
+          ""
+        ]
+      },
+      {
+        "sequence": 57,
+        "nodeId": "uO-q342nRMfxi2GmsmpVN",
+        "value": [
+          [
+            "alpha",
+            "alpha"
+          ],
+          [
+            "alpha",
+            "beta"
+          ],
+          [
+            "alpha",
+            "alpha"
+          ],
+          [
+            "alpha",
+            "gamma"
+          ],
+          [
+            "beta",
+            "alpha"
+          ],
+          [
+            "beta",
+            "beta"
+          ],
+          [
+            "beta",
+            "alpha"
+          ],
+          [
+            "beta",
+            "gamma"
+          ],
+          [
+            "alpha",
+            "alpha"
+          ],
+          [
+            "alpha",
+            "beta"
+          ],
+          [
+            "alpha",
+            "alpha"
+          ],
+          [
+            "alpha",
+            "gamma"
+          ],
+          [
+            "",
+            "alpha"
+          ],
+          [
+            "",
+            "beta"
+          ],
+          [
+            "",
+            "alpha"
+          ],
+          [
+            "",
+            "gamma"
+          ],
+          [
+            "gamma",
+            "alpha"
+          ],
+          [
+            "gamma",
+            "beta"
+          ],
+          [
+            "gamma",
+            "alpha"
+          ],
+          [
+            "gamma",
+            "gamma"
+          ]
+        ]
+      },
+      {
+        "sequence": 60,
+        "nodeId": "PODpRrglE4SbTSPuEKQCB",
+        "value": [
+          "",
+          "beta",
+          "alpha",
+          "alpha",
+          "gamma"
+        ]
+      },
+      {
+        "sequence": 63,
+        "nodeId": "xERkTJfanrUtg_F5GeTAz",
+        "value": [
+          "alpha",
+          "alpha"
+        ]
+      },
+      {
+        "sequence": 66,
+        "nodeId": "UgrZNpB1pugxa1H3pg4X0",
+        "value": {
+          "score": "2",
+          "name": "alpha",
+          "extra": "gamma"
+        }
+      },
+      {
+        "sequence": 69,
+        "nodeId": "drpGXf2HT7u6M6OYEx4sk",
+        "value": {
+          "score": "2",
+          "name": "alpha"
+        }
+      },
+      {
+        "sequence": 72,
+        "nodeId": "wZXzYFM7C-HG2kEFnw2-5",
+        "value": {
+          "score": "2",
+          "name": "alpha"
+        }
+      },
+      {
+        "sequence": 75,
+        "nodeId": "QCeI2AGX8yRd-Y2xu58H0",
+        "value": {
+          "2": "score",
+          "alpha": "name"
+        }
+      },
+      {
+        "sequence": 78,
+        "nodeId": "x6iIMHkWYP6CQrehtnyIE",
+        "value": {
+          "name": "alpha",
+          "score": "2"
+        }
+      },
+      {
+        "sequence": 81,
+        "nodeId": "PZzUyqsixreem0-4BZFij",
+        "value": {
+          "score": "2",
+          "name": "alpha",
+          "extra": "gamma"
+        }
+      },
+      {
+        "sequence": 84,
+        "nodeId": "FuEU4BV81UmfDJ42Ki5Gd",
+        "value": "2"
+      },
+      {
+        "sequence": 87,
+        "nodeId": "PBmMV0cbksGw5C461xPFF",
+        "value": {
+          "score": "2",
+          "name": "alpha",
+          "extra": "gamma"
+        }
+      },
+      {
+        "sequence": 90,
+        "nodeId": "kpmDS5YhABp6zaPZo-CgC",
+        "value": [
+          [
+            "alice",
+            "10"
+          ]
+        ]
+      },
+      {
+        "sequence": 93,
+        "nodeId": "YtvoY6NTEEZtozQ6YEAYC",
+        "value": "alice|10\r\n"
+      },
+      {
+        "sequence": 96,
+        "nodeId": "A5hkEvZb2bFrM92lXYcRR",
+        "value": "[alpha|beta|alpha|gamma]"
+      }
+    ],
+    "logs": [
+      {
+        "sequence": 4,
+        "nodeId": "j0fNlRU-qGzSJU0ARml4S",
+        "message": "分割为 5 个部分"
+      },
+      {
+        "sequence": 7,
+        "nodeId": "HXWfY502SqiIV2MyhBByK",
+        "message": "列表已反转，共 5 个元素"
+      },
+      {
+        "sequence": 10,
+        "nodeId": "bXLKHw93uKtaWjy-ALMrJ",
+        "message": "找到元素，索引为 1"
+      },
+      {
+        "sequence": 13,
+        "nodeId": "6ZIOa4tifPKuyAXVRgn9q",
+        "message": "元素出现 2 次"
+      },
+      {
+        "sequence": 16,
+        "nodeId": "vG4kco_I-1ngYngtC2zPB",
+        "message": "过滤完成，得到 4 个元素"
+      },
+      {
+        "sequence": 19,
+        "nodeId": "aU_0b8c1qtPE7gpWj8UQX",
+        "message": "映射完成，处理 4 个元素"
+      },
+      {
+        "sequence": 22,
+        "nodeId": "FoVC2AD4yzCZJOZK84zvf",
+        "message": "获取列表[0] = alpha"
+      },
+      {
+        "sequence": 25,
+        "nodeId": "ue7kCmSjmiauq88q77f02",
+        "message": "获取列表[4] = gamma"
+      },
+      {
+        "sequence": 28,
+        "nodeId": "hZOjFnE7CEoom-qNQxwpV",
+        "message": "已设置 score = 2"
+      },
+      {
+        "sequence": 31,
+        "nodeId": "f55OCFwCgXN7_XHqyFO_I",
+        "message": "已设置 name = alpha"
+      },
+      {
+        "sequence": 34,
+        "nodeId": "-UAkPCopC5xibCfuG7HU9",
+        "message": "已设置 extra = gamma"
+      },
+      {
+        "sequence": 37,
+        "nodeId": "pkLO2fVCfm95T9G9qy3sm",
+        "message": "合并完成，共 9 个元素"
+      },
+      {
+        "sequence": 40,
+        "nodeId": "TvQtPvFQv_HP2XwichsSP",
+        "message": "分组完成，共 3 组"
+      },
+      {
+        "sequence": 43,
+        "nodeId": "g9KgLrp1tPMsfHnTC3MgX",
+        "message": "扁平化完成，共 5 个元素"
+      },
+      {
+        "sequence": 46,
+        "nodeId": "88rgmh-nOKWFElCbIGL0o",
+        "message": "去空完成，移除 1 个空值"
+      },
+      {
+        "sequence": 49,
+        "nodeId": "wXpb_ChVyQEjCYGGWLyAP",
+        "message": "交集完成，共 3 个元素"
+      },
+      {
+        "sequence": 52,
+        "nodeId": "o_9fuF4-CHJdnH8calhOc",
+        "message": "并集完成，共 4 个元素"
+      },
+      {
+        "sequence": 55,
+        "nodeId": "QjC48_QyeEIZSe7jqyI_Y",
+        "message": "差集完成，共 1 个元素"
+      },
+      {
+        "sequence": 58,
+        "nodeId": "uO-q342nRMfxi2GmsmpVN",
+        "message": "笛卡尔积完成，共 20 个组合"
+      },
+      {
+        "sequence": 61,
+        "nodeId": "PODpRrglE4SbTSPuEKQCB",
+        "message": "列表已随机打乱，共 5 个元素"
+      },
+      {
+        "sequence": 64,
+        "nodeId": "xERkTJfanrUtg_F5GeTAz",
+        "message": "采样完成，抽取 2 个元素"
+      },
+      {
+        "sequence": 67,
+        "nodeId": "UgrZNpB1pugxa1H3pg4X0",
+        "message": "字典合并完成，共 3 个键"
+      },
+      {
+        "sequence": 70,
+        "nodeId": "drpGXf2HT7u6M6OYEx4sk",
+        "message": "过滤完成，保留 2 个键"
+      },
+      {
+        "sequence": 73,
+        "nodeId": "wZXzYFM7C-HG2kEFnw2-5",
+        "message": "映射完成，处理 2 个键值对"
+      },
+      {
+        "sequence": 76,
+        "nodeId": "QCeI2AGX8yRd-Y2xu58H0",
+        "message": "字典反转完成，共 2 个键值对"
+      },
+      {
+        "sequence": 79,
+        "nodeId": "x6iIMHkWYP6CQrehtnyIE",
+        "message": "按值降序排序完成"
+      },
+      {
+        "sequence": 82,
+        "nodeId": "PZzUyqsixreem0-4BZFij",
+        "message": "字典深拷贝完成"
+      },
+      {
+        "sequence": 85,
+        "nodeId": "FuEU4BV81UmfDJ42Ki5Gd",
+        "message": "路径取值完成: score"
+      },
+      {
+        "sequence": 88,
+        "nodeId": "PBmMV0cbksGw5C461xPFF",
+        "message": "字典扁平化完成，共 3 个键"
+      },
+      {
+        "sequence": 91,
+        "nodeId": "kpmDS5YhABp6zaPZo-CgC",
+        "message": "CSV解析完成，共 1 行"
+      },
+      {
+        "sequence": 94,
+        "nodeId": "YtvoY6NTEEZtozQ6YEAYC",
+        "message": "CSV生成完成"
+      },
+      {
+        "sequence": 97,
+        "nodeId": "A5hkEvZb2bFrM92lXYcRR",
+        "message": "列表转字符串完成"
+      },
+      {
+        "sequence": 98,
+        "nodeId": null,
+        "message": "执行完成，共执行 32 个节点，失败 0 个"
+      }
+    ]
+  },
+  "requiresBrowserEvidence": {
+    "workflowRequiresBrowser": false,
+    "nodeRequiresBrowser": {
+      "string_split": false,
+      "list_reverse": false,
+      "list_find": false,
+      "list_count": false,
+      "list_filter": false,
+      "list_map": false,
+      "list_get": false,
+      "dict_operation": false,
+      "list_merge": false,
+      "list_chunk": false,
+      "list_flatten": false,
+      "list_remove_empty": false,
+      "list_intersection": false,
+      "list_union": false,
+      "list_difference": false,
+      "list_cartesian_product": false,
+      "list_shuffle": false,
+      "list_sample": false,
+      "dict_merge": false,
+      "dict_filter": false,
+      "dict_map_values": false,
+      "dict_invert": false,
+      "dict_sort": false,
+      "dict_deep_copy": false,
+      "dict_get_path": false,
+      "dict_flatten": false,
+      "csv_parse": false,
+      "csv_generate": false,
+      "list_to_string_advanced": false
+    }
+  },
+  "browserEvidence": {
+    "installedKernelEntries": [
+      "chromium-145.0.7632.109.2"
+    ],
+    "cloakBrowserProcessesBefore": [],
+    "cloakBrowserProcessesDuring": [],
+    "cloakBrowserProcessesAfter": []
+  },
+  "workflowDataFlow": "string_split.base_list → list/dict advanced operations → csv_parse/csv_generate → list_to_string_advanced.summary_text_ui",
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserLaunch": "none (pure data)",
+    "interaction": "CDP mouse and keyboard through the main window and formal Studio UI; public sidecar APIs used only for Profile setup and evidence reads; SQLite used only for evidence reads; no Store or page-internal function access",
+    "claim": "26 of 26 approved advanced-data nodes executed through the formal UI; 6 already-approved base nodes prepared typed inputs"
+  }
+}

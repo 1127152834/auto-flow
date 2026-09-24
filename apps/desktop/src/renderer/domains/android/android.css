@@ -793,13 +793,14 @@
 }
 .ad-create-device dl {
   flex: 1;
+  min-width: 0;
   margin: 0;
 }
 .ad-create-device dl > div {
   display: flex;
   gap: 20px;
   margin: 20px 0;
-  white-space: nowrap;
+  white-space: normal;
 }
 .ad-create-device dt {
   width: 63px;
@@ -808,6 +809,7 @@
 .ad-create-device dd {
   margin: 0;
   font-size: 16px;
+  overflow-wrap: anywhere;
 }
 .ad-create-preview section {
   padding-top: 17px;
@@ -879,7 +881,7 @@
   display: flex;
   align-items: flex-start;
   gap: 24px;
-  height: 76px;
+  min-height: 76px;
 }
 .ad-device-heading-image {
   width: 54px;
@@ -893,11 +895,13 @@
 }
 .ad-device-heading > div:nth-child(2) > div {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 14px;
 }
 .ad-device-heading h1 {
   font-size: 28px;
+  overflow-wrap: anywhere;
 }
 .ad-device-heading p {
   color: #787671;
@@ -1288,7 +1292,7 @@
   aspect-ratio: 9/16;
 }
 .ad-takeover-page .ad-device-heading {
-  height: 76px;
+  min-height: 76px;
   gap: 13px;
 }
 .ad-takeover-page .ad-device-heading-image {
@@ -1700,7 +1704,7 @@
   height: 38px;
 }
 .ad-manual-page .ad-device-heading {
-  height: 70px;
+  min-height: 70px;
 }
 .ad-manual-page .ad-console-grid {
   grid-template-columns: 950fr 467fr;
@@ -1751,7 +1755,7 @@
   box-shadow: 0 0 0 0.5px #955432;
 }
 .ad-takeover-page .ad-device-heading {
-  height: 69px;
+  min-height: 69px;
 }
 .ad-takeover-page .ad-console-sidebar {
   padding-top: 9px;
@@ -1991,4 +1995,48 @@
 }
 .ad-takeover-page .ad-current-run + section {
   margin-top: 11px;
+}
+
+@media (max-width: 1190px) {
+  .ad-create-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ad-create-form,
+  .ad-create-preview {
+    min-width: 0;
+    min-height: 0;
+    overflow-wrap: anywhere;
+  }
+  .ad-create-form .ad-form-row {
+    grid-template-columns: 120px minmax(0, 1fr);
+  }
+  .ad-create-form .ad-form-row > .ad-link,
+  .ad-create-form .ad-instance-types,
+  .ad-create-form .ad-start-row > div {
+    grid-column: 2;
+  }
+  .ad-create-form .ad-form-row > label:nth-child(3) {
+    text-align: left;
+  }
+  .ad-create-form select {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .ad-create-form .ad-profile-note,
+  .ad-create-form .ad-advanced-fields {
+    flex-wrap: wrap;
+  }
+  .ad-create-form .ad-profile-note > span {
+    white-space: normal;
+  }
+  .ad-create-footer {
+    position: static;
+    height: auto;
+    flex-wrap: wrap;
+    padding: 18px 0;
+    margin-top: 20px;
+  }
+  .ad-create-footer > p {
+    margin-left: 0;
+  }
 }

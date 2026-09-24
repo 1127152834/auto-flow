@@ -24,3 +24,7 @@
 ## 2026-09-15 数据库与 DP 范围调整
 
 用户将数据库 48 个节点和 DP 9 个节点从 Studio 当前范围移除，保留入口由 284 调整为 227。数据库专属中文专题、速查章节和示例同步移除；DP 入口及说明不得通过搜索、收藏、自定义模块分类、AI 添加或教学入口重新出现。旧文档中的节点数据仍由兼容层识别并明确提示不支持。详细决定与验收标准见 `scope-database-dp-cloakbrowser.md`。
+
+## 2026-09-22 通知节点范围调整
+
+用户进一步删除 Discord、钉钉、企业微信、Bark、Slack、Teams、Pushover、PushBullet、Gotify、Server酱、PushPlus、Ntfy、Matrix 和 RocketChat 共 14 个通知节点；Telegram 与通用 Webhook 继续保留。有效入口由 227 调整为 213。旧文档中的这些节点仅由兼容层识别并明确拒绝，不进入目录、搜索、收藏、常用、自定义模块或执行白名单。

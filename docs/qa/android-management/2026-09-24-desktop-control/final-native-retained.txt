@@ -1,0 +1,11 @@
+Window: "AutoFlow · QA Desktop Control 20260924 01", App: AutoFlow Android.
+0 standard window AutoFlow · QA Desktop Control 20260924 01, Secondary Actions: Raise
+	1 close button
+	2 full screen button Help: this button also has an action to zoom the window, Secondary Actions: zoom the window
+	3 minimize button
+	4 text AutoFlow · QA Desktop Control 20260924 01
+5 menu bar
+	6 AutoFlow Android
+	7 Window
+
+The focused UI element is 0 standard window AutoFlow · QA Desktop Control 20260924 01, Secondary Actions: Raise

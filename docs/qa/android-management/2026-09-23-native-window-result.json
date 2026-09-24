@@ -1,0 +1,23 @@
+{
+  "deviceId": "2e078d8a-114b-47b2-bf3c-fa500e4c8247",
+  "workspaceId": "5037ee9539348ef22437592f7fd3fccfa1b777c2f897f2190e08cb5261f4a540",
+  "windows": [
+    {
+      "readonly": false,
+      "pid": 70057,
+      "alive": true
+    },
+    {
+      "readonly": true,
+      "pid": 70888,
+      "alive": true
+    }
+  ],
+  "deviceContinuedAfterWindowClose": true,
+  "status": "passed",
+  "cleanup": {
+    "containers": 0,
+    "volumes": 0,
+    "deleted": true
+  }
+}

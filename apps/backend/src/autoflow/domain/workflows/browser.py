@@ -88,6 +88,15 @@ class BrowserMousePort(Protocol):
 
     async def wheel(self, delta_x: float, delta_y: float) -> None: ...
 
+    async def click(
+        self,
+        x: float,
+        y: float,
+        *,
+        button: str = "left",
+        click_count: int = 1,
+    ) -> None: ...
+
 
 class BrowserDownloadPort(Protocol):
     @property
@@ -159,6 +168,8 @@ class BrowserPagePort(Protocol):
     async def keyboard_type(self, value: str) -> None: ...
 
     async def evaluate(self, expression: str) -> Any: ...
+
+    async def content(self) -> str: ...
 
     def frame(self, *, name: str) -> BrowserPagePort | None: ...
 

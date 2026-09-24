@@ -40,7 +40,6 @@ export function PrototypePreview() {
           onSession={noop}
           onOpen={noop}
           onManage={noop}
-          onAllocate={noop}
           onRefresh={noop}
         />
       ) : (

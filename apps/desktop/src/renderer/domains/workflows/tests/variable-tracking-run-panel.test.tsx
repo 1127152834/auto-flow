@@ -67,6 +67,18 @@ it('keeps confirmed data on a failed clear and ignores an older read after succe
  expect(api.clearRun).toHaveBeenCalledWith('run-a',expect.any(AbortSignal));expect(api.clear).not.toHaveBeenCalled()
 })
 
+it('shows and filters loop scope exit records',async()=>{
+ const exitRecord={...record,old_value:'乙',new_value:null,operation:'scope_exit' as const,value_type:'null'}
+ api.listRun.mockResolvedValue(page('run-a',[exitRecord],null))
+ render(panel());await screen.findByText('退出作用域');fireEvent.click(screen.getByTitle('关闭自动刷新'))
+ fireEvent.click(screen.getByText('过滤器'))
+ fireEvent.click(screen.getByRole('combobox',{name:'操作类型'}))
+ fireEvent.click(await screen.findByRole('option',{name:'退出作用域'}))
+ await waitFor(()=>expect(api.listRun).toHaveBeenLastCalledWith('run-a',expect.objectContaining({operation:'scope_exit',cursor:0}),expect.any(AbortSignal)))
+ expect(screen.getByText('乙')).toBeTruthy()
+ expect(screen.getAllByText('null')).toHaveLength(3)
+})
+
 it('selects paginated historical runs explicitly without latest-run fallback',async()=>{
  api.listRuns.mockResolvedValueOnce({success:true,data:{items:[{runId:'history-a',workflowId:'workflow',workflowName:'历史一',startedAt:'2026-09-14'}],nextCursor:50}})
   .mockResolvedValueOnce({success:true,data:{items:[{runId:'history-b',workflowId:'workflow',workflowName:'历史二',startedAt:'2026-09-13'}],nextCursor:null}})

@@ -3,6 +3,8 @@ from pydantic import ValidationError
 
 from autoflow.adapters.http.workflow_studio_schemas import (
     StudioRecorderBatch,
+    StudioRecorderCommandState,
+    StudioRecorderControl,
     StudioRecorderReadRequest,
     StudioRecorderStartRequest,
     StudioRecorderStatus,
@@ -11,14 +13,14 @@ from autoflow.adapters.http.workflow_studio_schemas import (
 
 
 def test_stable_session_and_cursor():
-    assert StudioRecorderStartRequest.model_validate({'sessionId': 'session'}).session_id == 'session'
-    assert StudioRecorderReadRequest.model_validate({'sessionId': 'session'}).after_seq == 0
+    assert StudioRecorderStartRequest.model_validate({'sessionId': 'session', 'commandId': 'start-1'}).session_id == 'session'
+    assert StudioRecorderReadRequest.model_validate({'sessionId': 'session', 'commandId': 'stop-1'}).after_seq == 0
 
 
 @pytest.mark.parametrize('value', [
-    {'success': True, 'sessionId': None, 'recording': False, 'nextSeq': 0},
-    {'success': True, 'sessionId': 'session', 'recording': True, 'nextSeq': 3},
-    {'success': True, 'sessionId': 'session', 'recording': False, 'nextSeq': 3},
+    {'success': True, 'sessionId': None, 'recording': False, 'paused': False, 'nextSeq': 0},
+    {'success': True, 'sessionId': 'session', 'recording': True, 'paused': True, 'nextSeq': 3},
+    {'success': True, 'sessionId': 'session', 'recording': False, 'paused': False, 'nextSeq': 3},
 ])
 def test_recorder_status_roundtrip(value):
     assert StudioRecorderStatus.model_validate(value).model_dump(by_alias=True) == value
@@ -49,8 +51,26 @@ def test_invalid_read_identity_or_cursor(value):
 def test_batch_roundtrip(stopped):
     events = [{'sequence': 1, 'type': 'input', 'selector': '#name', 'value': '中文'}]
     value = {'success': True, 'sessionId': 's', 'nextSeq': 1, 'data': {'events': events} if stopped else events}
+    if stopped:
+        value['commandId'] = 'stop-1'
     model = StudioRecorderStopped if stopped else StudioRecorderBatch
     assert model.model_validate(value).model_dump(by_alias=True, exclude_unset=True) == value
+
+
+def test_pause_control_requires_an_active_recording_and_keeps_tail():
+    value = {'success': True, 'commandId': 'pause-1', 'sessionId': 's', 'recording': True, 'paused': True, 'nextSeq': 1, 'data': {'events': [{'sequence': 1, 'type': 'click'}]}}
+    assert StudioRecorderControl.model_validate(value).model_dump(by_alias=True, exclude_unset=True) == value
+    with pytest.raises(ValidationError):
+        StudioRecorderControl.model_validate({**value, 'recording': False})
+
+
+def test_recorder_command_lookup_distinguishes_pending_completed_and_failed():
+    base = {'success': True, 'commandId': 'cmd', 'sessionId': 's', 'action': 'pause', 'httpStatus': 202}
+    StudioRecorderCommandState.model_validate({**base, 'status': 'pending'})
+    StudioRecorderCommandState.model_validate({**base, 'status': 'completed', 'httpStatus': 200, 'result': {'success': True}})
+    StudioRecorderCommandState.model_validate({**base, 'status': 'failed', 'httpStatus': 409, 'error': '冲突', 'errorCode': 'CONFLICT'})
+    with pytest.raises(ValidationError):
+        StudioRecorderCommandState.model_validate({**base, 'status': 'completed'})
 
 
 @pytest.mark.parametrize('events,next_seq', [

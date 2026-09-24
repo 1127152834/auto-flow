@@ -22,28 +22,25 @@ import {
   UploadSimple,
 } from '@phosphor-icons/react'
 import type { AndroidApi, AndroidDevice } from '../api'
-import type { Apps, ConsoleSession, DeviceRun, FleetApi, InputCommand, SessionAction } from '../fleet-api'
+import { isCurrentConsoleResponse, isVerifiedAppFailure, type Apps, type ConsoleSession, type DeviceRun, type FleetApi, type InputCommand, type SessionAction } from '../fleet-api'
 import { Action, Badge, Dot, Phone, Toggle } from './PrototypeControls'
 import { AndroidVideo } from './AndroidVideo'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableScroll } from '../../../shared/components/ui/table'
+import { ApplicationsPanel } from './ApplicationsPanel'
 export type ConsoleProps = {
   device: AndroidDevice
   session: ConsoleSession | null
   api?: FleetApi
   deviceApi?: AndroidApi
   run?: DeviceRun
-  history?: DeviceRun[]
-  historyPage?: number
-  onHistoryPage?(page: number): void
   apps?: Apps
   image?: string
   thumbnail?: string
   initialText?: string
   onBack(): void
   onSession(s: ConsoleSession): void
+  onTransition?(changing: boolean): Promise<void> | void
   onOpen(): void
   onManage(action: string): void
-  onAllocate(): void
   onRefresh(): void
 }
 export function DeviceConsole(p: ConsoleProps) {
@@ -56,7 +53,8 @@ export function DeviceConsole(p: ConsoleProps) {
     [fit, setFit] = useState('fit'),
     [packageName, setPackage] = useState(p.apps?.currentPackage ?? '')
   const [videoReady, setVideoReady] = useState(Boolean(p.image)),
-    [volumeMenu, setVolumeMenu] = useState(false)
+    [volumeMenu, setVolumeMenu] = useState(false),
+    [unknownInstall, setUnknownInstall] = useState<{ requestId: string; generation: number } | null>(null)
   const switching = useRef(false)
   const sequence = useRef(0),
     queue = useRef(Promise.resolve()),
@@ -65,7 +63,11 @@ export function DeviceConsole(p: ConsoleProps) {
     sessionRef = useRef(p.session),
     failed = useRef(false)
   sessionRef.current = p.session
-  const readonly = p.session?.state === 'closed' || p.session?.access !== 'manual',
+  useEffect(() => {
+    sessionRef.current = p.session
+    return () => { sessionRef.current = null }
+  }, [p.session])
+  const readonly = !p.session || p.session.state !== 'connected' || p.session.access !== 'manual' || p.session.endpoint !== 'embedded',
     workflow = Boolean(p.run && !['succeeded', 'failed', 'stopped', 'interrupted'].includes(p.run.state)),
     temporary = p.device.instanceType === 'temporary'
   const inputError = useCallback((message: string) => {
@@ -77,7 +79,7 @@ export function DeviceConsole(p: ConsoleProps) {
   const send = useCallback(
     (command: Partial<InputCommand>) => {
       const session = sessionRef.current
-      if (!session || session.access !== 'manual' || !p.api || failed.current) return
+      if (!session || session.access !== 'manual' || !p.api || failed.current || switching.current) return
       const payload: InputCommand = {
         action: 0,
         keycode: 0,
@@ -93,30 +95,40 @@ export function DeviceConsole(p: ConsoleProps) {
       }
       queue.current = queue.current
         .then(async () => {
-          if (failed.current) return
+          if (failed.current || !isCurrentConsoleResponse(sessionRef.current, session)) return
           const updated = await p.api!.input(session.id, payload)
-          p.onSession(updated)
+          if (isCurrentConsoleResponse(sessionRef.current, session)) p.onSession(updated)
         })
-        .catch((e) => inputError(e instanceof Error ? e.message : '操作结果未知，请核实设备'))
+        .catch((e) => {
+          if (isCurrentConsoleResponse(sessionRef.current, session)) inputError(e instanceof Error ? e.message : '操作结果未知，请核实设备')
+        })
     },
     [p.api, p.onSession, inputError],
   )
   const action = async (kind: SessionAction) => {
     if (!p.api || !p.session || busy) return
+    const issued = p.session
+    const current = () => sessionRef.current?.id === issued.id && sessionRef.current.deviceId === issued.deviceId &&
+      sessionRef.current.generation === issued.generation && sessionRef.current.state === issued.state &&
+      sessionRef.current.access === issued.access && sessionRef.current.endpoint === issued.endpoint
     setBusy(true)
     switching.current = true
     setError('')
     try {
+      await p.onTransition?.(true)
       await queue.current
-      const s = await p.api.action(p.session, kind)
+      if (!current()) return
+      const s = await p.api.action(issued, kind)
+      if (!current()) return
       p.onSession(s)
       failed.current = false
       p.onRefresh()
     } catch (e) {
-      setError(e instanceof Error ? e.message : '控制权切换结果未知，请刷新核实')
+      if (current()) setError(e instanceof Error ? e.message : '控制权切换结果未知，请刷新核实')
     } finally {
       setBusy(false)
       switching.current = false
+      void p.onTransition?.(false)
     }
   }
   useEffect(() => {
@@ -150,23 +162,53 @@ export function DeviceConsole(p: ConsoleProps) {
   const install = async (selected?: File) => {
     if (!selected || !p.api || !p.session) return
     setBusy(true)
+    const requestId = crypto.randomUUID()
     try {
-      p.onSession(await p.api.install(p.session, selected))
+      const next = await p.api.install(p.session, selected, requestId)
+      if (!isCurrentConsoleResponse(sessionRef.current, p.session)) return
+      p.onSession(next)
+      setUnknownInstall(null)
       p.onRefresh()
     } catch (e) {
+      if (!isCurrentConsoleResponse(sessionRef.current, p.session)) return
+      const code = typeof e === 'object' && e !== null && 'code' in e ? String((e as { code?: unknown }).code) : ''
+      if (!['ANDROID_APK_INVALID', 'ANDROID_APK_UNSUPPORTED', 'ANDROID_APK_TOO_LARGE', 'ANDROID_INSTALL_FAILED'].includes(code)) setUnknownInstall({ requestId, generation: p.session.generation })
       setError(e instanceof Error ? e.message : '安装结果未知')
     } finally {
       setBusy(false)
       if (file.current) file.current.value = ''
     }
   }
+  const verifyInstall = async () => {
+    if (!unknownInstall || !p.api?.verifyApp || !p.session) return
+    const issued = p.session
+    const current = () => isCurrentConsoleResponse(sessionRef.current, issued, unknownInstall.generation)
+    try {
+      const next = await p.api.verifyApp(p.session, unknownInstall.requestId, unknownInstall.generation)
+      if (!current()) return
+      p.onSession(next)
+      setUnknownInstall(null)
+      setError('应用安装已按原请求核实')
+      p.onRefresh()
+    } catch (cause) {
+      if (!current()) return
+      if (isVerifiedAppFailure(cause)) {
+        setUnknownInstall(null)
+        p.onRefresh()
+      }
+      setError(cause instanceof Error ? cause.message : '安装仍未核实')
+    }
+  }
   const launch = async () => {
     if (!p.api || !p.session || !packageName) return
     setBusy(true)
     try {
-      p.onSession(await p.api.launch(p.session, packageName))
+      const next = await p.api.launch(p.session, packageName)
+      if (!isCurrentConsoleResponse(sessionRef.current, p.session)) return
+      p.onSession(next)
       p.onRefresh()
     } catch (e) {
+      if (!isCurrentConsoleResponse(sessionRef.current, p.session)) return
       setError(e instanceof Error ? e.message : '启动失败')
     } finally {
       setBusy(false)
@@ -221,11 +263,11 @@ export function DeviceConsole(p: ConsoleProps) {
           </strong>
           <small>{packageName || '选择或安装应用后启动'}</small>
         </div>
-        <Action disabled={readonly || busy} onClick={() => file.current?.click()}>
+        <Action disabled={readonly || busy || Boolean(unknownInstall)} onClick={() => file.current?.click()}>
           <UploadSimple size={17} />
           上传 APK
         </Action>
-        <Action primary disabled={readonly || busy || !packageName} onClick={() => void launch()}>
+        <Action primary disabled={readonly || busy || Boolean(unknownInstall) || !packageName} onClick={() => void launch()}>
           <Play size={16} />
           启动应用
         </Action>
@@ -237,7 +279,7 @@ export function DeviceConsole(p: ConsoleProps) {
       <h3>设备信息</h3>
       <p>
         <AndroidLogo size={21} />
-        Android {p.device.androidVersion}
+        Android {p.device.androidVersion ?? '版本待核实'}
       </p>
       <p>
         <Monitor size={21} />
@@ -279,7 +321,7 @@ export function DeviceConsole(p: ConsoleProps) {
             <Badge tone={workflow ? 'gray' : 'brown'}>{temporary ? '临时实例' : '持久实例'}</Badge>
           </div>
           <p>
-            Android {p.device.androidVersion} · {p.device.width} × {p.device.height}
+            Android {p.device.androidVersion ?? '版本待核实'} · {p.device.width} × {p.device.height}
           </p>
         </div>
         <div className="ad-heading-actions">
@@ -328,7 +370,7 @@ export function DeviceConsole(p: ConsoleProps) {
       </header>
       <div className="ad-detail-surface">
         <nav className="ad-detail-tabs" aria-label="设备详情">
-          {['控制台', '应用', '环境配置', '运行记录'].map((label) => (
+          {['控制台', '应用', '环境配置'].map((label) => (
             <button key={label} aria-current={tab === label ? 'page' : undefined} onClick={() => setTab(label)}>
               {label}
             </button>
@@ -337,6 +379,7 @@ export function DeviceConsole(p: ConsoleProps) {
         {error && (
           <p role="alert" className="ad-error">
             {error}
+            {unknownInstall && p.api?.verifyApp && p.session && <Action onClick={() => void verifyInstall()}>按原请求核实</Action>}
             <Action onClick={p.onRefresh}>核实状态</Action>
           </p>
         )}
@@ -571,17 +614,6 @@ export function DeviceConsole(p: ConsoleProps) {
                     </section>
                     {application}
                     {information}
-                    <section className="ad-workflow-section">
-                      <h3>工作流</h3>
-                      <p>
-                        <Info size={18} />
-                        手动控制期间不可分配{' '}
-                        <Action disabled={!readonly} onClick={p.onAllocate}>
-                          分配给工作流
-                        </Action>
-                      </p>
-                      <small>结束控制后恢复可分配。</small>
-                    </section>
                   </>
                 )}
               </aside>
@@ -590,16 +622,9 @@ export function DeviceConsole(p: ConsoleProps) {
         ) : tab === '应用' ? (
           <section className="ad-secondary">
             {application}
-            <h2>已安装的应用</h2>
-            <select aria-label="选择应用" value={packageName} onChange={(e) => setPackage(e.target.value)}>
-              <option value="">选择应用</option>
-              {p.apps?.packages.map((pkg) => (
-                <option key={pkg}>{pkg}</option>
-              ))}
-            </select>
-            <p>工作流占用期间禁止人工启动和安装应用。</p>
+            {p.api && <ApplicationsPanel api={p.api} apps={p.apps} session={p.session} onSession={p.onSession} onRefresh={p.onRefresh} />}
           </section>
-        ) : tab === '环境配置' ? (
+        ) : (
           <section className="ad-secondary">
             {information}
             <dl>
@@ -619,54 +644,16 @@ export function DeviceConsole(p: ConsoleProps) {
             </dl>
             <Action onClick={() => p.onManage('copy')}>复制配置创建新实例</Action>
           </section>
-        ) : (
-          <section className="ad-secondary">
-            <h2>运行记录</h2>
-            <TableScroll label="设备运行记录">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>工作流</TableHead>
-                  <TableHead>状态</TableHead>
-                  <TableHead>开始时间</TableHead>
-                  <TableHead>进度</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {p.history?.map((r) => (
-                  <TableRow key={r.runId}>
-                    <TableCell>{r.workflowName}</TableCell>
-                    <TableCell>{r.state}</TableCell>
-                    <TableCell>{new Date(r.startedAt).toLocaleString()}</TableCell>
-                    <TableCell>
-                      {r.currentStep}/{r.totalSteps}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            </TableScroll>
-            {!p.history?.length && <p>此页没有运行记录。</p>}
-            {p.onHistoryPage && (
-              <div className="ad-history-pages">
-                <Action disabled={!p.historyPage} onClick={() => p.onHistoryPage?.((p.historyPage ?? 0) - 1)}>
-                  上一页
-                </Action>
-                <span>第 {(p.historyPage ?? 0) + 1} 页</span>
-                <Action
-                  disabled={(p.history?.length ?? 0) < 50}
-                  onClick={() => p.onHistoryPage?.((p.historyPage ?? 0) + 1)}
-                >
-                  下一页
-                </Action>
-              </div>
-            )}
-          </section>
         )}
       </div>
       <div className="ad-console-status">
         <Dot tone={videoReady ? 'green' : 'gray'} />
-        {readonly ? (
+        {p.session?.state === 'unknown' ? (
+          <>
+            <strong>控制会话状态未知</strong>
+            <span>输入已锁定，请重新连接并核实</span>
+          </>
+        ) : readonly ? (
           videoReady ? (
             '画面连接正常 · 输入已锁定'
           ) : (

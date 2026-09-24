@@ -1,0 +1,70 @@
+{
+  "recordedAt": "2026-09-21",
+  "classification": "原版功能迁入 + AutoFlow必要适配 + 已批准增强",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "path": "reference/WebRPA/backend/app/executors/ai_firecrawl.py",
+    "symbols": [
+      "FirecrawlScrapeExecutor",
+      "FirecrawlMapExecutor",
+      "FirecrawlCrawlExecutor"
+    ],
+    "license": "LICENSE.WebRPA"
+  },
+  "implemented": [
+    "三个节点保留冻结源码的抓取、主内容识别、标签过滤、Markdown/HTML/文本转换、链接过滤和广度优先遍历语义",
+    "移除私有 Chromium 启动器及 sitemap 直连 HTTP 客户端，所有页面和 sitemap 请求统一进入当前运行的 CloakBrowser Profile 会话",
+    "每个临时页面关闭后恢复原目标页；成功、失败及可选 sitemap 失败均不遗留临时页",
+    "单页抓取实现前端已批准的 screenshot 格式，并通过既有运行产物写入器登记 PNG",
+    "waitFor 按冻结源码的选择器语义执行，前端标签同步修正，不再误称毫秒等待",
+    "BeautifulSoup 与 html2text 依赖按冻结源码版本约束纳入正式锁文件和 PyInstaller 构建"
+  ],
+  "checks": [
+    {
+      "command": "uv run --project apps/backend pytest -q apps/backend/tests/differential/workflows/test_b5_firecrawl_executor_parity.py apps/backend/tests/unit/workflows/test_firecrawl_executors.py",
+      "exitCode": 0,
+      "result": "10 passed",
+      "covers": "三节点冻结源码输出差分、截图、sitemap、域名过滤、遍历顺序、临时页关闭与原目标页恢复"
+    },
+    {
+      "command": "AUTOFLOW_B1_CLOAK_EXECUTABLE=<installed-kernel> uv run --project apps/backend pytest -q apps/backend/tests/integration/test_b5_firecrawl_cloakbrowser_flow.py",
+      "exitCode": 0,
+      "result": "1 passed",
+      "covers": "darwin-arm64 已安装 CloakBrowser 151 对本地受控站点执行抓取、映射、遍历并生成真实 PNG"
+    },
+    {
+      "command": "AUTOFLOW_B1_CLOAK_EXECUTABLE=<installed-kernel> uv run --project apps/backend pytest -q apps/backend/tests/differential/workflows/test_b5_*.py apps/backend/tests/unit/workflows/test_ai_*.py apps/backend/tests/unit/workflows/test_firecrawl_executors.py apps/backend/tests/unit/workflows/test_executor_registry.py apps/backend/tests/integration/test_b5_*.py",
+      "exitCode": 0,
+      "result": "79 passed",
+      "covers": "B5 已迁入节点差分、正式注册、托管模型 worker 与真实 CloakBrowser 回归"
+    },
+    {
+      "command": "vitest conditional-node-branches + ai-model-picker-entry; tsc --noEmit; ESLint affected files",
+      "exitCode": 0,
+      "result": "76 tests, TypeScript and ESLint passed",
+      "covers": "Firecrawl 返回格式和等待选择器配置、AI 网页节点主应用模型边界"
+    },
+    {
+      "command": "npm run backend:build && npm run smoke:sidecar",
+      "exitCode": 0,
+      "result": "PyInstaller arm64 build and frozen sidecar smoke passed",
+      "covers": "BeautifulSoup/html2text 已进入冻结后端且服务可启动"
+    },
+    {
+      "command": "ruff affected files && mypy firecrawl.py ai_scraper.py",
+      "exitCode": 0,
+      "result": "Ruff and mypy passed"
+    }
+  ],
+  "remaining": [
+    "Windows 与 macOS Intel 实机未验收"
+  ],
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b5-scraper-firecrawl.mjs",
+    "exitCode": 0,
+    "result": "passed",
+    "platform": "darwin-arm64",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b5/formal-scraper-firecrawl-electron-HuLnmW/result.json",
+    "covers": "正式Studio真实UI配置Firecrawl单页、链接映射和全站抓取，CloakBrowser完成本地页面抓取并登记PNG产物，运行后清理完成"
+  }
+}

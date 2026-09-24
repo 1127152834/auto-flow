@@ -3,28 +3,41 @@ import { apiRequest } from '../api'
 import type { ChatMessage, SessionListItem } from '../hooks/stores/aiAssistantStore'
 
 export interface AssistantConfigPayload {
-  api_url: string
-  api_key: string
-  model: string
+  modelId: string
   temperature: number
-  max_tokens: number
-  system_prompt: string
-  enable_tools: boolean
-  auto_approve: boolean
+  maxTokens: number
+  systemPrompt: string
+  enableTools: boolean
+  autoApprove: boolean
 }
 
 export interface ChatRequestPayload {
-  session_id?: string | null
+  sessionId?: string | null
   message: string
   config: AssistantConfigPayload
-  workflow_context?: Record<string, any>
+  workflowContext?: Record<string, any>
   images?: string[]
-  fallback_configs?: AssistantConfigPayload[]
+  fallbackModelIds?: string[]
 }
 
 export interface ChatResponsePayload {
-  session_id: string
+  sessionId: string
   message: ChatMessage
+}
+
+export interface AssistantPendingAction {
+  commandId: string
+  action: string
+  payload: Record<string, unknown>
+}
+
+export interface AssistantSessionPayload {
+  id: string
+  title: string
+  messages: ChatMessage[]
+  status: 'idle' | 'running' | 'waiting_for_action' | 'completed' | 'failed' | 'cancelled'
+  pendingAction: AssistantPendingAction | null
+  revision: number
 }
 
 export const aiAssistantApi = {
@@ -32,13 +45,13 @@ export const aiAssistantApi = {
     apiRequest<SessionListItem[]>('/ai-assistant/sessions'),
 
   createSession: (title?: string) =>
-    apiRequest<{ session_id: string; title: string }>('/ai-assistant/sessions', {
+    apiRequest<{ sessionId: string; title: string }>('/ai-assistant/sessions', {
       method: 'POST',
       body: JSON.stringify({ title }),
     }),
 
   getSession: (id: string) =>
-    apiRequest<{ id: string; title: string; messages: ChatMessage[] }>(
+    apiRequest<AssistantSessionPayload>(
       `/ai-assistant/sessions/${id}`
     ),
 
@@ -57,7 +70,7 @@ export const aiAssistantApi = {
   truncateSession: (id: string, messageId: string) =>
     apiRequest<{ success: boolean; messages: ChatMessage[] }>(
       `/ai-assistant/sessions/${id}/truncate`,
-      { method: 'POST', body: JSON.stringify({ message_id: messageId }) }
+      { method: 'POST', body: JSON.stringify({ messageId }) }
     ),
 
   chat: (req: ChatRequestPayload, signal?: AbortSignal) =>
@@ -68,15 +81,15 @@ export const aiAssistantApi = {
     }),
 
   cancel: (sessionId: string) =>
-    apiRequest<{ success: boolean; session_id: string }>(
+    apiRequest<{ success: boolean; sessionId: string }>(
       `/ai-assistant/sessions/${sessionId}/cancel`,
       { method: 'POST' }
     ),
 
-  testConnection: (config: AssistantConfigPayload) =>
-    apiRequest<{ success: boolean; message: string; detail?: string; latency_ms?: number }>(
+  testConnection: (modelId: string) =>
+    apiRequest<{ success: boolean; message: string; detail?: string; latencyMs?: number }>(
       '/ai-assistant/test-connection',
-      { method: 'POST', body: JSON.stringify({ config }) }
+      { method: 'POST', body: JSON.stringify({ modelId }) }
     ),
 
   extractFile: (filename: string, contentBase64: string) =>
@@ -106,13 +119,4 @@ export const aiAssistantApi = {
   deleteMemory: (id: string) =>
     apiRequest(`/ai-assistant/memories/${id}`, { method: 'DELETE' }),
 
-  // 共享配置：跨上下文同步小助手配置（编辑器推送 / Agent 窗口拉取）
-  getSharedConfig: () =>
-    apiRequest<{ config: any | null }>('/ai-assistant/config'),
-
-  saveSharedConfig: (config: any) =>
-    apiRequest<{ success: boolean }>('/ai-assistant/config', {
-      method: 'PUT',
-      body: JSON.stringify({ config }),
-    }),
 }

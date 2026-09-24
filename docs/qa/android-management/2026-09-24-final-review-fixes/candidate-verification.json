@@ -1,0 +1,24 @@
+{
+  "head": "78bf8c92e8dd8e6b120087506e537a7840c4cb86",
+  "scopes": {
+    "frontend": {
+      "files": 1050,
+      "capturedMapSha256": "4383594f8d06a58845d491db6988746ecd0c21fd49029d1fb902009e70a2c439",
+      "changedSinceGateStart": []
+    },
+    "backend": {
+      "files": 996,
+      "capturedMapSha256": "28b2cd5cec58187172afd124607a7fc5a231742c5aea9a446f48f862a08e7b5b",
+      "changedSinceGateStart": []
+    }
+  },
+  "trees": {
+    "apps/backend/src": "78d28d87a660b0230c8f3e243638536e242aab5a",
+    "apps/backend/tests": "edd84eeeb26b059aa0350af58202b064326da32b",
+    "apps/desktop/src": "b9e4ab1507940a78e20e23b297705661bc25f3e1"
+  },
+  "afterAllGates": "all 2046 captured source/test files unchanged",
+  "protectedStudioFiles": "all three original dirty file hashes unchanged",
+  "backendFullExit": 0,
+  "frontendFullExit": 0
+}

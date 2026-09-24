@@ -1,0 +1,1091 @@
+{
+  "evidenceId": "BE-B4-data-structure-formal-electron",
+  "checkedAt": "2026-09-20T15:27:43.475Z",
+  "gitHead": "c2047ab0f31c78e19082d58a544fc15fc188bf5d",
+  "buildSha256": "1937f29695ad15e48420b2decd391c0c5cb3e67f91dfbbc9f90fbc0776edcf9f",
+  "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+  "profileId": "46171c6f-6484-47b7-a284-bacd6b872dae",
+  "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+  "result": "passed",
+  "checks": [
+    "真实 sidecar 在临时工作区创建 Profile；运行前无 CloakBrowser 进程",
+    "主窗口通过真实点击打开正式 Studio；未直接访问 Store 或页面内部函数",
+    "通过画布原生右键菜单和配置面板添加并配置 15 个代表节点",
+    "通过画布拖拽节点与连接手柄建立 string/list_export → regex → dict 纯数据链",
+    "真实 UI 保存经正式 HTTP 写入 SQLite，15 个节点类型、配置与 14 条边和输入一致",
+    "15 个节点均产生持久化结果与日志；相对路径 list_export 产物已通过正式 API 下载并核对内容与 SHA-256",
+    "纯数据链在已满足 Profile 前置条件的工作区完成，运行前后均无 CloakBrowser 进程"
+  ],
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflowPersistence": {
+    "revision": 1,
+    "nodeCount": 15,
+    "edgeCount": 14
+  },
+  "execution": {
+    "status": "completed",
+    "resultCount": 15,
+    "logCount": 16,
+    "artifactCount": 1,
+    "observedEvents": [
+      {
+        "id": 1,
+        "name": "execution:started",
+        "data": {
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "documentId": "7rb6I0doC0u_Myd_EDN7Z"
+        }
+      },
+      {
+        "id": 2,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "nodeId": "N5uXNAKP67QJqhde_I24G",
+          "executionId": "9be865a8-1666-4043-ac5c-4e404e78262c",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 2
+        }
+      },
+      {
+        "id": 3,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "nodeId": "N5uXNAKP67QJqhde_I24G",
+          "executionId": "9be865a8-1666-4043-ac5c-4e404e78262c",
+          "success": true,
+          "sequence": 3,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 4,
+        "name": "execution:log",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "log": {
+            "sequence": 4,
+            "id": "92a86424-4601-474f-b18d-d91e2405ab5b-4",
+            "timestamp": "2026-09-20T15:27:41.603240+00:00",
+            "level": "success",
+            "message": "分割为 3 个部分",
+            "nodeId": "N5uXNAKP67QJqhde_I24G",
+            "executionId": "9be865a8-1666-4043-ac5c-4e404e78262c",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 5,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "nodeId": "UaTFyogfT_NkhbM5p-FBd",
+          "executionId": "5ce91e15-db1a-4f6a-a825-f06c87e8bc39",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 5
+        }
+      },
+      {
+        "id": 6,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "nodeId": "UaTFyogfT_NkhbM5p-FBd",
+          "executionId": "5ce91e15-db1a-4f6a-a825-f06c87e8bc39",
+          "success": true,
+          "sequence": 6,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 7,
+        "name": "execution:log",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "log": {
+            "sequence": 7,
+            "id": "92a86424-4601-474f-b18d-d91e2405ab5b-7",
+            "timestamp": "2026-09-20T15:27:41.616242+00:00",
+            "level": "success",
+            "message": "已导出 3 条数据到: reports/b4-items.txt",
+            "nodeId": "UaTFyogfT_NkhbM5p-FBd",
+            "executionId": "5ce91e15-db1a-4f6a-a825-f06c87e8bc39",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 8,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "nodeId": "O0fE0s-hfn7614el1eMu6",
+          "executionId": "a1e81697-ee55-4396-a276-83e00aecc606",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 8
+        }
+      },
+      {
+        "id": 9,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "nodeId": "O0fE0s-hfn7614el1eMu6",
+          "executionId": "a1e81697-ee55-4396-a276-83e00aecc606",
+          "success": true,
+          "sequence": 9,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 10,
+        "name": "execution:log",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "log": {
+            "sequence": 10,
+            "id": "92a86424-4601-474f-b18d-d91e2405ab5b-10",
+            "timestamp": "2026-09-20T15:27:41.623631+00:00",
+            "level": "success",
+            "message": "匹配到: ITEM-42",
+            "nodeId": "O0fE0s-hfn7614el1eMu6",
+            "executionId": "a1e81697-ee55-4396-a276-83e00aecc606",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 11,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "nodeId": "25CjpWbWukcfXvXc2yoYA",
+          "executionId": "999cb86c-9f65-41b6-9cbf-7269fa9d837e",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 11
+        }
+      },
+      {
+        "id": 12,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "nodeId": "25CjpWbWukcfXvXc2yoYA",
+          "executionId": "999cb86c-9f65-41b6-9cbf-7269fa9d837e",
+          "success": true,
+          "sequence": 12,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 13,
+        "name": "execution:log",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "log": {
+            "sequence": 13,
+            "id": "92a86424-4601-474f-b18d-d91e2405ab5b-13",
+            "timestamp": "2026-09-20T15:27:41.631964+00:00",
+            "level": "success",
+            "message": "已设置 status = ITEM-42",
+            "nodeId": "25CjpWbWukcfXvXc2yoYA",
+            "executionId": "999cb86c-9f65-41b6-9cbf-7269fa9d837e",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 14,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "nodeId": "HoNEkRwOblXUVDHXFHbII",
+          "executionId": "982bfdcc-201c-4504-880c-2357e5a2bce8",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 14
+        }
+      },
+      {
+        "id": 15,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "nodeId": "HoNEkRwOblXUVDHXFHbII",
+          "executionId": "982bfdcc-201c-4504-880c-2357e5a2bce8",
+          "success": true,
+          "sequence": 15,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 16,
+        "name": "execution:log",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "log": {
+            "sequence": 16,
+            "id": "92a86424-4601-474f-b18d-d91e2405ab5b-16",
+            "timestamp": "2026-09-20T15:27:41.639642+00:00",
+            "level": "success",
+            "message": "获取 status = ITEM-42",
+            "nodeId": "HoNEkRwOblXUVDHXFHbII",
+            "executionId": "982bfdcc-201c-4504-880c-2357e5a2bce8",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 17,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "nodeId": "0SR1Y7F_2DY0Ph_ADOTQR",
+          "executionId": "570b8039-dca8-4f8f-9f69-8c7f240edac3",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 17
+        }
+      },
+      {
+        "id": 18,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "nodeId": "0SR1Y7F_2DY0Ph_ADOTQR",
+          "executionId": "570b8039-dca8-4f8f-9f69-8c7f240edac3",
+          "success": true,
+          "sequence": 18,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 19,
+        "name": "execution:log",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "log": {
+            "sequence": 19,
+            "id": "92a86424-4601-474f-b18d-d91e2405ab5b-19",
+            "timestamp": "2026-09-20T15:27:41.649859+00:00",
+            "level": "success",
+            "message": "已追加元素: delta",
+            "nodeId": "0SR1Y7F_2DY0Ph_ADOTQR",
+            "executionId": "570b8039-dca8-4f8f-9f69-8c7f240edac3",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 20,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "nodeId": "Py48Ps23Zs6J4ey8zNRMl",
+          "executionId": "a3718beb-60ab-4d4d-82ca-b7270583d4a1",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 20
+        }
+      },
+      {
+        "id": 21,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "nodeId": "Py48Ps23Zs6J4ey8zNRMl",
+          "executionId": "a3718beb-60ab-4d4d-82ca-b7270583d4a1",
+          "success": true,
+          "sequence": 21,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 22,
+        "name": "execution:log",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "log": {
+            "sequence": 22,
+            "id": "92a86424-4601-474f-b18d-d91e2405ab5b-22",
+            "timestamp": "2026-09-20T15:27:41.659161+00:00",
+            "level": "success",
+            "message": "获取列表[3] = delta",
+            "nodeId": "Py48Ps23Zs6J4ey8zNRMl",
+            "executionId": "a3718beb-60ab-4d4d-82ca-b7270583d4a1",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 23,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "nodeId": "exJsO_2RDm-Kr7KlFGS_3",
+          "executionId": "3c53f0c4-5512-498e-bb6a-56fbb688a375",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 23
+        }
+      },
+      {
+        "id": 24,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "nodeId": "exJsO_2RDm-Kr7KlFGS_3",
+          "executionId": "3c53f0c4-5512-498e-bb6a-56fbb688a375",
+          "success": true,
+          "sequence": 24,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 25,
+        "name": "execution:log",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "log": {
+            "sequence": 25,
+            "id": "92a86424-4601-474f-b18d-d91e2405ab5b-25",
+            "timestamp": "2026-09-20T15:27:41.667396+00:00",
+            "level": "success",
+            "message": "列表长度: 4",
+            "nodeId": "exJsO_2RDm-Kr7KlFGS_3",
+            "executionId": "3c53f0c4-5512-498e-bb6a-56fbb688a375",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 26,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "nodeId": "tQjFaVYkYLJLwYlQtiAaA",
+          "executionId": "9502c1cd-5d61-4dd1-ac5c-054c1465f99f",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 26
+        }
+      },
+      {
+        "id": 27,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "nodeId": "tQjFaVYkYLJLwYlQtiAaA",
+          "executionId": "9502c1cd-5d61-4dd1-ac5c-054c1465f99f",
+          "success": true,
+          "sequence": 27,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 28,
+        "name": "execution:log",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "log": {
+            "sequence": 28,
+            "id": "92a86424-4601-474f-b18d-d91e2405ab5b-28",
+            "timestamp": "2026-09-20T15:27:41.675853+00:00",
+            "level": "success",
+            "message": "获取所有键: ['status']",
+            "nodeId": "tQjFaVYkYLJLwYlQtiAaA",
+            "executionId": "9502c1cd-5d61-4dd1-ac5c-054c1465f99f",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 29,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "nodeId": "M9snwi6lWXSuSZRJNRXxi",
+          "executionId": "9d56ca73-b59d-452a-8674-be27ac6bc34c",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 29
+        }
+      },
+      {
+        "id": 30,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "nodeId": "M9snwi6lWXSuSZRJNRXxi",
+          "executionId": "9d56ca73-b59d-452a-8674-be27ac6bc34c",
+          "success": true,
+          "sequence": 30,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 31,
+        "name": "execution:log",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "log": {
+            "sequence": 31,
+            "id": "92a86424-4601-474f-b18d-d91e2405ab5b-31",
+            "timestamp": "2026-09-20T15:27:41.683892+00:00",
+            "level": "success",
+            "message": "替换完成",
+            "nodeId": "M9snwi6lWXSuSZRJNRXxi",
+            "executionId": "9d56ca73-b59d-452a-8674-be27ac6bc34c",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 32,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "nodeId": "yfIGhLNF57zq3vQqFmhdP",
+          "executionId": "d4cc2fc2-14fa-4fbe-b449-cebe0405a8a0",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 32
+        }
+      },
+      {
+        "id": 33,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "nodeId": "yfIGhLNF57zq3vQqFmhdP",
+          "executionId": "d4cc2fc2-14fa-4fbe-b449-cebe0405a8a0",
+          "success": true,
+          "sequence": 33,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 34,
+        "name": "execution:log",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "log": {
+            "sequence": 34,
+            "id": "92a86424-4601-474f-b18d-d91e2405ab5b-34",
+            "timestamp": "2026-09-20T15:27:41.692261+00:00",
+            "level": "success",
+            "message": "连接 4 个元素",
+            "nodeId": "yfIGhLNF57zq3vQqFmhdP",
+            "executionId": "d4cc2fc2-14fa-4fbe-b449-cebe0405a8a0",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 35,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "nodeId": "3fzABGlnrYx5d5GosFFB7",
+          "executionId": "e6f6a804-c3b4-409c-bc8c-7104513cd66f",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 35
+        }
+      },
+      {
+        "id": 36,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "nodeId": "3fzABGlnrYx5d5GosFFB7",
+          "executionId": "e6f6a804-c3b4-409c-bc8c-7104513cd66f",
+          "success": true,
+          "sequence": 36,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 37,
+        "name": "execution:log",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "log": {
+            "sequence": 37,
+            "id": "92a86424-4601-474f-b18d-d91e2405ab5b-37",
+            "timestamp": "2026-09-20T15:27:41.700479+00:00",
+            "level": "success",
+            "message": "拼接结果: alpha|beta|gamma|delta!",
+            "nodeId": "3fzABGlnrYx5d5GosFFB7",
+            "executionId": "e6f6a804-c3b4-409c-bc8c-7104513cd66f",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 38,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "nodeId": "ePQHEE8FX6nRlgPQsKeKv",
+          "executionId": "c6dedc95-b48f-48fa-9ed3-c35c242f0349",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 38
+        }
+      },
+      {
+        "id": 39,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "nodeId": "ePQHEE8FX6nRlgPQsKeKv",
+          "executionId": "c6dedc95-b48f-48fa-9ed3-c35c242f0349",
+          "success": true,
+          "sequence": 39,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 40,
+        "name": "execution:log",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "log": {
+            "sequence": 40,
+            "id": "92a86424-4601-474f-b18d-d91e2405ab5b-40",
+            "timestamp": "2026-09-20T15:27:41.707724+00:00",
+            "level": "success",
+            "message": "去除空白完成",
+            "nodeId": "ePQHEE8FX6nRlgPQsKeKv",
+            "executionId": "c6dedc95-b48f-48fa-9ed3-c35c242f0349",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 41,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "nodeId": "d5GVOMQ5weav0d0MRZbdx",
+          "executionId": "b5aaac31-1e73-4286-af5a-c10d7c25bf98",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 41
+        }
+      },
+      {
+        "id": 42,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "nodeId": "d5GVOMQ5weav0d0MRZbdx",
+          "executionId": "b5aaac31-1e73-4286-af5a-c10d7c25bf98",
+          "success": true,
+          "sequence": 42,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 43,
+        "name": "execution:log",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "log": {
+            "sequence": 43,
+            "id": "92a86424-4601-474f-b18d-d91e2405ab5b-43",
+            "timestamp": "2026-09-20T15:27:41.714569+00:00",
+            "level": "success",
+            "message": "大小写转换完成",
+            "nodeId": "d5GVOMQ5weav0d0MRZbdx",
+            "executionId": "b5aaac31-1e73-4286-af5a-c10d7c25bf98",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 44,
+        "name": "execution:node_start",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "nodeId": "C9DJBCT6EuJUlE6qUPfRA",
+          "executionId": "aef0c663-f341-449d-b3ed-f97b70721296",
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          },
+          "sequence": 44
+        }
+      },
+      {
+        "id": 45,
+        "name": "execution:node_complete",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "nodeId": "C9DJBCT6EuJUlE6qUPfRA",
+          "executionId": "aef0c663-f341-449d-b3ed-f97b70721296",
+          "success": true,
+          "sequence": 45,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        }
+      },
+      {
+        "id": 46,
+        "name": "execution:log",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "log": {
+            "sequence": 46,
+            "id": "92a86424-4601-474f-b18d-d91e2405ab5b-46",
+            "timestamp": "2026-09-20T15:27:41.721213+00:00",
+            "level": "success",
+            "message": "截取完成: lpha|",
+            "nodeId": "C9DJBCT6EuJUlE6qUPfRA",
+            "executionId": "aef0c663-f341-449d-b3ed-f97b70721296",
+            "executionContext": {
+              "scopes": [],
+              "loops": []
+            }
+          }
+        }
+      },
+      {
+        "id": 47,
+        "name": "execution:completed",
+        "data": {
+          "runId": "92a86424-4601-474f-b18d-d91e2405ab5b",
+          "workflowId": "7rb6I0doC0u_Myd_EDN7Z",
+          "result": {
+            "status": "completed",
+            "executedNodes": 15,
+            "failedNodes": 0
+          }
+        }
+      }
+    ]
+  },
+  "approvedFamilySize": 15,
+  "uiExecutedTypes": [
+    "string_split",
+    "list_export",
+    "regex_extract",
+    "dict_operation",
+    "dict_get",
+    "list_operation",
+    "list_get",
+    "list_length",
+    "dict_keys",
+    "string_replace",
+    "string_join",
+    "string_concat",
+    "string_trim",
+    "string_case",
+    "string_substring"
+  ],
+  "notUiExecutedTypes": [],
+  "uiNodes": [
+    {
+      "moduleType": "list_operation",
+      "label": "列表操作",
+      "status": "executed-through-ui",
+      "nodeId": "0SR1Y7F_2DY0Ph_ADOTQR",
+      "result": {
+        "list": [
+          "alpha",
+          "beta",
+          "gamma",
+          "delta"
+        ],
+        "length": 4
+      },
+      "logs": [
+        "已追加元素: delta"
+      ]
+    },
+    {
+      "moduleType": "list_get",
+      "label": "列表取值",
+      "status": "executed-through-ui",
+      "nodeId": "Py48Ps23Zs6J4ey8zNRMl",
+      "result": {
+        "value": "delta"
+      },
+      "logs": [
+        "获取列表[3] = delta"
+      ]
+    },
+    {
+      "moduleType": "list_length",
+      "label": "列表长度",
+      "status": "executed-through-ui",
+      "nodeId": "exJsO_2RDm-Kr7KlFGS_3",
+      "result": {
+        "value": 4
+      },
+      "logs": [
+        "列表长度: 4"
+      ]
+    },
+    {
+      "moduleType": "list_export",
+      "label": "列表导出",
+      "status": "executed-through-ui",
+      "nodeId": "UaTFyogfT_NkhbM5p-FBd",
+      "result": {
+        "path": "reports/b4-items.txt",
+        "count": 3
+      },
+      "logs": [
+        "已导出 3 条数据到: reports/b4-items.txt"
+      ]
+    },
+    {
+      "moduleType": "dict_operation",
+      "label": "字典操作",
+      "status": "executed-through-ui",
+      "nodeId": "25CjpWbWukcfXvXc2yoYA",
+      "result": {
+        "dict": {
+          "status": "ITEM-42"
+        },
+        "keys": [
+          "status"
+        ]
+      },
+      "logs": [
+        "已设置 status = ITEM-42"
+      ]
+    },
+    {
+      "moduleType": "dict_get",
+      "label": "字典取值",
+      "status": "executed-through-ui",
+      "nodeId": "HoNEkRwOblXUVDHXFHbII",
+      "result": {
+        "value": "ITEM-42"
+      },
+      "logs": [
+        "获取 status = ITEM-42"
+      ]
+    },
+    {
+      "moduleType": "dict_keys",
+      "label": "字典键列表",
+      "status": "executed-through-ui",
+      "nodeId": "tQjFaVYkYLJLwYlQtiAaA",
+      "result": {
+        "value": [
+          "status"
+        ]
+      },
+      "logs": [
+        "获取所有键: ['status']"
+      ]
+    },
+    {
+      "moduleType": "regex_extract",
+      "label": "正则提取",
+      "status": "executed-through-ui",
+      "nodeId": "O0fE0s-hfn7614el1eMu6",
+      "result": {
+        "value": "ITEM-42"
+      },
+      "logs": [
+        "匹配到: ITEM-42"
+      ]
+    },
+    {
+      "moduleType": "string_replace",
+      "label": "替换文本",
+      "status": "executed-through-ui",
+      "nodeId": "M9snwi6lWXSuSZRJNRXxi",
+      "result": {
+        "value": "hello AutoFlow"
+      },
+      "logs": [
+        "替换完成"
+      ]
+    },
+    {
+      "moduleType": "string_split",
+      "label": "分割文本",
+      "status": "executed-through-ui",
+      "nodeId": "N5uXNAKP67QJqhde_I24G",
+      "result": {
+        "value": [
+          "alpha",
+          "beta",
+          "gamma"
+        ]
+      },
+      "logs": [
+        "分割为 3 个部分"
+      ]
+    },
+    {
+      "moduleType": "string_join",
+      "label": "连接文本",
+      "status": "executed-through-ui",
+      "nodeId": "yfIGhLNF57zq3vQqFmhdP",
+      "result": {
+        "value": "alpha|beta|gamma|delta"
+      },
+      "logs": [
+        "连接 4 个元素"
+      ]
+    },
+    {
+      "moduleType": "string_concat",
+      "label": "拼接文本",
+      "status": "executed-through-ui",
+      "nodeId": "3fzABGlnrYx5d5GosFFB7",
+      "result": {
+        "value": "alpha|beta|gamma|delta!"
+      },
+      "logs": [
+        "拼接结果: alpha|beta|gamma|delta!"
+      ]
+    },
+    {
+      "moduleType": "string_trim",
+      "label": "去除空白",
+      "status": "executed-through-ui",
+      "nodeId": "ePQHEE8FX6nRlgPQsKeKv",
+      "result": {
+        "value": "padded"
+      },
+      "logs": [
+        "去除空白完成"
+      ]
+    },
+    {
+      "moduleType": "string_case",
+      "label": "大小写",
+      "status": "executed-through-ui",
+      "nodeId": "d5GVOMQ5weav0d0MRZbdx",
+      "result": {
+        "value": "PADDED"
+      },
+      "logs": [
+        "大小写转换完成"
+      ]
+    },
+    {
+      "moduleType": "string_substring",
+      "label": "截取文本",
+      "status": "executed-through-ui",
+      "nodeId": "C9DJBCT6EuJUlE6qUPfRA",
+      "result": {
+        "value": "lpha|"
+      },
+      "logs": [
+        "截取完成: lpha|"
+      ]
+    }
+  ],
+  "listExport": {
+    "configuredPath": "reports/b4-items.txt",
+    "pathKind": "relative",
+    "result": {
+      "path": "reports/b4-items.txt",
+      "count": 3
+    },
+    "artifact": {
+      "artifactId": "f1c561c4-91aa-4d3b-b9be-de115e1a3999",
+      "ordinal": 1,
+      "nodeId": "UaTFyogfT_NkhbM5p-FBd",
+      "executionId": "5ce91e15-db1a-4f6a-a825-f06c87e8bc39",
+      "size": 16,
+      "sha256": "f3220283d05d1ff2ae350cfe9e0e367cb5aef46e10efb203c8a53c678e2218c8",
+      "mimeType": "text/plain",
+      "purpose": "result",
+      "eventSequence": 6,
+      "downloadedSha256": "f3220283d05d1ff2ae350cfe9e0e367cb5aef46e10efb203c8a53c678e2218c8",
+      "downloadedBytes": 16,
+      "downloadedText": "alpha\nbeta\ngamma"
+    }
+  },
+  "browserEvidence": {
+    "installedKernelEntries": [
+      "chromium-145.0.7632.109.2"
+    ],
+    "cloakBrowserProcessesBefore": [],
+    "cloakBrowserProcessesAfter": []
+  },
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserLaunch": "none (pure data)",
+    "interaction": "CDP mouse and keyboard through the main window and formal Studio UI; public sidecar APIs used only for setup and evidence reads; no Store or page-internal function access",
+    "claim": "15 of 15 approved data-structure nodes executed through the formal UI; the remaining 0 are explicitly not claimed by this run"
+  }
+}

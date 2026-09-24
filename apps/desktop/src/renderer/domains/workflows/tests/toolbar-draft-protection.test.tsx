@@ -162,6 +162,16 @@ it('rejects direct AI document replacement without a mounted editor', async () =
   expect((await executeClientAction('new_workflow')).success).toBe(false)
   expect(useWorkflowStore.getState().variables[0].value).toBe('keep')
 })
+it.each(['menu', 'assistant'])('opens the local and WebDAV workflow browser through the %s entry', async entry => {
+  render(<Toolbar />)
+  if (entry === 'menu') {
+    fireEvent.pointerDown(screen.getByRole('button', { name: '更多操作' }), { button: 0, ctrlKey: false })
+    fireEvent.click(await screen.findByText('本地/远程工作流'))
+  } else {
+    expect((await executeClientAction('open_local_workflow_dialog')).success).toBe(true)
+  }
+  expect(await screen.findByText('打开本地工作流')).toBeTruthy()
+})
 it('AI file loading keeps all saved variables after an explicit discard decision', async () => {
   const content = { name: 'loaded variables', nodes: [], edges: [], variables: [{ name: 'restored', type: 'string', value: 'from file', scope: 'global' }] }
   setStudioTransport(async (input, init) => String(input).includes('/local-workflows/load/')

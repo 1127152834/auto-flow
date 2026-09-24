@@ -24,7 +24,7 @@ export const CONDITION_TYPES = new Set([
   'image_exists', 'phone_image_exists', 'face_recognition',
   'probability_trigger',
 ])
-export const LOOP_TYPES = new Set(['loop', 'foreach', 'foreach_dict'])
+export const LOOP_TYPES = new Set(['loop', 'infinite_loop', 'foreach', 'foreach_dict'])
 
 /** 不同分支模块的两个出口 handle（与 ModuleNode/后端约定一致） */
 export function branchHandles(moduleType: string): [string, string] {
@@ -309,7 +309,7 @@ export function createBlock(type: ModuleType, extraData?: Partial<NodeData>): Bl
   const defVars = getModuleAllDefaultVars(type as string)
   const node: Node<NodeData> = {
     id,
-    type: 'moduleNode',
+    type: type === 'subflow_header' ? 'subflowHeaderNode' : 'moduleNode',
     position: { x: 0, y: 0 },
     data: { label: moduleTypeLabels[type] || type, moduleType: type, ...(defVars as Partial<NodeData>), ...(extraData || {}) } as NodeData,
   }

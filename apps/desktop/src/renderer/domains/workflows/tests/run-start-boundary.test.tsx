@@ -85,6 +85,21 @@ it('does not start another request through run-from-node while a run is active',
   expect(store.getState().executionStatus).toBe('running')
 })
 
+it('reconciles a persisted interrupted run after the service connection returns', async () => {
+  const source = store.getState()
+  source.setExecutionStatus('running')
+  source.setCurrentExecutionWorkflowId(source.id)
+  source.setCurrentExecutionRunId('interrupted-run')
+  useDebugStore.getState().setPaused({ runId: 'interrupted-run', pauseId: 'old-pause', controlRevision: 1, nodeId: source.nodes[0].id })
+  vi.spyOn(workflowApi, 'getRun').mockResolvedValue({ success: true, data: { status: 'interrupted' } as never })
+
+  render(<Toolbar />)
+
+  await waitFor(() => expect(store.getState().executionStatus).toBe('failed'))
+  expect(useDebugStore.getState().isPaused).toBe(false)
+  expect(store.getState().logs.some(log => log.message.includes('不会自动重放'))).toBe(true)
+})
+
 it('binds the run identity to the original editor document before starting', async () => {
   const original = store.getState().id
   const bind = vi.spyOn(socketService, 'bindExecutionDocument')

@@ -10,7 +10,8 @@ vi.hoisted(() => {
   })
 })
 
-import { executeClientAction } from '../api/aiAssistantSkills'
+import { acknowledgeAssistantMcpTool, executeClientAction } from '../api/aiAssistantSkills'
+import { socketService } from '../events'
 import { AIAssistantPanel } from '../components/assistant/AIAssistantPanel'
 import { useWorkflowStore } from '../editor-store'
 import { useAIAssistantStore } from '../hooks/stores/aiAssistantStore'
@@ -147,4 +148,29 @@ it('F5.AI.permission.concurrent: a second action cannot replace or strand the vi
   fireEvent.click(screen.getByRole('button', { name: '允许执行' }))
   await expect(first).resolves.toMatchObject({ success: true })
   await waitFor(() => expect(useAIPermissionStore.getState().pending).toBeNull())
+})
+
+it('F5.AI.permission.mcp: requires visible approval even when global and server auto approval are enabled', async () => {
+  useGlobalConfigStore.getState().updateAIAssistantConfig({ permissionMode: 'full', autoApprove: true })
+  const calls: string[] = []
+  vi.spyOn(socketService, 'command').mockImplementation(async (event, _data, commandId) => {
+    calls.push(event)
+    return { commandId, success: true, httpStatus: 200 } as never
+  })
+  render(<AIAssistantPanel />)
+  let result!: ReturnType<typeof acknowledgeAssistantMcpTool>
+  await act(async () => {
+    result = acknowledgeAssistantMcpTool({
+      session_id: 'mcp-session',
+      tool_call_id: 'mcp-tool',
+      action: 'mcp__fixture__echo',
+      payload: { text: 'hello' },
+    })
+    await Promise.resolve()
+  })
+  await screen.findByText('小助手请求授权：MCP 工具：fixture / echo')
+  expect(calls).toEqual(['ai_client_action_claim'])
+  fireEvent.click(screen.getByRole('button', { name: '允许执行' }))
+  await expect(result).resolves.toMatchObject({ success: true })
+  expect(calls).toEqual(['ai_client_action_claim', 'ai_client_action_ack'])
 })

@@ -47,12 +47,14 @@ export interface ApiResponse<T = any> {
 export type WorkflowRunSummary = components['schemas']['StudioWorkflowRunSummary']
 export type WorkflowRunPage = components['schemas']['StudioWorkflowRunPage']
 export type ExecutionLogPage = components['schemas']['StudioExecutionLogPage']
+export type ModelOptionList = components['schemas']['ModelOptionListRead']
 export interface ExecutionLogQuery {
   cursor?: number
   limit?: number
   query?: string
   levels?: string[]
   nodeId?: string
+  executionId?: string
 }
 
 function executionLogSearch(query: ExecutionLogQuery = {}): string {
@@ -62,6 +64,7 @@ function executionLogSearch(query: ExecutionLogQuery = {}): string {
   if (query.query?.trim()) params.set('query', query.query.trim())
   if (query.levels?.length) params.set('levels', query.levels.join(','))
   if (query.nodeId?.trim()) params.set('nodeId', query.nodeId.trim())
+  if (query.executionId?.trim()) params.set('executionId', query.executionId.trim())
   const encoded = params.toString()
   return encoded ? `?${encoded}` : ''
 }
@@ -160,6 +163,10 @@ export const systemApi = {
     apiRequest<{ success: boolean; dataUrl?: string; width?: number; height?: number; error?: string }>(
       '/system/screenshot-base64', { method: 'POST', body: '{}' }
     ),
+}
+
+export const modelApi = {
+  listOptions: () => apiRequest<ModelOptionList>('/v1/models/options'),
 }
 
 // ==================== 工作流 API ====================
@@ -394,8 +401,10 @@ export const scheduledTaskApi = {
     apiRequest(`/scheduled-tasks/${id}`, { method: 'DELETE' }),
   toggle: (id: string, enabled: boolean) =>
     apiRequest(`/scheduled-tasks/${id}/toggle`, { method: 'POST', body: JSON.stringify({ enabled }) }),
-  execute: (id: string) =>
-    apiRequest(`/scheduled-tasks/${id}/execute`, { method: 'POST' }),
+  execute: (id: string, commandId: string) =>
+    apiRequest(`/scheduled-tasks/${id}/execute`, { method: 'POST', body: JSON.stringify({ commandId }) }),
+  getCommand: (commandId: string) =>
+    apiRequest(`/scheduled-tasks/commands/${encodeURIComponent(commandId)}`),
   stop: (id: string) =>
     apiRequest(`/scheduled-tasks/${id}/stop`, { method: 'POST' }),
   getTaskLogs: (id: string, limit: number = 100) => 
@@ -699,6 +708,25 @@ async function recorderRequest<T>(path:string,sessionId:string,options:RequestIn
   return result
 }
 
+const stopCommandIds = new Map<string, string>()
+async function issueRecorderCommand<T>(sessionId:string,action:'start'|'pause'|'resume'|'stop',afterSeq=0):Promise<ApiResponse<T>>{
+  const revision=getStudioTransportRevision()
+  const key=action==='stop'?`${revision}:${sessionId}:${afterSeq}`:''
+  const commandId=key?(stopCommandIds.get(key)??crypto.randomUUID()):crypto.randomUUID()
+  if(key)stopCommandIds.set(key,commandId)
+  const body=action==='start'?{sessionId,commandId}:{sessionId,commandId,afterSeq}
+  const result=await recorderRequest<T>(`/recorder/${action}`,sessionId,{method:'POST',body:JSON.stringify(body)})
+  if(revision!==getStudioTransportRevision()||(result.httpStatus&&result.httpStatus<500&&!result.success)||result.success)return result
+  const lookup=await apiRequest<components['schemas']['StudioRecorderCommandState']>(`/recorder/commands/${encodeURIComponent(commandId)}`)
+  if(revision!==getStudioTransportRevision())return {success:false,error:'录制所属服务连接已变更，响应未应用'}
+  const state=lookup.data
+  if(!lookup.success)return lookup.httpStatus===404||lookup.httpStatus===409?{success:false,error:lookup.error,httpStatus:lookup.httpStatus}:result
+  if(!state||state.commandId!==commandId||state.sessionId!==sessionId||state.action!==action)return result
+  if(state.status==='completed'&&state.result&&typeof state.result==='object')return {success:true,data:state.result as T}
+  if(state.status==='failed')return {success:false,error:state.error||'录制命令失败',httpStatus:state.httpStatus}
+  return {success:false,error:'录制命令尚未确认，请稍后查询原 commandId',outcomeUnknown:true}
+}
+
 async function completeRecorderTail(sessionId:string, first:ApiResponse<components['schemas']['StudioRecorderStopped']>):Promise<ApiResponse<components['schemas']['StudioRecorderStopped']>> {
   if(!first.success || !first.data?.hasMore)return first
   const body=first.data
@@ -716,41 +744,56 @@ async function completeRecorderTail(sessionId:string, first:ApiResponse<componen
   return {...first,data:{...body,nextSeq:cursor,hasMore:false,data:{events}}}
 }
 
+async function completeRecorderControl(sessionId:string, first:ApiResponse<components['schemas']['StudioRecorderControl']>):Promise<ApiResponse<components['schemas']['StudioRecorderControl']>> {
+  if(!first.success || !first.data?.hasMore)return first
+  const body=first.data
+  if(!Array.isArray(body.data?.events) || !Number.isSafeInteger(body.nextSeq) || body.nextSeq<0)return {success:false,error:'录制控制响应结构无效，请重试'}
+  const events=[...body.data.events]
+  let cursor=body.nextSeq,more=body.hasMore
+  while(more){
+    const next=await recorderApi.events(sessionId,cursor)
+    if(!next.success)return {...next,data:undefined}
+    const page=next.data
+    if(!page||!Array.isArray(page.data)||!Number.isSafeInteger(page.nextSeq)||page.nextSeq<=cursor||page.data.length!==page.nextSeq-cursor||page.data.some((event,index)=>event.sequence!==cursor+index+1))return {success:false,error:'录制控制分页不连续，请重试'}
+    events.push(...page.data);cursor=page.nextSeq;more=Boolean(page.hasMore)
+  }
+  return {...first,data:{...body,nextSeq:cursor,hasMore:false,data:{events}}}
+}
+
+async function controlRecorder(sessionId:string,action:'pause'|'resume',afterSeq=0):Promise<ApiResponse<components['schemas']['StudioRecorderControl']>>{
+  if(!validRecorderRequest(sessionId,afterSeq))return invalidRecorderRequest()
+  const result=await issueRecorderCommand<components['schemas']['StudioRecorderControl']>(sessionId,action,afterSeq)
+  if(result.success)return completeRecorderControl(sessionId,result)
+  return result
+}
+
 export const recorderApi = {
   readReview: (documentId:string) => apiRequest<components['schemas']['StudioRecordingReview']>(`/recorder/reviews/${encodeURIComponent(documentId)}`),
   saveReview: (documentId:string,body:components['schemas']['StudioRecordingReviewWrite']) => apiRequest<components['schemas']['StudioRecordingReview']>(`/recorder/reviews/${encodeURIComponent(documentId)}`,{method:'PUT',body:JSON.stringify(body)}),
   start: async (sessionId: string):Promise<ApiResponse<components['schemas']['StudioRecorderStarted']>> => {
     if(!validRecorderRequest(sessionId))return invalidRecorderRequest()
     const revision=getStudioTransportRevision()
-    const result=await recorderRequest<components['schemas']['StudioRecorderStarted']>('/recorder/start',sessionId,{method:'POST',body:JSON.stringify({sessionId})})
+    const result=await issueRecorderCommand<components['schemas']['StudioRecorderStarted']>(sessionId,'start')
     if(revision!==getStudioTransportRevision())return result
-    if(result.success&&result.data?.success===true&&result.data.recording===true&&Number.isSafeInteger(result.data.nextSeq)&&result.data.nextSeq>=0)return result
+    if(result.success&&result.data?.success===true&&result.data.recording===true&&Number.isSafeInteger(result.data.nextSeq)&&result.data.nextSeq>=0){
+      stopCommandIds.clear()
+      return result
+    }
     if(!result.httpStatus||result.httpStatus>=500){
-      const status=await recorderApi.status(sessionId)
-      if(revision!==getStudioTransportRevision())return {success:false,error:'录制所属服务连接已变更，响应未应用'}
-      if(status.success&&status.data?.recording)return {success:true,data:{...status.data,sessionId,success:true}}
-      if(status.httpStatus===404||status.httpStatus===409)return {success:false,error:status.error,httpStatus:status.httpStatus}
-      if(!status.success)return {success:false,error:result.error||'录制启动尚未确认',outcomeUnknown:true}
+      if(!result.success)return {success:false,error:result.error||'录制启动尚未确认',httpStatus:result.httpStatus,outcomeUnknown:result.outcomeUnknown}
     }
     return {success:false,error:result.error||'服务未确认录制已启动',httpStatus:result.httpStatus}
   },
   stop: async (sessionId: string, afterSeq = 0):Promise<ApiResponse<components['schemas']['StudioRecorderStopped']>> => {
     if(!validRecorderRequest(sessionId,afterSeq))return invalidRecorderRequest()
     const revision=getStudioTransportRevision()
-    const result=await recorderRequest<components['schemas']['StudioRecorderStopped']>('/recorder/stop',sessionId,{method:'POST',body:JSON.stringify({sessionId,afterSeq})})
+    const result=await issueRecorderCommand<components['schemas']['StudioRecorderStopped']>(sessionId,'stop',afterSeq)
     if(revision!==getStudioTransportRevision()||(result.httpStatus&&result.httpStatus<500&&!result.success))return result
     if(result.success)return completeRecorderTail(sessionId,result)
-    const status=await recorderApi.status(sessionId)
-    if(revision!==getStudioTransportRevision())return {success:false,error:'录制所属服务连接已变更，响应未应用'}
-    if(status.success&&status.data&&!status.data.recording){
-      const tail=await recorderApi.events(sessionId,afterSeq)
-      if(tail.success&&tail.data&&Array.isArray(tail.data.data)){
-        const complete=await completeRecorderTail(sessionId,{success:true,data:{...tail.data,data:{events:tail.data.data}}})
-        if(complete.data?.nextSeq===status.data.nextSeq)return complete
-      }
-    }
     return result
   },
+  pause: (sessionId:string,afterSeq=0) => controlRecorder(sessionId,'pause',afterSeq),
+  resume: (sessionId:string,afterSeq=0) => controlRecorder(sessionId,'resume',afterSeq),
   events: (sessionId: string, afterSeq = 0, signal?: AbortSignal) => validRecorderRequest(sessionId, afterSeq)
     ? recorderRequest<components['schemas']['StudioRecorderBatch']>(`/recorder/events?afterSeq=${afterSeq}&sessionId=${encodeURIComponent(sessionId)}`,sessionId,{signal})
     : invalidRecorderRequest(),
@@ -761,9 +804,9 @@ export const recorderApi = {
     if(revision!==getStudioTransportRevision())return {success:false,error:'录制所属服务连接已变更，响应未应用'}
     if(!result.success)return result
     const data=result.data
-    if(!data||data.success!==true||typeof data.recording!=='boolean'||!Number.isSafeInteger(data.nextSeq)||data.nextSeq<0||
+    if(!data||data.success!==true||typeof data.recording!=='boolean'||typeof data.paused!=='boolean'||!Number.isSafeInteger(data.nextSeq)||data.nextSeq<0||
       (data.sessionId!==null&&(typeof data.sessionId!=='string'||!data.sessionId.trim()))||
-      ((data.recording||data.nextSeq>0)&&!data.sessionId)||(sessionId&&data.sessionId!==sessionId))return {success:false,error:'录制状态身份或结构错误'}
+      (data.paused&&!data.recording)||((data.recording||data.nextSeq>0)&&!data.sessionId)||(sessionId&&data.sessionId!==sessionId))return {success:false,error:'录制状态身份或结构错误'}
     return result
   },
 }
@@ -1080,6 +1123,9 @@ export const jsScriptApi = {
 }
 export const speechApi = {
   getState: (requestId: string) => getClaimedRequestState('/events/tts-requests',requestId,'语音'),
+}
+export const desktopActionApi = {
+  getState: (requestId: string) => getClaimedRequestState('/events/desktop-actions', requestId, '平台操作'),
 }
 
 

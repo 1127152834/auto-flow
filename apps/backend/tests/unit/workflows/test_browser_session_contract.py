@@ -93,6 +93,7 @@ async def test_browser_process_id_uses_primary_chromium_process_and_detaches() -
     cdp.send.assert_awaited_once_with("SystemInfo.getProcessInfo")
     cdp.detach.assert_awaited_once_with()
 
+
 class RawContext:
     def __init__(self) -> None:
         self.pages = [RawPage("about:blank")]
@@ -137,7 +138,9 @@ async def test_closed_current_page_does_not_silently_fall_back() -> None:
         session.current_page()
 
 
-def test_frame_selection_is_explicit_and_page_selection_restores_main_document() -> None:
+def test_frame_selection_is_explicit_and_page_selection_restores_main_document() -> (
+    None
+):
     raw = RawContext()
     session = CloakBrowserWorkflowSession.from_context(raw)
     main = session.current_page()
@@ -299,6 +302,11 @@ async def test_page_and_locator_expose_the_approved_web_action_ports(
         async def wheel(self, x: float, y: float) -> None:
             calls.append(("wheel", x, y))
 
+        async def click(
+            self, x: float, y: float, *, button: str, click_count: int
+        ) -> None:
+            calls.append(("mouse-click", x, y, button, click_count))
+
     class RawChooser:
         async def set_files(self, path: str) -> None:
             calls.append(("chooser", path))
@@ -319,6 +327,7 @@ async def test_page_and_locator_expose_the_approved_web_action_ports(
     page.viewport_size = {"width": 1200, "height": 800}  # type: ignore[attr-defined]
     page.locator = lambda selector: RawLocator(selector)  # type: ignore[attr-defined]
     page.evaluate = AsyncMock(return_value="evaluated")  # type: ignore[attr-defined]
+    page.content = AsyncMock(return_value="<html>fixture</html>")  # type: ignore[attr-defined]
     page.expect_file_chooser = lambda **_options: ChooserContext()  # type: ignore[attr-defined]
     session = CloakBrowserWorkflowSession.from_context(raw)
     wrapped_page = session.current_page()
@@ -335,11 +344,13 @@ async def test_page_and_locator_expose_the_approved_web_action_ports(
     upload.write_text("fixture", encoding="utf-8")
     await locator.set_input_files(str(upload))
     assert await wrapped_page.evaluate("1 + 1") == "evaluated"
+    assert await wrapped_page.content() == "<html>fixture</html>"
     assert wrapped_page.viewport_size == {"width": 1200, "height": 800}
     await wrapped_page.mouse.move(10, 20, steps=2)
     await wrapped_page.mouse.down()
     await wrapped_page.mouse.up()
     await wrapped_page.mouse.wheel(0, 500)
+    await wrapped_page.mouse.click(50, 60, button="right", click_count=2)
 
     async def click() -> None:
         calls.append(("click",))
@@ -347,6 +358,7 @@ async def test_page_and_locator_expose_the_approved_web_action_ports(
     await wrapped_page.choose_file(click, str(upload), timeout_ms=2500)
 
     assert ("select", ".item:first", {"label": "二"}) in calls
+    assert ("mouse-click", 50, 60, "right", 2) in calls
     assert ("chooser", str(upload)) in calls
 
 
@@ -671,6 +683,94 @@ async def test_workflow_worker_runs_pure_data_document_without_launching_browser
         "execution:completed",
     ]
     assert events[2]["data"] == "AutoFlow"
+
+
+@pytest.mark.asyncio
+async def test_workflow_worker_reports_when_run_to_target_is_not_on_selected_path(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    async def reject_browser_launch(_command: dict[str, Any]) -> None:
+        raise AssertionError("pure data workflow must not launch CloakBrowser")
+
+    monkeypatch.setattr(
+        "autoflow.providers.browser.workflow_worker.launch_workflow_session",
+        reject_browser_launch,
+    )
+    command = {
+        "runId": "run-target-not-reached",
+        "workflowId": "workflow-target-not-reached",
+        "profileId": "profile-1",
+        "requiresBrowser": False,
+        "debug": True,
+        "runToNodeId": "false-branch",
+        "artifactRoot": str(tmp_path / "artifacts"),
+        "document": {
+            "nodes": [
+                {
+                    "id": "condition",
+                    "type": "moduleNode",
+                    "data": {
+                        "moduleType": "condition",
+                        "config": {"conditionType": "boolean", "leftValue": True},
+                    },
+                },
+                {
+                    "id": "true-branch",
+                    "type": "moduleNode",
+                    "data": {
+                        "moduleType": "string_concat",
+                        "config": {
+                            "string1": "selected",
+                            "string2": "",
+                            "variableName": "selected",
+                        },
+                    },
+                },
+                {
+                    "id": "false-branch",
+                    "type": "moduleNode",
+                    "data": {
+                        "moduleType": "string_concat",
+                        "config": {
+                            "string1": "skipped",
+                            "string2": "",
+                            "variableName": "skipped",
+                        },
+                    },
+                },
+            ],
+            "edges": [
+                {
+                    "id": "true",
+                    "source": "condition",
+                    "target": "true-branch",
+                    "sourceHandle": "true",
+                },
+                {
+                    "id": "false",
+                    "source": "condition",
+                    "target": "false-branch",
+                    "sourceHandle": "false",
+                },
+            ],
+            "variables": [],
+        },
+    }
+    output = io.StringIO()
+
+    result = await _run(command, Event(), output)
+
+    assert result == 0, output.getvalue()
+    events = [json.loads(line) for line in output.getvalue().splitlines()]
+    assert not any(event["type"] == "execution:paused" for event in events)
+    warning = next(
+        event
+        for event in events
+        if event["type"] == "execution:log"
+        and event["message"] == "本次执行路径未到达调试目标节点"
+    )
+    assert warning["nodeId"] == "false-branch"
+    assert events[-1]["type"] == "execution:completed"
 
 
 @pytest.mark.asyncio

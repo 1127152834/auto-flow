@@ -19,6 +19,7 @@ import { localWorkflowApi, workflowApi, imageAssetApi, scheduledTaskApi } from '
 import { socketService } from '../events'
 import { useAiActionLogStore, type AiActionEntry } from '../hooks/stores/aiActionLogStore'
 import { actionNeedsApproval, requestApproval } from '../hooks/stores/aiPermissionStore'
+import { hydrateAssistantArtifacts } from './assistantArtifacts'
 
 // 会改动画布、需要记入「AI 操作时间线」并可一键回退的 client_action
 const MUTATING_ACTIONS = new Set<string>([
@@ -1370,7 +1371,7 @@ export async function executeClientAction(
         const id = payload.id as string
         if (!id) return { success: false, error: '缺少 id' }
         try {
-          await scheduledTaskApi.execute(id)
+          await scheduledTaskApi.execute(id, crypto.randomUUID())
           return { success: true, message: `已立即执行计划任务 ${id}` }
         } catch (e: any) {
           return { success: false, error: e?.message || String(e) }
@@ -1781,24 +1782,108 @@ export function bindAssistantSocketEvents(handlers: {
 
   // 关键：后端发出 client_action 工具调用后会通过 socket 发请求让前端立即执行，
   // 前端必须把真实执行结果通过 ack 事件回传，否则后端会等 30s 超时
-  socketService.on('ai_assistant:client_action_request', async (data: any) => {
-    const toolCallId = data?.tool_call_id
-    const action = data?.action
-    const payload = data?.payload || {}
-    if (!toolCallId || !action) return
-    // 多窗口选举：只有胜出的窗口执行并回传，避免编辑器窗口与独立 Agent 窗口重复执行同一动作
-    try {
-      const mine = await shouldExecuteClientAction(toolCallId)
-      if (!mine) return  // 其它窗口会执行并回传 ack
-    } catch { /* 选举异常则按执行处理 */ }
-    try {
-      const result = await executeClientAction(action, payload)
-      socketService.emit('ai_client_action_ack', { tool_call_id: toolCallId, result })
-    } catch (err: any) {
-      socketService.emit('ai_client_action_ack', {
-        tool_call_id: toolCallId,
-        result: { success: false, error: err?.message || String(err) || '前端执行 client_action 异常' },
-      })
-    }
+  socketService.on('ai_assistant:client_action_request', (data: any) => {
+    void acknowledgeAssistantClientAction(data)
   })
+  socketService.on('ai_assistant:mcp_tool_request', (data: any) => {
+    void acknowledgeAssistantMcpTool(data)
+  })
+}
+
+const assistantActionTasks = new Map<string, Promise<unknown>>()
+
+async function assistantActionCommandIds(identity: string) {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(identity))
+  const hash = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('')
+  return { claim: `ai-claim:${hash}`, result: `ai-result:${hash}` }
+}
+
+export function acknowledgeAssistantClientAction(data: any) {
+  const toolCallId = data?.tool_call_id
+  const sessionId = data?.session_id
+  const action = data?.action
+  const payload = data?.payload || {}
+  if (!toolCallId || !action) return Promise.resolve(null)
+  const identity = `${sessionId || ''}:${toolCallId}`
+  const pending = assistantActionTasks.get(identity)
+  if (pending) return pending
+  const task = acknowledgeClaimedAssistantAction(identity, sessionId, toolCallId, action, payload)
+  assistantActionTasks.set(identity, task)
+  return task
+}
+
+export function acknowledgeAssistantMcpTool(data: any) {
+  const toolCallId = data?.tool_call_id
+  const sessionId = data?.session_id
+  const action = data?.action
+  const payload = data?.payload || {}
+  if (!toolCallId || typeof action !== 'string' || !action.startsWith('mcp__')) return Promise.resolve(null)
+  const identity = `${sessionId || ''}:${toolCallId}`
+  const pending = assistantActionTasks.get(identity)
+  if (pending) return pending
+  const task = acknowledgeClaimedAssistantMcpTool(identity, sessionId, toolCallId, action, payload)
+  assistantActionTasks.set(identity, task)
+  return task
+}
+
+async function acknowledgeClaimedAssistantMcpTool(
+  identity: string,
+  sessionId: string | undefined,
+  toolCallId: string,
+  action: string,
+  payload: Record<string, any>,
+) {
+  try {
+    const mine = await shouldExecuteClientAction(identity)
+    if (!mine) return null
+  } catch { /* 服务端幂等认领仍会阻止重复执行。 */ }
+  const commandIds = await assistantActionCommandIds(identity)
+  const claim = await socketService.command('ai_client_action_claim', {
+    session_id: sessionId,
+    tool_call_id: toolCallId,
+    executor_id: _electionId,
+  }, commandIds.claim)
+  if (!claim.success) return claim
+  const toolsEnabled = useGlobalConfigStore.getState().config.aiAssistant?.enableTools !== false
+  const approved = toolsEnabled && await requestApproval(action, `MCP 工具：${action.slice(5).replaceAll('__', ' / ')}`, payload)
+  return socketService.command('ai_client_action_ack', {
+    session_id: sessionId,
+    tool_call_id: toolCallId,
+    claim_command_id: commandIds.claim,
+    result: approved
+      ? { success: true }
+      : { success: false, error: toolsEnabled ? '用户拒绝执行 MCP 工具' : '小助手工具调用已关闭' },
+  }, commandIds.result)
+}
+
+async function acknowledgeClaimedAssistantAction(
+  identity: string,
+  sessionId: string | undefined,
+  toolCallId: string,
+  action: string,
+  payload: Record<string, any>,
+) {
+  try {
+    const mine = await shouldExecuteClientAction(identity)
+    if (!mine) return null
+  } catch { /* 选举异常时继续，让服务端幂等命令负责最终确认。 */ }
+  const commandIds = await assistantActionCommandIds(identity)
+  const claim = await socketService.command('ai_client_action_claim', {
+    session_id: sessionId,
+    tool_call_id: toolCallId,
+    executor_id: _electionId,
+  }, commandIds.claim)
+  if (!claim.success) return claim
+  let result
+  try {
+    result = await executeClientAction(action, await hydrateAssistantArtifacts(payload))
+  } catch (error: any) {
+    result = { success: false, error: error?.message || String(error) || '前端执行 client_action 异常' }
+  }
+  return socketService.command('ai_client_action_ack', {
+    session_id: sessionId,
+    tool_call_id: toolCallId,
+    claim_command_id: commandIds.claim,
+    result,
+  }, commandIds.result)
 }

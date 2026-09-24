@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 from fastapi import FastAPI
 
@@ -12,29 +14,51 @@ from autoflow.adapters.events.workflows import (
     workflow_events_router,
 )
 from autoflow.adapters.http.custom_modules import custom_modules_router
+from autoflow.adapters.http.workflow_ai import workflow_ai_router
+from autoflow.adapters.http.workflow_gestures import workflow_gesture_router
+from autoflow.adapters.http.workflow_inspection import workflow_inspection_router
+from autoflow.adapters.http.workflow_mcp import workflow_mcp_router
 from autoflow.adapters.http.workflow_metadata import workflow_metadata_router
 from autoflow.adapters.http.workflow_runs import (
     WorkflowRunCommands,
     workflow_run_command_router,
     workflow_runs_router,
+    workflow_trigger_router,
+    workflow_variable_tracking_router,
 )
 from autoflow.adapters.http.workflows import workflows_router
+from autoflow.application.workflows.assistant import WorkflowAssistantService
 from autoflow.application.workflows.coordinator import WorkflowRunCoordinator
 from autoflow.application.workflows.documents import WorkflowDocumentService
 from autoflow.application.workflows.executors.production import (
     build_production_executor_registry,
 )
+from autoflow.application.workflows.inspection import WorkflowInspectionService
+from autoflow.application.workflows.mcp import WorkflowMcpService
 from autoflow.application.workflows.modules import CustomModuleService
 from autoflow.application.workflows.runs import WorkflowRunService
 from autoflow.application.workflows.runtime import WorkflowRuntime
 from autoflow.domain.workflows.runs import WorkflowRunError
+from autoflow.infrastructure.database.workflow_assistant import (
+    SqlAlchemyWorkflowAssistant,
+)
+from autoflow.infrastructure.database.workflow_mcp import SqlAlchemyWorkflowMcp
 from autoflow.infrastructure.database.workflow_modules import SqlAlchemyWorkflowModules
+from autoflow.infrastructure.database.workflow_recordings import (
+    SqlAlchemyWorkflowRecordings,
+)
 from autoflow.infrastructure.database.workflow_runs import SqlAlchemyWorkflowRuns
 from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowDocuments
+from autoflow.infrastructure.gesture import (
+    GestureRecognitionService,
+    gesture_model_path,
+)
+from autoflow.infrastructure.process.inspection_worker import inspection_worker_command
 from autoflow.infrastructure.process.workflow_worker import (
     WorkflowResourceCoordinator,
     WorkflowWorkerManager,
 )
+from autoflow.infrastructure.sharing import NetworkShareHost
 
 
 class PendingWorkflowRunCommands:
@@ -46,6 +70,30 @@ class PendingWorkflowRunCommands:
         )
 
     async def stop(self, workflow_id: str, run_id: str) -> Mapping[str, Any]:
+        raise WorkflowRunError(
+            "WORKFLOW_EXECUTION_NOT_READY", "真实运行协调器尚未完成装配", 503
+        )
+
+    async def debug_control(
+        self, workflow_id: str, action: str, request: Mapping[str, Any]
+    ) -> tuple[dict[str, Any], int]:
+        del workflow_id, action, request
+        raise WorkflowRunError(
+            "WORKFLOW_EXECUTION_NOT_READY", "真实运行协调器尚未完成装配", 503
+        )
+
+    async def debug_variables(
+        self, workflow_id: str, request: Mapping[str, Any]
+    ) -> tuple[dict[str, Any], int]:
+        del workflow_id, request
+        raise WorkflowRunError(
+            "WORKFLOW_EXECUTION_NOT_READY", "真实运行协调器尚未完成装配", 503
+        )
+
+    async def debug_breakpoints(
+        self, workflow_id: str, breakpoints: list[str]
+    ) -> Mapping[str, Any]:
+        del workflow_id, breakpoints
         raise WorkflowRunError(
             "WORKFLOW_EXECUTION_NOT_READY", "真实运行协调器尚未完成装配", 503
         )
@@ -70,6 +118,68 @@ class PendingWorkflowRunCommands:
             "WORKFLOW_EXECUTION_NOT_READY", "真实运行协调器尚未完成装配", 503
         )
 
+    def js_script_state(self, request_id: str) -> dict[str, str]:
+        del request_id
+        raise WorkflowRunError(
+            "WORKFLOW_EXECUTION_NOT_READY", "真实运行协调器尚未完成装配", 503
+        )
+
+    def tts_request_state(self, request_id: str) -> dict[str, str]:
+        del request_id
+        raise WorkflowRunError(
+            "WORKFLOW_EXECUTION_NOT_READY", "真实运行协调器尚未完成装配", 503
+        )
+
+    def desktop_action_state(self, request_id: str) -> dict[str, str]:
+        del request_id
+        raise WorkflowRunError(
+            "WORKFLOW_EXECUTION_NOT_READY", "真实运行协调器尚未完成装配", 503
+        )
+
+    async def trigger_webhook(
+        self,
+        webhook_id: str,
+        *,
+        method: str,
+        headers: Mapping[str, str],
+        query: Mapping[str, str],
+        body: Any,
+    ) -> tuple[Any, int]:
+        del webhook_id, method, headers, query, body
+        raise WorkflowRunError(
+            "WORKFLOW_EXECUTION_NOT_READY", "真实运行协调器尚未完成装配", 503
+        )
+
+
+class StudioEventCommandMux:
+    def __init__(self, workflows: Any, assistant: WorkflowAssistantService) -> None:
+        self._workflows = workflows
+        self._assistant = assistant
+
+    async def submit_event_command(
+        self, command_id: str, event: str, data: Mapping[str, Any]
+    ) -> tuple[dict[str, Any], int]:
+        if event in {"ai_client_action_claim", "ai_client_action_ack"}:
+            return await self._assistant.submit_event_command(command_id, event, dict(data))
+        return await self._workflows.submit_event_command(command_id, event, data)
+
+    def event_command(self, command_id: str) -> tuple[dict[str, Any], int]:
+        if self._assistant.has_command(command_id):
+            return self._assistant.event_command(command_id)
+        return self._workflows.event_command(command_id)
+
+    def input_prompt_state(self, request_id: str) -> dict[str, str]:
+        return self._workflows.input_prompt_state(request_id)
+
+    def js_script_state(self, request_id: str) -> dict[str, str]:
+        return self._workflows.js_script_state(request_id)
+
+    def tts_request_state(self, request_id: str) -> dict[str, str]:
+        return self._workflows.tts_request_state(request_id)
+
+    def desktop_action_state(self, request_id: str) -> dict[str, str]:
+        return self._workflows.desktop_action_state(request_id)
+
 
 @dataclass(slots=True)
 class WorkflowServices:
@@ -80,14 +190,40 @@ class WorkflowServices:
     events: StudioEventJournal
     workers: WorkflowWorkerManager | None = None
     artifact_root: Path | None = None
+    inspection: WorkflowInspectionService | Any | None = None
+    assistant: WorkflowAssistantService | Any | None = None
+    mcp: WorkflowMcpService | Any | None = None
+    shares: NetworkShareHost | None = None
+    gestures: GestureRecognitionService | Any | None = None
+    event_commands: Any | None = None
 
     async def shutdown(self) -> None:
+        tasks = []
         if self.workers is not None:
-            await self.workers.shutdown()
+            tasks.append(self.workers.shutdown())
+        if self.inspection is not None:
+            tasks.append(self.inspection.shutdown())
+        if self.assistant is not None:
+            tasks.append(self.assistant.shutdown())
+        if self.mcp is not None:
+            tasks.append(self.mcp.shutdown())
+        if self.shares is not None:
+            tasks.append(self.shares.shutdown())
+        if tasks:
+            import asyncio
+
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+            for result in results:
+                if isinstance(result, BaseException):
+                    raise result
 
     def blockers(self) -> list[str]:
         if self.workers is not None and self.workers.busy():
             return ["workflow_process_active"]
+        if self.inspection is not None and self.inspection.busy():
+            return ["workflow_inspection_active"]
+        if self.shares is not None and self.shares.busy():
+            return ["workflow_share_active"]
         return []
 
 
@@ -102,6 +238,8 @@ def build_workflow_services(
     kernels_root: Path | None = None,
     temp_root: Path | None = None,
     artifact_root: Path | None = None,
+    models: Any | None = None,
+    credential_store: Any | None = None,
 ) -> WorkflowServices:
     modules = CustomModuleService(SqlAlchemyWorkflowModules(session_factory))
     documents = WorkflowDocumentService(
@@ -112,6 +250,24 @@ def build_workflow_services(
     run_repository = SqlAlchemyWorkflowRuns(session_factory)
     runs = WorkflowRunService(run_repository)
     events = StudioEventJournal()
+    mcp = (
+        WorkflowMcpService(
+            SqlAlchemyWorkflowMcp(session_factory), credential_store
+        )
+        if credential_store is not None
+        else None
+    )
+    assistant = (
+        WorkflowAssistantService(
+            SqlAlchemyWorkflowAssistant(session_factory),
+            artifact_root / "assistant" / "checkpoints.sqlite3",
+            models,
+            events,
+            mcp,
+        )
+        if artifact_root is not None and models is not None
+        else None
+    )
     if any(
         value is None
         for value in (
@@ -131,6 +287,8 @@ def build_workflow_services(
             runs=runs,
             commands=PendingWorkflowRunCommands(),
             events=events,
+            assistant=assistant,
+            mcp=mcp,
         )
     assert profiles is not None
     assert installed_kernels is not None
@@ -142,19 +300,73 @@ def build_workflow_services(
     assert artifact_root is not None
 
     holder: dict[str, WorkflowRunCoordinator] = {}
+    inspection_holder: dict[str, WorkflowInspectionService] = {}
+    shares = NetworkShareHost()
+    gestures = GestureRecognitionService(
+        artifact_root / "gestures" / "custom_gestures.json", gesture_model_path()
+    )
 
     async def on_event(event: dict[str, object]) -> None:
+        if event.get("type") == "execution:desktop_action" and shares.supports(
+            event.get("action")
+        ):
+            payload = event.get("payload")
+            result = await shares.perform(
+                str(event["action"]), payload if isinstance(payload, Mapping) else {}
+            )
+            await workers.send_command(
+                str(event["runId"]),
+                {
+                    "type": "desktop_action_result",
+                    "commandId": str(uuid4()),
+                    "requestId": event["requestId"],
+                    "success": result.success,
+                    "value": result.value,
+                    "error": result.error,
+                },
+            )
+            return
         await holder["coordinator"].on_worker_event(event)
 
     async def on_exit(run_id: str, return_code: int) -> None:
         await holder["coordinator"].on_worker_exit(run_id, return_code)
 
+    async def on_inspection_event(event: dict[str, object]) -> None:
+        await inspection_holder["service"].on_worker_event(event)
+
+    async def on_inspection_exit(session_id: str, return_code: int) -> None:
+        await inspection_holder["service"].on_worker_exit(session_id, return_code)
+
     workers = WorkflowWorkerManager(
         temp_root,
+        worker_env={
+            "AUTOFLOW_GESTURE_DATA_FILE": str(
+                artifact_root / "gestures" / "custom_gestures.json"
+            ),
+            "AUTOFLOW_GESTURE_MODEL_PATH": str(gesture_model_path()),
+        },
         on_event=on_event,
         on_exit=on_exit,
     )
     resources = WorkflowResourceCoordinator(profile_guard, kernels_root)
+    inspection_workers = WorkflowWorkerManager(
+        temp_root,
+        command=inspection_worker_command(),
+        on_event=on_inspection_event,
+        on_exit=on_inspection_exit,
+    )
+    recording_repository = SqlAlchemyWorkflowRecordings(session_factory)
+    recording_repository.recover_active(now=datetime.now(UTC))
+    inspection = WorkflowInspectionService(
+        profiles=profiles,
+        installed_kernels=installed_kernels,
+        resolve_proxy=resolve_proxy,
+        read_license=read_license,
+        resources=resources,
+        workers=inspection_workers,
+        recordings=recording_repository,
+    )
+    inspection_holder["service"] = inspection
     registry = build_production_executor_registry()
     coordinator = WorkflowRunCoordinator(
         documents=documents,
@@ -170,21 +382,51 @@ def build_workflow_services(
         events=events,
         artifact_root=artifact_root,
         modules=modules,
+        resolve_model=models.execution_binding if models is not None else None,
     )
     holder["coordinator"] = coordinator
     return WorkflowServices(
-        documents, modules, runs, coordinator, events, workers, artifact_root
+        documents=documents,
+        modules=modules,
+        runs=runs,
+        commands=coordinator,
+        events=events,
+        workers=workers,
+        artifact_root=artifact_root,
+        inspection=inspection,
+        assistant=assistant,
+        mcp=mcp,
+        shares=shares,
+        gestures=gestures,
+        event_commands=StudioEventCommandMux(coordinator, assistant) if assistant else None,
     )
 
 
 def register_workflow_routes(app: FastAPI, services: WorkflowServices) -> None:
     # Static workflow commands must be registered before the dynamic document ID.
     app.include_router(workflow_metadata_router())
+    app.include_router(workflow_trigger_router(services.commands))
+    if services.gestures is not None:
+        app.include_router(workflow_gesture_router(services.gestures))
     app.include_router(workflow_run_command_router(services.commands))
+    if services.inspection is not None:
+        app.include_router(workflow_inspection_router(services.inspection))
+    if services.assistant is not None:
+        app.include_router(workflow_ai_router(services.assistant))
+    if services.mcp is not None:
+        app.include_router(workflow_mcp_router(services.mcp))
+        app.router.add_event_handler("startup", services.mcp.startup)
     app.include_router(custom_modules_router(services.modules))
+    app.include_router(
+        workflow_variable_tracking_router(services.runs, services.artifact_root)
+    )
     app.include_router(workflows_router(services.documents))
     app.include_router(workflow_runs_router(services.runs, services.artifact_root))
-    app.include_router(workflow_events_router(services.events, services.commands))
+    app.include_router(
+        workflow_events_router(
+            services.events, services.event_commands or services.commands
+        )
+    )
 
 
 def configure_project_workflow_runtime(

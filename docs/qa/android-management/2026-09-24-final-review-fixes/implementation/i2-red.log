@@ -1,0 +1,388 @@
+FFFFFFFFFFF                                                              [100%]
+=================================== FAILURES ===================================
+_ test_metadata_verification_preserves_image_lifecycle[image_metadata-unregistered] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-251/test_metadata_verification_pre0')
+state = 'unregistered', check = 'image_metadata'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize('state', ['unregistered', 'deleted', 'delete_pending', 'delete_blocked', 'delete_needs_verification'])
+    @pytest.mark.parametrize('check', ['image_metadata', 'unsupported'])
+    async def test_metadata_verification_preserves_image_lifecycle(tmp_path, state, check):
+        sessions = _database(tmp_path)
+        resources = AndroidResourceRepository(sessions)
+        image = {'id': 'image', 'imageId': IMAGE_A, 'reference': 'local:fixture', 'state': state,
+                 'revision': 2, 'deleteRequestId': 'delete-original', 'workspaceId': 'workspace'}
+        resources.save('image', image)
+        service = AndroidImageService(resources, AndroidDeviceService(SqlAlchemyDeviceRepository(sessions), _ScenarioRuntime()), _ScenarioCatalog([IMAGE_A]))
+        try:
+            await service.verify_server('image', {'check': check})
+        except AndroidError as error:
+            assert error.code == 'ANDROID_IMAGE_STATE_CONFLICT'
+>       assert resources.get('image', 'image') == image
+E       AssertionError: assert {'id': 'image...erified', ...} == {'id': 'image...istered', ...}
+E         
+E         Omitting 6 identical items, use -vv to show
+E         Differing items:
+E         {'state': 'verified'} != {'state': 'unregistered'}
+E         Left contains 2 more items:
+E         {'validation': 'not_tested',
+E          'verification': {'records': [{'check': 'image_metadata',...
+E         
+E         ...Full output truncated (13 lines hidden), use '-vv' to show
+
+apps/backend/tests/integration/test_android_images_templates.py:264: AssertionError
+_ test_metadata_verification_preserves_image_lifecycle[image_metadata-deleted] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-251/test_metadata_verification_pre1')
+state = 'deleted', check = 'image_metadata'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize('state', ['unregistered', 'deleted', 'delete_pending', 'delete_blocked', 'delete_needs_verification'])
+    @pytest.mark.parametrize('check', ['image_metadata', 'unsupported'])
+    async def test_metadata_verification_preserves_image_lifecycle(tmp_path, state, check):
+        sessions = _database(tmp_path)
+        resources = AndroidResourceRepository(sessions)
+        image = {'id': 'image', 'imageId': IMAGE_A, 'reference': 'local:fixture', 'state': state,
+                 'revision': 2, 'deleteRequestId': 'delete-original', 'workspaceId': 'workspace'}
+        resources.save('image', image)
+        service = AndroidImageService(resources, AndroidDeviceService(SqlAlchemyDeviceRepository(sessions), _ScenarioRuntime()), _ScenarioCatalog([IMAGE_A]))
+        try:
+            await service.verify_server('image', {'check': check})
+        except AndroidError as error:
+            assert error.code == 'ANDROID_IMAGE_STATE_CONFLICT'
+>       assert resources.get('image', 'image') == image
+E       AssertionError: assert {'id': 'image...erified', ...} == {'id': 'image...deleted', ...}
+E         
+E         Omitting 6 identical items, use -vv to show
+E         Differing items:
+E         {'state': 'verified'} != {'state': 'deleted'}
+E         Left contains 2 more items:
+E         {'validation': 'not_tested',
+E          'verification': {'records': [{'check': 'image_metadata',...
+E         
+E         ...Full output truncated (13 lines hidden), use '-vv' to show
+
+apps/backend/tests/integration/test_android_images_templates.py:264: AssertionError
+_ test_metadata_verification_preserves_image_lifecycle[image_metadata-delete_pending] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-251/test_metadata_verification_pre2')
+state = 'delete_pending', check = 'image_metadata'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize('state', ['unregistered', 'deleted', 'delete_pending', 'delete_blocked', 'delete_needs_verification'])
+    @pytest.mark.parametrize('check', ['image_metadata', 'unsupported'])
+    async def test_metadata_verification_preserves_image_lifecycle(tmp_path, state, check):
+        sessions = _database(tmp_path)
+        resources = AndroidResourceRepository(sessions)
+        image = {'id': 'image', 'imageId': IMAGE_A, 'reference': 'local:fixture', 'state': state,
+                 'revision': 2, 'deleteRequestId': 'delete-original', 'workspaceId': 'workspace'}
+        resources.save('image', image)
+        service = AndroidImageService(resources, AndroidDeviceService(SqlAlchemyDeviceRepository(sessions), _ScenarioRuntime()), _ScenarioCatalog([IMAGE_A]))
+        try:
+            await service.verify_server('image', {'check': check})
+        except AndroidError as error:
+            assert error.code == 'ANDROID_IMAGE_STATE_CONFLICT'
+>       assert resources.get('image', 'image') == image
+E       AssertionError: assert {'id': 'image...erified', ...} == {'id': 'image...pending', ...}
+E         
+E         Omitting 6 identical items, use -vv to show
+E         Differing items:
+E         {'state': 'verified'} != {'state': 'delete_pending'}
+E         Left contains 2 more items:
+E         {'validation': 'not_tested',
+E          'verification': {'records': [{'check': 'image_metadata',...
+E         
+E         ...Full output truncated (13 lines hidden), use '-vv' to show
+
+apps/backend/tests/integration/test_android_images_templates.py:264: AssertionError
+_ test_metadata_verification_preserves_image_lifecycle[image_metadata-delete_blocked] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-251/test_metadata_verification_pre3')
+state = 'delete_blocked', check = 'image_metadata'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize('state', ['unregistered', 'deleted', 'delete_pending', 'delete_blocked', 'delete_needs_verification'])
+    @pytest.mark.parametrize('check', ['image_metadata', 'unsupported'])
+    async def test_metadata_verification_preserves_image_lifecycle(tmp_path, state, check):
+        sessions = _database(tmp_path)
+        resources = AndroidResourceRepository(sessions)
+        image = {'id': 'image', 'imageId': IMAGE_A, 'reference': 'local:fixture', 'state': state,
+                 'revision': 2, 'deleteRequestId': 'delete-original', 'workspaceId': 'workspace'}
+        resources.save('image', image)
+        service = AndroidImageService(resources, AndroidDeviceService(SqlAlchemyDeviceRepository(sessions), _ScenarioRuntime()), _ScenarioCatalog([IMAGE_A]))
+        try:
+            await service.verify_server('image', {'check': check})
+        except AndroidError as error:
+            assert error.code == 'ANDROID_IMAGE_STATE_CONFLICT'
+>       assert resources.get('image', 'image') == image
+E       AssertionError: assert {'id': 'image...erified', ...} == {'id': 'image...blocked', ...}
+E         
+E         Omitting 6 identical items, use -vv to show
+E         Differing items:
+E         {'state': 'verified'} != {'state': 'delete_blocked'}
+E         Left contains 2 more items:
+E         {'validation': 'not_tested',
+E          'verification': {'records': [{'check': 'image_metadata',...
+E         
+E         ...Full output truncated (13 lines hidden), use '-vv' to show
+
+apps/backend/tests/integration/test_android_images_templates.py:264: AssertionError
+_ test_metadata_verification_preserves_image_lifecycle[image_metadata-delete_needs_verification] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-251/test_metadata_verification_pre4')
+state = 'delete_needs_verification', check = 'image_metadata'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize('state', ['unregistered', 'deleted', 'delete_pending', 'delete_blocked', 'delete_needs_verification'])
+    @pytest.mark.parametrize('check', ['image_metadata', 'unsupported'])
+    async def test_metadata_verification_preserves_image_lifecycle(tmp_path, state, check):
+        sessions = _database(tmp_path)
+        resources = AndroidResourceRepository(sessions)
+        image = {'id': 'image', 'imageId': IMAGE_A, 'reference': 'local:fixture', 'state': state,
+                 'revision': 2, 'deleteRequestId': 'delete-original', 'workspaceId': 'workspace'}
+        resources.save('image', image)
+        service = AndroidImageService(resources, AndroidDeviceService(SqlAlchemyDeviceRepository(sessions), _ScenarioRuntime()), _ScenarioCatalog([IMAGE_A]))
+        try:
+            await service.verify_server('image', {'check': check})
+        except AndroidError as error:
+            assert error.code == 'ANDROID_IMAGE_STATE_CONFLICT'
+>       assert resources.get('image', 'image') == image
+E       AssertionError: assert {'id': 'image...erified', ...} == {'id': 'image...ication', ...}
+E         
+E         Omitting 6 identical items, use -vv to show
+E         Differing items:
+E         {'state': 'verified'} != {'state': 'delete_needs_verification'}
+E         Left contains 2 more items:
+E         {'validation': 'not_tested',
+E          'verification': {'records': [{'check': 'image_metadata',...
+E         
+E         ...Full output truncated (13 lines hidden), use '-vv' to show
+
+apps/backend/tests/integration/test_android_images_templates.py:264: AssertionError
+_ test_metadata_verification_preserves_image_lifecycle[unsupported-unregistered] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-251/test_metadata_verification_pre5')
+state = 'unregistered', check = 'unsupported'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize('state', ['unregistered', 'deleted', 'delete_pending', 'delete_blocked', 'delete_needs_verification'])
+    @pytest.mark.parametrize('check', ['image_metadata', 'unsupported'])
+    async def test_metadata_verification_preserves_image_lifecycle(tmp_path, state, check):
+        sessions = _database(tmp_path)
+        resources = AndroidResourceRepository(sessions)
+        image = {'id': 'image', 'imageId': IMAGE_A, 'reference': 'local:fixture', 'state': state,
+                 'revision': 2, 'deleteRequestId': 'delete-original', 'workspaceId': 'workspace'}
+        resources.save('image', image)
+        service = AndroidImageService(resources, AndroidDeviceService(SqlAlchemyDeviceRepository(sessions), _ScenarioRuntime()), _ScenarioCatalog([IMAGE_A]))
+        try:
+            await service.verify_server('image', {'check': check})
+        except AndroidError as error:
+            assert error.code == 'ANDROID_IMAGE_STATE_CONFLICT'
+>       assert resources.get('image', 'image') == image
+E       AssertionError: assert {'id': 'image...istered', ...} == {'id': 'image...istered', ...}
+E         
+E         Omitting 6 identical items, use -vv to show
+E         Differing items:
+E         {'state': 'registered'} != {'state': 'unregistered'}
+E         Left contains 2 more items:
+E         {'validation': 'not_tested',
+E          'verification': {'records': [{'check': 'unsupported',...
+E         
+E         ...Full output truncated (8 lines hidden), use '-vv' to show
+
+apps/backend/tests/integration/test_android_images_templates.py:264: AssertionError
+__ test_metadata_verification_preserves_image_lifecycle[unsupported-deleted] ___
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-251/test_metadata_verification_pre6')
+state = 'deleted', check = 'unsupported'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize('state', ['unregistered', 'deleted', 'delete_pending', 'delete_blocked', 'delete_needs_verification'])
+    @pytest.mark.parametrize('check', ['image_metadata', 'unsupported'])
+    async def test_metadata_verification_preserves_image_lifecycle(tmp_path, state, check):
+        sessions = _database(tmp_path)
+        resources = AndroidResourceRepository(sessions)
+        image = {'id': 'image', 'imageId': IMAGE_A, 'reference': 'local:fixture', 'state': state,
+                 'revision': 2, 'deleteRequestId': 'delete-original', 'workspaceId': 'workspace'}
+        resources.save('image', image)
+        service = AndroidImageService(resources, AndroidDeviceService(SqlAlchemyDeviceRepository(sessions), _ScenarioRuntime()), _ScenarioCatalog([IMAGE_A]))
+        try:
+            await service.verify_server('image', {'check': check})
+        except AndroidError as error:
+            assert error.code == 'ANDROID_IMAGE_STATE_CONFLICT'
+>       assert resources.get('image', 'image') == image
+E       AssertionError: assert {'id': 'image...istered', ...} == {'id': 'image...deleted', ...}
+E         
+E         Omitting 6 identical items, use -vv to show
+E         Differing items:
+E         {'state': 'registered'} != {'state': 'deleted'}
+E         Left contains 2 more items:
+E         {'validation': 'not_tested',
+E          'verification': {'records': [{'check': 'unsupported',...
+E         
+E         ...Full output truncated (8 lines hidden), use '-vv' to show
+
+apps/backend/tests/integration/test_android_images_templates.py:264: AssertionError
+_ test_metadata_verification_preserves_image_lifecycle[unsupported-delete_pending] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-251/test_metadata_verification_pre7')
+state = 'delete_pending', check = 'unsupported'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize('state', ['unregistered', 'deleted', 'delete_pending', 'delete_blocked', 'delete_needs_verification'])
+    @pytest.mark.parametrize('check', ['image_metadata', 'unsupported'])
+    async def test_metadata_verification_preserves_image_lifecycle(tmp_path, state, check):
+        sessions = _database(tmp_path)
+        resources = AndroidResourceRepository(sessions)
+        image = {'id': 'image', 'imageId': IMAGE_A, 'reference': 'local:fixture', 'state': state,
+                 'revision': 2, 'deleteRequestId': 'delete-original', 'workspaceId': 'workspace'}
+        resources.save('image', image)
+        service = AndroidImageService(resources, AndroidDeviceService(SqlAlchemyDeviceRepository(sessions), _ScenarioRuntime()), _ScenarioCatalog([IMAGE_A]))
+        try:
+            await service.verify_server('image', {'check': check})
+        except AndroidError as error:
+            assert error.code == 'ANDROID_IMAGE_STATE_CONFLICT'
+>       assert resources.get('image', 'image') == image
+E       AssertionError: assert {'id': 'image...istered', ...} == {'id': 'image...pending', ...}
+E         
+E         Omitting 6 identical items, use -vv to show
+E         Differing items:
+E         {'state': 'registered'} != {'state': 'delete_pending'}
+E         Left contains 2 more items:
+E         {'validation': 'not_tested',
+E          'verification': {'records': [{'check': 'unsupported',...
+E         
+E         ...Full output truncated (8 lines hidden), use '-vv' to show
+
+apps/backend/tests/integration/test_android_images_templates.py:264: AssertionError
+_ test_metadata_verification_preserves_image_lifecycle[unsupported-delete_blocked] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-251/test_metadata_verification_pre8')
+state = 'delete_blocked', check = 'unsupported'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize('state', ['unregistered', 'deleted', 'delete_pending', 'delete_blocked', 'delete_needs_verification'])
+    @pytest.mark.parametrize('check', ['image_metadata', 'unsupported'])
+    async def test_metadata_verification_preserves_image_lifecycle(tmp_path, state, check):
+        sessions = _database(tmp_path)
+        resources = AndroidResourceRepository(sessions)
+        image = {'id': 'image', 'imageId': IMAGE_A, 'reference': 'local:fixture', 'state': state,
+                 'revision': 2, 'deleteRequestId': 'delete-original', 'workspaceId': 'workspace'}
+        resources.save('image', image)
+        service = AndroidImageService(resources, AndroidDeviceService(SqlAlchemyDeviceRepository(sessions), _ScenarioRuntime()), _ScenarioCatalog([IMAGE_A]))
+        try:
+            await service.verify_server('image', {'check': check})
+        except AndroidError as error:
+            assert error.code == 'ANDROID_IMAGE_STATE_CONFLICT'
+>       assert resources.get('image', 'image') == image
+E       AssertionError: assert {'id': 'image...istered', ...} == {'id': 'image...blocked', ...}
+E         
+E         Omitting 6 identical items, use -vv to show
+E         Differing items:
+E         {'state': 'registered'} != {'state': 'delete_blocked'}
+E         Left contains 2 more items:
+E         {'validation': 'not_tested',
+E          'verification': {'records': [{'check': 'unsupported',...
+E         
+E         ...Full output truncated (8 lines hidden), use '-vv' to show
+
+apps/backend/tests/integration/test_android_images_templates.py:264: AssertionError
+_ test_metadata_verification_preserves_image_lifecycle[unsupported-delete_needs_verification] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-251/test_metadata_verification_pre9')
+state = 'delete_needs_verification', check = 'unsupported'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize('state', ['unregistered', 'deleted', 'delete_pending', 'delete_blocked', 'delete_needs_verification'])
+    @pytest.mark.parametrize('check', ['image_metadata', 'unsupported'])
+    async def test_metadata_verification_preserves_image_lifecycle(tmp_path, state, check):
+        sessions = _database(tmp_path)
+        resources = AndroidResourceRepository(sessions)
+        image = {'id': 'image', 'imageId': IMAGE_A, 'reference': 'local:fixture', 'state': state,
+                 'revision': 2, 'deleteRequestId': 'delete-original', 'workspaceId': 'workspace'}
+        resources.save('image', image)
+        service = AndroidImageService(resources, AndroidDeviceService(SqlAlchemyDeviceRepository(sessions), _ScenarioRuntime()), _ScenarioCatalog([IMAGE_A]))
+        try:
+            await service.verify_server('image', {'check': check})
+        except AndroidError as error:
+            assert error.code == 'ANDROID_IMAGE_STATE_CONFLICT'
+>       assert resources.get('image', 'image') == image
+E       AssertionError: assert {'id': 'image...istered', ...} == {'id': 'image...ication', ...}
+E         
+E         Omitting 6 identical items, use -vv to show
+E         Differing items:
+E         {'state': 'registered'} != {'state': 'delete_needs_verification'}
+E         Left contains 2 more items:
+E         {'validation': 'not_tested',
+E          'verification': {'records': [{'check': 'unsupported',...
+E         
+E         ...Full output truncated (8 lines hidden), use '-vv' to show
+
+apps/backend/tests/integration/test_android_images_templates.py:264: AssertionError
+_____ test_metadata_probe_serializes_with_delete_and_keeps_delete_receipt ______
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-251/test_metadata_probe_serializes0')
+
+    @pytest.mark.asyncio
+    async def test_metadata_probe_serializes_with_delete_and_keeps_delete_receipt(tmp_path):
+        import asyncio
+    
+        sessions = _database(tmp_path)
+        resources = AndroidResourceRepository(sessions)
+        started, release = asyncio.Event(), asyncio.Event()
+    
+        class Runtime(_ScenarioRuntime):
+            def lock(self):
+                if self.locked:
+                    raise AndroidError('ANDROID_RUNTIME_BUSY', 'busy', 409)
+                self.locked = 1
+    
+        class Catalog(_ScenarioCatalog):
+            async def inspect(self, reference):
+                started.set()
+                await release.wait()
+                return await super().inspect(reference)
+    
+        runtime = Runtime()
+        service = AndroidImageService(resources, AndroidDeviceService(SqlAlchemyDeviceRepository(sessions), runtime), Catalog([IMAGE_A]))
+        resources.save('image', {'id': 'image', 'imageId': IMAGE_A, 'reference': 'local:fixture', 'state': 'registered', 'revision': 1})
+        task = asyncio.create_task(service.verify_server('image', {'check': 'image_metadata'}))
+        await started.wait()
+        blocked = False
+        try:
+            service.delete('image', request_id='delete-original', expected_revision=1)
+        except AndroidError as error:
+            assert error.code == 'ANDROID_RUNTIME_BUSY'
+            blocked = True
+        release.set()
+        await task
+        if blocked:
+            service.delete('image', request_id='delete-original', expected_revision=1)
+        persisted = resources.get('image', 'image')
+>       assert persisted['state'] == 'unregistered'
+E       AssertionError: assert 'verified' == 'unregistered'
+E         
+E         - unregistered
+E         + verified
+
+apps/backend/tests/integration/test_android_images_templates.py:304: AssertionError
+=============================== warnings summary ===============================
+apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53
+  /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED apps/backend/tests/integration/test_android_images_templates.py::test_metadata_verification_preserves_image_lifecycle[image_metadata-unregistered]
+FAILED apps/backend/tests/integration/test_android_images_templates.py::test_metadata_verification_preserves_image_lifecycle[image_metadata-deleted]
+FAILED apps/backend/tests/integration/test_android_images_templates.py::test_metadata_verification_preserves_image_lifecycle[image_metadata-delete_pending]
+FAILED apps/backend/tests/integration/test_android_images_templates.py::test_metadata_verification_preserves_image_lifecycle[image_metadata-delete_blocked]
+FAILED apps/backend/tests/integration/test_android_images_templates.py::test_metadata_verification_preserves_image_lifecycle[image_metadata-delete_needs_verification]
+FAILED apps/backend/tests/integration/test_android_images_templates.py::test_metadata_verification_preserves_image_lifecycle[unsupported-unregistered]
+FAILED apps/backend/tests/integration/test_android_images_templates.py::test_metadata_verification_preserves_image_lifecycle[unsupported-deleted]
+FAILED apps/backend/tests/integration/test_android_images_templates.py::test_metadata_verification_preserves_image_lifecycle[unsupported-delete_pending]
+FAILED apps/backend/tests/integration/test_android_images_templates.py::test_metadata_verification_preserves_image_lifecycle[unsupported-delete_blocked]
+FAILED apps/backend/tests/integration/test_android_images_templates.py::test_metadata_verification_preserves_image_lifecycle[unsupported-delete_needs_verification]
+FAILED apps/backend/tests/integration/test_android_images_templates.py::test_metadata_probe_serializes_with_delete_and_keeps_delete_receipt
+11 failed, 4 deselected, 1 warning in 2.14s

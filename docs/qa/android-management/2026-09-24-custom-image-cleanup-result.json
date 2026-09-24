@@ -1,0 +1,9 @@
+{
+  "verifiedDeletedDevices": 9,
+  "verifiedAbsentCandidateImages": 8,
+  "registeredBackupsRemaining": 0,
+  "includesAllImagesListing": true,
+  "previousUntaggedCandidateRemoved": [
+    "sha256:74df399ac3155f6674d7e62cd22046bdbaa58e394f6c2692ac627411c8e190a3"
+  ]
+}

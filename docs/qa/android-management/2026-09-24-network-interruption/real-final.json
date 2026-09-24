@@ -1,0 +1,108 @@
+{
+  "status": "passed",
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-network-cut-49qdhgtt",
+  "guestRoot": "/tmp/autoflow-network-cut-5064251172134aa885f4ce758fc2a117",
+  "scope": "production HTTP/services/Mac adapter; Docker command transport selects dedicated real daemon; real TLS proxy fault; no mock response",
+  "reference": "redroid/redroid@sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "existingImageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "existingContainerIds": [
+    "a16690c74f02",
+    "5aa5cb6bb463",
+    "db81f3555d92",
+    "e29079a97dff",
+    "37a74f8c3ec7",
+    "245b229f93a1"
+  ],
+  "supervisor": {
+    "root": "/tmp/autoflow-network-cut-5064251172134aa885f4ce758fc2a117",
+    "daemonPid": 426200,
+    "containerdPid": 426176
+  },
+  "isolatedStorageDriver": "overlayfs",
+  "isolatedStorageDriverStatus": [
+    [
+      "driver-type",
+      "io.containerd.snapshotter.v1"
+    ]
+  ],
+  "responseStatus": 502,
+  "responseBody": {
+    "error": {
+      "code": "ANDROID_COMMAND_FAILED",
+      "message": "安卓运行环境命令失败，请检查设备与连接: short read: expected 640472802 bytes but got 4144085: unexpected EOF",
+      "details": {},
+      "requestId": "61cc2dda-5d0a-45c7-9856-80074d7b768e"
+    }
+  },
+  "fault": {
+    "upstreamBytes": 4212479,
+    "fault": "close TLS tunnels; reject subsequent proxy connects",
+    "hostAtCut": "production.cloudfront.docker.com",
+    "partialFiles": [
+      {
+        "path": "containerd-data/io.containerd.content.v1.content/ingest/46662a1aadb44de99da2813d60119d7dd91d52ebfbb2ffd38da02900ccafcbbb/data",
+        "bytes": 3145728
+      }
+    ]
+  },
+  "partialDownloadObserved": true,
+  "operation": {
+    "operationId": "b4e0bb7d-6908-472f-947d-619f84bb3ec2",
+    "requestId": "c5bf6829-3179-400f-b3b7-3202e053c311",
+    "targetId": "b4c06bac-ebdc-5f43-98ac-02158dd3cba1",
+    "action": "pull",
+    "state": "failed",
+    "stageCode": "failed",
+    "stageLabel": "失败",
+    "attempt": 1,
+    "retryOf": null,
+    "createdAt": "2026-09-24T02:46:42.555307",
+    "startedAt": "2026-09-24T02:46:42.557857",
+    "finishedAt": "2026-09-24T02:46:48.429820",
+    "resultCode": "ANDROID_COMMAND_FAILED",
+    "message": "安卓运行环境命令失败，请检查设备与连接: short read: expected 640472802 bytes but got 4144085: unexpected EOF",
+    "allowedActions": []
+  },
+  "afterRestart": {
+    "operationId": "b4e0bb7d-6908-472f-947d-619f84bb3ec2",
+    "requestId": "c5bf6829-3179-400f-b3b7-3202e053c311",
+    "targetId": "b4c06bac-ebdc-5f43-98ac-02158dd3cba1",
+    "action": "pull",
+    "state": "failed",
+    "stageCode": "failed",
+    "stageLabel": "失败",
+    "attempt": 1,
+    "retryOf": null,
+    "createdAt": "2026-09-24T02:46:42.555307",
+    "startedAt": "2026-09-24T02:46:42.557857",
+    "finishedAt": "2026-09-24T02:46:48.429820",
+    "resultCode": "ANDROID_COMMAND_FAILED",
+    "message": "安卓运行环境命令失败，请检查设备与连接: short read: expected 640472802 bytes but got 4144085: unexpected EOF",
+    "allowedActions": []
+  },
+  "actualPullCallsBeforeRetry": 1,
+  "noRegisteredImageAtFailure": true,
+  "recovery": {
+    "operationId": "b5422abc-d2b4-4b6e-bf0c-96b71079a6cb",
+    "requestId": "b7c6e3e1-0eae-4012-bc86-0a3d62c13f70",
+    "targetId": "45f42364-fb9d-5583-93b6-865e9b58b03e",
+    "action": "pull",
+    "state": "succeeded",
+    "stageCode": "completed",
+    "stageLabel": "已完成",
+    "attempt": 1,
+    "retryOf": null,
+    "createdAt": "2026-09-24T02:46:51.122908",
+    "startedAt": "2026-09-24T02:46:51.125955",
+    "finishedAt": "2026-09-24T02:47:58.127684",
+    "resultCode": "IMAGE_PULL_SUCCEEDED",
+    "message": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+    "allowedActions": []
+  },
+  "recoveredImageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "actualPullCalls": 2,
+  "ownedImageDeleted": true,
+  "daemonLog": "time=\"2026-09-24T10:46:40.236105141+08:00\" level=warning msg=\"overriding existing proxy variable with value from configuration\" name=HTTP_PROXY new-value=\"http://127.0.0.1:41389\" old-value=\"http://192.168.5.2:7892\"\ntime=\"2026-09-24T10:46:40.236163629+08:00\" level=warning msg=\"overriding existing proxy variable with value from configuration\" name=http_proxy new-value=\"http://127.0.0.1:41389\" old-value=\"http://192.168.5.2:7892\"\ntime=\"2026-09-24T10:46:40.236171549+08:00\" level=warning msg=\"overriding existing proxy variable with value from configuration\" name=HTTPS_PROXY new-value=\"http://127.0.0.1:41389\" old-value=\"http://192.168.5.2:7892\"\ntime=\"2026-09-24T10:46:40.236177511+08:00\" level=warning msg=\"overriding existing proxy variable with value from configuration\" name=https_proxy new-value=\"http://127.0.0.1:41389\" old-value=\"http://192.168.5.2:7892\"\ntime=\"2026-09-24T10:46:40.236184431+08:00\" level=info msg=\"Starting up\"\ntime=\"2026-09-24T10:46:40.236774517+08:00\" level=info msg=\"OTEL tracing is not configured, using no-op tracer provider\"\ntime=\"2026-09-24T10:46:40.236866105+08:00\" level=info msg=\"CDI directory does not exist, skipping: failed to monitor for changes: no such file or directory\" dir=/var/run/cdi\ntime=\"2026-09-24T10:46:40.236874609+08:00\" level=info msg=\"CDI directory does not exist, skipping: failed to monitor for changes: no such file or directory\" dir=/etc/cdi\ntime=\"2026-09-24T10:46:40.236932263+08:00\" level=info msg=\"detected 127.0.0.53 nameserver, assuming systemd-resolved, so using resolv.conf: /run/systemd/resolve/resolv.conf\"\ntime=\"2026-09-24T10:46:40.242925466+08:00\" level=warning msg=\"\\\"containerd-snapshotter\\\" is now the default and no longer needed to be set\"\ntime=\"2026-09-24T10:46:40.244160834+08:00\" level=info msg=\"Creating a containerd client\" address=/tmp/autoflow-network-cut-5064251172134aa885f4ce758fc2a117/containerd.sock timeout=1m0s\ntime=\"2026-09-24T10:46:40.249687846+08:00\" level=info msg=\"Loading containers: start.\"\ntime=\"2026-09-24T10:46:40.249710399+08:00\" level=info msg=\"Starting daemon with containerd snapshotter integration enabled\"\ntime=\"2026-09-24T10:46:40.250793482+08:00\" level=info msg=\"Restoring containers: start.\"\ntime=\"2026-09-24T10:46:40.256152868+08:00\" level=info msg=\"Loading containers: done.\"\ntime=\"2026-09-24T10:46:40.263307736+08:00\" level=info msg=\"Docker daemon\" commit=\"29.1.3-0ubuntu3~24.04.2\" containerd-snapshotter=true storage-driver=overlayfs version=29.1.3\ntime=\"2026-09-24T10:46:40.263400449+08:00\" level=info msg=\"Initializing buildkit\"\ntime=\"2026-09-24T10:46:40.273397153+08:00\" level=info msg=\"Completed buildkit initialization\"\ntime=\"2026-09-24T10:46:40.277912201+08:00\" level=info msg=\"Daemon has completed initialization\"\ntime=\"2026-09-24T10:46:40.277957390+08:00\" level=info msg=\"API listen on /tmp/autoflow-network-cut-5064251172134aa885f4ce758fc2a117/docker.sock\"\ntime=\"2026-09-24T10:46:48.431513051+08:00\" level=error msg=\"failed to cleanup \\\"extract-550859903-n1FM sha256:ea535815ad56e91ee068cebedbeb1d9c5b2d8df5e831f05229083190e717d9da\\\"\" error=\"NotFound: snapshot extract-550859903-n1FM sha256:ea535815ad56e91ee068cebedbeb1d9c5b2d8df5e831f05229083190e717d9da does not exist: not found\"\ntime=\"2026-09-24T10:47:58.906516942+08:00\" level=info msg=\"image pulled\" digest=\"sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b\" remote=\"docker.io/redroid/redroid@sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b\"\ntime=\"2026-09-24T10:48:00.025985397+08:00\" level=info msg=\"Processing signal 'terminated'\"\ntime=\"2026-09-24T10:48:00.028268705+08:00\" level=info msg=\"stopping event stream following graceful shutdown\" error=\"<nil>\" module=libcontainerd namespace=moby\ntime=\"2026-09-24T10:48:00.028789215+08:00\" level=info msg=\"Daemon shutdown complete\"\ntime=\"2026-09-24T10:48:00.028897311+08:00\" level=info msg=\"stopping event stream following graceful shutdown\" error=\"context canceled\" module=libcontainerd namespace=plugins.moby\n",
+  "isolatedDaemonRemoved": true,
+  "existingResourcesUnchanged": true
+}

@@ -1,0 +1,78 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/android/tests/ApplicationsPanel.test.tsx -t keeps keyboard focus
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+
+ ❯ src/renderer/domains/android/tests/ApplicationsPanel.test.tsx (19 tests | 2 failed | 17 skipped) 928ms
+   × keeps keyboard focus inside 清除数据 confirmation and restores it on cancel 785ms
+   × keeps keyboard focus inside 卸载 confirmation and restores it on cancel 141ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/android/tests/ApplicationsPanel.test.tsx > keeps keyboard focus inside 清除数据 confirmation and restores it on cancel
+Error: expect(element).toHaveFocus()
+
+Expected element with focus:
+  <button
+  type="button"
+>
+  取消
+</button>
+Received element with focus:
+  <button
+  class="ad-button  "
+  type="button"
+>
+  清除数据
+</button>
+ ❯ src/renderer/domains/android/tests/ApplicationsPanel.test.tsx:31:18
+     29|   const dialog = screen.getByRole('dialog')
+     30|   const cancel = within(dialog).getByRole('button', { name: '取消' })
+     31|   expect(cancel).toHaveFocus()
+       |                  ^
+     32|   expect(dialog).toHaveAccessibleName(`确认${action}`)
+     33|   await user.tab({ shift: true })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/renderer/domains/android/tests/ApplicationsPanel.test.tsx > keeps keyboard focus inside 卸载 confirmation and restores it on cancel
+Error: expect(element).toHaveFocus()
+
+Expected element with focus:
+  <button
+  type="button"
+>
+  取消
+</button>
+Received element with focus:
+  <button
+  class="ad-button  "
+  type="button"
+>
+  卸载
+</button>
+ ❯ src/renderer/domains/android/tests/ApplicationsPanel.test.tsx:31:18
+     29|   const dialog = screen.getByRole('dialog')
+     30|   const cancel = within(dialog).getByRole('button', { name: '取消' })
+     31|   expect(cancel).toHaveFocus()
+       |                  ^
+     32|   expect(dialog).toHaveAccessibleName(`确认${action}`)
+     33|   await user.tab({ shift: true })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 17 skipped (19)
+   Start at  05:12:01
+   Duration  12.19s (transform 1.65s, setup 1.68s, import 6.46s, tests 928ms, environment 2.75s)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/android/tests/ApplicationsPanel.test.tsx -t 'keeps keyboard focus'

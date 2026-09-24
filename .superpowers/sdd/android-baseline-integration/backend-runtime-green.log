@@ -1,0 +1,1263 @@
+.................FFFFFFFF.F..........................                    [100%]
+=================================== FAILURES ===================================
+_ test_structured_parallel_loops_keep_independent_frames_and_explicit_outputs __
+
+    @pytest.mark.asyncio
+    async def test_structured_parallel_loops_keep_independent_frames_and_explicit_outputs():
+        starts = []
+        async def emit(kind, node_id, _visit, payload):
+            await asyncio.sleep(.001)
+            if kind == 'nodeAttempt' and payload['status'] == 'started': starts.append((node_id, payload['executionContext']))
+        executor = ProjectGraphExecutor(None, {'index': 999, 'local': 'parent'}, emit, lambda: False)
+        document = {'nodes': [node('fork', 'set_variable', variableName='started', variableValue='yes', parallel={'joinNodeId': 'join', 'outputs': {'a': {'local': 'aResult'}, 'b': {'local': 'bResult'}}}), node('a', 'loop', count=2, indexVariable='index'), node('a-body', 'set_variable', variableName='local', variableValue='A-{index}'), node('b', 'loop', count=3, indexVariable='index'), node('b-body', 'set_variable', variableName='local', variableValue='B-{index}'), node('join', 'set_variable', variableName='joined', variableValue='{aResult}/{bResult}')], 'edges': [{'source': 'fork', 'target': 'a'}, {'source': 'fork', 'target': 'b'}, {'source': 'a', 'target': 'a-body', 'sourceHandle': 'loop'}, {'source': 'a', 'target': 'join', 'sourceHandle': 'done'}, {'source': 'b', 'target': 'b-body', 'sourceHandle': 'loop'}, {'source': 'b', 'target': 'join', 'sourceHandle': 'done'}]}
+>       assert (await executor.run({'document': document}))['status'] == 'succeeded'
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/unit/test_project_graph_executor.py:220: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/autoflow/providers/browser/project_graph.py:200: in run
+    result = await WorkflowRuntime(registry).execute(subflows.top_level_document(), self.context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/application/workflows/runtime.py:103: in execute
+    return await _WorkflowScheduler(self._registry, graph, context).run(
+src/autoflow/application/workflows/runtime.py:187: in run
+    await self._execute_parallel(
+src/autoflow/application/workflows/runtime.py:215: in _execute_parallel
+    await asyncio.gather(*tasks)
+src/autoflow/application/workflows/runtime.py:226: in _execute_branch
+    await self._execute_claimed(node_id)
+src/autoflow/application/workflows/runtime.py:237: in _execute_claimed
+    result = await self._dispatch(node)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/application/workflows/runtime.py:288: in _dispatch
+    return await self._dispatch_node(node)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/application/workflows/runtime.py:445: in _dispatch_node
+    fork_result = await self._execute_fork(node, execution_id)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/application/workflows/runtime.py:484: in _execute_fork
+    child = replace(self.context, variables=copy.deepcopy(self.context.variables), sensitive_variables=set(self.context.sensitive_variables), loop_stack=copy.deepcopy(self.context.loop_stack), current_row=copy.deepcopy(self.context.current_row), current_node_id=None, current_execution_id=None, should_break=False, should_continue=False, stop_workflow=False, stop_reason='', node_boundary=boundary, execution_scopes=(*self.context.execution_scopes, {'kind': 'parallel', 'id': node.id, 'callNodeId': node.id, 'callVisitId': visit, 'branchNodeId': root, 'joinNodeId': fork.join_id}))
+                                                                                                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/copy.py:172: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/copy.py:271: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/copy.py:146: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/copy.py:231: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = <ContextVar name='workflow_branch_loop_stack' default=None at 0x113d48310>
+memo = {4627661760: [], 4625700480: {}}, _nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        if memo is None:
+            memo = {}
+    
+        d = id(x)
+        y = memo.get(d, _nil)
+        if y is not _nil:
+            return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle '_contextvars.ContextVar' object
+
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/copy.py:161: TypeError
+_ test_parallel_manual_queue_hands_off_before_ordinary_nodes_and_never_overlaps _
+
+    @pytest.mark.asyncio
+    async def test_parallel_manual_queue_hands_off_before_ordinary_nodes_and_never_overlaps():
+        actions = []
+        active = False
+        async def emit(*_args): await asyncio.sleep(0)
+        async def request(node_id, _visit, operation, _arguments):
+            nonlocal active
+            if operation == 'manual':
+                assert not active, 'only the owning manual checkpoint may be live'
+                active = True; actions.append(node_id + '-start')
+                await asyncio.sleep(.01)
+                active = False; actions.append(node_id + '-end')
+                return {'result': {'action': 'resume', 'inputs': {}}}
+            assert not active, 'ordinary work must be quiescent while a manual item is live'
+            actions.append(node_id)
+            return {'result': {}}
+        executor = ProjectGraphExecutor(None, {}, emit, lambda: False, capability=request)
+        document = {'nodes': [node('fork', 'set_variable', variableName='start', variableValue='yes', parallel={'joinNodeId': 'join', 'outputs': {}}), node('manual-a', 'project_manual', reason='A'), node('manual-b', 'project_manual', reason='B'), node('normal-a', 'project_data', operation='inputs'), node('normal-b', 'project_data', operation='inputs'), node('join', 'set_variable', variableName='joined', variableValue='yes')], 'edges': [{'source': 'fork', 'target': 'manual-a'}, {'source': 'fork', 'target': 'manual-b'}, {'source': 'manual-a', 'target': 'normal-a'}, {'source': 'manual-b', 'target': 'normal-b'}, {'source': 'normal-a', 'target': 'join'}, {'source': 'normal-b', 'target': 'join'}]}
+>       assert (await executor.run({'document': document}))['status'] == 'succeeded'
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/unit/test_project_graph_executor.py:245: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/autoflow/providers/browser/project_graph.py:200: in run
+    result = await WorkflowRuntime(registry).execute(subflows.top_level_document(), self.context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/application/workflows/runtime.py:103: in execute
+    return await _WorkflowScheduler(self._registry, graph, context).run(
+src/autoflow/application/workflows/runtime.py:187: in run
+    await self._execute_parallel(
+src/autoflow/application/workflows/runtime.py:215: in _execute_parallel
+    await asyncio.gather(*tasks)
+src/autoflow/application/workflows/runtime.py:226: in _execute_branch
+    await self._execute_claimed(node_id)
+src/autoflow/application/workflows/runtime.py:237: in _execute_claimed
+    result = await self._dispatch(node)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/application/workflows/runtime.py:288: in _dispatch
+    return await self._dispatch_node(node)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/application/workflows/runtime.py:445: in _dispatch_node
+    fork_result = await self._execute_fork(node, execution_id)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/application/workflows/runtime.py:484: in _execute_fork
+    child = replace(self.context, variables=copy.deepcopy(self.context.variables), sensitive_variables=set(self.context.sensitive_variables), loop_stack=copy.deepcopy(self.context.loop_stack), current_row=copy.deepcopy(self.context.current_row), current_node_id=None, current_execution_id=None, should_break=False, should_continue=False, stop_workflow=False, stop_reason='', node_boundary=boundary, execution_scopes=(*self.context.execution_scopes, {'kind': 'parallel', 'id': node.id, 'callNodeId': node.id, 'callVisitId': visit, 'branchNodeId': root, 'joinNodeId': fork.join_id}))
+                                                                                                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/copy.py:172: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/copy.py:271: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/copy.py:146: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/copy.py:231: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = <ContextVar name='workflow_branch_loop_stack' default=None at 0x113d4b920>
+memo = {4627675360: [], 4630763136: {}}, _nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        if memo is None:
+            memo = {}
+    
+        d = id(x)
+        y = memo.get(d, _nil)
+        if y is not _nil:
+            return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle '_contextvars.ContextVar' object
+
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/copy.py:161: TypeError
+_ test_parallel_manual_waits_for_inflight_work_and_discards_queue_on_stop[resume] _
+
+fut = <Task cancelled name='Task-181' coro=<Event.wait() done, defined at /Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/locks.py:200>>
+timeout = 1
+
+    async def wait_for(fut, timeout):
+        """Wait for the single Future or coroutine to complete, with timeout.
+    
+        Coroutine will be wrapped in Task.
+    
+        Returns result of the Future or coroutine.  When a timeout occurs,
+        it cancels the task and raises TimeoutError.  To avoid the task
+        cancellation, wrap it in shield().
+    
+        If the wait is cancelled, the task is also cancelled.
+    
+        This function is a coroutine.
+        """
+        loop = events.get_running_loop()
+    
+        if timeout is None:
+            return await fut
+    
+        if timeout <= 0:
+            fut = ensure_future(fut, loop=loop)
+    
+            if fut.done():
+                return fut.result()
+    
+            await _cancel_and_wait(fut, loop=loop)
+            try:
+                return fut.result()
+            except exceptions.CancelledError as exc:
+                raise exceptions.TimeoutError() from exc
+    
+        waiter = loop.create_future()
+        timeout_handle = loop.call_later(timeout, _release_waiter, waiter)
+        cb = functools.partial(_release_waiter, waiter)
+    
+        fut = ensure_future(fut, loop=loop)
+        fut.add_done_callback(cb)
+    
+        try:
+            # wait until the future completes or the timeout
+            try:
+                await waiter
+            except exceptions.CancelledError:
+                if fut.done():
+                    return fut.result()
+                else:
+                    fut.remove_done_callback(cb)
+                    # We must ensure that the task is not running
+                    # after wait_for() returns.
+                    # See https://bugs.python.org/issue32751
+                    await _cancel_and_wait(fut, loop=loop)
+                    raise
+    
+            if fut.done():
+                return fut.result()
+            else:
+                fut.remove_done_callback(cb)
+                # We must ensure that the task is not running
+                # after wait_for() returns.
+                # See https://bugs.python.org/issue32751
+                await _cancel_and_wait(fut, loop=loop)
+                # In case task cancellation failed with some
+                # exception, we should re-raise it
+                # See https://bugs.python.org/issue40607
+                try:
+>                   return fut.result()
+                           ^^^^^^^^^^^^
+
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/tasks.py:500: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <asyncio.locks.Event object at 0x113db2d10 [unset]>
+
+    async def wait(self):
+        """Block until the internal flag is true.
+    
+        If the internal flag is true on entry, return True
+        immediately.  Otherwise, block until another coroutine calls
+        set() to set the flag to true, then return True.
+        """
+        if self._value:
+            return True
+    
+        fut = self._get_loop().create_future()
+        self._waiters.append(fut)
+        try:
+>           await fut
+E           asyncio.exceptions.CancelledError
+
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/locks.py:213: CancelledError
+
+The above exception was the direct cause of the following exception:
+
+outcome = 'resume'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize('outcome', ['resume', 'finish', 'cancel'])
+    async def test_parallel_manual_waits_for_inflight_work_and_discards_queue_on_stop(outcome):
+        actions = []
+        inflight = asyncio.Event()
+        release = asyncio.Event()
+        stopped = False
+        async def emit(*_args): await asyncio.sleep(0)
+        async def request(node_id, _visit, operation, _arguments):
+            nonlocal stopped
+            if operation == 'inputs':
+                actions.append('work-start'); inflight.set()
+                await release.wait()
+                actions.append('work-end')
+                return {'result': {}}
+            assert actions[:2] == ['work-start', 'work-end'], 'checkpoint must wait for already running work'
+            actions.append(node_id)
+            if outcome == 'cancel':
+                stopped = True
+                await asyncio.sleep(.1)
+            if outcome == 'finish':
+                return {'result': {'action': 'finish', 'outcome': 'succeeded', 'complete': True}}
+            return {'result': {'action': 'resume', 'inputs': {}}}
+        executor = ProjectGraphExecutor(None, {}, emit, lambda: stopped, capability=request)
+        document = {'nodes': [node('fork', 'set_variable', variableName='start', variableValue='yes', parallel={'joinNodeId': 'join', 'outputs': {}}), node('work', 'project_data', operation='inputs'), node('manual-a', 'project_manual', reason='A'), node('manual-b', 'project_manual', reason='B'), node('join', 'set_variable', variableName='joined', variableValue='yes')], 'edges': [{'source': 'fork', 'target': identity} for identity in ['work', 'manual-a', 'manual-b']] + [{'source': identity, 'target': 'join'} for identity in ['work', 'manual-a', 'manual-b']]}
+        running = asyncio.create_task(executor.run({'document': document}))
+>       await asyncio.wait_for(inflight.wait(), 1)
+
+tests/unit/test_project_graph_executor.py:276: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fut = <Task cancelled name='Task-181' coro=<Event.wait() done, defined at /Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/locks.py:200>>
+timeout = 1
+
+    async def wait_for(fut, timeout):
+        """Wait for the single Future or coroutine to complete, with timeout.
+    
+        Coroutine will be wrapped in Task.
+    
+        Returns result of the Future or coroutine.  When a timeout occurs,
+        it cancels the task and raises TimeoutError.  To avoid the task
+        cancellation, wrap it in shield().
+    
+        If the wait is cancelled, the task is also cancelled.
+    
+        This function is a coroutine.
+        """
+        loop = events.get_running_loop()
+    
+        if timeout is None:
+            return await fut
+    
+        if timeout <= 0:
+            fut = ensure_future(fut, loop=loop)
+    
+            if fut.done():
+                return fut.result()
+    
+            await _cancel_and_wait(fut, loop=loop)
+            try:
+                return fut.result()
+            except exceptions.CancelledError as exc:
+                raise exceptions.TimeoutError() from exc
+    
+        waiter = loop.create_future()
+        timeout_handle = loop.call_later(timeout, _release_waiter, waiter)
+        cb = functools.partial(_release_waiter, waiter)
+    
+        fut = ensure_future(fut, loop=loop)
+        fut.add_done_callback(cb)
+    
+        try:
+            # wait until the future completes or the timeout
+            try:
+                await waiter
+            except exceptions.CancelledError:
+                if fut.done():
+                    return fut.result()
+                else:
+                    fut.remove_done_callback(cb)
+                    # We must ensure that the task is not running
+                    # after wait_for() returns.
+                    # See https://bugs.python.org/issue32751
+                    await _cancel_and_wait(fut, loop=loop)
+                    raise
+    
+            if fut.done():
+                return fut.result()
+            else:
+                fut.remove_done_callback(cb)
+                # We must ensure that the task is not running
+                # after wait_for() returns.
+                # See https://bugs.python.org/issue32751
+                await _cancel_and_wait(fut, loop=loop)
+                # In case task cancellation failed with some
+                # exception, we should re-raise it
+                # See https://bugs.python.org/issue40607
+                try:
+                    return fut.result()
+                except exceptions.CancelledError as exc:
+>                   raise exceptions.TimeoutError() from exc
+E                   TimeoutError
+
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/tasks.py:502: TimeoutError
+_ test_parallel_manual_waits_for_inflight_work_and_discards_queue_on_stop[finish] _
+
+fut = <Task cancelled name='Task-189' coro=<Event.wait() done, defined at /Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/locks.py:200>>
+timeout = 1
+
+    async def wait_for(fut, timeout):
+        """Wait for the single Future or coroutine to complete, with timeout.
+    
+        Coroutine will be wrapped in Task.
+    
+        Returns result of the Future or coroutine.  When a timeout occurs,
+        it cancels the task and raises TimeoutError.  To avoid the task
+        cancellation, wrap it in shield().
+    
+        If the wait is cancelled, the task is also cancelled.
+    
+        This function is a coroutine.
+        """
+        loop = events.get_running_loop()
+    
+        if timeout is None:
+            return await fut
+    
+        if timeout <= 0:
+            fut = ensure_future(fut, loop=loop)
+    
+            if fut.done():
+                return fut.result()
+    
+            await _cancel_and_wait(fut, loop=loop)
+            try:
+                return fut.result()
+            except exceptions.CancelledError as exc:
+                raise exceptions.TimeoutError() from exc
+    
+        waiter = loop.create_future()
+        timeout_handle = loop.call_later(timeout, _release_waiter, waiter)
+        cb = functools.partial(_release_waiter, waiter)
+    
+        fut = ensure_future(fut, loop=loop)
+        fut.add_done_callback(cb)
+    
+        try:
+            # wait until the future completes or the timeout
+            try:
+                await waiter
+            except exceptions.CancelledError:
+                if fut.done():
+                    return fut.result()
+                else:
+                    fut.remove_done_callback(cb)
+                    # We must ensure that the task is not running
+                    # after wait_for() returns.
+                    # See https://bugs.python.org/issue32751
+                    await _cancel_and_wait(fut, loop=loop)
+                    raise
+    
+            if fut.done():
+                return fut.result()
+            else:
+                fut.remove_done_callback(cb)
+                # We must ensure that the task is not running
+                # after wait_for() returns.
+                # See https://bugs.python.org/issue32751
+                await _cancel_and_wait(fut, loop=loop)
+                # In case task cancellation failed with some
+                # exception, we should re-raise it
+                # See https://bugs.python.org/issue40607
+                try:
+>                   return fut.result()
+                           ^^^^^^^^^^^^
+
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/tasks.py:500: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <asyncio.locks.Event object at 0x1139eba50 [unset]>
+
+    async def wait(self):
+        """Block until the internal flag is true.
+    
+        If the internal flag is true on entry, return True
+        immediately.  Otherwise, block until another coroutine calls
+        set() to set the flag to true, then return True.
+        """
+        if self._value:
+            return True
+    
+        fut = self._get_loop().create_future()
+        self._waiters.append(fut)
+        try:
+>           await fut
+E           asyncio.exceptions.CancelledError
+
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/locks.py:213: CancelledError
+
+The above exception was the direct cause of the following exception:
+
+outcome = 'finish'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize('outcome', ['resume', 'finish', 'cancel'])
+    async def test_parallel_manual_waits_for_inflight_work_and_discards_queue_on_stop(outcome):
+        actions = []
+        inflight = asyncio.Event()
+        release = asyncio.Event()
+        stopped = False
+        async def emit(*_args): await asyncio.sleep(0)
+        async def request(node_id, _visit, operation, _arguments):
+            nonlocal stopped
+            if operation == 'inputs':
+                actions.append('work-start'); inflight.set()
+                await release.wait()
+                actions.append('work-end')
+                return {'result': {}}
+            assert actions[:2] == ['work-start', 'work-end'], 'checkpoint must wait for already running work'
+            actions.append(node_id)
+            if outcome == 'cancel':
+                stopped = True
+                await asyncio.sleep(.1)
+            if outcome == 'finish':
+                return {'result': {'action': 'finish', 'outcome': 'succeeded', 'complete': True}}
+            return {'result': {'action': 'resume', 'inputs': {}}}
+        executor = ProjectGraphExecutor(None, {}, emit, lambda: stopped, capability=request)
+        document = {'nodes': [node('fork', 'set_variable', variableName='start', variableValue='yes', parallel={'joinNodeId': 'join', 'outputs': {}}), node('work', 'project_data', operation='inputs'), node('manual-a', 'project_manual', reason='A'), node('manual-b', 'project_manual', reason='B'), node('join', 'set_variable', variableName='joined', variableValue='yes')], 'edges': [{'source': 'fork', 'target': identity} for identity in ['work', 'manual-a', 'manual-b']] + [{'source': identity, 'target': 'join'} for identity in ['work', 'manual-a', 'manual-b']]}
+        running = asyncio.create_task(executor.run({'document': document}))
+>       await asyncio.wait_for(inflight.wait(), 1)
+
+tests/unit/test_project_graph_executor.py:276: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fut = <Task cancelled name='Task-189' coro=<Event.wait() done, defined at /Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/locks.py:200>>
+timeout = 1
+
+    async def wait_for(fut, timeout):
+        """Wait for the single Future or coroutine to complete, with timeout.
+    
+        Coroutine will be wrapped in Task.
+    
+        Returns result of the Future or coroutine.  When a timeout occurs,
+        it cancels the task and raises TimeoutError.  To avoid the task
+        cancellation, wrap it in shield().
+    
+        If the wait is cancelled, the task is also cancelled.
+    
+        This function is a coroutine.
+        """
+        loop = events.get_running_loop()
+    
+        if timeout is None:
+            return await fut
+    
+        if timeout <= 0:
+            fut = ensure_future(fut, loop=loop)
+    
+            if fut.done():
+                return fut.result()
+    
+            await _cancel_and_wait(fut, loop=loop)
+            try:
+                return fut.result()
+            except exceptions.CancelledError as exc:
+                raise exceptions.TimeoutError() from exc
+    
+        waiter = loop.create_future()
+        timeout_handle = loop.call_later(timeout, _release_waiter, waiter)
+        cb = functools.partial(_release_waiter, waiter)
+    
+        fut = ensure_future(fut, loop=loop)
+        fut.add_done_callback(cb)
+    
+        try:
+            # wait until the future completes or the timeout
+            try:
+                await waiter
+            except exceptions.CancelledError:
+                if fut.done():
+                    return fut.result()
+                else:
+                    fut.remove_done_callback(cb)
+                    # We must ensure that the task is not running
+                    # after wait_for() returns.
+                    # See https://bugs.python.org/issue32751
+                    await _cancel_and_wait(fut, loop=loop)
+                    raise
+    
+            if fut.done():
+                return fut.result()
+            else:
+                fut.remove_done_callback(cb)
+                # We must ensure that the task is not running
+                # after wait_for() returns.
+                # See https://bugs.python.org/issue32751
+                await _cancel_and_wait(fut, loop=loop)
+                # In case task cancellation failed with some
+                # exception, we should re-raise it
+                # See https://bugs.python.org/issue40607
+                try:
+                    return fut.result()
+                except exceptions.CancelledError as exc:
+>                   raise exceptions.TimeoutError() from exc
+E                   TimeoutError
+
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/tasks.py:502: TimeoutError
+_ test_parallel_manual_waits_for_inflight_work_and_discards_queue_on_stop[cancel] _
+
+fut = <Task cancelled name='Task-197' coro=<Event.wait() done, defined at /Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/locks.py:200>>
+timeout = 1
+
+    async def wait_for(fut, timeout):
+        """Wait for the single Future or coroutine to complete, with timeout.
+    
+        Coroutine will be wrapped in Task.
+    
+        Returns result of the Future or coroutine.  When a timeout occurs,
+        it cancels the task and raises TimeoutError.  To avoid the task
+        cancellation, wrap it in shield().
+    
+        If the wait is cancelled, the task is also cancelled.
+    
+        This function is a coroutine.
+        """
+        loop = events.get_running_loop()
+    
+        if timeout is None:
+            return await fut
+    
+        if timeout <= 0:
+            fut = ensure_future(fut, loop=loop)
+    
+            if fut.done():
+                return fut.result()
+    
+            await _cancel_and_wait(fut, loop=loop)
+            try:
+                return fut.result()
+            except exceptions.CancelledError as exc:
+                raise exceptions.TimeoutError() from exc
+    
+        waiter = loop.create_future()
+        timeout_handle = loop.call_later(timeout, _release_waiter, waiter)
+        cb = functools.partial(_release_waiter, waiter)
+    
+        fut = ensure_future(fut, loop=loop)
+        fut.add_done_callback(cb)
+    
+        try:
+            # wait until the future completes or the timeout
+            try:
+                await waiter
+            except exceptions.CancelledError:
+                if fut.done():
+                    return fut.result()
+                else:
+                    fut.remove_done_callback(cb)
+                    # We must ensure that the task is not running
+                    # after wait_for() returns.
+                    # See https://bugs.python.org/issue32751
+                    await _cancel_and_wait(fut, loop=loop)
+                    raise
+    
+            if fut.done():
+                return fut.result()
+            else:
+                fut.remove_done_callback(cb)
+                # We must ensure that the task is not running
+                # after wait_for() returns.
+                # See https://bugs.python.org/issue32751
+                await _cancel_and_wait(fut, loop=loop)
+                # In case task cancellation failed with some
+                # exception, we should re-raise it
+                # See https://bugs.python.org/issue40607
+                try:
+>                   return fut.result()
+                           ^^^^^^^^^^^^
+
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/tasks.py:500: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <asyncio.locks.Event object at 0x1139ae790 [unset]>
+
+    async def wait(self):
+        """Block until the internal flag is true.
+    
+        If the internal flag is true on entry, return True
+        immediately.  Otherwise, block until another coroutine calls
+        set() to set the flag to true, then return True.
+        """
+        if self._value:
+            return True
+    
+        fut = self._get_loop().create_future()
+        self._waiters.append(fut)
+        try:
+>           await fut
+E           asyncio.exceptions.CancelledError
+
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/locks.py:213: CancelledError
+
+The above exception was the direct cause of the following exception:
+
+outcome = 'cancel'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize('outcome', ['resume', 'finish', 'cancel'])
+    async def test_parallel_manual_waits_for_inflight_work_and_discards_queue_on_stop(outcome):
+        actions = []
+        inflight = asyncio.Event()
+        release = asyncio.Event()
+        stopped = False
+        async def emit(*_args): await asyncio.sleep(0)
+        async def request(node_id, _visit, operation, _arguments):
+            nonlocal stopped
+            if operation == 'inputs':
+                actions.append('work-start'); inflight.set()
+                await release.wait()
+                actions.append('work-end')
+                return {'result': {}}
+            assert actions[:2] == ['work-start', 'work-end'], 'checkpoint must wait for already running work'
+            actions.append(node_id)
+            if outcome == 'cancel':
+                stopped = True
+                await asyncio.sleep(.1)
+            if outcome == 'finish':
+                return {'result': {'action': 'finish', 'outcome': 'succeeded', 'complete': True}}
+            return {'result': {'action': 'resume', 'inputs': {}}}
+        executor = ProjectGraphExecutor(None, {}, emit, lambda: stopped, capability=request)
+        document = {'nodes': [node('fork', 'set_variable', variableName='start', variableValue='yes', parallel={'joinNodeId': 'join', 'outputs': {}}), node('work', 'project_data', operation='inputs'), node('manual-a', 'project_manual', reason='A'), node('manual-b', 'project_manual', reason='B'), node('join', 'set_variable', variableName='joined', variableValue='yes')], 'edges': [{'source': 'fork', 'target': identity} for identity in ['work', 'manual-a', 'manual-b']] + [{'source': identity, 'target': 'join'} for identity in ['work', 'manual-a', 'manual-b']]}
+        running = asyncio.create_task(executor.run({'document': document}))
+>       await asyncio.wait_for(inflight.wait(), 1)
+
+tests/unit/test_project_graph_executor.py:276: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fut = <Task cancelled name='Task-197' coro=<Event.wait() done, defined at /Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/locks.py:200>>
+timeout = 1
+
+    async def wait_for(fut, timeout):
+        """Wait for the single Future or coroutine to complete, with timeout.
+    
+        Coroutine will be wrapped in Task.
+    
+        Returns result of the Future or coroutine.  When a timeout occurs,
+        it cancels the task and raises TimeoutError.  To avoid the task
+        cancellation, wrap it in shield().
+    
+        If the wait is cancelled, the task is also cancelled.
+    
+        This function is a coroutine.
+        """
+        loop = events.get_running_loop()
+    
+        if timeout is None:
+            return await fut
+    
+        if timeout <= 0:
+            fut = ensure_future(fut, loop=loop)
+    
+            if fut.done():
+                return fut.result()
+    
+            await _cancel_and_wait(fut, loop=loop)
+            try:
+                return fut.result()
+            except exceptions.CancelledError as exc:
+                raise exceptions.TimeoutError() from exc
+    
+        waiter = loop.create_future()
+        timeout_handle = loop.call_later(timeout, _release_waiter, waiter)
+        cb = functools.partial(_release_waiter, waiter)
+    
+        fut = ensure_future(fut, loop=loop)
+        fut.add_done_callback(cb)
+    
+        try:
+            # wait until the future completes or the timeout
+            try:
+                await waiter
+            except exceptions.CancelledError:
+                if fut.done():
+                    return fut.result()
+                else:
+                    fut.remove_done_callback(cb)
+                    # We must ensure that the task is not running
+                    # after wait_for() returns.
+                    # See https://bugs.python.org/issue32751
+                    await _cancel_and_wait(fut, loop=loop)
+                    raise
+    
+            if fut.done():
+                return fut.result()
+            else:
+                fut.remove_done_callback(cb)
+                # We must ensure that the task is not running
+                # after wait_for() returns.
+                # See https://bugs.python.org/issue32751
+                await _cancel_and_wait(fut, loop=loop)
+                # In case task cancellation failed with some
+                # exception, we should re-raise it
+                # See https://bugs.python.org/issue40607
+                try:
+                    return fut.result()
+                except exceptions.CancelledError as exc:
+>                   raise exceptions.TimeoutError() from exc
+E                   TimeoutError
+
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/tasks.py:502: TimeoutError
+_ test_parallel_failure_awaits_sibling_cleanup_without_exporting_partial_values[command] _
+
+failure = 'command'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize('failure', ['command', 'transport'])
+    async def test_parallel_failure_awaits_sibling_cleanup_without_exporting_partial_values(failure):
+        committed = []
+        running = asyncio.Event()
+        cleaned = asyncio.Event()
+        async def emit(*_args): pass
+        async def request(node_id, _visit, _operation, _arguments):
+            if node_id == 'write':
+                committed.append('durable'); running.set()
+                try: await asyncio.Event().wait()
+                finally:
+                    await asyncio.sleep(.01)
+                    cleaned.set()
+            await running.wait()
+            if failure == 'transport': raise RuntimeError('later branch failed')
+            return {'error': {'code': 'LATER_BRANCH_FAILED'}}
+        executor = ProjectGraphExecutor(None, {'answer': 'parent'}, emit, lambda: False, capability=request)
+        document = {'nodes': [node('fork', 'set_variable', variableName='start', variableValue='yes', parallel={'joinNodeId': 'join', 'outputs': {'write': {'saved': 'answer'}}}), node('write', 'project_data', operation='inputs', variableName='saved'), node('fail', 'project_data', operation='inputs'), node('join', 'set_variable', variableName='joined', variableValue='yes')], 'edges': [{'source': 'fork', 'target': identity} for identity in ['write', 'fail']] + [{'source': identity, 'target': 'join'} for identity in ['write', 'fail']]}
+        if failure == 'transport':
+            with pytest.raises(RuntimeError, match='later branch failed'): await asyncio.wait_for(executor.run({'document': document}), 2)
+        else:
+>           assert (await asyncio.wait_for(executor.run({'document': document}), 2))['status'] == 'failed'
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/unit/test_project_graph_executor.py:310: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/tasks.py:489: in wait_for
+    return fut.result()
+           ^^^^^^^^^^^^
+src/autoflow/providers/browser/project_graph.py:200: in run
+    result = await WorkflowRuntime(registry).execute(subflows.top_level_document(), self.context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/application/workflows/runtime.py:103: in execute
+    return await _WorkflowScheduler(self._registry, graph, context).run(
+src/autoflow/application/workflows/runtime.py:187: in run
+    await self._execute_parallel(
+src/autoflow/application/workflows/runtime.py:215: in _execute_parallel
+    await asyncio.gather(*tasks)
+src/autoflow/application/workflows/runtime.py:226: in _execute_branch
+    await self._execute_claimed(node_id)
+src/autoflow/application/workflows/runtime.py:237: in _execute_claimed
+    result = await self._dispatch(node)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/application/workflows/runtime.py:288: in _dispatch
+    return await self._dispatch_node(node)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/application/workflows/runtime.py:445: in _dispatch_node
+    fork_result = await self._execute_fork(node, execution_id)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/application/workflows/runtime.py:484: in _execute_fork
+    child = replace(self.context, variables=copy.deepcopy(self.context.variables), sensitive_variables=set(self.context.sensitive_variables), loop_stack=copy.deepcopy(self.context.loop_stack), current_row=copy.deepcopy(self.context.current_row), current_node_id=None, current_execution_id=None, should_break=False, should_continue=False, stop_workflow=False, stop_reason='', node_boundary=boundary, execution_scopes=(*self.context.execution_scopes, {'kind': 'parallel', 'id': node.id, 'callNodeId': node.id, 'callVisitId': visit, 'branchNodeId': root, 'joinNodeId': fork.join_id}))
+                                                                                                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/copy.py:172: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/copy.py:271: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/copy.py:146: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/copy.py:231: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = <ContextVar name='workflow_branch_loop_stack' default=None at 0x113a7fd30>
+memo = {4624743664: [], 4628782272: {}}, _nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        if memo is None:
+            memo = {}
+    
+        d = id(x)
+        y = memo.get(d, _nil)
+        if y is not _nil:
+            return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle '_contextvars.ContextVar' object
+
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/copy.py:161: TypeError
+_ test_parallel_failure_awaits_sibling_cleanup_without_exporting_partial_values[transport] _
+
+failure = 'transport'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize('failure', ['command', 'transport'])
+    async def test_parallel_failure_awaits_sibling_cleanup_without_exporting_partial_values(failure):
+        committed = []
+        running = asyncio.Event()
+        cleaned = asyncio.Event()
+        async def emit(*_args): pass
+        async def request(node_id, _visit, _operation, _arguments):
+            if node_id == 'write':
+                committed.append('durable'); running.set()
+                try: await asyncio.Event().wait()
+                finally:
+                    await asyncio.sleep(.01)
+                    cleaned.set()
+            await running.wait()
+            if failure == 'transport': raise RuntimeError('later branch failed')
+            return {'error': {'code': 'LATER_BRANCH_FAILED'}}
+        executor = ProjectGraphExecutor(None, {'answer': 'parent'}, emit, lambda: False, capability=request)
+        document = {'nodes': [node('fork', 'set_variable', variableName='start', variableValue='yes', parallel={'joinNodeId': 'join', 'outputs': {'write': {'saved': 'answer'}}}), node('write', 'project_data', operation='inputs', variableName='saved'), node('fail', 'project_data', operation='inputs'), node('join', 'set_variable', variableName='joined', variableValue='yes')], 'edges': [{'source': 'fork', 'target': identity} for identity in ['write', 'fail']] + [{'source': identity, 'target': 'join'} for identity in ['write', 'fail']]}
+        if failure == 'transport':
+>           with pytest.raises(RuntimeError, match='later branch failed'): await asyncio.wait_for(executor.run({'document': document}), 2)
+                                                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/unit/test_project_graph_executor.py:308: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/tasks.py:489: in wait_for
+    return fut.result()
+           ^^^^^^^^^^^^
+src/autoflow/providers/browser/project_graph.py:200: in run
+    result = await WorkflowRuntime(registry).execute(subflows.top_level_document(), self.context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/application/workflows/runtime.py:103: in execute
+    return await _WorkflowScheduler(self._registry, graph, context).run(
+src/autoflow/application/workflows/runtime.py:187: in run
+    await self._execute_parallel(
+src/autoflow/application/workflows/runtime.py:215: in _execute_parallel
+    await asyncio.gather(*tasks)
+src/autoflow/application/workflows/runtime.py:226: in _execute_branch
+    await self._execute_claimed(node_id)
+src/autoflow/application/workflows/runtime.py:237: in _execute_claimed
+    result = await self._dispatch(node)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/application/workflows/runtime.py:288: in _dispatch
+    return await self._dispatch_node(node)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/application/workflows/runtime.py:445: in _dispatch_node
+    fork_result = await self._execute_fork(node, execution_id)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/application/workflows/runtime.py:484: in _execute_fork
+    child = replace(self.context, variables=copy.deepcopy(self.context.variables), sensitive_variables=set(self.context.sensitive_variables), loop_stack=copy.deepcopy(self.context.loop_stack), current_row=copy.deepcopy(self.context.current_row), current_node_id=None, current_execution_id=None, should_break=False, should_continue=False, stop_workflow=False, stop_reason='', node_boundary=boundary, execution_scopes=(*self.context.execution_scopes, {'kind': 'parallel', 'id': node.id, 'callNodeId': node.id, 'callVisitId': visit, 'branchNodeId': root, 'joinNodeId': fork.join_id}))
+                                                                                                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/copy.py:172: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/copy.py:271: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/copy.py:146: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/copy.py:231: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = <ContextVar name='workflow_branch_loop_stack' default=None at 0x113a45990>
+memo = {4624505328: [], 4631693056: {}}, _nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        if memo is None:
+            memo = {}
+    
+        d = id(x)
+        y = memo.get(d, _nil)
+        if y is not _nil:
+            return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle '_contextvars.ContextVar' object
+
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/copy.py:161: TypeError
+_ test_parallel_local_break_inside_outer_loop_and_subflow_stays_in_its_branch __
+
+    @pytest.mark.asyncio
+    async def test_parallel_local_break_inside_outer_loop_and_subflow_stays_in_its_branch():
+        starts = []
+        async def emit(kind, identity, _visit, payload):
+            await asyncio.sleep(0)
+            if kind == 'nodeAttempt' and payload['status'] == 'started': starts.append((identity, payload['executionContext']))
+        executor = ProjectGraphExecutor(None, {}, emit, lambda: False)
+        document = {'nodes': [
+            node('outer', 'loop', count=2, indexVariable='outerIndex'),
+            node('fork', 'set_variable', variableName='start', variableValue='yes', parallel={'joinNodeId': 'join', 'outputs': {'left': {'local': 'a'}, 'right': {'local': 'b'}}}),
+            node('left', 'loop', count=5, indexVariable='index'),
+            node('left-value', 'set_variable', variableName='local', variableValue='A-{outerIndex}-{index}'), node('break', 'break_loop'),
+            node('right', 'loop', count=3, indexVariable='index'),
+            node('call', 'subflow', subflowGroupId='child', inputs={'value': 'B-{outerIndex}-{index}'}, outputs={'answer': 'local'}),
+            node('child', 'subflow_header'), node('child-value', 'set_variable', variableName='answer', variableValue='{value}'),
+            node('join', 'set_variable', variableName='joined', variableValue='{a}/{b}'),
+            node('done', 'set_variable', variableName='finished', variableValue='yes'),
+        ], 'edges': [{'source': a, 'target': b, **({'sourceHandle': handle} if handle else {})} for a, b, handle in [('outer', 'fork', 'loop'), ('outer', 'done', 'done'), ('fork', 'left', None), ('fork', 'right', None), ('left', 'left-value', 'loop'), ('left-value', 'break', None), ('left', 'join', 'done'), ('right', 'call', 'loop'), ('right', 'join', 'done'), ('child', 'child-value', None)]]}
+>       assert (await executor.run({'document': document}))['status'] == 'succeeded'
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/unit/test_project_graph_executor.py:333: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/autoflow/providers/browser/project_graph.py:200: in run
+    result = await WorkflowRuntime(registry).execute(subflows.top_level_document(), self.context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/application/workflows/runtime.py:103: in execute
+    return await _WorkflowScheduler(self._registry, graph, context).run(
+src/autoflow/application/workflows/runtime.py:187: in run
+    await self._execute_parallel(
+src/autoflow/application/workflows/runtime.py:215: in _execute_parallel
+    await asyncio.gather(*tasks)
+src/autoflow/application/workflows/runtime.py:226: in _execute_branch
+    await self._execute_claimed(node_id)
+src/autoflow/application/workflows/runtime.py:264: in _execute_claimed
+    await self._handle_loop(node)
+src/autoflow/application/workflows/runtime.py:539: in _handle_loop
+    await self._execute_parallel(body_nodes)
+src/autoflow/application/workflows/runtime.py:215: in _execute_parallel
+    await asyncio.gather(*tasks)
+src/autoflow/application/workflows/runtime.py:226: in _execute_branch
+    await self._execute_claimed(node_id)
+src/autoflow/application/workflows/runtime.py:237: in _execute_claimed
+    result = await self._dispatch(node)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/application/workflows/runtime.py:288: in _dispatch
+    return await self._dispatch_node(node)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/application/workflows/runtime.py:445: in _dispatch_node
+    fork_result = await self._execute_fork(node, execution_id)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/application/workflows/runtime.py:484: in _execute_fork
+    child = replace(self.context, variables=copy.deepcopy(self.context.variables), sensitive_variables=set(self.context.sensitive_variables), loop_stack=copy.deepcopy(self.context.loop_stack), current_row=copy.deepcopy(self.context.current_row), current_node_id=None, current_execution_id=None, should_break=False, should_continue=False, stop_workflow=False, stop_reason='', node_boundary=boundary, execution_scopes=(*self.context.execution_scopes, {'kind': 'parallel', 'id': node.id, 'callNodeId': node.id, 'callVisitId': visit, 'branchNodeId': root, 'joinNodeId': fork.join_id}))
+                                                                                                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/copy.py:172: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/copy.py:271: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/copy.py:146: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/copy.py:231: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = <ContextVar name='workflow_branch_loop_stack' default=None at 0x113a47740>
+memo = {4624503248: [], 4631380352: {}}, _nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        if memo is None:
+            memo = {}
+    
+        d = id(x)
+        y = memo.get(d, _nil)
+        if y is not _nil:
+            return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle '_contextvars.ContextVar' object
+
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/copy.py:161: TypeError
+______ test_sensitive_values_keep_taint_across_explicit_outputs[parallel] ______
+
+boundary = 'parallel'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize('boundary', ['subflow', 'parallel'])
+    async def test_sensitive_values_keep_taint_across_explicit_outputs(boundary):
+        import json
+        secret = 'synthetic-review-secret'
+        events = []
+        async def emit(*event): events.append(event)
+        executor = ProjectGraphExecutor(None, {}, emit, lambda: False)
+        if boundary == 'subflow':
+            class Credentials:
+                def get_field(self, _name, _field): return secret
+            executor.context.credentials = Credentials()
+            nodes = [node('call', 'subflow', subflowGroupId='child', inputs={'input': '{{cred:test}}'}, outputs={'answer': 'merged'}), node('child', 'subflow_header'), node('write', 'set_variable', variableName='answer', variableValue='{input}'), node('after', 'set_variable', variableName='copy', variableValue='{merged}')]
+            edges = [{'source': 'child', 'target': 'write'}, {'source': 'call', 'target': 'after'}]
+        else:
+            executor.context.variables['secret'] = secret
+            executor.context.sensitive_variables.add('secret')
+            nodes = [node('fork', 'set_variable', variableName='start', variableValue='ok', parallel={'joinNodeId': 'after', 'outputs': {'left': {'secret': 'merged'}}}), node('left', 'set_variable', variableName='left', variableValue='ok'), node('right', 'set_variable', variableName='right', variableValue='ok'), node('after', 'set_variable', variableName='copy', variableValue='{merged}')]
+            edges = [{'source': 'fork', 'target': 'left'}, {'source': 'fork', 'target': 'right'}, {'source': 'left', 'target': 'after'}, {'source': 'right', 'target': 'after'}]
+>       assert (await executor.run({'document': {'nodes': nodes, 'edges': edges}}))['status'] == 'succeeded'
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/unit/test_project_graph_executor.py:362: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/autoflow/providers/browser/project_graph.py:200: in run
+    result = await WorkflowRuntime(registry).execute(subflows.top_level_document(), self.context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/application/workflows/runtime.py:103: in execute
+    return await _WorkflowScheduler(self._registry, graph, context).run(
+src/autoflow/application/workflows/runtime.py:187: in run
+    await self._execute_parallel(
+src/autoflow/application/workflows/runtime.py:215: in _execute_parallel
+    await asyncio.gather(*tasks)
+src/autoflow/application/workflows/runtime.py:226: in _execute_branch
+    await self._execute_claimed(node_id)
+src/autoflow/application/workflows/runtime.py:237: in _execute_claimed
+    result = await self._dispatch(node)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/application/workflows/runtime.py:288: in _dispatch
+    return await self._dispatch_node(node)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/application/workflows/runtime.py:445: in _dispatch_node
+    fork_result = await self._execute_fork(node, execution_id)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/application/workflows/runtime.py:484: in _execute_fork
+    child = replace(self.context, variables=copy.deepcopy(self.context.variables), sensitive_variables=set(self.context.sensitive_variables), loop_stack=copy.deepcopy(self.context.loop_stack), current_row=copy.deepcopy(self.context.current_row), current_node_id=None, current_execution_id=None, should_break=False, should_continue=False, stop_workflow=False, stop_reason='', node_boundary=boundary, execution_scopes=(*self.context.execution_scopes, {'kind': 'parallel', 'id': node.id, 'callNodeId': node.id, 'callVisitId': visit, 'branchNodeId': root, 'joinNodeId': fork.join_id}))
+                                                                                                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/copy.py:172: in deepcopy
+    y = _reconstruct(x, memo, *rv)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/copy.py:271: in _reconstruct
+    state = deepcopy(state, memo)
+            ^^^^^^^^^^^^^^^^^^^^^
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/copy.py:146: in deepcopy
+    y = copier(x, memo)
+        ^^^^^^^^^^^^^^^
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/copy.py:231: in _deepcopy_dict
+    y[deepcopy(key, memo)] = deepcopy(value, memo)
+                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+x = <ContextVar name='workflow_branch_loop_stack' default=None at 0x113dd9670>
+memo = {4628256224: [], 4628101632: {}}, _nil = []
+
+    def deepcopy(x, memo=None, _nil=[]):
+        """Deep copy operation on arbitrary Python objects.
+    
+        See the module's __doc__ string for more info.
+        """
+    
+        if memo is None:
+            memo = {}
+    
+        d = id(x)
+        y = memo.get(d, _nil)
+        if y is not _nil:
+            return y
+    
+        cls = type(x)
+    
+        copier = _deepcopy_dispatch.get(cls)
+        if copier is not None:
+            y = copier(x, memo)
+        else:
+            if issubclass(cls, type):
+                y = _deepcopy_atomic(x, memo)
+            else:
+                copier = getattr(x, "__deepcopy__", None)
+                if copier is not None:
+                    y = copier(memo)
+                else:
+                    reductor = dispatch_table.get(cls)
+                    if reductor:
+                        rv = reductor(x)
+                    else:
+                        reductor = getattr(x, "__reduce_ex__", None)
+                        if reductor is not None:
+>                           rv = reductor(4)
+                                 ^^^^^^^^^^^
+E                           TypeError: cannot pickle '_contextvars.ContextVar' object
+
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/copy.py:161: TypeError
+=============================== warnings summary ===============================
+.venv/lib/python3.11/site-packages/starlette/testclient.py:53
+  /Users/zhangtiancheng/.codex/worktrees/android-baseline-integration/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/unit/test_project_graph_executor.py::test_structured_parallel_loops_keep_independent_frames_and_explicit_outputs
+FAILED tests/unit/test_project_graph_executor.py::test_parallel_manual_queue_hands_off_before_ordinary_nodes_and_never_overlaps
+FAILED tests/unit/test_project_graph_executor.py::test_parallel_manual_waits_for_inflight_work_and_discards_queue_on_stop[resume]
+FAILED tests/unit/test_project_graph_executor.py::test_parallel_manual_waits_for_inflight_work_and_discards_queue_on_stop[finish]
+FAILED tests/unit/test_project_graph_executor.py::test_parallel_manual_waits_for_inflight_work_and_discards_queue_on_stop[cancel]
+FAILED tests/unit/test_project_graph_executor.py::test_parallel_failure_awaits_sibling_cleanup_without_exporting_partial_values[command]
+FAILED tests/unit/test_project_graph_executor.py::test_parallel_failure_awaits_sibling_cleanup_without_exporting_partial_values[transport]
+FAILED tests/unit/test_project_graph_executor.py::test_parallel_local_break_inside_outer_loop_and_subflow_stays_in_its_branch
+FAILED tests/unit/test_project_graph_executor.py::test_sensitive_values_keep_taint_across_explicit_outputs[parallel]
+9 failed, 44 passed, 1 warning in 10.89s

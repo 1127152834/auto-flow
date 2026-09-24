@@ -1,0 +1,22 @@
+{
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-am4-disk-full-2vvapbmx",
+  "status": "passed",
+  "deviceId": "d1e2682d-6f21-4ab8-a7ba-59324e5498cf",
+  "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "filesystemErrno": 28,
+  "freeBytesBeforeBackup": 2097152,
+  "backupFailureCode": "ANDROID_BACKUP_UNAVAILABLE",
+  "failedOperationState": "failed",
+  "noPublishedBackup": true,
+  "noStaging": true,
+  "replayProtected": true,
+  "newRequestBackupBytes": 19364012,
+  "backupId": "856fa8e0-acba-48be-8c50-8c18b5044298",
+  "bytesAtTransferCancel": 112640,
+  "cancelledOperationState": "needs_verification",
+  "cancelNoPublishedBackup": true,
+  "cancelNoStaging": true,
+  "sourceProbePreserved": true,
+  "ownedResourcesDeleted": true,
+  "privateDiskDetached": true
+}

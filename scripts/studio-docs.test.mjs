@@ -4,7 +4,7 @@ import { buildReport, realModules } from '../apps/desktop/src/renderer/domains/w
 
 test('Studio Chinese documentation audit covers exactly the retained catalog', () => {
   const modules = realModules()
-  assert.equal(modules.length, 227)
+  assert.equal(modules.length, 213)
   assert.ok(modules.some(module => module.type === 'text_to_speech'))
   assert.ok(!modules.some(module => module.type === 'read_excel' || module.type === 'notify_feishu' || module.type === 'db_connect' || module.type === 'dp_open_page'))
   const report = buildReport()

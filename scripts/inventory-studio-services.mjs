@@ -40,9 +40,15 @@ for (const { file, tree } of sources) walk(tree, node => {
     const id = `${node.name.getText(tree)}.${member.name.getText(tree)}`
     const requests = []
     walk(member, child => {
-      if (!ts.isCallExpression(child) || !/^(apiRequest|studioFetch|fetch)$/.test(child.expression.getText(tree))) return
-      registeredRequests.add(`${file}:${child.pos}`)
-      requests.push({ ...requestContract(child, tree), call: child.getText(tree), ...site(file, tree, child) })
+      if (!ts.isCallExpression(child)) return
+      const callee = child.expression.getText(tree)
+      if (/^(apiRequest|studioFetch|fetch)$/.test(callee)) {
+        registeredRequests.add(`${file}:${child.pos}`)
+        requests.push({ ...requestContract(child, tree), call: child.getText(tree), ...site(file, tree, child) })
+      } else if (file.endsWith('/api/mcp.ts') && callee === 'command' && ts.isStringLiteral(child.arguments[1])) {
+        const endpoint = child.arguments[1].text
+        requests.push({ endpoint: child.arguments[1].getText(tree), method: endpoint.endsWith('/config') ? 'PUT' : 'POST', body: child.arguments[2]?.getText(tree) ?? null, responseType: null, call: child.getText(tree), ...site(file, tree, child) })
+      }
     })
     services.set(id, { id: `service:${id}`, operation: id, ...site(file, tree, member), requests, consumers: [], status: '已登记' })
   }
@@ -89,7 +95,7 @@ const lines = [
   '| 图像元数据和变更响应 | 上传/重命名/移动/删除包络、分页和缺失资源错误；见 image-schema-validation.md、image-command-validation.md | 实际文件系统及原生资源端点 |',
   '| HTTP/SSE | 受控鉴权传输、连接代际隔离、序号补读、断帧不确认和监听器隔离；见 authenticated-transport.md、sse-framing-validation.md | 服务进程重启及真实事件生产 |',
   '| Debug 与运行 | pauseId/controlRevision/runId/executionId、断点、变量、日志和产物分页；见 F3 协议及诊断证据 | 真实浏览器执行、暂停和清理 |',
-  '| 节点必填字段 | 生成 DTO、覆盖列表、条件规则、失败重试及连接隔离；见 required-field-service-contract.md | 后端必须按 227 节点目录实现真实预检 |',
+  '| 节点必填字段 | 生成 DTO、覆盖列表、条件规则、失败重试及连接隔离；见 required-field-service-contract.md | 后端必须按 213 节点目录实现真实预检 |',
   '| 系统路径选择 | 生成请求/响应 DTO、成功/取消/失败和错误码；见 path-service-contract.md 和 path-tool-delivery.md | 真实宿主对话框及平台实机 |',
   '| MCP、凭据与 WebDAV | 保存确认、修订/命令身份、跨连接隔离、离开保护及扩展字段保留；见 mcp-service-contract.md 与 F5 专项证据 | 真实 MCP、秘密存储和远程文件服务 |',
   '| 拾取与录制 | 会话/页面/请求身份、分页、迟到结果隔离、停止及恢复；见 F4 专项证据 | 真实浏览器采集和进程清理 |', '',

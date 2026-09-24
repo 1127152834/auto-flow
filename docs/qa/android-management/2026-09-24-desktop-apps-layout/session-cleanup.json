@@ -1,0 +1,18 @@
+{
+  "devices": [
+    {
+      "deviceId": "3d819343-8b92-4e66-9db1-4dfd468b54c5",
+      "androidStatus": "missing",
+      "control": "idle",
+      "ownerRunId": null
+    },
+    {
+      "deviceId": "df7fd086-a8cb-5e14-8ab1-3922db919248",
+      "androidStatus": "missing",
+      "control": "idle",
+      "ownerRunId": null
+    }
+  ],
+  "ownedSidecars": [],
+  "passed": true
+}

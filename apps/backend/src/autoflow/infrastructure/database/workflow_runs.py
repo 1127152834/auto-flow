@@ -19,7 +19,12 @@ from autoflow.domain.workflows.runs import (
     WorkflowRunStart,
 )
 
-from .workflow_models import WorkflowRunArtifactRow, WorkflowRunEventRow, WorkflowRunRow
+from .workflow_models import (
+    WorkflowDebugCommandRow,
+    WorkflowRunArtifactRow,
+    WorkflowRunEventRow,
+    WorkflowRunRow,
+)
 
 
 def _iso(value: datetime) -> str:
@@ -328,7 +333,7 @@ class SqlAlchemyWorkflowRuns:
             rows = [
                 row
                 for row in candidates
-                if row.payload.get("status") in {"starting", "running", "paused"}
+                if row.payload.get("status") in {"starting", "running", "paused", "failed_paused"}
                 and row.payload.get("cleanupState") == "pending"
             ]
             for run in rows:
@@ -436,3 +441,86 @@ class SqlAlchemyWorkflowRuns:
                 {"run_id": run_id, "id": artifact_id},
             )
             return _artifact(row) if row is not None else None
+
+    def save_debug_command(
+        self,
+        run_id: str,
+        command_id: str,
+        *,
+        request_hash: str,
+        receipt: dict[str, Any],
+        http_status: int,
+    ) -> tuple[str, dict[str, Any], int]:
+        with self._session_factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            existing = session.scalar(
+                select(WorkflowDebugCommandRow)
+                .where(WorkflowDebugCommandRow.id == command_id)
+                .order_by(WorkflowDebugCommandRow.run_id)
+            )
+            if existing is not None:
+                result = self._debug_command(existing)
+                session.rollback()
+                return result
+            self._require_run(session, run_id)
+            row = WorkflowDebugCommandRow(
+                run_id=run_id,
+                id=command_id,
+                request_hash=request_hash,
+                payload={
+                    "receipt": copy.deepcopy(receipt),
+                    "httpStatus": http_status,
+                },
+            )
+            session.add(row)
+            session.commit()
+            return self._debug_command(row)
+
+    def get_debug_command(
+        self, command_id: str
+    ) -> tuple[str, dict[str, Any], int] | None:
+        with self._session_factory() as session:
+            row = session.scalar(
+                select(WorkflowDebugCommandRow)
+                .where(WorkflowDebugCommandRow.id == command_id)
+                .order_by(WorkflowDebugCommandRow.run_id)
+            )
+            return self._debug_command(row) if row is not None else None
+
+    def clear_variable_tracking(
+        self, run_id: str, *, now: datetime
+    ) -> WorkflowRunEvent:
+        with self._session_factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            run = self._require_run(session, run_id)
+            sequence = self._next_sequence(session, run_id)
+            row = WorkflowRunEventRow(
+                run_id=run_id,
+                seq=sequence,
+                payload={
+                    "type": "execution:variables_cleared",
+                    "occurredAt": _iso(now),
+                    "payload": {},
+                    "nodeId": None,
+                    "executionId": None,
+                },
+            )
+            session.add(row)
+            value = copy.deepcopy(run.payload)
+            value["eventCount"] = sequence
+            run.payload = value
+            session.commit()
+            return _event(row)
+
+    @staticmethod
+    def _debug_command(
+        row: WorkflowDebugCommandRow,
+    ) -> tuple[str, dict[str, Any], int]:
+        payload = copy.deepcopy(row.payload)
+        receipt = payload.get("receipt")
+        if not isinstance(receipt, dict):
+            receipt = payload
+        status = payload.get("httpStatus")
+        if not isinstance(status, int):
+            status = 200 if receipt.get("success") is True else 409
+        return row.request_hash, receipt, status

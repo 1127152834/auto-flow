@@ -46,6 +46,14 @@ it('reports service rejection as an error attached to the target node', async ()
   await waitFor(() => expect(store.getState().logs.at(-1)).toMatchObject({ nodeId, level: 'error' }))
   expect(store.getState().hasUnsavedChanges).toBe(false)
 })
+it('keeps selector testing disabled until picker cleanup is confirmed', async () => {
+  vi.spyOn(elementPickerApi, 'start').mockImplementation(() => new Promise(() => {}))
+  vi.spyOn(elementPickerApi, 'stop').mockResolvedValue({ success: true, data: { success: true, sessionId: 'picker', active: false, selected: false } })
+  render(<ConfigPanel selectedNodeId={nodeId} />)
+  fireEvent.click(screen.getByTitle('可视化选择元素'))
+  fireEvent.click(screen.getByRole('button', { name: '启动选择器' }))
+  expect((button() as HTMLButtonElement).disabled).toBe(true)
+})
 it('does not let an older response clear the newer node test spinner or replace its result', async () => {
   const releases: Array<(value: Awaited<ReturnType<typeof elementPickerApi.testSelector>>) => void> = []
   vi.spyOn(elementPickerApi, 'testSelector').mockImplementation(() => new Promise(resolve => { releases.push(resolve) }))

@@ -1,7 +1,7 @@
 {
   "evidenceId": "BE-B2-web-basic-family-2026-09-16",
-  "recordedAt": "2026-09-16",
-  "result": "11个批准的基础网页节点已完成冻结源码差分、生产注册、共享页面/iframe适配和真实HTTP协调器准入；真实CloakBrowser用例已建立但因本机无隔离测试内核而未执行，正式Electron集中验收尚未执行。",
+  "recordedAt": "2026-09-21",
+  "result": "11个批准的基础网页节点已完成冻结源码差分、生产注册、真实HTTP协调器准入、真实CloakBrowser provider和正式Electron开发入口闭环；工作流经UI保存、正常关闭重开后执行，弹窗、导航历史、iframe、日志及资源清理均已核验。",
   "source": {
     "repository": "reference/WebRPA",
     "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
@@ -50,23 +50,34 @@
     },
     "affectedRegression": {
       "command": "cd apps/backend && uv run pytest -q tests/differential/workflows/test_b2_web_basic_executor_parity.py tests/differential/workflows/test_b2_advanced_browser_executor_parity.py tests/unit/workflows/test_browser_session_contract.py tests/unit/workflows/test_executor_registry.py tests/contract/test_workflow_runs_api.py tests/integration/test_workflow_artifacts.py tests/integration/test_b2_web_basic_cloakbrowser_flow.py tests/integration/test_b2_advanced_browser_cloakbrowser_flow.py",
-      "result": "163 passed, 2 opt-in real-CloakBrowser tests skipped"
+      "result": "123 passed（差分、browser session、生产注册、HTTP合同、真实CloakBrowser）；仅有2条依赖弃用警告"
     },
     "capacityAndCancellation": {
       "test": "apps/backend/tests/integration/test_workflow_artifacts.py and apps/backend/tests/unit/workflows/test_browser_session_contract.py#test_workflow_worker_externalizes_large_node_result",
       "result": "二进制写盘后取消会删除未登记文件；超过64 KiB的JSON节点结果写入登记产物，worker事件只保留摘要和artifactIds"
+    },
+    "realCloakBrowser": {
+      "test": "apps/backend/tests/integration/test_b2_web_basic_cloakbrowser_flow.py",
+      "result": "1 passed with AUTOFLOW_B1_CLOAK_EXECUTABLE",
+      "coverage": "同一真实CloakBrowser会话执行11类基础网页节点；包含页面匹配、元素等待/悬停、脚本触发并处理alert、刷新、前进后退、iframe进入/退出和关闭页面"
+    },
+    "formalElectron": {
+      "script": "scripts/smoke-studio-backend-b2-web-basic.mjs",
+      "evidencePath": "docs/migration/studio-backend-migration/evidence/b2/formal-web-basic-electron-csD29H/result.json",
+      "result": "passed on darwin-arm64 development entry",
+      "coverage": "主窗口真实打开Studio；鼠标/键盘配置15节点、Monaco脚本、14条连线；HTTP/SQLite保存；BrowserWindow.close正常关闭重开；真实CloakBrowser执行；SSE、日志、结果与清理通过"
     }
   },
   "quality": {
     "ruff": "passed",
-    "mypy": "passed"
+    "mypy": "passed",
+    "formalScriptSyntax": "node --check passed"
   },
   "productionSha256BeforeCommit": "ba180f9027ba17ebaba0b1ff6bc80b9025ab8f57ad46dd07d0ea6f9493dcdee2",
   "notClaimed": [
-    "真实CloakBrowser基础网页动作矩阵",
-    "正式Electron UI执行",
-    "打包sidecar执行",
-    "macOS Intel或Windows验证"
+    "重建后的打包sidecar执行",
+    "macOS Intel或Windows验证",
+    "其余B2网页模块族和拾取闭环"
   ],
   "userDatabaseModified": false
 }

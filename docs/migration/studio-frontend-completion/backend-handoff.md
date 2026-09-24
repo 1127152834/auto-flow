@@ -11,20 +11,20 @@
 | [后端全局约束](../../automation-studio/BACKEND_GLOBAL_CONSTRAINTS.md) | 仅 CloakBrowser、仅批准节点、AutoFlow 分层、小助手使用 LangGraph | 用户确认，实施必须遵守 |
 | [后端迁入设计规格](../../superpowers/specs/2026-09-15-studio-backend-webrpa-migration-design.md) | 架构、执行语义、合同、持久化、生命周期和数据库兼容 | B0 已实施，B1 实施中 |
 | [后端迁入实施计划](../../superpowers/plans/2026-09-15-studio-backend-webrpa-migration-implementation.md) | B0–B9 任务、文件、接口、测试、退出门槛和估计 | B0 检查项已核销；从 B1 继续 |
-| [227 节点能力台账](capabilities.json) | 每节点冻结源码、符号、业务字段、目标模块和三条后端验收用例 | 227 项已映射；681 条后端用例尚未验收 |
+| [213 节点能力台账](capabilities.json) | 每节点冻结源码、符号、业务字段、目标模块和三条后端验收用例 | 213 项已映射；639 条后端验收槽位中 570 条已通过、69 条待验收 |
 | [共享后端能力映射](backend-support-mapping.json) | 文档、执行器、浏览器、运行、拾取、录制、Debug、模型/MCP、LangGraph 小助手、凭据、触发器和数据库兼容 | 13 个共享能力已映射，真实实现待迁入 |
 | [后端验收矩阵](../studio-backend-migration-validation.md) | 跨节点链路、故障、容量、平台与正式包验收 | 静态基线已核实，其余待真实实施 |
 
 已核实基线：
 
-- 有效范围为 227 个节点，类型集合以 [范围文档](scope-database-dp-cloakbrowser.md) 为准；中文单语言，不恢复排除节点及专属配套。
-- 冻结源码位于 `reference/WebRPA`，commit 为 `5ccb900e8dcf1530aae66f676d87593c416c7ebb`，产品版本 3.2.0。227 项均找到执行器入口，226 项由装饰器注册，`subflow` 手动注册。
+- 有效范围为 213 个节点，类型集合以 [范围文档](scope-database-dp-cloakbrowser.md) 为准；中文单语言，不恢复排除节点及专属配套。
+- 冻结源码位于 `reference/WebRPA`，commit 为 `5ccb900e8dcf1530aae66f676d87593c416c7ebb`，产品版本 3.2.0。213 项均找到执行器入口，212 项由装饰器注册，`subflow` 手动注册。
 - [上游许可证副本](../../../LICENSE.WebRPA) 与冻结仓库 LICENSE 哈希一致。项目负责人已确认在本项目范围内获准使用并迁入源码；不把该确认扩写为具体商业授权或公开发布授权。
 - 前端功能与 Mock 消费协议已经验收；真实后端目前只有 Studio DTO/OpenAPI schema 以及可复用的 Profile、CloakBrowser、模型、凭据、进程和工作区基础设施。`domain/workflows` 与 `application/workflows` 尚无生产实现。
 - 数据库代码已逐字恢复提交 `f573a44` 中的四个历史 revision，并用空操作 `0011_merge_android_project_data` 合并为唯一 head。临时历史库、故障回滚及只读副本检查器已通过；正式用户数据库副本仍为外部等待，本轮未读取或修改真实用户数据库。
 - Studio 小助手按最新用户决定使用 LangGraph 管理真实多轮状态、工具、权限、取消和恢复；普通工作流仍迁入 WebRPA 确定性执行器。
 
-当前阶段是 B1 五节点真实闭环。B1 通过标准是：正式 Studio 通过真实 UI 保存并重开五节点流程，读取主应用 Profile，在 CloakBrowser 执行真实网页动作，持久化日志/提取值/PNG，并在成功、失败或停止后完成 worker、浏览器和锁清理。B1 不会提前核销其余 222 个节点。
+当前阶段是 B1 五节点真实闭环。B1 通过标准是：正式 Studio 通过真实 UI 保存并重开五节点流程，读取主应用 Profile，在 CloakBrowser 执行真实网页动作，持久化日志/提取值/PNG，并在成功、失败或停止后完成 worker、浏览器和锁清理。B1 不会提前核销其余 208 个节点。
 
 当前没有需要用户决定的产品冲突，源码使用授权不再是实施阻塞。正式数据库副本、跨平台机器和第三方凭据属于后续验收环境等待。
 

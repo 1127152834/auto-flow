@@ -260,3 +260,37 @@ proposed：本轮完整规格尚未确认，6组补图未生成；参数定义�
 2026-09-21 最新校正（confirmed，来源 input-environment-follow-through.json）：XE-A23 真实包链暴露输入环境启动仍要求默认 Profile，修复为实际领取事务冻结所选环境 Profile、忽略无关默认配置、解析失败不创建 Task/lease。54 定向、ruff/mypy/OpenAPI、100 脚本、PyInstaller 和完整真实人员/邮箱/账号恢复链通过，独立复审无 P1/P2。人员预先关联另一环境且全程关联/数据版本不变；邮箱原筛选不再创建 Task，新账号仅一条。当前 204 有断言/47 无直接场景，188 partial/63 planned/0 verified。新增生产改动需要新三平台矩阵；52936b6a Windows/ARM 成功保留，Intel attempt 2 因新候选取消。S1–S5 架构仍待确认，releaseAccepted=false。
 
 2026-09-22 PM9 最新状态（confirmed；来源 shared-data-follow-through.json、shared-data-final-review.json、coverage-audit.json）：上文 S1–S5/共享 C1–C4/R1–R5 待确认或实施中的状态已由用户批准与后续实现 supersede。全部授权切片已接通；S4 仅安全新文件/Job 所有权子集，既有文件覆盖/追加/读取仍拒绝。一次整批 C/R 审查 3 Important 已 RED→GREEN 修复，0 Critical/Minor；本机完整后端 3440/67、前端 5469/409 通过。后续仅测试/证据改变，当前生产源码 3c02b51f；原生 CI d75297fb 的 Intel 继续，Windows/ARM 修正测试后以 0d7524d9 补跑，结果以 verification.json 为准。235 有范围断言/16 未定位/198 partial/53 planned/0 verified；D1 普通来源业务格式错误保留与诊断已获批准并实现：安全来源 Scalar 在 Sheets/XLSX 保留原值并派生 validationIssues，身份、人工写入和 unsafe wire Scalar 仍严格；当前候选 5d1f4608，三平台 Actions 35638303073 待完成，真实 worker/打包完整链/实网授权/实机安装仍待验收。M1–M3 未批准；Google 当前授权/打包完整链、签名与三平台实机专项仍外部条件，PM6 历史实网证据有效。releaseAccepted=false，不合并或发布。
+
+## 安卓桌面布局与确认焦点（2026-09-24，confirmed，隔离分支）
+
+来源：`codex/android-management-complete` 的 `docs/qa/android-management/2026-09-24-desktop-apps-layout.md`，真实Electron/Lima/ReDroid与22项组件回归。
+
+- 安卓创建页在1280×800/1440×900、100%/200%通过真实布局断言；长设备名标题使用最小高度与换行，避免覆盖详情标签。
+- 应用破坏性确认复用共享Dialog；取消初始焦点与键盘圈定，未知结果触发器禁用时回搜索框。卸载请求提交时选择搜索框作为恢复目标，避免异步列表移除按钮后焦点丢失。
+- 真实清除/卸载与备份恢复读回已完成，自建资源已清理。本条只确认该有界切片；最终全量门禁与整个AM1–AM4验收状态以QA报告为准。
+
+- 2026-09-24 批次取消增量（confirmed 软件与真实 HTTP；完整 UI partial）：取消未准入项、冻结动作重试、确认终态后的新批次入口及筛选零匹配保留已实现；修复容量 await/跨批次旧快照/核实 await 覆盖取消和幂等回执。前端160项、后端47项定向通过；独立最终复审无Critical/Important；真实ReDroid容量等待取消、服务重启原编号重放保持cancelled且自建资源清理missing。最终全量后端4048passed/26skipped/2warnings、前端424文件/5650项及工程门禁通过；Mac锁屏阻塞真实UI，进度隐藏页检查与T14/T16等剩余项未关闭。见[报告](../../docs/qa/android-management/2026-09-24-bulk-actions.md)。
+
+- 2026-09-24 隐藏页与观察增量（confirmed 软件/真实后端，整体partial）：批次状态GET隐藏时暂停、可见恢复，一行修复经RED 1 failed→GREEN 69 passed；1/5台真实API P95为6.177/12.495ms，列表内inspect均0，后台间隔3.23–3.34/4.15–4.21秒，停机约15.8秒；5台自建资源均核实missing。Mac锁屏继续阻塞桌面隐藏页/前台/新批次入口，十台及GApps条件未变。完整前端424文件/5651项（722.44s）及类型/lint/OpenAPI/build全部exit0；结构4/脚本95/迁移6项通过，当前102步骤85passed/14not_run/3blocked不虚增。见[完整证据](../../docs/qa/android-management/2026-09-24-observation.md)。
+
+- 2026-09-24 规格复核修复（confirmed软件定向，真实桌面blocked）：原T13.4逐项结果证据范围过宽，本轮直接渲染冻结result.items的全部状态/错误/重试来源，accepted不再误报未知但继续冻结；镜像未知拉取补现有POST核实、原编号重试及A成功/B响应丢失的身份栅栏。4项初始RED加1项连续请求RED后，Android166项/类型/lint通过，最终增量复审无Critical/Important；完整前端424文件/5656项通过（750.46s），类型/lint/OpenAPI/build均exit0，真实UI仍受Mac锁屏阻塞。见[实际证据](../../docs/qa/android-management/2026-09-24-item-results-image-recovery.md)。
+
+- 2026-09-24 持久拉取恢复（confirmed 软件/真实HTTP，桌面blocked）：重启后按工作区分页发现未知拉取、原编号显式核实、新拉取冻结及422前置拒绝恢复输入已实现；后端34项、Android171项及类型/lint/OpenAPI/build通过，增量审查无C/I。真实强杀重启列表total1→核实→0，pull仅1次，基础镜像保留；未创建用户设备。AM-R12磁盘预检仍待实现，不能归为外部blocked。见[证据](../../docs/qa/android-management/2026-09-24-persistent-pull.md)。
+
+- 2026-09-24 最快验收（confirmed，整体不通过/partial）：当前Android后端477项、前端177项、迁移6项及工程门禁通过；真实备份磁盘预检零写入拒绝、释放后估计=实际18595840字节、传输取消及自有资源清理通过。最终限时审查新增备份跨动作未知编号覆盖已RED→GREEN关闭；创建/拉取磁盘准入和宿主/VM数值展示仍Important。Mac已解锁，最终构建首页/无效拉取恢复输入实机通过，其余完整UI改记not_run；十台/GApps仍blocked。最后候选全仓全量未重跑，旧数字不代替；见[完整验收命令及输出](../../docs/qa/android-management/2026-09-24-final-acceptance.md)。
+
+- 2026-09-24 磁盘观测（confirmed，整体partial）：宿主workspace与VM实际DockerRootDir可用字节分别透传HTTP/OpenAPI并展示，0与unknown分开；真实Mac只读路由及最终构建页面刷新通过。创建/拉取准入仍未实现，不能以两侧数值展示代替。证据：[验证报告](../../docs/qa/android-management/2026-09-24-disk-observation.md)。 最终本候选完整后端4069passed/26skipped/2warnings（880.33s）、前端424文件/5670项（213.55s）、Android后端485/前端180、迁移6及类型/lint/OpenAPI/结构4/脚本95/build通过；增量审查无新增C/I。
+
+- 2026-09-24（confirmed，整体partial）：18b75c49镜像拉取磁盘准入、严格未知确认和请求冻结已实现；真实未确认0pull、确认后强杀/重启/核实1pull通过。真实Electron批量筛选选择保留、目标冻结、取消未开始项、新批次通过，AC15关闭；两台自建资源已清理。创建/复制/恢复准入与最终全仓验证待Task4，不能沿用旧完整结果当本候选通过。见[验收证据](../../docs/qa/android-management/2026-09-24-pull-disk-and-bulk.md)。
+
+2026-09-24后续confirmed：真实Electron重启发现未知pull、核实前拒绝新请求、显式核实succeeded并清空历史、改引用撤销确认已验；自有登记已撤销。c4b6159d修复202/failed重放误报已接受，187前端回归通过，独立复审进行中。
+
+2026-09-24 当前准入状态（confirmed，整体partial；supersedes以上创建/拉取未完成的进度快照）：Task3及Task4已完成API/OpenAPI/provider/四UI入口并独立审查通过，最终真实Mac创建/保留卷恢复/备份恢复/模板批量/复制/拒绝后重试通过，8条自建记录已清理。严格当前请求确认、来源确认不继承、实际宿主Lima磁盘与VM检查、恢复写前重检见[事实记录](../knowledge/2026-09-24-android-disk-admission.md)。新确认UI仍因Mac再次锁屏blocked，最终全分支与完整门禁以[验收报告](../../docs/qa/android-management/2026-09-24-create-disk-admission.md)为准，不套用历史数字。
+
+2026-09-24 最终审查修复（confirmed软件/真实后端，整体partial）：78bf8c92关闭五项Important：旧核实投影覆盖新代次/owner、镜像核实复活墓碑、隐藏时TanStack停心跳、停机与删源备份维护不可达、当前recover误接历史verify。534项Android后端和199项Android前端通过；独立复审C/I均0。[修复后真实Mac](../../docs/qa/android-management/2026-09-24-final-review-fixes/real-mac.json)含永久删源后恢复新ID/卷与原探针读回，9条自建记录全部清理。最终完整前端5689项、后端4118passed/26skipped/2warnings及规定工程门禁通过，见[当前验收汇总](../../docs/qa/android-management/2026-09-24-final-acceptance.md)。实际Electron长隐藏/新入口锁屏blocked，Node本轮26.7.0；额外mypy6条既存诊断与修复前基线一致。
+
+2026-09-24补充真实验收（confirmed）：旧后端a92f0688真实创建的SQLite0019/temporary实例向前升级am01，身份/卷/配置/数据保留；发现原批次缺sourceDeviceId而当前默认null导致重放409，0f6f8fac仅比较时归一化后真实重放202，新temporary仍拒绝。真实备份目录权限拒绝也已通过，未知结果不自动重放，源数据和清理核实通过。见knowledge/2026-09-24-android-legacy-upgrade.md及最终验收报告；同发布入口组合桌面链仍未验，整体partial。
+
+2026-09-24镜像网络故障补验（confirmed）：独立Docker/containerd、相同overlayfs后端，经真实TLS代理在下载层落盘3MiB后断开；生产HTTP失败回执/同编号重放/重启保持，恢复网络新编号拉取成功且固定imageId一致，全部自有测试运行时清理、原资源未变。详见knowledge/2026-09-24-android-network-interruption.md。桌面仍锁屏；没有修改生产代码或改变整体partial结论。
+
+2026-09-24 Android/PM9本地baseline集成（confirmed）：用户明确要求将Android746c9c5b合入已含PM9的c6e02427；新增0020_merge_android_pm9汇合两侧迁移，旧迁移字节保留。ContextVar栈与PM9 fork复制冲突及变量字段基线自动合并漏计均已修复。合并树后端4466passed/103skipped、前端5725passed及工程门禁通过，独立审查无未解决C/I；不推送、不提升Android partial或PM9 releaseAccepted=false。见sessions/2026-09-24-android-baseline-integration.md与同名QA报告。

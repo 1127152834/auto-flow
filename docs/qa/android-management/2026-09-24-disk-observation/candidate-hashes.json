@@ -1,0 +1,10 @@
+{
+  "apps/backend/src/autoflow/adapters/http/android_management.py": "7379a7710446f0852897ab0411e7d50c615ad15bb0bc93b248eb9b36097a1126",
+  "apps/backend/src/autoflow/adapters/http/android_management_schemas.py": "f2398db51bfb3dec43960a20d37cc90ac61201b880199bf8e53189519a17e771",
+  "apps/backend/src/autoflow/providers/android/mac_runtime.py": "95e6b3efd44c5f036a58814a1bfd58927cb0c134884e3112d58af0dcded3bfa8",
+  "apps/backend/tests/contract/test_android_management_environment.py": "0c556ac22d950a5ad9e64991bfcf3ce59ec17b35d1077cbfd6d916e4fe584895",
+  "apps/backend/tests/unit/test_android_runtime.py": "9cd3d121bd0f7f60f50a5826321457224fbd380033c8107a95952e1b6d54ab56",
+  "apps/desktop/src/renderer/domains/android/components/RuntimeDiagnostics.tsx": "fc5d416308ba22770e602ce598661fbfc13a2ab726d45a326673b0657765c760",
+  "apps/desktop/src/renderer/domains/android/tests/RuntimeDiagnostics.test.tsx": "1168afcb8fa0da4a35c355d72613ac8981f2094a1c8aaf8280be2b3b941a2582",
+  "apps/desktop/src/renderer/shared/api/generated.ts": "e636597f3079fb2acd37a759ec1563d66ae58e05371d9cb3b065f8f565fad0be"
+}

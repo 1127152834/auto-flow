@@ -1,0 +1,50 @@
+{
+  "evidenceId": "BE-B6-021-image-trigger",
+  "recordedAt": "2026-09-21",
+  "classification": "原版功能迁入 + AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "reference/WebRPA/backend/app/executors/trigger.py#ImageTriggerExecutor"
+    ],
+    "license": "LICENSE.WebRPA"
+  },
+  "nodes": ["image_trigger"],
+  "implemented": [
+    "保留模板路径、置信度、轮询间隔、无限或有限等待、可选搜索区域及image_event结果变量",
+    "保留OpenCV灰度TM_CCOEFF_NORMED匹配、最高置信度超时信息和匹配中心坐标",
+    "模板读取和屏幕抓取/匹配在worker线程执行，事件循环可在轮询边界响应停止",
+    "生产运行无需CloakBrowser，但继续由独立workflow worker隔离屏幕访问和依赖"
+  ],
+  "adaptations": [
+    "原版全屏分支在非Windows仍无条件访问ctypes.windll；迁入统一使用Pillow ImageGrab的多屏能力，Windows不增加pywin32专属依赖",
+    "耗时图像解码、截图和模板匹配通过asyncio.to_thread执行",
+    "超时计时使用monotonic clock，避免系统时间调整改变等待期限"
+  ],
+  "checks": [
+    {
+      "command": "pytest image trigger unit and frozen-source differential, registry, scope, worker protocol and worker manager",
+      "result": "130 passed",
+      "covers": "真实OpenCV模板匹配差分、路径校验、区域偏移、坐标、置信度、变量写回、超时、生产注册和共享worker回归"
+    },
+    {
+      "command": "Ruff and mypy",
+      "result": "passed",
+      "covers": "迁入执行器、生产注册和差分工具"
+    }
+  ],
+  "boundaries": {
+    "screenInput": "deterministic generated PNG supplied through the real OpenCV/Pillow path",
+    "workspace": "pytest temporary directory",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "mockExecutionUsedForBackendEvidence": false,
+    "formalElectronUiTested": false,
+    "nativeScreenCaptureTested": false
+  },
+  "remaining": [
+    "macOS授予正式AutoFlow录屏权限后验证真实桌面全屏和区域匹配、负坐标多显示器及停止延迟",
+    "Windows验证DPI缩放、多显示器坐标和正式冻结包中的Pillow截图后端",
+    "正式Electron真实UI中配置、保存、关闭重开并执行图像触发器"
+  ]
+}

@@ -9,11 +9,27 @@ from fastapi.responses import JSONResponse
 
 from autoflow.adapters.http.android import android_router
 from autoflow.adapters.http.android_fleet import android_fleet_router
+from autoflow.adapters.http.android_management import (
+    android_management_internal_router,
+    android_management_router,
+)
 from autoflow.adapters.http.errors import error_response, install_error_handlers
+from autoflow.adapters.http.image_assets import image_assets_router
+from autoflow.adapters.http.local_workflows import local_workflows_router
 from autoflow.adapters.http.openapi import configure_openapi
+from autoflow.adapters.http.studio_credentials import studio_credentials_router
+from autoflow.adapters.http.studio_retention import studio_retention_router
+from autoflow.adapters.http.workflow_bundles import workflow_bundles_router
 from autoflow.adapters.http.workflow_catalog import workflow_catalog_router
+from autoflow.adapters.http.workflow_schedules import workflow_schedules_router
+from autoflow.application.android.backups import AndroidBackupService
+from autoflow.application.android.bulk import AndroidBulkService
+from autoflow.application.android.cleanup import CleanupService
 from autoflow.application.android.console import AndroidConsole
+from autoflow.application.android.diagnostics import EnvironmentCheckService
 from autoflow.application.android.fleet import AndroidFleet
+from autoflow.application.android.images import AndroidImageService
+from autoflow.application.android.observations import DeviceObservationService
 from autoflow.application.environments.service import EnvironmentService
 from autoflow.application.kernels.service import KernelService
 from autoflow.application.models.service import ModelService
@@ -60,7 +76,17 @@ from autoflow.application.projects.overview import ProjectOverviewService
 from autoflow.application.projects.service import ProjectService
 from autoflow.application.projects.statistics import ProjectStatisticsService
 from autoflow.application.settings.runtime import QuiesceGate, SettingsRuntimeService
+from autoflow.application.workflows.bundles import WorkflowBundleService
+from autoflow.application.workflows.credentials import StudioCredentialService
+from autoflow.application.workflows.image_assets import ImageAssetStore
+from autoflow.application.workflows.local_files import LocalWorkflowFiles
+from autoflow.application.workflows.retention import StudioRetentionService
+from autoflow.application.workflows.schedule_notifications import (
+    WorkflowScheduleNotifier,
+)
+from autoflow.application.workflows.schedules import WorkflowScheduleService
 from autoflow.application.workflows.service import WorkflowService
+from autoflow.application.workflows.webdav import WebDavWorkflowService
 from autoflow.bootstrap.android import CurrentAndroidRunBoundary, android_service
 from autoflow.bootstrap.config import Settings
 from autoflow.bootstrap.http_routes import (
@@ -88,6 +114,9 @@ from autoflow.domain.profiles.ports import (
     ProfileUsageGuard,
 )
 from autoflow.infrastructure.credentials.cloakbrowser import CloakBrowserLicenseStore
+from autoflow.infrastructure.database.android_operations import (
+    SqlAlchemyAndroidOperationRepository,
+)
 from autoflow.infrastructure.database.android_resources import AndroidResourceRepository
 from autoflow.infrastructure.database.environments import SqlAlchemyEnvironments
 from autoflow.infrastructure.database.kernel_operations import (
@@ -150,6 +179,13 @@ from autoflow.infrastructure.database.session import (
 from autoflow.infrastructure.database.settings_runtime import (
     SqlAlchemySettingsRuntimeRepository,
 )
+from autoflow.infrastructure.database.studio_credentials import (
+    SqlAlchemyStudioCredentials,
+)
+from autoflow.infrastructure.database.studio_retention import SqlAlchemyStudioRetention
+from autoflow.infrastructure.database.workflow_schedules import (
+    SqlAlchemyWorkflowSchedules,
+)
 from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
 from autoflow.infrastructure.events.kernel_events import KernelEventBroker
 from autoflow.infrastructure.filesystem.environment_store import EnvironmentStore
@@ -166,6 +202,7 @@ from autoflow.infrastructure.filesystem.profile_environment import (
 )
 from autoflow.infrastructure.process.kernel_worker import KernelWorkerManager
 from autoflow.infrastructure.process.test_browser_worker import TestBrowserWorkerManager
+from autoflow.providers.android.image_catalog import ImageCatalog
 from autoflow.providers.android.stream import AndroidStream
 from autoflow.providers.browser.environment_browser import EnvironmentBrowserLauncher
 from autoflow.providers.data import google_auth
@@ -213,6 +250,7 @@ def create_app(
     )
     kernel_worker_manager.recover_interrupted()
     credentials = LazySystemCredentialStore()
+    active_credentials = credential_store or credentials
     catalog_provider = CloakBrowserCatalogProvider(
         paths.kernels, licensed_catalog=kernel_worker_manager.licensed_catalog
     )
@@ -250,7 +288,7 @@ def create_app(
 
     model_service = ModelService(
         partial(model_repository_transaction, session_factory),
-        credential_store if credential_store is not None else credentials,
+        active_credentials,
         model_gateway or HttpModelProvider(),
         resource_references,
     )
@@ -320,10 +358,53 @@ def create_app(
         kernels_root=paths.kernels,
         temp_root=paths.temp,
         artifact_root=paths.workspace,
+        models=model_service,
+        credential_store=active_credentials,
     )
     workflow_services.runs.recover_interrupted()
+    webdav_workflows = WebDavWorkflowService(paths.workspace, active_credentials)
+    app.state.webdav_workflows = webdav_workflows
+    schedule_repository = SqlAlchemyWorkflowSchedules(session_factory)
+    local_workflows = LocalWorkflowFiles(
+        paths.workspace,
+        webdav_workflows,
+        schedule_repository.ensure_workflow_unreferenced,
+    )
+    app.state.local_workflows = local_workflows
+    image_assets = ImageAssetStore(paths.workspace)
+    app.state.image_assets = image_assets
+    workflow_bundles = WorkflowBundleService(workflow_services.modules, image_assets)
+    app.state.workflow_bundles = workflow_bundles
+    studio_credentials = StudioCredentialService(
+        SqlAlchemyStudioCredentials(session_factory), active_credentials
+    )
+    app.state.studio_credentials = studio_credentials
+    studio_retention = StudioRetentionService(
+        SqlAlchemyStudioRetention(session_factory), paths.workspace
+    )
+    app.state.studio_retention = studio_retention
+    workflow_schedules = WorkflowScheduleService(
+        schedule_repository,
+        local_workflows,
+        workflow_services.commands,
+        workflow_services.runs,
+        gate=quiesce_gate,
+        notifier=WorkflowScheduleNotifier(studio_credentials),
+    )
+    app.state.workflow_schedules = workflow_schedules
+    app.router.add_event_handler("startup", studio_retention.startup)
+    app.router.add_event_handler("startup", workflow_schedules.startup)
     android = android_service(session_factory, paths.workspace)
     android_resources = AndroidResourceRepository(session_factory)
+    android_operations = SqlAlchemyAndroidOperationRepository(session_factory)
+    android_images = AndroidImageService(android_resources, android, ImageCatalog(android.runtime))
+    android.runtime.image_catalog = android_images
+    android_backups = AndroidBackupService(android_resources, paths.workspace, android_operations)
+    android_observations = DeviceObservationService(android.repository, android.runtime)
+    android_bulk = AndroidBulkService(android_resources, android)
+    android_cleanup = CleanupService(android_resources, android, android_backups, android_operations)
+    android.management.operations = android_operations
+    android.management.workspace_identity = str(paths.workspace.resolve())
     android_runs = CurrentAndroidRunBoundary()
     android_fleet = AndroidFleet(android, android_resources, None, android_runs)
     android_console = AndroidConsole(
@@ -332,9 +413,14 @@ def create_app(
     app.state.android_service = android
     app.state.android_fleet = android_fleet
     app.state.android_console = android_console
+    app.state.android_operations = android_operations
+    app.state.android_observations = android_observations
+    app.state.android_bulk = android_bulk
     app.router.add_event_handler("startup", android.recover)
     app.router.add_event_handler("startup", android_fleet.start)
     app.router.add_event_handler("startup", android_console.start)
+    app.router.add_event_handler("startup", android_observations.start)
+    app.router.add_event_handler("startup", android_bulk.start)
 
     environment_store = EnvironmentStore(paths.workspace / "environments")
 
@@ -374,7 +460,7 @@ def create_app(
     sheets_impacts = SqlAlchemySheetsImpacts(session_factory)
     sheets_repository = SqlAlchemyProjectSync(session_factory, sheets_impacts)
     sheets_tokens = google_tokens or HttpxTokenTransport()
-    google_credentials = credential_store or credentials
+    google_credentials = active_credentials
     sheets_access = GoogleAccess(
         sheets_repository,
         google_credentials,
@@ -477,6 +563,7 @@ def create_app(
             ),
             *(["test_browser_process_active"] if test_browser_workers.busy() else []),
             *workflow_services.blockers(),
+            *workflow_schedules.blockers(),
             *(["android_management_active"] if android.management.busy() else []),
             *(["android_console_active"] if android_console.busy() else []),
         ],
@@ -506,6 +593,7 @@ def create_app(
             project_excel.shutdown()
             status_batch_coordinator.shutdown()
             await asyncio.to_thread(status_batch_executor.shutdown, wait=True)
+            await workflow_schedules.shutdown()
 
             async def close_project_workflows() -> None:
                 try:
@@ -515,10 +603,13 @@ def create_app(
                     await project_workflow_dispatcher.shutdown()
 
             results = await asyncio.gather(
+                studio_retention.shutdown(),
                 workflow_services.shutdown(),
                 android.management.shutdown(),
                 android_fleet.shutdown(),
                 android_console.shutdown(),
+                android_observations.shutdown(),
+                android_bulk.shutdown(),
                 close_project_workflows(),
                 test_browser_workers.shutdown(),
                 kernel_worker_manager.shutdown(),
@@ -556,7 +647,15 @@ def create_app(
         instance_id=settings.instance_id,
     )
     register_workflow_routes(app, workflow_services)
+    app.include_router(local_workflows_router(local_workflows, webdav_workflows))
+    app.include_router(image_assets_router(image_assets))
+    app.include_router(workflow_bundles_router(workflow_bundles))
+    app.include_router(studio_credentials_router(studio_credentials))
+    app.include_router(studio_retention_router(studio_retention))
+    app.include_router(workflow_schedules_router(workflow_schedules))
     app.include_router(android_router(android))
+    app.include_router(android_management_router(EnvironmentCheckService(android.runtime), android_operations, android_images, android_resources, android_backups, android, android_bulk, android_cleanup, android_resources, observations=android_observations))
+    app.include_router(android_management_internal_router(android_resources, lambda: android.management.workspace_identity))
     app.include_router(android_fleet_router(android_fleet, android_console))
     project_workflow_service = WorkflowService(
         SqlAlchemyWorkflowRepository(session_factory)
@@ -613,6 +712,7 @@ def create_app(
 
     @app.middleware("http")
     async def authenticate_api(request: Request, call_next):
+        external_webhook = request.url.path.startswith("/api/triggers/webhook/")
         if request.url.path.startswith("/internal/"):
             supplied = request.headers.get("x-autoflow-host-token", "")
             if (
@@ -625,7 +725,7 @@ def create_app(
                     status_code=401,
                     headers={"Cache-Control": "no-store"},
                 )
-        if request.url.path.startswith("/api/") and (
+        if request.url.path.startswith("/api/") and not external_webhook and (
             settings.instance_token is None
             or request.headers.get("x-autoflow-token") != settings.instance_token
         ):

@@ -1,0 +1,123 @@
+{
+  "evidenceId": "BE-B8-debug-control-foundation",
+  "recordedAt": "2026-09-22",
+  "classification": "原版功能迁入 + AutoFlow必要适配 + 已批准增强",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "reference/WebRPA/frontend/src/components/workflow/DebugBar.tsx",
+      "reference/WebRPA/frontend/src/stores/debugStore.ts",
+      "reference/WebRPA/backend/app/executors/base.py",
+      "reference/WebRPA/backend/app/services/workflow_executor.py"
+    ],
+    "license": "LICENSE.WebRPA"
+  },
+  "implemented": [
+    "运行时在节点调度开始、参数解析和节点超时计时之前进入调试边界",
+    "stepMode在首节点前暂停；单步只放行一次节点调度并在下一节点前再次暂停；继续恢复正常调度",
+    "暂停事件包含稳定pauseId、controlRevision、节点、变量快照和循环局部变量只读元数据",
+    "resume和step使用稳定commandId，worker实际应用后才确认；重复同内容返回原结果，过期暂停上下文返回409",
+    "调试命令回执写入既有workflow_debug_commands表；进程内缓存丢失后仍可查询单步和变量修改结果，冲突重试仍返回409",
+    "调试变量初值、节点写入和人工原子修改按executionId写入既有运行事件表，支持关键词、变量、操作和类型筛选及固定截止序号分页",
+    "超过64KiB的变量值写入purpose=diagnostic的校验产物；事件和命令回执只保存摘要，完整值按运行与事件位置读取并可流式导出JSONL",
+    "变量诊断可按运行或工作流读取和清空；清空使用追加事件保留审计序号，不改写历史运行事件",
+    "暂停变量支持一次提交多个JSON值并原子应用；循环局部变量只读，修改后沿用pauseId提升controlRevision并发布新快照",
+    "运行中的断点集合可通过正式接口替换并由worker确认；从指定顶层节点起跑会跳过前置节点并在目标执行前暂停",
+    "运行日志支持关键词、级别、节点和执行标识筛选，并按请求时事件截止序号导出JSONL",
+    "暂停、恢复和节点状态写入既有运行事件表及Studio事件流；停止可立即解除暂停且不会启动待执行节点",
+    "根流程、嵌套工作流、自定义模块和画布子流程共享同一个调试控制器",
+    "调试节点失败进入failed_paused并保留CloakBrowser、原错误和变量快照；结束调试后完成浏览器及worker清理，再以failed终态保留原失败节点",
+    "运行至此从真实流程入口执行前缀，在目标第一次调度前暂停；恢复后目标不重复暂停，未经过目标时记录明确警告",
+    "并行分支共享调试边界锁；一个分支暂停后，其他分支不能继续调度新节点",
+    "暂停事件携带循环轮次和子流程作用域；正式调试条展示当前执行上下文",
+    "sidecar事件日志代次归零时，SSE客户端只在EVENT_CURSOR_AHEAD明确响应后重置游标；普通断流继续从最后确认序号补读，不重复日志",
+    "日志导出在固定事件截止序号下按1000条持久事件分页扫描并流式输出，不在内存拼接整次运行",
+    "生产控制流完成1000轮纯变量循环，每轮具有独立executionId和准确循环轮次；10000条SQLite日志按100条有界窗口读取",
+    "循环首次写入、每轮index/item推进和退出作用域均写入变量诊断；退出时删除新建局部值或恢复进入循环前的同名值，局部值不泄漏到后续节点",
+    "变量追踪合同和正式面板支持scope_exit筛选、旧值、新值及退出类型展示",
+    "sidecar异常退出时Studio保留草稿并显示离线状态；仅服务已死亡时允许从主窗口设置页恢复，健康服务上的活跃会话仍阻止显式重启",
+    "服务连接代次切换后，Studio按稳定runId核对持久终态；interrupted运行解除本地暂停与占用、刷新历史且不重放节点"
+  ],
+  "checks": [
+    {
+      "command": "pytest debug runtime, control-flow runtime, coordinator, worker protocol, debug contract and workflow HTTP suites",
+      "result": "76 passed",
+      "covers": "节点前暂停、单步、继续、停止、真实worker HTTP闭环、状态持久化、命令幂等及原有运行回归"
+    },
+    {
+      "command": "Ruff, mypy and OpenAPI generation consistency",
+      "result": "passed",
+      "covers": "格式、类型、正式HTTP合同和生成类型"
+    },
+    {
+      "command": "pytest workflow run repository, real debug HTTP, coordinator, debug runtime and debug contract suites",
+      "result": "37 passed",
+      "covers": "命令数据库往返、缓存丢失恢复、变量修改回执恢复、冲突重试、单步不重复执行"
+    },
+    {
+      "command": "pytest workflow run HTTP, repository, debug runtime and worker protocol suites",
+      "result": "49 passed",
+      "covers": "真实worker变量事件、分页筛选、固定截止序号、大值诊断产物、完整值读取、流式导出、清空与重启后命令摘要"
+    },
+    {
+      "command": "Vitest variable tracking and debug command suites; TypeScript; ESLint; Ruff; mypy; OpenAPI consistency",
+      "result": "40 passed; all static and contract checks passed",
+      "covers": "前端真实合同消费、运行面板、分页、筛选、完整值读取、导出和生成类型"
+    },
+    {
+      "command": "AUTOFLOW_B8_FAILED_PAUSE_ONLY=1 node scripts/smoke-studio-backend-b1.mjs",
+      "result": "passed on macOS arm64 development build",
+      "covers": "正式Electron真实点击配置断点；真实CloakBrowser失败现场保留、只读诊断、结束调试、failed终态和进程清理"
+    },
+    {
+      "command": "AUTOFLOW_B8_RUN_TO_ONLY=1 node scripts/smoke-studio-backend-b1.mjs",
+      "result": "passed on macOS arm64 development build",
+      "covers": "正式Electron通过节点悬停入口运行至此；真实CloakBrowser执行前置网页动作、目标前暂停、一次性恢复和进程清理；Studio按executionId查询完整持久化日志并与服务端结果一致"
+    },
+    {
+      "command": "pytest debug runtime, control-flow runtime, browser session and real worker protocol suites",
+      "result": "62 passed",
+      "covers": "条件选中路径、未经过目标警告、循环首次命中、并行暂停阻断、画布子流程作用域和共享调试控制器"
+    },
+    {
+      "command": "AUTOFLOW_B8_COMPLEX_DEBUG_ONLY=1 node scripts/smoke-studio-backend-b3-control-flow.mjs",
+      "result": "passed on macOS arm64 development build",
+      "covers": "正式Electron真实创建、保存、正常关窗重开复杂流程；循环体首轮、条件真假实际路径及两个并行起点逐次断点暂停，未选分支与暂停前均无副作用"
+    },
+    {
+      "command": "Vitest Studio SSE generation reset, sequence gap, truncated frame, log replay and persisted history suites; TypeScript; ESLint",
+      "result": "21 passed; static checks passed",
+      "covers": "普通断流按确认游标补读、重复事件去重、未完成帧不确认、sidecar代次切换从零恢复、历史运行重开及服务端分页筛选"
+    },
+    {
+      "command": "pytest production control flow, workflow run repository and real debug HTTP suites; Vitest log history panel; Ruff; mypy; TypeScript; ESLint",
+      "result": "19 backend tests and 9 frontend tests passed; all static checks passed",
+      "covers": "1000轮生产执行器、每轮executionId和循环上下文、10000条SQLite日志分页、固定截止序号流式导出及前端100条有界加载"
+    },
+    {
+      "command": "pytest control-flow differential, production control flow, debug runtime, workflow run repository and variable diagnostic contract suites; Vitest variable tracking suites; Ruff; mypy; TypeScript; ESLint; OpenAPI consistency",
+      "result": "103 backend tests and 10 frontend tests passed; all static and contract checks passed",
+      "covers": "计数、范围、条件、列表、字典及无限循环的局部变量进入、逐轮更新、退出删除或外层恢复；scope_exit持久筛选、生成类型及面板展示"
+    },
+    {
+      "command": "AUTOFLOW_B8_RESTART_RECOVERY_ONLY=1 node scripts/smoke-studio-backend-b3-control-flow.mjs",
+      "result": "passed on macOS arm64 development build",
+      "covers": "正式Electron在调试暂停中强制终止sidecar、Studio离线保稿、主窗口设置页真实重启、interrupted恢复、运行历史重载和暂停目标零重放"
+    },
+    {
+      "command": "AUTOFLOW_B8_COMPLEX_DEBUG_ONLY=1 node scripts/smoke-studio-backend-b3-control-flow.mjs --executable <packaged AutoFlow>",
+      "result": "passed on macOS arm64 packaged directory",
+      "covers": "冻结后端及正式打包入口中的复杂调试真实UI闭环；与既有1000轮执行、10000条日志分页和固定截止序号导出证据共同核销容量验收"
+    }
+  ],
+  "boundaries": {
+    "userDatabaseTouched": false,
+    "mockExecutionUsedForBackendEvidence": false,
+    "formalElectronUiTested": true,
+    "packagedElectronUiTested": true,
+    "packagedElectronPlatform": "macOS arm64",
+    "realCloakBrowserRequired": true,
+    "windowsTested": false
+  },
+  "remaining": []
+}

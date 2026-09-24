@@ -1,0 +1,67 @@
+{
+  "dataDir": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-bulk-final-real-tv42k5qi",
+  "deviceId": "8b007f4a-8d06-47bf-bd34-742768b5b1c3",
+  "status": "passed",
+  "waiting": {
+    "id": "138a6fd5-7453-4e08-a24e-480830e95782",
+    "requestId": "b905b6a0-ec1d-48e7-ab58-7ac20edeea05",
+    "action": "start",
+    "deleteData": false,
+    "state": "running",
+    "items": [
+      {
+        "deviceId": "8b007f4a-8d06-47bf-bd34-742768b5b1c3",
+        "expectedRevision": 2,
+        "state": "waiting_capacity",
+        "operationId": "54f71b1b-ba7d-4bb3-9869-725a8348ab15",
+        "retryOf": null,
+        "error": "运行环境内存预算不足或 CPU 配额过大，请停止空闲设备或降低新实例配置",
+        "name": "QA 批次取消与重启持久性"
+      }
+    ],
+    "createdAt": "2026-09-23T22:30:07.920041Z"
+  },
+  "cancelled": {
+    "id": "138a6fd5-7453-4e08-a24e-480830e95782",
+    "requestId": "b905b6a0-ec1d-48e7-ab58-7ac20edeea05",
+    "action": "start",
+    "deleteData": false,
+    "state": "cancelled",
+    "items": [
+      {
+        "deviceId": "8b007f4a-8d06-47bf-bd34-742768b5b1c3",
+        "expectedRevision": 2,
+        "state": "cancelled",
+        "operationId": "54f71b1b-ba7d-4bb3-9869-725a8348ab15",
+        "retryOf": null,
+        "error": "运行环境内存预算不足或 CPU 配额过大，请停止空闲设备或降低新实例配置",
+        "name": "QA 批次取消与重启持久性"
+      }
+    ],
+    "createdAt": "2026-09-23T22:30:07.920041Z"
+  },
+  "afterRestart": {
+    "id": "138a6fd5-7453-4e08-a24e-480830e95782",
+    "requestId": "b905b6a0-ec1d-48e7-ab58-7ac20edeea05",
+    "action": "start",
+    "deleteData": false,
+    "state": "cancelled",
+    "items": [
+      {
+        "deviceId": "8b007f4a-8d06-47bf-bd34-742768b5b1c3",
+        "expectedRevision": 2,
+        "state": "cancelled",
+        "operationId": "54f71b1b-ba7d-4bb3-9869-725a8348ab15",
+        "retryOf": null,
+        "error": "运行环境内存预算不足或 CPU 配额过大，请停止空闲设备或降低新实例配置",
+        "name": "QA 批次取消与重启持久性"
+      }
+    ],
+    "createdAt": "2026-09-23T22:30:07.920041Z"
+  },
+  "deviceState": "stopped",
+  "cleanup": {
+    "state": "missing",
+    "passed": true
+  }
+}

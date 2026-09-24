@@ -6,7 +6,7 @@
 
 ## Preserved implementation
 
-The original WorkflowEditor, ModuleSidebar, ConfigPanel, Toolbar, graph/block views, grouping/note/subflow geometry, history and clipboard algorithms, specialized node forms, recording generation, Debug UI, logs/data/variables/assets and assistant components live inside AutoFlow's workflows domain. The retained action library has 227 entries after the user-requested database, DP, desktop/mobile/SAP, office/file, media and bot categories are filtered; this is a frontend configuration count, not a count of implemented executors.
+The original WorkflowEditor, ModuleSidebar, ConfigPanel, Toolbar, graph/block views, grouping/note/subflow geometry, history and clipboard algorithms, specialized node forms, recording generation, Debug UI, logs/data/variables/assets and assistant components live inside AutoFlow's workflows domain. The retained action library has 213 entries after the user-requested database, DP, selected notification, desktop/mobile/SAP, office/file, media and bot categories are filtered; this is a frontend configuration count, not a count of implemented executors.
 
 Original encrypted-file and clipboard identifiers remain unchanged for interchange compatibility. Original source API methods and event payload projections remain recognizable. Source `App`/entrypoint, port discovery, remote collaboration transport, publishing/version management and native desktop recorder are not copied as active application services.
 
@@ -28,7 +28,7 @@ Validation and remaining integration work: `docs/migration/studio-frontend-mock-
 
 ## F0 2026-09-13 follow-up
 
-Source ModuleSidebar category data was extracted to lib/moduleCatalog.ts. The shared catalog guards the approved 227-entry scope across assistant additions and Mock execution. Imported excluded nodes retain data and can be saved/exported, while their dedicated configuration panel displays JSON instead of removed tools. Obsolete Excel assets, publishing/version and screensaver assistant execution branches were removed; user-stored resource/configuration data was not purged. The existing bundle import handler is also exposed in the wide toolbar.
+Source ModuleSidebar category data was extracted to lib/moduleCatalog.ts. The shared catalog guards the approved 213-entry scope across assistant additions and Mock execution. Imported excluded nodes retain data and can be saved/exported, while their dedicated configuration panel displays JSON instead of removed tools. Obsolete Excel assets, publishing/version and screensaver assistant execution branches were removed; user-stored resource/configuration data was not purged. The existing bundle import handler is also exposed in the wide toolbar.
 
 The source globalTooltip implementation is now mounted with Studio. AutoFlow theme tokens replace its blue gradient; cleanup restores titles, preserves accessible icon names, cancels delayed display and supports remounts. Source checksum is recorded in the manifest.
 

@@ -1,0 +1,118 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/android/tests/ManagementTools.test.tsx -t pauses new batch status
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+
+ ❯ src/renderer/domains/android/tests/ManagementTools.test.tsx (37 tests | 1 failed | 36 skipped) 113ms
+   × pauses new batch status reads while the page is hidden and resumes without replaying actions 112ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/android/tests/ManagementTools.test.tsx > pauses new batch status reads while the page is hidden and resumes without replaying actions
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 5 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      "b",
+      AbortSignal {
+        Symbol(kEvents): Map {},
+        Symbol(events.maxEventTargetListeners): 0,
+        Symbol(events.maxEventTargetListenersWarned): false,
+        Symbol(kHandlers): Map {},
+        Symbol(kAborted): true,
+        Symbol(kReason): [AbortError: This operation was aborted],
+        Symbol(kComposite): false,
+      },
+    ]
+
+  2nd vi.fn() call:
+
+    Array [
+      "b",
+      AbortSignal {
+        Symbol(kEvents): Map {},
+        Symbol(events.maxEventTargetListeners): 0,
+        Symbol(events.maxEventTargetListenersWarned): false,
+        Symbol(kHandlers): Map {},
+        Symbol(kAborted): true,
+        Symbol(kReason): [AbortError: This operation was aborted],
+        Symbol(kComposite): false,
+      },
+    ]
+
+  3rd vi.fn() call:
+
+    Array [
+      "b",
+      AbortSignal {
+        Symbol(kEvents): Map {},
+        Symbol(events.maxEventTargetListeners): 0,
+        Symbol(events.maxEventTargetListenersWarned): false,
+        Symbol(kHandlers): Map {},
+        Symbol(kAborted): true,
+        Symbol(kReason): [AbortError: This operation was aborted],
+        Symbol(kComposite): false,
+      },
+    ]
+
+  4th vi.fn() call:
+
+    Array [
+      "b",
+      AbortSignal {
+        Symbol(kEvents): Map {},
+        Symbol(events.maxEventTargetListeners): 0,
+        Symbol(events.maxEventTargetListenersWarned): false,
+        Symbol(kHandlers): Map {},
+        Symbol(kAborted): true,
+        Symbol(kReason): [AbortError: This operation was aborted],
+        Symbol(kComposite): false,
+      },
+    ]
+
+  5th vi.fn() call:
+
+    Array [
+      "b",
+      AbortSignal {
+        Symbol(kEvents): Map {},
+        Symbol(events.maxEventTargetListeners): 0,
+        Symbol(events.maxEventTargetListenersWarned): false,
+        Symbol(kHandlers): Map {},
+        Symbol(kAborted): true,
+        Symbol(kReason): [AbortError: This operation was aborted],
+        Symbol(kComposite): false,
+      },
+    ]
+
+
+Number of calls: 5
+
+ ❯ src/renderer/domains/android/tests/ManagementTools.test.tsx:58:26
+     56|   act(() => { document.dispatchEvent(new Event('visibilitychange')) })
+     57|   await act(async () => { await vi.advanceTimersByTimeAsync(15000) })
+     58|   expect(bulkStatus).not.toHaveBeenCalled()
+       |                          ^
+     59|   expect(screen.getByLabelText('批次结果')).toHaveTextContent('running')
+     60|   visibility.mockReturnValue('visible')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 36 skipped (37)
+   Start at  06:53:00
+   Duration  1.21s (transform 197ms, setup 176ms, import 205ms, tests 113ms, environment 600ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/android/tests/ManagementTools.test.tsx -t 'pauses new batch status'

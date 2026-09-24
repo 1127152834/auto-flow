@@ -5,9 +5,11 @@ import {getStudioTransportRevision} from '../api/transport'
 import {useGlobalConfigStore} from '../hooks/stores/globalConfigStore'
 
 /** AutoFlow host adaptation: choose managed Profiles; never edit launch parameters here. */
-export function BrowserProfileSelect({label='浏览器配置',disabled=false}:{label?:string;disabled?:boolean}) {
-  const profileId=useGlobalConfigStore(state=>state.config.browserProfileId)
-  const select=useGlobalConfigStore(state=>state.setBrowserProfileId)
+export function BrowserProfileSelect({label='浏览器配置',disabled=false,value,onChange}:{label?:string;disabled?:boolean;value?:string;onChange?:(profileId:string)=>void}) {
+  const globalProfileId=useGlobalConfigStore(state=>state.config.browserProfileId)
+  const selectGlobal=useGlobalConfigStore(state=>state.setBrowserProfileId)
+  const profileId=value??globalProfileId
+  const select=onChange??selectGlobal
   const [profiles,setProfiles]=useState<components['schemas']['ProfileRead'][]>([])
   const [loading,setLoading]=useState(true),[error,setError]=useState(''),[attempt,setAttempt]=useState(0)
   useEffect(()=>{
@@ -19,7 +21,7 @@ export function BrowserProfileSelect({label='浏览器配置',disabled=false}:{l
       setLoading(false)
       if(!result.success||!result.data){setProfiles([]);setError(result.error||'浏览器配置读取失败');return}
       setProfiles(result.data.items)
-      if(!useGlobalConfigStore.getState().config.browserProfileId&&result.data.items.length)select(result.data.items[0].id)
+      if(!profileId&&result.data.items.length)select(result.data.items[0].id)
     })
     return()=>{active=false}
   },[attempt,select])

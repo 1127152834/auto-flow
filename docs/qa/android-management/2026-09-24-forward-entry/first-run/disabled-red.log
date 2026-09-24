@@ -1,0 +1,43 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/android/tests/AndroidPage.test.tsx -t QA AM2 forward entry rollback
+
+
+ RUN  v4.1.11 /private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-am2-forward-entry-h1ownogp/checkout/apps/desktop
+
+ ❯ src/renderer/domains/android/tests/AndroidPage.test.tsx (36 tests | 1 failed | 35 skipped) 178ms
+   × QA AM2 forward entry rollback retains basic management 177ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/android/tests/AndroidPage.test.tsx > QA AM2 forward entry rollback retains basic management
+Error: expect(element).not.toBeInTheDocument()
+
+expected document not to contain element, found <h2
+  class="font-semibold"
+>
+  镜像管理
+</h2> instead
+ ❯ src/renderer/domains/android/tests/AndroidPage.test.tsx:582:71
+    580|   const disabled = process.env.AUTOFLOW_QA_ENTRY_DISABLED === '1'
+    581|   for (const name of ['镜像管理', '设备模板']) {
+    582|     if (disabled) expect(screen.queryByRole('heading', { name })).not.…
+       |                                                                       ^
+    583|     else expect(screen.getByRole('heading', { name })).toBeVisible()
+    584|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 35 skipped (36)
+   Start at  07:28:16
+   Duration  2.26s (transform 384ms, setup 174ms, import 1.39s, tests 178ms, environment 416ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-am2-forward-entry-h1ownogp/checkout/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-am2-forward-entry-h1ownogp/checkout/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/android/tests/AndroidPage.test.tsx -t 'QA AM2 forward entry rollback'

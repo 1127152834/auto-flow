@@ -6,6 +6,7 @@ from typing import Any
 from uuid import uuid4
 
 from autoflow.application.android.management import AndroidManagement
+from autoflow.domain.android.management_rules import require_restored
 from autoflow.domain.android.ports import AndroidError, AndroidRuntime, DeviceRepository
 
 Emit = Callable[[dict[str, Any], dict[str, Any]], Awaitable[None]]
@@ -35,6 +36,14 @@ class AndroidDeviceService:
         factory = getattr(self.runtime, "for_device", None)
         return AndroidDeviceService(self.repository, factory(device_id)) if factory else self
 
+    def get(self, device_id: str) -> dict[str, Any]:
+        """Expose the device facade used by bulk and cleanup services."""
+        return self.repository.get(device_id)
+
+    def operate(self, device_id: str, request: dict[str, Any]) -> dict[str, Any]:
+        """Route lifecycle writes through the durable management owner."""
+        return self.management.operate(device_id, request)
+
     async def environment(self) -> dict[str, Any]:
         return await self.runtime.environment()
 
@@ -59,6 +68,7 @@ class AndroidDeviceService:
             device = self.repository.get(device_id)
             if device.get("deleted") or device.get("control") in {"managing", "recovery_required"}:
                 raise AndroidError("ANDROID_PREVIEW_UNAVAILABLE", "当前设备状态无法核实")
+            require_restored(device)
             cached = self.previews.get(device_id)
             if cached and monotonic() - cached[0] < 1:
                 return cached[1]
@@ -237,8 +247,12 @@ class AndroidDeviceService:
             if self.close_console:
                 await self.close_console()
             await self.runtime.disconnect()
-            await self.runtime.recover(self.device)
-            self.device.update(control="idle", ownerRunId=None, lastError=None)
+            if self.device.get("pendingCommand"):
+                await self.runtime.recover(self.device, preserve_command=True)
+                self.device.update(control="recovery_required", ownerRunId=None, lastError="应用操作结果待核实，请核实设备状态")
+            else:
+                await self.runtime.recover(self.device)
+                self.device.update(control="idle", ownerRunId=None, lastError=None)
             self._save()
             self.device = None
             self.runtime.unlock()
@@ -249,7 +263,22 @@ class AndroidDeviceService:
             raise
 
     async def recover(self) -> None:
-        records = [d for d in self.repository.list() if not d.get("deleted") and (d.get("ownerRunId") or d.get("control") != "idle")]
+        if self.management.operations is not None:
+            recover_running = getattr(self.management.operations, "recover_running", None)
+            if callable(recover_running):
+                recover_running(self.management.workspace_identity)
+        records = [
+            d
+            for d in self.repository.list()
+            if not d.get("deleted")
+            and (
+                d.get("ownerRunId")
+                or d.get("control") != "idle"
+                or d.get("operation", {}).get("state") == "needs_verification"
+                or d.get("pendingApk")
+                or d.get("pendingCommand")
+            )
+        ]
         if not records:
             return
         try:
@@ -261,20 +290,32 @@ class AndroidDeviceService:
                 device["control"] = "recovery_required"
                 self.repository.save(device)
                 try:
-                    if device.get("operation", {}).get("state") in {"running", "interrupted", "failed"}:
+                    operation_state = device.get("operation", {}).get("state")
+                    if operation_state == "needs_verification":
+                        device["lastError"] = "管理操作结果待核实，请先核实设备状态"
+                        self.repository.save(device)
+                        continue
+                    if operation_state in {"running", "interrupted", "failed"}:
                         device["operation"].update(state="interrupted", stage="等待核实", error="服务已重启，请核实设备状态")
                         device["lastError"] = "管理操作中断，请点击核实状态"
                         self.repository.save(device)
                         continue
-                    await self.runtime.recover(device)
-                    device.update(ownerRunId=None, control="idle", lastError=None)
+                    if device.get("pendingCommand"):
+                        await self.runtime.recover(device, preserve_command=True)
+                        device.update(ownerRunId=None, control="recovery_required", lastError="应用操作结果待核实，请核实设备状态")
+                    else:
+                        await self.runtime.recover(device)
+                        device.update(ownerRunId=None, control="idle", lastError=None)
                 except (AndroidError, OSError, TimeoutError):
                     device["lastError"] = "遗留操作未确认结束，设备保持隔离"
                 self.repository.save(device)
         finally:
             self.runtime.unlock()
 
+    def list(self) -> list[dict[str, Any]]:
+        return self.repository.list()
+
 
 def device_view(device: dict[str, Any]) -> dict[str, Any]:
     fields = ("deviceId", "name", "runtimeId", "ownerRunId", "control", "generation", "width", "height", "imageId")
-    return {key: device.get(key) for key in fields} | {"androidStatus": device.get("androidStatus", "unknown"), "lastError": device.get("lastError"), "cpu": device.get("cpu", 1), "memoryMb": device.get("memoryMb", 1536), "dpi": device.get("dpi", 320), "androidVersion": "13", "architecture": "arm64", "dataRetained": device.get("dataRetained", False), "deleted": device.get("deleted", False), "operation": device.get("operation"), "profileId": device.get("profileId"), "profileName": device.get("profileName", "Android 13 标准 · ARM64"), "instanceType": device.get("instanceType", "persistent"), "locale": device.get("locale", "zh-CN"), "timezone": device.get("timezone", "Asia/Shanghai")}
+    return {key: device.get(key) for key in fields} | {"androidStatus": device.get("androidStatus", "unknown"), "lastError": device.get("lastError"), "cpu": device.get("cpu", 1), "memoryMb": device.get("memoryMb", 1536), "dpi": device.get("dpi", 320), "androidVersion": device.get("androidVersion"), "architecture": device.get("architecture"), "dataRetained": device.get("dataRetained", False), "deleted": device.get("deleted", False), "operation": device.get("operation"), "profileId": device.get("profileId"), "profileName": device.get("profileName"), "instanceType": device.get("instanceType", "persistent"), "locale": device.get("locale", "zh-CN"), "timezone": device.get("timezone", "Asia/Shanghai")}

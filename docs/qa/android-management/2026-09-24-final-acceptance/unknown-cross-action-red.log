@@ -1,0 +1,62 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/android/tests/ManagementTools.test.tsx -t original unknown
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+
+ ❯ src/renderer/domains/android/tests/ManagementTools.test.tsx (45 tests | 2 failed | 43 skipped) 176ms
+   × keeps the original unknown create receipt when another backup action is clicked 145ms
+   × keeps the original unknown restore receipt when another backup action is clicked 30ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/android/tests/ManagementTools.test.tsx > keeps the original unknown create receipt when another backup action is clicked
+Error: expect(element).toBeDisabled()
+
+Received element is not disabled:
+  <button
+  aria-describedby="_r_0_-storage"
+  type="button"
+/>
+ ❯ src/renderer/domains/android/tests/ManagementTools.test.tsx:488:18
+    486|   expect(await screen.findByRole('alert')).toHaveTextContent('响应丢失')
+    487|   const requestId = kind === 'create' ? api.backup.mock.calls[0][0].re…
+    488|   expect(create).toBeDisabled()
+       |                  ^
+    489|   expect(restore).toBeDisabled()
+    490|   await userEvent.click(kind === 'create' ? restore : create)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/renderer/domains/android/tests/ManagementTools.test.tsx > keeps the original unknown restore receipt when another backup action is clicked
+Error: expect(element).toBeDisabled()
+
+Received element is not disabled:
+  <button
+  aria-describedby="_r_1_-storage"
+  type="button"
+/>
+ ❯ src/renderer/domains/android/tests/ManagementTools.test.tsx:488:18
+    486|   expect(await screen.findByRole('alert')).toHaveTextContent('响应丢失')
+    487|   const requestId = kind === 'create' ? api.backup.mock.calls[0][0].re…
+    488|   expect(create).toBeDisabled()
+       |                  ^
+    489|   expect(restore).toBeDisabled()
+    490|   await userEvent.click(kind === 'create' ? restore : create)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 43 skipped (45)
+   Start at  08:04:59
+   Duration  1.41s (transform 210ms, setup 190ms, import 238ms, tests 176ms, environment 674ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/android/tests/ManagementTools.test.tsx -t 'original unknown'

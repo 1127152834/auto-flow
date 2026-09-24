@@ -21,8 +21,8 @@ Element.prototype.setPointerCapture = vi.fn()
 Element.prototype.releasePointerCapture = vi.fn()
 
 const cases = [
-  { type: 'ai_generate_image', field: 'provider', before: 'openai', label: 'AI提供商', option: 'Stability AI', after: 'stability' },
-  { type: 'ai_generate_video', field: 'provider', before: 'runway', label: 'AI提供商', option: '自定义API', after: 'custom' },
+  { type: 'ai_generate_image', field: 'provider', before: 'openai', label: '接口协议', option: 'Stability AI', after: 'stability' },
+  { type: 'ai_generate_video', field: 'provider', before: 'runway', label: '接口协议', option: '通用同步接口', after: 'custom' },
   { type: 'webhook_request', field: 'method', before: 'POST', label: '请求方法', option: 'GET', after: 'GET' },
 ] as const
 

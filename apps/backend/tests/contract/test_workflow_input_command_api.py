@@ -33,6 +33,31 @@ class FakeCommands:
             "status": "pending",
         }
 
+    def js_script_state(self, request_id: str) -> dict[str, str]:
+        return {
+            "requestId": request_id,
+            "workflowId": "flow",
+            "nodeId": "script",
+            "status": "claimed",
+            "claimId": "studio",
+        }
+
+    def tts_request_state(self, request_id: str) -> dict[str, str]:
+        return {
+            "requestId": request_id,
+            "workflowId": "flow",
+            "nodeId": "voice",
+            "status": "pending",
+        }
+
+    def desktop_action_state(self, request_id: str) -> dict[str, str]:
+        return {
+            "requestId": request_id,
+            "workflowId": "flow",
+            "nodeId": "clipboard",
+            "status": "pending",
+        }
+
 
 def test_input_command_http_contract_uses_camel_case_and_queryable_receipts() -> None:
     commands = FakeCommands()
@@ -68,6 +93,27 @@ def test_input_command_http_contract_uses_camel_case_and_queryable_receipts() ->
         "workflowId": "flow",
         "nodeId": "prompt",
         "status": "pending",
+    }
+    assert client.get("/api/events/js-requests/script-1").json() == {
+        "requestId": "script-1",
+        "workflowId": "flow",
+        "nodeId": "script",
+        "status": "claimed",
+        "claimId": "studio",
+    }
+    assert client.get("/api/events/tts-requests/speech-1").json() == {
+        "requestId": "speech-1",
+        "workflowId": "flow",
+        "nodeId": "voice",
+        "status": "pending",
+        "claimId": None,
+    }
+    assert client.get("/api/events/desktop-actions/platform-1").json() == {
+        "requestId": "platform-1",
+        "workflowId": "flow",
+        "nodeId": "clipboard",
+        "status": "pending",
+        "claimId": None,
     }
 
 

@@ -1,0 +1,102 @@
+........................................................................ [ 13%]
+........................................................................ [ 27%]
+........................................................................ [ 40%]
+........................................................................ [ 54%]
+........................................................................ [ 67%]
+........................................................................ [ 81%]
+..............F....F.................................................... [ 94%]
+.............................                                            [100%]
+=================================== FAILURES ===================================
+_____ test_bulk_verify_reconciles_unknown_item_without_replaying_operation _____
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-255/test_bulk_verify_reconciles_un0')
+
+    @pytest.mark.asyncio
+    async def test_bulk_verify_reconciles_unknown_item_without_replaying_operation(tmp_path: Path):
+        database = tmp_path / "android-bulk-verify.sqlite3"
+        migrate_database(database)
+        sessions = create_session_factory(database)
+        resources = AndroidResourceRepository(sessions)
+        operations = SqlAlchemyAndroidOperationRepository(sessions)
+        devices = _Devices(operations)
+    
+        async def inspect(_device):
+            return {"androidStatus": "stopped"}
+    
+        devices.runtime.inspect = inspect
+        service = AndroidBulkService(resources, devices)
+        batch = service.create("ws", "bulk-verify", "stop", [{"deviceId": "d1", "expectedRevision": 2}], False)
+        result = service.run(batch["id"], "ws")
+        operation_id = result["items"][0]["operationId"]
+        operation = operations.get(operation_id, "ws")
+        operations.transition(operation.operation_id, "running", "needs_verification", {})
+        devices.items["d1"]["control"] = "recovery_required"
+    
+        result = await service.verify(batch["id"], "ws")
+    
+>       assert result["items"][0]["state"] == "succeeded"
+E       AssertionError: assert 'needs_verification' == 'succeeded'
+E         
+E         - succeeded
+E         + needs_verification
+
+tests/integration/test_android_multi_device.py:142: AssertionError
+_ test_verification_preserves_cancellation_recorded_while_runtime_read_is_pending[True] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-255/test_verification_preserves_ca0')
+verified = True
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("verified", [True, False])
+    async def test_verification_preserves_cancellation_recorded_while_runtime_read_is_pending(tmp_path: Path, verified: bool):
+        database = tmp_path / "cancel-during-verify.sqlite3"
+        migrate_database(database)
+        sessions = create_session_factory(database)
+        resources = AndroidResourceRepository(sessions)
+        operations = SqlAlchemyAndroidOperationRepository(sessions)
+        devices = _Devices(operations)
+        devices.capacity.ready = True
+        entered, release = asyncio.Event(), asyncio.Event()
+    
+        async def inspect(_device):
+            entered.set()
+            await release.wait()
+            if not verified:
+                raise OSError("runtime disconnected")
+            return {"androidStatus": "ready"}
+    
+        devices.runtime.inspect = inspect
+        service = AndroidBulkService(resources, devices)
+        batch = service.create("ws", "verify-cancel-race", "start", [{"deviceId": "d1", "expectedRevision": 2}, {"deviceId": "d2", "expectedRevision": 2}], False)
+        await service.tick()
+        batch = service.get(batch["id"])
+        operations.transition(batch["items"][0]["operationId"], "running", "needs_verification", {})
+        verify = asyncio.create_task(service.verify(batch["id"], "ws"))
+        try:
+            await asyncio.wait_for(entered.wait(), 2)
+            service.action(batch["id"], "cancelPending", "cancel-during-verify")
+            release.set()
+            result = await verify
+            assert result["items"][1]["state"] == "cancelled"
+            assert result["actionReceipts"] == {"cancel-during-verify": "cancelPending"}
+>           assert result["items"][0]["state"] == ("succeeded" if verified else "needs_verification")
+E           AssertionError: assert 'needs_verification' == 'succeeded'
+E             
+E             - succeeded
+E             + needs_verification
+
+tests/integration/test_android_multi_device.py:229: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.11/site-packages/starlette/testclient.py:53
+  /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+tests/unit/test_android_apk.py::test_parse_apk_rejects_duplicate_manifest_entries
+  /Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/zipfile.py:1567: UserWarning: Duplicate name: 'AndroidManifest.xml'
+    return self._open_to_write(zinfo, force_zip64=force_zip64)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/integration/test_android_multi_device.py::test_bulk_verify_reconciles_unknown_item_without_replaying_operation
+FAILED tests/integration/test_android_multi_device.py::test_verification_preserves_cancellation_recorded_while_runtime_read_is_pending[True]
+2 failed, 531 passed, 2 warnings in 35.46s

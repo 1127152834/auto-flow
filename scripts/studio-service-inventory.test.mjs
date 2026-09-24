@@ -34,9 +34,9 @@ test('the matrix registers every discovered service and event without treating r
 test('every service family is assigned to the frozen frontend contract matrix', () => {
   const coveredFamilies = new Set([
     'aiAssistantApi', 'browserApi', 'browserScriptTestsApi', 'credentialApi',
-    'customModulesApi', 'elementPickerApi', 'executorApi', 'featurePackApi',
+    'customModulesApi', 'desktopActionApi', 'elementPickerApi', 'executorApi', 'featurePackApi',
     'imageAssetApi', 'inputPromptApi', 'jsScriptApi', 'localWorkflowApi',
-    'mcpApi', 'pluginApi', 'recorderApi', 'retentionApi', 'scheduledTaskApi',
+    'mcpApi', 'modelApi', 'pluginApi', 'recorderApi', 'retentionApi', 'scheduledTaskApi',
     'speechApi', 'sponsorApi', 'systemApi', 'variableTrackingApi', 'workflowApi',
     'workflowBundleApi',
   ])

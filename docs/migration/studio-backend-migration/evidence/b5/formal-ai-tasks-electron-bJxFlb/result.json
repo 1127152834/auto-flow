@@ -1,0 +1,119 @@
+{
+  "evidenceId": "BE-B5-ai-task-chat-formal-electron",
+  "checkedAt": "2026-09-21T17:54:02.807Z",
+  "gitHead": "d06398c2e7698ac17159a37e8551291fb291148a",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflowId": "lKlxDjjSoFeRqgALyF7CI",
+  "profileId": "39262c2c-6675-4909-8731-a1a0597c8205",
+  "modelId": "4b4541a5-98f5-4181-9982-d92c96a42fde",
+  "runId": "e70db851-3078-443c-a72e-0fb8da600ed8",
+  "checks": [
+    "主窗口真实点击打开正式 Studio；动作库为 213，运行配置和模型均来自主应用",
+    "通过画布、属性面板和主应用模型选择器完成八个 AI 数据任务与一个 AI 对话节点编排",
+    "正式保存接口只写稳定 modelId，九节点和八条连线进入临时 SQLite，不保存模型地址或密钥",
+    "真实 worker 经主应用模型绑定完成九次受控 HTTP 调用，AI 数据任务和对话结果结构与变量语义逐项匹配",
+    "纯 AI 数据任务未启动 CloakBrowser，运行结束后无浏览器残留"
+  ],
+  "nodes": [
+    {
+      "moduleType": "ai_extract",
+      "nodeId": "SIJYXQuJyLRs9wSHv81RJ",
+      "result": {
+        "result": {
+          "姓名": "张三"
+        }
+      }
+    },
+    {
+      "moduleType": "ai_classify",
+      "nodeId": "F2JDaFpUnE58Wqyy2SGBZ",
+      "result": {
+        "category": "退款",
+        "detail": {
+          "category": "退款"
+        }
+      }
+    },
+    {
+      "moduleType": "ai_summarize",
+      "nodeId": "ofa60HIsJx6N8l2a5Q7sX",
+      "result": {
+        "summary": "简短摘要"
+      }
+    },
+    {
+      "moduleType": "ai_translate",
+      "nodeId": "wEcSvnDyd2xzTl19e0Srl",
+      "result": {
+        "translation": "Hello",
+        "targetLang": "英文"
+      }
+    },
+    {
+      "moduleType": "ai_sentiment",
+      "nodeId": "04uivoSbk3CS1N8PRO-Wb",
+      "result": {
+        "sentiment": "正面",
+        "detail": {
+          "sentiment": "正面"
+        }
+      }
+    },
+    {
+      "moduleType": "ai_normalize",
+      "nodeId": "AkJMnilNHq2RXRIxzgzR8",
+      "result": {
+        "result": "2026-09-21",
+        "type": "date"
+      }
+    },
+    {
+      "moduleType": "ai_dedup_semantic",
+      "nodeId": "qc4jzmIMM84S21m9vA45L",
+      "result": {
+        "result": [
+          "苹果",
+          "香蕉"
+        ],
+        "removed": 1
+      }
+    },
+    {
+      "moduleType": "ai_route",
+      "nodeId": "6alQ7LnjZalQ5QfP8B2zW",
+      "result": {
+        "route": "退款",
+        "detail": {
+          "route": "退款"
+        },
+        "routes": [
+          "退款",
+          "咨询"
+        ]
+      }
+    },
+    {
+      "moduleType": "ai_chat",
+      "nodeId": "tQkzGiGz7_FfKER3EO1bT",
+      "result": {
+        "response": "对话验收通过",
+        "reasoning": null,
+        "model": "ai-task-fixture",
+        "modelId": "4b4541a5-98f5-4181-9982-d92c96a42fde",
+        "usage": {}
+      }
+    }
+  ],
+  "providerRequestCount": 9,
+  "buildSha256": "464d9a3d31b8bbdf11677ab31923253ab762c532ff46d4fb8a55a9563c09eb48",
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserLaunch": "none",
+    "model": "local controlled OpenAI-compatible HTTP fixture configured through main application model management",
+    "interaction": "formal Electron via CDP mouse and keyboard; public sidecar APIs only for fixture setup and evidence reads; no Store or page-internal business function access",
+    "externalWaiting": "third-party production model providers remain separately unverified"
+  }
+}

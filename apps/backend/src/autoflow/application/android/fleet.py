@@ -11,6 +11,38 @@ from autoflow.application.android.management import now
 from autoflow.domain.android.ports import AndroidError
 from autoflow.domain.workflows.models import WorkflowError
 
+_PROFILE_PUBLIC_FIELDS = frozenset(
+    {
+        "id",
+        "revision",
+        "name",
+        "imageId",
+        "width",
+        "height",
+        "dpi",
+        "cpu",
+        "memoryMb",
+        "locale",
+        "timezone",
+        "shellRoot",
+        "applicationRoot",
+        "archived",
+    }
+)
+
+_SOURCE_SNAPSHOT_FIELDS = (
+    "imageId",
+    "dpi",
+    "cpu",
+    "memoryMb",
+    "width",
+    "height",
+    "profileId",
+    "profileRevision",
+    "locale",
+    "timezone",
+)
+
 
 class AndroidFleet:
     def __init__(
@@ -44,9 +76,17 @@ class AndroidFleet:
         )
 
     async def profiles(self) -> list[dict[str, Any]]:
+        return [self.public_profile(item) for item in self.resources.list("profile")]
+
+    @staticmethod
+    def public_profile(item: dict[str, Any]) -> dict[str, Any]:
+        return {key: value for key, value in item.items() if key in _PROFILE_PUBLIC_FIELDS}
+
+    async def create_standard_profile(self) -> dict[str, Any]:
         profiles = self.resources.list("profile")
-        if profiles:
-            return profiles
+        existing = next((item for item in profiles if item.get("name") == "Android 13 标准 · ARM64" and not item.get("archived")), None)
+        if existing:
+            return self.public_profile(existing)
         environment = await self.devices.environment()
         if environment.get("images"):
             item = {
@@ -65,8 +105,8 @@ class AndroidFleet:
                 "applicationRoot": "unknown",
             }
             self.resources.save("profile", item)
-            return [item]
-        return []
+            return self.public_profile(item)
+        raise AndroidError("ANDROID_IMAGE_MISSING", "尚未发现兼容镜像", 409)
 
     def save_profile(self, item: dict[str, Any]) -> dict[str, Any]:
         try:
@@ -85,8 +125,9 @@ class AndroidFleet:
             "shellRoot": "unknown",
             "applicationRoot": "unknown",
         }
+        saved.pop("archiveRequestId", None)
         self.resources.save("profile", saved)
-        return saved
+        return self.public_profile(saved)
 
     def _existing(
         self, kind: str, identifier: str, request: dict[str, Any]
@@ -97,17 +138,90 @@ class AndroidFleet:
             if error.status == 404:
                 return None
             raise
-        if existing["request"] != request:
+        previous_request = existing["request"]
+        if kind == "batch":
+            # Historical batches predate sourceDeviceId; missing and null mean no source.
+            previous_request = {"sourceDeviceId": None, **previous_request}
+            request = {"sourceDeviceId": None, **request}
+        if previous_request != request:
             raise AndroidError("ANDROID_REQUEST_CONFLICT", "请求编号已用于不同内容")
         return existing
 
+    def _source_profile(self, source_device_id: str) -> dict[str, Any]:
+        source_device_id = str(source_device_id)
+        repository = getattr(self.devices, "repository", None)
+        management = getattr(self.devices, "management", None)
+        runtime = getattr(self.devices, "runtime", None)
+        workspace = getattr(runtime, "workspace_id", None) or getattr(management, "workspace_identity", None)
+        if repository is None or not isinstance(workspace, str) or not workspace:
+            raise AndroidError("ANDROID_OWNERSHIP", "设备工作区归属无法核实", 403)
+        try:
+            source = repository.get(source_device_id)
+        except AndroidError as error:
+            if error.status == 404:
+                raise AndroidError("ANDROID_SOURCE_DEVICE_NOT_FOUND", "复制源实例不存在", 404) from error
+            raise
+        if source.get("workspaceId") != workspace:
+            raise AndroidError("ANDROID_OWNERSHIP", "设备工作区归属校验失败", 403)
+        if source.get("deleted"):
+            raise AndroidError("ANDROID_SOURCE_DEVICE_UNAVAILABLE", "复制源实例已删除，不能复制", 409)
+        snapshot = source.get("creationConfig")
+        if not isinstance(snapshot, dict) or any(field not in snapshot for field in _SOURCE_SNAPSHOT_FIELDS):
+            raise AndroidError(
+                "ANDROID_SOURCE_SNAPSHOT_UNAVAILABLE",
+                "复制源实例没有完整的服务端配置快照，请新建实例",
+                409,
+            )
+        # Only copy immutable environment fields. Runtime identity, data volume,
+        # ownership, lifecycle generation and control receipts are intentionally
+        # excluded and are allocated afresh by the management service.
+        return {
+            "id": snapshot["profileId"],
+            "revision": snapshot["profileRevision"],
+            "name": snapshot.get("profileName") or source.get("profileName") or "复制源环境",
+            "imageId": snapshot["imageId"],
+            "width": snapshot["width"],
+            "height": snapshot["height"],
+            "dpi": snapshot["dpi"],
+            "cpu": snapshot["cpu"],
+            "memoryMb": snapshot["memoryMb"],
+            "locale": snapshot["locale"],
+            "timezone": snapshot["timezone"],
+            "archived": False,
+        }
+
     def batch(self, request: dict[str, Any]) -> dict[str, Any]:
+        request = {key: value for key, value in request.items() if key != "allowUnknownDiskEstimate" or value is True}
         existing = self._existing("batch", request["batchId"], request)
         if existing:
             return existing
-        profile = self.resources.get("profile", request["profileId"])
-        if profile["revision"] != request["profileRevision"]:
-            raise AndroidError("ANDROID_PROFILE_CONFLICT", "环境配置已更新，请重新加载")
+        if request.get("instanceType") == "temporary":
+            raise AndroidError(
+                "ANDROID_TEMPORARY_DISABLED",
+                "新建临时安卓实例已停用，请改用持久实例",
+                409,
+            )
+        if request.get("sourceDeviceId"):
+            profile = self._source_profile(request["sourceDeviceId"])
+        else:
+            profile = self.public_profile(self.resources.get("profile", request["profileId"]))
+            if profile.get("archived"):
+                raise AndroidError(
+                    "ANDROID_PROFILE_ARCHIVED",
+                    "环境模板已归档，不能创建新实例",
+                    409,
+                )
+            if profile["revision"] != request["profileRevision"]:
+                raise AndroidError("ANDROID_PROFILE_CONFLICT", "环境配置已更新，请重新加载")
+            # A normal batch may intentionally override these presentation fields;
+            # source-device batches use their immutable snapshot instead.
+            profile = {
+                **profile,
+                "width": request["width"],
+                "height": request["height"],
+                "locale": request["locale"],
+                "timezone": request["timezone"],
+            }
         items = [
             {
                 "deviceId": str(uuid4()),
@@ -144,6 +258,15 @@ class AndroidFleet:
         return batch
 
     def allocate(self, request: dict[str, Any]) -> dict[str, Any]:
+        if request.get("mode") == "temporary":
+            existing = self._existing("allocation", request["requestId"], request)
+            if existing is not None:
+                return existing
+            raise AndroidError(
+                "ANDROID_TEMPORARY_DISABLED",
+                "新建临时安卓实例已停用，请改用持久实例",
+                409,
+            )
         raise AndroidError(
             "ANDROID_WORKFLOW_RUNTIME_UNAVAILABLE",
             "当前 Studio 尚未提供安卓工作流执行契约；设备管理和手动控制仍可使用",
@@ -291,15 +414,18 @@ class AndroidFleet:
             config.update(
                 deviceId=item["deviceId"],
                 name=item["name"],
-                width=request["width"],
-                height=request["height"],
+                width=profile["width"],
+                height=profile["height"],
                 start=False,
                 profileId=profile["id"],
                 profileName=profile["name"],
+                profileRevision=profile["revision"],
                 instanceType=request["instanceType"],
-                locale=request["locale"],
-                timezone=request["timezone"],
+                locale=profile["locale"],
+                timezone=profile["timezone"],
             )
+            if request.get("allowUnknownDiskEstimate") is True:
+                config["allowUnknownDiskEstimate"] = True
             self.devices.management.create(config)
             item["state"] = "creating"
             return
@@ -323,7 +449,26 @@ class AndroidFleet:
             raise AndroidError(
                 "ANDROID_BATCH_ITEM_DELETED", "实例已删除，不能重用原编号"
             )
+        if (device.get("operation") or {}).get("state") == "failed" and (device.get("operation") or {}).get("action") == "create":
+            if item["state"] != "waiting_create":
+                raise AndroidError("ANDROID_BATCH_ITEM_FAILED", device.get("lastError") or "实例创建失败")
+            operations = getattr(self.devices.management, "operations", None)
+            prior_id = device["operation"].get("id")
+            prior = operations.get(prior_id, self.devices.management.workspace_identity) if operations is not None and prior_id else None
+            if (prior is None or prior.target_id != device["deviceId"] or prior.action != "create" or prior.state != "failed"
+                    or prior.result_code not in {"ANDROID_DISK_ESTIMATE_UNKNOWN", "ANDROID_DISK_SPACE_INSUFFICIENT", "ANDROID_DISK_PROBE_FAILED", "ANDROID_DISK_PREFLIGHT_CANCELLED"}):
+                raise AndroidError("ANDROID_DATA_MISSING", "旧创建结果不能证明零写入，禁止空白重建", 409)
+            retry = {"requestId": str(uuid4()), "action": "create", "deleteData": False, "retryOf": prior.operation_id, "retryEmptyCreate": True}
+            if batch["request"].get("allowUnknownDiskEstimate") is True:
+                retry["allowUnknownDiskEstimate"] = True
+            self.devices.management.operate(device["deviceId"], retry)
+            item["state"] = "creating"
+            return
         observation = await self.devices.runtime.inspect(device)
+        if observation["androidStatus"] == "missing":
+            raise AndroidError("ANDROID_DATA_MISSING", "实例容器或数据卷丢失，不能空白重建", 409)
+        if not batch["request"]["start"] and observation["androidStatus"] not in {"stopped", "ready"}:
+            raise AndroidError("ANDROID_BATCH_ITEM_FAILED", "实例状态尚未核实，不能报告成功")
         if not batch["request"]["start"] or observation["androidStatus"] == "ready":
             item.update(state="succeeded", error=None)
             return
@@ -338,18 +483,22 @@ class AndroidFleet:
         item["state"] = "starting"
 
     async def _capacity(self, device: dict[str, Any]) -> bool:
-        check = getattr(self.devices.runtime, "capacity", None)
-        if check:
-            try:
-                await check(device)
-            except AndroidError as error:
-                if error.code in {
-                    "ANDROID_CAPACITY",
-                    "ANDROID_MEMORY_BUDGET",
-                    "ANDROID_CPU_BUDGET",
-                }:
-                    return False
-                raise
+        check = getattr(getattr(self.devices, "runtime", None), "capacity", None)
+        if not callable(check):
+            return False
+        try:
+            await check(device)
+        except AndroidError as error:
+            if error.code in {
+                "ANDROID_CAPACITY",
+                "ANDROID_MEMORY_BUDGET",
+                "ANDROID_CPU_BUDGET",
+                "ANDROID_CAPACITY_UNKNOWN",
+            }:
+                return False
+            raise
+        except (KeyError, TypeError, ValueError, OSError, TimeoutError):
+            return False
         return True
 
     async def _allocation_step(self, item: dict[str, Any]) -> None:

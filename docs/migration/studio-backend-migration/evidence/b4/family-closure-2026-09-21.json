@@ -1,0 +1,51 @@
+{
+  "evidenceId": "BE-B4-family-closure-2026-09-21",
+  "recordedAt": "2026-09-21",
+  "gitHead": "69900253",
+  "result": "passed",
+  "approvedNodeCount": 88,
+  "formalElectron": {
+    "platform": "darwin-arm64",
+    "entry": "development-build",
+    "nodeCount": 88,
+    "familyEvidence": [
+      "docs/migration/studio-backend-migration/evidence/b4/formal-electron-e63pS8/result.json",
+      "docs/migration/studio-backend-migration/evidence/b4/formal-utility-electron-oeKfeE/result.json",
+      "docs/migration/studio-backend-migration/evidence/b4/formal-math-electron-XqTnhR/result.json",
+      "docs/migration/studio-backend-migration/evidence/b4/formal-advanced-electron-2gUQYE/result.json",
+      "docs/migration/studio-backend-migration/evidence/b4/formal-table-electron-Dvd2Il/result.json"
+    ],
+    "interaction": "real Studio mouse/keyboard input; no Store or page-private function access",
+    "persistence": "HTTP, SSE and SQLite results/logs verified per family",
+    "browserBoundary": "pure-data workflows did not launch CloakBrowser"
+  },
+  "verification": [
+    {
+      "command": "UV_CACHE_DIR=/tmp/autoflow-uv-cache uv run --project apps/backend pytest -q apps/backend/tests/differential/workflows/test_b4_*.py apps/backend/tests/unit/workflows/test_executor_registry.py apps/backend/tests/unit/workflows/test_browser_session_contract.py apps/backend/tests/contract/test_workflow_runs_api.py apps/backend/tests/integration/test_workflow_artifacts.py",
+      "result": "711 passed, 2 dependency deprecation warnings"
+    },
+    {
+      "command": "UV_CACHE_DIR=/tmp/autoflow-uv-cache uv run --project apps/backend pytest -q apps/backend/tests/differential/workflows/test_b1_*.py apps/backend/tests/differential/workflows/test_b2_*.py apps/backend/tests/differential/workflows/test_b3_*.py apps/backend/tests/integration/test_b1_*.py apps/backend/tests/integration/test_b2_*.py apps/backend/tests/integration/test_b3_*.py",
+      "result": "307 passed, 4 opt-in real-CloakBrowser tests skipped"
+    },
+    {
+      "command": "uv run --project apps/backend ruff check <9 B4 executor files>",
+      "result": "passed after Ruff removed one import-group blank line in data_structure.py"
+    },
+    {
+      "command": "uv run --project apps/backend mypy <9 B4 executor files>",
+      "result": "success: no issues found in 9 source files"
+    },
+    {
+      "command": "uv run --project apps/backend pytest -q apps/backend/tests/differential/workflows/test_b4_data_structure_executor_parity.py",
+      "result": "146 passed after formatting-only change"
+    }
+  ],
+  "notClaimed": [
+    "a separate packaged-directory run containing all 88 B4 nodes in one workflow",
+    "macOS Intel verification",
+    "Windows verification",
+    "the four opt-in B1/B2 real-CloakBrowser tests skipped by the shared regression"
+  ],
+  "userDatabaseModified": false
+}

@@ -1,0 +1,59 @@
+{
+  "evidenceId": "BE-B6-log-family",
+  "recordedAt": "2026-09-22",
+  "classification": "原版功能迁入 + AutoFlow必要适配",
+  "source": {
+    "commit": "5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+    "paths": [
+      "reference/WebRPA/backend/app/executors/basic.py#PrintLogExecutor",
+      "reference/WebRPA/backend/app/executors/advanced.py#ExportLogExecutor"
+    ],
+    "license": "LICENSE.WebRPA"
+  },
+  "nodes": [
+    "print_log",
+    "export_log"
+  ],
+  "implemented": [
+    "打印日志保留变量解析、空日志、级别、消息、数据和 log_level 语义",
+    "已确认节点完成事件在 worker 内形成有界于本次运行生命周期的日志记录，敏感节点使用既有脱敏结果",
+    "日志导出保留 TXT、JSON、CSV 及时间、级别、耗时开关，输出变量保留原版结果结构",
+    "文件写入改走 AutoFlow 运行产物边界，拒绝绝对路径和目录逃逸，并登记可查询产物",
+    "子流程与自定义模块共享同一次运行日志记录，不建立第二套日志数据库"
+  ],
+  "checks": [
+    {
+      "command": "uv run --project apps/backend pytest -q apps/backend/tests/unit/workflows/test_log_executors.py apps/backend/tests/integration/test_b6_log_worker.py apps/backend/tests/unit/workflows/test_executor_registry.py apps/backend/tests/unit/workflows/test_runtime_control_flow_core.py apps/backend/tests/integration/test_workflow_worker_protocol.py",
+      "result": "44 passed",
+      "covers": "原版字段行为、真实 worker 日志次序、JSON 文件、产物登记、控制流和 worker 回归"
+    },
+    {
+      "command": "ruff affected files; mypy affected production modules",
+      "result": "passed",
+      "covers": "Python 静态检查"
+    }
+  ],
+  "boundaries": {
+    "workspace": "pytest temporary directory",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "filesystem": "WorkflowArtifactStore only"
+  },
+  "remaining": [],
+  "formalElectron": {
+    "command": "node scripts/smoke-studio-backend-b6-command-log.mjs",
+    "result": "passed on macOS arm64 development build",
+    "evidencePath": "docs/migration/studio-backend-migration/evidence/b6/formal-command-log-electron-CJetPO/result.json",
+    "covers": [
+      "Studio真实点击与键盘",
+      "正式SQLite保存",
+      "真实worker执行",
+      "变量传递",
+      "日志和产物持久化",
+      "进程清理"
+    ]
+  },
+  "nonBlockingFindings": [
+    "macOS Intel 与 Windows 未实测，按最终平台矩阵记录；不影响日志节点在已测平台的业务闭环。"
+  ]
+}

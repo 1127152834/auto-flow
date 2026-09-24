@@ -4,7 +4,7 @@ import { Handle, Position, type NodeProps, useReactFlow } from '@xyflow/react'
 import { cn } from '../lib/utils'
 import type { NodeData } from '../editor-store'
 import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
-import { Globe, ExternalLink, Play } from 'lucide-react'
+import { Globe, ExternalLink, LocateFixed, Play } from 'lucide-react'
 import { moduleIcons, excludedModuleTypes } from './ModuleSidebar'
 import { getNodeColorClass } from './moduleColors'
 import { useNodeRunStore } from '../hooks/stores/nodeRunStore'
@@ -170,6 +170,18 @@ function ModuleNodeComponent({ id, data, selected }: NodeProps) {
         <Play className="w-2.5 h-2.5" strokeWidth={3} fill="currentColor" />
       </button>
 
+      <button
+        className="nodrag nopan absolute left-5 -top-2 w-5 h-5 flex items-center justify-center rounded-full bg-amber-500 text-white shadow ring-2 ring-white z-10 cursor-pointer opacity-0 group-hover:opacity-100 hover:scale-110 hover:bg-amber-600 transition-all duration-150"
+        title="运行至此节点（保留前置上下文）"
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation()
+          window.dispatchEvent(new CustomEvent('run-to-node', { detail: { nodeId: id } }))
+        }}
+      >
+        <LocateFixed className="w-2.5 h-2.5" strokeWidth={3} />
+      </button>
+
       {isDisabled && (
         <div className="absolute -top-2 -right-2 bg-[hsl(var(--slate-700))] text-white text-[9.5px] font-bold px-2 py-0.5 rounded-control shadow-md uppercase tracking-wider">
           已禁用
@@ -250,7 +262,7 @@ function ModuleNodeComponent({ id, data, selected }: NodeProps) {
           </div>
           <Handle type="source" position={Position.Right} id="error" className="!bg-[hsl(var(--warning-500))] !border-[2px] !border-white" style={{ top: '50%', width: `${handleSize * 0.83}px`, height: `${handleSize * 0.83}px` }} />
         </>
-      ) : nodeData.moduleType === 'loop' || nodeData.moduleType === 'foreach' || nodeData.moduleType === 'foreach_dict' ? (
+      ) : nodeData.moduleType === 'loop' || nodeData.moduleType === 'infinite_loop' || nodeData.moduleType === 'foreach' || nodeData.moduleType === 'foreach_dict' ? (
         <>
           <Handle type="source" position={Position.Bottom} id="loop" className="!bg-[hsl(var(--success-500))] !border-[2px] !border-white" style={{ left: '30%', width: `${handleSize}px`, height: `${handleSize}px` }} />
           <div className="absolute -bottom-6 px-1.5 py-0.5 rounded-control bg-[hsl(var(--success-50))] text-[hsl(var(--success-700))] border border-[hsl(var(--success-500)/0.3)] text-[9.5px] font-bold shadow-xs whitespace-nowrap" style={{ left: '30%', transform: 'translateX(-50%)' }}>循环</div>

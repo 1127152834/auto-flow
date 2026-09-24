@@ -1,0 +1,73 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/workflows/tests/module-scope.test.ts src/renderer/domains/workflows/lib/__tests__/moduleColors.audit.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-baseline-integration/autoflow/apps/desktop
+
+(node:93437) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:93436) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/module-scope.test.ts (0 test)
+ ❯ src/renderer/domains/workflows/lib/__tests__/moduleColors.audit.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/module-scope.test.ts [ src/renderer/domains/workflows/tests/module-scope.test.ts ]
+Error: Transform failed with 1 error:
+/Users/zhangtiancheng/.codex/worktrees/android-baseline-integration/autoflow/apps/desktop/src/renderer/domains/workflows/tests/module-scope.test.ts:4:0: ERROR: Unexpected "<<"
+  Plugin: vite:esbuild
+  File: /Users/zhangtiancheng/.codex/worktrees/android-baseline-integration/autoflow/apps/desktop/src/renderer/domains/workflows/tests/module-scope.test.ts:4:0
+  
+  Unexpected "<<"
+  2  |  import { getAllAvailableModules, moduleCategories } from '../components/ModuleSidebar'
+  3  |  
+  4  |  <<<<<<< HEAD
+     |  ^
+  5  |  it('keeps the approved 227-node scope and removes database, DP, office, media and bot nodes', () => {
+  6  |    const modules = getAllAvailableModules().filter(module => !module.isCustom && !['project_data', 'project_end', 'pro...
+  
+ ❯ failureErrorWithLog ../../../../android-management-complete/autoflow/node_modules/vite/node_modules/esbuild/lib/main.js:1752:15
+ ❯ ../../../../android-management-complete/autoflow/node_modules/vite/node_modules/esbuild/lib/main.js:1019:50
+ ❯ responseCallbacks.<computed> ../../../../android-management-complete/autoflow/node_modules/vite/node_modules/esbuild/lib/main.js:886:9
+ ❯ handleIncomingPacket ../../../../android-management-complete/autoflow/node_modules/vite/node_modules/esbuild/lib/main.js:941:12
+ ❯ Socket.readFromStdout ../../../../android-management-complete/autoflow/node_modules/vite/node_modules/esbuild/lib/main.js:864:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/renderer/domains/workflows/lib/__tests__/moduleColors.audit.test.ts [ src/renderer/domains/workflows/lib/__tests__/moduleColors.audit.test.ts ]
+Error: Transform failed with 1 error:
+/Users/zhangtiancheng/.codex/worktrees/android-baseline-integration/autoflow/apps/desktop/src/renderer/domains/workflows/lib/__tests__/moduleColors.audit.test.ts:235:0: ERROR: Unexpected "<<"
+  Plugin: vite:esbuild
+  File: /Users/zhangtiancheng/.codex/worktrees/android-baseline-integration/autoflow/apps/desktop/src/renderer/domains/workflows/lib/__tests__/moduleColors.audit.test.ts:235:0
+  
+  Unexpected "<<"
+  233 |      // 防空跑：分类清单为空或解析异常时，上面的循环不会报错却什么也没测。
+  234 |      // 用户追加排除48个数据库及9个DP节点；保留严格数量与逐项配色断言。
+  235 |  <<<<<<< HEAD
+      |  ^
+  236 |      expect(checked, '被核验的模块数异常偏少，审计可能空跑').toBe(230)
+  237 |  =======
+  
+ ❯ failureErrorWithLog ../../../../android-management-complete/autoflow/node_modules/vite/node_modules/esbuild/lib/main.js:1752:15
+ ❯ ../../../../android-management-complete/autoflow/node_modules/vite/node_modules/esbuild/lib/main.js:1019:50
+ ❯ responseCallbacks.<computed> ../../../../android-management-complete/autoflow/node_modules/vite/node_modules/esbuild/lib/main.js:886:9
+ ❯ handleIncomingPacket ../../../../android-management-complete/autoflow/node_modules/vite/node_modules/esbuild/lib/main.js:941:12
+ ❯ Socket.readFromStdout ../../../../android-management-complete/autoflow/node_modules/vite/node_modules/esbuild/lib/main.js:864:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  no tests
+   Start at  11:50:37
+   Duration  1.01s (transform 254ms, setup 300ms, import 0ms, tests 0ms, environment 1.48s)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/.codex/worktrees/android-baseline-integration/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/.codex/worktrees/android-baseline-integration/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/workflows/tests/module-scope.test.ts src/renderer/domains/workflows/lib/__tests__/moduleColors.audit.test.ts

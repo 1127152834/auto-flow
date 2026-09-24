@@ -1,0 +1,12 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/main/settings/settings.integration.test.ts src/renderer/domains/project-data/pages/DataTableDetailPage.test.tsx src/renderer/domains/workflows/tests/navigation-config-entry.test.tsx src/renderer/domains/profiles/components/EnvironmentFields.test.tsx src/renderer/domains/workflows/tests/recorder-review.test.tsx src/renderer/domains/project-automations/pages/AutomationDetailPage.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+
+
+ Test Files  6 passed (6)
+      Tests  83 passed (83)
+   Start at  05:18:43
+   Duration  35.10s (transform 9.18s, setup 1.78s, import 35.64s, tests 74.54s, environment 9.26s)

@@ -61,7 +61,7 @@ export const MODULE_DEFAULT_VARS: Record<string, Record<string, string>> = {
   ai_dedup_semantic: { variableName: 'deduped_list' },
   ai_route: { variableName: 'route' },
   ai_vision: { resultVariable: 'vision_result' },
-  ocr_captcha: { resultVariable: 'captcha_text' },
+  ocr_captcha: { variableName: 'captcha_text' },
   list_operation: { resultVariable: 'list_result' },
   dict_operation: { resultVariable: 'dict_result' },
   string_replace: { resultVariable: 'replace_result' },

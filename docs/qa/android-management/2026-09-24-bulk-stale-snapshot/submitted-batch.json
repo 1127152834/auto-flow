@@ -1,0 +1,21 @@
+{
+  "id": "5570c658-9fd6-4d38-bfbf-5fddc939db0c",
+  "workspaceIdentity": "/private/tmp/autoflow-android-desktop-qa-20260924/workspace",
+  "requestId": "3f580dde-d754-4664-9b96-b505a7ed074d",
+  "action": "start",
+  "deleteData": false,
+  "state": "succeeded",
+  "items": [
+    {
+      "deviceId": "34e87958-33c6-4a1f-a787-7693deadaa03",
+      "expectedRevision": 3,
+      "state": "succeeded",
+      "operationId": "6972e592-3c20-4510-9a19-ac14b6eb34ca",
+      "retryOf": null,
+      "error": null,
+      "name": "QA 断线批量选择保护",
+      "attempt": 1
+    }
+  ],
+  "createdAt": "2026-09-23T22:03:10.486187+00:00"
+}

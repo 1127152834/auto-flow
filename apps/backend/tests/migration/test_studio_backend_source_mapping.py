@@ -17,8 +17,15 @@ PROVENANCE = (
     REPOSITORY_ROOT / "docs/migration/studio-backend-migration/source-provenance.json"
 )
 FROZEN_COMMIT = "5ccb900e8dcf1530aae66f676d87593c416c7ebb"
-EXPECTED_MILESTONES = {"B1": 5, "B2": 30, "B3": 21, "B4": 88, "B5": 22, "B6": 61}
-EXPECTED_CLASSIFICATIONS = {"原版直接迁入": 110, "AutoFlow必要适配": 117}
+EXPECTED_MILESTONES = {"B1": 5, "B2": 30, "B3": 21, "B4": 88, "B5": 22, "B6": 47}
+EXPECTED_CLASSIFICATIONS = {"原版直接迁入": 110, "AutoFlow必要适配": 103}
+ACCEPTANCE_STATUSES = {
+    "已实现且已验收",
+    "已实现待验收",
+    "尚未实现",
+    "外部等待",
+    "明确排除",
+}
 
 
 def _load(path: Path):
@@ -79,7 +86,7 @@ def test_all_approved_nodes_have_traceable_backend_sources_and_unique_cases() ->
     support_rows = _load(SUPPORT)["sharedCapabilities"]
     support_ids = {row["id"] for row in support_rows}
 
-    assert len(rows) == 227
+    assert len(rows) == 213
     assert len(support_rows) == 13
     assert "BE.SUPPORT.assistant-langgraph" in support_ids
 
@@ -96,6 +103,7 @@ def test_all_approved_nodes_have_traceable_backend_sources_and_unique_cases() ->
         node_types.add(node_type)
 
         migration = row["backendMigration"]
+        assert migration["status"] in ACCEPTANCE_STATUSES
         source = migration["source"]
         source_path = REPOSITORY_ROOT / source["path"]
         assert source["commit"] == FROZEN_COMMIT
@@ -136,20 +144,22 @@ def test_all_approved_nodes_have_traceable_backend_sources_and_unique_cases() ->
             f"BE.{node_type}.real-execution",
         ]
         for case in cases:
-            assert case["status"] in {"尚未验收", "已实现且已验收"}
-            if case["status"] == "尚未验收":
+            assert case["status"] in ACCEPTANCE_STATUSES
+            if case["status"] == "尚未实现":
                 assert case["evidencePath"] is None
-            else:
+            elif case["status"] == "已实现且已验收":
                 evidence = case["evidencePath"]
                 assert isinstance(evidence, str) and evidence
                 assert (REPOSITORY_ROOT / evidence).is_file()
+            elif case["evidencePath"] is not None:
+                assert (REPOSITORY_ROOT / case["evidencePath"]).is_file()
             assert case["id"] not in case_ids
             case_ids.add(case["id"])
 
     assert milestones == EXPECTED_MILESTONES
     assert classifications == EXPECTED_CLASSIFICATIONS
-    assert registrations == {"decorator": 226, "registry.register": 1}
-    assert len(case_ids) == 681
+    assert registrations == {"decorator": 212, "registry.register": 1}
+    assert len(case_ids) == 639
 
 
 def test_shared_capabilities_only_reference_existing_sources_and_contracts() -> None:

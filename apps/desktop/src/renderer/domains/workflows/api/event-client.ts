@@ -100,7 +100,15 @@ export class StudioEventClient {
     this.controller.signal.addEventListener('abort', abortConnection, { once: true })
     try {
       const response = await studioFetch(`${this.baseUrl}/api/events/stream?afterSeq=${this.sequence}`, { signal: connection.signal })
-      if (!response.ok || !response.body) throw new Error('Studio event stream unavailable')
+      if (!response.ok || !response.body) {
+        if (response.status === 409) {
+          const payload: unknown = await response.json().catch(() => null)
+          if (payload && typeof payload === 'object' && !Array.isArray(payload)
+            && 'error' in payload && payload.error && typeof payload.error === 'object' && !Array.isArray(payload.error)
+            && 'code' in payload.error && payload.error.code === 'EVENT_CURSOR_AHEAD') this.sequence = 0
+        }
+        throw new Error('Studio event stream unavailable')
+      }
       this.connected = true
       this.dispatch('connect')
       for await (const event of parseServerSentEvents(response.body)) {
