@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
-import { FileText, FlowArrow, SlidersHorizontal, Browser, Lightning, Info, Clock } from '@phosphor-icons/react'
+import { FileText, FlowArrow, SlidersHorizontal, Browser, Lightning, Info } from '@phosphor-icons/react'
 import { Button } from '../../../shared/components/ui/button'
 import { Input } from '../../../shared/components/ui/input'
-import { Select } from '../../../shared/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../shared/components/ui/tabs'
 import { Textarea } from '../../../shared/components/ui/textarea'
 import { automationToForm, normalizeAutomation, validateAutomationForm, type AutomationFormErrors } from '../form-schema'
@@ -107,10 +106,6 @@ export function AutomationEditor({ initialValue, resetKey, workflowOptions, isNe
     await onSubmit(normalizeAutomation(effectiveValue))
   }
   const workflow = workflowOptions.find(option => option.id === value.workflowId)
-  const workflowSelectOptions = [
-    ...(value.workflowId && !workflow ? [{ value: value.workflowId, label: '关联工作流暂不可用', disabled: true }] : []),
-    ...workflowOptions.map(option => ({ value: option.id, label: option.name })),
-  ]
   const fieldErrors = (prefix: string): AutomationFormErrors => Object.fromEntries(Object.entries(errors).filter(([key]) => key.startsWith(prefix)).map(([key, message]) => [key.slice(prefix.length), message]))
   const parameterErrors = Object.fromEntries(Object.entries(errors).flatMap(([key, message]) => {
     const match = /^parameterSchema\.(\d+)\.(.+)$/.exec(key)
@@ -134,7 +129,7 @@ export function AutomationEditor({ initialValue, resetKey, workflowOptions, isNe
         <div className="grid gap-6">
           <label className="grid gap-2 md:grid-cols-[12rem_minmax(0,1fr)] md:items-start"><span className="pt-2 text-sm font-medium">自动化名称 <span className="text-danger">*</span></span><span><Input aria-label="自动化名称" disabled={locked} aria-invalid={Boolean(errors.name)} aria-describedby={nameMessageId} {...register('name', { onChange: event => change('name', event.target.value) })}/>{errors.name ? <span id={nameMessageId} role="alert" className="mt-1 block text-xs text-danger">{errors.name}</span> : <span id={nameMessageId} className="mt-1 block text-xs text-muted">1–80 个字符</span>}</span></label>
           <label className="grid gap-2 md:grid-cols-[12rem_minmax(0,1fr)] md:items-start"><span className="pt-2 text-sm font-medium">用途说明</span><span><Textarea aria-label="用途说明" disabled={locked} aria-invalid={Boolean(errors.description)} aria-describedby={descriptionMessageId} className="resize-y" {...register('description', { onChange: event => change('description', event.target.value) })}/>{errors.description ? <span id={descriptionMessageId} role="alert" className="mt-1 block text-xs text-danger">{errors.description}</span> : <span id={descriptionMessageId} className="mt-1 block text-xs text-muted">最多 1000 个字符</span>}</span></label>
-          <div role="group" aria-label="工作流关联" className="grid gap-2 md:grid-cols-[12rem_minmax(0,1fr)] md:items-start"><span className="pt-2 text-sm font-medium">关联工作流</span><div>{isNew ? <div className="flex flex-col items-start gap-2 sm:flex-row"><div className="w-full min-w-0 flex-1"><Select aria-label="关联工作流" value={value.workflowId || null} options={workflowSelectOptions} clearable={false} disabled={locked} errorMessage={errors.workflowId} onValueChange={workflowId => workflowId && change('workflowId', workflowId)}/></div>{onOpenStudio ? <Button className="shrink-0" disabled={locked} onClick={() => onOpenStudio(value.workflowId || undefined)}>打开 Studio</Button> : null}</div> : <div className="flex flex-wrap items-center justify-between gap-3 rounded-control border border-line bg-surface-subtle p-3"><span className="flex min-w-0 flex-wrap items-center gap-3"><FlowArrow size={28} className="shrink-0 text-clay" aria-hidden/><strong className="break-words">{workflow?.name ?? '关联工作流暂不可用'}</strong><small className="text-muted">{workflow?.runnable === true ? '可以运行' : workflow?.runnable === false ? '不可运行' : '未能读取校验状态'}</small>{workflow?.updatedAt && Number.isFinite(Date.parse(workflow.updatedAt)) ? <small className="flex items-center gap-1 text-muted"><Clock aria-hidden/>最近保存 {new Intl.DateTimeFormat('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(workflow.updatedAt))}</small> : null}</span>{onOpenStudio ? <Button size="sm" disabled={locked} onClick={() => onOpenStudio(value.workflowId)}>打开 Studio</Button> : null}</div>}{isNew ? <p className="mb-0 mt-2 text-xs text-muted">没有合适的工作流？在 Studio 中新建并保存，返回后即可选择。</p> : null}<p className="mb-0 mt-2 text-xs text-muted">关联建立后不能通过普通编辑替换工作流</p></div></div>
+          <div role="group" aria-label="工作流" className="grid gap-2 md:grid-cols-[12rem_minmax(0,1fr)]"><span className="pt-2 text-sm font-medium">工作流</span><div className="flex flex-wrap items-center gap-3 rounded-control border border-line bg-surface-subtle p-3"><FlowArrow size={28} className="text-clay" aria-hidden/><span>{isNew ? '创建自动化时将自动创建专属工作流' : workflow?.name ?? '专属工作流'}</span>{!isNew && <small className="text-muted">{workflow?.runnable === true ? '可以运行' : workflow?.runnable === false ? '不可运行' : '未能读取校验状态'}</small>}{!isNew && onOpenStudio ? <Button size="sm" disabled={locked} onClick={() => onOpenStudio(value.workflowId)}>编辑工作流</Button> : null}</div></div>
 
         </div>
       </TabsContent>

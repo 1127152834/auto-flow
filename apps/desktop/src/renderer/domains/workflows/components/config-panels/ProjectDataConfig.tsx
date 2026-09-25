@@ -1,3 +1,4 @@
+import { useProjectInputs, inputReference } from '../../project-inputs'
 import { useEffect, useRef, useState } from 'react'
 import type { components } from '../../../../shared/api/generated'
 import { apiRequest } from '../../api'
@@ -14,13 +15,16 @@ const grantOperation = (operation: string) => ({ previewFieldChange: 'modifyFiel
 const readPurposes = (operation: string) => ['queryTableSchema', 'deleteField', 'previewFieldDeletion'].includes(operation) ? [] : ['condition', 'derivedWrite']
 
 export function ProjectDataConfig({ data, onChange }: { data: NodeData; onChange(key: string, value: unknown): void }) {
+  const automation = useProjectInputs(state => state.automation)
   const operation = String(data.operation ?? 'inputs')
+  const currentInput = automation?.inputPlan.inputs.find(input => input.inputId === data.currentInputId)
   const projectId = String(data.bindingProjectId ?? '')
   const grant = data.tableGrant as { tableId: string; datasetGeneration: string; fieldIds: string[] } | undefined
   const tableId = grant?.tableId ?? ''
   const [projects, setProjects] = useState<Schema['ProjectPage']['items']>([])
   const [tables, setTables] = useState<Schema['DataTablePage']['items']>([])
   const [fields, setFields] = useState<Schema['DataFieldDirectory']['items']>([])
+  const [statuses, setStatuses] = useState<Schema['DataStatusView'][]>([])
   const [projectPage, setProjectPage] = useState(1)
   const [tablePage, setTablePage] = useState(1)
   const [projectTotal, setProjectTotal] = useState(0)
@@ -78,25 +82,43 @@ export function ProjectDataConfig({ data, onChange }: { data: NodeData; onChange
       if (controller.signal.aborted) return
       if (!fieldResult.success || !fieldResult.data) { setError('字段读取失败，请重试'); return }
       setFields(fieldResult.data.items)
+      const statusResult = await apiRequest<Schema['DataStatusDirectory']>(`/v1/projects/${encodeURIComponent(projectId)}/tables/${encodeURIComponent(tableId)}/statuses`, { signal: controller.signal })
+      if (controller.signal.aborted) return
+      if (!statusResult.success || !statusResult.data) { setStatuses([]); setError('业务状态读取失败，请重试'); return }
+      setStatuses(statusResult.data.items)
     }
     void load()
     return () => controller.abort()
   }, [projectId, tableId, revision, projectPage, tablePage])
   function bind(table: Schema['DataTableView'], op = operation) {
+    onChange('currentInputId', undefined)
     onChange('tableGrant', { tableId: table.tableId, datasetGeneration: table.datasetGeneration, operations: [grantOperation(op)], fieldIds: [], readPurposes: readPurposes(op) })
     onChange('argumentsValid', true)
     onChange('arguments', initialArguments(op, table))
+  }
+  function selectInput(inputId: string) {
+    const input = automation?.inputPlan.inputs.find(item => item.inputId === inputId)
+    if (!input || !automation) return
+    const ids = input.fieldBindings.map(binding => binding.fieldRef.fieldId)
+    const ref = inputReference(inputId)
+    onChange('currentInputId', inputId)
+    onChange('bindingProjectId', automation.projectId)
+    onChange('tableGrant', { tableId: input.tableId, datasetGeneration: input.datasetGeneration, operations: [operation], fieldIds: ids, readPurposes: readPurposes(operation) })
+    onChange('argumentsValid', true)
+    onChange('arguments', { recordRef: `{${ref}['recordRef']}`, ...(operation === 'readRecord' ? { fieldIds: ids, readPurpose: 'condition' } : operation === 'setRecordStatus' ? { expectedStatusRevision: `{${ref}['statusRevision']}`, statusId: null } : { expectedContentRevision: `{${ref}['contentRevision']}`, changes: {} }) })
   }
   return <div className="space-y-4">
     <p className="text-sm text-muted-foreground">从项目自动化批次运行。使用任务的输入快照和数据权限，表发生重建时需要重新选择。</p>
     <Label htmlFor="project-data-operation">操作</Label>
     <Select id="project-data-operation" value={operation} onChange={event => {
       const next = event.target.value
-      onChange('operation', next); if (next === 'previewFieldDeletion') onChange('variableName', 'field_deletion_preview'); onChange('argumentsValid', true); onChange('arguments', {}); onChange('tableGrant', undefined)
+      onChange('currentInputId', undefined); onChange('operation', next); if (next === 'previewFieldDeletion') onChange('variableName', 'field_deletion_preview'); onChange('argumentsValid', true); onChange('arguments', {}); onChange('tableGrant', undefined)
     }}>{Object.entries(operations).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</Select>
+    {automation && ['readRecord', 'updateRecord', 'setRecordStatus'].includes(operation) && <><Label htmlFor="project-current-input">当前输入对象</Label><Select id="project-current-input" value={String(data.currentInputId ?? '')} onChange={event => selectInput(event.target.value)}><option value="">选择本次任务的输入对象</option>{automation.inputPlan.inputs.map(input => <option key={input.inputId} value={input.inputId}>{input.alias}</option>)}</Select></>}
+    {currentInput && operation === 'setRecordStatus' && <><Label htmlFor="project-input-status">保存业务状态</Label><Select id="project-input-status" value={String(argumentsValue?.statusId ?? '')} onChange={event => onChange('arguments', { ...argumentsValue, statusId: event.target.value || null })}><option value="">未设置</option>{statuses.map(status => <option key={status.statusId} value={status.statusId}>{status.name}</option>)}</Select></>}
     {operation !== 'inputs' && <>
       <Label htmlFor="project-data-project">所属项目</Label>
-      <Select id="project-data-project" value={projectId} onChange={event => { setTablePage(1); onChange('bindingProjectId', event.target.value); onChange('tableGrant', undefined); onChange('arguments', {}) }}>
+      <Select id="project-data-project" value={projectId} onChange={event => { setTablePage(1); onChange('currentInputId', undefined); onChange('bindingProjectId', event.target.value); onChange('tableGrant', undefined); onChange('arguments', {}) }}>
         <option value="">选择项目</option>{projects.map(project => <option key={project.projectId} value={project.projectId}>{project.name}</option>)}
       </Select>
       <div className="flex gap-2"><button type="button" disabled={projectPage === 1} onClick={() => setProjectPage(value => value - 1)}>上一页项目</button><span>第 {projectPage} 页</span><button type="button" disabled={projectPage * 100 >= projectTotal} onClick={() => setProjectPage(value => value + 1)}>下一页项目</button></div>

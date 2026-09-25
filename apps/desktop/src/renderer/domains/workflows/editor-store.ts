@@ -177,7 +177,7 @@ function remapNodeReferences(node: Node<NodeData>, idMap: Map<string, string>): 
 }
 
 // 底栏 Tab 类型
-export type BottomPanelTab = 'logs' | 'data' | 'variables' | 'assets' | 'images'
+export type BottomPanelTab = 'project' | 'logs' | 'data' | 'variables' | 'assets' | 'images'
 
 // 历史记录快照类型
 interface HistorySnapshot {

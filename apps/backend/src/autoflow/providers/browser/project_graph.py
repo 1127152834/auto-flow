@@ -217,10 +217,11 @@ class ProjectGraphExecutor:
         proxy_probe: Callable[[bool], Awaitable[dict[str, Any]]] | None = None,
         capability: Callable[..., Awaitable[Any]] | None = None,
         browser_initializer: Callable[..., Awaitable[Any]] | None = None,
+        project_input_context: dict[str, Any] | None = None,
     ) -> None:
         self.browser = CloakBrowserWorkflowSession(browser_context) if browser_context is not None else None
         self.cancellation = _Cancellation(should_stop)
-        self.context = ExecutionContext(proxy_control=command_bus.proxy_call if command_bus else None, proxy_probe=proxy_probe, process_cleanup=terminate_subprocess, variables=dict(variables), browser=self.browser, browser_initializer=browser_initializer, cancellation=self.cancellation, events=self, credentials=credentials, models=models, external_integrations=external_integrations, table_workbooks=OpenpyxlTableWorkbookRenderer())
+        self.context = ExecutionContext(project_input_context=project_input_context or {}, proxy_control=command_bus.proxy_call if command_bus else None, proxy_probe=proxy_probe, process_cleanup=terminate_subprocess, variables=dict(variables), browser=self.browser, browser_initializer=browser_initializer, cancellation=self.cancellation, events=self, credentials=credentials, models=models, external_integrations=external_integrations, table_workbooks=OpenpyxlTableWorkbookRenderer())
         self.command_bus = command_bus
         if command_bus is not None:
             interactive = command_bus.for_context(self.context)

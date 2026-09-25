@@ -487,7 +487,10 @@ class SqlAlchemyProjectInputGroups:
             DataRecordRow.dataset_generation == generation,
             DataRecordRow.deleted.is_(False),
         )
-        if exact_record_ref is not None:
+        rows: list[DataRecordRow]
+        if omit_candidates or restriction == []:
+            rows = []
+        elif exact_record_ref is not None:
             if (
                 exact_record_ref.project_id != project_id
                 or exact_record_ref.table_id != table_id

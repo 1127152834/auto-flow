@@ -815,7 +815,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 272,
+          "line": 317,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "browserApi.validateNodeResources(nodes)"
         }
@@ -1372,7 +1372,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 450,
+          "line": 452,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "call": "elementPickerApi.getSelected()"
         }
@@ -1406,7 +1406,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 487,
+          "line": 489,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "call": "elementPickerApi.getSimilar()"
         }
@@ -1484,7 +1484,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 428,
+          "line": 430,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "call": "elementPickerApi.start(resolvedUrl || undefined)"
         }
@@ -1528,13 +1528,13 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 306,
+          "line": 308,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "call": "elementPickerApi.stop()"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 363,
+          "line": 365,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "call": "elementPickerApi.stop()"
         },
@@ -1568,7 +1568,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 660,
+          "line": 662,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "call": "elementPickerApi.testSelector(selector, hints)"
         }
@@ -4208,7 +4208,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 198,
+          "line": 200,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "call": "systemApi.setClipboard(text)"
         }
@@ -4453,19 +4453,19 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 439,
+          "line": 252,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.create(workflowData)"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 818,
+          "line": 837,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.create({\n          name,\n          nodes: nodes.map(n => ({\n            id: n.id,\n            type: n.data.moduleType,\n            position: n.position,\n            data: n.data,\n            style: n.style,\n          })),\n          edges: edges.map(e => ({\n            id: e.id,\n            source: e.source,\n            target: e.target,\n            sourceHandle: e.sourceHandle,\n            targetHandle: e.targetHandle,\n          })),\n          variables: variables.map(v => ({\n            name: v.name,\n            value: v.value,\n            type: v.type,\n            scope: v.scope,\n          })),\n        })"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 921,
+          "line": 940,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.create(payload)"
         }
@@ -4579,7 +4579,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 331,
+          "line": 376,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.execute(currentWorkflowId, { \n        headless,\n        ...debugOptions,\n        runId,\n        documentId: sourceDocumentId,\n        document,\n        ...(startNodeId ? { startNodeId } : {}),\n        ...(runToNodeId ? { runToNodeId } : {}),\n      })"
         }
@@ -4607,7 +4607,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx",
-          "line": 301,
+          "line": 302,
           "source": "frontend/src/components/workflow/LogPanel.tsx",
           "call": "workflowApi.exportRunLogs(effectiveRunId, {\n          query: logSearchQuery,\n          levels: Array.from(logLevelFilters).sort(),\n          nodeId: logNodeFilter || undefined,\n          executionId: logExecutionFilter.trim() || undefined,\n        })"
         }
@@ -4635,7 +4635,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx",
-          "line": 411,
+          "line": 412,
           "source": "frontend/src/components/workflow/LogPanel.tsx",
           "call": "workflowApi.exportRunResults(runId,page.data.throughSequence)"
         },
@@ -4669,7 +4669,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 935,
+          "line": 954,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.exportScript(currentWorkflowId!, target)"
         }
@@ -4703,7 +4703,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/app/StudioApp.tsx",
-          "line": 30,
+          "line": 32,
           "source": null,
           "call": "workflowApi.get(context.workflowId!)"
         }
@@ -4794,7 +4794,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 168,
+          "line": 170,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.getRun(runId)"
         },
@@ -4828,7 +4828,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx",
-          "line": 176,
+          "line": 177,
           "source": "frontend/src/components/workflow/LogPanel.tsx",
           "call": "workflowApi.getRunLogs(effectiveRunId, {\n      cursor,\n      limit: maxLogCount,\n      query: logSearchQuery,\n      levels: Array.from(logLevelFilters).sort(),\n      nodeId: logNodeFilter || undefined,\n      executionId: logExecutionFilter.trim() || undefined,\n    })"
         }
@@ -4856,7 +4856,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx",
-          "line": 409,
+          "line": 410,
           "source": "frontend/src/components/workflow/LogPanel.tsx",
           "call": "workflowApi.getRunResults(runId,0,1)"
         },
@@ -4952,7 +4952,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx",
-          "line": 212,
+          "line": 213,
           "source": "frontend/src/components/workflow/LogPanel.tsx",
           "call": "workflowApi.listRuns(undefined, cursor, 50)"
         },
@@ -5020,19 +5020,19 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 438,
+          "line": 251,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.update(workflowId, workflowData)"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 851,
+          "line": 870,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.update(currentWorkflowId, {\n          name,\n          nodes: nodes.map(n => ({\n            id: n.id,\n            type: n.data.moduleType,\n            position: n.position,\n            data: n.data,\n            style: n.style,\n          })),\n          edges: edges.map(e => ({\n            id: e.id,\n            source: e.source,\n            target: e.target,\n            sourceHandle: e.sourceHandle,\n            targetHandle: e.targetHandle,\n          })),\n          variables: variables.map(v => ({\n            name: v.name,\n            value: v.value,\n            type: v.type,\n            scope: v.scope,\n          })),\n        })"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 929,
+          "line": 948,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowApi.update(currentWorkflowId, payload)"
         }
@@ -5060,7 +5060,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 1058,
+          "line": 1077,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowBundleApi.export(name, content)"
         }
@@ -5088,7 +5088,7 @@
       "consumers": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 1102,
+          "line": 1122,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "call": "workflowBundleApi.import(bundle)"
         }
@@ -5111,13 +5111,13 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 348,
+          "line": 350,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "via": "emitAssistantUiEvent"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx",
-          "line": 293,
+          "line": 294,
           "source": "frontend/src/components/workflow/LogPanel.tsx",
           "via": "emitAssistantUiEvent"
         }
@@ -5129,13 +5129,13 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 550,
+          "line": 568,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         },
         {
           "file": "apps/desktop/src/renderer/app/StudioApp.tsx",
-          "line": 68,
+          "line": 70,
           "source": null,
           "via": "window.addEventListener"
         }
@@ -5173,7 +5173,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 742,
+          "line": 760,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5193,7 +5193,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 740,
+          "line": 758,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5213,7 +5213,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 734,
+          "line": 752,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5226,7 +5226,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 738,
+          "line": 756,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5246,7 +5246,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 736,
+          "line": 754,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5266,7 +5266,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 744,
+          "line": 762,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5325,7 +5325,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx",
-          "line": 431,
+          "line": 432,
           "source": "frontend/src/components/workflow/LogPanel.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5345,7 +5345,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 227,
+          "line": 229,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         }
@@ -5661,7 +5661,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx",
-          "line": 428,
+          "line": 429,
           "source": "frontend/src/components/workflow/LogPanel.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5681,7 +5681,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 725,
+          "line": 743,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -5739,7 +5739,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 479,
+          "line": 497,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "emitAssistantUiEvent"
         }
@@ -5879,7 +5879,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 686,
+          "line": 704,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         }
@@ -5919,7 +5919,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 688,
+          "line": 706,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         },
@@ -5946,7 +5946,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 687,
+          "line": 705,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         }
@@ -5992,7 +5992,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 535,
+          "line": 553,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         },
@@ -6080,7 +6080,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 722,
+          "line": 740,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -6100,7 +6100,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 741,
+          "line": 759,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -6120,7 +6120,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 739,
+          "line": 757,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -6140,7 +6140,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 728,
+          "line": 746,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -6160,7 +6160,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 733,
+          "line": 751,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -6180,7 +6180,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 737,
+          "line": 755,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -6232,7 +6232,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 735,
+          "line": 753,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -6252,7 +6252,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 743,
+          "line": 761,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -6306,35 +6306,35 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 577,
+          "line": 595,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "CustomEvent",
           "call": "new CustomEvent('refresh:image-assets')"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 777,
+          "line": 796,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "CustomEvent",
           "call": "new CustomEvent('refresh:image-assets')"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 782,
+          "line": 801,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "CustomEvent",
           "call": "new CustomEvent('refresh:image-assets')"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 788,
+          "line": 807,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "CustomEvent",
           "call": "new CustomEvent('refresh:image-assets')"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 800,
+          "line": 819,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "CustomEvent",
           "call": "new CustomEvent('refresh:image-assets')"
@@ -6347,13 +6347,13 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-          "line": 275,
+          "line": 277,
           "source": "frontend/src/components/workflow/ConfigPanel.tsx",
           "via": "window.addEventListener"
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/ModuleSidebar.tsx",
-          "line": 1811,
+          "line": 1815,
           "source": "frontend/src/components/workflow/ModuleSidebar.tsx",
           "via": "window.addEventListener"
         },
@@ -6392,7 +6392,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 708,
+          "line": 726,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -6430,7 +6430,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 390,
+          "line": 435,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         }
@@ -6451,7 +6451,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 375,
+          "line": 420,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         }
@@ -6472,7 +6472,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 705,
+          "line": 723,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -6591,7 +6591,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 717,
+          "line": 735,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -6617,7 +6617,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 224,
+          "line": 226,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         }
@@ -6657,7 +6657,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx",
-          "line": 229,
+          "line": 230,
           "source": "frontend/src/components/workflow/LogPanel.tsx",
           "via": "window.addEventListener"
         },
@@ -6675,7 +6675,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 179,
+          "line": 181,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         },
@@ -6699,7 +6699,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx",
-          "line": 60,
+          "line": 64,
           "source": null,
           "via": "window.addEventListener"
         },
@@ -6733,7 +6733,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx",
-          "line": 230,
+          "line": 231,
           "source": "frontend/src/components/workflow/LogPanel.tsx",
           "via": "window.addEventListener"
         }
@@ -6741,7 +6741,7 @@
       "emissions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 175,
+          "line": 177,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "CustomEvent",
           "call": "new CustomEvent('studio:run-history-changed', { detail: { runId, status } })"
@@ -6829,7 +6829,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 178,
+          "line": 180,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "window.addEventListener"
         },
@@ -6865,7 +6865,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx",
-          "line": 59,
+          "line": 63,
           "source": null,
           "via": "window.addEventListener"
         },
@@ -6895,7 +6895,7 @@
         },
         {
           "file": "apps/desktop/src/renderer/app/StudioApp.tsx",
-          "line": 43,
+          "line": 45,
           "source": null,
           "via": "window.addEventListener"
         }
@@ -6916,7 +6916,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-          "line": 747,
+          "line": 765,
           "source": "frontend/src/components/workflow/Toolbar.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -6936,7 +6936,7 @@
       "subscriptions": [
         {
           "file": "apps/desktop/src/renderer/domains/workflows/components/LogPanel.tsx",
-          "line": 434,
+          "line": 435,
           "source": "frontend/src/components/workflow/LogPanel.tsx",
           "via": "onAssistantUiEvent"
         }
@@ -8103,7 +8103,7 @@
       "body": "body: JSON.stringify({ name })",
       "responseType": null,
       "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-      "line": 567,
+      "line": 585,
       "source": "frontend/src/components/workflow/Toolbar.tsx",
       "call": "studioFetch(`${API_BASE}/api/system/save-clipboard-image`, {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify({ name })\n      })"
     },
@@ -8113,7 +8113,7 @@
       "body": "body: JSON.stringify({ saveToAssets: true })",
       "responseType": null,
       "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-      "line": 609,
+      "line": 627,
       "source": "frontend/src/components/workflow/Toolbar.tsx",
       "call": "studioFetch(`${API_BASE}/api/system/screenshot-tool`, {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify({ saveToAssets: true })\n      })"
     },
@@ -8123,7 +8123,7 @@
       "body": null,
       "responseType": null,
       "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-      "line": 769,
+      "line": 788,
       "source": "frontend/src/components/workflow/Toolbar.tsx",
       "call": "studioFetch(`${API_BASE}/api/image-assets/${screenshotAsset.id}/rename?newName=${encodeURIComponent(newName + '.png')}`, {\n        method: 'PUT',\n        headers: { 'Content-Type': 'application/json' }\n      })"
     },
@@ -8133,7 +8133,7 @@
       "body": null,
       "responseType": null,
       "file": "apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx",
-      "line": 882,
+      "line": 901,
       "source": "frontend/src/components/workflow/Toolbar.tsx",
       "call": "studioFetch(`${API_BASE}/api/workflows/${currentWorkflowId}/export-playwright`)"
     },
@@ -8263,7 +8263,7 @@
       "body": "body: JSON.stringify(candidate)",
       "responseType": "Schema['DataSchemaImpact']",
       "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx",
-      "line": 51,
+      "line": 55,
       "source": null,
       "call": "apiRequest<Schema['DataSchemaImpact']>(`/v1/projects/${encodeURIComponent(projectId)}/tables/${encodeURIComponent(tableId)}/schema/preview`, { method: 'POST', body: JSON.stringify(candidate), signal: controller.signal })"
     },
@@ -8273,7 +8273,7 @@
       "body": null,
       "responseType": "Schema['ProjectPage']",
       "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx",
-      "line": 67,
+      "line": 71,
       "source": null,
       "call": "apiRequest<Schema['ProjectPage']>(`/v1/projects?pageSize=100&lifecycleState=active&page=${projectPage}`, { signal: controller.signal })"
     },
@@ -8283,7 +8283,7 @@
       "body": null,
       "responseType": "Schema['DataTablePage']",
       "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx",
-      "line": 72,
+      "line": 76,
       "source": null,
       "call": "apiRequest<Schema['DataTablePage']>(`/v1/projects/${encodeURIComponent(projectId)}/tables?pageSize=100&page=${tablePage}`, { signal: controller.signal })"
     },
@@ -8293,9 +8293,39 @@
       "body": null,
       "responseType": "Schema['DataFieldDirectory']",
       "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx",
-      "line": 77,
+      "line": 81,
       "source": null,
       "call": "apiRequest<Schema['DataFieldDirectory']>(`/v1/projects/${encodeURIComponent(projectId)}/tables/${encodeURIComponent(tableId)}/fields`, { signal: controller.signal })"
+    },
+    {
+      "endpoint": "`/v1/projects/${encodeURIComponent(projectId)}/tables/${encodeURIComponent(tableId)}/statuses`",
+      "method": "GET",
+      "body": null,
+      "responseType": "Schema['DataStatusDirectory']",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx",
+      "line": 85,
+      "source": null,
+      "call": "apiRequest<Schema['DataStatusDirectory']>(`/v1/projects/${encodeURIComponent(projectId)}/tables/${encodeURIComponent(tableId)}/statuses`, { signal: controller.signal })"
+    },
+    {
+      "endpoint": "`/v1/proxies?offset=${offset}&limit=100`",
+      "method": "GET",
+      "body": null,
+      "responseType": "components['schemas']['ProxyPage']",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProxyControlConfig.tsx",
+      "line": 31,
+      "source": null,
+      "call": "apiRequest<components['schemas']['ProxyPage']>(`/v1/proxies?offset=${offset}&limit=100`, { signal: controller.signal })"
+    },
+    {
+      "endpoint": "`/v1/proxy-panel/connections/${encodeURIComponent(connectionId)}/locations`",
+      "method": "GET",
+      "body": null,
+      "responseType": "components['schemas']['LocationList']",
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProxyControlConfig.tsx",
+      "line": 48,
+      "source": null,
+      "call": "apiRequest<components['schemas']['LocationList']>(`/v1/proxy-panel/connections/${encodeURIComponent(connectionId)}/locations`, { signal: controller.signal })"
     },
     {
       "endpoint": "`${getBackendUrl()}/api/triggers/gesture/custom`",
@@ -8386,6 +8416,16 @@
       "line": 40,
       "source": "frontend/src/lib/requiredFields.ts",
       "call": "apiRequest<RequiredFieldMetadata>('/system/module-required-fields', { signal: AbortSignal.timeout(10000) })"
+    },
+    {
+      "endpoint": "path.replace(/^\\/api/, '')",
+      "method": "dynamic",
+      "body": "body: init?.body == null ? undefined : JSON.stringify(init.body)",
+      "responseType": "T",
+      "file": "apps/desktop/src/renderer/domains/workflows/project-inputs.ts",
+      "line": 16,
+      "source": null,
+      "call": "apiRequest<T>(path.replace(/^\\/api/, ''), { ...init, body: init?.body == null ? undefined : JSON.stringify(init.body) })"
     }
   ]
 }

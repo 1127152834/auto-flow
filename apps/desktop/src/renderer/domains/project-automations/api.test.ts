@@ -22,7 +22,7 @@ it.each([
   { ...operation, projectId: 'other' },
   { ...operation, kind: 'updateAutomation' },
   { ...operation, resource: { ...operation.resource, automationId: 'other' } },
-  { ...operation, result: { ...automation, workflowId: 'other' } },
+  { ...operation, result: { ...automation, projectId: 'other' } },
 ])('rejects mismatched persisted identity', async wrong => {
   const request = vi.fn().mockResolvedValue(wrong)
   await expect(createAutomationApi(client(request), 'p').resumeCreate(body, 'key')).rejects.toBeInstanceOf(AutomationCommandUncertain)

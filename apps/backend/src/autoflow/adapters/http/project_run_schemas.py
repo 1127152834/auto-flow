@@ -12,6 +12,7 @@ JsonScalar = StrictStr | StrictInt | StrictFloat | StrictBool | None
 
 
 class BatchStartRequest(ApiModel):
+    debug_selection: dict[str, dict[str, JsonValue] | None] | None = None
     expected_automation_revision: StrictInt = Field(ge=1)
     parameters: dict[str, JsonScalar]
     max_tasks: StrictInt | None = Field(None, ge=1, le=100)
@@ -216,3 +217,20 @@ class TaskDetail(ApiModel):
 class BatchStopRequest(ApiModel):
     expected_status_revision: StrictInt = Field(ge=1)
     reason: StrictStr = Field(min_length=1, max_length=500)
+
+
+class DebugInputRequest(ApiModel):
+    expected_automation_revision: StrictInt = Field(ge=1)
+    choices: dict[str, dict[str, JsonValue] | None] = Field(default_factory=dict)
+    input_id: str | None = None
+    cursor: str | None = None
+    page_size: StrictInt = Field(50, ge=1, le=100)
+    search: str = Field('', max_length=200)
+
+
+class DebugInputResponse(ApiModel):
+    selection_status: str
+    selection: dict[str, dict[str, JsonValue] | None]
+    inputs: list[dict[str, JsonValue]]
+    items: list[dict[str, JsonValue]]
+    next_cursor: str | None
