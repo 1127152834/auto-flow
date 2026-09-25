@@ -47,3 +47,11 @@ it('allows bounded data concurrency while parameter-only policies remain serial'
     expect(validateAutomationForm({ ...value, runPolicy: { ...value.runPolicy, maxLiveInstances: invalid } })['runPolicy.maxLiveInstances']).toBeTruthy()
   }
 })
+
+it('defaults new automations to continue after failure and preserves explicit saved choices', () => {
+  const fresh = emptyAutomationForm('workflow')
+  expect(fresh.runPolicy.continueAfterFailure).toBe(true)
+  const saved = { ...fresh, runPolicy: { ...fresh.runPolicy, continueAfterFailure: false } }
+  expect(automationToForm(saved).runPolicy.continueAfterFailure).toBe(false)
+  expect(normalizeAutomation(saved).runPolicy.continueAfterFailure).toBe(false)
+})

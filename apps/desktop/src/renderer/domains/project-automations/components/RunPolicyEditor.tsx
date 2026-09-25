@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Clock, Cube, Database, SlidersHorizontal } from '@phosphor-icons/react'
 import { Input } from '../../../shared/components/ui/input'
-import { RadioGroup } from '../../../shared/components/ui/radio-group'
 import { Switch } from '../../../shared/components/ui/switch'
 import type { DraftState, FieldErrors, RunPolicy } from './policy-types'
 
@@ -76,8 +75,8 @@ export function RunPolicyEditor({ value, onChange, dataBatch = false, disabled =
     <label className="grid gap-2 text-sm md:grid-cols-[11rem_minmax(0,1fr)] md:items-start [&>:not(:first-child)]:md:col-start-2"><span className="pt-2 font-medium">最大活动实例</span><Input className="max-w-64" type="number" aria-label="最大活动实例" value={1} disabled/></label>
     </>}
     <label className="grid gap-2 text-sm md:grid-cols-[11rem_minmax(0,1fr)] md:items-center"><span className="font-medium">失败处理</span><span className="flex items-center gap-3">
-      <Switch aria-label="某个任务失败后停止创建后续任务" checked={!value.continueAfterFailure} disabled={disabled} onCheckedChange={stop => onChange({ ...value, continueAfterFailure: !stop })}/>
-      某个任务失败后停止创建后续任务</span>
+      <Switch aria-label="任务失败后继续下一个任务" checked={value.continueAfterFailure} disabled={disabled} onCheckedChange={continueAfterFailure => onChange({ ...value, continueAfterFailure })}/>
+      任务失败后继续下一个任务</span>
     </label>
     <label className="grid gap-2 text-sm md:grid-cols-[11rem_minmax(0,1fr)] md:items-start [&>:not(:first-child)]:md:col-start-2"><span className="pt-2 font-medium">单任务超时 <span className="text-danger">*</span></span>
       <span className="flex max-w-72 items-center gap-2"><Input type="text" inputMode="decimal" aria-label="单任务超时（分钟）" value={timeoutDraft} disabled={disabled} aria-invalid={Boolean(timeoutError)} aria-describedby={timeoutError ? timeoutErrorId : undefined} onChange={event => {
@@ -90,11 +89,6 @@ export function RunPolicyEditor({ value, onChange, dataBatch = false, disabled =
       }} onBlur={() => { if (!timeoutError) setTimeoutDraft(String(value.automaticExecutionTimeoutSeconds / 60)) }}/><span className="shrink-0">分钟</span></span>
       {timeoutError ? <span id={timeoutErrorId} role="alert" className="text-xs text-danger">{timeoutError}</span> : null}
     </label>
-    <div className="grid gap-2 text-sm md:grid-cols-[11rem_minmax(0,1fr)] md:items-start [&>:not(:first-child)]:md:col-start-2">
-      <span className="pt-2 font-medium">任务结束时环境处理</span>
-      <RadioGroup className="[&_div]:gap-3 [&_label]:rounded-control [&_label]:border [&_label]:border-line [&_label]:bg-surface [&_label]:px-3 [&_label]:py-1" label="任务结束时环境处理" value="cleanup" disabled options={[{ value: 'cleanup', label: '关闭并清理临时环境' }, { value: 'retain', label: '保留环境（暂未开放）' }]} onValueChange={() => undefined}/>
-      <span className="text-xs text-muted">{dataBatch ? '保存默认任务数；有必要数据输入时可在启动弹窗选择不限次数' : '当前按最大任务数执行；无限运行暂未开放'}</span>
-    </div>
     </div>
     <aside className="overflow-hidden rounded-control border border-line bg-surface text-sm" aria-label="本次运行策略">
       <h4 className="m-0 bg-surface-subtle px-5 py-4 text-base font-semibold">本次运行策略</h4>

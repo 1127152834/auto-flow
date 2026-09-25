@@ -20,25 +20,21 @@ it('edits max tasks and converts displayed minutes back to seconds without losin
   expect(onChange.mock.calls.at(-1)?.[0].manualDeadlineSeconds).toBe(7200)
 })
 
-it('shows fixed serial limits and maps the stop-after-failure wording to continueAfterFailure', () => {
+it('shows fixed serial limits and exposes batch continuation without inverting the saved choice', () => {
   const onChange = vi.fn()
   render(<RunPolicyEditor value={policy} onChange={onChange} />)
   expect(screen.getByLabelText('并发任务数')).toHaveValue(1)
   expect(screen.getByLabelText('并发任务数')).toBeDisabled()
   expect(screen.getByText('当前版本按顺序执行')).toBeVisible()
-  fireEvent.click(screen.getByRole('switch', { name: '某个任务失败后停止创建后续任务' }))
+  expect(screen.getByRole('switch', { name: '任务失败后继续下一个任务' })).not.toBeChecked()
+  fireEvent.click(screen.getByRole('switch', { name: '任务失败后继续下一个任务' }))
   expect(onChange).toHaveBeenCalledWith({ ...policy, continueAfterFailure: true })
 })
 
-it('shows the fixed cleanup policy and keeps environment retention unavailable', () => {
-  const onChange = vi.fn()
-  render(<RunPolicyEditor value={policy} onChange={onChange} />)
-  expect(screen.getByRole('radio', { name: '关闭并清理临时环境' })).toBeChecked()
-  expect(screen.getByRole('radio', { name: '保留环境（暂未开放）' })).toBeDisabled()
-  expect(screen.getByText('当前按最大任务数执行；无限运行暂未开放')).toBeVisible()
-  expect(screen.getByText('每个任务使用独立临时环境')).toBeVisible()
-  fireEvent.click(screen.getByRole('radio', { name: '保留环境（暂未开放）' }))
-  expect(onChange).not.toHaveBeenCalled()
+it('leaves environment persistence to the workflow instead of exposing a batch setting', () => {
+  render(<RunPolicyEditor value={policy} onChange={vi.fn()} />)
+  expect(screen.queryAllByText('任务结束时环境处理')).toHaveLength(0)
+  expect(screen.queryAllByRole('radio')).toHaveLength(0)
 })
 
 it('retains invalid drafts and reports finite positive and range errors without emitting', () => {
