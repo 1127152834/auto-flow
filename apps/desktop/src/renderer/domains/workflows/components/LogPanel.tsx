@@ -32,6 +32,7 @@ import {
 import { cn } from '../lib/utils'
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import type { LogEntry, LogLevel, VariableType } from '../types/index'
+import { ProjectInputPanel } from './ProjectInputPanel'
 import { ImageAssetsPanel } from './ImageAssetsPanel'
 import { LogList } from './LogList'
 import { DataTable } from './DataTable'
@@ -673,6 +674,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
                 {variables.length}
               </span>
             </button>
+            <button type="button" className={cn('px-3 py-1.5 rounded-[8px] text-[12px] font-semibold', activeTab === 'project' && 'bg-clay-soft text-clay')} onClick={() => setActiveTab('project')}>项目数据</button>
             {/* 图像 - 橙 */}
             <button
               className={cn(
@@ -1097,6 +1099,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
             </div>
           )}
 
+          {activeTab === 'project' && <ProjectInputPanel />}
           {activeTab === 'variables' && (
             <ScrollArea className="h-full p-2">
               {variables.length === 0 ? (

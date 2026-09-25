@@ -10,7 +10,7 @@ from .models import AutomationRecord
 
 class ProjectAutomations(Protocol):
     def create(
-        self, record: AutomationRecord, operation: ProjectOperation
+        self, record: AutomationRecord, operation: ProjectOperation, *, create_workflow: bool = False
     ) -> tuple[AutomationRecord, ProjectOperation, bool]: ...
     def update(
         self,

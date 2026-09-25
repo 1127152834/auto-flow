@@ -137,7 +137,7 @@ async def test_success_uses_frozen_plan_typed_parameters_and_commits_event_befor
         "enabled": False,
         "name": "测试",
     }
-    assert resources.requests == [({"frozen": "request"}, run.run_request_id)]
+    assert resources.requests == [({"frozen": "request"}, run.run_id)]
     with runtime() as session:
         repository = SqlAlchemyWorkflowRuntimeRepository(session)
         finished = repository.get_run(run_id=run.run_id)
@@ -874,15 +874,15 @@ async def test_two_run_owners_keep_manual_budget_cancellation_and_leases_indepen
         first_run = dispatcher.query_run(first.run_id)
         await dispatcher.cancel(first.run_id, expected_status_revision=first_run.status_revision, execution_generation=1)
         while workers.busy(first.run_id): await asyncio.sleep(.001)
-        while not resources.leases[first.run_request_id].released: await asyncio.sleep(.001)
+        while not resources.leases[first.run_id].released: await asyncio.sleep(.001)
         assert workers.busy(second.run_id)
-        assert not resources.leases[second.run_request_id].released
+        assert not resources.leases[second.run_id].released
         assert dispatcher.query_run(second.run_id).status == 'running'
         await workers.stop(second.run_id)
         await dispatcher.wait_idle()
         assert dispatcher.query_run(first.run_id).status == 'cancelled'
         assert dispatcher.query_run(second.run_id).status == 'succeeded'
-        assert resources.leases[second.run_request_id].released
+        assert resources.leases[second.run_id].released
     finally: await dispatcher.shutdown()
 
 
@@ -900,8 +900,8 @@ async def test_waiting_owner_never_pauses_other_runs_budget_or_releases_its_leas
             while not dispatcher.query_run(second.run_id).terminal: await asyncio.sleep(.01)
         assert dispatcher.query_run(second.run_id).status == 'timed_out'
         assert dispatcher.query_run(first.run_id).status == 'waiting_manual'
-        assert resources.leases[second.run_request_id].released
-        assert not resources.leases[first.run_request_id].released and workers.busy(first.run_id)
+        assert resources.leases[second.run_id].released
+        assert not resources.leases[first.run_id].released and workers.busy(first.run_id)
         dispatcher.resume_manual(first.run_id, 1)
         await workers.stop(first.run_id)
         await dispatcher.wait_idle()
@@ -944,7 +944,7 @@ async def test_unknown_cleanup_keeps_its_slot_without_stopping_another_owner(run
         for run in [first, second]: await dispatcher.dispatch(run.run_id, expected_status_revision=1, execution_generation=0)
         async with asyncio.timeout(2):
             while dispatcher.query_run(first.run_id).status != 'reconciling': await asyncio.sleep(.01)
-        assert workers.busy(second.run_id) and not resources.leases[first.run_request_id].released
+        assert workers.busy(second.run_id) and not resources.leases[first.run_id].released
         with pytest.raises(WorkflowRuntimeError, match='容量'): await dispatcher.dispatch(third.run_id, expected_status_revision=1, execution_generation=0)
         await workers.stop(second.run_id)
         await dispatcher._owners[second.run_id].task
@@ -954,8 +954,8 @@ async def test_unknown_cleanup_keeps_its_slot_without_stopping_another_owner(run
             while not workers.busy(third.run_id): await asyncio.sleep(.001)
         workers.cleanup_fail.clear()
         assert (await dispatcher.reconcile(first.run_id)).status == 'interrupted'
-        assert resources.leases[first.run_request_id].released
-        assert workers.busy(third.run_id) and not resources.leases[third.run_request_id].released
+        assert resources.leases[first.run_id].released
+        assert workers.busy(third.run_id) and not resources.leases[third.run_id].released
         await workers.stop(third.run_id)
         await dispatcher.wait_idle()
     finally:

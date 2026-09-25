@@ -392,8 +392,8 @@ class EnvironmentService:
     def instance_path(self, instance_id: str):
         return self.store.instance_dir(instance_id)
 
-    def run_work_directory(self, run_request_id: str):
-        instance = self.environments.active_instance_for_run_request(run_request_id)
+    def run_work_directory(self, run_id: str):
+        instance = self.environments.active_instance_for_run(run_id)
         if instance is None:
             return None
         directory = self.store.root / "instances" / instance.instance_id

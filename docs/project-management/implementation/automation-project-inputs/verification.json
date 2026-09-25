@@ -1,0 +1,76 @@
+{
+  "status": "implemented-locally-verified",
+  "releaseAccepted": false,
+  "projectId": "083879d6-0b91-4e44-af0f-5afd3b9a2364",
+  "automationId": "84584636-cabd-4103-9c44-fa263a157098",
+  "workflowId": "deadc4de-e4d4-559a-bf9f-00626450a9c4",
+  "debugBatchId": "949345e9-326e-4da1-8b61-3d790fe33c94",
+  "normalBatchId": "52fff846-fa97-4c83-a537-ca8e296d6446",
+  "checks": [
+    "server creates owned workflow",
+    "Studio validates automation context",
+    "default first input",
+    "single-record search selects third",
+    "real worker only processes selected third",
+    "original snapshot unchanged",
+    "record lease released",
+    "normal batch filters fresh data and selects first remaining"
+  ],
+  "screenshots": [
+    "debug-default.png",
+    "candidate-third.png",
+    "task-snapshot.png"
+  ],
+  "date": "2026-09-26",
+  "baseCommit": "b1ad5cb3",
+  "verification": {
+    "backendTargeted": {
+      "passed": 27
+    },
+    "backendLeaseAndOptionalBusyRecheck": {
+      "passed": 5
+    },
+    "frontendPanelAndDebugLifecycle": {
+      "passed": 8
+    },
+    "frontendToolbar": {
+      "passed": 48
+    },
+    "frontendEarlierFeatureRegression": {
+      "passed": 130
+    },
+    "desktopTypecheck": "passed",
+    "desktopLint": "passed",
+    "desktopBuild": "passed",
+    "openApiGeneratedCheck": "passed",
+    "changedPythonRuff": "passed",
+    "realElectronProductionHttpWorker": "passed",
+    "fullBackendEarlierRun": {
+      "passed": 908,
+      "failed": 18,
+      "resolution": "17 old HTTP creation fixtures repaired and targeted rechecked; 1 proxy metadata scope failure reproduced on baseline"
+    },
+    "fullFrontendEarlierRun": {
+      "passed": 5859,
+      "failed": 5,
+      "failedSuites": 1,
+      "resolution": "3 feature event polling tests repaired and rechecked; 2 proxy scope count failures reproduced on baseline; missing local frozen reference linked read-only and parity tests passed"
+    },
+    "scriptSuite": {
+      "passed": 101,
+      "failed": 4,
+      "resolution": "all 4 frozen proxy scope inventory failures reproduced on baseline"
+    },
+    "backendMypy": {
+      "errors": 65,
+      "files": 11,
+      "resolution": "same errors as baseline after normalization of line numbers; no additional feature errors"
+    }
+  },
+  "pending": [
+    "Candidate branch CI and three-platform validation are not accepted by this local evidence.",
+    "Existing proxy scope frozen metadata and Android typing baseline failures remain.",
+    "Remote baseline is 10 commits behind the local base; do not merge draft PR before reviewing its base.",
+    "No signing, OAuth, installer or release acceptance is included."
+  ]
+}

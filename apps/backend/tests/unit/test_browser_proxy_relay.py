@@ -259,3 +259,19 @@ def test_failed_socks_handshake_closes_the_tracked_upstream() -> None:
             time.sleep(0.01)
 
     assert upstream_closed.is_set()
+
+
+def test_reset_connections_keeps_listener_and_closes_existing_tunnels():
+    relay = BrowserProxyRelay({'server': 'http://127.0.0.1:12345', 'username': 'u', 'password': 'p'})
+    with relay:
+        url = relay.url
+        left, right = socket.socketpair()
+        try:
+            relay._track(left)
+            relay.reset_connections()
+            assert left.fileno() == -1
+            assert relay.url == url
+            assert not relay._closed.is_set()
+        finally:
+            left.close()
+            right.close()

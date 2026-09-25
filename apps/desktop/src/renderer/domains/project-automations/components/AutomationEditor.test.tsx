@@ -37,8 +37,8 @@ it('matches the four-tab prototype structure and renders only authorized actions
   expect(screen.getByRole('tablist', { name: '自动化配置页签' })).toBeVisible()
   expect(screen.getAllByRole('tab').map(tab => tab.textContent)).toEqual(['基本信息', '输入与参数', '资源与环境', '运行设置'])
   expect(screen.getByLabelText('自动化名称')).toBeVisible()
-  expect(screen.getByText('关联建立后不能通过普通编辑替换工作流')).toBeVisible()
-  expect(screen.getAllByRole('button', { name: '打开 Studio' })).toHaveLength(1)
+  expect(screen.queryByRole('combobox', { name: '关联工作流' })).not.toBeInTheDocument()
+  expect(screen.getAllByRole('button', { name: '编辑工作流' })).toHaveLength(1)
   expect(screen.queryByRole('button', { name: '启动运行' })).not.toBeInTheDocument()
   expect(screen.getAllByText('最多 10 个任务')).toHaveLength(2)
 })
@@ -137,15 +137,14 @@ it('shows an unknown workflow validation state unless runnable is explicit', () 
   expect(screen.queryByText('可以运行')).not.toBeInTheDocument()
 })
 
-it('uses a semantic option for an unavailable workflow without exposing its identity', async () => {
-  const workflowId = '11111111-2222-4333-8444-555555555555'
-  render(<AutomationEditor {...props({ isNew: true, workflowOptions: [], initialValue: { ...initial, workflowId } })}/>)
-  const select = screen.getByRole('combobox', { name: '关联工作流' })
-  expect(select).toHaveTextContent('关联工作流暂不可用')
-  await userEvent.setup().click(select)
-  expect(screen.getByRole('option', { name: '关联工作流暂不可用' })).toBeVisible()
-  expect(document.body.textContent).not.toContain(workflowId)
-  expect(select).not.toHaveAttribute('title', expect.stringContaining(workflowId))
+it('creates its own workflow without selecting an existing document', async () => {
+  const onSubmit = vi.fn()
+  render(<AutomationEditor {...props({ isNew: true, initialValue: { ...initial, name: '', workflowId: '' }, onSubmit })}/>)
+  expect(screen.queryByRole('combobox', { name: '关联工作流' })).not.toBeInTheDocument()
+  expect(screen.getByText('创建自动化时将自动创建专属工作流')).toBeVisible()
+  await userEvent.setup().type(screen.getByLabelText('自动化名称'), '新自动化')
+  await userEvent.setup().click(screen.getByRole('button', { name: '保存配置' }))
+  await waitFor(() => expect(onSubmit).toHaveBeenCalledOnce())
 })
 
 it('passes current input aliases to the saved input environment presentation', async () => {

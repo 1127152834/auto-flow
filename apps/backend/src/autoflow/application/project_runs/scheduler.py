@@ -691,6 +691,8 @@ class ProjectBatchScheduler:
             now = datetime.now(UTC)
             follow_up = row.frozen_request.get("followUp")
             restriction = _follow_up_candidate_restriction(follow_up)
+            if 'debugSelection' in row.frozen_request:
+                restriction = {'candidateRestriction': {key: [value['recordRef']] if value is not None else [] for key, value in row.frozen_request['debugSelection'].items()}}
             attempt = previous_outcome.get("claimAttempt")
             if not isinstance(attempt, dict) or attempt.get("state") != "prepared":
                 attempt = {
@@ -775,6 +777,15 @@ class ProjectBatchScheduler:
                 row.selection_outcome = {"status": "closed"}
                 ProjectBatchScheduler._commit(session)
                 return "closed"
+            if 'debugSelection' in row.frozen_request:
+                from .debug_inputs import validate_debug_selection
+                try:
+                    selection = validate_debug_selection(session, project_id, prepared['inputPlan'], row.frozen_request['debugSelection'])
+                except ProjectRunError as exc:
+                    row.claim_gate_state = 'closed'
+                    row.selection_outcome = {'status': 'configurationError', 'code': exc.code, 'message': str(exc)}
+                    ProjectBatchScheduler._commit(session)
+                    return 'configurationError'
             if _selection_guards(
                 session,
                 project_id,

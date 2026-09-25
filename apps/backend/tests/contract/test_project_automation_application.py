@@ -33,7 +33,7 @@ def test_real_application_configuration_and_operation_recovery(tmp_path):
         missing = client.get(f'/api/v1/workflows/{uuid4()}')
         assert missing.status_code == 404 and missing.json()['error']['code'] == 'WORKFLOW_NOT_FOUND'
         body = {
-            'name': '资料整理', 'description': '配置真实保存', 'workflowId': workflow.workflow_id,
+            'name': '资料整理', 'description': '配置真实保存',
             'inputPlan': {'inputs': []}, 'parameterSchema': [{'parameterId': str(uuid4()), 'name': '关键词', 'description': '提供搜索关键词', 'type': 'string', 'required': False}],
             'environmentPolicy': {'source': 'newFromProfile', 'modelProviderId': None},
             'runPolicy': {'maxTasks': 1, 'concurrency': 1, 'maxLiveInstances': 1, 'continueAfterFailure': False, 'automaticExecutionTimeoutSeconds': 60, 'manualDeadlineSeconds': 300},
@@ -53,7 +53,7 @@ def test_real_application_configuration_and_operation_recovery(tmp_path):
         assert recovered.json()['result']['environmentPolicy'] == body['environmentPolicy']
         replay = client.post(path, json=body, headers={'Idempotency-Key': key})
         assert replay.status_code == 200 and replay.json() == automation
-        updated = client.put(f"{path}/{automation['automationId']}", json={**body, 'name': '整理二版', 'expectedManagementRevision': 1}, headers={'Idempotency-Key': str(uuid4())})
+        updated = client.put(f"{path}/{automation['automationId']}", json={**body, 'workflowId': automation['workflowId'], 'name': '整理二版', 'expectedManagementRevision': 1}, headers={'Idempotency-Key': str(uuid4())})
         assert updated.status_code == 200, updated.text
         assert updated.json()['managementRevision'] == 2
         assert client.get(f'/api/v1/projects/{project_id}/operations/by-idempotency-key/{key}').json()['result']['name'] == '资料整理'
@@ -74,5 +74,6 @@ def test_real_application_configuration_and_operation_recovery(tmp_path):
         # Runnable still requires every real resource even when the installed core is available.
         validation = client.get(f"{path}/{automation['automationId']}/validation").json()
         assert not validation['runnable']
-        assert {issue['code'] for issue in validation['issues']} >= {'PROFILE_REQUIRED'}
+        assert {issue['code'] for issue in validation['issues']} >= {'WORKFLOW_UNAVAILABLE'}
+        assert automation['workflowId'] != workflow.workflow_id
         assert 'CORE_UNAVAILABLE' not in {issue['code'] for issue in validation['issues']}

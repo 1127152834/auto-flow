@@ -38,17 +38,20 @@ class ProfileTestBrowserService:
         resolve_proxy: Callable[[Profile, str], Awaitable[ProfileBrowserProxy | None]],
         read_license: Callable[[], str | None],
         launcher: ProfileTestBrowserLauncher,
+        release_proxy: Callable[[str], None] | None = None,
     ) -> None:
         self._profiles = profiles
         self._installed_kernels = installed_kernels
         self._resolve_proxy = resolve_proxy
         self._read_license = read_license
         self._launcher = launcher
+        self._release_proxy = release_proxy
         self._starts: dict[str, _StartOperation] = {}
         self._closes: dict[str, asyncio.Task[None]] = {}
         self._lock = Lock()
 
     async def start(self, profile_id: str) -> ProfileTestBrowserSession:
+        session_id: str | None = None
         current = asyncio.current_task()
         assert current is not None
         with self._lock:
@@ -86,6 +89,8 @@ class ProfileTestBrowserService:
                 raise ProfileTestBrowserUnavailable from None
             raise
         finally:
+            if session_id and self._release_proxy and not any(item.profile_id == profile_id for item in self._launcher.statuses()):
+                self._release_proxy(session_id)
             with self._lock:
                 if (
                     self._starts.get(profile_id) is operation

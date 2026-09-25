@@ -59,6 +59,7 @@ class WorkflowBrowserResources:
         environment_directory: Callable[[str], Path | None] | None = None,
         group_guard: Callable[[], AbstractContextManager[None]] = nullcontext,
         license_guard: Callable[[], AbstractContextManager[None]] = nullcontext,
+        release_proxy: Callable[[str], None] | None = None,
     ) -> None:
         self._profiles = profiles
         self._installed = installed_kernels
@@ -67,6 +68,7 @@ class WorkflowBrowserResources:
         self._usage_guard = usage_guard
         self._kernel_guard = kernel_guard
         self._environment_directory = environment_directory
+        self._release_proxy = release_proxy
         self._group_guard = group_guard
         self._license_guard = license_guard
         self._sharing_lock = RLock()
@@ -148,7 +150,7 @@ class WorkflowBrowserResources:
             },
         }
 
-    async def acquire(self, request: Mapping[str, Any], run_request_id: str, *, work_directory: Path | None = None) -> BrowserLease:
+    async def acquire(self, request: Mapping[str, Any], run_id: str, *, work_directory: Path | None = None) -> BrowserLease:
         if request.get("browser") not in {"newFromProfile", "persistent"}:
             raise WorkflowRuntimeError("WORKFLOW_RESOURCE_UNSUPPORTED", "当前运行需要浏览器配置", 422)
         if request.get("browser") == "persistent":
@@ -165,15 +167,17 @@ class WorkflowBrowserResources:
             guards.enter_context(self.guard(profile_id, kernel))
             self._profiles.get(profile_id)  # The frozen source must still exist.
             executable = self._kernel(profile.spec).executable_path
-            proxy = await self._resolve_proxy(profile, run_request_id)
+            proxy = await self._resolve_proxy(profile, run_id)
+            if self._release_proxy is not None:
+                guards.callback(self._release_proxy, run_id)
             license_key = self._read_license() if profile.spec.browser_edition == 'licensed' else None
             if profile.spec.browser_edition == 'licensed' and not license_key:
                 raise LicenseInvalid
-            browser = browser_worker_payload(run_request_id, profile, proxy, license_key)
+            browser = browser_worker_payload(run_id, profile, proxy, license_key)
             browser['headless'] = profile.spec.headless
             user_data_dir = str(work_directory) if work_directory is not None else request.get("userDataDir")
             if work_directory is None and self._environment_directory is not None:
-                directory = self._environment_directory(run_request_id)
+                directory = self._environment_directory(run_id)
                 if directory is not None:
                     user_data_dir = str(directory)
             if request.get("browser") == "persistent" or user_data_dir is not None:

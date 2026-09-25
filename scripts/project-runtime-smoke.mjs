@@ -28,7 +28,13 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks 
   })
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
   const site = `http://127.0.0.1:${server.address().port}`
+  const ownedWorkflows = new Map()
   async function api(path, body, method = body === undefined ? 'GET' : 'POST') {
+    const alias = path.match(/^\/api\/workflows\/([^/?]+)$/)?.[1]
+    if (alias && ownedWorkflows.has(alias)) {
+      path = '/api/workflows/' + ownedWorkflows.get(alias)
+      if (body) body = { ...body, id: ownedWorkflows.get(alias) }
+    }
     const response = await fetch(baseUrl + path, { method, headers: { 'x-autoflow-token': token, 'content-type': 'application/json', 'Idempotency-Key': randomUUID() }, ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(60_000) })
     const result = await response.json()
     assert.ok(response.ok, `${method} ${path}: ${response.status} ${JSON.stringify(result)}`)
@@ -63,7 +69,12 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks 
     const runPolicy = { maxTasks: 1, concurrency: 1, maxLiveInstances: 1, continueAfterFailure: false, automaticExecutionTimeoutSeconds: 600, manualDeadlineSeconds: 60 }
     async function run(workflowId, environmentPolicy, parameterSchema = [], parameters = {}, expectedStatus = 'succeeded', inputPlan = { inputs: [] }, followUp = null, options = {}) {
       const maxTasks = options.maxTasks ?? 1
-      const automation = followUp ? null : options.automation ?? await api(prefix + '/automations', { name: randomUUID(), description: '', workflowId, inputPlan, parameterSchema, environmentPolicy, runPolicy: { ...runPolicy, maxTasks } })
+      const automation = followUp ? null : options.automation ?? await api(prefix + '/automations', { name: randomUUID(), description: '', inputPlan, parameterSchema, environmentPolicy, runPolicy: { ...runPolicy, maxTasks } })
+      if (automation && !options.automation) {
+        const document = await api(`/api/workflows/${workflowId}`)
+        await api(`/api/workflows/${automation.workflowId}`, { ...document, id: automation.workflowId, projectId: project.projectId, expectedRevision: 1, clientRequestId: randomUUID() }, 'PUT')
+        ownedWorkflows.set(workflowId, automation.workflowId)
+      }
       if (automation) {
         const validation = await api(`${prefix}/automations/${automation.automationId}/validation`)
         assert.equal(validation.runnable, true, JSON.stringify(validation))

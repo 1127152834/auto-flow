@@ -15,6 +15,7 @@ from autoflow.application.proxies.credentials import format_proxy_credential
 from autoflow.application.proxies.facade import ProxyApplication
 from autoflow.application.proxies.groups import ResolveProxyForProfile
 from autoflow.application.proxies.remote_controls import ProxyRemoteControls
+from autoflow.application.proxies.workflow import WorkflowProxyService
 from autoflow.bootstrap.http_routes import ProxyHttpServices, register_proxy_routes
 from autoflow.domain.profiles.errors import (
     ProxyUnavailable,
@@ -53,6 +54,7 @@ class LazySystemCredentialStore:
 class ProxyManagementRuntime:
     resolve_profile: Callable[[Profile, str], Awaitable[ProfileBrowserProxy | None]]
     close: Callable[[], Awaitable[None]]
+    workflow: WorkflowProxyService
 
 
 def configure_proxy_management(
@@ -78,6 +80,7 @@ def configure_proxy_management(
     operations.recover()
     remote = ProxyRemoteControls(lambda: SqlAlchemyProxyUnitOfWork(session_factory), operations, credentials, provider)
     app.state.proxy_remote_controls = remote
+    workflow = WorkflowProxyService(remote, remote.usage, probe)
 
     async def resolve(body: CopyCredentialRequest) -> str:
         projection = application.get_projection(str(body.proxy_id))
@@ -121,8 +124,12 @@ def configure_proxy_management(
                 protocol=protocol,
                 format="url",
             )
+            if operations.active(projection.id) is not None:
+                raise ProxyUnavailable
+            _, connection, _ = remote._context(projection.id)
+            remote.usage.bind(request_id, projection, connection_version=connection.secret_ref)
             return ProfileBrowserProxy(
-                f"{protocol}://{url.rsplit('@', 1)[-1]}", value.username, value.password
+                f"{protocol}://{url.rsplit('@', 1)[-1]}", value.username, value.password, projection.id
             )
         except ProxyUnavailable:
             raise
@@ -134,4 +141,4 @@ def configure_proxy_management(
             await remote.close()
         finally:
             session_factory.dispose()
-    return ProxyManagementRuntime(resolve_profile, close)
+    return ProxyManagementRuntime(resolve_profile, close, workflow)

@@ -73,7 +73,7 @@ class LeasePort(Protocol):
 
 class ResourcePort(Protocol):
     async def acquire(
-        self, request: Mapping[str, Any], run_request_id: str
+        self, request: Mapping[str, Any], run_id: str
     ) -> LeasePort: ...
 
 
@@ -459,7 +459,7 @@ class WorkflowRunDispatcher:
                     if not admitted:
                         raise WorkflowRuntimeError('WORKFLOW_ADMISSION_CLOSED', '运行准入已关闭', 503)
                     request = prepare()
-                    owner.lease = await self._resources.acquire(request, current.run_request_id)
+                    owner.lease = await self._resources.acquire(request, current.run_id)
                     owner.browser_command_id = command_id
             return {'browser': dict(owner.lease.browser), 'executablePath': str(owner.lease.executable)}
 
@@ -492,7 +492,7 @@ class WorkflowRunDispatcher:
                     return
                 if "browser.cloakbrowser" in content.capability_requirements and dispatched.resource_request.get("browser") != "node":
                     lease = await self._resources.acquire(
-                        dispatched.resource_request, dispatched.run_request_id
+                        dispatched.resource_request, dispatched.run_id
                     )
                     owner.lease = lease
                 current = self._get_run(dispatched.run_id)
@@ -513,6 +513,7 @@ class WorkflowRunDispatcher:
                 owner.automatic_timeout = timeout
                 try:
                     async with timeout:
+                        execution_plan["projectInputContext"] = self._project_input_context(current)
                         outcome = await self._worker.run(
                             run_id=current.run_id,
                             execution_generation=current.execution_generation,
@@ -844,6 +845,21 @@ class WorkflowRunDispatcher:
             "occurredAt": self._now().isoformat(),
             "payload": {"status": run.status, "statusRevision": run.status_revision},
         }
+
+    def _project_input_context(self, run: CoreRun) -> dict[str, Any]:
+        from autoflow.domain.workflows.project_inputs import input_context
+        from autoflow.infrastructure.database.project_run_models import (
+            ProjectTaskInputSnapshotRow,
+            ProjectTaskRow,
+        )
+        with self._sessions() as session:
+            task = session.scalar(select(ProjectTaskRow).where(ProjectTaskRow.run_id == run.run_id))
+            if task is None:
+                return {}
+            snapshot = session.scalar(select(ProjectTaskInputSnapshotRow).where(ProjectTaskInputSnapshotRow.task_id == task.id))
+            if snapshot is None:
+                return {}
+            return input_context(snapshot.inputs, snapshot.parameters)
 
     @staticmethod
     def _variables(content: Any, run: CoreRun) -> dict[str, Any]:

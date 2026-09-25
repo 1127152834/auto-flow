@@ -4,7 +4,7 @@ import hashlib
 import json
 from datetime import UTC, datetime
 from typing import Any
-from uuid import uuid4
+from uuid import NAMESPACE_URL, uuid4, uuid5
 
 from autoflow.domain.project_automations.models import (
     AutomationRecord,
@@ -44,7 +44,8 @@ class ProjectAutomationService:
         return self.automations.list(project_id, **query)
 
     def create(self, project_id: str, key: str, payload: dict[str, Any]):
-        data = validate_write(payload, project_id)
+        owned = "workflowId" not in payload
+        data = validate_write({**payload, **({"workflowId": str(uuid5(NAMESPACE_URL, f"autoflow:{project_id}:{key}:workflow"))} if owned else {})}, project_id)
         now = datetime.now(UTC)
         record = AutomationRecord(
             str(uuid4()),
@@ -68,6 +69,8 @@ class ProjectAutomationService:
             {"scope": "project", "projectId": project_id, "request": data},
             now,
         )
+        if owned:
+            return self.automations.create(record, operation, create_workflow=True)
         return self.automations.create(record, operation)
 
     def get(self, project_id: str, automation_id: str):

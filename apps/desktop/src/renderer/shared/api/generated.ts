@@ -1313,6 +1313,23 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{projectId}/automations/{automationId}/debug-inputs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Debug Inputs */
+        post: operations["debug_inputs_api_v1_projects__projectId__automations__automationId__debug_inputs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{projectId}/automations/{automationId}/batches": {
         parameters: {
             query?: never;
@@ -6537,6 +6554,19 @@ export type components = {
              */
             occurredAt: string;
         };
+        /** AutomationCreate */
+        AutomationCreate: {
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            inputPlan: components["schemas"]["InputPlan"];
+            /** Parameterschema */
+            parameterSchema: components["schemas"]["ParameterDefinition"][];
+            /** Environmentpolicy */
+            environmentPolicy: components["schemas"]["NewFromProfile"] | components["schemas"]["FixedEnvironment"] | components["schemas"]["InputEnvironment"];
+            runPolicy: components["schemas"]["RunPolicy"];
+        };
         /** AutomationDeleteRequest */
         AutomationDeleteRequest: {
             /** Impactrevision */
@@ -6589,14 +6619,14 @@ export type components = {
             name: string;
             /** Description */
             description: string;
-            /** Workflowid */
-            workflowId: string;
             inputPlan: components["schemas"]["InputPlan"];
             /** Parameterschema */
             parameterSchema: components["schemas"]["ParameterDefinition"][];
             /** Environmentpolicy */
             environmentPolicy: components["schemas"]["NewFromProfile"] | components["schemas"]["FixedEnvironment"] | components["schemas"]["InputEnvironment"];
             runPolicy: components["schemas"]["RunPolicy"];
+            /** Workflowid */
+            workflowId: string;
             /** Expectedmanagementrevision */
             expectedManagementRevision: number;
         };
@@ -6640,14 +6670,14 @@ export type components = {
             name: string;
             /** Description */
             description: string;
-            /** Workflowid */
-            workflowId: string;
             inputPlan: components["schemas"]["InputPlan"];
             /** Parameterschema */
             parameterSchema: components["schemas"]["ParameterDefinition"][];
             /** Environmentpolicy */
             environmentPolicy: components["schemas"]["NewFromProfile"] | components["schemas"]["FixedEnvironment"] | components["schemas"]["InputEnvironment"];
             runPolicy: components["schemas"]["RunPolicy"];
+            /** Workflowid */
+            workflowId: string;
             /** Automationid */
             automationId: string;
             /** Projectid */
@@ -6666,21 +6696,6 @@ export type components = {
              * Format: date-time
              */
             updatedAt: string;
-        };
-        /** AutomationWrite */
-        AutomationWrite: {
-            /** Name */
-            name: string;
-            /** Description */
-            description: string;
-            /** Workflowid */
-            workflowId: string;
-            inputPlan: components["schemas"]["InputPlan"];
-            /** Parameterschema */
-            parameterSchema: components["schemas"]["ParameterDefinition"][];
-            /** Environmentpolicy */
-            environmentPolicy: components["schemas"]["NewFromProfile"] | components["schemas"]["FixedEnvironment"] | components["schemas"]["InputEnvironment"];
-            runPolicy: components["schemas"]["RunPolicy"];
         };
         /** BackupCreate */
         BackupCreate: {
@@ -6887,6 +6902,12 @@ export type components = {
         };
         /** BatchStartRequest */
         BatchStartRequest: {
+            /** Debugselection */
+            debugSelection?: {
+                [key: string]: {
+                    [key: string]: components["schemas"]["JsonValue"];
+                } | null;
+            } | null;
             /** Expectedautomationrevision */
             expectedAutomationRevision: number;
             /** Parameters */
@@ -8140,6 +8161,52 @@ export type components = {
             rule: string;
             /** Message */
             message: string;
+        };
+        /** DebugInputRequest */
+        DebugInputRequest: {
+            /** Expectedautomationrevision */
+            expectedAutomationRevision: number;
+            /** Choices */
+            choices?: {
+                [key: string]: {
+                    [key: string]: components["schemas"]["JsonValue"];
+                } | null;
+            };
+            /** Inputid */
+            inputId?: string | null;
+            /** Cursor */
+            cursor?: string | null;
+            /**
+             * Pagesize
+             * @default 50
+             */
+            pageSize: number;
+            /**
+             * Search
+             * @default
+             */
+            search: string;
+        };
+        /** DebugInputResponse */
+        DebugInputResponse: {
+            /** Selectionstatus */
+            selectionStatus: string;
+            /** Selection */
+            selection: {
+                [key: string]: {
+                    [key: string]: components["schemas"]["JsonValue"];
+                } | null;
+            };
+            /** Inputs */
+            inputs: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[];
+            /** Items */
+            items: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[];
+            /** Nextcursor */
+            nextCursor: string | null;
         };
         /** DefaultKernelRead */
         DefaultKernelRead: {
@@ -11333,6 +11400,10 @@ export type components = {
              * Format: date-time
              */
             fetched_at: string;
+            /** Rotation Blocked Reason */
+            rotation_blocked_reason?: string | null;
+            /** Retry After Seconds */
+            retry_after_seconds?: number | null;
         };
         /** ResourceReference */
         ResourceReference: {
@@ -19630,6 +19701,42 @@ export interface operations {
             };
         };
     };
+    debug_inputs_api_v1_projects__projectId__automations__automationId__debug_inputs_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                automationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DebugInputRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DebugInputResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     start_batch_api_v1_projects__projectId__automations__automationId__batches_post: {
         parameters: {
             query?: never;
@@ -20681,7 +20788,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AutomationWrite"];
+                "application/json": components["schemas"]["AutomationCreate"];
             };
         };
         responses: {

@@ -47,7 +47,7 @@ class SqlAlchemyProjectAutomations:
     def __init__(self, session_factory: sessionmaker[Session]):
         self._session_factory = session_factory
 
-    def create(self, record, operation):
+    def create(self, record, operation, *, create_workflow=False):
         with self._session_factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
             existing = self._operation_by_key(session, operation)
@@ -56,7 +56,12 @@ class SqlAlchemyProjectAutomations:
                 session.rollback()
                 return saved, _operation(existing), True
             self._guard_project(session, record.project_id)
-            if session.get(WorkflowDocumentRow, record.workflow_id) is None:
+            if create_workflow:
+                from autoflow.domain.workflows.document import WorkflowDraft
+
+                draft = WorkflowDraft.from_payload({"id": record.workflow_id, "name": record.name, "projectId": record.project_id, "nodes": [], "edges": [], "variables": [], "browserEnvironmentVersion": 1})
+                session.add(WorkflowDocumentRow(id=record.workflow_id, name=draft.name, document=draft.document, layout=draft.layout, revision=1, created_at=record.created_at, updated_at=record.updated_at))
+            if not create_workflow and session.get(WorkflowDocumentRow, record.workflow_id) is None:
                 session.rollback()
                 raise ProjectError(
                     "WORKFLOW_NOT_FOUND",

@@ -35,6 +35,9 @@ class RemoteState:
     bound: bool | None
     country: str | None
     capabilities: tuple[Capability, ...]
+    rotation_blocked_reason: str | None = None
+    rotation_available: bool | None = None
+    retry_after_seconds: int | None = None
 
 
 @dataclass(frozen=True)

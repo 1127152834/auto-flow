@@ -13,16 +13,17 @@ export function createAutomationApi(client: StreamingApiClient, projectId: strin
   const execute = createDataCommand(client, projectId)
   const operations = createOperationCommand(client, projectId)
   async function command(body: AutomationWrite | AutomationUpdate, key: string, automationId?: string, resume = false, policy?: DataCommandPolicy): Promise<Automation> {
-    const workflowId = body.workflowId
-    const result = await execute<Automation>(automationId ? `${base}/${encode(automationId)}` : base, automationId ? 'PUT' : 'POST', body, key, automationId ? 'updateAutomation' : 'createAutomation', resume, operation => {
+    const workflowId = automationId ? body.workflowId : undefined
+    const requestBody = automationId ? body : Object.fromEntries(Object.entries(body).filter(([key]) => key !== 'workflowId'))
+    const result = await execute<Automation>(automationId ? `${base}/${encode(automationId)}` : base, automationId ? 'PUT' : 'POST', requestBody, key, automationId ? 'updateAutomation' : 'createAutomation', resume, operation => {
       const { resource, result } = operation
       if (resource.type !== 'automation' || resource.projectId !== projectId || (automationId && resource.automationId !== automationId)
-        || !result || !('automationId' in result) || result.automationId !== resource.automationId || result.projectId !== projectId || result.workflowId !== workflowId) {
+        || !result || !('automationId' in result) || result.automationId !== resource.automationId || result.projectId !== projectId || (workflowId !== undefined && result.workflowId !== workflowId)) {
         throw new Error('操作结果与当前自动化配置不一致')
       }
       return result
     }, policy)
-    if ((policy?.canSubmit && !policy.canSubmit()) || result.projectId !== projectId || result.workflowId !== workflowId || (automationId && result.automationId !== automationId)) {
+    if ((policy?.canSubmit && !policy.canSubmit()) || result.projectId !== projectId || (workflowId !== undefined && result.workflowId !== workflowId) || (automationId && result.automationId !== automationId)) {
       throw new DataCommandUncertain(new Error('当前配置或工作区已变化，请在原上下文核对结果'))
     }
     return result

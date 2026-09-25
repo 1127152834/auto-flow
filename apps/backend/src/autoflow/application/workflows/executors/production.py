@@ -114,6 +114,7 @@ from .network_monitor import (
 from .network_sharing import NETWORK_SHARING_EXECUTORS
 from .page_load import PageLoadCompleteExecutor, WaitPageLoadExecutor
 from .printer import PRINTER_EXECUTORS
+from .proxy_control import PROXY_EXECUTORS
 from .python_script import PythonScriptExecutor
 from .registry import ExecutorRegistry
 from .run_command import RunCommandExecutor
@@ -163,6 +164,7 @@ from .web_basic import WEB_BASIC_EXECUTORS
 from .workflow_chain import RunWorkflowFileExecutor
 
 PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
+    *PROXY_EXECUTORS,
     CustomModuleExecutor,
     OpenPageExecutor,
     ClickElementExecutor,

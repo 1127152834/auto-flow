@@ -147,13 +147,10 @@ def client(tmp_path):
 
 
 def create_automation(api):
-    response = api.post(
-        f"/api/v1/projects/{PROJECT}/automations",
-        headers={"Idempotency-Key": str(uuid4())},
-        json=automation_body(),
-    )
-    assert response.status_code == 201, response.text
-    return response.json()["automationId"]
+    # Seed a pre-existing bound automation: deletion must preserve legacy history.
+    factory = api.app.state.automation_factory
+    service = ProjectAutomationService(SqlAlchemyProjects(factory), SqlAlchemyProjectAutomations(factory))
+    return service.create(PROJECT, str(uuid4()), automation_body())[0].automation_id
 
 
 def seed_batch(factory, automation_id, status="running"):
