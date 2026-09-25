@@ -24,14 +24,19 @@ export function BatchLauncher(props: BatchLauncherProps) {
   const [draft, setDraft] = useState<BatchStartDraft>(() => ({ ...createBatchStartDraft(props.savedAutomation.parameterSchema, props.savedAutomation.runPolicy.maxTasks ?? 1), concurrency: String(props.savedAutomation.runPolicy.concurrency) }))
   const previousIdentity = useRef(identity)
   const concurrencyOverridden = useRef(false)
+  const taskCountOverridden = useRef(false)
   useEffect(() => {
     if (previousIdentity.current !== identity) {
       previousIdentity.current = identity
       concurrencyOverridden.current = false
+      taskCountOverridden.current = false
       setDraft({ ...createBatchStartDraft(props.savedAutomation.parameterSchema, props.savedAutomation.runPolicy.maxTasks ?? 1), concurrency: String(props.savedAutomation.runPolicy.concurrency) })
-    } else if (!concurrencyOverridden.current) {
-      const concurrency = String(props.savedAutomation.runPolicy.concurrency)
-      setDraft(previous => previous.concurrency === concurrency ? previous : { ...previous, concurrency })
+    } else {
+      setDraft(previous => {
+        const concurrency = concurrencyOverridden.current ? previous.concurrency : String(props.savedAutomation.runPolicy.concurrency)
+        const maxTasks = taskCountOverridden.current ? previous.maxTasks : String(props.savedAutomation.runPolicy.maxTasks ?? 1)
+        return previous.concurrency === concurrency && previous.maxTasks === maxTasks ? previous : { ...previous, concurrency, maxTasks }
+      })
     }
   }, [identity, props.savedAutomation.parameterSchema, props.savedAutomation.runPolicy.maxTasks, props.savedAutomation.runPolicy.concurrency])
 
@@ -56,5 +61,5 @@ export function BatchLauncher(props: BatchLauncherProps) {
   const issueText = props.validation?.issues.map(safeProjectError).join('；')
   const checks = [{ label: '运行条件', value: props.validationLoading ? '正在检查' : props.validationError ? '检查失败' : props.readOnly ? '只读项目' : Boolean(props.validation?.runnable) ? '检查完成' : issueText || '需要配置', accepted: Boolean(props.validation?.runnable), status: props.validation?.runnable ? '可以启动' : '需要处理' }, ...(hasInputs ? [{ label: '项目数据', value: preview.loading ? '正在预检数据输入' : preview.error ? '预检失败' : inputCheckText, accepted: inputsAccepted, status: inputsAccepted ? '可以启动' : '需要处理' }] : [])]
   const inputPreview = hasInputs ? <DataInputPreview loading={preview.loading} error={preview.error ? presentRunFailure(preview.error, '服务连接已中断，请重新预检') : undefined} inputs={(preview.data?.inputs ?? []).map(item => ({ alias: item.alias, tableDisplay: item.tableDisplay, recordDisplay: item.recordDisplay, values: (item.values ?? []).map(value => ({ label: typeof value.fieldName === 'string' ? value.fieldName : '字段', value: String(value.value ?? 'null') })), outcome: item.outcome as DataInputPreviewOutcome, required: item.required, scannedCount: item.scannedCount ?? undefined, detail: item.detail ?? undefined }))}/> : undefined
-  return <BatchStartDialog dataBatch={hasInputs} allowUnlimited={props.savedAutomation.inputPlan.inputs.some(input => input.required === true)} continueAfterFailure={props.savedAutomation.runPolicy.continueAfterFailure} open={props.open} formSessionKey={identity} automationName={props.savedAutomation.name} expectedAutomationRevision={props.savedAutomation.managementRevision} parameters={props.savedAutomation.parameterSchema} value={draft} onChange={next => { if (next.concurrency !== draft.concurrency) concurrencyOverridden.current = true; setDraft(next) }} onOpenChange={props.onOpenChange} onSubmit={request => command.start(props.savedAutomation.automationId, request)} checks={checks} resources={props.resourceSummary} submitting={command.busy} recovering={command.recovering} errorMessage={command.error ?? (preview.error ? presentRunFailure(preview.error, '数据输入预检失败') : props.validationError ? presentRunFailure(props.validationError) : undefined)} onConfigure={() => props.onOpenChange(false)} inputPreview={inputPreview} temporaryEnvironmentOverride={temporaryOverride(props.savedAutomation)} recoveryActions={<><RunCommandNotice command={command} disabled={props.disabled} readOnly={props.readOnly}/>{props.validationError ? <Button size="sm" disabled={props.disabled || command.busy} onClick={props.onRefreshValidation}>重新检查运行条件</Button> : null}</>}/>
+  return <BatchStartDialog dataBatch={hasInputs} allowUnlimited={props.savedAutomation.inputPlan.inputs.some(input => input.required === true)} continueAfterFailure={props.savedAutomation.runPolicy.continueAfterFailure} open={props.open} formSessionKey={identity} automationName={props.savedAutomation.name} expectedAutomationRevision={props.savedAutomation.managementRevision} parameters={props.savedAutomation.parameterSchema} value={draft} onChange={next => { if (next.concurrency !== draft.concurrency) concurrencyOverridden.current = true; if (next.maxTasks !== draft.maxTasks || next.unlimited !== draft.unlimited) taskCountOverridden.current = true; setDraft(next) }} onOpenChange={props.onOpenChange} onSubmit={request => command.start(props.savedAutomation.automationId, request)} checks={checks} resources={props.resourceSummary} submitting={command.busy} recovering={command.recovering} errorMessage={command.error ?? (preview.error ? presentRunFailure(preview.error, '数据输入预检失败') : props.validationError ? presentRunFailure(props.validationError) : undefined)} onConfigure={() => props.onOpenChange(false)} inputPreview={inputPreview} temporaryEnvironmentOverride={temporaryOverride(props.savedAutomation)} recoveryActions={<><RunCommandNotice command={command} disabled={props.disabled} readOnly={props.readOnly}/>{props.validationError ? <Button size="sm" disabled={props.disabled || command.busy} onClick={props.onRefreshValidation}>重新检查运行条件</Button> : null}</>}/>
 }

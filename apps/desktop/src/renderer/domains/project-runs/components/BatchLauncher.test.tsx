@@ -115,3 +115,32 @@ it('preserves explicit concurrency override across save/reconnect and resets for
   view.rerender(<BatchLauncher {...p} savedAutomation={{ ...savedAutomation, automationId: 'different' }}/>)
   expect(screen.getByLabelText('请求并发数')).toHaveValue('2')
 })
+
+
+it('refreshes untouched task count after saving without overwriting requested concurrency', async () => {
+  const request = vi.fn().mockResolvedValue({}) as StreamingApiClient['request']
+  const p = props(request)
+  const view = render(<BatchLauncher {...p}/>)
+  fireEvent.change(screen.getByLabelText('请求并发数'), { target: { value: '3' } })
+  const savedAutomation = { ...automation, managementRevision: 8, runPolicy: { ...automation.runPolicy, maxTasks: 2 } }
+  view.rerender(<BatchLauncher {...p} open={false} savedAutomation={savedAutomation}/>)
+  view.rerender(<BatchLauncher {...p} open savedAutomation={savedAutomation}/>)
+  expect(screen.getByLabelText('本次任务数')).toHaveValue('2')
+  expect(screen.getByLabelText('请求并发数')).toHaveValue('3')
+  fireEvent.click(screen.getByRole('button', { name: '启动 2 个任务' }))
+  await waitFor(() => expect(request).toHaveBeenCalledWith(expect.stringContaining('/batches'), expect.objectContaining({ body: expect.objectContaining({ maxTasks: 2, concurrency: 3, expectedAutomationRevision: 8 }) })))
+})
+
+it.each(['23', ''])('preserves explicit task count %s across save and resets for another automation', value => {
+  const p = props(vi.fn())
+  const view = render(<BatchLauncher {...p}/>)
+  fireEvent.change(screen.getByLabelText('本次任务数'), { target: { value } })
+  const savedAutomation = { ...automation, managementRevision: 8, runPolicy: { ...automation.runPolicy, maxTasks: 2, concurrency: 2 } }
+  view.rerender(<BatchLauncher {...p} open={false} instanceId="i2" savedAutomation={savedAutomation}/>)
+  view.rerender(<BatchLauncher {...p} instanceId="i2" savedAutomation={savedAutomation}/>)
+  expect(screen.getByLabelText('本次任务数')).toHaveValue(value)
+  expect(screen.getByLabelText('请求并发数')).toHaveValue('2')
+  if (!value) expect(screen.getByRole('button', { name: '启动 — 个任务' })).toBeDisabled()
+  view.rerender(<BatchLauncher {...p} savedAutomation={{ ...savedAutomation, automationId: 'different' }}/>)
+  expect(screen.getByLabelText('本次任务数')).toHaveValue('2')
+})

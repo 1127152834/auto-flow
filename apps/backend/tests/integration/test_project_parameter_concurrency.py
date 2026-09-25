@@ -113,6 +113,54 @@ async def test_failure_stops_only_queued_tasks_and_does_not_cancel_running_sibli
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize('keep_going', [False, True])
+async def test_recovered_data_queue_obeys_failure_policy_and_releases_cancelled_claims(tmp_path, keep_going):
+    from autoflow.application.project_data.records import DataRecordService
+    from autoflow.infrastructure.database.project_data_records import (
+        SqlAlchemyProjectDataRecords,
+    )
+
+    factory, project, automation, coordinator = _setup(tmp_path)
+    configure(factory, automation, keep_going=keep_going)
+    records = DataRecordService(SqlAlchemyProjectDataRecords(factory))
+    for item in automation.input_plan['inputs']:
+        records.create(project, item['tableId'], str(uuid4()), {
+            'datasetGeneration': item['datasetGeneration'],
+            'values': [{'fieldId': item['fieldBindings'][0]['fieldRef']['fieldId'], 'value': 'second'}],
+        })
+    batch = coordinator.start(project, automation.automation_id, str(uuid4()), {
+        'expectedAutomationRevision': automation.management_revision,
+        'parameters': {}, 'maxTasks': 2, 'concurrency': 2,
+    })[0]
+    for _ in range(2):
+        assert ProjectBatchScheduler.claim_data_task(factory, project, batch.batch_id, core_capacity=2) == 'ready'
+    workers, core, scheduler = core_services(factory)
+    try:
+        tasks = coordinator.list_tasks(project, batch.batch_id)
+        first = core.query_run(tasks[0].run_id)
+        # Crash after dispatch persisted running, before a worker was created.
+        core._transition_identity(first.run_id, 'running', first.status_revision, first.execution_generation)
+        await core.startup()
+        assert [t.status for t in coordinator.list_tasks(project, batch.batch_id)] == ['interrupted', 'queued']
+        await scheduler.tick()
+        if keep_going:
+            await until(lambda: len(workers.calls) == 1)
+            assert workers.calls == [tasks[1].run_id]
+            workers.active[tasks[1].run_id].set()
+            await core.wait_idle()
+            await scheduler.tick()
+        else:
+            assert [t.status for t in coordinator.list_tasks(project, batch.batch_id)] == ['interrupted', 'cancelled']
+            assert not workers.calls
+        assert coordinator.get_batch(project, batch.batch_id).status == 'interrupted'
+        with factory() as session:
+            assert not session.scalar(select(ProjectRecordLeaseRow).where(ProjectRecordLeaseRow.state.in_(['held', 'reconciling'])))
+    finally:
+        await core.shutdown()
+        factory.dispose()
+
+
+@pytest.mark.asyncio
 async def test_manual_wait_counts_towards_same_automation_across_batches(tmp_path):
     factory, _, _, coordinator, _, project, automation = setup(tmp_path)
     configure(factory, automation, instances=1)

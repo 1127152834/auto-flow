@@ -34,3 +34,17 @@
 
 本地分支基于 baseline b1ad5cb3，未改主工作区。远端 baseline 的既有落后不在本轮擅自归并。未合并、未重启用户应用、未发布；未执行三平台打包，releaseAccepted=false。
 日志：/tmp/af-concurrency-{red,backend,regression,real,workers,native,native-final,contract,ui-red,ui,ui-final,frontend-full,typecheck,lint,build,ruff,mypy,openapi,worker-baseline}.log。
+
+
+## 用户复查后的两项补漏（2026-09-26）
+
+状态：confirmed（代码与针对性回归）；来源：用户要求 review 后明确授权修复。
+
+此前“关闭失败继续则取消所有排队任务”的行为描述在数据批次分支并不完整，现已补齐；两个问题都能在原 baseline 复现，不是新并发代码引入的回归。
+
+- 数据批次先领取两组，在第一次 dispatch 持久化后崩溃，重启会留下 interrupted + queued。原实现只关领取门，仍会派发 queued；现复用 `_stop_active_runs(stopping=False)` 取消尚未运行任务，保留运行中任务。新测试验证失败继续开关两侧、批次终态及租约释放；原运行中同伴收尾测试保持通过。
+- 持续挂载的启动弹窗原来只同步保存后的并发，保存任务数 10→2 后仍用最新版本提交 10。现分别跟踪任务数与并发的手动覆盖，未覆盖值跟随保存；显式覆盖（包括非法空草稿、不限次数）保留，切换自动化重置。本轮不改变参数默认值草稿的既有规则。
+- RED：后端 1 失败 / 1 通过；前端修正新增测试的按钮名称后 1 失败 / 17 通过。GREEN：后端并发/数据调度/数据领取/任务派发 78 通过、2 原生浏览器专项未选择（包含真实双 worker）；前端自动化与运行域 302 通过 / 37 文件。
+- Ruff 和 scheduler mypy、TypeScript、eslint、构建通过（34.01 秒；保留既有第三方注释和混合导入警告）。未重复全量套件、三平台打包或流水线；此前完整回归的 Studio 数量断言和 Windows 替身问题仍未纳入修复，不能宣称全量绿色。
+- 工作仍在 codex/automation-run-policy 独立工作区，未修改主目录 Studio，未合并、推送、发布；releaseAccepted=false。
+- 复现与回归日志：/tmp/af-review-fix-{backend-red,backend-green,ui-red,ui-red-final,ui-green}.log。首轮前端除真实反例外的按钮名称错误及首次 Ruff 导入格式错误均已修正，未改业务断言。

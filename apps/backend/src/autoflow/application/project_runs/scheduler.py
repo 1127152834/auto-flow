@@ -366,14 +366,13 @@ class ProjectBatchScheduler:
                 if any(task.status == "reconciling" for task in tasks)
                 else "stopping" if stopping else "draining",
             )
-            if stopping:
-                await self._stop_active_runs(
-                    project_id,
-                    batch_id,
-                    tasks,
-                    stopping=True,
-                    force_requested=force_requested,
-                )
+            await self._stop_active_runs(
+                project_id,
+                batch_id,
+                tasks,
+                stopping=stopping,
+                force_requested=force_requested,
+            )
             with self._factory() as session:
                 tasks = SqlAlchemyProjectRuns(session).list_tasks(project_id, batch_id)
 
