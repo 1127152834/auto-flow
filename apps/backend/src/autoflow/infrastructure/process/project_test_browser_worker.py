@@ -354,6 +354,7 @@ def browser_worker_payload(
     return {
         "sessionId": session_id,
         "profileId": profile.id,
+        "proxyId": proxy.proxy_id if proxy else None,
         "fingerprintSeed": profile.fingerprint_seed,
         "startUrl": spec.start_url,
         "locale": spec.locale,

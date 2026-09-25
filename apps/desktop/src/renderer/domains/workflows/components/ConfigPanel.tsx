@@ -1,5 +1,7 @@
 import { ProjectLifecycleConfig } from './config-panels/ProjectLifecycleConfig'
 import { ProjectDataConfig } from './config-panels/ProjectDataConfig'
+
+import { ProxyControlConfig } from './config-panels/ProxyControlConfig'
 import { excludedModuleTypes } from '../lib/moduleCatalog'
 // Source: WebRPA@5ccb900e, components/workflow/ConfigPanel.tsx; see SOURCE.md for license and adaptation boundaries.
 import { useWorkflowStore, moduleTypeLabels, getModuleDefaultTimeout, type NodeData, type ErrorPolicy } from '../editor-store'
@@ -915,6 +917,10 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
         return <FirecrawlMapConfig data={nodeData} onChange={handleChange} />
       case 'firecrawl_crawl':
         return <FirecrawlCrawlConfig data={nodeData} onChange={handleChange} />
+      case 'proxy_change_ip':
+      case 'proxy_change_location':
+      case 'proxy_query':
+        return <ProxyControlConfig data={nodeData} onChange={handleChange} />
       case 'api_request':
         return <ApiRequestConfig data={nodeData} onChange={handleChange} />
       case 'condition':

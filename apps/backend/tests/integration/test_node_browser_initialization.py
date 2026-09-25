@@ -61,6 +61,7 @@ async def test_authorized_initialization_replays_one_instance_and_fences_other_a
     first = await capabilities.handle(task.run_id, 1, request)
     replay = await capabilities.handle(task.run_id, 1, request)
     assert first == replay and len(acquired) == 1
+    assert acquired[0][1] == task.run_id
     saved = environments.environments.find_instance_by_task(project_id, task.task_id)
     assert saved.instance_id == request['commandId']
     assert saved.identity_package['frozenConfiguration']['fingerprintSeed'] == 42

@@ -72,6 +72,12 @@ def test_restored_android_revisions_match_the_recorded_source_bytes() -> None:
         "0008_merge_android_m4.py": "743ef6ed9cf442377e5b8bc300e58db247ae95aea75eb8b0a8caf158b3754e01",
         "0009_merge_android_m5.py": "0d56f34fc9d647896d7dd1ece2c8ff81aca163582b27b692b318053864a0de32",
         "0010_android_fleet.py": "9e49465c1f0db103273ab7c6cbbf810307caca0f1c883d3c2add41fdafa6507c",
+        "pm09_shared_sheet_identity.py": "1ef8e77cf081460e5e68cbc23514c673b064be811b909d85f9f8721f37431760",
+        "pm10_shared_sheet_cursors.py": "d634201fd63942eb30b4afd6ae02bede9d234866b1961b2fe18c47c9fdffabca",
+        "am01_management_operations.py": "353337c226805bee5297e5b78041453de854f33705ef8a5785ac4c8458464921",
+        "0020_merge_android_pm9.py": "0c9fd992932e5d1c976030fdf62b9e8d4f0a4e075c4fec72630c1dcd5b3c9f54",
+        "0022_merge_studio_pm10.py": "ae8be7c17972d900c3a94cfc2a3ea9df7303b0ed71d41987a5522e12718f6f10",
+        "0023_merge_studio_android.py": "d4fdcaabcced30fe7d0eb9b7990251414ab9f269ef92338d91125b8f40accafb",
     }
 
     import hashlib
@@ -124,3 +130,33 @@ def test_android_pm9_merge_upgrades_each_published_head_without_losing_data(tmp_
         assert "uq_project_task_record_cursors_ref" in cursor_schema
         assert "uq_project_task_record_cursors_lease" not in cursor_schema
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
+
+@pytest.mark.parametrize(
+    "start_revision", ["0021_assistant_project_scope", "0023_merge_studio_android"]
+)
+def test_integrated_workspace_history_is_recognized_and_preserved(
+    tmp_path: Path, start_revision: str
+) -> None:
+    database = tmp_path / "workspace.sqlite3"
+    command.upgrade(_config(database), start_revision)
+    with sqlite3.connect(database) as connection:
+        connection.execute("CREATE TABLE preserved_workspace_data (value TEXT)")
+        connection.execute("INSERT INTO preserved_workspace_data VALUES ('keep-me')")
+    database_session.migrate_database(database)
+    database_session.migrate_database(database)
+    with sqlite3.connect(database) as connection:
+        assert connection.execute(
+            "SELECT version_num FROM alembic_version"
+        ).fetchall() == [("0024_environment_identity",)]
+        assert connection.execute(
+            "SELECT value FROM preserved_workspace_data"
+        ).fetchall() == [("keep-me",)]
+        assert connection.execute("PRAGMA integrity_check").fetchone() == ("ok",)
+        assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
+        assert "identity_verification" in {
+            row[1]
+            for row in connection.execute("PRAGMA table_info(project_sheets_bindings)")
+        }
+        assert connection.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='android_operations'"
+        ).fetchone()

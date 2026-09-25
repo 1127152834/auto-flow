@@ -33,6 +33,19 @@ def test_runtime_rotation_condition_does_not_disable_other_controls():
     assert caps["relocate"].available and caps["rotation_schedule"].available
 
 
+def test_cooldown_is_machine_readable_without_inventing_remaining_time():
+    result = state({**detail(), "rotation_blocked_reason": "cooldown"})
+    assert result.rotation_blocked_reason == "cooldown"
+    assert result.retry_after_seconds is None
+    assert result.rotation_available is False
+
+
+def test_ready_is_explicit_not_inferred_from_absent_fields():
+    ready = state({**detail(), "rotation_available": True, "rotation_blocked_reason": None})
+    assert ready.rotation_available is True
+    assert ready.rotation_blocked_reason is None
+
+
 def test_catalog_groups_city_aliases_by_target_without_inventing_capacity():
     rows = [
         {

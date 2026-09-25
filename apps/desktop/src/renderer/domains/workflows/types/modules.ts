@@ -277,6 +277,7 @@ export interface PhonePullFileConfig extends ModuleConfig {
 
 // 所有模块配置类型联合
 export type AnyModuleConfig =
+  | ProxyControlConfig
   | OpenPageConfig
   | ClickElementConfig
   | InputTextConfig
@@ -317,3 +318,29 @@ export type AnyModuleConfig =
   | PhoneUninstallAppConfig
   | PhonePushFileConfig
   | PhonePullFileConfig
+
+export interface ProxyControlConfig extends ModuleConfig {
+  target?: 'current' | 'specified'
+  proxyId?: string
+  locationId?: string
+  operationId?: string
+  retryIntervalSeconds?: number | string
+  maxAttempts?: number | string
+  confirmationTimeoutSeconds?: number | string
+  failureMode?: 'raise' | 'capture'
+  resultVariable?: string
+}
+export interface ProxyControlResult {
+  status: 'queued' | 'running' | 'succeeded' | 'failed' | 'unknown'
+  action: 'change_ip' | 'relocate' | 'query'
+  proxyId: string | null
+  operationId: string | null
+  attemptsUsed: number
+  requestsSent: number
+  configuration: Record<string, unknown>
+  before: Record<string, unknown> | null
+  after: Record<string, unknown> | null
+  targetLocation: Record<string, unknown> | null
+  changed: boolean
+  error: { code: string; message: string; lastCode?: string; retryAfterSeconds: number | null; retryAllowed: boolean; outcomeUnknown: boolean } | null
+}

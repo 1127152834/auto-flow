@@ -33,6 +33,8 @@ class RemoteStateView(BaseModel):
     capabilities: list[Capability]
     operation: OperationView | None
     fetched_at: datetime
+    rotation_blocked_reason: str | None = None
+    retry_after_seconds: int | None = None
 
 
 def operation_view(value) -> OperationView:
@@ -65,6 +67,8 @@ def proxy_remote_router(service: ProxyRemoteControls) -> APIRouter:
                 capabilities=[Capability(**asdict(c)) for c in value.capabilities],
                 operation=operation_view(active) if active else None,
                 fetched_at=datetime.now(UTC),
+                rotation_blocked_reason=value.rotation_blocked_reason,
+                retry_after_seconds=value.retry_after_seconds,
             )
         except ProxyError as exc:
             return _error_response(exc)

@@ -10,12 +10,30 @@ export function useModelManagement(api: ModelApi, instanceId: string) {
   const providers = useQuery({ queryKey: modelKeys.providers(instanceId), queryFn: api.listProviders, retry: false, refetchOnWindowFocus: false })
   const [selectedId, setSelectedId] = useState('')
   const [providerFeedback, setProviderFeedback] = useState<Record<string, ModelFeedback>>({})
+  const providerFeedbackTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>())
   const [modelFeedback, setModelFeedback] = useState<ModelFeedback>()
   const [activity, setActivity] = useState<{ kind: 'crud' | 'provider' | 'model'; providerId: string; modelKey?: string }>()
   const lock = useRef(false)
   const viewEpoch = useRef(0)
   const selected = providers.data?.items.find(item => item.id === selectedId) ?? providers.data?.items[0]
   useEffect(() => { viewEpoch.current++; setModelFeedback(undefined) }, [selected?.id])
+  useEffect(() => {
+    const timers = providerFeedbackTimers.current
+    return () => { timers.forEach(clearTimeout); timers.clear() }
+  }, [])
+  useEffect(() => {
+    if (!modelFeedback) return
+    const timer = setTimeout(() => setModelFeedback(undefined), 2000)
+    return () => clearTimeout(timer)
+  }, [modelFeedback])
+  const showProviderFeedback = (providerId: string, feedback: ModelFeedback) => {
+    clearTimeout(providerFeedbackTimers.current.get(providerId))
+    setProviderFeedback(current => ({ ...current, [providerId]: feedback }))
+    providerFeedbackTimers.current.set(providerId, setTimeout(() => {
+      setProviderFeedback(current => { const next = { ...current }; delete next[providerId]; return next })
+      providerFeedbackTimers.current.delete(providerId)
+    }, 2000))
+  }
   const refresh = async () => {
     await Promise.all([
       cache.invalidateQueries({ queryKey: modelKeys.providers(instanceId) }),
@@ -37,7 +55,7 @@ export function useModelManagement(api: ModelApi, instanceId: string) {
     } catch (error) {
       feedback = { tone: 'danger', title: '供应商连接失败', detail: errorMessage(error) }
     }
-    setProviderFeedback(current => ({ ...current, [provider.id]: feedback }))
+    showProviderFeedback(provider.id, feedback)
     await refresh()
   })
   const testModel = (provider: ModelProvider, model: AiModel) => run('model', provider, async () => {
@@ -52,7 +70,7 @@ export function useModelManagement(api: ModelApi, instanceId: string) {
   }, model.modelKey)
   const toggleProvider = (provider: ModelProvider) => run('crud', provider, async () => {
     try { await api.updateProvider(provider.id, { name: provider.name, description: provider.description, enabled: !provider.enabled }); await refresh() }
-    catch (error) { refreshAfterModelConflict(cache, instanceId, error); setProviderFeedback(current => ({ ...current, [provider.id]: { tone: 'danger', title: '供应商更新失败', detail: errorMessage(error) } })) }
+    catch (error) { refreshAfterModelConflict(cache, instanceId, error); showProviderFeedback(provider.id, { tone: 'danger', title: '供应商更新失败', detail: errorMessage(error) }) }
   })
   const toggleModel = (provider: ModelProvider, model: AiModel) => run('crud', provider, async () => {
     const epoch = viewEpoch.current

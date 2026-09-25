@@ -144,6 +144,8 @@ class _TimedNode(ModuleExecutor):
 
 
 class _LegacyBrowserNode(ModuleExecutor):
+    requires_browser = True
+
     def __init__(self, kind: str, executor: WorkflowExecutor) -> None:
         self.kind, self.executor = kind, executor
 
@@ -212,12 +214,13 @@ class ProjectGraphExecutor:
         models: WorkflowModelGateway | None = None,
         external_integrations: ExternalIntegrationGateway | None = None,
         command_bus: _WorkerCommandBus | None = None,
+        proxy_probe: Callable[[bool], Awaitable[dict[str, Any]]] | None = None,
         capability: Callable[..., Awaitable[Any]] | None = None,
         browser_initializer: Callable[..., Awaitable[Any]] | None = None,
     ) -> None:
         self.browser = CloakBrowserWorkflowSession(browser_context) if browser_context is not None else None
         self.cancellation = _Cancellation(should_stop)
-        self.context = ExecutionContext(process_cleanup=terminate_subprocess, variables=dict(variables), browser=self.browser, browser_initializer=browser_initializer, cancellation=self.cancellation, events=self, credentials=credentials, models=models, external_integrations=external_integrations, table_workbooks=OpenpyxlTableWorkbookRenderer())
+        self.context = ExecutionContext(proxy_control=command_bus.proxy_call if command_bus else None, proxy_probe=proxy_probe, process_cleanup=terminate_subprocess, variables=dict(variables), browser=self.browser, browser_initializer=browser_initializer, cancellation=self.cancellation, events=self, credentials=credentials, models=models, external_integrations=external_integrations, table_workbooks=OpenpyxlTableWorkbookRenderer())
         self.command_bus = command_bus
         if command_bus is not None:
             interactive = command_bus.for_context(self.context)
@@ -314,6 +317,9 @@ class ProjectGraphExecutor:
                 payload = {**payload, 'executionContext': execution_context}
             await self.emit(kind, node_id, visit, payload)
 
+        if event['type'] == 'execution:log':
+            await emit('log', {'level': event.get('level', 'info'), 'message': event.get('message', '')})
+            return
         if event['type'] in {
             'execution:input_prompt', 'execution:input_prompt_closed',
             'execution:js_script', 'execution:js_script_closed',

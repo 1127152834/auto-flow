@@ -4,6 +4,8 @@
  * 视觉：左侧色条状态指示 + 时间戳 + 级别徽章 + 高亮搜索
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { ProxyRetryCountdown } from './ProxyRetryCountdown'
+import { useWorkflowStore } from '../editor-store'
 import { cn } from '../lib/utils'
 import { useVirtualizer } from '../hooks/useVirtualizer'
 import type { LogEntry, LogLevel } from '../types/index'
@@ -43,6 +45,7 @@ function highlightText(text: string, query: string) {
 }
 
 export function LogList({ logs, searchQuery, onLogClick }: LogListProps) {
+  const running = useWorkflowStore(state => state.executionStatus === 'running')
   const scrollRef = useRef<HTMLDivElement>(null)
   const getScrollElement = useCallback(() => scrollRef.current, [])
   const [autoScroll, setAutoScroll] = useState(true)
@@ -127,6 +130,7 @@ export function LogList({ logs, searchQuery, onLogClick }: LogListProps) {
               {/* 消息 */}
               <span className={cn('flex-1 truncate', style.text)}>
                 {highlightText(log.message, searchQuery || '')}
+                <ProxyRetryCountdown retryAt={log.details?.proxyRetryAt} active={running} />
               </span>
               {/* 耗时 */}
               {log.duration !== undefined && log.duration !== null && (

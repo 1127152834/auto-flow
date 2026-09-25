@@ -48489,5 +48489,128 @@
       "evidenceConfidence": "高：冻结源码差分、生产合同及 macOS arm64 正式 Electron UI、真实 sidecar/worker、持久化结果与清理证据均通过。",
       "mappingEvidencePath": "docs/migration/studio-backend-migration/evidence/b0/source-mapping.json"
     }
+  },
+  {
+    "type": "proxy_change_ip",
+    "category": "代理控制",
+    "id": "node:proxy_change_ip",
+    "status": "已实现，待实网验收",
+    "deliveryBlock": "workflow-proxy-control",
+    "differenceClass": "AutoFlow 原生扩展",
+    "verifiedCases": [
+      {
+        "id": "NODE.proxy_change_ip.owned-workers",
+        "status": "自动测试通过",
+        "level": "real process + synthetic service",
+        "evidencePath": "apps/backend/tests/integration/test_workflow_proxy_workers.py"
+      }
+    ],
+    "remaining": [
+      "真实供应商写入",
+      "Windows 与打包验证"
+    ],
+    "evidence": [
+      {
+        "kind": "branch",
+        "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProxyControlConfig.tsx",
+        "line": 12,
+        "fields": [
+          "target",
+          "proxyId",
+          "locationId",
+          "operationId",
+          "retryIntervalSeconds",
+          "maxAttempts",
+          "confirmationTimeoutSeconds",
+          "failureMode",
+          "resultVariable"
+        ],
+        "components": [
+          "ProxyControlConfig"
+        ]
+      }
+    ]
+  },
+  {
+    "type": "proxy_change_location",
+    "category": "代理控制",
+    "id": "node:proxy_change_location",
+    "status": "已实现，待实网验收",
+    "deliveryBlock": "workflow-proxy-control",
+    "differenceClass": "AutoFlow 原生扩展",
+    "verifiedCases": [
+      {
+        "id": "NODE.proxy_change_location.owned-workers",
+        "status": "自动测试通过",
+        "level": "real process + synthetic service",
+        "evidencePath": "apps/backend/tests/integration/test_workflow_proxy_workers.py"
+      }
+    ],
+    "remaining": [
+      "真实供应商写入",
+      "Windows 与打包验证"
+    ],
+    "evidence": [
+      {
+        "kind": "branch",
+        "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProxyControlConfig.tsx",
+        "line": 12,
+        "fields": [
+          "target",
+          "proxyId",
+          "locationId",
+          "operationId",
+          "retryIntervalSeconds",
+          "maxAttempts",
+          "confirmationTimeoutSeconds",
+          "failureMode",
+          "resultVariable"
+        ],
+        "components": [
+          "ProxyControlConfig"
+        ]
+      }
+    ]
+  },
+  {
+    "type": "proxy_query",
+    "category": "代理控制",
+    "id": "node:proxy_query",
+    "status": "已实现，待实网验收",
+    "deliveryBlock": "workflow-proxy-control",
+    "differenceClass": "AutoFlow 原生扩展",
+    "verifiedCases": [
+      {
+        "id": "NODE.proxy_query.owned-workers",
+        "status": "自动测试通过",
+        "level": "real process + synthetic service",
+        "evidencePath": "apps/backend/tests/integration/test_workflow_proxy_workers.py"
+      }
+    ],
+    "remaining": [
+      "真实供应商写入",
+      "Windows 与打包验证"
+    ],
+    "evidence": [
+      {
+        "kind": "branch",
+        "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProxyControlConfig.tsx",
+        "line": 12,
+        "fields": [
+          "target",
+          "proxyId",
+          "locationId",
+          "operationId",
+          "retryIntervalSeconds",
+          "maxAttempts",
+          "confirmationTimeoutSeconds",
+          "failureMode",
+          "resultVariable"
+        ],
+        "components": [
+          "ProxyControlConfig"
+        ]
+      }
+    ]
   }
 ]

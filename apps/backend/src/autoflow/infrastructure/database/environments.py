@@ -538,10 +538,10 @@ class SqlAlchemyEnvironments:
         items, _total = self.list_instances(project_id, task_id=task_id, page=1, page_size=1)
         return items[0] if items else None
 
-    def active_instance_for_run_request(self, run_request_id: str) -> EnvironmentInstance | None:
+    def active_instance_for_run(self, run_id: str) -> EnvironmentInstance | None:
         with self._session_factory() as session:
             run = session.scalar(select(WorkflowRunRow).where(
-                WorkflowRunRow.run_request_id == run_request_id,
+                WorkflowRunRow.id == run_id,
             ))
             if run is None:
                 raise environment_error("END_ACCESS_REVOKED", "运行身份不存在", 409)

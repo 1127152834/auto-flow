@@ -73,7 +73,7 @@ class LeasePort(Protocol):
 
 class ResourcePort(Protocol):
     async def acquire(
-        self, request: Mapping[str, Any], run_request_id: str
+        self, request: Mapping[str, Any], run_id: str
     ) -> LeasePort: ...
 
 
@@ -459,7 +459,7 @@ class WorkflowRunDispatcher:
                     if not admitted:
                         raise WorkflowRuntimeError('WORKFLOW_ADMISSION_CLOSED', '运行准入已关闭', 503)
                     request = prepare()
-                    owner.lease = await self._resources.acquire(request, current.run_request_id)
+                    owner.lease = await self._resources.acquire(request, current.run_id)
                     owner.browser_command_id = command_id
             return {'browser': dict(owner.lease.browser), 'executablePath': str(owner.lease.executable)}
 
@@ -492,7 +492,7 @@ class WorkflowRunDispatcher:
                     return
                 if "browser.cloakbrowser" in content.capability_requirements and dispatched.resource_request.get("browser") != "node":
                     lease = await self._resources.acquire(
-                        dispatched.resource_request, dispatched.run_request_id
+                        dispatched.resource_request, dispatched.run_id
                     )
                     owner.lease = lease
                 current = self._get_run(dispatched.run_id)

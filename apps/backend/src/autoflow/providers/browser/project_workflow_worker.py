@@ -135,7 +135,7 @@ class _Control:
                     if self.command_bus is not None:
                         self.command_bus.close()
                     continue
-                if message.get("type") in {"input_prompt_result", "js_script_result", "webhook_result"} and self.command_bus is not None:
+                if message.get("type") in {"input_prompt_result", "js_script_result", "webhook_result", "proxy:result"} and self.command_bus is not None:
                     self.command_bus.receive(message)
                     continue
                 if message.get("type") == "capability_result":
@@ -374,6 +374,7 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
         options['proxy'] = {'server': relay.url} if relay else None
         await launch_browser(payload, options)
         session = CloakBrowserWorkflowSession(context)
+        session.proxy_relay = relay
         initialized_configuration = declaration.copy()
         return session
 
@@ -409,6 +410,8 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
                     command_bus=command_bus,
                     capability=capability,
                     browser_initializer=initialize_browser if node_mode else None,
+
+                    proxy_probe=relay.probe if relay is not None else None,
                 )
                 result = await executor.run(command["executionPlan"])
                 control.check_parent()

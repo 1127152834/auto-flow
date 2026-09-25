@@ -31,11 +31,7 @@ export function ModelManagementPage({ api, instanceId }: { api: ModelApi; instan
     state.clearModelFeedback()
     setEditor({ provider: selected })
   }
-  const feedback = selected && (state.providerFeedback[selected.id] ?? (selected.lastCheckMessage ? {
-    tone: selected.connectionStatus === 'connected' ? 'success' as const : 'danger' as const,
-    title: selected.connectionStatus === 'connected' ? '供应商连接正常' : '供应商连接异常',
-    detail: `${selected.lastCheckMessage}${selected.lastCheckLatencyMs != null ? ` · ${Math.round(selected.lastCheckLatencyMs)} ms` : ''}`,
-  } : undefined))
+  const feedback = selected && state.providerFeedback[selected.id]
 
   return <main className="mx-auto w-full max-w-[1600px] px-8 pb-10 pt-8 max-[640px]:px-4">
     <header className="mb-7 flex flex-wrap items-center justify-between gap-4"><div><h1 className="m-0 text-3xl font-semibold tracking-tight">模型管理</h1><p className="mb-0 mt-2 text-sm text-muted">接入模型供应商，维护可用于自动化任务的模型目录。</p></div><Button variant="primary" onClick={add} aria-label="添加模型供应商"><Plus size={17} />添加供应商</Button></header>

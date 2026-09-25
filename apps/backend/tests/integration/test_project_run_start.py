@@ -214,8 +214,8 @@ async def test_project_run_acquires_its_reserved_persistent_directory(tmp_path, 
         execution_generation=queued.execution_generation,
     )
     instance = environment_service.environments.find_instance_by_task(project.project_id, task.task_id)
-    browser._environment_directory = lambda request_id: environment_service.run_work_directory(request_id)
-    lease = await browser.acquire(running.resource_request, running.run_request_id)
+    browser._environment_directory = lambda run_id: environment_service.run_work_directory(run_id)
+    lease = await browser.acquire(running.resource_request, running.run_id)
     try:
         assert lease.browser["userDataDir"] == str(environment_service.instance_path(instance.instance_id))
     finally:
@@ -225,7 +225,7 @@ async def test_project_run_acquires_its_reserved_persistent_directory(tmp_path, 
         execution_generation=running.execution_generation,
     )
     with pytest.raises(ProjectError) as revoked:
-        await browser.acquire(running.resource_request, running.run_request_id)
+        await browser.acquire(running.resource_request, running.run_id)
     assert revoked.value.code == "END_ACCESS_REVOKED"
     # A cancelled Run is refused atomically before accepting a new save,
     # even when its work copy has not yet become quiescent.

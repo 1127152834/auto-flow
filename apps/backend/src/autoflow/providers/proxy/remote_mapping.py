@@ -73,6 +73,8 @@ def state(value: object) -> RemoteState:
         bound,
         _optional(_object(body.get("location", {})).get("country_code")),
         caps,
+        rotation_blocked_reason=reason if isinstance(reason, str) else None,
+        rotation_available=available,
     )
 
 

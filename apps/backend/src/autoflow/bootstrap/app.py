@@ -344,12 +344,21 @@ def create_app(
     app.state.status_batch_coordinator = status_batch_coordinator
     app.router.add_event_handler("startup", status_batch_coordinator.resume)
     proxy_runtime = configure_proxy_management(app, paths.database, resource_references)
+    # ponytail: unknown legacy owners block all proxies until their existing cleanup removes evidence.
+    # Per-proxy recovery can replace this conservative guard once legacy runs persist binding identity.
+    legacy_proxy_directories = tuple(
+        directory for pattern in ("workflow-worker/*/*", "test-browser/*/*", "workflow-runs/*/generation-*")
+        for directory in paths.temp.glob(pattern) if directory.is_dir()
+    )
+    proxy_runtime.workflow.usage.unconfirmed_users = lambda: any(path.exists() for path in legacy_proxy_directories)
+    test_browser_workers.release_proxy = proxy_runtime.workflow.release
     profile_test_browser = ProfileTestBrowserService(
         profile_service,
         catalog_provider.installed,
         proxy_runtime.resolve_profile,
         license_store.read,
         test_browser_workers,
+        release_proxy=proxy_runtime.workflow.release,
     )
     studio_credentials = StudioCredentialService(
         SqlAlchemyStudioCredentials(session_factory), active_credentials
@@ -360,6 +369,7 @@ def create_app(
         profiles=profile_service,
         installed_kernels=catalog_provider.installed,
         resolve_proxy=proxy_runtime.resolve_profile,
+        proxy_service=proxy_runtime.workflow,
         read_license=license_store.read,
         profile_guard=usage_guard,
         kernels_root=paths.kernels,
@@ -499,6 +509,7 @@ def create_app(
         profiles=profile_service,
         installed=catalog_provider.installed,
         resolve_proxy=proxy_runtime.resolve_profile,
+        proxy_service=proxy_runtime.workflow,
         read_license=license_store.read,
         usage_guard=usage_guard,
         installations=installations,

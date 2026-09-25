@@ -90,6 +90,7 @@ class WorkflowRunCoordinator:
         profiles: ProfileService | ProfileReader,
         installed_kernels: Callable[[], Sequence[InstalledKernel]],
         resolve_proxy: Callable[[Profile, str], Awaitable[ProfileBrowserProxy | None]],
+        release_proxy: Callable[[str], None] | None = None,
         read_license: Callable[[], str | None],
         workers: WorkflowWorkers,
         resources: WorkflowResources,
@@ -107,6 +108,7 @@ class WorkflowRunCoordinator:
         self._profiles = profiles
         self._installed_kernels = installed_kernels
         self._resolve_proxy = resolve_proxy
+        self._release_proxy = release_proxy
         self._read_license = read_license
         self._workers = workers
         self._resources = resources
@@ -506,6 +508,8 @@ class WorkflowRunCoordinator:
                     await self._workers.stop(run_id)
                 if acquired and self._resources.owner_id == run_id:
                     await self._resources.release(run_id)
+                    if self._release_proxy is not None:
+                        self._release_proxy(run_id)
                 failure = (
                     {
                         "code": error.code,
@@ -2032,6 +2036,7 @@ def _worker_payload(
         "runId": start.run_id,
         "workflowId": start.workflow_id,
         "profileId": start.profile_id,
+        "proxyId": proxy.proxy_id if proxy else None,
         "licenseKey": license_key,
         "headless": headless,
         "artifactRoot": str(artifact_root),

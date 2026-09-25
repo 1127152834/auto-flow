@@ -300,6 +300,12 @@ class ExecutionContext:
     credentials: CredentialReader | None = None
     models: ModelGateway | None = None
     external_integrations: ExternalIntegrationGateway | None = None
+    proxy_control: Callable[[dict[str, Any]], Awaitable[dict[str, Any]]] | None = None
+    proxy_probe: Callable[[bool], Awaitable[dict[str, Any]]] | None = None
+    proxy_visit: ContextVar[tuple[str | None, str | None]] = field(
+        default_factory=lambda: ContextVar("proxy_visit", default=(None, None)), repr=False
+    )
+    proxy_activity: set[str] = field(default_factory=set)
     process_cleanup: Callable[[Any], Awaitable[None]] | None = None
     events: WorkflowEventSink | None = None
     input_prompts: InputPromptGateway | None = None

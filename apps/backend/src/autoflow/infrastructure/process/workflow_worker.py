@@ -26,6 +26,8 @@ from autoflow.infrastructure.process.browser_processes import (
 from autoflow.infrastructure.process.test_browser_worker import stop_process_tree
 from autoflow.infrastructure.process.workflow_subprocess import workflow_environment
 
+from .proxy_worker_requests import ProxyWorkerRequests
+
 _SAFE_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{0,127}")
 
 
@@ -119,6 +121,7 @@ class WorkflowWorkerManager:
         termination_timeout: float = 3,
         on_event: Callable[[dict[str, object]], Any] | None = None,
         on_exit: Callable[[str, int], Any] | None = None,
+        proxy_service: Any | None = None,
     ) -> None:
         self._root = (temp_dir / "workflow-worker" / uuid4().hex).resolve()
         self._command = command or workflow_worker_command()
@@ -127,6 +130,8 @@ class WorkflowWorkerManager:
         self._termination_timeout = termination_timeout
         self._on_event = on_event
         self._on_exit = on_exit
+        self._proxy_service = proxy_service
+        self._proxy_requests: dict[str, ProxyWorkerRequests] = {}
         self._starting: dict[str, _StartingWorker] = {}
         self._running: dict[str, _RunningWorker] = {}
         self._failures: dict[str, str] = {}
@@ -195,6 +200,12 @@ class WorkflowWorkerManager:
                 state.process = process
                 state.birth = birth
             assert process.stdin is not None and process.stdout is not None
+            if self._proxy_service is not None:
+                self._proxy_requests[run_id] = ProxyWorkerRequests(
+                    self._proxy_service, run_id, payload,
+                    lambda response: self.send_command(run_id, response),
+                    lambda: run_id in self._running and run_id not in self._stopping,
+                )
             process.stdin.write((json.dumps(payload, ensure_ascii=False) + "\n").encode())
             await process.stdin.drain()
             raw = await asyncio.wait_for(process.stdout.readline(), self._start_timeout)
@@ -260,6 +271,11 @@ class WorkflowWorkerManager:
                     birth,
                 )
             shutil.rmtree(directory, ignore_errors=True)
+            proxy_requests = self._proxy_requests.pop(run_id, None)
+            if proxy_requests is not None:
+                await proxy_requests.close()
+            elif self._proxy_service is not None:
+                self._proxy_service.release(run_id)
             async with self._lock:
                 self._starting.pop(run_id, None)
             raise
@@ -377,6 +393,12 @@ class WorkflowWorkerManager:
                         event = json.loads(raw)
                     except (json.JSONDecodeError, UnicodeDecodeError):
                         continue
+                    if isinstance(event, dict) and run_id in self._proxy_requests:
+                        active_requests = self._proxy_requests[run_id]
+                        if event.get("type") == "proxy:request":
+                            active_requests.receive(event)
+                            continue
+                        active_requests.observe(event)
                     if isinstance(event, dict) and self._on_event is not None:
                         if event.get("type") in {"credential:read", "browser:initialize"} and event.get("runId") != run_id:
                             raise RuntimeError("工作进程凭据请求归属不匹配")
@@ -399,6 +421,9 @@ class WorkflowWorkerManager:
             shutil.rmtree(directory, ignore_errors=True)
             async with self._lock:
                 self._running.pop(run_id, None)
+            proxy_requests = self._proxy_requests.pop(run_id, None)
+            if proxy_requests is not None:
+                await proxy_requests.close()
             if self._on_exit is not None:
                 try:
                     callback_result = self._on_exit(run_id, process.returncode or 0)

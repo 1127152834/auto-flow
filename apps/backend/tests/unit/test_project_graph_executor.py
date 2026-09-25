@@ -509,3 +509,38 @@ async def test_webhook_project_output_preserves_name_and_sensitive_boundary(conf
     assert [payload for kind, _, _, payload in events if kind == 'output'] == (
         [{'name': name, 'value': value}] if name and not sensitive else []
     )
+
+
+@pytest.mark.parametrize('kind', ['open_page', 'input_text', 'click_element', 'get_element_info'])
+def test_legacy_browser_nodes_declare_activity_for_proxy_exclusion(kind):
+    from autoflow.providers.browser.project_graph import _ProjectRegistry
+    node_executor = _ProjectRegistry(object()).get(kind)
+    assert node_executor is not None
+    assert node_executor.requires_browser_for({}) is True
+
+
+@pytest.mark.asyncio
+async def test_legacy_browser_branch_blocks_parallel_proxy_switch():
+    from autoflow.application.workflows.runtime import WorkflowRuntime
+    from autoflow.domain.workflows.execution import ExecutionContext
+    from autoflow.providers.browser.project_graph import _ProjectRegistry
+
+    entered, release = asyncio.Event(), asyncio.Event()
+    class Legacy:
+        async def _execute(self, kind, config):
+            entered.set()
+            await release.wait()
+    async def forbidden_proxy(payload):
+        pytest.fail('parallel switch reached the host while legacy browser was active')
+    class Events:
+        async def publish(self, event):
+            if event['type'] == 'execution:node_start' and event['nodeId'] == 'proxy':
+                await entered.wait()
+            if event['type'] == 'execution:node_complete' and event['nodeId'] == 'proxy':
+                release.set()
+    context = ExecutionContext(proxy_control=forbidden_proxy, events=Events())
+    graph = {'nodes': [node('browser', 'open_page'), node('proxy', 'proxy_change_ip', target='specified', proxyId='p', failureMode='capture')], 'edges': []}
+    async with asyncio.timeout(1):
+        result = await WorkflowRuntime(_ProjectRegistry(Legacy())).execute(graph, context)
+    assert result.success
+    assert context.variables['proxy_change_ip_result']['error']['lastCode'] == 'PROXY_BUSY'

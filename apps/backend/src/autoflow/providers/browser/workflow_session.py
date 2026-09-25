@@ -555,6 +555,7 @@ class CloakBrowserWorkflowSession:
         self._current_id: str | None = None
         self._active_frame: CloakBrowserWorkflowPage | None = None
         self._closed = False
+        self.proxy_relay: BrowserProxyRelay | None = None
         existing = self._synchronize_pages()
         if existing:
             self._current_id = existing[0].id
@@ -663,6 +664,11 @@ class CloakBrowserWorkflowSession:
             if watch.listener is not None:
                 self._context.remove_listener("page", watch.listener)
 
+    async def probe_proxy(self, reset: bool = False) -> dict[str, Any]:
+        if self.proxy_relay is None:
+            return {"exitIp": None, "error": {"code": "PROXY_NOT_BOUND", "message": "会话未绑定代理"}}
+        return await self.proxy_relay.probe(reset)
+
     async def close(self) -> None:
         if self._closed:
             return
@@ -726,6 +732,7 @@ async def launch_workflow_session(
         session = CloakBrowserWorkflowSession.from_context(
             context, browser_pid=await _browser_process_id(context)
         )
+        session.proxy_relay = relay_value
         yield session
     finally:
         try:
