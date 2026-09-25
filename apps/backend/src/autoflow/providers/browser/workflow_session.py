@@ -555,6 +555,7 @@ class CloakBrowserWorkflowSession:
         self._current_id: str | None = None
         self._active_frame: CloakBrowserWorkflowPage | None = None
         self._closed = False
+        self.trace: Any = None
         existing = self._synchronize_pages()
         if existing:
             self._current_id = existing[0].id
@@ -663,11 +664,26 @@ class CloakBrowserWorkflowSession:
             if watch.listener is not None:
                 self._context.remove_listener("page", watch.listener)
 
+    async def start_trace(self, save: Any) -> None:
+        from .workflow_trace import WorkflowTrace
+        if self.trace is None:
+            self.trace = WorkflowTrace(self._context, save)
+            await self.trace.start()
+
     async def close(self) -> None:
         if self._closed:
             return
         self._closed = True
-        await self._context.close()
+        try:
+            if self.trace is not None:
+                try:
+                    async with asyncio.timeout(8):
+                        await self.trace.finish()
+                except Exception:  # noqa: BLE001 -- cleanup must proceed if the disk is unavailable.
+                    import logging
+                    logging.getLogger(__name__).warning("Trace 归档未完成；浏览器继续清理")
+        finally:
+            await self._context.close()
 
 
 async def _browser_process_id(context: Any) -> int | None:

@@ -1042,6 +1042,26 @@ export async function executeClientAction(
         }
       }
 
+      case 'get_trace_summary':
+      case 'query_trace_events':
+      case 'read_trace_evidence': {
+        if (typeof payload.runId !== 'string' || !payload.runId.trim()) return { success: false, error: '必须指定要诊断的 runId' }
+        if (action === 'read_trace_evidence' && (typeof payload.evidenceId !== 'string' || !payload.evidenceId)) return { success: false, error: '必须指定 evidenceId' }
+        const cursor = payload.cursor ?? 0
+        if (!Number.isSafeInteger(cursor) || cursor < 0) return { success: false, error: 'cursor 必须是非负整数' }
+        const result = await workflowApi.getRunTrace(payload.runId, cursor, typeof payload.kind === 'string' ? payload.kind : '', {
+          limit: action === 'query_trace_events' ? 20 : 1,
+          executionId: typeof payload.executionId === 'string' ? payload.executionId : undefined,
+          evidenceId: action === 'read_trace_evidence' ? payload.evidenceId : undefined,
+        })
+        if (!result.success || !result.data) return { success: false, error: result.error || '追踪读取失败' }
+        const data = result.data
+        if (action === 'get_trace_summary') return { success: true, data: { runId: data.runId, runStatus: data.runStatus, status: data.status, gaps: data.gaps, total: data.total, traceId: data.traceId } }
+        if (action === 'read_trace_evidence' && data.events.length === 0) return { success: false, error: '证据不存在或不属于本次运行' }
+        // Model-bound tool results are redacted again by the existing assistant service.
+        return { success: true, data: { runId: data.runId, events: data.events, nextCursor: data.nextCursor, total: data.total, gaps: data.gaps } }
+      }
+
       case 'get_logs': {
         const s = useWorkflowStore.getState()
         const limit = Math.max(1, Math.min(500, Number(payload.limit) || 100))
