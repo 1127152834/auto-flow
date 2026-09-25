@@ -9,7 +9,7 @@ import { SelectNative } from './controls/select-native'
 
 type TracePage = components['schemas']['StudioTracePage']
 type TraceEvent = components['schemas']['StudioTraceEvent']
-const kinds = { '': '全部证据', execution: '节点动作', network: '网络请求', console: '控制台', exception: 'JS 异常', 'page-closed': '页面关闭' }
+const kinds = { '': '全部证据', execution: '节点动作', network: '网络请求', console: '控制台', exception: 'JS 异常', 'page-closed': '页面关闭', mark: '追踪标记', diagnostic: '诊断快照' }
 const runStates: Record<string, string> = { starting: '正在启动', running: '运行中', completed: '运行成功', failed: '运行失败', cancelled: '已停止', interrupted: '运行中断', paused: '已暂停', stopping: '正在清理' }
 const states = { pending: '等待归档', unavailable: '无可用追踪', partial: '部分采集', saved: '已归档' }
 function title(event: TraceEvent) {
@@ -18,20 +18,27 @@ function title(event: TraceEvent) {
   return event.message || '页面已关闭'
 }
 
-function Snapshot({ runId, artifactId }: { runId: string; artifactId?: string | null }) {
-  const [source, setSource] = useState(''), [error, setError] = useState('')
+function Snapshot({ runId, artifactId, dom = false }: { runId: string; artifactId?: string | null; dom?: boolean }) {
+  const [source, setSource] = useState(''), [error, setError] = useState(''), [text, setText] = useState<string | null>(null)
   useEffect(() => {
     let cancelled = false, url = ''
     const connection = getStudioTransportRevision()
-    setSource(''); setError('')
-    if (artifactId) void workflowApi.getRunArtifact(runId, artifactId).then(result => {
+    setSource(''); setError(''); setText(null)
+    if (artifactId) void workflowApi.getRunArtifact(runId, artifactId).then(async result => {
       if (cancelled || connection !== getStudioTransportRevision()) return
       if (!result.success || !result.data) { setError(result.error || '快照读取失败'); return }
+      if (dom) {
+        if (result.data.size > 8 * 1024 * 1024 || !result.data.type.startsWith('text/html')) { setError('DOM 证据格式或大小无效'); return }
+        const content = await result.data.text()
+        if (!cancelled && connection === getStudioTransportRevision()) setText(content.length > 65536 ? content.slice(0, 65536) + '\n…预览限前 65,536 字符，完整文件仍在运行产物中。' : content)
+        return
+      }
       if (result.data.type !== 'image/png') { setError('快照格式不受支持'); return }
       url = URL.createObjectURL(result.data); setSource(url)
     })
     return () => { cancelled = true; if (url) URL.revokeObjectURL(url) }
-  }, [runId, artifactId])
+  }, [runId, artifactId, dom])
+  if (dom && text !== null) return <pre aria-label="只读 DOM 原文" className="overflow-auto whitespace-pre-wrap break-all text-xs">{text}</pre>
   return source ? <img src={source} alt="该次执行结束时的页面快照" className="h-full w-full object-contain object-top" /> :
     <div className="flex h-full min-h-24 flex-col items-center justify-center gap-2 text-xs text-muted-foreground"><ImageOff className="h-5 w-5" />{error || (artifactId ? '正在读取页面快照…' : '此条证据没有页面快照')}</div>
 }
@@ -40,6 +47,7 @@ export function TracePanel({ runId }: { runId: string }) {
   const [page, setPage] = useState<TracePage | null>(null)
   const [kind, setKind] = useState(''), [cursor, setCursor] = useState(0), [selected, setSelected] = useState<string | null>(null)
   const [loading, setLoading] = useState(false), [error, setError] = useState(''), [downloading, setDownloading] = useState(false)
+  const [showDom, setShowDom] = useState(false)
   const [compare, setCompare] = useState(false), [detailsShown, setDetailsShown] = useState(false)
   const request = useRef(0), downloadRequest = useRef(0)
   const load = useCallback(async () => {
@@ -53,7 +61,7 @@ export function TracePanel({ runId }: { runId: string }) {
     setSelected(previous => result.data!.events.some(row => row.id === previous) ? previous : result.data!.events.find(row => row.snapshotId)?.id || result.data!.events[0]?.id || null)
   }, [runId, cursor, kind])
   useEffect(() => {
-    setPage(null); setSelected(null); setCompare(false)
+    setPage(null); setSelected(null); setCompare(false); setShowDom(false)
     void load()
     const refresh = () => { setPage(null); setDownloading(false); downloadRequest.current++; void load() }
     window.addEventListener('studio:transport-changed', refresh)
@@ -102,17 +110,17 @@ export function TracePanel({ runId }: { runId: string }) {
     {!!page?.gaps.length && <details className="border-b bg-amber-50 px-3 py-1.5 text-amber-900"><summary className="cursor-pointer"><AlertTriangle className="mr-1 inline h-3 w-3" />采集范围说明 · {page.gaps.length} 项</summary>{page.gaps.map(gap => <p key={gap} className="py-1">{gap}</p>)}</details>}
     {!!page?.events.length && <div className="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-[minmax(180px,26%)_minmax(240px,1fr)_minmax(180px,25%)] overflow-auto">
       <div aria-label="追踪事件" className={`min-h-0 overflow-auto border-r ${detailsShown ? 'hidden md:block' : ''}`}>
-        {page.events.map(row => <button key={row.id} onClick={() => { setSelected(row.id); setCompare(false); setDetailsShown(true) }} aria-pressed={selected === row.id} className={`flex w-full gap-2 border-b px-3 py-2.5 text-left ${selected === row.id ? 'bg-primary/10 text-primary' : 'hover:bg-muted'}`}>
+        {page.events.map(row => <button key={row.id} onClick={() => { setSelected(row.id); setCompare(false); setShowDom(false); setDetailsShown(true) }} aria-pressed={selected === row.id} className={`flex w-full gap-2 border-b px-3 py-2.5 text-left ${selected === row.id ? 'bg-primary/10 text-primary' : 'hover:bg-muted'}`}>
           {row.kind === 'network' ? <Globe className="mt-1 h-3 w-3 shrink-0" /> : row.kind === 'execution' ? <Activity className="mt-1 h-3 w-3 shrink-0" /> : <Terminal className="mt-1 h-3 w-3 shrink-0" />}
           <span className="min-w-0"><span className="block truncate">{title(row)}</span><span className="mt-1 block text-[10px] text-muted-foreground">+{(row.timeMs / 1000).toFixed(3)} s · {row.pageId || '无页面归属'}</span></span>
         </button>)}
       </div>
       <div className={`min-h-0 flex-col bg-muted/20 ${detailsShown ? 'flex' : 'hidden md:flex'}`}>
         <button onClick={() => setDetailsShown(false)} className="border-b p-2 text-left md:hidden">返回事件列表</button>
-        <div className="flex items-center justify-between border-b px-3 py-2"><span>只读页面证据</span><button disabled={!previous || !event?.snapshotId} onClick={() => setCompare(!compare)} className="disabled:opacity-40">{compare ? '单张查看' : '对比上一张同页快照'}</button></div>
+        <div className="flex items-center justify-between border-b px-3 py-2"><span>只读页面证据</span>{event?.domId && <button onClick={() => { setShowDom(!showDom); setCompare(false) }}>{showDom ? '查看截图' : '查看 DOM 原文'}</button>}<button disabled={showDom || !previous || !event?.snapshotId} onClick={() => setCompare(!compare)} className="disabled:opacity-40">{compare ? '单张查看' : '对比上一张同页快照'}</button></div>
         <div className={`grid min-h-0 flex-1 gap-2 p-3 ${compare ? 'grid-cols-2' : ''}`}>
           {compare && <Snapshot key={previous?.id} runId={runId} artifactId={previous?.snapshotId} />}
-          <Snapshot key={event?.id} runId={runId} artifactId={event?.snapshotId} />
+          <Snapshot key={event?.id} runId={runId} dom={showDom} artifactId={showDom ? event?.domId : event?.snapshotId} />
         </div>
       </div>
       <aside aria-label="证据详情" className={`min-h-0 overflow-auto border-l p-3 ${detailsShown ? '' : 'hidden md:block'}`}>
@@ -122,6 +130,9 @@ export function TracePanel({ runId }: { runId: string }) {
           {event.executionId && <div><dt className="text-muted-foreground">执行标识</dt><dd>{event.executionId}</dd></div>}
           <div><dt className="text-muted-foreground">记录时间</dt><dd>{event.timestamp}</dd></div>
           <div><dt className="text-muted-foreground">内容</dt><dd className="whitespace-pre-wrap">{title(event)}{event.truncated && '（摘要已截断）'}</dd></div>
+          {event.description && <div><dt className="text-muted-foreground">说明</dt><dd>{event.description}</dd></div>}
+          {event.correlation && <div><dt className="text-muted-foreground">业务关联</dt><dd>{event.correlation}</dd></div>}
+          {event.gaps?.map(gap => <div key={gap} className="text-amber-800">{gap}</div>)}
           {event.attribution && <div className="text-muted-foreground">后台页面事件；未推断属于某个节点。</div>}
           {event.executionContext != null && <div><dt className="text-muted-foreground">执行上下文</dt><dd><pre className="whitespace-pre-wrap">{JSON.stringify(event.executionContext, null, 2)}</pre></dd></div>}
         </dl>}

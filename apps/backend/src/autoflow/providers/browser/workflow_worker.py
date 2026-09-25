@@ -179,13 +179,13 @@ async def _run_in_session(
         )
         context.events = sink
         async def attach_trace(session: Any) -> Any:
-            if document.get("traceMode", "standard") != "off" and hasattr(session, "start_trace"):
+            if hasattr(session, "start_trace"):
                 async def save_trace(name: str, content: bytes, mime: str) -> str:
                     writer = sink._artifact_store.writer(run_id=run_id, node_id="__trace__", execution_id=None, purpose="diagnostic")
                     target = await writer.write_bytes(name=name, content=content, mime_type=mime)
                     relative = Path(target).resolve().relative_to(artifact_root.resolve()).as_posix()
                     return artifacts.by_path(relative).artifact_id
-                await session.start_trace(save_trace)
+                await session.start_trace(save_trace, enabled=document.get("traceMode", "standard") != "off")
             return session
         if browser is not None:
             await attach_trace(browser)

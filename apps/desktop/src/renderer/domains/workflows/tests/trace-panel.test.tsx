@@ -64,7 +64,51 @@ it('assistant reads bounded evidence for an explicit run and omits raw content f
     expect(summary.data).toEqual({ runId: 'run-a', runStatus: 'failed', status: 'partial', gaps: ['网页源码未单独采集'], total: 102, traceId: undefined })
     await executeClientAction('query_trace_events', { runId: 'run-a', cursor: 100, executionId: 'exec-2' })
     expect(query).toHaveBeenLastCalledWith('run-a', 100, '', { limit: 20, executionId: 'exec-2', evidenceId: undefined })
+    const domPage = page(); domPage.events[0].domId = 'dom-1'
+    query.mockResolvedValue({ success: true, data: domPage })
+    const content = '<html>recorded DOM</html>'
+    const file = vi.spyOn(workflowApi, 'getRunArtifact').mockResolvedValue({ success: true, data: new Blob([content], { type: 'text/html' }) })
+    const dom = await executeClientAction('read_trace_evidence', { runId: 'run-a', evidenceId: 'a', part: 'dom', offset: 6, limit: 8 })
+    expect(dom.data).toMatchObject({ text: 'recorded', nextOffset: 14, totalCharacters: content.length })
+    expect(file).toHaveBeenCalledWith('run-a', 'dom-1')
+    expect((await executeClientAction('read_trace_evidence', { runId: 'run-a', evidenceId: 'a', part: 'dom', limit: 8001 })).success).toBe(false)
     query.mockResolvedValue({ success: true, data: { ...page(), events: [] } })
     expect((await executeClientAction('read_trace_evidence', { runId: 'run-a', evidenceId: 'other' })).success).toBe(false)
   } finally { state.mockRestore() }
+})
+
+it('diagnostic node forms expose independent capture choices and exact marker references', async () => {
+  const { DiagnosticConfig } = await import('../components/config-panels/DiagnosticConfig')
+  const { getModuleConfigDefaults, getModuleAllDefaultVars } = await import('../lib/moduleDefaultVars')
+  const { moduleTypeLabels } = await import('../editor-store')
+  const change = vi.fn()
+  for (const type of ['trace_mark', 'capture_diagnostics', 'save_trace_segment'] as const) {
+    const defaults = getModuleConfigDefaults(type)
+    expect(defaults.variableName).toBe(getModuleAllDefaultVars(type).variableName)
+    const view = render(<DiagnosticConfig data={{ moduleType: type, label: moduleTypeLabels[type], ...defaults }} onChange={change} />)
+    expect((screen.getByLabelText('诊断名称') as HTMLInputElement).value).toBeTruthy()
+    if (type === 'capture_diagnostics') {
+      fireEvent.click(screen.getByRole('checkbox', { name: '只读 DOM 文档' }))
+      expect(change).toHaveBeenLastCalledWith('includeDom', false)
+      expect(screen.getByText(/截图始终为标签页视口/)).toBeTruthy()
+    }
+    if (type === 'save_trace_segment') {
+      fireEvent.change(screen.getByLabelText('起始标记 ID（可选）'), { target: { value: '{trace_marker[id]}' } })
+      expect(change).toHaveBeenLastCalledWith('startMarker', '{trace_marker[id]}')
+    }
+    view.unmount()
+  }
+})
+
+
+it('renders captured DOM as inert text rather than an executable page', async () => {
+  const data = page(); data.events[0].domId = 'dom-1'
+  vi.spyOn(workflowApi, 'getRunTrace').mockResolvedValue({ success: true, data })
+  vi.spyOn(workflowApi, 'getRunArtifact').mockResolvedValue({ success: true, data: new Blob(['<script>throw Error("untrusted")</script><h1>Recorded</h1>'], { type: 'text/html' }) })
+  render(<TracePanel runId="run-a" />)
+  fireEvent.click(await screen.findByRole('button', { name: '查看 DOM 原文' }))
+  const preview = await screen.findByLabelText('只读 DOM 原文')
+  expect(preview.textContent).toContain('<script>')
+  expect(preview.querySelector('script')).toBeNull()
+  expect(preview.querySelector('h1')).toBeNull()
 })

@@ -18,7 +18,7 @@ from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Command, interrupt
 
-from autoflow.domain.workflows.scope import APPROVED_NODE_TYPES
+from autoflow.domain.workflows.scope import APPROVED_NODE_TYPES, DIAGNOSTIC_NODE_TYPES
 
 
 @dataclass(frozen=True, slots=True)
@@ -237,7 +237,7 @@ def _validate_tool_call(call: AssistantToolCall) -> str | None:
         replacement = payload.get("new_type")
         if isinstance(replacement, str):
             node_types.append(replacement)
-    excluded = sorted({item for item in node_types if item not in APPROVED_NODE_TYPES})
+    excluded = sorted({item for item in node_types if item not in APPROVED_NODE_TYPES | DIAGNOSTIC_NODE_TYPES})
     if excluded:
         return f"助手请求包含未批准的节点类型: {', '.join(excluded)}"
     return None

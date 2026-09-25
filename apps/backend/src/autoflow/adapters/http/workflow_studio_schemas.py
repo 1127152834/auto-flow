@@ -1177,10 +1177,14 @@ class StudioProjectRunAssetPage(ApiModel):
 
 class StudioTraceEvent(ApiModel):
     id: str
-    kind: Literal['execution', 'network', 'console', 'exception', 'page-closed']
+    kind: Literal['execution', 'network', 'console', 'exception', 'page-closed', 'mark', 'diagnostic']
     time_ms: int = Field(alias='timeMs', ge=0)
     timestamp: str
     node_id: str | None = Field(default=None, alias='nodeId')
+    description: str | None = None
+    correlation: str | None = None
+    dom_id: str | None = Field(default=None, alias='domId')
+    gaps: list[str] = Field(default_factory=list)
     node_label: str | None = Field(default=None, alias='nodeLabel')
     execution_id: str | None = Field(default=None, alias='executionId')
     execution_context: JsonValue = Field(default=None, alias='executionContext')

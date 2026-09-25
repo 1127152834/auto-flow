@@ -430,6 +430,9 @@ export const moduleTypeLabels: Record<ModuleType, string> = {
   get_child_elements: '获取子元素',
   get_sibling_elements: '获取兄弟元素',
   // 数据处理
+  trace_mark: '追踪标记',
+  capture_diagnostics: '采集诊断快照',
+  save_trace_segment: '保存追踪片段',
   project_data: '项目数据',
   project_end: '结束并保留环境',
   project_manual: '人工处理',

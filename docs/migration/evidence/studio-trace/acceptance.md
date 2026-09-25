@@ -22,7 +22,7 @@
 | 构建入口 | 完整 main/preload/renderer 构建后，退出应用，用 file HTML 入口重启；主窗口进入 Studio，旧 Trace/PNG 恢复，节点名称来自运行快照；[截图](electron-built-history.png) |
 | 工程检查 | TypeScript、定向 ESLint、Ruff、定向 mypy、OpenAPI check、git diff --check、main/preload/renderer build 通过；构建保留已有大 chunk/混合导入告警 |
 
-后端真实专项最终 4 passed（其中 3 项使用实际浏览器），见 JUnit；前端专项 4 passed。回归跳过项未计作通过。
+后端真实专项最终 5 passed（其中 3 项使用实际浏览器），见 JUnit；前端 Trace 专项 6 passed；加节点范围测试共 9 passed。回归跳过项未计作通过。
 
 运行方式（仓库根目录）：
 ```sh
@@ -39,3 +39,14 @@ npm run build
 设计规格第 8 节列出的增强能力仍未完成；此切片不代表“所有行为、所有 JS”均已采集。结构化索引在关闭后读取，没有实时/崩溃恢复承诺；多会话目前明确提示仅显示最后归档会话。ZIP 为原始本地页面证据，不承诺内容已完全脱敏，只有主动下载，助手不会自动上传 ZIP。
 
 实机：macOS 当前主机通过上述项目；Windows、macOS 其他架构、PyInstaller 与正式安装包未验收。项目任务 worker 尚未接入，不能从独立 Studio 路径推断已通过。模型的真实调用和批准/拒绝全矩阵尚未验收。
+
+## 同轮诊断节点追加验收
+
+- 真实 worker 用例扩展为打开、提取、标记、快照、保存片段五节点：三节点全部 node_complete success；PNG/DOM 引用均存在、组件无缺失；片段首项为选定标记，包含快照事件、不含之前打开网页事件；全程原生 ZIP 仍生成。
+- 关闭追踪时保存片段明确 TRACE_NOT_ENABLED；跨会话/不存在标记明确报错；敏感关联值不原文写入标记。
+- 前端共享默认值和三个表单测试；冻结源目录仍严格 213 个，不恢复排除项。界面 219 = 原 213 + 项目 3 + 诊断 3。
+- 真实 Electron：画布快捷菜单加入标记、填写参数与变量、手动保存、F5 后日志显示实际节点成功。快照节点入口、默认变量 diagnostic_evidence、DOM/截图/控制台三项开关及保存验证；[原生可访问树](electron-diagnostic-config.txt)。没有调用 Store 或内部页面函数模拟操作。
+- DOM 页面内容按文本渲染，不建立 HTML 元素；助手 DOM 分段读取、8,000 字符上限、错误 ID 和缺失原文均有组件/工具合同测试。无模型真实调用证据。
+- 新节点最终完整 UI 连线重放、项目任务执行路径、跨框架快照、独立可移植片段仍待验收，不能从 worker 测试推定通过。
+
+最终相关回归：LangGraph 单元、助手合同、助手 service 与 worker 协议合计 47 passed；与前述 23 项有重叠，不累计成独立通过数量。最终 TypeScript、定向 ESLint/Ruff/mypy、OpenAPI 和 main/preload/renderer 构建均通过。三个诊断节点之后的构建成功，构建 HTML 原生历史恢复证据属于前一切片，未冒用为新增三节点完整端到端证据。临时应用正常退出，测试 userData 和下载文件已清理，未替换用户主应用。

@@ -1,8 +1,9 @@
+import { diagnosticModuleTypes } from '../lib/moduleCatalog'
 import { expect, it } from 'vitest'
 import { getAllAvailableModules, moduleCategories } from '../components/ModuleSidebar'
 
 it('keeps the approved 213-node scope and only approved notification channels', () => {
-  const modules = getAllAvailableModules().filter(module => !module.isCustom && !['project_data', 'project_end', 'project_manual'].includes(module.type))
+  const modules = getAllAvailableModules().filter(module => !module.isCustom && !diagnosticModuleTypes.includes(module.type) && !['project_data', 'project_end', 'project_manual'].includes(module.type))
   const types = modules.map(module => module.type)
   expect(types).toHaveLength(213)
   expect(new Set(types).size).toBe(213)
@@ -22,4 +23,8 @@ it('keeps the approved 213-node scope and only approved notification channels', 
 
 it('exposes the AutoFlow project extension alongside the frozen source catalog', () => {
   expect(getAllAvailableModules().filter(module => ['project_data', 'project_manual', 'project_end'].includes(module.type)).map(module => module.type)).toEqual(['project_data', 'project_manual', 'project_end'])
+})
+
+it('exposes only the three approved diagnostic extensions', () => {
+  expect(getAllAvailableModules().filter(module => diagnosticModuleTypes.includes(module.type)).map(module => module.type)).toEqual(['trace_mark', 'capture_diagnostics', 'save_trace_segment'])
 })

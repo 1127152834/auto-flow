@@ -326,10 +326,13 @@ export const workflowApi = {
     return result
   },
   getRunArtifact: async (runId: string, artifactId: string): Promise<ApiResponse<Blob>> => {
+    const connection = getStudioTransportRevision()
     try {
       const response = await studioFetch(scopeStudioUrl(`${getApiBase()}/workflow-runs/${encodeURIComponent(runId)}/artifacts/${encodeURIComponent(artifactId)}`))
       if (!response.ok) return { success: false, error: `证据读取失败：HTTP ${response.status}` }
-      return { success: true, data: await response.blob() }
+      const data = await response.blob()
+      if (connection !== getStudioTransportRevision()) return { success: false, error: '工作区连接已变化，请重新读取证据' }
+      return { success: true, data }
     } catch (error) { return { success: false, error: String(error) } }
   },
   getRunResults: async (runId:string,cursor=0,limit=100,throughSequence?:number) => {

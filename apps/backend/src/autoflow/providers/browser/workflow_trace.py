@@ -25,8 +25,9 @@ class WorkflowTrace:
     MAX_SNAPSHOTS = 100
     MAX_ARCHIVE = 64 * 1024 * 1024
 
-    def __init__(self, context: Any, save: SaveEvidence) -> None:
+    def __init__(self, context: Any, save: SaveEvidence, *, enabled: bool = True) -> None:
         self.context, self.save = context, save
+        self.enabled = enabled
         self.identity = uuid4().hex
         self.started = monotonic()
         self.events: list[dict[str, Any]] = []
@@ -63,10 +64,11 @@ class WorkflowTrace:
             return self.pages[identity]
         page_id = f"page-{len(self.pages)+1}"
         self.pages[identity] = page_id
-        task = asyncio.create_task(self._observe_page(page, page_id))
-        self.page_tasks.add(task)
-        task.add_done_callback(self.page_tasks.discard)
-        self._listen(page, "close", lambda *_: self._record("page-closed", pageId=page_id))
+        if self.enabled:
+            task = asyncio.create_task(self._observe_page(page, page_id))
+            self.page_tasks.add(task)
+            task.add_done_callback(self.page_tasks.discard)
+            self._listen(page, "close", lambda *_: self._record("page-closed", pageId=page_id))
         return page_id
 
     async def _observe_page(self, page: Any, page_id: str) -> None:
@@ -102,6 +104,9 @@ class WorkflowTrace:
                      attribution="page-background")
 
     async def start(self) -> None:
+        if not self.enabled:
+            self.gaps = {'本次未开启全程追踪，仅保留显式诊断节点证据'}
+            return
         try:
             async with asyncio.timeout(3):
                 await self.context.tracing.start(screenshots=True, snapshots=True, sources=False)
@@ -126,6 +131,8 @@ class WorkflowTrace:
             self.gaps.add("浏览器追踪启动失败")
 
     async def execution(self, event: Mapping[str, Any], session: Any) -> None:
+        if not self.enabled:
+            return
         if event.get("type") not in {"execution:node_start", "execution:node_complete"}:
             return
         row = self._record("execution", nodeId=event.get("nodeId"),
@@ -149,6 +156,57 @@ class WorkflowTrace:
         except Exception:  # noqa: BLE001 -- no automatic retry of the browser action.
             row["snapshotMissing"] = True
             self.gaps.add("部分节点页面快照不可用或超过 2 秒采集预算")
+
+    async def collect(self, kind: str, config: dict[str, Any], metadata: dict[str, Any], session: Any) -> dict[str, Any]:
+        if self.closed:
+            raise ValueError("TRACE_CLOSED: 追踪已经关闭")
+        if kind == 'save_trace_segment':
+            if not self.enabled:
+                raise ValueError('TRACE_NOT_ENABLED: 本次未开启全程追踪')
+            marker = config['startMarker']
+            start = next((i for i, row in enumerate(self.events) if row['id'] == marker and row['kind'] == 'mark'), None) if marker else 0
+            if start is None:
+                raise ValueError('startMarker: 找不到当前会话中的标记实例，请引用标记输出的 id')
+            segment_id = uuid4().hex
+            payload = {'schemaVersion': 1, 'traceId': self.identity, 'name': config['diagnosticName'],
+                       'events': self.events[start:], 'gaps': sorted(self.gaps),
+                       'format': 'structured-evidence', 'localOnly': True, **metadata}
+            artifact_id = await self.save(f'trace/{self.identity}/segment-{segment_id}.json',
+                                         json.dumps(payload, ensure_ascii=False).encode(), 'application/json')
+            return {'traceId': self.identity, 'artifactId': artifact_id, 'eventCount': len(payload['events']),
+                    'format': 'structured-evidence', 'gaps': sorted(self.gaps)}
+        if kind not in {'trace_mark', 'capture_diagnostics'}:
+            raise ValueError('TRACE_ACTION_INVALID')
+        row = self._record('mark' if kind == 'trace_mark' else 'diagnostic', message=config['diagnosticName'],
+                           description=config['description'], correlation=config['correlation'], **metadata)
+        if row is None:
+            raise ValueError('TRACE_CAPACITY_REACHED: 无法继续登记诊断证据')
+        if kind == 'trace_mark':
+            return {'id': row['id'], 'traceId': self.identity}
+        page = session.active_page() if config['target'] == 'frame' else session.current_page()
+        row['pageId'] = self._page(session.current_page()._raw)
+        result: dict[str, Any] = {'id': row['id'], 'traceId': self.identity, 'target': config['target'], 'gaps': []}
+        for key, mime in [('includeScreenshot', 'image/png'), ('includeDom', 'text/html')]:
+            if not config[key]:
+                continue
+            try:
+                async with asyncio.timeout(3):
+                    # Screenshots are the top-level viewport even when the DOM target is a frame.
+                    content = await session.current_page().screenshot() if key == 'includeScreenshot' else (await page.content()).encode()
+                    if len(content) > 8 * 1024 * 1024:
+                        raise ValueError('超过 8 MiB')
+                    suffix = 'png' if key == 'includeScreenshot' else 'html'
+                    artifact = await self.save(f'trace/{self.identity}/diagnostic-{uuid4().hex}.{suffix}', content, mime)
+                    row['snapshotId' if key == 'includeScreenshot' else 'domId'] = artifact
+                    result['snapshotId' if key == 'includeScreenshot' else 'domId'] = artifact
+            except Exception:  # noqa: BLE001 -- report each missing component, no silent substitution.
+                result['gaps'].append(f'{key}: 采集失败、超时或超过 8 MiB')
+        if config['includeConsole']:
+            if not self.enabled:
+                result['gaps'].append('includeConsole: 本次未开启全程追踪，没有历史控制台证据')
+            result['consoleEvidenceIds'] = [item['id'] for item in self.events if item['kind'] in {'console', 'exception'} and item.get('pageId') == row['pageId']][-100:]
+        row['gaps'] = result['gaps']
+        return result
 
     async def finish(self) -> None:
         if self.closed:

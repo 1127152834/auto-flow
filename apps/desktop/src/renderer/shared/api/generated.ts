@@ -13506,13 +13506,21 @@ export type components = {
              * Kind
              * @enum {string}
              */
-            kind: "execution" | "network" | "console" | "exception" | "page-closed";
+            kind: "execution" | "network" | "console" | "exception" | "page-closed" | "mark" | "diagnostic";
             /** Timems */
             timeMs: number;
             /** Timestamp */
             timestamp: string;
             /** Nodeid */
             nodeId?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Correlation */
+            correlation?: string | null;
+            /** Domid */
+            domId?: string | null;
+            /** Gaps */
+            gaps?: string[];
             /** Nodelabel */
             nodeLabel?: string | null;
             /** Executionid */
@@ -29512,7 +29520,7 @@ export interface operations {
             query?: {
                 cursor?: number;
                 limit?: number;
-                kind?: ("execution" | "network" | "console" | "exception" | "page-closed") | null;
+                kind?: ("execution" | "network" | "console" | "exception" | "page-closed" | "mark" | "diagnostic") | null;
                 executionId?: string | null;
                 evidenceId?: string | null;
                 projectId?: string | null;

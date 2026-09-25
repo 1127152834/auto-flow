@@ -4,6 +4,9 @@ from typing import Any
 # Project tasks reuse the approved browser bridge and pure-data executors.
 # Families with additional resource ports stay gated until those ports are wired.
 _RUNNABLE_MODULES = (
+    ("trace_mark", "追踪标记"),
+    ("capture_diagnostics", "采集诊断快照"),
+    ("save_trace_segment", "保存追踪片段"),
     ("condition", "条件判断"),
     ("loop", "循环"),
     ("foreach", "遍历列表"),

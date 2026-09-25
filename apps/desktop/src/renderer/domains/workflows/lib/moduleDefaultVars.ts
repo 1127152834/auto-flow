@@ -384,6 +384,9 @@ export const MODULE_DEFAULT_VARS: Record<string, Record<string, string>> = {
   qq_send_image: { resultVariable: 'qq_img_result' },
   qq_send_message: { resultVariable: 'qq_msg_result' },
   random_number: { variableName: 'random_num' },
+  trace_mark: { variableName: 'trace_marker' },
+  capture_diagnostics: { variableName: 'diagnostic_evidence' },
+  save_trace_segment: { variableName: 'trace_segment' },
   screenshot: { variableName: 'screenshot_path' },
   screenshot_screen: { variableName: 'screen_path' },
   set_variable: { variableName: 'my_var' },
@@ -503,6 +506,7 @@ export function collectNodeVarNames(moduleType: string, data?: Record<string, un
 }
 
 /** Persist the displayed Sitemap choice on creation; legacy documents keep source defaults. */
-export function getModuleConfigDefaults(type: string): { ignoreSitemap?: boolean } {
+export function getModuleConfigDefaults(type: string): Record<string, unknown> {
+  if (type === 'trace_mark' || type === 'capture_diagnostics' || type === 'save_trace_segment') return { ...getModuleAllDefaultVars(type), diagnosticName: { trace_mark: '追踪标记', capture_diagnostics: '诊断快照', save_trace_segment: '追踪片段' }[type], target: 'page', includeScreenshot: true, includeDom: true, includeConsole: true }
   return type === 'firecrawl_map' || type === 'firecrawl_crawl' ? { ignoreSitemap: false } : {}
 }

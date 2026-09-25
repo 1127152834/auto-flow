@@ -8,6 +8,9 @@ export interface Position {
 
 // 模块类型
 export type ModuleType =
+  | 'trace_mark'
+  | 'capture_diagnostics'
+  | 'save_trace_segment'
   | 'project_data'
   | 'project_end'
   | 'project_manual'

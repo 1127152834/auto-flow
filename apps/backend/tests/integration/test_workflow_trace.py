@@ -137,6 +137,16 @@ async def test_real_worker_flushes_trace_before_process_cleanup(tmp_path, monkey
         {'id': 'open', 'data': {'moduleType': 'open_page', 'config': {'url': 'data:text/html,<h1>Trace worker</h1>', 'openMode': 'current_tab'}}},
         {'id': 'next', 'data': {'moduleType': 'wait_element' if stop_early else 'get_element_info', 'config': {'selector': '#missing' if stop_early else 'h1', 'attribute': 'text', 'variableName': 'value', 'timeout': 60}}},
     ], 'edges': [{'id': 'e', 'source': 'open', 'target': 'next'}], 'variables': []}
+    if not stop_early:
+        previous = 'next'
+        for node_id, module_type, extra in [
+            ('mark', 'trace_mark', {'variableName': 'marker'}),
+            ('capture', 'capture_diagnostics', {'variableName': 'diagnostic'}),
+            ('segment', 'save_trace_segment', {'startMarker': '{marker[id]}', 'variableName': 'segment'}),
+        ]:
+            document['nodes'].append({'id': node_id, 'data': {'moduleType': module_type, 'config': {'diagnosticName': node_id, **extra}}})
+            document['edges'].append({'id': node_id, 'source': previous, 'target': node_id})
+            previous = node_id
     payload = {**config, 'runId': 'trace-worker', 'workflowId': 'flow', 'profileId': 'test-profile', 'artifactRoot': str(tmp_path / 'artifacts'), 'requiresBrowser': True, 'document': document}
     try:
         await manager.start('trace-worker', 'test-profile', Path(executable), payload)
@@ -155,5 +165,32 @@ async def test_real_worker_flushes_trace_before_process_cleanup(tmp_path, monkey
         assert manifest['archiveId'], manifest
         assert any(event.get('nodeId') == 'open' and event.get('snapshotId') for event in manifest['events'])
         assert all(event.get('executionId') for event in manifest['events'] if event['kind'] == 'execution')
+        if not stop_early:
+            for node_id in ('mark', 'capture', 'segment'):
+                assert any(event.get('type') == 'execution:node_complete' and event.get('nodeId') == node_id and event.get('success') for event in events), events
+            diagnostic = next(event for event in manifest['events'] if event['kind'] == 'diagnostic')
+            assert diagnostic['snapshotId'] and diagnostic['domId'] and not diagnostic['gaps']
+            segment_artifact = next(event for event in events if event.get('type') == 'artifact:registered' and '/segment-' in event.get('relativePath', ''))
+            segment = json.loads((tmp_path / 'artifacts' / segment_artifact['relativePath']).read_bytes())
+            assert segment['events'][0]['kind'] == 'mark'
+            assert any(event['kind'] == 'diagnostic' for event in segment['events'])
+            assert not any(event.get('nodeId') == 'open' for event in segment['events'])
     finally:
         await manager.stop('trace-worker')
+
+
+@pytest.mark.asyncio
+async def test_diagnostic_marker_sensitivity_and_disabled_or_missing_segment():
+    from autoflow.application.workflows.executors.diagnostics import TraceMarkExecutor
+    from autoflow.domain.workflows.execution import ExecutionContext
+    context = ExecutionContext(variables={'secret': 'not-for-evidence'}, sensitive_variables={'secret'})
+    result = await TraceMarkExecutor().execute({'diagnosticName': '标记', 'correlation': '{secret}'}, context)
+    assert result.success and result.data['correlation'] == '[敏感值]'
+    assert not (await TraceMarkExecutor().execute({'diagnosticName': ''}, context)).success
+    trace = WorkflowTrace(SimpleNamespace(), AsyncMock(return_value='artifact'), enabled=False)
+    await trace.start()
+    with pytest.raises(ValueError, match='TRACE_NOT_ENABLED'):
+        await trace.collect('save_trace_segment', {'startMarker': '', 'diagnosticName': '片段'}, {}, None)
+    trace.enabled = True
+    with pytest.raises(ValueError, match='startMarker'):
+        await trace.collect('save_trace_segment', {'startMarker': 'other-trace:1', 'diagnosticName': '片段'}, {}, None)

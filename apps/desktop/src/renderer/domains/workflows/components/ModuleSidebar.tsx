@@ -233,6 +233,9 @@ const moduleIcons: Record<ModuleType, React.ElementType> = {
   switch_tab: Layers,
   // 数据提取
   get_element_info: Search,
+  trace_mark: Search,
+  capture_diagnostics: Camera,
+  save_trace_segment: Download,
   screenshot: Camera,
   save_image: ImageDown,
   download_file: Download,
@@ -1060,6 +1063,9 @@ const moduleKeywords: Record<ModuleType, string[]> = {
   get_sibling_elements: ['兄弟元素', '同级', '获取', '列表', 'sibling', 'elements', '兄弟节点'],
   download_file: ['下载', '文件', 'download', 'file'],
   save_image: ['保存', '图片', 'save', 'image'],
+  trace_mark: ['追踪', '标记', 'trace', 'mark'],
+  capture_diagnostics: ['诊断', '快照', 'DOM', 'trace'],
+  save_trace_segment: ['追踪', '片段', 'trace', 'segment'],
   screenshot: ['截图', '网页', '网页截图', 'screenshot', '快照', '页面'],
   read_excel: ['读取', 'excel', '表格', 'xlsx', 'xls', '数据', '文件', '资产'],
   // Excel 自动化（openpyxl）

@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from typing import Any
 
 # AutoFlow extensions are separate from the frozen WebRPA source catalog.
+DIAGNOSTIC_NODE_TYPES = frozenset({'trace_mark', 'capture_diagnostics', 'save_trace_segment'})
+
 PROJECT_NODE_TYPES = frozenset({'project_data', 'project_end', 'project_manual'})
 
 APPROVED_NODE_TYPES: frozenset[str] = frozenset(
@@ -380,7 +382,7 @@ def validate_workflow_scope(
                 if module is not None:
                     visit(_module_nodes(module), f"customModules.{module_id}.nodes")
                 continue
-            if node_type not in APPROVED_NODE_TYPES | PROJECT_NODE_TYPES:
+            if node_type not in APPROVED_NODE_TYPES | PROJECT_NODE_TYPES | DIAGNOSTIC_NODE_TYPES:
                 issues.append(
                     WorkflowScopeIssue(
                         node_id=node_id,

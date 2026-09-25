@@ -664,10 +664,15 @@ class CloakBrowserWorkflowSession:
             if watch.listener is not None:
                 self._context.remove_listener("page", watch.listener)
 
-    async def start_trace(self, save: Any) -> None:
+    async def collect_diagnostic(self, kind: str, config: dict[str, Any], metadata: dict[str, Any]) -> dict[str, Any]:
+        if self.trace is None:
+            raise ValueError("TRACE_NOT_ENABLED: 本次浏览器未开启追踪")
+        return await self.trace.collect(kind, config, metadata, self)
+
+    async def start_trace(self, save: Any, *, enabled: bool = True) -> None:
         from .workflow_trace import WorkflowTrace
         if self.trace is None:
-            self.trace = WorkflowTrace(self._context, save)
+            self.trace = WorkflowTrace(self._context, save, enabled=enabled)
             await self.trace.start()
 
     async def close(self) -> None:

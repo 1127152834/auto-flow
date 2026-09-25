@@ -669,7 +669,7 @@ def workflow_runs_router(
         run_id: str,
         cursor: int = Query(default=0, ge=0),
         limit: int = Query(default=100, ge=1, le=200),
-        kind: Literal['execution', 'network', 'console', 'exception', 'page-closed'] | None = None,
+        kind: Literal['execution', 'network', 'console', 'exception', 'page-closed', 'mark', 'diagnostic'] | None = None,
         execution_id: str | None = Query(default=None, alias='executionId', max_length=200),
         evidence_id: str | None = Query(default=None, alias='evidenceId', max_length=200),
     ) -> StudioTracePage:
