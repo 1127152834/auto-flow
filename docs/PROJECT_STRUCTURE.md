@@ -480,3 +480,7 @@ PM4 QA 在 `tests/qa/pm4_*` 与 `scripts/qa-project-management-pm4.mjs` 注入�
 `application/proxies/{usage,workflow}.py` 在现有远程控制服务之上提供sidecar使用登记、运行身份绑定和结构化结果；`infrastructure/process/proxy_worker_requests.py` 复用Studio/项目worker私有管道，长操作不阻塞控制消息。`application/workflows/executors/proxy_control.py` 统一查询、IP/地点有限重试和结果变量，`providers/browser/proxy_relay.py` 在保持入口与浏览器状态时重建出口连接。
 
 Studio共享配置位于 `renderer/domains/workflows/components/config-panels/ProxyControlConfig.tsx`，目录读取仍使用既有sidecar HTTP；`ProxyRetryCountdown` 显示配置的重试等待。未新增数据库表或调度系统。使用与验证边界见 `docs/workflow-proxy-control.md`。
+
+## 本地数据库历史兼容修复（2026-09-26，confirmed）
+
+当前唯一迁移头为 `0023_merge_studio_android`。从已存在的集成提交 `1bc6b24d` 原样恢复 `pm09_shared_sheet_identity`、`pm10_shared_sheet_cursors`、`am01_management_operations` 及 `0020_merge_android_pm9`、`0022_merge_studio_pm10`、`0023_merge_studio_android`，使当前分支识别已由集成版本升级的工作区；不伪造数据库版本、不重写已有迁移。来源及验证见 `.ai/sessions/2026-09-26-sidecar-migration-history-repair.md`。
