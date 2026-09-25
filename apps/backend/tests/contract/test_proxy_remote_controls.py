@@ -6,8 +6,6 @@ from dataclasses import replace
 from uuid import uuid4
 
 import pytest
-from fastapi.testclient import TestClient
-
 from autoflow.bootstrap import proxies as composition
 from autoflow.bootstrap.app import create_app
 from autoflow.bootstrap.config import Settings
@@ -15,6 +13,7 @@ from autoflow.domain.proxies.errors import ProviderUnavailableError
 from autoflow.domain.proxies.models import Capability, ProviderPage, ProviderProxy
 from autoflow.domain.proxies.remote import Location, RemoteState, RotationSchedule
 from autoflow.providers.proxy.proxypanel import ProxyPanelHttpError
+from fastapi.testclient import TestClient
 
 
 class MemoryCredentials:
@@ -265,6 +264,26 @@ def test_explicit_rejection_keeps_retry_after(remote):
     assert len(provider.calls) == 1
 
 
+def test_workflow_budget_and_explicit_ready_allow_retry_without_changing_default(remote):
+    client, provider, proxy, service = remote
+    provider.behavior = "unchanged"
+    provider.state = replace(provider.state, rotation_available=True)
+
+    async def perform():
+        operation = service.submit(
+            proxy["id"], "change_ip", {}, proxy["revision"], str(uuid4()),
+            confirmation_seconds=0.05, retry_if_ready=True,
+        )
+        await service._tasks[operation.id]
+        return service.operations.get(operation.id)
+
+    result = client.portal.call(perform)
+    assert result.status == "failed"
+    assert result.error["code"] == "PROXY_IP_UNCHANGED"
+    assert service._budget == 0.12
+    assert len(provider.calls) == 1
+
+
 def test_schedule_save_readback_clear_and_validation(remote):
     client, provider, proxy, _ = remote
     assert (
@@ -390,3 +409,4 @@ def test_database_serializes_concurrent_reservations(remote):
         == "failed"
     )
     assert len(provider.calls) == 1
+

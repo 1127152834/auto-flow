@@ -3,6 +3,7 @@
 import asyncio
 import hashlib
 import json
+import math
 from collections.abc import Callable
 from dataclasses import asdict, replace
 from datetime import UTC, datetime
@@ -32,6 +33,7 @@ from autoflow.domain.proxies.remote import (
 from .connections import ConnectionService
 from .projections import ProjectionService
 from .sync import provider_error
+from .usage import ProxyUsage
 
 
 class ProxyRemoteControls:
@@ -50,6 +52,7 @@ class ProxyRemoteControls:
         self._budget, self._poll = confirmation_seconds, poll_seconds
         self._tasks: dict[str, asyncio.Task] = {}
         self._closing = False
+        self.usage = ProxyUsage()
 
     def _context(self, proxy_id: str, secret_ref: str | None = None):
         with self._uow() as uow:
@@ -99,7 +102,12 @@ class ProxyRemoteControls:
         payload: dict,
         expected_revision: int,
         key: str,
+        *, confirmation_seconds: float | None = None, retry_if_ready: bool = False,
+        owner: str | None = None,
+        is_active: Callable[[], bool] | None = None,
     ) -> RemoteOperation:
+        if confirmation_seconds is not None and (not math.isfinite(confirmation_seconds) or confirmation_seconds <= 0):
+            raise InvalidProxyGroupError("确认时限必须为正有限数值")
         if self._closing:
             raise OperationInProgressError("本地服务正在退出")
         if kind == "save_rotation" and (
@@ -118,6 +126,7 @@ class ProxyRemoteControls:
         proxy, connection, _ = self._context(proxy_id)
         if proxy.revision != expected_revision:
             raise RevisionConflictError("代理已变化，请刷新后重试")
+        self.usage.check(proxy, owner)
         now = datetime.now(UTC)
         operation = RemoteOperation(
             str(uuid4()),
@@ -136,7 +145,9 @@ class ProxyRemoteControls:
         reserved = self.operations.reserve(operation, expected_revision)
         self._same_request(reserved, fingerprint)
         if reserved.id == operation.id:
-            self._start(operation, send=True)
+            if owner is None:
+                self.usage.claim(proxy, None, operation.id)
+            self._start(operation, send=True, budget=confirmation_seconds, retry_if_ready=retry_if_ready, is_active=is_active)
         return reserved
 
     @staticmethod
@@ -145,12 +156,13 @@ class ProxyRemoteControls:
             raise RevisionConflictError("此请求标识已用于不同操作，请刷新后重新提交")
         return operation
 
-    def _start(self, operation: RemoteOperation, *, send: bool):
-        task = asyncio.create_task(self._run(operation, send=send))
+    def _start(self, operation: RemoteOperation, *, send: bool, budget: float | None = None, retry_if_ready: bool = False, is_active: Callable[[], bool] | None = None):
+        task = asyncio.create_task(self._bounded_run(operation, send=send, budget=budget, retry_if_ready=retry_if_ready, is_active=is_active))
         self._tasks[operation.id] = task
         task.add_done_callback(lambda _task: self._tasks.pop(operation.id, None))
+        task.add_done_callback(lambda _task: self.usage.unclaim(operation.id))
 
-    def reconcile(self, operation_id: str) -> RemoteOperation:
+    def reconcile(self, operation_id: str, *, confirmation_seconds: float | None = None, retry_if_ready: bool = False) -> RemoteOperation:
         operation = self.operations.get(operation_id)
         if (
             operation.status == "unknown"
@@ -159,7 +171,7 @@ class ProxyRemoteControls:
         ):
             self._context(operation.target_id, operation.secret_ref)
             self.operations.update(operation.id, "running", before=operation.before)
-            self._start(operation, send=False)
+            self._start(operation, send=False, budget=confirmation_seconds, retry_if_ready=retry_if_ready)
             return self.operations.get(operation.id)
         return operation
 
@@ -179,7 +191,14 @@ class ProxyRemoteControls:
         )
         return self.operations.get(operation_id)
 
-    async def _run(self, operation: RemoteOperation, *, send: bool):
+    async def _bounded_run(self, operation, *, send: bool, budget: float | None, retry_if_ready: bool, is_active: Callable[[], bool] | None = None):
+        try:
+            async with asyncio.timeout(budget if budget is not None else None):
+                await self._run(operation, send=send, budget=budget, retry_if_ready=retry_if_ready, is_active=is_active)
+        except TimeoutError:
+            pass  # _run records whether the command may have been sent.
+
+    async def _run(self, operation: RemoteOperation, *, send: bool, budget: float | None = None, retry_if_ready: bool = False, is_active: Callable[[], bool] | None = None):
         sent = not send
         executing = False
         before = operation.before
@@ -234,6 +253,12 @@ class ProxyRemoteControls:
                         )
                         return
                 self._context(operation.target_id, operation.secret_ref)
+                if is_active is not None and not is_active():
+                    self.operations.update(operation.id, "failed", error={
+                        "code": "PROXY_COMMAND_INTERRUPTED", "message": "运行已停止，未发送切换请求",
+                    })
+                    return
+                before["write_started"] = True
                 self.operations.update(operation.id, "running", before=before)
                 sent = True
                 executing = True
@@ -241,8 +266,10 @@ class ProxyRemoteControls:
                     key, proxy.provider_id, operation.kind, operation.payload
                 )
                 executing = False
-            async with asyncio.timeout(self._budget):
-                await self._confirm(operation, before)
+                before["acknowledged"] = True
+                self.operations.update(operation.id, "running", before=before)
+            async with asyncio.timeout(budget if budget is not None else self._budget):
+                await self._confirm(operation, before, budget=budget, retry_if_ready=retry_if_ready)
         except asyncio.CancelledError:
             self.operations.update(
                 operation.id,
@@ -291,8 +318,8 @@ class ProxyRemoteControls:
                 },
             )
 
-    async def _confirm(self, operation: RemoteOperation, before: dict):
-        deadline = asyncio.get_running_loop().time() + self._budget
+    async def _confirm(self, operation: RemoteOperation, before: dict, *, budget: float | None = None, retry_if_ready: bool = False):
+        deadline = asyncio.get_running_loop().time() + (budget if budget is not None else self._budget)
         attempt = 0
         while True:
             attempt += 1
@@ -347,6 +374,20 @@ class ProxyRemoteControls:
                     operation.id, "succeeded", resource_revision=revision
                 )
                 return
+            if retry_if_ready and before.get("acknowledged") and state is not None:
+                ready = (
+                    operation.kind == "change_ip" and state.rotation_available is True
+                    and state.rotation_blocked_reason is None
+                ) or (
+                    operation.kind == "relocate"
+                    and state.location_generation > before.get("location_generation", 0)
+                )
+                if ready:
+                    self.operations.update(operation.id, "failed", error={
+                        "code": "PROXY_IP_UNCHANGED" if operation.kind == "change_ip" else "PROXY_LOCATION_MISMATCH",
+                        "message": "供应商已允许继续操作，但未达到切换目标", "outcome_unknown": False,
+                    })
+                    return
             if asyncio.get_running_loop().time() >= deadline:
                 self.operations.update(
                     operation.id,

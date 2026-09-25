@@ -10005,6 +10005,10 @@ export type components = {
              * Format: date-time
              */
             fetched_at: string;
+            /** Rotation Blocked Reason */
+            rotation_blocked_reason?: string | null;
+            /** Retry After Seconds */
+            retry_after_seconds?: number | null;
         };
         /** ResourceReference */
         ResourceReference: {
