@@ -8,7 +8,7 @@ from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID, uuid4
 
-from sqlalchemy import func, select, text
+from sqlalchemy import func, or_, select, text
 from sqlalchemy.orm import Session, sessionmaker
 
 from autoflow.application.project_runs.coordinator import ProjectRunCoordinator
@@ -89,7 +89,7 @@ def _next_candidate_offsets(
 
 
 class ProjectBatchScheduler:
-    """Advance persisted parameter batches through the existing single-capacity core."""
+    """Advance persisted batches through the existing bounded execution core."""
 
     def __init__(
         self,
@@ -299,26 +299,44 @@ class ProjectBatchScheduler:
             return
         if stopping or (failed and not continue_after_failure):
             return
-        if any(task.status != "queued" for task in active):
-            return
-        current = self._core.query_run(active[0].run_id)
-        try:
-            await self._core.dispatch(
-                current.run_id,
-                expected_status_revision=current.status_revision,
-                execution_generation=current.execution_generation,
-            )
-        except WorkflowRuntimeError as error:
-            if error.code in {"WORKFLOW_CAPACITY_FULL", "WORKFLOW_ADMISSION_CLOSED"}:
-                self._set_status(project_id, batch_id, "blocked")
+        queued = [task for task in active if task.status == "queued"]
+        for task in queued:
+            with self._factory() as session:
+                repository = SqlAlchemyProjectRuns(session)
+                row = repository.batch_row(project_id, batch_id)
+                # Recheck after each dispatch; a sibling can finish while dispatch awaits.
+                current_tasks = repository.list_tasks(project_id, batch_id)
+                if not continue_after_failure and any(
+                    item.status in {"failed", "timed_out", "interrupted"}
+                    for item in current_tasks
+                ):
+                    self.wake()
+                    return
+                available = _claim_capacity_available(
+                    session, row, batch_id, max(1, int(getattr(self._core, "capacity", 1)))
+                )
+            if not available:
+                self._set_status(project_id, batch_id, "running" if any(
+                    item.status not in TERMINAL_STATUSES | {"queued"}
+                    for item in current_tasks
+                ) else "blocked")
                 return
-            if error.code in {
-                "RUN_STATUS_CONFLICT",
-                "RUN_NOT_DISPATCHABLE",
-                "EXECUTION_GENERATION_REVOKED",
-            }:
-                return  # Another authoritative core transition won; query on the next tick.
-            raise
+            current = self._core.query_run(task.run_id)
+            try:
+                await self._core.dispatch(
+                    current.run_id,
+                    expected_status_revision=current.status_revision,
+                    execution_generation=current.execution_generation,
+                )
+            except WorkflowRuntimeError as error:
+                if error.code in {"WORKFLOW_CAPACITY_FULL", "WORKFLOW_ADMISSION_CLOSED"}:
+                    self._set_status(project_id, batch_id, "blocked")
+                    return
+                if error.code in {
+                    "RUN_STATUS_CONFLICT", "RUN_NOT_DISPATCHABLE", "EXECUTION_GENERATION_REVOKED",
+                }:
+                    continue
+                raise
         self._set_status(project_id, batch_id, "running")
 
     async def _advance_data(
@@ -374,24 +392,9 @@ class ProjectBatchScheduler:
                 )
             )
             with self._factory() as session:
-                global_active = session.scalar(
-                    select(func.count())
-                    .select_from(WorkflowRunRow)
-                    .where(WorkflowRunRow.status.not_in(TERMINAL_STATUSES))
-                ) or 0
-                automation_active = session.scalar(
-                    select(func.count())
-                    .select_from(ProjectTaskRow)
-                    .join(
-                        ProjectBatchRow,
-                        ProjectBatchRow.id == ProjectTaskRow.batch_id,
-                    )
-                    .join(WorkflowRunRow, WorkflowRunRow.id == ProjectTaskRow.run_id)
-                    .where(
-                        ProjectBatchRow.automation_id == batch.automation_id,
-                        WorkflowRunRow.status.not_in(TERMINAL_STATUSES),
-                    )
-                ) or 0
+                global_active, automation_active, _ = _capacity_counts(
+                    session, batch_id, batch.automation_id
+                )
             core_capacity = max(1, int(getattr(self._core, "capacity", 1)))
             slots = max(
                 0,
@@ -1214,6 +1217,33 @@ class ProjectBatchScheduler:
             raise
 
 
+def _capacity_counts(
+    session: Session, batch_id: str, automation_id: str,
+) -> tuple[int, int, int]:
+    # Parameter batches pre-create their entire queue, without reserving slots.
+    # Data tasks already hold input leases when queued and must keep their slots.
+    counts = session.execute(
+        select(
+            func.count(),
+            func.count().filter(ProjectBatchRow.automation_id == automation_id),
+            func.count().filter(ProjectTaskRow.batch_id == batch_id),
+        )
+        .select_from(WorkflowRunRow)
+        .outerjoin(ProjectTaskRow, ProjectTaskRow.run_id == WorkflowRunRow.id)
+        .outerjoin(ProjectBatchRow, ProjectBatchRow.id == ProjectTaskRow.batch_id)
+        .where(
+            WorkflowRunRow.status.not_in(TERMINAL_STATUSES),
+            or_(
+                WorkflowRunRow.status != "queued",
+                func.json_array_length(
+                    ProjectBatchRow.frozen_request["automation"]["inputPlan"]["inputs"]
+                ) > 0,
+            ),
+        )
+    ).one()
+    return int(counts[0]), int(counts[1]), int(counts[2])
+
+
 def _claim_capacity_available(
     session: Session,
     row: ProjectBatchRow,
@@ -1224,30 +1254,9 @@ def _claim_capacity_available(
     run_policy = row.frozen_request["automation"]["runPolicy"]
     configured_concurrency = int(run_policy.get("concurrency", 1))
     configured_capacity = int(run_policy.get("maxLiveInstances", 1))
-    batch_active = session.scalar(
-        select(func.count())
-        .select_from(ProjectTaskRow)
-        .join(WorkflowRunRow, WorkflowRunRow.id == ProjectTaskRow.run_id)
-        .where(
-            ProjectTaskRow.batch_id == batch_id,
-            WorkflowRunRow.status.not_in(TERMINAL_STATUSES),
-        )
-    ) or 0
-    automation_active = session.scalar(
-        select(func.count())
-        .select_from(ProjectTaskRow)
-        .join(ProjectBatchRow, ProjectBatchRow.id == ProjectTaskRow.batch_id)
-        .join(WorkflowRunRow, WorkflowRunRow.id == ProjectTaskRow.run_id)
-        .where(
-            ProjectBatchRow.automation_id == row.automation_id,
-            WorkflowRunRow.status.not_in(TERMINAL_STATUSES),
-        )
-    ) or 0
-    global_active = session.scalar(
-        select(func.count())
-        .select_from(WorkflowRunRow)
-        .where(WorkflowRunRow.status.not_in(TERMINAL_STATUSES))
-    ) or 0
+    global_active, automation_active, batch_active = _capacity_counts(
+        session, batch_id, row.automation_id
+    )
     return (
         batch_active < request_concurrency
         and batch_active < configured_concurrency

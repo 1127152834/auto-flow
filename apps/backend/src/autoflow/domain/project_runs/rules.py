@@ -67,8 +67,6 @@ def validate_batch_start(
     )
     if type(concurrency) is not int or not 1 <= concurrency <= 100:
         raise _error("concurrency", "必须是 1–100 的整数")
-    if not automation.input_plan.get("inputs") and concurrency != 1:
-        raise _error("concurrency", "参数型运行当前并发数必须为 1")
     environment_override = payload.get("environmentOverride")
     if "environmentOverride" in payload and not isinstance(environment_override, dict):
         raise _error("environmentOverride", "必须是环境策略对象")

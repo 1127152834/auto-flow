@@ -36,10 +36,10 @@ describe('automation aggregate form', () => {
   })
 })
 
-it('allows bounded data concurrency while parameter-only policies remain serial', () => {
+it('allows bounded concurrency with or without data inputs', () => {
   const value = { ...emptyAutomationForm('workflow'), name: '数据运行' }
   value.runPolicy.concurrency = 4; value.runPolicy.maxLiveInstances = 2
-  expect(validateAutomationForm(value)['runPolicy.concurrency']).toBeTruthy()
+  expect(validateAutomationForm(value)).toEqual({})
   value.inputPlan.inputs = [{ inputId: 'input', alias: '资料', tableId: 'table', datasetGeneration: 'generation', mode: 'independent', required: true, fieldBindings: [], filter: { type: 'all', items: [] }, orderBy: [] }]
   expect(validateAutomationForm(value)).toEqual({})
   for (const invalid of [0, 101, 1.5, Infinity]) {

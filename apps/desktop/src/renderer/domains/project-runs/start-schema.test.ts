@@ -32,9 +32,9 @@ it('serializes explicit unlimited only with required data and validates concurre
   expect(toBatchStartRequest({ ...draft, concurrency: '101' }, [], 7, { allowUnlimited: true, dataBatch: true })).toBeNull()
 })
 
-it('keeps parameter-only batch concurrency fixed at one', () => {
+it('accepts manually entered parameter-only concurrency', () => {
   const draft = { ...createBatchStartDraft([]), concurrency: '2' }
-  expect(validateBatchStartDraft(draft, [])).toEqual({ concurrency: '参数型自动化的并发数固定为 1' })
-  expect(toBatchStartRequest(draft, [], 7)).toBeNull()
+  expect(validateBatchStartDraft(draft, [])).toEqual({})
+  expect(toBatchStartRequest(draft, [], 7)).toMatchObject({ concurrency: 2 })
   expect(toBatchStartRequest(draft, [], 7, { dataBatch: true })).toMatchObject({ concurrency: 2 })
 })

@@ -34,12 +34,12 @@ export function RunPolicyEditor({ value, onChange, dataBatch = false, disabled =
   useEffect(() => { setLimits(previous => ({ ...previous, concurrency: String(value.concurrency) })) }, [value.concurrency])
   useEffect(() => { setLimits(previous => ({ ...previous, maxLiveInstances: String(value.maxLiveInstances) })) }, [value.maxLiveInstances])
   useEffect(() => { setLimits({ concurrency: String(value.concurrency), maxLiveInstances: String(value.maxLiveInstances) }) }, [resetKey, dataBatch])
-  const limitErrors = Object.fromEntries((['concurrency', 'maxLiveInstances'] as const).map(key => [key, dataBatch && (!limits[key].trim() || !Number.isInteger(Number(limits[key])) || Number(limits[key]) < 1 || Number(limits[key]) > 100) ? '必须是 1–100 的整数' : errors[key]]))
+  const limitErrors = Object.fromEntries((['concurrency', 'maxLiveInstances'] as const).map(key => [key, (!limits[key].trim() || !Number.isInteger(Number(limits[key])) || Number(limits[key]) < 1 || Number(limits[key]) > 100) ? '必须是 1–100 的整数' : errors[key]]))
   const maxTasks = Number(maxTasksDraft)
   const maxTasksError = maxTasksDraft.trim() === '' || !Number.isInteger(maxTasks) || maxTasks < 1 || maxTasks > 100 ? '最大任务数必须是 1–100 的整数' : errors.maxTasks
   const timeout = Number(timeoutDraft)
   const timeoutError = timeoutDraft.trim() === '' || !Number.isFinite(timeout) || timeout <= 0 || !Number.isFinite(timeout * 60) ? '请输入有限的正数' : errors.automaticExecutionTimeoutSeconds
-  const draftDirty = (dataBatch && (limits.concurrency !== String(value.concurrency) || limits.maxLiveInstances !== String(value.maxLiveInstances))) || maxTasksDraft !== String(value.maxTasks ?? '') || timeoutDraft !== String(value.automaticExecutionTimeoutSeconds / 60)
+  const draftDirty = (limits.concurrency !== String(value.concurrency) || limits.maxLiveInstances !== String(value.maxLiveInstances)) || maxTasksDraft !== String(value.maxTasks ?? '') || timeoutDraft !== String(value.automaticExecutionTimeoutSeconds / 60)
   const draftValid = !maxTasksError && !timeoutError && !Object.values(limitErrors).some(Boolean) && !Object.values(errors).some(Boolean)
   const draftCallback = useRef(onDraftStateChange), lastDraftState = useRef<DraftState | undefined>(undefined)
   useEffect(() => { draftCallback.current = onDraftStateChange }, [onDraftStateChange])
@@ -63,17 +63,14 @@ export function RunPolicyEditor({ value, onChange, dataBatch = false, disabled =
       }} onBlur={() => { if (!maxTasksError) setMaxTasksDraft(String(value.maxTasks ?? '')) }}/>
       {maxTasksError ? <span id={maxTasksErrorId} role="alert" className="text-xs text-danger">{maxTasksError}</span> : <span className="text-xs text-muted">范围 1–100，新建自动化默认 1</span>}
     </label>
-    {dataBatch ? (['concurrency', 'maxLiveInstances'] as const).map(key => <label key={key} className="grid gap-2 text-sm md:grid-cols-[11rem_minmax(0,1fr)] md:items-start [&>:not(:first-child)]:md:col-start-2"><span className="pt-2 font-medium">{key === 'concurrency' ? '请求并发数' : '最大活动实例'}</span>
+    {(['concurrency', 'maxLiveInstances'] as const).map(key => <label key={key} className="grid gap-2 text-sm md:grid-cols-[11rem_minmax(0,1fr)] md:items-start [&>:not(:first-child)]:md:col-start-2"><span className="pt-2 font-medium">{key === 'concurrency' ? '请求并发数' : '最大活动实例'}</span>
       <Input className="max-w-64" inputMode="numeric" aria-label={key === 'concurrency' ? '请求并发数' : '最大活动实例'} value={limits[key]} disabled={disabled} aria-invalid={Boolean(limitErrors[key])} aria-describedby={limitErrors[key] ? `run-policy-${key}-error` : undefined} onChange={event => {
         const draft = event.target.value, parsed = Number(draft)
         setLimits(previous => ({ ...previous, [key]: draft }))
         if (draft.trim() && Number.isInteger(parsed) && parsed >= 1 && parsed <= 100) onChange({ ...value, [key]: parsed })
       }}/>
       {limitErrors[key] ? <span role="alert" id={`run-policy-${key}-error`} className="text-xs text-danger">{limitErrors[key]}</span> : <span className="text-xs text-muted">范围 1–100</span>}
-    </label>) : <>
-    <label className="grid gap-2 text-sm md:grid-cols-[11rem_minmax(0,1fr)] md:items-start [&>:not(:first-child)]:md:col-start-2"><span className="pt-2 font-medium">并发任务数</span><Input className="max-w-64" type="number" aria-label="并发任务数" value={1} disabled/><span className="text-xs text-muted">当前版本按顺序执行</span></label>
-    <label className="grid gap-2 text-sm md:grid-cols-[11rem_minmax(0,1fr)] md:items-start [&>:not(:first-child)]:md:col-start-2"><span className="pt-2 font-medium">最大活动实例</span><Input className="max-w-64" type="number" aria-label="最大活动实例" value={1} disabled/></label>
-    </>}
+    </label>)}
     <label className="grid gap-2 text-sm md:grid-cols-[11rem_minmax(0,1fr)] md:items-center"><span className="font-medium">失败处理</span><span className="flex items-center gap-3">
       <Switch aria-label="任务失败后继续下一个任务" checked={value.continueAfterFailure} disabled={disabled} onCheckedChange={continueAfterFailure => onChange({ ...value, continueAfterFailure })}/>
       任务失败后继续下一个任务</span>
@@ -92,8 +89,8 @@ export function RunPolicyEditor({ value, onChange, dataBatch = false, disabled =
     </div>
     <aside className="overflow-hidden rounded-control border border-line bg-surface text-sm" aria-label="本次运行策略">
       <h4 className="m-0 bg-surface-subtle px-5 py-4 text-base font-semibold">本次运行策略</h4>
-      <ul className="m-0 grid list-none px-5 py-2"><li className="flex items-center gap-3 border-b border-line py-3"><Database size={21} aria-hidden/>最多 {value.maxTasks ?? '—'} 个任务</li><li className="flex items-center gap-3 border-b border-line py-3"><SlidersHorizontal size={21} aria-hidden/>{dataBatch ? `配置并发上限 ${Math.min(value.concurrency, value.maxLiveInstances)}` : '串行执行'}</li><li className="flex items-center gap-3 border-b border-line py-3"><Clock size={21} aria-hidden/>单任务最长 {value.automaticExecutionTimeoutSeconds / 60} 分钟</li><li className="flex items-center gap-3 py-3"><Cube size={21} aria-hidden/>每个任务使用独立临时环境</li></ul>
-      {dataBatch ? <p className="m-0 border-t border-line px-5 py-3 text-xs text-muted">实际并发还受本次请求和执行容量限制</p> : null}
+      <ul className="m-0 grid list-none px-5 py-2"><li className="flex items-center gap-3 border-b border-line py-3"><Database size={21} aria-hidden/>最多 {value.maxTasks ?? '—'} 个任务</li><li className="flex items-center gap-3 border-b border-line py-3"><SlidersHorizontal size={21} aria-hidden/>{`配置并发上限 ${Math.min(value.concurrency, value.maxLiveInstances)}`}</li><li className="flex items-center gap-3 border-b border-line py-3"><Clock size={21} aria-hidden/>单任务最长 {value.automaticExecutionTimeoutSeconds / 60} 分钟</li><li className="flex items-center gap-3 py-3"><Cube size={21} aria-hidden/>每个任务使用独立临时环境</li></ul>
+      <p className="m-0 border-t border-line px-5 py-3 text-xs text-muted">实际并发还受本次请求和执行容量限制</p>
     </aside>
   </section>
 }

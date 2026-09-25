@@ -129,7 +129,9 @@ def test_unknown_and_missing_required_parameters_are_rejected_by_id():
         ("maxTasks", 0),
         ("maxTasks", 101),
         ("maxTasks", True),
-        ("concurrency", 2),
+        ("concurrency", 101),
+        ("concurrency", 0),
+        ("concurrency", 1.5),
         ("concurrency", True),
     ],
 )
@@ -307,3 +309,8 @@ def test_unlimited_start_requires_a_required_data_input(required):
             validate_batch_start(selected, request(maxTasks=None), allow_data_inputs=True)
         assert error.value.code == 'VALIDATION_ERROR'
         assert 'maxTasks' in error.value.details['fields']
+
+
+@pytest.mark.parametrize("concurrency", [1, 2, 100])
+def test_parameter_batch_accepts_bounded_concurrency(concurrency):
+    assert validate_batch_start(automation(), request(concurrency=concurrency)).concurrency == concurrency

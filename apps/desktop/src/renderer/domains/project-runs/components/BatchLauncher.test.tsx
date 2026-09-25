@@ -84,9 +84,10 @@ it.each(['configurationError', 'scanBudgetExceeded', 'ambiguous'])('keeps %s pre
   expect(screen.getByRole('button', { name: '启动 10 个任务' })).toBeDisabled()
   expect(screen.queryByRole('radio', { name: '不限次数' })).not.toBeInTheDocument()
 })
-it('forces legacy parameter-only automations to a disabled concurrency of one', () => {
+it('uses saved parameter concurrency and allows editing before launch', () => {
   render(<BatchLauncher {...props(vi.fn(), { savedAutomation: { ...automation, runPolicy: { ...automation.runPolicy, concurrency: 3 } } })}/>)
-  expect(screen.getByLabelText('请求并发数')).toHaveValue('1')
-  expect(screen.getByLabelText('请求并发数')).toBeDisabled()
-  expect(screen.getByText('参数型自动化按顺序执行，并发数固定为 1')).toBeVisible()
+  expect(screen.getByLabelText('请求并发数')).toHaveValue('3')
+  expect(screen.getByLabelText('请求并发数')).toBeEnabled()
+  fireEvent.change(screen.getByLabelText('请求并发数'), { target: { value: '2' } })
+  expect(screen.getByLabelText('请求并发数')).toHaveValue('2')
 })
