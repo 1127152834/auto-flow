@@ -591,6 +591,9 @@ export const moduleTypeLabels: Record<ModuleType, string> = {
   db_delete: 'MySQL删除数据',
   db_close: 'MySQL关闭连接',
   // 网络请求
+  proxy_change_ip: '切换代理 IP',
+  proxy_change_location: '切换代理地点',
+  proxy_query: '查询代理状态／操作结果',
   api_request: 'HTTP请求',
   send_email: '发送邮件',
   // QQ自动化
@@ -1043,6 +1046,9 @@ export const moduleDefaultTimeouts: Partial<Record<ModuleType, number>> = {
   hover_element: 60,    // 60秒
   input_text: 60,       // 60秒
   get_element_info: 60, // 60秒
+  proxy_change_ip: 0,
+  proxy_change_location: 0,
+  proxy_query: 0,
   wait: 0,                 // 固定等待不需要超时
   wait_element: 60,     // 60秒，等待元素可能需要较长时间
   wait_image: 60,       // 60秒，等待图像可能需要较长时间
@@ -1672,6 +1678,8 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       defaultData = {
         resultVariable: 'js_result',
       }
+    } else if (['proxy_change_ip', 'proxy_change_location', 'proxy_query'].includes(type)) {
+      defaultData = { target: 'current', retryIntervalSeconds: 10, maxAttempts: 5, confirmationTimeoutSeconds: 30, failureMode: 'raise', resultVariable: `${type}_result` }
     } else if (type === 'api_request') {
       // API请求模块默认变量
       defaultData = {

@@ -4,6 +4,9 @@ from typing import Any
 # Project tasks reuse the approved browser bridge and pure-data executors.
 # Families with additional resource ports stay gated until those ports are wired.
 _RUNNABLE_MODULES = (
+    ("proxy_change_ip", "切换代理 IP"),
+    ("proxy_change_location", "切换代理地点"),
+    ("proxy_query", "查询代理状态／操作结果"),
     ("condition", "条件判断"),
     ("loop", "循环"),
     ("foreach", "遍历列表"),

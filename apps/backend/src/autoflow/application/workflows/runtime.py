@@ -134,7 +134,7 @@ class WorkflowRuntime:
                     raw_config = (
                         data.get("config") if isinstance(data, Mapping) else None
                     )
-                    config = dict(raw_config) if isinstance(raw_config, Mapping) else {}
+                    config = dict(raw_config) if isinstance(raw_config, Mapping) else dict(data or {})
                     if executor.requires_browser_for(config):
                         return True
         return False
@@ -322,6 +322,7 @@ class _WorkflowScheduler:
         self, node: WorkflowNode, executor: ModuleExecutor, timing: _NodeTiming
     ) -> ModuleResult:
         execution_id = str(uuid4())
+        self.context.proxy_visit.set((node.id, execution_id))
         node_label = str(node.data.get("label") or node.type)
         execution_context = execution_context_snapshot(self.context)
         variables_before_loop = (
@@ -361,7 +362,7 @@ class _WorkflowScheduler:
         # and the enclosing call's own/nested debug boundary waits.
         timing.started_at = perf_counter()
         result = await _execute_with_cancellation(
-            executor.execute(config, self.context), self.context
+            self._execute_network_guarded(node, executor, config), self.context
         )
         if (
             result.success
@@ -474,6 +475,19 @@ class _WorkflowScheduler:
             },
         )
         return reported_result if self.context.node_uses_sensitive_values else result
+
+    async def _execute_network_guarded(self, node, executor, config):
+        if node.type in {"proxy_change_ip", "proxy_change_location", "proxy_query"} or not executor.requires_browser_for(config):
+            return await executor.execute(config, self.context)
+        active = self.context.proxy_activity
+        if "proxy-switch" in active:
+            return ModuleResult(False, error="PROXY_BUSY")
+        key = str(uuid4())
+        active.add(key)
+        try:
+            return await executor.execute(config, self.context)
+        finally:
+            active.discard(key)
 
     async def _handle_loop(self, loop_node: WorkflowNode) -> None:
         body_nodes = self.graph.get_loop_body_nodes(loop_node.id)

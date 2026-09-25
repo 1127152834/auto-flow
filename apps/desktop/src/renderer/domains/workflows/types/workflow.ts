@@ -206,6 +206,9 @@ export type ModuleType =
   | 'db_delete'
   | 'db_close'
   // 网络请求
+  | 'proxy_change_ip'
+  | 'proxy_change_location'
+  | 'proxy_query'
   | 'api_request'
   | 'send_email'
   // QQ自动化
