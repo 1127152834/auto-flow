@@ -669,10 +669,10 @@ class CloakBrowserWorkflowSession:
             raise ValueError("TRACE_NOT_ENABLED: 本次浏览器未开启追踪")
         return await self.trace.collect(kind, config, metadata, self)
 
-    async def start_trace(self, save: Any, *, enabled: bool = True) -> None:
+    async def start_trace(self, save: Any, *, enabled: bool = True, enhanced: bool = False) -> None:
         from .workflow_trace import WorkflowTrace
         if self.trace is None:
-            self.trace = WorkflowTrace(self._context, save, enabled=enabled)
+            self.trace = WorkflowTrace(self._context, save, enabled=enabled, enhanced=enhanced)
             await self.trace.start()
 
     async def close(self) -> None:

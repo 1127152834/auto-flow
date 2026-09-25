@@ -311,12 +311,13 @@ export const workflowApi = {
   },
   getRunLogs: (runId: string, query: ExecutionLogQuery = {}) =>
     checkedExecutionLogPage(apiRequest<unknown>(`/workflow-runs/${encodeURIComponent(runId)}/logs${executionLogSearch(query)}`), runId),
-  getRunTrace: async (runId: string, cursor = 0, kind = '', options: { limit?: number; executionId?: string; evidenceId?: string } = {}) => {
+  getRunTrace: async (runId: string, cursor = 0, kind = '', options: { limit?: number; executionId?: string; evidenceId?: string; traceId?: string } = {}) => {
     type Page = components['schemas']['StudioTracePage']
     const connection = getStudioTransportRevision()
     const params = new URLSearchParams({ cursor: String(cursor), limit: String(options.limit ?? 100) })
     if (options.executionId) params.set('executionId', options.executionId)
     if (options.evidenceId) params.set('evidenceId', options.evidenceId)
+    if (options.traceId) params.set('traceId', options.traceId)
     if (kind) params.set('kind', kind)
     const result = await apiRequest<Page>(`/workflow-runs/${encodeURIComponent(runId)}/trace?${params}`)
     if (connection !== getStudioTransportRevision()) return { success: false, error: '服务连接已变化，请重新读取 Trace' } as ApiResponse<Page>

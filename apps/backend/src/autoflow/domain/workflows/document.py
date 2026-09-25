@@ -47,6 +47,8 @@ class WorkflowDraft:
     @classmethod
     def from_payload(cls, payload: Mapping[str, Any]) -> WorkflowDraft:
         source = _json_copy(dict(payload))
+        if "traceMode" in source and source["traceMode"] not in ("off", "standard", "enhanced"):
+            raise _problem("TRACE_MODE_INVALID", "追踪模式必须是 off、standard 或 enhanced", "traceMode")
         name = source.pop("name", "未命名工作流")
         if not isinstance(name, str) or not name.strip() or len(name) > 120:
             raise _problem(

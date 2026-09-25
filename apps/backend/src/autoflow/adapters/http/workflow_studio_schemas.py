@@ -1176,8 +1176,14 @@ class StudioProjectRunAssetPage(ApiModel):
 
 
 class StudioTraceEvent(ApiModel):
+    source_id: str | None = Field(default=None, alias='sourceId')
+    source_origin: str | None = Field(default=None, alias='sourceOrigin')
+    source_bytes: int | None = Field(default=None, alias='sourceBytes', ge=0)
+    script_id: str | None = Field(default=None, alias='scriptId')
+    sha256: str | None = None
+    trace_id: str | None = Field(default=None, alias='traceId')
     id: str
-    kind: Literal['execution', 'network', 'console', 'exception', 'page-closed', 'mark', 'diagnostic']
+    kind: Literal['execution', 'network', 'console', 'exception', 'page-closed', 'mark', 'diagnostic', 'source']
     time_ms: int = Field(alias='timeMs', ge=0)
     timestamp: str
     node_id: str | None = Field(default=None, alias='nodeId')
@@ -1204,7 +1210,16 @@ class StudioTraceEvent(ApiModel):
     attribution: str | None = None
 
 
+class StudioTraceSession(ApiModel):
+    trace_id: str = Field(alias='traceId')
+    archive_id: str | None = Field(default=None, alias='archiveId')
+    status: Literal['partial', 'saved']
+    gaps: list[str]
+    event_count: int = Field(alias='eventCount', ge=0)
+
+
 class StudioTracePage(ApiModel):
+    sessions: list[StudioTraceSession] = Field(default_factory=list)
     run_id: str = Field(alias='runId')
     run_status: str = Field(alias='runStatus')
     status: Literal['pending', 'unavailable', 'partial', 'saved']

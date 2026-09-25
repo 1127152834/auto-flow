@@ -4,6 +4,7 @@ import copy
 import hashlib
 import json
 from collections.abc import Iterator, Mapping
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Literal, Protocol
 
@@ -29,6 +30,7 @@ from .workflow_studio_schemas import (
     StudioRunVariableTrackingPage,
     StudioTraceEvent,
     StudioTracePage,
+    StudioTraceSession,
     StudioVariableTrackingCleared,
     StudioVariableTrackingResult,
 )
@@ -669,9 +671,10 @@ def workflow_runs_router(
         run_id: str,
         cursor: int = Query(default=0, ge=0),
         limit: int = Query(default=100, ge=1, le=200),
-        kind: Literal['execution', 'network', 'console', 'exception', 'page-closed', 'mark', 'diagnostic'] | None = None,
+        kind: Literal['execution', 'network', 'console', 'exception', 'page-closed', 'mark', 'diagnostic', 'source'] | None = None,
         execution_id: str | None = Query(default=None, alias='executionId', max_length=200),
         evidence_id: str | None = Query(default=None, alias='evidenceId', max_length=200),
+        trace_id: str | None = Query(default=None, alias='traceId', max_length=200),
     ) -> StudioTracePage:
         from pydantic import ValidationError
 
@@ -680,8 +683,7 @@ def workflow_runs_router(
         )
 
         run = service.get(run_id)
-        manifest = None
-        manifest_count = 0
+        manifests = []
         artifact_cursor = 0
         while True:
             artifacts, next_cursor = service.artifacts(run_id, cursor=artifact_cursor, limit=200)
@@ -689,17 +691,28 @@ def workflow_runs_router(
                 if artifact.purpose == 'diagnostic' and artifact.mime_type == 'application/vnd.autoflow.trace+json':
                     if artifact_root is None:
                         raise WorkflowRunError('ARTIFACT_STORAGE_UNAVAILABLE', '运行产物存储不可用', 503)
-                    manifest = read_trace_manifest(artifact_root, artifact)
-                    manifest_count += 1
+                    manifests.append(read_trace_manifest(artifact_root, artifact))
             if next_cursor is None:
                 break
             artifact_cursor = next_cursor
-        if manifest is None:
+        if not manifests:
             active = run.status in {'starting', 'running', 'pausing', 'paused', 'failed_paused', 'stopping'}
             return StudioTracePage(runId=run_id, runStatus=run.status,
                                    status='pending' if active else 'unavailable', events=[], gaps=[], total=0)
         try:
-            events = [StudioTraceEvent.model_validate(row) for row in manifest['events']]
+            sessions = [StudioTraceSession(traceId=item['traceId'], archiveId=item.get('archiveId'),
+                                           status=item['status'], gaps=item['gaps'], eventCount=len(item['events']))
+                        for item in manifests]
+            selected = [item for item in manifests if trace_id is None or item['traceId'] == trace_id]
+            if not selected:
+                raise WorkflowRunError('TRACE_NOT_FOUND', '该运行中不存在此浏览器追踪会话', 404)
+            events = [StudioTraceEvent.model_validate({**row, 'traceId': item['traceId']})
+                      for item in selected for row in item['events']]
+            # Each browser owns its monotonic clock. Merge by recorded wall time,
+            # retaining per-context order for simultaneous timestamps.
+            events.sort(key=lambda row: datetime.fromisoformat(row.timestamp).timestamp())
+            gaps = sorted({gap for item in selected for gap in item['gaps']})
+            single = selected[0] if len(selected) == 1 else None
             labels = {node['id']: node.get('data', {}).get('label', node['id'])
                       for node in run.document_snapshot.get('nodes', [])}
             for event in events:
@@ -711,13 +724,14 @@ def workflow_runs_router(
             if evidence_id is not None:
                 events = [row for row in events if row.id == evidence_id]
             return StudioTracePage(
-                runId=run_id, runStatus=run.status, status=manifest['status'],
-                traceId=manifest['traceId'], archiveId=manifest.get('archiveId'),
-                gaps=manifest['gaps'] + (["本次运行包含多个浏览器会话；当前面板仅展示最后归档的会话"] if manifest_count > 1 else []),
+                runId=run_id, runStatus=run.status,
+                status='partial' if any(item['status'] == 'partial' for item in selected) else 'saved',
+                traceId=single['traceId'] if single else None, archiveId=single.get('archiveId') if single else None,
+                sessions=sessions, gaps=gaps,
                 events=events[cursor:cursor+limit], total=len(events),
                 nextCursor=cursor+limit if cursor+limit < len(events) else None,
             )
-        except (KeyError, TypeError, ValidationError) as error:
+        except (KeyError, TypeError, ValueError, ValidationError) as error:
             raise WorkflowRunError('TRACE_INDEX_INVALID', 'Trace 索引损坏或格式不受支持', 422) from error
 
     @router.get("/{run_id}/artifacts")

@@ -9,6 +9,7 @@ import asyncio
 import json
 from collections.abc import Awaitable, Callable, Mapping
 from datetime import UTC, datetime
+from hashlib import sha256
 from time import monotonic
 from typing import Any
 from uuid import uuid4
@@ -24,14 +25,25 @@ class WorkflowTrace:
     MAX_EVENTS = 2000
     MAX_SNAPSHOTS = 100
     MAX_ARCHIVE = 64 * 1024 * 1024
+    MAX_SOURCE = 4 * 1024 * 1024
+    MAX_SOURCE_TOTAL = 16 * 1024 * 1024
 
-    def __init__(self, context: Any, save: SaveEvidence, *, enabled: bool = True) -> None:
+    def __init__(self, context: Any, save: SaveEvidence, *, enabled: bool = True, enhanced: bool = False) -> None:
         self.context, self.save = context, save
         self.enabled = enabled
+        self.enhanced = enhanced
         self.identity = uuid4().hex
         self.started = monotonic()
         self.events: list[dict[str, Any]] = []
         self.gaps: set[str] = {"网页 JS 源码未单独采集；不保证 Worker 和动态脚本覆盖"}
+        if enhanced:
+            self.gaps = {'增强采集不等于全部 JS 执行记录；Worker、Service Worker 和独立跨域目标未保证完整覆盖'}
+        self.source_tasks: set[asyncio.Task[Any]] = set()
+        self.source_bytes = 0
+        self.sources: dict[str, str] = {}
+        self.source_lock = asyncio.Lock()
+        self.source_slots = asyncio.Semaphore(4)
+        self.source_count = 0
         self.listeners: list[tuple[Any, str, Any]] = []
         self.pages: dict[int, str] = {}
         self.snapshots = 0
@@ -88,8 +100,63 @@ class WorkflowTrace:
                                  message=text[:4096], truncated=len(text) > 4096)
                 self._listen(cdp, 'Console.messageAdded', console)
                 await cdp.send('Console.enable')
+                if self.enhanced:
+                    self._listen(cdp, 'Debugger.scriptParsed', lambda event: None if event.get('executionContextAuxData', {}).get('isDefault') is False else self._source(
+                        lambda: self._script_source(cdp, event['scriptId']),
+                        page_id, str(event.get('url', '')), 'debugger',
+                        str(event.get('scriptId', '')), event.get('length')))
+                    await cdp.send('Debugger.enable')
+                    await cdp.send('Debugger.setSkipAllPauses', {'skip': True})
+                    # Cloak 145 needs both flags: skipAllPauses alone still stops on debugger statements.
+                    await cdp.send('Debugger.setBreakpointsActive', {'active': False})
         except Exception:  # noqa: BLE001 -- closing pages and unsupported CDP domains.
-            self.gaps.add('部分页面的控制台通道不可用')
+            self.gaps.add('部分页面的控制台或源码通道不可用')
+
+    @staticmethod
+    async def _script_source(cdp: Any, script_id: str) -> bytes:
+        result = await cdp.send('Debugger.getScriptSource', {'scriptId': script_id})
+        return str(result.get('scriptSource', '')).encode()
+
+    def _source(self, read: Callable[[], Awaitable[bytes]], page_id: str | None,
+                url: str, origin: str, script_id: str | None = None, length: Any = None) -> None:
+        from .workflow_session import redact_browser_url
+        if self.closed:
+            return
+        if self.source_count >= 100:
+            self.gaps.add('源码超过 100 条；后续源码未单独采集')
+            return
+        row = self._record('source', pageId=page_id, url=redact_browser_url(url) if url else '',
+                           sourceOrigin=origin, scriptId=script_id, attribution='page-background')
+        if row is None:
+            return
+        self.source_count += 1
+        async def capture() -> None:
+            try:
+                async with self.source_slots, asyncio.timeout(1):
+                    if length is not None and int(length) > self.MAX_SOURCE:
+                        raise ValueError('source too large')
+                    content = await read()
+                    if len(content) > self.MAX_SOURCE:
+                        raise ValueError('source too large')
+                    digest = sha256(content).hexdigest()
+                    async with self.source_lock:
+                        if digest not in self.sources:
+                            if self.source_bytes + len(content) > self.MAX_SOURCE_TOTAL:
+                                raise ValueError('source budget exhausted')
+                            artifact = await self.save(f'trace/{self.identity}/source-{digest}.js', content, 'text/javascript')
+                            self.sources[digest] = artifact
+                            self.source_bytes += len(content)
+                        row.update(sourceId=self.sources[digest], sourceBytes=len(content), sha256=digest)
+            except asyncio.CancelledError:
+                row['gaps'] = ['源码采集在关闭时未完成']
+                self.gaps.add('部分源码在关闭时未完成')
+                raise
+            except Exception:  # noqa: BLE001 -- evidence is optional, never retry webpage actions.
+                row['gaps'] = ['源码不可读取、超时或超过容量限制']
+                self.gaps.add('部分源码不可读取、超时或超过容量限制')
+        task = asyncio.create_task(capture())
+        self.source_tasks.add(task)
+        task.add_done_callback(self.source_tasks.discard)
 
     def _response(self, response: Any) -> None:
         from .workflow_session import redact_browser_url
@@ -102,6 +169,9 @@ class WorkflowTrace:
         self._record("network", pageId=page_id, url=redact_browser_url(response.url),
                      method=request.method, status=response.status, resourceType=request.resource_type,
                      attribution="page-background")
+        if self.enhanced and request.resource_type == 'script':
+            self._source(response.body, page_id, response.url, 'response',
+                         length=response.headers.get('content-length'))
 
     async def start(self) -> None:
         if not self.enabled:
@@ -221,6 +291,11 @@ class WorkflowTrace:
                 target.remove_listener(name, callback)
             except Exception:  # noqa: BLE001,S110 -- page can already be closed.
                 pass
+        if self.source_tasks:
+            _, pending = await asyncio.wait(self.source_tasks, timeout=1)
+            for task in pending:
+                task.cancel()
+            await asyncio.gather(*pending, return_exceptions=True)
         archive = TraceArchive()
         try:
             if self.native_started:

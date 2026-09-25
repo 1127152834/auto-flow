@@ -707,7 +707,10 @@ export type BrowserEnvironment =
   | {source:'fixedEnvironment';environmentId:string}
   | {source:'inputEnvironment';inputId:string}
 
+export type TraceMode = 'off' | 'standard' | 'enhanced'
+
 export interface Workflow {
+  traceMode?: TraceMode
   schemaVersion?: number
   browserEnvironmentVersion?: number
   id: string

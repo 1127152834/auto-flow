@@ -1059,19 +1059,20 @@ export async function executeClientAction(
         if (!result.success || !result.data) return { success: false, error: result.error || '追踪读取失败' }
         if (connection !== getStudioTransportRevision()) return { success: false, error: '工作区连接已变化，请重新读取证据' }
         const data = result.data
-        if (action === 'get_trace_summary') return { success: true, data: { runId: data.runId, runStatus: data.runStatus, status: data.status, gaps: data.gaps, total: data.total, traceId: data.traceId } }
+        if (action === 'get_trace_summary') return { success: true, data: { runId: data.runId, runStatus: data.runStatus, status: data.status, gaps: data.gaps, total: data.total, traceId: data.traceId, sessions: data.sessions } }
         if (action === 'read_trace_evidence' && data.events.length === 0) return { success: false, error: '证据不存在或不属于本次运行' }
-        if (action === 'read_trace_evidence' && payload.part === 'dom') {
+        if (action === 'read_trace_evidence' && (payload.part === 'dom' || payload.part === 'source')) {
           const offset = payload.offset ?? 0, limit = payload.limit ?? 2000
           if (!Number.isSafeInteger(offset) || offset < 0 || !Number.isSafeInteger(limit) || limit < 1 || limit > 8000) return { success: false, error: 'offset 必须是非负整数，limit 范围为 1–8000 字符' }
           const evidence = data.events[0]
-          if (!evidence.domId) return { success: false, error: '该证据未采集 DOM 原文' }
-          const artifact = await workflowApi.getRunArtifact(payload.runId, evidence.domId)
+          const artifactId = payload.part === 'source' ? evidence.sourceId : evidence.domId
+          if (!artifactId) return { success: false, error: '该证据未采集所需原文' }
+          const artifact = await workflowApi.getRunArtifact(payload.runId, artifactId)
           if (!artifact.success || !artifact.data) return { success: false, error: artifact.error || 'DOM 证据读取失败' }
-          if (artifact.data.size > 8 * 1024 * 1024 || !artifact.data.type.startsWith('text/html')) return { success: false, error: 'DOM 证据格式或大小无效' }
+          if (artifact.data.size > 8 * 1024 * 1024 || !artifact.data.type.startsWith(payload.part === 'source' ? 'text/javascript' : 'text/html')) return { success: false, error: '原文证据格式或大小无效' }
           const content = await artifact.data.text()
           if (connection !== getStudioTransportRevision()) return { success: false, error: '工作区连接已变化，请重新读取证据' }
-          return { success: true, data: { runId: data.runId, evidenceId: evidence.id, part: 'dom', offset, text: content.slice(offset, offset + limit), totalCharacters: content.length, nextOffset: offset + limit < content.length ? offset + limit : null } }
+          return { success: true, data: { runId: data.runId, evidenceId: evidence.id, part: payload.part, offset, text: content.slice(offset, offset + limit), totalCharacters: content.length, nextOffset: offset + limit < content.length ? offset + limit : null } }
         }
         // Model-bound tool results are redacted again by the existing assistant service.
         return { success: true, data: { runId: data.runId, events: data.events, nextCursor: data.nextCursor, total: data.total, gaps: data.gaps } }

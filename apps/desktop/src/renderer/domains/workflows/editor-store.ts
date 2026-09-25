@@ -1,6 +1,6 @@
 // Source: WebRPA@5ccb900e, store/workflowStore.ts; see SOURCE.md for license and adaptation boundaries.
 import { create } from 'zustand'
-import type { BrowserEnvironment } from './types/workflow'
+import type { BrowserEnvironment, TraceMode } from './types/workflow'
 import { nanoid } from 'nanoid'
 import type { Node, Edge, Connection, NodeChange, EdgeChange } from '@xyflow/react'
 import { applyNodeChanges, applyEdgeChanges, addEdge } from '@xyflow/react'
@@ -27,8 +27,8 @@ function historyEdges(edges: Edge[]): Edge[] {
   return edges.map(edge => { const copy = { ...edge }; delete copy.selected; return copy })
 }
 
-function matchesHistory(state: { browserEnvironmentVersion?: number; nodes: Node<NodeData>[]; edges: Edge[]; name: string; variables: Variable[] }, snapshot?: HistorySnapshot): boolean {
-  return !!snapshot && state.browserEnvironmentVersion === snapshot.browserEnvironmentVersion && state.name === snapshot.name && JSON.stringify(state.variables) === JSON.stringify(snapshot.variables) &&
+function matchesHistory(state: { traceMode?: TraceMode; browserEnvironmentVersion?: number; nodes: Node<NodeData>[]; edges: Edge[]; name: string; variables: Variable[] }, snapshot?: HistorySnapshot): boolean {
+  return !!snapshot && state.browserEnvironmentVersion === snapshot.browserEnvironmentVersion && state.traceMode === snapshot.traceMode && state.name === snapshot.name && JSON.stringify(state.variables) === JSON.stringify(snapshot.variables) &&
     JSON.stringify(historyNodes(state.nodes)) === JSON.stringify(historyNodes(snapshot.nodes)) &&
     JSON.stringify(historyEdges(state.edges)) === JSON.stringify(historyEdges(snapshot.edges))
 }
@@ -181,6 +181,7 @@ export type BottomPanelTab = 'logs' | 'data' | 'variables' | 'assets' | 'images'
 
 // 历史记录快照类型
 interface HistorySnapshot {
+  traceMode?: TraceMode
   browserEnvironmentVersion?: number
   variables: Variable[]
   nodes: Node<NodeData>[]
@@ -221,6 +222,8 @@ export type DataRow = Record<string, unknown>
 
 // 工作流状态
 interface WorkflowState {
+  traceMode?: TraceMode
+  setTraceMode: (mode: TraceMode) => void
   browserEnvironmentVersion: number | undefined
   migrateBrowserEnvironment(nodeId:string, configuration:BrowserEnvironment): void
   // 工作流基本信息
@@ -371,9 +374,9 @@ interface WorkflowState {
   setWorkflowName: (name: string) => void
   setWorkflowNameWithHistory: (name: string) => void  // 设置名称并保存历史
   clearWorkflow: () => void
-  loadWorkflow: (workflow: { browserEnvironmentVersion?: number; nodes: Node<NodeData>[]; edges: Edge[]; name: string; variables?: Variable[] }) => void
+  loadWorkflow: (workflow: { traceMode?: TraceMode; browserEnvironmentVersion?: number; nodes: Node<NodeData>[]; edges: Edge[]; name: string; variables?: Variable[] }) => void
   // 回滚：把画布完整恢复到某个快照（含节点、连线、名称、全局变量）
-  restoreSnapshot: (snapshot: { browserEnvironmentVersion?: number; nodes: Node<NodeData>[]; edges: Edge[]; name?: string; variables?: Variable[] }, options?: { resetHistory?: boolean }) => void
+  restoreSnapshot: (snapshot: { traceMode?: TraceMode; browserEnvironmentVersion?: number; nodes: Node<NodeData>[]; edges: Edge[]; name?: string; variables?: Variable[] }, options?: { resetHistory?: boolean }) => void
   
   // 未保存状态管理
   markAsUnsaved: () => void
@@ -3079,6 +3082,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       edges: JSON.parse(JSON.stringify(historyEdges(state.edges))),
       name: state.name,
       browserEnvironmentVersion: state.browserEnvironmentVersion,
+      traceMode: state.traceMode,
       variables: structuredClone(state.variables),
     }
     
@@ -3089,6 +3093,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         JSON.stringify(historyEdges(currentSnapshot.edges)) === JSON.stringify(snapshot.edges) &&
         currentSnapshot.name === snapshot.name &&
         currentSnapshot.browserEnvironmentVersion === snapshot.browserEnvironmentVersion &&
+        currentSnapshot.traceMode === snapshot.traceMode &&
         JSON.stringify(currentSnapshot.variables) === JSON.stringify(snapshot.variables)) {
       return // 没有变化，不保存
     }
@@ -3119,6 +3124,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         edges: JSON.parse(JSON.stringify(snapshot.edges)),
         name: snapshot.name,
         browserEnvironmentVersion: snapshot.browserEnvironmentVersion,
+        traceMode: snapshot.traceMode,
         variables: structuredClone(snapshot.variables),
         historyIndex: newIndex,
         hasUnsavedChanges: true,
@@ -3137,6 +3143,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         edges: JSON.parse(JSON.stringify(snapshot.edges)),
         name: snapshot.name,
         browserEnvironmentVersion: snapshot.browserEnvironmentVersion,
+        traceMode: snapshot.traceMode,
         variables: structuredClone(snapshot.variables),
         historyIndex: newIndex,
         hasUnsavedChanges: true,
@@ -3153,6 +3160,12 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   canRedo: () => {
     const state = get()
     return state.historyIndex < state.history.length - 1 && matchesHistory(state, state.history[state.historyIndex])
+  },
+
+  setTraceMode: (mode) => {
+    if (!['off', 'standard', 'enhanced'].includes(mode) || get().traceMode === mode) return
+    get().pushHistory()
+    set({ traceMode: mode, hasUnsavedChanges: true })
   },
 
   setWorkflowName: (name) => {
@@ -3181,6 +3194,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     set({
       id: nanoid(),
       name: '未命名工作流',
+      traceMode: undefined,
   browserEnvironmentVersion: 1,
       nodes: [],
       edges: [],
@@ -3208,6 +3222,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       edges: JSON.parse(JSON.stringify(safeEdges)),
       name: workflow.name,
       browserEnvironmentVersion: workflow.browserEnvironmentVersion,
+      traceMode: workflow.traceMode,
       variables: structuredClone(workflow.variables ?? []),
     }
     set({
@@ -3215,6 +3230,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       edges: safeEdges as any,
       name: workflow.name,
       browserEnvironmentVersion: workflow.browserEnvironmentVersion,
+      traceMode: workflow.traceMode,
       variables: structuredClone(workflow.variables ?? []),
       selectedNodeId: null,
       clipboard: [],
@@ -3242,6 +3258,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       edges: structuredClone(sanitizeEdges(snapshot.edges || [])),
       name: snapshot.name ?? state.name,
       browserEnvironmentVersion: snapshot.browserEnvironmentVersion,
+      traceMode: snapshot.traceMode,
       variables: structuredClone(snapshot.variables ?? state.variables),
     }
     if (!options?.resetHistory) get().pushHistory()
@@ -3287,6 +3304,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       ...(state.browserEnvironmentVersion !== undefined ? {schemaVersion: 3} : {}),
       name: state.name,
       browserEnvironmentVersion: state.browserEnvironmentVersion,
+      traceMode: state.traceMode,
       nodes: convertedNodes,
       edges: state.edges,
       variables: state.variables,
@@ -3300,6 +3318,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     try {
       // 支持字符串或对象
       const workflow = typeof json === 'string' ? JSON.parse(json) : json
+      if (workflow.traceMode !== undefined && !['off', 'standard', 'enhanced'].includes(workflow.traceMode)) return false
       if (!hasValidImportGraph(workflow)) return false
       
       // 转换节点类型：将后端格式转换为前端 ReactFlow 格式
@@ -3359,12 +3378,13 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         id: workflow.id || nanoid(),
         name: workflow.name || '导入的工作流',
         browserEnvironmentVersion: workflow.browserEnvironmentVersion,
+        traceMode: workflow.traceMode,
         nodes: safeNodes,
         edges: safeEdges,
         variables: importedVariables,  // 恢复变量
         selectedNodeId: null,
         hasUnsavedChanges: false,  // 导入后标记为已保存
-        history: [{ browserEnvironmentVersion: workflow.browserEnvironmentVersion, nodes: JSON.parse(JSON.stringify(safeNodes)), edges: JSON.parse(JSON.stringify(safeEdges)), name: workflow.name || '导入的工作流', variables: structuredClone(importedVariables) }],
+        history: [{ traceMode: workflow.traceMode, browserEnvironmentVersion: workflow.browserEnvironmentVersion, nodes: JSON.parse(JSON.stringify(safeNodes)), edges: JSON.parse(JSON.stringify(safeEdges)), name: workflow.name || '导入的工作流', variables: structuredClone(importedVariables) }],
         historyIndex: 0,
       })
       return true
@@ -3376,6 +3396,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   mergeWorkflow: (json, position) => {
     try {
       const workflow = JSON.parse(json)
+      if (workflow.traceMode !== undefined && !['off', 'standard', 'enhanced'].includes(workflow.traceMode)) return false
       if (!hasValidImportGraph(workflow)) return false
       
       const state = get()

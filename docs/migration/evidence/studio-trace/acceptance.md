@@ -36,7 +36,7 @@ npm run build
 
 ## 剩余及限制
 
-设计规格第 8 节列出的增强能力仍未完成；此切片不代表“所有行为、所有 JS”均已采集。结构化索引在关闭后读取，没有实时/崩溃恢复承诺；多会话目前明确提示仅显示最后归档会话。ZIP 为原始本地页面证据，不承诺内容已完全脱敏，只有主动下载，助手不会自动上传 ZIP。
+设计规格第 8 节列出的增强能力仍未完成；此切片不代表“所有行为、所有 JS”均已采集。结构化索引在关闭后读取，没有实时/崩溃恢复承诺；多会话首切片只显示最后归档的限制已由下方增强切片解除。ZIP 为原始本地页面证据，不承诺内容已完全脱敏，只有主动下载，助手不会自动上传 ZIP。
 
 实机：macOS 当前主机通过上述项目；Windows、macOS 其他架构、PyInstaller 与正式安装包未验收。项目任务 worker 尚未接入，不能从独立 Studio 路径推断已通过。模型的真实调用和批准/拒绝全矩阵尚未验收。
 
@@ -50,3 +50,16 @@ npm run build
 - 新节点最终完整 UI 连线重放、项目任务执行路径、跨框架快照、独立可移植片段仍待验收，不能从 worker 测试推定通过。
 
 最终相关回归：LangGraph 单元、助手合同、助手 service 与 worker 协议合计 47 passed；与前述 23 项有重叠，不累计成独立通过数量。最终 TypeScript、定向 ESLint/Ruff/mypy、OpenAPI 和 main/preload/renderer 构建均通过。三个诊断节点之后的构建成功，构建 HTML 原生历史恢复证据属于前一切片，未冒用为新增三节点完整端到端证据。临时应用正常退出，测试 userData 和下载文件已清理，未替换用户主应用。
+
+
+## 增强源码、多会话与模式持久化（2026-09-26）
+
+- 后端关联回归 **130 passed**：[JUnit](backend-enhanced.xml)。最终补充真实worker增强源码断言后，Trace专项 **9 passed**：[最终Trace JUnit](backend-trace-final.xml)。两者重叠，不相加。4个实际Cloak用例：标准页面、增强页面、正常worker、停止worker。
+- 实际网页外部脚本和内联脚本内容归档可读；增强页含 debugger 语句，导航在5秒预算内完成，后续点击及JS异常仍可确认；正常worker接收冻结 enhanced 字段，归档包含 window.workerTraceProof=17 的实际脚本。
+- 发现并修复两项真实失败：并发直接丢弃导致内联脚本漏采，改100任务有界队列/4并发；仅skipAllPauses无法阻止 debugger 暂停，增加关闭CDP断点激活。失败用例保留原断言。
+- 源码去重、单值及累计容量、超限缺口、未知模式拒绝、运行投影和保存往返；多manifest交错时间、页ID相同、分页、过滤、错误traceId及精确证据身份有可执行用例。
+- 前端 Trace/文档导出/结构复制/节点范围关联回归 **32 passed**；其中Trace **10**。覆盖模式历史与导入、旧快照隔离、源码惰性文本展示、助手有界读取、已有归档时活跃运行继续刷新、跨会话禁止同页对比、所属ZIP下载及真实Radix会话筛选。
+- 构建HTML正式Electron UI：独立临时userData、独立测试应用标识；主窗口→Studio→运行菜单选择“增强：同时采集网页 JS”→填写Trace Enhanced QA→Cmd+S，出现保存成功→Cmd+W正常关闭Studio→主窗口重开→“打开”选择保存流程→运行菜单增强项Value1、标准Value0。随后Cmd+Q正常退出。没有通过Store或页面内部函数操作。
+- 此UI证据是模式保存重开，不冒充增强源码显示/多会话浏览器完整UI验收。当前临时主应用无Profile、无模型；实际源码来自独立后端受控测试。
+- TypeScript、ESLint、Ruff、定向mypy、OpenAPI一致性通过；main/preload/renderer构建通过（原有chunk/混合导入告警保留）。构建后的模式重开通过；此轮不是PyInstaller冻结包或安装包验收。
+- 本次仍隔离于codex/studio-trace，未修改用户应用或数据库、未合并。真实模型诊断、项目任务接入及设计11.2列出的其余缺口不能标为完成。

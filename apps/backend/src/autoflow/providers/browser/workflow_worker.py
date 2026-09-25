@@ -185,7 +185,8 @@ async def _run_in_session(
                     target = await writer.write_bytes(name=name, content=content, mime_type=mime)
                     relative = Path(target).resolve().relative_to(artifact_root.resolve()).as_posix()
                     return artifacts.by_path(relative).artifact_id
-                await session.start_trace(save_trace, enabled=document.get("traceMode", "standard") != "off")
+                await session.start_trace(save_trace, enabled=document.get("traceMode", "standard") != "off",
+                                          enhanced=document.get("traceMode") == "enhanced")
             return session
         if browser is not None:
             await attach_trace(browser)

@@ -75,6 +75,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
 } from './controls/dropdown-menu'
 
 export function Toolbar() {
@@ -136,6 +138,8 @@ export function Toolbar() {
   // 使用选择器确保配置更新时组件重新渲染
   const config = useGlobalConfigStore((state) => state.config)
   
+  const traceMode = useWorkflowStore(state => state.traceMode ?? 'standard')
+  const setTraceMode = useWorkflowStore(state => state.setTraceMode)
   const name = useWorkflowStore((state) => state.name)
   const nodes = useWorkflowStore((state) => state.nodes)
   const edges = useWorkflowStore((state) => state.edges)
@@ -1383,6 +1387,16 @@ export function Toolbar() {
                 <EyeOff className="w-3.5 h-3.5 mr-2 text-[hsl(var(--muted-foreground))]" />
                 无头运行
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>浏览器追踪 · 随流程保存</DropdownMenuLabel>
+              <DropdownMenuRadioGroup value={traceMode} onValueChange={value => {
+                if (value === 'off' || value === 'standard' || value === 'enhanced') setTraceMode(value)
+              }}>
+                <DropdownMenuRadioItem value="off">关闭全程追踪</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="standard">标准：动作与页面证据</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="enhanced">增强：同时采集网页 JS</DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+              <p className="px-2 py-1 text-xs text-muted-foreground">增强模式增加本地存储，仅采集实际可用源码。</p>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (

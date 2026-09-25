@@ -13500,13 +13500,25 @@ export type components = {
         };
         /** StudioTraceEvent */
         StudioTraceEvent: {
+            /** Sourceid */
+            sourceId?: string | null;
+            /** Sourceorigin */
+            sourceOrigin?: string | null;
+            /** Sourcebytes */
+            sourceBytes?: number | null;
+            /** Scriptid */
+            scriptId?: string | null;
+            /** Sha256 */
+            sha256?: string | null;
+            /** Traceid */
+            traceId?: string | null;
             /** Id */
             id: string;
             /**
              * Kind
              * @enum {string}
              */
-            kind: "execution" | "network" | "console" | "exception" | "page-closed" | "mark" | "diagnostic";
+            kind: "execution" | "network" | "console" | "exception" | "page-closed" | "mark" | "diagnostic" | "source";
             /** Timems */
             timeMs: number;
             /** Timestamp */
@@ -13563,6 +13575,8 @@ export type components = {
         };
         /** StudioTracePage */
         StudioTracePage: {
+            /** Sessions */
+            sessions?: components["schemas"]["StudioTraceSession"][];
             /** Runid */
             runId: string;
             /** Runstatus */
@@ -13590,6 +13604,22 @@ export type components = {
              * @constant
              */
             localOnly: true;
+        };
+        /** StudioTraceSession */
+        StudioTraceSession: {
+            /** Traceid */
+            traceId: string;
+            /** Archiveid */
+            archiveId?: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "partial" | "saved";
+            /** Gaps */
+            gaps: string[];
+            /** Eventcount */
+            eventCount: number;
         };
         /** StudioVariableTrackingCleared */
         StudioVariableTrackingCleared: {
@@ -29520,9 +29550,10 @@ export interface operations {
             query?: {
                 cursor?: number;
                 limit?: number;
-                kind?: ("execution" | "network" | "console" | "exception" | "page-closed" | "mark" | "diagnostic") | null;
+                kind?: ("execution" | "network" | "console" | "exception" | "page-closed" | "mark" | "diagnostic" | "source") | null;
                 executionId?: string | null;
                 evidenceId?: string | null;
+                traceId?: string | null;
                 projectId?: string | null;
             };
             header?: never;
