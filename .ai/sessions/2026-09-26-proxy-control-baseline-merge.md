@@ -23,4 +23,11 @@
 - 停止 PM9 开发版后，保存当前工作区 SQLite 备份 `data/backups/pre-proxy-baseline-20260926.sqlite3`。在副本执行 baseline 迁移至 0024，81 张已有表的全部原列值摘要保持不变，integrity_check=ok。原库由正常 baseline 启动执行已验证迁移。
 - 四项跳过是未提供真实浏览器环境的用例；真实供应商切换、Windows、打包仍未验收。
 
-本机日志：`/tmp/autoflow-baseline-merge-final-backend.txt`、`/tmp/autoflow-baseline-merge-frontend.txt`、`/tmp/autoflow-baseline-before-mypy.txt`、`/tmp/autoflow-baseline-merge-mypy.txt`。运行 UI 结果将在启动后追加。
+本机日志：`/tmp/autoflow-baseline-merge-final-backend.txt`、`/tmp/autoflow-baseline-merge-frontend.txt`、`/tmp/autoflow-baseline-before-mypy.txt`、`/tmp/autoflow-baseline-merge-mypy.txt`。运行 UI 结果见下节。
+
+
+## baseline 实际启动
+
+已生成双父合并提交 `3c603a91`，包含来源 `33ae3aa4`；当前分支明确为 `codex/architecture-baseline`。
+正常退出 PM9 Electron 后，从 baseline 工作树执行 `npm run dev`；启动前验证 Python 导入路径也属于 baseline 工作树，避免仅切换前端。
+真实 Electron AX 状态显示首页“本地服务正常”，且成功加载浏览器配置、代理和模型资源概况；当前数据库正常迁移至 `0024_environment_identity`。运行进程持续保留供用户查看，未推送。
