@@ -116,6 +116,8 @@ async def _run_in_session(
         integrations = WorkflowIntegrationGateway()
         context = ExecutionContext(
             process_cleanup=terminate_subprocess,
+            proxy_control=command_bus.proxy_call,
+            proxy_probe=getattr(browser, "probe_proxy", None),
             variables=_initial_variables(document),
             browser=browser,
             cancellation=_ThreadCancellation(stopped),
@@ -608,6 +610,9 @@ class _WorkerNestedWorkflows:
                 {"kind": "workflow", "id": canonical, "name": name},
             ),
             browser=self._parent.browser,
+            proxy_control=self._parent.proxy_control,
+            proxy_probe=self._parent.proxy_probe,
+            proxy_activity=self._parent.proxy_activity,
             table_workbooks=self._parent.table_workbooks,
             credentials=self._parent.credentials,
             models=self._parent.models,
@@ -787,6 +792,9 @@ class _WorkerCustomModules:
                 {"kind": "customModule", "id": module_id, "name": name},
             ),
             browser=self._parent.browser,
+            proxy_control=self._parent.proxy_control,
+            proxy_probe=self._parent.proxy_probe,
+            proxy_activity=self._parent.proxy_activity,
             table_workbooks=self._parent.table_workbooks,
             credentials=self._parent.credentials,
             models=self._parent.models,
@@ -939,6 +947,9 @@ class _WorkerCanvasSubflows:
                 {"kind": "subflow", "id": identity, "name": display_name},
             ),
             browser=self._parent.browser,
+            proxy_control=self._parent.proxy_control,
+            proxy_probe=self._parent.proxy_probe,
+            proxy_activity=self._parent.proxy_activity,
             table_workbooks=self._parent.table_workbooks,
             credentials=self._parent.credentials,
             models=self._parent.models,
@@ -1473,6 +1484,7 @@ class _WorkerCommandBus:
                 else None
             ),
         )
+        self._proxy_pending: dict[str, asyncio.Future[dict[str, Any]]] = {}
         self._pending: dict[str, asyncio.Future[str | None]] = {}
         self._pending_scripts: dict[str, asyncio.Future[JsScriptResult]] = {}
         self._pending_speech: dict[str, asyncio.Future[SpeechResult]] = {}
@@ -1481,6 +1493,17 @@ class _WorkerCommandBus:
         ] = {}
         self._pending_webhooks: dict[str, asyncio.Future[Mapping[str, Any]]] = {}
         self._webhook_ids: set[str] = set()
+
+    async def proxy_call(self, payload: dict[str, Any]) -> dict[str, Any]:
+        request_id = str(uuid4())
+        future = self._loop.create_future()
+        self._proxy_pending[request_id] = future
+        self._write_command({"type": "proxy:request", "runId": self._run_id,
+                             "requestId": request_id, "payload": payload})
+        try:
+            return await future
+        finally:
+            self._proxy_pending.pop(request_id, None)
 
     def _write_command(self, message: dict[str, Any]) -> None:
         _write(self._stdout, {**message, **self._protocol_metadata})
@@ -1726,6 +1749,16 @@ class _WorkerCommandBus:
 
     def _apply(self, command: dict[str, Any]) -> None:
         command_type = command.get("type")
+        if command_type == "proxy:result":
+            proxy_future = self._proxy_pending.get(str(command.get("requestId", "")))
+            if proxy_future is not None and not proxy_future.done():
+                if command.get("protocolError"):
+                    proxy_future.set_exception(RuntimeError("代理控制通道失效"))
+                elif isinstance(command.get("value"), dict):
+                    proxy_future.set_result(command["value"])
+                else:
+                    proxy_future.set_exception(RuntimeError("代理控制响应格式无效"))
+            return
         if command_type == "debug_breakpoints":
             command_id = command.get("commandId")
             if (
@@ -1945,6 +1978,9 @@ class _WorkerCommandBus:
         )
 
     def _cancel_pending(self) -> None:
+        for proxy_future in self._proxy_pending.values():
+            if not proxy_future.done():
+                proxy_future.cancel()
         if self.debug is not None:
             self.debug.close()
         for future in self._pending.values():

@@ -7,6 +7,7 @@ import shutil
 import signal
 import subprocess
 import sys
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -76,6 +77,7 @@ class TestBrowserWorkerManager:
         self._stop_tasks: dict[str, asyncio.Task[None]] = {}
         self._births: dict[int, int | None] = {}
         self._executables: dict[int, Path] = {}
+        self.release_proxy: Callable[[str], None] = lambda _owner: None
 
     async def start(
         self,
@@ -282,15 +284,18 @@ class TestBrowserWorkerManager:
         async with self._lock:
             self._sessions.pop(session_id, None)
             self._stopping.discard(profile_id)
+        self.release_proxy(session_id)
 
     async def _stop_pending_start(self, profile_id: str, process: asyncio.subprocess.Process) -> None:
-        directory = self._root / self._starting_sessions[profile_id]
+        session_id = self._starting_sessions[profile_id]
+        directory = self._root / session_id
         try:
             await self._stop_process_tree(process, directory)
             shutil.rmtree(directory, ignore_errors=True)
             async with self._lock:
                 self._starting.pop(profile_id, None)
                 self._starting_sessions.pop(profile_id, None)
+                self.release_proxy(session_id)
                 self._stopping.discard(profile_id)
         finally:
             async with self._lock:
@@ -319,6 +324,7 @@ class TestBrowserWorkerManager:
                 for session_id, item in list(self._sessions.items()):
                     if item is session:
                         self._sessions.pop(session_id, None)
+                        self.release_proxy(session_id)
                 self._stopping.discard(session.profile_id)
         finally:
             async with self._lock:

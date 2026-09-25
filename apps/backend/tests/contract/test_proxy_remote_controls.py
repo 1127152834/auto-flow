@@ -410,3 +410,102 @@ def test_database_serializes_concurrent_reservations(remote):
     )
     assert len(provider.calls) == 1
 
+
+def workflow_fixture(remote):
+    from datetime import UTC, datetime
+    from types import SimpleNamespace
+
+    from autoflow.application.proxies.workflow import WorkflowProxyService
+
+    client, provider, proxy, controls = remote
+
+    class Probe:
+        async def probe(self, projection):
+            return SimpleNamespace(exit_ip='8.8.8.8' if provider.state.current_ip == '192.0.2.1' else '1.1.1.1',
+                                   checked_at=datetime.now(UTC), error=None)
+
+    service = WorkflowProxyService(controls, controls.usage, Probe())
+    config = {'nodeId': 'node', 'executionId': 'visit', 'action': 'change_ip', 'target': 'specified',
+              'proxyId': proxy['id'], 'retryIntervalSeconds': 0.001, 'maxAttempts': 5,
+              'confirmationTimeoutSeconds': 0.05, 'generation': 1}
+
+    def call(method, **values):
+        return client.portal.call(service.call, 'run', {**config, 'method': method, **values})
+
+    return service, call, config
+
+
+def test_workflow_cooldown_no_post_and_manual_operation_blocked(remote):
+    _, provider, _, _ = remote
+    service, call, _ = workflow_fixture(remote)
+    initial = call('prepare')
+    assert initial['before']['exitIp'] == '8.8.8.8'
+    assert submit(remote).status_code == 409
+    provider.state = replace(provider.state, rotation_blocked_reason='cooldown')
+    result = call('attempt', attempt=1)
+    assert result['error']['code'] == 'PROXY_COOLDOWN'
+    assert result['error']['retryAfterSeconds'] is None
+    assert result['requestsSent'] == 0
+    assert provider.calls == []
+    call('finish')
+    assert not service.usage.controls
+
+
+def test_workflow_unknown_reconciliation_never_repeats_write(remote):
+    _, provider, _, controls = remote
+    service, call, _ = workflow_fixture(remote)
+    provider.behavior = 'timeout'
+    call('prepare')
+    first = call('attempt', attempt=1)
+    assert first['status'] == 'unknown'
+    assert first['requestsSent'] == 1
+    second = call('attempt', attempt=2)
+    assert second['status'] == 'unknown'
+    assert second['operationId'] == first['operationId']
+    assert second['requestsSent'] == 0
+    assert len(provider.calls) == 1
+    call('finish')
+    assert controls.operations.active(first['proxyId'] if 'proxyId' in first else remote[2]['id'])
+    assert not service.usage.controls
+
+
+def test_workflow_already_target_and_relocation_observe_fresh_exit(remote):
+    _, provider, _, _ = remote
+    _, call, _ = workflow_fixture(remote)
+    provider.state = replace(provider.state, proxy=replace(provider.proxy, city='Aliso Viejo'))
+    initial = call('prepare', action='relocate', locationId='target')
+    assert initial['alreadySatisfied'] is True
+    assert provider.calls == []
+    call('finish')
+    provider.state = replace(provider.state, proxy=provider.proxy)
+    initial = call('prepare', action='relocate', locationId='target')
+    assert not initial['alreadySatisfied']
+    result = call('attempt', action='relocate', locationId='target', attempt=1)
+    assert result['status'] == 'succeeded'
+    assert result['after']['city'] == 'Arcadia'
+    assert result['after']['exitIp'] == '8.8.8.8'  # A location change need not change IP.
+    call('finish')
+
+
+def test_workflow_stop_during_preflight_does_not_send(remote):
+    client, provider, _, _ = remote
+    service, call, config = workflow_fixture(remote)
+    call('prepare')
+    alive = True
+    original = provider.get_state
+    reads = 0
+
+    async def slow_state(*args):
+        nonlocal alive, reads
+        result = await original(*args)
+        reads += 1
+        if reads == 2:  # The remote operation's own preflight, after reservation.
+            alive = False
+        return result
+
+    provider.get_state = slow_state
+    result = client.portal.call(service.call, 'run', {**config, 'method': 'attempt', 'attempt': 1, '_alive': lambda: alive})
+    assert result['status'] == 'failed'
+    assert result['requestsSent'] == 0
+    assert provider.calls == []
+    call('finish')

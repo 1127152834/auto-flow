@@ -212,3 +212,4 @@ class ProfileBrowserProxy:
     server: str
     username: str = field(repr=False)
     password: str = field(repr=False)
+    proxy_id: str | None = None

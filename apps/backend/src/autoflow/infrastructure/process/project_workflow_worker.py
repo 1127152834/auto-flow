@@ -21,6 +21,8 @@ from autoflow.infrastructure.process.project_test_browser_worker import (
 )
 from autoflow.infrastructure.process.workflow_subprocess import workflow_environment
 
+from .proxy_worker_requests import ProxyWorkerRequests
+
 MAX_MESSAGE_BYTES = 1024 * 1024
 MAX_EVENT_BYTES = 16 * 1024 * 1024
 WorkerStatus = Literal["succeeded", "failed", "cancelled", "timed_out"]
@@ -73,6 +75,7 @@ class ProjectWorkflowWorkerManager:
         worker_env: dict[str, str] | None = None, start_timeout: float = 90,
         termination_timeout: float = 3,
         resolve_credential: Callable[[str], Mapping[str, str]] | None = None,
+        proxy_service: Any | None = None,
     ) -> None:
         self._root = (temp_dir / "workflow-runs").resolve()
         self._artifact_root = (temp_dir.parent / "workspace" / "runs").resolve()
@@ -81,6 +84,8 @@ class ProjectWorkflowWorkerManager:
         self._start_timeout = start_timeout
         self._termination_timeout = termination_timeout
         self._resolve_credential = resolve_credential
+        self._proxy_service = proxy_service
+        self._proxy_requests: ProxyWorkerRequests | None = None
         self._worker: _Worker | None = None
         self._closed = False
         self._lock = asyncio.Lock()
@@ -112,6 +117,13 @@ class ProjectWorkflowWorkerManager:
                 executable.resolve(strict=True) if executable is not None else None, current,
             )
             self._worker = worker
+            if self._proxy_service is not None:
+                self._proxy_requests = ProxyWorkerRequests(
+                    self._proxy_service, run_id, execution_plan,
+                    lambda response: self._send(worker, response),
+                    lambda: self._worker is worker and not worker.stop_requested and worker.cleanup is None,
+                    execution_generation,
+                )
         try:
             worker.directory.mkdir(parents=True, exist_ok=False)
             worker.created_directory = True
@@ -191,6 +203,11 @@ class ProjectWorkflowWorkerManager:
     ) -> WorkerOutcome:
         while True:
             message = await self._read(worker)
+            if message.get("type") == "proxy:request":
+                if self._proxy_requests is None:
+                    raise _protocol_error()
+                self._proxy_requests.receive(message)
+                continue
             if message.get("type") == "event":
                 event = message.get("event")
                 if (not isinstance(event, dict) or type(event.get("executionGeneration")) is not int
@@ -200,6 +217,8 @@ class ProjectWorkflowWorkerManager:
                     or "sequence" in event):
                     raise _protocol_error()
                 await on_event(event)
+                if self._proxy_requests is not None:
+                    self._proxy_requests.observe(event)
                 await self._send(worker, {
                     "type": "event_committed", "eventId": event["eventId"],
                     "executionGeneration": worker.generation,
@@ -418,6 +437,9 @@ class ProjectWorkflowWorkerManager:
                 shutil.rmtree(worker.directory)
             except FileNotFoundError:
                 pass
+        if self._proxy_requests is not None:
+            await self._proxy_requests.close()
+            self._proxy_requests = None
         async with self._lock:
             if self._worker is worker:
                 self._worker = None

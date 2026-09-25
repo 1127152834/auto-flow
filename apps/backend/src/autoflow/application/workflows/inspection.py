@@ -47,6 +47,7 @@ class WorkflowInspectionService:
         profiles: ProfileService,
         installed_kernels: Callable[[], Sequence[InstalledKernel]],
         resolve_proxy: Callable[[Profile, str], Awaitable[ProfileBrowserProxy | None]],
+        release_proxy: Callable[[str], None] | None = None,
         read_license: Callable[[], str | None],
         resources: WorkflowResourceCoordinator,
         workers: WorkflowWorkerManager,
@@ -55,6 +56,7 @@ class WorkflowInspectionService:
         self._profiles = profiles
         self._installed = installed_kernels
         self._resolve_proxy = resolve_proxy
+        self._release_proxy = release_proxy
         self._read_license = read_license
         self._resources = resources
         self._workers = workers
@@ -144,6 +146,8 @@ class WorkflowInspectionService:
                     raise WorkflowRunError("INSPECTION_CLEANUP_PENDING", "浏览器清理尚未确认", 503) from error
                 if acquired and self._resources.owner_id == session_id:
                     await self._resources.release(session_id)
+                if self._release_proxy is not None:
+                    self._release_proxy(session_id)
                 if self._state is state:
                     self._state = None
                 if isinstance(error, asyncio.CancelledError):

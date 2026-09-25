@@ -133,7 +133,7 @@ class _Control:
                     if self.command_bus is not None:
                         self.command_bus.close()
                     continue
-                if message.get("type") in {"input_prompt_result", "js_script_result", "webhook_result"} and self.command_bus is not None:
+                if message.get("type") in {"input_prompt_result", "js_script_result", "webhook_result", "proxy:result"} and self.command_bus is not None:
                     self.command_bus.receive(message)
                     continue
                 event_id = message.get("eventId")
@@ -304,6 +304,7 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
                     models=WorkflowModelGateway(command.pop("modelBindings", [])),
                     external_integrations=integrations,
                     command_bus=command_bus,
+                    proxy_probe=relay.probe if relay is not None else None,
                 )
                 result = await executor.run(command["executionPlan"])
                 control.check_parent()

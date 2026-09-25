@@ -271,6 +271,7 @@ def build_workflow_services(
     profiles: Any | None = None,
     installed_kernels: Any | None = None,
     resolve_proxy: Any | None = None,
+    proxy_service: Any | None = None,
     read_license: Any | None = None,
     profile_guard: Any | None = None,
     kernels_root: Path | None = None,
@@ -375,6 +376,8 @@ def build_workflow_services(
 
     async def on_inspection_exit(session_id: str, return_code: int) -> None:
         await inspection_holder["service"].on_worker_exit(session_id, return_code)
+        if proxy_service is not None:
+            proxy_service.release(session_id)
 
     workers = WorkflowWorkerManager(
         temp_root,
@@ -386,6 +389,7 @@ def build_workflow_services(
         },
         on_event=on_event,
         on_exit=on_exit,
+        proxy_service=proxy_service,
     )
     resources = WorkflowResourceCoordinator(profile_guard, kernels_root)
     inspection_workers = WorkflowWorkerManager(
@@ -400,6 +404,7 @@ def build_workflow_services(
         profiles=profiles,
         installed_kernels=installed_kernels,
         resolve_proxy=resolve_proxy,
+        release_proxy=proxy_service.release if proxy_service else None,
         read_license=read_license,
         resources=resources,
         workers=inspection_workers,
@@ -429,6 +434,7 @@ def build_workflow_services(
         profiles=profiles,
         installed_kernels=installed_kernels,
         resolve_proxy=resolve_proxy,
+        release_proxy=proxy_service.release if proxy_service else None,
         read_license=read_license,
         workers=workers,
         resources=resources,
@@ -492,6 +498,7 @@ def configure_project_workflow_runtime(
     profiles: Any,
     installed: Any,
     resolve_proxy: Any,
+    proxy_service: Any | None = None,
     read_license: Any,
     usage_guard: Any,
     installations: Any,
@@ -546,8 +553,9 @@ def configure_project_workflow_runtime(
     resources = WorkflowBrowserResources(
         profiles, installed, resolve_proxy, read_license, usage_guard, guard,
         environment_directory=environment_directory,
+        release_proxy=proxy_service.release if proxy_service else None,
     )
-    worker = ProjectWorkflowWorkerManager(temp_dir, resolve_credential=resolve_credential)
+    worker = ProjectWorkflowWorkerManager(temp_dir, resolve_credential=resolve_credential, proxy_service=proxy_service)
 
     async def recover(run: Any) -> None:
         if run.resource_request.get("browser") == "none":

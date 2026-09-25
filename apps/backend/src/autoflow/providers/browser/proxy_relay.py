@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import base64
 import ipaddress
 import select
@@ -7,8 +8,11 @@ import socket
 import socketserver
 import threading
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from typing import Self
 from urllib.parse import SplitResult, urlsplit
+
+import httpx
 
 _MAX_HEADER = 64 * 1024
 _MAX_CREDENTIAL = 4096
@@ -34,6 +38,7 @@ class BrowserProxyRelay:
         self._closed = threading.Event()
         self._connections: set[socket.socket] = set()
         self._connections_lock = threading.Lock()
+        self._generation = 0
 
     @property
     def url(self) -> str:
@@ -57,6 +62,38 @@ class BrowserProxyRelay:
     def __exit__(self, *_exc: object) -> None:
         self.close()
 
+    def reset_connections(self) -> None:
+        with self._connections_lock:
+            self._generation += 1
+            connections = tuple(self._connections)
+            self._connections.clear()
+        for connection in connections:
+            _close_socket(connection)
+
+    async def probe(self, reset: bool = False) -> dict:
+        from autoflow.providers.proxy.probe import PROBE_URL
+        if reset:
+            self.reset_connections()
+        try:
+            async with (
+                asyncio.timeout(10),
+                httpx.AsyncClient(proxy=self.url, timeout=10, trust_env=False) as client,
+                client.stream("GET", PROBE_URL) as response,
+            ):
+                response.raise_for_status()
+                content = bytearray()
+                async for chunk in response.aiter_bytes():
+                    content.extend(chunk)
+                    if len(content) > 4096:
+                        raise ValueError("probe too large")
+                import json
+                address = ipaddress.ip_address(json.loads(content)["ip"])
+                if not address.is_global:
+                    raise ValueError("invalid probe address")
+            return {"exitIp": str(address), "observedAt": datetime.now(UTC).isoformat(), "source": "session_relay", "error": None}
+        except (httpx.HTTPError, TimeoutError, ValueError, KeyError, TypeError):
+            return {"exitIp": None, "source": "session_relay", "error": {"code": "PROXY_PROBE_FAILED", "message": "会话出口检测失败"}}
+
     def close(self) -> None:
         server, thread = self._server, self._thread
         if server is None:
@@ -74,15 +111,16 @@ class BrowserProxyRelay:
         self._thread = None
 
     def _handle(self, client: socket.socket) -> None:
-        self._track(client)
+        generation = self._generation
         upstream: socket.socket | None = None
         try:
             client.settimeout(_CONNECT_TIMEOUT)
+            self._track(client, generation)
             head, extra = _read_head(client)
             method, target, version = _request_line(head)
             if method == "CONNECT":
                 host, port = _authority(target)
-                upstream = self._connect(host, port)
+                upstream = self._connect(host, port, generation)
                 tunnel_extra = b""
                 if self._proxy.scheme == "http":
                     response, tunnel_extra = _http_connect(
@@ -104,7 +142,7 @@ class BrowserProxyRelay:
             parsed = _absolute_http_target(target)
             http_host = parsed.hostname
             assert http_host is not None
-            upstream = self._connect(http_host, parsed.port or 80)
+            upstream = self._connect(http_host, parsed.port or 80, generation)
             if self._proxy.scheme == "http":
                 forwarded = _rewrite_head(
                     head,
@@ -138,12 +176,12 @@ class BrowserProxyRelay:
             self._untrack(client)
             _close_socket(client)
 
-    def _connect(self, host: str, port: int) -> socket.socket:
+    def _connect(self, host: str, port: int, generation: int | None = None) -> socket.socket:
         upstream = socket.create_connection(
             (self._proxy.host, self._proxy.port), timeout=_CONNECT_TIMEOUT
         )
         try:
-            self._track(upstream)
+            self._track(upstream, generation)
             upstream.settimeout(_CONNECT_TIMEOUT)
             if self._proxy.scheme == "socks5":
                 _socks5_connect(
@@ -159,9 +197,9 @@ class BrowserProxyRelay:
             _close_socket(upstream)
             raise
 
-    def _track(self, connection: socket.socket) -> None:
+    def _track(self, connection: socket.socket, generation: int | None = None) -> None:
         with self._connections_lock:
-            if self._closed.is_set():
+            if self._closed.is_set() or generation is not None and generation != self._generation:
                 raise OSError("proxy relay is closing")
             self._connections.add(connection)
 

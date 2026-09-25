@@ -40,6 +40,7 @@ class WorkflowBrowserResources:
         read_license: Callable[[], str | None], usage_guard: ProfileUsageGuard,
         kernel_guard: Callable[[KernelRef], AbstractContextManager[None]],
         environment_directory: Callable[[str], Path | None] | None = None,
+        release_proxy: Callable[[str], None] | None = None,
     ) -> None:
         self._profiles = profiles
         self._installed = installed_kernels
@@ -48,6 +49,7 @@ class WorkflowBrowserResources:
         self._usage_guard = usage_guard
         self._kernel_guard = kernel_guard
         self._environment_directory = environment_directory
+        self._release_proxy = release_proxy
 
     def freeze(
         self, profile_id: str, *, proxy: dict[str, Any] | None = None,
@@ -112,6 +114,8 @@ class WorkflowBrowserResources:
             )))
             executable = self._kernel(profile.spec).executable_path
             proxy = await self._resolve_proxy(profile, run_request_id)
+            if self._release_proxy is not None:
+                guards.callback(self._release_proxy, run_request_id)
             license_key = self._read_license() if profile.spec.browser_edition == 'licensed' else None
             if profile.spec.browser_edition == 'licensed' and not license_key:
                 raise LicenseInvalid
