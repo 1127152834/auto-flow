@@ -1495,6 +1495,8 @@ class _WorkerCommandBus:
         self._webhook_ids: set[str] = set()
 
     async def proxy_call(self, payload: dict[str, Any]) -> dict[str, Any]:
+        if self._stopped.is_set():
+            raise asyncio.CancelledError
         request_id = str(uuid4())
         future = self._loop.create_future()
         self._proxy_pending[request_id] = future

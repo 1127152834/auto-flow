@@ -57,6 +57,9 @@ class ProxyWorkerRequests:
             and event.get("payload", {}).get("status") in {"succeeded", "failed"}
         ):
             self.visits.discard((node, visit))
+            for request_id, payload in tuple(self.pending_payloads.items()):
+                if (payload.get("nodeId"), payload.get("executionId")) == (node, visit):
+                    self.tasks[request_id].cancel()
 
     def receive(self, message):
         request_id, payload = message.get("requestId"), message.get("payload")
@@ -99,6 +102,12 @@ class ProxyWorkerRequests:
         )
 
     async def _serve(self, request_id, payload):
+        def active():
+            return (
+                self.alive()
+                and (payload.get("nodeId"), payload.get("executionId")) in self.visits
+            )
+
         try:
             receipt = self.receipts.get(request_id)
             if receipt:
@@ -106,7 +115,7 @@ class ProxyWorkerRequests:
             else:
                 value = await self.service.call(
                     self.owner,
-                    {**payload, "generation": self.generation, "_alive": self.alive},
+                    {**payload, "generation": self.generation, "_alive": active},
                 )
                 response = {
                     "type": "proxy:result",
@@ -119,12 +128,12 @@ class ProxyWorkerRequests:
                         protocolVersion=1, executionGeneration=self.generation
                     )
                 self.receipts[request_id] = (dict(payload), response)
-            if self.alive():
+            if active():
                 await self.send(response)
         except asyncio.CancelledError:
             raise
         except Exception:  # noqa: BLE001 -- no provider diagnostics or credentials cross the pipe.
-            if self.alive():
+            if active():
                 try:
                     await self.send(
                         {

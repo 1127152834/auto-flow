@@ -474,3 +474,9 @@ PM1 生成类型仍只有 `renderer/shared/api/generated.ts`，平台桥与工�
 `adapters/http/project_runs.py` 暴露输入预检及既有批次/任务管理接口；数据节点能力不暴露为 renderer 可伪造的公共 HTTP。`renderer/domains/project-automations` 维护输入配置，`renderer/domains/project-runs` 展示预检、调度状态、不可变输入和写入事实。
 
 PM4 QA 在 `tests/qa/pm4_*` 与 `scripts/qa-project-management-pm4.mjs` 注入隔离 fake executor；Electron、FastAPI、SQLite、领取和项目数据能力真实运行。生产执行核心、CloakBrowser 与 Studio 不在该证据范围。阶段状态见 `docs/project-management/implementation/pm4/{a,b,c}-verification.md` 和 `pm4/verification.json`。当前源码业务 E2E `f-QHALLW` 已完成第二自动化读取、有限/不限链、候选态和日志搜索 Enter；`f-4QcXFG` 保留为前一提交候选；当前源码 `f-QHALLW` 已完成跨包管理链与 19 张截图审查，旧 `f-dJVKnL` 仅为历史候选。`d3a397cf`、`f07bb83b` 分别补齐人工删除和 Excel 重新导入的活动 lease 阻断，定向回归通过；当前源码的 19 张截图同视口复审与阶段全量检查均已通过。管理功能 delivered，验证 partially_verified。PM3 管理前端定向回归 16 文件/121 项、管理后端定向回归 139 项通过；`qa-project-management-pm3.mjs` 因会启动真实 CloakBrowser/生产执行核心而未执行。真实生产执行核心、CloakBrowser、Studio、Windows、打包及用户手测未执行。
+
+## 工作流代理控制（2026-09-25）
+
+`application/proxies/{usage,workflow}.py` 在现有远程控制服务之上提供sidecar使用登记、运行身份绑定和结构化结果；`infrastructure/process/proxy_worker_requests.py` 复用Studio/项目worker私有管道，长操作不阻塞控制消息。`application/workflows/executors/proxy_control.py` 统一查询、IP/地点有限重试和结果变量，`providers/browser/proxy_relay.py` 在保持入口与浏览器状态时重建出口连接。
+
+Studio共享配置位于 `renderer/domains/workflows/components/config-panels/ProxyControlConfig.tsx`，目录读取仍使用既有sidecar HTTP；`ProxyRetryCountdown` 显示配置的重试等待。未新增数据库表或调度系统。使用与验证边界见 `docs/workflow-proxy-control.md`。

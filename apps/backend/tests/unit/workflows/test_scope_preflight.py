@@ -5,7 +5,6 @@ import json
 from pathlib import Path
 
 import pytest
-
 from autoflow.domain.workflows.scope import (
     APPROVED_NODE_TYPES,
     EXCLUDED_LEGACY_NODE_TYPES,

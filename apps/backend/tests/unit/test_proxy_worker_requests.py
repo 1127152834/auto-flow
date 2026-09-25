@@ -71,3 +71,52 @@ async def test_owned_requests_are_nonblocking_deduplicated_and_generation_bound(
     assert sent[0]["executionGeneration"] == 2
     await broker.close()
     assert service.released
+
+
+@pytest.mark.asyncio
+async def test_completed_visit_revokes_permission_and_cancels_pending_request():
+    entered = asyncio.Event()
+    captured = []
+
+    class Service:
+        async def call(self, owner, payload):
+            captured.append(payload["_alive"])
+            entered.set()
+            await asyncio.Event().wait()
+
+        def release(self, owner):
+            pass
+
+    async def send(message):
+        pytest.fail("completed visit must not receive a late result")
+
+    broker = ProxyWorkerRequests(
+        Service(),
+        "run",
+        {"nodes": [{"id": "n", "data": {"moduleType": "proxy_query"}}]},
+        send,
+        lambda: True,
+    )
+    broker.observe({"type": "execution:node_start", "nodeId": "n", "executionId": "v"})
+    broker.receive(
+        {
+            "runId": "run",
+            "requestId": "r",
+            "payload": {
+                "nodeId": "n",
+                "executionId": "v",
+                "method": "query",
+                "action": "query",
+            },
+        }
+    )
+    await entered.wait()
+    assert captured[0]() is True
+    tasks = list(broker.tasks.values())
+    broker.observe(
+        {"type": "execution:node_complete", "nodeId": "n", "executionId": "v"}
+    )
+    assert captured[0]() is False
+    await asyncio.gather(*tasks, return_exceptions=True)
+    assert all(task.cancelled() for task in tasks)
+    await broker.close()

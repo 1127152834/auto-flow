@@ -80,6 +80,8 @@ class _TimedNode(ModuleExecutor):
 
 
 class _LegacyBrowserNode(ModuleExecutor):
+    requires_browser = True
+
     def __init__(self, kind: str, executor: WorkflowExecutor) -> None:
         self.kind, self.executor = kind, executor
 

@@ -208,6 +208,13 @@ class ProxyRemoteControls:
                 state = await self._provider.get_state(key, proxy.provider_id)
                 if state.proxy.provider_id != proxy.provider_id:
                     raise RevisionConflictError("远程代理身份不匹配")
+                if operation.kind == "change_ip" and state.rotation_blocked_reason in {"cooldown", "busy"}:
+                    self.operations.update(operation.id, "failed", error={
+                        "code": "PROXY_COOLDOWN" if state.rotation_blocked_reason == "cooldown" else "PROXY_BUSY",
+                        "message": "代理处于冷却期" if state.rotation_blocked_reason == "cooldown" else "代理正在切换",
+                        "retry_after_seconds": state.retry_after_seconds,
+                    })
+                    return
                 capability = (
                     "rotation_schedule"
                     if operation.kind in ("save_rotation", "clear_rotation")

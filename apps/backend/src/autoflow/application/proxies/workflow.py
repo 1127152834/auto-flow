@@ -88,6 +88,11 @@ class WorkflowProxyService:
             self.usage.unclaim(token)
             return {}
         self._validate(payload)
+        payload = {
+            **payload,
+            "_deadline": asyncio.get_running_loop().time()
+            + float(payload["confirmationTimeoutSeconds"]),
+        }
         try:
             async with asyncio.timeout(
                 float(payload.get("confirmationTimeoutSeconds", 30))
@@ -99,14 +104,11 @@ class WorkflowProxyService:
                 if method == "attempt":
                     return await self._attempt(owner, token, payload)
                 raise ValueError("Unknown proxy method")
-        except ProviderSchemaError:
+        except (asyncio.CancelledError, ProviderSchemaError):
+            self._prepared.pop(token, None)
+            self.usage.unclaim(token)
             raise
         except ProxyError as error:
-            if method == "prepare":
-                self._prepared.pop(token, None)
-                self.usage.unclaim(token)
-            return {"status": "failed", "error": failure(error), "requestsSent": 0}
-        except TimeoutError:
             if method == "prepare":
                 self._prepared.pop(token, None)
                 self.usage.unclaim(token)
@@ -115,13 +117,29 @@ class WorkflowProxyService:
             operation = (
                 self.remote.operations.get(operation_id) if operation_id else None
             )
-            sent = bool(prepared.pop("sent", False)) and bool(
-                operation and operation.before.get("write_started")
+            return {
+                "status": "failed",
+                "operationId": operation_id,
+                "error": failure(error),
+                "requestsSent": self._count_request(prepared, operation),
+            }
+        except TimeoutError:
+            if method == "prepare":
+                self._prepared.pop(token, None)
+                self.usage.unclaim(token)
+            prepared = self._prepared.get(token, {})
+            operation_id = prepared.get("operationId") or (
+                payload.get("operationId") if method == "query" else None
             )
+            prepared["reportedStatus"] = "unknown"
+            operation = (
+                self.remote.operations.get(operation_id) if operation_id else None
+            )
+            sent = self._count_request(prepared, operation)
             return {
                 "status": "unknown" if operation else "failed",
                 "operationId": operation_id,
-                "requestsSent": int(sent),
+                "requestsSent": sent,
                 "error": {
                     "code": "PROXY_OUTCOME_UNKNOWN"
                     if operation
@@ -241,7 +259,7 @@ class WorkflowProxyService:
             "target": target,
             "configuration": self._configuration(payload),
             "operationId": None,
-            "sent": False,
+            "countedOperations": set(),
         }
         return initial
 
@@ -344,7 +362,10 @@ class WorkflowProxyService:
                 operation = self.remote.reconcile(
                     existing_id, confirmation_seconds=budget, retry_if_ready=True
                 )
-            elif operation.status not in {"queued", "running"}:
+            elif operation.status == "failed" or (
+                operation.status == "succeeded"
+                and prepared.get("reportedStatus") == "succeeded"
+            ):
                 operation = None
         if operation is None:
             state, _ = await self.remote.state(proxy.id)
@@ -374,6 +395,9 @@ class WorkflowProxyService:
             if operation is None:
                 if not payload.get("_alive", lambda: True)():
                     raise asyncio.CancelledError
+                remaining = payload["_deadline"] - asyncio.get_running_loop().time()
+                if remaining <= 0:
+                    raise TimeoutError
                 operation = self.remote.submit(
                     proxy.id,
                     prepared["action"],
@@ -382,25 +406,24 @@ class WorkflowProxyService:
                     else {},
                     proxy.revision,
                     key,
-                    confirmation_seconds=budget,
+                    confirmation_seconds=remaining,
                     retry_if_ready=True,
                     owner=owner,
-                    is_active=payload.get("_alive"),
+                    is_active=lambda: (
+                        self._prepared.get(token) is prepared
+                        and asyncio.get_running_loop().time() < payload["_deadline"]
+                        and payload.get("_alive", lambda: True)()
+                    ),
                 )
-                prepared["sent"] = True
             prepared["operationId"] = operation.id
         task = self.remote._tasks.get(operation.id)
         if task is not None:
             await asyncio.shield(task)
         operation = self.remote.operations.get(operation.id)
-        sent = int(bool(prepared.pop("sent", False)))
-        # A rejected preflight did not reach the provider; acknowledged/send marker is durable.
-        if sent and not operation.before.get("write_started"):
-            sent = 0
         result = {
             "status": operation.status,
             "operationId": operation.id,
-            "requestsSent": sent,
+            "requestsSent": 0,
             "error": self._operation_error(operation),
         }
         if operation.status == "succeeded":
@@ -408,4 +431,16 @@ class WorkflowProxyService:
             result["after"] = observation(state)
             if not prepared["initial"]["current"]:
                 result["after"].update(await self._probe(proxy.id))
+        result["requestsSent"] = self._count_request(prepared, operation)
+        prepared["reportedStatus"] = operation.status
         return result
+
+    @staticmethod
+    def _count_request(prepared, operation):
+        if operation is None or not operation.before.get("write_started"):
+            return 0
+        counted = prepared.setdefault("countedOperations", set())
+        if operation.id in counted:
+            return 0
+        counted.add(operation.id)
+        return 1

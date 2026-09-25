@@ -509,3 +509,126 @@ def test_workflow_stop_during_preflight_does_not_send(remote):
     assert result['requestsSent'] == 0
     assert provider.calls == []
     call('finish')
+
+
+def test_node_finish_fences_remote_preflight_while_run_is_still_alive(remote):
+    client, provider, _, _ = remote
+    service, _, config = workflow_fixture(remote)
+
+    async def scenario():
+        payload = {**config, 'confirmationTimeoutSeconds': 1}
+        await service.call('run', {**payload, 'method': 'prepare'})
+        entered, resume = asyncio.Event(), asyncio.Event()
+        original = provider.get_state
+        reads = 0
+        async def get_state(*args):
+            nonlocal reads
+            reads += 1
+            if reads == 2:
+                entered.set()
+                await resume.wait()
+            return await original(*args)
+        provider.get_state = get_state
+        attempt = asyncio.create_task(service.call('run', {**payload, 'method': 'attempt', 'attempt': 1, '_alive': lambda: True}))
+        await asyncio.wait_for(entered.wait(), 1)
+        await service.call('run', {**payload, 'method': 'finish'})
+        resume.set()
+        await attempt
+        assert provider.calls == []
+    client.portal.call(scenario)
+
+
+def test_success_confirmed_between_rounds_is_returned_without_second_post(remote):
+    _, provider, _, controls = remote
+    service, call, _ = workflow_fixture(remote)
+    original_probe = service.probe.probe
+    waited = False
+    async def probe(projection):
+        nonlocal waited
+        if provider.calls and not waited:
+            waited = True
+            await asyncio.Event().wait()
+        return await original_probe(projection)
+    service.probe.probe = probe
+    call('prepare')
+    first = call('attempt', attempt=1)
+    assert first['status'] == 'unknown'
+    assert first['requestsSent'] == 1
+    assert controls.operations.get(first['operationId']).status == 'succeeded'
+    second = call('attempt', attempt=2, operationId=first['operationId'])
+    assert second['status'] == 'succeeded'
+    assert second['operationId'] == first['operationId']
+    assert second['requestsSent'] == 0
+    assert len(provider.calls) == 1
+    call('finish')
+
+
+def test_failed_post_switch_probe_preserves_operation_and_sent_count(remote):
+    _, provider, _, _ = remote
+    service, call, _ = workflow_fixture(remote)
+    original_probe = service.probe.probe
+    rejected = False
+
+    async def probe(projection):
+        nonlocal rejected
+        if provider.calls and not rejected:
+            rejected = True
+            raise ProviderUnavailableError("probe unavailable")
+        return await original_probe(projection)
+
+    service.probe.probe = probe
+    call('prepare')
+    first = call('attempt', attempt=1)
+    assert first['status'] == 'failed'
+    assert first['requestsSent'] == 1
+    assert first['operationId']
+    second = call('attempt', attempt=2)
+    assert second['status'] == 'succeeded'
+    assert second['operationId'] == first['operationId']
+    assert second['requestsSent'] == 0
+    assert len(provider.calls) == 1
+    call('finish')
+
+
+def test_cooldown_arriving_in_remote_preflight_remains_retryable(remote):
+    _, provider, _, _ = remote
+    _, call, _ = workflow_fixture(remote)
+    call('prepare')
+    original = provider.get_state
+    reads = 0
+    async def state(*args):
+        nonlocal reads
+        reads += 1
+        value = await original(*args)
+        if reads >= 2:
+            return replace(value, rotation_blocked_reason='cooldown', rotation_available=False,
+                capabilities=tuple(replace(cap, available=False, reason='cooldown') for cap in value.capabilities))
+        return value
+    provider.get_state = state
+    result = call('attempt', attempt=1)
+    assert result['error']['code'] == 'PROXY_COOLDOWN'
+    assert result['error']['retryAllowed'] is True
+    assert result['requestsSent'] == 0 and provider.calls == []
+    call('finish')
+
+
+def test_cancelled_prepare_releases_claim_without_writing(remote):
+    client, provider, _, _ = remote
+    service, _, config = workflow_fixture(remote)
+    async def scenario():
+        entered = asyncio.Event()
+        original = provider.get_state
+        async def wait_state(*args):
+            entered.set()
+            await asyncio.Event().wait()
+            return await original(*args)
+        provider.get_state = wait_state
+        task = asyncio.create_task(service.call('run', {**config, 'method': 'prepare'}))
+        await entered.wait()
+        task.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await task
+        assert not service.usage.controls
+        assert not service._prepared
+        assert provider.calls == []
+    client.portal.call(scenario)
