@@ -145,3 +145,18 @@ it('keeps the draft and ignores a late save response after reconnecting to anoth
   expect(screen.getByLabelText('自动化名称')).toHaveValue('重连草稿')
   expect(view.props.onCreated).not.toHaveBeenCalled()
 })
+
+it('shows the saved concurrency limit in the actual launch dialog', async () => {
+  const saved = { ...automation, runPolicy: { ...automation.runPolicy, concurrency: 4, maxLiveInstances: 2 } }
+  const request = vi.fn(async (path: string) => {
+    const found = resources(path); if (found) return found
+    if (path.endsWith('/automations/a')) return saved
+    if (path.includes('/validation')) return { status: 'ready', valid: true, runnable: true, issues: [] }
+    return { items: [], total: 0 }
+  }) as StreamingApiClient['request']
+  mount(request, { automationId: 'a', onBatchCreated: vi.fn() })
+  await userEvent.click(await screen.findByRole('button', { name: '启动运行' }))
+  const dialog = await screen.findByRole('dialog')
+  expect(within(dialog).getByText('配置并发上限 2')).toBeVisible()
+  expect(within(dialog).queryByText('按顺序执行')).not.toBeInTheDocument()
+})

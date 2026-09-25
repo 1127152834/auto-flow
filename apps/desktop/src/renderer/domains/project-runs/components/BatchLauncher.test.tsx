@@ -91,3 +91,27 @@ it('uses saved parameter concurrency and allows editing before launch', () => {
   fireEvent.change(screen.getByLabelText('请求并发数'), { target: { value: '2' } })
   expect(screen.getByLabelText('请求并发数')).toHaveValue('2')
 })
+
+it('refreshes untouched concurrency after saving while closed before the first launch', async () => {
+  const request = vi.fn().mockResolvedValue({}) as StreamingApiClient['request']
+  const p = props(request, { open: false })
+  const view = render(<BatchLauncher {...p}/>)
+  const savedAutomation = { ...automation, managementRevision: 8, runPolicy: { ...automation.runPolicy, concurrency: 2, maxLiveInstances: 2 } }
+  view.rerender(<BatchLauncher {...p} savedAutomation={savedAutomation}/>)
+  view.rerender(<BatchLauncher {...p} open savedAutomation={savedAutomation}/>)
+  expect(screen.getByLabelText('请求并发数')).toHaveValue('2')
+  fireEvent.click(screen.getByRole('button', { name: '启动 10 个任务' }))
+  await waitFor(() => expect(request).toHaveBeenCalledWith(expect.stringContaining('/batches'), expect.objectContaining({ body: expect.objectContaining({ concurrency: 2, expectedAutomationRevision: 8 }) })))
+})
+
+it('preserves explicit concurrency override across save/reconnect and resets for a different automation', () => {
+  const p = props(vi.fn())
+  const view = render(<BatchLauncher {...p}/>)
+  fireEvent.change(screen.getByLabelText('请求并发数'), { target: { value: '3' } })
+  const savedAutomation = { ...automation, managementRevision: 8, runPolicy: { ...automation.runPolicy, concurrency: 2 } }
+  view.rerender(<BatchLauncher {...p} open={false} instanceId="i2" savedAutomation={savedAutomation}/>)
+  view.rerender(<BatchLauncher {...p} instanceId="i2" savedAutomation={savedAutomation}/>)
+  expect(screen.getByLabelText('请求并发数')).toHaveValue('3')
+  view.rerender(<BatchLauncher {...p} savedAutomation={{ ...savedAutomation, automationId: 'different' }}/>)
+  expect(screen.getByLabelText('请求并发数')).toHaveValue('2')
+})

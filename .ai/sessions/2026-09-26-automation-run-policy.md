@@ -1,6 +1,6 @@
 # 自动化运行设置边界调整
 
-日期：2026-09-26；状态：confirmed（界面与默认值）；参数批次并发补充 proposed。
+日期：2026-09-26；状态：confirmed（界面与默认值）；参数批次并发补充已于同日获批，见下文后续记录。
 来源：本轮用户要求、RunPolicyEditor/form-schema、ProjectBatchScheduler 与既有环境回收测试。
 
 ## 已实施
