@@ -5,7 +5,7 @@ import json
 from collections.abc import Mapping
 from datetime import UTC, datetime
 from threading import RLock
-from typing import Any
+from typing import Any, NoReturn
 
 from autoflow.domain.credentials import CredentialStore, CredentialStoreUnavailableError
 from autoflow.domain.workflows.models import WorkflowError
@@ -20,6 +20,7 @@ class StudioCredentialService:
     ) -> None:
         self._metadata = metadata
         self._secrets = secrets
+        self._workspace_id = metadata.workspace_identity()
         self._mutation_lock = RLock()
 
     def list_items(self) -> list[dict[str, Any]]:
@@ -40,6 +41,11 @@ class StudioCredentialService:
         name = self._name(name)
         incoming = self._fields(fields)
         old = self._read_raw(name)
+        existing = self._metadata.get(name)
+        if old is None and existing is not None:
+            required = {field["key"] for field in existing["fields"]}
+            if not required.issubset(incoming):
+                self._require_reentry()
         merged = self._decode(old) if old is not None else {}
         merged.update(incoming)
         self._write(name, merged)
@@ -85,6 +91,8 @@ class StudioCredentialService:
                 409,
             )
         old = self._read_raw(name)
+        if old is None:
+            self._require_reentry()
         values = self._decode(old)
         next_values = self._apply_operations(values, operations)
         self._write(name, next_values)
@@ -114,7 +122,7 @@ class StudioCredentialService:
             raise WorkflowError("CREDENTIAL_EXISTS", "凭据名称已存在", 409)
         old = self._read_raw(old_name)
         if old is None:
-            raise WorkflowError("CREDENTIAL_SECRET_MISSING", "凭据秘密不存在", 409)
+            self._require_reentry()
         if old_name != new_name:
             self._write_raw(new_name, old)
             try:
@@ -152,7 +160,18 @@ class StudioCredentialService:
     def resolve(self, name: str) -> dict[str, str]:
         if self._metadata.get(name) is None:
             raise WorkflowError("CREDENTIAL_NOT_FOUND", "凭据不存在", 404)
-        return self._decode(self._read_raw(name))
+        value = self._read_raw(name)
+        if value is None:
+            self._require_reentry()
+        return self._decode(value)
+
+    @staticmethod
+    def _require_reentry() -> NoReturn:
+        raise WorkflowError(
+            "CREDENTIAL_REENTRY_REQUIRED",
+            "此工作区的凭据秘密不可用，请编辑凭据并重新录入全部字段；旧系统条目保持不变",
+            409,
+        )
 
     @staticmethod
     def _name(value: str) -> str:
@@ -195,10 +214,9 @@ class StudioCredentialService:
             raise WorkflowError("CREDENTIAL_FIELDS_EMPTY", "至少需要一个字段", 400)
         return result
 
-    @staticmethod
-    def _key(name: str) -> str:
+    def _key(self, name: str) -> str:
         digest = hashlib.sha256(name.encode()).hexdigest()
-        return f"studio-credential:{digest}"
+        return f"studio-credential:v2:{self._workspace_id}:{digest}"
 
     def _read_raw(self, name: str) -> bytes | None:
         try:

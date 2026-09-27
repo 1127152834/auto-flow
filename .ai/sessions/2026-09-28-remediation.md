@@ -5,3 +5,5 @@
 共享安全切片：统一GET/HEAD/download/preview/thumb/list和上传/目录写操作边界，排他创建与目录句柄防替换，单文件共享不暴露兄弟文件。预览明确415与页面提示。修复前16失败/5通过；修复后24项真实HTTP/磁盘 + 6项host/executor共30通过。平台差异集中于共享文件适配器；Windows安全句柄分支未实机验收。详细证据见docs/qa/2026-09-28-remediation/share.md。
 
 本轮AOCI仍由另一任务建立，checkpoint明确deferred_until_stable，未改写正式索引。总任务仍需凭据/Electron、PM9、正确性、诊断、质量门禁与最终全量/打包真实验收。
+
+- confirmed：SEC-03 以 SQLite 持久 UUID 隔离系统凭据键；旧键保持不动、缺秘密要求全部重录。26 后端、109 前端、9 macOS 原生检查通过，证据见 credentials.md。AOCI 在第三块遭并发索引变化中止，未接管维护。

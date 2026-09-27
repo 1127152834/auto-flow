@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 from datetime import datetime
 from typing import Any
+from uuid import uuid4
 
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session, sessionmaker
@@ -19,6 +20,19 @@ from .workflow_models import (
 class SqlAlchemyStudioCredentials:
     def __init__(self, session_factory: sessionmaker[Session]) -> None:
         self._session_factory = session_factory
+
+    def workspace_identity(self) -> str:
+        with self._session_factory() as database:
+            database.execute(text("BEGIN IMMEDIATE"))
+            state = database.get(StudioCredentialStateRow, 1)
+            if state is None:
+                state = StudioCredentialStateRow(id=1, revision=0)
+                database.add(state)
+            if state.workspace_id is None:
+                state.workspace_id = str(uuid4())
+            identity = state.workspace_id
+            database.commit()
+            return identity
 
     def list_items(self) -> list[dict[str, Any]]:
         with self._session_factory() as database:

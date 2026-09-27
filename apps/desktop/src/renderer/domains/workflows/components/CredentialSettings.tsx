@@ -191,7 +191,7 @@ export function CredentialSettings({ registerLeaveGuard }: { registerLeaveGuard?
               <Plus className="w-4 h-4 mr-1" />添加字段
             </Button>
           </div>}
-          {!renaming && !managingFields && source && <p className="text-xs text-gray-500">内容编辑保留已有字段；字段删除或改名请使用列表中的「管理字段」。留空保留原值。</p>}
+          {!renaming && !managingFields && source && <p className="text-xs text-gray-500">内容编辑保留已有字段；字段删除或改名请使用列表中的「管理字段」。留空保留原值。若提示凭据秘密不可用，请重新填写全部字段后保存；旧版本的系统条目不会自动读取或删除。需要空值时可删除本工作区的凭据记录后重新创建。</p>}
           {managingFields && <p className="text-xs text-gray-500">仅修改字段名或删除字段，保存后一次提交；改名保留原值。已有工作流引用需手动更新，至少保留一个字段。发生冲突请取消并重新打开。</p>}
           {pendingFields && <p role="status">字段修改结果尚未确认，输入已锁定。请再次保存以原命令重试核对，避免重复修改。</p>}
           <div className="flex justify-end gap-2">

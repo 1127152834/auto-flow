@@ -92,6 +92,7 @@ class StudioCredentialStateRow(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     revision: Mapped[int] = mapped_column(Integer, nullable=False)
+    workspace_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
 
 
 class StudioCredentialCommandRow(Base):
