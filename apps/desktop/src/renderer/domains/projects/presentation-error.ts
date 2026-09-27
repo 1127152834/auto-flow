@@ -1,4 +1,4 @@
-/** Project-owned errors are presented by code. Raw diagnostics never become UI copy. */
+/** Project errors use known codes and bounded, actionable cell details. */
 const messages: Record<string, string> = {
   RUN_ASSET_PROJECT_MISMATCH: '运行数据不属于当前项目',
   RUN_ASSET_IDENTITY_MISMATCH: '结果身份不匹配，请重新读取',
@@ -47,12 +47,41 @@ const messages: Record<string, string> = {
   SYNC_NOT_ABANDONABLE: '这条改动仍在处理中，不能放弃',
   FIELD_VALUES_INCOMPATIBLE: '现有记录不满足新的字段规则，请检查后重试',
 }
+const cellReasons: Record<string, string> = {
+  'must be a finite JSON-safe number': '必须是有限的 JSON 安全数字',
+  'must be text': '必须是文本',
+  'must be boolean': '必须是布尔值',
+  'required values must not be null': '必填值不能为空',
+  'required text must not be empty': '必填文本不能为空',
+  'must contain valid Unicode scalar values': '文本包含无效字符',
+}
+const cellRules: Record<string, string> = {
+  type: '字段类型不符合要求', required: '必填值不能为空',
+  minLength: '文本长度低于下限', maxLength: '文本长度超过上限',
+  minimum: '数值低于下限', maximum: '数值超过上限', pattern: '文本不符合字段格式',
+}
+function importCellError(details: unknown): string | null {
+  if (!details || typeof details !== 'object') return null
+  const value = details as Record<string, unknown>
+  // Backend columnIndex is zero-based; workbook rowNumber is already one-based.
+  if (!Number.isSafeInteger(value.rowNumber) || Number(value.rowNumber) < 1
+    || !Number.isSafeInteger(value.columnIndex) || Number(value.columnIndex) < 0) return null
+  const field = typeof value.field === 'string' && value.field.length <= 120
+    && !/[\p{Cc}\p{Cf}]/u.test(value.field) ? `，字段「${value.field}」` : ''
+  const reason = typeof value.reason === 'string' && Object.hasOwn(cellReasons, value.reason) ? cellReasons[value.reason]
+    : typeof value.rule === 'string' && Object.hasOwn(cellRules, value.rule) ? cellRules[value.rule] : '单元格不符合字段要求'
+  return `第 ${value.rowNumber} 行，第 ${Number(value.columnIndex) + 1} 列${field}：${reason}`
+}
 export function safeProjectError(error: unknown): string {
   if (error && typeof error === 'object') {
     if ('name' in error && error.name === 'ProjectCommandUncertain') return '上次保存结果尚未确认，请核对保存结果'
     if ('name' in error && error.name === 'DataCommandUncertain') return '上次操作结果尚未确认，请先核对原操作'
     if ('name' in error && error.name === 'DataCommandNotAccepted') return '原操作尚未接受，请核对后使用原请求重试'
     const code = 'code' in error && typeof error.code === 'string' ? error.code : undefined
+    if (code === 'INVALID_PROJECT_DATA' && 'details' in error) {
+      const cell = importCellError(error.details)
+      if (cell) return cell
+    }
     if (code && Object.hasOwn(messages, code)) return messages[code]
   }
   return '操作失败，请重试'

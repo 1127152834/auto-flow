@@ -19,6 +19,7 @@ from typing import Any
 from uuid import uuid4
 
 from autoflow.domain.android.ports import AndroidError
+from autoflow.infrastructure.credentials.redaction import redact_sensitive_text
 from autoflow.infrastructure.filesystem.locking import ExclusiveFileLock
 from autoflow.infrastructure.process.browser_processes import process_birth
 from autoflow.infrastructure.process.test_browser_worker import _wait_for_spawn
@@ -40,9 +41,11 @@ async def run(argv: list[str], timeout: float = 15) -> bytes:
         await process.wait()
         raise
     try:
-        stdout, _ = await asyncio.wait_for(process.communicate(), timeout)
+        stdout, stderr = await asyncio.wait_for(process.communicate(), timeout)
         if process.returncode:
-            raise AndroidError("ANDROID_COMMAND_FAILED", "安卓运行环境命令失败，请检查设备与连接", 502)
+            reason = redact_sensitive_text(stderr.decode('utf-8', errors='replace').strip())
+            reason = ''.join(char for char in reason if char.isprintable() or char in '\n\t')[:2000]
+            raise AndroidError("ANDROID_COMMAND_FAILED", f"安卓运行环境命令失败（退出码 {process.returncode}）" + (f"：{reason}" if reason else "，命令未返回错误说明"), 502)
         return stdout
     finally:
         if process.returncode is None:
@@ -82,22 +85,54 @@ class MacAndroidRuntime:
 
     async def environment(self) -> dict[str, Any]:
         supported = platform.system() == "Darwin" and platform.machine() == "arm64"
-        tools = all(shutil.which(tool) for tool in ("adb", "limactl", "ssh"))
+        missing = [tool for tool in ("adb", "limactl", "ssh") if not shutil.which(tool)]
+        tools = not missing
         vendor = (self.root / VENDOR / "scrcpy").is_file()
         ready = False
         info: dict[str, Any] = {}
+        issues = []
+        if not supported:
+            issues.append("仅支持 Apple Silicon Mac")
+        if missing:
+            issues.append("缺少命令：" + '、'.join(missing))
+        if not vendor:
+            issues.append("缺少固定版 scrcpy")
         if supported and tools:
             try:
                 info = json.loads(await docker("info", "--format", "{{json .}}", timeout=5))
+                if not isinstance(info, dict) or any(type(info.get(key, 0)) is not int or info.get(key, 0) < 0 for key in ("NCPU", "MemTotal")):
+                    raise ValueError("invalid Docker capacity")
                 filesystems = await run(["limactl", "shell", "--workdir=/tmp", VM, "cat", "/proc/filesystems"], 5)
                 ready = info.get("OSType") == "linux" and info.get("Architecture") in {"aarch64", "arm64"} and b"binder" in filesystems
-            except (AndroidError, TimeoutError, OSError, ValueError):
-                pass
+                if not ready:
+                    issues.append("Lima 需要 ARM64 Linux 与 binder 文件系统支持")
+                else:
+                    network = json.loads(await docker("network", "inspect", "bridge", timeout=5))[0]
+                    bridge = (network.get("Options") or {}).get("com.docker.network.bridge.name", "docker0")
+                    if not isinstance(bridge, str) or not re.fullmatch(r"[A-Za-z0-9_.-]{1,15}", bridge):
+                        raise ValueError("invalid bridge interface")
+                    try:
+                        await run(["limactl", "shell", "--workdir=/tmp", VM, "test", "-d", "/sys/class/net/" + bridge], 5)
+                    except AndroidError as error:
+                        raise AndroidError("ANDROID_NETWORK_UNAVAILABLE", f"Docker 默认网络接口 {bridge} 不可用：{error.message}", 503) from error
+            except AndroidError as error:
+                ready = False
+                issues.append(error.message)
+            except TimeoutError:
+                ready = False
+                issues.append("Lima 运行环境检查超时")
+            except OSError as error:
+                ready = False
+                issues.append(f"运行环境命令无法启动：{error.strerror or type(error).__name__}")
+            except (ValueError, IndexError, TypeError, AttributeError):
+                ready = False
+                info = {}
+                issues.append("Docker 运行环境返回的数据格式无效")
         from autoflow.providers.android.management import images
 
         cached = await images() if ready else []
         return {"images": cached, "cpuCount": info.get("NCPU", 0), "memoryMb": info.get("MemTotal", 0) // (1024 * 1024), "available": supported and tools and vendor and ready, "platformSupported": supported,
-                "runtimeId": VM, "message": "运行环境可用" if supported and tools and vendor and ready else "需要 Apple Silicon Mac、Lima Linux、ADB 和固定版 scrcpy；请运行设备准备命令"}
+                "runtimeId": VM, "message": "运行环境可用" if supported and tools and vendor and ready else "；".join(issues)}
 
     def new_device(self, config: dict[str, Any]) -> dict[str, Any]:
         name = "autoflow-android-" + config["deviceId"]

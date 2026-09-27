@@ -1,0 +1,13 @@
+{
+  "checkedAt": "2026-09-27T19:13:39.456958+00:00",
+  "method": "production environment; read-only Docker info/network/image inspect and Linux filesystem probes",
+  "environment": {
+    "images": [],
+    "cpuCount": 6,
+    "memoryMb": 7921,
+    "available": false,
+    "platformSupported": true,
+    "runtimeId": "autoflow-redroid",
+    "message": "Docker 默认网络接口 docker0 不可用：安卓运行环境命令失败（退出码 1），命令未返回错误说明"
+  }
+}

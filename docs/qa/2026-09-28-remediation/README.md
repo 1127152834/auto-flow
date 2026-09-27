@@ -17,8 +17,8 @@
 | FUNC-01 共享预览 | 当前 import 指向不存在模块 | preview 与共享页面 | 返回明确不支持并同步页面；现有媒体/文本下载保留 | 真 HTTP 不再500、不假成功 | 明确415与UI提示；本机通过 |
 | N-03 SHA | 历史未知算法静默 sha256 | 散列节点 | 白名单拒绝未知值 | 真实文件文本与独立 hashlib | 已修复；限定验收见 nodes.md |
 | F-01 代理必填字段 | 历史元数据213，批准216 | 导出器/后端准入/前端配置 | 从当前正确配置同步必填约束与检查集合 | 缺字段拒绝、完整配置准入、生成一致 | 6脚本+20前端+23后端通过，见 required-fields.md |
-| N-04 导入错误 | 持久错误 details 存在，UI 只显示通用码 | Excel import/status/presentation-error | 白名单展示行列字段和类型要求 | 真 XLSX 错映射→定位→修正→保存/重启 | 核对中 |
-| A-04/A-10 Android | available=true 与 docker0 缺失并存；stderr 丢弃 | runtime/environment/management/UI | 依赖诊断+稳定错误分类；准确工作流文案 | 当前 VM 只读诊断；自有资源；不修共享 VM | 核对中 |
+| N-04 导入错误 | 持久错误 details 存在，UI 只显示通用码 | Excel import/status/presentation-error | 白名单展示行列字段和类型要求 | 真 XLSX 错映射→定位→修正→保存/重启 | 展示修复29项通过，真实UI待验；见 diagnostics.md |
+| A-04/A-10 Android | available=true 与 docker0 缺失并存；stderr 丢弃 | runtime/environment/management/UI | 依赖诊断+稳定错误分类；准确工作流文案 | 当前 VM 只读诊断；自有资源；不修共享 VM | 14后端+12前端通过，真实诊断确认网络缺失；见 diagnostics.md |
 | F-02/A-06 文案 | PROJECT_STRUCTURE 入口已由其他任务修正；其他旧描述待处理 | 教学/Android/架构与.ai入口 | 更新当前能力，保留历史记录 | 当前目录与页面人工核对 | 部分历史结论已修订 |
 | QA-01 旧门禁 | 历史64后端/54前端/4脚本失败分报告 | smoke/迁移schema/registry/生命周期/生成检查 | 逐项契约证据后更新；检查不写既有证据 | 定向红绿→最终全量；原始失败分类 | 核对中 |
 | QA-02 静态检查 | Ruff137；普通mypy过，strict1041债务 | CI/后端src/tests | 修实际lint；strict独立基线、禁止新增，不泛化Any | lint/typecheck/债务门禁真实运行 | 核对中 |

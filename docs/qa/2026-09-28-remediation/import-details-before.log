@@ -1,0 +1,63 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/projects/presentation-error.test.ts src/renderer/domains/project-data/use-excel-import.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:20505) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:20504) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/projects/presentation-error.test.ts (18 tests | 1 failed) 7ms
+   × preserves actionable import cell details with one-based display columns 5ms
+ ❯ src/renderer/domains/project-data/use-excel-import.test.tsx (7 tests | 1 failed) 141ms
+   × restores the persisted cell error after a new service instance without repeating import 56ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/projects/presentation-error.test.ts > preserves actionable import cell details with one-based display columns
+AssertionError: expected '填写内容有误，请检查后重试' to be '第 2 行，第 2 列，字段「bytes」：必须是有限的 JSON 安全数字' // Object.is equality
+
+Expected: "第 2 行，第 2 列，字段「bytes」：必须是有限的 JSON 安全数字"
+Received: "填写内容有误，请检查后重试"
+
+ ❯ src/renderer/domains/projects/presentation-error.test.ts:8:35
+      6| it('preserves actionable import cell details with one-based display co…
+      7|   const error = { code: 'INVALID_PROJECT_DATA', details: { rowNumber: …
+      8|   expect(safeProjectError(error)).toBe('第 2 行，第 2 列，字段「bytes」：必须是有限的 J…
+       |                                   ^
+      9|   expect(safeProjectError({ ...error, details: { ...error.details, col…
+     10|   expect(safeProjectError({ ...error, details: { ...error.details, rea…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/renderer/domains/project-data/use-excel-import.test.tsx > restores the persisted cell error after a new service instance without repeating import
+AssertionError: expected '填写内容有误，请检查后重试' to be '第 2 行，第 2 列，字段「bytes」：必须是有限的 JSON 安全数字' // Object.is equality
+
+Expected: "第 2 行，第 2 列，字段「bytes」：必须是有限的 JSON 安全数字"
+Received: "填写内容有误，请检查后重试"
+
+ ❯ src/renderer/domains/project-data/use-excel-import.test.tsx:74:37
+     72|   const hook = renderHook(() => useExcelImport({ api: api as never, sc…
+     73|   await waitFor(() => expect(hook.result.current.phase).toBe('failed'))
+     74|   expect(hook.result.current.error).toBe('第 2 行，第 2 列，字段「bytes」：必须是有限的…
+       |                                     ^
+     75|   expect(api.startImport).not.toHaveBeenCalled()
+     76|   expect(api.lookupImport).toHaveBeenCalledWith('original', expect.any…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  2 failed | 23 passed (25)
+   Start at  03:11:08
+   Duration  858ms (transform 297ms, setup 308ms, import 102ms, tests 148ms, environment 775ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/projects/presentation-error.test.ts src/renderer/domains/project-data/use-excel-import.test.tsx

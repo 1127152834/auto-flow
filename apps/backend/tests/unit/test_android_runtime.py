@@ -1,5 +1,6 @@
 import json
 import struct
+import sys
 from concurrent.futures import ThreadPoolExecutor
 from unittest.mock import AsyncMock
 
@@ -12,6 +13,49 @@ from autoflow.infrastructure.database.session import (
     migrate_database,
 )
 from autoflow.providers.android import mac_runtime as mac
+
+
+@pytest.mark.asyncio
+async def test_failed_real_command_preserves_bounded_redacted_reason():
+    with pytest.raises(AndroidError) as caught:
+        await mac.run([sys.executable, '-c', 'import sys;sys.stderr.write("bridge docker0 does not exist\\nAuthorization: Bearer qa-secret");sys.exit(17)'])
+    assert caught.value.code == 'ANDROID_COMMAND_FAILED'
+    assert '17' in caught.value.message
+    assert 'bridge docker0 does not exist' in caught.value.message
+    assert 'qa-secret' not in caught.value.message
+    with pytest.raises(AndroidError) as long_error:
+        await mac.run([sys.executable, '-c', 'import sys;sys.stderr.write("x"*5000);sys.exit(1)'])
+    assert len(long_error.value.message) < 2200
+
+
+@pytest.mark.asyncio
+async def test_missing_docker_bridge_is_not_a_ready_environment(tmp_path, monkeypatch):
+    monkeypatch.setattr(mac.platform, 'system', lambda: 'Darwin')
+    monkeypatch.setattr(mac.platform, 'machine', lambda: 'arm64')
+    monkeypatch.setattr(mac.shutil, 'which', lambda tool: '/tools/' + tool)
+    vendor = tmp_path / mac.VENDOR / 'scrcpy'
+    vendor.parent.mkdir()
+    vendor.touch()
+    docker = AsyncMock(side_effect=[json.dumps({'OSType': 'linux', 'Architecture': 'aarch64'}).encode(), json.dumps([{'Options': {'com.docker.network.bridge.name': 'docker0'}}]).encode()])
+    monkeypatch.setattr(mac, 'docker', docker)
+    command = AsyncMock(side_effect=[b'nodev\tbinder\n', AndroidError('ANDROID_COMMAND_FAILED', 'bridge unavailable', 502)])
+    monkeypatch.setattr(mac, 'run', command)
+    result = await mac.MacAndroidRuntime(tmp_path, tmp_path).environment()
+    assert result['available'] is False
+    assert 'docker0' in result['message']
+    assert command.await_args_list[-1].args[0][-2:] == ['-d', '/sys/class/net/docker0']
+
+
+@pytest.mark.asyncio
+async def test_malformed_environment_response_becomes_diagnostic_not_500(tmp_path, monkeypatch):
+    monkeypatch.setattr(mac.platform, 'system', lambda: 'Darwin')
+    monkeypatch.setattr(mac.platform, 'machine', lambda: 'arm64')
+    monkeypatch.setattr(mac.shutil, 'which', lambda tool: '/tools/' + tool)
+    monkeypatch.setattr(mac, 'docker', AsyncMock(return_value=b'[]'))
+    result = await mac.MacAndroidRuntime(tmp_path, tmp_path).environment()
+    assert result['available'] is False
+    assert result['cpuCount'] == 0
+    assert '数据格式无效' in result['message']
 
 
 def test_database_claim_has_one_winner(tmp_path):

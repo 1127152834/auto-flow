@@ -65,4 +65,14 @@ it('keeps terminal failure evidence until the user starts a new import', async (
   await act(() => hook.result.current.submit({ mode: 'create', request })); expect(hook.result.current.operation?.status).toBe('failed'); expect(localStorage.getItem('autoflow:excel-import:w:p')).not.toBeNull()
   act(() => hook.result.current.reset()); expect(hook.result.current.operation).toBeNull(); await act(() => hook.result.current.submit({ mode: 'create', request: { ...request, name: '修正后' } })); expect(api.startImport).toHaveBeenCalledTimes(2)
 })
+it('restores the persisted cell error after a new service instance without repeating import', async () => {
+  localStorage.setItem('autoflow:excel-import:w:p', JSON.stringify({ key: 'original', body: { mode: 'create', request } }))
+  const failed = { ...operation, status: 'failed', error: { code: 'INVALID_PROJECT_DATA', details: { rowNumber: 2, columnIndex: 1, field: 'bytes', rule: 'type', reason: 'must be a finite JSON-safe number' } } }
+  const api = { startImport: vi.fn(), replace: vi.fn(), lookupImport: vi.fn().mockResolvedValue(failed) }
+  const hook = renderHook(() => useExcelImport({ api: api as never, scopeKey: 'w:p', contextKey: 'restarted', active: true }))
+  await waitFor(() => expect(hook.result.current.phase).toBe('failed'))
+  expect(hook.result.current.error).toBe('第 2 行，第 2 列，字段「bytes」：必须是有限的 JSON 安全数字')
+  expect(api.startImport).not.toHaveBeenCalled()
+  expect(api.lookupImport).toHaveBeenCalledWith('original', expect.any(Function), undefined)
+})
 // @vitest-environment jsdom

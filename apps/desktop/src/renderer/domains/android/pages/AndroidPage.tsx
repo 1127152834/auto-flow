@@ -433,7 +433,7 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
       <Dialog open={allocateOpen} onOpenChange={setAllocateOpen} busy={busy}>
         <DialogContent>
           <DialogTitle>分配给工作流</DialogTitle>
-          <DialogDescription>工作流执行期间独占设备；失败或中断时保留设备检查。</DialogDescription>
+          <DialogDescription>安卓工作流执行尚未开放，当前不能加入分配队列。设备管理和手动控制仍可使用。</DialogDescription>
           {allocation && (
             <div className="ad-page ad-profile-editor" style={{ minHeight: 0, padding: 0 }}>
               <label>
@@ -526,7 +526,7 @@ export function AndroidPage({ connected = true }: { connected?: boolean }) {
               )}
               <Action
                 primary
-                disabled={busy || !allocation.workflowId || !allocation.profileId}
+                disabled
                 onClick={() =>
                   void perform(async () => {
                     const values = Object.fromEntries(

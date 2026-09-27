@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import type { components } from '../../../shared/api/generated'
 import { Button } from '../../../shared/components/ui/button'
+import { safeProjectError } from '../../projects/presentation-error'
 
 type Operation = components['schemas']['ProjectOperationView']
 export function DataOperationStatus({ operation, error, busy = false, onRefresh, onReconcile, onStop, children }: {
@@ -8,6 +9,7 @@ export function DataOperationStatus({ operation, error, busy = false, onRefresh,
   onRefresh?(): void; onReconcile?(): void; onStop?(): void; children?: ReactNode
 }) {
   const result = operation.result
+  const errorMessage = error || (operation.error ? safeProjectError(operation.error) : null)
   const batch = result && 'blocks' in result ? result : null
   const terminal = operation.status === 'succeeded' || operation.status === 'failed'
   const title = operation.status === 'succeeded' ? '操作已完成'
@@ -21,7 +23,7 @@ export function DataOperationStatus({ operation, error, busy = false, onRefresh,
     {batch ? <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm"><span>已修改 {batch.changedCount} 条</span><span>冲突 {batch.conflictCount} 条</span><span>未执行 {batch.notStartedCount} 条</span></div> : null}
     {operation.status === 'succeeded' && filename && recordCount !== null ? <p className="m-0 break-all text-sm">{filename} · {recordCount} 条记录</p> : null}
     {!terminal ? <p className="m-0 text-xs text-muted">关闭此视图不会取消已接受的操作，返回后可继续核对结果。</p> : null}
-    {error ? <p role="alert" className="m-0 text-sm text-danger">{error}</p> : null}
+    {errorMessage ? <p role="alert" className="m-0 break-words text-sm text-danger">{errorMessage}</p> : null}
     {children}
     <div className="flex flex-wrap gap-2">
       {onRefresh ? <Button size="sm" variant="ghost" disabled={busy} onClick={onRefresh}>刷新结果</Button> : null}

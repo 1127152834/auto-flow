@@ -1,0 +1,41 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+__________ test_failed_real_command_preserves_bounded_redacted_reason __________
+
+    @pytest.mark.asyncio
+    async def test_failed_real_command_preserves_bounded_redacted_reason():
+        with pytest.raises(AndroidError) as caught:
+            await mac.run([sys.executable, '-c', 'import sys;sys.stderr.write("bridge docker0 does not exist\\nAuthorization: Bearer qa-secret");sys.exit(17)'])
+        assert caught.value.code == 'ANDROID_COMMAND_FAILED'
+>       assert '17' in caught.value.message
+E       AssertionError: assert '17' in '安卓运行环境命令失败，请检查设备与连接'
+E        +  where '安卓运行环境命令失败，请检查设备与连接' = AndroidError('安卓运行环境命令失败，请检查设备与连接').message
+E        +    where AndroidError('安卓运行环境命令失败，请检查设备与连接') = <ExceptionInfo AndroidError('安卓运行环境命令失败，请检查设备与连接') tblen=2>.value
+
+tests/unit/test_android_runtime.py:23: AssertionError
+____________ test_missing_docker_bridge_is_not_a_ready_environment _____________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-506/test_missing_docker_bridge_is_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10b683b90>
+
+    @pytest.mark.asyncio
+    async def test_missing_docker_bridge_is_not_a_ready_environment(tmp_path, monkeypatch):
+        monkeypatch.setattr(mac.platform, 'system', lambda: 'Darwin')
+        monkeypatch.setattr(mac.platform, 'machine', lambda: 'arm64')
+        monkeypatch.setattr(mac.shutil, 'which', lambda tool: '/tools/' + tool)
+        vendor = tmp_path / mac.VENDOR / 'scrcpy'
+        vendor.parent.mkdir()
+        vendor.touch()
+        docker = AsyncMock(side_effect=[json.dumps({'OSType': 'linux', 'Architecture': 'aarch64'}).encode(), json.dumps([{'Options': {'com.docker.network.bridge.name': 'docker0'}}]).encode()])
+        monkeypatch.setattr(mac, 'docker', docker)
+        command = AsyncMock(side_effect=[b'nodev\tbinder\n', AndroidError('ANDROID_COMMAND_FAILED', 'bridge unavailable', 502)])
+        monkeypatch.setattr(mac, 'run', command)
+        result = await mac.MacAndroidRuntime(tmp_path, tmp_path).environment()
+>       assert result['available'] is False
+E       assert True is False
+
+tests/unit/test_android_runtime.py:44: AssertionError
+=========================== short test summary info ============================
+FAILED tests/unit/test_android_runtime.py::test_failed_real_command_preserves_bounded_redacted_reason
+FAILED tests/unit/test_android_runtime.py::test_missing_docker_bridge_is_not_a_ready_environment
+2 failed, 6 deselected in 0.34s
