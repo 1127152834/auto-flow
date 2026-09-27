@@ -48,7 +48,9 @@ it('removes unsupported features from every searchable and downloadable teaching
   expect(ids.has('plugin-dev-guide')).toBe(false)
   expect(await loadDocContent('plugin-dev-guide')).toBe('')
   for (const [id, content] of Object.entries(entries)) {
-    expect(content, id).toContain('Mock 用于交互演示')
+    expect(content, id).toContain('桌面正式入口连接本机后端')
+    expect(content, id).not.toContain('Mock 用于交互演示')
+    expect(content, id).not.toContain('当前 Studio 使用 Mock 服务')
     expect(content, id).not.toMatch(/读取Excel|Excel自动处理|QQ自动化|微信自动化|飞书配置|宏录制器|鼠标坐标实时显示|真实鼠标滚动|播放音乐|播放视频|插件市场|在线社区|工作流仓库|版本历史|打包为.*EXE|企业平台管理|中英文国际化|Python313|真正并行|工作流自愈/)
     const identifiers = new Set(content.match(/\b[a-z]+(?:_[a-z0-9]+)+\b/g) ?? [])
     for (const type of excludedModuleTypes) expect(identifiers.has(type), `${id}: ${type}`).toBe(false)

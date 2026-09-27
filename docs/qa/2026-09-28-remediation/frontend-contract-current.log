@@ -1,0 +1,42 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --run src/renderer/domains/workflows/tests/catalog-field-contract.test.ts src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx src/renderer/domains/workflows/tests/ai-model-picker-entry.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:85462) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:85461) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:85460) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts [ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts ]
+TypeError: The URL must be of scheme file
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:25:24
+     23| const candidateDirectory = mkdtempSync(join(tmpdir(), 'autoflow-panel-…
+     24| afterAll(() => rmSync(candidateDirectory, { recursive: true, force: tr…
+     25| const repositoryRoot = fileURLToPath(new URL('../../../../../../../', …
+       |                        ^
+     26| execFileSync(process.execPath, ['scripts/inventory-studio-completion.m…
+     27| const currentComponents = JSON.parse(readFileSync(join(candidateDirect…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  345 passed (345)
+   Start at  04:12:48
+   Duration  9.88s (transform 2.79s, setup 459ms, import 3.22s, tests 9.65s, environment 1.17s)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --run src/renderer/domains/workflows/tests/catalog-field-contract.test.ts src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx src/renderer/domains/workflows/tests/ai-model-picker-entry.test.tsx

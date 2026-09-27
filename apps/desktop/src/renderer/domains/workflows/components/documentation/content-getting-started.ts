@@ -1,7 +1,7 @@
 // Source: WebRPA@5ccb900e, components/workflow/documentation/content-getting-started.ts; see SOURCE.md for license and adaptation boundaries.
 export const gettingStartedContent = `# 快速入门：5分钟学会AutoFlow
 
-> 当前 Studio 教学范围为保留节点及前端配置交互。Mock 用于交互演示，不执行真实网页、模型或系统操作；文中的执行行为需正式后端支持。
+> 桌面正式入口连接本机后端。运行前请配置节点所需资源，执行结果以当前运行日志和实际产物为准。
 
 欢迎来到**AutoFlow**（Web Automation Framework）！这是一个强大且易用的网页自动化工具，让你无需编程也能轻松实现各种自动化任务。
 

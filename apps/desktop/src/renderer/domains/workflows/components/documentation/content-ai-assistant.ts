@@ -1,7 +1,7 @@
 // Source: WebRPA@5ccb900e, components/workflow/documentation/content-ai-assistant.ts; see SOURCE.md for license and adaptation boundaries.
 export const aiAssistantGuideContent = `# AI 小助手指南
 
-> 当前 Studio 教学范围为保留节点及前端配置交互。Mock 用于交互演示，不执行真实网页、模型或系统操作；文中的执行行为需正式后端支持。
+> 桌面正式入口连接本机后端。运行前请配置节点所需资源，执行结果以当前运行日志和实际产物为准。
 
 AI 小助手面板用于输入需求、查看回复和工具记录，并将支持的画布操作应用到当前工作流。当前 Mock 提供交互演示，不调用真实模型，也不代表外部工具已执行。
 

@@ -7,3 +7,17 @@ F-03：两个 inventory 脚本测试此前调用生成器覆盖历史验收清�
 节点清单分别验证 213 个冻结来源节点与 4 个原生节点（代理 3、项目数据 1）。原生节点保持原有 status、verifiedCases、remaining 和 deliveryBlock，禁止用旧节点共享验收记录将新节点升级为通过。现有冻结节点的独有字段与依赖断言保留。测试逐字节验证历史 capabilities/test-cases/component-tools/service-inventory/contract-matrix 不变，并独立检查候选生成确定性。
 
 `inventory-readonly.log`：14 项通过，无 skip。未覆盖的门禁仍待处理，不代表完整根脚本或全前端回归已恢复。原生节点后续发生正式扩展时必须一起更新显式范围校验，不能从扫描结果自动放宽批准范围。
+
+## F-04 / F-05：前端过期合同与退役教学（confirmed，定向范围）
+
+历史 54 项失败的相关文件重新核对到当前源实现，未批量修改快照。当前目录固定为 213 个冻结节点和代理 3、项目数据 1 共 217 个节点；解析器新增计数逐项归因于 `30dc9686` 的 OCR 输出字段修正与 `7876acc6` 的项目数据节点，并增加两节点字段/默认值独立断言。
+
+31 个退役面板字段保留历史文档往返断言，同时显式验证它们不再出现在当前面板，且其替代控件（受管 modelId 或浏览器 captureMode）存在。14 个已排除通知入口由旧“可编辑”断言改为明确不可添加断言。图片/视频提示词使用实际 textarea，仍执行单字段变更、撤销、重做和文档重开检查。组件清单从现有 AST 脚本生成到独立临时目录，不再将他人未提交的历史 component-tools 当作当前契约。
+
+教学页删除退役 Mock 阶段提示；通知教程收紧为实际支持的 Telegram/Webhook 字段，移除已排除能力。项目入口文档标明历史状态已被当前生产入口替代。新增断言禁止恢复旧提示，不修改历史审计正文。
+
+- `frontend-original-failures-fixed.log`：8 文件、1239 项通过，无 skip（组件与单元边界，不是原生 UI 验收）。
+- `documentation-scope.log`：根教学审计 1 项通过。
+- `frontend-gates-typecheck.log`：tsc 通过；`frontend-gates-eslint-fixed.log`：改动文件 ESLint 通过。
+- 初次 AST 测试路径被 Vite URL 转换导致的加载失败、初次错误工作目录的 lint 命令均保留原始日志；修正测试路径/命令后通过，未改业务成功条件。
+- 默认 Studio smoke 已按当前真实 HTTP/窗口生命周期修改，尚未运行打包应用，不记为通过；最终全量前端、根脚本和打包真实验收仍待执行。

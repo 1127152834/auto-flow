@@ -1,7 +1,7 @@
 // Source: WebRPA@5ccb900e, components/workflow/documentation/content-browser.ts; see SOURCE.md for license and adaptation boundaries.
 export const browserGuideContent = `# 自动化浏览器详解
 
-> 当前 Studio 教学范围为保留节点及前端配置交互。Mock 用于交互演示，不执行真实网页、模型或系统操作；文中的执行行为需正式后端支持。
+> 桌面正式入口连接本机后端。运行前请配置节点所需资源，执行结果以当前运行日志和实际产物为准。
 
 本章详细介绍自动化浏览器的工作原理、配置方法和使用技巧。
 

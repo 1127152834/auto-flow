@@ -199,3 +199,9 @@ describe('注释与字符串的处理', () => {
     expect(sample!.line).toBeLessThan(2500)
   })
 })
+
+// Independent source changes: 30dc9686 moved captcha output; 7876acc6 added PM9 data.
+it('keeps the two reviewed output changes attached to the correct nodes', () => {
+  expect(VAR_FIELDS.filter(row => row.moduleType === 'ocr_captcha').map(({ field, defaultValue }) => ({ field, defaultValue }))).toEqual([{ field: 'variableName', defaultValue: 'captcha_text' }])
+  expect(VAR_FIELDS.filter(row => row.moduleType === 'project_data').map(({ field, defaultValue }) => ({ field, defaultValue }))).toEqual([{ field: 'resultVariable', defaultValue: 'project_result' }])
+})

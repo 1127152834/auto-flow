@@ -1,6 +1,8 @@
 # AutoFlow 系统架构规格
 
-> 2026-09-13 Studio 补充：旧实现已清除，仅保留[独立空窗口](../migration/studio-removal.md)。Electron/React/sidecar、领域目录、IO 分层和工程门槛继续适用。用户现要求保留 WebRPA 原 UI/交互/执行语义；本文有关自定义 Workflow IR、重新定义行为，以及坐标一律不进入执行的旧 Studio 取舍已被该方向替代，具体迁入安排见[修订设计（proposed，未实现）](../superpowers/specs/2026-09-13-studio-webrpa-source-migration-design.md)。必要组几何有业务含义，不包括 React Flow 选中/拖拽等瞬态。
+> 2026-09-28 当前状态（confirmed；bootstrap 与真实运行证据）：正式 Studio 已实现本机服务、SQLite、生产 worker 与共享 WorkflowRuntime 接入；项目执行也使用该 Runtime。PM9 数据能力已部分验收，End／持久人工恢复仍未完成，见[修复台账](../qa/2026-09-28-remediation/README.md)。下列“独立空窗口／未实现”为历史阶段状态，已 superseded。
+
+> 2026-09-13 Studio 补充（历史）：旧实现已清除，仅保留[独立空窗口](../migration/studio-removal.md)。Electron/React/sidecar、领域目录、IO 分层和工程门槛继续适用。用户现要求保留 WebRPA 原 UI/交互/执行语义；本文有关自定义 Workflow IR、重新定义行为，以及坐标一律不进入执行的旧 Studio 取舍已被该方向替代，具体迁入安排见[修订设计（proposed，未实现）](../superpowers/specs/2026-09-13-studio-webrpa-source-migration-design.md)。必要组几何有业务含义，不包括 React Flow 选中/拖拽等瞬态。
 
 - 状态：已批准，2026-09-11 用户确认架构规格
 - 日期：2026-09-11

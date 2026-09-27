@@ -45,13 +45,16 @@ vi.mock('../components/controls/dual-coordinate-input', () => ({ DualCoordinateI
 import { ConfigPanel } from '../components/ConfigPanel'
 import { useWorkflowStore as store } from '../editor-store'
 import type { ModuleType } from '../types/workflow'
+import { excludedModuleTypes, moduleCategories } from '../lib/moduleCatalog'
 
 const tools = ['VariableInput', 'VariableNameInput', 'VariableRefInput', 'NumberInput'] as const
 type Tool = (typeof tools)[number]
 type ToolCase = { id: string; capability: string; preconditions: { tool: string } }
-const entries = (toolCases.cases as ToolCase[])
+const historicalEntries = (toolCases.cases as ToolCase[])
   .filter(entry => tools.includes(entry.preconditions.tool as Tool))
   .map(entry => ({ id: entry.id, type: entry.capability.slice(5) as ModuleType, tool: entry.preconditions.tool as Tool }))
+const excludedEntries = historicalEntries.filter(entry => excludedModuleTypes.has(entry.type))
+const entries = historicalEntries.filter(entry => !excludedModuleTypes.has(entry.type))
 const entrySetup: Record<string, Record<string, unknown>> = {
   'NODE.inject_javascript.tool.VariableInput': { injectMode: 'url_match' },
   'NODE.get_time.tool.VariableInput': { timeFormat: 'custom' },
@@ -68,11 +71,13 @@ it.each(entries)('$id mounts and commits through its actual ConfigPanel consumer
   store.getState().addNode(type, { x: 0, y: 0 }, entrySetup[id])
   const nodeId = store.getState().nodes[0].id
   render(<ConfigPanel selectedNodeId={nodeId} />)
-  const controls = screen.queryAllByTestId(`tool-${tool}`)
+  const mediaPrompt = tool === 'VariableInput' && ['ai_generate_image', 'ai_generate_video'].includes(type)
+  const controls = mediaPrompt ? screen.getAllByRole('textbox').filter(element => element.tagName === 'TEXTAREA') : screen.queryAllByTestId(`tool-${tool}`)
   expect(controls.length, `${id} did not mount a direct ${tool}`).toBeGreaterThan(0)
 
   const before = structuredClone(store.getState().nodes[0].data)
-  fireEvent.click(controls[0])
+  if (mediaPrompt) fireEvent.change(controls[0], { target: { value: '__variable_value__' } })
+  else fireEvent.click(controls[0])
   const after = store.getState().nodes[0].data
   const changed = Object.keys({ ...before, ...after }).filter(key => !Object.is(before[key], after[key]))
   expect(changed, `${id} must write exactly one node field`).toHaveLength(1)
@@ -88,4 +93,14 @@ it.each(entries)('$id mounts and commits through its actual ConfigPanel consumer
     expect(store.getState().importWorkflow(exported)).toBe(true)
   })
   expect(store.getState().nodes.find(node => node.id === nodeId)!.data[changed[0]]).toEqual(after[changed[0]])
+})
+
+it('keeps precisely the retired fourteen notification tool cases outside the action catalog', () => {
+  const excluded = [...new Set(excludedEntries.map(entry => entry.type))]
+  expect(excluded).toHaveLength(14)
+  const available = moduleCategories.flatMap(category => category.modules)
+  for (const type of excluded) {
+    expect(type).toMatch(/^notify_/)
+    expect(available).not.toContain(type)
+  }
 })

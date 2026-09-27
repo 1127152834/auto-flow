@@ -1,0 +1,29 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --run src/main/index.test.ts src/renderer/domains/workflows/tests/catalog-field-contract.test.ts src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx src/renderer/domains/workflows/tests/documentation-loading.test.ts src/renderer/domains/workflows/tests/module-scope.test.ts src/renderer/domains/workflows/lib/__tests__/moduleColors.audit.test.ts src/renderer/domains/workflows/lib/__tests__/helpers/addNodeDefaults.test.ts src/renderer/domains/workflows/tests/ai-model-picker-entry.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:86034) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:86032) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:86035) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:86033) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:86042) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:86100) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:86122) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:86123) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  8 passed (8)
+      Tests  1239 passed (1239)
+   Start at  04:14:27
+   Duration  9.93s (transform 3.66s, setup 615ms, import 5.40s, tests 10.56s, environment 2.66s)
+

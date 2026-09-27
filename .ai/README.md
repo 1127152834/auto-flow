@@ -2,7 +2,7 @@
 
 `.ai/` 是项目协作知识库，不存放业务源码。它记录经过确认的上下文、架构决策、经验和阶段计划，帮助后续 agent 延续工作而不重复猜测。
 
-Studio 当前状态以 [memory/studio-status.md](memory/studio-status.md) 为准：已按用户新授权迁入 WebRPA 前端编辑器、Store 与 HTTP/SSE Mock 边界；真实后端与各平台验收仍按迁入台账推进。
+2026-09-28 更新（confirmed；源码、真实 worker 与浏览器验证）：Studio 正式入口已接入本机 sidecar、SQLite 和生产执行器。早期 [memory/studio-status.md](memory/studio-status.md) 的 Mock 阶段结论作为历史记录保留，不能代表当前实现。当前缺陷与修复证据见 [审计](../docs/qa/2026-09-28-system-audit/README.md) 和 [修复台账](../docs/qa/2026-09-28-remediation/README.md)；PM9 End、持久人工恢复及跨平台验收仍未完成。
 
 ## 目录
 

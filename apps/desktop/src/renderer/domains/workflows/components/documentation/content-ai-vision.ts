@@ -1,6 +1,8 @@
 // Source: WebRPA@5ccb900e, components/workflow/documentation/content-ai-vision.ts; see SOURCE.md for license and adaptation boundaries.
 export const aiVisionGuideContent = `# AI 识别与计算机视觉
 
+> 桌面正式入口连接本机后端。运行前请配置节点所需资源，执行结果以当前运行日志和实际产物为准。
+
 本章介绍 OCR 文字识别、验证码识别、人脸识别，以及 AI 智能爬虫模块。
 
 ---

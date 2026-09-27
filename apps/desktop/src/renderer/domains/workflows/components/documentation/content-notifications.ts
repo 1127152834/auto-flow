@@ -1,7 +1,7 @@
 // Source: WebRPA@5ccb900e, components/workflow/documentation/content-notifications.ts; see SOURCE.md for license and adaptation boundaries.
 export const notificationsGuideContent = `# 消息通知与交互
 
-> 当前 Studio 教学范围为保留节点及前端配置交互。Mock 用于交互演示，不执行真实网页、模型或系统操作；文中的执行行为需正式后端支持。
+> 桌面正式入口连接本机后端。运行前请配置节点所需资源，执行结果以当前运行日志和实际产物为准。
 
 本章介绍各种消息通知和用户交互功能。
 

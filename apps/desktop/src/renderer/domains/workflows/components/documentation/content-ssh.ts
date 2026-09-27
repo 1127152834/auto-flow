@@ -1,7 +1,7 @@
 // Source: WebRPA@5ccb900e, components/workflow/documentation/content-ssh.ts; see SOURCE.md for license and adaptation boundaries.
 export const sshGuideContent = `# SSH 远程操作
 
-> 当前 Studio 教学范围为保留节点及前端配置交互。Mock 用于交互演示，不执行真实网页、模型或系统操作；文中的执行行为需正式后端支持。
+> 桌面正式入口连接本机后端。运行前请配置节点所需资源，执行结果以当前运行日志和实际产物为准。
 
 本章介绍如何使用 AutoFlow 通过 SSH 协议远程连接服务器，执行命令、上传下载文件，实现服务器运维自动化。
 
