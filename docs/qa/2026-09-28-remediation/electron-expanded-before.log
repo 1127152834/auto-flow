@@ -1,0 +1,72 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/main/index.test.ts src/main/ipc src/main/project-files src/main/google-desktop.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:52061) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:52063) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:52064) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:52071) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:52072) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:52091) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:52062) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:52092) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/main/index.test.ts (14 tests | 1 failed) 565ms
+   × ignores a development renderer override in packaged applications 11ms
+(node:52094) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:52093) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:52095) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/index.test.ts > ignores a development renderer override in packaged applications
+AssertionError: expected "vi.fn()" to be called with arguments: [ '/compiled/renderer/index.html' ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+-   "/compiled/renderer/index.html",
++   "/Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/index.html",
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/main/index.test.ts:272:27
+    270|     const main = FakeWindow.instances[1]!
+    271|     expect(main.loadURL).not.toHaveBeenCalled()
+    272|     expect(main.loadFile).toHaveBeenCalledWith('/compiled/renderer/ind…
+       |                           ^
+    273|     await invoke('autoflow:open-automation-studio', main)
+    274|     const studio = FakeWindow.instances[2]!
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 10 passed (11)
+      Tests  1 failed | 109 passed (110)
+   Start at  02:43:17
+   Duration  2.02s (transform 1.37s, setup 1.35s, import 352ms, tests 954ms, environment 1.15s)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/main/index.test.ts src/main/ipc src/main/project-files src/main/google-desktop.test.ts

@@ -9,7 +9,7 @@
 | SEC-01 共享读边界 | 当前文件仍静态回退 SimpleHTTPRequestHandler；HEAD 同样需约束 | 静态 GET/HEAD、download、preview、thumb、list、单文件共享 | 统一根目录路径解析及实际打开；不泄露相邻文件 | 隔离真实 HTTP、编码/穿越/链接/正常下载 | 本机30项通过，见 share.md |
 | SEC-02 上传竞态 | 后缀候选直接 wb，exists 不识别悬空链接 | upload；同根 mkdir/delete 需审查 | 相对于受控目录排他创建；失败清理；平台适配 | 同名/链接/并发/请求中断真实文件检查 | 本机通过；Windows待实测，见 share.md |
 | SEC-03 凭据隔离 | _key 仍只 hash(name)，元数据则按工作区隔离 | 创建/读/字段变更/重命名/删/切换 | 稳定工作区命名空间；旧条目不自动认领、不删除 | 两真实 SQLite + 专属系统凭据；旧键恢复边界 | 本机26后端+109前端+9原生检查通过，见 credentials.md |
-| SEC-04 Electron | 审计源码缺共同可信页面约束；待逐调用方复核 | 主窗口/Studio/IPC | 拒绝非受信页面与子 frame，保留开发/本地页面 | 本地防御拒绝测试；不继续被拦截的利用链 | 核对中 |
+| SEC-04 Electron | 审计源码缺共同可信页面约束；待逐调用方复核 | 主窗口/Studio/IPC | 拒绝非受信页面与子 frame，保留开发/本地页面 | 本地防御拒绝测试；不继续被拦截的利用链 | 110项通过，见 electron.md；打包待验 |
 | A-01 PM9 R2/R3 | 已批准规格；历史生产桥缺失，当前未有业务提交 | dispatcher/project worker/runtime/data/environment/manual/UI | 复用现有能力服务；固定身份RPC、持久恢复；不改内存表语义 | 真 worker/浏览器/SQLite 全链、fencing/幂等/重启 | 核对中 |
 | DB-01 唯一约束 | ORM(task_id,lease_id) 与迁移(task_id,record_ref) | 数据能力 cursor | 按业务唯一性核对模型；不改历史迁移 | 新/旧库升级、metadata check、冲突数据 | 核对中 |
 | N-01 CSV | 历史真实仅表头返回一行 | csv 读取节点 | 有表头时跳过第一行，即使无数据 | 真实空/表头/普通 CSV | 核对中 |

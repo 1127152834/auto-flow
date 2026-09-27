@@ -1,4 +1,5 @@
 // @vitest-environment node
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { EventEmitter } from 'node:events'
 import { afterEach, beforeEach, expect, it, vi, type Mock } from 'vitest'
 import type { DesktopIpcEvent } from './ipc/automation-studio'
@@ -9,10 +10,13 @@ class FakeWindow extends EventEmitter {
   static instances: FakeWindow[] = []
   destroyed = false
   unsaved = false
-  webContents = Object.assign(new EventEmitter(), { id: 10 + FakeWindow.instances.length, mainFrame: {}, setWindowOpenHandler: vi.fn(), setZoomFactor: vi.fn(), send: vi.fn() })
-  loadURL = vi.fn(async () => {})
-  loadFile = vi.fn(async () => {})
-  show = vi.fn()
+  webContents = Object.assign(new EventEmitter(), { id: 10 + FakeWindow.instances.length, mainFrame: { url: '' }, setWindowOpenHandler: vi.fn(), setZoomFactor: vi.fn(), send: vi.fn() })
+  loadURL = vi.fn(async (url: string) => { this.webContents.mainFrame.url = url })
+  loadFile = vi.fn(async (path: string) => { this.webContents.mainFrame.url = pathToFileURL(path).href })
+  visible = true
+  hide = vi.fn(() => { this.visible = false })
+  show = vi.fn(() => { this.visible = true })
+  isVisible() { return this.visible }
   focus = vi.fn()
   setTitle = vi.fn()
   restore = vi.fn()
@@ -169,20 +173,21 @@ it('does not shut down the sidecar when the user keeps the unsaved Studio open',
   await vi.waitFor(()=>expect(settings.shutdown).toHaveBeenCalledOnce())
 })
 
-it('keeps Studio alive when the main window closes and permits reuse from its replacement', async () => {
+it('hides the main window while Studio owns a session and reuses it on activation', async () => {
   const studio = await openStudio()
-  const original = FakeWindow.instances[0]!
-  original.close()
+  const main = FakeWindow.instances[0]!
+  main.close()
+  expect(main.destroyed).toBe(false)
+  expect(main.isVisible()).toBe(false)
   expect(studio.destroyed).toBe(false)
   expect(settings.shutdown).not.toHaveBeenCalled()
   app.emit('activate')
-  await vi.waitFor(() => expect(FakeWindow.instances).toHaveLength(3))
-  const replacement = FakeWindow.instances[2]!
-  await invoke('autoflow:open-automation-studio', replacement)
-  expect(FakeWindow.instances).toHaveLength(3)
-  expect(() => invoke('autoflow:runtime-context', original)).toThrow()
-  await invoke('autoflow:settings:preferences', replacement, {})
-  expect(replacement.webContents.setZoomFactor).toHaveBeenCalledWith(1.25)
+  expect(FakeWindow.instances).toHaveLength(2)
+  expect(main.isVisible()).toBe(true)
+  await invoke('autoflow:open-automation-studio', main)
+  expect(FakeWindow.instances).toHaveLength(2)
+  await invoke('autoflow:settings:preferences', main, {})
+  expect(main.webContents.setZoomFactor).toHaveBeenCalledWith(1.25)
   expect(studio.webContents.setZoomFactor).toHaveBeenCalledWith(1.25)
 })
 it('wires project file selection and denies Studio and subframe callers', async () => {
@@ -191,7 +196,7 @@ it('wires project file selection and denies Studio and subframe callers', async 
   expect(handlers.has('autoflow:project-files:choose-excel-input')).toBe(true)
   expect(handlers.has('autoflow:project-files:choose-xlsx-output')).toBe(true)
   await expect(invoke('autoflow:project-files:choose-excel-input', studioWindow, '726a0f9e-a0e7-4b83-9794-b8d5946825e0')).resolves.toMatchObject({ ok: false, error: { code: 'UNAUTHORIZED_WINDOW' } })
-  await expect(handlers.get('autoflow:project-files:choose-excel-input')!({ ...sender(main), senderFrame: {} }, '726a0f9e-a0e7-4b83-9794-b8d5946825e0')).resolves.toMatchObject({ ok: false, error: { code: 'UNAUTHORIZED_WINDOW' } })
+  expect(() => handlers.get('autoflow:project-files:choose-excel-input')!({ ...sender(main), senderFrame: {} }, '726a0f9e-a0e7-4b83-9794-b8d5946825e0')).toThrow('不受信任')
 })
 
 it('registers controlled record links for the main frame only', async () => {
@@ -210,4 +215,64 @@ it('uses the same renderer storage partition for aliases of the same workspace',
  await invoke('autoflow:open-automation-studio', FakeWindow.instances[0]!)
  expect(FakeWindow.instances.at(-1)?.options?.webPreferences?.partition).toBe(partition)
  expect(partition).toMatch(/^persist:studio-/)
+})
+
+
+it('denies every registered IPC from a different document in the same main frame', async () => {
+  const main = FakeWindow.instances[0]!
+  const studio = await openStudio()
+  for (const window of [main, studio]) {
+    for (const url of ['https://example.invalid/', 'file:///tmp/untrusted.html', 'data:text/html,local-test', 'about:blank']) {
+      window.webContents.mainFrame.url = url
+      for (const [channel, handler] of handlers) {
+        await expect(Promise.resolve().then(() => handler(sender(window))), channel).rejects.toThrow('不受信任')
+      }
+    }
+  }
+  expect(settings.restart).not.toHaveBeenCalled()
+  expect(settings.confirmWorkspace).not.toHaveBeenCalled()
+})
+
+it('blocks navigation, redirects, new windows and webviews on both windows', async () => {
+  const main = FakeWindow.instances[0]!
+  const studio = await openStudio()
+  for (const window of [main, studio]) {
+    for (const name of ['will-navigate', 'will-redirect', 'will-attach-webview']) {
+      const event = { preventDefault: vi.fn() }
+      window.webContents.emit(name, event)
+      expect(event.preventDefault, name).toHaveBeenCalledOnce()
+    }
+    expect(window.webContents.setWindowOpenHandler).toHaveBeenCalled()
+    expect(window.webContents.setWindowOpenHandler.mock.calls[0]![0]()).toEqual({ action: 'deny' })
+  }
+})
+
+it('does not publish runtime credentials after the main document changes', async () => {
+  const main = FakeWindow.instances[0]!
+  const pending = Promise.withResolvers<unknown>()
+  settings.restart.mockImplementationOnce(() => pending.promise)
+  const restart = invoke('autoflow:sidecar-restart', main)
+  main.webContents.send.mockClear()
+  main.webContents.mainFrame.url = 'file:///tmp/untrusted.html'
+  pending.resolve(context.sidecar)
+  await expect(restart).rejects.toThrow('不受信任')
+  expect(main.webContents.send).not.toHaveBeenCalledWith('autoflow:runtime-context-changed', expect.anything())
+})
+
+
+it('ignores a development renderer override in packaged applications', async () => {
+  vi.resetModules()
+  Object.assign(app, { isPackaged: true })
+  vi.stubEnv('ELECTRON_RENDERER_URL', 'http://localhost:5173/')
+  try {
+    await import('./index')
+    await vi.waitFor(() => expect(FakeWindow.instances).toHaveLength(2))
+    const main = FakeWindow.instances[1]!
+    expect(main.loadURL).not.toHaveBeenCalled()
+    expect(main.loadFile).toHaveBeenCalledWith(fileURLToPath(new URL('../renderer/index.html', import.meta.url)))
+    await invoke('autoflow:open-automation-studio', main)
+    const studio = FakeWindow.instances[2]!
+    expect(studio.loadURL).not.toHaveBeenCalled()
+    expect(studio.loadFile).toHaveBeenCalledWith(fileURLToPath(new URL('../renderer/studio.html', import.meta.url)), { query: { view: 'automation-studio' } })
+  } finally { vi.unstubAllEnvs() }
 })

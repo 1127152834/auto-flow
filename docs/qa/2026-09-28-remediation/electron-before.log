@@ -1,0 +1,146 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/main/index.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:46486) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/main/index.test.ts (13 tests | 6 failed) 929ms
+   × switches workspace only after Studio acknowledgement and recreates its isolated window 22ms
+   × keeps Studio alive when the main window closes and permits reuse from its replacement 8ms
+   × uses the same renderer storage partition for aliases of the same workspace 5ms
+   × denies every registered IPC from a different document in the same main frame 7ms
+   × blocks navigation, redirects, new windows and webviews on both windows 7ms
+   × does not publish runtime credentials after the main document changes 7ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/index.test.ts > switches workspace only after Studio acknowledgement and recreates its isolated window
+AssertionError: expected { ok: false, error: { …(2) } } to match object { ok: true }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
++   "ok": false,
+  }
+
+ ❯ src/main/index.test.ts:115:77
+    113|   const studio = await openStudio()
+    114|   answerLeave(studio)
+    115|   await expect(invoke('autoflow:settings:confirm-workspace', main, 'ch…
+       |                                                                             ^
+    116|   expect(settings.confirmWorkspace).toHaveBeenCalledWith('choice')
+    117|   expect(main.webContents.send).toHaveBeenLastCalledWith('autoflow:run…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  src/main/index.test.ts > keeps Studio alive when the main window closes and permits reuse from its replacement
+TypeError: window.hide is not a function
+ ❯ retainMainWindowForStudio src/main/ipc/automation-studio.ts:200:10
+    198|   if (studioSenderId === undefined || quitting) return
+    199|   event.preventDefault()
+    200|   window.hide()
+       |          ^
+    201| }
+    202|
+ ❯ FakeWindow.<anonymous> src/main/index.ts:190:36
+ ❯ FakeWindow.close src/main/index.test.ts:23:222
+ ❯ src/main/index.test.ts:176:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  src/main/index.test.ts > uses the same renderer storage partition for aliases of the same workspace
+TypeError: mainWindow.isVisible is not a function
+ ❯ Object.onClosed src/main/index.ts:49:95
+     47| const studio = new StudioWindowController({
+     48|   onInvalidated: () => studioHotkeys?.clear(),
+     49|   onClosed: () => { if (!isQuitting && mainWindow && !mainWindow.isDes…
+       |                                                                                               ^
+     50|   mainSenderId: () => mainWindow?.webContents.id,
+     51|   workspacePartition:()=>{
+ ❯ FakeWindow.<anonymous> src/main/ipc/automation-studio.ts:84:20
+ ❯ FakeWindow.destroy src/main/index.test.ts:22:43
+ ❯ src/main/index.test.ts:209:8
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  src/main/index.test.ts > denies every registered IPC from a different document in the same main frame
+AssertionError: promise resolved "{ success: false, …(1) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "error": "此窗口不能注册工作台快捷键",
++   "success": false,
+  }
+
+ ❯ src/main/index.test.ts:224:75
+    222|       window.webContents.mainFrame.url = url
+    223|       for (const [channel, handler] of handlers) {
+    224|         await expect(Promise.resolve().then(() => handler(sender(windo…
+       |                                                                           ^
+    225|       }
+    226|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  src/main/index.test.ts > blocks navigation, redirects, new windows and webviews on both windows
+AssertionError: will-navigate: expected "vi.fn()" to be called once, but got 0 times
+ ❯ src/main/index.test.ts:239:42
+    237|       const event = { preventDefault: vi.fn() }
+    238|       window.webContents.emit(name, event)
+    239|       expect(event.preventDefault, name).toHaveBeenCalledOnce()
+       |                                          ^
+    240|     }
+    241|     expect(window.webContents.setWindowOpenHandler).toHaveBeenCalled()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  src/main/index.test.ts > does not publish runtime credentials after the main document changes
+AssertionError: promise resolved "{ state: 'ready', …(5) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "apiVersion": "v1",
++   "baseUrl": "http://127.0.0.1:43127",
++   "instanceId": "instance-a",
++   "port": 43127,
++   "state": "ready",
++   "token": "public-token",
+  }
+
+ ❯ src/main/index.test.ts:254:23
+    252|   main.webContents.mainFrame.url = 'file:///tmp/untrusted.html'
+    253|   pending.resolve(context.sidecar)
+    254|   await expect(restart).rejects.toThrow('不受信任')
+       |                       ^
+    255|   expect(main.webContents.send).not.toHaveBeenCalledWith('autoflow:run…
+    256| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 7 passed (13)
+   Start at  02:41:01
+   Duration  1.30s (transform 625ms, setup 166ms, import 38ms, tests 929ms, environment 0ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/main/index.test.ts

@@ -1,3 +1,5 @@
+import { pathToFileURL } from 'node:url'
+import { isTrustedRenderer, protectRendererNavigation } from './ipc/renderer-security'
 import {createHash} from 'node:crypto'
 import { execFile } from 'node:child_process'
 import { realpathSync } from 'node:fs'
@@ -44,6 +46,9 @@ const qaGoogleConfigPath = !app.isPackaged ? process.env.AUTOFLOW_QA_GOOGLE_CONF
  */
 const qaExcelInput = !app.isPackaged ? process.env.AUTOFLOW_QA_EXCEL_INPUT : undefined
 const qaXlsxOutputDir = !app.isPackaged ? process.env.AUTOFLOW_QA_XLSX_OUTPUT : undefined
+const rendererUrl = !app.isPackaged ? process.env.ELECTRON_RENDERER_URL : undefined
+const mainEntryUrl = rendererUrl || pathToFileURL(join(__dirname, '../renderer/index.html')).href
+const studioEntryUrl = rendererUrl ? new URL('studio.html', rendererUrl).href : pathToFileURL(join(__dirname, '../renderer/studio.html')).href
 const studio = new StudioWindowController({
   onInvalidated: () => studioHotkeys?.clear(),
   onClosed: () => { if (!isQuitting && mainWindow && !mainWindow.isDestroyed() && !mainWindow.isVisible()) mainWindow.show() },
@@ -55,8 +60,25 @@ const studio = new StudioWindowController({
   preferences: () => settings?.getPreferences() ?? { zoom: 100, motion: 'system' },
   preloadPath: join(__dirname, '../preload/index.js'),
   rendererFile: join(__dirname, '../renderer/studio.html'),
-  rendererUrl: process.env.ELECTRON_RENDERER_URL ? new URL('studio.html', process.env.ELECTRON_RENDERER_URL).toString() : undefined,
+  rendererUrl: rendererUrl ? studioEntryUrl : undefined,
 })
+
+function trustedSender(event: DesktopIpcEvent): boolean {
+  if (isWindowMainFrame(event, mainWindow?.webContents.id)) return isTrustedRenderer(event, mainEntryUrl)
+  return studio.isStudioSender(event) && isTrustedRenderer(event, studioEntryUrl)
+}
+
+// Every IPC enters through this boundary; handlers retain their narrower capability checks.
+function handleIpc(channel: string, handler: Parameters<typeof ipcMain.handle>[1]): void {
+  ipcMain.handle(channel, (event, ...args) => {
+    const verify = () => { if (!trustedSender(event)) throw new Error('不受信任的页面不能访问宿主能力') }
+    verify()
+    const result: unknown = handler(event, ...args)
+    if (result instanceof Promise) return result.then(value => { verify(); return value })
+    verify()
+    return result
+  })
+}
 
 function requireRuntimeSender(event: DesktopIpcEvent): void {
   if (!isWindowMainFrame(event, mainWindow?.webContents.id)&&!studio.isStudioSender(event)) throw new Error('此窗口不能访问本地服务')
@@ -65,7 +87,7 @@ function requireRuntimeSender(event: DesktopIpcEvent): void {
 function publishRuntimeContext(): void {
   if (!settings) return
   const context = settings.getRuntimeContext()
-  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('autoflow:runtime-context-changed', context)
+  if (mainWindow && !mainWindow.isDestroyed() && isTrustedRenderer({ sender: mainWindow.webContents, senderFrame: mainWindow.webContents.mainFrame }, mainEntryUrl)) mainWindow.webContents.send('autoflow:runtime-context-changed', context)
 }
 
 function applyPreferences(preferences: UiPreferences): void {
@@ -78,6 +100,7 @@ function applyPreferences(preferences: UiPreferences): void {
 
 async function createWindow(): Promise<void> {
   mainWindow = new BrowserWindow({ width: 1440, height: 1024, minWidth: 800, minHeight: 600, webPreferences: { preload: join(__dirname, '../preload/index.js'), contextIsolation: true, sandbox: true, nodeIntegration: false, backgroundThrottling: false } })
+  protectRendererNavigation(mainWindow.webContents)
   const projectFiles = new ProjectFilesController({
     allowedSenderId: mainWindow.webContents.id,
     getHostStatus: () => settings?.getHostStatus() ?? { state: 'stopped' },
@@ -89,22 +112,22 @@ async function createWindow(): Promise<void> {
       : options => dialog.showSaveDialog(mainWindow!, options as Electron.SaveDialogOptions),
   })
   ipcMain.removeHandler('autoflow:project-files:context')
-  ipcMain.handle('autoflow:project-files:context', event => projectFiles.getProjectFileContext(event))
+  handleIpc('autoflow:project-files:context', event => projectFiles.getProjectFileContext(event))
   ipcMain.removeHandler('autoflow:project-files:choose-excel-input')
-  ipcMain.handle('autoflow:project-files:choose-excel-input', (event, projectId: unknown) => projectFiles.chooseExcelInput(event, projectId))
+  handleIpc('autoflow:project-files:choose-excel-input', (event, projectId: unknown) => projectFiles.chooseExcelInput(event, projectId))
   ipcMain.removeHandler('autoflow:project-files:choose-xlsx-output')
-  ipcMain.handle('autoflow:project-files:choose-xlsx-output', (event, projectId: unknown, suggestedName: unknown) => projectFiles.chooseXlsxOutput(event, projectId, suggestedName))
+  handleIpc('autoflow:project-files:choose-xlsx-output', (event, projectId: unknown, suggestedName: unknown) => projectFiles.chooseXlsxOutput(event, projectId, suggestedName))
   ipcMain.removeHandler('autoflow:copy-proxy-credentials')
-  ipcMain.handle('autoflow:copy-proxy-credentials', createCopyProxyCredentialsHandler({
+  handleIpc('autoflow:copy-proxy-credentials', createCopyProxyCredentialsHandler({
     allowedSenderId: mainWindow.webContents.id,
     getSidecarStatus: () => settings?.getHostStatus() ?? { state: 'stopped' },
     request: fetch,
     clipboard,
   }))
   ipcMain.removeHandler('autoflow:open-external-link')
-  ipcMain.handle('autoflow:open-external-link', createOpenExternalLinkHandler({ allowedSenderId: mainWindow.webContents.id, openExternal: url => shell.openExternal(url) }))
+  handleIpc('autoflow:open-external-link', createOpenExternalLinkHandler({ allowedSenderId: mainWindow.webContents.id, openExternal: url => shell.openExternal(url) }))
   ipcMain.removeHandler('autoflow:google-sheets:connect')
-  ipcMain.handle('autoflow:google-sheets:connect', createConnectGoogleSheetsHandler({
+  handleIpc('autoflow:google-sheets:connect', createConnectGoogleSheetsHandler({
     allowedSenderId: mainWindow.webContents.id,
     getSidecarStatus: () => settings?.getHostStatus() ?? { state: 'stopped' },
     // Same development-only switch class as AUTOFLOW_QA_SIDECAR_MODULE: an
@@ -126,14 +149,14 @@ async function createWindow(): Promise<void> {
     request: fetch,
   }))
   ipcMain.removeHandler('autoflow:reveal-kernel')
-  ipcMain.handle('autoflow:reveal-kernel', createRevealKernelHandler({
+  handleIpc('autoflow:reveal-kernel', createRevealKernelHandler({
     allowedSenderId: mainWindow.webContents.id,
     getSidecarStatus: () => settings?.getHostStatus() ?? { state: 'stopped' },
     request: fetch,
     showItemInFolder: path => shell.showItemInFolder(path),
   }))
   ipcMain.removeHandler('autoflow:workflow-select-path')
-  ipcMain.handle('autoflow:workflow-select-path', createWorkflowPathSelectionHandler({
+  handleIpc('autoflow:workflow-select-path', createWorkflowPathSelectionHandler({
     allowed: event => isWindowMainFrame(event, mainWindow?.webContents.id) || studio.isStudioSender(event),
     context: () => { const context = settings!.getRuntimeContext(); return JSON.stringify([context.workspaceKey, context.sidecar]) },
     choose: async request => {
@@ -143,7 +166,7 @@ async function createWindow(): Promise<void> {
     },
   }))
   ipcMain.removeHandler('autoflow:studio-platform-action')
-  ipcMain.handle('autoflow:studio-platform-action',createStudioPlatformActionHandler({
+  handleIpc('autoflow:studio-platform-action',createStudioPlatformActionHandler({
     allowed:event=>studio.isStudioSender(event),
     writeText:value=>clipboard.writeText(value),
     readText:()=>clipboard.readText(),
@@ -175,10 +198,10 @@ async function createWindow(): Promise<void> {
   for (const [name, action] of Object.entries(actions)) {
     const channel = `autoflow:settings:${name}`
     ipcMain.removeHandler(channel)
-    ipcMain.handle(channel, protectSettingsHandler(mainWindow.webContents.id, action))
+    handleIpc(channel, protectSettingsHandler(mainWindow.webContents.id, action))
   }
   ipcMain.removeHandler('autoflow:sidecar-restart')
-  ipcMain.handle('autoflow:sidecar-restart', async event => {
+  handleIpc('autoflow:sidecar-restart', async event => {
     requireRuntimeSender(event)
     // A dead sidecar cannot release the stale renderer resource. The new
     // sidecar reconciles persisted active runs as interrupted during startup.
@@ -189,7 +212,7 @@ async function createWindow(): Promise<void> {
   const ownedWindow = mainWindow
   ownedWindow.on('close', event => retainMainWindowForStudio(event, ownedWindow, studio.senderId(), isQuitting))
   mainWindow.on('closed', () => { settings?.invalidateChoices(); mainWindow = undefined })
-  if (process.env.ELECTRON_RENDERER_URL) await mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
+  if (rendererUrl) await mainWindow.loadURL(rendererUrl)
   else await mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
 }
 
@@ -210,7 +233,7 @@ app.whenReady().then(async () => {
         : !app.isPackaged && process.env.AUTOFLOW_PM4_QA === '1'
           ? 'tests.qa.pm4_sidecar'
           : undefined,
-      rendererOrigin: process.env.ELECTRON_RENDERER_URL ? new URL(process.env.ELECTRON_RENDERER_URL).origin : 'null',
+      rendererOrigin: rendererUrl ? new URL(rendererUrl).origin : 'null',
       production: app.isPackaged,
       sidecarPath: app.isPackaged ? resolvePackagedSidecarPath(process.resourcesPath, process.platform) : undefined,
     }),
@@ -240,24 +263,24 @@ app.whenReady().then(async () => {
     return status?.state === 'ready' && windowId !== undefined ? { windowId, instanceId: status.instanceId } : null
   }
   studioHotkeys = new StudioHotkeyController({shortcuts: globalShortcut, getOwner: studioHotkeyOwner, dispatch: actionId => studio.sendHotkey(actionId)})
-  ipcMain.handle('autoflow:studio-hotkeys', (event, shortcuts: unknown) => {
+  handleIpc('autoflow:studio-hotkeys', (event, shortcuts: unknown) => {
     if (!studio.isStudioSender(event)) return {success: false, error: '此窗口不能注册工作台快捷键'}
     const owner = studioHotkeyOwner()
     if (!owner) return {success: false, error: '工作台或本地服务尚未就绪'}
     return studioHotkeys!.update(shortcuts, owner)
   })
 
-  ipcMain.handle('autoflow:open-automation-studio', (event, context: unknown) => studio.open(event, context))
-  ipcMain.handle('autoflow:studio-leave-ready',event=>studio.registerLeaveReady(event))
-  ipcMain.handle('autoflow:studio-leave-result',(event,result:unknown)=>studio.completeLeave(event,result))
-  ipcMain.handle('autoflow:show-project-interaction', event => {
+  handleIpc('autoflow:open-automation-studio', (event, context: unknown) => studio.open(event, context))
+  handleIpc('autoflow:studio-leave-ready',event=>studio.registerLeaveReady(event))
+  handleIpc('autoflow:studio-leave-result',(event,result:unknown)=>studio.completeLeave(event,result))
+  handleIpc('autoflow:show-project-interaction', event => {
     if (!isWindowMainFrame(event, mainWindow?.webContents.id)) throw new Error('此窗口不能显示项目交互')
     if (mainWindow?.isMinimized()) mainWindow.restore()
     mainWindow?.show(); mainWindow?.focus()
   })
-  ipcMain.handle('autoflow:runtime-context', event => { requireRuntimeSender(event); return settings!.getRuntimeContext() })
-  ipcMain.handle('autoflow:sidecar-status', event => { requireRuntimeSender(event); return settings!.getPublicStatus() })
-  ipcMain.handle('autoflow:platform-paths', event => {
+  handleIpc('autoflow:runtime-context', event => { requireRuntimeSender(event); return settings!.getRuntimeContext() })
+  handleIpc('autoflow:sidecar-status', event => { requireRuntimeSender(event); return settings!.getPublicStatus() })
+  handleIpc('autoflow:platform-paths', event => {
     if (!isWindowMainFrame(event, mainWindow?.webContents.id)) throw new Error('此窗口不能读取本机目录')
     return resolvePlatformPaths(app.getPath('userData'))
   })

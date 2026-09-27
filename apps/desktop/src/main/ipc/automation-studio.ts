@@ -1,3 +1,4 @@
+import { protectRendererNavigation } from './renderer-security'
 import {randomUUID} from 'node:crypto'
 import type {StudioLeaveRequest, StudioOpenContext} from '../../shared/automation-studio'
 import { BrowserWindow, dialog } from 'electron'
@@ -88,8 +89,7 @@ export class StudioWindowController {
       if (discard) event.preventDefault()
       else {this.closeResult?.(false);this.closeResult = undefined}
     })
-    window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
-    window.webContents.on('will-navigate', event => event.preventDefault())
+    protectRendererNavigation(window.webContents)
     window.webContents.on('did-finish-load', () => this.applyPreferences(this.options.preferences()))
     try {
       if (this.options.rendererUrl) {
