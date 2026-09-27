@@ -194,9 +194,13 @@ class SHAEncryptExecutor(ModuleExecutor):
             return ModuleResult(success=False, error="输入文本不能为空")
 
         try:
-            # 选择SHA算法
-            hash_func = getattr(hashlib, sha_type.lower(), hashlib.sha256)
-            sha_hash = hash_func(input_text.encode(encoding))
+            algorithm = str(sha_type).lower()
+            if algorithm not in {
+                "sha1", "sha224", "sha256", "sha384", "sha512",
+                "sha3_224", "sha3_256", "sha3_384", "sha3_512",
+            }:
+                return ModuleResult(success=False, error=f"不支持的SHA算法: {sha_type}")
+            sha_hash = hashlib.new(algorithm, input_text.encode(encoding))
 
             if output_format == "hex":
                 result = sha_hash.hexdigest()

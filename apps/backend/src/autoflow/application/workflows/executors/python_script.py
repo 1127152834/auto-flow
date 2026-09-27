@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from autoflow.domain.workflows.execution import ExecutionContext
+from autoflow.infrastructure.process.workflow_subprocess import split_script_arguments
 
 from .base import ModuleExecutor, ModuleResult
 from .type_utils import to_bool, to_int
@@ -70,7 +71,7 @@ class PythonScriptExecutor(ModuleExecutor):
                 command.append("--python-script")
             command.append(script_file)
             if script_args:
-                command.extend(str(script_args).split())
+                command.extend(split_script_arguments(str(script_args)))
             cwd = (
                 str(working_dir)
                 if working_dir and Path(str(working_dir)).exists()

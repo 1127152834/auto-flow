@@ -1,0 +1,26 @@
+.................................F....................                   [100%]
+=================================== FAILURES ===================================
+________ test_migrated_utility_tools_match_frozen_source[sha_encrypt2] _________
+
+payload = {'type': 'sha_encrypt', 'config': {'inputText': 'AutoFlow', 'shaType': 'not-real', 'outputFormat': 'hex', 'resultVariable': 'out'}}
+
+    @pytest.mark.parametrize("payload", CASES, ids=lambda case: case["type"])
+    @pytest.mark.asyncio
+    async def test_migrated_utility_tools_match_frozen_source(
+        payload: dict[str, Any],
+    ) -> None:
+>       assert await _target_result(payload) == _source_result(payload)
+E       AssertionError: assert {'success': F...ot-real', ...} == {'success': T...r': None, ...}
+E         
+E         Differing items:
+E         {'variables': {}} != {'variables': {'out': '4b622ed89b4e00676841bab3911cc983ec3b7b2b9213d99507faa22a6dd47026'}}
+E         {'message': ''} != {'message': 'NOT-REAL加密完成 (hex格式)'}
+E         {'data': None} != {'data': '4b622ed89b4e00676841bab3911cc983ec3b7b2b9213d99507faa22a6dd47026'}
+E         {'success': False} != {'success': True}
+E         {'error': '不支持的SHA算法: not-real'} != {'error': None}
+E         Use -v to get more diff
+
+tests/differential/workflows/test_b4_utility_tools_executor_parity.py:329: AssertionError
+=========================== short test summary info ============================
+FAILED tests/differential/workflows/test_b4_utility_tools_executor_parity.py::test_migrated_utility_tools_match_frozen_source[sha_encrypt2]
+1 failed, 53 passed in 12.42s

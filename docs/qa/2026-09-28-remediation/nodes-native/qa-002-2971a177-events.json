@@ -1,0 +1,43 @@
+[
+  {
+    "type": "execution:node_start",
+    "nodeId": "n0",
+    "executionId": "fe31a542-4f13-48a5-9ee4-7c89267329e8",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-002-2971a177",
+    "workflowId": "qa-002-2971a177"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n0",
+    "executionId": "fe31a542-4f13-48a5-9ee4-7c89267329e8",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": false,
+    "message": "",
+    "error": "不支持的SHA算法: sha999",
+    "isTimeout": false,
+    "data": null,
+    "logLevel": null,
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 2.346249995753169,
+    "artifactIds": [],
+    "runId": "qa-002-2971a177",
+    "workflowId": "qa-002-2971a177"
+  },
+  {
+    "type": "execution:failed",
+    "runId": "qa-002-2971a177",
+    "workflowId": "qa-002-2971a177",
+    "executedNodes": 1,
+    "failedNodeId": "n0",
+    "issues": [],
+    "error": "不支持的SHA算法: sha999"
+  }
+]

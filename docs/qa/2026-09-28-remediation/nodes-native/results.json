@@ -1,0 +1,88 @@
+{
+  "checkedAt": "2026-09-27T18:56:36.967317+00:00",
+  "gitHead": "2497896b07e1e1974c13e142b4ddc7823a16bac6",
+  "platform": "macOS-26.4.1-arm64-arm-64bit",
+  "python": "3.11.13 (main, Jul 23 2025, 00:18:05) [Clang 20.1.4 ]",
+  "dataSources": [
+    {
+      "path": "package.json",
+      "bytes": 1055,
+      "sha256": "6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92"
+    },
+    {
+      "path": "apps/desktop/package.json",
+      "bytes": 2393,
+      "sha256": "61fc76779f38838f8102e67810c66aebf408d25de7c0d3bc6da4795a1005f5b5"
+    },
+    {
+      "path": "apps/backend/pyproject.toml",
+      "bytes": 1460,
+      "sha256": "4e49812742d3362808878fc11614cbb6884b94a1f6c13b93a9775d6b2d6d84f1"
+    },
+    {
+      "path": "AGENTS.md",
+      "bytes": 15594,
+      "sha256": "4d0f5761fc2b047e9f10c2fc37d3849ac291dc6a0aeb065f0c935c6350598154"
+    },
+    {
+      "path": "docs/PROJECT_STRUCTURE.md",
+      "bytes": 59250,
+      "sha256": "bf468c23f3732b1f8719078b91e0ef908ce795df925628e1aa766f654b1364a8"
+    }
+  ],
+  "results": [
+    {
+      "name": "Python 文件模式读取带空格的真实仓库文件",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "python_script"
+      ],
+      "scenarioModuleTypes": [
+        "python_script"
+      ],
+      "status": "pass",
+      "durationMs": 2397.46,
+      "error": null,
+      "evidence": "qa-000-a70acf63-events.json"
+    },
+    {
+      "name": "真实 CSV 导出仅剩表头",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "csv_parse"
+      ],
+      "scenarioModuleTypes": [
+        "csv_parse"
+      ],
+      "status": "pass",
+      "durationMs": 2275.22,
+      "error": null,
+      "evidence": "qa-001-aae33156-events.json"
+    },
+    {
+      "name": "未知 SHA 明确失败且不执行后继",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "sha_encrypt"
+      ],
+      "scenarioModuleTypes": [
+        "print_log",
+        "sha_encrypt"
+      ],
+      "status": "pass",
+      "durationMs": 2260.81,
+      "error": null,
+      "evidence": "qa-002-2971a177-events.json"
+    }
+  ],
+  "totals": {
+    "pass": 3,
+    "fail": 0,
+    "blocked": 0
+  },
+  "executedModuleTypes": [
+    "csv_parse",
+    "python_script",
+    "sha_encrypt"
+  ]
+}

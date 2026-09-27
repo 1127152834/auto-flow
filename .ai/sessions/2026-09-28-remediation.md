@@ -11,3 +11,5 @@
 - confirmed：SEC-04 所有 Electron IPC 统一校验入口文档与主 frame，异步响应/运行上下文推送复核；双窗口阻止导航/重定向/新窗口/webview；打包忽略开发 URL。110 定向检查、ESLint、tsc 通过，详见 electron.md；不是历史利用链复现。
 
 - confirmed：独立审查发现并修复共享关闭 fd 复用、失败清理误删、暂存大小写别名三个问题；真实红绿证据和29项检查见share.md追加节。Windows规范路径及DELETE最终对象防御已加入，实机仍待验。
+
+- confirmed：N-01/N-02/N-03 与 DB-01 有界修复完成。55 项关联回归、14 项数据库组合（有重叠）、3 个生产 worker 场景通过；复审 NUL 拒绝补丁后15项通过。Windows原生参数与打包路径未实测。详见 nodes.md。本次AOCI完整交付5块280条、严格Challenge7/10、治理未对齐；继续源码绑定工程，不接管初始化。

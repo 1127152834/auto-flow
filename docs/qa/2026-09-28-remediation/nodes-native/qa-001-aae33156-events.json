@@ -1,0 +1,43 @@
+[
+  {
+    "type": "execution:node_start",
+    "nodeId": "n0",
+    "executionId": "88e13a93-cca8-46d6-83cb-0a0a5b9d947c",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-001-aae33156",
+    "workflowId": "qa-001-aae33156"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n0",
+    "executionId": "88e13a93-cca8-46d6-83cb-0a0a5b9d947c",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "CSV解析完成，共 0 行",
+    "error": null,
+    "isTimeout": false,
+    "data": [],
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.297166989184916,
+    "artifactIds": [],
+    "runId": "qa-001-aae33156",
+    "workflowId": "qa-001-aae33156"
+  },
+  {
+    "type": "execution:completed",
+    "runId": "qa-001-aae33156",
+    "workflowId": "qa-001-aae33156",
+    "executedNodes": 1,
+    "failedNodeId": null,
+    "issues": [],
+    "error": null
+  }
+]

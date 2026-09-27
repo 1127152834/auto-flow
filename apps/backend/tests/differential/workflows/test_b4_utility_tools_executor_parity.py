@@ -326,7 +326,16 @@ def test_frozen_source_exposes_exact_approved_utility_family() -> None:
 async def test_migrated_utility_tools_match_frozen_source(
     payload: dict[str, Any],
 ) -> None:
-    assert await _target_result(payload) == _source_result(payload)
+    if payload["type"] == "sha_encrypt" and payload["config"].get("shaType") == "not-real":
+        # Intentional audited defect correction: unknown SHA must not claim success
+        # with a different algorithm. Keep the frozen source itself unchanged.
+        assert _source_result(payload)["success"] is True
+        assert await _target_result(payload) == {
+            "success": False, "message": "", "data": None,
+            "error": "不支持的SHA算法: not-real", "variables": {},
+        }
+    else:
+        assert await _target_result(payload) == _source_result(payload)
 
 
 @pytest.mark.asyncio

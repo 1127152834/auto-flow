@@ -120,7 +120,7 @@ class ProjectTaskRecordCursorRow(Base):
     __tablename__ = "project_task_record_cursors"
     __table_args__ = (
         UniqueConstraint(
-            "task_id", "lease_id", name="uq_project_task_record_cursors_lease"
+            "task_id", "record_ref", name="uq_project_task_record_cursors_ref"
         ),
         Index("ix_project_task_record_cursors_task", "task_id"),
     )

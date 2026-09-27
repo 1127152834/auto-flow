@@ -318,9 +318,9 @@ export function PythonEditorDialog({ isOpen, code, onClose, onSave }: PythonEdit
             <div className="p-3 border-b">
               <h4 className="text-sm font-medium mb-2">使用说明</h4>
               <div className="text-xs text-gray-600 space-y-2">
-                <p>• 默认使用 WebRPA 内置的 Python 3.13</p>
+                <p>• 默认使用 AutoFlow 当前运行环境的 Python</p>
                 <p>• 可以在配置中选择使用本地 Python</p>
-                <p>• 支持命令行参数传递</p>
+                <p>• 文件参数：macOS/Linux 使用 shell 引号规则；Windows 使用双引号包裹空格路径，不执行 shell 表达式</p>
                 <p>• 标准输出和错误可保存到变量</p>
                 <p>• 返回码 0 表示成功</p>
               </div>

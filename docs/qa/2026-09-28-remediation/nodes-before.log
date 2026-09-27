@@ -1,0 +1,134 @@
+F.....FFFFF.                                                             [100%]
+=================================== FAILURES ===================================
+_________ test_header_only_csv_has_no_business_record[True-expected0] __________
+
+header = True, expected = []
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("header, expected", [(True, []), (False, [["path", "bytes"]])])
+    async def test_header_only_csv_has_no_business_record(header, expected):
+        context = ExecutionContext()
+        result = await CsvParseExecutor().execute(
+            {"csvContent": "path,bytes\n", "hasHeader": header, "resultVariable": "rows"}, context
+        )
+        assert result.success
+>       assert result.data == expected
+E       AssertionError: assert [['path', 'bytes']] == []
+E         
+E         Left contains one more item: ['path', 'bytes']
+E         Use -v to get more diff
+
+tests/integration/test_remediation_node_correctness.py:26: AssertionError
+____________ test_invalid_sha_does_not_write_success_result[sha999] ____________
+
+algorithm = 'sha999'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("algorithm", ["sha999", "md5", "new", "shake_128"])
+    async def test_invalid_sha_does_not_write_success_result(algorithm):
+        context = ExecutionContext(variables={"digest": "previous"})
+        result = await SHAEncryptExecutor().execute(
+            {"inputText": "repository digest", "shaType": algorithm, "resultVariable": "digest"}, context
+        )
+>       assert not result.success
+E       AssertionError: assert not True
+E        +  where True = ModuleResult(success=True, message='SHA999加密完成 (hex格式)', data='8a33e2758ee4ca6e1ae80705e5ffb695030f41718b5a4e211442eaccfa2ffbde', error=None, branch=None, duration=0, log_level=None, skipped=False, is_timeout=False).success
+
+tests/integration/test_remediation_node_correctness.py:46: AssertionError
+_____________ test_invalid_sha_does_not_write_success_result[md5] ______________
+
+algorithm = 'md5'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("algorithm", ["sha999", "md5", "new", "shake_128"])
+    async def test_invalid_sha_does_not_write_success_result(algorithm):
+        context = ExecutionContext(variables={"digest": "previous"})
+        result = await SHAEncryptExecutor().execute(
+            {"inputText": "repository digest", "shaType": algorithm, "resultVariable": "digest"}, context
+        )
+>       assert not result.success
+E       AssertionError: assert not True
+E        +  where True = ModuleResult(success=True, message='MD5加密完成 (hex格式)', data='28e45417977da6bd6c7df24f8650190d', error=None, branch=None, duration=0, log_level=None, skipped=False, is_timeout=False).success
+
+tests/integration/test_remediation_node_correctness.py:46: AssertionError
+_____________ test_invalid_sha_does_not_write_success_result[new] ______________
+
+algorithm = 'new'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("algorithm", ["sha999", "md5", "new", "shake_128"])
+    async def test_invalid_sha_does_not_write_success_result(algorithm):
+        context = ExecutionContext(variables={"digest": "previous"})
+        result = await SHAEncryptExecutor().execute(
+            {"inputText": "repository digest", "shaType": algorithm, "resultVariable": "digest"}, context
+        )
+        assert not result.success
+>       assert "不支持" in result.error
+E       AssertionError: assert '不支持' in 'SHA加密失败: name must be a string'
+E        +  where 'SHA加密失败: name must be a string' = ModuleResult(success=False, message='', data=None, error='SHA加密失败: name must be a string', branch=None, duration=0, log_level=None, skipped=False, is_timeout=False).error
+
+tests/integration/test_remediation_node_correctness.py:47: AssertionError
+__________ test_invalid_sha_does_not_write_success_result[shake_128] ___________
+
+algorithm = 'shake_128'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("algorithm", ["sha999", "md5", "new", "shake_128"])
+    async def test_invalid_sha_does_not_write_success_result(algorithm):
+        context = ExecutionContext(variables={"digest": "previous"})
+        result = await SHAEncryptExecutor().execute(
+            {"inputText": "repository digest", "shaType": algorithm, "resultVariable": "digest"}, context
+        )
+        assert not result.success
+>       assert "不支持" in result.error
+E       assert '不支持' in "SHA加密失败: hexdigest() missing required argument 'length' (pos 1)"
+E        +  where "SHA加密失败: hexdigest() missing required argument 'length' (pos 1)" = ModuleResult(success=False, message='', data=None, error="SHA加密失败: hexdigest() missing required argument 'length' (pos 1)", branch=None, duration=0, log_level=None, skipped=False, is_timeout=False).error
+
+tests/integration/test_remediation_node_correctness.py:47: AssertionError
+_ test_python_file_arguments_preserve_real_spaced_file_and_literal_shell_text __
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-492/test_python_file_arguments_pre0')
+
+    @pytest.mark.asyncio
+    async def test_python_file_arguments_preserve_real_spaced_file_and_literal_shell_text(tmp_path):
+        source = tmp_path / "中文 目录" / "actual input.json"
+        source.parent.mkdir()
+        source.write_text(Path(__file__).parents[4].joinpath("package.json").read_text())
+        script = tmp_path / "reader script.py"
+        script.write_text('import json,sys\nfrom pathlib import Path\nprint(json.dumps([json.loads(Path(sys.argv[1]).read_text())["name"], *sys.argv[2:]], ensure_ascii=False))\n')
+        argv = [str(source), "two words", "", "$(do-not-execute)", "a'b", 'a"b']
+        if sys.platform == "win32":
+            import subprocess
+            arguments = subprocess.list2cmdline(argv)
+        else:
+            arguments = shlex.join(argv)
+        context = ExecutionContext()
+        result = await PythonScriptExecutor().execute(
+            {"scriptMode": "file", "scriptPath": str(script), "scriptArgs": arguments, "stdoutVariable": "out"}, context
+        )
+>       assert result.success, result.error
+E       AssertionError: 脚本执行失败（返回码: 1）
+E         标准错误输出:
+E         Traceback (most recent call last):
+E           File "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-492/test_python_file_arguments_pre0/reader script.py", line 3, in <module>
+E             print(json.dumps([json.loads(Path(sys.argv[1]).read_text())["name"], *sys.argv[2:]], ensure_ascii=False))
+E                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/pathlib.py", line 1058, in read_text
+E             with self.open(mode='r', encoding=encoding, errors=errors) as f:
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/pathlib.py", line 1044, in open
+E             return io.open(self, mode, buffering, encoding, errors, newline)
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         FileNotFoundError: [Errno 2] No such file or directory: "'/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-492/test_python_file_arguments_pre0/中文"
+E       assert False
+E        +  where False = ModuleResult(success=False, message='', data={'stdout': '', 'stderr': 'Traceback (most recent call last):\n  File "/pr...est-492/test_python_file_arguments_pre0/中文"', branch=None, duration=0, log_level=None, skipped=False, is_timeout=False).success
+
+tests/integration/test_remediation_node_correctness.py:68: AssertionError
+=========================== short test summary info ============================
+FAILED tests/integration/test_remediation_node_correctness.py::test_header_only_csv_has_no_business_record[True-expected0]
+FAILED tests/integration/test_remediation_node_correctness.py::test_invalid_sha_does_not_write_success_result[sha999]
+FAILED tests/integration/test_remediation_node_correctness.py::test_invalid_sha_does_not_write_success_result[md5]
+FAILED tests/integration/test_remediation_node_correctness.py::test_invalid_sha_does_not_write_success_result[new]
+FAILED tests/integration/test_remediation_node_correctness.py::test_invalid_sha_does_not_write_success_result[shake_128]
+FAILED tests/integration/test_remediation_node_correctness.py::test_python_file_arguments_preserve_real_spaced_file_and_literal_shell_text
+6 failed, 6 passed in 0.31s

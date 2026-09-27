@@ -1,0 +1,32 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_________ test_cursor_identity_matches_migrated_record_ref_constraint __________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-494/test_cursor_identity_matches_m0')
+
+    def test_cursor_identity_matches_migrated_record_ref_constraint(tmp_path):
+        path = tmp_path / "cursor.sqlite"
+        migrate_database(path)
+        factory = create_session_factory(path)
+        try:
+            actual = inspect(factory.kw["bind"]).get_unique_constraints("project_task_record_cursors")
+            expected = {("uq_project_task_record_cursors_ref", ("task_id", "record_ref"))}
+            assert {(item["name"], tuple(item["column_names"])) for item in actual} == expected
+            declared = {
+                (item.name, tuple(column.name for column in item.columns))
+                for item in ProjectTaskRecordCursorRow.__table__.constraints
+                if isinstance(item, UniqueConstraint)
+            }
+>           assert declared == expected
+E           AssertionError: assert {('uq_project... 'lease_id'))} == {('uq_project...record_ref'))}
+E             
+E             Extra items in the left set:
+E             ('uq_project_task_record_cursors_lease', ('task_id', 'lease_id'))
+E             Extra items in the right set:
+E             ('uq_project_task_record_cursors_ref', ('task_id', 'record_ref'))
+E             Use -v to get more diff
+
+tests/migration/test_cursor_constraint_alignment.py:22: AssertionError
+=========================== short test summary info ============================
+FAILED tests/migration/test_cursor_constraint_alignment.py::test_cursor_identity_matches_migrated_record_ref_constraint
+1 failed in 0.53s

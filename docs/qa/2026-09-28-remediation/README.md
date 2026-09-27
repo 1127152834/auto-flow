@@ -11,11 +11,11 @@
 | SEC-03 凭据隔离 | _key 仍只 hash(name)，元数据则按工作区隔离 | 创建/读/字段变更/重命名/删/切换 | 稳定工作区命名空间；旧条目不自动认领、不删除 | 两真实 SQLite + 专属系统凭据；旧键恢复边界 | 本机26后端+109前端+9原生检查通过，见 credentials.md |
 | SEC-04 Electron | 审计源码缺共同可信页面约束；待逐调用方复核 | 主窗口/Studio/IPC | 拒绝非受信页面与子 frame，保留开发/本地页面 | 本地防御拒绝测试；不继续被拦截的利用链 | 110项通过，见 electron.md；打包待验 |
 | A-01 PM9 R2/R3 | 已批准规格；历史生产桥缺失，当前未有业务提交 | dispatcher/project worker/runtime/data/environment/manual/UI | 复用现有能力服务；固定身份RPC、持久恢复；不改内存表语义 | 真 worker/浏览器/SQLite 全链、fencing/幂等/重启 | 核对中 |
-| DB-01 唯一约束 | ORM(task_id,lease_id) 与迁移(task_id,record_ref) | 数据能力 cursor | 按业务唯一性核对模型；不改历史迁移 | 新/旧库升级、metadata check、冲突数据 | 核对中 |
-| N-01 CSV | 历史真实仅表头返回一行 | csv 读取节点 | 有表头时跳过第一行，即使无数据 | 真实空/表头/普通 CSV | 核对中 |
-| N-02 Python argv | 当前审计指出 str.split | 文件脚本节点/子进程 | 保留字符串契约，明确跨平台引号；无 shell=True | 真脚本/中文空格/引号/错误输入 | 核对中 |
+| DB-01 唯一约束 | ORM(task_id,lease_id) 与迁移(task_id,record_ref) | 数据能力 cursor | 按业务唯一性核对模型；不改历史迁移 | 新/旧库升级、metadata check、冲突数据 | 已修复；限定验收见 nodes.md |
+| N-01 CSV | 历史真实仅表头返回一行 | csv 读取节点 | 有表头时跳过第一行，即使无数据 | 真实空/表头/普通 CSV | 已修复；限定验收见 nodes.md |
+| N-02 Python argv | 当前审计指出 str.split | 文件脚本节点/子进程 | 保留字符串契约，明确跨平台引号；无 shell=True | 真脚本/中文空格/引号/错误输入 | 已修复；限定验收见 nodes.md |
 | FUNC-01 共享预览 | 当前 import 指向不存在模块 | preview 与共享页面 | 返回明确不支持并同步页面；现有媒体/文本下载保留 | 真 HTTP 不再500、不假成功 | 明确415与UI提示；本机通过 |
-| N-03 SHA | 历史未知算法静默 sha256 | 散列节点 | 白名单拒绝未知值 | 真实文件文本与独立 hashlib | 核对中 |
+| N-03 SHA | 历史未知算法静默 sha256 | 散列节点 | 白名单拒绝未知值 | 真实文件文本与独立 hashlib | 已修复；限定验收见 nodes.md |
 | F-01 代理必填字段 | 历史元数据213，批准216 | 导出器/后端准入/前端配置 | 从当前正确配置同步必填约束与检查集合 | 缺字段拒绝、完整配置准入、生成一致 | 核对中 |
 | N-04 导入错误 | 持久错误 details 存在，UI 只显示通用码 | Excel import/status/presentation-error | 白名单展示行列字段和类型要求 | 真 XLSX 错映射→定位→修正→保存/重启 | 核对中 |
 | A-04/A-10 Android | available=true 与 docker0 缺失并存；stderr 丢弃 | runtime/environment/management/UI | 依赖诊断+稳定错误分类；准确工作流文案 | 当前 VM 只读诊断；自有资源；不修共享 VM | 核对中 |

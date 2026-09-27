@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import shlex
 import signal
 import sys
 
@@ -12,6 +13,35 @@ from .project_browser_processes import (
     process_birth,
 )
 from .project_test_browser_worker import force_process_tree
+
+
+def split_script_arguments(arguments: str) -> list[str]:
+    """POSIX quoting on Unix; native double-quote/backslash rules on Windows."""
+    if "\x00" in arguments:
+        raise ValueError("脚本参数不能包含 NUL 字符")
+    if not arguments.strip():
+        return []
+    if sys.platform != "win32":
+        return shlex.split(arguments, posix=True)
+    import ctypes
+    from ctypes import wintypes
+
+    shell = ctypes.WinDLL("shell32", use_last_error=True)
+    kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+    parse = shell.CommandLineToArgvW
+    parse.argtypes = [wintypes.LPCWSTR, ctypes.POINTER(ctypes.c_int)]
+    parse.restype = ctypes.POINTER(wintypes.LPWSTR)
+    kernel.LocalFree.argtypes = [wintypes.HLOCAL]
+    kernel.LocalFree.restype = wintypes.HLOCAL
+    count = ctypes.c_int()
+    # argv[0] has different Windows parsing rules; consume a fixed dummy name.
+    argv = parse("autoflow-python " + arguments, ctypes.byref(count))
+    if not argv:
+        raise ctypes.WinError(ctypes.get_last_error())
+    try:
+        return [argv[index] for index in range(1, count.value)]
+    finally:
+        kernel.LocalFree(argv)
 
 
 async def terminate_subprocess(process: asyncio.subprocess.Process) -> None:

@@ -1,0 +1,12 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_______ test_python_arguments_reject_embedded_nul_before_platform_parser _______
+
+    def test_python_arguments_reject_embedded_nul_before_platform_parser():
+>       with pytest.raises(ValueError, match="NUL"):
+E       Failed: DID NOT RAISE ValueError
+
+apps/backend/tests/integration/test_remediation_node_correctness.py:20: Failed
+=========================== short test summary info ============================
+FAILED apps/backend/tests/integration/test_remediation_node_correctness.py::test_python_arguments_reject_embedded_nul_before_platform_parser
+1 failed, 12 deselected in 0.07s

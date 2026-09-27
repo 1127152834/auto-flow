@@ -67,7 +67,7 @@ class CsvParseExecutor(ModuleExecutor):
                 return ModuleResult(success=False, error="CSV内容为空")
 
             result: list[Any]
-            if has_header_bool and len(rows) > 1:
+            if has_header_bool:
                 headers = rows[0]
                 result = [dict(zip(headers, row)) for row in rows[1:]]
             else:
