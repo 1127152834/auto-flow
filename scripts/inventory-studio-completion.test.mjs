@@ -1,15 +1,20 @@
-import { test } from 'node:test'
+import { after, test } from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import { execFileSync } from 'node:child_process'
+import os from 'node:os'
+import path from 'node:path'
 const root = new URL('../', import.meta.url)
-execFileSync(process.execPath, ['scripts/inventory-studio-completion.mjs'], { cwd: root })
-const rows = JSON.parse(fs.readFileSync(new URL('docs/migration/studio-frontend-completion/capabilities.json', root)))
+const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'autoflow-inventory-'))
+after(() => fs.rmSync(directory, { recursive: true, force: true }))
+const historical = ['capabilities.json','test-cases.json','component-tools.json'].map(name => [name, fs.readFileSync(new URL(`docs/migration/studio-frontend-completion/${name}`, root))])
+execFileSync(process.execPath, ['scripts/inventory-studio-completion.mjs', '--output-dir', directory], { cwd: root })
+const rows = JSON.parse(fs.readFileSync(path.join(directory, 'capabilities.json')))
 const dependency = type => rows.find(row => row.type === type).toolDependencies
 const prefix = 'apps/desktop/src/renderer/domains/workflows/components/'
 test('retains the approved scope and resolves an imported alias to its actual component file', () => {
-  assert.equal(rows.length, 213)
-  assert.equal(new Set(rows.map(row => row.type)).size, 213)
+  assert.equal(rows.length, 217)
+  assert.equal(new Set(rows.map(row => row.type)).size, 217)
   assert.ok(dependency('open_page').resolved.includes(prefix + 'controls/select-native.tsx#SelectNative'))
   assert.ok(dependency('open_page').external.includes('@radix-ui/react-select#Trigger'))
   assert.deepEqual(dependency('open_page').unresolved, [])
@@ -33,10 +38,23 @@ test('follows lazy imports into actual code tools and their editor dependency', 
 test('does not silently discard dynamically selected icon components or reconciled node evidence', () => {
   const unresolved = new Set(rows.flatMap(row => row.toolDependencies.unresolved))
   assert.ok(unresolved.has(prefix + 'controls/custom-dialogs.tsx#Icon'))
-  assert.ok(rows.every(row => row.status === '已实现且已验收'))
-  assert.ok(rows.every(row => row.verifiedCases.some(item => item.id === `NODE.${row.type}.panel-registration`) && row.verifiedCases.some(item => item.id === `NODE.${row.type}.roundtrip`)))
-  assert.ok(rows.every(row => row.remaining.length === 0))
+  const frozen = rows.filter(row => row.differenceClass !== 'AutoFlow 原生扩展')
+  assert.equal(frozen.length, 213)
+  assert.ok(frozen.every(row => row.status === '已实现且已验收'))
+  assert.ok(frozen.every(row => row.verifiedCases.some(item => item.id === `NODE.${row.type}.panel-registration`) && row.verifiedCases.some(item => item.id === `NODE.${row.type}.roundtrip`)))
+  assert.ok(frozen.every(row => row.remaining.length === 0))
   assert.ok(rows.find(row => row.type === 'open_page').verifiedCases.some(item => item.id.startsWith('NODE.branch.open_page.')))
-  assert.ok(rows.every(row => row.verifiedCases.every(item => item.status === '已实现且已验收' && item.evidencePath)))
-  assert.ok(rows.every(row => row.backendMigration), 'frontend reconciliation must preserve backend migration evidence')
+  assert.ok(frozen.every(row => row.verifiedCases.every(item => item.status === '已实现且已验收' && item.evidencePath)))
+  assert.ok(frozen.every(row => row.backendMigration), 'frontend reconciliation must preserve backend migration evidence')
+})
+
+test('candidate generation preserves historical bytes and native acceptance limits', () => {
+  for (const [name, before] of historical) assert.deepEqual(fs.readFileSync(new URL(`docs/migration/studio-frontend-completion/${name}`, root)), before, name)
+  const previous = JSON.parse(historical[0][1])
+  for (const type of ['proxy_change_ip','proxy_change_location','proxy_query','project_data']) {
+    const actual = rows.find(row => row.type === type)
+    const expected = previous.find(row => row.type === type)
+    for (const key of ['status','verifiedCases','remaining','deliveryBlock']) assert.deepEqual(actual[key], expected[key], `${type}.${key}`)
+    assert.notEqual(actual.status, '已实现且已验收')
+  }
 })

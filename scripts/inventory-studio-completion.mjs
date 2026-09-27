@@ -4,7 +4,10 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const domain = 'apps/desktop/src/renderer/domains/workflows'
-const out = path.join(root, 'docs/migration/studio-frontend-completion')
+const evidenceDirectory = path.join(root, 'docs/migration/studio-frontend-completion')
+const outputIndex = process.argv.indexOf('--output-dir')
+if (outputIndex < 0 || !process.argv[outputIndex + 1]) throw Error('Pass --output-dir to generate candidates without replacing historical evidence')
+const out = path.resolve(process.argv[outputIndex + 1])
 const parse = file => ts.createSourceFile(file, fs.readFileSync(path.join(root, file), 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
 const walk = (node, visit) => { visit(node); ts.forEachChild(node, child => walk(child, visit)) }
 const unwrap = node => ts.isAsExpression(node) || ts.isParenthesizedExpression(node) ? unwrap(node.expression) : node
@@ -23,7 +26,9 @@ walk(sidebar,node=>{
 })
 if(!categories || !excluded || !extra)throw Error('Catalog structure changed; inventory cannot silently skip it')
 const retained=categories.filter(c=>!excluded.has(c.name)).flatMap(c=>c.types.filter(t=>!extra.has(t)).map(type=>({type,category:c.name})))
-if(retained.length!==213 || new Set(retained.map(n=>n.type)).size!==213)throw Error('Approved 213-node scope changed')
+const nativeTypes = new Set(['proxy_change_ip', 'proxy_change_location', 'proxy_query', 'project_data'])
+const frozen = retained.filter(node => !nativeTypes.has(node.type))
+if(frozen.length!==213 || new Set(frozen.map(n=>n.type)).size!==213 || retained.length!==213+nativeTypes.size)throw Error('Approved frozen/native node scope changed')
 const files=fs.readdirSync(path.join(root,domain,'components/config-panels')).filter(f=>f.endsWith('.tsx')).map(f=>`${domain}/components/config-panels/${f}`)
 files.push(`${domain}/components/ConfigPanel.tsx`,`${domain}/editor-store.ts`)
 const evidence=new Map(retained.map(n=>[n.type,[]]))
@@ -152,16 +157,17 @@ const scenarios=[
  ['history','修改配置、复制节点、撤销并重做','每次操作恢复预期内容','复制标识更新，历史不丢配置'],
  ['tools','逐个打开本节点配套工具，覆盖成功/空/失败/取消和迟到结果','正确结果可应用，取消/过期不写回','工具上下文和请求身份匹配'],
 ]
-const verified=JSON.parse(fs.readFileSync(path.join(out,'verified-cases.json'),'utf8'))
+const verified=JSON.parse(fs.readFileSync(path.join(evidenceDirectory,'verified-cases.json'),'utf8'))
 const sharedAdvancedCase=verified.find(row=>row.id==='F2.ADV.shared' && ['通过','已实现且已验收'].includes(row.status))
-const previousCapabilitiesPath=path.join(out,'capabilities.json')
+const previousCapabilitiesPath=path.join(evidenceDirectory,'capabilities.json')
 const previousCapabilities=fs.existsSync(previousCapabilitiesPath)?JSON.parse(fs.readFileSync(previousCapabilitiesPath,'utf8')):[]
 const previousById=new Map(previousCapabilities.map(row=>[row.id,row]))
 const capabilities=retained.map(n=>{
   const id=`node:${n.type}`
   const previous=previousById.get(id)
   const cases=verified.filter(row=>['通过','已实现且已验收'].includes(row.status) && (row.capability===id || row.preconditions?.nodeType===n.type))
-  if(sharedAdvancedCase)cases.push(sharedAdvancedCase)
+  if(sharedAdvancedCase && !nativeTypes.has(n.type))cases.push(sharedAdvancedCase)
+  if(nativeTypes.has(n.type)) return {...n, ...previous, evidence:[...evidence.get(n.type), ...(previous?.evidence??[])], toolDependencies:dependencies(n.type)}
   const supplementalEvidence=(previous?.evidence??[]).filter(item=>typeof item==='string')
   return {...n,id,status:previous?.status??'缺验收',deliveryBlock:'F2.2',differenceClass:'原版功能迁入',
     verifiedCases:cases.map(row=>({id:row.id,status:'已实现且已验收',level:row.level,evidencePath:row.evidencePath})),

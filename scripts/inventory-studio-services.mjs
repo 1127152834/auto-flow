@@ -5,7 +5,11 @@ import ts from 'typescript'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const domain = 'apps/desktop/src/renderer/domains/workflows'
-const output = path.join(root, 'docs/migration/studio-frontend-completion/service-inventory.json')
+const outputIndex = process.argv.indexOf('--output-dir')
+if (outputIndex < 0 || !process.argv[outputIndex + 1]) throw Error('Pass --output-dir to generate candidates without replacing historical evidence')
+const outputDirectory = path.resolve(process.argv[outputIndex + 1])
+fs.mkdirSync(outputDirectory, { recursive: true })
+const output = path.join(outputDirectory, 'service-inventory.json')
 const manifest = new Map(JSON.parse(fs.readFileSync(path.join(root, domain, 'source-manifest.json'), 'utf8')).map(row => [row.target, row.source]))
 const walk = (node, visit) => { visit(node); ts.forEachChild(node, child => walk(child, visit)) }
 const files = dir => fs.readdirSync(path.join(root, dir), { withFileTypes: true }).flatMap(entry => {

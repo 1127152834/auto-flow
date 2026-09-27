@@ -1,0 +1,22 @@
+✔ retains the approved scope and resolves an imported alias to its actual component file (0.951667ms)
+✔ excludes database and DP nodes from the delivery inventory (0.124458ms)
+✔ follows lazy imports into actual code tools and their editor dependency (0.090625ms)
+✔ does not silently discard dynamically selected icon components or reconciled node evidence (0.45625ms)
+✔ candidate generation preserves historical bytes and native acceptance limits (6.863667ms)
+✔ resource upload keeps multipart body and generated response type in the handoff inventory (0.687416ms)
+✔ transport forwarding is marked dynamic instead of inventing a GET contract (0.098ms)
+✔ the matrix registers every discovered service and event without treating registration as runtime backend proof (2.921083ms)
+✔ every service family is assigned to the frozen frontend contract matrix (0.569125ms)
+✔ inventory and matrix regenerate deterministically (719.954834ms)
+✔ direct apiRequest helpers outside Api objects remain visible in the contract inventory (0.227792ms)
+✔ plain Event emissions are recorded alongside CustomEvent emissions (0.126958ms)
+✔ MCP requests nested in validation helpers keep explicit endpoints and consumers (0.282125ms)
+✔ service inventory checks leave historical evidence unchanged (0.3835ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1502.683208

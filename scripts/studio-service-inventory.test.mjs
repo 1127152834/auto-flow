@@ -3,11 +3,15 @@ import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { test } from 'node:test'
+import { after, test } from 'node:test'
 
+import os from 'node:os'
+const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'autoflow-service-inventory-'))
+after(() => fs.rmSync(directory, { recursive: true, force: true }))
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-execFileSync(process.execPath, ['scripts/inventory-studio-services.mjs'], { cwd: root })
-const directory = path.join(root, 'docs/migration/studio-frontend-completion')
+const historical = ['service-inventory.json','contract-matrix.md'].map(name => [name, fs.readFileSync(path.join(root, 'docs/migration/studio-frontend-completion', name))])
+execFileSync(process.execPath, ['scripts/inventory-studio-services.mjs', '--output-dir', directory], { cwd: root })
+const historicalDirectory = path.join(root, 'docs/migration/studio-frontend-completion')
 const inventory = JSON.parse(fs.readFileSync(path.join(directory, 'service-inventory.json'), 'utf8'))
 const matrix = fs.readFileSync(path.join(directory, 'contract-matrix.md'), 'utf8')
 const operation = name => inventory.services.find(row => row.operation === name)
@@ -45,7 +49,7 @@ test('every service family is assigned to the frozen frontend contract matrix', 
 })
 test('inventory and matrix regenerate deterministically', () => {
   const before = fs.readFileSync(path.join(directory, 'service-inventory.json'), 'utf8')
-  execFileSync(process.execPath, ['scripts/inventory-studio-services.mjs'], { cwd: root })
+  execFileSync(process.execPath, ['scripts/inventory-studio-services.mjs', '--output-dir', directory], { cwd: root })
   assert.equal(fs.readFileSync(path.join(directory, 'service-inventory.json'), 'utf8'), before)
   assert.equal(fs.readFileSync(path.join(directory, 'contract-matrix.md'), 'utf8'), matrix)
 })
@@ -75,4 +79,8 @@ test('MCP requests nested in validation helpers keep explicit endpoints and cons
     if(name==='save'||name==='reload')assert.ok(item.requests.some(request=>request.endpoint.includes('/ai-assistant/mcp/commands/')))
   }
   assert.match(matrix,/mcp-service-contract.md/)
+})
+
+test('service inventory checks leave historical evidence unchanged', () => {
+  for (const [name, before] of historical) assert.deepEqual(fs.readFileSync(path.join(historicalDirectory, name)), before, name)
 })
