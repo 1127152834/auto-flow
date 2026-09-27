@@ -14,6 +14,7 @@ from threading import Event, Thread
 from typing import Any, Literal, cast
 from uuid import UUID
 
+from autoflow.domain.projects.models import ProjectError
 from autoflow.infrastructure.process.project_browser_processes import process_birth
 from autoflow.infrastructure.process.project_test_browser_worker import (
     force_process_tree,
@@ -76,6 +77,7 @@ class ProjectWorkflowWorkerManager:
         termination_timeout: float = 3,
         resolve_credential: Callable[[str], Mapping[str, str]] | None = None,
         proxy_service: Any | None = None,
+        project_data: Any | None = None,
     ) -> None:
         self._root = (temp_dir / "workflow-runs").resolve()
         self._artifact_root = (temp_dir.parent / "workspace" / "runs").resolve()
@@ -85,6 +87,7 @@ class ProjectWorkflowWorkerManager:
         self._termination_timeout = termination_timeout
         self._resolve_credential = resolve_credential
         self._proxy_service = proxy_service
+        self._project_data = project_data
         self._proxy_requests: ProxyWorkerRequests | None = None
         self._worker: _Worker | None = None
         self._closed = False
@@ -203,6 +206,35 @@ class ProjectWorkflowWorkerManager:
     ) -> WorkerOutcome:
         while True:
             message = await self._read(worker)
+            if message.get("type") == "capability:request":
+                request_id, payload = message.get("requestId"), message.get("payload")
+                if (not isinstance(request_id, str) or not request_id
+                    or not isinstance(payload, dict) or self._project_data is None
+                    or worker.stop_requested or worker.cleanup is not None):
+                    raise _protocol_error()
+                try:
+                    operation = asyncio.create_task(asyncio.to_thread(
+                        self._project_data.worker_call, worker.run_id, worker.generation, payload,
+                    ))
+                    try:
+                        value = await asyncio.shield(operation)
+                    except asyncio.CancelledError:
+                        # The existing SQL transaction checks the run fence. A
+                        # native thread cannot be cancelled: drain it before
+                        # releasing this worker's ownership and cleanup lease.
+                        try:
+                            await wait_for_cleanup(operation)
+                        except ProjectError:
+                            pass  # The revoked request has no recipient.
+                        raise
+                except ProjectError as capability_error:
+                    value = {"error": {"code": capability_error.code, "message": capability_error.message}}
+                await self._send(worker, {
+                    "type": "capability:result", "protocolVersion": 1,
+                    "runId": worker.run_id, "executionGeneration": worker.generation,
+                    "requestId": request_id, "value": value,
+                })
+                continue
             if message.get("type") == "proxy:request":
                 if self._proxy_requests is None:
                     raise _protocol_error()
@@ -317,7 +349,7 @@ class ProjectWorkflowWorkerManager:
 
     async def _send(self, worker: _Worker, message: dict[str, Any]) -> None:
         async with worker.write_lock:
-            if message.get("type") in {"input_prompt_result", "js_script_result", "webhook_result"} and (
+            if message.get("type") in {"input_prompt_result", "js_script_result", "webhook_result", "capability:result"} and (
                 self._worker is not worker or worker.stop_requested or not worker.ready or worker.cleanup is not None
             ):
                 raise WorkflowWorkerError("WORKFLOW_INTERACTION_UNAVAILABLE", "交互请求已结束或执行代次已失效")

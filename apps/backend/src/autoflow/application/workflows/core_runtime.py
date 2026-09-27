@@ -182,6 +182,20 @@ class WorkflowRuntimeService:
             runtime = WorkflowRuntime(build_production_executor_registry())
             return any(runtime.requires_browser(item) for item in _related_documents(document, modules, workflows))
 
+    def requires_project_data(self, workflow_id: str) -> bool:
+        with self._session_factory() as session:
+            row = session.get(WorkflowDocumentRow, workflow_id)
+            if row is None:
+                return False
+            document = workflow_record(row).document
+            modules = self._module_snapshots(document)
+            workflows = self._workflow_snapshots(document, workflow_project_id(session, workflow_id), modules)
+            return any(
+                node.get("data", {}).get("moduleType") == "project_data"
+                for item in _related_documents(document, modules, workflows)
+                for node in item.get("nodes", ())
+            )
+
     def requires_default_model(self, workflow_id: str) -> bool:
         with self._session_factory() as session:
             row = session.get(WorkflowDocumentRow, workflow_id)
@@ -292,6 +306,12 @@ class WorkflowRuntimeService:
             browser_runtime.requires_browser(item)
             for item in _related_documents(prepared.document, modules, workflows)
         ) else [])
+        if any(
+            node.get("data", {}).get("moduleType") == "project_data"
+            for item in _related_documents(prepared.document, modules, workflows)
+            for node in item.get("nodes", ())
+        ):
+            requirements.append("project.data")
         missing = sorted(set(requirements) - set(available_capabilities))
         if missing:
             raise WorkflowRuntimeError(

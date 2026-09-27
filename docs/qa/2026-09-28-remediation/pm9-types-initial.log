@@ -1,0 +1,3 @@
+src/autoflow/infrastructure/process/project_workflow_worker.py:275: error: Assignment to variable "error" outside except: block  [misc]
+src/autoflow/infrastructure/process/project_workflow_worker.py:279: error: Trying to read deleted variable "error"  [misc]
+Found 2 errors in 1 file (checked 6 source files)

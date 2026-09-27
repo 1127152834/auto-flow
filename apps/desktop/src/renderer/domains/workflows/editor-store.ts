@@ -594,6 +594,7 @@ export const moduleTypeLabels: Record<ModuleType, string> = {
   proxy_change_ip: '切换代理 IP',
   proxy_change_location: '切换代理地点',
   proxy_query: '查询代理状态／操作结果',
+  project_data: '项目数据',
   api_request: 'HTTP请求',
   send_email: '发送邮件',
   // QQ自动化
@@ -1049,6 +1050,7 @@ export const moduleDefaultTimeouts: Partial<Record<ModuleType, number>> = {
   proxy_change_ip: 0,
   proxy_change_location: 0,
   proxy_query: 0,
+  project_data: 0,
   wait: 0,                 // 固定等待不需要超时
   wait_element: 60,     // 60秒，等待元素可能需要较长时间
   wait_image: 60,       // 60秒，等待图像可能需要较长时间
@@ -1678,6 +1680,8 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       defaultData = {
         resultVariable: 'js_result',
       }
+    } else if (type === 'project_data') {
+      defaultData = { action: 'inputs', arguments: '{}', resultVariable: 'project_result' }
     } else if (['proxy_change_ip', 'proxy_change_location', 'proxy_query'].includes(type)) {
       defaultData = { target: 'current', retryIntervalSeconds: 10, maxAttempts: 5, confirmationTimeoutSeconds: 30, failureMode: 'raise', resultVariable: `${type}_result` }
     } else if (type === 'api_request') {

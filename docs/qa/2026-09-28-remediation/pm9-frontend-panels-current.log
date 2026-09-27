@@ -1,0 +1,408 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.test.tsx src/renderer/domains/workflows/components/config-panels/ProxyControlConfig.test.tsx src/renderer/domains/workflows/tests/proxy-required-fields.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:49407) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:49405) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:49406) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.test.tsx (3 tests | 1 failed) 1304ms
+   × freezes selected table generation and only explicitly selected fields 1181ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.test.tsx > freezes selected table generation and only explicitly selected fields
+TestingLibraryElementError: Unable to find role="option" and name "另一张表"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-4"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-2"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+          [33mfor[39m=[32m"_r_0_-action"[39m
+        [36m>[39m
+          [0m项目数据操作[0m
+        [36m</label>[39m
+        [36m<button[39m
+          [33maria-autocomplete[39m=[32m"none"[39m
+          [33maria-expanded[39m=[32m"false"[39m
+          [33mclass[39m=[32m"group relative flex h-8 w-full items-center justify-between gap-2 rounded-control border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] px-2.5 py-1 pr-2 text-[13px] text-[hsl(var(--foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,background-color,box-shadow,transform] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] data-[state=open]:border-[hsl(var(--brand-500))] data-[state=open]:bg-[hsl(var(--card))] data-[state=open]:ring-2 data-[state=open]:ring-[hsl(var(--brand-500)/0.18)] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer text-left"[39m
+          [33mdata-state[39m=[32m"closed"[39m
+          [33mdir[39m=[32m"ltr"[39m
+          [33mid[39m=[32m"_r_0_-action"[39m
+          [33mrole[39m=[32m"combobox"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"flex-1 truncate"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mstyle[39m=[32m"pointer-events: none;"[39m
+            [36m>[39m
+              [0m修改记录[0m
+            [36m</span>[39m
+          [36m</span>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-chevron-down h-3.5 w-3.5 text-[hsl(var(--muted-foreground))] transition-transform duration-150 group-data-[state=open]:rotate-180 group-data-[state=open]:text-[hsl(var(--brand-600))]"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m6 9 6 6 6-6"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-2"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+          [33mfor[39m=[32m"_r_0_-table"[39m
+        [36m>[39m
+          [0m授权数据表[0m
+        [36m</label>[39m
+        [36m<button[39m
+          [33maria-autocomplete[39m=[32m"none"[39m
+          [33maria-expanded[39m=[32m"false"[39m
+          [33mclass[39m=[32m"group relative flex h-8 w-full items-center justify-between gap-2 rounded-control border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] px-2.5 py-1 pr-2 text-[13px] text-[hsl(var(--foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,background-color,box-shadow,transform] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] data-[state=open]:border-[hsl(var(--brand-500))] data-[state=open]:bg-[hsl(var(--card))] data-[state=open]:ring-2 data-[state=open]:ring-[hsl(var(--brand-500)/0.18)] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer text-left"[39m
+          [33mdata-state[39m=[32m"closed"[39m
+          [33mdir[39m=[32m"ltr"[39m
+          [33mid[39m=[32m"_r_0_-table"[39m
+          [33mrole[39m=[32m"combobox"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"flex-1 truncate"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mstyle[39m=[32m"pointer-events: none;"[39m
+            [36m>[39m
+              [0m业务记录[0m
+            [36m</span>[39m
+          [36m</span>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-chevron-down h-3.5 w-3.5 text-[hsl(var(--muted-foreground))] transition-transform duration-150 group-data-[state=open]:rotate-180 group-data-[state=open]:text-[hsl(var(--brand-600))]"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m6 9 6 6 6-6"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<fieldset[39m
+        [33mclass[39m=[32m"space-y-2"[39m
+      [36m>[39m
+        [36m<legend[39m
+          [33mclass[39m=[32m"text-sm"[39m
+        [36m>[39m
+          [0m授权字段[0m
+        [36m</legend>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"flex items-center gap-2 text-sm"[39m
+        [36m>[39m
+          [36m<input[39m
+            [33mtype[39m=[32m"checkbox"[39m
+          [36m/>[39m
+          [0m结果[0m
+        [36m</label>[39m
+      [36m</fieldset>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [0m运行参数必须落在已授权的表和字段范围内。新增字段作用于所选数据表；修改字段必须选中对应字段，或引用本任务创建的字段。[0m
+      [36m</p>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-2"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+          [33mfor[39m=[32m"_r_0_-arguments"[39m
+        [36m>[39m
+          [0m操作参数（JSON）[0m
+        [36m</label>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"relative"[39m
+        [36m>[39m
+          [36m<textarea[39m
+            [33mclass[39m=[32m"flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none"[39m
+            [33mid[39m=[32m"_r_0_-arguments"[39m
+            [33mrows[39m=[32m"8"[39m
+          [36m>[39m
+            [0m{}[0m
+          [36m</textarea>[39m
+        [36m</div>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+        [36m>[39m
+          [0m支持对象变量与 JSON 模板。记录引用、版本号来自读取结果；对象和数字变量插入 JSON 时不加引号。冲突会终止当前节点，不自动重写。[0m
+        [36m</p>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-2"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [36m>[39m
+          [0m结果变量[0m
+        [36m</label>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"relative"[39m
+        [36m>[39m
+          [36m<input[39m
+            [33mclass[39m=[32m"flex h-8 w-full rounded-control px-2.5 py-1 text-[13px] border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,box-shadow,background-color] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-[hsl(var(--muted))] aria-[invalid=true]:border-[hsl(var(--danger-500))] aria-[invalid=true]:ring-[hsl(var(--danger-500)/0.18)] file:border-0 file:bg-transparent file:text-[12px] file:font-medium file:text-[hsl(var(--foreground))] font-mono"[39m
+            [33mvalue[39m=[32m"project_result"[39m
+          [36m/>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-4"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-2"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+          [33mfor[39m=[32m"_r_0_-action"[39m
+        [36m>[39m
+          [0m项目数据操作[0m
+        [36m</label>[39m
+        [36m<button[39m
+          [33maria-autocomplete[39m=[32m"none"[39m
+          [33maria-expanded[39m=[32m"false"[39m
+          [33mclass[39m=[32m"group relative flex h-8 w-full items-center justify-between gap-2 rounded-control border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] px-2.5 py-1 pr-2 text-[13px] text-[hsl(var(--foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,background-color,box-shadow,transform] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] data-[state=open]:border-[hsl(var(--brand-500))] data-[state=open]:bg-[hsl(var(--card))] data-[state=open]:ring-2 data-[state=open]:ring-[hsl(var(--brand-500)/0.18)] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer text-left"[39m
+          [33mdata-state[39m=[32m"closed"[39m
+          [33mdir[39m=[32m"ltr"[39m
+          [33mid[39m=[32m"_r_0_-action"[39m
+          [33mrole[39m=[32m"combobox"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"flex-1 truncate"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mstyle[39m=[32m"pointer-events: none;"[39m
+            [36m>[39m
+              [0m修改记录[0m
+            [36m</span>[39m
+          [36m</span>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-chevron-down h-3.5 w-3.5 text-[hsl(var(--muted-foreground))] transition-transform duration-150 group-data-[state=open]:rotate-180 group-data-[state=open]:text-[hsl(var(--brand-600))]"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m6 9 6 6 6-6"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-2"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+          [33mfor[39m=[32m"_r_0_-table"[39m
+        [36m>[39m
+          [0m授权数据表[0m
+        [36m</label>[39m
+        [36m<button[39m
+          [33maria-autocomplete[39m=[32m"none"[39m
+          [33maria-expanded[39m=[32m"false"[39m
+          [33mclass[39m=[32m"group relative flex h-8 w-full items-center justify-between gap-2 rounded-control border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] px-2.5 py-1 pr-2 text-[13px] text-[hsl(var(--foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,background-color,box-shadow,transform] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] data-[state=open]:border-[hsl(var(--brand-500))] data-[state=open]:bg-[hsl(var(--card))] data-[state=open]:ring-2 data-[state=open]:ring-[hsl(var(--brand-500)/0.18)] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer text-left"[39m
+          [33mdata-state[39m=[32m"closed"[39m
+          [33mdir[39m=[32m"ltr"[39m
+          [33mid[39m=[32m"_r_0_-table"[39m
+          [33mrole[39m=[32m"combobox"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"flex-1 truncate"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mstyle[39m=[32m"pointer-events: none;"[39m
+            [36m>[39m
+              [0m业务记录[0m
+            [36m</span>[39m
+          [36m</span>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-chevron-down h-3.5 w-3.5 text-[hsl(var(--muted-foreground))] transition-transform duration-150 group-data-[state=open]:rotate-180 group-data-[state=open]:text-[hsl(var(--brand-600))]"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m6 9 6 6 6-6"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<fieldset[39m
+        [33mclass[39m=[32m"space-y-2"[39m
+      [36m>[39m
+        [36m<legend[39m
+          [33mclass[39m=[32m"text-sm"[39m
+        [36m>[39m
+          [0m授权字段[0m
+        [36m</legend>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"flex items-center gap-2 text-sm"[39m
+        [36m>[39m
+          [36m<input[39m
+            [33mtype[39m=[32m"checkbox"[39m
+          [36m/>[39m
+          [0m结果[0m
+        [36m</label>[39m
+      [36m</fieldset>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [0m运行参数必须落在已授权的表和字段范围内。新增字段作用于所选数据表；修改字段必须选中对应字段，或引用本任务创建的字段。[0m
+      [36m</p>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-2"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+          [33mfor[39m=[32m"_r_0_-arguments"[39m
+        [36m>[39m
+          [0m操作参数（JSON）[0m
+        [36m</label>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"relative"[39m
+        [36m>[39m
+          [36m<textarea[39m
+            [33mclass[39m=[32m"flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none"[39m
+            [33mid[39m=[32m"_r_0_-arguments"[39m
+            [33mrows[39m=[32m"8"[39m
+          [36m>[39m
+            [0m{}[0m
+          [36m</textarea>[39m
+        [36m</div>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+        [36m>[39m
+          [0m支持对象变量与 JSON 模板。记录引用、版本号来自读取结果；对象和数字变量插入 JSON 时不加引号。冲突会终止当前节点，不自动重写。[0m
+        [36m</p>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-2"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+        [36m>[39m
+          [0m结果变量[0m
+        [36m</label>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"relative"[39m
+        [36m>[39m
+          [36m<input[39m
+            [33mclass[39m=[32m"flex h-8 w-full rounded-control px-2.5 py-1 text-[13px] border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,box-shadow,background-color] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-[hsl(var(--muted))] aria-[invalid=true]:border-[hsl(var(--danger-500))] aria-[invalid=true]:ring-[hsl(var(--danger-500)/0.18)] file:border-0 file:bg-transparent file:text-[12px] file:font-medium file:text-[hsl(var(--foreground))] font-mono"[39m
+            [33mvalue[39m=[32m"project_result"[39m
+          [36m/>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../../node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.test.tsx:25:33
+     23|   const user = userEvent.setup()
+     24|   await user.click(screen.getByLabelText('授权数据表'))
+     25|   await user.click(await screen.findByRole('option', { name: '另一张表' }))
+       |                                 ^
+     26|   expect(change).toHaveBeenLastCalledWith('binding', { tableId: 'other…
+     27|   const argumentsText = '{"expectedContentRevision": {record["result"]…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 1 unhandled error during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+TypeError: target.hasPointerCapture is not a function
+ ❯ ../../node_modules/@radix-ui/react-select/dist/index.mjs:211:22
+ ❯ handleEvent ../../node_modules/@radix-ui/primitive/dist/index.mjs:10:31
+ ❯ executeDispatch ../../node_modules/react-dom/cjs/react-dom-client.development.js:20804:9
+ ❯ runWithFiberInDEV ../../node_modules/react-dom/cjs/react-dom-client.development.js:1048:13
+ ❯ processDispatchQueue ../../node_modules/react-dom/cjs/react-dom-client.development.js:20854:19
+ ❯ ../../node_modules/react-dom/cjs/react-dom-client.development.js:21423:9
+ ❯ batchedUpdates$1 ../../node_modules/react-dom/cjs/react-dom-client.development.js:3437:40
+ ❯ dispatchEventForPluginEventSystem ../../node_modules/react-dom/cjs/react-dom-client.development.js:21008:7
+ ❯ dispatchEvent ../../node_modules/react-dom/cjs/react-dom-client.development.js:26142:11
+ ❯ dispatchDiscreteEvent ../../node_modules/react-dom/cjs/react-dom-client.development.js:26110:11
+
+This error originated in "src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.test.tsx" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "freezes selected table generation and only explicitly selected fields". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 11 passed (12)
+     Errors  1 error
+   Start at  03:45:39
+   Duration  2.31s (transform 647ms, setup 466ms, import 816ms, tests 1.48s, environment 1.17s)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.test.tsx src/renderer/domains/workflows/components/config-panels/ProxyControlConfig.test.tsx src/renderer/domains/workflows/tests/proxy-required-fields.test.ts

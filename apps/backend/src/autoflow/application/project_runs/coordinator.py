@@ -109,7 +109,7 @@ class ProjectRunCoordinator:
             },
             {
                 "capability": "project.data",
-                "required": False,
+                "required": self._core.requires_project_data(workflow_id),
                 "available": "project.data" in self._capabilities,
                 "reason": (
                     "项目数据执行能力可用"
@@ -496,6 +496,14 @@ class ProjectRunCoordinator:
             created_at=now,
             uow=session,
         )
+        from autoflow.domain.workflows.project_data import project_data_manifest
+
+        try:
+            declared_table_grants.extend(self._validate_capability_manifest(
+                session, automation, project_data_manifest(prepared.execution_plan),
+            ))
+        except (ValueError, TypeError) as error:
+            raise ProjectRunError("CAPABILITY_FACTS_INCOMPLETE", "项目数据节点缺少有效的固定能力绑定", 409) from error
         frozen = _json_dates(
             {
                 "automation": _json_dates(automation_to_dict(automation)),
@@ -540,6 +548,7 @@ class ProjectRunCoordinator:
         )
         has_data_capability = bool(
             has_data_inputs
+            or "project.data" in prepared.capability_requirements
             or create_record_targets
             or table_grants
             or status_input_ids

@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+from dataclasses import replace
 from datetime import UTC, datetime
 from functools import cmp_to_key
 from uuid import uuid4
@@ -50,6 +51,10 @@ from autoflow.domain.project_runs.input_selection import (
     RecordRef,
 )
 from autoflow.domain.projects.models import ProjectError, ProjectOperation
+from autoflow.domain.workflows.project_data import (
+    project_data_manifest,
+    project_data_nodes,
+)
 from autoflow.infrastructure.database.models import ProjectOperationRow
 from autoflow.infrastructure.database.project_claims import _lease_key
 from autoflow.infrastructure.database.project_data import (
@@ -83,7 +88,11 @@ from autoflow.infrastructure.database.project_run_models import (
     ProjectTaskRecordReadRow,
     ProjectTaskRow,
 )
-from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
+from autoflow.infrastructure.database.workflow_runtime_models import (
+    WorkflowPreparedContentRow,
+    WorkflowRunEventRow,
+    WorkflowRunRow,
+)
 
 MAX_QUERY_SNAPSHOT_RECORDS = MAX_CANDIDATE_EVALUATIONS
 MAX_QUERY_SNAPSHOT_BYTES = 4 * 1024 * 1024
@@ -94,6 +103,61 @@ class SqlAlchemyProjectDataCapabilities:
 
     def __init__(self, factory: sessionmaker[Session]):
         self._factory = factory
+
+    def worker_context(self, run_id: str, generation: int, request: dict):
+        """Resolve authority from this workspace and a durably admitted node visit."""
+        with self._factory() as session:
+            task = session.scalar(select(ProjectTaskRow).where(ProjectTaskRow.run_id == run_id))
+            if task is None:
+                raise ProjectError('CAPABILITY_SCOPE_DENIED', 'Run has no project task', 403)
+            _task, run, snapshot = self._facts(session, task.project_id, task.id, run_id)
+            if type(generation) is not int or generation != run.execution_generation:
+                raise ProjectError('LEASE_REVOKED', 'Worker execution generation is no longer active', 409)
+            visit = session.scalar(select(WorkflowRunEventRow).where(
+                WorkflowRunEventRow.run_id == run_id,
+                WorkflowRunEventRow.execution_generation == generation,
+                WorkflowRunEventRow.node_id == request['nodeId'],
+                WorkflowRunEventRow.node_visit_id == request['nodeVisitId'],
+                WorkflowRunEventRow.attempt == request['attempt'],
+                WorkflowRunEventRow.kind == 'nodeAttempt',
+            ).order_by(WorkflowRunEventRow.sequence.desc()).limit(1))
+            if visit is None or visit.payload.get('status') != 'started':
+                raise ProjectError('CAPABILITY_SCOPE_DENIED', 'Node visit is not durably active', 403)
+            prepared = session.get(WorkflowPreparedContentRow, run.prepared_content_id)
+            configs = [] if prepared is None else [
+                config for node_id, config in project_data_nodes(prepared.execution_plan)
+                if node_id == request['nodeId']
+            ]
+            if not configs or any(
+                request['capability'] != 'project.data.' + config.get('action', 'inputs')
+                or config != configs[0] for config in configs
+            ):
+                raise ProjectError('CAPABILITY_SCOPE_DENIED', 'Node capability is absent from the frozen workflow', 403)
+            config = configs[0]
+            project_id, task_id, inputs = task.project_id, task.id, list(snapshot.inputs)
+        scope = self.scope(project_id, task_id, run_id)
+        if scope.execution_generation != generation:
+            raise ProjectError('LEASE_REVOKED', 'Worker execution generation changed', 409)
+        if config.get('action', 'inputs') not in {'inputs', 'operation'}:
+            manifest = project_data_manifest({'nodes': [{'data': {'moduleType': 'project_data', 'config': config}}]})
+            grant = manifest['tableGrants'][0]
+            allowed = TableCapabilityGrant(
+                grant['tableId'], grant['datasetGeneration'], frozenset(grant['operations']),
+                frozenset(grant['fieldIds']), frozenset(grant['readPurposes']),
+            )
+            if not any(
+                existing.table_id == allowed.table_id
+                and existing.dataset_generation == allowed.dataset_generation
+                and allowed.operations <= existing.operations
+                and allowed.field_ids <= existing.field_ids
+                and allowed.read_purposes <= existing.read_purposes
+                for existing in scope.table_grants
+            ):
+                raise ProjectError('CAPABILITY_SCOPE_DENIED', 'Node declaration exceeds the run grant', 403)
+            scope = replace(scope, status_record_refs=frozenset(), create_record_targets=frozenset(),
+                            record_read_grants=frozenset(), record_write_grants=frozenset(),
+                            table_grants=frozenset({allowed}))
+        return scope, inputs
 
     def scope(
         self,

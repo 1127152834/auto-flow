@@ -147,7 +147,7 @@ class ProjectGraphExecutor:
     ) -> None:
         self.browser = CloakBrowserWorkflowSession(browser_context) if browser_context is not None else None
         self.cancellation = _Cancellation(should_stop)
-        self.context = ExecutionContext(proxy_control=command_bus.proxy_call if command_bus else None, proxy_probe=proxy_probe, process_cleanup=terminate_subprocess, variables=dict(variables), browser=self.browser, cancellation=self.cancellation, events=self, credentials=credentials, models=models, external_integrations=external_integrations, table_workbooks=OpenpyxlTableWorkbookRenderer())
+        self.context = ExecutionContext(project_data=command_bus.project_data_call if command_bus else None, proxy_control=command_bus.proxy_call if command_bus else None, proxy_probe=proxy_probe, process_cleanup=terminate_subprocess, variables=dict(variables), browser=self.browser, cancellation=self.cancellation, events=self, credentials=credentials, models=models, external_integrations=external_integrations, table_workbooks=OpenpyxlTableWorkbookRenderer())
         self.command_bus = command_bus
         if command_bus is not None:
             interactive = command_bus.for_context(self.context)
@@ -354,6 +354,12 @@ class ProjectGraphExecutor:
         else:
             timeout = event.get('isTimeout') is True or event.get('error') == 'WORKFLOW_NODE_TIMEOUT'
             self.error = {'code': 'WORKFLOW_NODE_TIMEOUT' if timeout else 'WORKFLOW_NODE_FAILED', 'message': '工作流节点执行超时' if timeout else '工作流节点执行失败'}
+            if node_data.get('moduleType') == 'project_data' and isinstance(event.get('data'), dict):
+                from autoflow.domain.workflows.project_data import PROJECT_DATA_ERRORS
+
+                code = event['data'].get('projectDataError')
+                if isinstance(code, str) and code in PROJECT_DATA_ERRORS:
+                    self.error = {'code': code, 'message': PROJECT_DATA_ERRORS[code]}
             payload['error'] = self.error
             await emit('log', {'level': 'error', 'message': self.error['message']})
         await emit('nodeAttempt', payload)

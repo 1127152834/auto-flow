@@ -297,6 +297,16 @@ class WorkflowRunCoordinator:
                     error.code, error.message, error.status, error.details
                 ) from error
             raw_custom_module_dependencies = copy.deepcopy(custom_module_dependencies)
+            from autoflow.domain.workflows.project_data import project_data_nodes
+
+            if any(project_data_nodes({
+                "document": document, "workflowDependencies": workflow_dependencies,
+                "customModuleDependencies": custom_module_dependencies,
+            })):
+                raise WorkflowRunError(
+                    "CAPABILITY_MISSING", "项目数据节点需要从项目自动化任务运行，不能从 Studio 直接执行", 422,
+                    {"capabilities": ["project.data"]},
+                )
             resolved_default_model = self._apply_project_model_default(
                 [document, *workflow_dependencies.values(), *(
                     workflow for snapshot in custom_module_dependencies.values()

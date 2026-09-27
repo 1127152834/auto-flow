@@ -1,0 +1,47 @@
+....F                                                                    [100%]
+=================================== FAILURES ===================================
+_______ test_production_worker_uses_frozen_grants_and_writes_real_sqlite _______
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-515/test_production_worker_uses_fr0')
+
+    @pytest.mark.asyncio
+    async def test_production_worker_uses_frozen_grants_and_writes_real_sqlite(tmp_path):
+        from autoflow.infrastructure.database.project_data_models import DataRecordRow
+        from autoflow.infrastructure.database.project_run_models import ProjectTaskInputSnapshotRow
+        from autoflow.infrastructure.process.project_workflow_worker import ProjectWorkflowWorkerManager
+        from tests.integration.test_project_data_worker import _NoBrowserResources, _dispatcher
+    
+        factory, project, automation, coordinator = _setup(tmp_path)
+        worker = ProjectWorkflowWorkerManager(
+            tmp_path / 'capability-worker', start_timeout=10,
+            project_data=ProjectDataCapabilityService(SqlAlchemyProjectDataCapabilities(factory)),
+        )
+        dispatcher = _dispatcher(factory, worker, _NoBrowserResources())
+        try:
+            save_data_workflow(factory, automation)
+            batch = coordinator.start(project, automation.automation_id, uid(), {
+                'expectedAutomationRevision': automation.management_revision,
+                'parameters': {}, 'maxTasks': 1, 'concurrency': 1,
+            })[0]
+            assert ProjectBatchScheduler.claim_data_task(factory, project, batch.batch_id) == 'ready'
+            task = coordinator.list_tasks(project, batch.batch_id)[0]
+            with factory() as session:
+                run = SqlAlchemyWorkflowRuntimeRepository(session).get_run(run_id=task.run_id)
+                inputs = session.get(ProjectTaskInputSnapshotRow, task.input_snapshot_id).inputs
+            await dispatcher.dispatch(run.run_id, expected_status_revision=run.status_revision, execution_generation=run.execution_generation)
+            await dispatcher.wait_idle()
+            with factory() as session:
+                repository = SqlAlchemyWorkflowRuntimeRepository(session)
+                finished = repository.get_run(run_id=run.run_id)
+                events = repository.list_events(run.run_id, after_sequence=0, limit=100)
+>               assert finished.status == 'succeeded', [(event.kind, event.payload) for event in events]
+E               AssertionError: [('status', mappingproxy({'status': 'running', 'statusRevision': 2})), ('nodeAttempt', mappingproxy({'status': 'starte...ssage': '节点执行完成', 'isUserLog': False})), ('nodeAttempt', mappingproxy({'status': 'succeeded', 'durationMs': 36})), ...]
+E               assert 'failed' == 'succeeded'
+E                 
+E                 - succeeded
+E                 + failed
+
+apps/backend/tests/integration/test_project_worker_capabilities.py:193: AssertionError
+=========================== short test summary info ============================
+FAILED apps/backend/tests/integration/test_project_worker_capabilities.py::test_production_worker_uses_frozen_grants_and_writes_real_sqlite
+1 failed, 4 passed in 4.93s

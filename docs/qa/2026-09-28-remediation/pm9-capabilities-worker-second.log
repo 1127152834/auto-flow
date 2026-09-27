@@ -1,0 +1,105 @@
+....F                                                                    [100%]
+=================================== FAILURES ===================================
+_______ test_production_worker_uses_frozen_grants_and_writes_real_sqlite _______
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-516/test_production_worker_uses_fr0')
+
+    @pytest.mark.asyncio
+    async def test_production_worker_uses_frozen_grants_and_writes_real_sqlite(tmp_path):
+        from autoflow.infrastructure.database.project_data_models import DataRecordRow
+        from autoflow.infrastructure.database.project_run_models import ProjectTaskInputSnapshotRow
+        from autoflow.infrastructure.process.project_workflow_worker import ProjectWorkflowWorkerManager
+        from tests.integration.test_project_data_worker import _NoBrowserResources, _dispatcher
+    
+        factory, project, automation, coordinator = _setup(tmp_path)
+        worker = ProjectWorkflowWorkerManager(
+            tmp_path / 'capability-worker', start_timeout=10,
+            project_data=ProjectDataCapabilityService(SqlAlchemyProjectDataCapabilities(factory)),
+        )
+        dispatcher = _dispatcher(factory, worker, _NoBrowserResources())
+        try:
+            save_data_workflow(factory, automation)
+            batch = coordinator.start(project, automation.automation_id, uid(), {
+                'expectedAutomationRevision': automation.management_revision,
+                'parameters': {}, 'maxTasks': 1, 'concurrency': 1,
+            })[0]
+            assert ProjectBatchScheduler.claim_data_task(factory, project, batch.batch_id) == 'ready'
+            task = coordinator.list_tasks(project, batch.batch_id)[0]
+            with factory() as session:
+                run = SqlAlchemyWorkflowRuntimeRepository(session).get_run(run_id=task.run_id)
+                inputs = session.get(ProjectTaskInputSnapshotRow, task.input_snapshot_id).inputs
+            await dispatcher.dispatch(run.run_id, expected_status_revision=run.status_revision, execution_generation=run.execution_generation)
+            await dispatcher.wait_idle()
+            with factory() as session:
+                repository = SqlAlchemyWorkflowRuntimeRepository(session)
+                finished = repository.get_run(run_id=run.run_id)
+                events = repository.list_events(run.run_id, after_sequence=0, limit=100)
+                assert finished.status == 'succeeded', [(event.kind, event.payload) for event in events]
+                succeeded = [event.node_id for event in events if event.kind == 'nodeAttempt' and event.payload.get('status') == 'succeeded']
+                assert succeeded == ['data-node', 'read-node', 'update-node']
+                ref = inputs[0]['recordRef']
+>               row = session.get(DataRecordRow, ref['recordKey']['value'])
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+apps/backend/tests/integration/test_project_worker_capabilities.py:204: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+apps/backend/.venv/lib/python3.11/site-packages/sqlalchemy/orm/session.py:3702: in get
+    return self._get_impl(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <sqlalchemy.orm.session.Session object at 0x10cc87cd0>
+entity = <class 'autoflow.infrastructure.database.project_data_models.DataRecordRow'>
+primary_key_identity = ['85edbd66-5224-49e0-a0f5-828a19f9f965']
+db_load_fn = <function load_on_pk_identity at 0x109536ac0>, options = None
+populate_existing = False, with_for_update = None, identity_token = None
+execution_options = immutabledict({}), bind_arguments = None
+
+    def _get_impl(
+        self,
+        entity: _EntityBindKey[_O],
+        primary_key_identity: _PKIdentityArgument,
+        db_load_fn: Callable[..., _O],
+        *,
+        options: Optional[Sequence[ExecutableOption]] = None,
+        populate_existing: bool = False,
+        with_for_update: ForUpdateParameter = None,
+        identity_token: Optional[Any] = None,
+        execution_options: OrmExecuteOptionsParameter = util.EMPTY_DICT,
+        bind_arguments: Optional[_BindArguments] = None,
+    ) -> Optional[_O]:
+        # convert composite types to individual args
+        if (
+            is_composite_class(primary_key_identity)
+            and type(primary_key_identity)
+            in descriptor_props._composite_getters
+        ):
+            getter = descriptor_props._composite_getters[
+                type(primary_key_identity)
+            ]
+            primary_key_identity = getter(primary_key_identity)
+    
+        mapper: Optional[Mapper[_O]] = inspect(entity)
+    
+        if mapper is None or not mapper.is_mapper:
+            raise sa_exc.ArgumentError(
+                "Expected mapped class or mapper, got: %r" % entity
+            )
+    
+        is_dict = isinstance(primary_key_identity, dict)
+        if not is_dict:
+            primary_key_identity = util.to_list(
+                primary_key_identity, default=[None]
+            )
+    
+        if len(primary_key_identity) != len(mapper.primary_key):
+>           raise sa_exc.InvalidRequestError(
+                "Incorrect number of values in identifier to formulate "
+                "primary key for session.get(); primary key columns "
+                "are %s" % ",".join("'%s'" % c for c in mapper.primary_key)
+            )
+E           sqlalchemy.exc.InvalidRequestError: Incorrect number of values in identifier to formulate primary key for session.get(); primary key columns are 'project_data_records.dataset_generation','project_data_records.key_type','project_data_records.key_value'
+
+apps/backend/.venv/lib/python3.11/site-packages/sqlalchemy/orm/session.py:3802: InvalidRequestError
+=========================== short test summary info ============================
+FAILED apps/backend/tests/integration/test_project_worker_capabilities.py::test_production_worker_uses_frozen_grants_and_writes_real_sqlite
+1 failed, 4 passed in 5.21s

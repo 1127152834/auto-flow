@@ -1,0 +1,41 @@
+.....F                                                                   [100%]
+=================================== FAILURES ===================================
+________ test_studio_rejects_task_capability_before_acquiring_resources ________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-521/test_studio_rejects_task_capab0')
+
+    @pytest.mark.asyncio
+    async def test_studio_rejects_task_capability_before_acquiring_resources(tmp_path):
+        from autoflow.adapters.events.workflows import StudioEventJournal
+        from autoflow.application.workflows.coordinator import WorkflowRunCoordinator
+        from autoflow.application.workflows.documents import WorkflowDocumentService
+        from autoflow.application.workflows.executors.production import build_production_executor_registry
+        from autoflow.application.workflows.runs import WorkflowRunService
+        from autoflow.application.workflows.runtime import WorkflowRuntime
+        from autoflow.domain.workflows.runs import WorkflowRunError
+        from autoflow.infrastructure.database.workflow_runs import SqlAlchemyWorkflowRuns
+        from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowDocuments
+        from tests.unit.workflows.test_run_coordinator import FakeProfiles, FakeResources, FakeWorkers, _none, _profile
+    
+        factory, _project, automation, _coordinator = _setup(tmp_path)
+        workers, resources = FakeWorkers(), FakeResources()
+        repository = SqlAlchemyWorkflowRuns(factory)
+        coordinator = WorkflowRunCoordinator(
+            documents=WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory)),
+            runs=WorkflowRunService(repository), run_repository=repository,
+            runtime=WorkflowRuntime(build_production_executor_registry()),
+            profiles=FakeProfiles(_profile()), installed_kernels=list,
+            resolve_proxy=lambda _profile, _run_id: _none(), read_license=lambda: None,
+            workers=workers, resources=resources, events=StudioEventJournal(), artifact_root=tmp_path / 'workspace',
+        )
+        try:
+            save_data_workflow(factory, automation)
+>           with pytest.raises(WorkflowRunError, match='项目自动化任务') as error:
+E           AssertionError: Regex pattern did not match.
+E             Expected regex: '项目自动化任务'
+E             Actual message: 'profileId 不能为空'
+
+apps/backend/tests/integration/test_project_worker_capabilities.py:451: AssertionError
+=========================== short test summary info ============================
+FAILED apps/backend/tests/integration/test_project_worker_capabilities.py::test_studio_rejects_task_capability_before_acquiring_resources
+1 failed, 5 passed in 5.51s

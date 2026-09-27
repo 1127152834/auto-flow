@@ -26,6 +26,13 @@ NATIVE_SCHEMAS = {
     for name in ('proxy_query', 'proxy_change_ip', 'proxy_change_location')
 }
 
+NATIVE_SCHEMAS['project_data'] = {
+    'required': ['action', 'resultVariable'],
+    'conditional_required': {'field': 'action', 'default': 'inputs', 'map': {
+        action: ['binding', 'arguments'] for action in ('read', 'query', 'update', 'status', 'create', 'delete', 'addField', 'ensureField', 'modifyField', 'previewField')
+    } | {'inputs': [], 'operation': ['arguments']}},
+    'desc': {'binding': '授权数据表和字段', 'arguments': '操作参数', 'action': '项目数据操作', 'resultVariable': '结果变量'},
+}
 
 def _update_name(statement):
     if not isinstance(statement, ast.Expr) or not isinstance(statement.value, ast.Call):
@@ -87,8 +94,8 @@ def _final_schemas():
 def extract():
     schemas, merge_order = _final_schemas()
     retained = {entry['type'] for entry in json.loads(CAPABILITIES.read_text(encoding='utf-8'))}
-    if len(retained) != 216:
-        raise ValueError(f'Approved 216-node scope changed: {len(retained)}')
+    if len(retained) != 213 + len(NATIVE_SCHEMAS):
+        raise ValueError(f'Approved source and native node scope changed: {len(retained)}')
     if schemas.keys() & NATIVE_SCHEMAS.keys():
         raise ValueError('Native metadata must not override frozen source rules')
     schemas.update(NATIVE_SCHEMAS)
@@ -114,10 +121,11 @@ def extract():
     manifest = {
         **sources[0], 'sources': sources, 'sourceRevision': REVISION,
         'nativeModules': sorted(NATIVE_SCHEMAS),
-        'nativeSource': 'apps/backend/src/autoflow/application/workflows/executors/proxy_control.py',
+        'nativeSources': ['apps/backend/src/autoflow/application/workflows/executors/proxy_control.py',
+                          'apps/backend/src/autoflow/application/workflows/executors/project_data.py'],
         'license': {'path': LICENSE.relative_to(ROOT).as_posix(), 'sha256': hashlib.sha256(LICENSE.read_bytes()).hexdigest()},
         'modifications': ['Read final literal groups in frozen merge order, including AUTOFIX and later manual overrides.',
-                          'Filter frozen metadata to 213 retained source nodes; add three AutoFlow proxy node rules for the approved 216-node scope.',
+                          'Filter frozen metadata to 213 retained source nodes; add AutoFlow proxy and PM9 project data rules for the approved native scope.',
                           'Describe AutoFlow bundled Python instead of the source Python313 environment.'],
         'mergeOrder': merge_order, 'approvedCount': len(retained), 'coveredCount': len(covered),
         'covered': covered, 'uncovered': missing,

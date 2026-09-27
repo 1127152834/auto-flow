@@ -1,0 +1,19 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.test.tsx src/renderer/domains/workflows/components/config-panels/ProxyControlConfig.test.tsx src/renderer/domains/workflows/tests/proxy-required-fields.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:59277) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:59275) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:59276) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  3 passed (3)
+      Tests  12 passed (12)
+   Start at  03:46:48
+   Duration  1.35s (transform 709ms, setup 514ms, import 793ms, tests 573ms, environment 1.18s)
+

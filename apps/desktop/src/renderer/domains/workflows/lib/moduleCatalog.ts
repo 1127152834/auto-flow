@@ -2,6 +2,7 @@
 import type { ModuleType } from '../types/index'
 
 const sourceModuleCategories = [
+  { name: '项目数据', color: 'bg-teal-600', modules: ['project_data'] as ModuleType[] },
   { name: '代理控制', color: 'bg-teal-600', modules: ['proxy_change_ip', 'proxy_change_location', 'proxy_query'] as ModuleType[] },
   // ===== 浏览器自动化 =====
   {

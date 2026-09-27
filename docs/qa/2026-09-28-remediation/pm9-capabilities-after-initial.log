@@ -1,0 +1,22 @@
+F.                                                                       [100%]
+=================================== FAILURES ===================================
+_____ test_worker_requires_committed_active_visit_and_host_owned_identity ______
+
+worker_context = (sessionmaker(class_='Session', bind=Engine(sqlite:////private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-...1, 'linkRevision': 1})), captured_at=datetime.datetime(2026, 9, 27, 19, 21, 53, 759782, tzinfo=datetime.timezone.utc)))
+
+    def test_worker_requires_committed_active_visit_and_host_owned_identity(worker_context):
+        factory, service, task, request, snapshot = worker_context
+        with pytest.raises(ProjectError, match='visit'):
+            service.worker_call(task.run_id, 1, request)
+        commit_visit(factory, task, request)
+>       assert service.worker_call(task.run_id, 1, request) == {'inputs': list(snapshot.inputs)}
+E       AssertionError: assert {'inputs': [{...00:00', ...}]} == {'inputs': [m...vision': 1})]}
+E         
+E         Differing items:
+E         {'inputs': [{'inputId': '40013d91-8403-4463-bc8b-90e40b588a3f', 'leaseId': '7b785290-3f60-4b58-b6be-ef11f6094c83', 'un...0094c-3bc8-407d-ba28-bb81dcfd5812', 'unavailableReason': None, 'capturedAt': '2026-09-27T19:21:53.759782+00:00', ...}]} != {'inputs': [mappingproxy({'inputId': '40013d91-8403-4463-bc8b-90e40b588a3f', 'leaseId': '7b785290-3f60-4b58-b6be-ef11f...mmary': mappingproxy({'kind': 'local', 'name': '邮箱'}), 'contentRevision': 1, 'statusRevision': 1, 'linkRevision': 1})]}
+E         Use -v to get more diff
+
+tests/integration/test_project_worker_capabilities.py:51: AssertionError
+=========================== short test summary info ============================
+FAILED tests/integration/test_project_worker_capabilities.py::test_worker_requires_committed_active_visit_and_host_owned_identity
+1 failed, 1 passed in 1.27s

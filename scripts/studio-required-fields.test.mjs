@@ -59,30 +59,36 @@ test('all three frozen metadata targets regenerate exactly without executing sou
   assert.equal(result.status, 0, result.stderr + result.stdout)
 })
 
-test('213 frozen entries plus 3 native proxy entries cover the exact approved scope', () => {
+test('213 frozen entries plus 4 native entries cover the exact approved scope', () => {
   const schemas = sourceOracle()
   const approved = read('docs/migration/studio-frontend-completion/capabilities.json').map(entry => entry.type).sort()
   const coverage = read('docs/migration/studio-frontend-completion/required-field-source-coverage.json')
   const data = metadata()
-  assert.equal(approved.length, 216)
-  assert.equal(new Set(approved).size, 216)
-  assert.equal(coverage.approvedCount, 216)
-  assert.equal(coverage.coveredCount, 216)
+  assert.equal(approved.length, 217)
+  assert.equal(new Set(approved).size, 217)
+  assert.equal(coverage.approvedCount, 217)
+  assert.equal(coverage.coveredCount, 217)
   assert.deepEqual(coverage.uncovered, [])
   assert.deepEqual(coverage.covered, approved)
   assert.deepEqual(data.coveredModules, approved)
-  const native = ['proxy_change_ip', 'proxy_change_location', 'proxy_query']
+  const native = ['project_data', 'proxy_change_ip', 'proxy_change_location', 'proxy_query']
   assert.deepEqual(coverage.nativeModules, native)
-  assert.equal(coverage.nativeSource, 'apps/backend/src/autoflow/application/workflows/executors/proxy_control.py')
+  assert.deepEqual(coverage.nativeSources, ['apps/backend/src/autoflow/application/workflows/executors/proxy_control.py', 'apps/backend/src/autoflow/application/workflows/executors/project_data.py'])
   for (const type of native) assert.ok(!Object.hasOwn(schemas, type))
   const frozen = approved.filter(type => !native.includes(type))
   assert.equal(frozen.length, 213)
   const expected = projectRules(schemas, frozen)
   expected.requiredFields.proxy_change_location = ['locationId']
-  for (const type of native) {
+  for (const type of native.filter(type => type !== 'project_data')) {
     expected.conditionalRequired[type] = {field:'target', default:'current', map:{current:[], specified:['proxyId']}}
     expected.fieldLabels[type] = {proxyId:'代理 ID／变量', locationId:'地点 ID／变量'}
   }
+  expected.requiredFields.project_data = ['action', 'resultVariable']
+  expected.conditionalRequired.project_data = {field:'action', default:'inputs', map:{
+    ...Object.fromEntries(['read','query','update','status','create','delete','addField','ensureField','modifyField','previewField'].map(action => [action, ['binding','arguments']])),
+    inputs: [], operation: ['arguments'],
+  }}
+  expected.fieldLabels.project_data = {binding:'授权数据表和字段', arguments:'操作参数', action:'项目数据操作', resultVariable:'结果变量'}
   for (const name of ['requiredFields','conditionalRequired','fieldLabels']) assert.deepEqual(data[name], expected[name])
   for (const excluded of Object.keys(schemas).filter(name => !approved.includes(name))) {
     assert.ok(!data.coveredModules.includes(excluded), `${excluded} must not reappear`)

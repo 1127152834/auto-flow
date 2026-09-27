@@ -1,0 +1,31 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_____ test_worker_requires_committed_active_visit_and_host_owned_identity ______
+
+worker_context = (sessionmaker(class_='Session', bind=Engine(sqlite:////private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-...1, 'linkRevision': 1})), captured_at=datetime.datetime(2026, 9, 27, 19, 20, 46, 265658, tzinfo=datetime.timezone.utc)))
+
+    def test_worker_requires_committed_active_visit_and_host_owned_identity(worker_context):
+        factory, service, task, request, snapshot = worker_context
+        with pytest.raises(ProjectError, match='visit'):
+>           service.worker_call(task.run_id, 1, request)
+            ^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'ProjectDataCapabilityService' object has no attribute 'worker_call'
+
+tests/integration/test_project_worker_capabilities.py:49: AttributeError
+____________ test_worker_cannot_use_old_generation_or_another_visit ____________
+
+worker_context = (sessionmaker(class_='Session', bind=Engine(sqlite:////private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-...1, 'linkRevision': 1})), captured_at=datetime.datetime(2026, 9, 27, 19, 20, 46, 570641, tzinfo=datetime.timezone.utc)))
+
+    def test_worker_cannot_use_old_generation_or_another_visit(worker_context):
+        factory, service, task, request, _snapshot = worker_context
+        commit_visit(factory, task, request)
+        with pytest.raises(ProjectError):
+>           service.worker_call(task.run_id, 1, {**request, 'nodeVisitId': uid()})
+            ^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'ProjectDataCapabilityService' object has no attribute 'worker_call'
+
+tests/integration/test_project_worker_capabilities.py:64: AttributeError
+=========================== short test summary info ============================
+FAILED tests/integration/test_project_worker_capabilities.py::test_worker_requires_committed_active_visit_and_host_owned_identity
+FAILED tests/integration/test_project_worker_capabilities.py::test_worker_cannot_use_old_generation_or_another_visit
+2 failed in 1.40s

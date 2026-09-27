@@ -48572,5 +48572,34 @@
         ]
       }
     ]
+  },
+  {
+    "type": "project_data",
+    "category": "项目数据",
+    "id": "node:project_data",
+    "status": "实施中，待完整验收",
+    "deliveryBlock": "PM9-R2",
+    "differenceClass": "AutoFlow 原生扩展",
+    "verifiedCases": [],
+    "remaining": [
+      "真实浏览器纵向链",
+      "打包 UI 保存重开",
+      "跨平台"
+    ],
+    "evidence": [
+      {
+        "kind": "branch",
+        "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx",
+        "fields": [
+          "action",
+          "binding",
+          "arguments",
+          "resultVariable"
+        ],
+        "components": [
+          "ProjectDataConfig"
+        ]
+      }
+    ]
   }
 ]

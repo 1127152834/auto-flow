@@ -47,6 +47,7 @@ export const MODULE_DEFAULT_VARS: Record<string, Record<string, string>> = {
   proxy_change_ip: { resultVariable: 'proxy_change_ip_result' },
   proxy_change_location: { resultVariable: 'proxy_change_location_result' },
   proxy_query: { resultVariable: 'proxy_query_result' },
+  project_data: { resultVariable: 'project_result' },
 
   // ==================== 媒体处理 ====================
   format_convert: { resultVariable: 'converted_path' },

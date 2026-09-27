@@ -1,0 +1,23 @@
+TRY004 Prefer `TypeError` exception for invalid type
+  --> src/autoflow/application/project_data/capabilities.py:64:17
+   |
+62 |             arguments = request['arguments']
+63 |             if not isinstance(arguments, dict):
+64 |                 raise ValueError('Invalid capability arguments')
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+65 |             scope, inputs = self.repository.worker_context(run_id, generation, request)
+66 |             if action == 'inputs':
+   |
+
+TRY004 Prefer `TypeError` exception for invalid type
+  --> src/autoflow/application/workflows/executors/project_data.py:34:17
+   |
+32 |                 arguments = json.loads(arguments)
+33 |             if not isinstance(arguments, dict):
+34 |                 raise ValueError
+   |                 ^^^^^^^^^^^^^^^^
+35 |         except (ValueError, TypeError):
+36 |             return ModuleResult(False, error="项目数据参数必须是 JSON 对象或对象变量")
+   |
+
+Found 8 errors (6 fixed, 2 remaining).

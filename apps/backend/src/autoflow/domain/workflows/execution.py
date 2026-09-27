@@ -298,6 +298,7 @@ class ExecutionContext:
     models: ModelGateway | None = None
     external_integrations: ExternalIntegrationGateway | None = None
     proxy_control: Callable[[dict[str, Any]], Awaitable[dict[str, Any]]] | None = None
+    project_data: Callable[[dict[str, Any]], Awaitable[dict[str, Any]]] | None = None
     proxy_probe: Callable[[bool], Awaitable[dict[str, Any]]] | None = None
     proxy_visit: ContextVar[tuple[str | None, str | None]] = field(
         default_factory=lambda: ContextVar("proxy_visit", default=(None, None)), repr=False

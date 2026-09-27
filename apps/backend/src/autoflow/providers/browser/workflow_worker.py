@@ -611,6 +611,7 @@ class _WorkerNestedWorkflows:
             ),
             browser=self._parent.browser,
             proxy_control=self._parent.proxy_control,
+            project_data=self._parent.project_data,
             proxy_probe=self._parent.proxy_probe,
             proxy_activity=self._parent.proxy_activity,
             table_workbooks=self._parent.table_workbooks,
@@ -793,6 +794,7 @@ class _WorkerCustomModules:
             ),
             browser=self._parent.browser,
             proxy_control=self._parent.proxy_control,
+            project_data=self._parent.project_data,
             proxy_probe=self._parent.proxy_probe,
             proxy_activity=self._parent.proxy_activity,
             table_workbooks=self._parent.table_workbooks,
@@ -948,6 +950,7 @@ class _WorkerCanvasSubflows:
             ),
             browser=self._parent.browser,
             proxy_control=self._parent.proxy_control,
+            project_data=self._parent.project_data,
             proxy_probe=self._parent.proxy_probe,
             proxy_activity=self._parent.proxy_activity,
             table_workbooks=self._parent.table_workbooks,
@@ -1485,6 +1488,7 @@ class _WorkerCommandBus:
             ),
         )
         self._proxy_pending: dict[str, asyncio.Future[dict[str, Any]]] = {}
+        self._capability_pending: dict[str, asyncio.Future[dict[str, Any]]] = {}
         self._pending: dict[str, asyncio.Future[str | None]] = {}
         self._pending_scripts: dict[str, asyncio.Future[JsScriptResult]] = {}
         self._pending_speech: dict[str, asyncio.Future[SpeechResult]] = {}
@@ -1506,6 +1510,19 @@ class _WorkerCommandBus:
             return await future
         finally:
             self._proxy_pending.pop(request_id, None)
+
+    async def project_data_call(self, payload: dict[str, Any]) -> dict[str, Any]:
+        if self._stopped.is_set():
+            raise asyncio.CancelledError
+        request_id = str(uuid4())
+        future = self._loop.create_future()
+        self._capability_pending[request_id] = future
+        self._write_command({"type": "capability:request", "runId": self._run_id,
+                             "requestId": request_id, "payload": payload})
+        try:
+            return await future
+        finally:
+            self._capability_pending.pop(request_id, None)
 
     def _write_command(self, message: dict[str, Any]) -> None:
         _write(self._stdout, {**message, **self._protocol_metadata})
@@ -1751,6 +1768,14 @@ class _WorkerCommandBus:
 
     def _apply(self, command: dict[str, Any]) -> None:
         command_type = command.get("type")
+        if command_type == "capability:result":
+            capability_future = self._capability_pending.get(str(command.get("requestId", "")))
+            if capability_future is not None and not capability_future.done():
+                if isinstance(command.get("value"), dict):
+                    capability_future.set_result(command["value"])
+                else:
+                    capability_future.set_exception(RuntimeError("项目数据响应格式无效"))
+            return
         if command_type == "proxy:result":
             proxy_future = self._proxy_pending.get(str(command.get("requestId", "")))
             if proxy_future is not None and not proxy_future.done():
@@ -1980,6 +2005,9 @@ class _WorkerCommandBus:
         )
 
     def _cancel_pending(self) -> None:
+        for capability_future in self._capability_pending.values():
+            if not capability_future.done():
+                capability_future.cancel()
         for proxy_future in self._proxy_pending.values():
             if not proxy_future.done():
                 proxy_future.cancel()

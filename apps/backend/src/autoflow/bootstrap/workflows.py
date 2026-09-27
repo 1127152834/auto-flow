@@ -555,7 +555,17 @@ def configure_project_workflow_runtime(
         environment_directory=environment_directory,
         release_proxy=proxy_service.release if proxy_service else None,
     )
-    worker = ProjectWorkflowWorkerManager(temp_dir, resolve_credential=resolve_credential, proxy_service=proxy_service)
+    from autoflow.application.project_data.capabilities import (
+        ProjectDataCapabilityService,
+    )
+    from autoflow.infrastructure.database.project_capabilities import (
+        SqlAlchemyProjectDataCapabilities,
+    )
+
+    worker = ProjectWorkflowWorkerManager(
+        temp_dir, resolve_credential=resolve_credential, proxy_service=proxy_service,
+        project_data=ProjectDataCapabilityService(SqlAlchemyProjectDataCapabilities(session_factory)),
+    )
 
     async def recover(run: Any) -> None:
         if run.resource_request.get("browser") == "none":

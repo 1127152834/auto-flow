@@ -13,18 +13,22 @@
   ],
   "sourceRevision": "WebRPA@5ccb900e8dcf1530aae66f676d87593c416c7ebb",
   "nativeModules": [
+    "project_data",
     "proxy_change_ip",
     "proxy_change_location",
     "proxy_query"
   ],
-  "nativeSource": "apps/backend/src/autoflow/application/workflows/executors/proxy_control.py",
+  "nativeSources": [
+    "apps/backend/src/autoflow/application/workflows/executors/proxy_control.py",
+    "apps/backend/src/autoflow/application/workflows/executors/project_data.py"
+  ],
   "license": {
     "path": "reference/WebRPA/LICENSE",
     "sha256": "24753455b187a47243e0dc82071450a114b5de99aac2909aa0f437e0eac8e409"
   },
   "modifications": [
     "Read final literal groups in frozen merge order, including AUTOFIX and later manual overrides.",
-    "Filter frozen metadata to 213 retained source nodes; add three AutoFlow proxy node rules for the approved 216-node scope.",
+    "Filter frozen metadata to 213 retained source nodes; add AutoFlow proxy and PM9 project data rules for the approved native scope.",
     "Describe AutoFlow bundled Python instead of the source Python313 environment."
   ],
   "mergeOrder": [
@@ -58,8 +62,8 @@
     "WORD_SCHEMAS",
     "RUN_WORKFLOW_SCHEMAS"
   ],
-  "approvedCount": 216,
-  "coveredCount": 216,
+  "approvedCount": 217,
+  "coveredCount": 217,
   "covered": [
     "ai_chat",
     "ai_classify",
@@ -204,6 +208,7 @@
     "print_log",
     "printer_call",
     "probability_trigger",
+    "project_data",
     "proxy_change_ip",
     "proxy_change_location",
     "proxy_query",
