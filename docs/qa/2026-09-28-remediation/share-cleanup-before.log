@@ -1,0 +1,68 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__________ test_failed_upload_never_removes_a_concurrent_replacement ___________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-496/test_failed_upload_never_remov0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x108c3b590>
+
+    def test_failed_upload_never_removes_a_concurrent_replacement(tmp_path, monkeypatch):
+        from autoflow.infrastructure.sharing.paths import ShareDirectory
+    
+        target = tmp_path / "report.txt"
+        original_stat = os.stat
+        replaced = False
+    
+        def replace():
+            nonlocal replaced
+            target.unlink(missing_ok=True)
+            target.write_bytes(b"other-request")
+            replaced = True
+    
+        def fail_sync(_fd):
+            # With private staging, the final pathname remains available until commit.
+            if not target.exists():
+                replace()
+            raise OSError("QA write failure")
+    
+        def replace_after_cleanup_check(path, *args, **kwargs):
+            value = original_stat(path, *args, **kwargs)
+            if path == "report.txt" and kwargs.get("follow_symlinks") is False:
+                replace()
+            return value
+    
+        boundary = ShareDirectory(tmp_path)
+        try:
+            monkeypatch.setattr(os, "fsync", fail_sync)
+            monkeypatch.setattr(os, "stat", replace_after_cleanup_check)
+            with pytest.raises(OSError, match="QA write failure"):
+                boundary.upload("", "report.txt", b"incomplete")
+            assert replaced
+>           assert target.read_bytes() == b"other-request"
+                   ^^^^^^^^^^^^^^^^^^^
+
+tests/integration/test_share_file_boundaries.py:329: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/pathlib.py:1050: in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-496/test_failed_upload_never_remov0/report.txt')
+mode = 'rb', buffering = -1, encoding = None, errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-496/test_failed_upload_never_remov0/report.txt'
+
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/pathlib.py:1044: FileNotFoundError
+=========================== short test summary info ============================
+FAILED tests/integration/test_share_file_boundaries.py::test_failed_upload_never_removes_a_concurrent_replacement
+1 failed, 26 deselected in 0.12s

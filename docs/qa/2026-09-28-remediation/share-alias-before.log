@@ -1,0 +1,35 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___________ test_upload_staging_is_private_until_atomic_publication ____________
+
+files = (PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-501/test_upload_s...sert (shared / "published.txt").read_bytes() == content\n        assert not list(shared.glob(".autoflow-upload-*"))\n')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1086df5d0>
+
+    def test_upload_staging_is_private_until_atomic_publication(files, monkeypatch):
+        shared, _, content = files
+        syncing, release = threading.Event(), threading.Event()
+        real_sync = os.fsync
+    
+        def pause_sync(fd):
+            syncing.set()
+            assert release.wait(5)
+            real_sync(fd)
+    
+        with shared_server(shared) as port, ThreadPoolExecutor(max_workers=1) as pool:
+            monkeypatch.setattr(os, "fsync", pause_sync)
+            pending = pool.submit(upload, port, "published.txt", content)
+            try:
+                assert syncing.wait(5)
+                stage = next(shared.glob(".autoflow-upload-*"))
+                assert not (shared / "published.txt").exists()
+                status, body = request(port, "GET", "/api/list")
+                assert status == 200
+                assert [item["name"] for item in json.loads(body)["items"]] == ["report.txt"]
+                for alias in [stage.name, stage.name.upper()]:
+>                   assert request(port, "GET", f"/{alias}/content")[0] == 403
+E                   assert 200 == 403
+
+tests/integration/test_share_file_boundaries.py:400: AssertionError
+=========================== short test summary info ============================
+FAILED tests/integration/test_share_file_boundaries.py::test_upload_staging_is_private_until_atomic_publication
+1 failed, 28 deselected in 0.64s

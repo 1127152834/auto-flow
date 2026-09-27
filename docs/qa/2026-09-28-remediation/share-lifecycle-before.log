@@ -1,0 +1,70 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_________ test_closed_directory_cannot_reuse_another_shares_descriptor _________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-495/test_closed_directory_cannot_r0')
+
+    def test_closed_directory_cannot_reuse_another_shares_descriptor(tmp_path):
+        from autoflow.infrastructure.sharing.paths import ShareDirectory
+    
+        first_root, second_root = tmp_path / "first", tmp_path / "second"
+        first_root.mkdir()
+        second_root.mkdir()
+        first = ShareDirectory(first_root)
+        first.close()
+        second = ShareDirectory(second_root)
+        try:
+>           with pytest.raises(PermissionError):
+E           Failed: DID NOT RAISE PermissionError
+
+tests/integration/test_share_file_boundaries.py:277: Failed
+________ test_operation_keeps_root_pinned_until_it_finishes_after_close ________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-495/test_operation_keeps_root_pinn0')
+
+    def test_operation_keeps_root_pinned_until_it_finishes_after_close(tmp_path):
+        from autoflow.infrastructure.sharing.paths import ShareDirectory
+    
+        boundary = ShareDirectory(tmp_path)
+        with boundary.directory("") as directory:
+            boundary.close()
+            with pytest.raises(PermissionError):
+>               boundary.upload("", "new.txt", b"denied")
+
+tests/integration/test_share_file_boundaries.py:291: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/autoflow/infrastructure/sharing/paths.py:162: in upload
+    with self.directory(directory, create=True) as parent:
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <autoflow.infrastructure.sharing.paths.ShareDirectory object at 0x10c3da610>
+value = '', create = True
+
+    @contextmanager
+    def directory(self, value: str, *, create: bool = False) -> Iterator[int | Path]:
+        components = parts(value)
+        with ExitStack() as stack:
+            if os.name == "nt":
+                path = self.root
+                for component in components:
+                    path /= component
+                    if create:
+                        try:
+                            path.mkdir()
+                        except FileExistsError:
+                            pass
+                    stack.callback(self._windows_open(path, directory=True).Close)
+                yield path
+            else:
+>               fd = os.dup(self._fd)
+                     ^^^^^^^^^^^^^^^^
+E               OSError: [Errno 9] Bad file descriptor
+
+src/autoflow/infrastructure/sharing/paths.py:111: OSError
+=========================== short test summary info ============================
+FAILED tests/integration/test_share_file_boundaries.py::test_closed_directory_cannot_reuse_another_shares_descriptor
+FAILED tests/integration/test_share_file_boundaries.py::test_operation_keeps_root_pinned_until_it_finishes_after_close
+2 failed, 24 deselected in 0.11s

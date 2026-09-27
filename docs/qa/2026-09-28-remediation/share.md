@@ -15,3 +15,15 @@
 平台实现依据：[Python os的dir_fd与排他打开](https://docs.python.org/3.11/library/os.html)、[Windows CreateFile与共享删除/重解析语义](https://learn.microsoft.com/windows/win32/api/fileapi/nf-fileapi-createfilea)。Windows分支未在本机执行，不冒称跨平台通过。
 
 改动：infrastructure/sharing/file_share.py、paths.py、file_share_page.py；tests/integration/test_share_file_boundaries.py。提交以Git日志中本切片为准。
+
+## 独立审查后的追加修复
+
+2026-09-28，状态 confirmed。本节替代前文关于上传直接创建及失败 inode 检查清理的实现描述；原始测试证据保留。
+
+审查在专属 loopback 服务复现了两项实际竞态：关闭共享释放根 fd 后，未读完 body 的旧请求可能借用新共享复用的 fd；失败上传的 stat/unlink 间隙可能删除其他请求替换的文件。追加修复为：关闭状态与操作引用受同一锁保护，关闭后拒绝新操作、最后在途操作结束才释放根句柄；上传在 API 不可访问的随机私有目录写入并 fsync，再以 POSIX hard link 或 Windows 不覆盖 rename 原子发布，失败只清理私有暂存。
+
+再次复审发现本机大小写不敏感文件系统可用大写前缀访问暂存，已实际复现并修复为 casefold；Windows 还对打开句柄的规范路径校验保留前缀，包含 DELETE 最终目标。保留前缀 `.autoflow-upload-` 不可作为用户访问路径；列表隐藏它。Windows 短名实际行为仍待实机验证，未宣称通过。
+
+证据：share-lifecycle-before（2失败）、share-cleanup-before（1失败）、share-alias-before（1失败）；share-review-final-acceptance（29通过），包含真实 HTTP 未完请求→关闭→新共享→拒绝旧上传、并发替换保留、暂存不可读/删、大小写别名、完整发布。Ruff/mypy 通过。每次复审只核对修复和新增风险，没有将原失败日志覆盖为成功。
+
+POSIX 目标文件系统必须支持 hard link 才能安全发布；不支持时返回真实失败并清理暂存，不降级为覆盖写入。异常进程死亡可能留下隐藏暂存目录，当前不自动删除不明归属的历史目录；本次测试资源由临时目录清理。Microsoft GetFinalPathNameByHandle 的规范路径语义见 https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfinalpathnamebyhandlew 。

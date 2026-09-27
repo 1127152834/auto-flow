@@ -9,3 +9,5 @@
 - confirmed：SEC-03 以 SQLite 持久 UUID 隔离系统凭据键；旧键保持不动、缺秘密要求全部重录。26 后端、109 前端、9 macOS 原生检查通过，证据见 credentials.md。AOCI 在第三块遭并发索引变化中止，未接管维护。
 
 - confirmed：SEC-04 所有 Electron IPC 统一校验入口文档与主 frame，异步响应/运行上下文推送复核；双窗口阻止导航/重定向/新窗口/webview；打包忽略开发 URL。110 定向检查、ESLint、tsc 通过，详见 electron.md；不是历史利用链复现。
+
+- confirmed：独立审查发现并修复共享关闭 fd 复用、失败清理误删、暂存大小写别名三个问题；真实红绿证据和29项检查见share.md追加节。Windows规范路径及DELETE最终对象防御已加入，实机仍待验。

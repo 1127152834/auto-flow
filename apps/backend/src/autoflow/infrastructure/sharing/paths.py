@@ -1,7 +1,8 @@
 """Filesystem boundary for one share; never open a checked pathname a second time.
 
 POSIX walks with directory descriptors and O_NOFOLLOW. Windows keeps directory
-handles without FILE_SHARE_DELETE, rejects reparse points, then uses CREATE_NEW.
+handles without FILE_SHARE_DELETE and rejects reparse points. Uploads publish
+complete private staging files exclusively, without replacing any public name.
 Symlinks/junctions inside a share are deliberately not traversed on either OS.
 """
 
@@ -16,7 +17,11 @@ import sys
 from collections.abc import Iterator
 from contextlib import ExitStack, contextmanager
 from pathlib import Path
+from threading import Lock
 from typing import BinaryIO
+from uuid import uuid4
+
+_UPLOAD_PREFIX = ".autoflow-upload-"
 
 
 def parts(value: str) -> tuple[str, ...]:
@@ -26,7 +31,7 @@ def parts(value: str) -> tuple[str, ...]:
         raise PermissionError("无效的共享路径")
     result = tuple(part for part in value.split("/") if part)
     for part in result:
-        if part in {".", ".."} or part.endswith((".", " ")):
+        if part in {".", ".."} or part.endswith((".", " ")) or part.casefold().startswith(_UPLOAD_PREFIX):
             raise PermissionError("无效的共享路径")
         if part.split(".")[0].upper() in {
             "CON",
@@ -44,6 +49,9 @@ class ShareDirectory:
     def __init__(self, root: Path):
         self.root = root.resolve(strict=True)
         self._stack = ExitStack()
+        self._lifecycle = Lock()
+        self._closed = False
+        self._active = 0
         try:
             if os.name == "nt":
                 # Pin ancestors too: replacing an ancestor must not redirect a later
@@ -67,9 +75,26 @@ class ShareDirectory:
             raise
 
     def close(self) -> None:
-        self._stack.close()
+        with self._lifecycle:
+            self._closed = True
+            if self._active == 0:
+                self._stack.close()
 
-    def _windows_open(self, path: Path, *, directory: bool = False):
+    @contextmanager
+    def _operation(self) -> Iterator[None]:
+        with self._lifecycle:
+            if self._closed:
+                raise PermissionError("共享已关闭")
+            self._active += 1
+        try:
+            yield
+        finally:
+            with self._lifecycle:
+                self._active -= 1
+                if self._closed and self._active == 0:
+                    self._stack.close()
+
+    def _windows_open(self, path: Path, *, directory: bool = False, private: bool = False):
         if sys.platform != "win32":
             raise RuntimeError("Windows file handles require Windows")
         try:
@@ -86,16 +111,24 @@ class ShareDirectory:
             import ctypes
 
             raise ctypes.WinError(error.args[0]) from error
-        attributes = self._win.GetFileInformationByHandle(handle)[0]
-        if attributes & 0x400:  # FILE_ATTRIBUTE_REPARSE_POINT
+        try:
+            attributes = self._win.GetFileInformationByHandle(handle)[0]
+            if attributes & 0x400:  # FILE_ATTRIBUTE_REPARSE_POINT
+                raise PermissionError("共享路径不能经过链接")
+            # Inspect the normalized opened object, including Windows short-name
+            # aliases, rather than relying only on the caller's spelling.
+            actual = Path(self._win.GetFinalPathNameByHandle(handle, 0))
+            if not private and actual.name.casefold().startswith(_UPLOAD_PREFIX):
+                raise PermissionError("共享路径不能访问上传暂存")
+            return handle
+        except BaseException:
             handle.Close()
-            raise PermissionError("共享路径不能经过链接")
-        return handle
+            raise
 
     @contextmanager
     def directory(self, value: str, *, create: bool = False) -> Iterator[int | Path]:
         components = parts(value)
-        with ExitStack() as stack:
+        with self._operation(), ExitStack() as stack:
             if os.name == "nt":
                 path = self.root
                 for component in components:
@@ -156,54 +189,67 @@ class ShareDirectory:
                     raise PermissionError("共享对象必须是普通文件")
                 yield stream
 
+    @contextmanager
+    def _upload_stage(self, parent: int | Path) -> Iterator[int | Path]:
+        # A private, API-inaccessible staging directory keeps failed writes away
+        # from final names. No check-then-unlink cleanup of public paths.
+        name = _UPLOAD_PREFIX + uuid4().hex
+        options = {} if isinstance(parent, Path) else {"dir_fd": parent}
+        path = parent / name if isinstance(parent, Path) else name
+        os.mkdir(path, 0o700, **options)
+        try:
+            with ExitStack() as stack:
+                stage: int | Path
+                if isinstance(parent, Path):
+                    stage = parent / name
+                    stack.callback(self._windows_open(stage, directory=True, private=True).Close)
+                else:
+                    stage = os.open(name, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=parent)
+                    stack.callback(os.close, stage)
+                try:
+                    yield stage
+                finally:
+                    try:
+                        if isinstance(stage, Path):
+                            (stage / "content").unlink(missing_ok=True)
+                        else:
+                            os.unlink("content", dir_fd=stage)
+                    except FileNotFoundError:
+                        pass
+        finally:
+            os.rmdir(path, **options)
+
     def upload(self, directory: str, filename: str, content: bytes) -> str:
         if parts(filename) != (filename,):
             raise PermissionError("无效的文件名")
-        with self.directory(directory, create=True) as parent:
+        with self.directory(directory, create=True) as parent, self._upload_stage(parent) as stage:
+            fd = os.open(
+                stage / "content" if isinstance(stage, Path) else "content",
+                os.O_WRONLY | os.O_CREAT | os.O_EXCL
+                | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_BINARY", 0),
+                0o600,
+                **({} if isinstance(stage, Path) else {"dir_fd": stage}),
+            )
+            with os.fdopen(fd, "wb") as stream:
+                stream.write(content)
+                stream.flush()
+                os.fsync(stream.fileno())
             counter = 0
             while True:
-                name = (
-                    filename
-                    if not counter
-                    else f"{Path(filename).stem}_{counter}{Path(filename).suffix}"
-                )
+                name = filename if not counter else f"{Path(filename).stem}_{counter}{Path(filename).suffix}"
                 try:
-                    fd = os.open(
-                        parent / name if isinstance(parent, Path) else name,
-                        os.O_WRONLY
-                        | os.O_CREAT
-                        | os.O_EXCL
-                        | getattr(os, "O_NOFOLLOW", 0)
-                        | getattr(os, "O_BINARY", 0),
-                        0o600,
-                        **({} if isinstance(parent, Path) else {"dir_fd": parent}),
-                    )
-                    created = os.fstat(fd)
-                    break
+                    if isinstance(parent, Path) and isinstance(stage, Path):
+                        # Windows rename refuses existing targets, including links.
+                        os.rename(stage / "content", parent / name)
+                    elif isinstance(parent, int) and isinstance(stage, int):
+                        # POSIX link is an atomic exclusive publication; never replace
+                        # an existing file/link. Filesystems without links fail closed.
+                        os.link("content", name, src_dir_fd=stage, dst_dir_fd=parent, follow_symlinks=False)
+                    else:
+                        raise TypeError("共享路径平台不一致")
+                    return name
                 except FileExistsError:
                     counter += 1
-            try:
-                with os.fdopen(fd, "wb") as stream:
-                    stream.write(content)
-                    stream.flush()
-                    os.fsync(stream.fileno())
-            except BaseException:
-                # Only remove the inode this request created, never a replacement.
-                # Parent is pinned; successful publication is never rolled back
-                # merely because the client lost the response.
-                target = parent / name if isinstance(parent, Path) else name
-                options = {} if isinstance(parent, Path) else {"dir_fd": parent}
-                try:
-                    current = os.stat(target, follow_symlinks=False, **options)
-                    if (current.st_dev, current.st_ino) == (
-                        created.st_dev,
-                        created.st_ino,
-                    ):
-                        os.unlink(target, **options)
-                except FileNotFoundError:
-                    pass
-                raise
-            return name
 
     def mkdir(self, directory: str, name: str) -> None:
         if parts(name) != (name,):
@@ -229,6 +275,12 @@ class ShareDirectory:
                 or getattr(info, "st_file_attributes", 0) & 0x400
             ):
                 raise PermissionError("共享路径不能经过链接")
+            if isinstance(parent, Path):
+                # The final segment may be a short-name alias of private staging.
+                # Release this target handle before deleting; the parent stays pinned.
+                self._windows_open(
+                    parent / components[-1], directory=stat.S_ISDIR(info.st_mode)
+                ).Close()
             if stat.S_ISDIR(info.st_mode):
                 # Python's fd-based rmtree refuses symlink swaps; on Windows it
                 # removes junctions without recursing into their targets.
@@ -243,6 +295,8 @@ class ShareDirectory:
         result: list[dict[str, object]] = []
         with self.directory(directory) as parent, os.scandir(parent) as iterator:
             for entry in iterator:
+                if entry.name.casefold().startswith(_UPLOAD_PREFIX):
+                    continue
                 info = entry.stat(follow_symlinks=False)
                 if (
                     stat.S_ISLNK(info.st_mode)
