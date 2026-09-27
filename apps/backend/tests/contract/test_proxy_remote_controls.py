@@ -6,6 +6,8 @@ from dataclasses import replace
 from uuid import uuid4
 
 import pytest
+from fastapi.testclient import TestClient
+
 from autoflow.bootstrap import proxies as composition
 from autoflow.bootstrap.app import create_app
 from autoflow.bootstrap.config import Settings
@@ -13,7 +15,6 @@ from autoflow.domain.proxies.errors import ProviderUnavailableError
 from autoflow.domain.proxies.models import Capability, ProviderPage, ProviderProxy
 from autoflow.domain.proxies.remote import Location, RemoteState, RotationSchedule
 from autoflow.providers.proxy.proxypanel import ProxyPanelHttpError
-from fastapi.testclient import TestClient
 
 
 class MemoryCredentials:

@@ -14,8 +14,8 @@ pynput.mouse = mouse_module
 sys.modules["pynput"] = pynput
 sys.modules["pynput.mouse"] = mouse_module
 
-from app.executors.base import ExecutionContext  # noqa: E402
-from app.executors.trigger import (  # noqa: E402
+from app.executors.base import ExecutionContext
+from app.executors.trigger import (
     HotkeyTriggerExecutor,
     MouseTriggerExecutor,
 )

@@ -102,6 +102,8 @@ jobs:
       - run: npm run openapi:check
       - run: uv run --directory apps/backend ruff check .
       - run: uv run --directory apps/backend mypy src
+      - name: Reject new strict type debt (fixed Darwin analysis target)
+        run: uv run --directory apps/backend python scripts/check_strict_types.py
       - run: npm test
       - run: uv run --directory apps/backend pytest -q
       - name: Upload PM9 reports and installer artifacts

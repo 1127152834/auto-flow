@@ -497,7 +497,7 @@ def test_recording_scope_migration_preserves_legacy_rows_without_guessing_owner(
         with sqlite3.connect(database) as connection:
             assert connection.execute(
                 "SELECT version_num FROM alembic_version"
-            ).fetchone() == ("0020_recording_project_scope",)
+            ).fetchone() == ("0024_studio_credential_namespace",)
     finally:
         factory.dispose()
 

@@ -18,8 +18,13 @@ from collections.abc import Iterator
 from contextlib import ExitStack, contextmanager
 from pathlib import Path
 from threading import Lock
-from typing import BinaryIO
+from typing import BinaryIO, Protocol
 from uuid import uuid4
+
+
+class _WindowsHandle(Protocol):
+    def Close(self) -> None: ...
+
 
 _UPLOAD_PREFIX = ".autoflow-upload-"
 
@@ -94,11 +99,11 @@ class ShareDirectory:
                 if self._closed and self._active == 0:
                     self._stack.close()
 
-    def _windows_open(self, path: Path, *, directory: bool = False, private: bool = False):
+    def _windows_open(self, path: Path, *, directory: bool = False, private: bool = False) -> _WindowsHandle:
         if sys.platform != "win32":
             raise RuntimeError("Windows file handles require Windows")
         try:
-            handle = self._win.CreateFile(
+            handle: _WindowsHandle = self._win.CreateFile(
                 str(path),
                 0 if directory else 0x80000000,
                 1 | 2,

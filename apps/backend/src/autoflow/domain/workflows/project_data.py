@@ -1,6 +1,6 @@
 """Frozen project-data declarations shared by admission and worker authorization."""
 
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
 from typing import Any
 
 PROJECT_DATA_OPERATIONS = {
@@ -31,7 +31,7 @@ PROJECT_DATA_ERRORS = {
 }
 
 
-def project_data_nodes(plan: Mapping[str, Any]):
+def project_data_nodes(plan: Mapping[str, Any]) -> Iterator[tuple[str, Mapping[str, Any]]]:
     documents = [plan.get("document", plan)]
     documents.extend(plan.get("workflowDependencies", {}).values())
     documents.extend(

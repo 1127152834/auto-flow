@@ -36,7 +36,8 @@ async def test_workflow_shutdown_error_still_closes_other_modules(tmp_path, monk
     monkeypatch.setattr(app.state.excel_exports, 'shutdown', exports)
     monkeypatch.setattr(app.state.status_batch_coordinator, 'shutdown', batches)
     with pytest.raises(RuntimeError, match='synthetic workflow cleanup failure'):
-        await app.router.on_shutdown[-1]()
+        async with app.router.lifespan_context(app):
+            pass
     browser.assert_awaited_once()
     kernel.assert_awaited_once()
     exports.assert_called_once()

@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 import pytest
+
 from autoflow.application.workflows.inspection import WorkflowInspectionService
 from autoflow.domain.kernels.models import InstalledKernel
 from autoflow.domain.profiles.models import Profile, ProfileSpec

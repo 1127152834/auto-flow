@@ -4,12 +4,12 @@ import json
 from uuid import uuid4
 
 import pytest
+from sqlalchemy import select
+
 from autoflow.application.project_runs.interactions import ProjectRunInteractions
 from autoflow.domain.project_runs.models import ProjectRunError
 from autoflow.infrastructure.database.models import ProjectOperationRow
 from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
-from sqlalchemy import select
-
 from tests.integration.test_project_run_dispatch import services
 
 
@@ -161,6 +161,9 @@ async def test_http_to_real_worker_confirmed_in_same_event_transaction(tmp_path,
     from types import SimpleNamespace
 
     import uvicorn
+    from fastapi import FastAPI
+    from httpx import AsyncClient
+
     from autoflow.adapters.http.errors import install_error_handlers
     from autoflow.adapters.http.project_run_events import project_run_events_router
     from autoflow.adapters.http.project_run_interactions import (
@@ -175,9 +178,6 @@ async def test_http_to_real_worker_confirmed_in_same_event_transaction(tmp_path,
     from autoflow.infrastructure.process.project_workflow_worker import (
         ProjectWorkflowWorkerManager,
     )
-    from fastapi import FastAPI
-    from httpx import AsyncClient
-
     from tests.fixtures.workflow_runs import SyntheticResources
     from tests.integration.test_project_interactive_worker import plan
 
@@ -560,11 +560,12 @@ async def test_webhook_stop_before_worker_ack_never_confirms_delivery_or_replays
 
 @pytest.mark.asyncio
 async def test_shared_webhook_route_rejects_studio_project_collision(tmp_path):
+    from fastapi import FastAPI
+    from httpx import ASGITransport, AsyncClient
+
     from autoflow.adapters.http.errors import install_error_handlers
     from autoflow.adapters.http.workflow_runs import workflow_trigger_router
     from autoflow.bootstrap.workflows import PendingWorkflowRunCommands
-    from fastapi import FastAPI
-    from httpx import ASGITransport, AsyncClient
 
     factory, _, _, service, _, _, sent = webhook_state(tmp_path)
 
@@ -583,9 +584,10 @@ async def test_shared_webhook_route_rejects_studio_project_collision(tmp_path):
 
 
 def test_external_get_webhook_obeys_quiesce_without_sidecar_token(tmp_path):
+    from fastapi.testclient import TestClient
+
     from autoflow.bootstrap.app import create_app
     from autoflow.bootstrap.config import Settings
-    from fastapi.testclient import TestClient
 
     app = create_app(Settings(data_dir=str(tmp_path), instance_id='webhook-gate', instance_token='test-only-token'))
     with TestClient(app) as client:

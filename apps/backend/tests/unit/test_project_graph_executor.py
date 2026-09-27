@@ -2,6 +2,7 @@ import asyncio
 from time import monotonic
 
 import pytest
+
 from autoflow.providers.browser.project_graph import ProjectGraphExecutor
 
 

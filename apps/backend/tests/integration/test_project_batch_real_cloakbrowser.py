@@ -13,6 +13,8 @@ from uuid import uuid4
 
 import httpx
 import pytest
+from openpyxl import load_workbook
+
 from autoflow.application.workflows.service import WorkflowService
 from autoflow.bootstrap.app import create_app
 from autoflow.bootstrap.config import Settings
@@ -21,8 +23,6 @@ from autoflow.infrastructure.database.workflow_runtime import (
     SqlAlchemyWorkflowRuntimeRepository,
 )
 from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
-from openpyxl import load_workbook
-
 from tests.fixtures.workflows import workflow_payload
 from tests.integration.test_workflow_real_cloakbrowser import (
     real_cloak_page as cloak_fixture,

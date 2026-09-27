@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 
 import pytest
+
 from autoflow.application.workflows.executors import run_command
 from autoflow.application.workflows.executors.run_command import RunCommandExecutor
 from autoflow.domain.workflows.execution import ExecutionContext

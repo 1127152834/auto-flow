@@ -11,6 +11,9 @@ from uuid import uuid4
 import httpx
 import pytest
 import uvicorn
+from fastapi import FastAPI
+from sqlalchemy import select
+
 from autoflow.adapters.http.errors import install_error_handlers
 from autoflow.adapters.http.project_run_events import project_run_events_router
 from autoflow.adapters.http.workflow_runs import workflow_trigger_router
@@ -27,9 +30,6 @@ from autoflow.infrastructure.database.workflows import (
 from autoflow.infrastructure.process.project_workflow_worker import (
     ProjectWorkflowWorkerManager,
 )
-from fastapi import FastAPI
-from sqlalchemy import select
-
 from tests.integration.test_project_data_worker import (
     _dispatcher,
     _NoBrowserResources,

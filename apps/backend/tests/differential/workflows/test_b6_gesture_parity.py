@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+
 from autoflow.infrastructure.gesture import GestureRecognitionService
 
 ROOT = Path(__file__).resolve().parents[5]

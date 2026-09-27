@@ -1,0 +1,20 @@
+<stdin>:13: SAWarning: Cannot correctly sort tables; there are unresolvable cycles between tables "project_data_generations, project_data_tables", which is usually caused by mutually dependent foreign key constraints.  Foreign key constraints involving these tables will not be considered; this warning may raise an error in a future release.
+unmapped tables: ['android_operations', 'project_workflow_debug_commands', 'proxy_connections', 'proxy_group_details', 'proxy_group_members', 'proxy_group_resolutions', 'proxy_operations', 'proxy_projections']
+remove_table proxy_group_members 
+remove_index Index('uq_proxy_remote_active', Column('target_id', VARCHAR(length=36), table=<proxy_operations>, nullable=False), unique=True) 
+remove_table proxy_operations 
+remove_index Index('ix_android_operations_target_created', Column('target_id', VARCHAR(length=36), table=<android_operations>, nullable=False), Column('created_at', DATETIME 
+remove_table android_operations 
+remove_index Index('ix_proxy_projections_connection_id', Column('connection_id', VARCHAR(length=36), table=<proxy_projections>, nullable=False)) 
+remove_table proxy_projections 
+remove_table project_workflow_debug_commands 
+remove_table proxy_group_resolutions 
+remove_table proxy_connections 
+remove_table proxy_group_details 
+remove_index Index('uq_project_environments_active_name', Column('project_id', VARCHAR(length=36), table=<project_environments>, nullable=False), Column('name_key', TEXT(),  
+remove_column None project_sheets_bindings
+remove_constraint UniqueConstraint(Column('run_id', NullType(), table=<project_workflow_run_artifacts>), Column('ordinal', NullType(), table=<project_workflow_run_artifacts>)) 
+add_constraint UniqueConstraint(Column('run_id', NullType(), table=<project_workflow_run_artifacts>), Column('ordinal', NullType(), table=<project_workflow_run_artifacts>)) 
+remove_constraint UniqueConstraint(Column('run_id', NullType(), table=<project_workflow_run_events>), Column('event_id', NullType(), table=<project_workflow_run_events>)) 
+add_constraint UniqueConstraint(Column('run_id', NullType(), table=<project_workflow_run_events>), Column('event_id', NullType(), table=<project_workflow_run_events>)) 
+modify_type None studio_credentials

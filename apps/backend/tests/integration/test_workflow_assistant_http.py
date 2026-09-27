@@ -12,11 +12,11 @@ import faster_whisper
 import httpx
 import openpyxl
 import pytest
+
 from autoflow.adapters.events.workflows import StudioEvent, _scope_assistant_event
 from autoflow.bootstrap.app import create_app
 from autoflow.bootstrap.config import Settings
 from autoflow.domain.models import ModelInvocationResult
-
 from tests.contract.test_models_api import _provider
 from tests.fixtures.model_management import FakeCredentialStore, FakeModelGateway
 

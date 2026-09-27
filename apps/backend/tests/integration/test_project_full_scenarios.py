@@ -9,6 +9,7 @@ from pathlib import Path
 
 import httpx
 import pytest
+
 from autoflow.application.project_data.catalog import DataCatalogService
 from autoflow.application.workflows.service import WorkflowService
 from autoflow.bootstrap.app import create_app
@@ -19,7 +20,6 @@ from autoflow.infrastructure.database.project_data_catalog import (
 )
 from autoflow.infrastructure.database.project_data_models import DataRecordRow
 from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
-
 from tests.fixtures.workflows import workflow_payload
 from tests.integration.test_project_run_data_start import _input, _table, uid
 from tests.integration.test_workflow_real_cloakbrowser import (

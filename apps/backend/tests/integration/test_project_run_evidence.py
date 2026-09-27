@@ -2,6 +2,8 @@
 
 from datetime import UTC, datetime, timedelta
 
+from sqlalchemy import func, select
+
 from autoflow.adapters.http.project_run_schemas import TaskDetail
 from autoflow.application.project_data.capabilities import ProjectDataCapabilityService
 from autoflow.application.project_data.catalog import DataCatalogService
@@ -27,8 +29,6 @@ from autoflow.infrastructure.database.workflow_runtime_models import (
     WorkflowRunEventRow,
     WorkflowRunRow,
 )
-from sqlalchemy import func, select
-
 from tests.integration.test_project_run_data_start import _setup, uid
 
 

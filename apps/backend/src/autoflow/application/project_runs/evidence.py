@@ -6,6 +6,9 @@ import stat
 from pathlib import Path
 from typing import Any
 
+from sqlalchemy import text
+from sqlalchemy.orm import Session, sessionmaker
+
 from autoflow.domain.project_runs.models import ProjectRunError
 from autoflow.domain.workflows.runtime import RunArtifact, RunEvent, thaw_json
 from autoflow.infrastructure.database.models import ProjectRow
@@ -13,8 +16,6 @@ from autoflow.infrastructure.database.project_run_models import ProjectTaskRow
 from autoflow.infrastructure.database.workflow_runtime import (
     SqlAlchemyWorkflowRuntimeRepository,
 )
-from sqlalchemy import text
-from sqlalchemy.orm import Session, sessionmaker
 
 from .presentation import prepared_node_names
 

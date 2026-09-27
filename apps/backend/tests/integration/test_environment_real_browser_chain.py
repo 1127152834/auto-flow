@@ -44,6 +44,7 @@ def test_management_chain_saves_linked_environment_and_restores_login(tmp_path):
     report = json.loads((tmp_path / "evidence" / "browser-chain.json").read_text("utf-8"))
 
     assert result.returncode == 0, report
+    assert report["shutdownConfirmed"] is True
     assert report["login"]["signedIn"] is True
     assert report["endStatus"] == 202
     assert report["endPhase"] == "completed"

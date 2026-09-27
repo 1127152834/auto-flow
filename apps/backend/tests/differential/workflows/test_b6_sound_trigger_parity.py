@@ -34,7 +34,7 @@ def source(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 class _Meter:
-    def GetPeakValue(self) -> float:  # noqa: N802 - COM API compatibility.
+    def GetPeakValue(self) -> float:
         return 0.67
 
 

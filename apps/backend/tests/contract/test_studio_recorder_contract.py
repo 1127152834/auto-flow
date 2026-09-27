@@ -1,4 +1,6 @@
 import pytest
+from pydantic import ValidationError
+
 from autoflow.adapters.http.workflow_studio_schemas import (
     StudioRecorderBatch,
     StudioRecorderCommandState,
@@ -8,7 +10,6 @@ from autoflow.adapters.http.workflow_studio_schemas import (
     StudioRecorderStatus,
     StudioRecorderStopped,
 )
-from pydantic import ValidationError
 
 
 def test_stable_session_and_cursor():

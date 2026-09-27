@@ -38,10 +38,10 @@ _WORKER_COMMANDS = {
 class ProjectDataCapabilityService:
     """The internal workflow-facing boundary for explicit project data writes."""
 
-    def __init__(self, repository):
+    def __init__(self, repository) -> None:
         self.repository = repository
 
-    def worker_call(self, run_id: str, generation: int, request: dict[str, Any]):
+    def worker_call(self, run_id: str, generation: int, request: dict[str, Any]) -> dict[str, Any]:
         """Decode only fixed commands; identity comes from the owning host pipe."""
         try:
             if set(request) != {

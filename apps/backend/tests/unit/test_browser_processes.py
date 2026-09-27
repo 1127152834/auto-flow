@@ -8,6 +8,7 @@ from threading import Event
 from types import SimpleNamespace
 
 import pytest
+
 from autoflow.domain.profiles.models import Profile, ProfileSpec
 
 

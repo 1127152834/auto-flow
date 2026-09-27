@@ -1,0 +1,4753 @@
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/android/devices.py:188:20
+    |
+186 |                 self.handoff["state"] = "open"
+187 |                 await self._publish("native_opened", "请在 Mac 原生窗口操作")
+188 |             except Exception as exc:
+    |                    ^^^^^^^^^
+189 |                 try:
+190 |                     await self.runtime.close_window()
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/android/devices.py:192:24
+    |
+190 |                     await self.runtime.close_window()
+191 |                     self.device["control"] = "workflow"
+192 |                 except Exception:
+    |                        ^^^^^^^^^
+193 |                     self.device["control"] = "recovery_required"
+194 |                     self.resuming = True
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/android/devices.py:219:16
+    |
+217 |                 await self._publish("resumed", "人工处理完成，继续自动执行", "running")
+218 |                 self.continued.set()
+219 |         except Exception:
+    |                ^^^^^^^^^
+220 |             self.device.update(control="recovery_required", lastError="原生连接交接失败，请停止并重试清理")
+221 |             self._save()
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/android/management.py:104:16
+    |
+102 | …         device.update(control="recovery_required", lastError="操作中断，请核实实际设备状态")
+103 | …         device["operation"].update(state="interrupted", stage="等待核实", error=device["lastError"], finishedAt=now())
+104 | …     except Exception as error:
+    |              ^^^^^^^^^
+105 | …         device.update(control="recovery_required", lastError=error.message if isinstance(error, AndroidError) else "设备操作未完成…
+106 | …         device["operation"].update(state="failed", stage="需要处理", error=device["lastError"], finishedAt=now())
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/kernels/service.py:150:20
+    |
+148 |             try:
+149 |                 self.installations.purge(token)
+150 |             except Exception:
+    |                    ^^^^^^^^^
+151 |                 logger.warning("kernel cleanup remains pending for token=%s", token)
+152 |             return default
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/project_data/excel_export.py:103:16
+    |
+101 |             if self.repository.complete(job) is None:
+102 |                 raise ProjectError("OPERATION_CLAIM_LOST", "Export claim was lost", 409)
+103 |         except Exception as cause:
+    |                ^^^^^^^^^
+104 |             error = (
+105 |                 cause
+    |
+
+S112 `try`-`except`-`continue` detected, consider logging the exception
+   --> src/autoflow/application/project_data/excel_export.py:156:13
+    |
+154 |                           },
+155 |                       )
+156 | /             except Exception:
+157 | |                 # Leave durable evidence pending for the next startup/reconcile attempt.
+158 | |                 continue
+    | |________________________^
+159 |           for command_id, target_id in self.repository.pending_reconciliations():
+160 |               publication = self.repository.publication(target_id)
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/project_data/excel_export.py:156:20
+    |
+154 |                         },
+155 |                     )
+156 |             except Exception:
+    |                    ^^^^^^^^^
+157 |                 # Leave durable evidence pending for the next startup/reconcile attempt.
+158 |                 continue
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/project_data/excel_export.py:169:24
+    |
+167 |                         Path(publication.path), publication.digest
+168 |                     )
+169 |                 except Exception:
+    |                        ^^^^^^^^^
+170 |                     recovery_outcome = "error"
+171 |             try:
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/project_data/excel_export.py:208:16
+    |
+206 |                 Path(publication.path), publication.digest
+207 |             )
+208 |         except Exception:
+    |                ^^^^^^^^^
+209 |             outcome = "error"
+210 |         return self.repository.finish_reconcile(command.id, operation_id, outcome)
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/project_data/excel_import.py:111:16
+    |
+109 |             with self.mutation():
+110 |                 self.repository.publish(job)
+111 |         except Exception as error:
+    |                ^^^^^^^^^
+112 |             failure = (
+113 |                 error
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/project_data/status_batches.py:64:24
+   |
+62 |                         more = self.repository.process_block(operation_id)
+63 |                     break
+64 |                 except Exception as error:
+   |                        ^^^^^^^^^
+65 |                     if attempt == 2:
+66 |                         self.repository.fail(operation_id, error)
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/project_runs/scheduler.py:164:20
+    |
+162 |             try:
+163 |                 await self.tick()
+164 |             except Exception:
+    |                    ^^^^^^^^^
+165 |                 # Keep accepted facts for the next query/recovery; never invent a terminal result.
+166 |                 _LOG.exception("Project batch progress could not be committed")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/projects/lifecycle.py:102:20
+    |
+100 |                     timeout = self._interval
+101 |                 await self.tick()
+102 |             except Exception:
+    |                    ^^^^^^^^^
+103 |                 _LOG.exception("Project lifecycle could not be advanced")
+104 |             try:
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/proxies/remote_controls.py:315:16
+    |
+313 |                 }
+314 |             self.operations.update(operation.id, status, error=error)
+315 |         except Exception:
+    |                ^^^^^^^^^
+316 |             # Never serialize arbitrary provider exceptions, URLs or secrets.
+317 |             self.operations.update(
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/assistant.py:525:28
+    |
+523 |                             ),
+524 |                         }
+525 |                     except Exception as error:
+    |                            ^^^^^^^^^
+526 |                         result = {
+527 |                             "success": False,
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/coordinator.py:820:20
+    |
+818 |                 if not discard.is_set():
+819 |                     result.append(value)
+820 |             except Exception:
+    |                    ^^^^^^^^^
+821 |                 result.clear()
+822 |             finally:
+    |
+
+S112 `try`-`except`-`continue` detected, consider logging the exception
+   --> src/autoflow/application/workflows/dispatcher.py:153:13
+    |
+151 |               try:
+152 |                   await self._recover_orphan(fenced)
+153 | /             except Exception:
+154 | |                 continue
+    | |________________________^
+155 |               self._transition_current(
+156 |                   fenced.run_id,
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/dispatcher.py:153:20
+    |
+151 |             try:
+152 |                 await self._recover_orphan(fenced)
+153 |             except Exception:
+    |                    ^^^^^^^^^
+154 |                 continue
+155 |             self._transition_current(
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/dispatcher.py:248:24
+    |
+246 |                 try:
+247 |                     await self._recover_orphan(fenced)
+248 |                 except Exception:
+    |                        ^^^^^^^^^
+249 |                     return self._get_run(run_id)
+250 |                 self._owner_cleanup_unknown = False
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/dispatcher.py:254:24
+    |
+252 |                 try:
+253 |                     await self._recover_orphan(fenced)
+254 |                 except Exception:
+    |                        ^^^^^^^^^
+255 |                     return self._get_run(run_id)
+256 |                 self._owner_cleanup_unknown = False
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/dispatcher.py:262:16
+    |
+260 |             else:
+261 |                 await self._recover_orphan(fenced)
+262 |         except Exception:
+    |                ^^^^^^^^^
+263 |             return self._get_run(run_id)
+264 |         if self._worker.busy():
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/dispatcher.py:328:16
+    |
+326 |             else:
+327 |                 await self._recover_orphan(run)
+328 |         except Exception:
+    |                ^^^^^^^^^
+329 |             return self._get_run(run_id)
+330 |         if self._worker.busy():
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/dispatcher.py:374:16
+    |
+372 |         try:
+373 |             await self._worker.shutdown()
+374 |         except Exception as caught:
+    |                ^^^^^^^^^
+375 |             error = caught
+376 |         if error is None and self._owner_cleanup_unknown and run_id is not None:
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/dispatcher.py:381:20
+    |
+379 |                 self._owner_cleanup_unknown = False
+380 |                 task_error = None
+381 |             except Exception as caught:
+    |                    ^^^^^^^^^
+382 |                 error = caught
+383 |         if error is None:
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/dispatcher.py:513:20
+    |
+511 |                 else:
+512 |                     await self._worker.force_stop(current.run_id)
+513 |             except Exception:
+    |                    ^^^^^^^^^
+514 |                 self._owner_cleanup_unknown = True
+515 |                 unhandled = True
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/dispatcher.py:660:16
+    |
+658 |                 if repository.artifact_path_is_registered(run.run_id, relative_path):
+659 |                     return
+660 |         except Exception:
+    |                ^^^^^^^^^
+661 |             return
+662 |         if committed is None:
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/advanced_browser.py:45:12
+   |
+43 |             active_page() if active_page is not None else context.browser.current_page()
+44 |         )
+45 |     except Exception:
+   |            ^^^^^^^^^
+46 |         return None
+   |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+   --> src/autoflow/application/workflows/executors/advanced_browser.py:113:13
+    |
+111 |                       "domcontentloaded", timeout_ms=float(timeout_ms or 0)
+112 |                   )
+113 | /             except Exception:
+114 | |                 pass
+    | |____________________^
+115 |               element = await _locator(
+116 |                   page, str(selector), config, context, timeout_ms=timeout_ms
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/advanced_browser.py:113:20
+    |
+111 |                     "domcontentloaded", timeout_ms=float(timeout_ms or 0)
+112 |                 )
+113 |             except Exception:
+    |                    ^^^^^^^^^
+114 |                 pass
+115 |             element = await _locator(
+    |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+   --> src/autoflow/application/workflows/executors/advanced_browser.py:124:17
+    |
+122 |                       await select_option(value=[str(item) for item in values])
+123 |                       return ModuleResult(success=True, message=f"已多选: {values}")
+124 | /                 except Exception:
+125 | |                     pass
+    | |________________________^
+126 |               try:
+127 |                   if select_by == "value":
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/advanced_browser.py:124:24
+    |
+122 |                     await select_option(value=[str(item) for item in values])
+123 |                     return ModuleResult(success=True, message=f"已多选: {values}")
+124 |                 except Exception:
+    |                        ^^^^^^^^^
+125 |                     pass
+126 |             try:
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/advanced_browser.py:134:20
+    |
+132 |                     await select_option(index=int(value))
+133 |                 return ModuleResult(success=True, message=f"已选择: {value}")
+134 |             except Exception as native_error:
+    |                    ^^^^^^^^^
+135 |                 clicked = await self._select_custom(
+136 |                     page, element, str(select_by), value, timeout_ms
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/advanced_browser.py:150:16
+    |
+148 |                     ),
+149 |                 )
+150 |         except Exception as error:
+    |                ^^^^^^^^^
+151 |             return ModuleResult(success=False, error=f"选择下拉框失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/advanced_browser.py:163:16
+    |
+161 |         try:
+162 |             await _first(element).click(timeout=timeout_ms)
+163 |         except Exception:
+    |                ^^^^^^^^^
+164 |             try:
+165 |                 inner = _first(
+    |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+   --> src/autoflow/application/workflows/executors/advanced_browser.py:169:13
+    |
+167 |                   )
+168 |                   await inner.click(timeout=3000)
+169 | /             except Exception:
+170 | |                 pass
+    | |____________________^
+171 |           await asyncio.sleep(0.35)
+172 |           target_text = str(value).strip()
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/advanced_browser.py:169:20
+    |
+167 |                 )
+168 |                 await inner.click(timeout=3000)
+169 |             except Exception:
+    |                    ^^^^^^^^^
+170 |                 pass
+171 |         await asyncio.sleep(0.35)
+    |
+
+S112 `try`-`except`-`continue` detected, consider logging the exception
+   --> src/autoflow/application/workflows/executors/advanced_browser.py:187:13
+    |
+185 |               try:
+186 |                   count = await options.count()
+187 | /             except Exception:
+188 | |                 continue
+    | |________________________^
+189 |               if not count:
+190 |                   continue
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/advanced_browser.py:187:20
+    |
+185 |             try:
+186 |                 count = await options.count()
+187 |             except Exception:
+    |                    ^^^^^^^^^
+188 |                 continue
+189 |             if not count:
+    |
+
+S112 `try`-`except`-`continue` detected, consider logging the exception
+   --> src/autoflow/application/workflows/executors/advanced_browser.py:197:17
+    |
+195 |                       )
+196 |                       return True
+197 | /                 except Exception:
+198 | |                     continue
+    | |____________________________^
+199 |               for index in range(min(count, 200)):
+200 |                   try:
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/advanced_browser.py:197:24
+    |
+195 |                     )
+196 |                     return True
+197 |                 except Exception:
+    |                        ^^^^^^^^^
+198 |                     continue
+199 |             for index in range(min(count, 200)):
+    |
+
+S112 `try`-`except`-`continue` detected, consider logging the exception
+   --> src/autoflow/application/workflows/executors/advanced_browser.py:210:17
+    |
+208 |                           await option.click(timeout=3000)
+209 |                           return True
+210 | /                 except Exception:
+211 | |                     continue
+    | |____________________________^
+212 |           return False
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/advanced_browser.py:210:24
+    |
+208 |                         await option.click(timeout=3000)
+209 |                         return True
+210 |                 except Exception:
+    |                        ^^^^^^^^^
+211 |                     continue
+212 |         return False
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/advanced_browser.py:243:16
+    |
+241 |                 success=True, message=f"复选框已{'勾选' if checked else '取消勾选'}"
+242 |             )
+243 |         except Exception as error:
+    |                ^^^^^^^^^
+244 |             return ModuleResult(success=False, error=f"设置复选框失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/advanced_browser.py:297:16
+    |
+295 |                     await mouse.up()
+296 |             return ModuleResult(success=True, message="拖拽完成")
+297 |         except Exception as error:
+    |                ^^^^^^^^^
+298 |             return ModuleResult(success=False, error=f"拖拽元素失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/advanced_browser.py:370:16
+    |
+368 |                 success=True, message=f"已滚动 {direction} {distance}px"
+369 |             )
+370 |         except Exception as error:
+    |                ^^^^^^^^^
+371 |             return ModuleResult(success=False, error=f"滚动页面失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/advanced_browser.py:417:16
+    |
+415 |                 error="上传文件失败（所有策略均失败）: 浏览器运行时不支持文件选择器",
+416 |             )
+417 |         except Exception as error:
+    |                ^^^^^^^^^
+418 |             return ModuleResult(success=False, error=f"上传文件失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/advanced_browser.py:498:16
+    |
+496 |                 success=True, message=f"已下载文件: {final_path}", data=final_path
+497 |             )
+498 |         except Exception as error:
+    |                ^^^^^^^^^
+499 |             return ModuleResult(success=False, error=f"下载文件失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/advanced_browser.py:548:16
+    |
+546 |                 success=True, message=f"已保存图片: {final_path}", data=final_path
+547 |             )
+548 |         except Exception as error:
+    |                ^^^^^^^^^
+549 |             return ModuleResult(success=False, error=f"保存图片失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/advanced_browser.py:612:16
+    |
+610 |                 data=selectors,
+611 |             )
+612 |         except Exception as error:
+    |                ^^^^^^^^^
+613 |             return ModuleResult(success=False, error=f"获取子元素列表失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/advanced_browser.py:703:16
+    |
+701 |                 data=selectors,
+702 |             )
+703 |         except Exception as error:
+    |                ^^^^^^^^^
+704 |             return ModuleResult(success=False, error=f"获取兄弟元素列表失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/advanced_browser.py:737:16
+    |
+735 |                 data={"exists": exists, "count": count},
+736 |             )
+737 |         except Exception as error:
+    |                ^^^^^^^^^
+738 |             return ModuleResult(
+739 |                 success=True,
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/advanced_browser.py:781:16
+    |
+779 |                 data={"visible": visible, "exists": count > 0, "count": count},
+780 |             )
+781 |         except Exception as error:
+    |                ^^^^^^^^^
+782 |             return ModuleResult(
+783 |                 success=True,
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/ai.py:99:16
+    |
+ 97 |                 raise ValueError("AI返回内容为空")
+ 98 |             return result, model_id
+ 99 |         except Exception as error:
+    |                ^^^^^^^^^
+100 |             last_error = str(error) or "模型调用失败"
+101 |             if index + 1 < len(candidates):
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/ai.py:128:16
+    |
+126 |         try:
+127 |             result, model_id = await self._invoke(config, context)
+128 |         except Exception as error:
+    |                ^^^^^^^^^
+129 |             return ModuleResult(success=False, error=str(error) or "模型调用失败")
+130 |         variable_name = config.get("variableName", "")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/ai.py:232:16
+    |
+230 |                 default_temperature=0.2,
+231 |             )
+232 |         except Exception as error:
+    |                ^^^^^^^^^
+233 |             return ModuleResult(success=False, error=str(error) or "AI视觉调用失败")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/ai_media.py:173:16
+    |
+171 |                 },
+172 |             )
+173 |         except Exception as error:
+    |                ^^^^^^^^^
+174 |             return ModuleResult(success=False, error=str(error) or "AI生图失败")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/ai_media.py:235:16
+    |
+233 |                 context.set_variable(variable_name, value)
+234 |             return ModuleResult(success=True, message="AI生视频成功", data=data)
+235 |         except Exception as error:
+    |                ^^^^^^^^^
+236 |             return ModuleResult(success=False, error=str(error) or "AI生视频失败")
+    |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+  --> src/autoflow/application/workflows/executors/ai_scraper.py:63:17
+   |
+61 |                   try:
+62 |                       context.browser.select_page(current.id)
+63 | /                 except Exception:
+64 | |                     pass
+   | |________________________^
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/ai_scraper.py:63:24
+   |
+61 |                 try:
+62 |                     context.browser.select_page(current.id)
+63 |                 except Exception:
+   |                        ^^^^^^^^^
+64 |                     pass
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/ai_scraper.py:94:16
+   |
+92 |                 default_temperature=0.2,
+93 |             )
+94 |         except Exception as error:
+   |                ^^^^^^^^^
+95 |             return ModuleResult(success=False, error=f"AI 智能爬虫失败: {error}")
+96 |         value = _extract_json(result.content)
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/ai_scraper.py:145:16
+    |
+143 |                 default_temperature=0.1,
+144 |             )
+145 |         except Exception as error:
+    |                ^^^^^^^^^
+146 |             return ModuleResult(success=False, error=f"AI 智能元素选择失败: {error}")
+147 |         parsed = _extract_json(result.content)
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/ai_tasks.py:42:12
+   |
+40 |             default_temperature=0.2,
+41 |         )
+42 |     except Exception as error:
+   |            ^^^^^^^^^
+43 |         return False, "", str(error) or "模型调用失败"
+44 |     return True, result.content.strip(), ""
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/ai_vision_act.py:90:20
+   |
+88 |                     if type(width) is int and type(height) is int and width > 0 and height > 0:
+89 |                         viewport = {"width": width, "height": height}
+90 |             except Exception:
+   |                    ^^^^^^^^^
+91 |                 viewport = None
+92 |         if not viewport or viewport.get("width", 0) <= 0 or viewport.get("height", 0) <= 0:
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/ai_vision_act.py:118:16
+    |
+116 |                 default_temperature=0.2,
+117 |             )
+118 |         except Exception as error:
+    |                ^^^^^^^^^
+119 |             return ModuleResult(success=False, error=str(error) or "视觉模型调用失败")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/ai_vision_act.py:181:16
+    |
+179 |                 )
+180 |                 message = f"已在「{instruction}」({x}, {y}) {action_name}"
+181 |         except Exception as error:
+    |                ^^^^^^^^^
+182 |             return ModuleResult(success=False, error=f"页面鼠标操作失败: {error}")
+183 |         return ModuleResult(success=True, message=message, data={"x": x, "y": y})
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/allure.py:300:16
+    |
+298 |                 data=data,
+299 |             )
+300 |         except Exception as error:
+    |                ^^^^^^^^^
+301 |             return ModuleResult(success=False, error=f"生成报告失败: {error}")
+    |
+
+DTZ006 `datetime.datetime.fromtimestamp()` called without a `tz` argument
+  --> src/autoflow/application/workflows/executors/allure_report_builder.py:34:16
+   |
+32 | def _fmt_ts(ts_ms: int) -> str:
+33 |     try:
+34 |         return datetime.fromtimestamp(ts_ms / 1000).strftime("%Y-%m-%d %H:%M:%S")
+   |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+35 |     except Exception:
+36 |         return "-"
+   |
+help: Pass a `datetime.timezone` object to the `tz` parameter
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/allure_report_builder.py:35:12
+   |
+33 |     try:
+34 |         return datetime.fromtimestamp(ts_ms / 1000).strftime("%Y-%m-%d %H:%M:%S")
+35 |     except Exception:
+   |            ^^^^^^^^^
+36 |         return "-"
+   |
+
+UP045 [*] Use `X | None` for type annotations
+  --> src/autoflow/application/workflows/executors/allure_report_builder.py:39:29
+   |
+39 | def _img_b64(path: Path) -> Optional[str]:
+   |                             ^^^^^^^^^^^^^
+40 |     try:
+41 |         ext = path.suffix.lower().lstrip(".")
+   |
+help: Convert to `X | None`
+   |
+38 |
+   - def _img_b64(path: Path) -> Optional[str]:
+39 + def _img_b64(path: Path) -> str | None:
+40 |     try:
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/allure_report_builder.py:47:12
+   |
+45 |         data = base64.b64encode(path.read_bytes()).decode()
+46 |         return f"data:{mime};base64,{data}"
+47 |     except Exception:
+   |            ^^^^^^^^^
+48 |         return None
+   |
+
+DTZ005 `datetime.datetime.now()` called without a `tz` argument
+  --> src/autoflow/application/workflows/executors/allure_report_builder.py:66:16
+   |
+64 |     t_stop  = max(stops)  if stops  else 0
+65 |     total_dur = t_stop - t_start if t_stop > t_start else 0
+66 |     gen_time = datetime.now().strftime("%Y/%m/%d")
+   |                ^^^^^^^^^^^^^^
+67 |     t_start_str = _fmt_ts(t_start).split(' ')[1] if t_start else '--'
+68 |     t_stop_str  = _fmt_ts(t_stop).split(' ')[1]  if t_stop  else '--'
+   |
+help: Pass a `datetime.timezone` object to the `tz` parameter
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+   --> src/autoflow/application/workflows/executors/allure_report_builder.py:146:13
+    |
+144 |                   content = path.read_text(encoding="utf-8", errors="replace")[:3000]
+145 |                   out.append({"name": name, "type": "text", "data": content})
+146 | /             except Exception:
+147 | |                 pass
+    | |____________________^
+148 |       return out
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/allure_report_builder.py:146:20
+    |
+144 |                 content = path.read_text(encoding="utf-8", errors="replace")[:3000]
+145 |                 out.append({"name": name, "type": "text", "data": content})
+146 |             except Exception:
+    |                    ^^^^^^^^^
+147 |                 pass
+148 |     return out
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/basic.py:36:12
+   |
+34 |     try:
+35 |         return context.browser.current_page()
+36 |     except Exception:
+   |            ^^^^^^^^^
+37 |         return None
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/basic.py:48:12
+   |
+46 |             active_page() if active_page is not None else context.browser.current_page()
+47 |         )
+48 |     except Exception:
+   |            ^^^^^^^^^
+49 |         return None
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/basic.py:85:16
+   |
+83 |                 success=True, message=f"已打开网页: {redact_browser_url(str(url))}"
+84 |             )
+85 |         except Exception as error:
+   |                ^^^^^^^^^
+86 |             return ModuleResult(
+87 |                 success=False,
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/basic.py:121:24
+    |
+119 |                     await locator.wait_for(state="attached", timeout_ms=timeout_ms)
+120 |                     used_selector = selector
+121 |                 except Exception:
+    |                        ^^^^^^^^^
+122 |                     locator, used_selector = await wait_for_locator(
+123 |                         page,
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/basic.py:149:16
+    |
+147 |             )
+148 |             return ModuleResult(success=True, message=f"已点击元素: {selector}{suffix}")
+149 |         except Exception as error:
+    |                ^^^^^^^^^
+150 |             diagnostic = ""
+151 |             try:
+    |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+   --> src/autoflow/application/workflows/executors/basic.py:157:13
+    |
+155 |                   elif not await page.locator(selector).is_visible():
+156 |                       diagnostic = f"（诊断：找到 {count} 个匹配元素，但首个元素不可见）"
+157 | /             except Exception:
+158 | |                 pass
+    | |____________________^
+159 |               return ModuleResult(
+160 |                   success=False, error=f"点击元素失败: {error}{diagnostic}"
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/basic.py:157:20
+    |
+155 |                 elif not await page.locator(selector).is_visible():
+156 |                     diagnostic = f"（诊断：找到 {count} 个匹配元素，但首个元素不可见）"
+157 |             except Exception:
+    |                    ^^^^^^^^^
+158 |                 pass
+159 |             return ModuleResult(
+    |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+   --> src/autoflow/application/workflows/executors/basic.py:166:17
+    |
+164 |                   try:
+165 |                       await context.browser.settle_new_page_watch(watch, follow=False)
+166 | /                 except Exception:
+167 | |                     pass
+    | |________________________^
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/basic.py:166:24
+    |
+164 |                 try:
+165 |                     await context.browser.settle_new_page_watch(watch, follow=False)
+166 |                 except Exception:
+    |                        ^^^^^^^^^
+167 |                     pass
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/basic.py:212:20
+    |
+210 |                     state="visible", timeout_ms=timeout_ms
+211 |                 )
+212 |             except Exception:
+    |                    ^^^^^^^^^
+213 |                 hints = config.get("selectorHints")
+214 |                 if isinstance(hints, Mapping) and hints:
+    |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+   --> src/autoflow/application/workflows/executors/basic.py:225:21
+    |
+223 |                           config["selector"] = used_selector
+224 |                           selector = used_selector
+225 | /                     except Exception:
+226 | |                         pass
+    | |____________________________^
+227 |               locator, input_type = await self._find_input_element(page, selector)
+228 |               if input_type == "keyboard":
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/basic.py:225:28
+    |
+223 |                         config["selector"] = used_selector
+224 |                         selector = used_selector
+225 |                     except Exception:
+    |                            ^^^^^^^^^
+226 |                         pass
+227 |             locator, input_type = await self._find_input_element(page, selector)
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/basic.py:256:16
+    |
+254 |                 success=True, message=f"已输入文本到: {selector}{suffix}"
+255 |             )
+256 |         except Exception as error:
+    |                ^^^^^^^^^
+257 |             return ModuleResult(success=False, error=f"输入文本失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/basic.py:285:20
+    |
+283 |             try:
+284 |                 await locator.wait_for(state="attached", timeout_ms=timeout_ms)
+285 |             except Exception:
+    |                    ^^^^^^^^^
+286 |                 try:
+287 |                     await locator.wait_for(state="visible", timeout_ms=timeout_ms)
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/basic.py:288:24
+    |
+286 |                 try:
+287 |                     await locator.wait_for(state="visible", timeout_ms=timeout_ms)
+288 |                 except Exception:
+    |                        ^^^^^^^^^
+289 |                     hints = config.get("selectorHints")
+290 |                     if isinstance(hints, Mapping) and hints:
+    |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+   --> src/autoflow/application/workflows/executors/basic.py:301:25
+    |
+299 |                               config["selector"] = used_selector
+300 |                               selector = used_selector
+301 | /                         except Exception:
+302 | |                             pass
+    | |________________________________^
+303 |               if await locator.count() == 0:
+304 |                   return ModuleResult(success=False, error=f"未找到元素: {selector}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/basic.py:301:32
+    |
+299 |                             config["selector"] = used_selector
+300 |                             selector = used_selector
+301 |                         except Exception:
+    |                                ^^^^^^^^^
+302 |                             pass
+303 |             if await locator.count() == 0:
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/basic.py:332:16
+    |
+330 |                 success=True, message=f"已获取元素信息: {value}", data=value
+331 |             )
+332 |         except Exception as error:
+    |                ^^^^^^^^^
+333 |             return ModuleResult(success=False, error=f"获取元素信息失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/basic.py:392:16
+    |
+390 |                 data={"path": final_path},
+391 |             )
+392 |         except Exception as error:
+    |                ^^^^^^^^^
+393 |             return ModuleResult(success=False, error=f"截图失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/captcha.py:92:16
+   |
+90 |         except ImportError:
+91 |             return ModuleResult(success=False, error="验证码识别功能初始化失败")
+92 |         except Exception as error:
+   |                ^^^^^^^^^
+93 |             return ModuleResult(success=False, error=f"验证码识别失败: {error}")
+   |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+   --> src/autoflow/application/workflows/executors/captcha.py:174:17
+    |
+172 |                           await gap.screenshot(),
+173 |                       )
+174 | /                 except Exception:
+175 | |                     pass
+    | |________________________^
+176 |               if slide_distance is None:
+177 |                   slide_distance = 200
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/captcha.py:174:24
+    |
+172 |                         await gap.screenshot(),
+173 |                     )
+174 |                 except Exception:
+    |                        ^^^^^^^^^
+175 |                     pass
+176 |             if slide_distance is None:
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/captcha.py:199:16
+    |
+197 |                 message=f"滑块验证完成，滑动距离: {slide_distance}px",
+198 |             )
+199 |         except Exception as error:
+    |                ^^^^^^^^^
+200 |             return ModuleResult(success=False, error=f"滑块验证失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/control_variable.py:32:12
+   |
+30 |     try:
+31 |         return context.browser.active_page()
+32 |     except Exception:
+   |            ^^^^^^^^^
+33 |         return None
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/control_variable.py:192:24
+    |
+190 |                     if result and condition_type == "element_visible":
+191 |                         result = await element.first.is_visible()
+192 |                 except Exception as error:
+    |                        ^^^^^^^^^
+193 |                     return ModuleResult(
+194 |                         success=True,
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/control_variable.py:206:16
+    |
+204 |                 data=result,
+205 |             )
+206 |         except Exception as error:
+    |                ^^^^^^^^^
+207 |             return ModuleResult(success=False, error=f"条件判断失败: {error}")
+    |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+   --> src/autoflow/application/workflows/executors/control_variable.py:437:13
+    |
+435 |                       return int(result)
+436 |                   return result
+437 | /             except Exception:
+438 | |                 pass
+    | |____________________^
+439 |           try:
+440 |               if "." in resolved:
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/control_variable.py:437:20
+    |
+435 |                     return int(result)
+436 |                 return result
+437 |             except Exception:
+    |                    ^^^^^^^^^
+438 |                 pass
+439 |         try:
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/control_variable.py:461:16
+    |
+459 |                 data=resolved_value,
+460 |             )
+461 |         except Exception as error:
+    |                ^^^^^^^^^
+462 |             return ModuleResult(success=False, error=f"设置变量失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/control_variable.py:527:16
+    |
+525 |                 },
+526 |             )
+527 |         except Exception as error:
+    |                ^^^^^^^^^
+528 |             return ModuleResult(success=False, error=f"自增自减失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/control_variable.py:631:16
+    |
+629 |                 success=True, message=f"解析成功: {display}", data=result
+630 |             )
+631 |         except Exception as error:
+    |                ^^^^^^^^^
+632 |             return ModuleResult(success=False, error=f"JSON解析失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/control_variable.py:732:16
+    |
+730 |                 )
+731 |             return ModuleResult(success=False, error=f"未知操作类型: {operation}")
+732 |         except Exception as error:
+    |                ^^^^^^^^^
+733 |             return ModuleResult(success=False, error=f"Base64处理失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/control_variable.py:765:16
+    |
+763 |                 data={"value": result},
+764 |             )
+765 |         except Exception as error:
+    |                ^^^^^^^^^
+766 |             return ModuleResult(success=False, error=f"生成随机数失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/control_variable.py:810:16
+    |
+808 |                 data={"value": result},
+809 |             )
+810 |         except Exception as error:
+    |                ^^^^^^^^^
+811 |             return ModuleResult(success=False, error=f"获取时间失败: {error}")
+    |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+   --> src/autoflow/application/workflows/executors/control_variable.py:846:29
+    |
+844 |                               try:
+845 |                                   duration = float(text[:-2].strip()) / 1000
+846 | /                             except Exception:
+847 | |                                 pass
+    | |____________________________________^
+848 |                           elif text.endswith(("秒", "s")):
+849 |                               try:
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/control_variable.py:846:36
+    |
+844 |                             try:
+845 |                                 duration = float(text[:-2].strip()) / 1000
+846 |                             except Exception:
+    |                                    ^^^^^^^^^
+847 |                                 pass
+848 |                         elif text.endswith(("秒", "s")):
+    |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+   --> src/autoflow/application/workflows/executors/control_variable.py:851:29
+    |
+849 |                               try:
+850 |                                   duration = float(text[:-1].strip())
+851 | /                             except Exception:
+852 | |                                 pass
+    | |____________________________________^
+853 |                   if 1000 <= duration <= 3_600_000:
+854 |                       duration /= 1000
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/control_variable.py:851:36
+    |
+849 |                             try:
+850 |                                 duration = float(text[:-1].strip())
+851 |                             except Exception:
+    |                                    ^^^^^^^^^
+852 |                                 pass
+853 |                 if 1000 <= duration <= 3_600_000:
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/control_variable.py:877:16
+    |
+875 |                 return ModuleResult(success=True, message="页面导航完成")
+876 |             return ModuleResult(success=False, error=f"未知的等待类型: {wait_type}")
+877 |         except Exception as error:
+    |                ^^^^^^^^^
+878 |             return ModuleResult(success=False, error=f"等待失败: {error}")
+    |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+    --> src/autoflow/application/workflows/executors/control_variable.py:1008:9
+     |
+1006 |           try:
+1007 |               await context.send_progress(fail_message, "warning")
+1008 | /         except Exception:
+1009 | |             pass
+     | |________________^
+1010 |           return ModuleResult(
+1011 |               success=True,
+     |
+
+BLE001 Do not catch blind exception: `Exception`
+    --> src/autoflow/application/workflows/executors/control_variable.py:1008:16
+     |
+1006 |         try:
+1007 |             await context.send_progress(fail_message, "warning")
+1008 |         except Exception:
+     |                ^^^^^^^^^
+1009 |             pass
+1010 |         return ModuleResult(
+     |
+
+BLE001 Do not catch blind exception: `Exception`
+    --> src/autoflow/application/workflows/executors/control_variable.py:1101:16
+     |
+1099 |                 )
+1100 |             return False, "", f"未知元素检查: {element_check}"
+1101 |         except Exception as error:
+     |                ^^^^^^^^^
+1102 |             return False, "", f"元素断言异常: {error}"
+     |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/data_structure.py:92:16
+   |
+90 |                 data={"list": list_data, "length": len(list_data)},
+91 |             )
+92 |         except Exception as error:
+   |                ^^^^^^^^^
+93 |             return ModuleResult(success=False, error=f"列表操作失败: {error}")
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/data_structure.py:227:16
+    |
+225 |                 data={"path": output_path, "count": len(list_data)},
+226 |             )
+227 |         except Exception as error:
+    |                ^^^^^^^^^
+228 |             return ModuleResult(success=False, error=f"导出失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/data_structure.py:278:16
+    |
+276 |                 data={"dict": dict_data, "keys": list(dict_data.keys())},
+277 |             )
+278 |         except Exception as error:
+    |                ^^^^^^^^^
+279 |             return ModuleResult(success=False, error=f"字典操作失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/data_structure.py:421:16
+    |
+419 |                 )
+420 |             return ModuleResult(success=False, error=f"正则表达式错误: {error_msg}")
+421 |         except Exception as error:
+    |                ^^^^^^^^^
+422 |             return ModuleResult(success=False, error=f"提取失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/data_structure.py:468:16
+    |
+466 |         except regex.error as error:
+467 |             return ModuleResult(success=False, error=f"正则表达式错误: {error}")
+468 |         except Exception as error:
+    |                ^^^^^^^^^
+469 |             return ModuleResult(success=False, error=f"替换失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/data_structure.py:505:16
+    |
+503 |                 success=True, message=f"分割为 {len(result)} 个部分", data=result
+504 |             )
+505 |         except Exception as error:
+    |                ^^^^^^^^^
+506 |             return ModuleResult(success=False, error=f"分割失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/data_structure.py:541:16
+    |
+539 |                 success=True, message=f"连接 {len(str_list)} 个元素", data=result
+540 |             )
+541 |         except Exception as error:
+    |                ^^^^^^^^^
+542 |             return ModuleResult(success=False, error=f"连接失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/data_structure.py:569:16
+    |
+567 |                 success=True, message=f"拼接结果: {preview}", data=result
+568 |             )
+569 |         except Exception as error:
+    |                ^^^^^^^^^
+570 |             return ModuleResult(success=False, error=f"拼接失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/data_structure.py:604:16
+    |
+602 |             context.set_variable(variable_name, result)
+603 |             return ModuleResult(success=True, message="去除空白完成", data=result)
+604 |         except Exception as error:
+    |                ^^^^^^^^^
+605 |             return ModuleResult(success=False, error=f"去除空白失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/data_structure.py:639:16
+    |
+637 |             context.set_variable(variable_name, result)
+638 |             return ModuleResult(success=True, message="大小写转换完成", data=result)
+639 |         except Exception as error:
+    |                ^^^^^^^^^
+640 |             return ModuleResult(success=False, error=f"大小写转换失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/data_structure.py:673:16
+    |
+671 |         except ValueError as error:
+672 |             return ModuleResult(success=False, error=f"索引值无效: {error}")
+673 |         except Exception as error:
+    |                ^^^^^^^^^
+674 |             return ModuleResult(success=False, error=f"截取失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/dict_advanced.py:77:16
+   |
+75 |                 data=result,
+76 |             )
+77 |         except Exception as e:
+   |                ^^^^^^^^^
+78 |             return ModuleResult(success=False, error=f"合并失败: {e!s}")
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/dict_advanced.py:132:24
+    |
+130 |                         ),
+131 |                     )
+132 |                 except Exception as e:
+    |                        ^^^^^^^^^
+133 |                     return ModuleResult(
+134 |                         success=False,
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/dict_advanced.py:170:16
+    |
+168 |                 success=True, message=f"过滤完成，保留 {len(result)} 个键", data=result
+169 |             )
+170 |         except Exception as e:
+    |                ^^^^^^^^^
+171 |             return ModuleResult(success=False, error=f"过滤失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/dict_advanced.py:224:24
+    |
+222 |                         ),
+223 |                     )
+224 |                 except Exception as e:
+    |                        ^^^^^^^^^
+225 |                     return ModuleResult(
+226 |                         success=False,
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/dict_advanced.py:251:28
+    |
+249 |                     try:
+250 |                         value = float(value)
+251 |                     except Exception:
+    |                            ^^^^^^^^^
+252 |                         result[key] = value
+253 |                         continue
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/dict_advanced.py:270:16
+    |
+268 |                 data=result,
+269 |             )
+270 |         except Exception as e:
+    |                ^^^^^^^^^
+271 |             return ModuleResult(success=False, error=f"映射失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/dict_advanced.py:316:16
+    |
+314 |                 data=result,
+315 |             )
+316 |         except Exception as e:
+    |                ^^^^^^^^^
+317 |             return ModuleResult(success=False, error=f"反转失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/dict_advanced.py:384:16
+    |
+382 |                 success=True, message=f"按{by_text}{order_text}排序完成", data=result
+383 |             )
+384 |         except Exception as e:
+    |                ^^^^^^^^^
+385 |             return ModuleResult(success=False, error=f"排序失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/dict_advanced.py:425:16
+    |
+423 |             context.set_variable(result_variable, result)
+424 |             return ModuleResult(success=True, message="字典深拷贝完成", data=result)
+425 |         except Exception as e:
+    |                ^^^^^^^^^
+426 |             return ModuleResult(success=False, error=f"深拷贝失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/dict_advanced.py:476:16
+    |
+474 |                 success=True, message=f"路径取值完成: {path}", data=result
+475 |             )
+476 |         except Exception as e:
+    |                ^^^^^^^^^
+477 |             return ModuleResult(success=False, error=f"路径取值失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/dict_advanced.py:541:16
+    |
+539 |                 data=result,
+540 |             )
+541 |         except Exception as e:
+    |                ^^^^^^^^^
+542 |             return ModuleResult(success=False, error=f"扁平化失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/element_change_trigger.py:120:20
+    |
+118 |                     state="visible", timeout_ms=10000
+119 |                 )
+120 |             except Exception:
+    |                    ^^^^^^^^^
+121 |                 return ModuleResult(success=False, error=f"未找到元素: {selector}")
+122 |             params = json.dumps(
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/element_change_trigger.py:144:16
+    |
+142 |                 context=context,
+143 |             )
+144 |         except Exception as error:
+    |                ^^^^^^^^^
+145 |             message = str(error)
+146 |             if "监控超时" in message:
+    |
+
+F401 [*] `logging` imported but unused
+  --> src/autoflow/application/workflows/executors/email_trigger.py:11:8
+   |
+10 | import asyncio
+11 | import logging
+   |        ^^^^^^^
+12 | from collections.abc import Mapping
+13 | from typing import Any
+   |
+help: Remove unused import: `logging`
+   |
+10 | import asyncio
+   - import logging
+11 | from collections.abc import Mapping
+   |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+  --> src/autoflow/application/workflows/executors/email_trigger.py:96:9
+   |
+94 |           except asyncio.CancelledError:
+95 |               raise
+96 | /         except Exception:
+97 | |             pass
+   | |________________^
+98 |           await asyncio.sleep(max(0, check_interval))
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/email_trigger.py:96:16
+   |
+94 |         except asyncio.CancelledError:
+95 |             raise
+96 |         except Exception:
+   |                ^^^^^^^^^
+97 |             pass
+98 |         await asyncio.sleep(max(0, check_interval))
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/external_http.py:153:16
+    |
+151 |                 ),
+152 |             )
+153 |         except Exception as error:
+    |                ^^^^^^^^^
+154 |             return ModuleResult(success=False, error=str(error) or "API请求失败")
+155 |         status = int(response.get("statusCode", 0))
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/external_http.py:217:16
+    |
+215 |                 success=False, error=f"Webhook等待超时（{timeout}秒）"
+216 |             )
+217 |         except Exception as error:
+    |                ^^^^^^^^^
+218 |             return ModuleResult(success=False, error=str(error) or "Webhook触发失败")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/external_http.py:377:20
+    |
+375 |                     f"⏳ 第{check_count}次检查，条件未满足，{check_interval}秒后重试...",
+376 |                 )
+377 |             except Exception as error:
+    |                    ^^^^^^^^^
+378 |                 await _trigger_progress(
+379 |                     context,
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/external_http.py:468:16
+    |
+466 |                 ),
+467 |             )
+468 |         except Exception as error:
+    |                ^^^^^^^^^
+469 |             return ModuleResult(success=False, error=str(error) or "Webhook请求失败")
+470 |         status = int(response.get("statusCode", 0))
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/external_http.py:539:16
+    |
+537 |                 ),
+538 |             )
+539 |         except Exception as error:
+    |                ^^^^^^^^^
+540 |             return ModuleResult(success=False, error=str(error) or "通知发送失败")
+541 |         status = int(response.get("statusCode", 0))
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/face_trigger.py:103:16
+    |
+101 |         except asyncio.CancelledError:
+102 |             raise
+103 |         except Exception as error:
+    |                ^^^^^^^^^
+104 |             return ModuleResult(success=False, error=f"人脸触发器失败: {error}")
+105 |         finally:
+    |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+  --> src/autoflow/application/workflows/executors/firecrawl.py:47:9
+   |
+45 |           try:
+46 |               context.browser.select_page(original_id)
+47 | /         except Exception:
+48 | |             pass
+   | |________________^
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/firecrawl.py:47:16
+   |
+45 |         try:
+46 |             context.browser.select_page(original_id)
+47 |         except Exception:
+   |                ^^^^^^^^^
+48 |             pass
+   |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+   --> src/autoflow/application/workflows/executors/firecrawl.py:169:21
+    |
+167 |                       try:
+168 |                           await page.wait_for_selector(wait_for, timeout=5_000)
+169 | /                     except Exception:
+170 | |                         pass
+    | |____________________________^
+171 |                   html = await page.content()
+172 |                   soup = _prepare_html(
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/firecrawl.py:169:28
+    |
+167 |                     try:
+168 |                         await page.wait_for_selector(wait_for, timeout=5_000)
+169 |                     except Exception:
+    |                            ^^^^^^^^^
+170 |                         pass
+171 |                 html = await page.content()
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/firecrawl.py:214:16
+    |
+212 |                 data=result,
+213 |             )
+214 |         except Exception as error:
+    |                ^^^^^^^^^
+215 |             return ModuleResult(success=False, error=f"抓取失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/firecrawl.py:268:24
+    |
+266 |                         if len(found) >= limit:
+267 |                             break
+268 |                 except Exception as error:
+    |                        ^^^^^^^^^
+269 |                     await context.send_progress(
+270 |                         f"⚠️ 站点地图读取失败(忽略): {error}", "warning"
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/firecrawl.py:285:16
+    |
+283 |                 data=result,
+284 |             )
+285 |         except Exception as error:
+    |                ^^^^^^^^^
+286 |             return ModuleResult(success=False, error=f"链接抓取失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/firecrawl.py:330:24
+    |
+328 |                             continue
+329 |                         queue.append((item, 1))
+330 |                 except Exception as error:
+    |                        ^^^^^^^^^
+331 |                     await context.send_progress(
+332 |                         f"⚠️ 站点地图读取失败(忽略): {error}", "warning"
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/firecrawl.py:374:24
+    |
+372 |                         if absolute not in visited:
+373 |                             queue.append((absolute, depth + 1))
+374 |                 except Exception as error:
+    |                        ^^^^^^^^^
+375 |                     await context.send_progress(
+376 |                         f"⚠️ 跳过页面 {current}: {error}", "warning"
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/firecrawl.py:387:16
+    |
+385 |                 data=results,
+386 |             )
+387 |         except Exception as error:
+    |                ^^^^^^^^^
+388 |             return ModuleResult(success=False, error=f"全站爬取失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/gesture_trigger.py:75:16
+   |
+73 |                 error="手势触发器初始化失败，请安装 mediapipe 和 opencv-python",
+74 |             )
+75 |         except Exception as error:
+   |                ^^^^^^^^^
+76 |             return ModuleResult(success=False, error=f"手势触发器失败: {error}")
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/image_trigger.py:97:16
+   |
+95 |         except asyncio.CancelledError:
+96 |             raise
+97 |         except Exception as error:
+   |                ^^^^^^^^^
+98 |             return ModuleResult(success=False, error=f"图像触发器失败: {error}")
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/input_prompt.py:73:16
+   |
+71 |         except (TypeError, ValueError, json.JSONDecodeError) as error:
+72 |             return ModuleResult(success=False, error=str(error))
+73 |         except Exception as error:
+   |                ^^^^^^^^^
+74 |             return ModuleResult(success=False, error=f"输入框失败: {error}")
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/input_triggers.py:132:16
+    |
+130 |                 success=False, error="热键触发器初始化失败，请检查系统配置"
+131 |             )
+132 |         except Exception as error:
+    |                ^^^^^^^^^
+133 |             return ModuleResult(success=False, error=f"热键触发器失败: {error}")
+134 |         finally:
+    |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+   --> src/autoflow/application/workflows/executors/input_triggers.py:138:17
+    |
+136 |                   try:
+137 |                       listener.stop()
+138 | /                 except Exception:
+139 | |                     pass
+    | |________________________^
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/input_triggers.py:138:24
+    |
+136 |                 try:
+137 |                     listener.stop()
+138 |                 except Exception:
+    |                        ^^^^^^^^^
+139 |                     pass
+    |
+
+RUF007 Prefer `itertools.pairwise()` over `zip()` when iterating over successive pairs
+   --> src/autoflow/application/workflows/executors/input_triggers.py:192:27
+    |
+190 |                 simplified.append(point)
+191 |         result: list[Direction] = []
+192 |         for start, end in zip(simplified, simplified[1:], strict=False):
+    |                           ^^^
+193 |             direction = self.direction(start, end)
+194 |             if direction is not None and (not result or direction != result[-1]):
+    |
+help: Replace `zip()` with `itertools.pairwise()`
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/input_triggers.py:358:16
+    |
+356 |                 success=False, error="鼠标触发器初始化失败，请检查系统配置"
+357 |             )
+358 |         except Exception as error:
+    |                ^^^^^^^^^
+359 |             return ModuleResult(success=False, error=f"鼠标触发器失败: {error}")
+360 |         finally:
+    |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+   --> src/autoflow/application/workflows/executors/input_triggers.py:364:17
+    |
+362 |                   try:
+363 |                       listener.stop()
+364 | /                 except Exception:
+365 | |                     pass
+    | |________________________^
+366 |
+367 |       async def _gesture(
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/input_triggers.py:364:24
+    |
+362 |                 try:
+363 |                     listener.stop()
+364 |                 except Exception:
+    |                        ^^^^^^^^^
+365 |                     pass
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/input_triggers.py:429:16
+    |
+427 |                 success=False, error="鼠标触发器初始化失败，请检查系统配置"
+428 |             )
+429 |         except Exception as error:
+    |                ^^^^^^^^^
+430 |             return ModuleResult(success=False, error=f"鼠标触发器失败: {error}")
+431 |         finally:
+    |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+   --> src/autoflow/application/workflows/executors/input_triggers.py:435:17
+    |
+433 |                   try:
+434 |                       listener.stop()
+435 | /                 except Exception:
+436 | |                     pass
+    | |________________________^
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/input_triggers.py:435:24
+    |
+433 |                 try:
+434 |                     listener.stop()
+435 |                 except Exception:
+    |                        ^^^^^^^^^
+436 |                     pass
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/js_script.py:45:16
+   |
+43 |                 timeout_seconds=30,
+44 |             )
+45 |         except Exception as error:
+   |                ^^^^^^^^^
+46 |             return ModuleResult(success=False, error=f"JS脚本执行异常: {error}")
+47 |         if not outcome.success:
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/list_advanced.py:86:16
+   |
+84 |                 data=result,
+85 |             )
+86 |         except Exception as e:
+   |                ^^^^^^^^^
+87 |             return ModuleResult(success=False, error=f"反转失败: {e!s}")
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/list_advanced.py:137:16
+    |
+135 |                     success=True, message="未找到元素，返回 -1", data=-1
+136 |                 )
+137 |         except Exception as e:
+    |                ^^^^^^^^^
+138 |             return ModuleResult(success=False, error=f"查找失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/list_advanced.py:181:16
+    |
+179 |                 success=True, message=f"元素出现 {count} 次", data=count
+180 |             )
+181 |         except Exception as e:
+    |                ^^^^^^^^^
+182 |             return ModuleResult(success=False, error=f"计数失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/list_advanced.py:236:24
+    |
+234 |                         ),
+235 |                     )
+236 |                 except Exception as e:
+    |                        ^^^^^^^^^
+237 |                     return ModuleResult(
+238 |                         success=False,
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/list_advanced.py:297:16
+    |
+295 |                 data=result,
+296 |             )
+297 |         except Exception as e:
+    |                ^^^^^^^^^
+298 |             return ModuleResult(success=False, error=f"过滤失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/list_advanced.py:351:24
+    |
+349 |                         ),
+350 |                     )
+351 |                 except Exception as e:
+    |                        ^^^^^^^^^
+352 |                     return ModuleResult(
+353 |                         success=False,
+    |
+
+S112 `try`-`except`-`continue` detected, consider logging the exception
+   --> src/autoflow/application/workflows/executors/list_advanced.py:378:21
+    |
+376 |                       try:
+377 |                           item = float(item)
+378 | /                     except Exception:
+379 | |                         continue
+    | |________________________________^
+380 |
+381 |                   if operation == "multiply":
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/list_advanced.py:378:28
+    |
+376 |                     try:
+377 |                         item = float(item)
+378 |                     except Exception:
+    |                            ^^^^^^^^^
+379 |                         continue
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/list_advanced.py:398:16
+    |
+396 |                 data=result,
+397 |             )
+398 |         except Exception as e:
+    |                ^^^^^^^^^
+399 |             return ModuleResult(success=False, error=f"映射失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/list_advanced.py:432:16
+    |
+430 |                 success=True, message=f"合并完成，共 {len(result)} 个元素", data=result
+431 |             )
+432 |         except Exception as e:
+    |                ^^^^^^^^^
+433 |             return ModuleResult(success=False, error=f"合并失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/list_advanced.py:515:16
+    |
+513 |                 data=result,
+514 |             )
+515 |         except Exception as e:
+    |                ^^^^^^^^^
+516 |             return ModuleResult(success=False, error=f"扁平化失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/list_advanced.py:560:16
+    |
+558 |                 success=True, message=f"分组完成，共 {len(result)} 组", data=result
+559 |             )
+560 |         except Exception as e:
+    |                ^^^^^^^^^
+561 |             return ModuleResult(success=False, error=f"分组失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/list_advanced.py:602:16
+    |
+600 |                 success=True, message=f"去空完成，移除 {removed} 个空值", data=result
+601 |             )
+602 |         except Exception as e:
+    |                ^^^^^^^^^
+603 |             return ModuleResult(success=False, error=f"去空失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/list_advanced.py:648:16
+    |
+646 |                 success=True, message=f"交集完成，共 {len(result)} 个元素", data=result
+647 |             )
+648 |         except Exception as e:
+    |                ^^^^^^^^^
+649 |             return ModuleResult(success=False, error=f"交集计算失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/list_advanced.py:694:16
+    |
+692 |                 success=True, message=f"并集完成，共 {len(result)} 个元素", data=result
+693 |             )
+694 |         except Exception as e:
+    |                ^^^^^^^^^
+695 |             return ModuleResult(success=False, error=f"并集计算失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/list_advanced.py:740:16
+    |
+738 |                 success=True, message=f"差集完成，共 {len(result)} 个元素", data=result
+739 |             )
+740 |         except Exception as e:
+    |                ^^^^^^^^^
+741 |             return ModuleResult(success=False, error=f"差集计算失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/list_advanced.py:797:16
+    |
+795 |                 data=result,
+796 |             )
+797 |         except Exception as e:
+    |                ^^^^^^^^^
+798 |             return ModuleResult(success=False, error=f"笛卡尔积计算失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/list_advanced.py:842:16
+    |
+840 |                 data=result,
+841 |             )
+842 |         except Exception as e:
+    |                ^^^^^^^^^
+843 |             return ModuleResult(success=False, error=f"打乱失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/list_advanced.py:894:16
+    |
+892 |                 data=result,
+893 |             )
+894 |         except Exception as e:
+    |                ^^^^^^^^^
+895 |             return ModuleResult(success=False, error=f"采样失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/logging.py:76:16
+   |
+74 |                 mime_type=mime_type,
+75 |             )
+76 |         except Exception as error:
+   |                ^^^^^^^^^
+77 |             return ModuleResult(success=False, error=f"导出日志失败: {error}")
+78 |         result = {
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/math_advanced.py:129:16
+    |
+127 |         except (ValueError, TypeError) as e:
+128 |             return ModuleResult(success=False, error=f"无效的数字: {e!s}")
+129 |         except Exception as e:
+    |                ^^^^^^^^^
+130 |             return ModuleResult(success=False, error=f"对数运算失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/math_advanced.py:212:16
+    |
+210 |         except (ValueError, TypeError) as e:
+211 |             return ModuleResult(success=False, error=f"无效的数字: {e!s}")
+212 |         except Exception as e:
+    |                ^^^^^^^^^
+213 |             return ModuleResult(success=False, error=f"三角函数计算失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/math_advanced.py:251:16
+    |
+249 |         except OverflowError:
+250 |             return ModuleResult(success=False, error="结果溢出，数值过大")
+251 |         except Exception as e:
+    |                ^^^^^^^^^
+252 |             return ModuleResult(success=False, error=f"指数运算失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/math_advanced.py:305:16
+    |
+303 |         except (ValueError, TypeError) as e:
+304 |             return ModuleResult(success=False, error=f"无效的数字: {e!s}")
+305 |         except Exception as e:
+    |                ^^^^^^^^^
+306 |             return ModuleResult(success=False, error=f"计算最大公约数失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/math_advanced.py:359:16
+    |
+357 |         except (ValueError, TypeError) as e:
+358 |             return ModuleResult(success=False, error=f"无效的数字: {e!s}")
+359 |         except Exception as e:
+    |                ^^^^^^^^^
+360 |             return ModuleResult(success=False, error=f"计算最小公倍数失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/math_advanced.py:402:16
+    |
+400 |         except (ValueError, TypeError):
+401 |             return ModuleResult(success=False, error=f"无效的数字: {number_value}")
+402 |         except Exception as e:
+    |                ^^^^^^^^^
+403 |             return ModuleResult(success=False, error=f"阶乘计算失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/math_advanced.py:466:16
+    |
+464 |         except (ValueError, TypeError) as e:
+465 |             return ModuleResult(success=False, error=f"无效的数字: {e!s}")
+466 |         except Exception as e:
+    |                ^^^^^^^^^
+467 |             return ModuleResult(success=False, error=f"计算失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/math_advanced.py:558:16
+    |
+556 |         except (ValueError, TypeError) as e:
+557 |             return ModuleResult(success=False, error=f"无效的数字: {e!s}")
+558 |         except Exception as e:
+    |                ^^^^^^^^^
+559 |             return ModuleResult(success=False, error=f"百分比计算失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/math_advanced.py:611:16
+    |
+609 |         except (ValueError, TypeError) as e:
+610 |             return ModuleResult(success=False, error=f"无效的数字: {e!s}")
+611 |         except Exception as e:
+    |                ^^^^^^^^^
+612 |             return ModuleResult(success=False, error=f"范围限制失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/math_advanced.py:715:16
+    |
+713 |         except (ValueError, TypeError) as e:
+714 |             return ModuleResult(success=False, error=f"无效的参数: {e!s}")
+715 |         except Exception as e:
+    |                ^^^^^^^^^
+716 |             return ModuleResult(success=False, error=f"生成随机数失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/math_list_ops.py:80:16
+   |
+78 |             )
+79 |
+80 |         except Exception as e:
+   |                ^^^^^^^^^
+81 |             return ModuleResult(success=False, error=f"求和失败: {e!s}")
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/math_list_ops.py:135:16
+    |
+133 |             )
+134 |
+135 |         except Exception as e:
+    |                ^^^^^^^^^
+136 |             return ModuleResult(success=False, error=f"求平均值失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/math_list_ops.py:190:16
+    |
+188 |             )
+189 |
+190 |         except Exception as e:
+    |                ^^^^^^^^^
+191 |             return ModuleResult(success=False, error=f"求最大值失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/math_list_ops.py:245:16
+    |
+243 |             )
+244 |
+245 |         except Exception as e:
+    |                ^^^^^^^^^
+246 |             return ModuleResult(success=False, error=f"求最小值失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/math_list_ops.py:294:16
+    |
+292 |         except TypeError:
+293 |             return ModuleResult(success=False, error="列表元素类型不一致，无法排序")
+294 |         except Exception as e:
+    |                ^^^^^^^^^
+295 |             return ModuleResult(success=False, error=f"排序失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/math_list_ops.py:351:16
+    |
+349 |             )
+350 |
+351 |         except Exception as e:
+    |                ^^^^^^^^^
+352 |             return ModuleResult(success=False, error=f"去重失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/math_list_ops.py:399:16
+    |
+397 |         except ValueError as e:
+398 |             return ModuleResult(success=False, error=f"索引值无效: {e!s}")
+399 |         except Exception as e:
+    |                ^^^^^^^^^
+400 |             return ModuleResult(success=False, error=f"截取失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/math_list_ops.py:441:16
+    |
+439 |         except (ValueError, TypeError):
+440 |             return ModuleResult(success=False, error=f"无效的数字: {number_value}")
+441 |         except Exception as e:
+    |                ^^^^^^^^^
+442 |             return ModuleResult(success=False, error=f"四舍五入失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/math_list_ops.py:514:16
+    |
+512 |         except ValueError as e:
+513 |             return ModuleResult(success=False, error=f"无效的数字或进制: {e!s}")
+514 |         except Exception as e:
+    |                ^^^^^^^^^
+515 |             return ModuleResult(success=False, error=f"进制转换失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/math_list_ops.py:551:16
+    |
+549 |         except (ValueError, TypeError):
+550 |             return ModuleResult(success=False, error=f"无效的数字: {number_value}")
+551 |         except Exception as e:
+    |                ^^^^^^^^^
+552 |             return ModuleResult(success=False, error=f"取整失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/math_list_ops.py:593:16
+    |
+591 |         except (ValueError, TypeError):
+592 |             return ModuleResult(success=False, error="无效的数字")
+593 |         except Exception as e:
+    |                ^^^^^^^^^
+594 |             return ModuleResult(success=False, error=f"求余失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/math_list_ops.py:630:16
+    |
+628 |         except (ValueError, TypeError):
+629 |             return ModuleResult(success=False, error=f"无效的数字: {number_value}")
+630 |         except Exception as e:
+    |                ^^^^^^^^^
+631 |             return ModuleResult(success=False, error=f"求绝对值失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/math_list_ops.py:677:16
+    |
+675 |         except (ValueError, TypeError):
+676 |             return ModuleResult(success=False, error="无效的数字")
+677 |         except Exception as e:
+    |                ^^^^^^^^^
+678 |             return ModuleResult(success=False, error=f"开次方失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/math_list_ops.py:720:16
+    |
+718 |         except OverflowError:
+719 |             return ModuleResult(success=False, error="结果溢出，数值过大")
+720 |         except Exception as e:
+    |                ^^^^^^^^^
+721 |             return ModuleResult(success=False, error=f"求次方失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/media_recognition.py:170:16
+    |
+168 |         except ImportError:
+169 |             return ModuleResult(success=False, error="人脸识别功能初始化失败")
+170 |         except Exception as error:
+    |                ^^^^^^^^^
+171 |             return ModuleResult(success=False, error=f"人脸识别失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/media_recognition.py:267:16
+    |
+265 |                 return ModuleResult(success=False, error=str(error))
+266 |             return ModuleResult(success=False, error=f"OCR识别失败: {error}")
+267 |         except Exception as error:
+    |                ^^^^^^^^^
+268 |             return ModuleResult(success=False, error=f"OCR识别失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/messaging.py:63:16
+   |
+61 |                 },
+62 |             )
+63 |         except Exception as error:
+   |                ^^^^^^^^^
+64 |             return ModuleResult(success=False, error=str(error) or "通知发送失败")
+65 |         return ModuleResult(success=True, message="通知发送成功")
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/messaging.py:100:16
+    |
+ 98 |                 },
+ 99 |             )
+100 |         except Exception as error:
+    |                ^^^^^^^^^
+101 |             return ModuleResult(success=False, error=str(error) or "发送邮件失败")
+102 |         return ModuleResult(
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/network_capture.py:73:20
+   |
+71 |             try:
+72 |                 page = context.browser.current_page()
+73 |             except Exception:
+   |                    ^^^^^^^^^
+74 |                 return ModuleResult(
+75 |                     success=False,
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/network_capture.py:119:16
+    |
+117 |         except asyncio.CancelledError:
+118 |             raise
+119 |         except Exception as error:
+    |                ^^^^^^^^^
+120 |             return ModuleResult(success=False, error=f"网络抓包启动失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/network_monitor.py:67:16
+   |
+65 |                 },
+66 |             )
+67 |         except Exception as error:
+   |                ^^^^^^^^^
+68 |             return ModuleResult(success=False, error=f"启动网络监听失败: {error}")
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/network_monitor.py:169:16
+    |
+167 |                 _stop_monitor(context, monitor_id)
+168 |             raise
+169 |         except Exception as error:
+    |                ^^^^^^^^^
+170 |             return ModuleResult(success=False, error=f"等待API请求失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/network_monitor.py:216:16
+    |
+214 |                 },
+215 |             )
+216 |         except Exception as error:
+    |                ^^^^^^^^^
+217 |             return ModuleResult(success=False, error=f"停止网络监听失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/page_load.py:18:12
+   |
+16 |     try:
+17 |         return context.browser.current_page()
+18 |     except Exception:
+   |            ^^^^^^^^^
+19 |         return None
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/page_load.py:41:16
+   |
+39 |             await page.wait_for_load_state(wait_until, timeout_ms=timeout * 1000)
+40 |             return ModuleResult(success=True, message=f"页面已加载完成（{wait_until}）")
+41 |         except Exception as error:
+   |                ^^^^^^^^^
+42 |             return ModuleResult(success=False, error=f"等待页面加载失败: {error}")
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/page_load.py:65:20
+   |
+63 |                 await page.wait_for_load_state(check_state, timeout_ms=100)
+64 |                 is_loaded = True
+65 |             except Exception:
+   |                    ^^^^^^^^^
+66 |                 is_loaded = False
+67 |             context.set_variable(save_to_variable, is_loaded)
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/page_load.py:73:16
+   |
+71 |                 data={"loaded": is_loaded},
+72 |             )
+73 |         except Exception as error:
+   |                ^^^^^^^^^
+74 |             return ModuleResult(success=False, error=f"检查页面加载状态失败: {error}")
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/printer.py:54:16
+   |
+52 |         except FileNotFoundError:
+53 |             return ModuleResult(success=False, error=f"文件不存在: {file_path}")
+54 |         except Exception as error:
+   |                ^^^^^^^^^
+55 |             return ModuleResult(success=False, error=f"打印失败: {error}")
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/python_script.py:92:16
+   |
+90 |         except ValueError as error:
+91 |             return ModuleResult(success=False, error=str(error))
+92 |         except Exception as error:
+   |                ^^^^^^^^^
+93 |             return ModuleResult(success=False, error=f"执行失败: {error}")
+94 |         finally:
+   |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+   --> src/autoflow/application/workflows/executors/python_script.py:237:13
+    |
+235 |               try:
+236 |                   await context.send_progress(f"[Python脚本] {text}", level)
+237 | /             except Exception:
+238 | |                 pass
+    | |____________________^
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/python_script.py:237:20
+    |
+235 |             try:
+236 |                 await context.send_progress(f"[Python脚本] {text}", level)
+237 |             except Exception:
+    |                    ^^^^^^^^^
+238 |                 pass
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/run_command.py:76:16
+   |
+74 |         except asyncio.CancelledError:
+75 |             raise
+76 |         except Exception as error:
+   |                ^^^^^^^^^
+77 |             return ModuleResult(success=False, error=f"命令执行失败: {error}")
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/sound_trigger.py:61:16
+   |
+59 |         except asyncio.CancelledError:
+60 |             raise
+61 |         except Exception as error:
+   |                ^^^^^^^^^
+62 |             return ModuleResult(success=False, error=f"声音触发器失败: {error}")
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/ssh.py:70:20
+   |
+68 |                 )
+69 |                 key_content = snapshot.content
+70 |             except Exception as error:
+   |                    ^^^^^^^^^
+71 |                 return ModuleResult(success=False, error=f"读取SSH密钥失败: {error}")
+72 |             if key_content is None:
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/ssh.py:88:16
+   |
+86 |                 },
+87 |             )
+88 |         except Exception as error:
+   |                ^^^^^^^^^
+89 |             return ModuleResult(success=False, error=str(error) or "SSH连接失败")
+90 |         return ModuleResult(
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/ssh.py:121:16
+    |
+119 |             error = str(raw.get("error") or "")
+120 |             exit_code = int(raw.get("exitCode", -1))
+121 |         except Exception as exc:
+    |                ^^^^^^^^^
+122 |             return ModuleResult(success=False, error=str(exc) or "SSH命令执行失败")
+123 |         context.set_variable(str(config.get("outputVariable") or "ssh_output"), output)
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/ssh.py:165:16
+    |
+163 |                 },
+164 |             )
+165 |         except Exception as error:
+    |                ^^^^^^^^^
+166 |             return ModuleResult(success=False, error=f"SSH文件上传失败: {error}")
+167 |         return ModuleResult(success=True, message=f"文件上传成功: {local_path} -> {remote_path}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/ssh.py:202:16
+    |
+200 |                 mime_type="application/octet-stream",
+201 |             )
+202 |         except Exception as error:
+    |                ^^^^^^^^^
+203 |             return ModuleResult(success=False, error=f"SSH文件下载失败: {error}")
+204 |         return ModuleResult(
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/ssh.py:222:16
+    |
+220 |         try:
+221 |             await _call(context, "ssh_disconnect", {"connectionName": name})
+222 |         except Exception as error:
+    |                ^^^^^^^^^
+223 |             return ModuleResult(success=False, error=str(error) or "SSH断开连接失败")
+224 |         return ModuleResult(success=True, message=f"SSH连接 {name} 已断开")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/statistics.py:73:16
+   |
+71 |             context.set_variable(result_variable, result)
+72 |             return ModuleResult(success=True, message=f"中位数: {result}", data=result)
+73 |         except Exception as e:
+   |                ^^^^^^^^^
+74 |             return ModuleResult(success=False, error=f"计算中位数失败: {e!s}")
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/statistics.py:115:16
+    |
+113 |         except statistics.StatisticsError:
+114 |             return ModuleResult(success=False, error="没有唯一的众数")
+115 |         except Exception as e:
+    |                ^^^^^^^^^
+116 |             return ModuleResult(success=False, error=f"计算众数失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/statistics.py:158:16
+    |
+156 |             context.set_variable(result_variable, result)
+157 |             return ModuleResult(success=True, message=f"方差: {result}", data=result)
+158 |         except Exception as e:
+    |                ^^^^^^^^^
+159 |             return ModuleResult(success=False, error=f"计算方差失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/statistics.py:201:16
+    |
+199 |             context.set_variable(result_variable, result)
+200 |             return ModuleResult(success=True, message=f"标准差: {result}", data=result)
+201 |         except Exception as e:
+    |                ^^^^^^^^^
+202 |             return ModuleResult(success=False, error=f"计算标准差失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/statistics.py:258:16
+    |
+256 |                 success=True, message=f"第{p}百分位数: {result}", data=result
+257 |             )
+258 |         except Exception as e:
+    |                ^^^^^^^^^
+259 |             return ModuleResult(success=False, error=f"计算百分位数失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/statistics.py:333:16
+    |
+331 |                 data=result,
+332 |             )
+333 |         except Exception as e:
+    |                ^^^^^^^^^
+334 |             return ModuleResult(success=False, error=f"归一化失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/statistics.py:388:16
+    |
+386 |                 success=True, message="标准化完成（Z-score）", data=result
+387 |             )
+388 |         except Exception as e:
+    |                ^^^^^^^^^
+389 |             return ModuleResult(success=False, error=f"标准化失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/string_convert.py:81:16
+   |
+79 |                 data=result,
+80 |             )
+81 |         except Exception as e:
+   |                ^^^^^^^^^
+82 |             return ModuleResult(success=False, error=f"CSV解析失败: {e!s}")
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/string_convert.py:151:16
+    |
+149 |             context.set_variable(result_variable, result)
+150 |             return ModuleResult(success=True, message="CSV生成完成", data=result)
+151 |         except Exception as e:
+    |                ^^^^^^^^^
+152 |             return ModuleResult(success=False, error=f"CSV生成失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/string_convert.py:216:16
+    |
+214 |             context.set_variable(result_variable, result)
+215 |             return ModuleResult(success=True, message="列表转字符串完成", data=result)
+216 |         except Exception as e:
+    |                ^^^^^^^^^
+217 |             return ModuleResult(success=False, error=f"转换失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/switch_tab.py:38:12
+   |
+36 |     try:
+37 |         return context.browser.current_page()
+38 |     except Exception:
+   |            ^^^^^^^^^
+39 |         return None
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/switch_tab.py:194:16
+    |
+192 |                 },
+193 |             )
+194 |         except Exception as error:
+    |                ^^^^^^^^^
+195 |             urls = (
+196 |                 [page.url for page in context.browser.pages()]
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/table.py:169:16
+    |
+167 |         except json.JSONDecodeError as e:
+168 |             return ModuleResult(success=False, error=f"JSON解析失败: {e!s}")
+169 |         except Exception as e:
+    |                ^^^^^^^^^
+170 |             return ModuleResult(success=False, error=f"添加数据行失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/table.py:231:16
+    |
+229 |             )
+230 |
+231 |         except Exception as e:
+    |                ^^^^^^^^^
+232 |             return ModuleResult(success=False, error=f"添加数据列失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/table.py:307:16
+    |
+305 |             )
+306 |
+307 |         except Exception as e:
+    |                ^^^^^^^^^
+308 |             return ModuleResult(success=False, error=f"设置单元格失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/table.py:427:16
+    |
+425 |             )
+426 |
+427 |         except Exception as e:
+    |                ^^^^^^^^^
+428 |             return ModuleResult(success=False, error=f"删除数据行失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/table.py:455:16
+    |
+453 |             )
+454 |
+455 |         except Exception as e:
+    |                ^^^^^^^^^
+456 |             return ModuleResult(success=False, error=f"清空数据表失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/table.py:509:16
+    |
+507 |         try:
+508 |             return json.dumps(value, ensure_ascii=False, default=str)
+509 |         except Exception:
+    |                ^^^^^^^^^
+510 |             return str(value)
+511 |     return str(value)
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/table.py:618:20
+    |
+616 |                     expected_identity=existing.identity,
+617 |                 )
+618 |             except Exception as error:
+    |                    ^^^^^^^^^
+619 |                 return ModuleResult(
+620 |                     success=False,
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/table.py:648:16
+    |
+646 |                 error="CSV导出内容超过工作流安全限制",
+647 |             )
+648 |         except Exception as error:
+    |                ^^^^^^^^^
+649 |             return ModuleResult(
+650 |                 success=False,
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/table.py:663:16
+    |
+661 |                 mime_type="text/csv",
+662 |             )
+663 |         except Exception as error:
+    |                ^^^^^^^^^
+664 |             return ModuleResult(
+665 |                 success=False,
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/table_extract.py:72:12
+   |
+70 |         active_page = getattr(browser, "active_page", None)
+71 |         return active_page() if active_page is not None else browser.current_page()
+72 |     except Exception:
+   |            ^^^^^^^^^
+73 |         return None
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/table_extract.py:143:16
+    |
+141 |         try:
+142 |             await table.wait_for(state="attached", timeout_ms=10_000)
+143 |         except Exception:
+    |                ^^^^^^^^^
+144 |             return ModuleResult(success=False, error=f"未找到表格元素: {selector}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/table_extract.py:186:16
+    |
+184 |             if not table_data:
+185 |                 return ModuleResult(success=False, error="表格为空或未找到数据")
+186 |         except Exception as exc:
+    |                ^^^^^^^^^
+187 |             return ModuleResult(success=False, error=f"提取表格失败: {exc}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/table_extract.py:230:16
+    |
+228 |                 expected_identity=None,
+229 |             )
+230 |         except Exception as exc:
+    |                ^^^^^^^^^
+231 |             return ModuleResult(success=False, error=f"导出Excel失败: {exc}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/text_to_speech.py:41:16
+   |
+39 |                 timeout_seconds=60,
+40 |             )
+41 |         except Exception as error:
+   |                ^^^^^^^^^
+42 |             return ModuleResult(success=False, error=f"文本朗读失败: {error}")
+43 |         if not outcome.success:
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/timing_probability.py:98:16
+   |
+96 |                 )
+97 |             return ModuleResult(success=False, error=f"未知的定时类型: {schedule_type}")
+98 |         except Exception as error:
+   |                ^^^^^^^^^
+99 |             return ModuleResult(success=False, error=f"定时执行失败: {error}")
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/timing_probability.py:137:16
+    |
+135 |                 },
+136 |             )
+137 |         except Exception as error:
+    |                ^^^^^^^^^
+138 |             return ModuleResult(
+139 |                 success=False,
+    |
+
+DTZ007 Naive datetime constructed using `datetime.datetime.strptime()` without %z
+   --> src/autoflow/application/workflows/executors/timing_probability.py:148:20
+    |
+146 |     for pattern in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M"):
+147 |         try:
+148 |             return datetime.strptime(value, pattern)
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+149 |         except ValueError:
+150 |             pass
+    |
+help: Call `.replace(tzinfo=<timezone>)` or `.astimezone()` to convert to an aware datetime
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/utility_tools.py:103:16
+    |
+101 |             )
+102 |
+103 |         except Exception as e:
+    |                ^^^^^^^^^
+104 |             return ModuleResult(success=False, error=f"密码生成失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/utility_tools.py:136:16
+    |
+134 |             return ModuleResult(success=True, message=msg, data=result)
+135 |
+136 |         except Exception as e:
+    |                ^^^^^^^^^
+137 |             return ModuleResult(success=False, error=f"URL编解码失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/utility_tools.py:173:16
+    |
+171 |             )
+172 |
+173 |         except Exception as e:
+    |                ^^^^^^^^^
+174 |             return ModuleResult(success=False, error=f"MD5加密失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/utility_tools.py:219:16
+    |
+217 |             )
+218 |
+219 |         except Exception as e:
+    |                ^^^^^^^^^
+220 |             return ModuleResult(success=False, error=f"SHA加密失败: {e!s}")
+    |
+
+DTZ005 `datetime.datetime.now()` called without a `tz` argument
+   --> src/autoflow/application/workflows/executors/utility_tools.py:246:26
+    |
+244 |                 if not input_value:
+245 |                     # 如果没有输入，使用当前时间
+246 |                     dt = datetime.now()
+    |                          ^^^^^^^^^^^^^^
+247 |                 else:
+248 |                     dt = datetime.strptime(str(input_value), datetime_format)
+    |
+help: Pass a `datetime.timezone` object to the `tz` parameter
+
+DTZ007 Naive datetime constructed using `datetime.datetime.strptime()` without %z
+   --> src/autoflow/application/workflows/executors/utility_tools.py:248:26
+    |
+246 |                     dt = datetime.now()
+247 |                 else:
+248 |                     dt = datetime.strptime(str(input_value), datetime_format)
+    |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+249 |
+250 |                 timestamp = dt.timestamp()
+    |
+help: Call `.replace(tzinfo=<timezone>)` or `.astimezone()` to convert to an aware datetime
+
+DTZ006 `datetime.datetime.fromtimestamp()` called without a `tz` argument
+   --> src/autoflow/application/workflows/executors/utility_tools.py:272:22
+    |
+270 |                     timestamp = timestamp / 1000
+271 |
+272 |                 dt = datetime.fromtimestamp(timestamp)
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+273 |                 result = dt.strftime(datetime_format)
+274 |                 msg = "已转换为日期时间"
+    |
+help: Pass a `datetime.timezone` object to the `tz` parameter
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/utility_tools.py:281:16
+    |
+279 |             return ModuleResult(success=True, message=msg, data=result)
+280 |
+281 |         except Exception as e:
+    |                ^^^^^^^^^
+282 |             return ModuleResult(success=False, error=f"时间戳转换失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/utility_tools.py:330:16
+    |
+328 |             )
+329 |
+330 |         except Exception as e:
+    |                ^^^^^^^^^
+331 |             return ModuleResult(success=False, error=f"RGB转HSV失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/utility_tools.py:386:16
+    |
+384 |             )
+385 |
+386 |         except Exception as e:
+    |                ^^^^^^^^^
+387 |             return ModuleResult(success=False, error=f"RGB转CMYK失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/utility_tools.py:459:16
+    |
+457 |             )
+458 |
+459 |         except Exception as e:
+    |                ^^^^^^^^^
+460 |             return ModuleResult(success=False, error=f"HEX转CMYK失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/utility_tools.py:525:16
+    |
+523 |             )
+524 |
+525 |         except Exception as e:
+    |                ^^^^^^^^^
+526 |             return ModuleResult(success=False, error=f"UUID生成失败: {e!s}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/web_basic.py:89:12
+   |
+87 |             active_page() if active_page is not None else session.current_page(),
+88 |         )
+89 |     except Exception:
+   |            ^^^^^^^^^
+90 |         return None
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/web_basic.py:99:12
+    |
+ 97 |     try:
+ 98 |         return list(cast(tuple[_Page, ...], session.pages()))
+ 99 |     except Exception:
+    |            ^^^^^^^^^
+100 |         return []
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/web_basic.py:140:16
+    |
+138 |         try:
+139 |             return cast(_Page, active_page())
+140 |         except Exception:
+    |                ^^^^^^^^^
+141 |             return None
+142 |     state = _frame_state(context)
+    |
+
+S112 `try`-`except`-`continue` detected, consider logging the exception
+   --> src/autoflow/application/workflows/executors/web_basic.py:182:13
+    |
+180 |                   config["selector"] = fallback
+181 |                   return locator
+182 | /             except Exception:
+183 | |                 continue
+    | |________________________^
+184 |           raise
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/web_basic.py:182:20
+    |
+180 |                 config["selector"] = fallback
+181 |                 return locator
+182 |             except Exception:
+    |                    ^^^^^^^^^
+183 |                 continue
+184 |         raise
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/web_basic.py:204:16
+    |
+202 |             await page.close()
+203 |             return ModuleResult(success=True, message="已关闭页面")
+204 |         except Exception as error:
+    |                ^^^^^^^^^
+205 |             return ModuleResult(success=False, error=f"关闭页面失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/web_basic.py:234:16
+    |
+232 |                 ),
+233 |             )
+234 |         except Exception as error:
+    |                ^^^^^^^^^
+235 |             return ModuleResult(
+236 |                 success=False,
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/web_basic.py:308:20
+    |
+306 |                     page, str(selector), state="attached", timeout=timeout
+307 |                 )
+308 |             except Exception:
+    |                    ^^^^^^^^^
+309 |                 hints = config.get("selectorHints")
+310 |                 if hints:
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/web_basic.py:327:16
+    |
+325 |                 await asyncio.sleep(hover_duration)
+326 |             return ModuleResult(success=True, message=f"已悬停到元素: {selector}")
+327 |         except Exception as error:
+    |                ^^^^^^^^^
+328 |             return ModuleResult(success=False, error=f"悬停元素失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/web_basic.py:383:16
+    |
+381 |                 data={"selector": selector, "condition": wait_condition},
+382 |             )
+383 |         except Exception as error:
+    |                ^^^^^^^^^
+384 |             error_message = str(error)
+385 |             if "Timeout" in error_message:
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/web_basic.py:448:16
+    |
+446 |                 data={"waiting": True},
+447 |             )
+448 |         except Exception as error:
+    |                ^^^^^^^^^
+449 |             return ModuleResult(success=False, error=f"处理弹窗失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/web_basic.py:559:24
+    |
+557 |                         }
+558 |                     )
+559 |                 except Exception as error:
+    |                        ^^^^^^^^^
+560 |                     errors.append(
+561 |                         {
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/web_basic.py:628:16
+    |
+626 |                 },
+627 |             )
+628 |         except Exception as error:
+    |                ^^^^^^^^^
+629 |             return ModuleResult(success=False, error=f"JavaScript执行失败: {error}")
+    |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+   --> src/autoflow/application/workflows/executors/web_basic.py:677:21
+    |
+675 |                           if element is not None:
+676 |                               frame = await element.content_frame()
+677 | /                     except Exception:
+678 | |                         pass
+    | |____________________________^
+679 |                   if frame is None:
+680 |                       return ModuleResult(
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/web_basic.py:677:28
+    |
+675 |                         if element is not None:
+676 |                             frame = await element.content_frame()
+677 |                     except Exception:
+    |                            ^^^^^^^^^
+678 |                         pass
+679 |                 if frame is None:
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/web_basic.py:698:24
+    |
+696 |                             error=f"选择器 '{iframe_selector}' 找到的元素不是iframe",
+697 |                         )
+698 |                 except Exception as error:
+    |                        ^^^^^^^^^
+699 |                     return ModuleResult(
+700 |                         success=False,
+    |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+   --> src/autoflow/application/workflows/executors/web_basic.py:724:33
+    |
+722 |                                           "domcontentloaded", timeout_ms=5000
+723 |                                       )
+724 | /                                 except Exception:
+725 | |                                     pass
+    | |________________________________________^
+726 |                                   frame = nested_frame
+727 |                       except Exception:
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/web_basic.py:724:40
+    |
+722 | …                             "domcontentloaded", timeout_ms=5000
+723 | …                         )
+724 | …                     except Exception:
+    |                              ^^^^^^^^^
+725 | …                         pass
+726 | …                     frame = nested_frame
+    |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+   --> src/autoflow/application/workflows/executors/web_basic.py:727:21
+    |
+725 |                                       pass
+726 |                                   frame = nested_frame
+727 | /                     except Exception:
+728 | |                         pass
+    | |____________________________^
+729 |               except Exception:
+730 |                   pass
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/web_basic.py:727:28
+    |
+725 |                                     pass
+726 |                                 frame = nested_frame
+727 |                     except Exception:
+    |                            ^^^^^^^^^
+728 |                         pass
+729 |             except Exception:
+    |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+   --> src/autoflow/application/workflows/executors/web_basic.py:729:13
+    |
+727 |                       except Exception:
+728 |                           pass
+729 | /             except Exception:
+730 | |                 pass
+    | |____________________^
+731 |
+732 |               state = _frame_state(context)
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/web_basic.py:729:20
+    |
+727 |                     except Exception:
+728 |                         pass
+729 |             except Exception:
+    |                    ^^^^^^^^^
+730 |                 pass
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/web_basic.py:756:16
+    |
+754 |                 message=f"已切换到iframe（{locate_by}），URL: {frame_url}",
+755 |             )
+756 |         except Exception as error:
+    |                ^^^^^^^^^
+757 |             return ModuleResult(success=False, error=f"切换iframe失败: {error}")
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/web_basic.py:802:16
+    |
+800 |                 message=f"已切换回主页面，URL: {redact_browser_url(page.url)}",
+801 |             )
+802 |         except Exception as error:
+    |                ^^^^^^^^^
+803 |             return ModuleResult(success=False, error=f"切换回主页面失败: {error}")
+    |
+
+S112 `try`-`except`-`continue` detected, consider logging the exception
+   --> src/autoflow/application/workflows/executors/web_basic.py:852:21
+    |
+850 |                               matched = candidate
+851 |                               break
+852 | /                     except Exception:
+853 | |                         continue
+    | |________________________________^
+854 |                   if matched is None:
+855 |                       return ModuleResult(
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/web_basic.py:852:28
+    |
+850 |                             matched = candidate
+851 |                             break
+852 |                     except Exception:
+    |                            ^^^^^^^^^
+853 |                         continue
+854 |                 if matched is None:
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/executors/web_basic.py:903:16
+    |
+901 |                 return ModuleResult(success=False, error="刷新页面失败")
+902 |             return ModuleResult(success=False, error=f"未知的操作类型: {action}")
+903 |         except Exception as error:
+    |                ^^^^^^^^^
+904 |             known_urls = [str(url), *[page.url for page in _pages(context)]]
+905 |             return ModuleResult(
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/executors/workflow_chain.py:38:16
+   |
+36 |                 wait_complete=wait_complete,
+37 |             )
+38 |         except Exception as error:
+   |                ^^^^^^^^^
+39 |             return ModuleResult(
+40 |                 success=False,
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/runtime.py:544:24
+    |
+543 |                     return bool(safe_eval(resolved, dict(self.context.variables)))
+544 |                 except Exception:
+    |                        ^^^^^^^^^
+545 |                     return resolved.strip().lower() in {"true", "1"}
+546 |             return bool(resolved)
+    |
+
+F401 [*] `.core_runtime.WorkflowRuntimeService` imported but unused
+   --> src/autoflow/application/workflows/runtime.py:860:27
+    |
+860 | from .core_runtime import WorkflowRuntimeService
+    |                           ^^^^^^^^^^^^^^^^^^^^^^
+help: Remove unused import: `.core_runtime.WorkflowRuntimeService`
+    |
+859 |
+    - from .core_runtime import WorkflowRuntimeService
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/application/workflows/schedule_notifications.py:65:20
+   |
+63 |                 await self._send(kind, channel, title, content)
+64 |                 results.append({"type": kind, "success": True})
+65 |             except Exception as exception:
+   |                    ^^^^^^^^^
+66 |                 results.append({"type": kind, "success": False, "error": str(exception)})
+67 |         return results
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/schedules.py:394:24
+    |
+392 |                     if error.code != "SCHEDULED_TASK_RUNNING":
+393 |                         _LOG.exception("Scheduled workflow could not start")
+394 |                 except Exception:
+    |                        ^^^^^^^^^
+395 |                     _LOG.exception("Scheduled workflow could not start")
+396 |             await self._dispatch_pending(now)
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/schedules.py:485:20
+    |
+483 |             try:
+484 |                 await self.tick()
+485 |             except Exception:
+    |                    ^^^^^^^^^
+486 |                 _LOG.exception("Scheduled workflow polling failed")
+487 |             try:
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/application/workflows/schedules.py:514:32
+    |
+512 |                                 error=error,
+513 |                             )
+514 |                         except Exception:
+    |                                ^^^^^^^^^
+515 |                             _LOG.exception("Scheduled workflow notification failed")
+516 |                     finished = self._repository.finish_execution(
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/domain/workflows/variables.py:100:20
+    |
+ 98 |                 resolved = credentials.get_field(name, field_name)
+ 99 |             # Frozen WebRPA keeps credential placeholders on any provider failure.
+100 |             except Exception:
+    |                    ^^^^^^^^^
+101 |                 return match.group(0)
+102 |             return resolved if isinstance(resolved, str) else (
+    |
+
+F401 [*] `autoflow.infrastructure.database.android_models` imported but unused
+ --> src/autoflow/infrastructure/database/migrations/env.py:5:5
+  |
+4 | from autoflow.infrastructure.database import (
+5 |     android_models,
+  |     ^^^^^^^^^^^^^^
+6 |     environment_models,
+7 |     project_automation_models,
+  |
+help: Remove unused import
+  |
+3 |
+  - from autoflow.infrastructure.database import (
+  -     android_models,
+  -     environment_models,
+  -     project_automation_models,
+  -     project_data_models,
+  -     project_data_status_batch_models,
+  -     project_excel_models,
+  -     project_run_models,
+  -     project_sync_models,
+  -     workflow_core_models,
+  -     workflow_models,
+  -     workflow_runtime_models,
+  - )
+4 | from autoflow.infrastructure.database.models import Base
+  |
+
+F401 [*] `autoflow.infrastructure.database.environment_models` imported but unused
+ --> src/autoflow/infrastructure/database/migrations/env.py:6:5
+  |
+4 | from autoflow.infrastructure.database import (
+5 |     android_models,
+6 |     environment_models,
+  |     ^^^^^^^^^^^^^^^^^^
+7 |     project_automation_models,
+8 |     project_data_models,
+  |
+help: Remove unused import
+  |
+3 |
+  - from autoflow.infrastructure.database import (
+  -     android_models,
+  -     environment_models,
+  -     project_automation_models,
+  -     project_data_models,
+  -     project_data_status_batch_models,
+  -     project_excel_models,
+  -     project_run_models,
+  -     project_sync_models,
+  -     workflow_core_models,
+  -     workflow_models,
+  -     workflow_runtime_models,
+  - )
+4 | from autoflow.infrastructure.database.models import Base
+  |
+
+F401 [*] `autoflow.infrastructure.database.project_automation_models` imported but unused
+ --> src/autoflow/infrastructure/database/migrations/env.py:7:5
+  |
+5 |     android_models,
+6 |     environment_models,
+7 |     project_automation_models,
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+8 |     project_data_models,
+9 |     project_data_status_batch_models,
+  |
+help: Remove unused import
+  |
+3 |
+  - from autoflow.infrastructure.database import (
+  -     android_models,
+  -     environment_models,
+  -     project_automation_models,
+  -     project_data_models,
+  -     project_data_status_batch_models,
+  -     project_excel_models,
+  -     project_run_models,
+  -     project_sync_models,
+  -     workflow_core_models,
+  -     workflow_models,
+  -     workflow_runtime_models,
+  - )
+4 | from autoflow.infrastructure.database.models import Base
+  |
+
+F401 [*] `autoflow.infrastructure.database.project_data_models` imported but unused
+  --> src/autoflow/infrastructure/database/migrations/env.py:8:5
+   |
+ 6 |     environment_models,
+ 7 |     project_automation_models,
+ 8 |     project_data_models,
+   |     ^^^^^^^^^^^^^^^^^^^
+ 9 |     project_data_status_batch_models,
+10 |     project_excel_models,
+   |
+help: Remove unused import
+  |
+3 |
+  - from autoflow.infrastructure.database import (
+  -     android_models,
+  -     environment_models,
+  -     project_automation_models,
+  -     project_data_models,
+  -     project_data_status_batch_models,
+  -     project_excel_models,
+  -     project_run_models,
+  -     project_sync_models,
+  -     workflow_core_models,
+  -     workflow_models,
+  -     workflow_runtime_models,
+  - )
+4 | from autoflow.infrastructure.database.models import Base
+  |
+
+F401 [*] `autoflow.infrastructure.database.project_data_status_batch_models` imported but unused
+  --> src/autoflow/infrastructure/database/migrations/env.py:9:5
+   |
+ 7 |     project_automation_models,
+ 8 |     project_data_models,
+ 9 |     project_data_status_batch_models,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+10 |     project_excel_models,
+11 |     project_run_models,
+   |
+help: Remove unused import
+  |
+3 |
+  - from autoflow.infrastructure.database import (
+  -     android_models,
+  -     environment_models,
+  -     project_automation_models,
+  -     project_data_models,
+  -     project_data_status_batch_models,
+  -     project_excel_models,
+  -     project_run_models,
+  -     project_sync_models,
+  -     workflow_core_models,
+  -     workflow_models,
+  -     workflow_runtime_models,
+  - )
+4 | from autoflow.infrastructure.database.models import Base
+  |
+
+F401 [*] `autoflow.infrastructure.database.project_excel_models` imported but unused
+  --> src/autoflow/infrastructure/database/migrations/env.py:10:5
+   |
+ 8 |     project_data_models,
+ 9 |     project_data_status_batch_models,
+10 |     project_excel_models,
+   |     ^^^^^^^^^^^^^^^^^^^^
+11 |     project_run_models,
+12 |     project_sync_models,
+   |
+help: Remove unused import
+  |
+3 |
+  - from autoflow.infrastructure.database import (
+  -     android_models,
+  -     environment_models,
+  -     project_automation_models,
+  -     project_data_models,
+  -     project_data_status_batch_models,
+  -     project_excel_models,
+  -     project_run_models,
+  -     project_sync_models,
+  -     workflow_core_models,
+  -     workflow_models,
+  -     workflow_runtime_models,
+  - )
+4 | from autoflow.infrastructure.database.models import Base
+  |
+
+F401 [*] `autoflow.infrastructure.database.project_run_models` imported but unused
+  --> src/autoflow/infrastructure/database/migrations/env.py:11:5
+   |
+ 9 |     project_data_status_batch_models,
+10 |     project_excel_models,
+11 |     project_run_models,
+   |     ^^^^^^^^^^^^^^^^^^
+12 |     project_sync_models,
+13 |     workflow_core_models,
+   |
+help: Remove unused import
+  |
+3 |
+  - from autoflow.infrastructure.database import (
+  -     android_models,
+  -     environment_models,
+  -     project_automation_models,
+  -     project_data_models,
+  -     project_data_status_batch_models,
+  -     project_excel_models,
+  -     project_run_models,
+  -     project_sync_models,
+  -     workflow_core_models,
+  -     workflow_models,
+  -     workflow_runtime_models,
+  - )
+4 | from autoflow.infrastructure.database.models import Base
+  |
+
+F401 [*] `autoflow.infrastructure.database.project_sync_models` imported but unused
+  --> src/autoflow/infrastructure/database/migrations/env.py:12:5
+   |
+10 |     project_excel_models,
+11 |     project_run_models,
+12 |     project_sync_models,
+   |     ^^^^^^^^^^^^^^^^^^^
+13 |     workflow_core_models,
+14 |     workflow_models,
+   |
+help: Remove unused import
+  |
+3 |
+  - from autoflow.infrastructure.database import (
+  -     android_models,
+  -     environment_models,
+  -     project_automation_models,
+  -     project_data_models,
+  -     project_data_status_batch_models,
+  -     project_excel_models,
+  -     project_run_models,
+  -     project_sync_models,
+  -     workflow_core_models,
+  -     workflow_models,
+  -     workflow_runtime_models,
+  - )
+4 | from autoflow.infrastructure.database.models import Base
+  |
+
+F401 [*] `autoflow.infrastructure.database.workflow_core_models` imported but unused
+  --> src/autoflow/infrastructure/database/migrations/env.py:13:5
+   |
+11 |     project_run_models,
+12 |     project_sync_models,
+13 |     workflow_core_models,
+   |     ^^^^^^^^^^^^^^^^^^^^
+14 |     workflow_models,
+15 |     workflow_runtime_models,
+   |
+help: Remove unused import
+  |
+3 |
+  - from autoflow.infrastructure.database import (
+  -     android_models,
+  -     environment_models,
+  -     project_automation_models,
+  -     project_data_models,
+  -     project_data_status_batch_models,
+  -     project_excel_models,
+  -     project_run_models,
+  -     project_sync_models,
+  -     workflow_core_models,
+  -     workflow_models,
+  -     workflow_runtime_models,
+  - )
+4 | from autoflow.infrastructure.database.models import Base
+  |
+
+F401 [*] `autoflow.infrastructure.database.workflow_models` imported but unused
+  --> src/autoflow/infrastructure/database/migrations/env.py:14:5
+   |
+12 |     project_sync_models,
+13 |     workflow_core_models,
+14 |     workflow_models,
+   |     ^^^^^^^^^^^^^^^
+15 |     workflow_runtime_models,
+16 | )
+   |
+help: Remove unused import
+  |
+3 |
+  - from autoflow.infrastructure.database import (
+  -     android_models,
+  -     environment_models,
+  -     project_automation_models,
+  -     project_data_models,
+  -     project_data_status_batch_models,
+  -     project_excel_models,
+  -     project_run_models,
+  -     project_sync_models,
+  -     workflow_core_models,
+  -     workflow_models,
+  -     workflow_runtime_models,
+  - )
+4 | from autoflow.infrastructure.database.models import Base
+  |
+
+F401 [*] `autoflow.infrastructure.database.workflow_runtime_models` imported but unused
+  --> src/autoflow/infrastructure/database/migrations/env.py:15:5
+   |
+13 |     workflow_core_models,
+14 |     workflow_models,
+15 |     workflow_runtime_models,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^
+16 | )
+17 | from autoflow.infrastructure.database.models import Base
+   |
+help: Remove unused import
+  |
+3 |
+  - from autoflow.infrastructure.database import (
+  -     android_models,
+  -     environment_models,
+  -     project_automation_models,
+  -     project_data_models,
+  -     project_data_status_batch_models,
+  -     project_excel_models,
+  -     project_run_models,
+  -     project_sync_models,
+  -     workflow_core_models,
+  -     workflow_models,
+  -     workflow_runtime_models,
+  - )
+4 | from autoflow.infrastructure.database.models import Base
+  |
+
+SIM115 Use a context manager for opening files
+   --> src/autoflow/infrastructure/database/project_excel_exports.py:345:21
+    |
+343 |                 ["状态"] if job.request["includeStatus"] else []
+344 |             )
+345 |             spool = tempfile.SpooledTemporaryFile(
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+346 |                 max_size=8 * 1024 * 1024, mode="w+t", encoding="utf-8"
+347 |             )
+    |
+
+F401 [*] `.core_workflows.SqlAlchemyWorkflowRepository` imported but unused
+   --> src/autoflow/infrastructure/database/workflows.py:273:5
+    |
+272 | from .core_workflows import (
+273 |     SqlAlchemyWorkflowRepository,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+274 |     _record,
+275 | )
+    |
+help: Remove unused import
+    |
+271 |
+    - from .core_workflows import (
+    -     SqlAlchemyWorkflowRepository,
+    -     _record,
+    - )
+    |
+
+F401 [*] `.core_workflows._record` imported but unused
+   --> src/autoflow/infrastructure/database/workflows.py:274:5
+    |
+272 | from .core_workflows import (
+273 |     SqlAlchemyWorkflowRepository,
+274 |     _record,
+    |     ^^^^^^^
+275 | )
+    |
+help: Remove unused import
+    |
+271 |
+    - from .core_workflows import (
+    -     SqlAlchemyWorkflowRepository,
+    -     _record,
+    - )
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/infrastructure/filesystem/assistant_files.py:344:16
+    |
+342 |             else:
+343 |                 text = _decode_text(content)
+344 |         except Exception as error:
+    |                ^^^^^^^^^
+345 |             return {
+346 |                 "success": False,
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/infrastructure/filesystem/assistant_files.py:403:16
+    |
+401 |                 "error": "",
+402 |             }
+403 |         except Exception as error:
+    |                ^^^^^^^^^
+404 |             return {
+405 |                 "success": False,
+    |
+
+B010 [*] Do not call `setattr` with a constant attribute value. It is not any safer than normal property access.
+   --> src/autoflow/infrastructure/filesystem/project_excel.py:388:9
+    |
+386 |             cached_buffer, read_only=True, data_only=True, keep_links=False
+387 |         )
+388 |         setattr(formulas, "_autoflow_buffer", formula_buffer)
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+389 |         setattr(cached, "_autoflow_buffer", cached_buffer)
+390 |         return formulas, cached
+    |
+help: Replace `setattr` with assignment
+    |
+387 |         )
+    -         setattr(formulas, "_autoflow_buffer", formula_buffer)
+388 +         formulas._autoflow_buffer = formula_buffer
+389 |         setattr(cached, "_autoflow_buffer", cached_buffer)
+    |
+
+B010 [*] Do not call `setattr` with a constant attribute value. It is not any safer than normal property access.
+   --> src/autoflow/infrastructure/filesystem/project_excel.py:389:9
+    |
+387 |         )
+388 |         setattr(formulas, "_autoflow_buffer", formula_buffer)
+389 |         setattr(cached, "_autoflow_buffer", cached_buffer)
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+390 |         return formulas, cached
+391 |     except (
+    |
+help: Replace `setattr` with assignment
+    |
+388 |         setattr(formulas, "_autoflow_buffer", formula_buffer)
+    -         setattr(cached, "_autoflow_buffer", cached_buffer)
+389 +         cached._autoflow_buffer = cached_buffer
+390 |         return formulas, cached
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/infrastructure/filesystem/workflow_table_workbook.py:45:16
+   |
+43 |         try:
+44 |             return json.dumps(value, ensure_ascii=False, default=str)
+45 |         except Exception:
+   |                ^^^^^^^^^
+46 |             return str(value)
+47 |     return str(value)
+   |
+
+BLE001 Do not catch blind exception: `BaseException`
+   --> src/autoflow/infrastructure/process/kernel_worker.py:185:28
+    |
+183 |                     try:
+184 |                         process, _ = await _wait_uninterruptibly(spawn)
+185 |                     except BaseException:
+    |                            ^^^^^^^^^^^^^
+186 |                         process = None
+187 |                     raise
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/infrastructure/process/kernel_worker.py:208:20
+    |
+206 |                 await _wait_uninterruptibly(cleanup)
+207 |                 raise
+208 |             except Exception:
+    |                    ^^^^^^^^^
+209 |                 cleanup = asyncio.create_task(
+210 |                     self._compensate_start(
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/infrastructure/process/kernel_worker.py:340:16
+    |
+338 |         except asyncio.CancelledError:
+339 |             raise
+340 |         except Exception:
+    |                ^^^^^^^^^
+341 |             raise LicenseValidationUnavailable() from None
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/infrastructure/process/kernel_worker.py:394:16
+    |
+392 |         except KernelWorkerManagerError:
+393 |             raise
+394 |         except Exception:
+    |                ^^^^^^^^^
+395 |             raise KernelWorkerManagerError("Kernel RPC worker failed") from None
+396 |         finally:
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/infrastructure/process/kernel_worker.py:451:24
+    |
+449 |                 except asyncio.CancelledError:
+450 |                     raise
+451 |                 except Exception:
+    |                        ^^^^^^^^^
+452 |                     await self._fail(operation_id, "Kernel worker protocol error")
+453 |                     if process.returncode is None:
+    |
+
+BLE001 Do not catch blind exception: `BaseException`
+   --> src/autoflow/infrastructure/process/project_test_browser_worker.py:131:24
+    |
+129 |                     self._births[process.pid] = process_birth(process.pid) if sys.platform != "win32" else None
+130 |                     self._executables[process.pid] = executable
+131 |                 except BaseException:
+    |                        ^^^^^^^^^^^^^
+132 |                     process = None
+133 |                 raise
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/infrastructure/process/project_test_browser_worker.py:277:16
+    |
+275 |             # A clean worker exit does not prove that Chromium descendants exited.
+276 |             await self._force_process_tree(process, directory)
+277 |         except Exception:
+    |                ^^^^^^^^^
+278 |             async with self._lock:
+279 |                 self._stopping.add(profile_id)
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/infrastructure/process/project_workflow_worker.py:328:20
+    |
+326 |                 if isinstance(value, str) and not discard.is_set():
+327 |                     result.append(value)
+328 |             except Exception:
+    |                    ^^^^^^^^^
+329 |                 result.clear()
+330 |             finally:
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/infrastructure/process/project_workflow_worker.py:405:28
+    |
+403 |                     try:
+404 |                         await self._cleanup(worker)
+405 |                     except Exception:
+    |                            ^^^^^^^^^
+406 |                         raise WorkflowWorkerError(
+407 |                             "WORKFLOW_CLEANUP_FAILED", "执行进程清理失败，请重试核验",
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/infrastructure/process/proxy_worker_requests.py:135:16
+    |
+133 |         except asyncio.CancelledError:
+134 |             raise
+135 |         except Exception:
+    |                ^^^^^^^^^
+136 |             if active():
+137 |                 try:
+    |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+   --> src/autoflow/infrastructure/process/proxy_worker_requests.py:154:17
+    |
+152 |                           }
+153 |                       )
+154 | /                 except Exception:
+155 | |                     pass
+    | |________________________^
+156 |
+157 |       async def close(self):
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/infrastructure/process/proxy_worker_requests.py:154:24
+    |
+152 |                         }
+153 |                     )
+154 |                 except Exception:
+    |                        ^^^^^^^^^
+155 |                     pass
+    |
+
+BLE001 Do not catch blind exception: `BaseException`
+   --> src/autoflow/infrastructure/process/test_browser_worker.py:133:24
+    |
+131 |                     self._births[process.pid] = process_birth(process.pid)
+132 |                     self._executables[process.pid] = executable
+133 |                 except BaseException:
+    |                        ^^^^^^^^^^^^^
+134 |                     process = None
+135 |                 raise
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/infrastructure/process/test_browser_worker.py:279:16
+    |
+277 |             # A clean worker exit does not prove that Chromium descendants exited.
+278 |             await self._force_process_tree(process, directory)
+279 |         except Exception:
+    |                ^^^^^^^^^
+280 |             async with self._lock:
+281 |                 self._stopping.add(profile_id)
+    |
+
+BLE001 Do not catch blind exception: `BaseException`
+   --> src/autoflow/infrastructure/process/workflow_worker.py:192:24
+    |
+190 |                         state.process = process
+191 |                         state.birth = birth
+192 |                 except BaseException:
+    |                        ^^^^^^^^^^^^^
+193 |                     process = None
+194 |                 raise
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/infrastructure/process/workflow_worker.py:395:20
+    |
+393 |                             await callback_result
+394 |                 await process.wait()
+395 |             except Exception:
+    |                    ^^^^^^^^^
+396 |                 self._failures[run_id] = "WORKER_EVENT_CONSUMER_FAILED"
+397 |         finally:
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/infrastructure/process/workflow_worker.py:417:24
+    |
+415 |                     if isawaitable(callback_result):
+416 |                         await callback_result
+417 |                 except Exception:
+    |                        ^^^^^^^^^
+418 |                     self._failures[run_id] = "WORKER_EXIT_CONSUMER_FAILED"
+    |
+
+F401 [*] `.project_workflow_worker.WorkerOutcome` imported but unused
+   --> src/autoflow/infrastructure/process/workflow_worker.py:477:38
+    |
+475 | # PM4's dispatcher result is kept in its project-owned worker module. Re-export
+476 | # the value object for source-compatible fakes without replacing this manager.
+477 | from .project_workflow_worker import WorkerOutcome
+    |                                      ^^^^^^^^^^^^^
+help: Remove unused import: `.project_workflow_worker.WorkerOutcome`
+    |
+476 | # the value object for source-compatible fakes without replacing this manager.
+    - from .project_workflow_worker import WorkerOutcome
+    |
+
+ASYNC220 Async functions should not create subprocesses with blocking methods
+   --> src/autoflow/providers/android/mac_runtime.py:235:23
+    |
+233 | …     device["spawnPending"] = True
+234 | …     self.save()
+235 | …     self.tunnel = subprocess.Popen(["ssh", "-F", str(config), "-o", "ControlMaster=no", "-o", "ControlPath=none", "-o", "ExitOnForw…
+    |                     ^^^^^^^^^^^^^^^^
+236 | …     self._remember("tunnel", self.tunnel)
+237 | …     for _ in range(30):
+    |
+
+ASYNC220 Async functions should not create subprocesses with blocking methods
+   --> src/autoflow/providers/android/mac_runtime.py:343:27
+    |
+341 | …     self.save()
+342 | …     try:
+343 | …         self.viewer = subprocess.Popen([str(executable), "--serial", str(self.serial), "--window-title", title, "--no-audio", "--no…
+    |                         ^^^^^^^^^^^^^^^^
+344 | …                                        env={**os.environ, "ADB": shutil.which("adb") or "adb", "SCRCPY_SERVER_PATH": str(binary.wit…
+345 | …         self._remember("viewer", self.viewer)
+    |
+
+ASYNC220 Async functions should not create subprocesses with blocking methods
+  --> src/autoflow/providers/android/stream.py:57:28
+   |
+55 |                 ).strip()
+56 |             )
+57 |             self.process = subprocess.Popen(
+   |                            ^^^^^^^^^^^^^^^^
+58 |                 [
+59 |                     "adb",
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/providers/browser/environment_browser.py:307:12
+    |
+305 |     try:
+306 |         owner.run(context.close(), timeout=_CLOSE_TIMEOUT_SECONDS)
+307 |     except Exception:
+    |            ^^^^^^^^^
+308 |         return
+    |
+
+BLE001 Do not catch blind exception: `BaseException`
+  --> src/autoflow/providers/browser/inspection_worker.py:45:12
+   |
+43 |     try:
+44 |         return asyncio.run(_run(_read(stdin), stdin, stdout))
+45 |     except BaseException:
+   |            ^^^^^^^^^^^^^
+46 |         _write(stdout, {"type": "error", "error": "Inspection worker failed"})
+47 |         return 1
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/providers/browser/inspection_worker.py:85:20
+   |
+83 |                     },
+84 |                 )
+85 |             except Exception:
+   |                    ^^^^^^^^^
+86 |                 _write(
+87 |                     stdout,
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/providers/browser/inspection_worker.py:257:20
+    |
+255 |                 locator = page.locator(format_selector(candidate))
+256 |                 count = await locator.count()
+257 |             except Exception as error:
+    |                    ^^^^^^^^^
+258 |                 tried.append({"selector": candidate, "error": str(error)[:160]})
+259 |                 continue
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/providers/browser/project_graph.py:97:16
+   |
+95 |         try:
+96 |             output = await self.executor._execute(self.kind, config)
+97 |         except Exception as error:
+   |                ^^^^^^^^^
+98 |             return ModuleResult(False, error=self.executor._safe_error(error)['code'])
+99 |         if output is not None:
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/providers/browser/project_graph.py:369:20
+    |
+367 |             try:
+368 |                 page = self.browser.current_page()._raw if self.graph_adapter and self.browser is not None else self.legacy.page
+369 |             except Exception:
+    |                    ^^^^^^^^^
+370 |                 page = None
+371 |             await emit('artifact', await self.capture_failure(page, node_id, visit))
+    |
+
+BLE001 Do not catch blind exception: `BaseException`
+  --> src/autoflow/providers/browser/project_workflow_worker.py:88:16
+   |
+86 |                         self.credentials.close()
+87 |                 self.messages.put(message)
+88 |         except BaseException as exc:
+   |                ^^^^^^^^^^^^^
+89 |             if self.credentials is not None:
+90 |                 self.credentials.close()
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/providers/browser/project_workflow_worker.py:147:16
+    |
+145 |         except asyncio.CancelledError:
+146 |             raise
+147 |         except Exception as error:
+    |                ^^^^^^^^^
+148 |             self.failure = error if isinstance(error, ProtocolFailure) else ProtocolFailure()
+149 |             for waiter in self.pending.values():
+    |
+
+BLE001 Do not catch blind exception: `BaseException`
+   --> src/autoflow/providers/browser/project_workflow_worker.py:175:12
+    |
+173 |         input_stream.start()
+174 |         return asyncio.run(_run(command, stopped, input_stream, stdout))
+175 |     except BaseException:
+    |            ^^^^^^^^^^^^^
+176 |         _write(stdout, {"type": "error", "code": "WORKFLOW_WORKER_FAILED", "message": "工作流执行进程失败"})
+177 |         return 1
+    |
+
+ASYNC230 Async functions should not open files with blocking methods like `open`
+   --> src/autoflow/providers/browser/project_workflow_worker.py:256:18
+    |
+254 |         with relay_guard as relay:
+255 |             launch["proxy"] = {"server": relay.url} if relay is not None else None
+256 |             with open(os.devnull, "w", encoding="utf-8") as sink, redirect_stdout(sink), redirect_stderr(sink):
+    |                  ^^^^
+257 |                 if requires_browser:
+258 |                     from cloakbrowser import (  # type: ignore[import-untyped]
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/providers/browser/project_workflow_worker.py:319:12
+    |
+317 |         message = "工作流输出超过协议限制" if exc.code == "WORKFLOW_OUTPUT_TOO_LARGE" else "父进程通信中断"
+318 |         result = {"status": "failed", "error": {"code": exc.code, "message": message}}
+319 |     except Exception:
+    |            ^^^^^^^^^
+320 |         result = {"status": "failed", "error": {"code": "WORKFLOW_WORKER_FAILED", "message": "工作流执行进程失败"}}
+321 |     finally:
+    |
+
+ASYNC230 Async functions should not open files with blocking methods like `open`
+   --> src/autoflow/providers/browser/project_workflow_worker.py:324:22
+    |
+322 |         try:
+323 |             if context is not None:
+324 |                 with open(os.devnull, "w", encoding="utf-8") as sink, redirect_stdout(sink), redirect_stderr(sink):
+    |                      ^^^^
+325 |                     await context.close()
+326 |         except Exception:
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/providers/browser/project_workflow_worker.py:326:16
+    |
+324 |                 with open(os.devnull, "w", encoding="utf-8") as sink, redirect_stdout(sink), redirect_stderr(sink):
+325 |                     await context.close()
+326 |         except Exception:
+    |                ^^^^^^^^^
+327 |             cleanup_failed = True
+328 |         try:
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/providers/browser/project_workflow_worker.py:330:16
+    |
+328 |         try:
+329 |             await integrations.close()
+330 |         except Exception:
+    |                ^^^^^^^^^
+331 |             cleanup_failed = True
+332 |         cleanup_failed = cleanup_failed or relay_guard.failed
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/providers/browser/project_workflow_worker.py:423:12
+    |
+421 |     except ProtocolFailure:
+422 |         raise
+423 |     except Exception:
+    |            ^^^^^^^^^
+424 |         if temporary is not None:
+425 |             try:
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/providers/browser/recorder.py:154:16
+    |
+152 |                 "Runtime.addBinding", {"name": "__autoflowRecordCdp"}
+153 |             )
+154 |         except Exception:
+    |                ^^^^^^^^^
+155 |             self._cdp_sessions.pop(page_key, None)
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/providers/browser/recorder.py:248:16
+    |
+246 |                 page, frame, [item for item in frames if item is not page.main_frame]
+247 |             )
+248 |         except Exception:
+    |                ^^^^^^^^^
+249 |             frame_meta = {"main": frame is getattr(page, "main_frame", None)}
+250 |         self._bound_events.append({**event, "_frame": frame_meta})
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/providers/browser/recorder.py:256:12
+    |
+254 |     try:
+255 |         return list(page.frames)
+256 |     except Exception:
+    |            ^^^^^^^^^
+257 |         return [page]
+    |
+
+BLE001 Do not catch blind exception: `BaseException`
+  --> src/autoflow/providers/browser/worker.py:32:12
+   |
+30 |         Thread(target=_watch_stdin, args=(stdin, stopped), daemon=True).start()
+31 |         return asyncio.run(_run(command, stopped, stdout))
+32 |     except BaseException:
+   |            ^^^^^^^^^^^^^
+33 |         _write(stdout, {"type": "error", "error": "Test browser worker failed"})
+34 |         return 1
+   |
+
+ASYNC230 Async functions should not open files with blocking methods like `open`
+  --> src/autoflow/providers/browser/worker.py:58:21
+   |
+56 |             try:
+57 |                 with (
+58 |                     open(os.devnull, "w", encoding="utf-8") as sink,
+   |                     ^^^^
+59 |                     redirect_stdout(sink),
+60 |                     redirect_stderr(sink),
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/providers/browser/worker.py:73:32
+   |
+71 |                                 timeout=15_000,
+72 |                             )
+73 |                         except Exception:
+   |                                ^^^^^^^^^
+74 |                             warning = "起始网址加载失败，浏览器已保留，可手动重试"
+75 |                 _write(
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/providers/browser/worker.py:89:28
+   |
+87 |                         if not context.pages:
+88 |                             break
+89 |                     except Exception:
+   |                            ^^^^^^^^^
+90 |                         break
+91 |                     await asyncio.sleep(0.1)
+   |
+
+S112 `try`-`except`-`continue` detected, consider logging the exception
+  --> src/autoflow/providers/browser/workflow_actions.py:76:13
+   |
+74 |                   await candidate.wait_for(state=state, timeout_ms=3000)
+75 |                   return candidate, fallback
+76 | /             except Exception:
+77 | |                 continue
+   | |________________________^
+78 |           raise
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/providers/browser/workflow_actions.py:76:20
+   |
+74 |                 await candidate.wait_for(state=state, timeout_ms=3000)
+75 |                 return candidate, fallback
+76 |             except Exception:
+   |                    ^^^^^^^^^
+77 |                 continue
+78 |         raise
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/providers/browser/workflow_executor.py:74:20
+   |
+72 |             except asyncio.CancelledError:
+73 |                 raise
+74 |             except Exception as exc:
+   |                    ^^^^^^^^^
+75 |                 error = self._safe_error(exc)
+76 |                 await self.emit("log", node_id, visit, {"level": "error", "message": str(error["message"])})
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/providers/browser/workflow_session.py:340:16
+    |
+338 |             self._match_urls.append(url)
+339 |             self._captured_bytes += size
+340 |         except Exception:
+    |                ^^^^^^^^^
+341 |             return
+    |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+   --> src/autoflow/providers/browser/workflow_session.py:363:9
+    |
+361 |           try:
+362 |               self._raw_page.remove_listener("request", self._on_request)
+363 | /         except Exception:
+364 | |             pass
+    | |________________^
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/providers/browser/workflow_session.py:363:16
+    |
+361 |         try:
+362 |             self._raw_page.remove_listener("request", self._on_request)
+363 |         except Exception:
+    |                ^^^^^^^^^
+364 |             pass
+    |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+   --> src/autoflow/providers/browser/workflow_session.py:659:13
+    |
+657 |               try:
+658 |                   await page.wait_for_load_state("domcontentloaded", timeout_ms=10_000)
+659 | /             except Exception:
+660 | |                 pass
+    | |____________________^
+661 |               self._current_id = page.id
+662 |               return page
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/providers/browser/workflow_session.py:659:20
+    |
+657 |             try:
+658 |                 await page.wait_for_load_state("domcontentloaded", timeout_ms=10_000)
+659 |             except Exception:
+    |                    ^^^^^^^^^
+660 |                 pass
+661 |             self._current_id = page.id
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/providers/browser/workflow_session.py:696:12
+    |
+694 |             if isinstance(process_id, int) and process_id > 0:
+695 |                 return process_id
+696 |     except Exception:
+    |            ^^^^^^^^^
+697 |         return None
+698 |     finally:
+    |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+   --> src/autoflow/providers/browser/workflow_session.py:702:13
+    |
+700 |               try:
+701 |                   await session.detach()
+702 | /             except Exception:
+703 | |                 pass
+    | |____________________^
+704 |       return None
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/providers/browser/workflow_session.py:702:20
+    |
+700 |             try:
+701 |                 await session.detach()
+702 |             except Exception:
+    |                    ^^^^^^^^^
+703 |                 pass
+704 |     return None
+    |
+
+BLE001 Do not catch blind exception: `BaseException`
+  --> src/autoflow/providers/browser/workflow_worker.py:52:12
+   |
+50 |         command = _read_command(stdin)
+51 |         return asyncio.run(_run(command, stopped, stdout, stdin))
+52 |     except BaseException:
+   |            ^^^^^^^^^^^^^
+53 |         _write(stdout, {"type": "error", "error": "Workflow worker failed"})
+54 |         return 1
+   |
+
+F401 [*] `logging` imported but unused
+  --> src/autoflow/providers/integrations/gateway.py:8:8
+   |
+ 6 | import io
+ 7 | import json
+ 8 | import logging
+   |        ^^^^^^^
+ 9 | import smtplib
+10 | from collections.abc import Mapping
+   |
+help: Remove unused import: `logging`
+  |
+7 | import json
+  - import logging
+8 | import smtplib
+  |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+   --> src/autoflow/providers/integrations/gateway.py:260:17
+    |
+258 |                   try:
+259 |                       client.store(email_id, "+FLAGS", "\\Seen")
+260 | /                 except Exception:
+261 | |                     pass
+    | |________________________^
+262 |               return result
+263 |           finally:
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/providers/integrations/gateway.py:260:24
+    |
+258 |                 try:
+259 |                     client.store(email_id, "+FLAGS", "\\Seen")
+260 |                 except Exception:
+    |                        ^^^^^^^^^
+261 |                     pass
+262 |             return result
+    |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+   --> src/autoflow/providers/integrations/gateway.py:267:17
+    |
+265 |                   try:
+266 |                       client.close()
+267 | /                 except Exception:
+268 | |                     pass
+    | |________________________^
+269 |                   try:
+270 |                       client.logout()
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/providers/integrations/gateway.py:267:24
+    |
+265 |                 try:
+266 |                     client.close()
+267 |                 except Exception:
+    |                        ^^^^^^^^^
+268 |                     pass
+269 |                 try:
+    |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+   --> src/autoflow/providers/integrations/gateway.py:271:17
+    |
+269 |                   try:
+270 |                       client.logout()
+271 | /                 except Exception:
+272 | |                     pass
+    | |________________________^
+273 |
+274 |       async def _http(self, payload: Mapping[str, Any]) -> Mapping[str, Any]:
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/providers/integrations/gateway.py:271:24
+    |
+269 |                 try:
+270 |                     client.logout()
+271 |                 except Exception:
+    |                        ^^^^^^^^^
+272 |                     pass
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/providers/kernel/cloakbrowser.py:84:16
+   |
+82 |             payload = await self._fetch_public_releases()
+83 |             releases.extend(parse_public_catalog(payload, platform=self._platform))
+84 |         except Exception:
+   |                ^^^^^^^^^
+85 |             failed = True
+86 |         try:
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/providers/kernel/cloakbrowser.py:89:16
+   |
+87 |             licensed = await self._licensed_catalog()
+88 |             releases.extend(parse_licensed_catalog(licensed))
+89 |         except Exception:
+   |                ^^^^^^^^^
+90 |             failed = True
+91 |         return KernelCatalog(
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/providers/kernel/cloakbrowser.py:138:12
+    |
+137 |         info = validate_license(license_key)
+138 |     except Exception:
+    |            ^^^^^^^^^
+139 |         raise LicenseValidationUnavailable() from None
+140 |     if info is None:
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/providers/kernel/cloakbrowser.py:146:16
+    |
+144 |         try:
+145 |             seats = get_session_seats(license_key)
+146 |         except Exception:
+    |                ^^^^^^^^^
+147 |             seats = None
+148 |     return parse_license_status(info, seats=seats, configured=True)
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/providers/kernel/cloakbrowser.py:223:16
+    |
+221 |         except (LicenseInvalid, LicenseValidationUnavailable):
+222 |             raise
+223 |         except Exception:
+    |                ^^^^^^^^^
+224 |             raise LicenseValidationUnavailable() from None
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> src/autoflow/providers/kernel/worker.py:58:12
+   |
+56 |             _write(stdout, {"type": "completed", **result})
+57 |         return 0
+58 |     except Exception:
+   |            ^^^^^^^^^
+59 |         _write(stdout, {"type": "error", "error": "Kernel worker failed"})
+60 |         return 1
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> src/autoflow/providers/mcp.py:171:20
+    |
+169 |             try:
+170 |                 await connection.connect()
+171 |             except Exception:
+    |                    ^^^^^^^^^
+172 |                 failed.append(
+173 |                     {"name": name, "error": connection.last_error or "连接失败"}
+    |
+
+PLC0414 Import alias does not rename original package
+ --> tests/contract/test_project_data_deletions.py:3:5
+  |
+1 | from autoflow.infrastructure.database.models import ProjectRow
+2 | from tests.contract.test_project_data_catalog import (
+3 |     catalog as catalog,
+  |     ^^^^^^^^^^^^^^^^^^
+4 | )
+5 | from tests.contract.test_project_data_catalog import key
+  |
+help: Remove import alias
+
+PLC0414 Import alias does not rename original package
+ --> tests/contract/test_project_data_field_changes.py:2:5
+  |
+1 | from tests.contract.test_project_data_catalog import (
+2 |     catalog as catalog,
+  |     ^^^^^^^^^^^^^^^^^^
+3 | )
+4 | from tests.contract.test_project_data_catalog import (
+  |
+help: Remove import alias
+
+PLC0414 Import alias does not rename original package
+ --> tests/contract/test_project_data_queries.py:6:5
+  |
+5 | from tests.contract.test_project_data_catalog import (
+6 |     catalog as catalog,
+  |     ^^^^^^^^^^^^^^^^^^
+7 | )
+8 | from tests.contract.test_project_data_catalog import key
+  |
+help: Remove import alias
+
+PLC0414 Import alias does not rename original package
+ --> tests/contract/test_project_data_record_batches.py:3:54
+  |
+1 | from uuid import uuid4
+2 |
+3 | from tests.contract.test_project_data_catalog import catalog as catalog
+  |                                                      ^^^^^^^^^^^^^^^^^^
+4 | from tests.contract.test_project_data_catalog import key
+  |
+help: Remove import alias
+
+PLC0414 Import alias does not rename original package
+  --> tests/contract/test_project_data_records.py:8:5
+   |
+ 6 | from autoflow.infrastructure.database.models import ProjectOperationRow
+ 7 | from tests.contract.test_project_data_catalog import (
+ 8 |     catalog as catalog,
+   |     ^^^^^^^^^^^^^^^^^^
+ 9 | )
+10 | from tests.contract.test_project_data_catalog import (
+   |
+help: Remove import alias
+
+PLC0414 Import alias does not rename original package
+  --> tests/contract/test_project_data_schema.py:11:54
+   |
+ 9 | from autoflow.infrastructure.database.models import ProjectRow
+10 | from autoflow.infrastructure.database.project_data_models import DataImpactRow
+11 | from tests.contract.test_project_data_catalog import catalog as catalog
+   |                                                      ^^^^^^^^^^^^^^^^^^
+12 | from tests.contract.test_project_data_catalog import key
+   |
+help: Remove import alias
+
+BLE001 Do not catch blind exception: `Exception`
+   --> tests/differential/workflows/frozen_table_harness.py:124:12
+    |
+122 |             "branch": result.branch,
+123 |         }
+124 |     except Exception as error:
+    |            ^^^^^^^^^
+125 |         result_payload = {
+126 |             "raised": type(error).__name__,
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> tests/differential/workflows/test_b4_table_executor_parity.py:97:12
+   |
+95 |             "branch": result.branch,
+96 |         }
+97 |     except Exception as error:
+   |            ^^^^^^^^^
+98 |         result_payload = {
+99 |             "raised": type(error).__name__,
+   |
+
+PLC0414 Import alias does not rename original package
+  --> tests/integration/test_project_data_schema_commit.py:30:5
+   |
+28 | from .test_project_data_schema_preview import add_field, candidate, preview, uid
+29 | from .test_project_data_schema_preview import (
+30 |     ctx as ctx,
+   |     ^^^^^^^^^^
+31 | )
+   |
+help: Remove import alias
+
+DTZ001 `tzinfo=None` passed to `datetime.datetime()`
+   --> tests/integration/test_project_statistics.py:316:39
+    |
+315 |     with pytest.raises(ProjectError) as naive:
+316 |         service.get(project_id, from_=datetime(2026, 3, 1, tzinfo=None))
+    |                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+317 |     assert naive.value.code == "STATISTICS_RANGE_INVALID"
+    |
+help: Pass a `datetime.timezone` object to the `tzinfo` parameter
+
+BLE001 Do not catch blind exception: `Exception`
+   --> tests/qa/pm4_fake_executor.py:229:20
+    |
+227 |             try:
+228 |                 result = await self._invoke(request, step, operation_id, events)
+229 |             except Exception as caught:
+    |                    ^^^^^^^^^
+230 |                 error = {
+231 |                     "code": type(caught).__name__,
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> tests/qa/pm4_sidecar.py:182:20
+    |
+180 |                 while await self.runner.tick() is not None:
+181 |                     pass
+182 |             except Exception:
+    |                    ^^^^^^^^^
+183 |                 _LOG.exception("PM4 QA runner could not advance a persisted task")
+184 |             try:
+    |
+
+BLE001 Do not catch blind exception: `BaseException`
+  --> tests/unit/test_browser_proxy_relay.py:59:16
+   |
+57 |                 connection.settimeout(2)
+58 |                 handler(connection)
+59 |         except BaseException as error:
+   |                ^^^^^^^^^^^^^
+60 |             errors.append(error)
+   |
+
+BLE001 Do not catch blind exception: `BaseException`
+   --> tests/unit/test_environment_browser.py:312:16
+    |
+310 |         try:
+311 |             launcher.closer(None, instance)
+312 |         except BaseException as error:
+    |                ^^^^^^^^^^^^^
+313 |             failures.append(error)
+314 |         finally:
+    |
+
+DTZ001 `datetime.datetime()` called without a `tzinfo` argument
+  --> tests/unit/test_project_excel_adapter.py:49:32
+   |
+47 |                 ["001", True, date(2026, 9, 13), 1.5],
+48 |                 [None, None, None, None],
+49 |                 ["002", False, datetime(2026, 9, 13, 8, 30), 2],
+   |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+50 |             ],
+51 |             "Empty": [["name"]],
+   |
+help: Pass a `datetime.timezone` object to the `tzinfo` parameter
+
+DTZ001 `datetime.datetime()` called without a `tzinfo` argument
+   --> tests/unit/test_project_excel_adapter.py:247:33
+    |
+245 |     assert sheet["A2"].value == "001" and sheet["A2"].data_type == "s"
+246 |     assert sheet["B2"].value == formula_like and sheet["B2"].data_type == "s"
+247 |     assert sheet["C2"].value == datetime(2026, 9, 13)
+    |                                 ^^^^^^^^^^^^^^^^^^^^^
+248 |     assert sheet["C2"].number_format == "yyyy-mm-dd"
+249 |     assert sheet["D2"].value == "2026-09-13T08:30:00"
+    |
+help: Pass a `datetime.timezone` object to the `tzinfo` parameter
+
+DTZ001 `datetime.datetime()` called without a `tzinfo` argument
+  --> tests/unit/test_workflow_runtime.py:46:13
+   |
+44 | def test_direct_construction_freezes_nested_json_and_normalizes_all_times():
+45 |     nested = {"items": [{"value": 1}]}
+46 |     naive = datetime(2026, 9, 14, 10, 0)
+   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+47 |     prepared = PreparedContent(
+48 |         "content",
+   |
+help: Pass a `datetime.timezone` object to the `tzinfo` parameter
+
+Found 423 errors.
+[*] 20 fixable with the `--fix` option (8 hidden fixes can be enabled with the `--unsafe-fixes` option).

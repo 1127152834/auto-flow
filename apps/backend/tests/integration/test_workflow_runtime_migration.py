@@ -11,7 +11,7 @@ from alembic.script import ScriptDirectory
 
 from autoflow.infrastructure.database import session as database_session
 
-EXPECTED_HEAD = "0020_recording_project_scope"
+EXPECTED_HEAD = "0024_studio_credential_namespace"
 
 
 def _config(path: Path) -> Config:

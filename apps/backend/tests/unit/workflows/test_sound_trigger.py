@@ -13,7 +13,7 @@ class _Meter:
     def __init__(self, values: list[float]) -> None:
         self.values = values
 
-    def GetPeakValue(self) -> float:  # noqa: N802 - COM API compatibility.
+    def GetPeakValue(self) -> float:
         return self.values.pop(0)
 
 

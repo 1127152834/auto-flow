@@ -1,5 +1,6 @@
 """Opt-in native CloakBrowser checks, never substituted with another browser."""
 import asyncio
+import inspect
 import os
 import shutil
 from datetime import UTC, datetime
@@ -182,7 +183,10 @@ async def test_real_cloakbrowser_persisted_dispatch_and_service_recreation(tmp_p
         assert events[-1].kind == 'status' and events[-1].payload['status'] == 'succeeded'
         assert app.state.project_workflow_dispatcher.blockers() == []
     finally:
-        await app.router.on_shutdown[-1]()
+        for callback in app.router.on_shutdown:
+            closing = callback()
+            if inspect.isawaitable(closing):
+                await closing
     restored = create_app(settings)
     try:
         await restored.state.project_workflow_dispatcher.startup()
@@ -190,4 +194,7 @@ async def test_real_cloakbrowser_persisted_dispatch_and_service_recreation(tmp_p
         assert found == result
         assert not restored.state.project_workflow_worker_manager.busy()
     finally:
-        await restored.router.on_shutdown[-1]()
+        for callback in restored.router.on_shutdown:
+            closing = callback()
+            if inspect.isawaitable(closing):
+                await closing

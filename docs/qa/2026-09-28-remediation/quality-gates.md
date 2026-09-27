@@ -21,3 +21,27 @@ F-03：两个 inventory 脚本测试此前调用生成器覆盖历史验收清�
 - `frontend-gates-typecheck.log`：tsc 通过；`frontend-gates-eslint-fixed.log`：改动文件 ESLint 通过。
 - 初次 AST 测试路径被 Vite URL 转换导致的加载失败、初次错误工作目录的 lint 命令均保留原始日志；修正测试路径/命令后通过，未改业务成功条件。
 - 默认 Studio smoke 已按当前真实 HTTP/窗口生命周期修改，尚未运行打包应用，不记为通过；最终全量前端、根脚本和打包真实验收仍待执行。
+
+## B-01 / B-02：后端过期断言与生命周期（confirmed，定向范围）
+
+按实际 Alembic 图将集成 head 更新为 `0024_studio_credential_namespace`，保留所有历史起点、升级前后行比较、外键检查与历史迁移 SHA 断言；未修改迁移版本文件。BrowserStatus 补齐当前 schema 五个字段的精确默认值；WebDAV 请求 schema 是唯一允许 password 字段的公开 schema，并另外核对配置读取不返回秘密。生产注册表补代理三节点和项目数据节点；来源审计仍逐项核验 213 个冻结节点，4 个原生节点独立检查来源/范围，不伪造上游迁入记录。
+
+Excel 公式缓存夹具兼容 `<v/>` 与 `<v></v>`，新增替换次数必须恰为 1 的断言；原公式和值检查保留。关停测试调用真实应用 lifespan 或按顺序调用并等待实际异步 handler；PM5 浏览器脚本关闭已进入的 TestClient，关闭失败保持非零退出并记录 `shutdownConfirmed=false`。显式 `--keep-browser` 现在等待回车后清理退出，不再让未关闭 portal 永久挂住 Python。
+
+- `backend-migration-current.log`：98 通过；`backend-contract-lifecycle.log`：55 通过；`backend-schema-scope.log`：11 通过。以上组合互相独立。
+- `backend-real-lifecycle.log`：2 项真实 CloakBrowser 登录保存恢复/服务重建通过；清理结果写入增强后 `backend-real-cleanup-final.log` 同一登录用例再次通过 1 项（重复验证，不额外累计场景）。
+- 历史 0.5 秒 worker 退出偶发失败暂未修改等待上限，等待当前完整回归确认，不能降低时序检查。
+
+## B-03：Ruff 与严格类型债务（confirmed，工程门禁）
+
+CI 工作目录下 Ruff 本轮原始 138 条（含本次新增测试导入顺序），修复以原配置导入整理及删除原本无效的 noqa 为主。IMAP 轮询/标记已读/退出失败现在记录安全的异常类型，不记录可能含凭据的异常正文；网页变更时间取现有 context clock，IMAP 时间明确 UTC；相邻鼠标点遍历使用 pairwise。行为回归 `ruff-behavior-regression.log` 20 通过。最终 `ruff-gates-fixed.log` 全后端 Ruff 通过。
+
+初次仅 select 部分规则使 Ruff 将其他有效 noqa 误判无效；已从 HEAD 精确恢复既有注释，再按完整配置的 fixable 白名单执行。未改既有 lint 策略、未增加跳过、未以新增 suppressions 获得通过。初始错误日志保留，最终 diff 只保留必要整理和有证据的修复。
+
+普通 mypy `mypy-gates-final.log`：506 源文件通过。strict 原始本轮1048，新增7项已补具体返回/句柄/消息类型，剩1041；其中既有构造器诊断仅从完全无注解变成参数缺注解，仍算债务。`strict-type-baseline.json` 固定现有943个诊断身份、1041个实例；CI `check_strict_types.py` 对完整 strict 输出按文件+符号+错误码+消息+数量比较，新增错误失败，已解决条目要求同步删基线。检查只读、不自动批准新债务，单元验证行号变动、不同函数、重复次数、消息变化及未知输出拒绝。
+
+`strict-gate-current.log`：1041基线、1041当前、0新增，增量门禁通过；**不是 strict 全量通过**。当前基线固定 Darwin 静态分析目标，跨平台普通 mypy 保留；未将配置加入 CI 冒充远程 CI 或 Windows 实测。
+
+## 当前全量检查仍在进行
+
+前端首次默认回归：431文件，5646通过/2失败；两项必填元数据 fixture 数量漏计本次项目数据节点。修正为217并新增项目数据必填字段/写操作绑定规则断言，`frontend-required-protocol-fixed.log` 定向4通过。根脚本 `root-scripts-current.log`：101通过、0失败、0skip。后端完整回归运行中，最终计数另记；以上结果不是最终稳定发行验收。

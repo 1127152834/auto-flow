@@ -8,6 +8,7 @@ from pathlib import Path
 from threading import Thread
 
 import pytest
+
 from autoflow.providers.browser.inspection_worker import InspectionController
 from autoflow.providers.browser.workflow_session import launch_workflow_session
 

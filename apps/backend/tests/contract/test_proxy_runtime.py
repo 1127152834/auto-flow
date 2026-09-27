@@ -64,7 +64,14 @@ def test_runtime_mounts_proxies_but_never_publishes_host_contract(runtime):
     assert not any(path.startswith("/internal") for path in document["paths"])
     schemas = document["components"]["schemas"]
     assert schemas["ConnectionCreate"]["properties"]["api_key"]["writeOnly"]
-    assert all("password" not in schema.get("properties", {}) for schema in schemas.values())
+    assert {
+        name for name, schema in schemas.items()
+        if "password" in schema.get("properties", {})
+    } == {"WebDavConfig"}
+    assert document["paths"]["/api/local-workflows/webdav-config"]["post"]["requestBody"]["content"]["application/json"]["schema"]["$ref"] == "#/components/schemas/WebDavConfig"
+    response = client.get("/api/local-workflows/webdav-config", headers={"x-autoflow-token": "renderer-token"})
+    assert response.status_code == 200
+    assert response.json()["config"]["password"] == ""
 
 
 @pytest.mark.parametrize("headers", [

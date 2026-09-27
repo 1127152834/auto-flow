@@ -177,7 +177,7 @@ def main() -> int:
     parser.add_argument(
         "--keep-browser",
         action="store_true",
-        help="leave the resumed browser open for a human to inspect",
+        help="keep the resumed browser open until Enter, then close all owned resources",
     )
     args = parser.parse_args()
 
@@ -205,6 +205,7 @@ def main() -> int:
     }
     app = None
     client = None
+    client_entered = False
     try:
         app = create_app(
             Settings(
@@ -219,6 +220,7 @@ def main() -> int:
         )
         client = TestClient(app)
         client.__enter__()
+        client_entered = True
         client.headers["x-autoflow-token"] = "renderer"
 
         project = client.post(
@@ -466,7 +468,9 @@ def main() -> int:
                 "marker": third_read["marker"],
             }
         )
-        retained = third if args.keep_browser else None
+        if args.keep_browser:
+            input("浏览器保持打开供检查；按回车关闭本次资源并退出。")
+        retained = None
         report["passed"] = (
             report["login"].get("signedIn") is True
             and report["endStatus"] == 202
@@ -484,7 +488,21 @@ def main() -> int:
         report["exception"] = str(error)
         return finish(report, out, app, None, None, None)
     finally:
-        site.close()
+        try:
+            if client_entered:
+                client.__exit__(None, None, None)
+            site.close()
+            report["shutdownConfirmed"] = True
+        except BaseException as error:  # noqa: BLE001 -- preserve failed QA cleanup evidence.
+            report["passed"] = False
+            report["shutdownConfirmed"] = False
+            report["shutdownError"] = type(error).__name__
+            site.close()
+            raise
+        finally:
+            (out / "browser-chain.json").write_text(
+                json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"
+            )
 
 
 def finish(report, out, app, service, launcher, keep_instance) -> int:

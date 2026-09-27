@@ -2,6 +2,7 @@ import asyncio
 
 import httpx
 import pytest
+
 from autoflow.domain.models import ModelError
 from autoflow.providers.model import HttpModelProvider
 from autoflow.providers.model.workflow import WorkflowModelGateway

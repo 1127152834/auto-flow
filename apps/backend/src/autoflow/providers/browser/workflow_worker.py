@@ -1515,7 +1515,7 @@ class _WorkerCommandBus:
         if self._stopped.is_set():
             raise asyncio.CancelledError
         request_id = str(uuid4())
-        future = self._loop.create_future()
+        future: asyncio.Future[dict[str, Any]] = self._loop.create_future()
         self._capability_pending[request_id] = future
         self._write_command({"type": "capability:request", "runId": self._run_id,
                              "requestId": request_id, "payload": payload})

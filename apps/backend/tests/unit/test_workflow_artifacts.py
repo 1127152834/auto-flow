@@ -2,6 +2,7 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 import pytest
+
 from autoflow.domain.workflows.runtime import (
     WorkflowRuntimeError,
     create_run_artifact,

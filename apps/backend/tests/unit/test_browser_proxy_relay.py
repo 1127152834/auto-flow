@@ -10,6 +10,7 @@ from typing import Any
 from urllib.parse import urlsplit
 
 import pytest
+
 from autoflow.providers.browser.proxy_relay import BrowserProxyRelay
 
 

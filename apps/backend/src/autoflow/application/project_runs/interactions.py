@@ -11,6 +11,9 @@ from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
 
+from sqlalchemy import select
+from sqlalchemy.orm import Session, sessionmaker
+
 from autoflow.application.workflows.webhooks import webhook_payload
 from autoflow.domain.project_runs.models import ProjectRunError
 from autoflow.domain.workflows.runs import WorkflowRunError
@@ -18,8 +21,6 @@ from autoflow.domain.workflows.runtime import CoreRun, WorkflowRuntimeError
 from autoflow.infrastructure.database.models import ProjectOperationRow, ProjectRow
 from autoflow.infrastructure.database.project_run_models import ProjectTaskRow
 from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
-from sqlalchemy import select
-from sqlalchemy.orm import Session, sessionmaker
 
 UI_REQUESTS = {"execution:input_prompt", "execution:js_script"}
 REQUESTS = UI_REQUESTS | {"execution:webhook_waiting"}

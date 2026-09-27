@@ -1,0 +1,14 @@
+SIM102 Use a single `if` statement instead of nested `if` statements
+  --> scripts/check_strict_types.py:33:13
+   |
+31 |           symbols: list[tuple[int, str]] = []
+32 |           for node in ast.walk(trees[path]):
+33 | /             if isinstance(node, ast.ClassDef | ast.FunctionDef | ast.AsyncFunctionDef):
+34 | |                 if node.lineno <= int(row) <= (node.end_lineno or node.lineno):
+   | |_______________________________________________________________________________^
+35 |                       symbols.append((node.lineno, node.name))
+36 |           symbol = ".".join(name for _, name in sorted(symbols)) or "<module>"
+   |
+help: Combine `if` statements using `and`
+
+Found 1 error.

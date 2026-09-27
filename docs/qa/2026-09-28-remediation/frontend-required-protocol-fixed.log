@@ -1,0 +1,15 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --run src/renderer/domains/workflows/tests/required-field-protocol.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:99845) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  04:35:40
+   Duration  775ms (transform 206ms, setup 158ms, import 91ms, tests 50ms, environment 376ms)
+

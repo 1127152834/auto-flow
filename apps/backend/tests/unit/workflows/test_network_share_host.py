@@ -6,6 +6,7 @@ from pathlib import Path
 
 import httpx
 import pytest
+
 from autoflow.infrastructure.sharing import NetworkShareHost, screen_share
 
 

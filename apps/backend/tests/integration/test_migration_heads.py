@@ -5,6 +5,7 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from alembic.script import ScriptDirectory
+
 from autoflow.infrastructure.database import session as database_session
 
 
@@ -17,7 +18,8 @@ def _config(database: Path) -> Config:
 def test_studio_backend_history_has_one_merged_head(tmp_path: Path) -> None:
     scripts = ScriptDirectory.from_config(_config(tmp_path / "heads.sqlite3"))
 
-    assert scripts.get_heads() == ["0023_merge_studio_android"]
+    assert scripts.get_heads() == ["0024_studio_credential_namespace"]
+    assert scripts.get_revision("0024_studio_credential_namespace").down_revision == "0023_merge_studio_android"
     assert (
         scripts.get_revision("0020_recording_project_scope").down_revision
         == "0019_recording_commands"
@@ -89,7 +91,7 @@ def test_integrated_workspace_history_is_recognized_and_preserved(
     with sqlite3.connect(database) as connection:
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchall() == [("0023_merge_studio_android",)]
+        ).fetchall() == [("0024_studio_credential_namespace",)]
         assert connection.execute(
             "SELECT value FROM preserved_workspace_data"
         ).fetchall() == [("keep-me",)]

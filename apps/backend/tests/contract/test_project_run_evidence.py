@@ -3,6 +3,9 @@ from hashlib import sha256
 from uuid import uuid4
 
 import pytest
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+
 from autoflow.adapters.http.errors import install_error_handlers
 from autoflow.adapters.http.project_run_evidence import project_run_evidence_router
 from autoflow.application.project_runs.evidence import ProjectRunEvidence
@@ -10,9 +13,6 @@ from autoflow.domain.project_runs.models import ProjectRunError
 from autoflow.infrastructure.database.workflow_runtime import (
     SqlAlchemyWorkflowRuntimeRepository,
 )
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
-
 from tests.integration.test_project_run_start import setup, start_payload
 
 NOW = datetime(2026, 9, 15, tzinfo=UTC)
@@ -336,10 +336,11 @@ def test_log_cursor_and_page_size_are_bounded(tmp_path, kwargs):
 
 @pytest.mark.parametrize("kind", ["gap", "future"])
 def test_incomplete_event_history_never_advances_cursor_as_if_complete(tmp_path, kind):
+    from sqlalchemy import delete
+
     from autoflow.infrastructure.database.workflow_runtime_models import (
         WorkflowRunEventRow,
     )
-    from sqlalchemy import delete
 
     _, evidence, factory, project, task = prepared(tmp_path)
     if kind == "gap":

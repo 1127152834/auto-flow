@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 import pytest
+
 from autoflow.infrastructure.gesture import gesture_model_path
 from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
 

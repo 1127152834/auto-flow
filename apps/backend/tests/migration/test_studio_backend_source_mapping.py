@@ -86,6 +86,19 @@ def test_all_approved_nodes_have_traceable_backend_sources_and_unique_cases() ->
     support_rows = _load(SUPPORT)["sharedCapabilities"]
     support_ids = {row["id"] for row in support_rows}
 
+    native_types = {"proxy_query", "proxy_change_ip", "proxy_change_location", "project_data"}
+    native = [row for row in rows if _node_type(row) in native_types]
+    assert len(rows) == 217
+    assert {_node_type(row) for row in native} == native_types
+    assert len(native) == 4
+    for row in native:
+        assert row["differenceClass"] == "AutoFlow 原生扩展"
+        assert row["deliveryBlock"] == ("PM9-R2" if _node_type(row) == "project_data" else "workflow-proxy-control")
+        assert row["remaining"]
+        assert "backendMigration" not in row
+        for evidence in row["evidence"]:
+            assert (REPOSITORY_ROOT / evidence["file"]).is_file()
+    rows = [row for row in rows if _node_type(row) not in native_types]
     assert len(rows) == 213
     assert len(support_rows) == 13
     assert "BE.SUPPORT.assistant-langgraph" in support_ids

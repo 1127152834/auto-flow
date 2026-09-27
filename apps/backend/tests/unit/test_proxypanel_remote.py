@@ -5,6 +5,7 @@ from pathlib import Path
 
 import httpx
 import pytest
+
 from autoflow.domain.proxies.errors import ProviderSchemaError
 from autoflow.providers.proxy.proxypanel import ProxyPanelReadProvider
 from autoflow.providers.proxy.remote_mapping import locations, schedule, state

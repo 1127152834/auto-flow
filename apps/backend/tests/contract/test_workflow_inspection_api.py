@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from autoflow.adapters.http.errors import install_error_handlers
-from autoflow.adapters.http.workflow_inspection import workflow_inspection_router
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+
+from autoflow.adapters.http.errors import install_error_handlers
+from autoflow.adapters.http.workflow_inspection import workflow_inspection_router
 
 
 class Inspection:

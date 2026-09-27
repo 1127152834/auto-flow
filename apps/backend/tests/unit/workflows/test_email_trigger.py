@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from email.message import EmailMessage
 from typing import Any
 
@@ -77,6 +78,7 @@ def test_imap_gateway_filters_parses_and_marks_matching_email(
             "body": "正文\n",
         }
     ]
+    assert datetime.fromisoformat(result[0]["timestamp"]).utcoffset() is not None
     assert seen == {
         "stored": [(b"2", "+FLAGS", "\\Seen")],
         "host": "imap.example.com",
@@ -93,7 +95,7 @@ def test_imap_gateway_filters_parses_and_marks_matching_email(
 
 
 @pytest.mark.asyncio
-async def test_email_trigger_retries_then_writes_last_matching_email() -> None:
+async def test_email_trigger_retries_then_writes_last_matching_email(caplog: pytest.LogCaptureFixture) -> None:
     message = {
         "from": "sender@example.com",
         "subject": "完成",
@@ -111,7 +113,7 @@ async def test_email_trigger_retries_then_writes_last_matching_email() -> None:
             assert payload["password"] == "secret"
             self.calls += 1
             if self.calls == 1:
-                raise OSError("temporary")
+                raise OSError("temporary secret-password")
             return [message]
 
     gateway = Gateway()
@@ -136,6 +138,8 @@ async def test_email_trigger_retries_then_writes_last_matching_email() -> None:
     assert result.data == message
     assert context.variables["mail"] == message
     assert gateway.calls == 2
+    assert "IMAP polling failed (OSError)" in caplog.text
+    assert "secret-password" not in caplog.text
 
 
 @pytest.mark.asyncio

@@ -13,11 +13,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal, TypedDict
 
-from autoflow.domain.workflows.scope import APPROVED_NODE_TYPES
 from langchain_core.runnables.config import RunnableConfig
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Command, interrupt
+
+from autoflow.domain.workflows.scope import APPROVED_NODE_TYPES
 
 
 @dataclass(frozen=True, slots=True)

@@ -1,0 +1,14 @@
+RUF007 Prefer `itertools.pairwise()` over `zip()` when iterating over successive pairs
+   --> src/autoflow/application/workflows/executors/input_triggers.py:192:27
+    |
+190 |                 simplified.append(point)
+191 |         result: list[Direction] = []
+192 |         for start, end in zip(simplified, simplified[1:], strict=False):
+    |                           ^^^
+193 |             direction = self.direction(start, end)
+194 |             if direction is not None and (not result or direction != result[-1]):
+    |
+help: Replace `zip()` with `itertools.pairwise()`
+
+Found 428 errors (427 fixed, 1 remaining).
+No fixes available (1 hidden fix can be enabled with the `--unsafe-fixes` option).

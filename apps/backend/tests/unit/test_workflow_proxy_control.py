@@ -2,6 +2,7 @@ import asyncio
 from types import SimpleNamespace
 
 import pytest
+
 from autoflow.application.proxies.usage import ProxyUsage
 from autoflow.application.workflows.executors.proxy_control import ProxyChangeIPExecutor
 from autoflow.domain.proxies.errors import ProxyInUseError

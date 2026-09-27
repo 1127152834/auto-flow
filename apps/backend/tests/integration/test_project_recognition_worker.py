@@ -8,6 +8,7 @@ from time import monotonic
 from uuid import uuid4
 
 import pytest
+
 from autoflow.application.workflows.documents import WorkflowDocumentService
 from autoflow.application.workflows.runtime import WorkflowRuntimeService
 from autoflow.domain.workflows.catalog import runnable_module_types
@@ -21,7 +22,6 @@ from autoflow.infrastructure.database.workflows import (
 from autoflow.infrastructure.process.project_workflow_worker import (
     ProjectWorkflowWorkerManager,
 )
-
 from tests.integration.test_b5_media_recognition_worker import _write_fixtures
 from tests.integration.test_project_data_worker import (
     _dispatcher,

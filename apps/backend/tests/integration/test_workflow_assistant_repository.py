@@ -4,10 +4,11 @@ import sqlite3
 from datetime import UTC, datetime
 from pathlib import Path
 
-import autoflow.infrastructure.database.session as database_session
 import pytest
 from alembic import command
 from alembic.config import Config
+
+import autoflow.infrastructure.database.session as database_session
 from autoflow.infrastructure.database.session import (
     create_session_factory,
     migrate_database,

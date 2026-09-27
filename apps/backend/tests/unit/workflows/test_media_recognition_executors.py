@@ -7,11 +7,12 @@ from types import SimpleNamespace
 
 import numpy as np
 import pytest
+from PIL import Image
+
 from autoflow.application.workflows.executors.production import (
     build_production_executor_registry,
 )
 from autoflow.domain.workflows.execution import BinaryOutputSnapshot, ExecutionContext
-from PIL import Image
 
 
 class Artifacts:
@@ -178,8 +179,9 @@ async def test_face_recognition_reports_missing_source_before_loading_engine() -
 async def test_image_ocr_region_normalizes_coordinates_and_returns_region(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    from autoflow.application.workflows.executors import media_recognition
     from PIL import ImageGrab
+
+    from autoflow.application.workflows.executors import media_recognition
 
     boxes: list[tuple[int, int, int, int]] = []
     monkeypatch.setattr(

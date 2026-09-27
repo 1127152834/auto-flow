@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 from alembic import command
 from alembic.config import Config
+
 from autoflow.infrastructure.database import session as database_session
 from autoflow.infrastructure.database import workflow_recordings
 from autoflow.infrastructure.database.session import (
@@ -79,7 +80,7 @@ def test_recording_command_migration_preserves_existing_sessions(tmp_path) -> No
     with sqlite3.connect(database) as connection:
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchone() == ("0020_recording_project_scope",)
+        ).fetchone() == ("0024_studio_credential_namespace",)
         assert connection.execute(
             "SELECT id, status FROM workflow_recording_sessions"
         ).fetchone() == ("kept", "stopped")

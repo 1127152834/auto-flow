@@ -4,6 +4,7 @@ import json
 from typing import Any
 
 import pytest
+
 from autoflow.application.workflows.executors.base import (
     ModuleExecutor,
     ModuleResult,
@@ -66,6 +67,10 @@ def test_production_registry_contains_every_migrated_executor() -> None:
     production = build_production_executor_registry()
 
     assert set(production.get_all_types()) == {
+        "project_data",
+        "proxy_query",
+        "proxy_change_ip",
+        "proxy_change_location",
         "open_page",
         "click_element",
         "input_text",

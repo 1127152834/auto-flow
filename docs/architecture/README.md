@@ -270,7 +270,7 @@ Windows 使用 DPAPI 或系统凭据存储；macOS 使用 Keychain。业务层�
 
 每个迁移切片必须同时满足：
 
-- Python：Ruff、mypy strict、pytest；
+- Python：Ruff、mypy、pytest；strict 为目标门槛。2026-09-28 实测仍有 1041 项历史 strict 债务，不能宣称 strict 通过。CI 另运行 `python scripts/check_strict_types.py`，按文件、符号、错误类型、完整消息与数量禁止新增债务；基线只允许审查后更新，不由检查命令改写。该增量门禁固定 Darwin 分析目标以避免宿主平台改变基线，原生平台仍执行普通 mypy；Windows/Intel 原生 strict 与运行验收分开登记。
 - TypeScript：ESLint、tsc、Vitest；
 - API：OpenAPI 导出与生成类型一致；
 - 领域：纯函数和用例有单元测试；

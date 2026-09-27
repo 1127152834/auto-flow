@@ -27,8 +27,8 @@ sys.modules["pycaw.pycaw"] = SimpleNamespace(
     IAudioMeterInformation=meter_type,
 )
 
-from app.executors.base import ExecutionContext  # noqa: E402
-from app.executors.trigger import SoundTriggerExecutor  # noqa: E402
+from app.executors.base import ExecutionContext
+from app.executors.trigger import SoundTriggerExecutor
 
 
 async def run(payload):

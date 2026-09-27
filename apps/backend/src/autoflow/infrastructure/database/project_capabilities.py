@@ -6,6 +6,7 @@ import json
 from dataclasses import replace
 from datetime import UTC, datetime
 from functools import cmp_to_key
+from typing import Any
 from uuid import uuid4
 
 from sqlalchemy import func, select, text
@@ -104,7 +105,7 @@ class SqlAlchemyProjectDataCapabilities:
     def __init__(self, factory: sessionmaker[Session]):
         self._factory = factory
 
-    def worker_context(self, run_id: str, generation: int, request: dict):
+    def worker_context(self, run_id: str, generation: int, request: dict[str, Any]) -> tuple[TaskCapabilityScope, list[dict[str, Any]]]:
         """Resolve authority from this workspace and a durably admitted node visit."""
         with self._factory() as session:
             task = session.scalar(select(ProjectTaskRow).where(ProjectTaskRow.run_id == run_id))

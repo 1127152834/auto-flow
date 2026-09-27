@@ -4,6 +4,7 @@ import asyncio
 from pathlib import Path
 
 import pytest
+
 from autoflow.adapters.events.workflows import StudioEventJournal
 from autoflow.application.workflows.assistant import WorkflowAssistantService
 from autoflow.domain.models import ModelError, ModelInvocationResult

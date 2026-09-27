@@ -5,10 +5,15 @@ from datetime import timedelta
 from functools import partial
 
 import pytest
+
 from autoflow.application.models.service import ModelService
 from autoflow.domain.credentials import CredentialStoreUnavailableError
 from autoflow.domain.models.errors import ModelError
-from autoflow.domain.models.models import ModelInvocationResult, LocalModelSpec, ProviderProfile
+from autoflow.domain.models.models import (
+    LocalModelSpec,
+    ModelInvocationResult,
+    ProviderProfile,
+)
 from autoflow.infrastructure.database.model_providers import (
     model_repository_transaction,
 )
@@ -16,7 +21,6 @@ from autoflow.infrastructure.database.session import (
     create_session_factory,
     migrate_database,
 )
-
 from tests.fixtures.model_management import FakeCredentialStore, FakeModelGateway
 
 

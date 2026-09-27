@@ -5,9 +5,10 @@ import email
 import imaplib
 import io
 import json
+import logging
 import smtplib
 from collections.abc import Mapping
-from datetime import datetime
+from datetime import UTC, datetime
 from email.header import decode_header
 from email.message import EmailMessage
 from email.utils import parseaddr
@@ -251,24 +252,24 @@ class WorkflowIntegrationGateway:
                         "subject": subject,
                         "date": message.get("Date", ""),
                         "body": _email_text_body(message),
-                        "timestamp": datetime.now().isoformat(),
+                        "timestamp": datetime.now(UTC).isoformat(),
                     }
                 )
                 try:
                     client.store(email_id, "+FLAGS", "\\Seen")
-                except Exception:  # noqa: BLE001 - source treats marking read as best effort.
-                    pass
+                except Exception as error:  # noqa: BLE001 - source best-effort behavior.
+                    logging.getLogger(__name__).warning("IMAP mark-read failed (%s)", type(error).__name__)
             return result
         finally:
             if client is not None:
                 try:
                     client.close()
-                except Exception:  # noqa: BLE001 - connection cleanup is best effort.
-                    pass
+                except Exception as error:  # noqa: BLE001 - cleanup still attempts logout.
+                    logging.getLogger(__name__).warning("IMAP cleanup failed (%s)", type(error).__name__)
                 try:
                     client.logout()
-                except Exception:  # noqa: BLE001 - connection cleanup is best effort.
-                    pass
+                except Exception as error:  # noqa: BLE001 - cleanup still attempts logout.
+                    logging.getLogger(__name__).warning("IMAP cleanup failed (%s)", type(error).__name__)
 
     async def _http(self, payload: Mapping[str, Any]) -> Mapping[str, Any]:
         url = payload.get("url")
