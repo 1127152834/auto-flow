@@ -1,0 +1,84 @@
+{
+  "startedAt": "2026-09-27T17:01:46.003322+00:00",
+  "gitHead": "33ae3aa49600840b1700c83723408c494dc201a8",
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-runtime-395e66er",
+  "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/runtime/run-tqhr5x51",
+  "checks": [
+    {
+      "name": "real loopback service ready",
+      "passed": true,
+      "detail": {
+        "url": "http://127.0.0.1:61591",
+        "pid": 9935
+      }
+    },
+    {
+      "name": "record idempotency package.json",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "record idempotency apps/backend/pyproject.toml",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "record idempotency AGENTS.md",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "actual file metadata roundtrip",
+      "passed": true,
+      "detail": null
+    }
+  ],
+  "scenarios": {},
+  "processes": [
+    9935
+  ],
+  "realInputFiles": [
+    {
+      "path": "package.json",
+      "size": 1055,
+      "sha256": "6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92"
+    },
+    {
+      "path": "apps/backend/pyproject.toml",
+      "size": 1460,
+      "sha256": "4e49812742d3362808878fc11614cbb6884b94a1f6c13b93a9775d6b2d6d84f1"
+    },
+    {
+      "path": "AGENTS.md",
+      "size": 2335,
+      "sha256": "f59c274adb1d4144cc8a351f111702e21b92be2d9b0bd459e572a0243a1c48a8"
+    }
+  ],
+  "projectId": "ebc14b1f-7dd9-4409-abd5-924b48983889",
+  "table": {
+    "projectId": "ebc14b1f-7dd9-4409-abd5-924b48983889",
+    "tableId": "3b74e551-35ad-41b2-98c8-c11c1cf22a88",
+    "name": "当前源码文件清单",
+    "description": "来自真实工作树字节与SHA-256",
+    "sourceKind": "local",
+    "source": {
+      "kind": "local"
+    },
+    "datasetGeneration": "d9d9eda4-35de-46d9-b590-2cc2aeb3e04e",
+    "tableRevision": 1,
+    "identity": {
+      "mode": "system"
+    },
+    "slotDefinitions": [],
+    "recordCount": 0,
+    "syncSummary": {
+      "status": "notApplicable",
+      "pendingCount": 0,
+      "unknownCount": 0
+    },
+    "createdAt": "2026-09-27T17:01:49.188841Z",
+    "updatedAt": "2026-09-27T17:01:49.188841Z"
+  },
+  "fatalError": "Traceback (most recent call last):\n  File \"/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/runtime/real_runtime_qa.py\", line 170, in main\n    await api('PATCH',record_path,update,str(uuid4()))\n  File \"/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/runtime/real_runtime_qa.py\", line 71, in api\n    assert response.status_code in expected,(method,path,response.status_code,data)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ('PATCH', '/api/v1/projects/ebc14b1f-7dd9-4409-abd5-924b48983889/tables/3b74e551-35ad-41b2-98c8-c11c1cf22a88/records/742a43b5-fea7-4fa6-a6c3-204f1e525779', 422, {'error': {'code': 'INVALID_PROJECT_DATA', 'message': 'Invalid record key', 'details': {'field': 'recordKey', 'reason': 'encoded key is not canonical UTF-8 base64url', 'domainCode': 'invalid_project_data', 'retryable': False}, 'requestId': 'e4cda9b9-45bd-4631-8284-10c4f9d31fee'}})\n",
+  "finishedAt": "2026-09-27T17:01:50.631626+00:00"
+}

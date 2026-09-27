@@ -1,0 +1,27 @@
+{
+  "command": [
+    "uv",
+    "run",
+    "--frozen",
+    "--no-sync",
+    "--directory",
+    "apps/backend",
+    "pytest",
+    "-q",
+    "-ra",
+    "--durations=30",
+    "--junitxml=/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/backend/pytest.xml",
+    "--basetemp=/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4"
+  ],
+  "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow",
+  "startedAt": "2026-09-28T00:57:03.254139+08:00",
+  "basetemp": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4",
+  "removedEnvNames": [
+    "AUTOFLOW_LIVE_MODEL_TEST",
+    "AUTOFLOW_B1_CLOAK_EXECUTABLE",
+    "AUTOFLOW_TEST_CLOAKBROWSER"
+  ],
+  "returncode": 1,
+  "elapsedSeconds": 1331.081,
+  "finishedAt": "2026-09-28T01:19:13.702854+08:00"
+}

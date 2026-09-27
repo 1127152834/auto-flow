@@ -1,0 +1,119 @@
+[
+  {
+    "type": "execution:node_start",
+    "nodeId": "n0",
+    "executionId": "9b904045-5bfa-4dc1-bf6d-c9daea0e8553",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-059",
+    "workflowId": "qa-059"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n0",
+    "executionId": "9b904045-5bfa-4dc1-bf6d-c9daea0e8553",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "脚本执行成功（返回码: 0），已返回结果到变量 py",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "stdout": "",
+      "stderr": "",
+      "returnCode": 0,
+      "result": {
+        "name": "autoflow",
+        "bytes": 1055,
+        "sha256": "6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92"
+      }
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 42.33262498746626,
+    "artifactIds": [],
+    "runId": "qa-059",
+    "workflowId": "qa-059"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "n1",
+    "executionId": "51109a34-8f2d-4710-96c6-9cf723c0e60c",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-059",
+    "workflowId": "qa-059"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n1",
+    "executionId": "51109a34-8f2d-4710-96c6-9cf723c0e60c",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "解析成功: 6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92",
+    "error": null,
+    "isTimeout": false,
+    "data": "6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92",
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.2868330047931522,
+    "artifactIds": [],
+    "runId": "qa-059",
+    "workflowId": "qa-059"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "n2",
+    "executionId": "70aeab93-0e88-4435-aaaa-2c37c97f173f",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-059",
+    "workflowId": "qa-059"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n2",
+    "executionId": "70aeab93-0e88-4435-aaaa-2c37c97f173f",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "(空日志)",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "level": "info",
+      "message": "(空日志)"
+    },
+    "logLevel": "info",
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 0.2174580004066229,
+    "artifactIds": [],
+    "runId": "qa-059",
+    "workflowId": "qa-059"
+  },
+  {
+    "type": "execution:completed",
+    "runId": "qa-059",
+    "workflowId": "qa-059",
+    "executedNodes": 3,
+    "failedNodeId": null,
+    "issues": [],
+    "error": null
+  }
+]

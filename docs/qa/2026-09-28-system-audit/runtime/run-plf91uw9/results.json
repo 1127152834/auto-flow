@@ -1,0 +1,2315 @@
+{
+  "startedAt": "2026-09-27T17:34:47.749796+00:00",
+  "gitHead": "33ae3aa49600840b1700c83723408c494dc201a8",
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-runtime-6rajavpv",
+  "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/runtime/run-plf91uw9",
+  "checks": [
+    {
+      "name": "production browser graph completes all 26 visits",
+      "passed": true,
+      "status": "passed",
+      "detail": {
+        "taskStatus": "succeeded",
+        "attemptCount": 26,
+        "expected": 26
+      }
+    },
+    {
+      "name": "actual public page title heading and load",
+      "passed": true,
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "name": "actual body children and heading siblings queried",
+      "passed": true,
+      "status": "passed",
+      "detail": {
+        "children": [
+          "body > div:nth-child(1)"
+        ],
+        "siblings": [
+          "div > p:nth-child(2)",
+          "div > p:nth-child(3)"
+        ]
+      }
+    },
+    {
+      "name": "first and last tab identity matches real sources",
+      "passed": true,
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "name": "scroll changes actual long source viewport",
+      "passed": true,
+      "status": "passed",
+      "detail": {
+        "scrollY": 99
+      }
+    },
+    {
+      "name": "back returns exact actual TOML file",
+      "passed": true,
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "name": "forward returns exact actual package JSON",
+      "passed": true,
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "name": "production screenshot is downloadable PNG",
+      "passed": true,
+      "status": "passed",
+      "detail": [
+        {
+          "artifactId": "ada8b2af-8e53-49ae-b85d-3f4a69b8cc10",
+          "kind": "screenshot",
+          "purpose": "result",
+          "availability": "available",
+          "nodeId": "n11",
+          "nodeName": "网页截图",
+          "nodeVisitId": "1e398f0a-5c21-4305-b746-31e251ebad74",
+          "eventSequence": 53,
+          "executionGeneration": 1,
+          "mediaType": "image/png",
+          "fileName": "real-example-domain.png",
+          "byteSize": 20253,
+          "sha256": "30165066964078a95fe8c5bf616b67d2327532979e872629911b4d68b33a6122",
+          "createdAt": "2026-09-27T17:35:01.604919Z",
+          "unavailableReason": null,
+          "contentUrl": "/api/v1/projects/9812a3b6-abb7-4874-b7a5-f379275f9088/tasks/d69604df-886d-4de1-8557-3aacb61ef113/artifacts/ada8b2af-8e53-49ae-b85d-3f4a69b8cc10/content",
+          "downloadSha256": "30165066964078a95fe8c5bf616b67d2327532979e872629911b4d68b33a6122"
+        }
+      ]
+    },
+    {
+      "name": "browser environment cleaned",
+      "passed": true,
+      "status": "passed",
+      "detail": null
+    }
+  ],
+  "scenarios": {
+    "browser_nodes": {
+      "workflowId": "bba850ec-795d-48d5-9dd0-47e0048fa810",
+      "automationId": "b7c2ced6-eeb1-4e8b-b9b6-3a15d9a805a4",
+      "batchId": "2bafdc81-28e9-4f31-9b2f-ba161a1bd745",
+      "result": {
+        "batch": {
+          "batch": {
+            "batchId": "2bafdc81-28e9-4f31-9b2f-ba161a1bd745",
+            "projectId": "9812a3b6-abb7-4874-b7a5-f379275f9088",
+            "automationId": "b7c2ced6-eeb1-4e8b-b9b6-3a15d9a805a4",
+            "automationName": "只读浏览器节点验收",
+            "startOperationId": "1e63478c-3d45-4079-9fd4-0cc5b0167557",
+            "status": "completed",
+            "statusRevision": 3,
+            "managementRevision": 1,
+            "requestedCount": 1,
+            "createdTaskCount": 1,
+            "activeTaskCount": 0,
+            "claimGateState": "closed",
+            "selectionOutcome": null,
+            "createdAt": "2026-09-27T17:34:51.644696Z",
+            "completedAt": "2026-09-27T17:35:03.473260Z"
+          },
+          "statusCounts": {
+            "interrupted": 0,
+            "cancelled": 0,
+            "succeeded": 1,
+            "failed": 0,
+            "timed_out": 0
+          },
+          "taskCount": 1,
+          "reusedInputGroupCount": 0,
+          "unchangedInputStreak": 0,
+          "stopOperation": null,
+          "forceStopAllowed": false,
+          "forceStopAvailableAt": null,
+          "configurationSnapshot": {
+            "automation": {
+              "automationId": "b7c2ced6-eeb1-4e8b-b9b6-3a15d9a805a4",
+              "projectId": "9812a3b6-abb7-4874-b7a5-f379275f9088",
+              "workflowId": "bba850ec-795d-48d5-9dd0-47e0048fa810",
+              "name": "只读浏览器节点验收",
+              "description": "公开网页与实际仓库文件，无合成HTML",
+              "managementRevision": 1,
+              "inputPlan": {
+                "inputs": []
+              },
+              "parameterSchema": [],
+              "environmentPolicy": {
+                "source": "newFromProfile",
+                "profileId": "64186e0a-a84c-4683-92dc-e97e249b449b",
+                "proxyOverride": {
+                  "mode": "none"
+                },
+                "modelProviderId": null
+              },
+              "runPolicy": {
+                "maxTasks": 1,
+                "concurrency": 1,
+                "maxLiveInstances": 1,
+                "continueAfterFailure": false,
+                "automaticExecutionTimeoutSeconds": 150,
+                "manualDeadlineSeconds": 300
+              },
+              "capabilityRequirements": [],
+              "createdAt": "2026-09-27T17:34:51.497542+00:00",
+              "updatedAt": "2026-09-27T17:34:51.497542+00:00"
+            },
+            "parameters": {},
+            "maxTasks": 1,
+            "concurrency": 1,
+            "resourceRequest": {
+              "browser": "newFromProfile",
+              "profileId": "64186e0a-a84c-4683-92dc-e97e249b449b",
+              "kernelId": "public:145.0.7632.109.2",
+              "proxy": {
+                "mode": "none"
+              },
+              "modelProviderId": null,
+              "frozenConfiguration": {
+                "profileSpec": {
+                  "name": "只读浏览器节点真实验收",
+                  "description": "",
+                  "start_url": "about:blank",
+                  "locale": null,
+                  "timezone": null,
+                  "geoip": false,
+                  "headless": true,
+                  "humanize": false,
+                  "human_preset": "default",
+                  "user_agent": null,
+                  "viewport": null,
+                  "color_scheme": null,
+                  "extension_paths": [],
+                  "expert_args": [],
+                  "browser_version": "145.0.7632.109.2",
+                  "browser_edition": "public",
+                  "release_channel": "stable",
+                  "proxy_mode": "none",
+                  "proxy_id": null,
+                  "proxy_pool_id": null
+                },
+                "fingerprintSeed": 92491,
+                "createdAt": "2026-09-27T17:34:51.045706+00:00",
+                "updatedAt": "2026-09-27T17:34:51.045706+00:00"
+              },
+              "automaticExecutionTimeoutSeconds": 150
+            },
+            "workflowRevision": 1,
+            "dataCapabilityBinding": null
+          }
+        },
+        "tasks": [
+          {
+            "summary": {
+              "taskId": "d69604df-886d-4de1-8557-3aacb61ef113",
+              "projectId": "9812a3b6-abb7-4874-b7a5-f379275f9088",
+              "batchId": "2bafdc81-28e9-4f31-9b2f-ba161a1bd745",
+              "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+              "runRequestId": "aefc466e-2e91-4c6e-872d-92fdfa42bfe3",
+              "status": "succeeded",
+              "statusRevision": 4,
+              "inputSnapshotId": "725a3721-daa9-49ab-b0d8-a0eeb0b8a1fe",
+              "taskOrdinal": 1,
+              "automationName": "只读浏览器节点验收",
+              "batchStartedAt": "2026-09-27T17:34:51.644696Z",
+              "inputIdentifier": "参数任务",
+              "endNodeName": "关闭网页",
+              "lastStatusAt": "2026-09-27T17:35:03.439829Z",
+              "manualItemId": null,
+              "createdAt": "2026-09-27T17:34:51.644696Z",
+              "completedAt": "2026-09-27T17:35:03.439829Z"
+            },
+            "detail": {
+              "automationName": "只读浏览器节点验收",
+              "batchStartedAt": "2026-09-27T17:34:51.644696Z",
+              "parameterDefinitions": [],
+              "nodeNames": {
+                "n0": "打开网页",
+                "n1": "等待页面加载完成",
+                "n2": "网页是否加载完成",
+                "n3": "等待元素",
+                "n4": "读取文本",
+                "n5": "元素是否存在",
+                "n6": "元素是否可见",
+                "n7": "获取子元素",
+                "n8": "获取兄弟元素",
+                "n9": "悬停元素",
+                "n10": "注入 JavaScript",
+                "n11": "网页截图",
+                "n12": "打开网页",
+                "n13": "切换标签页",
+                "n14": "切换标签页",
+                "n15": "使用已打开网页",
+                "n16": "刷新网页",
+                "n17": "滚动页面",
+                "n18": "注入 JavaScript",
+                "n19": "打开网页",
+                "n20": "后退",
+                "n21": "注入 JavaScript",
+                "n22": "前进",
+                "n23": "注入 JavaScript",
+                "n24": "切换标签页",
+                "n25": "关闭网页"
+              },
+              "task": {
+                "taskId": "d69604df-886d-4de1-8557-3aacb61ef113",
+                "projectId": "9812a3b6-abb7-4874-b7a5-f379275f9088",
+                "batchId": "2bafdc81-28e9-4f31-9b2f-ba161a1bd745",
+                "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                "runRequestId": "aefc466e-2e91-4c6e-872d-92fdfa42bfe3",
+                "status": "succeeded",
+                "statusRevision": 4,
+                "inputSnapshotId": "725a3721-daa9-49ab-b0d8-a0eeb0b8a1fe",
+                "taskOrdinal": 1,
+                "automationName": null,
+                "batchStartedAt": null,
+                "inputIdentifier": null,
+                "endNodeName": null,
+                "lastStatusAt": null,
+                "manualItemId": null,
+                "createdAt": "2026-09-27T17:34:51.644696Z",
+                "completedAt": "2026-09-27T17:35:03.439829Z"
+              },
+              "inputSnapshot": {
+                "inputSnapshotId": "725a3721-daa9-49ab-b0d8-a0eeb0b8a1fe",
+                "taskId": "d69604df-886d-4de1-8557-3aacb61ef113",
+                "batchId": "2bafdc81-28e9-4f31-9b2f-ba161a1bd745",
+                "parameters": {},
+                "inputs": [],
+                "capturedAt": "2026-09-27T17:34:51.644696Z"
+              },
+              "currentInputs": [],
+              "run": {
+                "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                "runRequestId": "aefc466e-2e91-4c6e-872d-92fdfa42bfe3",
+                "status": "succeeded",
+                "statusRevision": 4,
+                "executionGeneration": 1,
+                "preparedContentId": "6ef96216-92d7-4a2d-b1a1-1fe65eff0cd7",
+                "capabilityBindings": [],
+                "resourceRequest": {
+                  "browser": "newFromProfile",
+                  "profileId": "64186e0a-a84c-4683-92dc-e97e249b449b",
+                  "kernelId": "public:145.0.7632.109.2",
+                  "proxy": {
+                    "mode": "none"
+                  },
+                  "modelProviderId": null,
+                  "automaticExecutionTimeoutSeconds": 150
+                },
+                "lastSequence": 121,
+                "terminal": true,
+                "error": null,
+                "startedAt": "2026-09-27T17:34:51.675889Z",
+                "finishedAt": "2026-09-27T17:35:03.439829Z"
+              },
+              "dataWrites": [],
+              "cleanup": {
+                "status": "succeeded",
+                "operationId": null,
+                "message": "已确认浏览器退出，临时环境已释放。"
+              }
+            },
+            "outputs": {
+              "items": [
+                {
+                  "outputId": "a3235e2946f3433b91f8f18f3f33cda3",
+                  "kind": "value",
+                  "name": "public_loaded",
+                  "value": true,
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 12,
+                  "nodeId": "n2",
+                  "nodeName": "网页是否加载完成",
+                  "nodeVisitId": "243d9372-7c35-4cd7-a741-f6d4cf455061",
+                  "attempt": 1,
+                  "createdAt": "2026-09-27T17:35:00.895603Z",
+                  "executionContext": null
+                },
+                {
+                  "outputId": "88bfe23792454435b1d010deef6bc98b",
+                  "kind": "value",
+                  "name": "heading",
+                  "value": "Example Domain",
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 21,
+                  "nodeId": "n4",
+                  "nodeName": "读取文本",
+                  "nodeVisitId": "5bf25e80-2b79-4acb-bfe6-33bb46422776",
+                  "attempt": 1,
+                  "createdAt": "2026-09-27T17:35:01.030019Z",
+                  "executionContext": null
+                },
+                {
+                  "outputId": "37ee726ca4794e55a07959151a0650d3",
+                  "kind": "value",
+                  "name": "body_children",
+                  "value": [
+                    "body > div:nth-child(1)"
+                  ],
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 34,
+                  "nodeId": "n7",
+                  "nodeName": "获取子元素",
+                  "nodeVisitId": "9530f958-2cde-4317-b6ac-c7fe17974c03",
+                  "attempt": 1,
+                  "createdAt": "2026-09-27T17:35:01.247495Z",
+                  "executionContext": null
+                },
+                {
+                  "outputId": "8049047935414c39b8db7518e943c15e",
+                  "kind": "value",
+                  "name": "heading_siblings",
+                  "value": [
+                    "div > p:nth-child(2)",
+                    "div > p:nth-child(3)"
+                  ],
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 39,
+                  "nodeId": "n8",
+                  "nodeName": "获取兄弟元素",
+                  "nodeVisitId": "8d69c6a9-940a-43bb-baaa-6bb0c24623db",
+                  "attempt": 1,
+                  "createdAt": "2026-09-27T17:35:01.347218Z",
+                  "executionContext": null
+                },
+                {
+                  "outputId": "cdeb547823874f76a500b84478cf558d",
+                  "kind": "value",
+                  "name": "public_dom",
+                  "value": {
+                    "title": "Example Domain",
+                    "heading": "Example Domain",
+                    "url": "https://example.com/"
+                  },
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 48,
+                  "nodeId": "n10",
+                  "nodeName": "注入 JavaScript",
+                  "nodeVisitId": "b90feaac-a2b1-4bd0-aba7-e2e6069c41b6",
+                  "attempt": 1,
+                  "createdAt": "2026-09-27T17:35:01.498215Z",
+                  "executionContext": null
+                },
+                {
+                  "outputId": "452616f3b6aa4678853082e58b39bc04",
+                  "kind": "value",
+                  "name": "public_screenshot",
+                  "value": {
+                    "path": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-runtime-6rajavpv/workspace/runs/9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5/generation-1/artifacts/real-example-domain.png"
+                  },
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 54,
+                  "nodeId": "n11",
+                  "nodeName": "网页截图",
+                  "nodeVisitId": "1e398f0a-5c21-4305-b746-31e251ebad74",
+                  "attempt": 1,
+                  "createdAt": "2026-09-27T17:35:01.620964Z",
+                  "executionContext": null
+                },
+                {
+                  "outputId": "56d0e59588a94bef8dbd8aaab0276948",
+                  "kind": "value",
+                  "name": "first_index",
+                  "value": 0,
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 63,
+                  "nodeId": "n13",
+                  "nodeName": "切换标签页",
+                  "nodeVisitId": "69fc7e36-9314-43b8-8706-2188096b2a38",
+                  "attempt": 1,
+                  "createdAt": "2026-09-27T17:35:01.921459Z",
+                  "executionContext": null
+                },
+                {
+                  "outputId": "a5a737c8d7b248849edc91f46b067084",
+                  "kind": "value",
+                  "name": "first_title",
+                  "value": "Example Domain",
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 64,
+                  "nodeId": "n13",
+                  "nodeName": "切换标签页",
+                  "nodeVisitId": "69fc7e36-9314-43b8-8706-2188096b2a38",
+                  "attempt": 1,
+                  "createdAt": "2026-09-27T17:35:01.931432Z",
+                  "executionContext": null
+                },
+                {
+                  "outputId": "ab3324c4702a493387b86fff5e1a8b5a",
+                  "kind": "value",
+                  "name": "last_index",
+                  "value": 1,
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 69,
+                  "nodeId": "n14",
+                  "nodeName": "切换标签页",
+                  "nodeVisitId": "47b65953-a835-420e-a395-6ff2704ab408",
+                  "attempt": 1,
+                  "createdAt": "2026-09-27T17:35:02.000667Z",
+                  "executionContext": null
+                },
+                {
+                  "outputId": "64f1567e23f14928a87c8bf5b62b6212",
+                  "kind": "value",
+                  "name": "last_url",
+                  "value": "file:///Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/pyproject.toml",
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 70,
+                  "nodeId": "n14",
+                  "nodeName": "切换标签页",
+                  "nodeVisitId": "47b65953-a835-420e-a395-6ff2704ab408",
+                  "attempt": 1,
+                  "createdAt": "2026-09-27T17:35:02.007487Z",
+                  "executionContext": null
+                },
+                {
+                  "outputId": "019b7e2a660e4f2bbf7879610bcddc6c",
+                  "kind": "value",
+                  "name": "scrolled_source",
+                  "value": {
+                    "scrollY": 99,
+                    "body": "[project]\nname = \"autoflow-backend\"\nversion = \"0.1.0\"\ndescription = \"AutoFlow backend service\"\nrequires-python = \">=3.11,<3.12\"\ndependencies = [\n  \"fastapi\",\n  \"pydantic\",\n  \"uvicorn\",\n  \"sqlalchemy>=2.0,<3\",\n  \"alembic>=1.13,<2\",\n  \"cloakbrowser[geoip]==0.5.9\",\n  \"httpx[socks]>=0.28,<1\",\n  \"keyring>=25,<26\",\n  \"tzdata>=2026.3\",\n  \"openpyxl==3.1.5\",\n  \"defusedxml==0.7.1\",\n  \"regex==2026.9.10\",\n  \"langgraph==1.2.11\",\n  \"langgraph-checkpoint-sqlite==3.1.1\",\n  \"beautifulsoup4>=4.12,<5\",\n  \"html2text>=2024.2.26,<2027\",\n  \"ddddocr>=1.0.6,<2\",\n  \"numpy>=1.26,<3\",\n  \"opencv-contrib-python>=5,<6\",\n  \"easyocr>=1.7,<2\",\n  \"face-recognition>=1.3,<2\",\n  \"setuptools>=70,<81\",\n  \"pypdf>=4,<7\",\n  \"python-docx>=1,<2\",\n  \"xlrd>=2,<3\",\n  \"faster-whisper>=1.2,<2\",\n  \"mcp>=1,<2\",\n  \"paramiko>=3.4,<4\",\n  \"pynput>=1.7,<2\",\n  \"pywin32>=312,<313; sys_platform == 'win32'\",\n  \"pycaw>=20251023,<20270000; sys_platform == 'win32'\",\n  \"mss>=10,<11\",\n  \"mediapipe>=0.10.35,<0.11\",\n  \"laya==0.3.6\",\n]\n\n[build-system]\nrequires = [\"hatchling\"]\nbuild-backend = \"hatchling.build\"\n\n[tool.hatch.build.targets.wheel]\npackages = [\"src/autoflow\"]\n\n[tool.pytest.ini_options]\npythonpath = [\"src\"]\n\n[dependency-groups]\ndev = [\n  \"httpx\",\n  \"pytest\",\n  \"pytest-asyncio\",\n  \"ruff\",\n  \"mypy\",\n  \"types-setuptools\",\n  \"types-openpyxl>=3.1.5.20260827\",\n  \"types-defusedxml>=0.7.0.20260504\",\n  \"types-regex>=2026.9.10.20260911\",\n  \"types-paramiko>=5.0.0.20260724\",\n]\nbuild = [\n  \"pyinstaller\",\n]\n",
+                    "url": "file:///Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/pyproject.toml"
+                  },
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 87,
+                  "nodeId": "n18",
+                  "nodeName": "注入 JavaScript",
+                  "nodeVisitId": "5c31c2a6-bb4b-4ffc-be9b-44fc0583078d",
+                  "attempt": 1,
+                  "createdAt": "2026-09-27T17:35:02.265967Z",
+                  "executionContext": null
+                },
+                {
+                  "outputId": "a83b08dfc9c14e31bed07833088e1a99",
+                  "kind": "value",
+                  "name": "back_source",
+                  "value": {
+                    "url": "file:///Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/pyproject.toml",
+                    "text": "[project]\nname = \"autoflow-backend\"\nversion = \"0.1.0\"\ndescription = \"AutoFlow backend service\"\nrequires-python = \">=3.11,<3.12\"\ndependencies = [\n  \"fastapi\",\n  \"pydantic\",\n  \"uvicorn\",\n  \"sqlalchemy>=2.0,<3\",\n  \"alembic>=1.13,<2\",\n  \"cloakbrowser[geoip]==0.5.9\",\n  \"httpx[socks]>=0.28,<1\",\n  \"keyring>=25,<26\",\n  \"tzdata>=2026.3\",\n  \"openpyxl==3.1.5\",\n  \"defusedxml==0.7.1\",\n  \"regex==2026.9.10\",\n  \"langgraph==1.2.11\",\n  \"langgraph-checkpoint-sqlite==3.1.1\",\n  \"beautifulsoup4>=4.12,<5\",\n  \"html2text>=2024.2.26,<2027\",\n  \"ddddocr>=1.0.6,<2\",\n  \"numpy>=1.26,<3\",\n  \"opencv-contrib-python>=5,<6\",\n  \"easyocr>=1.7,<2\",\n  \"face-recognition>=1.3,<2\",\n  \"setuptools>=70,<81\",\n  \"pypdf>=4,<7\",\n  \"python-docx>=1,<2\",\n  \"xlrd>=2,<3\",\n  \"faster-whisper>=1.2,<2\",\n  \"mcp>=1,<2\",\n  \"paramiko>=3.4,<4\",\n  \"pynput>=1.7,<2\",\n  \"pywin32>=312,<313; sys_platform == 'win32'\",\n  \"pycaw>=20251023,<20270000; sys_platform == 'win32'\",\n  \"mss>=10,<11\",\n  \"mediapipe>=0.10.35,<0.11\",\n  \"laya==0.3.6\",\n]\n\n[build-system]\nrequires = [\"hatchling\"]\nbuild-backend = \"hatchling.build\"\n\n[tool.hatch.build.targets.wheel]\npackages = [\"src/autoflow\"]\n\n[tool.pytest.ini_options]\npythonpath = [\"src\"]\n\n[dependency-groups]\ndev = [\n  \"httpx\",\n  \"pytest\",\n  \"pytest-asyncio\",\n  \"ruff\",\n  \"mypy\",\n  \"types-setuptools\",\n  \"types-openpyxl>=3.1.5.20260827\",\n  \"types-defusedxml>=0.7.0.20260504\",\n  \"types-regex>=2026.9.10.20260911\",\n  \"types-paramiko>=5.0.0.20260724\",\n]\nbuild = [\n  \"pyinstaller\",\n]\n"
+                  },
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 100,
+                  "nodeId": "n21",
+                  "nodeName": "注入 JavaScript",
+                  "nodeVisitId": "c5cbba23-4627-4aa1-b2df-0174ac1ca756",
+                  "attempt": 1,
+                  "createdAt": "2026-09-27T17:35:02.527693Z",
+                  "executionContext": null
+                },
+                {
+                  "outputId": "1c18dab23ff54372b66dc2a13aebe7e7",
+                  "kind": "value",
+                  "name": "forward_source",
+                  "value": {
+                    "url": "file:///Users/zhangtiancheng/Documents/projects/autoflow/package.json",
+                    "text": "{\n  \"name\": \"autoflow\",\n  \"private\": true,\n  \"workspaces\": [\n    \"apps/desktop\"\n  ],\n  \"scripts\": {\n    \"test:structure\": \"node --test scripts/structure.test.mjs\",\n    \"dev\": \"npm --workspace @autoflow/desktop run dev\",\n    \"test\": \"npm --workspace @autoflow/desktop test\",\n    \"typecheck\": \"npm --workspace @autoflow/desktop run typecheck\",\n    \"lint\": \"npm --workspace @autoflow/desktop run lint\",\n    \"build\": \"npm --workspace @autoflow/desktop run build\",\n    \"backend:build\": \"node scripts/build-backend.mjs\",\n    \"package:dir\": \"npm --workspace @autoflow/desktop run package:dir\",\n    \"openapi:generate\": \"node scripts/generate-api.mjs\",\n    \"openapi:check\": \"node scripts/generate-api.mjs --check\",\n    \"smoke:sidecar\": \"node scripts/smoke-sidecar.mjs\",\n    \"test:scripts\": \"node --test scripts/*.test.mjs\",\n    \"smoke:desktop\": \"node scripts/smoke-desktop.mjs\",\n    \"smoke:studio\": \"node scripts/smoke-studio-window.mjs\",\n    \"test:pm2\": \"node scripts/verify-pm2-delivery.mjs\"\n  },\n  \"devDependencies\": {\n    \"openapi-typescript\": \"^7.13.0\"\n  }\n}\n"
+                  },
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 109,
+                  "nodeId": "n23",
+                  "nodeName": "注入 JavaScript",
+                  "nodeVisitId": "7394cf51-1e9d-4747-b092-cb5d05bd6394",
+                  "attempt": 1,
+                  "createdAt": "2026-09-27T17:35:02.679270Z",
+                  "executionContext": null
+                }
+              ],
+              "page": 1,
+              "pageSize": 50,
+              "total": 13,
+              "sort": "createdAt"
+            },
+            "node-attempts": {
+              "items": [
+                {
+                  "nodeVisitId": "d7200d0c-e7df-4cd4-8417-ede1d1d7dbc7",
+                  "nodeId": "n0",
+                  "nodeName": "打开网页",
+                  "attempt": 1,
+                  "status": "succeeded",
+                  "startedAt": "2026-09-27T17:35:00.282714Z",
+                  "completedAt": "2026-09-27T17:35:00.819212Z",
+                  "error": null,
+                  "executionContext": null
+                },
+                {
+                  "nodeVisitId": "6eb82a9a-5390-437c-b3df-1e6bb2b0491b",
+                  "nodeId": "n1",
+                  "nodeName": "等待页面加载完成",
+                  "attempt": 1,
+                  "status": "succeeded",
+                  "startedAt": "2026-09-27T17:35:00.829405Z",
+                  "completedAt": "2026-09-27T17:35:00.862394Z",
+                  "error": null,
+                  "executionContext": null
+                },
+                {
+                  "nodeVisitId": "243d9372-7c35-4cd7-a741-f6d4cf455061",
+                  "nodeId": "n2",
+                  "nodeName": "网页是否加载完成",
+                  "attempt": 1,
+                  "status": "succeeded",
+                  "startedAt": "2026-09-27T17:35:00.873549Z",
+                  "completedAt": "2026-09-27T17:35:00.916819Z",
+                  "error": null,
+                  "executionContext": null
+                },
+                {
+                  "nodeVisitId": "9fa94c81-8d99-4a02-b24d-b481a63d4cd0",
+                  "nodeId": "n3",
+                  "nodeName": "等待元素",
+                  "attempt": 1,
+                  "status": "succeeded",
+                  "startedAt": "2026-09-27T17:35:00.928173Z",
+                  "completedAt": "2026-09-27T17:35:00.983046Z",
+                  "error": null,
+                  "executionContext": null
+                },
+                {
+                  "nodeVisitId": "5bf25e80-2b79-4acb-bfe6-33bb46422776",
+                  "nodeId": "n4",
+                  "nodeName": "读取文本",
+                  "attempt": 1,
+                  "status": "succeeded",
+                  "startedAt": "2026-09-27T17:35:00.993346Z",
+                  "completedAt": "2026-09-27T17:35:01.047533Z",
+                  "error": null,
+                  "executionContext": null
+                },
+                {
+                  "nodeVisitId": "91e9cf39-e259-4eac-af9a-fcd42e9994c4",
+                  "nodeId": "n5",
+                  "nodeName": "元素是否存在",
+                  "attempt": 1,
+                  "status": "succeeded",
+                  "startedAt": "2026-09-27T17:35:01.059840Z",
+                  "completedAt": "2026-09-27T17:35:01.102840Z",
+                  "error": null,
+                  "executionContext": null
+                },
+                {
+                  "nodeVisitId": "491babb8-6fe9-49bb-9616-16547155b44e",
+                  "nodeId": "n6",
+                  "nodeName": "元素是否可见",
+                  "attempt": 1,
+                  "status": "succeeded",
+                  "startedAt": "2026-09-27T17:35:01.114785Z",
+                  "completedAt": "2026-09-27T17:35:01.178285Z",
+                  "error": null,
+                  "executionContext": null
+                },
+                {
+                  "nodeVisitId": "9530f958-2cde-4317-b6ac-c7fe17974c03",
+                  "nodeId": "n7",
+                  "nodeName": "获取子元素",
+                  "attempt": 1,
+                  "status": "succeeded",
+                  "startedAt": "2026-09-27T17:35:01.189718Z",
+                  "completedAt": "2026-09-27T17:35:01.281345Z",
+                  "error": null,
+                  "executionContext": null
+                },
+                {
+                  "nodeVisitId": "8d69c6a9-940a-43bb-baaa-6bb0c24623db",
+                  "nodeId": "n8",
+                  "nodeName": "获取兄弟元素",
+                  "attempt": 1,
+                  "status": "succeeded",
+                  "startedAt": "2026-09-27T17:35:01.292155Z",
+                  "completedAt": "2026-09-27T17:35:01.365410Z",
+                  "error": null,
+                  "executionContext": null
+                },
+                {
+                  "nodeVisitId": "995463a5-53b9-4fdb-a790-846579e053b5",
+                  "nodeId": "n9",
+                  "nodeName": "悬停元素",
+                  "attempt": 1,
+                  "status": "succeeded",
+                  "startedAt": "2026-09-27T17:35:01.377408Z",
+                  "completedAt": "2026-09-27T17:35:01.456758Z",
+                  "error": null,
+                  "executionContext": null
+                },
+                {
+                  "nodeVisitId": "b90feaac-a2b1-4bd0-aba7-e2e6069c41b6",
+                  "nodeId": "n10",
+                  "nodeName": "注入 JavaScript",
+                  "attempt": 1,
+                  "status": "succeeded",
+                  "startedAt": "2026-09-27T17:35:01.468813Z",
+                  "completedAt": "2026-09-27T17:35:01.524988Z",
+                  "error": null,
+                  "executionContext": null
+                },
+                {
+                  "nodeVisitId": "1e398f0a-5c21-4305-b746-31e251ebad74",
+                  "nodeId": "n11",
+                  "nodeName": "网页截图",
+                  "attempt": 1,
+                  "status": "succeeded",
+                  "startedAt": "2026-09-27T17:35:01.534834Z",
+                  "completedAt": "2026-09-27T17:35:01.641760Z",
+                  "error": null,
+                  "executionContext": null
+                },
+                {
+                  "nodeVisitId": "169b27a9-5d7d-4f49-9e83-6d82808fde1a",
+                  "nodeId": "n12",
+                  "nodeName": "打开网页",
+                  "attempt": 1,
+                  "status": "succeeded",
+                  "startedAt": "2026-09-27T17:35:01.655165Z",
+                  "completedAt": "2026-09-27T17:35:01.865795Z",
+                  "error": null,
+                  "executionContext": null
+                },
+                {
+                  "nodeVisitId": "69fc7e36-9314-43b8-8706-2188096b2a38",
+                  "nodeId": "n13",
+                  "nodeName": "切换标签页",
+                  "attempt": 1,
+                  "status": "succeeded",
+                  "startedAt": "2026-09-27T17:35:01.877618Z",
+                  "completedAt": "2026-09-27T17:35:01.952324Z",
+                  "error": null,
+                  "executionContext": null
+                },
+                {
+                  "nodeVisitId": "47b65953-a835-420e-a395-6ff2704ab408",
+                  "nodeId": "n14",
+                  "nodeName": "切换标签页",
+                  "attempt": 1,
+                  "status": "succeeded",
+                  "startedAt": "2026-09-27T17:35:01.964370Z",
+                  "completedAt": "2026-09-27T17:35:02.028095Z",
+                  "error": null,
+                  "executionContext": null
+                },
+                {
+                  "nodeVisitId": "2ff6f14c-eed2-43fb-8c23-e5222c75fa99",
+                  "nodeId": "n15",
+                  "nodeName": "使用已打开网页",
+                  "attempt": 1,
+                  "status": "succeeded",
+                  "startedAt": "2026-09-27T17:35:02.039264Z",
+                  "completedAt": "2026-09-27T17:35:02.093932Z",
+                  "error": null,
+                  "executionContext": null
+                },
+                {
+                  "nodeVisitId": "e0574dde-abba-4381-8ee0-b588f7a78dbe",
+                  "nodeId": "n16",
+                  "nodeName": "刷新网页",
+                  "attempt": 1,
+                  "status": "succeeded",
+                  "startedAt": "2026-09-27T17:35:02.105335Z",
+                  "completedAt": "2026-09-27T17:35:02.181706Z",
+                  "error": null,
+                  "executionContext": null
+                },
+                {
+                  "nodeVisitId": "8d932ce9-cecf-47df-b563-d51a93c5a87e",
+                  "nodeId": "n17",
+                  "nodeName": "滚动页面",
+                  "attempt": 1,
+                  "status": "succeeded",
+                  "startedAt": "2026-09-27T17:35:02.193047Z",
+                  "completedAt": "2026-09-27T17:35:02.226172Z",
+                  "error": null,
+                  "executionContext": null
+                },
+                {
+                  "nodeVisitId": "5c31c2a6-bb4b-4ffc-be9b-44fc0583078d",
+                  "nodeId": "n18",
+                  "nodeName": "注入 JavaScript",
+                  "attempt": 1,
+                  "status": "succeeded",
+                  "startedAt": "2026-09-27T17:35:02.236622Z",
+                  "completedAt": "2026-09-27T17:35:02.280892Z",
+                  "error": null,
+                  "executionContext": null
+                },
+                {
+                  "nodeVisitId": "75925ce0-3207-4510-8db2-ba88c323ddee",
+                  "nodeId": "n19",
+                  "nodeName": "打开网页",
+                  "attempt": 1,
+                  "status": "succeeded",
+                  "startedAt": "2026-09-27T17:35:02.293169Z",
+                  "completedAt": "2026-09-27T17:35:02.395178Z",
+                  "error": null,
+                  "executionContext": null
+                },
+                {
+                  "nodeVisitId": "1f732db9-ed01-41d8-af3e-be8274bc58c8",
+                  "nodeId": "n20",
+                  "nodeName": "后退",
+                  "attempt": 1,
+                  "status": "succeeded",
+                  "startedAt": "2026-09-27T17:35:02.406646Z",
+                  "completedAt": "2026-09-27T17:35:02.484358Z",
+                  "error": null,
+                  "executionContext": null
+                },
+                {
+                  "nodeVisitId": "c5cbba23-4627-4aa1-b2df-0174ac1ca756",
+                  "nodeId": "n21",
+                  "nodeName": "注入 JavaScript",
+                  "attempt": 1,
+                  "status": "succeeded",
+                  "startedAt": "2026-09-27T17:35:02.496109Z",
+                  "completedAt": "2026-09-27T17:35:02.553104Z",
+                  "error": null,
+                  "executionContext": null
+                },
+                {
+                  "nodeVisitId": "9b787309-cf48-406f-ac5b-b0850901b661",
+                  "nodeId": "n22",
+                  "nodeName": "前进",
+                  "attempt": 1,
+                  "status": "succeeded",
+                  "startedAt": "2026-09-27T17:35:02.564620Z",
+                  "completedAt": "2026-09-27T17:35:02.641114Z",
+                  "error": null,
+                  "executionContext": null
+                },
+                {
+                  "nodeVisitId": "7394cf51-1e9d-4747-b092-cb5d05bd6394",
+                  "nodeId": "n23",
+                  "nodeName": "注入 JavaScript",
+                  "attempt": 1,
+                  "status": "succeeded",
+                  "startedAt": "2026-09-27T17:35:02.652400Z",
+                  "completedAt": "2026-09-27T17:35:02.695631Z",
+                  "error": null,
+                  "executionContext": null
+                },
+                {
+                  "nodeVisitId": "d0458e33-a471-4926-b560-98ba3a2ce602",
+                  "nodeId": "n24",
+                  "nodeName": "切换标签页",
+                  "attempt": 1,
+                  "status": "succeeded",
+                  "startedAt": "2026-09-27T17:35:02.706712Z",
+                  "completedAt": "2026-09-27T17:35:02.738544Z",
+                  "error": null,
+                  "executionContext": null
+                },
+                {
+                  "nodeVisitId": "eccb508c-b1d5-4b2b-980a-520f735a233f",
+                  "nodeId": "n25",
+                  "nodeName": "关闭网页",
+                  "attempt": 1,
+                  "status": "succeeded",
+                  "startedAt": "2026-09-27T17:35:02.749684Z",
+                  "completedAt": "2026-09-27T17:35:02.792963Z",
+                  "error": null,
+                  "executionContext": null
+                }
+              ],
+              "page": 1,
+              "pageSize": 50,
+              "total": 26,
+              "sort": "createdAt"
+            },
+            "logs": {
+              "items": [
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 3,
+                  "eventId": "526f1b696e2944efb01f2e17347cbe0a",
+                  "executionGeneration": 1,
+                  "nodeId": "n0",
+                  "nodeName": "打开网页",
+                  "nodeVisitId": "d7200d0c-e7df-4cd4-8417-ede1d1d7dbc7",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "开始执行节点",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:00.294006Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 4,
+                  "eventId": "be8fb89d1f514a5a912b40b84311615a",
+                  "executionGeneration": 1,
+                  "nodeId": "n0",
+                  "nodeName": "打开网页",
+                  "nodeVisitId": "d7200d0c-e7df-4cd4-8417-ede1d1d7dbc7",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "节点执行完成",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:00.809648Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 7,
+                  "eventId": "8857b9c906c542a9b6d84ed46d380f2a",
+                  "executionGeneration": 1,
+                  "nodeId": "n1",
+                  "nodeName": "等待页面加载完成",
+                  "nodeVisitId": "6eb82a9a-5390-437c-b3df-1e6bb2b0491b",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "开始执行节点",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:00.840184Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 8,
+                  "eventId": "f3ab0d22f6724ebbb5eec23aaa37e3ab",
+                  "executionGeneration": 1,
+                  "nodeId": "n1",
+                  "nodeName": "等待页面加载完成",
+                  "nodeVisitId": "6eb82a9a-5390-437c-b3df-1e6bb2b0491b",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "节点执行完成",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:00.853939Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 11,
+                  "eventId": "52c060f10e664cb4950f2d13b58c7933",
+                  "executionGeneration": 1,
+                  "nodeId": "n2",
+                  "nodeName": "网页是否加载完成",
+                  "nodeVisitId": "243d9372-7c35-4cd7-a741-f6d4cf455061",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "开始执行节点",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:00.884465Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 13,
+                  "eventId": "7998ce47a24143e3b7e006a999fa61a9",
+                  "executionGeneration": 1,
+                  "nodeId": "n2",
+                  "nodeName": "网页是否加载完成",
+                  "nodeVisitId": "243d9372-7c35-4cd7-a741-f6d4cf455061",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "节点执行完成",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:00.905755Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 16,
+                  "eventId": "60dcc847e031457c9ee3ee4e414c8b21",
+                  "executionGeneration": 1,
+                  "nodeId": "n3",
+                  "nodeName": "等待元素",
+                  "nodeVisitId": "9fa94c81-8d99-4a02-b24d-b481a63d4cd0",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "开始执行节点",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:00.939030Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 17,
+                  "eventId": "ce12041bb6ad4f95aca306979479d721",
+                  "executionGeneration": 1,
+                  "nodeId": "n3",
+                  "nodeName": "等待元素",
+                  "nodeVisitId": "9fa94c81-8d99-4a02-b24d-b481a63d4cd0",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "节点执行完成",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:00.976911Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 20,
+                  "eventId": "b855e506a0da4026b237bd00c16f0c86",
+                  "executionGeneration": 1,
+                  "nodeId": "n4",
+                  "nodeName": "读取文本",
+                  "nodeVisitId": "5bf25e80-2b79-4acb-bfe6-33bb46422776",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "开始执行节点",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:01.004308Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 22,
+                  "eventId": "af2f00989ef341a69b35091cc65ceb5c",
+                  "executionGeneration": 1,
+                  "nodeId": "n4",
+                  "nodeName": "读取文本",
+                  "nodeVisitId": "5bf25e80-2b79-4acb-bfe6-33bb46422776",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "节点执行完成",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:01.036900Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 25,
+                  "eventId": "37a0af01e648449d966d22dbbea1a95d",
+                  "executionGeneration": 1,
+                  "nodeId": "n5",
+                  "nodeName": "元素是否存在",
+                  "nodeVisitId": "91e9cf39-e259-4eac-af9a-fcd42e9994c4",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "开始执行节点",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:01.069071Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 26,
+                  "eventId": "17934dfc8ad1440d8ceb3ddbad609c3d",
+                  "executionGeneration": 1,
+                  "nodeId": "n5",
+                  "nodeName": "元素是否存在",
+                  "nodeVisitId": "91e9cf39-e259-4eac-af9a-fcd42e9994c4",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "节点执行完成",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:01.092360Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 29,
+                  "eventId": "d35137ac0b9c40f5ae5559e7c1d49731",
+                  "executionGeneration": 1,
+                  "nodeId": "n6",
+                  "nodeName": "元素是否可见",
+                  "nodeVisitId": "491babb8-6fe9-49bb-9616-16547155b44e",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "开始执行节点",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:01.125841Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 30,
+                  "eventId": "bacf820726814c19a550a184329e60a1",
+                  "executionGeneration": 1,
+                  "nodeId": "n6",
+                  "nodeName": "元素是否可见",
+                  "nodeVisitId": "491babb8-6fe9-49bb-9616-16547155b44e",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "节点执行完成",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:01.152612Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 33,
+                  "eventId": "8e829a1c34c1403c9594eeb74083cb0c",
+                  "executionGeneration": 1,
+                  "nodeId": "n7",
+                  "nodeName": "获取子元素",
+                  "nodeVisitId": "9530f958-2cde-4317-b6ac-c7fe17974c03",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "开始执行节点",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:01.201269Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 35,
+                  "eventId": "8163ddbb3c0247bb91f4db216960ff4d",
+                  "executionGeneration": 1,
+                  "nodeId": "n7",
+                  "nodeName": "获取子元素",
+                  "nodeVisitId": "9530f958-2cde-4317-b6ac-c7fe17974c03",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "节点执行完成",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:01.259945Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 38,
+                  "eventId": "2f80b31c497c4b5b82ef36a69c8e52c5",
+                  "executionGeneration": 1,
+                  "nodeId": "n8",
+                  "nodeName": "获取兄弟元素",
+                  "nodeVisitId": "8d69c6a9-940a-43bb-baaa-6bb0c24623db",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "开始执行节点",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:01.309425Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 40,
+                  "eventId": "1927cd139f2f4864aadeb9fb22bc0ece",
+                  "executionGeneration": 1,
+                  "nodeId": "n8",
+                  "nodeName": "获取兄弟元素",
+                  "nodeVisitId": "8d69c6a9-940a-43bb-baaa-6bb0c24623db",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "节点执行完成",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:01.354261Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 43,
+                  "eventId": "7aac795228eb4bc78bdf6d9d7fc79611",
+                  "executionGeneration": 1,
+                  "nodeId": "n9",
+                  "nodeName": "悬停元素",
+                  "nodeVisitId": "995463a5-53b9-4fdb-a790-846579e053b5",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "开始执行节点",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:01.391185Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 44,
+                  "eventId": "9e1ab3e34dcd4f5c9d5db88edfa2b295",
+                  "executionGeneration": 1,
+                  "nodeId": "n9",
+                  "nodeName": "悬停元素",
+                  "nodeVisitId": "995463a5-53b9-4fdb-a790-846579e053b5",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "节点执行完成",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:01.448420Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 47,
+                  "eventId": "6829ddb4ff394336a691fce7d4397458",
+                  "executionGeneration": 1,
+                  "nodeId": "n10",
+                  "nodeName": "注入 JavaScript",
+                  "nodeVisitId": "b90feaac-a2b1-4bd0-aba7-e2e6069c41b6",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "开始执行节点",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:01.479204Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 49,
+                  "eventId": "f2e336472b634e319bfd082f61e3b433",
+                  "executionGeneration": 1,
+                  "nodeId": "n10",
+                  "nodeName": "注入 JavaScript",
+                  "nodeVisitId": "b90feaac-a2b1-4bd0-aba7-e2e6069c41b6",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "节点执行完成",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:01.512654Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 52,
+                  "eventId": "db87693d43a4494a95345d4c5f0d9bed",
+                  "executionGeneration": 1,
+                  "nodeId": "n11",
+                  "nodeName": "网页截图",
+                  "nodeVisitId": "1e398f0a-5c21-4305-b746-31e251ebad74",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "开始执行节点",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:01.545497Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 55,
+                  "eventId": "74d7ea72980048629abd039cc28e97b5",
+                  "executionGeneration": 1,
+                  "nodeId": "n11",
+                  "nodeName": "网页截图",
+                  "nodeVisitId": "1e398f0a-5c21-4305-b746-31e251ebad74",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "节点执行完成",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:01.631459Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 58,
+                  "eventId": "3a3b187217bc46a783b884e87dcd7918",
+                  "executionGeneration": 1,
+                  "nodeId": "n12",
+                  "nodeName": "打开网页",
+                  "nodeVisitId": "169b27a9-5d7d-4f49-9e83-6d82808fde1a",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "开始执行节点",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:01.665356Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 59,
+                  "eventId": "1497ca910f92495a843ade297373db18",
+                  "executionGeneration": 1,
+                  "nodeId": "n12",
+                  "nodeName": "打开网页",
+                  "nodeVisitId": "169b27a9-5d7d-4f49-9e83-6d82808fde1a",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "节点执行完成",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:01.853427Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 62,
+                  "eventId": "145c1c38a07a4e968b856dbc9b4550d8",
+                  "executionGeneration": 1,
+                  "nodeId": "n13",
+                  "nodeName": "切换标签页",
+                  "nodeVisitId": "69fc7e36-9314-43b8-8706-2188096b2a38",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "开始执行节点",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:01.888015Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 65,
+                  "eventId": "f7b7ad819cde41a8a46761f5269879e7",
+                  "executionGeneration": 1,
+                  "nodeId": "n13",
+                  "nodeName": "切换标签页",
+                  "nodeVisitId": "69fc7e36-9314-43b8-8706-2188096b2a38",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "节点执行完成",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:01.942235Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 68,
+                  "eventId": "0fc2c33b4aab4fcbb1ce8a1d58f8580b",
+                  "executionGeneration": 1,
+                  "nodeId": "n14",
+                  "nodeName": "切换标签页",
+                  "nodeVisitId": "47b65953-a835-420e-a395-6ff2704ab408",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "开始执行节点",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:01.974799Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 71,
+                  "eventId": "6d6d84945bed48508fef4c42e3c55b2e",
+                  "executionGeneration": 1,
+                  "nodeId": "n14",
+                  "nodeName": "切换标签页",
+                  "nodeVisitId": "47b65953-a835-420e-a395-6ff2704ab408",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "节点执行完成",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:02.017463Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 74,
+                  "eventId": "fd2cd7d80edf423ebc10b4f5a080af49",
+                  "executionGeneration": 1,
+                  "nodeId": "n15",
+                  "nodeName": "使用已打开网页",
+                  "nodeVisitId": "2ff6f14c-eed2-43fb-8c23-e5222c75fa99",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "开始执行节点",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:02.050259Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 75,
+                  "eventId": "445f87d61f844d82b8c50198b0f66882",
+                  "executionGeneration": 1,
+                  "nodeId": "n15",
+                  "nodeName": "使用已打开网页",
+                  "nodeVisitId": "2ff6f14c-eed2-43fb-8c23-e5222c75fa99",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "节点执行完成",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:02.063687Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 78,
+                  "eventId": "d3aef6aba56e4ae6ae56a5df0fcbe231",
+                  "executionGeneration": 1,
+                  "nodeId": "n16",
+                  "nodeName": "刷新网页",
+                  "nodeVisitId": "e0574dde-abba-4381-8ee0-b588f7a78dbe",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "开始执行节点",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:02.116322Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 79,
+                  "eventId": "9492dc9a30d64c458ddf40c84236d0cf",
+                  "executionGeneration": 1,
+                  "nodeId": "n16",
+                  "nodeName": "刷新网页",
+                  "nodeVisitId": "e0574dde-abba-4381-8ee0-b588f7a78dbe",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "节点执行完成",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:02.169853Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 82,
+                  "eventId": "f07e7e5ac5264ce4bfa5b10c634daa0d",
+                  "executionGeneration": 1,
+                  "nodeId": "n17",
+                  "nodeName": "滚动页面",
+                  "nodeVisitId": "8d932ce9-cecf-47df-b563-d51a93c5a87e",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "开始执行节点",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:02.204262Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 83,
+                  "eventId": "2996d7c0f9684cabb7dbb9082243c657",
+                  "executionGeneration": 1,
+                  "nodeId": "n17",
+                  "nodeName": "滚动页面",
+                  "nodeVisitId": "8d932ce9-cecf-47df-b563-d51a93c5a87e",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "节点执行完成",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:02.219264Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 86,
+                  "eventId": "c3dadfd422194d3c87bcca22c3f881b4",
+                  "executionGeneration": 1,
+                  "nodeId": "n18",
+                  "nodeName": "注入 JavaScript",
+                  "nodeVisitId": "5c31c2a6-bb4b-4ffc-be9b-44fc0583078d",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "开始执行节点",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:02.247521Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 88,
+                  "eventId": "413e7d63b8d044c39c359d360a9b0196",
+                  "executionGeneration": 1,
+                  "nodeId": "n18",
+                  "nodeName": "注入 JavaScript",
+                  "nodeVisitId": "5c31c2a6-bb4b-4ffc-be9b-44fc0583078d",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "节点执行完成",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:02.269187Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 91,
+                  "eventId": "92db1c825b114b5982bdf8b5f3bb13c6",
+                  "executionGeneration": 1,
+                  "nodeId": "n19",
+                  "nodeName": "打开网页",
+                  "nodeVisitId": "75925ce0-3207-4510-8db2-ba88c323ddee",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "开始执行节点",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:02.303904Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 92,
+                  "eventId": "c6f4e6e0464241ed9f8a330560951755",
+                  "executionGeneration": 1,
+                  "nodeId": "n19",
+                  "nodeName": "打开网页",
+                  "nodeVisitId": "75925ce0-3207-4510-8db2-ba88c323ddee",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "节点执行完成",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:02.381895Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 95,
+                  "eventId": "f3c199ef0c504b1ca9a3e3fbaa98606d",
+                  "executionGeneration": 1,
+                  "nodeId": "n20",
+                  "nodeName": "后退",
+                  "nodeVisitId": "1f732db9-ed01-41d8-af3e-be8274bc58c8",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "开始执行节点",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:02.417683Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 96,
+                  "eventId": "eb61cb5b4964445ca357cfb7469a5b94",
+                  "executionGeneration": 1,
+                  "nodeId": "n20",
+                  "nodeName": "后退",
+                  "nodeVisitId": "1f732db9-ed01-41d8-af3e-be8274bc58c8",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "节点执行完成",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:02.476506Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 99,
+                  "eventId": "1bcd74e840e84e5b8b592d67370a7b87",
+                  "executionGeneration": 1,
+                  "nodeId": "n21",
+                  "nodeName": "注入 JavaScript",
+                  "nodeVisitId": "c5cbba23-4627-4aa1-b2df-0174ac1ca756",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "开始执行节点",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:02.507300Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 101,
+                  "eventId": "f53ee2c30bdf489b9ac1d7bf38756f57",
+                  "executionGeneration": 1,
+                  "nodeId": "n21",
+                  "nodeName": "注入 JavaScript",
+                  "nodeVisitId": "c5cbba23-4627-4aa1-b2df-0174ac1ca756",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "节点执行完成",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:02.544119Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 104,
+                  "eventId": "760d0cd4e282413fb37d1c7447990598",
+                  "executionGeneration": 1,
+                  "nodeId": "n22",
+                  "nodeName": "前进",
+                  "nodeVisitId": "9b787309-cf48-406f-ac5b-b0850901b661",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "开始执行节点",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:02.575708Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 105,
+                  "eventId": "e54f7883614c4bda8d3c15caaed405e3",
+                  "executionGeneration": 1,
+                  "nodeId": "n22",
+                  "nodeName": "前进",
+                  "nodeVisitId": "9b787309-cf48-406f-ac5b-b0850901b661",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "节点执行完成",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:02.633998Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 108,
+                  "eventId": "73af2c5511d3467f9ab4d8a06471298e",
+                  "executionGeneration": 1,
+                  "nodeId": "n23",
+                  "nodeName": "注入 JavaScript",
+                  "nodeVisitId": "7394cf51-1e9d-4747-b092-cb5d05bd6394",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "开始执行节点",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:02.663303Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 110,
+                  "eventId": "f52b32d22c9141f0a27d3c40cc10648f",
+                  "executionGeneration": 1,
+                  "nodeId": "n23",
+                  "nodeName": "注入 JavaScript",
+                  "nodeVisitId": "7394cf51-1e9d-4747-b092-cb5d05bd6394",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "节点执行完成",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:02.684424Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 113,
+                  "eventId": "f87ed3cb68f64a7db4452a873bb8bd56",
+                  "executionGeneration": 1,
+                  "nodeId": "n24",
+                  "nodeName": "切换标签页",
+                  "nodeVisitId": "d0458e33-a471-4926-b560-98ba3a2ce602",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "开始执行节点",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:02.717698Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "9f6c14b1-3ac6-43cb-8e03-8a0c916aa0a5",
+                  "sequence": 114,
+                  "eventId": "8c45e8103dbe4354a388afa62cf739f1",
+                  "executionGeneration": 1,
+                  "nodeId": "n24",
+                  "nodeName": "切换标签页",
+                  "nodeVisitId": "d0458e33-a471-4926-b560-98ba3a2ce602",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "节点执行完成",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:35:02.734604Z",
+                  "executionContext": null
+                }
+              ],
+              "afterSequence": 114,
+              "lastSequence": 121,
+              "hasMore": true
+            },
+            "artifacts": {
+              "items": [
+                {
+                  "artifactId": "ada8b2af-8e53-49ae-b85d-3f4a69b8cc10",
+                  "kind": "screenshot",
+                  "purpose": "result",
+                  "availability": "available",
+                  "nodeId": "n11",
+                  "nodeName": "网页截图",
+                  "nodeVisitId": "1e398f0a-5c21-4305-b746-31e251ebad74",
+                  "eventSequence": 53,
+                  "executionGeneration": 1,
+                  "mediaType": "image/png",
+                  "fileName": "real-example-domain.png",
+                  "byteSize": 20253,
+                  "sha256": "30165066964078a95fe8c5bf616b67d2327532979e872629911b4d68b33a6122",
+                  "createdAt": "2026-09-27T17:35:01.604919Z",
+                  "unavailableReason": null,
+                  "contentUrl": "/api/v1/projects/9812a3b6-abb7-4874-b7a5-f379275f9088/tasks/d69604df-886d-4de1-8557-3aacb61ef113/artifacts/ada8b2af-8e53-49ae-b85d-3f4a69b8cc10/content",
+                  "downloadSha256": "30165066964078a95fe8c5bf616b67d2327532979e872629911b4d68b33a6122"
+                }
+              ],
+              "page": 1,
+              "pageSize": 50,
+              "total": 1,
+              "sort": "createdAt"
+            }
+          }
+        ],
+        "history": [
+          {
+            "at": 1790530491.808264,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530492.127294,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530492.452616,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530492.7680619,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530493.085278,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530493.4068549,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530493.765745,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530494.083499,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530494.5392818,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530494.889317,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530495.302764,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530495.6219919,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530495.946817,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530496.267358,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530496.588518,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530496.972883,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530497.2884579,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530497.602305,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530497.923142,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530498.2449238,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530498.561506,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530498.877728,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530499.1926699,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530499.521554,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530499.840084,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530500.166618,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530500.489297,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530500.880144,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530501.462368,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530501.8948889,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530502.24706,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530502.6133618,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530502.9501948,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530503.280017,
+            "batchStatus": "running",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 0,
+              "failed": 0,
+              "timed_out": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790530503.608601,
+            "batchStatus": "completed",
+            "counts": {
+              "interrupted": 0,
+              "cancelled": 0,
+              "succeeded": 1,
+              "failed": 0,
+              "timed_out": 0
+            }
+          }
+        ]
+      }
+    }
+  },
+  "processes": [
+    35946
+  ],
+  "kind": "real_browser_node_coverage",
+  "nodeTypes": [
+    "close_page",
+    "element_exists",
+    "element_visible",
+    "get_child_elements",
+    "get_element_info",
+    "get_sibling_elements",
+    "go_back",
+    "go_forward",
+    "hover_element",
+    "inject_javascript",
+    "open_page",
+    "page_load_complete",
+    "refresh_page",
+    "screenshot",
+    "scroll_page",
+    "switch_tab",
+    "use_opened_page",
+    "wait_element",
+    "wait_page_load"
+  ],
+  "steps": [
+    {
+      "nodeId": "n0",
+      "type": "open_page",
+      "config": {
+        "url": "https://example.com/",
+        "openMode": "current_tab",
+        "timeout": 20
+      }
+    },
+    {
+      "nodeId": "n1",
+      "type": "wait_page_load",
+      "config": {
+        "waitUntil": "load",
+        "timeout": 10
+      }
+    },
+    {
+      "nodeId": "n2",
+      "type": "page_load_complete",
+      "config": {
+        "checkState": "domcontentloaded",
+        "saveToVariable": "public_loaded"
+      }
+    },
+    {
+      "nodeId": "n3",
+      "type": "wait_element",
+      "config": {
+        "selector": "h1",
+        "waitCondition": "visible",
+        "waitTimeout": 10
+      }
+    },
+    {
+      "nodeId": "n4",
+      "type": "get_element_info",
+      "config": {
+        "selector": "h1",
+        "attribute": "text",
+        "variableName": "heading"
+      }
+    },
+    {
+      "nodeId": "n5",
+      "type": "element_exists",
+      "config": {
+        "selector": "h1"
+      }
+    },
+    {
+      "nodeId": "n6",
+      "type": "element_visible",
+      "config": {
+        "selector": "h1"
+      }
+    },
+    {
+      "nodeId": "n7",
+      "type": "get_child_elements",
+      "config": {
+        "parentSelector": "body",
+        "variableName": "body_children"
+      }
+    },
+    {
+      "nodeId": "n8",
+      "type": "get_sibling_elements",
+      "config": {
+        "elementSelector": "h1",
+        "siblingType": "all",
+        "variableName": "heading_siblings"
+      }
+    },
+    {
+      "nodeId": "n9",
+      "type": "hover_element",
+      "config": {
+        "selector": "h1",
+        "hoverDuration": 0
+      }
+    },
+    {
+      "nodeId": "n10",
+      "type": "inject_javascript",
+      "config": {
+        "javascriptCode": "return {title:document.title,heading:document.querySelector(\"h1\").textContent,url:location.href}",
+        "saveResult": "public_dom"
+      }
+    },
+    {
+      "nodeId": "n11",
+      "type": "screenshot",
+      "config": {
+        "screenshotType": "viewport",
+        "fileNamePattern": "real-example-domain",
+        "variableName": "public_screenshot"
+      }
+    },
+    {
+      "nodeId": "n12",
+      "type": "open_page",
+      "config": {
+        "url": "file:///Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/pyproject.toml",
+        "openMode": "new_tab"
+      }
+    },
+    {
+      "nodeId": "n13",
+      "type": "switch_tab",
+      "config": {
+        "switchMode": "first",
+        "saveTitleVariable": "first_title",
+        "saveIndexVariable": "first_index"
+      }
+    },
+    {
+      "nodeId": "n14",
+      "type": "switch_tab",
+      "config": {
+        "switchMode": "last",
+        "saveUrlVariable": "last_url",
+        "saveIndexVariable": "last_index"
+      }
+    },
+    {
+      "nodeId": "n15",
+      "type": "use_opened_page",
+      "config": {
+        "pageIdentifier": "file:///Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/pyproject.toml",
+        "matchMode": "url"
+      }
+    },
+    {
+      "nodeId": "n16",
+      "type": "refresh_page",
+      "config": {
+        "waitUntil": "load"
+      }
+    },
+    {
+      "nodeId": "n17",
+      "type": "scroll_page",
+      "config": {
+        "direction": "down",
+        "distance": 400,
+        "scrollMode": "javascript"
+      }
+    },
+    {
+      "nodeId": "n18",
+      "type": "inject_javascript",
+      "config": {
+        "javascriptCode": "return {scrollY:window.scrollY,body:document.body.innerText,url:location.href}",
+        "saveResult": "scrolled_source"
+      }
+    },
+    {
+      "nodeId": "n19",
+      "type": "open_page",
+      "config": {
+        "url": "file:///Users/zhangtiancheng/Documents/projects/autoflow/package.json",
+        "openMode": "current_tab"
+      }
+    },
+    {
+      "nodeId": "n20",
+      "type": "go_back",
+      "config": {
+        "waitUntil": "load"
+      }
+    },
+    {
+      "nodeId": "n21",
+      "type": "inject_javascript",
+      "config": {
+        "javascriptCode": "return {url:location.href,text:document.body.innerText}",
+        "saveResult": "back_source"
+      }
+    },
+    {
+      "nodeId": "n22",
+      "type": "go_forward",
+      "config": {
+        "waitUntil": "load"
+      }
+    },
+    {
+      "nodeId": "n23",
+      "type": "inject_javascript",
+      "config": {
+        "javascriptCode": "return {url:location.href,text:document.body.innerText}",
+        "saveResult": "forward_source"
+      }
+    },
+    {
+      "nodeId": "n24",
+      "type": "switch_tab",
+      "config": {
+        "switchMode": "first"
+      }
+    },
+    {
+      "nodeId": "n25",
+      "type": "close_page",
+      "config": {}
+    }
+  ],
+  "projectId": "9812a3b6-abb7-4874-b7a5-f379275f9088",
+  "executedNodeTypes": [
+    "close_page",
+    "element_exists",
+    "element_visible",
+    "get_child_elements",
+    "get_element_info",
+    "get_sibling_elements",
+    "go_back",
+    "go_forward",
+    "hover_element",
+    "inject_javascript",
+    "open_page",
+    "page_load_complete",
+    "refresh_page",
+    "screenshot",
+    "scroll_page",
+    "switch_tab",
+    "use_opened_page",
+    "wait_element",
+    "wait_page_load"
+  ],
+  "successfulNodeTypes": [
+    "close_page",
+    "element_exists",
+    "element_visible",
+    "get_child_elements",
+    "get_element_info",
+    "get_sibling_elements",
+    "go_back",
+    "go_forward",
+    "hover_element",
+    "inject_javascript",
+    "open_page",
+    "page_load_complete",
+    "refresh_page",
+    "screenshot",
+    "scroll_page",
+    "switch_tab",
+    "use_opened_page",
+    "wait_element",
+    "wait_page_load"
+  ],
+  "finishedAt": "2026-09-27T17:35:05.034882+00:00",
+  "ownedProcessesAfterCleanup": []
+}

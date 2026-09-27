@@ -1,0 +1,30 @@
+{
+  "startedAt": "2026-09-27T17:00:09.818356+00:00",
+  "gitHead": "33ae3aa49600840b1700c83723408c494dc201a8",
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-runtime-itemarw4",
+  "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/runtime/run-j08v4our",
+  "checks": [],
+  "scenarios": {},
+  "processes": [
+    8501
+  ],
+  "realInputFiles": [
+    {
+      "path": "package.json",
+      "size": 1055,
+      "sha256": "6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92"
+    },
+    {
+      "path": "apps/backend/pyproject.toml",
+      "size": 1460,
+      "sha256": "4e49812742d3362808878fc11614cbb6884b94a1f6c13b93a9775d6b2d6d84f1"
+    },
+    {
+      "path": "AGENTS.md",
+      "size": 2335,
+      "sha256": "f59c274adb1d4144cc8a351f111702e21b92be2d9b0bd459e572a0243a1c48a8"
+    }
+  ],
+  "fatalError": "Traceback (most recent call last):\n  File \"/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/runtime/real_runtime_qa.py\", line 149, in main\n    await SIDE.start()\n  File \"/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/runtime/real_runtime_qa.py\", line 47, in start\n    raise RuntimeError('sidecar health timeout')\nRuntimeError: sidecar health timeout\n",
+  "finishedAt": "2026-09-27T17:00:59.994639+00:00"
+}

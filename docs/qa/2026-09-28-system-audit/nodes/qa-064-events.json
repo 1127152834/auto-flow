@@ -1,0 +1,54 @@
+[
+  {
+    "type": "execution:node_start",
+    "nodeId": "n0",
+    "executionId": "daf9e1dd-dd97-406c-90dc-5fa30214919e",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-064",
+    "workflowId": "qa-064"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n0",
+    "executionId": "daf9e1dd-dd97-406c-90dc-5fa30214919e",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "脚本执行成功（返回码: 0），已返回结果到变量 zip_result",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "stdout": "",
+      "stderr": "",
+      "returnCode": 0,
+      "result": {
+        "sha256": "6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92",
+        "file": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-nodes-a5m6recu/zip workspace/sources.zip",
+        "members": [
+          "package source.json"
+        ]
+      }
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 46.498875017277896,
+    "artifactIds": [],
+    "runId": "qa-064",
+    "workflowId": "qa-064"
+  },
+  {
+    "type": "execution:completed",
+    "runId": "qa-064",
+    "workflowId": "qa-064",
+    "executedNodes": 1,
+    "failedNodeId": null,
+    "issues": [],
+    "error": null
+  }
+]

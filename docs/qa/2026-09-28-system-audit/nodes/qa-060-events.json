@@ -1,0 +1,413 @@
+[
+  {
+    "type": "execution:node_start",
+    "nodeId": "n0",
+    "executionId": "a2a34927-0313-4eba-bc52-c511df457aec",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-060",
+    "workflowId": "qa-060"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n0",
+    "executionId": "a2a34927-0313-4eba-bc52-c511df457aec",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "已添加数据行，当前共 1 行",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "row": {
+        "path": "package.json",
+        "bytes": 1055,
+        "sha256": "6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92"
+      },
+      "total_rows": 1
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 1.5065409825183451,
+    "artifactIds": [],
+    "runId": "qa-060",
+    "workflowId": "qa-060"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "n1",
+    "executionId": "7dd8ee79-3e83-4e98-8713-d02d42e10709",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-060",
+    "workflowId": "qa-060"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n1",
+    "executionId": "7dd8ee79-3e83-4e98-8713-d02d42e10709",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "已添加数据行，当前共 2 行",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "row": {
+        "path": "apps/desktop/package.json",
+        "bytes": 2393,
+        "sha256": "61fc76779f38838f8102e67810c66aebf408d25de7c0d3bc6da4795a1005f5b5"
+      },
+      "total_rows": 2
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.20829198183491826,
+    "artifactIds": [],
+    "runId": "qa-060",
+    "workflowId": "qa-060"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "n2",
+    "executionId": "3dc80177-d763-4f73-81c1-ba7c83c15d55",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-060",
+    "workflowId": "qa-060"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n2",
+    "executionId": "3dc80177-d763-4f73-81c1-ba7c83c15d55",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "已添加数据行，当前共 3 行",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "row": {
+        "path": "apps/backend/pyproject.toml",
+        "bytes": 1460,
+        "sha256": "4e49812742d3362808878fc11614cbb6884b94a1f6c13b93a9775d6b2d6d84f1"
+      },
+      "total_rows": 3
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.21562498295679688,
+    "artifactIds": [],
+    "runId": "qa-060",
+    "workflowId": "qa-060"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "n3",
+    "executionId": "ffc13352-9d35-4c7a-90d5-6d0c01587e16",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-060",
+    "workflowId": "qa-060"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n3",
+    "executionId": "ffc13352-9d35-4c7a-90d5-6d0c01587e16",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "已添加数据行，当前共 4 行",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "row": {
+        "path": "AGENTS.md",
+        "bytes": 2335,
+        "sha256": "f59c274adb1d4144cc8a351f111702e21b92be2d9b0bd459e572a0243a1c48a8"
+      },
+      "total_rows": 4
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.1840839977376163,
+    "artifactIds": [],
+    "runId": "qa-060",
+    "workflowId": "qa-060"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "n4",
+    "executionId": "7e1db4a4-ff90-4c0e-a9db-a961f824bd15",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-060",
+    "workflowId": "qa-060"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n4",
+    "executionId": "7e1db4a4-ff90-4c0e-a9db-a961f824bd15",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "已添加数据行，当前共 5 行",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "row": {
+        "path": "docs/PROJECT_STRUCTURE.md",
+        "bytes": 58979,
+        "sha256": "dfbe76523c99d0dc49292fe11c71de346dc7475da611fb2890032d72b4dda924"
+      },
+      "total_rows": 5
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.8790419960860163,
+    "artifactIds": [],
+    "runId": "qa-060",
+    "workflowId": "qa-060"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "n5",
+    "executionId": "8556f162-f773-4dfd-801c-710547268816",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-060",
+    "workflowId": "qa-060"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n5",
+    "executionId": "8556f162-f773-4dfd-801c-710547268816",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "已添加列 'source'",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "column": "source",
+      "default": "autoflow"
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.16254099318757653,
+    "artifactIds": [],
+    "runId": "qa-060",
+    "workflowId": "qa-060"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "n6",
+    "executionId": "1711312b-b943-44a2-a985-416a3bb53840",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-060",
+    "workflowId": "qa-060"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n6",
+    "executionId": "1711312b-b943-44a2-a985-416a3bb53840",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "已设置 [0][source] = @autoflow/desktop",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "row": 0,
+      "column": "source",
+      "value": "@autoflow/desktop"
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.16304198652505875,
+    "artifactIds": [],
+    "runId": "qa-060",
+    "workflowId": "qa-060"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "n7",
+    "executionId": "40944927-6a3b-4915-b2f1-ed67854caa4e",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-060",
+    "workflowId": "qa-060"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n7",
+    "executionId": "40944927-6a3b-4915-b2f1-ed67854caa4e",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "获取 [0][source] = @autoflow/desktop",
+    "error": null,
+    "isTimeout": false,
+    "data": "@autoflow/desktop",
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.15137498849071562,
+    "artifactIds": [],
+    "runId": "qa-060",
+    "workflowId": "qa-060"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "n8",
+    "executionId": "094dbf8a-3979-4a85-83cf-3b32c5031b19",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-060",
+    "workflowId": "qa-060"
+  },
+  {
+    "type": "artifact:registered",
+    "runId": "qa-060",
+    "artifactId": "847b99af-aa78-47a1-ac86-8af96b96c317",
+    "nodeId": "n8",
+    "executionId": "094dbf8a-3979-4a85-83cf-3b32c5031b19",
+    "relativePath": "runs/qa-060/artifacts/exports/b168912a7a0040b7a775c62a52ed1fb7.txt",
+    "size": 534,
+    "sha256": "94656fc4042ee4522531d6bbf42200cfd86cb87cfe3e24643c0fc58109939cf0",
+    "mimeType": "text/csv",
+    "purpose": "result"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n8",
+    "executionId": "094dbf8a-3979-4a85-83cf-3b32c5031b19",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "已导出 5 行数据到: /private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-nodes-a5m6recu/artifacts/runs/qa-060/outputs/report/source-files.csv",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "path": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-nodes-a5m6recu/artifacts/runs/qa-060/outputs/report/source-files.csv",
+      "rows": 5,
+      "format": "csv",
+      "sheet_name": null,
+      "file_size": 534
+    },
+    "logLevel": null,
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 3.1442500185221434,
+    "artifactIds": [
+      "847b99af-aa78-47a1-ac86-8af96b96c317"
+    ],
+    "runId": "qa-060",
+    "workflowId": "qa-060"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "n9",
+    "executionId": "e0527111-fa40-4aa3-8c94-56c4684e52b2",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-060",
+    "workflowId": "qa-060"
+  },
+  {
+    "type": "artifact:registered",
+    "runId": "qa-060",
+    "artifactId": "17bc8d0a-715e-48bb-8cc3-d64a65b9a9a3",
+    "nodeId": "n9",
+    "executionId": "e0527111-fa40-4aa3-8c94-56c4684e52b2",
+    "relativePath": "runs/qa-060/artifacts/exports/b7545ee7a1f74468b8ed91c130cab2d8.xlsx",
+    "size": 5608,
+    "sha256": "281ecbc2433cef2c483e9cc48e34286f38dcdb9c9b5a175b91e30b526b71f862",
+    "mimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "purpose": "result"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n9",
+    "executionId": "e0527111-fa40-4aa3-8c94-56c4684e52b2",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "已导出 5 行数据到: /private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-nodes-a5m6recu/artifacts/runs/qa-060/outputs/report/source-files.xlsx (Sheet: 源文件)",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "path": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-nodes-a5m6recu/artifacts/runs/qa-060/outputs/report/source-files.xlsx",
+      "rows": 5,
+      "format": "excel",
+      "sheet_name": "源文件",
+      "file_size": 5608
+    },
+    "logLevel": null,
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 6.829374993685633,
+    "artifactIds": [
+      "17bc8d0a-715e-48bb-8cc3-d64a65b9a9a3"
+    ],
+    "runId": "qa-060",
+    "workflowId": "qa-060"
+  },
+  {
+    "type": "execution:completed",
+    "runId": "qa-060",
+    "workflowId": "qa-060",
+    "executedNodes": 10,
+    "failedNodeId": null,
+    "issues": [],
+    "error": null
+  }
+]

@@ -1,0 +1,61 @@
+[
+  {
+    "type": "execution:node_start",
+    "nodeId": "n0",
+    "executionId": "786befa5-7b75-4fcf-b41b-06401ddec769",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-117-f4f486bb",
+    "workflowId": "qa-117-f4f486bb"
+  },
+  {
+    "type": "artifact:registered",
+    "runId": "qa-117-f4f486bb",
+    "artifactId": "88ede5dc-c33a-4e18-87c2-b46528a8003e",
+    "nodeId": "n0",
+    "executionId": "786befa5-7b75-4fcf-b41b-06401ddec769",
+    "relativePath": "runs/qa-117-f4f486bb/artifacts/node-results/786befa5-7b75-4fcf-b41b-06401ddec769.json",
+    "size": 119910,
+    "sha256": "3746cd85b7fe2a1c68e1c8c3c2b52667626adff04c8055e09ea52c79daffe8a5",
+    "mimeType": "application/json",
+    "purpose": "result"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n0",
+    "executionId": "786befa5-7b75-4fcf-b41b-06401ddec769",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "API条件满足（第1次检查）: $.info.name = httpx",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "externalized": true,
+      "mimeType": "application/json",
+      "size": 119910
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": true,
+    "duration": 388.5942090128083,
+    "artifactIds": [
+      "88ede5dc-c33a-4e18-87c2-b46528a8003e"
+    ],
+    "runId": "qa-117-f4f486bb",
+    "workflowId": "qa-117-f4f486bb"
+  },
+  {
+    "type": "execution:completed",
+    "runId": "qa-117-f4f486bb",
+    "workflowId": "qa-117-f4f486bb",
+    "executedNodes": 1,
+    "failedNodeId": null,
+    "issues": [],
+    "error": null
+  }
+]

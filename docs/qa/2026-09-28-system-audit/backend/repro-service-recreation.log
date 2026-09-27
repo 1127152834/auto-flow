@@ -1,0 +1,75 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_______ test_real_cloakbrowser_persisted_dispatch_and_service_recreation _______
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-483/test_real_cloakbrowser_persist0')
+valid_profile_values = {'name': 'Default profile', 'description': '', 'start_url': 'about:blank', 'locale': None, ...}
+real_cloak_page = (PosixPath('/Users/zhangtiancheng/Library/Application Support/@autoflow/desktop/data/kernels/chromium-145.0.7632.109.2/Chromium.app/Contents/MacOS/Chromium'), 'http://127.0.0.1:55505/fixture', ['/fixture', '/favicon.ico'])
+
+    @pytest.mark.asyncio
+    async def test_real_cloakbrowser_persisted_dispatch_and_service_recreation(tmp_path, valid_profile_values, real_cloak_page):
+        from autoflow.application.workflows.service import WorkflowService
+        from autoflow.bootstrap.app import create_app
+        from autoflow.bootstrap.config import Settings
+        from autoflow.infrastructure.database.workflow_runtime import (
+            SqlAlchemyWorkflowRuntimeRepository,
+        )
+        from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
+        from tests.fixtures.workflows import workflow_payload
+    
+        executable, url, _ = real_cloak_page
+        source = next(parent for parent in executable.parents if parent.name.startswith('chromium-'))
+        workspace = tmp_path / 'isolated-workspace'
+        target = workspace / 'data' / 'kernels' / source.name
+        await asyncio.to_thread(shutil.copytree, source, target, symlinks=True)
+        settings = Settings(data_dir=str(workspace), instance_id='real-workflow-fixture')
+        app = create_app(settings)
+        try:
+            profile = app.state.profile_service.create(ProfileSpec.from_values({
+                **valid_profile_values, 'headless': True,
+                'browser_version': source.name.removeprefix('chromium-'),
+            }))
+            document = workflow_payload(str(uuid4()))
+            nodes = document['content']['nodes']
+            nodes[0]['data']['url'] = url
+            nodes[1]['data'].update(selector='#field', clearBefore=False)
+            nodes[2]['data']['selector'] = '#button'
+            nodes[3]['data'].update(selector='#field', attribute='value')
+            documents = WorkflowService(SqlAlchemyWorkflowRepository(app.state.session_factory))
+            record = documents.create(document, str(uuid4()))
+            prepared = app.state.project_workflow_runtime.prepare_content(
+                prepare_operation_id=str(uuid4()), workflow_id=record.document['id'],
+                source_revision=record.revision, available_capabilities=['browser.cloakbrowser'],
+            )
+            with app.state.session_factory() as session:
+                run = app.state.project_workflow_runtime.prepare_run(
+                    run_request_id=str(uuid4()), prepared_content_id=prepared.prepared_content_id,
+                    parameters={'zero': 0, 'flag': False}, input_snapshot_ref=None,
+                    resource_request=app.state.project_workflow_resources.freeze(profile.id),
+                    capability_bindings=[], uow=session,
+                )
+                session.commit()
+            document['content']['variables'][0]['value'] = '后续修改不应进入本次运行'
+            documents.save(record.document['id'], document, record.revision, str(uuid4()))
+            await app.state.project_workflow_dispatcher.dispatch(
+                run.run_id, expected_status_revision=run.status_revision,
+                execution_generation=run.execution_generation,
+            )
+            await asyncio.wait_for(app.state.project_workflow_dispatcher.wait_idle(), 60)
+            result = app.state.project_workflow_runtime.query_run(run_id=run.run_id)
+            assert result.status == 'succeeded'
+            assert result.parameters == {'zero': 0, 'flag': False}
+            with app.state.session_factory() as session:
+                events = SqlAlchemyWorkflowRuntimeRepository(session).list_events(run.run_id, after_sequence=0, limit=200)
+            assert [event.payload['value'] for event in events if event.kind == 'output'] == ['before测试用户']
+            assert [event.sequence for event in events] == list(range(1, len(events) + 1))
+            assert events[-1].kind == 'status' and events[-1].payload['status'] == 'succeeded'
+            assert app.state.project_workflow_dispatcher.blockers() == []
+        finally:
+>           await app.router.on_shutdown[-1]()
+E           TypeError: object NoneType can't be used in 'await' expression
+
+tests/integration/test_workflow_real_cloakbrowser.py:185: TypeError
+=========================== short test summary info ============================
+FAILED tests/integration/test_workflow_real_cloakbrowser.py::test_real_cloakbrowser_persisted_dispatch_and_service_recreation
+1 failed in 12.33s

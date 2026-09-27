@@ -1,0 +1,22 @@
+{
+  "originalFormulaXml": "<f>1+1</f><v></v>",
+  "oldFixtureRegexMatches": 0,
+  "correctedCopyAccepted": true,
+  "formulaRowCount": [
+    0,
+    1
+  ],
+  "identityEligible": [
+    true,
+    false
+  ],
+  "lastRow": [
+    "x",
+    2
+  ],
+  "formulaColumns": [
+    1
+  ],
+  "rowNumber": 23,
+  "businessCodeModified": false
+}

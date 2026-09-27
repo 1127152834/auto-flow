@@ -1,0 +1,130 @@
+{
+  "status": "passed",
+  "packaged": true,
+  "createdViaNativeUI": true,
+  "code": "function main(vars) { return {runtime: navigator.userAgent, language: navigator.language, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone}; }",
+  "expected": {
+    "runtime": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) @autoflow/desktop/0.1.0 Chrome/146.0.7680.216 Electron/41.10.3 Safari/537.36",
+    "language": "zh-CN",
+    "timeZone": "Asia/Shanghai"
+  },
+  "actual": {
+    "runtime": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) @autoflow/desktop/0.1.0 Chrome/146.0.7680.216 Electron/41.10.3 Safari/537.36",
+    "language": "zh-CN",
+    "timeZone": "Asia/Shanghai"
+  },
+  "run": {
+    "runId": "f87a3fdc-2a6d-4e9f-9d18-1dd7203264ae",
+    "workflowId": "Aypf09Giaoa7M_Py3gbES",
+    "documentId": "Aypf09Giaoa7M_Py3gbES",
+    "projectId": "53d16290-6c85-4cfe-ae5c-df1abb1510aa",
+    "workflowName": "原生编辑器真实JavaScript验收",
+    "status": "completed",
+    "startedAt": "2026-09-27T17:23:36.695419+00:00",
+    "finishedAt": "2026-09-27T17:23:39.372680+00:00",
+    "logCount": 2
+  },
+  "detail": {
+    "runId": "f87a3fdc-2a6d-4e9f-9d18-1dd7203264ae",
+    "workflowId": "Aypf09Giaoa7M_Py3gbES",
+    "documentId": "Aypf09Giaoa7M_Py3gbES",
+    "projectId": "53d16290-6c85-4cfe-ae5c-df1abb1510aa",
+    "workflowName": "原生编辑器真实JavaScript验收",
+    "status": "completed",
+    "startedAt": "2026-09-27T17:23:36.695419+00:00",
+    "finishedAt": "2026-09-27T17:23:39.372680+00:00",
+    "logCount": 2,
+    "error": null,
+    "documentSnapshot": {
+      "nodes": [
+        {
+          "id": "td4WspbNxFmTxkkKLW5Vh",
+          "type": "js_script",
+          "data": {
+            "label": "JS脚本",
+            "moduleType": "js_script",
+            "timeout": 60,
+            "resultVariable": "js_result",
+            "code": "function main(vars) { return {runtime: navigator.userAgent, language: navigator.language, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone}; }"
+          }
+        }
+      ],
+      "edges": [],
+      "variables": [
+        {
+          "name": "js_result",
+          "type": "string",
+          "scope": "global"
+        }
+      ]
+    },
+    "layoutSnapshot": {
+      "nodes": {
+        "td4WspbNxFmTxkkKLW5Vh": {
+          "position": {
+            "x": 205,
+            "y": 253.75
+          }
+        }
+      }
+    },
+    "profileSnapshot": {
+      "id": "f6065818-0dc1-4f27-a5c5-a67835ca8b3e",
+      "fingerprintSeed": 58153,
+      "name": "源码审计运行配置",
+      "description": "公开内核，独立工作区",
+      "locale": "zh-CN",
+      "timezone": "Asia/Shanghai",
+      "geoip": false,
+      "headless": true,
+      "humanize": false,
+      "human_preset": "default",
+      "user_agent": null,
+      "viewport": null,
+      "color_scheme": "light",
+      "extension_paths": [],
+      "expert_args": [],
+      "browser_version": "145.0.7632.109.2",
+      "browser_edition": "public",
+      "release_channel": "stable",
+      "proxy_mode": "none",
+      "proxy_id": null,
+      "proxy_pool_id": null,
+      "runOptions": {
+        "headless": true,
+        "startNodeId": null,
+        "runToNodeId": null,
+        "mode": "run",
+        "stepMode": false,
+        "breakpoints": []
+      }
+    },
+    "customModuleSnapshots": {}
+  },
+  "results": {
+    "runId": "f87a3fdc-2a6d-4e9f-9d18-1dd7203264ae",
+    "workflowId": "Aypf09Giaoa7M_Py3gbES",
+    "items": [
+      {
+        "sequence": 4,
+        "nodeId": "td4WspbNxFmTxkkKLW5Vh",
+        "executionId": "4bc49464-d593-4d36-81f4-d3d8e679d543",
+        "executionContext": {
+          "scopes": [],
+          "loops": []
+        },
+        "values": {
+          "result": {
+            "runtime": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) @autoflow/desktop/0.1.0 Chrome/146.0.7680.216 Electron/41.10.3 Safari/537.36",
+            "language": "zh-CN",
+            "timeZone": "Asia/Shanghai"
+          }
+        },
+        "largeValues": {}
+      }
+    ],
+    "total": 1,
+    "throughSequence": 4,
+    "nextCursor": null
+  }
+}

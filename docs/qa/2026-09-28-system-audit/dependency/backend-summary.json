@@ -1,0 +1,102 @@
+{
+  "source": "PyPI JSON advisory service via pip-audit 2.10.1",
+  "production_scope": {
+    "direct_union": 34,
+    "transitive_union": 162,
+    "all_union": 196,
+    "direct_host": 32,
+    "transitive_host": 135,
+    "all_host": 167
+  },
+  "scans": {
+    "installed": {
+      "dependency_entries": 187,
+      "skipped": [
+        {
+          "name": "autoflow-backend",
+          "skip_reason": "distribution marked as editable"
+        }
+      ],
+      "audited_entries": 186,
+      "raw_vulnerability_records": 4,
+      "unique_package_advisory_hits": 2,
+      "unique_advisories": 2,
+      "affected_packages": 2,
+      "hits": [
+        {
+          "name": "paramiko",
+          "version": "3.5.1",
+          "id": "PYSEC-2026-2858",
+          "aliases": [
+            "CVE-2026-44405",
+            "GHSA-r374-rxx8-8654"
+          ],
+          "fix_versions": [],
+          "production_direct": true,
+          "production_lock": true,
+          "host_production": true,
+          "raw_duplicate_count": 2
+        },
+        {
+          "name": "setuptools",
+          "version": "80.10.2",
+          "id": "PYSEC-2026-3447",
+          "aliases": [
+            "BIT-setuptools-2026-59890",
+            "CVE-2026-59890",
+            "GHSA-h35f-9h28-mq5c"
+          ],
+          "fix_versions": [
+            "83.0.0"
+          ],
+          "production_direct": true,
+          "production_lock": true,
+          "host_production": true,
+          "raw_duplicate_count": 2
+        }
+      ]
+    },
+    "production": {
+      "dependency_entries": 196,
+      "skipped": [],
+      "audited_entries": 196,
+      "raw_vulnerability_records": 4,
+      "unique_package_advisory_hits": 2,
+      "unique_advisories": 2,
+      "affected_packages": 2,
+      "hits": [
+        {
+          "name": "paramiko",
+          "version": "3.5.1",
+          "id": "PYSEC-2026-2858",
+          "aliases": [
+            "CVE-2026-44405",
+            "GHSA-r374-rxx8-8654"
+          ],
+          "fix_versions": [],
+          "production_direct": true,
+          "production_lock": true,
+          "host_production": true,
+          "raw_duplicate_count": 2
+        },
+        {
+          "name": "setuptools",
+          "version": "80.10.2",
+          "id": "PYSEC-2026-3447",
+          "aliases": [
+            "BIT-setuptools-2026-59890",
+            "CVE-2026-59890",
+            "GHSA-h35f-9h28-mq5c"
+          ],
+          "fix_versions": [
+            "83.0.0"
+          ],
+          "production_direct": true,
+          "production_lock": true,
+          "host_production": true,
+          "raw_duplicate_count": 2
+        }
+      ]
+    }
+  }
+}

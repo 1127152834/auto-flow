@@ -1,0 +1,67 @@
+{
+  "executions": [
+    {
+      "label": "installed",
+      "exit_code": 1,
+      "timed_out": false,
+      "command": [
+        "uvx",
+        "--index-url",
+        "https://pypi.org/simple",
+        "pip-audit==2.10.1",
+        "--format",
+        "json",
+        "--progress-spinner",
+        "off",
+        "--timeout",
+        "10",
+        "--vulnerability-service",
+        "pypi",
+        "--aliases",
+        "on",
+        "--desc",
+        "on",
+        "--path",
+        "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages",
+        "--skip-editable",
+        "--output",
+        "/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/dependency/backend-installed.json"
+      ],
+      "started_utc": "2026-09-27T17:30:14.142756+00:00",
+      "elapsed_seconds": 23.571
+    },
+    {
+      "label": "production",
+      "exit_code": 1,
+      "timed_out": false,
+      "command": [
+        "uvx",
+        "--index-url",
+        "https://pypi.org/simple",
+        "pip-audit==2.10.1",
+        "--format",
+        "json",
+        "--progress-spinner",
+        "off",
+        "--timeout",
+        "10",
+        "--vulnerability-service",
+        "pypi",
+        "--aliases",
+        "on",
+        "--desc",
+        "on",
+        "--requirement",
+        "/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/dependency/backend-production-union-pins.txt",
+        "--no-deps",
+        "--disable-pip",
+        "--output",
+        "/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/dependency/backend-production.json"
+      ],
+      "started_utc": "2026-09-27T17:30:14.144672+00:00",
+      "elapsed_seconds": 23.232
+    }
+  ],
+  "repo_dependency_files_unchanged": true,
+  "installed_packages_unchanged": true
+}

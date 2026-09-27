@@ -1,0 +1,83 @@
+[
+  {
+    "type": "execution:node_start",
+    "nodeId": "n0",
+    "executionId": "c3e187cb-3de8-4242-8fd4-741407b2bb14",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-118",
+    "workflowId": "qa-118"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n0",
+    "executionId": "c3e187cb-3de8-4242-8fd4-741407b2bb14",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "脚本执行成功（返回码: 0），已返回结果到变量 ",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "stdout": "",
+      "stderr": "",
+      "returnCode": 0,
+      "result": "6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92"
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 40.11120900395326,
+    "artifactIds": [],
+    "runId": "qa-118",
+    "workflowId": "qa-118"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "n1",
+    "executionId": "89914684-4c72-44dd-b082-558e5cf1eec1",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-118",
+    "workflowId": "qa-118"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n1",
+    "executionId": "89914684-4c72-44dd-b082-558e5cf1eec1",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "level": "info",
+      "message": "6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92"
+    },
+    "logLevel": "info",
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 1.5462080191355199,
+    "artifactIds": [],
+    "runId": "qa-118",
+    "workflowId": "qa-118"
+  },
+  {
+    "type": "execution:completed",
+    "runId": "qa-118",
+    "workflowId": "qa-118",
+    "executedNodes": 2,
+    "failedNodeId": null,
+    "issues": [],
+    "error": null
+  }
+]

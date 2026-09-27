@@ -1,0 +1,247 @@
+
+> test:scripts
+> node --test scripts/*.test.mjs
+
+file:///private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-qa-scripts-ii9k6xw2/scripts/inventory-studio-completion.mjs:26
+if(retained.length!==213 || new Set(retained.map(n=>n.type)).size!==213)throw Error('Approved 213-node scope changed')
+                                                                              ^
+
+Error: Approved 213-node scope changed
+    at file:///private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-qa-scripts-ii9k6xw2/scripts/inventory-studio-completion.mjs:26:79
+    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)
+    at async node:internal/modules/esm/loader:650:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v26.7.0
+node:internal/errors:999
+  const err = new Error(message);
+              ^
+
+Error: Command failed: /Users/zhangtiancheng/.hermes/node/bin/node scripts/inventory-studio-completion.mjs
+file:///private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-qa-scripts-ii9k6xw2/scripts/inventory-studio-completion.mjs:26
+if(retained.length!==213 || new Set(retained.map(n=>n.type)).size!==213)throw Error('Approved 213-node scope changed')
+                                                                              ^
+
+Error: Approved 213-node scope changed
+    at file:///private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-qa-scripts-ii9k6xw2/scripts/inventory-studio-completion.mjs:26:79
+    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)
+    at async node:internal/modules/esm/loader:650:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v26.7.0
+
+    at genericNodeError (node:internal/errors:999:15)
+    at wrappedFn (node:internal/errors:544:14)
+    at checkExecSyncError (node:child_process:942:11)
+    at execFileSync (node:child_process:978:15)
+    at file:///private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-qa-scripts-ii9k6xw2/scripts/inventory-studio-completion.test.mjs:6:1
+    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)
+    at async node:internal/modules/esm/loader:650:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  status: 1,
+  signal: null,
+  output: [
+    null,
+    Buffer(0) [Uint8Array] [],
+    Buffer(742) [Uint8Array] [
+      102, 105, 108, 101,  58,  47,  47,  47, 112, 114, 105, 118,
+       97, 116, 101,  47, 118,  97, 114,  47, 102, 111, 108, 100,
+      101, 114, 115,  47,  56, 103,  47, 115, 113,  51, 115, 114,
+      114,  55,  49,  48,  54,  51,  99,  48,  56,  51, 114, 112,
+      107, 100,  51,  50, 107,  51,  56,  48,  48,  48,  48, 103,
+      110,  47,  84,  47,  97, 117, 116, 111, 102, 108, 111, 119,
+       45, 113,  97,  45, 115,  99, 114, 105, 112, 116, 115,  45,
+      105, 105,  57, 107,  54, 120, 119,  50,  47, 115,  99, 114,
+      105, 112, 116, 115,
+      ... 642 more items
+    ]
+  ],
+  pid: 5830,
+  stdout: Buffer(0) [Uint8Array] [],
+  stderr: Buffer(742) [Uint8Array] [
+    102, 105, 108, 101,  58,  47,  47,  47, 112, 114, 105, 118,
+     97, 116, 101,  47, 118,  97, 114,  47, 102, 111, 108, 100,
+    101, 114, 115,  47,  56, 103,  47, 115, 113,  51, 115, 114,
+    114,  55,  49,  48,  54,  51,  99,  48,  56,  51, 114, 112,
+    107, 100,  51,  50, 107,  51,  56,  48,  48,  48,  48, 103,
+    110,  47,  84,  47,  97, 117, 116, 111, 102, 108, 111, 119,
+     45, 113,  97,  45, 115,  99, 114, 105, 112, 116, 115,  45,
+    105, 105,  57, 107,  54, 120, 119,  50,  47, 115,  99, 114,
+    105, 112, 116, 115,
+    ... 642 more items
+  ]
+}
+
+Node.js v26.7.0
+✖ scripts/inventory-studio-completion.test.mjs (434.893541ms)
+✔ history output guard resolves symlinks before any nested directory is created (39.134916ms)
+✔ containment handles Windows separators and sibling prefixes (0.361541ms)
+✔ R1 acceptance tools refuse paths outside the marked disposable root (38.634125ms)
+✔ R2 wrapper reuses the exported R1 harness (10.213292ms)
+✔ record-pages mode records required evidence levels and leaves visual review pending (3.762625ms)
+✔ R3 runner exposes automatic and retained manual modes (0.908958ms)
+✔ R3 evidence matrix names every required real interaction (0.116333ms)
+✔ R3 runner uses the real desktop harness and never auto-approves visual review (9.033041ms)
+✔ R3 visual fixtures use UI states and label the synthetic file selection (4.290958ms)
+✔ self-test accepts only a marker-owned workspace below its owner (92.153709ms)
+✔ arguments reject missing kernel paths before launching Electron (84.06625ms)
+✔ arguments reject unknown switches before launching Electron (70.778958ms)
+✔ scenario selection is validated before any workspace or Electron launch (145.796917ms)
+✔ PM4 QA arguments keep V1 automatic and preparation modes explicit (1.101833ms)
+✔ PM4 workspace ownership requires both marker and containment (0.156625ms)
+✔ V1 plan names every user-visible step and real fact (0.08975ms)
+✔ runner uses only UI for business object creation and labels fake executor boundary (7.041667ms)
+✔ PM6 QA arguments keep automatic and manual modes explicit (2.045584ms)
+✔ PM6 workspace ownership requires both marker and containment (0.187833ms)
+✔ the QA service-account fixture only carries the frozen Google shape (77.417625ms)
+✔ PM6 steps name every user-visible stage of the management chain (0.134625ms)
+✔ the runner drives business objects through the UI and labels its stand-ins (6.454916ms)
+✔ the QA sidecar swaps only the two declared ports and keeps a real bootstrap (1.798334ms)
+✔ PM7 QA arguments keep manual, preparation and cleanup modes explicit (2.140416ms)
+✔ PM7 workspace ownership requires both marker and containment (0.353166ms)
+✔ every PM7 end-to-end step and fault injection is named (0.427333ms)
+✔ runner drives the product through the renderer and labels the executor boundary (4.239416ms)
+✔ fault injection only exists in the QA sidecar and never in production modules (4.144875ms)
+✔ PM8 QA arguments keep manual, preparation and cleanup modes explicit (1.240125ms)
+✔ PM8 workspace ownership requires both marker and containment (0.165959ms)
+✔ every PM8 end-to-end step and fault injection is named (0.186208ms)
+✔ manual injections expose the executor faults the hand-test plan needs (0.118958ms)
+✔ runner drives the product through the renderer and labels the executor boundary (4.955625ms)
+✔ lifecycle fault injection only exists in the QA sidecar and never in production modules (1.978375ms)
+✔ reports a known full system UUID in visible text and perceptible attributes (1.340125ms)
+✔ reports a known eight-character system prefix without scanning arbitrary UUIDs (4.263334ms)
+✔ keeps a user-owned UUID visible and excludes its shared prefix from prefix checks (8.784792ms)
+✔ does not inspect DOM value, href, hash, data attributes, or hidden implementation state (1.4165ms)
+✔ checkCdpPage sends a self-contained audit to evaluate and rejects missing business UUIDs (2.535416ms)
+✔ checkCdpPage audit expression executes without module bindings in the renderer (0.453875ms)
+✔ a business UUID sharing a prefix does not hide a separate technical short ID (0.403ms)
+✔ cleanup rejects an unmarked or wrongly marked workspace (9.760958ms)
+✔ cleanup removes only a marked temporary workspace and returns the preserved evidence path (6.444291ms)
+✔ browser management smoke accepts an explicit packaged sidecar (1.952917ms)
+✔ browser management smoke creates the platform kernel layout (0.3175ms)
+✔ profile test browser smoke parses kernel and sidecar paths (1.209416ms)
+✔ profile test browser smoke validates a public kernel directory (58.233416ms)
+✔ profile test browser smoke finds a session below the manager root (6.345792ms)
+✔ Windows kernels do not require POSIX executable bits (9.5145ms)
+✔ smoke-project-management.mjs rejects invalid arguments before launching: --output-dir --dev (79.445125ms)
+✔ smoke-project-management.mjs rejects invalid arguments before launching: --output-dir (52.122542ms)
+✔ smoke-project-management.mjs rejects invalid arguments before launching: --unknown (52.544417ms)
+✔ smoke-project-management.mjs rejects invalid arguments before launching: --executable (50.728958ms)
+✔ smoke-project-management.mjs rejects invalid arguments before launching: --executable     (59.151125ms)
+✔ smoke-project-management.mjs rejects invalid arguments before launching: --output-dir /tmp/a --output-dir /tmp/b (54.00025ms)
+✔ smoke-project-management-desktop.mjs rejects invalid arguments before launching: --output-dir --dev (49.990333ms)
+✔ smoke-project-management-desktop.mjs rejects invalid arguments before launching: --output-dir (54.691375ms)
+✔ smoke-project-management-desktop.mjs rejects invalid arguments before launching: --unknown (52.303458ms)
+✔ smoke-project-management-desktop.mjs rejects invalid arguments before launching: --executable (56.444167ms)
+✔ smoke-project-management-desktop.mjs rejects invalid arguments before launching: --executable     (57.168209ms)
+✔ smoke-project-management-desktop.mjs rejects invalid arguments before launching: --output-dir /tmp/a --output-dir /tmp/b (65.851916ms)
+✔ smoke-project-management.mjs rejects fake sidecar environment before launch (61.111ms)
+✔ smoke-project-management-desktop.mjs rejects fake sidecar environment before launch (53.626125ms)
+✔ packaged smoke cannot silently select external health mode (7.19275ms)
+✔ cleanup rejects after the final deadline if the child never exits (13.602625ms)
+✔ cleanup observes close without requiring exit (0.25025ms)
+✔ cleanup rejects a child process error (0.165334ms)
+✔ required path exists: apps/desktop/package.json (0.686459ms)
+✔ required path exists: apps/backend/pyproject.toml (0.139ms)
+✔ root scripts expose the foundation checks (0.991833ms)
+✔ renderer table headers never nest a <td> inside <thead> (228.970625ms)
+(node:5838) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/lib/moduleCatalog.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✖ Studio Chinese documentation audit covers exactly the retained catalog (1.411541ms)
+✔ production Studio entry keeps preview mocks behind the Vite development boundary (0.684167ms)
+✖ all three frozen metadata targets regenerate exactly without executing source modules (658.942709ms)
+✖ all 213 entries match final source update order and every excluded source node is absent (140.484542ms)
+✔ AUTOFIX then PRIORITY and mode overrides retain exact field names and empty rules (118.387916ms)
+✔ source and license digests cover both frozen schema files and preserve provenance (1.909125ms)
+✔ production domain literal matches frontend metadata and has no runtime source dependency (55.113458ms)
+✔ Python runtime description preserves the explicit AutoFlow adaptation (109.514458ms)
+✔ resource upload keeps multipart body and generated response type in the handoff inventory (0.797875ms)
+✔ transport forwarding is marked dynamic instead of inventing a GET contract (0.127958ms)
+✔ the matrix registers every discovered service and event without treating registration as runtime backend proof (3.09825ms)
+✔ every service family is assigned to the frozen frontend contract matrix (0.593375ms)
+✔ inventory and matrix regenerate deterministically (730.303958ms)
+✔ direct apiRequest helpers outside Api objects remain visible in the contract inventory (0.159583ms)
+✔ plain Event emissions are recorded alongside CustomEvent emissions (0.120292ms)
+✔ MCP requests nested in validation helpers keep explicit endpoints and consumers (0.247333ms)
+✔ checks sources without inventing application or visual acceptance (18.1245ms)
+✔ rejects source hash drift, dimensions and unknown mapped sources (5.725792ms)
+✔ does not allow a passed page without real evidence or missing required states (5.531208ms)
+✔ rejects duplicate source and page identities and evidence traversal (5.3015ms)
+✔ requires actual evidence files instead of an existing directory or blank path (6.230167ms)
+✔ PM2 static coverage does not certify pending business or real application acceptance (3.447042ms)
+✔ PM2 rejects lost requirement identifiers and invented evidence paths (0.826125ms)
+✔ a green machine report cannot substitute for real application evidence (0.293834ms)
+ℹ tests 96
+ℹ suites 0
+ℹ pass 92
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1811.720416
+
+✖ failing tests:
+
+test at scripts/inventory-studio-completion.test.mjs:1:1
+✖ scripts/inventory-studio-completion.test.mjs (434.893541ms)
+  'test failed'
+
+test at scripts/studio-docs.test.mjs:5:1
+✖ Studio Chinese documentation audit covers exactly the retained catalog (1.411541ms)
+  Error: 已批准的 213 节点范围发生变化
+      at realModules (file:///Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/tests/audits/audit-module-docs.mjs:26:66)
+      at TestContext.<anonymous> (file:///private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-qa-scripts-ii9k6xw2/scripts/studio-docs.test.mjs:6:19)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.start (node:internal/test_runner/test:1257:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+test at scripts/studio-required-fields.test.mjs:57:1
+✖ all three frozen metadata targets regenerate exactly without executing source modules (658.942709ms)
+  AssertionError [ERR_ASSERTION]: Traceback (most recent call last):
+    File "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-qa-scripts-ii9k6xw2/scripts/export-studio-required-fields.py", line 126, in <module>
+      metadata, manifest = extract()
+                           ~~~~~~~^^
+    File "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-qa-scripts-ii9k6xw2/scripts/export-studio-required-fields.py", line 80, in extract
+      raise ValueError(f'Approved 213-node scope changed: {len(retained)}')
+  ValueError: Approved 213-node scope changed: 216
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-qa-scripts-ii9k6xw2/scripts/studio-required-fields.test.mjs:59:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.start (node:internal/test_runner/test:1257:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/studio-required-fields.test.mjs:62:1
+✖ all 213 entries match final source update order and every excluded source node is absent (140.484542ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  216 !== 213
+  
+      at TestContext.<anonymous> (file:///private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-qa-scripts-ii9k6xw2/scripts/studio-required-fields.test.mjs:67:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 216,
+    expected: 213,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

@@ -1,0 +1,59 @@
+{
+  "status": "passed",
+  "packaged": true,
+  "nativeOpenDialog": true,
+  "tableId": "9c197ed0-b21d-42c3-bdc0-610575ac916d",
+  "rows": [
+    {
+      "source_path": "docs/PROJECT_STRUCTURE.md",
+      "bytes": "58979",
+      "sha256": "dfbe76523c99d0dc49292fe11c71de346dc7475da611fb2890032d72b4dda924",
+      "status": null
+    },
+    {
+      "source_path": "package.json",
+      "bytes": "1055",
+      "sha256": "6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92",
+      "status": null
+    },
+    {
+      "source_path": "apps/backend/pyproject.toml",
+      "bytes": "1460",
+      "sha256": "4e49812742d3362808878fc11614cbb6884b94a1f6c13b93a9775d6b2d6d84f1",
+      "status": null
+    },
+    {
+      "source_path": "AGENTS.md",
+      "bytes": "2335",
+      "sha256": "f59c274adb1d4144cc8a351f111702e21b92be2d9b0bd459e572a0243a1c48a8",
+      "status": null
+    },
+    {
+      "source_path": "/Users/zhangtiancheng/Documents/projects/autoflow/README.md",
+      "bytes": "1575",
+      "sha256": "b3f7f413926ee62c04aba0c253b8453e69d5d834ed0f798401875db55c8221ee",
+      "status": null
+    }
+  ],
+  "allValuesMatchOriginalTable": true,
+  "originalRecordsUnchanged": true,
+  "operations": [
+    {
+      "id": "2922395b-c7ef-45fd-bd00-b2cabbc88bc0",
+      "kind": "importExcel",
+      "status": "failed",
+      "result": "null",
+      "error": "{\"code\": \"INVALID_PROJECT_DATA\", \"message\": \"\\u6765\\u6e90\\u5355\\u5143\\u683c\\u4e0d\\u6ee1\\u8db3\\u5b57\\u6bb5\\u8981\\u6c42\\u3002\", \"details\": {\"field\": \"bytes\", \"reason\": \"must be a finite JSON-safe number\", \"rule\": \"type\", \"rowNumber\": 2, \"columnIndex\": 1}}"
+    },
+    {
+      "id": "8870bbe1-cd5b-4ee5-8f6e-75d0aae99bd2",
+      "kind": "importExcel",
+      "status": "succeeded",
+      "result": "{\"table\": {\"projectId\": \"53d16290-6c85-4cfe-ae5c-df1abb1510aa\", \"tableId\": \"9c197ed0-b21d-42c3-bdc0-610575ac916d\", \"name\": \"\\u539f\\u751fExcel\\u5f80\\u8fd4\\u9a8c\\u6536\", \"description\": \"2026-09-28 \\u5f53\\u524d\\u6253\\u5305\\u5e94\\u7528\\u7684\\u539f\\u751f\\u4fdd\\u5b58\\u3001\\u9009\\u62e9\\u3001\\u5bfc\\u5165\\u4e0e\\u6301\\u4e45\\u5316\\u9a8c\\u6536\\uff1b\\u6570\\u636e\\u6765\\u81ea\\u4ed3\\u5e93\\u771f\\u5b9e\\u6587\\u4ef6\\u3002\", \"sourceKind\": \"excel\", \"source\": {\"kind\": \"excel\", \"filename\": \"\\u771f\\u5b9e\\u6e90\\u7801\\u6e05\\u5355-\\u539f\\u751f\\u5bfc\\u51fa.xlsx\", \"sheetName\": \"Data\", \"importedAt\": \"2026-09-27T17:18:51.345749+00:00\"}, \"datasetGeneration\": \"bd6e35a7-aa73-44b5-b52b-789b5ac94107\", \"tableRevision\": 1, \"identity\": {\"mode\": \"system\"}, \"slotDefinitions\": [], \"recordCount\": 5, \"syncSummary\": {\"status\": \"notApplicable\", \"pendingCount\": 0, \"unknownCount\": 0}, \"createdAt\": \"2026-09-27T17:18:51.351145+00:00\", \"updatedAt\": \"2026-09-27T17:18:51.362308+00:00\"}, \"importedRecordCount\": 5}",
+      "error": "null"
+    }
+  ],
+  "integrityCheck": "ok",
+  "foreignKeyViolations": 0,
+  "note": "Initial number mapping for exported string cells was a tester mistake and correctly rejected. Retry using original string type passed. Failed import kept its staging table unpublished with zero records."
+}

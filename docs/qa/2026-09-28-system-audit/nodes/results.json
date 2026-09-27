@@ -1,0 +1,2683 @@
+{
+  "checkedAt": "2026-09-27T17:25:13.689873+00:00",
+  "gitHead": "33ae3aa49600840b1700c83723408c494dc201a8",
+  "platform": "macOS-26.4.1-arm64-arm-64bit",
+  "python": "3.11.13 (main, Jul 23 2025, 00:18:05) [Clang 20.1.4 ]",
+  "dataSources": [
+    {
+      "path": "package.json",
+      "bytes": 1055,
+      "sha256": "6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92"
+    },
+    {
+      "path": "apps/desktop/package.json",
+      "bytes": 2393,
+      "sha256": "61fc76779f38838f8102e67810c66aebf408d25de7c0d3bc6da4795a1005f5b5"
+    },
+    {
+      "path": "apps/backend/pyproject.toml",
+      "bytes": 1460,
+      "sha256": "4e49812742d3362808878fc11614cbb6884b94a1f6c13b93a9775d6b2d6d84f1"
+    },
+    {
+      "path": "AGENTS.md",
+      "bytes": 2335,
+      "sha256": "f59c274adb1d4144cc8a351f111702e21b92be2d9b0bd459e572a0243a1c48a8"
+    },
+    {
+      "path": "docs/PROJECT_STRUCTURE.md",
+      "bytes": 58979,
+      "sha256": "dfbe76523c99d0dc49292fe11c71de346dc7475da611fb2890032d72b4dda924"
+    }
+  ],
+  "results": [
+    {
+      "name": "真实源文件尺寸 list_sum",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "list_sum"
+      ],
+      "status": "pass",
+      "durationMs": 0.38,
+      "actual": 66222,
+      "expected": 66222,
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "真实源文件尺寸 list_average",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "list_average"
+      ],
+      "status": "pass",
+      "durationMs": 0.53,
+      "actual": 13244.4,
+      "expected": 13244.4,
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "真实源文件尺寸 list_min",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "list_min"
+      ],
+      "status": "pass",
+      "durationMs": 0.55,
+      "actual": 1055,
+      "expected": 1055,
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "真实源文件尺寸 list_max",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "list_max"
+      ],
+      "status": "pass",
+      "durationMs": 0.53,
+      "actual": 58979,
+      "expected": 58979,
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "真实源文件尺寸 list_reverse",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "list_reverse"
+      ],
+      "status": "pass",
+      "durationMs": 0.47,
+      "actual": [
+        58979,
+        2335,
+        1460,
+        2393,
+        1055
+      ],
+      "expected": [
+        58979,
+        2335,
+        1460,
+        2393,
+        1055
+      ],
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "真实源文件尺寸 list_sort",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "list_sort"
+      ],
+      "status": "pass",
+      "durationMs": 0.54,
+      "actual": [
+        1055,
+        1460,
+        2335,
+        2393,
+        58979
+      ],
+      "expected": [
+        1055,
+        1460,
+        2335,
+        2393,
+        58979
+      ],
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "真实源文件尺寸 list_unique",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "list_unique"
+      ],
+      "status": "pass",
+      "durationMs": 0.55,
+      "actual": [
+        1055,
+        2393,
+        1460,
+        2335,
+        58979
+      ],
+      "expected": [
+        1055,
+        2393,
+        1460,
+        2335,
+        58979
+      ],
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "真实源文件尺寸 stat_median",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "stat_median"
+      ],
+      "status": "pass",
+      "durationMs": 0.54,
+      "actual": 2335.0,
+      "expected": 2335,
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "真实源文件尺寸 stat_variance",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "stat_variance"
+      ],
+      "status": "pass",
+      "durationMs": 0.72,
+      "actual": 653968770.8,
+      "expected": 653968770.8,
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "真实源文件尺寸 stat_stdev",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "stat_stdev"
+      ],
+      "status": "pass",
+      "durationMs": 0.65,
+      "actual": 25572.813118622675,
+      "expected": 25572.813118622675,
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "真实源文件尺寸 stat_percentile",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "stat_percentile"
+      ],
+      "status": "pass",
+      "durationMs": 0.57,
+      "actual": 2335.0,
+      "expected": 2335,
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "源文件列表计数",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "list_length"
+      ],
+      "status": "pass",
+      "durationMs": 0.48,
+      "actual": 5,
+      "expected": 5,
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "源文件负索引",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "list_get"
+      ],
+      "status": "pass",
+      "durationMs": 0.5,
+      "actual": "docs/PROJECT_STRUCTURE.md",
+      "expected": "docs/PROJECT_STRUCTURE.md",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "源文件区间",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "list_slice"
+      ],
+      "status": "pass",
+      "durationMs": 0.58,
+      "actual": [
+        2393,
+        1460
+      ],
+      "expected": [
+        2393,
+        1460
+      ],
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "源文件过滤",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "list_filter"
+      ],
+      "status": "pass",
+      "durationMs": 0.53,
+      "actual": [
+        2393,
+        1460,
+        2335,
+        58979
+      ],
+      "expected": [
+        2393,
+        1460,
+        2335,
+        58979
+      ],
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "源文件 KiB 换算",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "list_map"
+      ],
+      "status": "pass",
+      "durationMs": 1.22,
+      "actual": [
+        1.0302734375,
+        2.3369140625,
+        1.42578125,
+        2.2802734375,
+        57.5966796875
+      ],
+      "expected": [
+        1.0302734375,
+        2.3369140625,
+        1.42578125,
+        2.2802734375,
+        57.5966796875
+      ],
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "源文件首项查找",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "list_find"
+      ],
+      "status": "pass",
+      "durationMs": 0.53,
+      "actual": 0,
+      "expected": 0,
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "源文件次数",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "list_count"
+      ],
+      "status": "pass",
+      "durationMs": 2.21,
+      "actual": 1,
+      "expected": 1,
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "仓库真实数据 dict_get",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "dict_get"
+      ],
+      "status": "pass",
+      "durationMs": 0.48,
+      "actual": "autoflow",
+      "expected": "autoflow",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "仓库真实数据 dict_keys",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "dict_keys"
+      ],
+      "status": "pass",
+      "durationMs": 0.49,
+      "actual": [
+        "test:structure",
+        "dev",
+        "test",
+        "typecheck",
+        "lint",
+        "build",
+        "backend:build",
+        "package:dir",
+        "openapi:generate",
+        "openapi:check",
+        "smoke:sidecar",
+        "test:scripts",
+        "smoke:desktop",
+        "smoke:studio",
+        "test:pm2"
+      ],
+      "expected": [
+        "test:structure",
+        "dev",
+        "test",
+        "typecheck",
+        "lint",
+        "build",
+        "backend:build",
+        "package:dir",
+        "openapi:generate",
+        "openapi:check",
+        "smoke:sidecar",
+        "test:scripts",
+        "smoke:desktop",
+        "smoke:studio",
+        "test:pm2"
+      ],
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "仓库真实数据 dict_get_path",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "dict_get_path"
+      ],
+      "status": "pass",
+      "durationMs": 0.52,
+      "actual": "npm --workspace @autoflow/desktop test",
+      "expected": "npm --workspace @autoflow/desktop test",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "仓库真实数据 dict_deep_copy",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "dict_deep_copy"
+      ],
+      "status": "pass",
+      "durationMs": 0.58,
+      "actual": {
+        "name": "autoflow",
+        "private": true,
+        "workspaces": [
+          "apps/desktop"
+        ],
+        "scripts": {
+          "test:structure": "node --test scripts/structure.test.mjs",
+          "dev": "npm --workspace @autoflow/desktop run dev",
+          "test": "npm --workspace @autoflow/desktop test",
+          "typecheck": "npm --workspace @autoflow/desktop run typecheck",
+          "lint": "npm --workspace @autoflow/desktop run lint",
+          "build": "npm --workspace @autoflow/desktop run build",
+          "backend:build": "node scripts/build-backend.mjs",
+          "package:dir": "npm --workspace @autoflow/desktop run package:dir",
+          "openapi:generate": "node scripts/generate-api.mjs",
+          "openapi:check": "node scripts/generate-api.mjs --check",
+          "smoke:sidecar": "node scripts/smoke-sidecar.mjs",
+          "test:scripts": "node --test scripts/*.test.mjs",
+          "smoke:desktop": "node scripts/smoke-desktop.mjs",
+          "smoke:studio": "node scripts/smoke-studio-window.mjs",
+          "test:pm2": "node scripts/verify-pm2-delivery.mjs"
+        },
+        "devDependencies": {
+          "openapi-typescript": "^7.13.0"
+        }
+      },
+      "expected": {
+        "name": "autoflow",
+        "private": true,
+        "workspaces": [
+          "apps/desktop"
+        ],
+        "scripts": {
+          "test:structure": "node --test scripts/structure.test.mjs",
+          "dev": "npm --workspace @autoflow/desktop run dev",
+          "test": "npm --workspace @autoflow/desktop test",
+          "typecheck": "npm --workspace @autoflow/desktop run typecheck",
+          "lint": "npm --workspace @autoflow/desktop run lint",
+          "build": "npm --workspace @autoflow/desktop run build",
+          "backend:build": "node scripts/build-backend.mjs",
+          "package:dir": "npm --workspace @autoflow/desktop run package:dir",
+          "openapi:generate": "node scripts/generate-api.mjs",
+          "openapi:check": "node scripts/generate-api.mjs --check",
+          "smoke:sidecar": "node scripts/smoke-sidecar.mjs",
+          "test:scripts": "node --test scripts/*.test.mjs",
+          "smoke:desktop": "node scripts/smoke-desktop.mjs",
+          "smoke:studio": "node scripts/smoke-studio-window.mjs",
+          "test:pm2": "node scripts/verify-pm2-delivery.mjs"
+        },
+        "devDependencies": {
+          "openapi-typescript": "^7.13.0"
+        }
+      },
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "仓库真实数据 dict_sort",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "dict_sort"
+      ],
+      "status": "pass",
+      "durationMs": 0.53,
+      "actual": {
+        "backend:build": "node scripts/build-backend.mjs",
+        "build": "npm --workspace @autoflow/desktop run build",
+        "dev": "npm --workspace @autoflow/desktop run dev",
+        "lint": "npm --workspace @autoflow/desktop run lint",
+        "openapi:check": "node scripts/generate-api.mjs --check",
+        "openapi:generate": "node scripts/generate-api.mjs",
+        "package:dir": "npm --workspace @autoflow/desktop run package:dir",
+        "smoke:desktop": "node scripts/smoke-desktop.mjs",
+        "smoke:sidecar": "node scripts/smoke-sidecar.mjs",
+        "smoke:studio": "node scripts/smoke-studio-window.mjs",
+        "test": "npm --workspace @autoflow/desktop test",
+        "test:pm2": "node scripts/verify-pm2-delivery.mjs",
+        "test:scripts": "node --test scripts/*.test.mjs",
+        "test:structure": "node --test scripts/structure.test.mjs",
+        "typecheck": "npm --workspace @autoflow/desktop run typecheck"
+      },
+      "expected": {
+        "backend:build": "node scripts/build-backend.mjs",
+        "build": "npm --workspace @autoflow/desktop run build",
+        "dev": "npm --workspace @autoflow/desktop run dev",
+        "lint": "npm --workspace @autoflow/desktop run lint",
+        "openapi:check": "node scripts/generate-api.mjs --check",
+        "openapi:generate": "node scripts/generate-api.mjs",
+        "package:dir": "npm --workspace @autoflow/desktop run package:dir",
+        "smoke:desktop": "node scripts/smoke-desktop.mjs",
+        "smoke:sidecar": "node scripts/smoke-sidecar.mjs",
+        "smoke:studio": "node scripts/smoke-studio-window.mjs",
+        "test": "npm --workspace @autoflow/desktop test",
+        "test:pm2": "node scripts/verify-pm2-delivery.mjs",
+        "test:scripts": "node --test scripts/*.test.mjs",
+        "test:structure": "node --test scripts/structure.test.mjs",
+        "typecheck": "npm --workspace @autoflow/desktop run typecheck"
+      },
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "仓库真实数据 json_parse",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "json_parse"
+      ],
+      "status": "pass",
+      "durationMs": 0.46,
+      "actual": "autoflow",
+      "expected": "autoflow",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "仓库真实数据 md5_encrypt",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "md5_encrypt"
+      ],
+      "status": "pass",
+      "durationMs": 2.21,
+      "actual": "04faa33681fc3e598be0af5330b73d6f",
+      "expected": "04faa33681fc3e598be0af5330b73d6f",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "仓库真实数据 sha_encrypt",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "sha_encrypt"
+      ],
+      "status": "pass",
+      "durationMs": 0.57,
+      "actual": "f59c274adb1d4144cc8a351f111702e21b92be2d9b0bd459e572a0243a1c48a8",
+      "expected": "f59c274adb1d4144cc8a351f111702e21b92be2d9b0bd459e572a0243a1c48a8",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "仓库真实数据 url_encode_decode",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "url_encode_decode"
+      ],
+      "status": "pass",
+      "durationMs": 20.24,
+      "actual": "docs%2FPROJECT_STRUCTURE.md",
+      "expected": "docs%2FPROJECT_STRUCTURE.md",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "仓库真实数据 base64",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "base64"
+      ],
+      "status": "pass",
+      "durationMs": 0.56,
+      "actual": "IyBBdXRvRmxvdyBBZ2VudCDljY/kvZzop4TojIMKCiMjIOW8gOWni+W3peS9nOWJjQoKMS4g6ZiF6K+75pys5paH5qGj44CBYC5haS9SRUFETUUubWRg44CBYC5haS9tZW1vcnkvcHJvamVjdC1jb250ZXh0Lm1kYCDlkoznm7jlhbMgYC5haS9kZWNpc2lvbnMvYOOAggoyLiDmn6XnnIsgYGRvY3MvUFJPSkVDVF9TVFJVQ1RVUkUubWRg44CB55u45YWz5p625p6E5paH5qGj5ZKM5b2T5YmNIGdpdCDnirbmgIHjgIIKMy4g5YWI5Yik5pat5Lu75Yqh5piv5o6i6Lev44CB5pyJ55WM5pS55Yqo6L+Y5piv5p625p6E57qn5pS55Yqo44CC5p625p6E57qn5bel5L2c5b+F6aG75YWI5a6M5oiQ6K6+6K6h44CB6KeE5qC85ZKM5a6e5pa96K6h5YiS77yM5bm2562J5b6F55So5oi356Gu6K6k44CCCjQuIOaYjuehruacrOasoeS7u+WKoeeahOiMg+WbtOOAgei+k+WFpeOAgei+k+WHuuOAgemqjOivgeWRveS7pOWSjOS4jeWBmuS6i+mhueOAggoKIyMg5LiO55So5oi35Y2P5ZCMCgotIOeUqOS4reaWh+ayn+mAmu+8jOWFiOaKpeWRiue7k+iuuuOAgemjjumZqeWSjOS4i+S4gOatpe+8jOS4jemakOeekuacqumqjOivgeWGheWuueOAggotIOavj+asoeWPqumXruS4gOS4quecn+ato+mYu+WhnuWGs+etlueahOmXrumimO+8m+iDveagueaNrueOsOacieS4iuS4i+aWh+WIpOaWreeahOS6i+mhueebtOaOpeaOqOi/m+OAggotIOeUqOaIt+imgeaxguKAnOWFiOiuoeWIkuKAneaXtu+8jOS4jee8luWGmeS4muWKoeS7o+egge+8m+WFiOaPkOS6pOWPr+WuoeafpeeahOiuvuiuoeWSjOS7u+WKoeaLhuWIhuOAggotIOeUqOaIt+ehruiupOWQjuWGjei/m+WFpeWunueOsOOAgua2ieWPiuWkmuS4quWKn+iDveaXtuaMieWeguebtOWIh+eJh+aOqOi/m++8muWQjuerr+Wlkee6pi/lrp7njrDjgIHliY3nq6/nu4Tku7Yv6aG16Z2i44CB5rWL6K+V5LiA6LW35a6M5oiQ44CCCi0g5LiN5pOF6Ieq5Y+R6YCB5aSW6YOo5raI5oGv44CB5Y+R5biD5oiW56C05Z2P5oCn5Yig6Zmk5pWw5o2u44CCCgojIyDlt6XnqIvkuaDmg68KCi0g5YWI6K+7546w5pyJ5Luj56CB5ZKM5rWL6K+V77yM5YaN5L+u5pS577yb5L+d5oyB6IGM6LSj5Y2V5LiA44CB5L6d6LWW5pa55ZCR5riF5pmw44CB5ZG95ZCN5LiA6Ie044CCCi0g57uE5Lu25YWI5LqO6aG16Z2i77ya5YWI5a6M5oiQIHRva2Vu44CB5Z+656GA5o6n5Lu244CB5aSN5ZCI5qih5byP5ZKM57uE5Lu25rWL6K+V77yM5YaN57uE6KOF6aG16Z2i44CCCi0gQVBJIOWFiOS6juiBlOiwg++8muWQjuerr+aooeWei+WSjCBPcGVuQVBJIOWlkee6puehruWumuWQjueUn+aIkC/mm7TmlrDlrqLmiLfnq6/nsbvlnovvvIznpoHmraLpobXpnaLplb/mnJ/kvp3otZYgbW9jayDmlbDmja7jgIIKLSDlubPlj7Dlt67lvILpm4bkuK3lnKjpgILphY3lmajvvJvkuJrliqHlsYLkuI3lvpfnm7TmjqXliKTmlq0gbWFjT1MvV2luZG93cyDmiJbmi7zmjqXnlKjmiLfmlbDmja7ot6/lvoTjgIIKLSDmr4/kuKrlj5jmm7Tpg73ov5DooYzkuI7ojIPlm7TljLnphY3nmoTmtYvor5XjgIFsaW5044CB57G75Z6L5qOA5p+l5ZKM5p6E5bu66aqM6K+B44CCCi0g5LiA5Liq5Lu75Yqh5LiA5Liq5riF5pmw5o+Q5Lqk77yb5o+Q5Lqk5L+h5oGv6K+05piO6KGM5Li65Y+Y5YyW44CC5L+u5pS55p625p6E5oiW57uP6aqM5pe25ZCM5q2l5pu05pawIGAuYWkvYCDlkozmlofmoaPjgIIKCiMjIGAuYWlgIOS9v+eUqOinhOWImQoKLSDnqLPlrprkuovlrp7lhpnlhaUgYC5haS9tZW1vcnkvYO+8jOiwg+eglOS4jumqjOivgeWGmeWFpSBgLmFpL2tub3dsZWRnZS9g77yM5Y+W6IiN5YaZ5YWlIGAuYWkvZGVjaXNpb25zL2DvvIzpmLbmrrXmlrnmoYjlhpnlhaUgYC5haS9wbGFucy9g77yM5Lya6K+d5pGY6KaB5YaZ5YWlIGAuYWkvc2Vzc2lvbnMvYOOAggotIOiusOW9leW/hemhu+WMheWQq+aXpeacn+OAgeadpea6kOaIlumqjOivgeaWueW8j+OAgeeKtuaAge+8iGNvbmZpcm1lZC9wcm9wb3NlZC9zdXBlcnNlZGVk77yJ44CCCi0g5LiN6K6w5b2V56eY5a+G44CB5Luk54mM44CB5Liq5Lq66ZqQ56eB5oiW5peg562b6YCJ55qE5a+56K+d5YWo5paH44CCCi0g5Y+R546w5pen6K6w5b2V5LiO5Luj56CB5LiN5LiA6Ie05pe277yM5YWI6aqM6K+B77yM5YaN5pu05paw6K6w5b2V5bm25qCH6K6w5pen57uT6K665Li6IGBzdXBlcnNlZGVkYOOAggoKIyMg5a6M5oiQ5a6a5LmJCgrku7vliqHlj6rmnInlnKjku6PnoIHjgIHmlofmoaPjgIHmtYvor5XlkowgYC5haWAg6K6w5b2V77yI5aaC5pyJ5b2x5ZON77yJ5LiA6Ie077yM5bm25ZCR55So5oi36K+05piO6aqM6K+B57uT5p6c44CB5Ymp5L2Z6aOO6Zmp5ZKM5LiL5LiA5q2l5ZCO5omN566X5a6M5oiQ44CCCg==",
+      "expected": "IyBBdXRvRmxvdyBBZ2VudCDljY/kvZzop4TojIMKCiMjIOW8gOWni+W3peS9nOWJjQoKMS4g6ZiF6K+75pys5paH5qGj44CBYC5haS9SRUFETUUubWRg44CBYC5haS9tZW1vcnkvcHJvamVjdC1jb250ZXh0Lm1kYCDlkoznm7jlhbMgYC5haS9kZWNpc2lvbnMvYOOAggoyLiDmn6XnnIsgYGRvY3MvUFJPSkVDVF9TVFJVQ1RVUkUubWRg44CB55u45YWz5p625p6E5paH5qGj5ZKM5b2T5YmNIGdpdCDnirbmgIHjgIIKMy4g5YWI5Yik5pat5Lu75Yqh5piv5o6i6Lev44CB5pyJ55WM5pS55Yqo6L+Y5piv5p625p6E57qn5pS55Yqo44CC5p625p6E57qn5bel5L2c5b+F6aG75YWI5a6M5oiQ6K6+6K6h44CB6KeE5qC85ZKM5a6e5pa96K6h5YiS77yM5bm2562J5b6F55So5oi356Gu6K6k44CCCjQuIOaYjuehruacrOasoeS7u+WKoeeahOiMg+WbtOOAgei+k+WFpeOAgei+k+WHuuOAgemqjOivgeWRveS7pOWSjOS4jeWBmuS6i+mhueOAggoKIyMg5LiO55So5oi35Y2P5ZCMCgotIOeUqOS4reaWh+ayn+mAmu+8jOWFiOaKpeWRiue7k+iuuuOAgemjjumZqeWSjOS4i+S4gOatpe+8jOS4jemakOeekuacqumqjOivgeWGheWuueOAggotIOavj+asoeWPqumXruS4gOS4quecn+ato+mYu+WhnuWGs+etlueahOmXrumimO+8m+iDveagueaNrueOsOacieS4iuS4i+aWh+WIpOaWreeahOS6i+mhueebtOaOpeaOqOi/m+OAggotIOeUqOaIt+imgeaxguKAnOWFiOiuoeWIkuKAneaXtu+8jOS4jee8luWGmeS4muWKoeS7o+egge+8m+WFiOaPkOS6pOWPr+WuoeafpeeahOiuvuiuoeWSjOS7u+WKoeaLhuWIhuOAggotIOeUqOaIt+ehruiupOWQjuWGjei/m+WFpeWunueOsOOAgua2ieWPiuWkmuS4quWKn+iDveaXtuaMieWeguebtOWIh+eJh+aOqOi/m++8muWQjuerr+Wlkee6pi/lrp7njrDjgIHliY3nq6/nu4Tku7Yv6aG16Z2i44CB5rWL6K+V5LiA6LW35a6M5oiQ44CCCi0g5LiN5pOF6Ieq5Y+R6YCB5aSW6YOo5raI5oGv44CB5Y+R5biD5oiW56C05Z2P5oCn5Yig6Zmk5pWw5o2u44CCCgojIyDlt6XnqIvkuaDmg68KCi0g5YWI6K+7546w5pyJ5Luj56CB5ZKM5rWL6K+V77yM5YaN5L+u5pS577yb5L+d5oyB6IGM6LSj5Y2V5LiA44CB5L6d6LWW5pa55ZCR5riF5pmw44CB5ZG95ZCN5LiA6Ie044CCCi0g57uE5Lu25YWI5LqO6aG16Z2i77ya5YWI5a6M5oiQIHRva2Vu44CB5Z+656GA5o6n5Lu244CB5aSN5ZCI5qih5byP5ZKM57uE5Lu25rWL6K+V77yM5YaN57uE6KOF6aG16Z2i44CCCi0gQVBJIOWFiOS6juiBlOiwg++8muWQjuerr+aooeWei+WSjCBPcGVuQVBJIOWlkee6puehruWumuWQjueUn+aIkC/mm7TmlrDlrqLmiLfnq6/nsbvlnovvvIznpoHmraLpobXpnaLplb/mnJ/kvp3otZYgbW9jayDmlbDmja7jgIIKLSDlubPlj7Dlt67lvILpm4bkuK3lnKjpgILphY3lmajvvJvkuJrliqHlsYLkuI3lvpfnm7TmjqXliKTmlq0gbWFjT1MvV2luZG93cyDmiJbmi7zmjqXnlKjmiLfmlbDmja7ot6/lvoTjgIIKLSDmr4/kuKrlj5jmm7Tpg73ov5DooYzkuI7ojIPlm7TljLnphY3nmoTmtYvor5XjgIFsaW5044CB57G75Z6L5qOA5p+l5ZKM5p6E5bu66aqM6K+B44CCCi0g5LiA5Liq5Lu75Yqh5LiA5Liq5riF5pmw5o+Q5Lqk77yb5o+Q5Lqk5L+h5oGv6K+05piO6KGM5Li65Y+Y5YyW44CC5L+u5pS55p625p6E5oiW57uP6aqM5pe25ZCM5q2l5pu05pawIGAuYWkvYCDlkozmlofmoaPjgIIKCiMjIGAuYWlgIOS9v+eUqOinhOWImQoKLSDnqLPlrprkuovlrp7lhpnlhaUgYC5haS9tZW1vcnkvYO+8jOiwg+eglOS4jumqjOivgeWGmeWFpSBgLmFpL2tub3dsZWRnZS9g77yM5Y+W6IiN5YaZ5YWlIGAuYWkvZGVjaXNpb25zL2DvvIzpmLbmrrXmlrnmoYjlhpnlhaUgYC5haS9wbGFucy9g77yM5Lya6K+d5pGY6KaB5YaZ5YWlIGAuYWkvc2Vzc2lvbnMvYOOAggotIOiusOW9leW/hemhu+WMheWQq+aXpeacn+OAgeadpea6kOaIlumqjOivgeaWueW8j+OAgeeKtuaAge+8iGNvbmZpcm1lZC9wcm9wb3NlZC9zdXBlcnNlZGVk77yJ44CCCi0g5LiN6K6w5b2V56eY5a+G44CB5Luk54mM44CB5Liq5Lq66ZqQ56eB5oiW5peg562b6YCJ55qE5a+56K+d5YWo5paH44CCCi0g5Y+R546w5pen6K6w5b2V5LiO5Luj56CB5LiN5LiA6Ie05pe277yM5YWI6aqM6K+B77yM5YaN5pu05paw6K6w5b2V5bm25qCH6K6w5pen57uT6K665Li6IGBzdXBlcnNlZGVkYOOAggoKIyMg5a6M5oiQ5a6a5LmJCgrku7vliqHlj6rmnInlnKjku6PnoIHjgIHmlofmoaPjgIHmtYvor5XlkowgYC5haWAg6K6w5b2V77yI5aaC5pyJ5b2x5ZON77yJ5LiA6Ie077yM5bm25ZCR55So5oi36K+05piO6aqM6K+B57uT5p6c44CB5Ymp5L2Z6aOO6Zmp5ZKM5LiL5LiA5q2l5ZCO5omN566X5a6M5oiQ44CCCg==",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "仓库真实数据 string_split",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "string_split"
+      ],
+      "status": "pass",
+      "durationMs": 0.59,
+      "actual": [
+        "# AutoFlow Agent 协作规范",
+        "",
+        "## 开始工作前",
+        "",
+        "1. 阅读本文档、`.ai/README.md`、`.ai/memory/project-context.md` 和相关 `.ai/decisions/`。",
+        "2. 查看 `docs/PROJECT_STRUCTURE.md`、相关架构文档和当前 git 状态。",
+        "3. 先判断任务是探路、有界改动还是架构级改动。架构级工作必须先完成设计、规格和实施计划，并等待用户确认。",
+        "4. 明确本次任务的范围、输入、输出、验证命令和不做事项。",
+        "",
+        "## 与用户协同",
+        "",
+        "- 用中文沟通，先报告结论、风险和下一步，不隐瞒未验证内容。",
+        "- 每次只问一个真正阻塞决策的问题；能根据现有上下文判断的事项直接推进。",
+        "- 用户要求“先计划”时，不编写业务代码；先提交可审查的设计和任务拆分。",
+        "- 用户确认后再进入实现。涉及多个功能时按垂直切片推进：后端契约/实现、前端组件/页面、测试一起完成。",
+        "- 不擅自发送外部消息、发布或破坏性删除数据。",
+        "",
+        "## 工程习惯",
+        "",
+        "- 先读现有代码和测试，再修改；保持职责单一、依赖方向清晰、命名一致。",
+        "- 组件先于页面：先完成 token、基础控件、复合模式和组件测试，再组装页面。",
+        "- API 先于联调：后端模型和 OpenAPI 契约确定后生成/更新客户端类型，禁止页面长期依赖 mock 数据。",
+        "- 平台差异集中在适配器；业务层不得直接判断 macOS/Windows 或拼接用户数据路径。",
+        "- 每个变更都运行与范围匹配的测试、lint、类型检查和构建验证。",
+        "- 一个任务一个清晰提交；提交信息说明行为变化。修改架构或经验时同步更新 `.ai/` 和文档。",
+        "",
+        "## `.ai` 使用规则",
+        "",
+        "- 稳定事实写入 `.ai/memory/`，调研与验证写入 `.ai/knowledge/`，取舍写入 `.ai/decisions/`，阶段方案写入 `.ai/plans/`，会话摘要写入 `.ai/sessions/`。",
+        "- 记录必须包含日期、来源或验证方式、状态（confirmed/proposed/superseded）。",
+        "- 不记录秘密、令牌、个人隐私或无筛选的对话全文。",
+        "- 发现旧记录与代码不一致时，先验证，再更新记录并标记旧结论为 `superseded`。",
+        "",
+        "## 完成定义",
+        "",
+        "任务只有在代码、文档、测试和 `.ai` 记录（如有影响）一致，并向用户说明验证结果、剩余风险和下一步后才算完成。",
+        ""
+      ],
+      "expected": [
+        "# AutoFlow Agent 协作规范",
+        "",
+        "## 开始工作前",
+        "",
+        "1. 阅读本文档、`.ai/README.md`、`.ai/memory/project-context.md` 和相关 `.ai/decisions/`。",
+        "2. 查看 `docs/PROJECT_STRUCTURE.md`、相关架构文档和当前 git 状态。",
+        "3. 先判断任务是探路、有界改动还是架构级改动。架构级工作必须先完成设计、规格和实施计划，并等待用户确认。",
+        "4. 明确本次任务的范围、输入、输出、验证命令和不做事项。",
+        "",
+        "## 与用户协同",
+        "",
+        "- 用中文沟通，先报告结论、风险和下一步，不隐瞒未验证内容。",
+        "- 每次只问一个真正阻塞决策的问题；能根据现有上下文判断的事项直接推进。",
+        "- 用户要求“先计划”时，不编写业务代码；先提交可审查的设计和任务拆分。",
+        "- 用户确认后再进入实现。涉及多个功能时按垂直切片推进：后端契约/实现、前端组件/页面、测试一起完成。",
+        "- 不擅自发送外部消息、发布或破坏性删除数据。",
+        "",
+        "## 工程习惯",
+        "",
+        "- 先读现有代码和测试，再修改；保持职责单一、依赖方向清晰、命名一致。",
+        "- 组件先于页面：先完成 token、基础控件、复合模式和组件测试，再组装页面。",
+        "- API 先于联调：后端模型和 OpenAPI 契约确定后生成/更新客户端类型，禁止页面长期依赖 mock 数据。",
+        "- 平台差异集中在适配器；业务层不得直接判断 macOS/Windows 或拼接用户数据路径。",
+        "- 每个变更都运行与范围匹配的测试、lint、类型检查和构建验证。",
+        "- 一个任务一个清晰提交；提交信息说明行为变化。修改架构或经验时同步更新 `.ai/` 和文档。",
+        "",
+        "## `.ai` 使用规则",
+        "",
+        "- 稳定事实写入 `.ai/memory/`，调研与验证写入 `.ai/knowledge/`，取舍写入 `.ai/decisions/`，阶段方案写入 `.ai/plans/`，会话摘要写入 `.ai/sessions/`。",
+        "- 记录必须包含日期、来源或验证方式、状态（confirmed/proposed/superseded）。",
+        "- 不记录秘密、令牌、个人隐私或无筛选的对话全文。",
+        "- 发现旧记录与代码不一致时，先验证，再更新记录并标记旧结论为 `superseded`。",
+        "",
+        "## 完成定义",
+        "",
+        "任务只有在代码、文档、测试和 `.ai` 记录（如有影响）一致，并向用户说明验证结果、剩余风险和下一步后才算完成。",
+        ""
+      ],
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "仓库真实数据 string_join",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "string_join"
+      ],
+      "status": "pass",
+      "durationMs": 0.56,
+      "actual": "package.json\napps/desktop/package.json\napps/backend/pyproject.toml\nAGENTS.md\ndocs/PROJECT_STRUCTURE.md",
+      "expected": "package.json\napps/desktop/package.json\napps/backend/pyproject.toml\nAGENTS.md\ndocs/PROJECT_STRUCTURE.md",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "仓库真实数据 string_replace",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "string_replace"
+      ],
+      "status": "pass",
+      "durationMs": 0.59,
+      "actual": "package.yaml",
+      "expected": "package.yaml",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "仓库真实数据 string_concat",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "string_concat"
+      ],
+      "status": "pass",
+      "durationMs": 0.5,
+      "actual": "autoflow",
+      "expected": "autoflow",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "仓库真实数据 string_trim",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "string_trim"
+      ],
+      "status": "pass",
+      "durationMs": 0.65,
+      "actual": "# AutoFlow Agent 协作规范\n\n## 开始工作前\n\n1. 阅读本文档、`.ai/README.md`、`.ai/memory/project-context.md` 和相关 `.ai/decisions/`。\n2. 查看 `docs/PROJECT_STRUCTURE.md`、相关架构文档和当前 git 状态。\n3. 先判断任务是探路、有界改动还是架构级改动。架构级工作必须先完成设计、规格和实施计划，并等待用户确认。\n4. 明确本次任务的范围、输入、输出、验证命令和不做事项。\n\n## 与用户协同\n\n- 用中文沟通，先报告结论、风险和下一步，不隐瞒未验证内容。\n- 每次只问一个真正阻塞决策的问题；能根据现有上下文判断的事项直接推进。\n- 用户要求“先计划”时，不编写业务代码；先提交可审查的设计和任务拆分。\n- 用户确认后再进入实现。涉及多个功能时按垂直切片推进：后端契约/实现、前端组件/页面、测试一起完成。\n- 不擅自发送外部消息、发布或破坏性删除数据。\n\n## 工程习惯\n\n- 先读现有代码和测试，再修改；保持职责单一、依赖方向清晰、命名一致。\n- 组件先于页面：先完成 token、基础控件、复合模式和组件测试，再组装页面。\n- API 先于联调：后端模型和 OpenAPI 契约确定后生成/更新客户端类型，禁止页面长期依赖 mock 数据。\n- 平台差异集中在适配器；业务层不得直接判断 macOS/Windows 或拼接用户数据路径。\n- 每个变更都运行与范围匹配的测试、lint、类型检查和构建验证。\n- 一个任务一个清晰提交；提交信息说明行为变化。修改架构或经验时同步更新 `.ai/` 和文档。\n\n## `.ai` 使用规则\n\n- 稳定事实写入 `.ai/memory/`，调研与验证写入 `.ai/knowledge/`，取舍写入 `.ai/decisions/`，阶段方案写入 `.ai/plans/`，会话摘要写入 `.ai/sessions/`。\n- 记录必须包含日期、来源或验证方式、状态（confirmed/proposed/superseded）。\n- 不记录秘密、令牌、个人隐私或无筛选的对话全文。\n- 发现旧记录与代码不一致时，先验证，再更新记录并标记旧结论为 `superseded`。\n\n## 完成定义\n\n任务只有在代码、文档、测试和 `.ai` 记录（如有影响）一致，并向用户说明验证结果、剩余风险和下一步后才算完成。",
+      "expected": "# AutoFlow Agent 协作规范\n\n## 开始工作前\n\n1. 阅读本文档、`.ai/README.md`、`.ai/memory/project-context.md` 和相关 `.ai/decisions/`。\n2. 查看 `docs/PROJECT_STRUCTURE.md`、相关架构文档和当前 git 状态。\n3. 先判断任务是探路、有界改动还是架构级改动。架构级工作必须先完成设计、规格和实施计划，并等待用户确认。\n4. 明确本次任务的范围、输入、输出、验证命令和不做事项。\n\n## 与用户协同\n\n- 用中文沟通，先报告结论、风险和下一步，不隐瞒未验证内容。\n- 每次只问一个真正阻塞决策的问题；能根据现有上下文判断的事项直接推进。\n- 用户要求“先计划”时，不编写业务代码；先提交可审查的设计和任务拆分。\n- 用户确认后再进入实现。涉及多个功能时按垂直切片推进：后端契约/实现、前端组件/页面、测试一起完成。\n- 不擅自发送外部消息、发布或破坏性删除数据。\n\n## 工程习惯\n\n- 先读现有代码和测试，再修改；保持职责单一、依赖方向清晰、命名一致。\n- 组件先于页面：先完成 token、基础控件、复合模式和组件测试，再组装页面。\n- API 先于联调：后端模型和 OpenAPI 契约确定后生成/更新客户端类型，禁止页面长期依赖 mock 数据。\n- 平台差异集中在适配器；业务层不得直接判断 macOS/Windows 或拼接用户数据路径。\n- 每个变更都运行与范围匹配的测试、lint、类型检查和构建验证。\n- 一个任务一个清晰提交；提交信息说明行为变化。修改架构或经验时同步更新 `.ai/` 和文档。\n\n## `.ai` 使用规则\n\n- 稳定事实写入 `.ai/memory/`，调研与验证写入 `.ai/knowledge/`，取舍写入 `.ai/decisions/`，阶段方案写入 `.ai/plans/`，会话摘要写入 `.ai/sessions/`。\n- 记录必须包含日期、来源或验证方式、状态（confirmed/proposed/superseded）。\n- 不记录秘密、令牌、个人隐私或无筛选的对话全文。\n- 发现旧记录与代码不一致时，先验证，再更新记录并标记旧结论为 `superseded`。\n\n## 完成定义\n\n任务只有在代码、文档、测试和 `.ai` 记录（如有影响）一致，并向用户说明验证结果、剩余风险和下一步后才算完成。",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "仓库真实数据 string_case",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "string_case"
+      ],
+      "status": "pass",
+      "durationMs": 0.68,
+      "actual": "AUTOFLOW",
+      "expected": "AUTOFLOW",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "仓库真实数据 string_substring",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "string_substring"
+      ],
+      "status": "pass",
+      "durationMs": 0.47,
+      "actual": "# AutoFlow",
+      "expected": "# AutoFlow",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "仓库真实数据 regex_extract",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "regex_extract"
+      ],
+      "status": "pass",
+      "durationMs": 1.33,
+      "actual": [
+        "autoflow"
+      ],
+      "expected": [
+        "autoflow"
+      ],
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "仓库真实数据 math_gcd",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "math_gcd"
+      ],
+      "status": "pass",
+      "durationMs": 0.61,
+      "actual": 1,
+      "expected": 1,
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "仓库真实数据 math_lcm",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "math_lcm"
+      ],
+      "status": "pass",
+      "durationMs": 0.53,
+      "actual": 2524615,
+      "expected": 2524615,
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "仓库真实数据 math_clamp",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "math_clamp"
+      ],
+      "status": "pass",
+      "durationMs": 0.65,
+      "actual": 1055.0,
+      "expected": 1055,
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "源文件元数据 math_round",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "math_round"
+      ],
+      "status": "pass",
+      "durationMs": 0.68,
+      "actual": 1.03,
+      "expected": 1.03,
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "源文件元数据 math_floor",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "math_floor"
+      ],
+      "status": "pass",
+      "durationMs": 0.51,
+      "actual": 1,
+      "expected": 1,
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "源文件元数据 math_abs",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "math_abs"
+      ],
+      "status": "pass",
+      "durationMs": 0.49,
+      "actual": 1338.0,
+      "expected": 1338,
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "源文件元数据 math_sqrt",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "math_sqrt"
+      ],
+      "status": "pass",
+      "durationMs": 0.64,
+      "actual": 32.48076353782343,
+      "expected": 32.48076353782343,
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "源文件元数据 math_power",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "math_power"
+      ],
+      "status": "pass",
+      "durationMs": 0.86,
+      "actual": 1113025.0,
+      "expected": 1113025,
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "源文件元数据 math_modulo",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "math_modulo"
+      ],
+      "status": "pass",
+      "durationMs": 0.55,
+      "actual": 31.0,
+      "expected": 31,
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "源文件元数据 math_base_convert",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "math_base_convert"
+      ],
+      "status": "pass",
+      "durationMs": 0.47,
+      "actual": "41F",
+      "expected": "41F",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "源文件元数据 math_factorial",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "math_factorial"
+      ],
+      "status": "pass",
+      "durationMs": 0.48,
+      "actual": 120,
+      "expected": 120,
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "源文件元数据 math_permutation",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "math_permutation"
+      ],
+      "status": "pass",
+      "durationMs": 0.53,
+      "actual": 10,
+      "expected": 10,
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "源文件元数据 stat_normalize",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "stat_normalize"
+      ],
+      "status": "pass",
+      "durationMs": 0.5,
+      "actual": [
+        0.0,
+        0.023099233478350942,
+        0.006991920447482909,
+        0.02209792141426697,
+        1.0
+      ],
+      "expected": [
+        0.0,
+        0.023099233478350942,
+        0.006991920447482909,
+        0.02209792141426697,
+        1.0
+      ],
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "源文件元数据 stat_standardize",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "stat_standardize"
+      ],
+      "status": "pass",
+      "durationMs": 0.59,
+      "actual": [
+        -0.47665463879386094,
+        -0.42433344934186285,
+        -0.4608175074574938,
+        -0.42660148296534256,
+        1.7884070785585602
+      ],
+      "expected": [
+        -0.47665463879386094,
+        -0.42433344934186285,
+        -0.4608175074574938,
+        -0.42660148296534256,
+        1.7884070785585602
+      ],
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "源文件元数据 list_merge",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "list_merge"
+      ],
+      "status": "pass",
+      "durationMs": 0.59,
+      "actual": [
+        "package.json",
+        "apps/desktop/package.json",
+        "apps/backend/pyproject.toml",
+        "AGENTS.md",
+        "docs/PROJECT_STRUCTURE.md",
+        "package.json",
+        "apps/desktop/package.json",
+        "apps/backend/pyproject.toml",
+        "AGENTS.md",
+        "docs/PROJECT_STRUCTURE.md"
+      ],
+      "expected": [
+        "package.json",
+        "apps/desktop/package.json",
+        "apps/backend/pyproject.toml",
+        "AGENTS.md",
+        "docs/PROJECT_STRUCTURE.md",
+        "package.json",
+        "apps/desktop/package.json",
+        "apps/backend/pyproject.toml",
+        "AGENTS.md",
+        "docs/PROJECT_STRUCTURE.md"
+      ],
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "源文件元数据 list_chunk",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "list_chunk"
+      ],
+      "status": "pass",
+      "durationMs": 0.54,
+      "actual": [
+        [
+          "package.json",
+          "apps/desktop/package.json"
+        ],
+        [
+          "apps/backend/pyproject.toml",
+          "AGENTS.md"
+        ],
+        [
+          "docs/PROJECT_STRUCTURE.md"
+        ]
+      ],
+      "expected": [
+        [
+          "package.json",
+          "apps/desktop/package.json"
+        ],
+        [
+          "apps/backend/pyproject.toml",
+          "AGENTS.md"
+        ],
+        [
+          "docs/PROJECT_STRUCTURE.md"
+        ]
+      ],
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "源文件元数据 list_remove_empty",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "list_remove_empty"
+      ],
+      "status": "pass",
+      "durationMs": 0.52,
+      "actual": [
+        "package.json",
+        "apps/desktop/package.json",
+        "apps/backend/pyproject.toml",
+        "AGENTS.md",
+        "docs/PROJECT_STRUCTURE.md"
+      ],
+      "expected": [
+        "package.json",
+        "apps/desktop/package.json",
+        "apps/backend/pyproject.toml",
+        "AGENTS.md",
+        "docs/PROJECT_STRUCTURE.md"
+      ],
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "真实 CSV 生成解析",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "csv_generate"
+      ],
+      "status": "pass",
+      "durationMs": 0.66,
+      "actual": "path,bytes,sha256\r\npackage.json,1055,6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92\r\napps/desktop/package.json,2393,61fc76779f38838f8102e67810c66aebf408d25de7c0d3bc6da4795a1005f5b5\r\napps/backend/pyproject.toml,1460,4e49812742d3362808878fc11614cbb6884b94a1f6c13b93a9775d6b2d6d84f1\r\nAGENTS.md,2335,f59c274adb1d4144cc8a351f111702e21b92be2d9b0bd459e572a0243a1c48a8\r\ndocs/PROJECT_STRUCTURE.md,58979,dfbe76523c99d0dc49292fe11c71de346dc7475da611fb2890032d72b4dda924\r\n",
+      "expected": "predicate in source",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "源文件 CSV 解析",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "csv_parse"
+      ],
+      "status": "pass",
+      "durationMs": 0.94,
+      "actual": [
+        {
+          "path": "package.json",
+          "bytes": "1055",
+          "sha256": "6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92"
+        },
+        {
+          "path": "apps/desktop/package.json",
+          "bytes": "2393",
+          "sha256": "61fc76779f38838f8102e67810c66aebf408d25de7c0d3bc6da4795a1005f5b5"
+        },
+        {
+          "path": "apps/backend/pyproject.toml",
+          "bytes": "1460",
+          "sha256": "4e49812742d3362808878fc11614cbb6884b94a1f6c13b93a9775d6b2d6d84f1"
+        },
+        {
+          "path": "AGENTS.md",
+          "bytes": "2335",
+          "sha256": "f59c274adb1d4144cc8a351f111702e21b92be2d9b0bd459e572a0243a1c48a8"
+        },
+        {
+          "path": "docs/PROJECT_STRUCTURE.md",
+          "bytes": "58979",
+          "sha256": "dfbe76523c99d0dc49292fe11c71de346dc7475da611fb2890032d72b4dda924"
+        }
+      ],
+      "expected": [
+        {
+          "path": "package.json",
+          "bytes": "1055",
+          "sha256": "6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92"
+        },
+        {
+          "path": "apps/desktop/package.json",
+          "bytes": "2393",
+          "sha256": "61fc76779f38838f8102e67810c66aebf408d25de7c0d3bc6da4795a1005f5b5"
+        },
+        {
+          "path": "apps/backend/pyproject.toml",
+          "bytes": "1460",
+          "sha256": "4e49812742d3362808878fc11614cbb6884b94a1f6c13b93a9775d6b2d6d84f1"
+        },
+        {
+          "path": "AGENTS.md",
+          "bytes": "2335",
+          "sha256": "f59c274adb1d4144cc8a351f111702e21b92be2d9b0bd459e572a0243a1c48a8"
+        },
+        {
+          "path": "docs/PROJECT_STRUCTURE.md",
+          "bytes": "58979",
+          "sha256": "dfbe76523c99d0dc49292fe11c71de346dc7475da611fb2890032d72b4dda924"
+        }
+      ],
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "真实 CSV 导出仅剩表头时应为空数据集",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "csv_parse"
+      ],
+      "status": "fail",
+      "durationMs": 0.61,
+      "actual": [
+        [
+          "path",
+          "bytes",
+          "sha256"
+        ]
+      ],
+      "expected": [],
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "源文件列表索引越界",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "list_get"
+      ],
+      "status": "pass",
+      "durationMs": 0.53,
+      "actual": null,
+      "expected": null,
+      "success": false,
+      "error": "索引 5 超出范围",
+      "issues": []
+    },
+    {
+      "name": "截断真实 package JSON 应拒绝",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "json_parse"
+      ],
+      "status": "pass",
+      "durationMs": 0.51,
+      "actual": null,
+      "expected": null,
+      "success": false,
+      "error": "源数据不是有效的JSON: Expecting ',' delimiter: line 26 column 4 (char 1052)",
+      "issues": []
+    },
+    {
+      "name": "不支持的散列算法应拒绝",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "sha_encrypt"
+      ],
+      "status": "fail",
+      "durationMs": 0.6,
+      "actual": "f59c274adb1d4144cc8a351f111702e21b92be2d9b0bd459e572a0243a1c48a8",
+      "expected": null,
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "Python 真实读仓库文件 → JSON → 日志",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "json_parse",
+        "print_log",
+        "python_script"
+      ],
+      "status": "pass",
+      "durationMs": 2436.49,
+      "error": null,
+      "evidence": "qa-059-events.json"
+    },
+    {
+      "name": "实际表格增列改格 → CSV/XLSX 文件 → 独立库回读",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "table_add_column",
+        "table_add_row",
+        "table_export",
+        "table_get_cell",
+        "table_set_cell"
+      ],
+      "status": "pass",
+      "durationMs": 2296.53,
+      "error": null,
+      "evidence": "qa-060-events.json"
+    },
+    {
+      "name": "真实列表导出覆盖后追加",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "list_export"
+      ],
+      "status": "pass",
+      "durationMs": 2373.79,
+      "error": null,
+      "evidence": "qa-061-events.json"
+    },
+    {
+      "name": "真实文件 Base64 写入再读取",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "base64"
+      ],
+      "status": "pass",
+      "durationMs": 2467.18,
+      "error": null,
+      "evidence": "qa-062-events.json"
+    },
+    {
+      "name": "产物路径越界应拒绝",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "list_export"
+      ],
+      "status": "pass",
+      "durationMs": 2328.49,
+      "error": null,
+      "evidence": "qa-063-events.json"
+    },
+    {
+      "name": "Python 压缩真实文件并解压验 SHA256",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "python_script"
+      ],
+      "status": "pass",
+      "durationMs": 2350.88,
+      "error": null,
+      "evidence": "qa-064-events.json"
+    },
+    {
+      "name": "Python 文件模式带空格路径参数",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "python_script"
+      ],
+      "status": "fail",
+      "durationMs": 2343.76,
+      "error": "AssertionError({'type': 'execution:failed', 'runId': 'qa-065', 'workflowId': 'qa-065', 'executedNodes': 1, 'failedNodeId': 'n0', 'issues': [], 'error': '脚本执行失败（返回码: 1）\\n标准错误输出:\\nTraceback (most recent call last):\\n  File \"/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-nodes-a5m6recu/zip workspace/read argument.py\", line 3, in <module>\\n    print(json.loads(Path(sys.argv[1]).read_text())[\"name\"])\\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/pathlib.py\", line 1058, in read_text\\n    with self.open(mode=\\'r\\', encoding=encoding, errors=errors) as f:\\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/pathlib.py\", line 1044, in open\\n    return io.open(self, mode, buffering, encoding, errors, newline)\\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\nFileNotFoundError: [Errno 2] No such file or directory: \"\\'/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-nodes-a5m6recu/zip\"'})",
+      "evidence": "qa-065-events.json"
+    },
+    {
+      "name": "Python 失败应中断后继节点",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "print_log",
+        "python_script"
+      ],
+      "status": "pass",
+      "durationMs": 3586.62,
+      "error": null,
+      "evidence": "qa-066-events.json"
+    },
+    {
+      "name": "Python 超时清理",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "python_script"
+      ],
+      "status": "pass",
+      "durationMs": 3416.01,
+      "error": null,
+      "evidence": "qa-067-events.json"
+    },
+    {
+      "name": "系统命令 Node.js 真实读取 package.json",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "run_command"
+      ],
+      "status": "pass",
+      "durationMs": 2349.15,
+      "error": null,
+      "evidence": "qa-068-events.json"
+    },
+    {
+      "name": "公开 IANA 网页真实 HTTP GET",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "api_request"
+      ],
+      "status": "pass",
+      "durationMs": 2416.27,
+      "error": null,
+      "evidence": "qa-069-events.json"
+    },
+    {
+      "name": "Studio JavaScript 节点完整浏览器执行",
+      "moduleTypes": [],
+      "status": "blocked",
+      "reason": "js_script 经 sidecar UI/SSE 的 BrowserScriptGateway 运行；本分工不启动 Electron，未用 Node.js 替代品假冒节点通过。run_command 中 Node.js 执行单独计为命令节点。"
+    },
+    {
+      "name": "专用文件路径/压缩节点",
+      "moduleTypes": [],
+      "status": "blocked",
+      "reason": "production registry 未发现通用 read_file/write_file/path/zip 节点；真实文件读写由 Base64/导出/Python 验证，压缩经 Python 脚本验证，不虚称独立节点。"
+    },
+    {
+      "name": "补充 真实清单 list_operation",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "list_operation"
+      ],
+      "status": "pass",
+      "durationMs": 0.44,
+      "actual": [
+        "package.json",
+        "apps/desktop/package.json",
+        "apps/backend/pyproject.toml",
+        "AGENTS.md",
+        "docs/PROJECT_STRUCTURE.md",
+        "package.json"
+      ],
+      "expected": [
+        "package.json",
+        "apps/desktop/package.json",
+        "apps/backend/pyproject.toml",
+        "AGENTS.md",
+        "docs/PROJECT_STRUCTURE.md",
+        "package.json"
+      ],
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "补充 真实清单 dict_operation",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "dict_operation"
+      ],
+      "status": "pass",
+      "durationMs": 0.53,
+      "actual": {
+        "name": "@autoflow/desktop",
+        "private": true,
+        "workspaces": [
+          "apps/desktop"
+        ],
+        "scripts": {
+          "test:structure": "node --test scripts/structure.test.mjs",
+          "dev": "npm --workspace @autoflow/desktop run dev",
+          "test": "npm --workspace @autoflow/desktop test",
+          "typecheck": "npm --workspace @autoflow/desktop run typecheck",
+          "lint": "npm --workspace @autoflow/desktop run lint",
+          "build": "npm --workspace @autoflow/desktop run build",
+          "backend:build": "node scripts/build-backend.mjs",
+          "package:dir": "npm --workspace @autoflow/desktop run package:dir",
+          "openapi:generate": "node scripts/generate-api.mjs",
+          "openapi:check": "node scripts/generate-api.mjs --check",
+          "smoke:sidecar": "node scripts/smoke-sidecar.mjs",
+          "test:scripts": "node --test scripts/*.test.mjs",
+          "smoke:desktop": "node scripts/smoke-desktop.mjs",
+          "smoke:studio": "node scripts/smoke-studio-window.mjs",
+          "test:pm2": "node scripts/verify-pm2-delivery.mjs"
+        },
+        "devDependencies": {
+          "openapi-typescript": "^7.13.0"
+        }
+      },
+      "expected": {
+        "name": "@autoflow/desktop",
+        "private": true,
+        "workspaces": [
+          "apps/desktop"
+        ],
+        "scripts": {
+          "test:structure": "node --test scripts/structure.test.mjs",
+          "dev": "npm --workspace @autoflow/desktop run dev",
+          "test": "npm --workspace @autoflow/desktop test",
+          "typecheck": "npm --workspace @autoflow/desktop run typecheck",
+          "lint": "npm --workspace @autoflow/desktop run lint",
+          "build": "npm --workspace @autoflow/desktop run build",
+          "backend:build": "node scripts/build-backend.mjs",
+          "package:dir": "npm --workspace @autoflow/desktop run package:dir",
+          "openapi:generate": "node scripts/generate-api.mjs",
+          "openapi:check": "node scripts/generate-api.mjs --check",
+          "smoke:sidecar": "node scripts/smoke-sidecar.mjs",
+          "test:scripts": "node --test scripts/*.test.mjs",
+          "smoke:desktop": "node scripts/smoke-desktop.mjs",
+          "smoke:studio": "node scripts/smoke-studio-window.mjs",
+          "test:pm2": "node scripts/verify-pm2-delivery.mjs"
+        },
+        "devDependencies": {
+          "openapi-typescript": "^7.13.0"
+        }
+      },
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "补充 真实清单 dict_merge",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "dict_merge"
+      ],
+      "status": "pass",
+      "durationMs": 0.79,
+      "actual": {
+        "name": "@autoflow/desktop",
+        "private": true,
+        "workspaces": [
+          "apps/desktop"
+        ],
+        "scripts": {
+          "dev": "electron-vite dev",
+          "build": "electron-vite build",
+          "test": "vitest run",
+          "typecheck": "tsc --noEmit",
+          "lint": "eslint .",
+          "package:dir": "electron-builder --config electron-builder.yml --dir",
+          "openapi:generate": "node ../../scripts/generate-api.mjs",
+          "openapi:check": "node ../../scripts/generate-api.mjs --check",
+          "studio:preview": "vite --config vite.studio-preview.config.ts"
+        },
+        "devDependencies": {
+          "@testing-library/jest-dom": "^7.0.1",
+          "@testing-library/react": "^16.3.3",
+          "@testing-library/user-event": "^14.6.7",
+          "@types/node": "^24.3.0",
+          "@types/react": "^19.1.10",
+          "@types/react-dom": "^19.1.7",
+          "@vitejs/plugin-react": "^5.0.4",
+          "electron": "41.10.3",
+          "electron-builder": "^26.0.12",
+          "electron-vite": "^4.0.0",
+          "eslint": "^10.10.0",
+          "jsdom": "^30.0.1",
+          "typescript": "^5.9.2",
+          "typescript-eslint": "^8.70.0",
+          "vite": "^7.1.3",
+          "vitest": "4.1.11"
+        },
+        "version": "0.1.0",
+        "main": "./out/main/index.js",
+        "dependencies": {
+          "@daypicker/react": "^10.0.1",
+          "@hookform/resolvers": "^5.9.1",
+          "@monaco-editor/react": "^4.7.0",
+          "@phosphor-icons/react": "^2.1.10",
+          "@radix-ui/react-alert-dialog": "^1.1.23",
+          "@radix-ui/react-checkbox": "^1.3.11",
+          "@radix-ui/react-dialog": "^1.1.23",
+          "@radix-ui/react-dropdown-menu": "^2.1.24",
+          "@radix-ui/react-popover": "^1.1.23",
+          "@radix-ui/react-scroll-area": "1.2.18",
+          "@radix-ui/react-select": "^2.3.7",
+          "@radix-ui/react-switch": "^1.3.7",
+          "@radix-ui/react-tabs": "^1.1.21",
+          "@radix-ui/react-tooltip": "^1.2.16",
+          "@tailwindcss/vite": "^4.3.3",
+          "@tanstack/react-query": "^5.102.8",
+          "@xyflow/react": "^12.11.6",
+          "class-variance-authority": "^0.7.1",
+          "clsx": "^2.1.1",
+          "dompurify": "^3.4.15",
+          "elkjs": "^0.11.1",
+          "framer-motion": "^12.43.0",
+          "html2canvas": "^1.4.1",
+          "lucide-react": "^0.562.0",
+          "marked": "^18.0.13",
+          "mermaid": "^11.17.2",
+          "monaco-editor": "^0.55.1",
+          "nanoid": "^5.1.16",
+          "pinyin-pro": "^3.29.4",
+          "react": "^19.3.0",
+          "react-dom": "^19.3.0",
+          "react-hook-form": "^7.87.0",
+          "react-resizable-panels": "^4.12.4",
+          "tailwind-merge": "^3.6.0",
+          "tailwindcss": "^4.3.3",
+          "zod": "^4.6.2",
+          "zustand": "^5.0.15"
+        }
+      },
+      "expected": {
+        "name": "@autoflow/desktop",
+        "private": true,
+        "workspaces": [
+          "apps/desktop"
+        ],
+        "scripts": {
+          "dev": "electron-vite dev",
+          "build": "electron-vite build",
+          "test": "vitest run",
+          "typecheck": "tsc --noEmit",
+          "lint": "eslint .",
+          "package:dir": "electron-builder --config electron-builder.yml --dir",
+          "openapi:generate": "node ../../scripts/generate-api.mjs",
+          "openapi:check": "node ../../scripts/generate-api.mjs --check",
+          "studio:preview": "vite --config vite.studio-preview.config.ts"
+        },
+        "devDependencies": {
+          "@testing-library/jest-dom": "^7.0.1",
+          "@testing-library/react": "^16.3.3",
+          "@testing-library/user-event": "^14.6.7",
+          "@types/node": "^24.3.0",
+          "@types/react": "^19.1.10",
+          "@types/react-dom": "^19.1.7",
+          "@vitejs/plugin-react": "^5.0.4",
+          "electron": "41.10.3",
+          "electron-builder": "^26.0.12",
+          "electron-vite": "^4.0.0",
+          "eslint": "^10.10.0",
+          "jsdom": "^30.0.1",
+          "typescript": "^5.9.2",
+          "typescript-eslint": "^8.70.0",
+          "vite": "^7.1.3",
+          "vitest": "4.1.11"
+        },
+        "version": "0.1.0",
+        "main": "./out/main/index.js",
+        "dependencies": {
+          "@daypicker/react": "^10.0.1",
+          "@hookform/resolvers": "^5.9.1",
+          "@monaco-editor/react": "^4.7.0",
+          "@phosphor-icons/react": "^2.1.10",
+          "@radix-ui/react-alert-dialog": "^1.1.23",
+          "@radix-ui/react-checkbox": "^1.3.11",
+          "@radix-ui/react-dialog": "^1.1.23",
+          "@radix-ui/react-dropdown-menu": "^2.1.24",
+          "@radix-ui/react-popover": "^1.1.23",
+          "@radix-ui/react-scroll-area": "1.2.18",
+          "@radix-ui/react-select": "^2.3.7",
+          "@radix-ui/react-switch": "^1.3.7",
+          "@radix-ui/react-tabs": "^1.1.21",
+          "@radix-ui/react-tooltip": "^1.2.16",
+          "@tailwindcss/vite": "^4.3.3",
+          "@tanstack/react-query": "^5.102.8",
+          "@xyflow/react": "^12.11.6",
+          "class-variance-authority": "^0.7.1",
+          "clsx": "^2.1.1",
+          "dompurify": "^3.4.15",
+          "elkjs": "^0.11.1",
+          "framer-motion": "^12.43.0",
+          "html2canvas": "^1.4.1",
+          "lucide-react": "^0.562.0",
+          "marked": "^18.0.13",
+          "mermaid": "^11.17.2",
+          "monaco-editor": "^0.55.1",
+          "nanoid": "^5.1.16",
+          "pinyin-pro": "^3.29.4",
+          "react": "^19.3.0",
+          "react-dom": "^19.3.0",
+          "react-hook-form": "^7.87.0",
+          "react-resizable-panels": "^4.12.4",
+          "tailwind-merge": "^3.6.0",
+          "tailwindcss": "^4.3.3",
+          "zod": "^4.6.2",
+          "zustand": "^5.0.15"
+        }
+      },
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "补充 真实清单 dict_filter",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "dict_filter"
+      ],
+      "status": "pass",
+      "durationMs": 0.89,
+      "actual": {
+        "name": "autoflow"
+      },
+      "expected": {
+        "name": "autoflow"
+      },
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "补充 真实清单 dict_map_values",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "dict_map_values"
+      ],
+      "status": "pass",
+      "durationMs": 1.57,
+      "actual": {
+        "package.json": 1.0302734375,
+        "apps/desktop/package.json": 2.3369140625,
+        "apps/backend/pyproject.toml": 1.42578125,
+        "AGENTS.md": 2.2802734375,
+        "docs/PROJECT_STRUCTURE.md": 57.5966796875
+      },
+      "expected": {
+        "package.json": 1.0302734375,
+        "apps/desktop/package.json": 2.3369140625,
+        "apps/backend/pyproject.toml": 1.42578125,
+        "AGENTS.md": 2.2802734375,
+        "docs/PROJECT_STRUCTURE.md": 57.5966796875
+      },
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "补充 真实清单 dict_invert",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "dict_invert"
+      ],
+      "status": "pass",
+      "durationMs": 0.58,
+      "actual": {
+        "1055": "package.json",
+        "2393": "apps/desktop/package.json",
+        "1460": "apps/backend/pyproject.toml",
+        "2335": "AGENTS.md",
+        "58979": "docs/PROJECT_STRUCTURE.md"
+      },
+      "expected": {
+        "1055": "package.json",
+        "2393": "apps/desktop/package.json",
+        "1460": "apps/backend/pyproject.toml",
+        "2335": "AGENTS.md",
+        "58979": "docs/PROJECT_STRUCTURE.md"
+      },
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "补充 真实清单 dict_flatten",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "dict_flatten"
+      ],
+      "status": "pass",
+      "durationMs": 0.52,
+      "actual": {
+        "metadata.package.json": 1055,
+        "metadata.apps/desktop/package.json": 2393,
+        "metadata.apps/backend/pyproject.toml": 1460,
+        "metadata.AGENTS.md": 2335,
+        "metadata.docs/PROJECT_STRUCTURE.md": 58979
+      },
+      "expected": {
+        "metadata.package.json": 1055,
+        "metadata.apps/desktop/package.json": 2393,
+        "metadata.apps/backend/pyproject.toml": 1460,
+        "metadata.AGENTS.md": 2335,
+        "metadata.docs/PROJECT_STRUCTURE.md": 58979
+      },
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "补充 真实清单 list_flatten",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "list_flatten"
+      ],
+      "status": "pass",
+      "durationMs": 0.54,
+      "actual": [
+        "package.json",
+        "apps/desktop/package.json",
+        "apps/backend/pyproject.toml",
+        "AGENTS.md",
+        "docs/PROJECT_STRUCTURE.md"
+      ],
+      "expected": [
+        "package.json",
+        "apps/desktop/package.json",
+        "apps/backend/pyproject.toml",
+        "AGENTS.md",
+        "docs/PROJECT_STRUCTURE.md"
+      ],
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "补充 真实清单 list_intersection",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "list_intersection"
+      ],
+      "status": "pass",
+      "durationMs": 0.61,
+      "actual": [
+        "package.json",
+        "apps/desktop/package.json"
+      ],
+      "expected": "predicate in source",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "补充 真实清单 list_union",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "list_union"
+      ],
+      "status": "pass",
+      "durationMs": 0.54,
+      "actual": [
+        "package.json",
+        "docs/PROJECT_STRUCTURE.md",
+        "AGENTS.md",
+        "apps/desktop/package.json",
+        "apps/backend/pyproject.toml"
+      ],
+      "expected": "predicate in source",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "补充 真实清单 list_difference",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "list_difference"
+      ],
+      "status": "pass",
+      "durationMs": 0.53,
+      "actual": [
+        "docs/PROJECT_STRUCTURE.md",
+        "AGENTS.md",
+        "apps/backend/pyproject.toml"
+      ],
+      "expected": "predicate in source",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "补充 真实清单 list_cartesian_product",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "list_cartesian_product"
+      ],
+      "status": "pass",
+      "durationMs": 1.69,
+      "actual": [
+        [
+          "package.json",
+          "package.json"
+        ],
+        [
+          "package.json",
+          "apps/desktop/package.json"
+        ],
+        [
+          "apps/desktop/package.json",
+          "package.json"
+        ],
+        [
+          "apps/desktop/package.json",
+          "apps/desktop/package.json"
+        ],
+        [
+          "apps/backend/pyproject.toml",
+          "package.json"
+        ],
+        [
+          "apps/backend/pyproject.toml",
+          "apps/desktop/package.json"
+        ],
+        [
+          "AGENTS.md",
+          "package.json"
+        ],
+        [
+          "AGENTS.md",
+          "apps/desktop/package.json"
+        ],
+        [
+          "docs/PROJECT_STRUCTURE.md",
+          "package.json"
+        ],
+        [
+          "docs/PROJECT_STRUCTURE.md",
+          "apps/desktop/package.json"
+        ]
+      ],
+      "expected": [
+        [
+          "package.json",
+          "package.json"
+        ],
+        [
+          "package.json",
+          "apps/desktop/package.json"
+        ],
+        [
+          "apps/desktop/package.json",
+          "package.json"
+        ],
+        [
+          "apps/desktop/package.json",
+          "apps/desktop/package.json"
+        ],
+        [
+          "apps/backend/pyproject.toml",
+          "package.json"
+        ],
+        [
+          "apps/backend/pyproject.toml",
+          "apps/desktop/package.json"
+        ],
+        [
+          "AGENTS.md",
+          "package.json"
+        ],
+        [
+          "AGENTS.md",
+          "apps/desktop/package.json"
+        ],
+        [
+          "docs/PROJECT_STRUCTURE.md",
+          "package.json"
+        ],
+        [
+          "docs/PROJECT_STRUCTURE.md",
+          "apps/desktop/package.json"
+        ]
+      ],
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "补充 真实清单 list_to_string_advanced",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "list_to_string_advanced"
+      ],
+      "status": "pass",
+      "durationMs": 1.9,
+      "actual": "package.json\napps/desktop/package.json\napps/backend/pyproject.toml\nAGENTS.md\ndocs/PROJECT_STRUCTURE.md",
+      "expected": "package.json\napps/desktop/package.json\napps/backend/pyproject.toml\nAGENTS.md\ndocs/PROJECT_STRUCTURE.md",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "补充 真实清单 stat_mode",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "stat_mode"
+      ],
+      "status": "pass",
+      "durationMs": 0.5,
+      "actual": 1055,
+      "expected": 1055,
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "补充 真实元数据 math_log",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "math_log"
+      ],
+      "status": "pass",
+      "durationMs": 0.6,
+      "actual": 1.6094379124341003,
+      "expected": "predicate in source",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "补充 真实元数据 math_exp",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "math_exp"
+      ],
+      "status": "pass",
+      "durationMs": 0.47,
+      "actual": 148.4131591025766,
+      "expected": "predicate in source",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "补充 真实元数据 math_trig",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "math_trig"
+      ],
+      "status": "pass",
+      "durationMs": 0.51,
+      "actual": -0.9589242746631385,
+      "expected": "predicate in source",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "补充 真实元数据 math_percentage",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "math_percentage"
+      ],
+      "status": "pass",
+      "durationMs": 0.4,
+      "actual": 1.593126151430038,
+      "expected": "predicate in source",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "补充 真实列表洗牌",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "list_shuffle"
+      ],
+      "status": "pass",
+      "durationMs": 0.41,
+      "actual": [
+        "package.json",
+        "apps/backend/pyproject.toml",
+        "apps/desktop/package.json",
+        "AGENTS.md",
+        "docs/PROJECT_STRUCTURE.md"
+      ],
+      "expected": "predicate in source",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "补充 真实列表抽样",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "list_sample"
+      ],
+      "status": "pass",
+      "durationMs": 0.52,
+      "actual": [
+        "apps/backend/pyproject.toml",
+        "package.json"
+      ],
+      "expected": "predicate in source",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "补充 运行时 UUID",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "uuid_generator"
+      ],
+      "status": "pass",
+      "durationMs": 0.47,
+      "actual": "9588c4b4-aa57-4594-80a3-bbf1d3b0359f",
+      "expected": "predicate in source",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "补充 运行时随机口令",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "random_password_generator"
+      ],
+      "status": "pass",
+      "durationMs": 20.88,
+      "actual": "0aC]WpR7GoW%K#xBY>lh",
+      "expected": "predicate in source",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "补充 源文件尺寸边界内随机数",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "random_number"
+      ],
+      "status": "pass",
+      "durationMs": 0.52,
+      "actual": 20567,
+      "expected": "predicate in source",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "补充 高级随机数",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "math_random_advanced"
+      ],
+      "status": "pass",
+      "durationMs": 0.5,
+      "actual": [
+        47304.27589959081,
+        9672.125127332338,
+        32994.073182805965,
+        53957.246860805295,
+        52924.11957650779
+      ],
+      "expected": "predicate in source",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "补充 系统日期",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "get_time"
+      ],
+      "status": "pass",
+      "durationMs": 0.51,
+      "actual": "2026-09-28",
+      "expected": "2026-09-28",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "补充 实际源文件 mtime 时间戳",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "timestamp_converter"
+      ],
+      "status": "pass",
+      "durationMs": 0.5,
+      "actual": "2026-09-14 10:05:30",
+      "expected": "2026-09-14 10:05:30",
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "补充 实际 CSS token RGB 转 HSV",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "rgb_to_hsv"
+      ],
+      "status": "pass",
+      "durationMs": 0.53,
+      "actual": {
+        "h": 25,
+        "s": 5,
+        "v": 98,
+        "string": "HSV(25, 5%, 98%)"
+      },
+      "expected": {
+        "h": 25,
+        "s": 5,
+        "v": 98,
+        "string": "HSV(25, 5%, 98%)"
+      },
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "补充 实际 CSS token RGB 转 CMYK",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "rgb_to_cmyk"
+      ],
+      "status": "pass",
+      "durationMs": 0.45,
+      "actual": {
+        "c": 0,
+        "m": 3,
+        "y": 5,
+        "k": 1,
+        "string": "CMYK(0%, 3%, 5%, 1%)"
+      },
+      "expected": {
+        "c": 0,
+        "m": 3,
+        "y": 5,
+        "k": 1,
+        "string": "CMYK(0%, 3%, 5%, 1%)"
+      },
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "补充 实际 CSS token HEX 转 CMYK",
+      "layer": "WorkflowRuntime + production executor",
+      "moduleTypes": [
+        "hex_to_cmyk"
+      ],
+      "status": "pass",
+      "durationMs": 0.48,
+      "actual": {
+        "c": 0,
+        "m": 3,
+        "y": 5,
+        "k": 1,
+        "string": "CMYK(0%, 3%, 5%, 1%)"
+      },
+      "expected": {
+        "c": 0,
+        "m": 3,
+        "y": 5,
+        "k": 1,
+        "string": "CMYK(0%, 3%, 5%, 1%)"
+      },
+      "success": true,
+      "error": null,
+      "issues": []
+    },
+    {
+      "name": "补充 日志实际导出 JSON",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "export_log",
+        "print_log"
+      ],
+      "scenarioModuleTypes": [
+        "export_log",
+        "print_log"
+      ],
+      "status": "pass",
+      "durationMs": 2266.54,
+      "error": null,
+      "evidence": "qa-101-events.json"
+    },
+    {
+      "name": "补充 表格删除与清空",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "table_add_row",
+        "table_clear",
+        "table_delete_row",
+        "table_get_cell"
+      ],
+      "scenarioModuleTypes": [
+        "table_add_row",
+        "table_clear",
+        "table_delete_row",
+        "table_get_cell"
+      ],
+      "status": "pass",
+      "durationMs": 2239.52,
+      "error": null,
+      "evidence": "qa-102-events.json"
+    },
+    {
+      "name": "补充 Allure 完整报告真实源文件附件",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "allure_add_attachment",
+        "allure_add_step",
+        "allure_generate_report",
+        "allure_init",
+        "allure_start_test",
+        "allure_stop_test"
+      ],
+      "scenarioModuleTypes": [
+        "allure_add_attachment",
+        "allure_add_step",
+        "allure_generate_report",
+        "allure_init",
+        "allure_start_test",
+        "allure_stop_test"
+      ],
+      "status": "pass",
+      "durationMs": 2257.75,
+      "error": null,
+      "evidence": "qa-103-events.json"
+    },
+    {
+      "name": "补充 Webhook request 的公开网页 GET",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "webhook_request"
+      ],
+      "scenarioModuleTypes": [
+        "webhook_request"
+      ],
+      "status": "pass",
+      "durationMs": 2400.94,
+      "error": null,
+      "evidence": "qa-105-events.json"
+    },
+    {
+      "name": "补充 真实文件创建触发器",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "file_watcher_trigger"
+      ],
+      "scenarioModuleTypes": [
+        "file_watcher_trigger"
+      ],
+      "status": "pass",
+      "durationMs": 4247.89,
+      "error": null,
+      "evidence": "qa-106-events.json"
+    },
+    {
+      "name": "补充 真实延迟定时与 wait",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "scheduled_task",
+        "wait"
+      ],
+      "scenarioModuleTypes": [
+        "scheduled_task",
+        "wait"
+      ],
+      "status": "pass",
+      "durationMs": 3315.48,
+      "error": null,
+      "evidence": "qa-107-events.json"
+    },
+    {
+      "name": "补充 概率节点真实随机值与必达分支",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "probability_trigger"
+      ],
+      "scenarioModuleTypes": [
+        "probability_trigger"
+      ],
+      "status": "pass",
+      "durationMs": 2302.75,
+      "error": null,
+      "evidence": "qa-108-events.json"
+    },
+    {
+      "name": "补充 真实文件 foreach 条件求和",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "assert_checkpoint",
+        "condition",
+        "foreach",
+        "increment_decrement",
+        "set_variable"
+      ],
+      "scenarioModuleTypes": [
+        "assert_checkpoint",
+        "condition",
+        "continue_loop",
+        "foreach",
+        "increment_decrement",
+        "set_variable"
+      ],
+      "status": "pass",
+      "durationMs": 2213.39,
+      "error": null,
+      "evidence": "qa-109-events.json"
+    },
+    {
+      "name": "补充 真实仓库计数 loop continue",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "continue_loop",
+        "loop",
+        "print_log"
+      ],
+      "scenarioModuleTypes": [
+        "continue_loop",
+        "loop",
+        "print_log"
+      ],
+      "status": "pass",
+      "durationMs": 2234.4,
+      "error": null,
+      "evidence": "qa-110-events.json"
+    },
+    {
+      "name": "补充 真实仓库计数 foreach_dict continue",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "continue_loop",
+        "foreach_dict",
+        "print_log"
+      ],
+      "scenarioModuleTypes": [
+        "continue_loop",
+        "foreach_dict",
+        "print_log"
+      ],
+      "status": "pass",
+      "durationMs": 2234.16,
+      "error": null,
+      "evidence": "qa-111-events.json"
+    },
+    {
+      "name": "补充 无限循环 break 并停止后继",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "break_loop",
+        "infinite_loop",
+        "stop_workflow"
+      ],
+      "scenarioModuleTypes": [
+        "break_loop",
+        "infinite_loop",
+        "print_log",
+        "stop_workflow"
+      ],
+      "status": "pass",
+      "durationMs": 2233.66,
+      "error": null,
+      "evidence": "qa-112-events.json"
+    },
+    {
+      "name": "补充 真实嵌套工作流返回变量",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "assert_checkpoint",
+        "run_workflow_file"
+      ],
+      "scenarioModuleTypes": [
+        "assert_checkpoint",
+        "run_workflow_file"
+      ],
+      "status": "pass",
+      "durationMs": 2167.61,
+      "error": null,
+      "evidence": "qa-113-events.json"
+    },
+    {
+      "name": "补充 真实自定义模块参数输出",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "assert_checkpoint",
+        "custom_module"
+      ],
+      "scenarioModuleTypes": [
+        "assert_checkpoint",
+        "custom_module"
+      ],
+      "status": "pass",
+      "durationMs": 2339.74,
+      "error": null,
+      "evidence": "qa-114-events.json"
+    },
+    {
+      "name": "补充 真实历史应用截图 OCR",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "base64",
+        "image_ocr"
+      ],
+      "scenarioModuleTypes": [
+        "base64",
+        "image_ocr"
+      ],
+      "status": "pass",
+      "durationMs": 13278.71,
+      "error": null,
+      "evidence": "qa-116-events.json"
+    },
+    {
+      "name": "补充 真实应用截图人脸负样本",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "base64",
+        "face_recognition"
+      ],
+      "scenarioModuleTypes": [
+        "base64",
+        "face_recognition"
+      ],
+      "status": "pass",
+      "durationMs": 7917.12,
+      "error": null,
+      "evidence": "qa-117-events.json"
+    },
+    {
+      "name": "补充 Python 真实源文件散列与日志复核",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "print_log",
+        "python_script"
+      ],
+      "scenarioModuleTypes": [
+        "print_log",
+        "python_script"
+      ],
+      "status": "pass",
+      "durationMs": 2305.22,
+      "error": null,
+      "evidence": "qa-118-events.json"
+    },
+    {
+      "name": "补充 PyPI 真实公开 API 轮询条件",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "api_trigger"
+      ],
+      "scenarioModuleTypes": [
+        "api_trigger"
+      ],
+      "status": "pass",
+      "durationMs": 2731.2,
+      "error": null,
+      "evidence": "qa-117-f4f486bb-events.json"
+    },
+    {
+      "name": "补充 真实画布子流程与结构节点",
+      "layer": "real subprocess worker + production WorkflowRuntime/adapters",
+      "moduleTypes": [
+        "assert_checkpoint",
+        "list_sum",
+        "subflow"
+      ],
+      "scenarioModuleTypes": [
+        "assert_checkpoint",
+        "group",
+        "list_sum",
+        "note",
+        "subflow"
+      ],
+      "status": "pass",
+      "durationMs": 2285.66,
+      "error": null,
+      "evidence": "qa-118-d15fd889-events.json"
+    },
+    {
+      "name": "补充 真实 sidecar 文件共享与 Webhook 契约",
+      "layer": "real isolated sidecar HTTP + SQLite + production worker + NetworkShareHost/webhook Gateway",
+      "moduleTypes": [
+        "share_file",
+        "share_folder",
+        "stop_share",
+        "webhook_trigger",
+        "json_parse",
+        "print_log"
+      ],
+      "status": "pass",
+      "durationMs": 7657.79,
+      "error": null,
+      "httpEvidence": "sidecar-results.json"
+    }
+  ],
+  "totals": {
+    "pass": 115,
+    "fail": 3,
+    "blocked": 2
+  },
+  "executedModuleTypes": [
+    "allure_add_attachment",
+    "allure_add_step",
+    "allure_generate_report",
+    "allure_init",
+    "allure_start_test",
+    "allure_stop_test",
+    "api_request",
+    "api_trigger",
+    "assert_checkpoint",
+    "base64",
+    "break_loop",
+    "condition",
+    "continue_loop",
+    "csv_generate",
+    "csv_parse",
+    "custom_module",
+    "dict_deep_copy",
+    "dict_filter",
+    "dict_flatten",
+    "dict_get",
+    "dict_get_path",
+    "dict_invert",
+    "dict_keys",
+    "dict_map_values",
+    "dict_merge",
+    "dict_operation",
+    "dict_sort",
+    "export_log",
+    "face_recognition",
+    "file_watcher_trigger",
+    "foreach",
+    "foreach_dict",
+    "get_time",
+    "hex_to_cmyk",
+    "image_ocr",
+    "increment_decrement",
+    "infinite_loop",
+    "json_parse",
+    "list_average",
+    "list_cartesian_product",
+    "list_chunk",
+    "list_count",
+    "list_difference",
+    "list_export",
+    "list_filter",
+    "list_find",
+    "list_flatten",
+    "list_get",
+    "list_intersection",
+    "list_length",
+    "list_map",
+    "list_max",
+    "list_merge",
+    "list_min",
+    "list_operation",
+    "list_remove_empty",
+    "list_reverse",
+    "list_sample",
+    "list_shuffle",
+    "list_slice",
+    "list_sort",
+    "list_sum",
+    "list_to_string_advanced",
+    "list_union",
+    "list_unique",
+    "loop",
+    "math_abs",
+    "math_base_convert",
+    "math_clamp",
+    "math_exp",
+    "math_factorial",
+    "math_floor",
+    "math_gcd",
+    "math_lcm",
+    "math_log",
+    "math_modulo",
+    "math_percentage",
+    "math_permutation",
+    "math_power",
+    "math_random_advanced",
+    "math_round",
+    "math_sqrt",
+    "math_trig",
+    "md5_encrypt",
+    "print_log",
+    "probability_trigger",
+    "python_script",
+    "random_number",
+    "random_password_generator",
+    "regex_extract",
+    "rgb_to_cmyk",
+    "rgb_to_hsv",
+    "run_command",
+    "run_workflow_file",
+    "scheduled_task",
+    "set_variable",
+    "sha_encrypt",
+    "share_file",
+    "share_folder",
+    "stat_median",
+    "stat_mode",
+    "stat_normalize",
+    "stat_percentile",
+    "stat_standardize",
+    "stat_stdev",
+    "stat_variance",
+    "stop_share",
+    "stop_workflow",
+    "string_case",
+    "string_concat",
+    "string_join",
+    "string_replace",
+    "string_split",
+    "string_substring",
+    "string_trim",
+    "subflow",
+    "table_add_column",
+    "table_add_row",
+    "table_clear",
+    "table_delete_row",
+    "table_export",
+    "table_get_cell",
+    "table_set_cell",
+    "timestamp_converter",
+    "url_encode_decode",
+    "uuid_generator",
+    "wait",
+    "webhook_request",
+    "webhook_trigger"
+  ]
+}

@@ -1,0 +1,2926 @@
+........................................................................ [  1%]
+........................................................................ [  3%]
+........................................................................ [  5%]
+................................F....................................... [  6%]
+.......FFFF............................................................. [  8%]
+........................................................................ [ 10%]
+........................................................................ [ 11%]
+........................................................................ [ 13%]
+..........F............................................................. [ 15%]
+........................................................................ [ 16%]
+........................................................................ [ 18%]
+........................................................................ [ 20%]
+........................................................................ [ 21%]
+........................................................................ [ 23%]
+........................................................................ [ 25%]
+........................................................................ [ 27%]
+........................................................................ [ 28%]
+........................................................................ [ 30%]
+........................................................................ [ 32%]
+........................................................................ [ 33%]
+........................................................................ [ 35%]
+........................................................................ [ 37%]
+........................................................................ [ 38%]
+........................................................................ [ 40%]
+..............................................FFFFs...ssssssssss........ [ 42%]
+...........ss...s.................................s..FF......sss........ [ 43%]
+............................FFFFFFFF.................................... [ 45%]
+..........FFFF......ssssssssssssssssssss..........................F..... [ 47%]
+.......FF..FFFF......................................................... [ 49%]
+........FF.........FF................................................... [ 50%]
+........................................................................ [ 52%]
+................................FF.F.................................... [ 54%]
+........................................................................ [ 55%]
+......................................................FF................ [ 57%]
+.............................................FF.FF...................... [ 59%]
+........................................................................ [ 60%]
+............F................................FFFFFF.F................... [ 62%]
+F....s.................................................................. [ 64%]
+..............................................................FF........ [ 65%]
+...........Fssss..F.................................FFF...F............. [ 67%]
+................................................F....................... [ 69%]
+........................................................................ [ 71%]
+........................................................................ [ 72%]
+........................................................................ [ 74%]
+........................................................................ [ 76%]
+........................................................................ [ 77%]
+........................................................................ [ 79%]
+.......................F................................................ [ 81%]
+........................................................................ [ 82%]
+........................................................................ [ 84%]
+........................................................................ [ 86%]
+........................................................................ [ 87%]
+........................................................................ [ 89%]
+........................................................................ [ 91%]
+........................................................................ [ 93%]
+...F.................................................................... [ 94%]
+........................................................................ [ 96%]
+........................................................................ [ 98%]
+........................................................................ [ 99%]
+.........                                                                [100%]
+=================================== FAILURES ===================================
+________ test_runtime_mounts_proxies_but_never_publishes_host_contract _________
+
+runtime = (<starlette.testclient.TestClient object at 0x13b046510>, <tests.contract.test_proxy_runtime.MemoryCredentials object at 0x139ae3750>)
+
+    def test_runtime_mounts_proxies_but_never_publishes_host_contract(runtime):
+        client, _ = runtime
+        assert client.get("/api/v1/proxies").status_code == 401
+        assert client.get("/api/v1/proxies", headers={"x-autoflow-token": "renderer-token"}).json()["items"] == []
+        document = client.get("/openapi.json").json()
+        assert "/api/v1/proxies/{projection_id}/probe" in document["paths"]
+        assert not any(path.startswith("/internal") for path in document["paths"])
+        schemas = document["components"]["schemas"]
+        assert schemas["ConnectionCreate"]["properties"]["api_key"]["writeOnly"]
+>       assert all("password" not in schema.get("properties", {}) for schema in schemas.values())
+E       assert False
+E        +  where False = all(<generator object test_runtime_mounts_proxies_but_never_publishes_host_contract.<locals>.<genexpr> at 0x1334788b0>)
+
+tests/contract/test_proxy_runtime.py:67: AssertionError
+____ test_browser_status_preserves_independent_reported_flags[False-False] _____
+
+is_open = False, picker_active = False
+
+    @pytest.mark.parametrize("is_open", [False, True])
+    @pytest.mark.parametrize("picker_active", [False, True])
+    def test_browser_status_preserves_independent_reported_flags(is_open, picker_active):
+        value = StudioBrowserStatus.model_validate({"isOpen": is_open, "pickerActive": picker_active})
+>       assert value.model_dump(by_alias=True) == {"isOpen": is_open, "pickerActive": picker_active}
+E       AssertionError: assert {'projectId':...': False, ...} == {'isOpen': Fa...ctive': False}
+E         
+E         Omitting 2 identical items, use -vv to show
+E         Left contains 5 more items:
+E         {'phase': 'closed',
+E          'pickerSessionId': None,
+E          'profileId': None,
+E          'projectId': None,
+E          'sessionId': None}
+E         Use -v to get more diff
+
+tests/contract/test_studio_browser_status.py:11: AssertionError
+_____ test_browser_status_preserves_independent_reported_flags[False-True] _____
+
+is_open = True, picker_active = False
+
+    @pytest.mark.parametrize("is_open", [False, True])
+    @pytest.mark.parametrize("picker_active", [False, True])
+    def test_browser_status_preserves_independent_reported_flags(is_open, picker_active):
+        value = StudioBrowserStatus.model_validate({"isOpen": is_open, "pickerActive": picker_active})
+>       assert value.model_dump(by_alias=True) == {"isOpen": is_open, "pickerActive": picker_active}
+E       AssertionError: assert {'projectId':...': False, ...} == {'isOpen': Tr...ctive': False}
+E         
+E         Omitting 2 identical items, use -vv to show
+E         Left contains 5 more items:
+E         {'phase': 'closed',
+E          'pickerSessionId': None,
+E          'profileId': None,
+E          'projectId': None,
+E          'sessionId': None}
+E         Use -v to get more diff
+
+tests/contract/test_studio_browser_status.py:11: AssertionError
+_____ test_browser_status_preserves_independent_reported_flags[True-False] _____
+
+is_open = False, picker_active = True
+
+    @pytest.mark.parametrize("is_open", [False, True])
+    @pytest.mark.parametrize("picker_active", [False, True])
+    def test_browser_status_preserves_independent_reported_flags(is_open, picker_active):
+        value = StudioBrowserStatus.model_validate({"isOpen": is_open, "pickerActive": picker_active})
+>       assert value.model_dump(by_alias=True) == {"isOpen": is_open, "pickerActive": picker_active}
+E       AssertionError: assert {'projectId':...e': True, ...} == {'isOpen': Fa...Active': True}
+E         
+E         Omitting 2 identical items, use -vv to show
+E         Left contains 5 more items:
+E         {'phase': 'closed',
+E          'pickerSessionId': None,
+E          'profileId': None,
+E          'projectId': None,
+E          'sessionId': None}
+E         Use -v to get more diff
+
+tests/contract/test_studio_browser_status.py:11: AssertionError
+_____ test_browser_status_preserves_independent_reported_flags[True-True] ______
+
+is_open = True, picker_active = True
+
+    @pytest.mark.parametrize("is_open", [False, True])
+    @pytest.mark.parametrize("picker_active", [False, True])
+    def test_browser_status_preserves_independent_reported_flags(is_open, picker_active):
+        value = StudioBrowserStatus.model_validate({"isOpen": is_open, "pickerActive": picker_active})
+>       assert value.model_dump(by_alias=True) == {"isOpen": is_open, "pickerActive": picker_active}
+E       AssertionError: assert {'projectId':...e': True, ...} == {'isOpen': Tr...Active': True}
+E         
+E         Omitting 2 identical items, use -vv to show
+E         Left contains 5 more items:
+E         {'phase': 'closed',
+E          'pickerSessionId': None,
+E          'profileId': None,
+E          'projectId': None,
+E          'sessionId': None}
+E         Use -v to get more diff
+
+tests/contract/test_studio_browser_status.py:11: AssertionError
+__ test_real_required_fields_route_preserves_frozen_rules_and_approved_scope ___
+
+client = <starlette.testclient.TestClient object at 0x1366b2550>
+
+    def test_real_required_fields_route_preserves_frozen_rules_and_approved_scope(client):
+        response = client.get('/api/system/module-required-fields')
+        assert response.status_code == 200, response.text
+        data = response.json()
+        assert StudioModuleRequiredFields.model_validate(data).model_dump(by_alias=True) == data
+>       assert set(data['coveredModules']) == APPROVED_NODE_TYPES
+E       AssertionError: assert {'ai_chat', '...e_image', ...} == frozenset({'a..._image', ...})
+E         
+E         Extra items in the right set:
+E         'proxy_query'
+E         'proxy_change_ip'
+E         'proxy_change_location'
+E         Use -v to get more diff
+
+tests/contract/test_studio_required_fields.py:42: AssertionError
+_ test_existing_migration_histories_keep_devices_runs_and_artifacts[0006_workflow_runs] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_existing_migration_histor0')
+revision = '0006_workflow_runs'
+
+    @pytest.mark.parametrize('revision', ['0006_workflow_runs', '0007_android_devices', '0007_workflow_artifacts', '0008_merge_android_m4'])
+    def test_existing_migration_histories_keep_devices_runs_and_artifacts(tmp_path, revision):
+        database = tmp_path / 'existing.sqlite3'
+        config = Config(str(Path(database_session.__file__).with_name('alembic.ini')))
+        config.set_main_option('sqlalchemy.url', f'sqlite:///{database}')
+        command.upgrade(config, revision)
+        artifact = {'id': 'image-one', 'nodeId': 'screen', 'relativePath': 'original.png'}
+        with sqlite3.connect(database) as connection:
+            indexed = revision in {'0007_workflow_artifacts', '0008_merge_android_m4'}
+            connection.execute('INSERT INTO workflow_runs(id,workflow_id,request_hash,started_at,payload) VALUES(?,?,?,?,?)', ('run', 'flow', 'original-hash', '2026-09-13', json.dumps({'artifacts': [] if indexed else [artifact], 'artifactCount': 1})))
+            if indexed:
+                connection.execute('INSERT INTO workflow_run_artifacts(run_id,id,ordinal,node_id,payload) VALUES(?,?,?,?,?)', ('run', 'image-one', 1, 'screen', json.dumps(artifact)))
+            if revision in {'0007_android_devices', '0008_merge_android_m4'}:
+                connection.execute('INSERT INTO android_devices(id,payload) VALUES(?,?)', ('device', json.dumps({'name': 'Keep device', 'volumeId': 'keep-data'})))
+        database_session.migrate_database(database)
+        database_session.migrate_database(database)
+        with sqlite3.connect(database) as connection:
+>           assert connection.execute('SELECT version_num FROM alembic_version').fetchall() == [('0020_recording_project_scope',)]
+E           AssertionError: assert [('0023_merge...io_android',)] == [('0020_recor...ject_scope',)]
+E             
+E             At index 0 diff: ('0023_merge_studio_android',) != ('0020_recording_project_scope',)
+E             Use -v to get more diff
+
+tests/integration/test_android_m4_migration.py:29: AssertionError
+_ test_existing_migration_histories_keep_devices_runs_and_artifacts[0007_android_devices] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_existing_migration_histor1')
+revision = '0007_android_devices'
+
+    @pytest.mark.parametrize('revision', ['0006_workflow_runs', '0007_android_devices', '0007_workflow_artifacts', '0008_merge_android_m4'])
+    def test_existing_migration_histories_keep_devices_runs_and_artifacts(tmp_path, revision):
+        database = tmp_path / 'existing.sqlite3'
+        config = Config(str(Path(database_session.__file__).with_name('alembic.ini')))
+        config.set_main_option('sqlalchemy.url', f'sqlite:///{database}')
+        command.upgrade(config, revision)
+        artifact = {'id': 'image-one', 'nodeId': 'screen', 'relativePath': 'original.png'}
+        with sqlite3.connect(database) as connection:
+            indexed = revision in {'0007_workflow_artifacts', '0008_merge_android_m4'}
+            connection.execute('INSERT INTO workflow_runs(id,workflow_id,request_hash,started_at,payload) VALUES(?,?,?,?,?)', ('run', 'flow', 'original-hash', '2026-09-13', json.dumps({'artifacts': [] if indexed else [artifact], 'artifactCount': 1})))
+            if indexed:
+                connection.execute('INSERT INTO workflow_run_artifacts(run_id,id,ordinal,node_id,payload) VALUES(?,?,?,?,?)', ('run', 'image-one', 1, 'screen', json.dumps(artifact)))
+            if revision in {'0007_android_devices', '0008_merge_android_m4'}:
+                connection.execute('INSERT INTO android_devices(id,payload) VALUES(?,?)', ('device', json.dumps({'name': 'Keep device', 'volumeId': 'keep-data'})))
+        database_session.migrate_database(database)
+        database_session.migrate_database(database)
+        with sqlite3.connect(database) as connection:
+>           assert connection.execute('SELECT version_num FROM alembic_version').fetchall() == [('0020_recording_project_scope',)]
+E           AssertionError: assert [('0023_merge...io_android',)] == [('0020_recor...ject_scope',)]
+E             
+E             At index 0 diff: ('0023_merge_studio_android',) != ('0020_recording_project_scope',)
+E             Use -v to get more diff
+
+tests/integration/test_android_m4_migration.py:29: AssertionError
+_ test_existing_migration_histories_keep_devices_runs_and_artifacts[0007_workflow_artifacts] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_existing_migration_histor2')
+revision = '0007_workflow_artifacts'
+
+    @pytest.mark.parametrize('revision', ['0006_workflow_runs', '0007_android_devices', '0007_workflow_artifacts', '0008_merge_android_m4'])
+    def test_existing_migration_histories_keep_devices_runs_and_artifacts(tmp_path, revision):
+        database = tmp_path / 'existing.sqlite3'
+        config = Config(str(Path(database_session.__file__).with_name('alembic.ini')))
+        config.set_main_option('sqlalchemy.url', f'sqlite:///{database}')
+        command.upgrade(config, revision)
+        artifact = {'id': 'image-one', 'nodeId': 'screen', 'relativePath': 'original.png'}
+        with sqlite3.connect(database) as connection:
+            indexed = revision in {'0007_workflow_artifacts', '0008_merge_android_m4'}
+            connection.execute('INSERT INTO workflow_runs(id,workflow_id,request_hash,started_at,payload) VALUES(?,?,?,?,?)', ('run', 'flow', 'original-hash', '2026-09-13', json.dumps({'artifacts': [] if indexed else [artifact], 'artifactCount': 1})))
+            if indexed:
+                connection.execute('INSERT INTO workflow_run_artifacts(run_id,id,ordinal,node_id,payload) VALUES(?,?,?,?,?)', ('run', 'image-one', 1, 'screen', json.dumps(artifact)))
+            if revision in {'0007_android_devices', '0008_merge_android_m4'}:
+                connection.execute('INSERT INTO android_devices(id,payload) VALUES(?,?)', ('device', json.dumps({'name': 'Keep device', 'volumeId': 'keep-data'})))
+        database_session.migrate_database(database)
+        database_session.migrate_database(database)
+        with sqlite3.connect(database) as connection:
+>           assert connection.execute('SELECT version_num FROM alembic_version').fetchall() == [('0020_recording_project_scope',)]
+E           AssertionError: assert [('0023_merge...io_android',)] == [('0020_recor...ject_scope',)]
+E             
+E             At index 0 diff: ('0023_merge_studio_android',) != ('0020_recording_project_scope',)
+E             Use -v to get more diff
+
+tests/integration/test_android_m4_migration.py:29: AssertionError
+_ test_existing_migration_histories_keep_devices_runs_and_artifacts[0008_merge_android_m4] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_existing_migration_histor3')
+revision = '0008_merge_android_m4'
+
+    @pytest.mark.parametrize('revision', ['0006_workflow_runs', '0007_android_devices', '0007_workflow_artifacts', '0008_merge_android_m4'])
+    def test_existing_migration_histories_keep_devices_runs_and_artifacts(tmp_path, revision):
+        database = tmp_path / 'existing.sqlite3'
+        config = Config(str(Path(database_session.__file__).with_name('alembic.ini')))
+        config.set_main_option('sqlalchemy.url', f'sqlite:///{database}')
+        command.upgrade(config, revision)
+        artifact = {'id': 'image-one', 'nodeId': 'screen', 'relativePath': 'original.png'}
+        with sqlite3.connect(database) as connection:
+            indexed = revision in {'0007_workflow_artifacts', '0008_merge_android_m4'}
+            connection.execute('INSERT INTO workflow_runs(id,workflow_id,request_hash,started_at,payload) VALUES(?,?,?,?,?)', ('run', 'flow', 'original-hash', '2026-09-13', json.dumps({'artifacts': [] if indexed else [artifact], 'artifactCount': 1})))
+            if indexed:
+                connection.execute('INSERT INTO workflow_run_artifacts(run_id,id,ordinal,node_id,payload) VALUES(?,?,?,?,?)', ('run', 'image-one', 1, 'screen', json.dumps(artifact)))
+            if revision in {'0007_android_devices', '0008_merge_android_m4'}:
+                connection.execute('INSERT INTO android_devices(id,payload) VALUES(?,?)', ('device', json.dumps({'name': 'Keep device', 'volumeId': 'keep-data'})))
+        database_session.migrate_database(database)
+        database_session.migrate_database(database)
+        with sqlite3.connect(database) as connection:
+>           assert connection.execute('SELECT version_num FROM alembic_version').fetchall() == [('0020_recording_project_scope',)]
+E           AssertionError: assert [('0023_merge...io_android',)] == [('0020_recor...ject_scope',)]
+E             
+E             At index 0 diff: ('0023_merge_studio_android',) != ('0020_recording_project_scope',)
+E             Use -v to get more diff
+
+tests/integration/test_android_m4_migration.py:29: AssertionError
+__ test_custom_module_database_upgrades_to_integrated_head_without_data_loss ___
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_custom_module_database_up0')
+
+    def test_custom_module_database_upgrades_to_integrated_head_without_data_loss(
+        tmp_path: Path,
+    ) -> None:
+        database = tmp_path / "custom-modules.sqlite3"
+        config = _config(database)
+        command.upgrade(config, "0013_workflow_custom_modules")
+    
+        with sqlite3.connect(database) as connection:
+            connection.execute(
+                """INSERT INTO workflow_custom_modules
+                   (id, name, definition, dependency_ids, revision, usage_count,
+                    created_at, updated_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    "module-1",
+                    "保留模块",
+                    '{"nodes":[]}',
+                    "[]",
+                    3,
+                    2,
+                    "2026-09-17T00:00:00Z",
+                    "2026-09-17T00:00:00Z",
+                ),
+            )
+            connection.execute(
+                """INSERT INTO workflow_custom_module_requests
+                   (id, request_digest, kind, module_id, response, created_at)
+                   VALUES (?, ?, ?, ?, ?, ?)""",
+                (
+                    "request-1",
+                    "digest-1",
+                    "create",
+                    "module-1",
+                    '{"id":"module-1"}',
+                    "2026-09-17T00:00:00Z",
+                ),
+            )
+    
+        database_session.migrate_database(database)
+        database_session.migrate_database(database)
+    
+        with sqlite3.connect(database) as connection:
+>           assert connection.execute(
+                "SELECT version_num FROM alembic_version"
+            ).fetchall() == [("0015_workflow_mcp",)]
+E           AssertionError: assert [('0023_merge...io_android',)] == [('0015_workflow_mcp',)]
+E             
+E             At index 0 diff: ('0023_merge_studio_android',) != ('0015_workflow_mcp',)
+E             Use -v to get more diff
+
+tests/integration/test_custom_module_revision_compatibility.py:58: AssertionError
+_________ test_inspector_upgrades_a_copy_and_preserves_source_and_rows _________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_inspector_upgrades_a_copy0')
+
+    def test_inspector_upgrades_a_copy_and_preserves_source_and_rows(
+        tmp_path: Path,
+    ) -> None:
+        source = tmp_path / "source.sqlite3"
+        target = tmp_path / "target.sqlite3"
+        command.upgrade(_config(source), "0008_workflow_debug")
+        with sqlite3.connect(source) as connection:
+            connection.execute(
+                "INSERT INTO workflow_documents VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (
+                    "workflow",
+                    "保留流程",
+                    '{"nodes":[]}',
+                    "{}",
+                    7,
+                    "2026-09-15",
+                    "2026-09-15",
+                ),
+            )
+            connection.execute(
+                "CREATE TABLE compatibility_private (id TEXT PRIMARY KEY, display_name TEXT, api_token TEXT)"
+            )
+            connection.execute(
+                "INSERT INTO compatibility_private VALUES ('one', '可核对名称', '不得出现在报告中')"
+            )
+    
+        before = _fingerprint(source)
+        report = inspect_database_compatibility(source, target)
+    
+        assert _fingerprint(source) == before
+        assert report["source"]["unchanged"] is True
+        assert report["source"]["revision"] == ["0008_workflow_debug"]
+>       assert report["target"]["revision"] == ["0015_workflow_mcp"]
+E       AssertionError: assert ['0023_merge_studio_android'] == ['0015_workflow_mcp']
+E         
+E         At index 0 diff: '0023_merge_studio_android' != '0015_workflow_mcp'
+E         Use -v to get more diff
+
+tests/integration/test_database_compatibility_inspector.py:63: AssertionError
+___________ test_merge_upgrade_preserves_each_branch_database[None] ____________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_merge_upgrade_preserves_e0')
+revision = None
+
+    @pytest.mark.parametrize(
+        "revision",
+        [None, "0001_browser_resources", "0002_proxy_management", "0002_model_management", "0008_workflow_debug", "pm01_projects", "pm02_schema_drafts"],
+    )
+    def test_merge_upgrade_preserves_each_branch_database(
+        tmp_path: Path, revision: str | None
+    ):
+        database = tmp_path / "merged.sqlite3"
+        config = Config(str(Path(database_session.__file__).with_name("alembic.ini")))
+        config.set_main_option("sqlalchemy.url", f"sqlite:///{database}")
+>       assert ScriptDirectory.from_config(config).get_heads() == ["0020_recording_project_scope"]
+E       AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']
+E         
+E         At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E         Use -v to get more diff
+
+tests/integration/test_merged_model_migrations.py:22: AssertionError
+__ test_merge_upgrade_preserves_each_branch_database[0001_browser_resources] ___
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_merge_upgrade_preserves_e1')
+revision = '0001_browser_resources'
+
+    @pytest.mark.parametrize(
+        "revision",
+        [None, "0001_browser_resources", "0002_proxy_management", "0002_model_management", "0008_workflow_debug", "pm01_projects", "pm02_schema_drafts"],
+    )
+    def test_merge_upgrade_preserves_each_branch_database(
+        tmp_path: Path, revision: str | None
+    ):
+        database = tmp_path / "merged.sqlite3"
+        config = Config(str(Path(database_session.__file__).with_name("alembic.ini")))
+        config.set_main_option("sqlalchemy.url", f"sqlite:///{database}")
+>       assert ScriptDirectory.from_config(config).get_heads() == ["0020_recording_project_scope"]
+E       AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']
+E         
+E         At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E         Use -v to get more diff
+
+tests/integration/test_merged_model_migrations.py:22: AssertionError
+___ test_merge_upgrade_preserves_each_branch_database[0002_proxy_management] ___
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_merge_upgrade_preserves_e2')
+revision = '0002_proxy_management'
+
+    @pytest.mark.parametrize(
+        "revision",
+        [None, "0001_browser_resources", "0002_proxy_management", "0002_model_management", "0008_workflow_debug", "pm01_projects", "pm02_schema_drafts"],
+    )
+    def test_merge_upgrade_preserves_each_branch_database(
+        tmp_path: Path, revision: str | None
+    ):
+        database = tmp_path / "merged.sqlite3"
+        config = Config(str(Path(database_session.__file__).with_name("alembic.ini")))
+        config.set_main_option("sqlalchemy.url", f"sqlite:///{database}")
+>       assert ScriptDirectory.from_config(config).get_heads() == ["0020_recording_project_scope"]
+E       AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']
+E         
+E         At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E         Use -v to get more diff
+
+tests/integration/test_merged_model_migrations.py:22: AssertionError
+___ test_merge_upgrade_preserves_each_branch_database[0002_model_management] ___
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_merge_upgrade_preserves_e3')
+revision = '0002_model_management'
+
+    @pytest.mark.parametrize(
+        "revision",
+        [None, "0001_browser_resources", "0002_proxy_management", "0002_model_management", "0008_workflow_debug", "pm01_projects", "pm02_schema_drafts"],
+    )
+    def test_merge_upgrade_preserves_each_branch_database(
+        tmp_path: Path, revision: str | None
+    ):
+        database = tmp_path / "merged.sqlite3"
+        config = Config(str(Path(database_session.__file__).with_name("alembic.ini")))
+        config.set_main_option("sqlalchemy.url", f"sqlite:///{database}")
+>       assert ScriptDirectory.from_config(config).get_heads() == ["0020_recording_project_scope"]
+E       AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']
+E         
+E         At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E         Use -v to get more diff
+
+tests/integration/test_merged_model_migrations.py:22: AssertionError
+____ test_merge_upgrade_preserves_each_branch_database[0008_workflow_debug] ____
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_merge_upgrade_preserves_e4')
+revision = '0008_workflow_debug'
+
+    @pytest.mark.parametrize(
+        "revision",
+        [None, "0001_browser_resources", "0002_proxy_management", "0002_model_management", "0008_workflow_debug", "pm01_projects", "pm02_schema_drafts"],
+    )
+    def test_merge_upgrade_preserves_each_branch_database(
+        tmp_path: Path, revision: str | None
+    ):
+        database = tmp_path / "merged.sqlite3"
+        config = Config(str(Path(database_session.__file__).with_name("alembic.ini")))
+        config.set_main_option("sqlalchemy.url", f"sqlite:///{database}")
+>       assert ScriptDirectory.from_config(config).get_heads() == ["0020_recording_project_scope"]
+E       AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']
+E         
+E         At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E         Use -v to get more diff
+
+tests/integration/test_merged_model_migrations.py:22: AssertionError
+_______ test_merge_upgrade_preserves_each_branch_database[pm01_projects] _______
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_merge_upgrade_preserves_e5')
+revision = 'pm01_projects'
+
+    @pytest.mark.parametrize(
+        "revision",
+        [None, "0001_browser_resources", "0002_proxy_management", "0002_model_management", "0008_workflow_debug", "pm01_projects", "pm02_schema_drafts"],
+    )
+    def test_merge_upgrade_preserves_each_branch_database(
+        tmp_path: Path, revision: str | None
+    ):
+        database = tmp_path / "merged.sqlite3"
+        config = Config(str(Path(database_session.__file__).with_name("alembic.ini")))
+        config.set_main_option("sqlalchemy.url", f"sqlite:///{database}")
+>       assert ScriptDirectory.from_config(config).get_heads() == ["0020_recording_project_scope"]
+E       AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']
+E         
+E         At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E         Use -v to get more diff
+
+tests/integration/test_merged_model_migrations.py:22: AssertionError
+____ test_merge_upgrade_preserves_each_branch_database[pm02_schema_drafts] _____
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_merge_upgrade_preserves_e6')
+revision = 'pm02_schema_drafts'
+
+    @pytest.mark.parametrize(
+        "revision",
+        [None, "0001_browser_resources", "0002_proxy_management", "0002_model_management", "0008_workflow_debug", "pm01_projects", "pm02_schema_drafts"],
+    )
+    def test_merge_upgrade_preserves_each_branch_database(
+        tmp_path: Path, revision: str | None
+    ):
+        database = tmp_path / "merged.sqlite3"
+        config = Config(str(Path(database_session.__file__).with_name("alembic.ini")))
+        config.set_main_option("sqlalchemy.url", f"sqlite:///{database}")
+>       assert ScriptDirectory.from_config(config).get_heads() == ["0020_recording_project_scope"]
+E       AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']
+E         
+E         At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E         Use -v to get more diff
+
+tests/integration/test_merged_model_migrations.py:22: AssertionError
+____________ test_retired_studio_data_survives_application_startup _____________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_retired_studio_data_survi0')
+
+    def test_retired_studio_data_survives_application_startup(tmp_path: Path):
+        from fastapi.testclient import TestClient
+    
+        from autoflow.bootstrap.app import create_app
+        from autoflow.bootstrap.config import Settings
+        from autoflow.infrastructure.filesystem.paths import AppPaths
+        from tests.fixtures.model_management import FakeCredentialStore, FakeModelGateway
+    
+        paths = AppPaths.from_data_dir(tmp_path)
+        config = Config(str(Path(database_session.__file__).with_name("alembic.ini")))
+        config.set_main_option("sqlalchemy.url", f"sqlite:///{paths.database}")
+        paths.database.parent.mkdir(parents=True, exist_ok=True)
+        command.upgrade(config, "0008_workflow_debug")
+        statements = {
+            "workflow_documents": (
+                "INSERT INTO workflow_documents VALUES (?, ?, ?, ?, ?, ?, ?)",
+                ("document", "Archived Studio", '{"schemaVersion":2}', '{"breakpoints":["node"]}', 7, "2026-09-13", "2026-09-13"),
+            ),
+            "workflow_runs": (
+                "INSERT INTO workflow_runs VALUES (?, ?, ?, ?, ?, ?)",
+                ("run", "document", "request-hash", "2026-09-13", 1, '{"state":"paused"}'),
+            ),
+            "workflow_run_events": (
+                "INSERT INTO workflow_run_events VALUES (?, ?, ?)",
+                ("run", 1, '{"type":"paused"}'),
+            ),
+            "workflow_run_artifacts": (
+                "INSERT INTO workflow_run_artifacts (run_id,id,ordinal,node_id,execution_id,payload,purpose,event_seq) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                ("run", "artifact", 1, "node", "execution", '{"relativePath":"artifacts/result.json"}', "result", 1),
+            ),
+            "workflow_debug_commands": (
+                "INSERT INTO workflow_debug_commands VALUES (?, ?, ?, ?)",
+                ("run", "command", "command-hash", '{"status":"applied"}'),
+            ),
+        }
+        artifact = paths.workspace / "runs" / "run" / "artifacts" / "result.json"
+        artifact.parent.mkdir(parents=True)
+        artifact.write_bytes(b'{"saved":"evidence"}')
+        with sqlite3.connect(paths.database) as connection:
+            connection.execute("PRAGMA foreign_keys=ON")
+            for statement, values in statements.values():
+                connection.execute(statement, values)
+            before = {
+                table: connection.execute(f"SELECT * FROM {table}").fetchall()
+                for table in statements
+            }
+    
+        app = create_app(
+            Settings(data_dir=str(tmp_path), instance_id="retired-studio"),
+            credential_store=FakeCredentialStore(), model_gateway=FakeModelGateway(),
+        )
+        with TestClient(app):
+            pass
+    
+        with sqlite3.connect(paths.database) as connection:
+            after = {
+                table: connection.execute(f"SELECT * FROM {table}").fetchall()
+                for table in statements
+            }
+            assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
+>           assert connection.execute(
+                "SELECT version_num FROM alembic_version"
+            ).fetchone() == ("0020_recording_project_scope",)
+E           AssertionError: assert ('0023_merge_studio_android',) == ('0020_record...oject_scope',)
+E             
+E             At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E             Use -v to get more diff
+
+tests/integration/test_merged_model_migrations.py:121: AssertionError
+__ test_automation_upgrade_preserves_existing_rows_and_enforces_binding[None] __
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_automation_upgrade_preser0')
+previous = None
+
+    @pytest.mark.parametrize(
+        "previous", [None, "pm01_projects", "0011_workflow_runtime_contracts"]
+    )
+    def test_automation_upgrade_preserves_existing_rows_and_enforces_binding(
+        tmp_path, previous
+    ):
+        database = tmp_path / "automation-migration.sqlite3"
+        config = config_for(database)
+>       assert ScriptDirectory.from_config(config).get_heads() == ["0020_recording_project_scope"]
+E       AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']
+E         
+E         At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E         Use -v to get more diff
+
+tests/integration/test_project_automation_migration.py:27: AssertionError
+_ test_automation_upgrade_preserves_existing_rows_and_enforces_binding[pm01_projects] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_automation_upgrade_preser1')
+previous = 'pm01_projects'
+
+    @pytest.mark.parametrize(
+        "previous", [None, "pm01_projects", "0011_workflow_runtime_contracts"]
+    )
+    def test_automation_upgrade_preserves_existing_rows_and_enforces_binding(
+        tmp_path, previous
+    ):
+        database = tmp_path / "automation-migration.sqlite3"
+        config = config_for(database)
+>       assert ScriptDirectory.from_config(config).get_heads() == ["0020_recording_project_scope"]
+E       AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']
+E         
+E         At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E         Use -v to get more diff
+
+tests/integration/test_project_automation_migration.py:27: AssertionError
+_ test_automation_upgrade_preserves_existing_rows_and_enforces_binding[0011_workflow_runtime_contracts] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_automation_upgrade_preser2')
+previous = '0011_workflow_runtime_contracts'
+
+    @pytest.mark.parametrize(
+        "previous", [None, "pm01_projects", "0011_workflow_runtime_contracts"]
+    )
+    def test_automation_upgrade_preserves_existing_rows_and_enforces_binding(
+        tmp_path, previous
+    ):
+        database = tmp_path / "automation-migration.sqlite3"
+        config = config_for(database)
+>       assert ScriptDirectory.from_config(config).get_heads() == ["0020_recording_project_scope"]
+E       AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']
+E         
+E         At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E         Use -v to get more diff
+
+tests/integration/test_project_automation_migration.py:27: AssertionError
+_____ test_empty_downgrade_roundtrip_and_nonempty_downgrade_preserves_data _____
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_empty_downgrade_roundtrip0')
+
+    def test_empty_downgrade_roundtrip_and_nonempty_downgrade_preserves_data(tmp_path):
+        database = tmp_path / "downgrade.sqlite3"
+        config = config_for(database)
+        command.upgrade(config, "head")
+        command.downgrade(config, "0011_workflow_runtime_contracts")
+        command.upgrade(config, "head")
+        with sqlite3.connect(database) as connection:
+            connection.execute("PRAGMA foreign_keys=ON")
+            connection.execute(
+                "INSERT INTO workflow_documents VALUES (?,?,?,?,?,?,?)",
+                ("w", "W", "{}", "{}", 1, "2026-09-15", "2026-09-15"),
+            )
+            connection.execute(
+                "INSERT INTO projects (id,name,name_key,description,search_text,default_resources,management_revision,lifecycle_state,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                ("p", "P", "p", "", "p", "{}", 1, "active", "2026-09-15", "2026-09-15"),
+            )
+            connection.execute(
+                "INSERT INTO project_automations (id,project_id,workflow_id,name,name_key,search_text,description,management_revision,input_plan,parameter_schema,environment_policy,run_policy,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                (
+                    "a",
+                    "p",
+                    "w",
+                    "A",
+                    "a",
+                    "a",
+                    "",
+                    1,
+                    "{}",
+                    "[]",
+                    "{}",
+                    "{}",
+                    "2026-09-15",
+                    "2026-09-15",
+                ),
+            )
+            original = connection.execute("SELECT * FROM project_automations").fetchall()
+        with pytest.raises(RuntimeError, match="configuration exists"):
+            command.downgrade(config, "0011_workflow_runtime_contracts")
+        with sqlite3.connect(database) as connection:
+            assert (
+                connection.execute("SELECT * FROM project_automations").fetchall()
+                == original
+            )
+>           assert connection.execute(
+                "SELECT version_num FROM alembic_version"
+            ).fetchone() == ("0020_recording_project_scope",)
+E           AssertionError: assert ('0023_merge_studio_android',) == ('0020_record...oject_scope',)
+E             
+E             At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E             Use -v to get more diff
+
+tests/integration/test_project_automation_migration.py:154: AssertionError
+______ test_claim_migration_is_the_single_head_and_creates_durable_facts _______
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_claim_migration_is_the_si0')
+
+    def test_claim_migration_is_the_single_head_and_creates_durable_facts(tmp_path):
+        database = tmp_path / "claims.sqlite3"
+        config = config_for(database)
+    
+>       assert ScriptDirectory.from_config(config).get_heads() == [EXPECTED_HEAD]
+E       AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']
+E         
+E         At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E         Use -v to get more diff
+
+tests/integration/test_project_claim_migration.py:23: AssertionError
+_ test_project_worker_reads_private_credential_after_start_commit[private-lookup-key-\u51ed\u636e] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_project_worker_reads_priv0')
+prefix = '凭据', value = 'private-lookup-key'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("prefix", ["凭据", "cred"])
+    @pytest.mark.parametrize("value", ["private-lookup-key", "", None])
+    async def test_project_worker_reads_private_credential_after_start_commit(tmp_path, prefix, value):
+        reference = "{{" + prefix + ":账号.password}}"
+        factory, queued = _queued_pure_data_run(
+            tmp_path,
+            node_data={"moduleType": "dict_get_path", "dictVariable": "record", "path": reference, "resultVariable": "out"},
+            variables={"record": {"private-lookup-key": "resolved", reference: "preserved"}},
+        )
+        reads = []
+    
+        def resolve(name):
+            with factory() as session:
+                events = SqlAlchemyWorkflowRuntimeRepository(session).list_events(queued.run_id, after_sequence=0, limit=100)
+            assert any(event.kind == "nodeAttempt" and event.payload.get("status") == "started" for event in events)
+            reads.append(name)
+            return {"password": value}
+    
+        worker = ProjectWorkflowWorkerManager(tmp_path / "temp", resolve_credential=resolve)
+        dispatcher = _dispatcher(factory, worker, _NoBrowserResources())
+        try:
+            await dispatcher.dispatch(queued.run_id, expected_status_revision=queued.status_revision, execution_generation=queued.execution_generation)
+            async with asyncio.timeout(15):
+                await dispatcher.wait_idle()
+            with factory() as session:
+                repository = SqlAlchemyWorkflowRuntimeRepository(session)
+                run = repository.get_run(run_id=queued.run_id)
+                events = repository.list_events(queued.run_id, after_sequence=0, limit=100)
+            assert run.status == ("failed" if value == "" else "succeeded")
+            assert reads == ["账号"]
+            outputs = [event.payload["value"] for event in events if event.kind == "output"]
+            # The shared runtime deliberately redacts credential-derived results.
+            # Empty fields stay empty (invalid path); missing fields keep placeholders.
+>           assert outputs == ([] if value == "" else [None])
+E           assert [] == [None]
+E             
+E             Right contains one more item: None
+E             Use -v to get more diff
+
+tests/integration/test_project_credential_worker.py:58: AssertionError
+_ test_project_worker_reads_private_credential_after_start_commit[private-lookup-key-cred] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_project_worker_reads_priv1')
+prefix = 'cred', value = 'private-lookup-key'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("prefix", ["凭据", "cred"])
+    @pytest.mark.parametrize("value", ["private-lookup-key", "", None])
+    async def test_project_worker_reads_private_credential_after_start_commit(tmp_path, prefix, value):
+        reference = "{{" + prefix + ":账号.password}}"
+        factory, queued = _queued_pure_data_run(
+            tmp_path,
+            node_data={"moduleType": "dict_get_path", "dictVariable": "record", "path": reference, "resultVariable": "out"},
+            variables={"record": {"private-lookup-key": "resolved", reference: "preserved"}},
+        )
+        reads = []
+    
+        def resolve(name):
+            with factory() as session:
+                events = SqlAlchemyWorkflowRuntimeRepository(session).list_events(queued.run_id, after_sequence=0, limit=100)
+            assert any(event.kind == "nodeAttempt" and event.payload.get("status") == "started" for event in events)
+            reads.append(name)
+            return {"password": value}
+    
+        worker = ProjectWorkflowWorkerManager(tmp_path / "temp", resolve_credential=resolve)
+        dispatcher = _dispatcher(factory, worker, _NoBrowserResources())
+        try:
+            await dispatcher.dispatch(queued.run_id, expected_status_revision=queued.status_revision, execution_generation=queued.execution_generation)
+            async with asyncio.timeout(15):
+                await dispatcher.wait_idle()
+            with factory() as session:
+                repository = SqlAlchemyWorkflowRuntimeRepository(session)
+                run = repository.get_run(run_id=queued.run_id)
+                events = repository.list_events(queued.run_id, after_sequence=0, limit=100)
+            assert run.status == ("failed" if value == "" else "succeeded")
+            assert reads == ["账号"]
+            outputs = [event.payload["value"] for event in events if event.kind == "output"]
+            # The shared runtime deliberately redacts credential-derived results.
+            # Empty fields stay empty (invalid path); missing fields keep placeholders.
+>           assert outputs == ([] if value == "" else [None])
+E           assert [] == [None]
+E             
+E             Right contains one more item: None
+E             Use -v to get more diff
+
+tests/integration/test_project_credential_worker.py:58: AssertionError
+_ test_project_worker_reads_private_credential_after_start_commit[None-\u51ed\u636e] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_project_worker_reads_priv4')
+prefix = '凭据', value = None
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("prefix", ["凭据", "cred"])
+    @pytest.mark.parametrize("value", ["private-lookup-key", "", None])
+    async def test_project_worker_reads_private_credential_after_start_commit(tmp_path, prefix, value):
+        reference = "{{" + prefix + ":账号.password}}"
+        factory, queued = _queued_pure_data_run(
+            tmp_path,
+            node_data={"moduleType": "dict_get_path", "dictVariable": "record", "path": reference, "resultVariable": "out"},
+            variables={"record": {"private-lookup-key": "resolved", reference: "preserved"}},
+        )
+        reads = []
+    
+        def resolve(name):
+            with factory() as session:
+                events = SqlAlchemyWorkflowRuntimeRepository(session).list_events(queued.run_id, after_sequence=0, limit=100)
+            assert any(event.kind == "nodeAttempt" and event.payload.get("status") == "started" for event in events)
+            reads.append(name)
+            return {"password": value}
+    
+        worker = ProjectWorkflowWorkerManager(tmp_path / "temp", resolve_credential=resolve)
+        dispatcher = _dispatcher(factory, worker, _NoBrowserResources())
+        try:
+            await dispatcher.dispatch(queued.run_id, expected_status_revision=queued.status_revision, execution_generation=queued.execution_generation)
+            async with asyncio.timeout(15):
+                await dispatcher.wait_idle()
+            with factory() as session:
+                repository = SqlAlchemyWorkflowRuntimeRepository(session)
+                run = repository.get_run(run_id=queued.run_id)
+                events = repository.list_events(queued.run_id, after_sequence=0, limit=100)
+            assert run.status == ("failed" if value == "" else "succeeded")
+            assert reads == ["账号"]
+            outputs = [event.payload["value"] for event in events if event.kind == "output"]
+            # The shared runtime deliberately redacts credential-derived results.
+            # Empty fields stay empty (invalid path); missing fields keep placeholders.
+>           assert outputs == ([] if value == "" else [None])
+E           assert [] == [None]
+E             
+E             Right contains one more item: None
+E             Use -v to get more diff
+
+tests/integration/test_project_credential_worker.py:58: AssertionError
+__ test_project_worker_reads_private_credential_after_start_commit[None-cred] __
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_project_worker_reads_priv5')
+prefix = 'cred', value = None
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("prefix", ["凭据", "cred"])
+    @pytest.mark.parametrize("value", ["private-lookup-key", "", None])
+    async def test_project_worker_reads_private_credential_after_start_commit(tmp_path, prefix, value):
+        reference = "{{" + prefix + ":账号.password}}"
+        factory, queued = _queued_pure_data_run(
+            tmp_path,
+            node_data={"moduleType": "dict_get_path", "dictVariable": "record", "path": reference, "resultVariable": "out"},
+            variables={"record": {"private-lookup-key": "resolved", reference: "preserved"}},
+        )
+        reads = []
+    
+        def resolve(name):
+            with factory() as session:
+                events = SqlAlchemyWorkflowRuntimeRepository(session).list_events(queued.run_id, after_sequence=0, limit=100)
+            assert any(event.kind == "nodeAttempt" and event.payload.get("status") == "started" for event in events)
+            reads.append(name)
+            return {"password": value}
+    
+        worker = ProjectWorkflowWorkerManager(tmp_path / "temp", resolve_credential=resolve)
+        dispatcher = _dispatcher(factory, worker, _NoBrowserResources())
+        try:
+            await dispatcher.dispatch(queued.run_id, expected_status_revision=queued.status_revision, execution_generation=queued.execution_generation)
+            async with asyncio.timeout(15):
+                await dispatcher.wait_idle()
+            with factory() as session:
+                repository = SqlAlchemyWorkflowRuntimeRepository(session)
+                run = repository.get_run(run_id=queued.run_id)
+                events = repository.list_events(queued.run_id, after_sequence=0, limit=100)
+            assert run.status == ("failed" if value == "" else "succeeded")
+            assert reads == ["账号"]
+            outputs = [event.payload["value"] for event in events if event.kind == "output"]
+            # The shared runtime deliberately redacts credential-derived results.
+            # Empty fields stay empty (invalid path); missing fields keep placeholders.
+>           assert outputs == ([] if value == "" else [None])
+E           assert [] == [None]
+E             
+E             Right contains one more item: None
+E             Use -v to get more diff
+
+tests/integration/test_project_credential_worker.py:58: AssertionError
+_ test_project_empty_credential_parts_preserve_reference_without_protocol_failure[{{cred:\u8d26\u53f7.}}] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_project_empty_credential_0')
+reference = '{{cred:账号.}}'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("reference", ["{{cred:账号.}}", "{{cred:.password}}"])
+    async def test_project_empty_credential_parts_preserve_reference_without_protocol_failure(
+        tmp_path, reference
+    ):
+        factory, queued = _queued_pure_data_run(
+            tmp_path,
+            node_data={
+                "moduleType": "dict_get_path",
+                "dictVariable": "record",
+                "path": reference,
+                "resultVariable": "out",
+            },
+            variables={"record": {reference: "preserved"}},
+        )
+        reads = []
+    
+        def resolve(name):
+            reads.append(name)
+            raise AssertionError("空凭据名称或字段不应进入凭据存储")
+    
+        worker = ProjectWorkflowWorkerManager(tmp_path / "temp", resolve_credential=resolve)
+        dispatcher = _dispatcher(factory, worker, _NoBrowserResources())
+        try:
+            await dispatcher.dispatch(
+                queued.run_id,
+                expected_status_revision=queued.status_revision,
+                execution_generation=queued.execution_generation,
+            )
+            async with asyncio.timeout(15):
+                await dispatcher.wait_idle()
+            with factory() as session:
+                repository = SqlAlchemyWorkflowRuntimeRepository(session)
+                run = repository.get_run(run_id=queued.run_id)
+                events = repository.list_events(queued.run_id, after_sequence=0, limit=100)
+            assert run.status == "succeeded"
+            assert run.error is None
+            assert reads == []
+            assert [event.payload["status"] for event in events if event.kind == "nodeAttempt"] == [
+                "started", "succeeded"
+            ]
+            # Successful lookup proves the original placeholder reached the executor;
+            # shared source-compatible sensitive-result redaction remains in force.
+>           assert [event.payload["value"] for event in events if event.kind == "output"] == [None]
+E           assert [] == [None]
+E             
+E             Right contains one more item: None
+E             Use -v to get more diff
+
+tests/integration/test_project_credential_worker.py:112: AssertionError
+_ test_project_empty_credential_parts_preserve_reference_without_protocol_failure[{{cred:.password}}] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_project_empty_credential_1')
+reference = '{{cred:.password}}'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("reference", ["{{cred:账号.}}", "{{cred:.password}}"])
+    async def test_project_empty_credential_parts_preserve_reference_without_protocol_failure(
+        tmp_path, reference
+    ):
+        factory, queued = _queued_pure_data_run(
+            tmp_path,
+            node_data={
+                "moduleType": "dict_get_path",
+                "dictVariable": "record",
+                "path": reference,
+                "resultVariable": "out",
+            },
+            variables={"record": {reference: "preserved"}},
+        )
+        reads = []
+    
+        def resolve(name):
+            reads.append(name)
+            raise AssertionError("空凭据名称或字段不应进入凭据存储")
+    
+        worker = ProjectWorkflowWorkerManager(tmp_path / "temp", resolve_credential=resolve)
+        dispatcher = _dispatcher(factory, worker, _NoBrowserResources())
+        try:
+            await dispatcher.dispatch(
+                queued.run_id,
+                expected_status_revision=queued.status_revision,
+                execution_generation=queued.execution_generation,
+            )
+            async with asyncio.timeout(15):
+                await dispatcher.wait_idle()
+            with factory() as session:
+                repository = SqlAlchemyWorkflowRuntimeRepository(session)
+                run = repository.get_run(run_id=queued.run_id)
+                events = repository.list_events(queued.run_id, after_sequence=0, limit=100)
+            assert run.status == "succeeded"
+            assert run.error is None
+            assert reads == []
+            assert [event.payload["status"] for event in events if event.kind == "nodeAttempt"] == [
+                "started", "succeeded"
+            ]
+            # Successful lookup proves the original placeholder reached the executor;
+            # shared source-compatible sensitive-result redaction remains in force.
+>           assert [event.payload["value"] for event in events if event.kind == "output"] == [None]
+E           assert [] == [None]
+E             
+E             Right contains one more item: None
+E             Use -v to get more diff
+
+tests/integration/test_project_credential_worker.py:112: AssertionError
+_________ test_pm2_upgrade_preserves_projects_and_has_one_head[False] __________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_pm2_upgrade_preserves_pro0')
+existing = False
+
+    @pytest.mark.parametrize("existing", [False, True])
+    def test_pm2_upgrade_preserves_projects_and_has_one_head(tmp_path, existing):
+        path = tmp_path / "data.sqlite3"
+        config = config_for(path)
+    
+>       assert ScriptDirectory.from_config(config).get_heads() == ["0020_recording_project_scope"]
+E       AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']
+E         
+E         At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E         Use -v to get more diff
+
+tests/integration/test_project_data_migrations.py:89: AssertionError
+__________ test_pm2_upgrade_preserves_projects_and_has_one_head[True] __________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_pm2_upgrade_preserves_pro1')
+existing = True
+
+    @pytest.mark.parametrize("existing", [False, True])
+    def test_pm2_upgrade_preserves_projects_and_has_one_head(tmp_path, existing):
+        path = tmp_path / "data.sqlite3"
+        config = config_for(path)
+    
+>       assert ScriptDirectory.from_config(config).get_heads() == ["0020_recording_project_scope"]
+E       AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']
+E         
+E         At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E         Use -v to get more diff
+
+tests/integration/test_project_data_migrations.py:89: AssertionError
+______ test_failed_upgrade_rolls_back_ddl_and_can_restart[pm01_projects] _______
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_failed_upgrade_rolls_back0')
+starting_revision = 'pm01_projects'
+
+    @pytest.mark.parametrize("starting_revision", ["pm01_projects", "base"])
+    def test_failed_upgrade_rolls_back_ddl_and_can_restart(tmp_path, starting_revision):
+        from sqlalchemy import event
+        from sqlalchemy.engine import Engine
+    
+        path = tmp_path / "interrupted.sqlite3"
+        config = config_for(path)
+        command.upgrade(config, starting_revision)
+    
+        def fail_mid_migration(
+            connection, cursor, statement, parameters, context, executemany
+        ):
+            if "CREATE TABLE project_data_generations" in statement:
+                raise RuntimeError("synthetic migration interruption")
+    
+        event.listen(Engine, "before_cursor_execute", fail_mid_migration)
+        try:
+            with pytest.raises(RuntimeError, match="synthetic migration interruption"):
+                database_session.migrate_database(path)
+        finally:
+            event.remove(Engine, "before_cursor_execute", fail_mid_migration)
+        with sqlite3.connect(path) as connection:
+            partial = connection.execute(
+                "SELECT name FROM sqlite_master WHERE name LIKE 'project_data_%' OR name='uq_project_operations_scope'"
+            ).fetchall()
+            assert partial == []
+        database_session.migrate_database(path)
+        with sqlite3.connect(path) as connection:
+>           assert connection.execute(
+                "SELECT version_num FROM alembic_version"
+    
+            ).fetchone() == ("0020_recording_project_scope",)
+E           AssertionError: assert ('0023_merge_studio_android',) == ('0020_record...oject_scope',)
+E             
+E             At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E             Use -v to get more diff
+
+tests/integration/test_project_data_migrations.py:321: AssertionError
+___________ test_failed_upgrade_rolls_back_ddl_and_can_restart[base] ___________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_failed_upgrade_rolls_back1')
+starting_revision = 'base'
+
+    @pytest.mark.parametrize("starting_revision", ["pm01_projects", "base"])
+    def test_failed_upgrade_rolls_back_ddl_and_can_restart(tmp_path, starting_revision):
+        from sqlalchemy import event
+        from sqlalchemy.engine import Engine
+    
+        path = tmp_path / "interrupted.sqlite3"
+        config = config_for(path)
+        command.upgrade(config, starting_revision)
+    
+        def fail_mid_migration(
+            connection, cursor, statement, parameters, context, executemany
+        ):
+            if "CREATE TABLE project_data_generations" in statement:
+                raise RuntimeError("synthetic migration interruption")
+    
+        event.listen(Engine, "before_cursor_execute", fail_mid_migration)
+        try:
+            with pytest.raises(RuntimeError, match="synthetic migration interruption"):
+                database_session.migrate_database(path)
+        finally:
+            event.remove(Engine, "before_cursor_execute", fail_mid_migration)
+        with sqlite3.connect(path) as connection:
+            partial = connection.execute(
+                "SELECT name FROM sqlite_master WHERE name LIKE 'project_data_%' OR name='uq_project_operations_scope'"
+            ).fetchall()
+            assert partial == []
+        database_session.migrate_database(path)
+        with sqlite3.connect(path) as connection:
+>           assert connection.execute(
+                "SELECT version_num FROM alembic_version"
+    
+            ).fetchone() == ("0020_recording_project_scope",)
+E           AssertionError: assert ('0023_merge_studio_android',) == ('0020_record...oject_scope',)
+E             
+E             At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E             Use -v to get more diff
+
+tests/integration/test_project_data_migrations.py:321: AssertionError
+____ test_status_upgrade_preserves_records_and_enforces_active_names[False] ____
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_status_upgrade_preserves_0')
+existing = False
+
+    @pytest.mark.parametrize("existing", [False, True])
+    def test_status_upgrade_preserves_records_and_enforces_active_names(tmp_path, existing):
+        path = tmp_path / "status.sqlite3"
+        config = config_for(path)
+        command.upgrade(config, "pm02_project_data")
+        before = []
+        if existing:
+            with sqlite3.connect(path) as connection:
+                seed_project(connection)
+                seed_table(connection)
+                seed_status(connection)
+                add_record(connection, key="current", status="s")
+                add_record(connection, key="deleted", status="s")
+                connection.execute(
+                    "UPDATE project_data_records SET deleted=1 WHERE key_value='deleted'"
+                )
+                connection.execute(
+                    "INSERT INTO project_data_generations VALUES ('old','p','t','{}','{}','2026-09-13')"
+                )
+                add_record(connection, key="history", generation="old", status="s")
+                before = connection.execute(
+                    "SELECT * FROM project_data_records ORDER BY key_value"
+                ).fetchall()
+        migrate_database(path)
+        with sqlite3.connect(path) as connection:
+            connection.execute("PRAGMA foreign_keys=ON")
+>           assert connection.execute(
+                "SELECT version_num FROM alembic_version"
+    
+            ).fetchone() == ("0020_recording_project_scope",)
+E           AssertionError: assert ('0023_merge_studio_android',) == ('0020_record...oject_scope',)
+E             
+E             At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E             Use -v to get more diff
+
+tests/integration/test_project_data_status_migration.py:57: AssertionError
+____ test_status_upgrade_preserves_records_and_enforces_active_names[True] _____
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_status_upgrade_preserves_1')
+existing = True
+
+    @pytest.mark.parametrize("existing", [False, True])
+    def test_status_upgrade_preserves_records_and_enforces_active_names(tmp_path, existing):
+        path = tmp_path / "status.sqlite3"
+        config = config_for(path)
+        command.upgrade(config, "pm02_project_data")
+        before = []
+        if existing:
+            with sqlite3.connect(path) as connection:
+                seed_project(connection)
+                seed_table(connection)
+                seed_status(connection)
+                add_record(connection, key="current", status="s")
+                add_record(connection, key="deleted", status="s")
+                connection.execute(
+                    "UPDATE project_data_records SET deleted=1 WHERE key_value='deleted'"
+                )
+                connection.execute(
+                    "INSERT INTO project_data_generations VALUES ('old','p','t','{}','{}','2026-09-13')"
+                )
+                add_record(connection, key="history", generation="old", status="s")
+                before = connection.execute(
+                    "SELECT * FROM project_data_records ORDER BY key_value"
+                ).fetchall()
+        migrate_database(path)
+        with sqlite3.connect(path) as connection:
+            connection.execute("PRAGMA foreign_keys=ON")
+>           assert connection.execute(
+                "SELECT version_num FROM alembic_version"
+    
+            ).fetchone() == ("0020_recording_project_scope",)
+E           AssertionError: assert ('0023_merge_studio_android',) == ('0020_record...oject_scope',)
+E             
+E             At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E             Use -v to get more diff
+
+tests/integration/test_project_data_status_migration.py:57: AssertionError
+__ test_downgrade_preserves_live_data_but_refuses_to_resurrect_deleted_status __
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_downgrade_preserves_live_0')
+
+    def test_downgrade_preserves_live_data_but_refuses_to_resurrect_deleted_status(
+        tmp_path,
+    ):
+        path = tmp_path / "downgrade.sqlite3"
+        config = config_for(path)
+        migrate_database(path)
+        with sqlite3.connect(path) as connection:
+            seed_project(connection)
+            seed_table(connection)
+            seed_status(connection)
+            add_record(connection, status="s")
+        command.downgrade(config, "pm02_project_data")
+        with sqlite3.connect(path) as connection:
+            assert connection.execute(
+                "SELECT status_id FROM project_data_records"
+            ).fetchall() == [("s",)]
+            assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
+        migrate_database(path)
+        with sqlite3.connect(path) as connection:
+            connection.execute("UPDATE project_data_statuses SET deleted=1")
+        with pytest.raises(RuntimeError, match="deleted statuses"):
+            command.downgrade(config, "pm02_project_data")
+        with sqlite3.connect(path) as connection:
+            assert connection.execute(
+                "SELECT deleted FROM project_data_statuses"
+            ).fetchall() == [(1,)]
+>           assert connection.execute(
+                "SELECT version_num FROM alembic_version"
+    
+            ).fetchone() == ("0020_recording_project_scope",)
+E           AssertionError: assert ('0023_merge_studio_android',) == ('0020_record...oject_scope',)
+E             
+E             At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E             Use -v to get more diff
+
+tests/integration/test_project_data_status_migration.py:155: AssertionError
+_______________ test_pm1_upgrade_preserves_0005_resources[False] _______________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_pm1_upgrade_preserves_0000')
+existing = False
+
+    @pytest.mark.parametrize("existing", [False, True])
+    def test_pm1_upgrade_preserves_0005_resources(tmp_path: Path, existing: bool):
+        database = tmp_path / "projects.sqlite3"
+        config = Config(str(Path(database_session.__file__).with_name("alembic.ini")))
+        config.set_main_option("sqlalchemy.url", f"sqlite:///{database}")
+    
+>       assert ScriptDirectory.from_config(config).get_heads() == ["0020_recording_project_scope"]
+E       AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']
+E         
+E         At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E         Use -v to get more diff
+
+tests/integration/test_project_migration.py:18: AssertionError
+_______________ test_pm1_upgrade_preserves_0005_resources[True] ________________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_pm1_upgrade_preserves_0001')
+existing = True
+
+    @pytest.mark.parametrize("existing", [False, True])
+    def test_pm1_upgrade_preserves_0005_resources(tmp_path: Path, existing: bool):
+        database = tmp_path / "projects.sqlite3"
+        config = Config(str(Path(database_session.__file__).with_name("alembic.ini")))
+        config.set_main_option("sqlalchemy.url", f"sqlite:///{database}")
+    
+>       assert ScriptDirectory.from_config(config).get_heads() == ["0020_recording_project_scope"]
+E       AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']
+E         
+E         At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E         Use -v to get more diff
+
+tests/integration/test_project_migration.py:18: AssertionError
+_________ test_empty_database_upgrades_to_the_single_project_run_head __________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_empty_database_upgrades_t0')
+
+    def test_empty_database_upgrades_to_the_single_project_run_head(tmp_path):
+        database = tmp_path / "empty.sqlite3"
+        config = config_for(database)
+    
+>       assert ScriptDirectory.from_config(config).get_heads() == ["0020_recording_project_scope"]
+E       AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']
+E         
+E         At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E         Use -v to get more diff
+
+tests/integration/test_project_run_migration.py:39: AssertionError
+____ test_pm03_upgrade_preserves_real_project_automation_and_workflow_rows _____
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_pm03_upgrade_preserves_re0')
+
+    def test_pm03_upgrade_preserves_real_project_automation_and_workflow_rows(tmp_path):
+        database = tmp_path / "existing.sqlite3"
+        config = config_for(database)
+        command.upgrade(config, "pm03_project_automations")
+        document = workflow_payload("00000000-0000-0000-0000-000000000020")
+        with sqlite3.connect(database) as connection:
+            connection.execute(
+                "INSERT INTO workflow_documents VALUES (?,?,?,?,?,?,?)",
+                (
+                    document["id"],
+                    "既有流程",
+                    json.dumps(document),
+                    "{}",
+                    7,
+                    "2026-09-15",
+                    "2026-09-15",
+                ),
+            )
+            connection.execute(
+                "INSERT INTO projects (id,name,name_key,description,search_text,default_resources,management_revision,lifecycle_state,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                (
+                    "00000000-0000-0000-0000-000000000010",
+                    "既有项目",
+                    "既有项目",
+                    "说明",
+                    "既有项目 说明",
+                    json.dumps(
+                        {
+                            "profileId": None,
+                            "proxy": {"mode": "none"},
+                            "modelProviderId": None,
+                        }
+                    ),
+                    3,
+                    "active",
+                    "2026-09-15",
+                    "2026-09-15",
+                ),
+            )
+            connection.execute(
+                "INSERT INTO project_automations (id,project_id,workflow_id,name,name_key,search_text,description,management_revision,input_plan,parameter_schema,environment_policy,run_policy,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                (
+                    "00000000-0000-0000-0000-000000000030",
+                    "00000000-0000-0000-0000-000000000010",
+                    document["id"],
+                    "既有自动化",
+                    "既有自动化",
+                    "既有自动化",
+                    "",
+                    2,
+                    '{"inputs":[]}',
+                    "[]",
+                    '{"source":"newFromProfile"}',
+                    '{"maxTasks":1,"concurrency":1}',
+                    "2026-09-15",
+                    "2026-09-15",
+                ),
+            )
+            before = {
+                table: connection.execute(f"SELECT * FROM {table}").fetchall()
+                for table in ("workflow_documents", "projects", "project_automations")
+            }
+    
+        database_session.migrate_database(database)
+        with sqlite3.connect(database) as connection:
+            connection.execute("PRAGMA foreign_keys=ON")
+            assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
+>           assert connection.execute(
+                "SELECT version_num FROM alembic_version"
+            ).fetchone() == ("0020_recording_project_scope",)
+E           AssertionError: assert ('0023_merge_studio_android',) == ('0020_record...oject_scope',)
+E             
+E             At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E             Use -v to get more diff
+
+tests/integration/test_project_run_migration.py:126: AssertionError
+___________ test_empty_project_run_tables_can_downgrade_and_upgrade ____________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_empty_project_run_tables_0')
+
+    def test_empty_project_run_tables_can_downgrade_and_upgrade(tmp_path):
+        database = tmp_path / "roundtrip.sqlite3"
+        config = config_for(database)
+        command.upgrade(config, "head")
+    
+        command.downgrade(config, "pm03_project_automations")
+        with create_session_factory(database)() as session:
+            assert not {
+                "project_batches",
+                "project_tasks",
+                "project_task_input_snapshots",
+            } & set(inspect(session.bind).get_table_names())
+        command.upgrade(config, "head")
+        with sqlite3.connect(database) as connection:
+>           assert connection.execute(
+                "SELECT version_num FROM alembic_version"
+            ).fetchone() == ("0020_recording_project_scope",)
+E           AssertionError: assert ('0023_merge_studio_android',) == ('0020_record...oject_scope',)
+E             
+E             At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E             Use -v to get more diff
+
+tests/integration/test_project_run_migration.py:178: AssertionError
+____ test_nonempty_project_run_evidence_refuses_downgrade_without_data_loss ____
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_nonempty_project_run_evid0')
+
+    def test_nonempty_project_run_evidence_refuses_downgrade_without_data_loss(tmp_path):
+        database = tmp_path / "evidence.sqlite3"
+        config = config_for(database)
+        database_session.migrate_database(database)
+        factory = create_session_factory(database)
+        projects = ProjectService(SqlAlchemyProjects(factory))
+        project, _, _ = projects.create(
+            str(uuid4()), {"name": "证据项目", "description": ""}
+        )
+        workflow_repository = SqlAlchemyWorkflowRepository(factory)
+        workflow = WorkflowService(workflow_repository).create(
+            workflow_payload(), str(uuid4())
+        )
+        automations = ProjectAutomationService(
+            SqlAlchemyProjects(factory), SqlAlchemyProjectAutomations(factory)
+        )
+        automation, _, _ = automations.create(
+            project.project_id,
+            str(uuid4()),
+            {
+                "name": "证据自动化",
+                "description": "",
+                "workflowId": workflow.workflow_id,
+                "inputPlan": {"inputs": []},
+                "parameterSchema": [],
+                "environmentPolicy": {"source": "newFromProfile"},
+                "runPolicy": {
+                    "maxTasks": 1,
+                    "concurrency": 1,
+                    "maxLiveInstances": 1,
+                    "continueAfterFailure": False,
+                    "automaticExecutionTimeoutSeconds": 60,
+                    "manualDeadlineSeconds": 300,
+                },
+            },
+        )
+        runtime = WorkflowRuntimeService(factory, workflow_repository)
+        prepared = runtime.prepare_content(
+            prepare_operation_id=str(uuid4()),
+            workflow_id=workflow.workflow_id,
+            source_revision=workflow.revision,
+            available_capabilities=["browser.cloakbrowser"],
+        )
+        now = datetime.now(UTC)
+        batch_id, operation_id = str(uuid4()), str(uuid4())
+        with factory() as session:
+            session.add(
+                ProjectOperationRow(
+                    id=operation_id,
+                    project_id=project.project_id,
+                    idempotency_key=str(uuid4()),
+                    kind="startBatch",
+                    request_digest="a" * 64,
+                    status="succeeded",
+                    status_revision=2,
+                    resource={
+                        "type": "batch",
+                        "projectId": project.project_id,
+                        "batchId": batch_id,
+                    },
+                    result={"batch": {"batchId": batch_id}},
+                    error=None,
+                    created_at=now,
+                    updated_at=now,
+                    completed_at=now,
+                )
+            )
+            session.add(
+                ProjectBatchRow(
+                    id=batch_id,
+                    project_id=project.project_id,
+                    automation_id=automation.automation_id,
+                    start_operation_id=operation_id,
+                    prepared_content_id=prepared.prepared_content_id,
+                    automation_revision=automation.management_revision,
+                    workflow_revision=workflow.revision,
+                    status="accepted",
+                    status_revision=1,
+                    frozen_request={
+                        "maxTasks": 1,
+                        "parameters": {},
+                        "resourceRequest": {"browser": "none"},
+                    },
+                    created_at=now,
+                    completed_at=None,
+                )
+            )
+            session.commit()
+        with sqlite3.connect(database) as connection:
+            before = connection.execute(
+                "SELECT * FROM project_batches WHERE id=?", (batch_id,)
+            ).fetchall()
+        factory.dispose()
+    
+        with pytest.raises(RuntimeError, match="Project run evidence exists"):
+            command.downgrade(config, "pm03_project_automations")
+    
+        with sqlite3.connect(database) as connection:
+>           assert connection.execute(
+                "SELECT version_num FROM alembic_version"
+            ).fetchone() == ("0020_recording_project_scope",)
+E           AssertionError: assert ('0023_merge_studio_android',) == ('0020_record...oject_scope',)
+E             
+E             At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E             Use -v to get more diff
+
+tests/integration/test_project_run_migration.py:281: AssertionError
+___________ test_workflow_shutdown_error_still_closes_other_modules ____________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_workflow_shutdown_error_s0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x124d5a550>
+
+    @pytest.mark.asyncio
+    async def test_workflow_shutdown_error_still_closes_other_modules(tmp_path, monkeypatch):
+        from unittest.mock import AsyncMock, Mock
+    
+        from autoflow.bootstrap.app import create_app
+        from autoflow.bootstrap.config import Settings
+    
+        app = create_app(Settings(data_dir=str(tmp_path / 'shutdown-data'), instance_id='shutdown-fixture'))
+        failed = AsyncMock(side_effect=RuntimeError('synthetic workflow cleanup failure'))
+        monkeypatch.setattr(app.state.workflow_dispatcher, 'shutdown', failed)
+        browser = AsyncMock(wraps=app.state.test_browser_worker_manager.shutdown)
+        kernel = AsyncMock(wraps=app.state.kernel_worker_manager.shutdown)
+        exports = Mock(wraps=app.state.excel_exports.shutdown)
+        batches = Mock(wraps=app.state.status_batch_coordinator.shutdown)
+        monkeypatch.setattr(app.state.test_browser_worker_manager, 'shutdown', browser)
+        monkeypatch.setattr(app.state.kernel_worker_manager, 'shutdown', kernel)
+        monkeypatch.setattr(app.state.excel_exports, 'shutdown', exports)
+        monkeypatch.setattr(app.state.status_batch_coordinator, 'shutdown', batches)
+        with pytest.raises(RuntimeError, match='synthetic workflow cleanup failure'):
+>           await app.router.on_shutdown[-1]()
+E           TypeError: object NoneType can't be used in 'await' expression
+
+tests/integration/test_sidecar_shutdown.py:39: TypeError
+___ test_all_supported_histories_upgrade_without_losing_existing_rows[None] ____
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_all_supported_histories_u0')
+starting_revision = None
+
+    @pytest.mark.parametrize(
+        "starting_revision",
+        [
+            None,
+            "0005_workflow_documents",
+            "0008_workflow_debug",
+            "0009_merge_android_m5",
+            "0009_merge_project_data",
+            "0010_android_fleet",
+        ],
+    )
+    def test_all_supported_histories_upgrade_without_losing_existing_rows(
+        tmp_path: Path, starting_revision: str | None
+    ) -> None:
+        database = tmp_path / "compatibility.sqlite3"
+        config = _config(database)
+        if starting_revision is not None:
+            command.upgrade(config, starting_revision)
+            with sqlite3.connect(database) as connection:
+                tables = _tables(connection)
+                if "workflow_documents" in tables:
+                    connection.execute(
+                        "INSERT INTO workflow_documents VALUES (?, ?, ?, ?, ?, ?, ?)",
+                        (
+                            "workflow",
+                            "保留流程",
+                            '{"nodes":[]}',
+                            "{}",
+                            7,
+                            "2026-09-15",
+                            "2026-09-15",
+                        ),
+                    )
+                if "android_devices" in tables:
+                    connection.execute(
+                        "INSERT INTO android_devices VALUES (?, ?, ?)",
+                        ("device", None, '{"name":"保留设备"}'),
+                    )
+                if "android_resources" in tables:
+                    connection.execute(
+                        "INSERT INTO android_resources VALUES (?, ?, ?)",
+                        ("template", "resource", '{"name":"保留模板"}'),
+                    )
+    
+        database_session.migrate_database(database)
+        database_session.migrate_database(database)
+    
+        with sqlite3.connect(database) as connection:
+            tables = _tables(connection)
+>           assert connection.execute(
+                "SELECT version_num FROM alembic_version"
+            ).fetchall() == [("0020_recording_project_scope",)]
+E           AssertionError: assert [('0023_merge...io_android',)] == [('0020_recor...ject_scope',)]
+E             
+E             At index 0 diff: ('0023_merge_studio_android',) != ('0020_recording_project_scope',)
+E             Use -v to get more diff
+
+tests/integration/test_studio_migration_compatibility.py:80: AssertionError
+_ test_all_supported_histories_upgrade_without_losing_existing_rows[0005_workflow_documents] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_all_supported_histories_u1')
+starting_revision = '0005_workflow_documents'
+
+    @pytest.mark.parametrize(
+        "starting_revision",
+        [
+            None,
+            "0005_workflow_documents",
+            "0008_workflow_debug",
+            "0009_merge_android_m5",
+            "0009_merge_project_data",
+            "0010_android_fleet",
+        ],
+    )
+    def test_all_supported_histories_upgrade_without_losing_existing_rows(
+        tmp_path: Path, starting_revision: str | None
+    ) -> None:
+        database = tmp_path / "compatibility.sqlite3"
+        config = _config(database)
+        if starting_revision is not None:
+            command.upgrade(config, starting_revision)
+            with sqlite3.connect(database) as connection:
+                tables = _tables(connection)
+                if "workflow_documents" in tables:
+                    connection.execute(
+                        "INSERT INTO workflow_documents VALUES (?, ?, ?, ?, ?, ?, ?)",
+                        (
+                            "workflow",
+                            "保留流程",
+                            '{"nodes":[]}',
+                            "{}",
+                            7,
+                            "2026-09-15",
+                            "2026-09-15",
+                        ),
+                    )
+                if "android_devices" in tables:
+                    connection.execute(
+                        "INSERT INTO android_devices VALUES (?, ?, ?)",
+                        ("device", None, '{"name":"保留设备"}'),
+                    )
+                if "android_resources" in tables:
+                    connection.execute(
+                        "INSERT INTO android_resources VALUES (?, ?, ?)",
+                        ("template", "resource", '{"name":"保留模板"}'),
+                    )
+    
+        database_session.migrate_database(database)
+        database_session.migrate_database(database)
+    
+        with sqlite3.connect(database) as connection:
+            tables = _tables(connection)
+>           assert connection.execute(
+                "SELECT version_num FROM alembic_version"
+            ).fetchall() == [("0020_recording_project_scope",)]
+E           AssertionError: assert [('0023_merge...io_android',)] == [('0020_recor...ject_scope',)]
+E             
+E             At index 0 diff: ('0023_merge_studio_android',) != ('0020_recording_project_scope',)
+E             Use -v to get more diff
+
+tests/integration/test_studio_migration_compatibility.py:80: AssertionError
+_ test_all_supported_histories_upgrade_without_losing_existing_rows[0008_workflow_debug] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_all_supported_histories_u2')
+starting_revision = '0008_workflow_debug'
+
+    @pytest.mark.parametrize(
+        "starting_revision",
+        [
+            None,
+            "0005_workflow_documents",
+            "0008_workflow_debug",
+            "0009_merge_android_m5",
+            "0009_merge_project_data",
+            "0010_android_fleet",
+        ],
+    )
+    def test_all_supported_histories_upgrade_without_losing_existing_rows(
+        tmp_path: Path, starting_revision: str | None
+    ) -> None:
+        database = tmp_path / "compatibility.sqlite3"
+        config = _config(database)
+        if starting_revision is not None:
+            command.upgrade(config, starting_revision)
+            with sqlite3.connect(database) as connection:
+                tables = _tables(connection)
+                if "workflow_documents" in tables:
+                    connection.execute(
+                        "INSERT INTO workflow_documents VALUES (?, ?, ?, ?, ?, ?, ?)",
+                        (
+                            "workflow",
+                            "保留流程",
+                            '{"nodes":[]}',
+                            "{}",
+                            7,
+                            "2026-09-15",
+                            "2026-09-15",
+                        ),
+                    )
+                if "android_devices" in tables:
+                    connection.execute(
+                        "INSERT INTO android_devices VALUES (?, ?, ?)",
+                        ("device", None, '{"name":"保留设备"}'),
+                    )
+                if "android_resources" in tables:
+                    connection.execute(
+                        "INSERT INTO android_resources VALUES (?, ?, ?)",
+                        ("template", "resource", '{"name":"保留模板"}'),
+                    )
+    
+        database_session.migrate_database(database)
+        database_session.migrate_database(database)
+    
+        with sqlite3.connect(database) as connection:
+            tables = _tables(connection)
+>           assert connection.execute(
+                "SELECT version_num FROM alembic_version"
+            ).fetchall() == [("0020_recording_project_scope",)]
+E           AssertionError: assert [('0023_merge...io_android',)] == [('0020_recor...ject_scope',)]
+E             
+E             At index 0 diff: ('0023_merge_studio_android',) != ('0020_recording_project_scope',)
+E             Use -v to get more diff
+
+tests/integration/test_studio_migration_compatibility.py:80: AssertionError
+_ test_all_supported_histories_upgrade_without_losing_existing_rows[0009_merge_android_m5] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_all_supported_histories_u3')
+starting_revision = '0009_merge_android_m5'
+
+    @pytest.mark.parametrize(
+        "starting_revision",
+        [
+            None,
+            "0005_workflow_documents",
+            "0008_workflow_debug",
+            "0009_merge_android_m5",
+            "0009_merge_project_data",
+            "0010_android_fleet",
+        ],
+    )
+    def test_all_supported_histories_upgrade_without_losing_existing_rows(
+        tmp_path: Path, starting_revision: str | None
+    ) -> None:
+        database = tmp_path / "compatibility.sqlite3"
+        config = _config(database)
+        if starting_revision is not None:
+            command.upgrade(config, starting_revision)
+            with sqlite3.connect(database) as connection:
+                tables = _tables(connection)
+                if "workflow_documents" in tables:
+                    connection.execute(
+                        "INSERT INTO workflow_documents VALUES (?, ?, ?, ?, ?, ?, ?)",
+                        (
+                            "workflow",
+                            "保留流程",
+                            '{"nodes":[]}',
+                            "{}",
+                            7,
+                            "2026-09-15",
+                            "2026-09-15",
+                        ),
+                    )
+                if "android_devices" in tables:
+                    connection.execute(
+                        "INSERT INTO android_devices VALUES (?, ?, ?)",
+                        ("device", None, '{"name":"保留设备"}'),
+                    )
+                if "android_resources" in tables:
+                    connection.execute(
+                        "INSERT INTO android_resources VALUES (?, ?, ?)",
+                        ("template", "resource", '{"name":"保留模板"}'),
+                    )
+    
+        database_session.migrate_database(database)
+        database_session.migrate_database(database)
+    
+        with sqlite3.connect(database) as connection:
+            tables = _tables(connection)
+>           assert connection.execute(
+                "SELECT version_num FROM alembic_version"
+            ).fetchall() == [("0020_recording_project_scope",)]
+E           AssertionError: assert [('0023_merge...io_android',)] == [('0020_recor...ject_scope',)]
+E             
+E             At index 0 diff: ('0023_merge_studio_android',) != ('0020_recording_project_scope',)
+E             Use -v to get more diff
+
+tests/integration/test_studio_migration_compatibility.py:80: AssertionError
+_ test_all_supported_histories_upgrade_without_losing_existing_rows[0009_merge_project_data] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_all_supported_histories_u4')
+starting_revision = '0009_merge_project_data'
+
+    @pytest.mark.parametrize(
+        "starting_revision",
+        [
+            None,
+            "0005_workflow_documents",
+            "0008_workflow_debug",
+            "0009_merge_android_m5",
+            "0009_merge_project_data",
+            "0010_android_fleet",
+        ],
+    )
+    def test_all_supported_histories_upgrade_without_losing_existing_rows(
+        tmp_path: Path, starting_revision: str | None
+    ) -> None:
+        database = tmp_path / "compatibility.sqlite3"
+        config = _config(database)
+        if starting_revision is not None:
+            command.upgrade(config, starting_revision)
+            with sqlite3.connect(database) as connection:
+                tables = _tables(connection)
+                if "workflow_documents" in tables:
+                    connection.execute(
+                        "INSERT INTO workflow_documents VALUES (?, ?, ?, ?, ?, ?, ?)",
+                        (
+                            "workflow",
+                            "保留流程",
+                            '{"nodes":[]}',
+                            "{}",
+                            7,
+                            "2026-09-15",
+                            "2026-09-15",
+                        ),
+                    )
+                if "android_devices" in tables:
+                    connection.execute(
+                        "INSERT INTO android_devices VALUES (?, ?, ?)",
+                        ("device", None, '{"name":"保留设备"}'),
+                    )
+                if "android_resources" in tables:
+                    connection.execute(
+                        "INSERT INTO android_resources VALUES (?, ?, ?)",
+                        ("template", "resource", '{"name":"保留模板"}'),
+                    )
+    
+        database_session.migrate_database(database)
+        database_session.migrate_database(database)
+    
+        with sqlite3.connect(database) as connection:
+            tables = _tables(connection)
+>           assert connection.execute(
+                "SELECT version_num FROM alembic_version"
+            ).fetchall() == [("0020_recording_project_scope",)]
+E           AssertionError: assert [('0023_merge...io_android',)] == [('0020_recor...ject_scope',)]
+E             
+E             At index 0 diff: ('0023_merge_studio_android',) != ('0020_recording_project_scope',)
+E             Use -v to get more diff
+
+tests/integration/test_studio_migration_compatibility.py:80: AssertionError
+_ test_all_supported_histories_upgrade_without_losing_existing_rows[0010_android_fleet] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_all_supported_histories_u5')
+starting_revision = '0010_android_fleet'
+
+    @pytest.mark.parametrize(
+        "starting_revision",
+        [
+            None,
+            "0005_workflow_documents",
+            "0008_workflow_debug",
+            "0009_merge_android_m5",
+            "0009_merge_project_data",
+            "0010_android_fleet",
+        ],
+    )
+    def test_all_supported_histories_upgrade_without_losing_existing_rows(
+        tmp_path: Path, starting_revision: str | None
+    ) -> None:
+        database = tmp_path / "compatibility.sqlite3"
+        config = _config(database)
+        if starting_revision is not None:
+            command.upgrade(config, starting_revision)
+            with sqlite3.connect(database) as connection:
+                tables = _tables(connection)
+                if "workflow_documents" in tables:
+                    connection.execute(
+                        "INSERT INTO workflow_documents VALUES (?, ?, ?, ?, ?, ?, ?)",
+                        (
+                            "workflow",
+                            "保留流程",
+                            '{"nodes":[]}',
+                            "{}",
+                            7,
+                            "2026-09-15",
+                            "2026-09-15",
+                        ),
+                    )
+                if "android_devices" in tables:
+                    connection.execute(
+                        "INSERT INTO android_devices VALUES (?, ?, ?)",
+                        ("device", None, '{"name":"保留设备"}'),
+                    )
+                if "android_resources" in tables:
+                    connection.execute(
+                        "INSERT INTO android_resources VALUES (?, ?, ?)",
+                        ("template", "resource", '{"name":"保留模板"}'),
+                    )
+    
+        database_session.migrate_database(database)
+        database_session.migrate_database(database)
+    
+        with sqlite3.connect(database) as connection:
+            tables = _tables(connection)
+>           assert connection.execute(
+                "SELECT version_num FROM alembic_version"
+            ).fetchall() == [("0020_recording_project_scope",)]
+E           AssertionError: assert [('0023_merge...io_android',)] == [('0020_recor...ject_scope',)]
+E             
+E             At index 0 diff: ('0023_merge_studio_android',) != ('0020_recording_project_scope',)
+E             Use -v to get more diff
+
+tests/integration/test_studio_migration_compatibility.py:80: AssertionError
+___________ test_interrupted_branch_merge_rolls_back_and_can_restart ___________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_interrupted_branch_merge_0')
+
+    def test_interrupted_branch_merge_rolls_back_and_can_restart(tmp_path: Path) -> None:
+        database = tmp_path / "interrupted.sqlite3"
+        command.upgrade(_config(database), "0008_workflow_debug")
+        with sqlite3.connect(database) as connection:
+            connection.execute(
+                "INSERT INTO workflow_documents VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (
+                    "workflow",
+                    "迁移中断仍保留",
+                    '{"nodes":[]}',
+                    "{}",
+                    3,
+                    "2026-09-15",
+                    "2026-09-15",
+                ),
+            )
+    
+        def fail_mid_upgrade(
+            connection, cursor, statement, parameters, context, executemany
+        ) -> None:
+            if "CREATE TABLE android_resources" in statement:
+                raise RuntimeError("synthetic branch merge interruption")
+    
+        event.listen(Engine, "before_cursor_execute", fail_mid_upgrade)
+        try:
+            with pytest.raises(RuntimeError, match="synthetic branch merge interruption"):
+                database_session.migrate_database(database)
+        finally:
+            event.remove(Engine, "before_cursor_execute", fail_mid_upgrade)
+    
+        with sqlite3.connect(database) as connection:
+            assert connection.execute(
+                "SELECT version_num FROM alembic_version"
+            ).fetchall() == [("0008_workflow_debug",)]
+            assert "android_devices" not in _tables(connection)
+            assert "android_resources" not in _tables(connection)
+            assert connection.execute(
+                "SELECT name, revision FROM workflow_documents WHERE id='workflow'"
+            ).fetchone() == ("迁移中断仍保留", 3)
+    
+        database_session.migrate_database(database)
+        with sqlite3.connect(database) as connection:
+>           assert connection.execute(
+                "SELECT version_num FROM alembic_version"
+            ).fetchall() == [("0020_recording_project_scope",)]
+E           AssertionError: assert [('0023_merge...io_android',)] == [('0020_recor...ject_scope',)]
+E             
+E             At index 0 diff: ('0023_merge_studio_android',) != ('0020_recording_project_scope',)
+E             Use -v to get more diff
+
+tests/integration/test_studio_migration_compatibility.py:186: AssertionError
+_ test_recording_scope_migration_preserves_legacy_rows_without_guessing_owner __
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_recording_scope_migration0')
+
+    def test_recording_scope_migration_preserves_legacy_rows_without_guessing_owner(
+        tmp_path,
+    ):
+        database = tmp_path / "legacy-recordings.sqlite"
+        config = Config(str(Path(database_session.__file__).with_name("alembic.ini")))
+        config.set_main_option("sqlalchemy.url", f"sqlite:///{database}")
+        command.upgrade(config, "0019_recording_commands")
+        event = {"type": "input", "selector": "#legacy", "value": "旧原文", "sequence": 1}
+        with sqlite3.connect(database) as connection:
+            connection.execute(
+                "INSERT INTO workflow_recording_sessions VALUES (?,?,?,?,?,?,?)",
+                ("legacy", "stopped", None, 1, 20, "2026-09-20", "2026-09-20"),
+            )
+            connection.execute(
+                "INSERT INTO workflow_recording_events VALUES (?,?,?,?)",
+                ("legacy", 1, json.dumps(event), 20),
+            )
+            connection.execute(
+                "INSERT INTO workflow_recording_reviews VALUES (?,?,?,?,?)",
+                ("old-document", 2, True, json.dumps([event]), "2026-09-20"),
+            )
+            connection.execute(
+                "INSERT INTO workflow_recording_commands VALUES (?,?,?,?,?,?,?,?,?)",
+                (
+                    "old-command",
+                    "legacy",
+                    "stop",
+                    "a" * 64,
+                    "completed",
+                    json.dumps({"success": True}),
+                    200,
+                    "2026-09-20",
+                    "2026-09-20",
+                ),
+            )
+        migrate_database(database)
+        factory = create_session_factory(database)
+        try:
+            repo = SqlAlchemyWorkflowRecordings(factory)
+            assert repo.events("legacy", after_seq=0)["data"] == [event]
+            assert repo.read_review("old-document")["events"] == [event]
+            assert repo.read_review("old-document")["revision"] == 2
+            assert repo.command("old-command")["payload"] == {"success": True}
+            with factory() as session:
+                for model in (
+                    WorkflowRecordingSessionRow,
+                    WorkflowRecordingReviewRow,
+                    WorkflowRecordingCommandRow,
+                ):
+                    assert all(
+                        row.project_id is None for row in session.scalars(select(model))
+                    )
+                assert (
+                    session.get(WorkflowRecordingSessionRow, "legacy").document_id is None
+                )
+            with sqlite3.connect(database) as connection:
+>               assert connection.execute(
+                    "SELECT version_num FROM alembic_version"
+                ).fetchone() == ("0020_recording_project_scope",)
+E               AssertionError: assert ('0023_merge_studio_android',) == ('0020_record...oject_scope',)
+E                 
+E                 At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E                 Use -v to get more diff
+
+tests/integration/test_studio_project_inspection.py:498: AssertionError
+__ test_workflow_command_migration_is_durable_and_preserves_documents[False] ___
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_workflow_command_migratio0')
+existing = False
+
+    @pytest.mark.parametrize("existing", [False, True])
+    def test_workflow_command_migration_is_durable_and_preserves_documents(
+        tmp_path: Path, existing: bool
+    ):
+        database = tmp_path / "workflow-commands.sqlite3"
+        config = config_for(database)
+>       assert ScriptDirectory.from_config(config).get_heads() == [
+            "0020_recording_project_scope"
+        ]
+E       AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']
+E         
+E         At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E         Use -v to get more diff
+
+tests/integration/test_workflow_document_migration.py:25: AssertionError
+___ test_workflow_command_migration_is_durable_and_preserves_documents[True] ___
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_workflow_command_migratio1')
+existing = True
+
+    @pytest.mark.parametrize("existing", [False, True])
+    def test_workflow_command_migration_is_durable_and_preserves_documents(
+        tmp_path: Path, existing: bool
+    ):
+        database = tmp_path / "workflow-commands.sqlite3"
+        config = config_for(database)
+>       assert ScriptDirectory.from_config(config).get_heads() == [
+            "0020_recording_project_scope"
+        ]
+E       AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']
+E         
+E         At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E         Use -v to get more diff
+
+tests/integration/test_workflow_document_migration.py:25: AssertionError
+_ test_proxy_nodes_over_real_owned_worker_pipes[project-proxy_change_location] _
+
+fut = <Task cancelled name='Task-16676' coro=<Process.wait() done, defined at /Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/subprocess.py:135>>
+timeout = 0.5
+
+    async def wait_for(fut, timeout):
+        """Wait for the single Future or coroutine to complete, with timeout.
+    
+        Coroutine will be wrapped in Task.
+    
+        Returns result of the Future or coroutine.  When a timeout occurs,
+        it cancels the task and raises TimeoutError.  To avoid the task
+        cancellation, wrap it in shield().
+    
+        If the wait is cancelled, the task is also cancelled.
+    
+        This function is a coroutine.
+        """
+        loop = events.get_running_loop()
+    
+        if timeout is None:
+            return await fut
+    
+        if timeout <= 0:
+            fut = ensure_future(fut, loop=loop)
+    
+            if fut.done():
+                return fut.result()
+    
+            await _cancel_and_wait(fut, loop=loop)
+            try:
+                return fut.result()
+            except exceptions.CancelledError as exc:
+                raise exceptions.TimeoutError() from exc
+    
+        waiter = loop.create_future()
+        timeout_handle = loop.call_later(timeout, _release_waiter, waiter)
+        cb = functools.partial(_release_waiter, waiter)
+    
+        fut = ensure_future(fut, loop=loop)
+        fut.add_done_callback(cb)
+    
+        try:
+            # wait until the future completes or the timeout
+            try:
+                await waiter
+            except exceptions.CancelledError:
+                if fut.done():
+                    return fut.result()
+                else:
+                    fut.remove_done_callback(cb)
+                    # We must ensure that the task is not running
+                    # after wait_for() returns.
+                    # See https://bugs.python.org/issue32751
+                    await _cancel_and_wait(fut, loop=loop)
+                    raise
+    
+            if fut.done():
+                return fut.result()
+            else:
+                fut.remove_done_callback(cb)
+                # We must ensure that the task is not running
+                # after wait_for() returns.
+                # See https://bugs.python.org/issue32751
+                await _cancel_and_wait(fut, loop=loop)
+                # In case task cancellation failed with some
+                # exception, we should re-raise it
+                # See https://bugs.python.org/issue40607
+                try:
+>                   return fut.result()
+                           ^^^^^^^^^^^^
+
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/tasks.py:500: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/subprocess.py:137: in wait
+    return await self._transport._wait()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <_UnixSubprocessTransport closed pid=27681 returncode=0 stdin=<_UnixWritePipeTransport closed fd=63 closed> stdout=<_UnixReadPipeTransport closed fd=64 closed>>
+
+    async def _wait(self):
+        """Wait until the process exit and return the process return code.
+    
+        This method is a coroutine."""
+        if self._returncode is not None:
+            return self._returncode
+    
+        waiter = self._loop.create_future()
+        self._exit_waiters.append(waiter)
+>       return await waiter
+               ^^^^^^^^^^^^
+E       asyncio.exceptions.CancelledError
+
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/base_subprocess.py:230: CancelledError
+
+The above exception was the direct cause of the following exception:
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_proxy_nodes_over_real_own5')
+host = 'project', kind = 'proxy_change_location'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "kind", ["proxy_query", "proxy_change_ip", "proxy_change_location"]
+    )
+    @pytest.mark.parametrize("host", ["studio", "project"])
+    async def test_proxy_nodes_over_real_owned_worker_pipes(tmp_path, host, kind):
+        service = ProxyService()
+        events = []
+        run_id = str(uuid4())
+        if host == "studio":
+            manager = WorkflowWorkerManager(
+                tmp_path,
+                proxy_service=service,
+                on_event=events.append,
+                termination_timeout=0.5,
+            )
+            await manager.start(
+                run_id,
+                "profile",
+                None,
+                {
+                    "runId": run_id,
+                    "workflowId": "flow",
+                    "profileId": "profile",
+                    "requiresBrowser": False,
+                    "artifactRoot": str(tmp_path / "artifacts"),
+                    "document": document(kind),
+                },
+            )
+            async with asyncio.timeout(15):
+                while manager.busy():
+                    await asyncio.sleep(0.01)
+            terminal = [
+                e
+                for e in events
+                if e.get("type") in {"execution:completed", "execution:failed"}
+            ]
+            assert terminal and terminal[-1]["type"] == "execution:completed", events
+            result = next(
+                e["data"] for e in events if e.get("type") == "execution:node_complete"
+            )
+        else:
+            manager = ProjectWorkflowWorkerManager(
+                tmp_path, proxy_service=service, termination_timeout=0.5
+            )
+    
+            async def emit(event):
+                events.append(event)
+    
+>           outcome = await manager.run(
+                run_id=run_id,
+                execution_generation=3,
+                execution_plan={"document": document(kind)},
+                parameters={},
+                variables={},
+                browser={},
+                executable=None,
+                on_event=emit,
+            )
+
+tests/integration/test_workflow_proxy_workers.py:113: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/autoflow/infrastructure/process/project_workflow_worker.py:186: in run
+    await asyncio.wait_for(worker.process.wait(), self._termination_timeout)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fut = <Task cancelled name='Task-16676' coro=<Process.wait() done, defined at /Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/subprocess.py:135>>
+timeout = 0.5
+
+    async def wait_for(fut, timeout):
+        """Wait for the single Future or coroutine to complete, with timeout.
+    
+        Coroutine will be wrapped in Task.
+    
+        Returns result of the Future or coroutine.  When a timeout occurs,
+        it cancels the task and raises TimeoutError.  To avoid the task
+        cancellation, wrap it in shield().
+    
+        If the wait is cancelled, the task is also cancelled.
+    
+        This function is a coroutine.
+        """
+        loop = events.get_running_loop()
+    
+        if timeout is None:
+            return await fut
+    
+        if timeout <= 0:
+            fut = ensure_future(fut, loop=loop)
+    
+            if fut.done():
+                return fut.result()
+    
+            await _cancel_and_wait(fut, loop=loop)
+            try:
+                return fut.result()
+            except exceptions.CancelledError as exc:
+                raise exceptions.TimeoutError() from exc
+    
+        waiter = loop.create_future()
+        timeout_handle = loop.call_later(timeout, _release_waiter, waiter)
+        cb = functools.partial(_release_waiter, waiter)
+    
+        fut = ensure_future(fut, loop=loop)
+        fut.add_done_callback(cb)
+    
+        try:
+            # wait until the future completes or the timeout
+            try:
+                await waiter
+            except exceptions.CancelledError:
+                if fut.done():
+                    return fut.result()
+                else:
+                    fut.remove_done_callback(cb)
+                    # We must ensure that the task is not running
+                    # after wait_for() returns.
+                    # See https://bugs.python.org/issue32751
+                    await _cancel_and_wait(fut, loop=loop)
+                    raise
+    
+            if fut.done():
+                return fut.result()
+            else:
+                fut.remove_done_callback(cb)
+                # We must ensure that the task is not running
+                # after wait_for() returns.
+                # See https://bugs.python.org/issue32751
+                await _cancel_and_wait(fut, loop=loop)
+                # In case task cancellation failed with some
+                # exception, we should re-raise it
+                # See https://bugs.python.org/issue40607
+                try:
+                    return fut.result()
+                except exceptions.CancelledError as exc:
+>                   raise exceptions.TimeoutError() from exc
+E                   TimeoutError
+
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/tasks.py:502: TimeoutError
+_________ test_recording_command_migration_preserves_existing_sessions _________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_recording_command_migrati0')
+
+    def test_recording_command_migration_preserves_existing_sessions(tmp_path) -> None:
+        database = tmp_path / "recording-command-upgrade.db"
+        config = Config(str(Path(database_session.__file__).with_name("alembic.ini")))
+        config.set_main_option("sqlalchemy.url", f"sqlite:///{database}")
+        command.upgrade(config, "0018_scheduled_tasks")
+        with sqlite3.connect(database) as connection:
+            connection.execute(
+                "INSERT INTO workflow_recording_sessions VALUES (?, ?, ?, ?, ?, ?, ?)",
+                ("kept", "stopped", None, 0, 0, "2026-09-21", "2026-09-21"),
+            )
+        migrate_database(database)
+        with sqlite3.connect(database) as connection:
+>           assert connection.execute(
+                "SELECT version_num FROM alembic_version"
+            ).fetchone() == ("0020_recording_project_scope",)
+E           AssertionError: assert ('0023_merge_studio_android',) == ('0020_record...oject_scope',)
+E             
+E             At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E             Use -v to get more diff
+
+tests/integration/test_workflow_recordings.py:80: AssertionError
+___ test_empty_database_upgrades_to_one_runtime_head_with_complete_v2_schema ___
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_empty_database_upgrades_t1')
+
+    def test_empty_database_upgrades_to_one_runtime_head_with_complete_v2_schema(tmp_path):
+        database = tmp_path / "empty.sqlite3"
+        config = _config(database)
+>       assert ScriptDirectory.from_config(config).get_heads() == [EXPECTED_HEAD]
+E       AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']
+E         
+E         At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E         Use -v to get more diff
+
+tests/integration/test_workflow_runtime_migration.py:264: AssertionError
+_ test_upgrade_from_legacy_studio_reaches_v2_without_replaying_unknown_work[0005_workflow_documents] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_upgrade_from_legacy_studi0')
+start_revision = '0005_workflow_documents'
+
+    @pytest.mark.parametrize(
+        "start_revision", ["0005_workflow_documents", "0008_workflow_debug"]
+    )
+    def test_upgrade_from_legacy_studio_reaches_v2_without_replaying_unknown_work(
+        tmp_path, start_revision
+    ):
+        database = tmp_path / f"legacy-{start_revision}.sqlite3"
+        config = _config(database)
+        command.upgrade(config, start_revision)
+        if start_revision == "0008_workflow_debug":
+            with sqlite3.connect(database) as connection:
+                connection.execute("PRAGMA foreign_keys=ON")
+                _seed_legacy_runtime(connection)
+    
+        command.upgrade(config, "head")
+    
+        with sqlite3.connect(database) as connection:
+>           assert connection.execute(
+                "SELECT version_num FROM alembic_version"
+            ).fetchone() == (EXPECTED_HEAD,)
+E           AssertionError: assert ('0023_merge_studio_android',) == ('0020_record...oject_scope',)
+E             
+E             At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E             Use -v to get more diff
+
+tests/integration/test_workflow_runtime_migration.py:339: AssertionError
+_ test_upgrade_from_legacy_studio_reaches_v2_without_replaying_unknown_work[0008_workflow_debug] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_upgrade_from_legacy_studi1')
+start_revision = '0008_workflow_debug'
+
+    @pytest.mark.parametrize(
+        "start_revision", ["0005_workflow_documents", "0008_workflow_debug"]
+    )
+    def test_upgrade_from_legacy_studio_reaches_v2_without_replaying_unknown_work(
+        tmp_path, start_revision
+    ):
+        database = tmp_path / f"legacy-{start_revision}.sqlite3"
+        config = _config(database)
+        command.upgrade(config, start_revision)
+        if start_revision == "0008_workflow_debug":
+            with sqlite3.connect(database) as connection:
+                connection.execute("PRAGMA foreign_keys=ON")
+                _seed_legacy_runtime(connection)
+    
+        command.upgrade(config, "head")
+    
+        with sqlite3.connect(database) as connection:
+>           assert connection.execute(
+                "SELECT version_num FROM alembic_version"
+            ).fetchone() == (EXPECTED_HEAD,)
+E           AssertionError: assert ('0023_merge_studio_android',) == ('0020_record...oject_scope',)
+E             
+E             At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E             Use -v to get more diff
+
+tests/integration/test_workflow_runtime_migration.py:339: AssertionError
+______________ test_empty_runtime_can_downgrade_and_upgrade_again ______________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_empty_runtime_can_downgra0')
+
+    def test_empty_runtime_can_downgrade_and_upgrade_again(tmp_path):
+        database = tmp_path / "empty-roundtrip.sqlite3"
+        config = _config(database)
+        command.upgrade(config, "head")
+        command.downgrade(config, "0010_workflow_document_commands")
+        command.upgrade(config, "head")
+        with sqlite3.connect(database) as connection:
+            assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
+>           assert connection.execute(
+                "SELECT version_num FROM alembic_version"
+            ).fetchone() == (EXPECTED_HEAD,)
+E           AssertionError: assert ('0023_merge_studio_android',) == ('0020_record...oject_scope',)
+E             
+E             At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'
+E             Use -v to get more diff
+
+tests/integration/test_workflow_runtime_migration.py:492: AssertionError
+___ test_all_approved_nodes_have_traceable_backend_sources_and_unique_cases ____
+
+    def test_all_approved_nodes_have_traceable_backend_sources_and_unique_cases() -> None:
+        rows = _load(CAPABILITIES)
+        support_rows = _load(SUPPORT)["sharedCapabilities"]
+        support_ids = {row["id"] for row in support_rows}
+    
+>       assert len(rows) == 213
+E       AssertionError: assert 216 == 213
+E        +  where 216 = len([{'type': 'open_page', 'category': '网页导航', 'id': 'node:open_page', 'status': '已实现且已验收', ...}, {'type': 'use_opened_pag...': '已实现且已验收', ...}, {'type': 'go_forward', 'category': '网页导航', 'id': 'node:go_forward', 'status': '已实现且已验收', ...}, ...])
+
+tests/migration/test_studio_backend_source_mapping.py:89: AssertionError
+__________ test_formula_metadata_scans_beyond_sample_and_streams_rows __________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_formula_metadata_scans_be0')
+
+    def test_formula_metadata_scans_beyond_sample_and_streams_rows(tmp_path: Path) -> None:
+        source = tmp_path / "formulas.xlsx"
+        _save_book(
+            source,
+            {"Rows": [["id", "value"], *[[str(i), i] for i in range(21)], ["x", "=1+1"]]},
+        )
+        # Give the formula a cached value by editing the worksheet XML directly.
+        rewritten = tmp_path / "cached.xlsx"
+        with zipfile.ZipFile(source) as original, zipfile.ZipFile(rewritten, "w") as output:
+            for entry in original.infolist():
+                data = original.read(entry)
+                if entry.filename == "xl/worksheets/sheet1.xml":
+                    data = re.sub(rb"<f>1\+1</f><v\s*/>", b"<f>1+1</f><v>2</v>", data)
+                output.writestr(entry, data)
+        rewritten.replace(source)
+    
+>       inspection = inspect_workbook(source)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/unit/test_project_excel_adapter.py:320: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/autoflow/infrastructure/filesystem/project_excel.py:428: in inspect_workbook
+    for row in rows:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def rows() -> Iterator[ExcelRow]:
+        try:
+            for row_number, (source_row, value_row) in enumerate(
+                zip(source_rows, value_rows), start=2
+            ):
+                _check(deadline)
+                if row_number - 1 > MAX_ROWS:
+                    raise _error(
+                        "EXCEL_ROW_LIMIT_EXCEEDED", "Worksheet exceeds row limit"
+                    )
+                width = max(len(source_row), len(value_row))
+                budget.cells += width
+                if width > MAX_COLUMNS:
+                    raise _error(
+                        "EXCEL_COLUMN_LIMIT_EXCEEDED", "Worksheet exceeds column limit"
+                    )
+                if budget.cells > MAX_CELLS:
+                    raise _error(
+                        "EXCEL_CELL_LIMIT_EXCEEDED", "Workbook exceeds cell limit"
+                    )
+                if any(x.value is not None for x in source_row[len(headers) :]):
+                    raise _error("EXCEL_EMPTY_HEADER", "Data column has no header")
+                output = []
+                formula_columns = []
+                for column in range(len(headers)):
+                    source_cell = (
+                        source_row[column] if column < len(source_row) else None
+                    )
+                    value_cell = value_row[column] if column < len(value_row) else None
+                    value = getattr(value_cell, "value", None)
+                    if getattr(source_cell, "data_type", None) == "f":
+                        formula_columns.append(column)
+                        if value is None:
+>                           raise _error(
+                                "EXCEL_FORMULA_CACHE_MISSING",
+                                "Formula has no saved value",
+                            )
+E                           autoflow.domain.projects.models.ProjectError: Formula has no saved value
+
+src/autoflow/infrastructure/filesystem/project_excel.py:349: ProjectError
+__________ test_production_registry_contains_every_migrated_executor ___________
+
+    def test_production_registry_contains_every_migrated_executor() -> None:
+        production = build_production_executor_registry()
+    
+>       assert set(production.get_all_types()) == {
+            "open_page",
+            "click_element",
+            "input_text",
+            "get_element_info",
+            "screenshot",
+            "ai_chat",
+            "ai_generate_image",
+            "ai_generate_video",
+            "ai_vision",
+            "ai_vision_act",
+            "ai_smart_scraper",
+            "ai_element_selector",
+            "ai_extract",
+            "ai_classify",
+            "ai_summarize",
+            "ai_translate",
+            "ai_sentiment",
+            "ai_normalize",
+            "ai_dedup_semantic",
+            "ai_route",
+            "firecrawl_scrape",
+            "firecrawl_map",
+            "firecrawl_crawl",
+            "face_recognition",
+            "image_ocr",
+            "ocr_captcha",
+            "slider_captcha",
+            "api_request",
+            "webhook_request",
+            "notify_webhook",
+            "print_log",
+            "export_log",
+            "notify_telegram",
+            "send_email",
+            "ssh_connect",
+            "ssh_execute_command",
+            "ssh_upload_file",
+            "ssh_download_file",
+            "ssh_disconnect",
+            "wait_page_load",
+            "page_load_complete",
+            "list_operation",
+            "list_get",
+            "list_length",
+            "list_export",
+            "dict_operation",
+            "dict_get",
+            "dict_keys",
+            "regex_extract",
+            "string_replace",
+            "string_split",
+            "string_join",
+            "string_concat",
+            "string_trim",
+            "string_case",
+            "string_substring",
+            "list_sum",
+            "list_average",
+            "list_max",
+            "list_min",
+            "list_sort",
+            "list_unique",
+            "list_slice",
+            "math_round",
+            "math_base_convert",
+            "math_floor",
+            "math_modulo",
+            "math_abs",
+            "math_sqrt",
+            "math_power",
+            "math_log",
+            "math_trig",
+            "math_exp",
+            "math_gcd",
+            "math_lcm",
+            "math_factorial",
+            "math_permutation",
+            "math_percentage",
+            "math_clamp",
+            "math_random_advanced",
+            "stat_median",
+            "stat_mode",
+            "stat_variance",
+            "stat_stdev",
+            "stat_percentile",
+            "stat_normalize",
+            "stat_standardize",
+            "random_password_generator",
+            "url_encode_decode",
+            "md5_encrypt",
+            "sha_encrypt",
+            "timestamp_converter",
+            "rgb_to_hsv",
+            "rgb_to_cmyk",
+            "hex_to_cmyk",
+            "uuid_generator",
+            "list_reverse",
+            "list_find",
+            "list_count",
+            "list_filter",
+            "list_map",
+            "list_merge",
+            "list_flatten",
+            "list_chunk",
+            "list_remove_empty",
+            "list_intersection",
+            "list_union",
+            "list_difference",
+            "list_cartesian_product",
+            "list_shuffle",
+            "list_sample",
+            "dict_merge",
+            "dict_filter",
+            "dict_map_values",
+            "dict_invert",
+            "dict_sort",
+            "dict_deep_copy",
+            "dict_get_path",
+            "dict_flatten",
+            "csv_parse",
+            "csv_generate",
+            "list_to_string_advanced",
+            "table_add_row",
+            "table_add_column",
+            "table_set_cell",
+            "table_get_cell",
+            "table_delete_row",
+            "table_clear",
+            "table_export",
+            "network_monitor_start",
+            "network_monitor_wait",
+            "network_monitor_stop",
+            "switch_tab",
+            "extract_table_data",
+            "network_capture",
+            "use_opened_page",
+            "close_page",
+            "refresh_page",
+            "go_back",
+            "go_forward",
+            "switch_iframe",
+            "switch_to_main",
+            "hover_element",
+            "handle_dialog",
+            "inject_javascript",
+            "wait_element",
+            "select_dropdown",
+            "set_checkbox",
+            "drag_element",
+            "scroll_page",
+            "upload_file",
+            "download_file",
+            "get_child_elements",
+            "get_sibling_elements",
+            "element_exists",
+            "element_visible",
+            "save_image",
+            "condition",
+            "loop",
+            "foreach",
+            "infinite_loop",
+            "foreach_dict",
+            "break_loop",
+            "continue_loop",
+            "set_variable",
+            "increment_decrement",
+            "json_parse",
+            "base64",
+            "random_number",
+            "get_time",
+            "wait",
+            "stop_workflow",
+            "assert_checkpoint",
+            "group",
+            "note",
+            "input_prompt",
+            "js_script",
+            "text_to_speech",
+            "python_script",
+            "run_command",
+            "printer_call",
+            "sound_trigger",
+            "gesture_trigger",
+            "share_file",
+            "share_folder",
+            "stop_share",
+            "start_screen_share",
+            "stop_screen_share",
+            "set_clipboard",
+            "get_clipboard",
+            "play_sound",
+            "system_notification",
+            "shutdown_system",
+            "lock_screen",
+            "allure_init",
+            "allure_start_test",
+            "allure_add_step",
+            "allure_add_attachment",
+            "allure_stop_test",
+            "allure_generate_report",
+            "scheduled_task",
+            "probability_trigger",
+            "api_trigger",
+            "webhook_trigger",
+            "file_watcher_trigger",
+            "email_trigger",
+            "element_change_trigger",
+            "hotkey_trigger",
+            "mouse_trigger",
+            "image_trigger",
+            "face_trigger",
+            "run_workflow_file",
+            "subflow",
+            "custom_module",
+        }
+E       AssertionError: assert {'ai_chat', '...e_image', ...} == {'ai_chat', '...e_image', ...}
+E         
+E         Extra items in the left set:
+E         'proxy_query'
+E         'proxy_change_ip'
+E         'proxy_change_location'
+E         Use -v to get more diff
+
+tests/unit/workflows/test_executor_registry.py:68: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.11/site-packages/starlette/testclient.py:53
+  /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+============================= slowest 30 durations =============================
+12.34s call     tests/integration/test_project_data_scheduler.py::test_unlimited_batch_has_no_hidden_former_finite_cap
+11.25s call     tests/integration/test_b5_media_recognition_worker.py::test_real_worker_runs_face_recognition_and_easyocr
+10.38s call     tests/integration/test_sidecar_shutdown.py::test_open_sse_does_not_block_shutdown_or_worker_cleanup[True-host]
+10.26s call     tests/integration/test_project_recognition_worker.py::test_project_recognition_uses_real_models_files_branches_and_cleanup[match]
+10.23s call     tests/integration/test_project_interaction_commands.py::test_webhook_delivery_failure_is_unconfirmed_and_not_replayed[ack_timeout]
+10.01s call     tests/integration/test_sidecar_shutdown.py::test_open_sse_does_not_block_shutdown_or_worker_cleanup[True-signal]
+6.43s call     tests/integration/test_sidecar_shutdown.py::test_open_sse_does_not_block_shutdown_or_worker_cleanup[False-host]
+5.74s call     tests/contract/test_workflow_runs_api.py::test_external_webhook_resumes_real_worker_without_sidecar_token
+5.69s call     tests/contract/test_schema_export.py::test_schema_export_cli_outputs_only_json
+5.57s call     tests/integration/test_b6_file_watcher_worker.py::test_real_worker_observes_file_creation_and_stops_cleanly
+5.20s call     tests/integration/test_sidecar_shutdown.py::test_open_sse_does_not_block_shutdown_or_worker_cleanup[False-signal]
+5.12s call     tests/integration/test_studio_project_statistics.py::test_statistics_counts_actual_worker_published_node_starts
+5.05s call     tests/integration/test_project_file_watcher.py::test_project_file_watcher_event_and_cleanup[deleted]
+4.98s call     tests/contract/test_workflow_runs_api.py::test_real_http_debug_step_and_resume_control_the_actual_worker
+4.95s call     tests/integration/test_project_data_worker.py::test_project_ai_task_uses_project_default_or_explicit_model_without_persisting_secret
+4.93s call     tests/integration/test_b6_network_sharing_worker.py::test_file_share_outlives_start_worker_and_stop_node_cleans_it
+4.68s call     tests/integration/test_b6_mail_transport_worker.py::test_real_mail_worker_errors_do_not_run_successor[imap-auth-\u90ae\u4ef6\u76d1\u63a7\u7b49\u5f85\u8d85\u65f6]
+4.37s call     tests/integration/test_b6_mail_transport_worker.py::test_real_mail_worker_errors_do_not_run_successor[imap-empty-\u90ae\u4ef6\u76d1\u63a7\u7b49\u5f85\u8d85\u65f6]
+4.18s call     tests/integration/test_project_data_worker.py::test_project_task_executes_pure_data_family_in_real_worker[math]
+4.14s call     tests/contract/test_schema_export.py::test_schema_export_matches_the_formal_application
+3.96s call     tests/contract/test_studio_project_run_scope.py::test_project_archive_waits_for_actual_paused_worker_cleanup
+3.89s call     tests/integration/test_project_recognition_worker.py::test_project_recognition_uses_real_models_files_branches_and_cleanup[ocr_timeout]
+3.88s call     tests/integration/test_project_sheets_recovery.py::test_a_dataset_replacement_stops_an_intent_from_the_old_generation
+3.84s call     tests/integration/test_project_recognition_worker.py::test_project_recognition_uses_real_models_files_branches_and_cleanup[no_face]
+3.83s call     tests/integration/test_project_sheets_sync.py::test_local_edit_pushes_and_records_evidence
+3.79s call     tests/integration/test_project_timing_worker.py::test_project_timer_probability_routing_and_cleanup[path1]
+3.78s call     tests/integration/test_project_data_worker.py::test_project_task_executes_pure_data_family_in_real_worker[variables]
+3.75s call     tests/integration/test_workflow_assistant_http.py::test_http_extracts_text_and_xlsx_attachments_with_source_limits
+3.63s call     tests/integration/test_project_recognition_worker.py::test_project_recognition_uses_real_models_files_branches_and_cleanup[ocr_stop]
+3.59s call     tests/integration/test_project_timing_worker.py::test_project_timer_probability_routing_and_cleanup[path2]
+=========================== short test summary info ============================
+SKIPPED [1] tests/integration/test_b1_cloakbrowser_flow.py:48: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_advanced_browser_cloakbrowser_flow.py:34: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_inspection_cloakbrowser_flow.py:34: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_inspection_cloakbrowser_flow.py:90: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_inspection_cloakbrowser_flow.py:206: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_inspection_cloakbrowser_flow.py:296: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_large_artifacts_cloakbrowser_flow.py:22: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_network_monitor_cloakbrowser_flow.py:25: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_page_load_cloakbrowser_flow.py:22: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_remaining_browser_cloakbrowser_flow.py:24: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_web_basic_cloakbrowser_flow.py:21: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b5_captcha_cloakbrowser_flow.py:37: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b5_firecrawl_cloakbrowser_flow.py:35: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b6_element_change_cloakbrowser_flow.py:22: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b7_recording_cloakbrowser_flow.py:21: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [2] tests/integration/test_environment_persist_restore.py:47: set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable
+SKIPPED [1] tests/integration/test_environment_real_browser_chain.py:26: set AUTOFLOW_TEST_CLOAKBROWSER to an installed CloakBrowser executable
+SKIPPED [20] tests/integration/test_project_batch_real_cloakbrowser.py:34: set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable
+SKIPPED [1] tests/integration/test_studio_project_model_live.py:61: 真实模型计费验收仅由 AUTOFLOW_LIVE_MODEL_TEST=1 显式启用
+SKIPPED [3] tests/integration/test_workflow_real_cloakbrowser.py:70: set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable
+SKIPPED [1] tests/integration/test_workflow_real_cloakbrowser.py:125: set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable
+FAILED tests/contract/test_proxy_runtime.py::test_runtime_mounts_proxies_but_never_publishes_host_contract
+FAILED tests/contract/test_studio_browser_status.py::test_browser_status_preserves_independent_reported_flags[False-False]
+FAILED tests/contract/test_studio_browser_status.py::test_browser_status_preserves_independent_reported_flags[False-True]
+FAILED tests/contract/test_studio_browser_status.py::test_browser_status_preserves_independent_reported_flags[True-False]
+FAILED tests/contract/test_studio_browser_status.py::test_browser_status_preserves_independent_reported_flags[True-True]
+FAILED tests/contract/test_studio_required_fields.py::test_real_required_fields_route_preserves_frozen_rules_and_approved_scope
+FAILED tests/integration/test_android_m4_migration.py::test_existing_migration_histories_keep_devices_runs_and_artifacts[0006_workflow_runs]
+FAILED tests/integration/test_android_m4_migration.py::test_existing_migration_histories_keep_devices_runs_and_artifacts[0007_android_devices]
+FAILED tests/integration/test_android_m4_migration.py::test_existing_migration_histories_keep_devices_runs_and_artifacts[0007_workflow_artifacts]
+FAILED tests/integration/test_android_m4_migration.py::test_existing_migration_histories_keep_devices_runs_and_artifacts[0008_merge_android_m4]
+FAILED tests/integration/test_custom_module_revision_compatibility.py::test_custom_module_database_upgrades_to_integrated_head_without_data_loss
+FAILED tests/integration/test_database_compatibility_inspector.py::test_inspector_upgrades_a_copy_and_preserves_source_and_rows
+FAILED tests/integration/test_merged_model_migrations.py::test_merge_upgrade_preserves_each_branch_database[None]
+FAILED tests/integration/test_merged_model_migrations.py::test_merge_upgrade_preserves_each_branch_database[0001_browser_resources]
+FAILED tests/integration/test_merged_model_migrations.py::test_merge_upgrade_preserves_each_branch_database[0002_proxy_management]
+FAILED tests/integration/test_merged_model_migrations.py::test_merge_upgrade_preserves_each_branch_database[0002_model_management]
+FAILED tests/integration/test_merged_model_migrations.py::test_merge_upgrade_preserves_each_branch_database[0008_workflow_debug]
+FAILED tests/integration/test_merged_model_migrations.py::test_merge_upgrade_preserves_each_branch_database[pm01_projects]
+FAILED tests/integration/test_merged_model_migrations.py::test_merge_upgrade_preserves_each_branch_database[pm02_schema_drafts]
+FAILED tests/integration/test_merged_model_migrations.py::test_retired_studio_data_survives_application_startup
+FAILED tests/integration/test_project_automation_migration.py::test_automation_upgrade_preserves_existing_rows_and_enforces_binding[None]
+FAILED tests/integration/test_project_automation_migration.py::test_automation_upgrade_preserves_existing_rows_and_enforces_binding[pm01_projects]
+FAILED tests/integration/test_project_automation_migration.py::test_automation_upgrade_preserves_existing_rows_and_enforces_binding[0011_workflow_runtime_contracts]
+FAILED tests/integration/test_project_automation_migration.py::test_empty_downgrade_roundtrip_and_nonempty_downgrade_preserves_data
+FAILED tests/integration/test_project_claim_migration.py::test_claim_migration_is_the_single_head_and_creates_durable_facts
+FAILED tests/integration/test_project_credential_worker.py::test_project_worker_reads_private_credential_after_start_commit[private-lookup-key-\u51ed\u636e]
+FAILED tests/integration/test_project_credential_worker.py::test_project_worker_reads_private_credential_after_start_commit[private-lookup-key-cred]
+FAILED tests/integration/test_project_credential_worker.py::test_project_worker_reads_private_credential_after_start_commit[None-\u51ed\u636e]
+FAILED tests/integration/test_project_credential_worker.py::test_project_worker_reads_private_credential_after_start_commit[None-cred]
+FAILED tests/integration/test_project_credential_worker.py::test_project_empty_credential_parts_preserve_reference_without_protocol_failure[{{cred:\u8d26\u53f7.}}]
+FAILED tests/integration/test_project_credential_worker.py::test_project_empty_credential_parts_preserve_reference_without_protocol_failure[{{cred:.password}}]
+FAILED tests/integration/test_project_data_migrations.py::test_pm2_upgrade_preserves_projects_and_has_one_head[False]
+FAILED tests/integration/test_project_data_migrations.py::test_pm2_upgrade_preserves_projects_and_has_one_head[True]
+FAILED tests/integration/test_project_data_migrations.py::test_failed_upgrade_rolls_back_ddl_and_can_restart[pm01_projects]
+FAILED tests/integration/test_project_data_migrations.py::test_failed_upgrade_rolls_back_ddl_and_can_restart[base]
+FAILED tests/integration/test_project_data_status_migration.py::test_status_upgrade_preserves_records_and_enforces_active_names[False]
+FAILED tests/integration/test_project_data_status_migration.py::test_status_upgrade_preserves_records_and_enforces_active_names[True]
+FAILED tests/integration/test_project_data_status_migration.py::test_downgrade_preserves_live_data_but_refuses_to_resurrect_deleted_status
+FAILED tests/integration/test_project_migration.py::test_pm1_upgrade_preserves_0005_resources[False]
+FAILED tests/integration/test_project_migration.py::test_pm1_upgrade_preserves_0005_resources[True]
+FAILED tests/integration/test_project_run_migration.py::test_empty_database_upgrades_to_the_single_project_run_head
+FAILED tests/integration/test_project_run_migration.py::test_pm03_upgrade_preserves_real_project_automation_and_workflow_rows
+FAILED tests/integration/test_project_run_migration.py::test_empty_project_run_tables_can_downgrade_and_upgrade
+FAILED tests/integration/test_project_run_migration.py::test_nonempty_project_run_evidence_refuses_downgrade_without_data_loss
+FAILED tests/integration/test_sidecar_shutdown.py::test_workflow_shutdown_error_still_closes_other_modules
+FAILED tests/integration/test_studio_migration_compatibility.py::test_all_supported_histories_upgrade_without_losing_existing_rows[None]
+FAILED tests/integration/test_studio_migration_compatibility.py::test_all_supported_histories_upgrade_without_losing_existing_rows[0005_workflow_documents]
+FAILED tests/integration/test_studio_migration_compatibility.py::test_all_supported_histories_upgrade_without_losing_existing_rows[0008_workflow_debug]
+FAILED tests/integration/test_studio_migration_compatibility.py::test_all_supported_histories_upgrade_without_losing_existing_rows[0009_merge_android_m5]
+FAILED tests/integration/test_studio_migration_compatibility.py::test_all_supported_histories_upgrade_without_losing_existing_rows[0009_merge_project_data]
+FAILED tests/integration/test_studio_migration_compatibility.py::test_all_supported_histories_upgrade_without_losing_existing_rows[0010_android_fleet]
+FAILED tests/integration/test_studio_migration_compatibility.py::test_interrupted_branch_merge_rolls_back_and_can_restart
+FAILED tests/integration/test_studio_project_inspection.py::test_recording_scope_migration_preserves_legacy_rows_without_guessing_owner
+FAILED tests/integration/test_workflow_document_migration.py::test_workflow_command_migration_is_durable_and_preserves_documents[False]
+FAILED tests/integration/test_workflow_document_migration.py::test_workflow_command_migration_is_durable_and_preserves_documents[True]
+FAILED tests/integration/test_workflow_proxy_workers.py::test_proxy_nodes_over_real_owned_worker_pipes[project-proxy_change_location]
+FAILED tests/integration/test_workflow_recordings.py::test_recording_command_migration_preserves_existing_sessions
+FAILED tests/integration/test_workflow_runtime_migration.py::test_empty_database_upgrades_to_one_runtime_head_with_complete_v2_schema
+FAILED tests/integration/test_workflow_runtime_migration.py::test_upgrade_from_legacy_studio_reaches_v2_without_replaying_unknown_work[0005_workflow_documents]
+FAILED tests/integration/test_workflow_runtime_migration.py::test_upgrade_from_legacy_studio_reaches_v2_without_replaying_unknown_work[0008_workflow_debug]
+FAILED tests/integration/test_workflow_runtime_migration.py::test_empty_runtime_can_downgrade_and_upgrade_again
+FAILED tests/migration/test_studio_backend_source_mapping.py::test_all_approved_nodes_have_traceable_backend_sources_and_unique_cases
+FAILED tests/unit/test_project_excel_adapter.py::test_formula_metadata_scans_beyond_sample_and_streams_rows
+FAILED tests/unit/workflows/test_executor_registry.py::test_production_registry_contains_every_migrated_executor
+64 failed, 4150 passed, 43 skipped, 1 warning in 1319.96s (0:21:59)

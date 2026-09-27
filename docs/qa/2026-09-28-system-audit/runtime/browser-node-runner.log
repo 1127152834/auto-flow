@@ -1,0 +1,11 @@
+Evidence: /Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/runtime/run-plf91uw9
+{"check": "production browser graph completes all 26 visits", "passed": true, "status": "passed"}
+{"check": "actual public page title heading and load", "passed": true, "status": "passed"}
+{"check": "actual body children and heading siblings queried", "passed": true, "status": "passed"}
+{"check": "first and last tab identity matches real sources", "passed": true, "status": "passed"}
+{"check": "scroll changes actual long source viewport", "passed": true, "status": "passed"}
+{"check": "back returns exact actual TOML file", "passed": true, "status": "passed"}
+{"check": "forward returns exact actual package JSON", "passed": true, "status": "passed"}
+{"check": "production screenshot is downloadable PNG", "passed": true, "status": "passed"}
+{"check": "browser environment cleaned", "passed": true, "status": "passed"}
+RESULT /Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/runtime/run-plf91uw9/results.json

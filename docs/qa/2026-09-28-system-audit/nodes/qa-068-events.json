@@ -1,0 +1,46 @@
+[
+  {
+    "type": "execution:node_start",
+    "nodeId": "n0",
+    "executionId": "c8ee798f-cd8c-49fb-b6ee-55a9535bc5b3",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-068",
+    "workflowId": "qa-068"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n0",
+    "executionId": "c8ee798f-cd8c-49fb-b6ee-55a9535bc5b3",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "命令执行成功: autoflow",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "output": "autoflow",
+      "return_code": 0
+    },
+    "logLevel": null,
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 53.543916990747675,
+    "artifactIds": [],
+    "runId": "qa-068",
+    "workflowId": "qa-068"
+  },
+  {
+    "type": "execution:completed",
+    "runId": "qa-068",
+    "workflowId": "qa-068",
+    "executedNodes": 1,
+    "failedNodeId": null,
+    "issues": [],
+    "error": null
+  }
+]

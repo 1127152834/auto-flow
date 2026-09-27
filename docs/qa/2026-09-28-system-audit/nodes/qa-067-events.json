@@ -1,0 +1,43 @@
+[
+  {
+    "type": "execution:node_start",
+    "nodeId": "n0",
+    "executionId": "7eda1245-e545-4661-8293-9fba4c473a58",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-067",
+    "workflowId": "qa-067"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n0",
+    "executionId": "7eda1245-e545-4661-8293-9fba4c473a58",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": false,
+    "message": "",
+    "error": "脚本执行超时（1秒）",
+    "isTimeout": false,
+    "data": null,
+    "logLevel": null,
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 1067.071917001158,
+    "artifactIds": [],
+    "runId": "qa-067",
+    "workflowId": "qa-067"
+  },
+  {
+    "type": "execution:failed",
+    "runId": "qa-067",
+    "workflowId": "qa-067",
+    "executedNodes": 1,
+    "failedNodeId": "n0",
+    "issues": [],
+    "error": "脚本执行超时（1秒）"
+  }
+]

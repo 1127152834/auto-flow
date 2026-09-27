@@ -1,0 +1,12 @@
+{"rowsWritten": 1000, "writeElapsedMs": 496.786}
+{"rows": 1000, "scenario": "default_first_page", "samples": 10, "p50Ms": 16.258, "p95Ms": 17.25, "minMs": 15.622, "maxMs": 17.25, "firstObservedMs": 18.807, "matchedRows": 1000, "correct": true}
+{"rows": 1000, "scenario": "bytes_desc_first_page", "samples": 10, "p50Ms": 39.46, "p95Ms": 40.114, "minMs": 38.401, "maxMs": 40.114, "firstObservedMs": 40.441, "matchedRows": 1000, "correct": true}
+{"rows": 1000, "scenario": "python_filter_first_page", "samples": 10, "p50Ms": 19.758, "p95Ms": 108.852, "minMs": 19.106, "maxMs": 108.852, "firstObservedMs": 20.351, "matchedRows": 676, "correct": true}
+{"rows": 1000, "scenario": "python_filter_bytes_desc", "samples": 10, "p50Ms": 34.191, "p95Ms": 38.486, "minMs": 33.536, "maxMs": 38.486, "firstObservedMs": 34.362, "matchedRows": 676, "correct": true}
+{"rows": 1000, "scenario": "default_last_page", "samples": 10, "p50Ms": 17.431, "p95Ms": 19.008, "minMs": 17.143, "maxMs": 19.008, "firstObservedMs": 18.841, "matchedRows": 1000, "correct": true}
+{"rowsWritten": 8504, "writeElapsedMs": 4591.454}
+{"rows": 8504, "scenario": "default_first_page", "samples": 10, "p50Ms": 30.316, "p95Ms": 31.497, "minMs": 29.719, "maxMs": 31.497, "firstObservedMs": 29.123, "matchedRows": 8504, "correct": true}
+{"rows": 8504, "scenario": "bytes_desc_first_page", "samples": 10, "p50Ms": 136.743, "p95Ms": 145.181, "minMs": 135.136, "maxMs": 145.181, "firstObservedMs": 136.165, "matchedRows": 8504, "correct": true}
+{"rows": 8504, "scenario": "python_filter_first_page", "samples": 10, "p50Ms": 61.722, "p95Ms": 65.869, "minMs": 59.419, "maxMs": 65.869, "firstObservedMs": 62.545, "matchedRows": 999, "correct": true}
+{"rows": 8504, "scenario": "python_filter_bytes_desc", "samples": 10, "p50Ms": 83.112, "p95Ms": 89.487, "minMs": 80.046, "maxMs": 89.487, "firstObservedMs": 83.028, "matchedRows": 999, "correct": true}
+{"rows": 8504, "scenario": "default_last_page", "samples": 10, "p50Ms": 74.524, "p95Ms": 86.797, "minMs": 73.405, "maxMs": 86.797, "firstObservedMs": 76.888, "matchedRows": 8504, "correct": true}

@@ -1,0 +1,25 @@
+{
+  "platform": "macOS-26.4.1-arm64-arm-64bit",
+  "python": "3.11.13",
+  "gitHead": "33ae3aa49600840b1700c83723408c494dc201a8",
+  "versions": {
+    "pytest": "9.1.1",
+    "ruff": "0.16.7",
+    "mypy": "2.3.1",
+    "fastapi": "0.141.1",
+    "sqlalchemy": "2.0.52",
+    "alembic": "1.19.2",
+    "cloakbrowser": "0.5.9",
+    "playwright": "1.62.0"
+  },
+  "collected": 4257,
+  "collectedByFolder": {
+    "compatibility": 3,
+    "contract": 717,
+    "differential": 1054,
+    "integration": 1154,
+    "migration": 3,
+    "unit": 1326
+  },
+  "inheritedRuntimeOverridesPresent": {}
+}

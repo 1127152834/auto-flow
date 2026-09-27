@@ -1,0 +1,109 @@
+[
+  {
+    "type": "execution:node_start",
+    "nodeId": "n0",
+    "executionId": "11868c60-a8f4-4fa1-8b0a-debf7ded97fa",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-061",
+    "workflowId": "qa-061"
+  },
+  {
+    "type": "artifact:registered",
+    "runId": "qa-061",
+    "artifactId": "07c0a935-675e-4e5f-a6df-2b77cd651e60",
+    "nodeId": "n0",
+    "executionId": "11868c60-a8f4-4fa1-8b0a-debf7ded97fa",
+    "relativePath": "runs/qa-061/artifacts/exports/e321b3e3659c47a5a3e38e396ff7be8b.txt",
+    "size": 102,
+    "sha256": "d84d7b97664497c9acd2f035b19036af543b5526220bdd0128cfad36b61668ad",
+    "mimeType": "text/plain",
+    "purpose": "result"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n0",
+    "executionId": "11868c60-a8f4-4fa1-8b0a-debf7ded97fa",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "已导出 5 条数据到: paths.txt",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "path": "paths.txt",
+      "count": 5
+    },
+    "logLevel": null,
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 2.8440830064937472,
+    "artifactIds": [
+      "07c0a935-675e-4e5f-a6df-2b77cd651e60"
+    ],
+    "runId": "qa-061",
+    "workflowId": "qa-061"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "n1",
+    "executionId": "552c0ae3-072c-48f2-933c-c65e123f9796",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-061",
+    "workflowId": "qa-061"
+  },
+  {
+    "type": "artifact:registered",
+    "runId": "qa-061",
+    "artifactId": "a7b837cf-7250-404b-9191-0de237cfb60d",
+    "nodeId": "n1",
+    "executionId": "552c0ae3-072c-48f2-933c-c65e123f9796",
+    "relativePath": "runs/qa-061/artifacts/exports/d15ddfd8cad148fcac04a83bc1702b4b.txt",
+    "size": 205,
+    "sha256": "4deda5fdaf39b141aafc7b291d055d92c9a369ecae3942a110b856a625396da0",
+    "mimeType": "text/plain",
+    "purpose": "result"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n1",
+    "executionId": "552c0ae3-072c-48f2-933c-c65e123f9796",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "已导出 5 条数据到: paths.txt",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "path": "paths.txt",
+      "count": 5
+    },
+    "logLevel": null,
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 2.3066670109983534,
+    "artifactIds": [
+      "a7b837cf-7250-404b-9191-0de237cfb60d"
+    ],
+    "runId": "qa-061",
+    "workflowId": "qa-061"
+  },
+  {
+    "type": "execution:completed",
+    "runId": "qa-061",
+    "workflowId": "qa-061",
+    "executedNodes": 2,
+    "failedNodeId": null,
+    "issues": [],
+    "error": null
+  }
+]

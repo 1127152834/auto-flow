@@ -1,0 +1,194 @@
+[
+  {
+    "type": "execution:node_start",
+    "nodeId": "n0",
+    "executionId": "57e20a09-c746-4fa3-89ed-7ea87d3a08aa",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-102",
+    "workflowId": "qa-102"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n0",
+    "executionId": "57e20a09-c746-4fa3-89ed-7ea87d3a08aa",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "已添加数据行，当前共 1 行",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "row": {
+        "path": "package.json",
+        "bytes": 1055,
+        "sha256": "6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92"
+      },
+      "total_rows": 1
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 1.5035000105854124,
+    "artifactIds": [],
+    "runId": "qa-102",
+    "workflowId": "qa-102"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "n1",
+    "executionId": "b2597fe0-f0c4-49c6-bad3-4ee29c5e0a75",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-102",
+    "workflowId": "qa-102"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n1",
+    "executionId": "b2597fe0-f0c4-49c6-bad3-4ee29c5e0a75",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "已添加数据行，当前共 2 行",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "row": {
+        "path": "apps/desktop/package.json",
+        "bytes": 2393,
+        "sha256": "61fc76779f38838f8102e67810c66aebf408d25de7c0d3bc6da4795a1005f5b5"
+      },
+      "total_rows": 2
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.2340420032851398,
+    "artifactIds": [],
+    "runId": "qa-102",
+    "workflowId": "qa-102"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "n2",
+    "executionId": "a3af6c1b-aa10-4d98-99f0-8752113c364e",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-102",
+    "workflowId": "qa-102"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n2",
+    "executionId": "a3af6c1b-aa10-4d98-99f0-8752113c364e",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "已删除第 0 行，剩余 1 行",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "deleted": {
+        "path": "package.json",
+        "bytes": 1055,
+        "sha256": "6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92"
+      },
+      "remaining": 1
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.1858329924289137,
+    "artifactIds": [],
+    "runId": "qa-102",
+    "workflowId": "qa-102"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "n3",
+    "executionId": "9ab06cc4-d380-4d07-aee4-c05695db0608",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-102",
+    "workflowId": "qa-102"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n3",
+    "executionId": "9ab06cc4-d380-4d07-aee4-c05695db0608",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "获取 [0][path] = apps/desktop/package.json",
+    "error": null,
+    "isTimeout": false,
+    "data": "apps/desktop/package.json",
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.15929099754430354,
+    "artifactIds": [],
+    "runId": "qa-102",
+    "workflowId": "qa-102"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "n4",
+    "executionId": "66f56e94-d2c0-49a9-9b12-2703a15a4e6f",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-102",
+    "workflowId": "qa-102"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n4",
+    "executionId": "66f56e94-d2c0-49a9-9b12-2703a15a4e6f",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "已清空数据表格 (原有 1 行)",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "cleared_rows": 1
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.1374170242343098,
+    "artifactIds": [],
+    "runId": "qa-102",
+    "workflowId": "qa-102"
+  },
+  {
+    "type": "execution:completed",
+    "runId": "qa-102",
+    "workflowId": "qa-102",
+    "executedNodes": 5,
+    "failedNodeId": null,
+    "issues": [],
+    "error": null
+  }
+]

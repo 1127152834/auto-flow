@@ -1,0 +1,316 @@
+{
+  "startedAt": "2026-09-27T17:01:50.895Z",
+  "head": "33ae3aa49600840b1700c83723408c494dc201a8",
+  "platform": "darwin",
+  "arch": "arm64",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow 真实审计-7Ssqw9",
+  "boundary": "Built Electron + production Python sidecar + SQLite. UI project creation, real repository metadata written via authenticated API, UI readback and navigation. No fake provider or executor.",
+  "checks": [
+    {
+      "name": "UI-01 真实应用启动与认证",
+      "status": "passed",
+      "ms": 3251
+    },
+    {
+      "name": "UI-02 通过界面创建本仓库审计项目",
+      "status": "passed",
+      "ms": 296
+    },
+    {
+      "name": "UI-03 实际仓库文件元数据入库与幂等",
+      "status": "passed",
+      "ms": 375,
+      "detail": {
+        "rows": 5
+      }
+    },
+    {
+      "name": "UI-04 记录详情真实读取",
+      "status": "passed",
+      "ms": 222
+    },
+    {
+      "name": "UI-project-overview 项目概览",
+      "status": "passed",
+      "ms": 139,
+      "detail": {
+        "hash": "#/projects/bca63ae5-6c5f-4405-bae3-70aa4408cc23/overview",
+        "text": "AutoFlow\n总览\n项目\n浏览器配置\n安卓设备\n代理管理\n模型管理\n实验室\n设置\n本地服务正常\n项目已创建\n关闭\n项目 / AutoFlow 源码审计 33ae3aa4 / 概览\nAutoFlow 源码审计 33ae3aa4\n\n当前代码 33ae3aa49600840b1700c83723408c494dc201a8；真实源文件体积与 SHA-256，2026-09-28 审计。\n\n最近修改：9/28 01:01\n\n编辑项目\n概览\n自动化\n运行记录\n统计\n数据\n环境\n自动化\n0\n数据表\n1\n运行批次\n0\n环境\n0\n今日数据变化\n新增 9 · 更新 0\n\n统计口径：Asia/Shanghai\n\n项目活动\n当前\n\n当前没有进行中的工作。\n\n最近\n\n记录已创建\n\n记录\n2026/9/28 01:01:54\n\n打开\n\n记录已创建\n\n记录\n2026/9/28 01:01:54\n\n打开\n\n记录已创建\n\n记录\n2026/9/28 01:01:54\n\n打开\n\n记录已创建\n\n记录\n2026/9/28 01:01:54\n\n打开\n\n记录已创建\n\n记录\n2026/9/28 01:01:54\n\n打开\n\n字段已新增\n\n字段\n2026/9/28 01:01:54\n\n打开\n\n字段已新增\n\n字段\n2026/9/28 01:01:54\n\n打开\n\n字段已新增\n\n字段\n2026/9/28 01:01:54\n\n打开\n\n数据表已创建\n\n数据表\n2026/9/28 01:01:54\n\n打开\n继续工作\n\n数据表\n\n数据表已创建\n\n继续",
+        "viewport": [
+          1440,
+          992
+        ],
+        "width": 1428,
+        "alerts": []
+      }
+    },
+    {
+      "name": "UI-project-automations 项目自动化",
+      "status": "passed",
+      "ms": 128,
+      "detail": {
+        "hash": "#/projects/bca63ae5-6c5f-4405-bae3-70aa4408cc23/automations",
+        "text": "AutoFlow\n总览\n项目\n浏览器配置\n安卓设备\n代理管理\n模型管理\n实验室\n设置\n本地服务正常\n项目已创建\n关闭\n项目 / AutoFlow 源码审计 33ae3aa4 / 自动化\nAutoFlow 源码审计 33ae3aa4\n\n当前代码 33ae3aa49600840b1700c83723408c494dc201a8；真实源文件体积与 SHA-256，2026-09-28 审计。\n\n最近修改：9/28 01:01\n\n编辑项目\n概览\n自动化\n运行记录\n统计\n数据\n环境\n自动化 0 个\n工作流工作台\n还没有自动化\n\n创建一个自动化，整理你的工作流程\n\n新建自动化\n0–0 / 0\n上一页\n第 1 页\n下一页\n\n配置状态不代表执行状态",
+        "viewport": [
+          1440,
+          992
+        ],
+        "width": 1440,
+        "alerts": []
+      }
+    },
+    {
+      "name": "UI-project-runs 项目运行记录",
+      "status": "passed",
+      "ms": 131,
+      "detail": {
+        "hash": "#/projects/bca63ae5-6c5f-4405-bae3-70aa4408cc23/runs",
+        "text": "AutoFlow\n总览\n项目\n浏览器配置\n安卓设备\n代理管理\n模型管理\n实验室\n设置\n本地服务正常\n项目已创建\n关闭\n项目 / AutoFlow 源码审计 33ae3aa4 / 运行记录\nAutoFlow 源码审计 33ae3aa4\n\n当前代码 33ae3aa49600840b1700c83723408c494dc201a8；真实源文件体积与 SHA-256，2026-09-28 审计。\n\n最近修改：9/28 01:01\n\n编辑项目\n概览\n自动化\n运行记录\n统计\n数据\n环境\n运行记录\n\n查看自动化批次、任务与真实执行结果\n\n刷新记录\n批次记录\n任务记录\n等待人工\n最新创建在前\n全部自动化\n全部状态\n全部时间\n还没有运行记录\n\n自动化产生批次后，记录会按开始时间出现在这里。\n\n0–0 / 0\n上一页\n第 1 页\n下一页",
+        "viewport": [
+          1440,
+          992
+        ],
+        "width": 1440,
+        "alerts": []
+      }
+    },
+    {
+      "name": "UI-project-statistics 项目统计",
+      "status": "passed",
+      "ms": 135,
+      "detail": {
+        "hash": "#/projects/bca63ae5-6c5f-4405-bae3-70aa4408cc23/statistics",
+        "text": "AutoFlow\n总览\n项目\n浏览器配置\n安卓设备\n代理管理\n模型管理\n实验室\n设置\n本地服务正常\n项目已创建\n关闭\n项目 / AutoFlow 源码审计 33ae3aa4 / 统计\nAutoFlow 源码审计 33ae3aa4\n\n当前代码 33ae3aa49600840b1700c83723408c494dc201a8；真实源文件体积与 SHA-256，2026-09-28 审计。\n\n最近修改：9/28 01:01\n\n编辑项目\n概览\n自动化\n运行记录\n统计\n数据\n环境\nStudio 运行统计\n统计\n\n按任务结束时间汇总\n\n全部自动化\n近7天\n\n9月21日 — 9月28日（截至 9月28日 01:01）\n\n查看运行记录 →\n本期已结束任务\n0 个\n\n成功 0 · 失败 0\n\n任务成功率\n无样本\n\n本区间没有成功或失败任务\n\n失败任务\n0 个\n\n取消 0 · 超时 0 · 中断 0\n\n平均任务耗时\n无有效样本\n\n暂无起止时间完整的任务\n\n按日处理量\n\n按结束时间\n\n9月21日 — 9月28日 无已结束任务。\n\n失败任务去向\n\n本区间没有失败任务。\n\n资源使用\n—\n尚未采集\n\n成功率 = 成功 /（成功 + 失败）；不计运行中与等待人工；任务数不等于数据新增量。",
+        "viewport": [
+          1440,
+          992
+        ],
+        "width": 1440,
+        "alerts": []
+      }
+    },
+    {
+      "name": "UI-project-data 项目数据",
+      "status": "passed",
+      "ms": 134,
+      "detail": {
+        "hash": "#/projects/bca63ae5-6c5f-4405-bae3-70aa4408cc23/data",
+        "text": "AutoFlow\n总览\n项目\n浏览器配置\n安卓设备\n代理管理\n模型管理\n实验室\n设置\n本地服务正常\n项目已创建\n关闭\n项目 / AutoFlow 源码审计 33ae3aa4 / 数据\nAutoFlow 源码审计 33ae3aa4\n\n当前代码 33ae3aa49600840b1700c83723408c494dc201a8；真实源文件体积与 SHA-256，2026-09-28 审计。\n\n最近修改：9/28 01:01\n\n编辑项目\n概览\n自动化\n运行记录\n统计\n数据\n环境\n自动化运行数据\n数据表\n1 张\n\n按用途找到数据，进入表内维护记录。\n\n全部来源\n最近修改\n从 Excel 导入\n新建数据表\n仓库文件清单\n\n暂无描述\n\n本地表\n\n5 条记录\n5\n条\n本地记录\n本地可维护 · 更新于 2026年9月28日 01:01\n打开数据表\n1–1 / 1\n上一页\n下一页",
+        "viewport": [
+          1440,
+          992
+        ],
+        "width": 1440,
+        "alerts": []
+      }
+    },
+    {
+      "name": "UI-project-environments 项目环境",
+      "status": "passed",
+      "ms": 120,
+      "detail": {
+        "hash": "#/projects/bca63ae5-6c5f-4405-bae3-70aa4408cc23/environments",
+        "text": "AutoFlow\n总览\n项目\n浏览器配置\n安卓设备\n代理管理\n模型管理\n实验室\n设置\n本地服务正常\n项目已创建\n关闭\n项目 / AutoFlow 源码审计 33ae3aa4 / 环境\nAutoFlow 源码审计 33ae3aa4\n\n当前代码 33ae3aa49600840b1700c83723408c494dc201a8；真实源文件体积与 SHA-256，2026-09-28 审计。\n\n最近修改：9/28 01:01\n\n编辑项目\n概览\n自动化\n运行记录\n统计\n数据\n环境\n当前现场\n\n当前没有临时现场\n\n最后更新：2026年9月28日 01:01\n刷新\n运行环境0\n等待人工0\n持久环境0\n项目默认资源\n\n当前没有临时现场。任务启动后，正在占用的临时环境会出现在这里。\n\n项目默认资源\n浏览器\n未指定\n代理\n沿用浏览器配置\n查看默认资源\n持久环境 0\n\n工作流明确保存的环境。\n\n查看持久环境 0",
+        "viewport": [
+          1440,
+          992
+        ],
+        "width": 1440,
+        "alerts": []
+      }
+    },
+    {
+      "name": "UI-table-records 数据表页签",
+      "status": "passed",
+      "ms": 168,
+      "detail": {
+        "hash": "#/projects/bca63ae5-6c5f-4405-bae3-70aa4408cc23/data/d070705f-f69f-492f-856d-6f1f5aa54eb6/records",
+        "text": "AutoFlow\n总览\n项目\n浏览器配置\n安卓设备\n代理管理\n模型管理\n实验室\n设置\n本地服务正常\n项目已创建\n关闭\n项目 / AutoFlow 源码审计 33ae3aa4 / 数据 / 仓库文件清单\nAutoFlow 源码审计 33ae3aa4\n\n当前代码 33ae3aa49600840b1700c83723408c494dc201a8；真实源文件体积与 SHA-256，2026-09-28 审计。\n\n概览\n自动化\n运行记录\n统计\n数据\n环境\n仓库文件清单\n\n暂无说明\n\n本地数据　|　本地可维护\n\n数据记录\n字段与校验\n数据状态\n来源设置\n数据表设置\n5 条\n本地记录\n源文件路径\n源文件路径\n字节数\nSHA-256\n筛选\n排序\n显示列\n新增行\n\t记录\t\n源文件路径\n\t\n字节数\n\t\nSHA-256\n\t业务状态\t最近修改\t操作\n\t\nREADME.md\n\t\nREADME.md\n\t\n1575\n\t\nb3f7f413926ee62c04aba0c253b8453e69d5d834ed0f798401875db55c8221ee\n\t\n未设置\n\t\n9/28 01:01\n\t\n查看\n编辑\n\n\t\ndocs/PROJECT_STRUCTURE.md\n\t\ndocs/PROJECT_STRUCTURE.md\n\t\n58979\n\t\ndfbe76523c99d0dc49292fe11c71de346dc7475da611fb2890032d72b4dda924\n\t\n未设置\n\t\n9/28 01:01\n\t\n查看\n编辑\n\n\t\nAGENTS.md\n\t\nAGENTS.md\n\t\n2335\n\t\nf59c274adb1d4144cc8a351f111702e21b92be2d9b0bd459e572a0243a1c48a8\n\t\n未设置\n\t\n9/28 01:01\n\t\n查看\n编辑\n\n\t\napps/backend/pyproject.toml\n\t\napps/backend/pyproject.toml\n\t\n1460\n\t\n4e49812742d3362808878fc11614cbb6884b94a1f6c13b93a9775d6b2d6d84f1\n\t\n未设置\n\t\n9/28 01:01\n\t\n查看\n编辑\n\n\t\npackage.json\n\t\npackage.json\n\t\n1055\n\t\n6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92\n\t\n未设置\n\t\n9/28 01:01\n\t\n查看\n编辑\n\n\n＋ 点击新增一行\n1–5 / 5\n上一页\n第 1 页\n下一页\n\n业务状态由本项目维护，修改记录内容不会自动改变业务状态。",
+        "viewport": [
+          1440,
+          992
+        ],
+        "width": 1440,
+        "alerts": []
+      }
+    },
+    {
+      "name": "UI-table-fields 数据表页签",
+      "status": "passed",
+      "ms": 145,
+      "detail": {
+        "hash": "#/projects/bca63ae5-6c5f-4405-bae3-70aa4408cc23/data/d070705f-f69f-492f-856d-6f1f5aa54eb6/fields",
+        "text": "AutoFlow\n总览\n项目\n浏览器配置\n安卓设备\n代理管理\n模型管理\n实验室\n设置\n本地服务正常\n项目已创建\n关闭\n项目 / AutoFlow 源码审计 33ae3aa4 / 数据 / 仓库文件清单\nAutoFlow 源码审计 33ae3aa4\n\n当前代码 33ae3aa49600840b1700c83723408c494dc201a8；真实源文件体积与 SHA-256，2026-09-28 审计。\n\n概览\n自动化\n运行记录\n统计\n数据\n环境\n仓库文件清单\n\n暂无说明\n\n本地数据　|　本地可维护\n\n数据记录\n字段与校验\n数据状态\n来源设置\n数据表设置\n字段与校验\n\n定义业务字段与填写规则，业务状态单独管理。\n\n新增字段\n字段名称\t字段键\t类型\t必填\t规则\t操作\n源文件路径\tpath\t文本\t否\t—\t\n编辑\n删除\n\n字节数\tbytes\t文本\t否\t—\t\n编辑\n删除\n\nSHA-256\tsha256\t文本\t否\t—\t\n编辑\n删除\n\n记录身份保持稳定，身份字段类型受保护。\n\n字段修改在点击「保存字段」后统一生效。\n\n3 个业务字段 · 暂无未保存修改\n\n重置修改\n保存字段",
+        "viewport": [
+          1440,
+          992
+        ],
+        "width": 1440,
+        "alerts": []
+      }
+    },
+    {
+      "name": "UI-table-statuses 数据表页签",
+      "status": "passed",
+      "ms": 126,
+      "detail": {
+        "hash": "#/projects/bca63ae5-6c5f-4405-bae3-70aa4408cc23/data/d070705f-f69f-492f-856d-6f1f5aa54eb6/statuses",
+        "text": "AutoFlow\n总览\n项目\n浏览器配置\n安卓设备\n代理管理\n模型管理\n实验室\n设置\n本地服务正常\n项目已创建\n关闭\n项目 / AutoFlow 源码审计 33ae3aa4 / 数据 / 仓库文件清单\nAutoFlow 源码审计 33ae3aa4\n\n当前代码 33ae3aa49600840b1700c83723408c494dc201a8；真实源文件体积与 SHA-256，2026-09-28 审计。\n\n概览\n自动化\n运行记录\n统计\n数据\n环境\n仓库文件清单\n\n暂无说明\n\n本地数据　|　本地可维护\n\n数据记录\n字段与校验\n数据状态\n来源设置\n数据表设置\n数据状态\n\n用于标记记录的整理进度，仅保存在当前项目。\n\n新增状态\n\n当前记录与未完成批量操作的引用分别统计，不相加；有引用的状态不能删除。\n\n状态名称\t当前记录\t未完成批量操作\t操作\n尚未设置数据状态\n\n配置引用尚未接通，不表示没有引用。删除前仍需检查影响。",
+        "viewport": [
+          1440,
+          992
+        ],
+        "width": 1440,
+        "alerts": []
+      }
+    },
+    {
+      "name": "UI-table-source 数据表页签",
+      "status": "passed",
+      "ms": 145,
+      "detail": {
+        "hash": "#/projects/bca63ae5-6c5f-4405-bae3-70aa4408cc23/data/d070705f-f69f-492f-856d-6f1f5aa54eb6/source",
+        "text": "AutoFlow\n总览\n项目\n浏览器配置\n安卓设备\n代理管理\n模型管理\n实验室\n设置\n本地服务正常\n项目已创建\n关闭\n项目 / AutoFlow 源码审计 33ae3aa4 / 数据 / 仓库文件清单\nAutoFlow 源码审计 33ae3aa4\n\n当前代码 33ae3aa49600840b1700c83723408c494dc201a8；真实源文件体积与 SHA-256，2026-09-28 审计。\n\n概览\n自动化\n运行记录\n统计\n数据\n环境\n仓库文件清单\n\n暂无说明\n\n本地数据　|　本地可维护\n\n数据记录\n字段与校验\n数据状态\n来源设置\n数据表设置\n数据来源\n\n手动维护\n\n本地记录\t5 条\n写入方式\t项目内维护\n\n记录和字段直接在项目中维护。\n\nGoogle Sheets\n\n把这张表绑定到一张工作表，之后按需拉取与推送。\n\n绑定 Google Sheets…\n\n尚未绑定工作表，绑定后这里会显示同步事实。\n\n功能说明\n\n允许新增、编辑、删除本地业务记录\n\n绑定来源后仍然可以在项目内维护资料，本地维护不受云端状态影响。\n\n云端结果需等待确认\n\n本地修改会尝试推送到来源，最终结果以核验状态为准，未确认前不当作已完成。\n\n业务状态只保存在项目内\n\n待核对、已整理等业务状态保存在本项目，不会写回来源工作表。",
+        "viewport": [
+          1440,
+          992
+        ],
+        "width": 1440,
+        "alerts": []
+      }
+    },
+    {
+      "name": "UI-table-settings 数据表页签",
+      "status": "passed",
+      "ms": 134,
+      "detail": {
+        "hash": "#/projects/bca63ae5-6c5f-4405-bae3-70aa4408cc23/data/d070705f-f69f-492f-856d-6f1f5aa54eb6/settings",
+        "text": "AutoFlow\n总览\n项目\n浏览器配置\n安卓设备\n代理管理\n模型管理\n实验室\n设置\n本地服务正常\n项目已创建\n关闭\n项目 / AutoFlow 源码审计 33ae3aa4 / 数据 / 仓库文件清单\nAutoFlow 源码审计 33ae3aa4\n\n当前代码 33ae3aa49600840b1700c83723408c494dc201a8；真实源文件体积与 SHA-256，2026-09-28 审计。\n\n概览\n自动化\n运行记录\n统计\n数据\n环境\n仓库文件清单\n\n暂无说明\n\n本地数据　|　本地可维护\n\n数据记录\n字段与校验\n数据状态\n来源设置\n数据表设置\n基本信息\n\n修改名称与用途说明，不会改动记录内容。\n\n数据表名称 *\n用途说明\n\n最多 1000 个字符\n\n没有未保存的修改\n\n取消更改\n保存设置\n删除数据表\n\n数据表删除暂未开放。\n\n删除数据表",
+        "viewport": [
+          1440,
+          992
+        ],
+        "width": 1428,
+        "alerts": []
+      }
+    },
+    {
+      "name": "UI-global-dashboard 全局总览",
+      "status": "passed",
+      "ms": 133,
+      "detail": {
+        "alerts": [],
+        "width": 1428,
+        "viewport": [
+          1440,
+          992
+        ]
+      }
+    },
+    {
+      "name": "UI-global-profiles 全局浏览器配置",
+      "status": "passed",
+      "ms": 103,
+      "detail": {
+        "alerts": [],
+        "width": 1428,
+        "viewport": [
+          1440,
+          992
+        ]
+      }
+    },
+    {
+      "name": "UI-global-android 全局安卓设备",
+      "status": "passed",
+      "ms": 129,
+      "detail": {
+        "alerts": [
+          ""
+        ],
+        "width": 1428,
+        "viewport": [
+          1440,
+          992
+        ]
+      }
+    },
+    {
+      "name": "UI-global-proxies 全局代理管理",
+      "status": "passed",
+      "ms": 104,
+      "detail": {
+        "alerts": [],
+        "width": 1428,
+        "viewport": [
+          1440,
+          992
+        ]
+      }
+    },
+    {
+      "name": "UI-global-models 全局模型管理",
+      "status": "passed",
+      "ms": 99,
+      "detail": {
+        "alerts": [],
+        "width": 1440,
+        "viewport": [
+          1440,
+          992
+        ]
+      }
+    },
+    {
+      "name": "UI-global-lab 全局实验室",
+      "status": "passed",
+      "ms": 147,
+      "detail": {
+        "alerts": [],
+        "width": 1428,
+        "viewport": [
+          1440,
+          992
+        ]
+      }
+    },
+    {
+      "name": "UI-global-settings 全局设置",
+      "status": "passed",
+      "ms": 93,
+      "detail": {
+        "alerts": [],
+        "width": 1428,
+        "viewport": [
+          1440,
+          992
+        ]
+      }
+    },
+    {
+      "name": "UI-05 原生200%缩放",
+      "status": "passed",
+      "ms": 244
+    },
+    {
+      "name": "UI-06 Studio实际窗口和同一服务",
+      "status": "passed",
+      "ms": 768
+    },
+    {
+      "name": "UI-07 服务重启与真实数据库持久化",
+      "status": "failed",
+      "ms": 29,
+      "error": "Error: renderer evaluation failed: Uncaught (in promise) Error: Error invoking remote method 'autoflow:sidecar-restart': Error: 任务进行中，暂时无法重启或切换工作区；请等待任务结束\n    at Object.evaluate (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/electron-cdp.mjs:74:40)\n    at async file:///Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/ui-realqa.mjs:171:5\n    at async check (file:///Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/ui-realqa.mjs:31:24)\n    at async file:///Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/ui-realqa.mjs:170:3"
+    },
+    {
+      "name": "UI-08 应用进程重启持久化",
+      "status": "passed",
+      "ms": 5313
+    }
+  ],
+  "observations": [],
+  "consoleErrors": [],
+  "finishedAt": "2026-09-27T17:02:04.865Z",
+  "status": "failed"
+}

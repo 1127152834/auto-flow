@@ -1,0 +1,607 @@
+[
+  {
+    "type": "execution:node_start",
+    "nodeId": "init",
+    "executionId": "3b9c0f6c-3ad8-41e9-abb2-213cfb15cca3",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-109",
+    "workflowId": "qa-109"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "init",
+    "executionId": "3b9c0f6c-3ad8-41e9-abb2-213cfb15cca3",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "已设置变量 total = 0",
+    "error": null,
+    "isTimeout": false,
+    "data": 0,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.34137500915676355,
+    "artifactIds": [],
+    "runId": "qa-109",
+    "workflowId": "qa-109"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "files",
+    "executionId": "f881c479-0798-4acb-a24c-341e65532cb3",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-109",
+    "workflowId": "qa-109"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "files",
+    "executionId": "f881c479-0798-4acb-a24c-341e65532cb3",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "开始遍历 (共 5 项)",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "type": "foreach",
+      "data": [
+        1055,
+        2393,
+        1460,
+        2335,
+        58979
+      ],
+      "item_variable": "size",
+      "index_variable": "index",
+      "current_index": 0
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.15983401681296527,
+    "artifactIds": [],
+    "runId": "qa-109",
+    "workflowId": "qa-109"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "positive",
+    "executionId": "1a2f08ff-69c2-4b24-a75a-60721a198de9",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "files",
+          "type": "foreach",
+          "currentIndex": 0,
+          "iteration": 1
+        }
+      ]
+    },
+    "runId": "qa-109",
+    "workflowId": "qa-109"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "positive",
+    "executionId": "1a2f08ff-69c2-4b24-a75a-60721a198de9",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "files",
+          "type": "foreach",
+          "currentIndex": 0,
+          "iteration": 1
+        }
+      ]
+    },
+    "success": true,
+    "message": "条件判断结果: True",
+    "error": null,
+    "isTimeout": false,
+    "data": true,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 1.562166988151148,
+    "artifactIds": [],
+    "runId": "qa-109",
+    "workflowId": "qa-109"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "sum",
+    "executionId": "2f193668-ea2a-49eb-928e-d63daeb94d4f",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "files",
+          "type": "foreach",
+          "currentIndex": 0,
+          "iteration": 1
+        }
+      ]
+    },
+    "runId": "qa-109",
+    "workflowId": "qa-109"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "sum",
+    "executionId": "2f193668-ea2a-49eb-928e-d63daeb94d4f",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "files",
+          "type": "foreach",
+          "currentIndex": 0,
+          "iteration": 1
+        }
+      ]
+    },
+    "success": true,
+    "message": "自增: total = 0 → 1055 (步长: 1055)",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "variable": "total",
+      "old_value": 0,
+      "new_value": 1055,
+      "step": 1055
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 1.0074170131701976,
+    "artifactIds": [],
+    "runId": "qa-109",
+    "workflowId": "qa-109"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "positive",
+    "executionId": "607462a4-70fe-47cb-8b3b-49b4fe8336e7",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "files",
+          "type": "foreach",
+          "currentIndex": 1,
+          "iteration": 2
+        }
+      ]
+    },
+    "runId": "qa-109",
+    "workflowId": "qa-109"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "positive",
+    "executionId": "607462a4-70fe-47cb-8b3b-49b4fe8336e7",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "files",
+          "type": "foreach",
+          "currentIndex": 1,
+          "iteration": 2
+        }
+      ]
+    },
+    "success": true,
+    "message": "条件判断结果: True",
+    "error": null,
+    "isTimeout": false,
+    "data": true,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.1545000122860074,
+    "artifactIds": [],
+    "runId": "qa-109",
+    "workflowId": "qa-109"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "sum",
+    "executionId": "f7c5237a-2404-4ca9-a84d-ba73b291212f",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "files",
+          "type": "foreach",
+          "currentIndex": 1,
+          "iteration": 2
+        }
+      ]
+    },
+    "runId": "qa-109",
+    "workflowId": "qa-109"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "sum",
+    "executionId": "f7c5237a-2404-4ca9-a84d-ba73b291212f",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "files",
+          "type": "foreach",
+          "currentIndex": 1,
+          "iteration": 2
+        }
+      ]
+    },
+    "success": true,
+    "message": "自增: total = 1055 → 3448 (步长: 2393)",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "variable": "total",
+      "old_value": 1055,
+      "new_value": 3448,
+      "step": 2393
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.14525000005960464,
+    "artifactIds": [],
+    "runId": "qa-109",
+    "workflowId": "qa-109"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "positive",
+    "executionId": "4105da7b-b107-4d3d-8749-79c50dd7755d",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "files",
+          "type": "foreach",
+          "currentIndex": 2,
+          "iteration": 3
+        }
+      ]
+    },
+    "runId": "qa-109",
+    "workflowId": "qa-109"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "positive",
+    "executionId": "4105da7b-b107-4d3d-8749-79c50dd7755d",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "files",
+          "type": "foreach",
+          "currentIndex": 2,
+          "iteration": 3
+        }
+      ]
+    },
+    "success": true,
+    "message": "条件判断结果: True",
+    "error": null,
+    "isTimeout": false,
+    "data": true,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.1357919827569276,
+    "artifactIds": [],
+    "runId": "qa-109",
+    "workflowId": "qa-109"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "sum",
+    "executionId": "16af5d13-cd0f-4270-87d7-4cd7c7f9ee72",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "files",
+          "type": "foreach",
+          "currentIndex": 2,
+          "iteration": 3
+        }
+      ]
+    },
+    "runId": "qa-109",
+    "workflowId": "qa-109"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "sum",
+    "executionId": "16af5d13-cd0f-4270-87d7-4cd7c7f9ee72",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "files",
+          "type": "foreach",
+          "currentIndex": 2,
+          "iteration": 3
+        }
+      ]
+    },
+    "success": true,
+    "message": "自增: total = 3448 → 4908 (步长: 1460)",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "variable": "total",
+      "old_value": 3448,
+      "new_value": 4908,
+      "step": 1460
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.14558399561792612,
+    "artifactIds": [],
+    "runId": "qa-109",
+    "workflowId": "qa-109"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "positive",
+    "executionId": "c9f682dc-e736-4dbc-9d31-a380b408b19e",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "files",
+          "type": "foreach",
+          "currentIndex": 3,
+          "iteration": 4
+        }
+      ]
+    },
+    "runId": "qa-109",
+    "workflowId": "qa-109"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "positive",
+    "executionId": "c9f682dc-e736-4dbc-9d31-a380b408b19e",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "files",
+          "type": "foreach",
+          "currentIndex": 3,
+          "iteration": 4
+        }
+      ]
+    },
+    "success": true,
+    "message": "条件判断结果: True",
+    "error": null,
+    "isTimeout": false,
+    "data": true,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.13537498307414353,
+    "artifactIds": [],
+    "runId": "qa-109",
+    "workflowId": "qa-109"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "sum",
+    "executionId": "98589953-4029-410a-aebf-475011d969c7",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "files",
+          "type": "foreach",
+          "currentIndex": 3,
+          "iteration": 4
+        }
+      ]
+    },
+    "runId": "qa-109",
+    "workflowId": "qa-109"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "sum",
+    "executionId": "98589953-4029-410a-aebf-475011d969c7",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "files",
+          "type": "foreach",
+          "currentIndex": 3,
+          "iteration": 4
+        }
+      ]
+    },
+    "success": true,
+    "message": "自增: total = 4908 → 7243 (步长: 2335)",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "variable": "total",
+      "old_value": 4908,
+      "new_value": 7243,
+      "step": 2335
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.17112502246163785,
+    "artifactIds": [],
+    "runId": "qa-109",
+    "workflowId": "qa-109"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "positive",
+    "executionId": "036a3113-c6e8-4e83-a48c-0b1c6a37a869",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "files",
+          "type": "foreach",
+          "currentIndex": 4,
+          "iteration": 5
+        }
+      ]
+    },
+    "runId": "qa-109",
+    "workflowId": "qa-109"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "positive",
+    "executionId": "036a3113-c6e8-4e83-a48c-0b1c6a37a869",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "files",
+          "type": "foreach",
+          "currentIndex": 4,
+          "iteration": 5
+        }
+      ]
+    },
+    "success": true,
+    "message": "条件判断结果: True",
+    "error": null,
+    "isTimeout": false,
+    "data": true,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.13608401059173048,
+    "artifactIds": [],
+    "runId": "qa-109",
+    "workflowId": "qa-109"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "sum",
+    "executionId": "f0d7dbe8-c6eb-47d2-8047-9dc9986ec64d",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "files",
+          "type": "foreach",
+          "currentIndex": 4,
+          "iteration": 5
+        }
+      ]
+    },
+    "runId": "qa-109",
+    "workflowId": "qa-109"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "sum",
+    "executionId": "f0d7dbe8-c6eb-47d2-8047-9dc9986ec64d",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "files",
+          "type": "foreach",
+          "currentIndex": 4,
+          "iteration": 5
+        }
+      ]
+    },
+    "success": true,
+    "message": "自增: total = 7243 → 66222 (步长: 58979)",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "variable": "total",
+      "old_value": 7243,
+      "new_value": 66222,
+      "step": 58979
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.1349169760942459,
+    "artifactIds": [],
+    "runId": "qa-109",
+    "workflowId": "qa-109"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "check",
+    "executionId": "b08874da-c5b8-47bb-b252-0d6f16ee9e89",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-109",
+    "workflowId": "qa-109"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "check",
+    "executionId": "b08874da-c5b8-47bb-b252-0d6f16ee9e89",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "断言通过: '66222' == 66222",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "passed": true,
+      "detail": "'66222' == 66222"
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.1400829933118075,
+    "artifactIds": [],
+    "runId": "qa-109",
+    "workflowId": "qa-109"
+  },
+  {
+    "type": "execution:completed",
+    "runId": "qa-109",
+    "workflowId": "qa-109",
+    "executedNodes": 13,
+    "failedNodeId": null,
+    "issues": [],
+    "error": null
+  }
+]

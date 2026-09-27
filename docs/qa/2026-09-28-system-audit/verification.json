@@ -1,0 +1,33 @@
+{
+  "date": "2026-09-28T01:50:13.347375+08:00",
+  "baseline_head": "33ae3aa49600840b1700c83723408c494dc201a8",
+  "checked": {
+    "python": 14,
+    "javascript": 3,
+    "json": 133,
+    "markdown_links": 204
+  },
+  "errors": [],
+  "artifact_files_before_verification": 286,
+  "bytes": 15178501,
+  "concurrent_or_preexisting_tracked_changes": [
+    ".gitignore",
+    "AGENTS.md",
+    "docs/PROJECT_STRUCTURE.md",
+    "docs/migration/studio-backend-migration-validation.md",
+    "docs/migration/studio-frontend-completion/component-tools.json",
+    "docs/superpowers/plans/2026-09-15-studio-backend-webrpa-migration-implementation.md"
+  ],
+  "scope": "audit artifacts only; no full-suite rerun for concurrent documentation changes",
+  "excluded": [
+    "__pycache__",
+    "*.pyc"
+  ],
+  "aoci": "concurrent formal asset change prevented cognition confirmation; no formal index edits",
+  "artifact_sensitive_scan": {
+    "text_files": 249,
+    "private_key_or_provider_token_hits": 0,
+    "url_userinfo_hits": 2,
+    "classification": "Existing pytest fixture literals on example domains in collection log and JUnit; reviewed, not real credentials"
+  }
+}

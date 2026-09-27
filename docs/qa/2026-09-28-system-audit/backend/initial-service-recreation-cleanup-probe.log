@@ -1,0 +1,18 @@
+Traceback (most recent call last):
+  File "/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/backend/probe_service_recreation_cleanup.py", line 57, in <module>
+    main()
+  File "/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/backend/probe_service_recreation_cleanup.py", line 37, in main
+    asyncio.run(namespace[
+  File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/tests/integration/test_workflow_real_cloakbrowser.py", line 185, in test_real_cloakbrowser_persisted_dispatch_and_service_recreation
+    await app.router.on_shutdown[-1]()
+          ^^^^^^^^^^^^^^^^^^^
+AttributeError: 'APIRouter' object has no attribute 'shutdown'. Did you mean: '_shutdown'?

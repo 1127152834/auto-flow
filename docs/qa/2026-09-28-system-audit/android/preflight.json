@@ -1,0 +1,84 @@
+{
+  "checkedAt": "2026-09-27T17:18:26.430116+00:00",
+  "cpu": 6,
+  "memoryBytes": 8306655232,
+  "containers": [
+    {
+      "id": "a16690c74f02c67610234d41cb281459ee5de572f6c73fa19e121fcb93ef0ca9",
+      "name": "/autoflow-android-f5c99e27-a272-486b-9e04-05b506d2b0df",
+      "state": "exited",
+      "startedAt": "2026-09-22T07:06:57.074990964Z",
+      "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+      "memoryBytes": 1610612736,
+      "nanoCpus": 1000000000,
+      "workspaceLabel": "a0f4594029bbec28ef357b47e8c5c6f12d83437e7c6b34f0fb60b6dd00b6f36b",
+      "deviceLabel": "f5c99e27-a272-486b-9e04-05b506d2b0df"
+    },
+    {
+      "id": "5aa5cb6bb46345eefcde805e7a281e35676771b4b556b54a90378f48f7e65235",
+      "name": "/autoflow-android-f4b86f69-bf45-4adf-853d-b9c687ab3985",
+      "state": "exited",
+      "startedAt": "2026-09-13T02:44:41.739973642Z",
+      "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+      "memoryBytes": 1610612736,
+      "nanoCpus": 1000000000,
+      "workspaceLabel": "9be4c5eb2fcfde95481454e5c93b05957d716ba9cbc386d7dac3cc8df3bb9b43",
+      "deviceLabel": "f4b86f69-bf45-4adf-853d-b9c687ab3985"
+    },
+    {
+      "id": "db81f3555d925cb62ca44b99fd5aed4f6ad1507a73834dcb5f4a225c02071702",
+      "name": "/afd-5a7beadf6de2468d",
+      "state": "exited",
+      "startedAt": "2026-09-13T08:51:56.598542403Z",
+      "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+      "memoryBytes": 2147483648,
+      "nanoCpus": 2000000000,
+      "workspaceLabel": null,
+      "deviceLabel": null
+    },
+    {
+      "id": "e29079a97dff5d4189cac91a09161c876615d060b4ab49c3f415e5781c133611",
+      "name": "/autoflow-redroid-demo-manager-1",
+      "state": "exited",
+      "startedAt": "2026-09-12T19:56:37.003170458Z",
+      "imageId": "sha256:5fa0f62d5cdaf941752ad2f2eed81f0aaa0be32d004b9a2bef8cc9f991ee1c6c",
+      "memoryBytes": 0,
+      "nanoCpus": 0,
+      "workspaceLabel": null,
+      "deviceLabel": null
+    },
+    {
+      "id": "37a74f8c3ec782d13eea9f8389c052e288933a8c25f508c3b9a11450cbe26de1",
+      "name": "/afd-635e8a215e194178",
+      "state": "exited",
+      "startedAt": "2026-09-13T07:49:54.94374302Z",
+      "imageId": "sha256:0e8b779981d61a11ec1dd230b23dddc454fba2c75794abe8a7583037984e5f8b",
+      "memoryBytes": 2147483648,
+      "nanoCpus": 2000000000,
+      "workspaceLabel": null,
+      "deviceLabel": null
+    },
+    {
+      "id": "245b229f93a149ce7e6d2adf5f27b8522b7d6897fc979ff0e0acd3cf394a234a",
+      "name": "/afd-ef3857a550924052",
+      "state": "exited",
+      "startedAt": "2026-09-13T07:09:22.382847468Z",
+      "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+      "memoryBytes": 2147483648,
+      "nanoCpus": 2000000000,
+      "workspaceLabel": null,
+      "deviceLabel": null
+    }
+  ],
+  "volumes": [
+    "afd-5a7beadf6de2468d-data",
+    "afd-635e8a215e194178-data",
+    "afd-ef3857a550924052-data",
+    "autoflow-android-f4b86f69-bf45-4adf-853d-b9c687ab3985-data",
+    "autoflow-android-f5c99e27-a272-486b-9e04-05b506d2b0df-data",
+    "autoflow-redroid-demo_uploads"
+  ],
+  "memory": "MemTotal:        8111968 kB\nMemFree:         3971884 kB\nMemAvailable:    4695916 kB\nBuffers:          137176 kB\nCached:          3067308 kB\nSwapCached:            0 kB\nActive:          1574528 kB\nInactive:        1780528 kB\nActive(anon):     159092 kB\nInactive(anon):        0 kB\nActive(file):    1415436 kB\nInactive(file):  1780528 kB\nUnevictable:       26236 kB\nMlocked:           26236 kB\nSwapTotal:             0 kB\nSwapFree:              0 kB\nZswap:                 0 kB\nZswapped:              0 kB\nDirty:               172 kB\nWriteback:             0 kB\nAnonPages:        177064 kB\nMapped:           181968 kB\nShmem:              1068 kB\nKReclaimable:     153976 kB\nSlab:             257264 kB\nSReclaimable:     153976 kB\nSUnreclaim:       103288 kB\nKernelStack:        3308 kB\nShadowCallStack:     884 kB\nPageTables:         3688 kB\nSecPageTables:         0 kB\nNFS_Unstable:          0 kB\nBounce:                0 kB\nWritebackTmp:          0 kB\nCommitLimit:     4055984 kB\nCommitted_AS:     976504 kB\nVmallocTotal:   133141626880 kB\nVmallocUsed:       18452 kB\nVmallocChunk:          0 kB\nPercpu:             6384 kB\nHardwareCorrupted:     0 kB\nAnonHugePages:         0 kB\nShmemHugePages:        0 kB\nShmemPmdMapped:        0 kB\nFileHugePages:         0 kB\nFilePmdMapped:         0 kB\nCmaTotal:          32768 kB\nCmaFree:           29696 kB\nHugePages_Total:       0\nHugePages_Free:        0\nHugePages_Rsvd:        0\nHugePages_Surp:        0\nHugepagesize:       2048 kB\nHugetlb:               0 kB\n",
+  "activeReservedMemoryBytes": 0,
+  "new1536MbWithinBudget": true
+}

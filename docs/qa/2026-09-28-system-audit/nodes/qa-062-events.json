@@ -1,0 +1,89 @@
+[
+  {
+    "type": "execution:node_start",
+    "nodeId": "n0",
+    "executionId": "77882db8-7909-4d53-8e56-05651a11bacb",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-062",
+    "workflowId": "qa-062"
+  },
+  {
+    "type": "artifact:registered",
+    "runId": "qa-062",
+    "artifactId": "a0d31ccb-c4fd-41db-bb5f-1df6d23fcc95",
+    "nodeId": "n0",
+    "executionId": "77882db8-7909-4d53-8e56-05651a11bacb",
+    "relativePath": "runs/qa-062/artifacts/exports/9adc57611b284e05bd85305a83a8f380.json",
+    "size": 1055,
+    "sha256": "6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92",
+    "mimeType": "application/octet-stream",
+    "purpose": "result"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n0",
+    "executionId": "77882db8-7909-4d53-8e56-05651a11bacb",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "文件保存成功: copies/package.json (1055 字节)",
+    "error": null,
+    "isTimeout": false,
+    "data": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-nodes-a5m6recu/artifacts/runs/qa-062/outputs/copies/package.json",
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 6.694999989122152,
+    "artifactIds": [
+      "a0d31ccb-c4fd-41db-bb5f-1df6d23fcc95"
+    ],
+    "runId": "qa-062",
+    "workflowId": "qa-062"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "n1",
+    "executionId": "a2f2b8fe-5517-4ba9-9aa2-7fa310d8c8ac",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-062",
+    "workflowId": "qa-062"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n1",
+    "executionId": "a2f2b8fe-5517-4ba9-9aa2-7fa310d8c8ac",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "文件转换成功: package.json (1055 字节)",
+    "error": null,
+    "isTimeout": false,
+    "data": "data:application/json;base64,ewogICJuYW1lIjogImF1dG9mbG93IiwKICAicHJpdmF0ZSI6IHRydWUsCiAgIndvcmtzcGFjZXMiOiBbCiAgICAiYXBwcy9kZXNrdG9wIgogIF0sCiAgInNjcmlwdHMiOiB7CiAgICAidGVzdDpzdHJ1Y3R1cmUiOiAibm9kZSAtLXRlc3Qgc2NyaXB0cy9zdHJ1Y3R1cmUudGVzdC5tanMiLAogICAgImRldiI6ICJucG0gLS13b3Jrc3BhY2UgQGF1dG9mbG93L2Rlc2t0b3AgcnVuIGRldiIsCiAgICAidGVzdCI6ICJucG0gLS13b3Jrc3BhY2UgQGF1dG9mbG93L2Rlc2t0b3AgdGVzdCIsCiAgICAidHlwZWNoZWNrIjogIm5wbSAtLXdvcmtzcGFjZSBAYXV0b2Zsb3cvZGVza3RvcCBydW4gdHlwZWNoZWNrIiwKICAgICJsaW50IjogIm5wbSAtLXdvcmtzcGFjZSBAYXV0b2Zsb3cvZGVza3RvcCBydW4gbGludCIsCiAgICAiYnVpbGQiOiAibnBtIC0td29ya3NwYWNlIEBhdXRvZmxvdy9kZXNrdG9wIHJ1biBidWlsZCIsCiAgICAiYmFja2VuZDpidWlsZCI6ICJub2RlIHNjcmlwdHMvYnVpbGQtYmFja2VuZC5tanMiLAogICAgInBhY2thZ2U6ZGlyIjogIm5wbSAtLXdvcmtzcGFjZSBAYXV0b2Zsb3cvZGVza3RvcCBydW4gcGFja2FnZTpkaXIiLAogICAgIm9wZW5hcGk6Z2VuZXJhdGUiOiAibm9kZSBzY3JpcHRzL2dlbmVyYXRlLWFwaS5tanMiLAogICAgIm9wZW5hcGk6Y2hlY2siOiAibm9kZSBzY3JpcHRzL2dlbmVyYXRlLWFwaS5tanMgLS1jaGVjayIsCiAgICAic21va2U6c2lkZWNhciI6ICJub2RlIHNjcmlwdHMvc21va2Utc2lkZWNhci5tanMiLAogICAgInRlc3Q6c2NyaXB0cyI6ICJub2RlIC0tdGVzdCBzY3JpcHRzLyoudGVzdC5tanMiLAogICAgInNtb2tlOmRlc2t0b3AiOiAibm9kZSBzY3JpcHRzL3Ntb2tlLWRlc2t0b3AubWpzIiwKICAgICJzbW9rZTpzdHVkaW8iOiAibm9kZSBzY3JpcHRzL3Ntb2tlLXN0dWRpby13aW5kb3cubWpzIiwKICAgICJ0ZXN0OnBtMiI6ICJub2RlIHNjcmlwdHMvdmVyaWZ5LXBtMi1kZWxpdmVyeS5tanMiCiAgfSwKICAiZGV2RGVwZW5kZW5jaWVzIjogewogICAgIm9wZW5hcGktdHlwZXNjcmlwdCI6ICJeNy4xMy4wIgogIH0KfQo=",
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.6363749853335321,
+    "artifactIds": [],
+    "runId": "qa-062",
+    "workflowId": "qa-062"
+  },
+  {
+    "type": "execution:completed",
+    "runId": "qa-062",
+    "workflowId": "qa-062",
+    "executedNodes": 2,
+    "failedNodeId": null,
+    "issues": [],
+    "error": null
+  }
+]

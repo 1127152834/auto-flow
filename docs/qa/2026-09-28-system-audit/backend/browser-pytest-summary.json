@@ -1,0 +1,232 @@
+{
+  "counts": {
+    "passed": 40,
+    "failure": 2
+  },
+  "failures": [
+    {
+      "node": "tests.integration.test_environment_real_browser_chain::test_management_chain_saves_linked_environment_and_restores_login",
+      "status": "failure",
+      "seconds": 600.031,
+      "message": "subprocess.TimeoutExpired: Command '['/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/bin/python', '/Users/zhangtiancheng/Documents/projects/autoflow/scripts/qa-pm5-browser-chain.py', '--workspace', '/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-cloak-cinilw86/pytest/test_management_chain_saves_li0/workspace', '--out', '/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-cloak-cinilw86/pytest/test_management_chain_saves_li0/evidence', '--kernel', '/Users/zhangtiancheng/Library/Application Support/@autoflow/desktop/data/kernels/chromium-145.0.7632.109.2/Chromium.app/Contents/MacOS/Chromium']' timed out after 600 seconds"
+    },
+    {
+      "node": "tests.integration.test_workflow_real_cloakbrowser::test_real_cloakbrowser_persisted_dispatch_and_service_recreation",
+      "status": "failure",
+      "seconds": 9.639,
+      "message": "TypeError: object NoneType can't be used in 'await' expression"
+    }
+  ],
+  "cases": [
+    {
+      "node": "tests.integration.test_b1_cloakbrowser_flow::test_real_cloakbrowser_runs_five_node_workflow",
+      "status": "passed",
+      "seconds": 5.063
+    },
+    {
+      "node": "tests.integration.test_b2_advanced_browser_cloakbrowser_flow::test_real_cloakbrowser_runs_advanced_browser_family",
+      "status": "passed",
+      "seconds": 1.726
+    },
+    {
+      "node": "tests.integration.test_b2_inspection_cloakbrowser_flow::test_real_cloakbrowser_tests_and_picks_a_selector",
+      "status": "passed",
+      "seconds": 1.496
+    },
+    {
+      "node": "tests.integration.test_b2_inspection_cloakbrowser_flow::test_real_inspection_handles_selector_and_page_change_edges",
+      "status": "passed",
+      "seconds": 1.549
+    },
+    {
+      "node": "tests.integration.test_b2_inspection_cloakbrowser_flow::test_real_picker_and_runtime_share_nested_cross_origin_frame_target",
+      "status": "passed",
+      "seconds": 2.177
+    },
+    {
+      "node": "tests.integration.test_b2_inspection_cloakbrowser_flow::test_real_inspection_worker_owns_profile_and_cleans_process_tree",
+      "status": "passed",
+      "seconds": 4.053
+    },
+    {
+      "node": "tests.integration.test_b2_large_artifacts_cloakbrowser_flow::test_real_cloakbrowser_externalizes_one_mib_web_artifacts",
+      "status": "passed",
+      "seconds": 3.296
+    },
+    {
+      "node": "tests.integration.test_b2_network_monitor_cloakbrowser_flow::test_real_cloakbrowser_runs_network_monitor_family",
+      "status": "passed",
+      "seconds": 1.679
+    },
+    {
+      "node": "tests.integration.test_b2_page_load_cloakbrowser_flow::test_real_cloakbrowser_runs_page_load_family",
+      "status": "passed",
+      "seconds": 1.207
+    },
+    {
+      "node": "tests.integration.test_b2_remaining_browser_cloakbrowser_flow::test_real_cloakbrowser_runs_remaining_browser_family",
+      "status": "passed",
+      "seconds": 2.174
+    },
+    {
+      "node": "tests.integration.test_b2_web_basic_cloakbrowser_flow::test_real_cloakbrowser_runs_web_basic_family",
+      "status": "passed",
+      "seconds": 2.155
+    },
+    {
+      "node": "tests.integration.test_b5_captcha_cloakbrowser_flow::test_real_cloakbrowser_runs_captcha_family",
+      "status": "passed",
+      "seconds": 2.672
+    },
+    {
+      "node": "tests.integration.test_b5_firecrawl_cloakbrowser_flow::test_real_cloakbrowser_runs_firecrawl_family",
+      "status": "passed",
+      "seconds": 4.709
+    },
+    {
+      "node": "tests.integration.test_b6_element_change_cloakbrowser_flow::test_real_cloakbrowser_observes_added_element",
+      "status": "passed",
+      "seconds": 2.019
+    },
+    {
+      "node": "tests.integration.test_b7_recording_cloakbrowser_flow::test_real_cloakbrowser_records_chinese_form_and_future_page",
+      "status": "passed",
+      "seconds": 2.271
+    },
+    {
+      "node": "tests.integration.test_environment_persist_restore::test_real_login_persists_after_browser_close[explicit-close]",
+      "status": "passed",
+      "seconds": 3.38
+    },
+    {
+      "node": "tests.integration.test_environment_persist_restore::test_real_login_persists_after_browser_close[http-end-close]",
+      "status": "passed",
+      "seconds": 3.552
+    },
+    {
+      "node": "tests.integration.test_environment_real_browser_chain::test_management_chain_saves_linked_environment_and_restores_login",
+      "status": "failure",
+      "seconds": 600.031
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[success]",
+      "status": "passed",
+      "seconds": 13.691
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[stop]",
+      "status": "passed",
+      "seconds": 9.049
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[budget]",
+      "status": "passed",
+      "seconds": 2.519
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[failure]",
+      "status": "passed",
+      "seconds": 11.574
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[web_basic]",
+      "status": "passed",
+      "seconds": 16.249
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[page_load]",
+      "status": "passed",
+      "seconds": 12.519
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[advanced_browser]",
+      "status": "passed",
+      "seconds": 14.54
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[tab_switch]",
+      "status": "passed",
+      "seconds": 14.441
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[table_extract]",
+      "status": "passed",
+      "seconds": 12.549
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[control_primitives]",
+      "status": "passed",
+      "seconds": 12.531
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[network_capture]",
+      "status": "passed",
+      "seconds": 22.06
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[firecrawl]",
+      "status": "passed",
+      "seconds": 18.879
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[firecrawl_failure]",
+      "status": "passed",
+      "seconds": 8.976
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[firecrawl_stop]",
+      "status": "passed",
+      "seconds": 9.829
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[element_change]",
+      "status": "passed",
+      "seconds": 15.043
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[element_timeout]",
+      "status": "passed",
+      "seconds": 10.037
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[element_stop]",
+      "status": "passed",
+      "seconds": 10.57
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[captcha]",
+      "status": "passed",
+      "seconds": 15.536
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[captcha_failure]",
+      "status": "passed",
+      "seconds": 10.032
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[captcha_stop]",
+      "status": "passed",
+      "seconds": 10.389
+    },
+    {
+      "node": "tests.integration.test_workflow_real_cloakbrowser::test_real_cloakbrowser_worker_lifecycle[success]",
+      "status": "passed",
+      "seconds": 4.165
+    },
+    {
+      "node": "tests.integration.test_workflow_real_cloakbrowser::test_real_cloakbrowser_worker_lifecycle[stop_before_navigation]",
+      "status": "passed",
+      "seconds": 3.012
+    },
+    {
+      "node": "tests.integration.test_workflow_real_cloakbrowser::test_real_cloakbrowser_worker_lifecycle[node_timeout]",
+      "status": "passed",
+      "seconds": 3.317
+    },
+    {
+      "node": "tests.integration.test_workflow_real_cloakbrowser::test_real_cloakbrowser_persisted_dispatch_and_service_recreation",
+      "status": "failure",
+      "seconds": 9.639
+    }
+  ]
+}

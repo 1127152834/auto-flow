@@ -1,0 +1,39 @@
+{
+  "source": "../ui/native-import.json",
+  "actualFailedOperation": {
+    "id": "2922395b-c7ef-45fd-bd00-b2cabbc88bc0",
+    "kind": "importExcel",
+    "status": "failed",
+    "result": "null",
+    "error": {
+      "code": "INVALID_PROJECT_DATA",
+      "message": "来源单元格不满足字段要求。",
+      "details": {
+        "field": "bytes",
+        "reason": "must be a finite JSON-safe number",
+        "rule": "type",
+        "rowNumber": 2,
+        "columnIndex": 1
+      }
+    }
+  },
+  "renderChain": [
+    {
+      "path": "apps/desktop/src/renderer/domains/project-data/use-excel-import.ts",
+      "line": 37,
+      "behavior": "safeProjectError(value.error)"
+    },
+    {
+      "path": "apps/desktop/src/renderer/domains/projects/presentation-error.ts",
+      "line": 15,
+      "behavior": "INVALID_PROJECT_DATA maps to generic text"
+    },
+    {
+      "path": "apps/desktop/src/renderer/domains/project-data/components/DataOperationStatus.tsx",
+      "line": 24,
+      "behavior": "renders error string only"
+    }
+  ],
+  "uiText": "填写内容有误，请检查后重试",
+  "classification": "correct input rejection; structured error details not displayed"
+}

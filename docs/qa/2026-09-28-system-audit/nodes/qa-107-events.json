@@ -1,0 +1,75 @@
+[
+  {
+    "type": "execution:node_start",
+    "nodeId": "n0",
+    "executionId": "f8ae55de-dda4-4b50-a202-6c0102e80981",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-107",
+    "workflowId": "qa-107"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n0",
+    "executionId": "f8ae55de-dda4-4b50-a202-6c0102e80981",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "延迟 1秒 完成，开始执行",
+    "error": null,
+    "isTimeout": false,
+    "data": null,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 1001.4037090004422,
+    "artifactIds": [],
+    "runId": "qa-107",
+    "workflowId": "qa-107"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "n1",
+    "executionId": "98008323-1b6c-4dfd-894f-71d6587b290d",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-107",
+    "workflowId": "qa-107"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n1",
+    "executionId": "98008323-1b6c-4dfd-894f-71d6587b290d",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "已等待 0.05秒",
+    "error": null,
+    "isTimeout": false,
+    "data": null,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 51.22845899313688,
+    "artifactIds": [],
+    "runId": "qa-107",
+    "workflowId": "qa-107"
+  },
+  {
+    "type": "execution:completed",
+    "runId": "qa-107",
+    "workflowId": "qa-107",
+    "executedNodes": 2,
+    "failedNodeId": null,
+    "issues": [],
+    "error": null
+  }
+]

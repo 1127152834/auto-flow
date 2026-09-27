@@ -1,0 +1,1571 @@
+[
+  {
+    "type": "execution:node_start",
+    "nodeId": "loop",
+    "executionId": "bb7e7b02-382d-423c-972d-304edefc80e8",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "loop",
+    "executionId": "bb7e7b02-382d-423c-972d-304edefc80e8",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "开始遍历字典 (共 15 项)",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "type": "foreach_dict",
+      "data": [
+        [
+          "test:structure",
+          "node --test scripts/structure.test.mjs"
+        ],
+        [
+          "dev",
+          "npm --workspace @autoflow/desktop run dev"
+        ],
+        [
+          "test",
+          "npm --workspace @autoflow/desktop test"
+        ],
+        [
+          "typecheck",
+          "npm --workspace @autoflow/desktop run typecheck"
+        ],
+        [
+          "lint",
+          "npm --workspace @autoflow/desktop run lint"
+        ],
+        [
+          "build",
+          "npm --workspace @autoflow/desktop run build"
+        ],
+        [
+          "backend:build",
+          "node scripts/build-backend.mjs"
+        ],
+        [
+          "package:dir",
+          "npm --workspace @autoflow/desktop run package:dir"
+        ],
+        [
+          "openapi:generate",
+          "node scripts/generate-api.mjs"
+        ],
+        [
+          "openapi:check",
+          "node scripts/generate-api.mjs --check"
+        ],
+        [
+          "smoke:sidecar",
+          "node scripts/smoke-sidecar.mjs"
+        ],
+        [
+          "test:scripts",
+          "node --test scripts/*.test.mjs"
+        ],
+        [
+          "smoke:desktop",
+          "node scripts/smoke-desktop.mjs"
+        ],
+        [
+          "smoke:studio",
+          "node scripts/smoke-studio-window.mjs"
+        ],
+        [
+          "test:pm2",
+          "node scripts/verify-pm2-delivery.mjs"
+        ]
+      ],
+      "key_variable": "key",
+      "value_variable": "value",
+      "index_variable": "index",
+      "current_index": 0
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.2384590043220669,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "log",
+    "executionId": "5cbd3411-eb09-44a4-93fc-a11931060cde",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 0,
+          "iteration": 1
+        }
+      ]
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "log",
+    "executionId": "5cbd3411-eb09-44a4-93fc-a11931060cde",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 0,
+          "iteration": 1
+        }
+      ]
+    },
+    "success": true,
+    "message": "autoflow",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "level": "info",
+      "message": "autoflow"
+    },
+    "logLevel": "info",
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 0.23570898338221014,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "continue",
+    "executionId": "3ce6b7e1-75a5-4726-9ae0-14ccd21d9423",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 0,
+          "iteration": 1
+        }
+      ]
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "continue",
+    "executionId": "3ce6b7e1-75a5-4726-9ae0-14ccd21d9423",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 0,
+          "iteration": 1
+        }
+      ]
+    },
+    "success": true,
+    "message": "继续下一次循环",
+    "error": null,
+    "isTimeout": false,
+    "data": null,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.1732500095386058,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "log",
+    "executionId": "bb0fbd05-c236-49d4-b523-6f38ce5c60d2",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 1,
+          "iteration": 2
+        }
+      ]
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "log",
+    "executionId": "bb0fbd05-c236-49d4-b523-6f38ce5c60d2",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 1,
+          "iteration": 2
+        }
+      ]
+    },
+    "success": true,
+    "message": "autoflow",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "level": "info",
+      "message": "autoflow"
+    },
+    "logLevel": "info",
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 0.14437499339692295,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "continue",
+    "executionId": "27e19ed7-cb38-43a2-87ac-fba4787f416a",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 1,
+          "iteration": 2
+        }
+      ]
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "continue",
+    "executionId": "27e19ed7-cb38-43a2-87ac-fba4787f416a",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 1,
+          "iteration": 2
+        }
+      ]
+    },
+    "success": true,
+    "message": "继续下一次循环",
+    "error": null,
+    "isTimeout": false,
+    "data": null,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.11679201270453632,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "log",
+    "executionId": "e693f587-76cd-4034-b7bd-bf1e56aa3b52",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 2,
+          "iteration": 3
+        }
+      ]
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "log",
+    "executionId": "e693f587-76cd-4034-b7bd-bf1e56aa3b52",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 2,
+          "iteration": 3
+        }
+      ]
+    },
+    "success": true,
+    "message": "autoflow",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "level": "info",
+      "message": "autoflow"
+    },
+    "logLevel": "info",
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 0.15425001038238406,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "continue",
+    "executionId": "1a412fe7-c735-4bc7-8448-f5979bc7b476",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 2,
+          "iteration": 3
+        }
+      ]
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "continue",
+    "executionId": "1a412fe7-c735-4bc7-8448-f5979bc7b476",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 2,
+          "iteration": 3
+        }
+      ]
+    },
+    "success": true,
+    "message": "继续下一次循环",
+    "error": null,
+    "isTimeout": false,
+    "data": null,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.12533398694358766,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "log",
+    "executionId": "88e5d049-4cf6-4808-bdd5-c6d7fd149627",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 3,
+          "iteration": 4
+        }
+      ]
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "log",
+    "executionId": "88e5d049-4cf6-4808-bdd5-c6d7fd149627",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 3,
+          "iteration": 4
+        }
+      ]
+    },
+    "success": true,
+    "message": "autoflow",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "level": "info",
+      "message": "autoflow"
+    },
+    "logLevel": "info",
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 0.1516659976914525,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "continue",
+    "executionId": "8aa0852b-5ee1-4fcf-a3b5-f35312526964",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 3,
+          "iteration": 4
+        }
+      ]
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "continue",
+    "executionId": "8aa0852b-5ee1-4fcf-a3b5-f35312526964",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 3,
+          "iteration": 4
+        }
+      ]
+    },
+    "success": true,
+    "message": "继续下一次循环",
+    "error": null,
+    "isTimeout": false,
+    "data": null,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.12237500050105155,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "log",
+    "executionId": "da42390d-a536-4f57-8db0-e128b1637a88",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 4,
+          "iteration": 5
+        }
+      ]
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "log",
+    "executionId": "da42390d-a536-4f57-8db0-e128b1637a88",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 4,
+          "iteration": 5
+        }
+      ]
+    },
+    "success": true,
+    "message": "autoflow",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "level": "info",
+      "message": "autoflow"
+    },
+    "logLevel": "info",
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 0.12695800978690386,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "continue",
+    "executionId": "d8d13ea2-62a2-48b9-b233-f736f79e9e9e",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 4,
+          "iteration": 5
+        }
+      ]
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "continue",
+    "executionId": "d8d13ea2-62a2-48b9-b233-f736f79e9e9e",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 4,
+          "iteration": 5
+        }
+      ]
+    },
+    "success": true,
+    "message": "继续下一次循环",
+    "error": null,
+    "isTimeout": false,
+    "data": null,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.1092919846996665,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "log",
+    "executionId": "b84cfe0d-41c2-4db9-bb87-71e19a502f24",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 5,
+          "iteration": 6
+        }
+      ]
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "log",
+    "executionId": "b84cfe0d-41c2-4db9-bb87-71e19a502f24",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 5,
+          "iteration": 6
+        }
+      ]
+    },
+    "success": true,
+    "message": "autoflow",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "level": "info",
+      "message": "autoflow"
+    },
+    "logLevel": "info",
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 0.11691701365634799,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "continue",
+    "executionId": "dff5f1d2-1398-400c-8fa6-8c062e0e24f3",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 5,
+          "iteration": 6
+        }
+      ]
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "continue",
+    "executionId": "dff5f1d2-1398-400c-8fa6-8c062e0e24f3",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 5,
+          "iteration": 6
+        }
+      ]
+    },
+    "success": true,
+    "message": "继续下一次循环",
+    "error": null,
+    "isTimeout": false,
+    "data": null,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.10858298628591001,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "log",
+    "executionId": "07ed9c90-b32c-4c92-9cf5-2677c714d07c",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 6,
+          "iteration": 7
+        }
+      ]
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "log",
+    "executionId": "07ed9c90-b32c-4c92-9cf5-2677c714d07c",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 6,
+          "iteration": 7
+        }
+      ]
+    },
+    "success": true,
+    "message": "autoflow",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "level": "info",
+      "message": "autoflow"
+    },
+    "logLevel": "info",
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 0.116915995022282,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "continue",
+    "executionId": "23f582c9-b491-475b-a6e0-bccbd1900104",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 6,
+          "iteration": 7
+        }
+      ]
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "continue",
+    "executionId": "23f582c9-b491-475b-a6e0-bccbd1900104",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 6,
+          "iteration": 7
+        }
+      ]
+    },
+    "success": true,
+    "message": "继续下一次循环",
+    "error": null,
+    "isTimeout": false,
+    "data": null,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.875917001394555,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "log",
+    "executionId": "7cd60b34-b948-4878-a22a-ba705db0f7b0",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 7,
+          "iteration": 8
+        }
+      ]
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "log",
+    "executionId": "7cd60b34-b948-4878-a22a-ba705db0f7b0",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 7,
+          "iteration": 8
+        }
+      ]
+    },
+    "success": true,
+    "message": "autoflow",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "level": "info",
+      "message": "autoflow"
+    },
+    "logLevel": "info",
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 0.13062500511296093,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "continue",
+    "executionId": "38366d2d-ae97-49f6-ab7b-87d03de11a55",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 7,
+          "iteration": 8
+        }
+      ]
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "continue",
+    "executionId": "38366d2d-ae97-49f6-ab7b-87d03de11a55",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 7,
+          "iteration": 8
+        }
+      ]
+    },
+    "success": true,
+    "message": "继续下一次循环",
+    "error": null,
+    "isTimeout": false,
+    "data": null,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.12479198630899191,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "log",
+    "executionId": "e1a1c881-54b5-4b85-9763-64b401b85c54",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 8,
+          "iteration": 9
+        }
+      ]
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "log",
+    "executionId": "e1a1c881-54b5-4b85-9763-64b401b85c54",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 8,
+          "iteration": 9
+        }
+      ]
+    },
+    "success": true,
+    "message": "autoflow",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "level": "info",
+      "message": "autoflow"
+    },
+    "logLevel": "info",
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 0.12479198630899191,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "continue",
+    "executionId": "486dbeb0-26d0-4135-9e90-28415d04e33a",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 8,
+          "iteration": 9
+        }
+      ]
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "continue",
+    "executionId": "486dbeb0-26d0-4135-9e90-28415d04e33a",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 8,
+          "iteration": 9
+        }
+      ]
+    },
+    "success": true,
+    "message": "继续下一次循环",
+    "error": null,
+    "isTimeout": false,
+    "data": null,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.11166700278408825,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "log",
+    "executionId": "5dccd392-68b7-44c0-88b5-4a744eab6158",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 9,
+          "iteration": 10
+        }
+      ]
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "log",
+    "executionId": "5dccd392-68b7-44c0-88b5-4a744eab6158",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 9,
+          "iteration": 10
+        }
+      ]
+    },
+    "success": true,
+    "message": "autoflow",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "level": "info",
+      "message": "autoflow"
+    },
+    "logLevel": "info",
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 0.11900000390596688,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "continue",
+    "executionId": "186efda6-b90c-4076-b144-4c1abea27918",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 9,
+          "iteration": 10
+        }
+      ]
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "continue",
+    "executionId": "186efda6-b90c-4076-b144-4c1abea27918",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 9,
+          "iteration": 10
+        }
+      ]
+    },
+    "success": true,
+    "message": "继续下一次循环",
+    "error": null,
+    "isTimeout": false,
+    "data": null,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.10483301593922079,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "log",
+    "executionId": "12ebb6c8-5e90-47ae-9a8b-494fbc022855",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 10,
+          "iteration": 11
+        }
+      ]
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "log",
+    "executionId": "12ebb6c8-5e90-47ae-9a8b-494fbc022855",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 10,
+          "iteration": 11
+        }
+      ]
+    },
+    "success": true,
+    "message": "autoflow",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "level": "info",
+      "message": "autoflow"
+    },
+    "logLevel": "info",
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 0.14670801465399563,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "continue",
+    "executionId": "20d4fbc8-1b51-4868-8981-1b34534c236b",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 10,
+          "iteration": 11
+        }
+      ]
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "continue",
+    "executionId": "20d4fbc8-1b51-4868-8981-1b34534c236b",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 10,
+          "iteration": 11
+        }
+      ]
+    },
+    "success": true,
+    "message": "继续下一次循环",
+    "error": null,
+    "isTimeout": false,
+    "data": null,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.1677919935900718,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "log",
+    "executionId": "6ce4778b-611d-49f6-b408-e9eafe104a4f",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 11,
+          "iteration": 12
+        }
+      ]
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "log",
+    "executionId": "6ce4778b-611d-49f6-b408-e9eafe104a4f",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 11,
+          "iteration": 12
+        }
+      ]
+    },
+    "success": true,
+    "message": "autoflow",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "level": "info",
+      "message": "autoflow"
+    },
+    "logLevel": "info",
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 0.14820898650214076,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "continue",
+    "executionId": "b5c95166-4bfb-4d4e-93c9-26514f1d472d",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 11,
+          "iteration": 12
+        }
+      ]
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "continue",
+    "executionId": "b5c95166-4bfb-4d4e-93c9-26514f1d472d",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 11,
+          "iteration": 12
+        }
+      ]
+    },
+    "success": true,
+    "message": "继续下一次循环",
+    "error": null,
+    "isTimeout": false,
+    "data": null,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.1094590115826577,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "log",
+    "executionId": "85d7e090-806b-48fe-958c-da1274650b86",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 12,
+          "iteration": 13
+        }
+      ]
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "log",
+    "executionId": "85d7e090-806b-48fe-958c-da1274650b86",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 12,
+          "iteration": 13
+        }
+      ]
+    },
+    "success": true,
+    "message": "autoflow",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "level": "info",
+      "message": "autoflow"
+    },
+    "logLevel": "info",
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 0.11758401524275541,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "continue",
+    "executionId": "4fa4f8a2-e697-4b55-a876-d86b017d1488",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 12,
+          "iteration": 13
+        }
+      ]
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "continue",
+    "executionId": "4fa4f8a2-e697-4b55-a876-d86b017d1488",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 12,
+          "iteration": 13
+        }
+      ]
+    },
+    "success": true,
+    "message": "继续下一次循环",
+    "error": null,
+    "isTimeout": false,
+    "data": null,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.12524999328888953,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "log",
+    "executionId": "a22379d0-080e-4567-aa9b-9eb59e1a026f",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 13,
+          "iteration": 14
+        }
+      ]
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "log",
+    "executionId": "a22379d0-080e-4567-aa9b-9eb59e1a026f",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 13,
+          "iteration": 14
+        }
+      ]
+    },
+    "success": true,
+    "message": "autoflow",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "level": "info",
+      "message": "autoflow"
+    },
+    "logLevel": "info",
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 0.12833299115300179,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "continue",
+    "executionId": "dc9b16ff-5bfe-473a-abb0-0b16e64323b2",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 13,
+          "iteration": 14
+        }
+      ]
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "continue",
+    "executionId": "dc9b16ff-5bfe-473a-abb0-0b16e64323b2",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 13,
+          "iteration": 14
+        }
+      ]
+    },
+    "success": true,
+    "message": "继续下一次循环",
+    "error": null,
+    "isTimeout": false,
+    "data": null,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.11212500976398587,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "log",
+    "executionId": "c52e63d2-8301-4fa6-8589-775bc7f39310",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 14,
+          "iteration": 15
+        }
+      ]
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "log",
+    "executionId": "c52e63d2-8301-4fa6-8589-775bc7f39310",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 14,
+          "iteration": 15
+        }
+      ]
+    },
+    "success": true,
+    "message": "autoflow",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "level": "info",
+      "message": "autoflow"
+    },
+    "logLevel": "info",
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 0.12012501247227192,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "continue",
+    "executionId": "75c1d110-9776-4a88-ba7b-a27cee12f279",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 14,
+          "iteration": 15
+        }
+      ]
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "continue",
+    "executionId": "75c1d110-9776-4a88-ba7b-a27cee12f279",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "foreach_dict",
+          "currentIndex": 14,
+          "iteration": 15
+        }
+      ]
+    },
+    "success": true,
+    "message": "继续下一次循环",
+    "error": null,
+    "isTimeout": false,
+    "data": null,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.11637498391792178,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "done",
+    "executionId": "bd786d36-0820-4de8-a6bb-df69f8f739cb",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "done",
+    "executionId": "bd786d36-0820-4de8-a6bb-df69f8f739cb",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "@autoflow/desktop",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "level": "info",
+      "message": "@autoflow/desktop"
+    },
+    "logLevel": "info",
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 0.145500001963228,
+    "artifactIds": [],
+    "runId": "qa-111",
+    "workflowId": "qa-111"
+  },
+  {
+    "type": "execution:completed",
+    "runId": "qa-111",
+    "workflowId": "qa-111",
+    "executedNodes": 32,
+    "failedNodeId": null,
+    "issues": [],
+    "error": null
+  }
+]

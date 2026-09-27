@@ -1,0 +1,13 @@
+{
+  "lockfileVersion": 3,
+  "summary": {
+    "entries": 872,
+    "links": 1,
+    "installed": 775,
+    "versionMismatch": 0,
+    "missingRequired": 0,
+    "missingOptionalPlatformSpecific": 96
+  },
+  "details": [],
+  "limitations": "Package versions checked at paths recorded in lockfile; tarball integrity and modified package contents are not re-verified. Optional platform-specific entries counted as expected absence; npm ls provides complementary installed-tree validation."
+}

@@ -1,0 +1,13 @@
+{
+  "startedAt": "2026-09-27T17:09:18.456886+00:00",
+  "gitHead": "33ae3aa49600840b1700c83723408c494dc201a8",
+  "platform": "macOS-26.4.1-arm64-arm-64bit",
+  "python": "3.11.13",
+  "realSampleCount": 8504,
+  "source": "git ls-files + actual filesystem stat; no duplicated rows",
+  "timing": "TCP HTTP request through response body download; JSON decode excluded; nearest-rank percentiles; persistent client",
+  "stages": [],
+  "error": "AssertionError: ('POST', '/api/v1/projects/4e2c1aac-b7a2-4cde-8be6-78c51030f278/tables/d3da8f7c-e141-4dd8-82d6-5633166903f3/records/batch', 422, '{\"error\":{\"code\":\"INVALID_RECORD_BATCH\",\"message\":\"Record batch was not saved\",\"details\":{\"rowErrors\":[{\"clientRowId\":\"f9d5f7a2-84c8-4ec5-a4b4-d083c622ac01\",\"fieldId\":\"47c1788c-ea08-4e19-9e31-4d76a4104610\",\"code\":\"INVALID_PROJECT_DATA\",\"message\":\"Invalid project data\"},{\"clientRowId\":\"b83cee10-6f7e-4f29-a3c1-b0a8519bfad0\",\"fieldId\":\"47c1788c-ea08-4e19-9e31-4d76a4104610\",\"code\":\"INVALID_PROJECT_DATA\",\"message\":\"Invalid project data\"}],\"domainCode\":\"invalid_record_batch\",\"retryable\":false},\"requestId\":\"927984e7-a430-42b6-ba32-934e2e520151\"}}')",
+  "sidecarStopped": true,
+  "finishedAt": "2026-09-27T17:09:21.587526+00:00"
+}

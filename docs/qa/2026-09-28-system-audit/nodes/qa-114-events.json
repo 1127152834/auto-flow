@@ -1,0 +1,128 @@
+[
+  {
+    "type": "execution:node_start",
+    "nodeId": "call",
+    "executionId": "8504acfb-9574-4396-9a8d-7daf7113649c",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-114",
+    "workflowId": "qa-114"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "childsum",
+    "executionId": "a0bb3518-1d90-4fc4-bf02-1aa8aeae6ba4",
+    "executionContext": {
+      "scopes": [
+        {
+          "kind": "customModule",
+          "id": "source-summary",
+          "name": "source-summary"
+        }
+      ],
+      "loops": []
+    },
+    "runId": "qa-114",
+    "workflowId": "qa-114"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "childsum",
+    "executionId": "a0bb3518-1d90-4fc4-bf02-1aa8aeae6ba4",
+    "executionContext": {
+      "scopes": [
+        {
+          "kind": "customModule",
+          "id": "source-summary",
+          "name": "source-summary"
+        }
+      ],
+      "loops": []
+    },
+    "success": true,
+    "message": "列表求和: 66222",
+    "error": null,
+    "isTimeout": false,
+    "data": 66222,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.2716669987421483,
+    "artifactIds": [],
+    "runId": "qa-114",
+    "workflowId": "qa-114"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "call",
+    "executionId": "8504acfb-9574-4396-9a8d-7daf7113649c",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "自定义模块 'source-summary' 执行完成",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "outputs": {
+        "source_bytes": 66222
+      },
+      "executed_nodes": 1,
+      "failed_nodes": 0
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 1.1128329788334668,
+    "artifactIds": [],
+    "runId": "qa-114",
+    "workflowId": "qa-114"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "check",
+    "executionId": "d8992ac8-4191-47f0-aa07-66ed5da69f57",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-114",
+    "workflowId": "qa-114"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "check",
+    "executionId": "d8992ac8-4191-47f0-aa07-66ed5da69f57",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "断言通过: '66222' == 66222",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "passed": true,
+      "detail": "'66222' == 66222"
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 1.4252080000005662,
+    "artifactIds": [],
+    "runId": "qa-114",
+    "workflowId": "qa-114"
+  },
+  {
+    "type": "execution:completed",
+    "runId": "qa-114",
+    "workflowId": "qa-114",
+    "executedNodes": 2,
+    "failedNodeId": null,
+    "issues": [],
+    "error": null
+  }
+]

@@ -1,0 +1,32 @@
+Evidence: /Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/runtime/run-hn1fvbhq
+{"check": "real loopback service ready", "passed": true}
+{"check": "record idempotency package.json", "passed": true}
+{"check": "record idempotency apps/backend/pyproject.toml", "passed": true}
+{"check": "record idempotency AGENTS.md", "passed": true}
+{"check": "actual file metadata roundtrip", "passed": true}
+{"check": "stale revision rejects overwrite", "passed": true}
+{"check": "table_semantics validation ready", "passed": true}
+{"check": "table nodes run on real source metadata", "passed": true}
+{"check": "table node boundary - project business table remains unchanged", "passed": true}
+{"check": "concurrent_real_file validation ready", "passed": true}
+{"check": "two production browser workers succeed", "passed": true}
+{"check": "browser reads exact actual package 918b36f2-5d99-44d6-b90b-d2cf82ef358f", "passed": true}
+{"check": "browser reads exact actual package bcf452f8-00e9-41ac-95ba-fc0361c8d39c", "passed": true}
+{"check": "requested concurrency 2 actually reaches 2", "passed": false}
+{"check": "batch original-key replay creates no second batch", "passed": true}
+{"check": "public_web validation ready", "passed": true}
+{"check": "public HTTPS browser read", "passed": true}
+{"check": "failure validation ready", "passed": true}
+{"check": "real missing-element failure and pending cancellation", "passed": true}
+{"check": "real failure has downloadable evidence", "passed": true}
+{"check": "stop validation ready", "passed": true}
+{"check": "ordinary stop cancels running and queued tasks", "passed": true}
+{"check": "stopped graph never runs following read", "passed": true}
+{"check": "crash_restart validation ready", "passed": true}
+{"check": "sidecar crash durable interruption", "passed": true}
+{"check": "sidecar restart does not replay read side effect", "passed": true}
+{"check": "completed batch survives process restart", "passed": true}
+{"check": "after_recovery validation ready", "passed": true}
+{"check": "fresh production run succeeds after crash recovery", "passed": true}
+{"check": "temporary environments cleaned", "passed": true}
+RESULT /Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/runtime/run-hn1fvbhq/results.json

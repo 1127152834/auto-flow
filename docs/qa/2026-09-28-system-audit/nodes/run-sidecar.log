@@ -1,0 +1,274 @@
+{
+  "status": "pass",
+  "error": null,
+  "checks": [
+    {
+      "name": "actual repository download 51628",
+      "passed": true,
+      "details": {
+        "status": 200,
+        "sha256": "6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92"
+      }
+    },
+    {
+      "name": "actual repository download 51629",
+      "passed": true,
+      "details": {
+        "status": 200,
+        "sha256": "6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92"
+      }
+    },
+    {
+      "name": "folder listing contains actual package.json",
+      "passed": true,
+      "details": {
+        "status": 200
+      }
+    },
+    {
+      "name": "valid callback custom response",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "all seven real nodes complete",
+      "passed": true,
+      "details": {
+        "runId": "qa-eeaba679bc7042d3a1b4bbff26f748d0",
+        "workflowId": "c3bec16e-6936-4f28-9af7-97525554ca86",
+        "documentId": "c3bec16e-6936-4f28-9af7-97525554ca86",
+        "projectId": null,
+        "workflowName": "真实仓库文件共享与Webhook回调",
+        "status": "completed",
+        "startedAt": "2026-09-27T17:25:08.710726+00:00",
+        "finishedAt": "2026-09-27T17:25:12.347956+00:00",
+        "logCount": 8,
+        "error": null,
+        "documentSnapshot": {
+          "nodes": [
+            {
+              "id": "n0",
+              "type": "moduleNode",
+              "data": {
+                "moduleType": "share_folder",
+                "label": "share_folder",
+                "config": {
+                  "folderPath": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-sidecar-nodes-nfp2ni7w/repo share",
+                  "port": 51628,
+                  "allowWrite": false
+                }
+              }
+            },
+            {
+              "id": "n1",
+              "type": "moduleNode",
+              "data": {
+                "moduleType": "share_file",
+                "label": "share_file",
+                "config": {
+                  "filePath": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-sidecar-nodes-nfp2ni7w/repo share/package.json",
+                  "port": 51629
+                }
+              }
+            },
+            {
+              "id": "n2",
+              "type": "moduleNode",
+              "data": {
+                "moduleType": "webhook_trigger",
+                "label": "webhook_trigger",
+                "config": {
+                  "webhookId": "qa-27bf6dd6c6f64dba80680ce153bfa1db",
+                  "method": "POST",
+                  "timeout": 30,
+                  "validateHeaders": "{\"x-source-sha256\": \"6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92\"}",
+                  "validateParams": "{\"source\": \"package.json\"}",
+                  "responseBody": "{\"source\": \"autoflow\"}",
+                  "responseStatus": 200,
+                  "saveToVariable": "webhook_data"
+                }
+              }
+            },
+            {
+              "id": "n3",
+              "type": "moduleNode",
+              "data": {
+                "moduleType": "json_parse",
+                "label": "json_parse",
+                "config": {
+                  "sourceVariable": "webhook_data",
+                  "jsonPath": "$.body.sha256",
+                  "variableName": "sha"
+                }
+              }
+            },
+            {
+              "id": "n4",
+              "type": "moduleNode",
+              "data": {
+                "moduleType": "print_log",
+                "label": "print_log",
+                "config": {
+                  "logMessage": "${sha}"
+                }
+              }
+            },
+            {
+              "id": "n5",
+              "type": "moduleNode",
+              "data": {
+                "moduleType": "stop_share",
+                "label": "stop_share",
+                "config": {
+                  "port": 51628
+                }
+              }
+            },
+            {
+              "id": "n6",
+              "type": "moduleNode",
+              "data": {
+                "moduleType": "stop_share",
+                "label": "stop_share",
+                "config": {
+                  "port": 51629
+                }
+              }
+            }
+          ],
+          "edges": [
+            {
+              "id": "e0",
+              "source": "n0",
+              "target": "n1"
+            },
+            {
+              "id": "e1",
+              "source": "n1",
+              "target": "n2"
+            },
+            {
+              "id": "e2",
+              "source": "n2",
+              "target": "n3"
+            },
+            {
+              "id": "e3",
+              "source": "n3",
+              "target": "n4"
+            },
+            {
+              "id": "e4",
+              "source": "n4",
+              "target": "n5"
+            },
+            {
+              "id": "e5",
+              "source": "n5",
+              "target": "n6"
+            }
+          ],
+          "variables": []
+        },
+        "layoutSnapshot": {
+          "nodes": {
+            "n0": {
+              "position": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            "n1": {
+              "position": {
+                "x": 200,
+                "y": 0
+              }
+            },
+            "n2": {
+              "position": {
+                "x": 400,
+                "y": 0
+              }
+            },
+            "n3": {
+              "position": {
+                "x": 600,
+                "y": 0
+              }
+            },
+            "n4": {
+              "position": {
+                "x": 800,
+                "y": 0
+              }
+            },
+            "n5": {
+              "position": {
+                "x": 1000,
+                "y": 0
+              }
+            },
+            "n6": {
+              "position": {
+                "x": 1200,
+                "y": 0
+              }
+            }
+          }
+        },
+        "profileSnapshot": {
+          "id": "4bd0723d-cec5-49b2-bf98-eecd4b9b7efc",
+          "fingerprintSeed": 75987,
+          "name": "QA repository sharing only",
+          "description": "",
+          "locale": null,
+          "timezone": null,
+          "geoip": false,
+          "headless": true,
+          "humanize": false,
+          "human_preset": "default",
+          "user_agent": null,
+          "viewport": null,
+          "color_scheme": null,
+          "extension_paths": [],
+          "expert_args": [],
+          "browser_version": "145.0.7632.109.2",
+          "browser_edition": "public",
+          "release_channel": "stable",
+          "proxy_mode": "none",
+          "proxy_id": null,
+          "proxy_pool_id": null,
+          "runOptions": {
+            "headless": true,
+            "startNodeId": null,
+            "runToNodeId": null,
+            "mode": "run",
+            "stepMode": false,
+            "breakpoints": []
+          }
+        },
+        "customModuleSnapshots": {}
+      }
+    },
+    {
+      "name": "every node has persisted result",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "webhook real payload reached log",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "stop_share closed own port 51628",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "stop_share closed own port 51629",
+      "passed": true,
+      "details": null
+    }
+  ]
+}

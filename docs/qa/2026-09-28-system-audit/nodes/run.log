@@ -1,0 +1,70 @@
+PASS 真实源文件尺寸 list_sum
+PASS 真实源文件尺寸 list_average
+PASS 真实源文件尺寸 list_min
+PASS 真实源文件尺寸 list_max
+PASS 真实源文件尺寸 list_reverse
+PASS 真实源文件尺寸 list_sort
+PASS 真实源文件尺寸 list_unique
+PASS 真实源文件尺寸 stat_median
+PASS 真实源文件尺寸 stat_variance
+PASS 真实源文件尺寸 stat_stdev
+PASS 真实源文件尺寸 stat_percentile
+PASS 源文件列表计数
+PASS 源文件负索引
+PASS 源文件区间
+PASS 源文件过滤
+PASS 源文件 KiB 换算
+PASS 源文件首项查找
+PASS 源文件次数
+PASS 仓库真实数据 dict_get
+PASS 仓库真实数据 dict_keys
+PASS 仓库真实数据 dict_get_path
+PASS 仓库真实数据 dict_deep_copy
+PASS 仓库真实数据 dict_sort
+PASS 仓库真实数据 json_parse
+PASS 仓库真实数据 md5_encrypt
+PASS 仓库真实数据 sha_encrypt
+PASS 仓库真实数据 url_encode_decode
+PASS 仓库真实数据 base64
+PASS 仓库真实数据 string_split
+PASS 仓库真实数据 string_join
+PASS 仓库真实数据 string_replace
+PASS 仓库真实数据 string_concat
+PASS 仓库真实数据 string_trim
+PASS 仓库真实数据 string_case
+PASS 仓库真实数据 string_substring
+PASS 仓库真实数据 regex_extract
+PASS 仓库真实数据 math_gcd
+PASS 仓库真实数据 math_lcm
+PASS 仓库真实数据 math_clamp
+PASS 源文件元数据 math_round
+PASS 源文件元数据 math_floor
+PASS 源文件元数据 math_abs
+PASS 源文件元数据 math_sqrt
+PASS 源文件元数据 math_power
+PASS 源文件元数据 math_modulo
+PASS 源文件元数据 math_base_convert
+PASS 源文件元数据 math_factorial
+PASS 源文件元数据 math_permutation
+PASS 源文件元数据 stat_normalize
+PASS 源文件元数据 stat_standardize
+PASS 源文件元数据 list_merge
+PASS 源文件元数据 list_chunk
+PASS 源文件元数据 list_remove_empty
+PASS 真实 CSV 生成解析
+PASS 源文件 CSV 解析
+FAIL 真实 CSV 导出仅剩表头时应为空数据集
+PASS 源文件列表索引越界
+PASS 截断真实 package JSON 应拒绝
+FAIL 不支持的散列算法应拒绝
+PASS Python 真实读仓库文件 → JSON → 日志 
+PASS 实际表格增列改格 → CSV/XLSX 文件 → 独立库回读 
+PASS 真实列表导出覆盖后追加 
+PASS 真实文件 Base64 写入再读取 
+PASS 产物路径越界应拒绝 
+PASS Python 压缩真实文件并解压验 SHA256 
+FAIL Python 文件模式带空格路径参数 AssertionError({'type': 'execution:failed', 'runId': 'qa-065', 'workflowId': 'qa-065', 'executedNodes': 1, 'failedNodeId': 'n0', 'issues': [], 'error': '脚本执行失败（返回码: 1）\n标准错误输出:\nTraceback (most recent call last):\n  File "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-nodes-a5m6recu/zip workspace/read argument.py", line 3, in <module>\n    print(json.loads(Path(sys.argv[1]).read_text())["name"])\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/pathlib.py", line 1058, in read_text\n    with self.open(mode=\'r\', encoding=encoding, errors=errors) as f:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/pathlib.py", line 1044, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: "\'/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-nodes-a5m6recu/zip"'})
+PASS Python 失败应中断后继节点 
+PASS Python 超时清理 
+PASS 系统命令 Node.js 真实读取 package.json 
+PASS 公开 IANA 网页真实 HTTP GET 

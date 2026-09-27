@@ -1,0 +1,47 @@
+[
+  {
+    "type": "execution:node_start",
+    "nodeId": "n0",
+    "executionId": "bec71bfc-0ad5-4c2a-884c-23a5074afe50",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-065",
+    "workflowId": "qa-065"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n0",
+    "executionId": "bec71bfc-0ad5-4c2a-884c-23a5074afe50",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": false,
+    "message": "",
+    "error": "脚本执行失败（返回码: 1）\n标准错误输出:\nTraceback (most recent call last):\n  File \"/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-nodes-a5m6recu/zip workspace/read argument.py\", line 3, in <module>\n    print(json.loads(Path(sys.argv[1]).read_text())[\"name\"])\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/pathlib.py\", line 1058, in read_text\n    with self.open(mode='r', encoding=encoding, errors=errors) as f:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/pathlib.py\", line 1044, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: \"'/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-nodes-a5m6recu/zip\"",
+    "isTimeout": false,
+    "data": {
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\n  File \"/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-nodes-a5m6recu/zip workspace/read argument.py\", line 3, in <module>\n    print(json.loads(Path(sys.argv[1]).read_text())[\"name\"])\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/pathlib.py\", line 1058, in read_text\n    with self.open(mode='r', encoding=encoding, errors=errors) as f:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/pathlib.py\", line 1044, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: \"'/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-nodes-a5m6recu/zip\"",
+      "returnCode": 1
+    },
+    "logLevel": null,
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 42.45741697377525,
+    "artifactIds": [],
+    "runId": "qa-065",
+    "workflowId": "qa-065"
+  },
+  {
+    "type": "execution:failed",
+    "runId": "qa-065",
+    "workflowId": "qa-065",
+    "executedNodes": 1,
+    "failedNodeId": "n0",
+    "issues": [],
+    "error": "脚本执行失败（返回码: 1）\n标准错误输出:\nTraceback (most recent call last):\n  File \"/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-nodes-a5m6recu/zip workspace/read argument.py\", line 3, in <module>\n    print(json.loads(Path(sys.argv[1]).read_text())[\"name\"])\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/pathlib.py\", line 1058, in read_text\n    with self.open(mode='r', encoding=encoding, errors=errors) as f:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/pathlib.py\", line 1044, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: \"'/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-nodes-a5m6recu/zip\""
+  }
+]

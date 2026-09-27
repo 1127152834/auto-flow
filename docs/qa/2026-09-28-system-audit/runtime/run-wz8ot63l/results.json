@@ -1,0 +1,40 @@
+{
+  "startedAt": "2026-09-27T17:01:15.093992+00:00",
+  "gitHead": "33ae3aa49600840b1700c83723408c494dc201a8",
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-runtime-jzyh8hr6",
+  "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/runtime/run-wz8ot63l",
+  "checks": [
+    {
+      "name": "real loopback service ready",
+      "passed": true,
+      "detail": {
+        "url": "http://127.0.0.1:61509",
+        "pid": 9732
+      }
+    }
+  ],
+  "scenarios": {},
+  "processes": [
+    9732
+  ],
+  "realInputFiles": [
+    {
+      "path": "package.json",
+      "size": 1055,
+      "sha256": "6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92"
+    },
+    {
+      "path": "apps/backend/pyproject.toml",
+      "size": 1460,
+      "sha256": "4e49812742d3362808878fc11614cbb6884b94a1f6c13b93a9775d6b2d6d84f1"
+    },
+    {
+      "path": "AGENTS.md",
+      "size": 2335,
+      "sha256": "f59c274adb1d4144cc8a351f111702e21b92be2d9b0bd459e572a0243a1c48a8"
+    }
+  ],
+  "projectId": "dfd40d49-0328-4207-8627-8bce734706b2",
+  "fatalError": "Traceback (most recent call last):\n  File \"/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/runtime/real_runtime_qa.py\", line 158, in main\n    field=await api('POST',table_path+'/fields',{'definition':{'key':name,'name':name,'type':kind,'required':True,'validation':{}},'expectedTableRevision':revision,'existingRecordDefault':None,'sourceColumnPolicy':'localOnly'},str(uuid4()))\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/runtime/real_runtime_qa.py\", line 71, in api\n    assert response.status_code in expected,(method,path,response.status_code,data)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ('POST', '/api/v1/projects/dfd40d49-0328-4207-8627-8bce734706b2/tables/c2980cab-78b4-461c-bf8f-0a5e1a29ce29/fields', 422, {'error': {'code': 'INVALID_PROJECT_DATA', 'message': 'Invalid project data', 'details': {'field': 'path', 'reason': 'required values must not be null', 'rule': 'required', 'domainCode': 'invalid_project_data', 'retryable': False}, 'requestId': '2cf47a8c-2ba5-4dac-a20f-4c8d281e4f6d'}})\n",
+  "finishedAt": "2026-09-27T17:01:19.104354+00:00"
+}

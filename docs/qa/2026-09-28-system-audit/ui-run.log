@@ -1,0 +1,29 @@
+PASS UI-01 真实应用启动与认证
+PASS UI-02 通过界面创建本仓库审计项目
+PASS UI-03 实际仓库文件元数据入库与幂等
+PASS UI-04 记录详情真实读取
+PASS UI-04b 真实界面编辑源码路径并持久化
+PASS UI-project-overview 项目概览
+PASS UI-project-automations 项目自动化
+PASS UI-project-runs 项目运行记录
+PASS UI-project-statistics 项目统计
+PASS UI-project-data 项目数据
+PASS UI-project-environments 项目环境
+PASS UI-table-records 数据表页签
+PASS UI-table-fields 数据表页签
+PASS UI-table-statuses 数据表页签
+PASS UI-table-source 数据表页签
+PASS UI-table-settings 数据表页签
+PASS UI-global-dashboard 全局总览
+PASS UI-global-profiles 全局浏览器配置
+PASS UI-global-android 全局安卓设备
+PASS UI-global-proxies 全局代理管理
+PASS UI-global-models 全局模型管理
+PASS UI-global-lab 全局实验室
+PASS UI-global-settings 全局设置
+PASS UI-05 原生200%缩放
+PASS UI-06 Studio实际窗口和同一服务
+FAIL UI-06b 正式Studio真实JS worker脚本及持久结果: timed out waiting for real profile selected: false
+PASS UI-07 服务重启与真实数据库持久化
+PASS UI-08 应用进程重启持久化
+{"status":"failed","passed":27,"failed":1,"workspace":"/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow 真实审计-PgrlrB"}

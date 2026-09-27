@@ -1,0 +1,14 @@
+{
+  "status": "passed",
+  "nativeSaveDialog": true,
+  "packaged": true,
+  "rows": 5,
+  "headers": [
+    "源文件路径",
+    "字节数",
+    "SHA-256",
+    "状态"
+  ],
+  "allValuesMatchRepositoryManifest": true,
+  "file": "/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/ui/真实源码清单-原生导出.xlsx"
+}

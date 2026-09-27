@@ -1,0 +1,84 @@
+{
+  "startedAt": "2026-09-27T17:02:06.963026+00:00",
+  "gitHead": "33ae3aa49600840b1700c83723408c494dc201a8",
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-runtime-djxba5p0",
+  "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/runtime/run-f59lirkf",
+  "checks": [
+    {
+      "name": "real loopback service ready",
+      "passed": true,
+      "detail": {
+        "url": "http://127.0.0.1:61703",
+        "pid": 11111
+      }
+    },
+    {
+      "name": "record idempotency package.json",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "record idempotency apps/backend/pyproject.toml",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "record idempotency AGENTS.md",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "actual file metadata roundtrip",
+      "passed": true,
+      "detail": null
+    }
+  ],
+  "scenarios": {},
+  "processes": [
+    11111
+  ],
+  "realInputFiles": [
+    {
+      "path": "package.json",
+      "size": 1055,
+      "sha256": "6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92"
+    },
+    {
+      "path": "apps/backend/pyproject.toml",
+      "size": 1460,
+      "sha256": "4e49812742d3362808878fc11614cbb6884b94a1f6c13b93a9775d6b2d6d84f1"
+    },
+    {
+      "path": "AGENTS.md",
+      "size": 2335,
+      "sha256": "f59c274adb1d4144cc8a351f111702e21b92be2d9b0bd459e572a0243a1c48a8"
+    }
+  ],
+  "projectId": "84f301ea-dab3-4c78-89c7-772a211a93bd",
+  "table": {
+    "projectId": "84f301ea-dab3-4c78-89c7-772a211a93bd",
+    "tableId": "ba311a08-dfcb-4cb8-b62b-1678e1b02a8c",
+    "name": "当前源码文件清单",
+    "description": "来自真实工作树字节与SHA-256",
+    "sourceKind": "local",
+    "source": {
+      "kind": "local"
+    },
+    "datasetGeneration": "b45dd18a-f9a1-4e53-be1b-1a9206eec662",
+    "tableRevision": 1,
+    "identity": {
+      "mode": "system"
+    },
+    "slotDefinitions": [],
+    "recordCount": 0,
+    "syncSummary": {
+      "status": "notApplicable",
+      "pendingCount": 0,
+      "unknownCount": 0
+    },
+    "createdAt": "2026-09-27T17:02:10.456498Z",
+    "updatedAt": "2026-09-27T17:02:10.456498Z"
+  },
+  "fatalError": "Traceback (most recent call last):\n  File \"/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/runtime/real_runtime_qa.py\", line 171, in main\n    stale=await api('PATCH',record_path,update,str(uuid4()),expected=(409,412))\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/runtime/real_runtime_qa.py\", line 71, in api\n    assert response.status_code in expected,(method,path,response.status_code,data)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ('PATCH', '/api/v1/projects/84f301ea-dab3-4c78-89c7-772a211a93bd/tables/ba311a08-dfcb-4cb8-b62b-1678e1b02a8c/records/NTY2NWFhOTUtZDY0Yy00NWI5LTgyYTEtMzk3OTYxNzY5ODZm', 200, {'ref': {'projectId': '84f301ea-dab3-4c78-89c7-772a211a93bd', 'tableId': 'ba311a08-dfcb-4cb8-b62b-1678e1b02a8c', 'datasetGeneration': 'b45dd18a-f9a1-4e53-be1b-1a9206eec662', 'recordKey': {'type': 'uuid', 'value': '5665aa95-d64c-45b9-82a1-39796176986f'}}, 'values': [{'fieldId': '0cdadc7b-eded-42e1-a786-edb562d11167', 'value': 'package.json', 'source': 'local', 'readable': True}, {'fieldId': 'c26bb7cb-b14c-4aaf-9e4c-f1a28a39f56f', 'value': 1055, 'source': 'local', 'readable': True}, {'fieldId': '4e7c7d83-ca59-4722-86cb-2ff481514a55', 'value': '6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92', 'source': 'local', 'readable': True}], 'recordSlots': [], 'statusId': None, 'currentEnvironmentId': None, 'contentRevision': 1, 'statusRevision': 1, 'linkRevision': 1, 'deleted': False, 'createdAt': '2026-09-27T17:02:10.704534Z', 'updatedAt': '2026-09-27T17:02:10.704534Z'})\n",
+  "finishedAt": "2026-09-27T17:02:11.995566+00:00"
+}

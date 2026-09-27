@@ -1,0 +1,194 @@
+{
+  "scenario": "PM5 首条链：真实浏览器登录 → End 保留并关联 → 关闭 → 恢复登录",
+  "evidenceType": "production 装配下的管理 HTTP + 真实 CloakBrowser",
+  "notEvidence": [
+    "Electron 渲染层点击",
+    "生产工作流执行节点推进"
+  ],
+  "kernel": "/Users/zhangtiancheng/Library/Application Support/@autoflow/desktop/data/kernels/chromium-145.0.7632.109.2/Chromium.app/Contents/MacOS/Chromium",
+  "kernelVersion": "145.0.7632.109.2",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-cloak-cinilw86/pytest/test_management_chain_saves_li0/workspace",
+  "steps": [
+    {
+      "step": "HTTP 建项目 / 账号表 / 必填字段 / 记录",
+      "ok": true
+    },
+    {
+      "step": "POST environment-instances/open 触发真实 opener",
+      "ok": true,
+      "launched": true
+    },
+    {
+      "step": "在 opener 打开的真实浏览器里登录",
+      "signedIn": true,
+      "cookieNames": [
+        "autoflow_login"
+      ]
+    },
+    {
+      "step": "POST tasks/{taskId}/end 保留环境 + 关联记录",
+      "ok": true,
+      "phase": "completed",
+      "targets": [
+        {
+          "projectId": "440893e3-2ec3-4321-9e36-ece7579fad2d",
+          "tableId": "960bd80c-92a5-451e-8795-c1324855479a",
+          "datasetGeneration": "1da55369-685f-4404-b5d1-49bb1a83311a",
+          "recordKey": {
+            "type": "uuid",
+            "value": "710a8ee0-fc97-4949-99e5-235739e44134"
+          }
+        }
+      ],
+      "browserClosedByEnd": true
+    },
+    {
+      "step": "用已保存环境新建实例并重新打开 → 访问 /me",
+      "ok": true,
+      "httpStatus": 200,
+      "body": "已登录"
+    },
+    {
+      "step": "修改浏览器状态后 End 更新同一保存环境",
+      "ok": true,
+      "generation": 2,
+      "browserClosedByEnd": true
+    },
+    {
+      "step": "第三次打开读取新内容",
+      "ok": true,
+      "body": "已登录",
+      "marker": "v2"
+    }
+  ],
+  "projectId": "440893e3-2ec3-4321-9e36-ece7579fad2d",
+  "tableId": "960bd80c-92a5-451e-8795-c1324855479a",
+  "recordRef": {
+    "projectId": "440893e3-2ec3-4321-9e36-ece7579fad2d",
+    "tableId": "960bd80c-92a5-451e-8795-c1324855479a",
+    "datasetGeneration": "1da55369-685f-4404-b5d1-49bb1a83311a",
+    "recordKey": {
+      "type": "uuid",
+      "value": "710a8ee0-fc97-4949-99e5-235739e44134"
+    }
+  },
+  "linkRevision": 1,
+  "profileId": "2a1865df-a056-4052-b4db-2cc348138cdf",
+  "openStatus": 202,
+  "openBody": {
+    "operation": {
+      "operationId": "bce4dd63-26d8-40a5-8812-7a5b29939105",
+      "projectId": "440893e3-2ec3-4321-9e36-ece7579fad2d",
+      "idempotencyKey": "21922192-aba3-4201-b92e-5eb8f7c654d4",
+      "kind": "openInstance",
+      "status": "succeeded",
+      "statusRevision": 2,
+      "resource": {
+        "type": "environment",
+        "projectId": "440893e3-2ec3-4321-9e36-ece7579fad2d",
+        "environmentId": null
+      },
+      "result": {
+        "phase": "open",
+        "complete": false,
+        "instance": {
+          "instanceId": "cd9c7ebf-c1a1-47a4-919c-08a3d13f238a",
+          "projectId": "440893e3-2ec3-4321-9e36-ece7579fad2d",
+          "environmentId": null,
+          "state": "active",
+          "source": "newFromProfile",
+          "sourceContentGeneration": null,
+          "instanceUseGeneration": 1,
+          "activeTaskId": "b5c07cc0-479f-403b-a9d8-f456e53fcc97",
+          "activeRunId": "61f7051f-a7f6-4208-a85f-3a3ce15ff7ca",
+          "maintenanceOperationId": null,
+          "profileId": "2a1865df-a056-4052-b4db-2cc348138cdf",
+          "createdAt": "2026-09-27T17:20:04.116053",
+          "updatedAt": "2026-09-27T17:20:04.118949"
+        },
+        "source": null,
+        "saved": null,
+        "targets": [],
+        "conflicts": [],
+        "launched": true
+      },
+      "error": null,
+      "createdAt": "2026-09-27T17:20:04.176138Z",
+      "updatedAt": "2026-09-27T17:20:05.357614Z",
+      "completedAt": "2026-09-27T17:20:05.357614Z"
+    },
+    "outcome": {
+      "phase": "open",
+      "complete": false,
+      "instance": {
+        "instanceId": "cd9c7ebf-c1a1-47a4-919c-08a3d13f238a",
+        "projectId": "440893e3-2ec3-4321-9e36-ece7579fad2d",
+        "environmentId": null,
+        "state": "active",
+        "source": "newFromProfile",
+        "sourceContentGeneration": null,
+        "instanceUseGeneration": 1,
+        "activeTaskId": "b5c07cc0-479f-403b-a9d8-f456e53fcc97",
+        "activeRunId": "61f7051f-a7f6-4208-a85f-3a3ce15ff7ca",
+        "maintenanceOperationId": null,
+        "profileId": "2a1865df-a056-4052-b4db-2cc348138cdf",
+        "createdAt": "2026-09-27T17:20:04.116053",
+        "updatedAt": "2026-09-27T17:20:04.118949"
+      },
+      "source": null,
+      "saved": null,
+      "targets": [],
+      "conflicts": [],
+      "launched": true
+    }
+  },
+  "login": {
+    "signedIn": true,
+    "cookieNames": [
+      "autoflow_login"
+    ]
+  },
+  "endStatus": 202,
+  "endPhase": "completed",
+  "endError": null,
+  "savedEnvironmentId": "63a20aaa-fcb7-54aa-92a9-75c50b1e4530",
+  "endTargets": [
+    {
+      "projectId": "440893e3-2ec3-4321-9e36-ece7579fad2d",
+      "tableId": "960bd80c-92a5-451e-8795-c1324855479a",
+      "datasetGeneration": "1da55369-685f-4404-b5d1-49bb1a83311a",
+      "recordKey": {
+        "type": "uuid",
+        "value": "710a8ee0-fc97-4949-99e5-235739e44134"
+      }
+    }
+  ],
+  "browserClosedByEnd": true,
+  "instanceStateAfterEnd": "cleaned",
+  "resumedInstanceId": "66e6f0d1-1027-41a5-9d92-ae98e660a06d",
+  "resumedEnvironmentId": "63a20aaa-fcb7-54aa-92a9-75c50b1e4530",
+  "resumeOpenStatus": 202,
+  "resumeStatus": {
+    "httpStatus": 200,
+    "body": "已登录"
+  },
+  "marker": {
+    "cookieWritten": true,
+    "localStorageWritten": "v2"
+  },
+  "secondSaveStatus": 202,
+  "secondSavePhase": "completed",
+  "secondSaveGeneration": 2,
+  "secondSaveError": null,
+  "secondCloseConfirmed": true,
+  "thirdInstanceId": "30a2f98e-689a-4ea3-aa1a-7ef076ecbca5",
+  "thirdOpenStatus": 202,
+  "thirdRead": {
+    "httpStatus": 200,
+    "body": "已登录",
+    "marker": "v2",
+    "note": "v2"
+  },
+  "passed": true,
+  "finishedAt": "2026-09-28T01:20:09+0800"
+}

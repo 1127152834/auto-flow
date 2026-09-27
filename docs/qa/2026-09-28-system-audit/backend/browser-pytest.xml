@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="42" time="918.255" timestamp="2026-09-28T01:19:14.423330+08:00" hostname="zhangtianchengs-MacBook-Pro-3.local"><testcase classname="tests.integration.test_b1_cloakbrowser_flow" name="test_real_cloakbrowser_runs_five_node_workflow" time="5.063" /><testcase classname="tests.integration.test_b2_advanced_browser_cloakbrowser_flow" name="test_real_cloakbrowser_runs_advanced_browser_family" time="1.726" /><testcase classname="tests.integration.test_b2_inspection_cloakbrowser_flow" name="test_real_cloakbrowser_tests_and_picks_a_selector" time="1.496" /><testcase classname="tests.integration.test_b2_inspection_cloakbrowser_flow" name="test_real_inspection_handles_selector_and_page_change_edges" time="1.549" /><testcase classname="tests.integration.test_b2_inspection_cloakbrowser_flow" name="test_real_picker_and_runtime_share_nested_cross_origin_frame_target" time="2.177" /><testcase classname="tests.integration.test_b2_inspection_cloakbrowser_flow" name="test_real_inspection_worker_owns_profile_and_cleans_process_tree" time="4.053" /><testcase classname="tests.integration.test_b2_large_artifacts_cloakbrowser_flow" name="test_real_cloakbrowser_externalizes_one_mib_web_artifacts" time="3.296" /><testcase classname="tests.integration.test_b2_network_monitor_cloakbrowser_flow" name="test_real_cloakbrowser_runs_network_monitor_family" time="1.679" /><testcase classname="tests.integration.test_b2_page_load_cloakbrowser_flow" name="test_real_cloakbrowser_runs_page_load_family" time="1.207" /><testcase classname="tests.integration.test_b2_remaining_browser_cloakbrowser_flow" name="test_real_cloakbrowser_runs_remaining_browser_family" time="2.174" /><testcase classname="tests.integration.test_b2_web_basic_cloakbrowser_flow" name="test_real_cloakbrowser_runs_web_basic_family" time="2.155" /><testcase classname="tests.integration.test_b5_captcha_cloakbrowser_flow" name="test_real_cloakbrowser_runs_captcha_family" time="2.672" /><testcase classname="tests.integration.test_b5_firecrawl_cloakbrowser_flow" name="test_real_cloakbrowser_runs_firecrawl_family" time="4.709" /><testcase classname="tests.integration.test_b6_element_change_cloakbrowser_flow" name="test_real_cloakbrowser_observes_added_element" time="2.019" /><testcase classname="tests.integration.test_b7_recording_cloakbrowser_flow" name="test_real_cloakbrowser_records_chinese_form_and_future_page" time="2.271" /><testcase classname="tests.integration.test_environment_persist_restore" name="test_real_login_persists_after_browser_close[explicit-close]" time="3.380" /><testcase classname="tests.integration.test_environment_persist_restore" name="test_real_login_persists_after_browser_close[http-end-close]" time="3.552" /><testcase classname="tests.integration.test_environment_real_browser_chain" name="test_management_chain_saves_linked_environment_and_restores_login" time="600.031"><failure message="subprocess.TimeoutExpired: Command '['/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/bin/python', '/Users/zhangtiancheng/Documents/projects/autoflow/scripts/qa-pm5-browser-chain.py', '--workspace', '/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-cloak-cinilw86/pytest/test_management_chain_saves_li0/workspace', '--out', '/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-cloak-cinilw86/pytest/test_management_chain_saves_li0/evidence', '--kernel', '/Users/zhangtiancheng/Library/Application Support/@autoflow/desktop/data/kernels/chromium-145.0.7632.109.2/Chromium.app/Contents/MacOS/Chromium']' timed out after 600 seconds">tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-cloak-cinilw86/pytest/test_management_chain_saves_li0')
+
+    def test_management_chain_saves_linked_environment_and_restores_login(tmp_path):
+        configured = os.environ.get("AUTOFLOW_TEST_CLOAKBROWSER")
+        if not configured:
+            pytest.skip("set AUTOFLOW_TEST_CLOAKBROWSER to an installed CloakBrowser executable")
+    
+&gt;       result = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPT),
+                "--workspace",
+                str(tmp_path / "workspace"),
+                "--out",
+                str(tmp_path / "evidence"),
+                "--kernel",
+                configured,
+            ],
+            capture_output=True,
+            text=True,
+            timeout=600,
+            check=False,
+        )
+
+tests/integration/test_environment_real_browser_chain.py:28: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/subprocess.py:550: in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/subprocess.py:1209: in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/subprocess.py:2116: in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;Popen: returncode: -9 args: ['/Users/zhangtiancheng/Documents/projects/auto...&gt;
+endtime = 149205.477785125, orig_timeout = 600
+stdout_seq = [b'{\n  "scenario": "PM5 \xe9\xa6\x96\xe6\x9d\xa1\xe9\x93\xbe\xef\xbc\x9a\xe7\x9c\x9f\xe5\xae\x9e\xe6\xb5\x8f\xe8\xa7\...95",\n    "marker": "v2",\n    "note": "v2"\n  },\n  "passed": true,\n  "finishedAt": "2026-09-28T01:20:09+0800"\n}\n']
+stderr_seq = [b'Project batch progress could not be committed\nTraceback (most recent call last):\n  File "/Users/zhangtiancheng/Do...rror(\'cannot schedule new futures after shutdown\')\nRuntimeError: cannot schedule new futures after shutdown\n', ...]
+skip_check_and_raise = False
+
+    def _check_timeout(self, endtime, orig_timeout, stdout_seq, stderr_seq,
+                       skip_check_and_raise=False):
+        """Convenience for checking if a timeout has expired."""
+        if endtime is None:
+            return
+        if skip_check_and_raise or _time() &gt; endtime:
+&gt;           raise TimeoutExpired(
+                    self.args, orig_timeout,
+                    output=b''.join(stdout_seq) if stdout_seq else None,
+                    stderr=b''.join(stderr_seq) if stderr_seq else None)
+E           subprocess.TimeoutExpired: Command '['/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/bin/python', '/Users/zhangtiancheng/Documents/projects/autoflow/scripts/qa-pm5-browser-chain.py', '--workspace', '/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-cloak-cinilw86/pytest/test_management_chain_saves_li0/workspace', '--out', '/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-cloak-cinilw86/pytest/test_management_chain_saves_li0/evidence', '--kernel', '/Users/zhangtiancheng/Library/Application Support/@autoflow/desktop/data/kernels/chromium-145.0.7632.109.2/Chromium.app/Contents/MacOS/Chromium']' timed out after 600 seconds
+
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/subprocess.py:1253: TimeoutExpired</failure></testcase><testcase classname="tests.integration.test_project_batch_real_cloakbrowser" name="test_real_project_batch_http[success]" time="13.691" /><testcase classname="tests.integration.test_project_batch_real_cloakbrowser" name="test_real_project_batch_http[stop]" time="9.049" /><testcase classname="tests.integration.test_project_batch_real_cloakbrowser" name="test_real_project_batch_http[budget]" time="2.519" /><testcase classname="tests.integration.test_project_batch_real_cloakbrowser" name="test_real_project_batch_http[failure]" time="11.574" /><testcase classname="tests.integration.test_project_batch_real_cloakbrowser" name="test_real_project_batch_http[web_basic]" time="16.249" /><testcase classname="tests.integration.test_project_batch_real_cloakbrowser" name="test_real_project_batch_http[page_load]" time="12.519" /><testcase classname="tests.integration.test_project_batch_real_cloakbrowser" name="test_real_project_batch_http[advanced_browser]" time="14.540" /><testcase classname="tests.integration.test_project_batch_real_cloakbrowser" name="test_real_project_batch_http[tab_switch]" time="14.441" /><testcase classname="tests.integration.test_project_batch_real_cloakbrowser" name="test_real_project_batch_http[table_extract]" time="12.549" /><testcase classname="tests.integration.test_project_batch_real_cloakbrowser" name="test_real_project_batch_http[control_primitives]" time="12.531" /><testcase classname="tests.integration.test_project_batch_real_cloakbrowser" name="test_real_project_batch_http[network_capture]" time="22.060" /><testcase classname="tests.integration.test_project_batch_real_cloakbrowser" name="test_real_project_batch_http[firecrawl]" time="18.879" /><testcase classname="tests.integration.test_project_batch_real_cloakbrowser" name="test_real_project_batch_http[firecrawl_failure]" time="8.976" /><testcase classname="tests.integration.test_project_batch_real_cloakbrowser" name="test_real_project_batch_http[firecrawl_stop]" time="9.829" /><testcase classname="tests.integration.test_project_batch_real_cloakbrowser" name="test_real_project_batch_http[element_change]" time="15.043" /><testcase classname="tests.integration.test_project_batch_real_cloakbrowser" name="test_real_project_batch_http[element_timeout]" time="10.037" /><testcase classname="tests.integration.test_project_batch_real_cloakbrowser" name="test_real_project_batch_http[element_stop]" time="10.570" /><testcase classname="tests.integration.test_project_batch_real_cloakbrowser" name="test_real_project_batch_http[captcha]" time="15.536" /><testcase classname="tests.integration.test_project_batch_real_cloakbrowser" name="test_real_project_batch_http[captcha_failure]" time="10.032" /><testcase classname="tests.integration.test_project_batch_real_cloakbrowser" name="test_real_project_batch_http[captcha_stop]" time="10.389" /><testcase classname="tests.integration.test_workflow_real_cloakbrowser" name="test_real_cloakbrowser_worker_lifecycle[success]" time="4.165" /><testcase classname="tests.integration.test_workflow_real_cloakbrowser" name="test_real_cloakbrowser_worker_lifecycle[stop_before_navigation]" time="3.012" /><testcase classname="tests.integration.test_workflow_real_cloakbrowser" name="test_real_cloakbrowser_worker_lifecycle[node_timeout]" time="3.317" /><testcase classname="tests.integration.test_workflow_real_cloakbrowser" name="test_real_cloakbrowser_persisted_dispatch_and_service_recreation" time="9.639"><failure message="TypeError: object NoneType can't be used in 'await' expression">tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-cloak-cinilw86/pytest/test_real_cloakbrowser_persist0')
+valid_profile_values = {'name': 'Default profile', 'description': '', 'start_url': 'about:blank', 'locale': None, ...}
+real_cloak_page = (PosixPath('/Users/zhangtiancheng/Library/Application Support/@autoflow/desktop/data/kernels/chromium-145.0.7632.109.2/Chromium.app/Contents/MacOS/Chromium'), 'http://127.0.0.1:54991/fixture', ['/fixture', '/favicon.ico'])
+
+    @pytest.mark.asyncio
+    async def test_real_cloakbrowser_persisted_dispatch_and_service_recreation(tmp_path, valid_profile_values, real_cloak_page):
+        from autoflow.application.workflows.service import WorkflowService
+        from autoflow.bootstrap.app import create_app
+        from autoflow.bootstrap.config import Settings
+        from autoflow.infrastructure.database.workflow_runtime import (
+            SqlAlchemyWorkflowRuntimeRepository,
+        )
+        from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
+        from tests.fixtures.workflows import workflow_payload
+    
+        executable, url, _ = real_cloak_page
+        source = next(parent for parent in executable.parents if parent.name.startswith('chromium-'))
+        workspace = tmp_path / 'isolated-workspace'
+        target = workspace / 'data' / 'kernels' / source.name
+        await asyncio.to_thread(shutil.copytree, source, target, symlinks=True)
+        settings = Settings(data_dir=str(workspace), instance_id='real-workflow-fixture')
+        app = create_app(settings)
+        try:
+            profile = app.state.profile_service.create(ProfileSpec.from_values({
+                **valid_profile_values, 'headless': True,
+                'browser_version': source.name.removeprefix('chromium-'),
+            }))
+            document = workflow_payload(str(uuid4()))
+            nodes = document['content']['nodes']
+            nodes[0]['data']['url'] = url
+            nodes[1]['data'].update(selector='#field', clearBefore=False)
+            nodes[2]['data']['selector'] = '#button'
+            nodes[3]['data'].update(selector='#field', attribute='value')
+            documents = WorkflowService(SqlAlchemyWorkflowRepository(app.state.session_factory))
+            record = documents.create(document, str(uuid4()))
+            prepared = app.state.project_workflow_runtime.prepare_content(
+                prepare_operation_id=str(uuid4()), workflow_id=record.document['id'],
+                source_revision=record.revision, available_capabilities=['browser.cloakbrowser'],
+            )
+            with app.state.session_factory() as session:
+                run = app.state.project_workflow_runtime.prepare_run(
+                    run_request_id=str(uuid4()), prepared_content_id=prepared.prepared_content_id,
+                    parameters={'zero': 0, 'flag': False}, input_snapshot_ref=None,
+                    resource_request=app.state.project_workflow_resources.freeze(profile.id),
+                    capability_bindings=[], uow=session,
+                )
+                session.commit()
+            document['content']['variables'][0]['value'] = '后续修改不应进入本次运行'
+            documents.save(record.document['id'], document, record.revision, str(uuid4()))
+            await app.state.project_workflow_dispatcher.dispatch(
+                run.run_id, expected_status_revision=run.status_revision,
+                execution_generation=run.execution_generation,
+            )
+            await asyncio.wait_for(app.state.project_workflow_dispatcher.wait_idle(), 60)
+            result = app.state.project_workflow_runtime.query_run(run_id=run.run_id)
+            assert result.status == 'succeeded'
+            assert result.parameters == {'zero': 0, 'flag': False}
+            with app.state.session_factory() as session:
+                events = SqlAlchemyWorkflowRuntimeRepository(session).list_events(run.run_id, after_sequence=0, limit=200)
+            assert [event.payload['value'] for event in events if event.kind == 'output'] == ['before测试用户']
+            assert [event.sequence for event in events] == list(range(1, len(events) + 1))
+            assert events[-1].kind == 'status' and events[-1].payload['status'] == 'succeeded'
+            assert app.state.project_workflow_dispatcher.blockers() == []
+        finally:
+&gt;           await app.router.on_shutdown[-1]()
+E           TypeError: object NoneType can't be used in 'await' expression
+
+tests/integration/test_workflow_real_cloakbrowser.py:185: TypeError</failure></testcase></testsuite></testsuites>

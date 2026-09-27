@@ -1,0 +1,53 @@
+{
+  "compatibility": {
+    "testFiles": 1,
+    "filesContainingToken": {
+      "monkeypatch": 1,
+      "tmp_path": 1
+    }
+  },
+  "differential": {
+    "testFiles": 47,
+    "filesContainingToken": {
+      "monkeypatch": 10,
+      "tmp_path": 11,
+      "Fake": 2
+    }
+  },
+  "unit": {
+    "testFiles": 119,
+    "filesContainingToken": {
+      "monkeypatch": 38,
+      "tmp_path": 46,
+      "TestClient": 7,
+      "AsyncMock": 8,
+      "MockTransport": 6,
+      "Fake": 13
+    }
+  },
+  "integration": {
+    "testFiles": 148,
+    "filesContainingToken": {
+      "tmp_path": 147,
+      "Fake": 11,
+      "TestClient": 16,
+      "monkeypatch": 42,
+      "AsyncMock": 2,
+      "MockTransport": 1
+    }
+  },
+  "contract": {
+    "testFiles": 79,
+    "filesContainingToken": {
+      "TestClient": 46,
+      "monkeypatch": 14,
+      "tmp_path": 37,
+      "AsyncMock": 2,
+      "Fake": 11
+    }
+  },
+  "migration": {
+    "testFiles": 1,
+    "filesContainingToken": {}
+  }
+}

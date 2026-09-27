@@ -1,0 +1,563 @@
+[
+  {
+    "type": "execution:node_start",
+    "nodeId": "loop",
+    "executionId": "7dd104a6-7879-4669-89e1-9e1be9e9658c",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-110",
+    "workflowId": "qa-110"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "loop",
+    "executionId": "7dd104a6-7879-4669-89e1-9e1be9e9658c",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "开始循环 (类型: count, 次数: 5)",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "type": "count",
+      "count": 5,
+      "condition": "",
+      "max_iterations": 1000,
+      "index_variable": "index",
+      "current_index": 0,
+      "start_value": 1,
+      "end_value": 10,
+      "step_value": 1
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.3077909932471812,
+    "artifactIds": [],
+    "runId": "qa-110",
+    "workflowId": "qa-110"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "log",
+    "executionId": "e012c8d2-ca00-4a78-af6a-32cafc07d367",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "count",
+          "currentIndex": 0,
+          "iteration": 1
+        }
+      ]
+    },
+    "runId": "qa-110",
+    "workflowId": "qa-110"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "log",
+    "executionId": "e012c8d2-ca00-4a78-af6a-32cafc07d367",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "count",
+          "currentIndex": 0,
+          "iteration": 1
+        }
+      ]
+    },
+    "success": true,
+    "message": "autoflow",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "level": "info",
+      "message": "autoflow"
+    },
+    "logLevel": "info",
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 0.1579160161782056,
+    "artifactIds": [],
+    "runId": "qa-110",
+    "workflowId": "qa-110"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "continue",
+    "executionId": "69d2e608-0a85-4956-996d-65d544f64d49",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "count",
+          "currentIndex": 0,
+          "iteration": 1
+        }
+      ]
+    },
+    "runId": "qa-110",
+    "workflowId": "qa-110"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "continue",
+    "executionId": "69d2e608-0a85-4956-996d-65d544f64d49",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "count",
+          "currentIndex": 0,
+          "iteration": 1
+        }
+      ]
+    },
+    "success": true,
+    "message": "继续下一次循环",
+    "error": null,
+    "isTimeout": false,
+    "data": null,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.1583749835845083,
+    "artifactIds": [],
+    "runId": "qa-110",
+    "workflowId": "qa-110"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "log",
+    "executionId": "f106b9f6-f4b6-4401-ac0b-e864adda1366",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "count",
+          "currentIndex": 1,
+          "iteration": 2
+        }
+      ]
+    },
+    "runId": "qa-110",
+    "workflowId": "qa-110"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "log",
+    "executionId": "f106b9f6-f4b6-4401-ac0b-e864adda1366",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "count",
+          "currentIndex": 1,
+          "iteration": 2
+        }
+      ]
+    },
+    "success": true,
+    "message": "autoflow",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "level": "info",
+      "message": "autoflow"
+    },
+    "logLevel": "info",
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 0.14095898950472474,
+    "artifactIds": [],
+    "runId": "qa-110",
+    "workflowId": "qa-110"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "continue",
+    "executionId": "8f615e52-a8c7-43a7-b100-1e47178a44ad",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "count",
+          "currentIndex": 1,
+          "iteration": 2
+        }
+      ]
+    },
+    "runId": "qa-110",
+    "workflowId": "qa-110"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "continue",
+    "executionId": "8f615e52-a8c7-43a7-b100-1e47178a44ad",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "count",
+          "currentIndex": 1,
+          "iteration": 2
+        }
+      ]
+    },
+    "success": true,
+    "message": "继续下一次循环",
+    "error": null,
+    "isTimeout": false,
+    "data": null,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.13766699703410268,
+    "artifactIds": [],
+    "runId": "qa-110",
+    "workflowId": "qa-110"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "log",
+    "executionId": "bd6cca0d-7a18-411f-bcd4-e3e22f7108ef",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "count",
+          "currentIndex": 2,
+          "iteration": 3
+        }
+      ]
+    },
+    "runId": "qa-110",
+    "workflowId": "qa-110"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "log",
+    "executionId": "bd6cca0d-7a18-411f-bcd4-e3e22f7108ef",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "count",
+          "currentIndex": 2,
+          "iteration": 3
+        }
+      ]
+    },
+    "success": true,
+    "message": "autoflow",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "level": "info",
+      "message": "autoflow"
+    },
+    "logLevel": "info",
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 0.1348750083707273,
+    "artifactIds": [],
+    "runId": "qa-110",
+    "workflowId": "qa-110"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "continue",
+    "executionId": "48c0375b-2c7c-4697-bc6d-c85c828c51db",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "count",
+          "currentIndex": 2,
+          "iteration": 3
+        }
+      ]
+    },
+    "runId": "qa-110",
+    "workflowId": "qa-110"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "continue",
+    "executionId": "48c0375b-2c7c-4697-bc6d-c85c828c51db",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "count",
+          "currentIndex": 2,
+          "iteration": 3
+        }
+      ]
+    },
+    "success": true,
+    "message": "继续下一次循环",
+    "error": null,
+    "isTimeout": false,
+    "data": null,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.1619999820832163,
+    "artifactIds": [],
+    "runId": "qa-110",
+    "workflowId": "qa-110"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "log",
+    "executionId": "ce1d753b-9e22-45e7-ab4e-585430bb39f9",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "count",
+          "currentIndex": 3,
+          "iteration": 4
+        }
+      ]
+    },
+    "runId": "qa-110",
+    "workflowId": "qa-110"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "log",
+    "executionId": "ce1d753b-9e22-45e7-ab4e-585430bb39f9",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "count",
+          "currentIndex": 3,
+          "iteration": 4
+        }
+      ]
+    },
+    "success": true,
+    "message": "autoflow",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "level": "info",
+      "message": "autoflow"
+    },
+    "logLevel": "info",
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 0.16145798144862056,
+    "artifactIds": [],
+    "runId": "qa-110",
+    "workflowId": "qa-110"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "continue",
+    "executionId": "80be6ea0-4a52-499f-9515-8130a93f92ec",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "count",
+          "currentIndex": 3,
+          "iteration": 4
+        }
+      ]
+    },
+    "runId": "qa-110",
+    "workflowId": "qa-110"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "continue",
+    "executionId": "80be6ea0-4a52-499f-9515-8130a93f92ec",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "count",
+          "currentIndex": 3,
+          "iteration": 4
+        }
+      ]
+    },
+    "success": true,
+    "message": "继续下一次循环",
+    "error": null,
+    "isTimeout": false,
+    "data": null,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.11649998486973345,
+    "artifactIds": [],
+    "runId": "qa-110",
+    "workflowId": "qa-110"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "log",
+    "executionId": "35d0aa1e-7125-4676-8d38-61249ca36559",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "count",
+          "currentIndex": 4,
+          "iteration": 5
+        }
+      ]
+    },
+    "runId": "qa-110",
+    "workflowId": "qa-110"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "log",
+    "executionId": "35d0aa1e-7125-4676-8d38-61249ca36559",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "count",
+          "currentIndex": 4,
+          "iteration": 5
+        }
+      ]
+    },
+    "success": true,
+    "message": "autoflow",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "level": "info",
+      "message": "autoflow"
+    },
+    "logLevel": "info",
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 0.12141698971390724,
+    "artifactIds": [],
+    "runId": "qa-110",
+    "workflowId": "qa-110"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "continue",
+    "executionId": "4dee0e81-157f-4bfa-b2f5-20f622563a64",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "count",
+          "currentIndex": 4,
+          "iteration": 5
+        }
+      ]
+    },
+    "runId": "qa-110",
+    "workflowId": "qa-110"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "continue",
+    "executionId": "4dee0e81-157f-4bfa-b2f5-20f622563a64",
+    "executionContext": {
+      "scopes": [],
+      "loops": [
+        {
+          "nodeId": "loop",
+          "type": "count",
+          "currentIndex": 4,
+          "iteration": 5
+        }
+      ]
+    },
+    "success": true,
+    "message": "继续下一次循环",
+    "error": null,
+    "isTimeout": false,
+    "data": null,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.13220799155533314,
+    "artifactIds": [],
+    "runId": "qa-110",
+    "workflowId": "qa-110"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "done",
+    "executionId": "d48730e3-65a8-46e0-8a55-93e7d3c4fcf4",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-110",
+    "workflowId": "qa-110"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "done",
+    "executionId": "d48730e3-65a8-46e0-8a55-93e7d3c4fcf4",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "@autoflow/desktop",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "level": "info",
+      "message": "@autoflow/desktop"
+    },
+    "logLevel": "info",
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 0.14070799807086587,
+    "artifactIds": [],
+    "runId": "qa-110",
+    "workflowId": "qa-110"
+  },
+  {
+    "type": "execution:completed",
+    "runId": "qa-110",
+    "workflowId": "qa-110",
+    "executedNodes": 12,
+    "failedNodeId": null,
+    "issues": [],
+    "error": null
+  }
+]

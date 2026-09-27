@@ -1,0 +1,9 @@
+{
+  "cpu": "Apple M2 Max",
+  "logicalCpuCount": 12,
+  "memoryBytes": 34359738368,
+  "manifestSha256": "154f26609fcdf0ebcb97175d7a0b5154876442b8f84e75604b72a5c416298bd7",
+  "fileCount": 8504,
+  "sourceTotalBytes": 878438880,
+  "filesWithoutExtension": 49
+}

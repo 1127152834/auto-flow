@@ -1,0 +1,44 @@
+PASS 补充 真实清单 list_operation
+PASS 补充 真实清单 dict_operation
+PASS 补充 真实清单 dict_merge
+PASS 补充 真实清单 dict_filter
+PASS 补充 真实清单 dict_map_values
+PASS 补充 真实清单 dict_invert
+PASS 补充 真实清单 dict_flatten
+PASS 补充 真实清单 list_flatten
+PASS 补充 真实清单 list_intersection
+PASS 补充 真实清单 list_union
+PASS 补充 真实清单 list_difference
+PASS 补充 真实清单 list_cartesian_product
+PASS 补充 真实清单 list_to_string_advanced
+PASS 补充 真实清单 stat_mode
+PASS 补充 真实元数据 math_log
+PASS 补充 真实元数据 math_exp
+PASS 补充 真实元数据 math_trig
+PASS 补充 真实元数据 math_percentage
+PASS 补充 真实列表洗牌
+PASS 补充 真实列表抽样
+PASS 补充 运行时 UUID
+PASS 补充 运行时随机口令
+PASS 补充 源文件尺寸边界内随机数
+PASS 补充 高级随机数
+PASS 补充 系统日期
+PASS 补充 实际源文件 mtime 时间戳
+PASS 补充 实际 CSS token RGB 转 HSV
+PASS 补充 实际 CSS token RGB 转 CMYK
+PASS 补充 实际 CSS token HEX 转 CMYK
+PASS 补充 日志实际导出 JSON 
+PASS 补充 表格删除与清空 
+PASS 补充 Allure 完整报告真实源文件附件 
+FAIL 补充 PyPI 真实公开 API 轮询条件 KeyError('info')
+PASS 补充 Webhook request 的公开网页 GET 
+PASS 补充 真实文件创建触发器 
+PASS 补充 真实延迟定时与 wait 
+PASS 补充 概率节点真实随机值与必达分支 
+PASS 补充 真实文件 foreach 条件求和 
+PASS 补充 真实仓库计数 loop continue 
+PASS 补充 真实仓库计数 foreach_dict continue 
+PASS 补充 无限循环 break 并停止后继 
+PASS 补充 真实嵌套工作流返回变量 
+PASS 补充 真实自定义模块参数输出 
+PASS 补充 真实画布子流程与结构节点 

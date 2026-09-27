@@ -1,0 +1,221 @@
+[
+  {
+    "type": "execution:node_start",
+    "nodeId": "n0",
+    "executionId": "4f101c82-d684-44b1-a2e4-58c953cf8ba2",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-103",
+    "workflowId": "qa-103"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n0",
+    "executionId": "4f101c82-d684-44b1-a2e4-58c953cf8ba2",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "已初始化Allure测试套件: autoflow",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "suite_id": "78e11427-24d9-4014-99b8-5758ba30fdbe"
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.2104580053128302,
+    "artifactIds": [],
+    "runId": "qa-103",
+    "workflowId": "qa-103"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "n1",
+    "executionId": "e0d0ba4f-3c13-49f6-b799-ac14f17c15a8",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-103",
+    "workflowId": "qa-103"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n1",
+    "executionId": "e0d0ba4f-3c13-49f6-b799-ac14f17c15a8",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "已开始测试用例: package.json",
+    "error": null,
+    "isTimeout": false,
+    "data": null,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.28308300534263253,
+    "artifactIds": [],
+    "runId": "qa-103",
+    "workflowId": "qa-103"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "n2",
+    "executionId": "16f39b88-71cc-4903-94bb-eeb71dbc8593",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-103",
+    "workflowId": "qa-103"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n2",
+    "executionId": "16f39b88-71cc-4903-94bb-eeb71dbc8593",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "已添加步骤: 6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92",
+    "error": null,
+    "isTimeout": false,
+    "data": null,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.15754200285300612,
+    "artifactIds": [],
+    "runId": "qa-103",
+    "workflowId": "qa-103"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "n3",
+    "executionId": "b1f0af6f-0164-4770-9f16-7099c21ca1d6",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-103",
+    "workflowId": "qa-103"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n3",
+    "executionId": "b1f0af6f-0164-4770-9f16-7099c21ca1d6",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "已添加附件：package.json",
+    "error": null,
+    "isTimeout": false,
+    "data": null,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.17154100351035595,
+    "artifactIds": [],
+    "runId": "qa-103",
+    "workflowId": "qa-103"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "n4",
+    "executionId": "be82ac10-9b02-4d68-af48-7203d093c868",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-103",
+    "workflowId": "qa-103"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n4",
+    "executionId": "be82ac10-9b02-4d68-af48-7203d093c868",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "已结束测试用例，状态: passed",
+    "error": null,
+    "isTimeout": false,
+    "data": null,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.13516601757146418,
+    "artifactIds": [],
+    "runId": "qa-103",
+    "workflowId": "qa-103"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "n5",
+    "executionId": "ea96f15d-bb89-41e8-bcb8-2635e2426de1",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-103",
+    "workflowId": "qa-103"
+  },
+  {
+    "type": "artifact:registered",
+    "runId": "qa-103",
+    "artifactId": "2a5d32b4-9c80-4a70-a36e-abe3178937af",
+    "nodeId": "n5",
+    "executionId": "ea96f15d-bb89-41e8-bcb8-2635e2426de1",
+    "relativePath": "runs/qa-103/artifacts/exports/3b4be3e7103e437c995425234844e1ec.html",
+    "size": 31170,
+    "sha256": "efee00c40f12addad2dce0a957db7e8a7452fbc5233433890d6e2e477dde3d00",
+    "mimeType": "text/html",
+    "purpose": "result"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n5",
+    "executionId": "ea96f15d-bb89-41e8-bcb8-2635e2426de1",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "已生成Allure测试报告: /private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-extra-nodes-hj7mnv_l/artifacts/runs/qa-103/outputs/allure/report_20260927_171055.html",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "report_path": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-extra-nodes-hj7mnv_l/artifacts/runs/qa-103/outputs/allure/report_20260927_171055.html"
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 4.056292003951967,
+    "artifactIds": [
+      "2a5d32b4-9c80-4a70-a36e-abe3178937af"
+    ],
+    "runId": "qa-103",
+    "workflowId": "qa-103"
+  },
+  {
+    "type": "execution:completed",
+    "runId": "qa-103",
+    "workflowId": "qa-103",
+    "executedNodes": 6,
+    "failedNodeId": null,
+    "issues": [],
+    "error": null
+  }
+]

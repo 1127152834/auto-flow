@@ -1,0 +1,1641 @@
+{
+  "python_platform": "macOS-26.4.1-arm64-arm-64bit",
+  "marker_environment": {
+    "implementation_name": "cpython",
+    "implementation_version": "3.11.13",
+    "os_name": "posix",
+    "platform_machine": "arm64",
+    "platform_release": "25.4.0",
+    "platform_system": "Darwin",
+    "platform_version": "Darwin Kernel Version 25.4.0: Thu Mar 19 19:31:17 PDT 2026; root:xnu-12377.101.15~1/RELEASE_ARM64_T6020",
+    "python_full_version": "3.11.13",
+    "platform_python_implementation": "CPython",
+    "python_version": "3.11",
+    "sys_platform": "darwin",
+    "extra": ""
+  },
+  "production_direct_names": [
+    "alembic",
+    "beautifulsoup4",
+    "cloakbrowser",
+    "ddddocr",
+    "defusedxml",
+    "easyocr",
+    "face-recognition",
+    "fastapi",
+    "faster-whisper",
+    "html2text",
+    "httpx",
+    "keyring",
+    "langgraph",
+    "langgraph-checkpoint-sqlite",
+    "laya",
+    "mcp",
+    "mediapipe",
+    "mss",
+    "numpy",
+    "opencv-contrib-python",
+    "openpyxl",
+    "paramiko",
+    "pycaw",
+    "pydantic",
+    "pynput",
+    "pypdf",
+    "python-docx",
+    "pywin32",
+    "regex",
+    "setuptools",
+    "sqlalchemy",
+    "tzdata",
+    "uvicorn",
+    "xlrd"
+  ],
+  "requirement_rows": [
+    {
+      "name": "absl-py",
+      "version": "2.5.0",
+      "requirement": "absl-py==2.5.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "aiohappyeyeballs",
+      "version": "2.7.1",
+      "requirement": "aiohappyeyeballs==2.7.1",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "aiohttp",
+      "version": "3.14.3",
+      "requirement": "aiohttp==3.14.3",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "aiosignal",
+      "version": "1.4.0",
+      "requirement": "aiosignal==1.4.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "aiosqlite",
+      "version": "0.22.1",
+      "requirement": "aiosqlite==0.22.1",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "alembic",
+      "version": "1.19.2",
+      "requirement": "alembic==1.19.2",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "annotated-doc",
+      "version": "0.0.5",
+      "requirement": "annotated-doc==0.0.5",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "annotated-types",
+      "version": "0.8.0",
+      "requirement": "annotated-types==0.8.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "anyio",
+      "version": "4.15.1",
+      "requirement": "anyio==4.15.1",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "attrs",
+      "version": "26.1.0",
+      "requirement": "attrs==26.1.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "av",
+      "version": "18.1.0",
+      "requirement": "av==18.1.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "backports-tarfile",
+      "version": "1.2.0",
+      "requirement": "backports-tarfile==1.2.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "bcrypt",
+      "version": "5.0.0",
+      "requirement": "bcrypt==5.0.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "beautifulsoup4",
+      "version": "4.15.0",
+      "requirement": "beautifulsoup4==4.15.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "certifi",
+      "version": "2026.7.22",
+      "requirement": "certifi==2026.7.22",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "cffi",
+      "version": "2.1.1",
+      "requirement": "cffi==2.1.1",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "charset-normalizer",
+      "version": "3.5.1",
+      "requirement": "charset-normalizer==3.5.1",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "click",
+      "version": "8.5.0",
+      "requirement": "click==8.5.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "cloakbrowser",
+      "version": "0.5.9",
+      "requirement": "cloakbrowser==0.5.9",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "colorama",
+      "version": "0.4.6",
+      "requirement": "colorama==0.4.6 ; sys_platform == 'win32'",
+      "marker": "sys_platform == \"win32\"",
+      "active_on_host": false,
+      "direct": false
+    },
+    {
+      "name": "comtypes",
+      "version": "1.4.16",
+      "requirement": "comtypes==1.4.16 ; sys_platform == 'win32'",
+      "marker": "sys_platform == \"win32\"",
+      "active_on_host": false,
+      "direct": false
+    },
+    {
+      "name": "contourpy",
+      "version": "1.3.3",
+      "requirement": "contourpy==1.3.3",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "cryptography",
+      "version": "50.0.1",
+      "requirement": "cryptography==50.0.1",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "ctranslate2",
+      "version": "4.8.2",
+      "requirement": "ctranslate2==4.8.2",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "cuda-bindings",
+      "version": "13.4.2",
+      "requirement": "cuda-bindings==13.4.2 ; sys_platform == 'linux'",
+      "marker": "sys_platform == \"linux\"",
+      "active_on_host": false,
+      "direct": false
+    },
+    {
+      "name": "cuda-pathfinder",
+      "version": "1.8.2",
+      "requirement": "cuda-pathfinder==1.8.2 ; sys_platform == 'linux'",
+      "marker": "sys_platform == \"linux\"",
+      "active_on_host": false,
+      "direct": false
+    },
+    {
+      "name": "cuda-toolkit",
+      "version": "13.0.3.0",
+      "requirement": "cuda-toolkit==13.0.3.0 ; sys_platform == 'linux'",
+      "marker": "sys_platform == \"linux\"",
+      "active_on_host": false,
+      "direct": false
+    },
+    {
+      "name": "cycler",
+      "version": "0.12.1",
+      "requirement": "cycler==0.12.1",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "ddddocr",
+      "version": "1.6.1",
+      "requirement": "ddddocr==1.6.1",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "defusedxml",
+      "version": "0.7.1",
+      "requirement": "defusedxml==0.7.1",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "distro",
+      "version": "1.9.0",
+      "requirement": "distro==1.9.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "dlib",
+      "version": "20.0.1",
+      "requirement": "dlib==20.0.1",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "easyocr",
+      "version": "1.7.2",
+      "requirement": "easyocr==1.7.2",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "et-xmlfile",
+      "version": "2.0.0",
+      "requirement": "et-xmlfile==2.0.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "evdev",
+      "version": "2.0.0",
+      "requirement": "evdev==2.0.0 ; 'linux' in sys_platform",
+      "marker": "\"linux\" in sys_platform",
+      "active_on_host": false,
+      "direct": false
+    },
+    {
+      "name": "face-recognition",
+      "version": "1.3.0",
+      "requirement": "face-recognition==1.3.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "face-recognition-models",
+      "version": "0.3.0",
+      "requirement": "face-recognition-models==0.3.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "fastapi",
+      "version": "0.141.1",
+      "requirement": "fastapi==0.141.1",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "faster-whisper",
+      "version": "1.2.1",
+      "requirement": "faster-whisper==1.2.1",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "filelock",
+      "version": "4.0.1",
+      "requirement": "filelock==4.0.1",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "flatbuffers",
+      "version": "25.12.19",
+      "requirement": "flatbuffers==25.12.19",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "fonttools",
+      "version": "4.65.0",
+      "requirement": "fonttools==4.65.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "frozenlist",
+      "version": "1.8.0",
+      "requirement": "frozenlist==1.8.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "fsspec",
+      "version": "2026.9.0",
+      "requirement": "fsspec==2026.9.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "geoip2",
+      "version": "5.3.0",
+      "requirement": "geoip2==5.3.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "greenlet",
+      "version": "3.5.5",
+      "requirement": "greenlet==3.5.5",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "h11",
+      "version": "0.16.0",
+      "requirement": "h11==0.16.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "hf-xet",
+      "version": "1.6.0",
+      "requirement": "hf-xet==1.6.0 ; platform_machine == 'AMD64' or platform_machine == 'aarch64' or platform_machine == 'amd64' or platform_machine == 'arm64' or platform_machine == 'x86_64'",
+      "marker": "platform_machine == \"AMD64\" or platform_machine == \"aarch64\" or platform_machine == \"amd64\" or platform_machine == \"arm64\" or platform_machine == \"x86_64\"",
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "html2text",
+      "version": "2025.4.15",
+      "requirement": "html2text==2025.4.15",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "httpcore",
+      "version": "1.0.9",
+      "requirement": "httpcore==1.0.9",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "httpcore2",
+      "version": "2.13.0",
+      "requirement": "httpcore2==2.13.0 ; sys_platform != 'emscripten'",
+      "marker": "sys_platform != \"emscripten\"",
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "httpx",
+      "version": "0.28.1",
+      "requirement": "httpx==0.28.1",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "httpx-sse",
+      "version": "0.4.3",
+      "requirement": "httpx-sse==0.4.3",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "httpx2",
+      "version": "2.13.0",
+      "requirement": "httpx2==2.13.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "huggingface-hub",
+      "version": "1.32.0",
+      "requirement": "huggingface-hub==1.32.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "idna",
+      "version": "3.19",
+      "requirement": "idna==3.19",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "imageio",
+      "version": "2.37.4",
+      "requirement": "imageio==2.37.4",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "importlib-metadata",
+      "version": "9.0.1",
+      "requirement": "importlib-metadata==9.0.1",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "jaraco-classes",
+      "version": "3.4.0",
+      "requirement": "jaraco-classes==3.4.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "jaraco-context",
+      "version": "6.1.2",
+      "requirement": "jaraco-context==6.1.2",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "jaraco-functools",
+      "version": "4.6.0",
+      "requirement": "jaraco-functools==4.6.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "jeepney",
+      "version": "0.9.0",
+      "requirement": "jeepney==0.9.0 ; sys_platform == 'linux'",
+      "marker": "sys_platform == \"linux\"",
+      "active_on_host": false,
+      "direct": false
+    },
+    {
+      "name": "jinja2",
+      "version": "3.1.6",
+      "requirement": "jinja2==3.1.6",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "jsonpatch",
+      "version": "1.33",
+      "requirement": "jsonpatch==1.33",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "jsonpointer",
+      "version": "3.1.1",
+      "requirement": "jsonpointer==3.1.1",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "jsonschema",
+      "version": "4.26.0",
+      "requirement": "jsonschema==4.26.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "jsonschema-specifications",
+      "version": "2025.9.1",
+      "requirement": "jsonschema-specifications==2025.9.1",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "keyring",
+      "version": "25.7.0",
+      "requirement": "keyring==25.7.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "kiwisolver",
+      "version": "1.5.1",
+      "requirement": "kiwisolver==1.5.1",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "langchain-core",
+      "version": "1.6.3",
+      "requirement": "langchain-core==1.6.3",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "langchain-protocol",
+      "version": "0.0.19",
+      "requirement": "langchain-protocol==0.0.19",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "langgraph",
+      "version": "1.2.11",
+      "requirement": "langgraph==1.2.11",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "langgraph-checkpoint",
+      "version": "4.2.0",
+      "requirement": "langgraph-checkpoint==4.2.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "langgraph-checkpoint-sqlite",
+      "version": "3.1.1",
+      "requirement": "langgraph-checkpoint-sqlite==3.1.1",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "langgraph-prebuilt",
+      "version": "1.1.0",
+      "requirement": "langgraph-prebuilt==1.1.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "langgraph-sdk",
+      "version": "0.4.4",
+      "requirement": "langgraph-sdk==0.4.4",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "langsmith",
+      "version": "0.13.0",
+      "requirement": "langsmith==0.13.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "laya",
+      "version": "0.3.6",
+      "requirement": "laya==0.3.6",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "lazy-loader",
+      "version": "0.5",
+      "requirement": "lazy-loader==0.5",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "lxml",
+      "version": "6.1.3",
+      "requirement": "lxml==6.1.3",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "mako",
+      "version": "1.4.1",
+      "requirement": "mako==1.4.1",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "markdown-it-py",
+      "version": "4.2.0",
+      "requirement": "markdown-it-py==4.2.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "markupsafe",
+      "version": "3.0.3",
+      "requirement": "markupsafe==3.0.3",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "matplotlib",
+      "version": "3.11.2",
+      "requirement": "matplotlib==3.11.2",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "maxminddb",
+      "version": "3.2.0",
+      "requirement": "maxminddb==3.2.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "mcp",
+      "version": "1.30.0",
+      "requirement": "mcp==1.30.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "mdurl",
+      "version": "0.1.2",
+      "requirement": "mdurl==0.1.2",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "mediapipe",
+      "version": "0.10.35",
+      "requirement": "mediapipe==0.10.35",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "more-itertools",
+      "version": "11.1.0",
+      "requirement": "more-itertools==11.1.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "mpmath",
+      "version": "1.3.0",
+      "requirement": "mpmath==1.3.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "mss",
+      "version": "10.2.0",
+      "requirement": "mss==10.2.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "multidict",
+      "version": "6.8.0",
+      "requirement": "multidict==6.8.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "networkx",
+      "version": "3.6.1",
+      "requirement": "networkx==3.6.1",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "ninja",
+      "version": "1.13.2",
+      "requirement": "ninja==1.13.2",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "numpy",
+      "version": "2.4.6",
+      "requirement": "numpy==2.4.6",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "nvidia-cublas",
+      "version": "13.1.1.3",
+      "requirement": "nvidia-cublas==13.1.1.3 ; sys_platform == 'linux'",
+      "marker": "sys_platform == \"linux\"",
+      "active_on_host": false,
+      "direct": false
+    },
+    {
+      "name": "nvidia-cuda-cupti",
+      "version": "13.0.85",
+      "requirement": "nvidia-cuda-cupti==13.0.85 ; (platform_machine == 'aarch64' and sys_platform == 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux')",
+      "marker": "(platform_machine == \"aarch64\" and sys_platform == \"linux\") or (platform_machine == \"x86_64\" and sys_platform == \"linux\")",
+      "active_on_host": false,
+      "direct": false
+    },
+    {
+      "name": "nvidia-cuda-nvrtc",
+      "version": "13.0.88",
+      "requirement": "nvidia-cuda-nvrtc==13.0.88 ; sys_platform == 'linux'",
+      "marker": "sys_platform == \"linux\"",
+      "active_on_host": false,
+      "direct": false
+    },
+    {
+      "name": "nvidia-cuda-runtime",
+      "version": "13.0.96",
+      "requirement": "nvidia-cuda-runtime==13.0.96 ; (platform_machine == 'aarch64' and sys_platform == 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux')",
+      "marker": "(platform_machine == \"aarch64\" and sys_platform == \"linux\") or (platform_machine == \"x86_64\" and sys_platform == \"linux\")",
+      "active_on_host": false,
+      "direct": false
+    },
+    {
+      "name": "nvidia-cudnn-cu13",
+      "version": "9.24.0.43",
+      "requirement": "nvidia-cudnn-cu13==9.24.0.43 ; sys_platform == 'linux'",
+      "marker": "sys_platform == \"linux\"",
+      "active_on_host": false,
+      "direct": false
+    },
+    {
+      "name": "nvidia-cufft",
+      "version": "12.0.0.61",
+      "requirement": "nvidia-cufft==12.0.0.61 ; (platform_machine == 'aarch64' and sys_platform == 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux')",
+      "marker": "(platform_machine == \"aarch64\" and sys_platform == \"linux\") or (platform_machine == \"x86_64\" and sys_platform == \"linux\")",
+      "active_on_host": false,
+      "direct": false
+    },
+    {
+      "name": "nvidia-cufile",
+      "version": "1.15.1.6",
+      "requirement": "nvidia-cufile==1.15.1.6 ; (platform_machine == 'aarch64' and sys_platform == 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux')",
+      "marker": "(platform_machine == \"aarch64\" and sys_platform == \"linux\") or (platform_machine == \"x86_64\" and sys_platform == \"linux\")",
+      "active_on_host": false,
+      "direct": false
+    },
+    {
+      "name": "nvidia-curand",
+      "version": "10.4.0.35",
+      "requirement": "nvidia-curand==10.4.0.35 ; (platform_machine == 'aarch64' and sys_platform == 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux')",
+      "marker": "(platform_machine == \"aarch64\" and sys_platform == \"linux\") or (platform_machine == \"x86_64\" and sys_platform == \"linux\")",
+      "active_on_host": false,
+      "direct": false
+    },
+    {
+      "name": "nvidia-cusolver",
+      "version": "12.0.4.66",
+      "requirement": "nvidia-cusolver==12.0.4.66 ; (platform_machine == 'aarch64' and sys_platform == 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux')",
+      "marker": "(platform_machine == \"aarch64\" and sys_platform == \"linux\") or (platform_machine == \"x86_64\" and sys_platform == \"linux\")",
+      "active_on_host": false,
+      "direct": false
+    },
+    {
+      "name": "nvidia-cusparse",
+      "version": "12.6.3.3",
+      "requirement": "nvidia-cusparse==12.6.3.3 ; (platform_machine == 'aarch64' and sys_platform == 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux')",
+      "marker": "(platform_machine == \"aarch64\" and sys_platform == \"linux\") or (platform_machine == \"x86_64\" and sys_platform == \"linux\")",
+      "active_on_host": false,
+      "direct": false
+    },
+    {
+      "name": "nvidia-cusparselt-cu13",
+      "version": "0.8.1",
+      "requirement": "nvidia-cusparselt-cu13==0.8.1 ; sys_platform == 'linux'",
+      "marker": "sys_platform == \"linux\"",
+      "active_on_host": false,
+      "direct": false
+    },
+    {
+      "name": "nvidia-nccl-cu13",
+      "version": "2.30.7",
+      "requirement": "nvidia-nccl-cu13==2.30.7 ; sys_platform == 'linux'",
+      "marker": "sys_platform == \"linux\"",
+      "active_on_host": false,
+      "direct": false
+    },
+    {
+      "name": "nvidia-nvjitlink",
+      "version": "13.4.92",
+      "requirement": "nvidia-nvjitlink==13.4.92 ; (platform_machine == 'aarch64' and sys_platform == 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux')",
+      "marker": "(platform_machine == \"aarch64\" and sys_platform == \"linux\") or (platform_machine == \"x86_64\" and sys_platform == \"linux\")",
+      "active_on_host": false,
+      "direct": false
+    },
+    {
+      "name": "nvidia-nvshmem-cu13",
+      "version": "3.4.5",
+      "requirement": "nvidia-nvshmem-cu13==3.4.5 ; sys_platform == 'linux'",
+      "marker": "sys_platform == \"linux\"",
+      "active_on_host": false,
+      "direct": false
+    },
+    {
+      "name": "nvidia-nvtx",
+      "version": "13.0.85",
+      "requirement": "nvidia-nvtx==13.0.85 ; (platform_machine == 'aarch64' and sys_platform == 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux')",
+      "marker": "(platform_machine == \"aarch64\" and sys_platform == \"linux\") or (platform_machine == \"x86_64\" and sys_platform == \"linux\")",
+      "active_on_host": false,
+      "direct": false
+    },
+    {
+      "name": "onnxruntime",
+      "version": "1.30.0",
+      "requirement": "onnxruntime==1.30.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "opencv-contrib-python",
+      "version": "5.0.0.93",
+      "requirement": "opencv-contrib-python==5.0.0.93",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "opencv-python",
+      "version": "5.0.0.93",
+      "requirement": "opencv-python==5.0.0.93 ; sys_platform == 'darwin' or sys_platform == 'win32'",
+      "marker": "sys_platform == \"darwin\" or sys_platform == \"win32\"",
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "opencv-python-headless",
+      "version": "4.14.0.94",
+      "requirement": "opencv-python-headless==4.14.0.94",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "openpyxl",
+      "version": "3.1.5",
+      "requirement": "openpyxl==3.1.5",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "orjson",
+      "version": "3.12.0",
+      "requirement": "orjson==3.12.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "ormsgpack",
+      "version": "1.12.2",
+      "requirement": "ormsgpack==1.12.2",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "packaging",
+      "version": "26.3",
+      "requirement": "packaging==26.3",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "paramiko",
+      "version": "3.5.1",
+      "requirement": "paramiko==3.5.1",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "pillow",
+      "version": "12.3.0",
+      "requirement": "pillow==12.3.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "playwright",
+      "version": "1.62.0",
+      "requirement": "playwright==1.62.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "propcache",
+      "version": "0.5.2",
+      "requirement": "propcache==0.5.2",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "protobuf",
+      "version": "7.36.2",
+      "requirement": "protobuf==7.36.2",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "psutil",
+      "version": "7.2.2",
+      "requirement": "psutil==7.2.2 ; sys_platform == 'win32'",
+      "marker": "sys_platform == \"win32\"",
+      "active_on_host": false,
+      "direct": false
+    },
+    {
+      "name": "pycaw",
+      "version": "20251023",
+      "requirement": "pycaw==20251023 ; sys_platform == 'win32'",
+      "marker": "sys_platform == \"win32\"",
+      "active_on_host": false,
+      "direct": true
+    },
+    {
+      "name": "pyclipper",
+      "version": "1.4.0",
+      "requirement": "pyclipper==1.4.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "pycparser",
+      "version": "3.0",
+      "requirement": "pycparser==3.0 ; implementation_name != 'PyPy'",
+      "marker": "implementation_name != \"PyPy\"",
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "pydantic",
+      "version": "2.13.5",
+      "requirement": "pydantic==2.13.5",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "pydantic-core",
+      "version": "2.46.5",
+      "requirement": "pydantic-core==2.46.5",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "pydantic-settings",
+      "version": "2.15.0",
+      "requirement": "pydantic-settings==2.15.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "pyee",
+      "version": "13.0.1",
+      "requirement": "pyee==13.0.1",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "pygments",
+      "version": "2.21.0",
+      "requirement": "pygments==2.21.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "pyjwt",
+      "version": "2.14.0",
+      "requirement": "pyjwt==2.14.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "pynacl",
+      "version": "1.6.2",
+      "requirement": "pynacl==1.6.2",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "pynput",
+      "version": "1.8.2",
+      "requirement": "pynput==1.8.2",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "pyobjc-core",
+      "version": "12.2.2",
+      "requirement": "pyobjc-core==12.2.2 ; sys_platform == 'darwin'",
+      "marker": "sys_platform == \"darwin\"",
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "pyobjc-framework-applicationservices",
+      "version": "12.2.2",
+      "requirement": "pyobjc-framework-applicationservices==12.2.2 ; sys_platform == 'darwin'",
+      "marker": "sys_platform == \"darwin\"",
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "pyobjc-framework-cocoa",
+      "version": "12.2.2",
+      "requirement": "pyobjc-framework-cocoa==12.2.2 ; sys_platform == 'darwin'",
+      "marker": "sys_platform == \"darwin\"",
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "pyobjc-framework-coretext",
+      "version": "12.2.2",
+      "requirement": "pyobjc-framework-coretext==12.2.2 ; sys_platform == 'darwin'",
+      "marker": "sys_platform == \"darwin\"",
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "pyobjc-framework-quartz",
+      "version": "12.2.2",
+      "requirement": "pyobjc-framework-quartz==12.2.2 ; sys_platform == 'darwin'",
+      "marker": "sys_platform == \"darwin\"",
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "pyparsing",
+      "version": "3.3.3",
+      "requirement": "pyparsing==3.3.3",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "pypdf",
+      "version": "6.19.0",
+      "requirement": "pypdf==6.19.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "python-bidi",
+      "version": "0.6.11",
+      "requirement": "python-bidi==0.6.11",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "python-dateutil",
+      "version": "2.9.0.post0",
+      "requirement": "python-dateutil==2.9.0.post0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "python-docx",
+      "version": "1.2.0",
+      "requirement": "python-docx==1.2.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "python-dotenv",
+      "version": "1.2.3",
+      "requirement": "python-dotenv==1.2.3",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "python-multipart",
+      "version": "0.0.32",
+      "requirement": "python-multipart==0.0.32",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "python-xlib",
+      "version": "0.33",
+      "requirement": "python-xlib==0.33 ; 'linux' in sys_platform",
+      "marker": "\"linux\" in sys_platform",
+      "active_on_host": false,
+      "direct": false
+    },
+    {
+      "name": "pywin32",
+      "version": "312",
+      "requirement": "pywin32==312 ; sys_platform == 'win32'",
+      "marker": "sys_platform == \"win32\"",
+      "active_on_host": false,
+      "direct": true
+    },
+    {
+      "name": "pywin32-ctypes",
+      "version": "0.2.3",
+      "requirement": "pywin32-ctypes==0.2.3 ; sys_platform == 'win32'",
+      "marker": "sys_platform == \"win32\"",
+      "active_on_host": false,
+      "direct": false
+    },
+    {
+      "name": "pyyaml",
+      "version": "6.0.3",
+      "requirement": "pyyaml==6.0.3",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "referencing",
+      "version": "0.37.0",
+      "requirement": "referencing==0.37.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "regex",
+      "version": "2026.9.10",
+      "requirement": "regex==2026.9.10",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "requests",
+      "version": "2.34.2",
+      "requirement": "requests==2.34.2",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "requests-toolbelt",
+      "version": "1.0.0",
+      "requirement": "requests-toolbelt==1.0.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "rich",
+      "version": "15.0.0",
+      "requirement": "rich==15.0.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "rpds-py",
+      "version": "2026.6.3",
+      "requirement": "rpds-py==2026.6.3",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "safetensors",
+      "version": "0.8.0",
+      "requirement": "safetensors==0.8.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "scikit-image",
+      "version": "0.26.0",
+      "requirement": "scikit-image==0.26.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "scipy",
+      "version": "1.17.1",
+      "requirement": "scipy==1.17.1",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "secretstorage",
+      "version": "3.5.0",
+      "requirement": "secretstorage==3.5.0 ; sys_platform == 'linux'",
+      "marker": "sys_platform == \"linux\"",
+      "active_on_host": false,
+      "direct": false
+    },
+    {
+      "name": "setuptools",
+      "version": "80.10.2",
+      "requirement": "setuptools==80.10.2",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "shapely",
+      "version": "2.1.2",
+      "requirement": "shapely==2.1.2",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "shellingham",
+      "version": "1.5.4",
+      "requirement": "shellingham==1.5.4",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "six",
+      "version": "1.17.0",
+      "requirement": "six==1.17.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "sniffio",
+      "version": "1.3.1",
+      "requirement": "sniffio==1.3.1",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "socksio",
+      "version": "1.0.0",
+      "requirement": "socksio==1.0.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "sounddevice",
+      "version": "0.5.6",
+      "requirement": "sounddevice==0.5.6",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "soupsieve",
+      "version": "2.9.2",
+      "requirement": "soupsieve==2.9.2",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "sqlalchemy",
+      "version": "2.0.52",
+      "requirement": "sqlalchemy==2.0.52",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "sqlite-vec",
+      "version": "0.1.9",
+      "requirement": "sqlite-vec==0.1.9",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "sse-starlette",
+      "version": "3.4.11",
+      "requirement": "sse-starlette==3.4.11",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "starlette",
+      "version": "1.6.0",
+      "requirement": "starlette==1.6.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "sympy",
+      "version": "1.14.0",
+      "requirement": "sympy==1.14.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "tenacity",
+      "version": "9.1.4",
+      "requirement": "tenacity==9.1.4",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "tifffile",
+      "version": "2026.3.3",
+      "requirement": "tifffile==2026.3.3",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "tokenizers",
+      "version": "0.23.2",
+      "requirement": "tokenizers==0.23.2",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "torch",
+      "version": "2.14.0",
+      "requirement": "torch==2.14.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "torchvision",
+      "version": "0.29.0",
+      "requirement": "torchvision==0.29.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "tqdm",
+      "version": "4.70.1",
+      "requirement": "tqdm==4.70.1",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "transformers",
+      "version": "5.17.0",
+      "requirement": "transformers==5.17.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "triton",
+      "version": "3.8.0",
+      "requirement": "triton==3.8.0 ; sys_platform == 'linux'",
+      "marker": "sys_platform == \"linux\"",
+      "active_on_host": false,
+      "direct": false
+    },
+    {
+      "name": "truststore",
+      "version": "0.10.4",
+      "requirement": "truststore==0.10.4 ; sys_platform != 'emscripten'",
+      "marker": "sys_platform != \"emscripten\"",
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "typer",
+      "version": "0.27.2",
+      "requirement": "typer==0.27.2",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "typing-extensions",
+      "version": "4.16.0",
+      "requirement": "typing-extensions==4.16.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "typing-inspection",
+      "version": "0.4.4",
+      "requirement": "typing-inspection==0.4.4",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "tzdata",
+      "version": "2026.3",
+      "requirement": "tzdata==2026.3",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "urllib3",
+      "version": "2.7.0",
+      "requirement": "urllib3==2.7.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "uuid-utils",
+      "version": "0.17.1",
+      "requirement": "uuid-utils==0.17.1",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "uvicorn",
+      "version": "0.52.4",
+      "requirement": "uvicorn==0.52.4",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "websockets",
+      "version": "16.1.1",
+      "requirement": "websockets==16.1.1",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "xlrd",
+      "version": "2.0.2",
+      "requirement": "xlrd==2.0.2",
+      "marker": null,
+      "active_on_host": true,
+      "direct": true
+    },
+    {
+      "name": "xxhash",
+      "version": "4.0.1",
+      "requirement": "xxhash==4.0.1",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "yarl",
+      "version": "1.24.5",
+      "requirement": "yarl==1.24.5",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "zipp",
+      "version": "4.1.0",
+      "requirement": "zipp==4.1.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    },
+    {
+      "name": "zstandard",
+      "version": "0.25.0",
+      "requirement": "zstandard==0.25.0",
+      "marker": null,
+      "active_on_host": true,
+      "direct": false
+    }
+  ],
+  "unique_pins": 196,
+  "active_on_host_pins": 167,
+  "export_command": [
+    "uv",
+    "export",
+    "--project",
+    "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend",
+    "--frozen",
+    "--no-dev",
+    "--no-default-groups",
+    "--no-emit-project",
+    "--no-hashes",
+    "--no-annotate",
+    "--no-header",
+    "--output-file",
+    "/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/dependency/backend-production-requirements.txt"
+  ],
+  "note": "Audit the frozen production lock export union across platform markers. This does not install or resolve dependencies. Conditional non-host packages are classified separately."
+}

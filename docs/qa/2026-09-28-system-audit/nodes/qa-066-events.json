@@ -1,0 +1,47 @@
+[
+  {
+    "type": "execution:node_start",
+    "nodeId": "n0",
+    "executionId": "7b0afab1-2f27-4f59-b412-99004a12f377",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-066",
+    "workflowId": "qa-066"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n0",
+    "executionId": "7b0afab1-2f27-4f59-b412-99004a12f377",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": false,
+    "message": "",
+    "error": "脚本执行失败（返回码: 1）\n标准错误输出:\n脚本执行错误: [Errno 2] No such file or directory: '/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-nodes-a5m6recu/not-created.json'\nTraceback (most recent call last):\n  File \"/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-nodes-a5m6recu/workflow-worker/278756dcc1b1447d942f0c67e2155090/qa-066/tmpgv9y3qi8.py\", line 39, in <module>\n    _result = _user_script()\n              ^^^^^^^^^^^^^^\n  File \"/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-nodes-a5m6recu/workflow-worker/278756dcc1b1447d942f0c67e2155090/qa-066/tmpgv9y3qi8.py\", line 36, in _user_script\n    return Path(vars.source).read_text()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/pathlib.py\", line 1058, in read_text\n    with self.open(mode='r', encoding=encoding, errors=errors) as f:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/pathlib.py\", line 1044, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-nodes-a5m6recu/not-created.json'",
+    "isTimeout": false,
+    "data": {
+      "stdout": "",
+      "stderr": "脚本执行错误: [Errno 2] No such file or directory: '/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-nodes-a5m6recu/not-created.json'\nTraceback (most recent call last):\n  File \"/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-nodes-a5m6recu/workflow-worker/278756dcc1b1447d942f0c67e2155090/qa-066/tmpgv9y3qi8.py\", line 39, in <module>\n    _result = _user_script()\n              ^^^^^^^^^^^^^^\n  File \"/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-nodes-a5m6recu/workflow-worker/278756dcc1b1447d942f0c67e2155090/qa-066/tmpgv9y3qi8.py\", line 36, in _user_script\n    return Path(vars.source).read_text()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/pathlib.py\", line 1058, in read_text\n    with self.open(mode='r', encoding=encoding, errors=errors) as f:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/pathlib.py\", line 1044, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-nodes-a5m6recu/not-created.json'",
+      "returnCode": 1
+    },
+    "logLevel": null,
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 43.041709024691954,
+    "artifactIds": [],
+    "runId": "qa-066",
+    "workflowId": "qa-066"
+  },
+  {
+    "type": "execution:failed",
+    "runId": "qa-066",
+    "workflowId": "qa-066",
+    "executedNodes": 1,
+    "failedNodeId": "n0",
+    "issues": [],
+    "error": "脚本执行失败（返回码: 1）\n标准错误输出:\n脚本执行错误: [Errno 2] No such file or directory: '/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-nodes-a5m6recu/not-created.json'\nTraceback (most recent call last):\n  File \"/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-nodes-a5m6recu/workflow-worker/278756dcc1b1447d942f0c67e2155090/qa-066/tmpgv9y3qi8.py\", line 39, in <module>\n    _result = _user_script()\n              ^^^^^^^^^^^^^^\n  File \"/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-nodes-a5m6recu/workflow-worker/278756dcc1b1447d942f0c67e2155090/qa-066/tmpgv9y3qi8.py\", line 36, in _user_script\n    return Path(vars.source).read_text()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/pathlib.py\", line 1058, in read_text\n    with self.open(mode='r', encoding=encoding, errors=errors) as f:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/pathlib.py\", line 1044, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-nodes-a5m6recu/not-created.json'"
+  }
+]

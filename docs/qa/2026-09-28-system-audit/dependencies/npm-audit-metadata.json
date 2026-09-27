@@ -1,0 +1,23 @@
+{
+  "startedAtUtc": "2026-09-27T17:27:04.742652+00:00",
+  "registry": "https://registry.npmjs.org/",
+  "node": "v26.7.0",
+  "npm": "11.19.0",
+  "head": "33ae3aa49600840b1700c83723408c494dc201a8",
+  "lockfileSha256": "3b4cc926137f033edb818bf6a41b3c50b85a60561f655df0434c47427abae205",
+  "mode": "read-only npm audit; no fix, install, or lock update",
+  "completedAtUtc": "2026-09-27T17:29:40.937885+00:00",
+  "auditExitCode": 1,
+  "installedTreeExitCode": 1,
+  "auditReportVersion": 2,
+  "registryScanCompleted": true,
+  "lockfileUnchanged": true,
+  "uniqueAdvisories": 18,
+  "installedLockedVersionsMatch": true,
+  "directDOMPurifyVersion": "3.4.15",
+  "monacoVersion": "0.55.1",
+  "monacoDOMPurifyVersion": "3.2.7",
+  "bundledDOMPurifyEvidence": "apps/desktop/out/renderer/assets/AICodeAssistant-BXXEYJZC.js:81927",
+  "compatibleMissingOptionalEntries": 0,
+  "reachability": "Bundled library presence confirmed; advisory-specific exploitable paths and attacker-controlled input reachability are unverified."
+}

@@ -1,0 +1,97 @@
+[
+  {
+    "type": "execution:node_start",
+    "nodeId": "n0",
+    "executionId": "c7c6a13d-c83d-4b15-b75c-373e2fba24b4",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-101",
+    "workflowId": "qa-101"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n0",
+    "executionId": "c7c6a13d-c83d-4b15-b75c-373e2fba24b4",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "level": "info",
+      "message": "6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92"
+    },
+    "logLevel": "info",
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 0.2672499977052212,
+    "artifactIds": [],
+    "runId": "qa-101",
+    "workflowId": "qa-101"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "n1",
+    "executionId": "0b24fa64-4b7f-4773-ab2c-865e98ee836b",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-101",
+    "workflowId": "qa-101"
+  },
+  {
+    "type": "artifact:registered",
+    "runId": "qa-101",
+    "artifactId": "743f5ff1-a5ef-4515-85ca-980bf511ce28",
+    "nodeId": "n1",
+    "executionId": "0b24fa64-4b7f-4773-ab2c-865e98ee836b",
+    "relativePath": "runs/qa-101/artifacts/exports/bf0e43c9d7854049b6a0892a0d62843c.txt",
+    "size": 223,
+    "sha256": "05c05e213bf53ba73494286b6c4f7882bcfc8b5edac75af12606ca4975983093",
+    "mimeType": "application/json",
+    "purpose": "result"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n1",
+    "executionId": "0b24fa64-4b7f-4773-ab2c-865e98ee836b",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "已导出 1 条日志到 /private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-extra-nodes-hj7mnv_l/artifacts/runs/qa-101/outputs/logs/source.json",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "output_path": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-extra-nodes-hj7mnv_l/artifacts/runs/qa-101/outputs/logs/source.json",
+      "log_count": 1,
+      "format": "json",
+      "file_size": 223
+    },
+    "logLevel": null,
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 3.120999987004325,
+    "artifactIds": [
+      "743f5ff1-a5ef-4515-85ca-980bf511ce28"
+    ],
+    "runId": "qa-101",
+    "workflowId": "qa-101"
+  },
+  {
+    "type": "execution:completed",
+    "runId": "qa-101",
+    "workflowId": "qa-101",
+    "executedNodes": 2,
+    "failedNodeId": null,
+    "issues": [],
+    "error": null
+  }
+]

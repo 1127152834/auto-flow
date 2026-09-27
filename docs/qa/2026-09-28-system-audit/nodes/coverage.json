@@ -1,0 +1,2502 @@
+{
+  "registryCount": 217,
+  "approvedCount": 216,
+  "registryExtra": [
+    "custom_module"
+  ],
+  "approvedMissingExecutor": [],
+  "scriptExecutedTypes": 129,
+  "supplementalScenarios": [
+    {
+      "name": "主任务补验：打包 Electron 正式 JS Gateway",
+      "moduleTypes": [
+        "js_script"
+      ],
+      "status": "pass",
+      "evidence": "../ui/native-js-result.json"
+    },
+    {
+      "name": "运行链补验：真实 CloakBrowser 公开网页与仓库文件",
+      "moduleTypes": [
+        "close_page",
+        "element_exists",
+        "element_visible",
+        "get_child_elements",
+        "get_element_info",
+        "get_sibling_elements",
+        "go_back",
+        "go_forward",
+        "hover_element",
+        "inject_javascript",
+        "open_page",
+        "page_load_complete",
+        "refresh_page",
+        "screenshot",
+        "scroll_page",
+        "switch_tab",
+        "use_opened_page",
+        "wait_element",
+        "wait_page_load"
+      ],
+      "status": "pass",
+      "evidence": "../runtime/browser-node-results.json",
+      "scenarioCount": 1,
+      "taskCount": 1,
+      "nodeVisits": 26,
+      "assertions": 9
+    }
+  ],
+  "executedTypes": 149,
+  "statusCounts": {
+    "not-run": 66,
+    "real-tested": 145,
+    "known-failure": 3,
+    "real-negative-only": 1,
+    "structural-tested": 2
+  },
+  "categoryCounts": {
+    "需外部服务或账号": 30,
+    "实际执行": 149,
+    "需浏览器或正式UI": 20,
+    "需设备或原生交互": 16,
+    "结构节点": 2
+  },
+  "nodes": [
+    {
+      "moduleType": "ai_chat",
+      "approved": true,
+      "status": "not-run",
+      "category": "需外部服务或账号",
+      "reason": "需要真实已配置供应商/服务/代理/SSH与授权目标；本子任务未使用账号、付费凭据或发送外部消息。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "ai_classify",
+      "approved": true,
+      "status": "not-run",
+      "category": "需外部服务或账号",
+      "reason": "需要真实已配置供应商/服务/代理/SSH与授权目标；本子任务未使用账号、付费凭据或发送外部消息。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "ai_dedup_semantic",
+      "approved": true,
+      "status": "not-run",
+      "category": "需外部服务或账号",
+      "reason": "需要真实已配置供应商/服务/代理/SSH与授权目标；本子任务未使用账号、付费凭据或发送外部消息。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "ai_element_selector",
+      "approved": true,
+      "status": "not-run",
+      "category": "需外部服务或账号",
+      "reason": "需要真实已配置供应商/服务/代理/SSH与授权目标；本子任务未使用账号、付费凭据或发送外部消息。 还需要真实浏览器会话。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "ai_extract",
+      "approved": true,
+      "status": "not-run",
+      "category": "需外部服务或账号",
+      "reason": "需要真实已配置供应商/服务/代理/SSH与授权目标；本子任务未使用账号、付费凭据或发送外部消息。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "ai_generate_image",
+      "approved": true,
+      "status": "not-run",
+      "category": "需外部服务或账号",
+      "reason": "需要真实已配置供应商/服务/代理/SSH与授权目标；本子任务未使用账号、付费凭据或发送外部消息。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "ai_generate_video",
+      "approved": true,
+      "status": "not-run",
+      "category": "需外部服务或账号",
+      "reason": "需要真实已配置供应商/服务/代理/SSH与授权目标；本子任务未使用账号、付费凭据或发送外部消息。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "ai_normalize",
+      "approved": true,
+      "status": "not-run",
+      "category": "需外部服务或账号",
+      "reason": "需要真实已配置供应商/服务/代理/SSH与授权目标；本子任务未使用账号、付费凭据或发送外部消息。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "ai_route",
+      "approved": true,
+      "status": "not-run",
+      "category": "需外部服务或账号",
+      "reason": "需要真实已配置供应商/服务/代理/SSH与授权目标；本子任务未使用账号、付费凭据或发送外部消息。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "ai_sentiment",
+      "approved": true,
+      "status": "not-run",
+      "category": "需外部服务或账号",
+      "reason": "需要真实已配置供应商/服务/代理/SSH与授权目标；本子任务未使用账号、付费凭据或发送外部消息。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "ai_smart_scraper",
+      "approved": true,
+      "status": "not-run",
+      "category": "需外部服务或账号",
+      "reason": "需要真实已配置供应商/服务/代理/SSH与授权目标；本子任务未使用账号、付费凭据或发送外部消息。 还需要真实浏览器会话。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "ai_summarize",
+      "approved": true,
+      "status": "not-run",
+      "category": "需外部服务或账号",
+      "reason": "需要真实已配置供应商/服务/代理/SSH与授权目标；本子任务未使用账号、付费凭据或发送外部消息。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "ai_translate",
+      "approved": true,
+      "status": "not-run",
+      "category": "需外部服务或账号",
+      "reason": "需要真实已配置供应商/服务/代理/SSH与授权目标；本子任务未使用账号、付费凭据或发送外部消息。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "ai_vision",
+      "approved": true,
+      "status": "not-run",
+      "category": "需外部服务或账号",
+      "reason": "需要真实已配置供应商/服务/代理/SSH与授权目标；本子任务未使用账号、付费凭据或发送外部消息。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "ai_vision_act",
+      "approved": true,
+      "status": "not-run",
+      "category": "需外部服务或账号",
+      "reason": "需要真实已配置供应商/服务/代理/SSH与授权目标；本子任务未使用账号、付费凭据或发送外部消息。 还需要真实浏览器会话。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "allure_add_attachment",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 Allure 完整报告真实源文件附件"
+      ],
+      "evidence": [
+        "qa-103-events.json"
+      ]
+    },
+    {
+      "moduleType": "allure_add_step",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 Allure 完整报告真实源文件附件"
+      ],
+      "evidence": [
+        "qa-103-events.json"
+      ]
+    },
+    {
+      "moduleType": "allure_generate_report",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 Allure 完整报告真实源文件附件"
+      ],
+      "evidence": [
+        "qa-103-events.json"
+      ]
+    },
+    {
+      "moduleType": "allure_init",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 Allure 完整报告真实源文件附件"
+      ],
+      "evidence": [
+        "qa-103-events.json"
+      ]
+    },
+    {
+      "moduleType": "allure_start_test",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 Allure 完整报告真实源文件附件"
+      ],
+      "evidence": [
+        "qa-103-events.json"
+      ]
+    },
+    {
+      "moduleType": "allure_stop_test",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 Allure 完整报告真实源文件附件"
+      ],
+      "evidence": [
+        "qa-103-events.json"
+      ]
+    },
+    {
+      "moduleType": "api_request",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "公开 IANA 网页真实 HTTP GET"
+      ],
+      "evidence": [
+        "qa-069-events.json"
+      ]
+    },
+    {
+      "moduleType": "api_trigger",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 PyPI 真实公开 API 轮询条件"
+      ],
+      "evidence": [
+        "qa-117-f4f486bb-events.json"
+      ]
+    },
+    {
+      "moduleType": "assert_checkpoint",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实文件 foreach 条件求和",
+        "补充 真实嵌套工作流返回变量",
+        "补充 真实自定义模块参数输出",
+        "补充 真实画布子流程与结构节点"
+      ],
+      "evidence": [
+        "qa-109-events.json",
+        "qa-113-events.json",
+        "qa-114-events.json",
+        "qa-118-d15fd889-events.json"
+      ]
+    },
+    {
+      "moduleType": "base64",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "仓库真实数据 base64",
+        "真实文件 Base64 写入再读取",
+        "补充 真实历史应用截图 OCR",
+        "补充 真实应用截图人脸负样本"
+      ],
+      "evidence": [
+        "qa-062-events.json",
+        "qa-116-events.json",
+        "qa-117-events.json"
+      ]
+    },
+    {
+      "moduleType": "break_loop",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 无限循环 break 并停止后继"
+      ],
+      "evidence": [
+        "qa-112-events.json"
+      ]
+    },
+    {
+      "moduleType": "click_element",
+      "approved": true,
+      "status": "not-run",
+      "category": "需浏览器或正式UI",
+      "reason": "需要CloakBrowser页面、真实元素/下载/网络/验证码，或正式Electron交互Gateway；由主任务浏览器/UI测试合并证据，本报告未计通过。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "close_page",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "运行链补验：真实 CloakBrowser 公开网页与仓库文件"
+      ],
+      "evidence": [
+        "../runtime/browser-node-results.json"
+      ]
+    },
+    {
+      "moduleType": "condition",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实文件 foreach 条件求和"
+      ],
+      "evidence": [
+        "qa-109-events.json"
+      ]
+    },
+    {
+      "moduleType": "continue_loop",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实仓库计数 loop continue",
+        "补充 真实仓库计数 foreach_dict continue"
+      ],
+      "evidence": [
+        "qa-110-events.json",
+        "qa-111-events.json"
+      ]
+    },
+    {
+      "moduleType": "csv_generate",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "真实 CSV 生成解析"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "csv_parse",
+      "approved": true,
+      "status": "known-failure",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "源文件 CSV 解析",
+        "真实 CSV 导出仅剩表头时应为空数据集"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "custom_module",
+      "approved": false,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实自定义模块参数输出"
+      ],
+      "evidence": [
+        "qa-114-events.json"
+      ]
+    },
+    {
+      "moduleType": "dict_deep_copy",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "仓库真实数据 dict_deep_copy"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "dict_filter",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实清单 dict_filter"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "dict_flatten",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实清单 dict_flatten"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "dict_get",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "仓库真实数据 dict_get"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "dict_get_path",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "仓库真实数据 dict_get_path"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "dict_invert",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实清单 dict_invert"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "dict_keys",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "仓库真实数据 dict_keys"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "dict_map_values",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实清单 dict_map_values"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "dict_merge",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实清单 dict_merge"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "dict_operation",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实清单 dict_operation"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "dict_sort",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "仓库真实数据 dict_sort"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "download_file",
+      "approved": true,
+      "status": "not-run",
+      "category": "需浏览器或正式UI",
+      "reason": "需要CloakBrowser页面、真实元素/下载/网络/验证码，或正式Electron交互Gateway；由主任务浏览器/UI测试合并证据，本报告未计通过。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "drag_element",
+      "approved": true,
+      "status": "not-run",
+      "category": "需浏览器或正式UI",
+      "reason": "需要CloakBrowser页面、真实元素/下载/网络/验证码，或正式Electron交互Gateway；由主任务浏览器/UI测试合并证据，本报告未计通过。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "element_change_trigger",
+      "approved": true,
+      "status": "not-run",
+      "category": "需浏览器或正式UI",
+      "reason": "需要CloakBrowser页面、真实元素/下载/网络/验证码，或正式Electron交互Gateway；由主任务浏览器/UI测试合并证据，本报告未计通过。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "element_exists",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。 浏览器补组仅真实可见元素的正向分支，未覆盖不存在/隐藏分支。",
+      "cases": [
+        "运行链补验：真实 CloakBrowser 公开网页与仓库文件"
+      ],
+      "evidence": [
+        "../runtime/browser-node-results.json"
+      ]
+    },
+    {
+      "moduleType": "element_visible",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。 浏览器补组仅真实可见元素的正向分支，未覆盖不存在/隐藏分支。",
+      "cases": [
+        "运行链补验：真实 CloakBrowser 公开网页与仓库文件"
+      ],
+      "evidence": [
+        "../runtime/browser-node-results.json"
+      ]
+    },
+    {
+      "moduleType": "email_trigger",
+      "approved": true,
+      "status": "not-run",
+      "category": "需外部服务或账号",
+      "reason": "需要真实已配置供应商/服务/代理/SSH与授权目标；本子任务未使用账号、付费凭据或发送外部消息。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "export_log",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 日志实际导出 JSON"
+      ],
+      "evidence": [
+        "qa-101-events.json"
+      ]
+    },
+    {
+      "moduleType": "extract_table_data",
+      "approved": true,
+      "status": "not-run",
+      "category": "需浏览器或正式UI",
+      "reason": "需要CloakBrowser页面、真实元素/下载/网络/验证码，或正式Electron交互Gateway；由主任务浏览器/UI测试合并证据，本报告未计通过。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "face_recognition",
+      "approved": true,
+      "status": "real-negative-only",
+      "category": "实际执行",
+      "reason": "真实应用截图经本地人脸模型推理返回0个人脸；缺少授权真人样本，未验证人脸正向匹配和误识率。",
+      "cases": [
+        "补充 真实应用截图人脸负样本"
+      ],
+      "evidence": [
+        "qa-117-events.json"
+      ]
+    },
+    {
+      "moduleType": "face_trigger",
+      "approved": true,
+      "status": "not-run",
+      "category": "需设备或原生交互",
+      "reason": "需要系统设备/屏幕/剪贴板/音频/通知/打印或原生UI权限；本子任务未触发全局键鼠、关机、锁屏、屏幕分享或改变剪贴板。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "file_watcher_trigger",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实文件创建触发器"
+      ],
+      "evidence": [
+        "qa-106-events.json"
+      ]
+    },
+    {
+      "moduleType": "firecrawl_crawl",
+      "approved": true,
+      "status": "not-run",
+      "category": "需外部服务或账号",
+      "reason": "需要真实已配置供应商/服务/代理/SSH与授权目标；本子任务未使用账号、付费凭据或发送外部消息。 还需要真实浏览器会话。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "firecrawl_map",
+      "approved": true,
+      "status": "not-run",
+      "category": "需外部服务或账号",
+      "reason": "需要真实已配置供应商/服务/代理/SSH与授权目标；本子任务未使用账号、付费凭据或发送外部消息。 还需要真实浏览器会话。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "firecrawl_scrape",
+      "approved": true,
+      "status": "not-run",
+      "category": "需外部服务或账号",
+      "reason": "需要真实已配置供应商/服务/代理/SSH与授权目标；本子任务未使用账号、付费凭据或发送外部消息。 还需要真实浏览器会话。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "foreach",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实文件 foreach 条件求和"
+      ],
+      "evidence": [
+        "qa-109-events.json"
+      ]
+    },
+    {
+      "moduleType": "foreach_dict",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实仓库计数 foreach_dict continue"
+      ],
+      "evidence": [
+        "qa-111-events.json"
+      ]
+    },
+    {
+      "moduleType": "gesture_trigger",
+      "approved": true,
+      "status": "not-run",
+      "category": "需设备或原生交互",
+      "reason": "需要系统设备/屏幕/剪贴板/音频/通知/打印或原生UI权限；本子任务未触发全局键鼠、关机、锁屏、屏幕分享或改变剪贴板。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "get_child_elements",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "运行链补验：真实 CloakBrowser 公开网页与仓库文件"
+      ],
+      "evidence": [
+        "../runtime/browser-node-results.json"
+      ]
+    },
+    {
+      "moduleType": "get_clipboard",
+      "approved": true,
+      "status": "not-run",
+      "category": "需设备或原生交互",
+      "reason": "需要系统设备/屏幕/剪贴板/音频/通知/打印或原生UI权限；本子任务未触发全局键鼠、关机、锁屏、屏幕分享或改变剪贴板。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "get_element_info",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "运行链补验：真实 CloakBrowser 公开网页与仓库文件"
+      ],
+      "evidence": [
+        "../runtime/browser-node-results.json"
+      ]
+    },
+    {
+      "moduleType": "get_sibling_elements",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "运行链补验：真实 CloakBrowser 公开网页与仓库文件"
+      ],
+      "evidence": [
+        "../runtime/browser-node-results.json"
+      ]
+    },
+    {
+      "moduleType": "get_time",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 系统日期"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "go_back",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "运行链补验：真实 CloakBrowser 公开网页与仓库文件"
+      ],
+      "evidence": [
+        "../runtime/browser-node-results.json"
+      ]
+    },
+    {
+      "moduleType": "go_forward",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "运行链补验：真实 CloakBrowser 公开网页与仓库文件"
+      ],
+      "evidence": [
+        "../runtime/browser-node-results.json"
+      ]
+    },
+    {
+      "moduleType": "group",
+      "approved": true,
+      "status": "structural-tested",
+      "category": "结构节点",
+      "reason": "真实画布子流程图包含该节点；运行时按结构语义处理，不记为执行器完成。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "handle_dialog",
+      "approved": true,
+      "status": "not-run",
+      "category": "需浏览器或正式UI",
+      "reason": "需要CloakBrowser页面、真实元素/下载/网络/验证码，或正式Electron交互Gateway；由主任务浏览器/UI测试合并证据，本报告未计通过。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "hex_to_cmyk",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 实际 CSS token HEX 转 CMYK"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "hotkey_trigger",
+      "approved": true,
+      "status": "not-run",
+      "category": "需设备或原生交互",
+      "reason": "需要系统设备/屏幕/剪贴板/音频/通知/打印或原生UI权限；本子任务未触发全局键鼠、关机、锁屏、屏幕分享或改变剪贴板。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "hover_element",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "运行链补验：真实 CloakBrowser 公开网页与仓库文件"
+      ],
+      "evidence": [
+        "../runtime/browser-node-results.json"
+      ]
+    },
+    {
+      "moduleType": "image_ocr",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实历史应用截图 OCR"
+      ],
+      "evidence": [
+        "qa-116-events.json"
+      ]
+    },
+    {
+      "moduleType": "image_trigger",
+      "approved": true,
+      "status": "not-run",
+      "category": "需设备或原生交互",
+      "reason": "需要系统设备/屏幕/剪贴板/音频/通知/打印或原生UI权限；本子任务未触发全局键鼠、关机、锁屏、屏幕分享或改变剪贴板。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "increment_decrement",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实文件 foreach 条件求和"
+      ],
+      "evidence": [
+        "qa-109-events.json"
+      ]
+    },
+    {
+      "moduleType": "infinite_loop",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 无限循环 break 并停止后继"
+      ],
+      "evidence": [
+        "qa-112-events.json"
+      ]
+    },
+    {
+      "moduleType": "inject_javascript",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "运行链补验：真实 CloakBrowser 公开网页与仓库文件"
+      ],
+      "evidence": [
+        "../runtime/browser-node-results.json"
+      ]
+    },
+    {
+      "moduleType": "input_prompt",
+      "approved": true,
+      "status": "not-run",
+      "category": "需浏览器或正式UI",
+      "reason": "需要CloakBrowser页面、真实元素/下载/网络/验证码，或正式Electron交互Gateway；由主任务浏览器/UI测试合并证据，本报告未计通过。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "input_text",
+      "approved": true,
+      "status": "not-run",
+      "category": "需浏览器或正式UI",
+      "reason": "需要CloakBrowser页面、真实元素/下载/网络/验证码，或正式Electron交互Gateway；由主任务浏览器/UI测试合并证据，本报告未计通过。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "js_script",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "主任务补验：打包 Electron 正式 JS Gateway"
+      ],
+      "evidence": [
+        "../ui/native-js-result.json"
+      ]
+    },
+    {
+      "moduleType": "json_parse",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "仓库真实数据 json_parse",
+        "截断真实 package JSON 应拒绝",
+        "Python 真实读仓库文件 → JSON → 日志",
+        "补充 真实 sidecar 文件共享与 Webhook 契约"
+      ],
+      "evidence": [
+        "qa-059-events.json",
+        "sidecar-results.json"
+      ]
+    },
+    {
+      "moduleType": "list_average",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "真实源文件尺寸 list_average"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "list_cartesian_product",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实清单 list_cartesian_product"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "list_chunk",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "源文件元数据 list_chunk"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "list_count",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "源文件次数"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "list_difference",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实清单 list_difference"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "list_export",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "真实列表导出覆盖后追加",
+        "产物路径越界应拒绝"
+      ],
+      "evidence": [
+        "qa-061-events.json",
+        "qa-063-events.json"
+      ]
+    },
+    {
+      "moduleType": "list_filter",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "源文件过滤"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "list_find",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "源文件首项查找"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "list_flatten",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实清单 list_flatten"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "list_get",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "源文件负索引",
+        "源文件列表索引越界"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "list_intersection",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实清单 list_intersection"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "list_length",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "源文件列表计数"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "list_map",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "源文件 KiB 换算"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "list_max",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "真实源文件尺寸 list_max"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "list_merge",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "源文件元数据 list_merge"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "list_min",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "真实源文件尺寸 list_min"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "list_operation",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实清单 list_operation"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "list_remove_empty",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "源文件元数据 list_remove_empty"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "list_reverse",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "真实源文件尺寸 list_reverse"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "list_sample",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实列表抽样"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "list_shuffle",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实列表洗牌"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "list_slice",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "源文件区间"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "list_sort",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "真实源文件尺寸 list_sort"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "list_sum",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "真实源文件尺寸 list_sum",
+        "补充 真实画布子流程与结构节点"
+      ],
+      "evidence": [
+        "qa-118-d15fd889-events.json"
+      ]
+    },
+    {
+      "moduleType": "list_to_string_advanced",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实清单 list_to_string_advanced"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "list_union",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实清单 list_union"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "list_unique",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "真实源文件尺寸 list_unique"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "lock_screen",
+      "approved": true,
+      "status": "not-run",
+      "category": "需设备或原生交互",
+      "reason": "需要系统设备/屏幕/剪贴板/音频/通知/打印或原生UI权限；本子任务未触发全局键鼠、关机、锁屏、屏幕分享或改变剪贴板。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "loop",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实仓库计数 loop continue"
+      ],
+      "evidence": [
+        "qa-110-events.json"
+      ]
+    },
+    {
+      "moduleType": "math_abs",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "源文件元数据 math_abs"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "math_base_convert",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "源文件元数据 math_base_convert"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "math_clamp",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "仓库真实数据 math_clamp"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "math_exp",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实元数据 math_exp"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "math_factorial",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "源文件元数据 math_factorial"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "math_floor",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "源文件元数据 math_floor"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "math_gcd",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "仓库真实数据 math_gcd"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "math_lcm",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "仓库真实数据 math_lcm"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "math_log",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实元数据 math_log"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "math_modulo",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "源文件元数据 math_modulo"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "math_percentage",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实元数据 math_percentage"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "math_permutation",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "源文件元数据 math_permutation"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "math_power",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "源文件元数据 math_power"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "math_random_advanced",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 高级随机数"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "math_round",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "源文件元数据 math_round"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "math_sqrt",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "源文件元数据 math_sqrt"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "math_trig",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实元数据 math_trig"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "md5_encrypt",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "仓库真实数据 md5_encrypt"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "mouse_trigger",
+      "approved": true,
+      "status": "not-run",
+      "category": "需设备或原生交互",
+      "reason": "需要系统设备/屏幕/剪贴板/音频/通知/打印或原生UI权限；本子任务未触发全局键鼠、关机、锁屏、屏幕分享或改变剪贴板。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "network_capture",
+      "approved": true,
+      "status": "not-run",
+      "category": "需浏览器或正式UI",
+      "reason": "需要CloakBrowser页面、真实元素/下载/网络/验证码，或正式Electron交互Gateway；由主任务浏览器/UI测试合并证据，本报告未计通过。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "network_monitor_start",
+      "approved": true,
+      "status": "not-run",
+      "category": "需浏览器或正式UI",
+      "reason": "需要CloakBrowser页面、真实元素/下载/网络/验证码，或正式Electron交互Gateway；由主任务浏览器/UI测试合并证据，本报告未计通过。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "network_monitor_stop",
+      "approved": true,
+      "status": "not-run",
+      "category": "需浏览器或正式UI",
+      "reason": "需要CloakBrowser页面、真实元素/下载/网络/验证码，或正式Electron交互Gateway；由主任务浏览器/UI测试合并证据，本报告未计通过。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "network_monitor_wait",
+      "approved": true,
+      "status": "not-run",
+      "category": "需浏览器或正式UI",
+      "reason": "需要CloakBrowser页面、真实元素/下载/网络/验证码，或正式Electron交互Gateway；由主任务浏览器/UI测试合并证据，本报告未计通过。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "note",
+      "approved": true,
+      "status": "structural-tested",
+      "category": "结构节点",
+      "reason": "真实画布子流程图包含该节点；运行时按结构语义处理，不记为执行器完成。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "notify_telegram",
+      "approved": true,
+      "status": "not-run",
+      "category": "需外部服务或账号",
+      "reason": "需要真实已配置供应商/服务/代理/SSH与授权目标；本子任务未使用账号、付费凭据或发送外部消息。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "notify_webhook",
+      "approved": true,
+      "status": "not-run",
+      "category": "需外部服务或账号",
+      "reason": "需要真实已配置供应商/服务/代理/SSH与授权目标；本子任务未使用账号、付费凭据或发送外部消息。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "ocr_captcha",
+      "approved": true,
+      "status": "not-run",
+      "category": "需浏览器或正式UI",
+      "reason": "需要CloakBrowser页面、真实元素/下载/网络/验证码，或正式Electron交互Gateway；由主任务浏览器/UI测试合并证据，本报告未计通过。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "open_page",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "运行链补验：真实 CloakBrowser 公开网页与仓库文件"
+      ],
+      "evidence": [
+        "../runtime/browser-node-results.json"
+      ]
+    },
+    {
+      "moduleType": "page_load_complete",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "运行链补验：真实 CloakBrowser 公开网页与仓库文件"
+      ],
+      "evidence": [
+        "../runtime/browser-node-results.json"
+      ]
+    },
+    {
+      "moduleType": "play_sound",
+      "approved": true,
+      "status": "not-run",
+      "category": "需设备或原生交互",
+      "reason": "需要系统设备/屏幕/剪贴板/音频/通知/打印或原生UI权限；本子任务未触发全局键鼠、关机、锁屏、屏幕分享或改变剪贴板。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "print_log",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "Python 真实读仓库文件 → JSON → 日志",
+        "Python 失败应中断后继节点",
+        "补充 日志实际导出 JSON",
+        "补充 真实仓库计数 loop continue",
+        "补充 真实仓库计数 foreach_dict continue",
+        "补充 Python 真实源文件散列与日志复核",
+        "补充 真实 sidecar 文件共享与 Webhook 契约"
+      ],
+      "evidence": [
+        "qa-059-events.json",
+        "qa-066-events.json",
+        "qa-101-events.json",
+        "qa-110-events.json",
+        "qa-111-events.json",
+        "qa-118-events.json",
+        "sidecar-results.json"
+      ]
+    },
+    {
+      "moduleType": "printer_call",
+      "approved": true,
+      "status": "not-run",
+      "category": "需设备或原生交互",
+      "reason": "需要系统设备/屏幕/剪贴板/音频/通知/打印或原生UI权限；本子任务未触发全局键鼠、关机、锁屏、屏幕分享或改变剪贴板。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "probability_trigger",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 概率节点真实随机值与必达分支"
+      ],
+      "evidence": [
+        "qa-108-events.json"
+      ]
+    },
+    {
+      "moduleType": "proxy_change_ip",
+      "approved": true,
+      "status": "not-run",
+      "category": "需外部服务或账号",
+      "reason": "需要真实已配置供应商/服务/代理/SSH与授权目标；本子任务未使用账号、付费凭据或发送外部消息。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "proxy_change_location",
+      "approved": true,
+      "status": "not-run",
+      "category": "需外部服务或账号",
+      "reason": "需要真实已配置供应商/服务/代理/SSH与授权目标；本子任务未使用账号、付费凭据或发送外部消息。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "proxy_query",
+      "approved": true,
+      "status": "not-run",
+      "category": "需外部服务或账号",
+      "reason": "需要真实已配置供应商/服务/代理/SSH与授权目标；本子任务未使用账号、付费凭据或发送外部消息。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "python_script",
+      "approved": true,
+      "status": "known-failure",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "Python 真实读仓库文件 → JSON → 日志",
+        "Python 压缩真实文件并解压验 SHA256",
+        "Python 文件模式带空格路径参数",
+        "Python 失败应中断后继节点",
+        "Python 超时清理",
+        "补充 Python 真实源文件散列与日志复核"
+      ],
+      "evidence": [
+        "qa-059-events.json",
+        "qa-064-events.json",
+        "qa-065-events.json",
+        "qa-066-events.json",
+        "qa-067-events.json",
+        "qa-118-events.json"
+      ]
+    },
+    {
+      "moduleType": "random_number",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 源文件尺寸边界内随机数"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "random_password_generator",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 运行时随机口令"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "refresh_page",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "运行链补验：真实 CloakBrowser 公开网页与仓库文件"
+      ],
+      "evidence": [
+        "../runtime/browser-node-results.json"
+      ]
+    },
+    {
+      "moduleType": "regex_extract",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "仓库真实数据 regex_extract"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "rgb_to_cmyk",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 实际 CSS token RGB 转 CMYK"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "rgb_to_hsv",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 实际 CSS token RGB 转 HSV"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "run_command",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "系统命令 Node.js 真实读取 package.json"
+      ],
+      "evidence": [
+        "qa-068-events.json"
+      ]
+    },
+    {
+      "moduleType": "run_workflow_file",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实嵌套工作流返回变量"
+      ],
+      "evidence": [
+        "qa-113-events.json"
+      ]
+    },
+    {
+      "moduleType": "save_image",
+      "approved": true,
+      "status": "not-run",
+      "category": "需浏览器或正式UI",
+      "reason": "需要CloakBrowser页面、真实元素/下载/网络/验证码，或正式Electron交互Gateway；由主任务浏览器/UI测试合并证据，本报告未计通过。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "scheduled_task",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实延迟定时与 wait"
+      ],
+      "evidence": [
+        "qa-107-events.json"
+      ]
+    },
+    {
+      "moduleType": "screenshot",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "运行链补验：真实 CloakBrowser 公开网页与仓库文件"
+      ],
+      "evidence": [
+        "../runtime/browser-node-results.json"
+      ]
+    },
+    {
+      "moduleType": "scroll_page",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "运行链补验：真实 CloakBrowser 公开网页与仓库文件"
+      ],
+      "evidence": [
+        "../runtime/browser-node-results.json"
+      ]
+    },
+    {
+      "moduleType": "select_dropdown",
+      "approved": true,
+      "status": "not-run",
+      "category": "需浏览器或正式UI",
+      "reason": "需要CloakBrowser页面、真实元素/下载/网络/验证码，或正式Electron交互Gateway；由主任务浏览器/UI测试合并证据，本报告未计通过。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "send_email",
+      "approved": true,
+      "status": "not-run",
+      "category": "需外部服务或账号",
+      "reason": "需要真实已配置供应商/服务/代理/SSH与授权目标；本子任务未使用账号、付费凭据或发送外部消息。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "set_checkbox",
+      "approved": true,
+      "status": "not-run",
+      "category": "需浏览器或正式UI",
+      "reason": "需要CloakBrowser页面、真实元素/下载/网络/验证码，或正式Electron交互Gateway；由主任务浏览器/UI测试合并证据，本报告未计通过。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "set_clipboard",
+      "approved": true,
+      "status": "not-run",
+      "category": "需设备或原生交互",
+      "reason": "需要系统设备/屏幕/剪贴板/音频/通知/打印或原生UI权限；本子任务未触发全局键鼠、关机、锁屏、屏幕分享或改变剪贴板。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "set_variable",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实文件 foreach 条件求和"
+      ],
+      "evidence": [
+        "qa-109-events.json"
+      ]
+    },
+    {
+      "moduleType": "sha_encrypt",
+      "approved": true,
+      "status": "known-failure",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "仓库真实数据 sha_encrypt",
+        "不支持的散列算法应拒绝"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "share_file",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实 sidecar 文件共享与 Webhook 契约"
+      ],
+      "evidence": [
+        "sidecar-results.json"
+      ]
+    },
+    {
+      "moduleType": "share_folder",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实 sidecar 文件共享与 Webhook 契约"
+      ],
+      "evidence": [
+        "sidecar-results.json"
+      ]
+    },
+    {
+      "moduleType": "shutdown_system",
+      "approved": true,
+      "status": "not-run",
+      "category": "需设备或原生交互",
+      "reason": "需要系统设备/屏幕/剪贴板/音频/通知/打印或原生UI权限；本子任务未触发全局键鼠、关机、锁屏、屏幕分享或改变剪贴板。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "slider_captcha",
+      "approved": true,
+      "status": "not-run",
+      "category": "需浏览器或正式UI",
+      "reason": "需要CloakBrowser页面、真实元素/下载/网络/验证码，或正式Electron交互Gateway；由主任务浏览器/UI测试合并证据，本报告未计通过。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "sound_trigger",
+      "approved": true,
+      "status": "not-run",
+      "category": "需设备或原生交互",
+      "reason": "需要系统设备/屏幕/剪贴板/音频/通知/打印或原生UI权限；本子任务未触发全局键鼠、关机、锁屏、屏幕分享或改变剪贴板。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "ssh_connect",
+      "approved": true,
+      "status": "not-run",
+      "category": "需外部服务或账号",
+      "reason": "需要真实已配置供应商/服务/代理/SSH与授权目标；本子任务未使用账号、付费凭据或发送外部消息。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "ssh_disconnect",
+      "approved": true,
+      "status": "not-run",
+      "category": "需外部服务或账号",
+      "reason": "需要真实已配置供应商/服务/代理/SSH与授权目标；本子任务未使用账号、付费凭据或发送外部消息。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "ssh_download_file",
+      "approved": true,
+      "status": "not-run",
+      "category": "需外部服务或账号",
+      "reason": "需要真实已配置供应商/服务/代理/SSH与授权目标；本子任务未使用账号、付费凭据或发送外部消息。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "ssh_execute_command",
+      "approved": true,
+      "status": "not-run",
+      "category": "需外部服务或账号",
+      "reason": "需要真实已配置供应商/服务/代理/SSH与授权目标；本子任务未使用账号、付费凭据或发送外部消息。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "ssh_upload_file",
+      "approved": true,
+      "status": "not-run",
+      "category": "需外部服务或账号",
+      "reason": "需要真实已配置供应商/服务/代理/SSH与授权目标；本子任务未使用账号、付费凭据或发送外部消息。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "start_screen_share",
+      "approved": true,
+      "status": "not-run",
+      "category": "需设备或原生交互",
+      "reason": "需要系统设备/屏幕/剪贴板/音频/通知/打印或原生UI权限；本子任务未触发全局键鼠、关机、锁屏、屏幕分享或改变剪贴板。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "stat_median",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "真实源文件尺寸 stat_median"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "stat_mode",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实清单 stat_mode"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "stat_normalize",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "源文件元数据 stat_normalize"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "stat_percentile",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "真实源文件尺寸 stat_percentile"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "stat_standardize",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "源文件元数据 stat_standardize"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "stat_stdev",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "真实源文件尺寸 stat_stdev"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "stat_variance",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "真实源文件尺寸 stat_variance"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "stop_screen_share",
+      "approved": true,
+      "status": "not-run",
+      "category": "需设备或原生交互",
+      "reason": "需要系统设备/屏幕/剪贴板/音频/通知/打印或原生UI权限；本子任务未触发全局键鼠、关机、锁屏、屏幕分享或改变剪贴板。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "stop_share",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实 sidecar 文件共享与 Webhook 契约"
+      ],
+      "evidence": [
+        "sidecar-results.json"
+      ]
+    },
+    {
+      "moduleType": "stop_workflow",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 无限循环 break 并停止后继"
+      ],
+      "evidence": [
+        "qa-112-events.json"
+      ]
+    },
+    {
+      "moduleType": "string_case",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "仓库真实数据 string_case"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "string_concat",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "仓库真实数据 string_concat"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "string_join",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "仓库真实数据 string_join"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "string_replace",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "仓库真实数据 string_replace"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "string_split",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "仓库真实数据 string_split"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "string_substring",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "仓库真实数据 string_substring"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "string_trim",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "仓库真实数据 string_trim"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "subflow",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实画布子流程与结构节点"
+      ],
+      "evidence": [
+        "qa-118-d15fd889-events.json"
+      ]
+    },
+    {
+      "moduleType": "switch_iframe",
+      "approved": true,
+      "status": "not-run",
+      "category": "需浏览器或正式UI",
+      "reason": "需要CloakBrowser页面、真实元素/下载/网络/验证码，或正式Electron交互Gateway；由主任务浏览器/UI测试合并证据，本报告未计通过。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "switch_tab",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "运行链补验：真实 CloakBrowser 公开网页与仓库文件"
+      ],
+      "evidence": [
+        "../runtime/browser-node-results.json"
+      ]
+    },
+    {
+      "moduleType": "switch_to_main",
+      "approved": true,
+      "status": "not-run",
+      "category": "需浏览器或正式UI",
+      "reason": "需要CloakBrowser页面、真实元素/下载/网络/验证码，或正式Electron交互Gateway；由主任务浏览器/UI测试合并证据，本报告未计通过。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "system_notification",
+      "approved": true,
+      "status": "not-run",
+      "category": "需设备或原生交互",
+      "reason": "需要系统设备/屏幕/剪贴板/音频/通知/打印或原生UI权限；本子任务未触发全局键鼠、关机、锁屏、屏幕分享或改变剪贴板。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "table_add_column",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "实际表格增列改格 → CSV/XLSX 文件 → 独立库回读"
+      ],
+      "evidence": [
+        "qa-060-events.json"
+      ]
+    },
+    {
+      "moduleType": "table_add_row",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "实际表格增列改格 → CSV/XLSX 文件 → 独立库回读",
+        "补充 表格删除与清空"
+      ],
+      "evidence": [
+        "qa-060-events.json",
+        "qa-102-events.json"
+      ]
+    },
+    {
+      "moduleType": "table_clear",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 表格删除与清空"
+      ],
+      "evidence": [
+        "qa-102-events.json"
+      ]
+    },
+    {
+      "moduleType": "table_delete_row",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 表格删除与清空"
+      ],
+      "evidence": [
+        "qa-102-events.json"
+      ]
+    },
+    {
+      "moduleType": "table_export",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "实际表格增列改格 → CSV/XLSX 文件 → 独立库回读"
+      ],
+      "evidence": [
+        "qa-060-events.json"
+      ]
+    },
+    {
+      "moduleType": "table_get_cell",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "实际表格增列改格 → CSV/XLSX 文件 → 独立库回读",
+        "补充 表格删除与清空"
+      ],
+      "evidence": [
+        "qa-060-events.json",
+        "qa-102-events.json"
+      ]
+    },
+    {
+      "moduleType": "table_set_cell",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "实际表格增列改格 → CSV/XLSX 文件 → 独立库回读"
+      ],
+      "evidence": [
+        "qa-060-events.json"
+      ]
+    },
+    {
+      "moduleType": "text_to_speech",
+      "approved": true,
+      "status": "not-run",
+      "category": "需设备或原生交互",
+      "reason": "需要系统设备/屏幕/剪贴板/音频/通知/打印或原生UI权限；本子任务未触发全局键鼠、关机、锁屏、屏幕分享或改变剪贴板。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "timestamp_converter",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 实际源文件 mtime 时间戳"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "upload_file",
+      "approved": true,
+      "status": "not-run",
+      "category": "需浏览器或正式UI",
+      "reason": "需要CloakBrowser页面、真实元素/下载/网络/验证码，或正式Electron交互Gateway；由主任务浏览器/UI测试合并证据，本报告未计通过。",
+      "cases": [],
+      "evidence": []
+    },
+    {
+      "moduleType": "url_encode_decode",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "仓库真实数据 url_encode_decode"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "use_opened_page",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "运行链补验：真实 CloakBrowser 公开网页与仓库文件"
+      ],
+      "evidence": [
+        "../runtime/browser-node-results.json"
+      ]
+    },
+    {
+      "moduleType": "uuid_generator",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 运行时 UUID"
+      ],
+      "evidence": []
+    },
+    {
+      "moduleType": "wait",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实延迟定时与 wait"
+      ],
+      "evidence": [
+        "qa-107-events.json"
+      ]
+    },
+    {
+      "moduleType": "wait_element",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "运行链补验：真实 CloakBrowser 公开网页与仓库文件"
+      ],
+      "evidence": [
+        "../runtime/browser-node-results.json"
+      ]
+    },
+    {
+      "moduleType": "wait_page_load",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "运行链补验：真实 CloakBrowser 公开网页与仓库文件"
+      ],
+      "evidence": [
+        "../runtime/browser-node-results.json"
+      ]
+    },
+    {
+      "moduleType": "webhook_request",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 Webhook request 的公开网页 GET"
+      ],
+      "evidence": [
+        "qa-105-events.json"
+      ]
+    },
+    {
+      "moduleType": "webhook_trigger",
+      "approved": true,
+      "status": "real-tested",
+      "category": "实际执行",
+      "reason": "仅证明所列场景；不表示该类型所有配置、异常路径或平台已穷尽。",
+      "cases": [
+        "补充 真实 sidecar 文件共享与 Webhook 契约"
+      ],
+      "evidence": [
+        "sidecar-results.json"
+      ]
+    }
+  ]
+}

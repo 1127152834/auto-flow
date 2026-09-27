@@ -1,0 +1,31 @@
+{
+  "startedAt": "2026-09-27T17:00:56.203Z",
+  "head": "33ae3aa49600840b1700c83723408c494dc201a8",
+  "platform": "darwin",
+  "arch": "arm64",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow 真实审计-7xuafM",
+  "boundary": "Built Electron + production Python sidecar + SQLite. UI project creation, real repository metadata written via authenticated API, UI readback and navigation. No fake provider or executor.",
+  "checks": [
+    {
+      "name": "UI-01 真实应用启动与认证",
+      "status": "passed",
+      "ms": 5712
+    },
+    {
+      "name": "UI-02 通过界面创建本仓库审计项目",
+      "status": "passed",
+      "ms": 293
+    },
+    {
+      "name": "UI-03 实际仓库文件元数据入库与幂等",
+      "status": "failed",
+      "ms": 62,
+      "error": "AssertionError [ERR_ASSERTION]: POST /projects/b97510c1-5e70-4e2c-9336-b659b5635baf/tables/726aa5e7-190e-4aee-9afe-942258c8eaa2/fields: {\"field\":{\"key\":\"path\",\"name\":\"源文件路径\",\"type\":\"string\",\"required\":false,\"validation\":{},\"ref\":{\"projectId\":\"b97510c1-5e70-4e2c-9336-b659b5635baf\",\"tableId\":\"726aa5e7-190e-4aee-9afe-942258c8eaa2\",\"datasetGeneration\":\"b2efdfa4-9ad1-4303-a90a-d954a6530529\",\"fieldId\":\"45036dd8-3999-4f53-98b2-eb7257fc8cee\"},\"writable\":true,\"formula\":false,\"fieldRevision\":1},\"tableRevision\":2}\n\n200 !== 201\n\n    at api (file:///Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/ui-realqa.mjs:60:10)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async file:///Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/ui-realqa.mjs:92:22\n    at async check (file:///Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/ui-realqa.mjs:31:24)\n    at async file:///Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/ui-realqa.mjs:86:8"
+    }
+  ],
+  "observations": [],
+  "consoleErrors": [],
+  "fatal": "Error: Real data setup failed\n    at file:///Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/ui-realqa.mjs:113:13",
+  "finishedAt": "2026-09-27T17:01:03.210Z",
+  "status": "failed"
+}

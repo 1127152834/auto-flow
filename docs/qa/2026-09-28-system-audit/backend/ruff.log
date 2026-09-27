@@ -1,0 +1,3344 @@
+I001 [*] Import block is un-sorted or un-formatted
+  --> src/autoflow/application/project_runs/evidence.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import hashlib
+ 4 | | import os
+ 5 | | import stat
+ 6 | | from pathlib import Path
+ 7 | | from typing import Any
+ 8 | |
+ 9 | | from autoflow.domain.project_runs.models import ProjectRunError
+10 | | from autoflow.domain.workflows.runtime import RunArtifact, RunEvent, thaw_json
+11 | | from autoflow.infrastructure.database.models import ProjectRow
+12 | | from autoflow.infrastructure.database.project_run_models import ProjectTaskRow
+13 | | from autoflow.infrastructure.database.workflow_runtime import (
+14 | |     SqlAlchemyWorkflowRuntimeRepository,
+15 | | )
+16 | | from sqlalchemy import text
+17 | | from sqlalchemy.orm import Session, sessionmaker
+18 | |
+19 | | from .presentation import prepared_node_names
+   | |_____________________________________________^
+help: Organize imports
+   |
+8  |
+9  + from sqlalchemy import text
+10 + from sqlalchemy.orm import Session, sessionmaker
+11 +
+12 | from autoflow.domain.project_runs.models import ProjectRunError
+--------------------------------------------------------------------------------
+18 | )
+   - from sqlalchemy import text
+   - from sqlalchemy.orm import Session, sessionmaker
+19 |
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> src/autoflow/application/project_runs/interactions.py:3:1
+   |
+ 1 |   """Project ownership and durable receipts around the migrated worker command bus."""
+ 2 |
+ 3 | / from __future__ import annotations
+ 4 | |
+ 5 | | import asyncio
+ 6 | | import copy
+ 7 | | import hashlib
+ 8 | | import json
+ 9 | | from collections.abc import Awaitable, Callable, Mapping
+10 | | from datetime import UTC, datetime
+11 | | from typing import Any
+12 | | from uuid import uuid4
+13 | |
+14 | | from autoflow.application.workflows.webhooks import webhook_payload
+15 | | from autoflow.domain.project_runs.models import ProjectRunError
+16 | | from autoflow.domain.workflows.runs import WorkflowRunError
+17 | | from autoflow.domain.workflows.runtime import CoreRun, WorkflowRuntimeError
+18 | | from autoflow.infrastructure.database.models import ProjectOperationRow, ProjectRow
+19 | | from autoflow.infrastructure.database.project_run_models import ProjectTaskRow
+20 | | from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
+21 | | from sqlalchemy import select
+22 | | from sqlalchemy.orm import Session, sessionmaker
+   | |________________________________________________^
+23 |
+24 |   UI_REQUESTS = {"execution:input_prompt", "execution:js_script"}
+   |
+help: Organize imports
+   |
+13 |
+14 + from sqlalchemy import select
+15 + from sqlalchemy.orm import Session, sessionmaker
+16 +
+17 | from autoflow.application.workflows.webhooks import webhook_payload
+--------------------------------------------------------------------------------
+23 | from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
+   - from sqlalchemy import select
+   - from sqlalchemy.orm import Session, sessionmaker
+24 |
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> src/autoflow/application/workflows/executors/advanced_browser.py:7:1
+   |
+ 5 |   """
+ 6 |
+ 7 | / from __future__ import annotations
+ 8 | |
+ 9 | | import asyncio
+10 | | import base64
+11 | | import os
+12 | | import tempfile
+13 | | from collections.abc import Mapping
+14 | | from pathlib import Path
+15 | | from typing import Any
+16 | | from urllib.parse import unquote, urlparse
+17 | |
+18 | | import httpx
+19 | | from autoflow.domain.workflows.browser import BrowserLocatorPort, BrowserPagePort
+20 | | from autoflow.domain.workflows.execution import ExecutionContext
+21 | | from autoflow.providers.browser.workflow_actions import wait_for_locator
+22 | |
+23 | | from .base import ModuleExecutor, ModuleResult
+24 | | from .registry import register_executor
+25 | | from .type_utils import to_int
+   | |______________________________^
+26 |
+27 |   _MAX_DOWNLOAD_BYTES = 64 * 1024 * 1024
+   |
+help: Organize imports
+   |
+18 | import httpx
+19 +
+20 | from autoflow.domain.workflows.browser import BrowserLocatorPort, BrowserPagePort
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> src/autoflow/application/workflows/executors/data_structure.py:8:1
+   |
+ 6 |   """
+ 7 |
+ 8 | / from __future__ import annotations
+ 9 | |
+10 | | import asyncio
+11 | | import json
+12 | | from typing import Any
+13 | |
+14 | | import regex
+15 | | from autoflow.domain.workflows.execution import ExecutionContext
+16 | |
+17 | | from .base import ModuleExecutor, ModuleResult
+18 | | from .registry import register_executor
+19 | | from .type_utils import to_int
+   | |______________________________^
+help: Organize imports
+   |
+14 | import regex
+15 +
+16 | from autoflow.domain.workflows.execution import ExecutionContext
+   |
+
+DTZ005 `datetime.datetime.now()` called without a `tz` argument
+   --> src/autoflow/application/workflows/executors/element_change_trigger.py:195:22
+    |
+193 |         "removedNodes": removed,
+194 |         "newElementText": new_text,
+195 |         "timestamp": datetime.now().isoformat(),
+    |                      ^^^^^^^^^^^^^^
+196 |     }
+197 |     if change_variable:
+    |
+help: Pass a `datetime.timezone` object to the `tz` parameter
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+  --> src/autoflow/application/workflows/executors/email_trigger.py:95:9
+   |
+93 |           except asyncio.CancelledError:
+94 |               raise
+95 | /         except Exception:  # noqa: BLE001 - source keeps polling after IMAP failures.
+96 | |             pass
+   | |________________^
+97 |           await asyncio.sleep(max(0, check_interval))
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> src/autoflow/application/workflows/executors/firecrawl.py:10:1
+   |
+ 8 |   """
+ 9 |
+10 | / from __future__ import annotations
+11 | |
+12 | | import json
+13 | | import re
+14 | | from collections.abc import AsyncIterator
+15 | | from contextlib import asynccontextmanager
+16 | | from typing import Any
+17 | | from urllib.parse import urljoin, urlparse
+18 | |
+19 | | import html2text  # type: ignore[import-untyped]
+20 | | from autoflow.domain.workflows.browser import BrowserPagePort
+21 | | from autoflow.domain.workflows.execution import ExecutionContext
+22 | | from bs4 import BeautifulSoup  # type: ignore[import-untyped]
+23 | |
+24 | | from .base import ModuleExecutor, ModuleResult
+25 | | from .type_utils import to_bool, to_int
+   | |_______________________________________^
+help: Organize imports
+   |
+19 | import html2text  # type: ignore[import-untyped]
+20 + from bs4 import BeautifulSoup  # type: ignore[import-untyped]
+21 +
+22 | from autoflow.domain.workflows.browser import BrowserPagePort
+23 | from autoflow.domain.workflows.execution import ExecutionContext
+   - from bs4 import BeautifulSoup  # type: ignore[import-untyped]
+24 |
+   |
+
+UP035 [*] Import from `collections.abc` instead: `Callable`
+  --> src/autoflow/application/workflows/executors/input_triggers.py:15:1
+   |
+13 | from dataclasses import dataclass, field
+14 | from enum import Enum
+15 | from typing import Any, Callable
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+16 |
+17 | from autoflow.domain.workflows.execution import ExecutionContext
+   |
+help: Import from `collections.abc`
+   |
+14 | from enum import Enum
+   - from typing import Any, Callable
+15 + from typing import Any
+16 + from collections.abc import Callable
+17 |
+   |
+
+RUF007 Prefer `itertools.pairwise()` over `zip()` when iterating over successive pairs
+   --> src/autoflow/application/workflows/executors/input_triggers.py:191:27
+    |
+189 |                 simplified.append(point)
+190 |         result: list[Direction] = []
+191 |         for start, end in zip(simplified, simplified[1:], strict=False):
+    |                           ^^^
+192 |             direction = self.direction(start, end)
+193 |             if direction is not None and (not result or direction != result[-1]):
+    |
+help: Replace `zip()` with `itertools.pairwise()`
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> src/autoflow/providers/assistant/langgraph.py:8:1
+   |
+ 6 |   """
+ 7 |
+ 8 | / from __future__ import annotations
+ 9 | |
+10 | | import json
+11 | | from collections.abc import Awaitable, Callable
+12 | | from dataclasses import dataclass
+13 | | from pathlib import Path
+14 | | from typing import Any, Literal, TypedDict
+15 | |
+16 | | from autoflow.domain.workflows.scope import APPROVED_NODE_TYPES
+17 | | from langchain_core.runnables.config import RunnableConfig
+18 | | from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+19 | | from langgraph.graph import END, START, StateGraph
+20 | | from langgraph.types import Command, interrupt
+   | |______________________________________________^
+help: Organize imports
+   |
+15 |
+   - from autoflow.domain.workflows.scope import APPROVED_NODE_TYPES
+16 | from langchain_core.runnables.config import RunnableConfig
+--------------------------------------------------------------------------------
+20 |
+21 + from autoflow.domain.workflows.scope import APPROVED_NODE_TYPES
+22 +
+23 |
+   |
+
+DTZ005 `datetime.datetime.now()` called without a `tz` argument
+   --> src/autoflow/providers/integrations/gateway.py:254:38
+    |
+252 |                         "date": message.get("Date", ""),
+253 |                         "body": _email_text_body(message),
+254 |                         "timestamp": datetime.now().isoformat(),
+    |                                      ^^^^^^^^^^^^^^
+255 |                     }
+256 |                 )
+    |
+help: Pass a `datetime.timezone` object to the `tz` parameter
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+   --> src/autoflow/providers/integrations/gateway.py:259:17
+    |
+257 |                   try:
+258 |                       client.store(email_id, "+FLAGS", "\\Seen")
+259 | /                 except Exception:  # noqa: BLE001 - source treats marking read as best effort.
+260 | |                     pass
+    | |________________________^
+261 |               return result
+262 |           finally:
+    |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+   --> src/autoflow/providers/integrations/gateway.py:266:17
+    |
+264 |                   try:
+265 |                       client.close()
+266 | /                 except Exception:  # noqa: BLE001 - connection cleanup is best effort.
+267 | |                     pass
+    | |________________________^
+268 |                   try:
+269 |                       client.logout()
+    |
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+   --> src/autoflow/providers/integrations/gateway.py:270:17
+    |
+268 |                   try:
+269 |                       client.logout()
+270 | /                 except Exception:  # noqa: BLE001 - connection cleanup is best effort.
+271 | |                     pass
+    | |________________________^
+272 |
+273 |       async def _http(self, payload: Mapping[str, Any]) -> Mapping[str, Any]:
+    |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> src/autoflow/providers/model/http.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import asyncio
+ 4 | | import base64
+ 5 | | import json
+ 6 | | import time
+ 7 | | from collections.abc import Awaitable, Callable, Mapping
+ 8 | | from typing import Any, cast
+ 9 | | from urllib.parse import parse_qsl, quote, urlencode, urlsplit, urlunsplit
+10 | |
+11 | | import httpx
+12 | | from autoflow.domain.models import (
+13 | |     DiscoveryResult,
+14 | |     ModelError,
+15 | |     ModelInvocationResult,
+16 | |     ModelTestResult,
+17 | |     ProviderConnection,
+18 | |     RemoteModel,
+19 | | )
+20 | | from autoflow.domain.models.validation import normalize_base_url as _normalize_base_url
+21 | | from autoflow.domain.models.validation import validate_connection
+   | |_________________________________________________________________^
+22 |
+23 |   MAX_RESPONSE_BYTES = 8 * 1024 * 1024
+   |
+help: Organize imports
+   |
+11 | import httpx
+12 +
+13 | from autoflow.domain.models import (
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/contract/test_project_run_evidence.py:1:1
+   |
+ 1 | / from datetime import UTC, datetime, timedelta
+ 2 | | from hashlib import sha256
+ 3 | | from uuid import uuid4
+ 4 | |
+ 5 | | import pytest
+ 6 | | from autoflow.adapters.http.errors import install_error_handlers
+ 7 | | from autoflow.adapters.http.project_run_evidence import project_run_evidence_router
+ 8 | | from autoflow.application.project_runs.evidence import ProjectRunEvidence
+ 9 | | from autoflow.domain.project_runs.models import ProjectRunError
+10 | | from autoflow.infrastructure.database.workflow_runtime import (
+11 | |     SqlAlchemyWorkflowRuntimeRepository,
+12 | | )
+13 | | from fastapi import FastAPI
+14 | | from fastapi.testclient import TestClient
+15 | |
+16 | | from tests.integration.test_project_run_start import setup, start_payload
+   | |_________________________________________________________________________^
+17 |
+18 |   NOW = datetime(2026, 9, 15, tzinfo=UTC)
+   |
+help: Organize imports
+   |
+5  | import pytest
+6  + from fastapi import FastAPI
+7  + from fastapi.testclient import TestClient
+8  +
+9  | from autoflow.adapters.http.errors import install_error_handlers
+--------------------------------------------------------------------------------
+15 | )
+   - from fastapi import FastAPI
+   - from fastapi.testclient import TestClient
+   -
+16 | from tests.integration.test_project_run_start import setup, start_payload
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+   --> tests/contract/test_project_run_evidence.py:339:5
+    |
+337 |   @pytest.mark.parametrize("kind", ["gap", "future"])
+338 |   def test_incomplete_event_history_never_advances_cursor_as_if_complete(tmp_path, kind):
+339 | /     from autoflow.infrastructure.database.workflow_runtime_models import (
+340 | |         WorkflowRunEventRow,
+341 | |     )
+342 | |     from sqlalchemy import delete
+    | |_________________________________^
+343 |
+344 |       _, evidence, factory, project, task = prepared(tmp_path)
+    |
+help: Organize imports
+    |
+338 | def test_incomplete_event_history_never_advances_cursor_as_if_complete(tmp_path, kind):
+339 +     from sqlalchemy import delete
+340 +
+341 |     from autoflow.infrastructure.database.workflow_runtime_models import (
+342 |         WorkflowRunEventRow,
+343 |     )
+    -     from sqlalchemy import delete
+344 |
+    |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/contract/test_proxy_remote_controls.py:3:1
+   |
+ 1 |   """End-to-end local HTTP/SQLite lifecycle with a synthetic provider; no live writes."""
+ 2 |
+ 3 | / import asyncio
+ 4 | | import time
+ 5 | | from dataclasses import replace
+ 6 | | from uuid import uuid4
+ 7 | |
+ 8 | | import pytest
+ 9 | | from autoflow.bootstrap import proxies as composition
+10 | | from autoflow.bootstrap.app import create_app
+11 | | from autoflow.bootstrap.config import Settings
+12 | | from autoflow.domain.proxies.errors import ProviderUnavailableError
+13 | | from autoflow.domain.proxies.models import Capability, ProviderPage, ProviderProxy
+14 | | from autoflow.domain.proxies.remote import Location, RemoteState, RotationSchedule
+15 | | from autoflow.providers.proxy.proxypanel import ProxyPanelHttpError
+16 | | from fastapi.testclient import TestClient
+   | |_________________________________________^
+help: Organize imports
+   |
+8  | import pytest
+9  + from fastapi.testclient import TestClient
+10 +
+11 | from autoflow.bootstrap import proxies as composition
+--------------------------------------------------------------------------------
+17 | from autoflow.providers.proxy.proxypanel import ProxyPanelHttpError
+   - from fastapi.testclient import TestClient
+18 |
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/contract/test_studio_command_envelopes.py:1:1
+  |
+1 | / import pytest
+2 | | from autoflow.adapters.http.workflow_studio_schemas import (
+3 | |     StudioCommandLookup,
+4 | |     StudioCommandReceipt,
+5 | | )
+6 | | from autoflow.bootstrap.schema_export import export_schema
+7 | | from pydantic import ValidationError
+  | |____________________________________^
+help: Organize imports
+  |
+1 | import pytest
+2 + from pydantic import ValidationError
+3 +
+4 | from autoflow.adapters.http.workflow_studio_schemas import (
+--------------------------------------------------------------------------------
+8 | from autoflow.bootstrap.schema_export import export_schema
+  - from pydantic import ValidationError
+9 |
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/contract/test_studio_recorder_contract.py:1:1
+   |
+ 1 | / import pytest
+ 2 | | from autoflow.adapters.http.workflow_studio_schemas import (
+ 3 | |     StudioRecorderBatch,
+ 4 | |     StudioRecorderCommandState,
+ 5 | |     StudioRecorderControl,
+ 6 | |     StudioRecorderReadRequest,
+ 7 | |     StudioRecorderStartRequest,
+ 8 | |     StudioRecorderStatus,
+ 9 | |     StudioRecorderStopped,
+10 | | )
+11 | | from pydantic import ValidationError
+   | |____________________________________^
+help: Organize imports
+   |
+1  | import pytest
+2  + from pydantic import ValidationError
+3  +
+4  | from autoflow.adapters.http.workflow_studio_schemas import (
+--------------------------------------------------------------------------------
+12 | )
+   - from pydantic import ValidationError
+13 |
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/contract/test_workflow_gesture_contract.py:1:1
+  |
+1 | / from __future__ import annotations
+2 | |
+3 | | from typing import Any
+4 | |
+5 | | from autoflow.adapters.http.workflow_gestures import workflow_gesture_router
+6 | | from fastapi import FastAPI
+7 | | from fastapi.testclient import TestClient
+  | |_________________________________________^
+help: Organize imports
+   |
+4  |
+   - from autoflow.adapters.http.workflow_gestures import workflow_gesture_router
+5  | from fastapi import FastAPI
+6  | from fastapi.testclient import TestClient
+7  |
+8  + from autoflow.adapters.http.workflow_gestures import workflow_gesture_router
+9  +
+10 |
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/contract/test_workflow_inspection_api.py:1:1
+  |
+1 | / from __future__ import annotations
+2 | |
+3 | | from autoflow.adapters.http.errors import install_error_handlers
+4 | | from autoflow.adapters.http.workflow_inspection import workflow_inspection_router
+5 | | from fastapi import FastAPI
+6 | | from fastapi.testclient import TestClient
+  | |_________________________________________^
+help: Organize imports
+  |
+2 |
+  - from autoflow.adapters.http.errors import install_error_handlers
+  - from autoflow.adapters.http.workflow_inspection import workflow_inspection_router
+3 | from fastapi import FastAPI
+4 | from fastapi.testclient import TestClient
+5 |
+6 + from autoflow.adapters.http.errors import install_error_handlers
+7 + from autoflow.adapters.http.workflow_inspection import workflow_inspection_router
+8 +
+9 |
+  |
+
+RUF100 [*] Unused `noqa` directive (non-enabled: `E402`)
+  --> tests/differential/workflows/frozen_b6_desktop_platform_harness.py:16:39
+   |
+14 | )
+15 |
+16 | from app.executors.advanced import (  # noqa: E402
+   |                                       ^^^^^^^^^^^^
+17 |     GetClipboardExecutor,
+18 |     LockScreenExecutor,
+   |
+help: Remove unused `noqa` directive
+   |
+15 |
+   - from app.executors.advanced import (  # noqa: E402
+16 + from app.executors.advanced import (
+17 |     GetClipboardExecutor,
+   |
+
+RUF100 [*] Unused `noqa` directive (non-enabled: `E402`)
+  --> tests/differential/workflows/frozen_b6_desktop_platform_harness.py:22:50
+   |
+20 |     ShutdownSystemExecutor,
+21 | )
+22 | from app.executors.base import ExecutionContext  # noqa: E402
+   |                                                  ^^^^^^^^^^^^
+23 | from app.executors.basic import (  # noqa: E402
+24 |     PlaySoundExecutor,
+   |
+help: Remove unused `noqa` directive
+   |
+21 | )
+   - from app.executors.base import ExecutionContext  # noqa: E402
+22 + from app.executors.base import ExecutionContext
+23 | from app.executors.basic import (  # noqa: E402
+   |
+
+RUF100 [*] Unused `noqa` directive (non-enabled: `E402`)
+  --> tests/differential/workflows/frozen_b6_desktop_platform_harness.py:23:36
+   |
+21 | )
+22 | from app.executors.base import ExecutionContext  # noqa: E402
+23 | from app.executors.basic import (  # noqa: E402
+   |                                    ^^^^^^^^^^^^
+24 |     PlaySoundExecutor,
+25 |     SystemNotificationExecutor,
+   |
+help: Remove unused `noqa` directive
+   |
+22 | from app.executors.base import ExecutionContext  # noqa: E402
+   - from app.executors.basic import (  # noqa: E402
+23 + from app.executors.basic import (
+24 |     PlaySoundExecutor,
+   |
+
+RUF100 [*] Unused `noqa` directive (non-enabled: `E402`)
+  --> tests/differential/workflows/frozen_b6_face_trigger_harness.py:41:50
+   |
+39 | sys.modules["cv2"] = cv2
+40 |
+41 | from app.executors.base import ExecutionContext  # noqa: E402
+   |                                                  ^^^^^^^^^^^^
+42 | from app.executors.trigger import FaceTriggerExecutor  # noqa: E402
+   |
+help: Remove unused `noqa` directive
+   |
+40 |
+   - from app.executors.base import ExecutionContext  # noqa: E402
+41 + from app.executors.base import ExecutionContext
+42 | from app.executors.trigger import FaceTriggerExecutor  # noqa: E402
+   |
+
+RUF100 [*] Unused `noqa` directive (non-enabled: `E402`)
+  --> tests/differential/workflows/frozen_b6_face_trigger_harness.py:42:56
+   |
+41 | from app.executors.base import ExecutionContext  # noqa: E402
+42 | from app.executors.trigger import FaceTriggerExecutor  # noqa: E402
+   |                                                        ^^^^^^^^^^^^
+help: Remove unused `noqa` directive
+   |
+41 | from app.executors.base import ExecutionContext  # noqa: E402
+   - from app.executors.trigger import FaceTriggerExecutor  # noqa: E402
+42 + from app.executors.trigger import FaceTriggerExecutor
+43 |
+   |
+
+RUF100 [*] Unused `noqa` directive (non-enabled: `E402`)
+  --> tests/differential/workflows/frozen_b6_image_trigger_harness.py:20:50
+   |
+18 | )
+19 |
+20 | from app.executors.base import ExecutionContext  # noqa: E402
+   |                                                  ^^^^^^^^^^^^
+21 | from app.executors.trigger import ImageTriggerExecutor  # noqa: E402
+   |
+help: Remove unused `noqa` directive
+   |
+19 |
+   - from app.executors.base import ExecutionContext  # noqa: E402
+20 + from app.executors.base import ExecutionContext
+21 | from app.executors.trigger import ImageTriggerExecutor  # noqa: E402
+   |
+
+RUF100 [*] Unused `noqa` directive (non-enabled: `E402`)
+  --> tests/differential/workflows/frozen_b6_image_trigger_harness.py:21:57
+   |
+20 | from app.executors.base import ExecutionContext  # noqa: E402
+21 | from app.executors.trigger import ImageTriggerExecutor  # noqa: E402
+   |                                                         ^^^^^^^^^^^^
+help: Remove unused `noqa` directive
+   |
+20 | from app.executors.base import ExecutionContext  # noqa: E402
+   - from app.executors.trigger import ImageTriggerExecutor  # noqa: E402
+21 + from app.executors.trigger import ImageTriggerExecutor
+22 |
+   |
+
+RUF100 [*] Unused `noqa` directive (non-enabled: `E402`)
+  --> tests/differential/workflows/frozen_b6_input_trigger_harness.py:17:50
+   |
+15 | sys.modules["pynput.mouse"] = mouse_module
+16 |
+17 | from app.executors.base import ExecutionContext  # noqa: E402
+   |                                                  ^^^^^^^^^^^^
+18 | from app.executors.trigger import (  # noqa: E402
+19 |     HotkeyTriggerExecutor,
+   |
+help: Remove unused `noqa` directive
+   |
+16 |
+   - from app.executors.base import ExecutionContext  # noqa: E402
+17 + from app.executors.base import ExecutionContext
+18 | from app.executors.trigger import (  # noqa: E402
+   |
+
+RUF100 [*] Unused `noqa` directive (non-enabled: `E402`)
+  --> tests/differential/workflows/frozen_b6_input_trigger_harness.py:18:38
+   |
+17 | from app.executors.base import ExecutionContext  # noqa: E402
+18 | from app.executors.trigger import (  # noqa: E402
+   |                                      ^^^^^^^^^^^^
+19 |     HotkeyTriggerExecutor,
+20 |     MouseTriggerExecutor,
+   |
+help: Remove unused `noqa` directive
+   |
+17 | from app.executors.base import ExecutionContext  # noqa: E402
+   - from app.executors.trigger import (  # noqa: E402
+18 + from app.executors.trigger import (
+19 |     HotkeyTriggerExecutor,
+   |
+
+RUF100 [*] Unused `noqa` directive (non-enabled: `E402`)
+  --> tests/differential/workflows/frozen_b6_printer_harness.py:27:50
+   |
+25 | )
+26 |
+27 | from app.executors.base import ExecutionContext  # noqa: E402
+   |                                                  ^^^^^^^^^^^^
+28 | from app.executors.utility_tools import PrinterCallExecutor  # noqa: E402
+   |
+help: Remove unused `noqa` directive
+   |
+26 |
+   - from app.executors.base import ExecutionContext  # noqa: E402
+27 + from app.executors.base import ExecutionContext
+28 | from app.executors.utility_tools import PrinterCallExecutor  # noqa: E402
+   |
+
+RUF100 [*] Unused `noqa` directive (non-enabled: `E402`)
+  --> tests/differential/workflows/frozen_b6_printer_harness.py:28:62
+   |
+27 | from app.executors.base import ExecutionContext  # noqa: E402
+28 | from app.executors.utility_tools import PrinterCallExecutor  # noqa: E402
+   |                                                              ^^^^^^^^^^^^
+help: Remove unused `noqa` directive
+   |
+27 | from app.executors.base import ExecutionContext  # noqa: E402
+   - from app.executors.utility_tools import PrinterCallExecutor  # noqa: E402
+28 + from app.executors.utility_tools import PrinterCallExecutor
+29 |
+   |
+
+RUF100 [*] Unused `noqa` directive (non-enabled: `E402`)
+  --> tests/differential/workflows/frozen_b6_sound_trigger_harness.py:30:50
+   |
+28 | )
+29 |
+30 | from app.executors.base import ExecutionContext  # noqa: E402
+   |                                                  ^^^^^^^^^^^^
+31 | from app.executors.trigger import SoundTriggerExecutor  # noqa: E402
+   |
+help: Remove unused `noqa` directive
+   |
+29 |
+   - from app.executors.base import ExecutionContext  # noqa: E402
+30 + from app.executors.base import ExecutionContext
+31 | from app.executors.trigger import SoundTriggerExecutor  # noqa: E402
+   |
+
+RUF100 [*] Unused `noqa` directive (non-enabled: `E402`)
+  --> tests/differential/workflows/frozen_b6_sound_trigger_harness.py:31:57
+   |
+30 | from app.executors.base import ExecutionContext  # noqa: E402
+31 | from app.executors.trigger import SoundTriggerExecutor  # noqa: E402
+   |                                                         ^^^^^^^^^^^^
+help: Remove unused `noqa` directive
+   |
+30 | from app.executors.base import ExecutionContext  # noqa: E402
+   - from app.executors.trigger import SoundTriggerExecutor  # noqa: E402
+31 + from app.executors.trigger import SoundTriggerExecutor
+32 |
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/differential/workflows/test_b5_ai_media_parity.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import asyncio
+ 4 | | import json
+ 5 | | import os
+ 6 | | import subprocess
+ 7 | | import sys
+ 8 | | from collections.abc import Mapping
+ 9 | | from pathlib import Path
+10 | | from typing import Any
+11 | |
+12 | | import pytest
+13 | | from autoflow.application.workflows.executors.production import (
+14 | |     build_production_executor_registry,
+15 | | )
+16 | | from autoflow.domain.workflows.execution import ExecutionContext
+   | |________________________________________________________________^
+17 |
+18 |   REPOSITORY_ROOT = Path(__file__).resolve().parents[5]
+   |
+help: Organize imports
+   |
+12 | import pytest
+13 +
+14 | from autoflow.application.workflows.executors.production import (
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/differential/workflows/test_b5_ai_scraper_parity.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import asyncio
+ 4 | | import json
+ 5 | | import os
+ 6 | | import subprocess
+ 7 | | import sys
+ 8 | | from collections.abc import Mapping
+ 9 | | from pathlib import Path
+10 | | from typing import Any
+11 | |
+12 | | import pytest
+13 | | from autoflow.application.workflows.executors.production import (
+14 | |     build_production_executor_registry,
+15 | | )
+16 | | from autoflow.domain.models import ModelInvocationResult
+17 | | from autoflow.domain.workflows.execution import ExecutionContext
+   | |________________________________________________________________^
+18 |
+19 |   REPOSITORY_ROOT = Path(__file__).resolve().parents[5]
+   |
+help: Organize imports
+   |
+12 | import pytest
+13 +
+14 | from autoflow.application.workflows.executors.production import (
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/differential/workflows/test_b5_ai_task_executor_parity.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import asyncio
+ 4 | | import json
+ 5 | | import os
+ 6 | | import subprocess
+ 7 | | import sys
+ 8 | | from collections.abc import Mapping
+ 9 | | from pathlib import Path
+10 | | from typing import Any
+11 | |
+12 | | import pytest
+13 | | from autoflow.application.workflows.executors.production import (
+14 | |     build_production_executor_registry,
+15 | | )
+16 | | from autoflow.domain.models import ModelInvocationResult
+17 | | from autoflow.domain.workflows.execution import ExecutionContext
+   | |________________________________________________________________^
+18 |
+19 |   REPOSITORY_ROOT = Path(__file__).resolve().parents[5]
+   |
+help: Organize imports
+   |
+12 | import pytest
+13 +
+14 | from autoflow.application.workflows.executors.production import (
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/differential/workflows/test_b5_captcha_executor_parity.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import asyncio
+ 4 | | import base64
+ 5 | | import io
+ 6 | | import json
+ 7 | | import os
+ 8 | | import subprocess
+ 9 | | import sys
+10 | | from pathlib import Path
+11 | | from typing import Any
+12 | |
+13 | | import pytest
+14 | | from autoflow.application.workflows.executors import captcha
+15 | | from autoflow.application.workflows.executors.production import (
+16 | |     build_production_executor_registry,
+17 | | )
+18 | | from autoflow.domain.workflows.execution import ExecutionContext
+19 | | from PIL import Image, ImageDraw, ImageFont
+   | |___________________________________________^
+20 |
+21 |   REPOSITORY_ROOT = Path(__file__).resolve().parents[5]
+   |
+help: Organize imports
+   |
+13 | import pytest
+14 + from PIL import Image, ImageDraw, ImageFont
+15 +
+16 | from autoflow.application.workflows.executors import captcha
+--------------------------------------------------------------------------------
+20 | from autoflow.domain.workflows.execution import ExecutionContext
+   - from PIL import Image, ImageDraw, ImageFont
+21 |
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/differential/workflows/test_b5_firecrawl_executor_parity.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import asyncio
+ 4 | | import json
+ 5 | | import os
+ 6 | | import subprocess
+ 7 | | import sys
+ 8 | | from pathlib import Path
+ 9 | | from typing import Any
+10 | |
+11 | | import pytest
+12 | | from autoflow.application.workflows.executors.production import (
+13 | |     build_production_executor_registry,
+14 | | )
+15 | | from autoflow.domain.workflows.execution import ExecutionContext
+   | |________________________________________________________________^
+16 |
+17 |   REPOSITORY_ROOT = Path(__file__).resolve().parents[5]
+   |
+help: Organize imports
+   |
+11 | import pytest
+12 +
+13 | from autoflow.application.workflows.executors.production import (
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/differential/workflows/test_b5_media_recognition_parity.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import asyncio
+ 4 | | import base64
+ 5 | | import io
+ 6 | | import json
+ 7 | | import os
+ 8 | | import subprocess
+ 9 | | import sys
+10 | | from pathlib import Path
+11 | | from types import SimpleNamespace
+12 | | from typing import Any
+13 | |
+14 | | import numpy as np
+15 | | import pytest
+16 | | from autoflow.application.workflows.executors import media_recognition
+17 | | from autoflow.application.workflows.executors.production import (
+18 | |     build_production_executor_registry,
+19 | | )
+20 | | from autoflow.domain.workflows.execution import BinaryOutputSnapshot, ExecutionContext
+21 | | from PIL import Image
+   | |_____________________^
+22 |
+23 |   REPOSITORY_ROOT = Path(__file__).resolve().parents[5]
+   |
+help: Organize imports
+   |
+15 | import pytest
+16 + from PIL import Image
+17 +
+18 | from autoflow.application.workflows.executors import media_recognition
+--------------------------------------------------------------------------------
+22 | from autoflow.domain.workflows.execution import BinaryOutputSnapshot, ExecutionContext
+   - from PIL import Image
+23 |
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/differential/workflows/test_b6_allure_executor_parity.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import json
+ 4 | | import os
+ 5 | | import subprocess
+ 6 | | import sys
+ 7 | | from pathlib import Path
+ 8 | | from typing import Any
+ 9 | |
+10 | | import pytest
+11 | | from autoflow.application.workflows.executors.production import (
+12 | |     build_production_executor_registry,
+13 | | )
+14 | | from autoflow.domain.workflows.execution import ExecutionContext
+   | |________________________________________________________________^
+15 |
+16 |   ROOT = Path(__file__).resolve().parents[5]
+   |
+help: Organize imports
+   |
+10 | import pytest
+11 +
+12 | from autoflow.application.workflows.executors.production import (
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/differential/workflows/test_b6_desktop_platform_executor_parity.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import json
+ 4 | | import os
+ 5 | | import subprocess
+ 6 | | import sys
+ 7 | | from collections.abc import Mapping
+ 8 | | from pathlib import Path
+ 9 | | from typing import Any
+10 | |
+11 | | import pytest
+12 | | from autoflow.application.workflows.executors.production import (
+13 | |     build_production_executor_registry,
+14 | | )
+15 | | from autoflow.domain.workflows.execution import DesktopActionResult, ExecutionContext
+   | |_____________________________________________________________________________________^
+16 |
+17 |   REPOSITORY_ROOT = Path(__file__).resolve().parents[5]
+   |
+help: Organize imports
+   |
+11 | import pytest
+12 +
+13 | from autoflow.application.workflows.executors.production import (
+   |
+
+RUF100 [*] Unused `noqa` directive (non-enabled: `N802`)
+  --> tests/differential/workflows/test_b6_face_trigger_parity.py:37:34
+   |
+36 | class _Capture:
+37 |     def isOpened(self) -> bool:  # noqa: N802 - OpenCV API compatibility.
+   |                                  ^^^^^^^^^^^^
+38 |         return True
+   |
+help: Remove unused `noqa` directive
+   |
+36 | class _Capture:
+   -     def isOpened(self) -> bool:  # noqa: N802 - OpenCV API compatibility.
+37 +     def isOpened(self) -> bool:
+38 |         return True
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/differential/workflows/test_b6_gesture_parity.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import json
+ 4 | | import os
+ 5 | | import subprocess
+ 6 | | import sys
+ 7 | | from pathlib import Path
+ 8 | | from typing import Any
+ 9 | |
+10 | | import pytest
+11 | | from autoflow.infrastructure.gesture import GestureRecognitionService
+   | |_____________________________________________________________________^
+12 |
+13 |   ROOT = Path(__file__).resolve().parents[5]
+   |
+help: Organize imports
+   |
+10 | import pytest
+11 +
+12 | from autoflow.infrastructure.gesture import GestureRecognitionService
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/differential/workflows/test_b6_js_script_executor_parity.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import json
+ 4 | | import subprocess
+ 5 | | import sys
+ 6 | | from collections.abc import Mapping
+ 7 | | from pathlib import Path
+ 8 | | from typing import Any
+ 9 | |
+10 | | import pytest
+11 | | from autoflow.application.workflows.executors.js_script import JsScriptExecutor
+12 | | from autoflow.domain.workflows.execution import ExecutionContext, JsScriptResult
+   | |________________________________________________________________________________^
+13 |
+14 |   REPOSITORY_ROOT = Path(__file__).resolve().parents[5]
+   |
+help: Organize imports
+   |
+10 | import pytest
+11 +
+12 | from autoflow.application.workflows.executors.js_script import JsScriptExecutor
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/differential/workflows/test_b6_network_sharing_parity.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import json
+ 4 | | import os
+ 5 | | import subprocess
+ 6 | | import sys
+ 7 | | from collections.abc import Mapping
+ 8 | | from pathlib import Path
+ 9 | | from typing import Any
+10 | |
+11 | | import pytest
+12 | | from autoflow.application.workflows.executors.production import (
+13 | |     build_production_executor_registry,
+14 | | )
+15 | | from autoflow.domain.workflows.execution import DesktopActionResult, ExecutionContext
+   | |_____________________________________________________________________________________^
+16 |
+17 |   ROOT = Path(__file__).resolve().parents[5]
+   |
+help: Organize imports
+   |
+11 | import pytest
+12 +
+13 | from autoflow.application.workflows.executors.production import (
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/differential/workflows/test_b6_python_script_executor_parity.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import json
+ 4 | | import re
+ 5 | | import subprocess
+ 6 | | import sys
+ 7 | | from pathlib import Path
+ 8 | | from typing import Any
+ 9 | |
+10 | | import pytest
+11 | | from autoflow.application.workflows.executors.python_script import (
+12 | |     PythonScriptExecutor,
+13 | | )
+14 | | from autoflow.domain.workflows.execution import ExecutionContext
+   | |________________________________________________________________^
+15 |
+16 |   REPOSITORY_ROOT = Path(__file__).resolve().parents[5]
+   |
+help: Organize imports
+   |
+10 | import pytest
+11 +
+12 | from autoflow.application.workflows.executors.python_script import (
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/differential/workflows/test_b6_run_command_executor_parity.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import json
+ 4 | | import os
+ 5 | | import subprocess
+ 6 | | import sys
+ 7 | | from pathlib import Path
+ 8 | | from typing import Any
+ 9 | |
+10 | | import pytest
+11 | | from autoflow.application.workflows.executors.run_command import RunCommandExecutor
+12 | | from autoflow.domain.workflows.execution import ExecutionContext
+   | |________________________________________________________________^
+13 |
+14 |   REPOSITORY_ROOT = Path(__file__).resolve().parents[5]
+   |
+help: Organize imports
+   |
+10 | import pytest
+11 +
+12 | from autoflow.application.workflows.executors.run_command import RunCommandExecutor
+   |
+
+RUF100 [*] Unused `noqa` directive (non-enabled: `N802`)
+  --> tests/differential/workflows/test_b6_sound_trigger_parity.py:37:39
+   |
+36 | class _Meter:
+37 |     def GetPeakValue(self) -> float:  # noqa: N802 - COM API compatibility.
+   |                                       ^^^^^^^^^^^^
+38 |         return 0.67
+   |
+help: Remove unused `noqa` directive
+   |
+36 | class _Meter:
+   -     def GetPeakValue(self) -> float:  # noqa: N802 - COM API compatibility.
+37 +     def GetPeakValue(self) -> float:
+38 |         return 0.67
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/differential/workflows/test_b6_text_to_speech_executor_parity.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import json
+ 4 | | import subprocess
+ 5 | | import sys
+ 6 | | from pathlib import Path
+ 7 | |
+ 8 | | import pytest
+ 9 | | from autoflow.application.workflows.executors.text_to_speech import (
+10 | |     TextToSpeechExecutor,
+11 | | )
+12 | | from autoflow.domain.workflows.execution import ExecutionContext, SpeechResult
+   | |______________________________________________________________________________^
+13 |
+14 |   REPOSITORY_ROOT = Path(__file__).resolve().parents[5]
+   |
+help: Organize imports
+   |
+8  | import pytest
+9  +
+10 | from autoflow.application.workflows.executors.text_to_speech import (
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/differential/workflows/test_b6_timing_probability_parity.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import json
+ 4 | | import os
+ 5 | | import random
+ 6 | | import subprocess
+ 7 | | import sys
+ 8 | | from pathlib import Path
+ 9 | | from typing import Any
+10 | |
+11 | | import pytest
+12 | | from autoflow.application.workflows.executors.production import (
+13 | |     build_production_executor_registry,
+14 | | )
+15 | | from autoflow.domain.workflows.execution import ExecutionContext
+   | |________________________________________________________________^
+16 |
+17 |   ROOT = Path(__file__).resolve().parents[5]
+   |
+help: Organize imports
+   |
+11 | import pytest
+12 +
+13 | from autoflow.application.workflows.executors.production import (
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_b2_advanced_browser_cloakbrowser_flow.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import os
+ 4 | | from pathlib import Path
+ 5 | | from typing import cast
+ 6 | |
+ 7 | | import pytest
+ 8 | | from autoflow.application.workflows.executors.production import (
+ 9 | |     build_production_executor_registry,
+10 | | )
+11 | | from autoflow.application.workflows.runtime import WorkflowRuntime
+12 | | from autoflow.domain.workflows.execution import ArtifactWriter, ExecutionContext
+13 | | from autoflow.providers.browser.workflow_session import launch_workflow_session
+   | |_______________________________________________________________________________^
+help: Organize imports
+  |
+7 | import pytest
+8 +
+9 | from autoflow.application.workflows.executors.production import (
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_b2_inspection_cloakbrowser_flow.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import os
+ 4 | | from contextlib import contextmanager
+ 5 | | from datetime import UTC, datetime
+ 6 | | from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+ 7 | | from pathlib import Path
+ 8 | | from threading import Thread
+ 9 | |
+10 | | import pytest
+11 | | from autoflow.application.workflows.executors.production import (
+12 | |     build_production_executor_registry,
+13 | | )
+14 | | from autoflow.application.workflows.inspection import WorkflowInspectionService
+15 | | from autoflow.application.workflows.runtime import WorkflowRuntime
+16 | | from autoflow.domain.kernels.models import InstalledKernel
+17 | | from autoflow.domain.profiles.models import Profile, ProfileSpec
+18 | | from autoflow.domain.workflows.execution import ExecutionContext
+19 | | from autoflow.infrastructure.process.inspection_worker import inspection_worker_command
+20 | | from autoflow.infrastructure.process.workflow_worker import (
+21 | |     WorkflowResourceCoordinator,
+22 | |     WorkflowWorkerManager,
+23 | | )
+24 | | from autoflow.providers.browser.inspection_worker import InspectionController
+25 | | from autoflow.providers.browser.workflow_session import launch_workflow_session
+   | |_______________________________________________________________________________^
+help: Organize imports
+   |
+10 | import pytest
+11 +
+12 | from autoflow.application.workflows.executors.production import (
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_b2_large_artifacts_cloakbrowser_flow.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import hashlib
+ 4 | | import io
+ 5 | | import json
+ 6 | | import os
+ 7 | | from contextlib import contextmanager
+ 8 | | from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+ 9 | | from pathlib import Path
+10 | | from threading import Event, Thread
+11 | |
+12 | | import pytest
+13 | | from autoflow.providers.browser.workflow_worker import _run
+   | |___________________________________________________________^
+help: Organize imports
+   |
+12 | import pytest
+13 +
+14 | from autoflow.providers.browser.workflow_worker import _run
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_b2_network_monitor_cloakbrowser_flow.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import asyncio
+ 4 | | import json
+ 5 | | import os
+ 6 | | from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+ 7 | | from pathlib import Path
+ 8 | | from threading import Thread
+ 9 | |
+10 | | import pytest
+11 | | from autoflow.application.workflows.executors.production import (
+12 | |     build_production_executor_registry,
+13 | | )
+14 | | from autoflow.application.workflows.runtime import WorkflowRuntime
+15 | | from autoflow.domain.workflows.execution import ExecutionContext
+16 | | from autoflow.providers.browser.workflow_session import launch_workflow_session
+   | |_______________________________________________________________________________^
+help: Organize imports
+   |
+10 | import pytest
+11 +
+12 | from autoflow.application.workflows.executors.production import (
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_b2_remaining_browser_cloakbrowser_flow.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import json
+ 4 | | import os
+ 5 | | from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+ 6 | | from pathlib import Path
+ 7 | | from threading import Thread
+ 8 | |
+ 9 | | import pytest
+10 | | from autoflow.application.workflows.executors.production import (
+11 | |     build_production_executor_registry,
+12 | | )
+13 | | from autoflow.application.workflows.runtime import WorkflowRuntime
+14 | | from autoflow.domain.workflows.execution import ExecutionContext
+15 | | from autoflow.providers.browser.workflow_session import launch_workflow_session
+   | |_______________________________________________________________________________^
+help: Organize imports
+   |
+9  | import pytest
+10 +
+11 | from autoflow.application.workflows.executors.production import (
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_b2_web_basic_cloakbrowser_flow.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import os
+ 4 | | from pathlib import Path
+ 5 | |
+ 6 | | import pytest
+ 7 | | from autoflow.application.workflows.executors.production import (
+ 8 | |     build_production_executor_registry,
+ 9 | | )
+10 | | from autoflow.application.workflows.runtime import WorkflowRuntime
+11 | | from autoflow.domain.workflows.execution import ExecutionContext
+12 | | from autoflow.providers.browser.workflow_session import launch_workflow_session
+   | |_______________________________________________________________________________^
+help: Organize imports
+  |
+6 | import pytest
+7 +
+8 | from autoflow.application.workflows.executors.production import (
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_b5_ai_media_worker.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import asyncio
+ 4 | | import base64
+ 5 | | import json
+ 6 | | from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+ 7 | | from pathlib import Path
+ 8 | | from threading import Thread
+ 9 | |
+10 | | import pytest
+11 | | from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
+   | |_________________________________________________________________________________^
+help: Organize imports
+   |
+10 | import pytest
+11 +
+12 | from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_b5_ai_task_worker.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import asyncio
+ 4 | | import json
+ 5 | | from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+ 6 | | from pathlib import Path
+ 7 | | from threading import Thread
+ 8 | |
+ 9 | | import pytest
+10 | | from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
+   | |_________________________________________________________________________________^
+help: Organize imports
+   |
+9  | import pytest
+10 +
+11 | from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_b5_ai_vision_worker.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import asyncio
+ 4 | | import json
+ 5 | | from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+ 6 | | from pathlib import Path
+ 7 | | from threading import Thread
+ 8 | |
+ 9 | | import pytest
+10 | | from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
+   | |_________________________________________________________________________________^
+help: Organize imports
+   |
+9  | import pytest
+10 +
+11 | from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_b5_captcha_cloakbrowser_flow.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import base64
+ 4 | | import io
+ 5 | | import os
+ 6 | | from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+ 7 | | from pathlib import Path
+ 8 | | from threading import Thread
+ 9 | |
+10 | | import pytest
+11 | | from autoflow.application.workflows.executors.production import (
+12 | |     build_production_executor_registry,
+13 | | )
+14 | | from autoflow.application.workflows.runtime import WorkflowRuntime
+15 | | from autoflow.domain.workflows.execution import ExecutionContext
+16 | | from autoflow.providers.browser.workflow_session import launch_workflow_session
+17 | | from PIL import Image, ImageDraw, ImageFont
+   | |___________________________________________^
+help: Organize imports
+   |
+10 | import pytest
+11 + from PIL import Image, ImageDraw, ImageFont
+12 +
+13 | from autoflow.application.workflows.executors.production import (
+--------------------------------------------------------------------------------
+18 | from autoflow.providers.browser.workflow_session import launch_workflow_session
+   - from PIL import Image, ImageDraw, ImageFont
+19 |
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_b5_firecrawl_cloakbrowser_flow.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import os
+ 4 | | from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+ 5 | | from pathlib import Path
+ 6 | | from threading import Thread
+ 7 | |
+ 8 | | import pytest
+ 9 | | from autoflow.application.workflows.executors.production import (
+10 | |     build_production_executor_registry,
+11 | | )
+12 | | from autoflow.application.workflows.runtime import WorkflowRuntime
+13 | | from autoflow.domain.workflows.execution import ExecutionContext
+14 | | from autoflow.providers.browser.workflow_session import launch_workflow_session
+   | |_______________________________________________________________________________^
+help: Organize imports
+   |
+8  | import pytest
+9  +
+10 | from autoflow.application.workflows.executors.production import (
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_b5_media_recognition_worker.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import asyncio
+ 4 | | import os
+ 5 | | from pathlib import Path
+ 6 | |
+ 7 | | import pytest
+ 8 | | from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
+ 9 | | from PIL import Image, ImageDraw, ImageFont
+10 | | from skimage import data
+   | |________________________^
+help: Organize imports
+   |
+7  | import pytest
+   - from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
+8  | from PIL import Image, ImageDraw, ImageFont
+9  | from skimage import data
+10 |
+11 + from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
+12 +
+13 |
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/integration/test_b6_allure_worker.py:1:1
+  |
+1 | / from __future__ import annotations
+2 | |
+3 | | import asyncio
+4 | | from pathlib import Path
+5 | |
+6 | | import pytest
+7 | | from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
+  | |_________________________________________________________________________________^
+help: Organize imports
+  |
+6 | import pytest
+7 +
+8 | from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/integration/test_b6_desktop_platform_worker.py:1:1
+  |
+1 | / from __future__ import annotations
+2 | |
+3 | | import asyncio
+4 | | import json
+5 | | from pathlib import Path
+6 | |
+7 | | import pytest
+8 | | from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
+  | |_________________________________________________________________________________^
+help: Organize imports
+  |
+7 | import pytest
+8 +
+9 | from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/integration/test_b6_gesture_worker.py:1:1
+  |
+1 | / from __future__ import annotations
+2 | |
+3 | | import asyncio
+4 | | import json
+5 | | from pathlib import Path
+6 | |
+7 | | import pytest
+8 | | from autoflow.infrastructure.gesture import gesture_model_path
+9 | | from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
+  | |_________________________________________________________________________________^
+help: Organize imports
+  |
+7 | import pytest
+8 +
+9 | from autoflow.infrastructure.gesture import gesture_model_path
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/integration/test_b6_js_script_worker.py:1:1
+  |
+1 | / from __future__ import annotations
+2 | |
+3 | | import asyncio
+4 | | from pathlib import Path
+5 | |
+6 | | import pytest
+7 | | from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
+  | |_________________________________________________________________________________^
+help: Organize imports
+  |
+6 | import pytest
+7 +
+8 | from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/integration/test_b6_log_worker.py:1:1
+  |
+1 | / from __future__ import annotations
+2 | |
+3 | | import asyncio
+4 | | import json
+5 | | from pathlib import Path
+6 | |
+7 | | import pytest
+8 | | from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
+  | |_________________________________________________________________________________^
+help: Organize imports
+  |
+7 | import pytest
+8 +
+9 | from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_b6_network_sharing_worker.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import asyncio
+ 4 | | import socket
+ 5 | | from pathlib import Path
+ 6 | | from uuid import uuid4
+ 7 | |
+ 8 | | import httpx
+ 9 | | import pytest
+10 | | from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
+11 | | from autoflow.infrastructure.sharing import NetworkShareHost
+   | |____________________________________________________________^
+help: Organize imports
+   |
+9  | import pytest
+10 +
+11 | from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/integration/test_b6_python_script_worker.py:1:1
+  |
+1 | / from __future__ import annotations
+2 | |
+3 | | import asyncio
+4 | | from pathlib import Path
+5 | |
+6 | | import pytest
+7 | | from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
+  | |_________________________________________________________________________________^
+help: Organize imports
+  |
+6 | import pytest
+7 +
+8 | from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/integration/test_b6_run_command_worker.py:1:1
+  |
+1 | / from __future__ import annotations
+2 | |
+3 | | import asyncio
+4 | | import shlex
+5 | | import sys
+6 | | from pathlib import Path
+7 | |
+8 | | import pytest
+9 | | from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
+  | |_________________________________________________________________________________^
+help: Organize imports
+   |
+8  | import pytest
+9  +
+10 | from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/integration/test_b6_scheduled_task_stop.py:1:1
+  |
+1 | / from __future__ import annotations
+2 | |
+3 | | import asyncio
+4 | | from pathlib import Path
+5 | |
+6 | | import pytest
+7 | | from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
+  | |_________________________________________________________________________________^
+help: Organize imports
+  |
+6 | import pytest
+7 +
+8 | from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/integration/test_b6_text_to_speech_worker.py:1:1
+  |
+1 | / from __future__ import annotations
+2 | |
+3 | | import asyncio
+4 | | from pathlib import Path
+5 | |
+6 | | import pytest
+7 | | from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
+  | |_________________________________________________________________________________^
+help: Organize imports
+  |
+6 | import pytest
+7 +
+8 | from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_b7_recording_cloakbrowser_flow.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import os
+ 4 | | import shutil
+ 5 | | from contextlib import contextmanager
+ 6 | | from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+ 7 | | from pathlib import Path
+ 8 | | from threading import Thread
+ 9 | |
+10 | | import pytest
+11 | | from autoflow.providers.browser.inspection_worker import InspectionController
+12 | | from autoflow.providers.browser.workflow_session import launch_workflow_session
+   | |_______________________________________________________________________________^
+help: Organize imports
+   |
+10 | import pytest
+11 +
+12 | from autoflow.providers.browser.inspection_worker import InspectionController
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/integration/test_migration_heads.py:1:1
+  |
+1 | / import sqlite3
+2 | | from pathlib import Path
+3 | |
+4 | | import pytest
+5 | | from alembic import command
+6 | | from alembic.config import Config
+7 | | from alembic.script import ScriptDirectory
+8 | | from autoflow.infrastructure.database import session as database_session
+  | |________________________________________________________________________^
+help: Organize imports
+  |
+7 | from alembic.script import ScriptDirectory
+8 +
+9 | from autoflow.infrastructure.database import session as database_session
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_project_batch_real_cloakbrowser.py:3:1
+   |
+ 1 |   """Opt-in real HTTP/SQLite/CloakBrowser batch chain; no Studio or synthetic Run facts."""
+ 2 |
+ 3 | / import asyncio
+ 4 | | import base64
+ 5 | | import hashlib
+ 6 | | import inspect
+ 7 | | import io
+ 8 | | import os
+ 9 | | import shutil
+10 | | import traceback
+11 | | from pathlib import Path
+12 | | from uuid import uuid4
+13 | |
+14 | | import httpx
+15 | | import pytest
+16 | | from autoflow.application.workflows.service import WorkflowService
+17 | | from autoflow.bootstrap.app import create_app
+18 | | from autoflow.bootstrap.config import Settings
+19 | | from autoflow.domain.profiles.models import ProfileSpec
+20 | | from autoflow.infrastructure.database.workflow_runtime import (
+21 | |     SqlAlchemyWorkflowRuntimeRepository,
+22 | | )
+23 | | from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
+24 | | from openpyxl import load_workbook
+25 | |
+26 | | from tests.fixtures.workflows import workflow_payload
+27 | | from tests.integration.test_workflow_real_cloakbrowser import (
+28 | |     real_cloak_page as cloak_fixture,
+29 | | )
+   | |_^
+30 |
+31 |   real_cloak_page = cloak_fixture
+   |
+help: Organize imports
+   |
+15 | import pytest
+16 + from openpyxl import load_workbook
+17 +
+18 | from autoflow.application.workflows.service import WorkflowService
+--------------------------------------------------------------------------------
+25 | from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
+   - from openpyxl import load_workbook
+   -
+26 | from tests.fixtures.workflows import workflow_payload
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_project_interaction_commands.py:3:1
+   |
+ 1 |   """SQLite command contract, controlled worker transport; not Electron acceptance."""
+ 2 |
+ 3 | / import json
+ 4 | | from uuid import uuid4
+ 5 | |
+ 6 | | import pytest
+ 7 | | from autoflow.application.project_runs.interactions import ProjectRunInteractions
+ 8 | | from autoflow.domain.project_runs.models import ProjectRunError
+ 9 | | from autoflow.infrastructure.database.models import ProjectOperationRow
+10 | | from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
+11 | | from sqlalchemy import select
+12 | |
+13 | | from tests.integration.test_project_run_dispatch import services
+   | |________________________________________________________________^
+help: Organize imports
+   |
+6  | import pytest
+7  + from sqlalchemy import select
+8  +
+9  | from autoflow.application.project_runs.interactions import ProjectRunInteractions
+10 | from autoflow.domain.project_runs.models import ProjectRunError
+11 | from autoflow.infrastructure.database.models import ProjectOperationRow
+12 | from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
+   - from sqlalchemy import select
+   -
+13 | from tests.integration.test_project_run_dispatch import services
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+   --> tests/integration/test_project_interaction_commands.py:159:5
+    |
+157 |   async def test_http_to_real_worker_confirmed_in_same_event_transaction(tmp_path, kind):
+158 |       """Real subprocess + SQLite + TCP/SSE; renderer payload is controlled, not UI proof."""
+159 | /     import asyncio
+160 | |     import socket
+161 | |     from types import SimpleNamespace
+162 | |
+163 | |     import uvicorn
+164 | |     from autoflow.adapters.http.errors import install_error_handlers
+165 | |     from autoflow.adapters.http.project_run_events import project_run_events_router
+166 | |     from autoflow.adapters.http.project_run_interactions import (
+167 | |         project_run_interactions_router,
+168 | |     )
+169 | |     from autoflow.adapters.http.project_schemas import ProjectOperationView
+170 | |     from autoflow.adapters.http.projects import _op
+171 | |     from autoflow.application.project_runs.events import ProjectRunEvents
+172 | |     from autoflow.application.settings.runtime import QuiesceGate
+173 | |     from autoflow.application.workflows.dispatcher import WorkflowRunDispatcher
+174 | |     from autoflow.infrastructure.database.projects import SqlAlchemyProjects
+175 | |     from autoflow.infrastructure.process.project_workflow_worker import (
+176 | |         ProjectWorkflowWorkerManager,
+177 | |     )
+178 | |     from fastapi import FastAPI
+179 | |     from httpx import AsyncClient
+180 | |
+181 | |     from tests.fixtures.workflow_runs import SyntheticResources
+182 | |     from tests.integration.test_project_interactive_worker import plan
+    | |______________________________________________________________________^
+183 |
+184 |       factory, project, task, _, _, _, _ = prepare(tmp_path, kind)
+    |
+help: Organize imports
+    |
+163 |     import uvicorn
+164 +     from fastapi import FastAPI
+165 +     from httpx import AsyncClient
+166 +
+167 |     from autoflow.adapters.http.errors import install_error_handlers
+--------------------------------------------------------------------------------
+180 |     )
+    -     from fastapi import FastAPI
+    -     from httpx import AsyncClient
+    -
+181 |     from tests.fixtures.workflow_runs import SyntheticResources
+    |
+
+I001 [*] Import block is un-sorted or un-formatted
+   --> tests/integration/test_project_interaction_commands.py:563:5
+    |
+561 |   @pytest.mark.asyncio
+562 |   async def test_shared_webhook_route_rejects_studio_project_collision(tmp_path):
+563 | /     from autoflow.adapters.http.errors import install_error_handlers
+564 | |     from autoflow.adapters.http.workflow_runs import workflow_trigger_router
+565 | |     from autoflow.bootstrap.workflows import PendingWorkflowRunCommands
+566 | |     from fastapi import FastAPI
+567 | |     from httpx import ASGITransport, AsyncClient
+    | |________________________________________________^
+568 |
+569 |       factory, _, _, service, _, _, sent = webhook_state(tmp_path)
+    |
+help: Organize imports
+    |
+562 | async def test_shared_webhook_route_rejects_studio_project_collision(tmp_path):
+563 +     from fastapi import FastAPI
+564 +     from httpx import ASGITransport, AsyncClient
+565 +
+566 |     from autoflow.adapters.http.errors import install_error_handlers
+567 |     from autoflow.adapters.http.workflow_runs import workflow_trigger_router
+568 |     from autoflow.bootstrap.workflows import PendingWorkflowRunCommands
+    -     from fastapi import FastAPI
+    -     from httpx import ASGITransport, AsyncClient
+569 |
+    |
+
+I001 [*] Import block is un-sorted or un-formatted
+   --> tests/integration/test_project_interaction_commands.py:586:5
+    |
+585 |   def test_external_get_webhook_obeys_quiesce_without_sidecar_token(tmp_path):
+586 | /     from autoflow.bootstrap.app import create_app
+587 | |     from autoflow.bootstrap.config import Settings
+588 | |     from fastapi.testclient import TestClient
+    | |_____________________________________________^
+589 |
+590 |       app = create_app(Settings(data_dir=str(tmp_path), instance_id='webhook-gate', instance_token='test-only-token'))
+    |
+help: Organize imports
+    |
+585 | def test_external_get_webhook_obeys_quiesce_without_sidecar_token(tmp_path):
+586 +     from fastapi.testclient import TestClient
+587 +
+588 |     from autoflow.bootstrap.app import create_app
+589 |     from autoflow.bootstrap.config import Settings
+    -     from fastapi.testclient import TestClient
+590 |
+    |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_project_recognition_worker.py:2:1
+   |
+ 1 |   """Project document/dispatcher/SQLite + real recognition worker; not Electron evidence."""
+ 2 | / from __future__ import annotations
+ 3 | |
+ 4 | | import asyncio
+ 5 | | import os
+ 6 | | from pathlib import Path
+ 7 | | from time import monotonic
+ 8 | | from uuid import uuid4
+ 9 | |
+10 | | import pytest
+11 | | from autoflow.application.workflows.documents import WorkflowDocumentService
+12 | | from autoflow.application.workflows.runtime import WorkflowRuntimeService
+13 | | from autoflow.domain.workflows.catalog import runnable_module_types
+14 | | from autoflow.infrastructure.database.workflow_runtime import (
+15 | |     SqlAlchemyWorkflowRuntimeRepository,
+16 | | )
+17 | | from autoflow.infrastructure.database.workflows import (
+18 | |     SqlAlchemyWorkflowDocuments,
+19 | |     SqlAlchemyWorkflowRepository,
+20 | | )
+21 | | from autoflow.infrastructure.process.project_workflow_worker import (
+22 | |     ProjectWorkflowWorkerManager,
+23 | | )
+24 | |
+25 | | from tests.integration.test_b5_media_recognition_worker import _write_fixtures
+26 | | from tests.integration.test_project_data_worker import (
+27 | |     _dispatcher,
+28 | |     _NoBrowserResources,
+29 | |     _studio_payload,
+30 | | )
+31 | | from tests.integration.test_project_run_start import setup, start_payload
+   | |_________________________________________________________________________^
+help: Organize imports
+   |
+10 | import pytest
+11 +
+12 | from autoflow.application.workflows.documents import WorkflowDocumentService
+--------------------------------------------------------------------------------
+24 | )
+   -
+25 | from tests.integration.test_b5_media_recognition_worker import _write_fixtures
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_project_run_evidence.py:3:1
+   |
+ 1 |   """PM7-A1: frozen inputs vs live values, write attribution, node visit chain."""
+ 2 |
+ 3 | / from datetime import UTC, datetime, timedelta
+ 4 | |
+ 5 | | from autoflow.adapters.http.project_run_schemas import TaskDetail
+ 6 | | from autoflow.application.project_data.capabilities import ProjectDataCapabilityService
+ 7 | | from autoflow.application.project_data.catalog import DataCatalogService
+ 8 | | from autoflow.application.project_data.records import DataRecordService
+ 9 | | from autoflow.application.project_runs.evidence import ProjectRunEvidence
+10 | | from autoflow.application.project_runs.queries import ProjectRunQueries
+11 | | from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
+12 | | from autoflow.domain.project_data.capabilities import SetRecordStatusCommand
+13 | | from autoflow.domain.project_data.identity import RecordKey, encode_record_key
+14 | | from autoflow.domain.project_runs.input_selection import RecordRef
+15 | | from autoflow.infrastructure.database.models import ProjectOperationRow
+16 | | from autoflow.infrastructure.database.project_capabilities import (
+17 | |     SqlAlchemyProjectDataCapabilities,
+18 | | )
+19 | | from autoflow.infrastructure.database.project_data_catalog import (
+20 | |     SqlAlchemyProjectDataCatalog,
+21 | | )
+22 | | from autoflow.infrastructure.database.project_data_models import DataRecordRow
+23 | | from autoflow.infrastructure.database.project_data_records import (
+24 | |     SqlAlchemyProjectDataRecords,
+25 | | )
+26 | | from autoflow.infrastructure.database.workflow_runtime_models import (
+27 | |     WorkflowRunEventRow,
+28 | |     WorkflowRunRow,
+29 | | )
+30 | | from sqlalchemy import func, select
+31 | |
+32 | | from tests.integration.test_project_run_data_start import _setup, uid
+   | |_____________________________________________________________________^
+help: Organize imports
+   |
+4  |
+5  + from sqlalchemy import func, select
+6  +
+7  | from autoflow.adapters.http.project_run_schemas import TaskDetail
+--------------------------------------------------------------------------------
+31 | )
+   - from sqlalchemy import func, select
+   -
+32 | from tests.integration.test_project_run_data_start import _setup, uid
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_project_webhook.py:2:1
+   |
+ 1 |   """Project webhook uses the real runtime, worker, SQLite and loopback HTTP/SSE."""
+ 2 | / from __future__ import annotations
+ 3 | |
+ 4 | | import asyncio
+ 5 | | import json
+ 6 | | import os
+ 7 | | import socket
+ 8 | | from pathlib import Path
+ 9 | | from uuid import uuid4
+10 | |
+11 | | import httpx
+12 | | import pytest
+13 | | import uvicorn
+14 | | from autoflow.adapters.http.errors import install_error_handlers
+15 | | from autoflow.adapters.http.project_run_events import project_run_events_router
+16 | | from autoflow.adapters.http.workflow_runs import workflow_trigger_router
+17 | | from autoflow.application.project_runs.events import ProjectRunEvents
+18 | | from autoflow.application.workflows.documents import WorkflowDocumentService
+19 | | from autoflow.application.workflows.runtime import WorkflowRuntimeService
+20 | | from autoflow.bootstrap.workflows import PendingWorkflowRunCommands
+21 | | from autoflow.domain.workflows.catalog import runnable_module_types
+22 | | from autoflow.infrastructure.database.models import ProjectOperationRow
+23 | | from autoflow.infrastructure.database.workflows import (
+24 | |     SqlAlchemyWorkflowDocuments,
+25 | |     SqlAlchemyWorkflowRepository,
+26 | | )
+27 | | from autoflow.infrastructure.process.project_workflow_worker import (
+28 | |     ProjectWorkflowWorkerManager,
+29 | | )
+30 | | from fastapi import FastAPI
+31 | | from sqlalchemy import select
+32 | |
+33 | | from tests.integration.test_project_data_worker import (
+34 | |     _dispatcher,
+35 | |     _NoBrowserResources,
+36 | |     _studio_payload,
+37 | | )
+38 | | from tests.integration.test_project_run_start import setup, start_payload
+   | |_________________________________________________________________________^
+help: Organize imports
+   |
+13 | import uvicorn
+14 + from fastapi import FastAPI
+15 + from sqlalchemy import select
+16 +
+17 | from autoflow.adapters.http.errors import install_error_handlers
+--------------------------------------------------------------------------------
+32 | )
+   - from fastapi import FastAPI
+   - from sqlalchemy import select
+   -
+33 | from tests.integration.test_project_data_worker import (
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_workflow_artifacts.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import asyncio
+ 4 | | import hashlib
+ 5 | | import os
+ 6 | | import threading
+ 7 | | from datetime import UTC, datetime
+ 8 | | from pathlib import Path
+ 9 | |
+10 | | import pytest
+11 | | from autoflow.application.workflows.runs import WorkflowRunService
+12 | | from autoflow.domain.workflows.runs import (
+13 | |     WorkflowArtifact,
+14 | |     WorkflowRunError,
+15 | |     WorkflowRunStart,
+16 | | )
+17 | | from autoflow.infrastructure.database.session import (
+18 | |     create_session_factory,
+19 | |     migrate_database,
+20 | | )
+21 | | from autoflow.infrastructure.database.workflow_runs import SqlAlchemyWorkflowRuns
+22 | | from autoflow.infrastructure.filesystem.workflow_artifacts import WorkflowArtifactStore
+   | |_______________________________________________________________________________________^
+help: Organize imports
+   |
+10 | import pytest
+11 +
+12 | from autoflow.application.workflows.runs import WorkflowRunService
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_workflow_assistant_http.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import asyncio
+ 4 | | import base64
+ 5 | | import io
+ 6 | | from collections.abc import Mapping
+ 7 | | from pathlib import Path
+ 8 | | from typing import Any
+ 9 | | from uuid import uuid4
+10 | |
+11 | | import faster_whisper
+12 | | import httpx
+13 | | import openpyxl
+14 | | import pytest
+15 | | from autoflow.adapters.events.workflows import StudioEvent, _scope_assistant_event
+16 | | from autoflow.bootstrap.app import create_app
+17 | | from autoflow.bootstrap.config import Settings
+18 | | from autoflow.domain.models import ModelInvocationResult
+19 | |
+20 | | from tests.contract.test_models_api import _provider
+21 | | from tests.fixtures.model_management import FakeCredentialStore, FakeModelGateway
+   | |_________________________________________________________________________________^
+help: Organize imports
+   |
+14 | import pytest
+15 +
+16 | from autoflow.adapters.events.workflows import StudioEvent, _scope_assistant_event
+17 | from autoflow.bootstrap.app import create_app
+18 | from autoflow.bootstrap.config import Settings
+19 | from autoflow.domain.models import ModelInvocationResult
+   -
+20 | from tests.contract.test_models_api import _provider
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_workflow_assistant_repository.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import sqlite3
+ 4 | | from datetime import UTC, datetime
+ 5 | | from pathlib import Path
+ 6 | |
+ 7 | | import autoflow.infrastructure.database.session as database_session
+ 8 | | import pytest
+ 9 | | from alembic import command
+10 | | from alembic.config import Config
+11 | | from autoflow.infrastructure.database.session import (
+12 | |     create_session_factory,
+13 | |     migrate_database,
+14 | | )
+15 | | from autoflow.infrastructure.database.workflow_assistant import (
+16 | |     SqlAlchemyWorkflowAssistant,
+17 | | )
+   | |_^
+help: Organize imports
+   |
+6  |
+   - import autoflow.infrastructure.database.session as database_session
+7  | import pytest
+8  | from alembic import command
+9  | from alembic.config import Config
+10 +
+11 + import autoflow.infrastructure.database.session as database_session
+12 | from autoflow.infrastructure.database.session import (
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_workflow_assistant_service.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import asyncio
+ 4 | | from pathlib import Path
+ 5 | |
+ 6 | | import pytest
+ 7 | | from autoflow.adapters.events.workflows import StudioEventJournal
+ 8 | | from autoflow.application.workflows.assistant import WorkflowAssistantService
+ 9 | | from autoflow.domain.models import ModelError, ModelInvocationResult
+10 | | from autoflow.infrastructure.database.session import (
+11 | |     create_session_factory,
+12 | |     migrate_database,
+13 | | )
+14 | | from autoflow.infrastructure.database.workflow_assistant import (
+15 | |     SqlAlchemyWorkflowAssistant,
+16 | | )
+   | |_^
+help: Organize imports
+  |
+6 | import pytest
+7 +
+8 | from autoflow.adapters.events.workflows import StudioEventJournal
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_workflow_proxy_workers.py:3:1
+   |
+ 1 |   """Real worker pipes and graph runtime with an owned synthetic proxy service."""
+ 2 |
+ 3 | / import asyncio
+ 4 | | from uuid import uuid4
+ 5 | |
+ 6 | | import pytest
+ 7 | | from autoflow.infrastructure.process.project_workflow_worker import (
+ 8 | |     ProjectWorkflowWorkerManager,
+ 9 | | )
+10 | | from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
+   | |_________________________________________________________________________________^
+help: Organize imports
+  |
+6 | import pytest
+7 +
+8 | from autoflow.infrastructure.process.project_workflow_worker import (
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/integration/test_workflow_recording_http.py:1:1
+  |
+1 | / from __future__ import annotations
+2 | |
+3 | | import httpx
+4 | | import pytest
+5 | | from autoflow.bootstrap.app import create_app
+6 | | from autoflow.bootstrap.config import Settings
+  | |______________________________________________^
+help: Organize imports
+  |
+4 | import pytest
+5 +
+6 | from autoflow.bootstrap.app import create_app
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_workflow_recordings.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import sqlite3
+ 4 | | from datetime import UTC, datetime
+ 5 | | from pathlib import Path
+ 6 | |
+ 7 | | import pytest
+ 8 | | from alembic import command
+ 9 | | from alembic.config import Config
+10 | | from autoflow.infrastructure.database import session as database_session
+11 | | from autoflow.infrastructure.database import workflow_recordings
+12 | | from autoflow.infrastructure.database.session import (
+13 | |     create_session_factory,
+14 | |     migrate_database,
+15 | | )
+16 | | from autoflow.infrastructure.database.workflow_models import WorkflowRecordingSessionRow
+17 | | from autoflow.infrastructure.database.workflow_recordings import (
+18 | |     MAX_RECORDING_BYTES,
+19 | |     MAX_RECORDING_EVENTS,
+20 | |     MAX_RECORDING_VALUE_BYTES,
+21 | |     SqlAlchemyWorkflowRecordings,
+22 | | )
+   | |_^
+help: Organize imports
+   |
+9  | from alembic.config import Config
+10 +
+11 | from autoflow.infrastructure.database import session as database_session
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_workflow_worker_protocol.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import asyncio
+ 4 | | import json
+ 5 | | import os
+ 6 | | import sys
+ 7 | | from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+ 8 | | from pathlib import Path
+ 9 | | from threading import Thread
+10 | |
+11 | | import pytest
+12 | | from autoflow.infrastructure.process.workflow_worker import (
+13 | |     WorkflowWorkerBusy,
+14 | |     WorkflowWorkerManager,
+15 | | )
+   | |_^
+help: Organize imports
+   |
+11 | import pytest
+12 +
+13 | from autoflow.infrastructure.process.workflow_worker import (
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/unit/test_browser_processes.py:1:1
+   |
+ 1 | / import asyncio
+ 2 | | import os
+ 3 | | import sys
+ 4 | | import time
+ 5 | | from datetime import UTC, datetime
+ 6 | | from pathlib import Path
+ 7 | | from threading import Event
+ 8 | | from types import SimpleNamespace
+ 9 | |
+10 | | import pytest
+11 | | from autoflow.domain.profiles.models import Profile, ProfileSpec
+   | |________________________________________________________________^
+help: Organize imports
+   |
+10 | import pytest
+11 +
+12 | from autoflow.domain.profiles.models import Profile, ProfileSpec
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/unit/test_browser_proxy_relay.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import base64
+ 4 | | import socket
+ 5 | | import threading
+ 6 | | import time
+ 7 | | from contextlib import contextmanager
+ 8 | | from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+ 9 | | from typing import Any
+10 | | from urllib.parse import urlsplit
+11 | |
+12 | | import pytest
+13 | | from autoflow.providers.browser.proxy_relay import BrowserProxyRelay
+   | |____________________________________________________________________^
+help: Organize imports
+   |
+12 | import pytest
+13 +
+14 | from autoflow.providers.browser.proxy_relay import BrowserProxyRelay
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/unit/test_credential_store.py:1:1
+  |
+1 | / import pytest
+2 | | from autoflow.domain.credentials import CredentialStoreUnavailableError
+3 | | from autoflow.infrastructure.credentials.redaction import (
+4 | |     redact_sensitive_text,
+5 | |     redact_sensitive_value,
+6 | | )
+7 | | from autoflow.infrastructure.credentials.system import SystemCredentialStore
+8 | | from keyring.errors import KeyringError
+  | |_______________________________________^
+help: Organize imports
+   |
+1  | import pytest
+2  + from keyring.errors import KeyringError
+3  +
+4  | from autoflow.domain.credentials import CredentialStoreUnavailableError
+--------------------------------------------------------------------------------
+9  | from autoflow.infrastructure.credentials.system import SystemCredentialStore
+   - from keyring.errors import KeyringError
+10 |
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/unit/test_model_provider.py:1:1
+  |
+1 | / import asyncio
+2 | | import json
+3 | |
+4 | | import httpx
+5 | | import pytest
+6 | | from autoflow.domain.models import ModelError, ProviderConnection
+7 | | from autoflow.providers.model import HttpModelProvider, normalize_base_url
+  | |__________________________________________________________________________^
+help: Organize imports
+  |
+5 | import pytest
+6 +
+7 | from autoflow.domain.models import ModelError, ProviderConnection
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/unit/test_model_service.py:1:1
+   |
+ 1 | / import asyncio
+ 2 | | from contextlib import contextmanager
+ 3 | | from dataclasses import replace
+ 4 | | from datetime import timedelta
+ 5 | | from functools import partial
+ 6 | |
+ 7 | | import pytest
+ 8 | | from autoflow.application.models.service import ModelService
+ 9 | | from autoflow.domain.credentials import CredentialStoreUnavailableError
+10 | | from autoflow.domain.models.errors import ModelError
+11 | | from autoflow.domain.models.models import ModelInvocationResult, LocalModelSpec, ProviderProfile
+12 | | from autoflow.infrastructure.database.model_providers import (
+13 | |     model_repository_transaction,
+14 | | )
+15 | | from autoflow.infrastructure.database.session import (
+16 | |     create_session_factory,
+17 | |     migrate_database,
+18 | | )
+19 | |
+20 | | from tests.fixtures.model_management import FakeCredentialStore, FakeModelGateway
+   | |_________________________________________________________________________________^
+help: Organize imports
+   |
+7  | import pytest
+8  +
+9  | from autoflow.application.models.service import ModelService
+10 | from autoflow.domain.credentials import CredentialStoreUnavailableError
+11 | from autoflow.domain.models.errors import ModelError
+   - from autoflow.domain.models.models import ModelInvocationResult, LocalModelSpec, ProviderProfile
+12 + from autoflow.domain.models.models import (
+13 +     LocalModelSpec,
+14 +     ModelInvocationResult,
+15 +     ProviderProfile,
+16 + )
+17 | from autoflow.infrastructure.database.model_providers import (
+--------------------------------------------------------------------------------
+23 | )
+   -
+24 | from tests.fixtures.model_management import FakeCredentialStore, FakeModelGateway
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/unit/test_project_graph_executor.py:1:1
+  |
+1 | / import asyncio
+2 | | from time import monotonic
+3 | |
+4 | | import pytest
+5 | | from autoflow.providers.browser.project_graph import ProjectGraphExecutor
+  | |_________________________________________________________________________^
+help: Organize imports
+  |
+4 | import pytest
+5 +
+6 | from autoflow.providers.browser.project_graph import ProjectGraphExecutor
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/unit/test_project_run_resources.py:1:1
+  |
+1 | / from datetime import UTC, datetime
+2 | |
+3 | | import pytest
+4 | | from autoflow.application.project_runs.resources import ProjectRunResourceResolver
+5 | | from autoflow.domain.project_automations.models import AutomationRecord
+6 | | from autoflow.domain.project_runs.models import ProjectRunError
+  | |_______________________________________________________________^
+7 |
+8 |   NOW = datetime(2026, 9, 15, tzinfo=UTC)
+  |
+help: Organize imports
+  |
+3 | import pytest
+4 +
+5 | from autoflow.application.project_runs.resources import ProjectRunResourceResolver
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/unit/test_proxy_worker_requests.py:1:1
+  |
+1 | / import asyncio
+2 | |
+3 | | import pytest
+4 | | from autoflow.infrastructure.process.proxy_worker_requests import ProxyWorkerRequests
+  | |_____________________________________________________________________________________^
+help: Organize imports
+  |
+3 | import pytest
+4 +
+5 | from autoflow.infrastructure.process.proxy_worker_requests import ProxyWorkerRequests
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/unit/test_proxypanel_remote.py:3:1
+   |
+ 1 |   """Public catalog shape is observed; non-null schedules and writes are synthetic."""
+ 2 |
+ 3 | / import json
+ 4 | | from pathlib import Path
+ 5 | |
+ 6 | | import httpx
+ 7 | | import pytest
+ 8 | | from autoflow.domain.proxies.errors import ProviderSchemaError
+ 9 | | from autoflow.providers.proxy.proxypanel import ProxyPanelReadProvider
+10 | | from autoflow.providers.proxy.remote_mapping import locations, schedule, state
+   | |______________________________________________________________________________^
+help: Organize imports
+  |
+7 | import pytest
+8 +
+9 | from autoflow.domain.proxies.errors import ProviderSchemaError
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/unit/test_workflow_artifacts.py:1:1
+   |
+ 1 | / from datetime import UTC, datetime
+ 2 | | from uuid import uuid4
+ 3 | |
+ 4 | | import pytest
+ 5 | | from autoflow.domain.workflows.runtime import (
+ 6 | |     WorkflowRuntimeError,
+ 7 | |     create_run_artifact,
+ 8 | | )
+   | |_^
+ 9 |
+10 |   NOW = datetime(2026, 9, 15, tzinfo=UTC)
+   |
+help: Organize imports
+  |
+4 | import pytest
+5 +
+6 | from autoflow.domain.workflows.runtime import (
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/unit/test_workflow_proxy_control.py:1:1
+  |
+1 | / import asyncio
+2 | | from types import SimpleNamespace
+3 | |
+4 | | import pytest
+5 | | from autoflow.application.proxies.usage import ProxyUsage
+6 | | from autoflow.application.workflows.executors.proxy_control import ProxyChangeIPExecutor
+7 | | from autoflow.domain.proxies.errors import ProxyInUseError
+8 | | from autoflow.domain.workflows.execution import ExecutionContext
+  | |________________________________________________________________^
+help: Organize imports
+  |
+4 | import pytest
+5 +
+6 | from autoflow.application.proxies.usage import ProxyUsage
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/unit/workflows/test_ai_executors.py:1:1
+   |
+ 1 | / from collections.abc import Mapping
+ 2 | | from typing import Any
+ 3 | |
+ 4 | | import pytest
+ 5 | | from autoflow.application.workflows.executors.ai import AIChatExecutor, AIVisionExecutor
+ 6 | | from autoflow.application.workflows.executors.production import (
+ 7 | |     build_production_executor_registry,
+ 8 | | )
+ 9 | | from autoflow.domain.models import ModelError, ModelInvocationResult
+10 | | from autoflow.domain.workflows.execution import ExecutionContext
+   | |________________________________________________________________^
+help: Organize imports
+  |
+4 | import pytest
+5 +
+6 | from autoflow.application.workflows.executors.ai import AIChatExecutor, AIVisionExecutor
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/unit/workflows/test_ai_media_executors.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | from collections.abc import Mapping
+ 4 | | from typing import Any
+ 5 | |
+ 6 | | import pytest
+ 7 | | from autoflow.application.workflows.executors.production import (
+ 8 | |     build_production_executor_registry,
+ 9 | | )
+10 | | from autoflow.domain.workflows.execution import ExecutionContext
+   | |________________________________________________________________^
+help: Organize imports
+  |
+6 | import pytest
+7 +
+8 | from autoflow.application.workflows.executors.production import (
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/unit/workflows/test_ai_scraper_executors.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | from collections.abc import Mapping
+ 4 | | from typing import Any
+ 5 | |
+ 6 | | import pytest
+ 7 | | from autoflow.application.workflows.executors.production import (
+ 8 | |     build_production_executor_registry,
+ 9 | | )
+10 | | from autoflow.domain.models import ModelInvocationResult
+11 | | from autoflow.domain.workflows.execution import ExecutionContext
+   | |________________________________________________________________^
+help: Organize imports
+  |
+6 | import pytest
+7 +
+8 | from autoflow.application.workflows.executors.production import (
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/unit/workflows/test_ai_task_executors.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | from collections.abc import Mapping
+ 4 | | from typing import Any
+ 5 | |
+ 6 | | import pytest
+ 7 | | from autoflow.application.workflows.executors.production import (
+ 8 | |     build_production_executor_registry,
+ 9 | | )
+10 | | from autoflow.domain.models import ModelError, ModelInvocationResult
+11 | | from autoflow.domain.workflows.execution import ExecutionContext
+   | |________________________________________________________________^
+12 |
+13 |   TASK_TYPES = (
+   |
+help: Organize imports
+  |
+6 | import pytest
+7 +
+8 | from autoflow.application.workflows.executors.production import (
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/unit/workflows/test_ai_vision_act_executor.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | from collections.abc import Mapping
+ 4 | | from typing import Any
+ 5 | |
+ 6 | | import pytest
+ 7 | | from autoflow.application.workflows.executors.production import (
+ 8 | |     build_production_executor_registry,
+ 9 | | )
+10 | | from autoflow.domain.models import ModelInvocationResult
+11 | | from autoflow.domain.workflows.execution import ExecutionContext
+   | |________________________________________________________________^
+help: Organize imports
+  |
+6 | import pytest
+7 +
+8 | from autoflow.application.workflows.executors.production import (
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/unit/workflows/test_allure_executors.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | from collections.abc import Mapping
+ 4 | | from pathlib import Path
+ 5 | | from typing import Any
+ 6 | |
+ 7 | | import pytest
+ 8 | | from autoflow.application.workflows.executors.production import (
+ 9 | |     build_production_executor_registry,
+10 | | )
+11 | | from autoflow.domain.workflows.execution import DesktopActionResult, ExecutionContext
+   | |_____________________________________________________________________________________^
+help: Organize imports
+  |
+7 | import pytest
+8 +
+9 | from autoflow.application.workflows.executors.production import (
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/unit/workflows/test_browser_session_contract.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import io
+ 4 | | import json
+ 5 | | import sys
+ 6 | | from contextlib import AbstractAsyncContextManager
+ 7 | | from pathlib import Path
+ 8 | | from threading import Event
+ 9 | | from types import SimpleNamespace
+10 | | from typing import Any
+11 | | from unittest.mock import AsyncMock
+12 | |
+13 | | import pytest
+14 | | from autoflow.application.workflows.executors.web_basic import SwitchIframeExecutor
+15 | | from autoflow.domain.workflows.browser import CurrentPageClosed, UnknownPage
+16 | | from autoflow.domain.workflows.execution import ExecutionContext
+17 | | from autoflow.providers.browser.workflow_session import (
+18 | |     CloakBrowserWorkflowPage,
+19 | |     CloakBrowserWorkflowSession,
+20 | |     _browser_process_id,
+21 | | )
+22 | | from autoflow.providers.browser.workflow_worker import _run, run_workflow_worker
+   | |________________________________________________________________________________^
+help: Organize imports
+   |
+13 | import pytest
+14 +
+15 | from autoflow.application.workflows.executors.web_basic import SwitchIframeExecutor
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/unit/workflows/test_captcha_executors.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import asyncio
+ 4 | | import io
+ 5 | | import sys
+ 6 | | from types import SimpleNamespace
+ 7 | | from typing import Any
+ 8 | |
+ 9 | | import pytest
+10 | | from autoflow.application.workflows.executors.production import (
+11 | |     build_production_executor_registry,
+12 | | )
+13 | | from autoflow.domain.workflows.execution import ExecutionContext
+14 | | from PIL import Image, ImageDraw
+   | |________________________________^
+help: Organize imports
+   |
+9  | import pytest
+10 + from PIL import Image, ImageDraw
+11 +
+12 | from autoflow.application.workflows.executors.production import (
+13 |     build_production_executor_registry,
+14 | )
+15 | from autoflow.domain.workflows.execution import ExecutionContext
+   - from PIL import Image, ImageDraw
+16 |
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/unit/workflows/test_debug_runtime_control.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import asyncio
+ 4 | | import io
+ 5 | | from threading import Event
+ 6 | | from typing import Any
+ 7 | |
+ 8 | | import pytest
+ 9 | | from autoflow.application.workflows.executors.base import ModuleExecutor, ModuleResult
+10 | | from autoflow.application.workflows.executors.registry import ExecutorRegistry
+11 | | from autoflow.application.workflows.runtime import WorkflowRuntime
+12 | | from autoflow.domain.workflows.execution import ExecutionContext
+13 | | from autoflow.providers.browser.workflow_worker import _WorkerCommandBus
+   | |________________________________________________________________________^
+help: Organize imports
+   |
+8  | import pytest
+9  +
+10 | from autoflow.application.workflows.executors.base import ModuleExecutor, ModuleResult
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/unit/workflows/test_desktop_platform_executors.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | from collections.abc import Mapping
+ 4 | | from typing import Any
+ 5 | |
+ 6 | | import pytest
+ 7 | | from autoflow.application.workflows.executors.production import (
+ 8 | |     build_production_executor_registry,
+ 9 | | )
+10 | | from autoflow.domain.workflows.execution import DesktopActionResult, ExecutionContext
+   | |_____________________________________________________________________________________^
+help: Organize imports
+  |
+6 | import pytest
+7 +
+8 | from autoflow.application.workflows.executors.production import (
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/unit/workflows/test_executor_registry.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import json
+ 4 | | from typing import Any
+ 5 | |
+ 6 | | import pytest
+ 7 | | from autoflow.application.workflows.executors.base import (
+ 8 | |     ModuleExecutor,
+ 9 | |     ModuleResult,
+10 | | )
+11 | | from autoflow.application.workflows.executors.production import (
+12 | |     build_production_executor_registry,
+13 | | )
+14 | | from autoflow.application.workflows.executors.registry import ExecutorRegistry
+15 | | from autoflow.application.workflows.runtime import WorkflowRuntime
+16 | | from autoflow.domain.workflows.execution import ExecutionContext
+17 | | from autoflow.domain.workflows.scope import WorkflowScopeIssue
+   | |______________________________________________________________^
+help: Organize imports
+  |
+6 | import pytest
+7 +
+8 | from autoflow.application.workflows.executors.base import (
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/unit/workflows/test_external_integration_gateway.py:1:1
+  |
+1 | / from __future__ import annotations
+2 | |
+3 | | from typing import Any, Self
+4 | | from unittest.mock import AsyncMock
+5 | |
+6 | | import pytest
+7 | | from autoflow.providers.integrations import WorkflowIntegrationGateway
+  | |______________________________________________________________________^
+help: Organize imports
+  |
+6 | import pytest
+7 +
+8 | from autoflow.providers.integrations import WorkflowIntegrationGateway
+  |
+
+RUF100 [*] Unused `noqa` directive (non-enabled: `N802`)
+  --> tests/unit/workflows/test_face_trigger.py:21:34
+   |
+19 |         self.released = False
+20 |
+21 |     def isOpened(self) -> bool:  # noqa: N802 - OpenCV API compatibility.
+   |                                  ^^^^^^^^^^^^
+22 |         return self.opened
+   |
+help: Remove unused `noqa` directive
+   |
+20 |
+   -     def isOpened(self) -> bool:  # noqa: N802 - OpenCV API compatibility.
+21 +     def isOpened(self) -> bool:
+22 |         return self.opened
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/unit/workflows/test_firecrawl_executors.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | from typing import Any
+ 4 | |
+ 5 | | import pytest
+ 6 | | from autoflow.application.workflows.executors.production import (
+ 7 | |     build_production_executor_registry,
+ 8 | | )
+ 9 | | from autoflow.domain.workflows.execution import ExecutionContext
+   | |________________________________________________________________^
+10 |
+11 |   HTML = """<html lang="zh"><head><title>示例</title>
+   |
+help: Organize imports
+  |
+5 | import pytest
+6 +
+7 | from autoflow.application.workflows.executors.production import (
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/unit/workflows/test_gesture_service.py:1:1
+  |
+1 | / from __future__ import annotations
+2 | |
+3 | | import json
+4 | | from pathlib import Path
+5 | | from types import SimpleNamespace
+6 | |
+7 | | import pytest
+8 | | from autoflow.infrastructure.gesture import GestureRecognitionService
+  | |_____________________________________________________________________^
+help: Organize imports
+  |
+7 | import pytest
+8 +
+9 | from autoflow.infrastructure.gesture import GestureRecognitionService
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/unit/workflows/test_gesture_trigger_executor.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | from typing import Any
+ 4 | |
+ 5 | | import pytest
+ 6 | | from autoflow.application.workflows.executors import gesture_trigger
+ 7 | | from autoflow.application.workflows.executors.production import (
+ 8 | |     build_production_executor_registry,
+ 9 | | )
+10 | | from autoflow.domain.workflows.execution import ExecutionContext
+   | |________________________________________________________________^
+help: Organize imports
+  |
+5 | import pytest
+6 +
+7 | from autoflow.application.workflows.executors import gesture_trigger
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/unit/workflows/test_inspection_service.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | from datetime import UTC, datetime
+ 4 | |
+ 5 | | import pytest
+ 6 | | from autoflow.application.workflows.inspection import WorkflowInspectionService
+ 7 | | from autoflow.domain.kernels.models import InstalledKernel
+ 8 | | from autoflow.domain.profiles.models import Profile, ProfileSpec
+ 9 | | from autoflow.domain.workflows.browser import WorkflowBrowserBusy
+10 | | from autoflow.domain.workflows.runs import WorkflowRunError
+11 | | from autoflow.infrastructure.database import workflow_recordings
+12 | | from autoflow.infrastructure.database.session import (
+13 | |     create_session_factory,
+14 | |     migrate_database,
+15 | | )
+16 | | from autoflow.infrastructure.database.workflow_models import WorkflowRecordingSessionRow
+17 | | from autoflow.infrastructure.database.workflow_recordings import (
+18 | |     SqlAlchemyWorkflowRecordings,
+19 | | )
+   | |_^
+help: Organize imports
+  |
+5 | import pytest
+6 +
+7 | from autoflow.application.workflows.inspection import WorkflowInspectionService
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/unit/workflows/test_js_script_executor.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | from collections.abc import Mapping
+ 4 | | from typing import Any
+ 5 | |
+ 6 | | import pytest
+ 7 | | from autoflow.application.workflows.executors.production import (
+ 8 | |     build_production_executor_registry,
+ 9 | | )
+10 | | from autoflow.domain.workflows.execution import ExecutionContext, JsScriptResult
+   | |________________________________________________________________________________^
+help: Organize imports
+  |
+6 | import pytest
+7 +
+8 | from autoflow.application.workflows.executors.production import (
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/unit/workflows/test_log_executors.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import json
+ 4 | | from pathlib import Path
+ 5 | |
+ 6 | | import pytest
+ 7 | | from autoflow.application.workflows.executors.production import (
+ 8 | |     build_production_executor_registry,
+ 9 | | )
+10 | | from autoflow.domain.workflows.execution import BinaryOutputSnapshot, ExecutionContext
+   | |______________________________________________________________________________________^
+help: Organize imports
+  |
+6 | import pytest
+7 +
+8 | from autoflow.application.workflows.executors.production import (
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/unit/workflows/test_media_recognition_executors.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import asyncio
+ 4 | | import io
+ 5 | | import sys
+ 6 | | from types import SimpleNamespace
+ 7 | |
+ 8 | | import numpy as np
+ 9 | | import pytest
+10 | | from autoflow.application.workflows.executors.production import (
+11 | |     build_production_executor_registry,
+12 | | )
+13 | | from autoflow.domain.workflows.execution import BinaryOutputSnapshot, ExecutionContext
+14 | | from PIL import Image
+   | |_____________________^
+help: Organize imports
+   |
+9  | import pytest
+10 + from PIL import Image
+11 +
+12 | from autoflow.application.workflows.executors.production import (
+13 |     build_production_executor_registry,
+14 | )
+15 | from autoflow.domain.workflows.execution import BinaryOutputSnapshot, ExecutionContext
+   - from PIL import Image
+16 |
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+   --> tests/unit/workflows/test_media_recognition_executors.py:181:5
+    |
+179 |       monkeypatch: pytest.MonkeyPatch,
+180 |   ) -> None:
+181 | /     from autoflow.application.workflows.executors import media_recognition
+182 | |     from PIL import ImageGrab
+    | |_____________________________^
+183 |
+184 |       boxes: list[tuple[int, int, int, int]] = []
+    |
+help: Organize imports
+    |
+180 | ) -> None:
+    -     from autoflow.application.workflows.executors import media_recognition
+181 |     from PIL import ImageGrab
+182 |
+183 +     from autoflow.application.workflows.executors import media_recognition
+184 +
+185 |     boxes: list[tuple[int, int, int, int]] = []
+    |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/unit/workflows/test_message_executors.py:1:1
+  |
+1 | / from __future__ import annotations
+2 | |
+3 | | from typing import Any
+4 | |
+5 | | import pytest
+6 | | from autoflow.application.workflows.executors.production import (
+7 | |     build_production_executor_registry,
+8 | | )
+9 | | from autoflow.domain.workflows.execution import ExecutionContext
+  | |________________________________________________________________^
+help: Organize imports
+  |
+5 | import pytest
+6 +
+7 | from autoflow.application.workflows.executors.production import (
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/unit/workflows/test_model_gateway.py:1:1
+  |
+1 | / import asyncio
+2 | |
+3 | | import httpx
+4 | | import pytest
+5 | | from autoflow.domain.models import ModelError
+6 | | from autoflow.providers.model import HttpModelProvider
+7 | | from autoflow.providers.model.workflow import WorkflowModelGateway
+  | |__________________________________________________________________^
+help: Organize imports
+  |
+4 | import pytest
+5 +
+6 | from autoflow.domain.models import ModelError
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/unit/workflows/test_network_share_host.py:1:1
+  |
+1 | / from __future__ import annotations
+2 | |
+3 | | import socket
+4 | | import threading
+5 | | from pathlib import Path
+6 | |
+7 | | import httpx
+8 | | import pytest
+9 | | from autoflow.infrastructure.sharing import NetworkShareHost, screen_share
+  | |__________________________________________________________________________^
+help: Organize imports
+   |
+8  | import pytest
+9  +
+10 | from autoflow.infrastructure.sharing import NetworkShareHost, screen_share
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/unit/workflows/test_network_sharing_executors.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | from collections.abc import Mapping
+ 4 | | from pathlib import Path
+ 5 | | from typing import Any
+ 6 | |
+ 7 | | import pytest
+ 8 | | from autoflow.application.workflows.executors.production import (
+ 9 | |     build_production_executor_registry,
+10 | | )
+11 | | from autoflow.domain.workflows.execution import DesktopActionResult, ExecutionContext
+   | |_____________________________________________________________________________________^
+help: Organize imports
+  |
+7 | import pytest
+8 +
+9 | from autoflow.application.workflows.executors.production import (
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/unit/workflows/test_recording_provider.py:1:1
+  |
+1 | / from __future__ import annotations
+2 | |
+3 | | import pytest
+4 | | from autoflow.providers.browser.inspection_worker import InspectionController
+  | |_____________________________________________________________________________^
+help: Organize imports
+  |
+3 | import pytest
+4 +
+5 | from autoflow.providers.browser.inspection_worker import InspectionController
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/unit/workflows/test_run_command_executor.py:1:1
+  |
+1 | / from __future__ import annotations
+2 | |
+3 | | import sys
+4 | |
+5 | | import pytest
+6 | | from autoflow.application.workflows.executors import run_command
+7 | | from autoflow.application.workflows.executors.run_command import RunCommandExecutor
+8 | | from autoflow.domain.workflows.execution import ExecutionContext
+  | |________________________________________________________________^
+help: Organize imports
+  |
+5 | import pytest
+6 +
+7 | from autoflow.application.workflows.executors import run_command
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/unit/workflows/test_run_coordinator.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import asyncio
+ 4 | | import json
+ 5 | | from datetime import UTC, datetime
+ 6 | | from pathlib import Path
+ 7 | | from typing import Any
+ 8 | |
+ 9 | | import pytest
+10 | | from autoflow.adapters.events.workflows import StudioEventJournal
+11 | | from autoflow.application.models.service import ModelExecutionBinding
+12 | | from autoflow.application.workflows.coordinator import (
+13 | |     WorkflowRunCoordinator,
+14 | |     WorkflowRunError,
+15 | | )
+16 | | from autoflow.application.workflows.documents import WorkflowDocumentService
+17 | | from autoflow.application.workflows.executors.basic import OpenPageExecutor
+18 | | from autoflow.application.workflows.executors.input_prompt import InputPromptExecutor
+19 | | from autoflow.application.workflows.executors.js_script import JsScriptExecutor
+20 | | from autoflow.application.workflows.executors.production import (
+21 | |     build_production_executor_registry,
+22 | | )
+23 | | from autoflow.application.workflows.executors.registry import ExecutorRegistry
+24 | | from autoflow.application.workflows.modules import CustomModuleService
+25 | | from autoflow.application.workflows.runs import WorkflowRunService
+26 | | from autoflow.application.workflows.runtime import WorkflowRuntime
+27 | | from autoflow.domain.kernels.models import InstalledKernel
+28 | | from autoflow.domain.models import ProviderConnection
+29 | | from autoflow.domain.profiles.models import Profile, ProfileSpec
+30 | | from autoflow.domain.workflows.browser import WorkflowWorkerSession
+31 | | from autoflow.infrastructure.database.session import (
+32 | |     create_session_factory,
+33 | |     migrate_database,
+34 | | )
+35 | | from autoflow.infrastructure.database.workflow_modules import SqlAlchemyWorkflowModules
+36 | | from autoflow.infrastructure.database.workflow_runs import SqlAlchemyWorkflowRuns
+37 | | from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowDocuments
+   | |__________________________________________________________________________________^
+help: Organize imports
+   |
+9  | import pytest
+10 +
+11 | from autoflow.adapters.events.workflows import StudioEventJournal
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/unit/workflows/test_scope_preflight.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import copy
+ 4 | | import json
+ 5 | | from pathlib import Path
+ 6 | |
+ 7 | | import pytest
+ 8 | | from autoflow.domain.workflows.scope import (
+ 9 | |     APPROVED_NODE_TYPES,
+10 | |     EXCLUDED_LEGACY_NODE_TYPES,
+11 | |     validate_workflow_scope,
+12 | | )
+   | |_^
+13 |
+14 |   REPOSITORY_ROOT = Path(__file__).resolve().parents[5]
+   |
+help: Organize imports
+  |
+7 | import pytest
+8 +
+9 | from autoflow.domain.workflows.scope import (
+  |
+
+RUF100 [*] Unused `noqa` directive (non-enabled: `N802`)
+  --> tests/unit/workflows/test_sound_trigger.py:16:39
+   |
+14 |         self.values = values
+15 |
+16 |     def GetPeakValue(self) -> float:  # noqa: N802 - COM API compatibility.
+   |                                       ^^^^^^^^^^^^
+17 |         return self.values.pop(0)
+   |
+help: Remove unused `noqa` directive
+   |
+15 |
+   -     def GetPeakValue(self) -> float:  # noqa: N802 - COM API compatibility.
+16 +     def GetPeakValue(self) -> float:
+17 |         return self.values.pop(0)
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/unit/workflows/test_ssh_executors.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | from pathlib import Path
+ 4 | | from typing import Any
+ 5 | |
+ 6 | | import pytest
+ 7 | | from autoflow.application.workflows.executors.production import (
+ 8 | |     build_production_executor_registry,
+ 9 | | )
+10 | | from autoflow.domain.workflows.execution import BinaryOutputSnapshot, ExecutionContext
+   | |______________________________________________________________________________________^
+help: Organize imports
+  |
+6 | import pytest
+7 +
+8 | from autoflow.application.workflows.executors.production import (
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/unit/workflows/test_ssh_integration_gateway.py:1:1
+  |
+1 | / from __future__ import annotations
+2 | |
+3 | | from typing import Any, Self
+4 | |
+5 | | import pytest
+6 | | from autoflow.providers.integrations import WorkflowIntegrationGateway
+  | |______________________________________________________________________^
+help: Organize imports
+  |
+5 | import pytest
+6 +
+7 | from autoflow.providers.integrations import WorkflowIntegrationGateway
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/unit/workflows/test_text_to_speech_executor.py:1:1
+  |
+1 | / from __future__ import annotations
+2 | |
+3 | | from typing import Any
+4 | |
+5 | | import pytest
+6 | | from autoflow.application.workflows.executors.text_to_speech import (
+7 | |     TextToSpeechExecutor,
+8 | | )
+9 | | from autoflow.domain.workflows.execution import ExecutionContext, SpeechResult
+  | |______________________________________________________________________________^
+help: Organize imports
+  |
+5 | import pytest
+6 +
+7 | from autoflow.application.workflows.executors.text_to_speech import (
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/unit/workflows/test_timing_probability_executors.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | from datetime import UTC, datetime
+ 4 | |
+ 5 | | import pytest
+ 6 | | from autoflow.application.workflows.executors.production import (
+ 7 | |     build_production_executor_registry,
+ 8 | | )
+ 9 | | from autoflow.application.workflows.runtime import WorkflowRuntime
+10 | | from autoflow.domain.workflows.execution import ExecutionContext, WorkflowClock
+   | |_______________________________________________________________________________^
+help: Organize imports
+  |
+5 | import pytest
+6 +
+7 | from autoflow.application.workflows.executors.production import (
+  |
+
+Found 137 errors.
+[*] 130 fixable with the `--fix` option (1 hidden fix can be enabled with the `--unsafe-fixes` option).

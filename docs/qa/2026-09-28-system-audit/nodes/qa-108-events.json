@@ -1,0 +1,47 @@
+[
+  {
+    "type": "execution:node_start",
+    "nodeId": "n0",
+    "executionId": "c78cf5aa-d0f8-495c-9fb8-d4837890b3e8",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-108",
+    "workflowId": "qa-108"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n0",
+    "executionId": "c78cf5aa-d0f8-495c-9fb8-d4837890b3e8",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "触发路径1（概率: 100.0%, 随机值: 29.21）",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "probability": 100.0,
+      "random_value": 29.210145779760733,
+      "selected_path": "path1"
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.23783399956300855,
+    "artifactIds": [],
+    "runId": "qa-108",
+    "workflowId": "qa-108"
+  },
+  {
+    "type": "execution:completed",
+    "runId": "qa-108",
+    "workflowId": "qa-108",
+    "executedNodes": 1,
+    "failedNodeId": null,
+    "issues": [],
+    "error": null
+  }
+]

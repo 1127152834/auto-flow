@@ -1,0 +1,4 @@
+
+> smoke:sidecar
+> node scripts/smoke-sidecar.mjs --executable apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/backend/autoflow-backend
+

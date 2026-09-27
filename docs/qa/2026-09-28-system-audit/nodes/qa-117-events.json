@@ -1,0 +1,94 @@
+[
+  {
+    "type": "execution:node_start",
+    "nodeId": "n0",
+    "executionId": "9d1735dc-4203-45fa-8769-c3b8355aa5bf",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-117",
+    "workflowId": "qa-117"
+  },
+  {
+    "type": "artifact:registered",
+    "runId": "qa-117",
+    "artifactId": "166a24d6-29a9-4719-b51e-32d4c9da8aae",
+    "nodeId": "n0",
+    "executionId": "9d1735dc-4203-45fa-8769-c3b8355aa5bf",
+    "relativePath": "runs/qa-117/artifacts/exports/4e86cabd78d841d681c47fd4d1f9230d.png",
+    "size": 320237,
+    "sha256": "a0b4916cee0841934bdf25e08e65fd2de2b2e12da9ee4327597a60790c132e9e",
+    "mimeType": "application/octet-stream",
+    "purpose": "result"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n0",
+    "executionId": "9d1735dc-4203-45fa-8769-c3b8355aa5bf",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "文件保存成功: images/real-studio.png (320237 字节)",
+    "error": null,
+    "isTimeout": false,
+    "data": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-extra-nodes-ei7usv_y/artifacts/runs/qa-117/outputs/images/real-studio.png",
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 18.242624995764345,
+    "artifactIds": [
+      "166a24d6-29a9-4719-b51e-32d4c9da8aae"
+    ],
+    "runId": "qa-117",
+    "workflowId": "qa-117"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "n1",
+    "executionId": "80a0fa29-e466-46c6-9e56-064d7084e1a5",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-117",
+    "workflowId": "qa-117"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n1",
+    "executionId": "80a0fa29-e466-46c6-9e56-064d7084e1a5",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "识别图片中未检测到人脸",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "matched": false,
+      "error": "识别图片中未检测到人脸",
+      "source_faces": 0,
+      "target_faces": 0
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 5250.7409999961965,
+    "artifactIds": [],
+    "runId": "qa-117",
+    "workflowId": "qa-117"
+  },
+  {
+    "type": "execution:completed",
+    "runId": "qa-117",
+    "workflowId": "qa-117",
+    "executedNodes": 2,
+    "failedNodeId": null,
+    "issues": [],
+    "error": null
+  }
+]

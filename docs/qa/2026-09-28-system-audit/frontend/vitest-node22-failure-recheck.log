@@ -1,0 +1,993 @@
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+ ❯ src/main/index.test.ts (10 tests | 3 failed) 372ms
+   × switches workspace only after Studio acknowledgement and recreates its isolated window 13ms
+   × keeps Studio alive when the main window closes and permits reuse from its replacement 6ms
+   × uses the same renderer storage partition for aliases of the same workspace 5ms
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts (835 tests | 31 failed) 270ms
+   × 'NODE.network_capture.field.proxyPort' remains mapped by the current panel inventory and document contract 4ms
+   × 'NODE.network_capture.field.targetPorts' remains mapped by the current panel inventory and document contract 1ms
+   × 'NODE.network_capture.field.targetProc…' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_chat.field.apiKey' remains mapped by the current panel inventory and document contract 1ms
+   × 'NODE.ai_chat.field.apiUrl' remains mapped by the current panel inventory and document contract 1ms
+   × 'NODE.ai_chat.field.model' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_vision.field.apiKey' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_vision.field.apiUrl' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_vision.field.model' remains mapped by the current panel inventory and document contract 1ms
+   × 'NODE.ai_vision_act.field.apiKey' remains mapped by the current panel inventory and document contract 1ms
+   × 'NODE.ai_vision_act.field.apiUrl' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_vision_act.field.model' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_generate_image.field.ai' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_generate_image.field.apiBase' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_generate_image.field.apiKey' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_generate_image.field.model' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_generate_video.field.ai' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_generate_video.field.apiBase' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_generate_video.field.apiKey' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_generate_video.field.apiUrl' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_smart_scraper.field.apiKey' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_smart_scraper.field.apiUrl' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_smart_scraper.field.azureEndp…' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_smart_scraper.field.headless' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_smart_scraper.field.llmModel' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_smart_scraper.field.llmProvid…' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_element_selector.field.apiKey' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_element_selector.field.apiUrl' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_element_selector.field.azureE…' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_element_selector.field.llmMod…' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_element_selector.field.llmPro…' remains mapped by the current panel inventory and document contract 0ms
+ ❯ src/renderer/domains/workflows/tests/documentation-loading.test.ts (18 tests | 1 failed) 87ms
+   × removes unsupported features from every searchable and downloadable teaching article 62ms
+ ❯ src/renderer/domains/workflows/lib/__tests__/moduleColors.audit.test.ts (9 tests | 1 failed) 11ms
+     × Property 7: 画布节点、缩略图 hex、模块条视图三处取色同源于分类 color 5ms
+ ❯ src/renderer/domains/workflows/lib/__tests__/helpers/addNodeDefaults.test.ts (15 tests | 1 failed) 13ms
+     × 逐字段分布与共用基线一致（只比总数会漏掉互相抵消的偏差） 6ms
+ ❯ src/renderer/domains/workflows/tests/module-scope.test.ts (1 test | 1 failed) 6ms
+   × keeps the approved 213-node scope and only approved notification channels 5ms
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx (326 tests | 16 failed) 8665ms
+   × 'NODE.ai_generate_image.tool.VariableI…' mounts and commits through its actual ConfigPanel consumer 27ms
+   × 'NODE.ai_generate_video.tool.VariableI…' mounts and commits through its actual ConfigPanel consumer 20ms
+   × 'NODE.notify_discord.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer 9ms
+   × 'NODE.notify_dingtalk.tool.VariableInp…' mounts and commits through its actual ConfigPanel consumer 10ms
+   × 'NODE.notify_wecom.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer 12ms
+   × 'NODE.notify_bark.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer 9ms
+   × 'NODE.notify_slack.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer 12ms
+   × 'NODE.notify_msteams.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer 9ms
+   × 'NODE.notify_pushover.tool.VariableInp…' mounts and commits through its actual ConfigPanel consumer 10ms
+   × 'NODE.notify_pushbullet.tool.VariableI…' mounts and commits through its actual ConfigPanel consumer 11ms
+   × 'NODE.notify_gotify.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer 9ms
+   × 'NODE.notify_serverchan.tool.VariableI…' mounts and commits through its actual ConfigPanel consumer 11ms
+   × 'NODE.notify_pushplus.tool.VariableInp…' mounts and commits through its actual ConfigPanel consumer 10ms
+   × 'NODE.notify_ntfy.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer 9ms
+   × 'NODE.notify_matrix.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer 11ms
+   × 'NODE.notify_rocketchat.tool.VariableI…' mounts and commits through its actual ConfigPanel consumer 9ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 54 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/index.test.ts > switches workspace only after Studio acknowledgement and recreates its isolated window
+AssertionError: expected { ok: false, error: { …(2) } } to match object { ok: true }
+(3 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "ok": true,
++   "ok": false,
+  }
+
+ ❯ src/main/index.test.ts:114:77
+    112|   const studio = await openStudio()
+    113|   answerLeave(studio)
+    114|   await expect(invoke('autoflow:settings:confirm-workspace', main, 'ch…
+       |                                                                             ^
+    115|   expect(settings.confirmWorkspace).toHaveBeenCalledWith('choice')
+    116|   expect(main.webContents.send).toHaveBeenLastCalledWith('autoflow:run…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/54]⎯
+
+ FAIL  src/main/index.test.ts > keeps Studio alive when the main window closes and permits reuse from its replacement
+TypeError: window.hide is not a function
+ ❯ retainMainWindowForStudio src/main/ipc/automation-studio.ts:200:10
+    198|   if (studioSenderId === undefined || quitting) return
+    199|   event.preventDefault()
+    200|   window.hide()
+       |          ^
+    201| }
+    202|
+ ❯ FakeWindow.<anonymous> src/main/index.ts:190:36
+ ❯ FakeWindow.close src/main/index.test.ts:22:222
+ ❯ src/main/index.test.ts:175:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/54]⎯
+
+ FAIL  src/main/index.test.ts > uses the same renderer storage partition for aliases of the same workspace
+TypeError: mainWindow.isVisible is not a function
+ ❯ Object.onClosed src/main/index.ts:49:95
+     47| const studio = new StudioWindowController({
+     48|   onInvalidated: () => studioHotkeys?.clear(),
+     49|   onClosed: () => { if (!isQuitting && mainWindow && !mainWindow.isDes…
+       |                                                                                               ^
+     50|   mainSenderId: () => mainWindow?.webContents.id,
+     51|   workspacePartition:()=>{
+ ❯ FakeWindow.<anonymous> src/main/ipc/automation-studio.ts:84:20
+ ❯ FakeWindow.destroy src/main/index.test.ts:21:43
+ ❯ src/main/index.test.ts:208:8
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.network_capture.field.proxyPort' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.network_capture.field.proxyPort is no longer present in the current component inventory and has no inline-entry evidence: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:65:5
+     63|     mappedByCurrentPanel || explicitInlineFields.has(id),
+     64|     `${id} is no longer present in the current component inventory and…
+     65|   ).toBe(true)
+       |     ^
+     66|
+     67|   store.getState().addNode(type, { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.network_capture.field.targetPorts' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.network_capture.field.targetPorts is no longer present in the current component inventory and has no inline-entry evidence: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:65:5
+     63|     mappedByCurrentPanel || explicitInlineFields.has(id),
+     64|     `${id} is no longer present in the current component inventory and…
+     65|   ).toBe(true)
+       |     ^
+     66|
+     67|   store.getState().addNode(type, { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.network_capture.field.targetProc…' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.network_capture.field.targetProcess is no longer present in the current component inventory and has no inline-entry evidence: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:65:5
+     63|     mappedByCurrentPanel || explicitInlineFields.has(id),
+     64|     `${id} is no longer present in the current component inventory and…
+     65|   ).toBe(true)
+       |     ^
+     66|
+     67|   store.getState().addNode(type, { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_chat.field.apiKey' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_chat.field.apiKey is no longer present in the current component inventory and has no inline-entry evidence: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:65:5
+     63|     mappedByCurrentPanel || explicitInlineFields.has(id),
+     64|     `${id} is no longer present in the current component inventory and…
+     65|   ).toBe(true)
+       |     ^
+     66|
+     67|   store.getState().addNode(type, { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_chat.field.apiUrl' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_chat.field.apiUrl is no longer present in the current component inventory and has no inline-entry evidence: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:65:5
+     63|     mappedByCurrentPanel || explicitInlineFields.has(id),
+     64|     `${id} is no longer present in the current component inventory and…
+     65|   ).toBe(true)
+       |     ^
+     66|
+     67|   store.getState().addNode(type, { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_chat.field.model' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_chat.field.model is no longer present in the current component inventory and has no inline-entry evidence: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:65:5
+     63|     mappedByCurrentPanel || explicitInlineFields.has(id),
+     64|     `${id} is no longer present in the current component inventory and…
+     65|   ).toBe(true)
+       |     ^
+     66|
+     67|   store.getState().addNode(type, { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_vision.field.apiKey' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_vision.field.apiKey is no longer present in the current component inventory and has no inline-entry evidence: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:65:5
+     63|     mappedByCurrentPanel || explicitInlineFields.has(id),
+     64|     `${id} is no longer present in the current component inventory and…
+     65|   ).toBe(true)
+       |     ^
+     66|
+     67|   store.getState().addNode(type, { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_vision.field.apiUrl' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_vision.field.apiUrl is no longer present in the current component inventory and has no inline-entry evidence: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:65:5
+     63|     mappedByCurrentPanel || explicitInlineFields.has(id),
+     64|     `${id} is no longer present in the current component inventory and…
+     65|   ).toBe(true)
+       |     ^
+     66|
+     67|   store.getState().addNode(type, { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_vision.field.model' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_vision.field.model is no longer present in the current component inventory and has no inline-entry evidence: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:65:5
+     63|     mappedByCurrentPanel || explicitInlineFields.has(id),
+     64|     `${id} is no longer present in the current component inventory and…
+     65|   ).toBe(true)
+       |     ^
+     66|
+     67|   store.getState().addNode(type, { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_vision_act.field.apiKey' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_vision_act.field.apiKey is no longer present in the current component inventory and has no inline-entry evidence: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:65:5
+     63|     mappedByCurrentPanel || explicitInlineFields.has(id),
+     64|     `${id} is no longer present in the current component inventory and…
+     65|   ).toBe(true)
+       |     ^
+     66|
+     67|   store.getState().addNode(type, { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_vision_act.field.apiUrl' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_vision_act.field.apiUrl is no longer present in the current component inventory and has no inline-entry evidence: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:65:5
+     63|     mappedByCurrentPanel || explicitInlineFields.has(id),
+     64|     `${id} is no longer present in the current component inventory and…
+     65|   ).toBe(true)
+       |     ^
+     66|
+     67|   store.getState().addNode(type, { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_vision_act.field.model' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_vision_act.field.model is no longer present in the current component inventory and has no inline-entry evidence: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:65:5
+     63|     mappedByCurrentPanel || explicitInlineFields.has(id),
+     64|     `${id} is no longer present in the current component inventory and…
+     65|   ).toBe(true)
+       |     ^
+     66|
+     67|   store.getState().addNode(type, { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_generate_image.field.ai' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_generate_image.field.ai is no longer present in the current component inventory and has no inline-entry evidence: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:65:5
+     63|     mappedByCurrentPanel || explicitInlineFields.has(id),
+     64|     `${id} is no longer present in the current component inventory and…
+     65|   ).toBe(true)
+       |     ^
+     66|
+     67|   store.getState().addNode(type, { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_generate_image.field.apiBase' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_generate_image.field.apiBase is no longer present in the current component inventory and has no inline-entry evidence: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:65:5
+     63|     mappedByCurrentPanel || explicitInlineFields.has(id),
+     64|     `${id} is no longer present in the current component inventory and…
+     65|   ).toBe(true)
+       |     ^
+     66|
+     67|   store.getState().addNode(type, { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_generate_image.field.apiKey' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_generate_image.field.apiKey is no longer present in the current component inventory and has no inline-entry evidence: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:65:5
+     63|     mappedByCurrentPanel || explicitInlineFields.has(id),
+     64|     `${id} is no longer present in the current component inventory and…
+     65|   ).toBe(true)
+       |     ^
+     66|
+     67|   store.getState().addNode(type, { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_generate_image.field.model' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_generate_image.field.model is no longer present in the current component inventory and has no inline-entry evidence: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:65:5
+     63|     mappedByCurrentPanel || explicitInlineFields.has(id),
+     64|     `${id} is no longer present in the current component inventory and…
+     65|   ).toBe(true)
+       |     ^
+     66|
+     67|   store.getState().addNode(type, { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_generate_video.field.ai' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_generate_video.field.ai is no longer present in the current component inventory and has no inline-entry evidence: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:65:5
+     63|     mappedByCurrentPanel || explicitInlineFields.has(id),
+     64|     `${id} is no longer present in the current component inventory and…
+     65|   ).toBe(true)
+       |     ^
+     66|
+     67|   store.getState().addNode(type, { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_generate_video.field.apiBase' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_generate_video.field.apiBase is no longer present in the current component inventory and has no inline-entry evidence: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:65:5
+     63|     mappedByCurrentPanel || explicitInlineFields.has(id),
+     64|     `${id} is no longer present in the current component inventory and…
+     65|   ).toBe(true)
+       |     ^
+     66|
+     67|   store.getState().addNode(type, { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_generate_video.field.apiKey' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_generate_video.field.apiKey is no longer present in the current component inventory and has no inline-entry evidence: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:65:5
+     63|     mappedByCurrentPanel || explicitInlineFields.has(id),
+     64|     `${id} is no longer present in the current component inventory and…
+     65|   ).toBe(true)
+       |     ^
+     66|
+     67|   store.getState().addNode(type, { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_generate_video.field.apiUrl' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_generate_video.field.apiUrl is no longer present in the current component inventory and has no inline-entry evidence: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:65:5
+     63|     mappedByCurrentPanel || explicitInlineFields.has(id),
+     64|     `${id} is no longer present in the current component inventory and…
+     65|   ).toBe(true)
+       |     ^
+     66|
+     67|   store.getState().addNode(type, { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_smart_scraper.field.apiKey' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_smart_scraper.field.apiKey is no longer present in the current component inventory and has no inline-entry evidence: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:65:5
+     63|     mappedByCurrentPanel || explicitInlineFields.has(id),
+     64|     `${id} is no longer present in the current component inventory and…
+     65|   ).toBe(true)
+       |     ^
+     66|
+     67|   store.getState().addNode(type, { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_smart_scraper.field.apiUrl' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_smart_scraper.field.apiUrl is no longer present in the current component inventory and has no inline-entry evidence: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:65:5
+     63|     mappedByCurrentPanel || explicitInlineFields.has(id),
+     64|     `${id} is no longer present in the current component inventory and…
+     65|   ).toBe(true)
+       |     ^
+     66|
+     67|   store.getState().addNode(type, { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_smart_scraper.field.azureEndp…' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_smart_scraper.field.azureEndpoint is no longer present in the current component inventory and has no inline-entry evidence: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:65:5
+     63|     mappedByCurrentPanel || explicitInlineFields.has(id),
+     64|     `${id} is no longer present in the current component inventory and…
+     65|   ).toBe(true)
+       |     ^
+     66|
+     67|   store.getState().addNode(type, { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_smart_scraper.field.headless' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_smart_scraper.field.headless is no longer present in the current component inventory and has no inline-entry evidence: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:65:5
+     63|     mappedByCurrentPanel || explicitInlineFields.has(id),
+     64|     `${id} is no longer present in the current component inventory and…
+     65|   ).toBe(true)
+       |     ^
+     66|
+     67|   store.getState().addNode(type, { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_smart_scraper.field.llmModel' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_smart_scraper.field.llmModel is no longer present in the current component inventory and has no inline-entry evidence: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:65:5
+     63|     mappedByCurrentPanel || explicitInlineFields.has(id),
+     64|     `${id} is no longer present in the current component inventory and…
+     65|   ).toBe(true)
+       |     ^
+     66|
+     67|   store.getState().addNode(type, { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_smart_scraper.field.llmProvid…' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_smart_scraper.field.llmProvider is no longer present in the current component inventory and has no inline-entry evidence: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:65:5
+     63|     mappedByCurrentPanel || explicitInlineFields.has(id),
+     64|     `${id} is no longer present in the current component inventory and…
+     65|   ).toBe(true)
+       |     ^
+     66|
+     67|   store.getState().addNode(type, { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_element_selector.field.apiKey' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_element_selector.field.apiKey is no longer present in the current component inventory and has no inline-entry evidence: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:65:5
+     63|     mappedByCurrentPanel || explicitInlineFields.has(id),
+     64|     `${id} is no longer present in the current component inventory and…
+     65|   ).toBe(true)
+       |     ^
+     66|
+     67|   store.getState().addNode(type, { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_element_selector.field.apiUrl' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_element_selector.field.apiUrl is no longer present in the current component inventory and has no inline-entry evidence: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:65:5
+     63|     mappedByCurrentPanel || explicitInlineFields.has(id),
+     64|     `${id} is no longer present in the current component inventory and…
+     65|   ).toBe(true)
+       |     ^
+     66|
+     67|   store.getState().addNode(type, { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_element_selector.field.azureE…' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_element_selector.field.azureEndpoint is no longer present in the current component inventory and has no inline-entry evidence: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:65:5
+     63|     mappedByCurrentPanel || explicitInlineFields.has(id),
+     64|     `${id} is no longer present in the current component inventory and…
+     65|   ).toBe(true)
+       |     ^
+     66|
+     67|   store.getState().addNode(type, { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_element_selector.field.llmMod…' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_element_selector.field.llmModel is no longer present in the current component inventory and has no inline-entry evidence: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:65:5
+     63|     mappedByCurrentPanel || explicitInlineFields.has(id),
+     64|     `${id} is no longer present in the current component inventory and…
+     65|   ).toBe(true)
+       |     ^
+     66|
+     67|   store.getState().addNode(type, { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_element_selector.field.llmPro…' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_element_selector.field.llmProvider is no longer present in the current component inventory and has no inline-entry evidence: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:65:5
+     63|     mappedByCurrentPanel || explicitInlineFields.has(id),
+     64|     `${id} is no longer present in the current component inventory and…
+     65|   ).toBe(true)
+       |     ^
+     66|
+     67|   store.getState().addNode(type, { x: 0, y: 0 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/documentation-loading.test.ts > removes unsupported features from every searchable and downloadable teaching article
+AssertionError: notify-guide: notify_discord: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/documentation-loading.test.ts:54:93
+     52|     expect(content, id).not.toMatch(/读取Excel|Excel自动处理|QQ自动化|微信自动化|飞书配…
+     53|     const identifiers = new Set(content.match(/\b[a-z]+(?:_[a-z0-9]+)+…
+     54|     for (const type of excludedModuleTypes) expect(identifiers.has(typ…
+       |                                                                                             ^
+     55|     for (const link of content.matchAll(/\]\(([a-z][a-z-]+)\)/g)) {
+     56|       expect(ids.has(link[1]), `${id}: broken link ${link[1]}`).toBe(t…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/module-scope.test.ts > keeps the approved 213-node scope and only approved notification channels
+AssertionError: expected [ 'proxy_change_ip', …(215) ] to have a length of 213 but got 216
+
+- Expected
++ Received
+
+- 213
++ 216
+
+ ❯ src/renderer/domains/workflows/tests/module-scope.test.ts:7:17
+      5|   const modules = getAllAvailableModules().filter(module => !module.is…
+      6|   const types = modules.map(module => module.type)
+      7|   expect(types).toHaveLength(213)
+       |                 ^
+      8|   expect(new Set(types).size).toBe(213)
+      9|   expect(types.filter(type => /^(excel_|pdf_|word_|wps_|qq_|wechat_|fe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.ai_generate_image.tool.VariableI…' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.ai_generate_image.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   render(<ConfigPanel selectedNodeId={nodeId} />)
+     71|   const controls = screen.queryAllByTestId(`tool-${tool}`)
+     72|   expect(controls.length, `${id} did not mount a direct ${tool}`).toBe…
+       |                                                                   ^
+     73|
+     74|   const before = structuredClone(store.getState().nodes[0].data)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[37/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.ai_generate_video.tool.VariableI…' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.ai_generate_video.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   render(<ConfigPanel selectedNodeId={nodeId} />)
+     71|   const controls = screen.queryAllByTestId(`tool-${tool}`)
+     72|   expect(controls.length, `${id} did not mount a direct ${tool}`).toBe…
+       |                                                                   ^
+     73|
+     74|   const before = structuredClone(store.getState().nodes[0].data)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[38/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.notify_discord.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.notify_discord.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   render(<ConfigPanel selectedNodeId={nodeId} />)
+     71|   const controls = screen.queryAllByTestId(`tool-${tool}`)
+     72|   expect(controls.length, `${id} did not mount a direct ${tool}`).toBe…
+       |                                                                   ^
+     73|
+     74|   const before = structuredClone(store.getState().nodes[0].data)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.notify_dingtalk.tool.VariableInp…' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.notify_dingtalk.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   render(<ConfigPanel selectedNodeId={nodeId} />)
+     71|   const controls = screen.queryAllByTestId(`tool-${tool}`)
+     72|   expect(controls.length, `${id} did not mount a direct ${tool}`).toBe…
+       |                                                                   ^
+     73|
+     74|   const before = structuredClone(store.getState().nodes[0].data)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[40/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.notify_wecom.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.notify_wecom.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   render(<ConfigPanel selectedNodeId={nodeId} />)
+     71|   const controls = screen.queryAllByTestId(`tool-${tool}`)
+     72|   expect(controls.length, `${id} did not mount a direct ${tool}`).toBe…
+       |                                                                   ^
+     73|
+     74|   const before = structuredClone(store.getState().nodes[0].data)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[41/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.notify_bark.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.notify_bark.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   render(<ConfigPanel selectedNodeId={nodeId} />)
+     71|   const controls = screen.queryAllByTestId(`tool-${tool}`)
+     72|   expect(controls.length, `${id} did not mount a direct ${tool}`).toBe…
+       |                                                                   ^
+     73|
+     74|   const before = structuredClone(store.getState().nodes[0].data)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[42/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.notify_slack.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.notify_slack.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   render(<ConfigPanel selectedNodeId={nodeId} />)
+     71|   const controls = screen.queryAllByTestId(`tool-${tool}`)
+     72|   expect(controls.length, `${id} did not mount a direct ${tool}`).toBe…
+       |                                                                   ^
+     73|
+     74|   const before = structuredClone(store.getState().nodes[0].data)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[43/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.notify_msteams.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.notify_msteams.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   render(<ConfigPanel selectedNodeId={nodeId} />)
+     71|   const controls = screen.queryAllByTestId(`tool-${tool}`)
+     72|   expect(controls.length, `${id} did not mount a direct ${tool}`).toBe…
+       |                                                                   ^
+     73|
+     74|   const before = structuredClone(store.getState().nodes[0].data)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[44/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.notify_pushover.tool.VariableInp…' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.notify_pushover.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   render(<ConfigPanel selectedNodeId={nodeId} />)
+     71|   const controls = screen.queryAllByTestId(`tool-${tool}`)
+     72|   expect(controls.length, `${id} did not mount a direct ${tool}`).toBe…
+       |                                                                   ^
+     73|
+     74|   const before = structuredClone(store.getState().nodes[0].data)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[45/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.notify_pushbullet.tool.VariableI…' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.notify_pushbullet.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   render(<ConfigPanel selectedNodeId={nodeId} />)
+     71|   const controls = screen.queryAllByTestId(`tool-${tool}`)
+     72|   expect(controls.length, `${id} did not mount a direct ${tool}`).toBe…
+       |                                                                   ^
+     73|
+     74|   const before = structuredClone(store.getState().nodes[0].data)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[46/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.notify_gotify.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.notify_gotify.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   render(<ConfigPanel selectedNodeId={nodeId} />)
+     71|   const controls = screen.queryAllByTestId(`tool-${tool}`)
+     72|   expect(controls.length, `${id} did not mount a direct ${tool}`).toBe…
+       |                                                                   ^
+     73|
+     74|   const before = structuredClone(store.getState().nodes[0].data)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[47/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.notify_serverchan.tool.VariableI…' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.notify_serverchan.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   render(<ConfigPanel selectedNodeId={nodeId} />)
+     71|   const controls = screen.queryAllByTestId(`tool-${tool}`)
+     72|   expect(controls.length, `${id} did not mount a direct ${tool}`).toBe…
+       |                                                                   ^
+     73|
+     74|   const before = structuredClone(store.getState().nodes[0].data)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[48/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.notify_pushplus.tool.VariableInp…' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.notify_pushplus.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   render(<ConfigPanel selectedNodeId={nodeId} />)
+     71|   const controls = screen.queryAllByTestId(`tool-${tool}`)
+     72|   expect(controls.length, `${id} did not mount a direct ${tool}`).toBe…
+       |                                                                   ^
+     73|
+     74|   const before = structuredClone(store.getState().nodes[0].data)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[49/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.notify_ntfy.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.notify_ntfy.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   render(<ConfigPanel selectedNodeId={nodeId} />)
+     71|   const controls = screen.queryAllByTestId(`tool-${tool}`)
+     72|   expect(controls.length, `${id} did not mount a direct ${tool}`).toBe…
+       |                                                                   ^
+     73|
+     74|   const before = structuredClone(store.getState().nodes[0].data)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[50/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.notify_matrix.tool.VariableInput' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.notify_matrix.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   render(<ConfigPanel selectedNodeId={nodeId} />)
+     71|   const controls = screen.queryAllByTestId(`tool-${tool}`)
+     72|   expect(controls.length, `${id} did not mount a direct ${tool}`).toBe…
+       |                                                                   ^
+     73|
+     74|   const before = structuredClone(store.getState().nodes[0].data)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[51/54]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx > 'NODE.notify_rocketchat.tool.VariableI…' mounts and commits through its actual ConfigPanel consumer
+AssertionError: NODE.notify_rocketchat.tool.VariableInput did not mount a direct VariableInput: expected 0 to be greater than 0
+ ❯ src/renderer/domains/workflows/tests/shared-control-entry-wiring.test.tsx:72:67
+     70|   render(<ConfigPanel selectedNodeId={nodeId} />)
+     71|   const controls = screen.queryAllByTestId(`tool-${tool}`)
+     72|   expect(controls.length, `${id} did not mount a direct ${tool}`).toBe…
+       |                                                                   ^
+     73|
+     74|   const before = structuredClone(store.getState().nodes[0].data)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[52/54]⎯
+
+ FAIL  src/renderer/domains/workflows/lib/__tests__/moduleColors.audit.test.ts > 模块配色三处同源审计 - module-integrity-audit Property 7 > Property 7: 画布节点、缩略图 hex、模块条视图三处取色同源于分类 color
+AssertionError: 被核验的模块数异常偏少，审计可能空跑: expected 216 to be 213 // Object.is equality
+
+- Expected
++ Received
+
+- 213
++ 216
+
+ ❯ src/renderer/domains/workflows/lib/__tests__/moduleColors.audit.test.ts:235:43
+    233|     // 防空跑：分类清单为空或解析异常时，上面的循环不会报错却什么也没测。
+    234|     // 用户追加排除48个数据库及9个DP节点；保留严格数量与逐项配色断言。
+    235|     expect(checked, '被核验的模块数异常偏少，审计可能空跑').toBe(213)
+       |                                           ^
+    236|     expect(
+    237|       mismatches,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[53/54]⎯
+
+ FAIL  src/renderer/domains/workflows/lib/__tests__/helpers/addNodeDefaults.test.ts > addNode 默认变量字段提取器 > 逐字段分布与共用基线一致（只比总数会漏掉互相抵消的偏差）
+AssertionError: expected { saveToVariable: 24, …(8) } to deeply equal { resultVariable: 115, …(8) }
+
+- Expected
++ Received
+
+  {
+    "appVariable": 15,
+    "controlVariable": 14,
+    "indexVariable": 2,
+    "itemVariable": 1,
+-   "resultVariable": 115,
++   "resultVariable": 114,
+    "saveChangeInfo": 1,
+    "saveNewElementSelector": 1,
+    "saveToVariable": 24,
+-   "variableName": 14,
++   "variableName": 15,
+  }
+
+ ❯ src/renderer/domains/workflows/lib/__tests__/helpers/addNodeDefaults.test.ts:89:20
+     87|     const actual: Record<string, number> = {}
+     88|     for (const f of VAR_FIELDS) actual[f.field] = (actual[f.field] ?? …
+     89|     expect(actual).toEqual(BASELINE.fieldDistribution)
+       |                    ^
+     90|   })
+     91|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[54/54]⎯
+
+
+ Test Files  7 failed (7)
+      Tests  54 failed | 1160 passed (1214)
+   Start at  01:00:28
+   Duration  11.08s (transform 2.43s, setup 433ms, import 2.99s, tests 9.43s, environment 2.58s)
+

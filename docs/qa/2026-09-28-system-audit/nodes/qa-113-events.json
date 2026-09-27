@@ -1,0 +1,148 @@
+[
+  {
+    "type": "execution:node_start",
+    "nodeId": "call",
+    "executionId": "80d1275a-6672-4df3-b629-8990284ecfcc",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-113",
+    "workflowId": "qa-113"
+  },
+  {
+    "type": "subflow:started",
+    "subflowId": "299a2228-93f7-4d7b-b335-7353aa1f378c",
+    "name": "autoflow",
+    "file": "autoflow.json",
+    "depth": 0,
+    "runId": "qa-113",
+    "workflowId": "qa-113"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "childsum",
+    "executionId": "362f949e-7f43-4989-b3d6-1cf3d6359813",
+    "executionContext": {
+      "scopes": [
+        {
+          "kind": "workflow",
+          "id": "source-summary",
+          "name": "autoflow"
+        }
+      ],
+      "loops": []
+    },
+    "runId": "qa-113",
+    "workflowId": "qa-113"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "childsum",
+    "executionId": "362f949e-7f43-4989-b3d6-1cf3d6359813",
+    "executionContext": {
+      "scopes": [
+        {
+          "kind": "workflow",
+          "id": "source-summary",
+          "name": "autoflow"
+        }
+      ],
+      "loops": []
+    },
+    "success": true,
+    "message": "列表求和: 66222",
+    "error": null,
+    "isTimeout": false,
+    "data": 66222,
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.21104200277477503,
+    "artifactIds": [],
+    "runId": "qa-113",
+    "workflowId": "qa-113"
+  },
+  {
+    "type": "subflow:completed",
+    "name": "autoflow",
+    "success": true,
+    "executedNodes": 1,
+    "failedNodes": 0,
+    "error": null,
+    "runId": "qa-113",
+    "workflowId": "qa-113"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "call",
+    "executionId": "80d1275a-6672-4df3-b629-8990284ecfcc",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "工作流「autoflow」执行完成（1 个模块）",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "workflow": "autoflow",
+      "file": "autoflow.json",
+      "success": true,
+      "executed_nodes": 1,
+      "failed_nodes": 0,
+      "error": null
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 0.9765000140760094,
+    "artifactIds": [],
+    "runId": "qa-113",
+    "workflowId": "qa-113"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "check",
+    "executionId": "1b8b7b7e-7aec-4faa-8c31-436977fdd17c",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-113",
+    "workflowId": "qa-113"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "check",
+    "executionId": "1b8b7b7e-7aec-4faa-8c31-436977fdd17c",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "断言通过: '66222' == 66222",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "passed": true,
+      "detail": "'66222' == 66222"
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 1.4219579752534628,
+    "artifactIds": [],
+    "runId": "qa-113",
+    "workflowId": "qa-113"
+  },
+  {
+    "type": "execution:completed",
+    "runId": "qa-113",
+    "workflowId": "qa-113",
+    "executedNodes": 2,
+    "failedNodeId": null,
+    "issues": [],
+    "error": null
+  }
+]

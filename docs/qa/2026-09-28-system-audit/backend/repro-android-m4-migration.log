@@ -1,0 +1,124 @@
+FFFF                                                                     [100%]
+=================================== FAILURES ===================================
+_ test_existing_migration_histories_keep_devices_runs_and_artifacts[0006_workflow_runs] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-479/test_existing_migration_histor0')
+revision = '0006_workflow_runs'
+
+    @pytest.mark.parametrize('revision', ['0006_workflow_runs', '0007_android_devices', '0007_workflow_artifacts', '0008_merge_android_m4'])
+    def test_existing_migration_histories_keep_devices_runs_and_artifacts(tmp_path, revision):
+        database = tmp_path / 'existing.sqlite3'
+        config = Config(str(Path(database_session.__file__).with_name('alembic.ini')))
+        config.set_main_option('sqlalchemy.url', f'sqlite:///{database}')
+        command.upgrade(config, revision)
+        artifact = {'id': 'image-one', 'nodeId': 'screen', 'relativePath': 'original.png'}
+        with sqlite3.connect(database) as connection:
+            indexed = revision in {'0007_workflow_artifacts', '0008_merge_android_m4'}
+            connection.execute('INSERT INTO workflow_runs(id,workflow_id,request_hash,started_at,payload) VALUES(?,?,?,?,?)', ('run', 'flow', 'original-hash', '2026-09-13', json.dumps({'artifacts': [] if indexed else [artifact], 'artifactCount': 1})))
+            if indexed:
+                connection.execute('INSERT INTO workflow_run_artifacts(run_id,id,ordinal,node_id,payload) VALUES(?,?,?,?,?)', ('run', 'image-one', 1, 'screen', json.dumps(artifact)))
+            if revision in {'0007_android_devices', '0008_merge_android_m4'}:
+                connection.execute('INSERT INTO android_devices(id,payload) VALUES(?,?)', ('device', json.dumps({'name': 'Keep device', 'volumeId': 'keep-data'})))
+        database_session.migrate_database(database)
+        database_session.migrate_database(database)
+        with sqlite3.connect(database) as connection:
+>           assert connection.execute('SELECT version_num FROM alembic_version').fetchall() == [('0020_recording_project_scope',)]
+E           AssertionError: assert [('0023_merge...io_android',)] == [('0020_recor...ject_scope',)]
+E             
+E             At index 0 diff: ('0023_merge_studio_android',) != ('0020_recording_project_scope',)
+E             Use -v to get more diff
+
+tests/integration/test_android_m4_migration.py:29: AssertionError
+_ test_existing_migration_histories_keep_devices_runs_and_artifacts[0007_android_devices] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-479/test_existing_migration_histor1')
+revision = '0007_android_devices'
+
+    @pytest.mark.parametrize('revision', ['0006_workflow_runs', '0007_android_devices', '0007_workflow_artifacts', '0008_merge_android_m4'])
+    def test_existing_migration_histories_keep_devices_runs_and_artifacts(tmp_path, revision):
+        database = tmp_path / 'existing.sqlite3'
+        config = Config(str(Path(database_session.__file__).with_name('alembic.ini')))
+        config.set_main_option('sqlalchemy.url', f'sqlite:///{database}')
+        command.upgrade(config, revision)
+        artifact = {'id': 'image-one', 'nodeId': 'screen', 'relativePath': 'original.png'}
+        with sqlite3.connect(database) as connection:
+            indexed = revision in {'0007_workflow_artifacts', '0008_merge_android_m4'}
+            connection.execute('INSERT INTO workflow_runs(id,workflow_id,request_hash,started_at,payload) VALUES(?,?,?,?,?)', ('run', 'flow', 'original-hash', '2026-09-13', json.dumps({'artifacts': [] if indexed else [artifact], 'artifactCount': 1})))
+            if indexed:
+                connection.execute('INSERT INTO workflow_run_artifacts(run_id,id,ordinal,node_id,payload) VALUES(?,?,?,?,?)', ('run', 'image-one', 1, 'screen', json.dumps(artifact)))
+            if revision in {'0007_android_devices', '0008_merge_android_m4'}:
+                connection.execute('INSERT INTO android_devices(id,payload) VALUES(?,?)', ('device', json.dumps({'name': 'Keep device', 'volumeId': 'keep-data'})))
+        database_session.migrate_database(database)
+        database_session.migrate_database(database)
+        with sqlite3.connect(database) as connection:
+>           assert connection.execute('SELECT version_num FROM alembic_version').fetchall() == [('0020_recording_project_scope',)]
+E           AssertionError: assert [('0023_merge...io_android',)] == [('0020_recor...ject_scope',)]
+E             
+E             At index 0 diff: ('0023_merge_studio_android',) != ('0020_recording_project_scope',)
+E             Use -v to get more diff
+
+tests/integration/test_android_m4_migration.py:29: AssertionError
+_ test_existing_migration_histories_keep_devices_runs_and_artifacts[0007_workflow_artifacts] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-479/test_existing_migration_histor2')
+revision = '0007_workflow_artifacts'
+
+    @pytest.mark.parametrize('revision', ['0006_workflow_runs', '0007_android_devices', '0007_workflow_artifacts', '0008_merge_android_m4'])
+    def test_existing_migration_histories_keep_devices_runs_and_artifacts(tmp_path, revision):
+        database = tmp_path / 'existing.sqlite3'
+        config = Config(str(Path(database_session.__file__).with_name('alembic.ini')))
+        config.set_main_option('sqlalchemy.url', f'sqlite:///{database}')
+        command.upgrade(config, revision)
+        artifact = {'id': 'image-one', 'nodeId': 'screen', 'relativePath': 'original.png'}
+        with sqlite3.connect(database) as connection:
+            indexed = revision in {'0007_workflow_artifacts', '0008_merge_android_m4'}
+            connection.execute('INSERT INTO workflow_runs(id,workflow_id,request_hash,started_at,payload) VALUES(?,?,?,?,?)', ('run', 'flow', 'original-hash', '2026-09-13', json.dumps({'artifacts': [] if indexed else [artifact], 'artifactCount': 1})))
+            if indexed:
+                connection.execute('INSERT INTO workflow_run_artifacts(run_id,id,ordinal,node_id,payload) VALUES(?,?,?,?,?)', ('run', 'image-one', 1, 'screen', json.dumps(artifact)))
+            if revision in {'0007_android_devices', '0008_merge_android_m4'}:
+                connection.execute('INSERT INTO android_devices(id,payload) VALUES(?,?)', ('device', json.dumps({'name': 'Keep device', 'volumeId': 'keep-data'})))
+        database_session.migrate_database(database)
+        database_session.migrate_database(database)
+        with sqlite3.connect(database) as connection:
+>           assert connection.execute('SELECT version_num FROM alembic_version').fetchall() == [('0020_recording_project_scope',)]
+E           AssertionError: assert [('0023_merge...io_android',)] == [('0020_recor...ject_scope',)]
+E             
+E             At index 0 diff: ('0023_merge_studio_android',) != ('0020_recording_project_scope',)
+E             Use -v to get more diff
+
+tests/integration/test_android_m4_migration.py:29: AssertionError
+_ test_existing_migration_histories_keep_devices_runs_and_artifacts[0008_merge_android_m4] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-479/test_existing_migration_histor3')
+revision = '0008_merge_android_m4'
+
+    @pytest.mark.parametrize('revision', ['0006_workflow_runs', '0007_android_devices', '0007_workflow_artifacts', '0008_merge_android_m4'])
+    def test_existing_migration_histories_keep_devices_runs_and_artifacts(tmp_path, revision):
+        database = tmp_path / 'existing.sqlite3'
+        config = Config(str(Path(database_session.__file__).with_name('alembic.ini')))
+        config.set_main_option('sqlalchemy.url', f'sqlite:///{database}')
+        command.upgrade(config, revision)
+        artifact = {'id': 'image-one', 'nodeId': 'screen', 'relativePath': 'original.png'}
+        with sqlite3.connect(database) as connection:
+            indexed = revision in {'0007_workflow_artifacts', '0008_merge_android_m4'}
+            connection.execute('INSERT INTO workflow_runs(id,workflow_id,request_hash,started_at,payload) VALUES(?,?,?,?,?)', ('run', 'flow', 'original-hash', '2026-09-13', json.dumps({'artifacts': [] if indexed else [artifact], 'artifactCount': 1})))
+            if indexed:
+                connection.execute('INSERT INTO workflow_run_artifacts(run_id,id,ordinal,node_id,payload) VALUES(?,?,?,?,?)', ('run', 'image-one', 1, 'screen', json.dumps(artifact)))
+            if revision in {'0007_android_devices', '0008_merge_android_m4'}:
+                connection.execute('INSERT INTO android_devices(id,payload) VALUES(?,?)', ('device', json.dumps({'name': 'Keep device', 'volumeId': 'keep-data'})))
+        database_session.migrate_database(database)
+        database_session.migrate_database(database)
+        with sqlite3.connect(database) as connection:
+>           assert connection.execute('SELECT version_num FROM alembic_version').fetchall() == [('0020_recording_project_scope',)]
+E           AssertionError: assert [('0023_merge...io_android',)] == [('0020_recor...ject_scope',)]
+E             
+E             At index 0 diff: ('0023_merge_studio_android',) != ('0020_recording_project_scope',)
+E             Use -v to get more diff
+
+tests/integration/test_android_m4_migration.py:29: AssertionError
+=========================== short test summary info ============================
+FAILED tests/integration/test_android_m4_migration.py::test_existing_migration_histories_keep_devices_runs_and_artifacts[0006_workflow_runs]
+FAILED tests/integration/test_android_m4_migration.py::test_existing_migration_histories_keep_devices_runs_and_artifacts[0007_android_devices]
+FAILED tests/integration/test_android_m4_migration.py::test_existing_migration_histories_keep_devices_runs_and_artifacts[0007_workflow_artifacts]
+FAILED tests/integration/test_android_m4_migration.py::test_existing_migration_histories_keep_devices_runs_and_artifacts[0008_merge_android_m4]
+4 failed in 1.33s

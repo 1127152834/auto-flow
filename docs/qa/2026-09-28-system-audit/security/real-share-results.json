@@ -1,0 +1,27 @@
+{
+  "real_http": true,
+  "bound_address": "127.0.0.1",
+  "direct_symlink_read": {
+    "status": 200,
+    "outside_bytes_returned": true
+  },
+  "guarded_symlink_read": {
+    "status": 403
+  },
+  "duplicate_name_upload": {
+    "status": 200,
+    "response": {
+      "success": true,
+      "message": "成功上传 1 个文件",
+      "files": [
+        "report.txt"
+      ]
+    },
+    "created_outside_share": true,
+    "outside_content_matches": true
+  },
+  "document_preview": {
+    "status": 500,
+    "missing_module_in_response": true
+  }
+}

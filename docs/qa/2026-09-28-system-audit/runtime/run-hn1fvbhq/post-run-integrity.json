@@ -1,0 +1,51 @@
+{
+  "integrity": [
+    [
+      "ok"
+    ]
+  ],
+  "foreignKeys": [],
+  "taskCount": 14,
+  "runStatusCounts": [
+    [
+      "cancelled",
+      4
+    ],
+    [
+      "failed",
+      1
+    ],
+    [
+      "interrupted",
+      1
+    ],
+    [
+      "succeeded",
+      8
+    ]
+  ],
+  "leaseStates": [
+    [
+      "released",
+      2
+    ]
+  ],
+  "environmentStates": [
+    [
+      "cleaned",
+      12
+    ]
+  ],
+  "liveProcesses": [],
+  "remainingEnvironmentDirectories": [],
+  "screenshotHeaders": [
+    {
+      "file": "failure-183ff8cc-9374-465a-8bf8-377d64dd036e-eddd716d-0c8f-47be-ad85-525d74838df8.bin",
+      "png": true,
+      "dimensions": [
+        1920,
+        947
+      ]
+    }
+  ]
+}

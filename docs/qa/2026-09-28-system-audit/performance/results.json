@@ -1,0 +1,278 @@
+{
+  "startedAt": "2026-09-27T17:11:06.453147+00:00",
+  "gitHead": "33ae3aa49600840b1700c83723408c494dc201a8",
+  "platform": "macOS-26.4.1-arm64-arm-64bit",
+  "python": "3.11.13",
+  "realSampleCount": 8504,
+  "source": "git ls-files + actual filesystem stat; no duplicated rows",
+  "timing": "TCP HTTP request through response body download; JSON decode excluded; nearest-rank percentiles; persistent client",
+  "stages": [
+    {
+      "rows": 1000,
+      "addedRows": 1000,
+      "writeBatches": {
+        "samples": 10,
+        "p50Ms": 49.034,
+        "p95Ms": 50.61,
+        "minMs": 47.308,
+        "maxMs": 50.61
+      },
+      "writeElapsedMs": 488.746,
+      "reads": {
+        "default_first_page": {
+          "samples": 10,
+          "p50Ms": 16.54,
+          "p95Ms": 17.936,
+          "minMs": 15.925,
+          "maxMs": 17.936,
+          "firstObservedMs": 19.593,
+          "matchedRows": 1000,
+          "correct": true
+        },
+        "bytes_desc_first_page": {
+          "samples": 10,
+          "p50Ms": 40.18,
+          "p95Ms": 41.781,
+          "minMs": 39.189,
+          "maxMs": 41.781,
+          "firstObservedMs": 42.993,
+          "matchedRows": 1000,
+          "correct": true
+        },
+        "python_filter_first_page": {
+          "samples": 10,
+          "p50Ms": 21.673,
+          "p95Ms": 133.214,
+          "minMs": 20.818,
+          "maxMs": 133.214,
+          "firstObservedMs": 23.117,
+          "matchedRows": 676,
+          "correct": true
+        },
+        "python_filter_bytes_desc": {
+          "samples": 10,
+          "p50Ms": 35.686,
+          "p95Ms": 38.209,
+          "minMs": 34.78,
+          "maxMs": 38.209,
+          "firstObservedMs": 36.744,
+          "matchedRows": 676,
+          "correct": true
+        },
+        "default_last_page": {
+          "samples": 10,
+          "p50Ms": 18.564,
+          "p95Ms": 19.5,
+          "minMs": 17.709,
+          "maxMs": 19.5,
+          "firstObservedMs": 18.914,
+          "matchedRows": 1000,
+          "correct": true
+        }
+      },
+      "rawTimingsMs": {
+        "default_first_page": [
+          16.92929200362414,
+          16.179250000277534,
+          15.925000014249235,
+          16.482458013342693,
+          17.936167016159743,
+          17.179374990519136,
+          17.228292010258883,
+          16.19829100673087,
+          16.53975000954233,
+          17.121042008511722
+        ],
+        "bytes_desc_first_page": [
+          39.18929200153798,
+          39.40604199306108,
+          41.75595901324414,
+          39.52658400521614,
+          40.34279100596905,
+          40.18020798685029,
+          41.781082982197404,
+          40.865124989068136,
+          40.18029198050499,
+          40.01366699230857
+        ],
+        "python_filter_first_page": [
+          21.752416010713205,
+          21.080707985674962,
+          21.16379200015217,
+          21.673415991244838,
+          21.79133298341185,
+          21.456874994328246,
+          133.2142500032205,
+          22.076790977735072,
+          22.183958993991837,
+          20.817916985834017
+        ],
+        "python_filter_bytes_desc": [
+          38.20874998928048,
+          35.685625014593825,
+          35.93062498839572,
+          36.60062499693595,
+          36.91820800304413,
+          35.45287501765415,
+          35.30658298404887,
+          35.79649998573586,
+          34.88070800085552,
+          34.77987501537427
+        ],
+        "default_last_page": [
+          18.935624975711107,
+          19.21737502561882,
+          19.136958988383412,
+          18.120165972504765,
+          18.953541002701968,
+          18.564250000054017,
+          17.708665982354432,
+          18.52316700387746,
+          19.500166992656887,
+          17.906665976624936
+        ]
+      },
+      "fullPagination": {
+        "pages": 5,
+        "uniqueRows": 1000,
+        "exactSourceMatch": true
+      }
+    },
+    {
+      "rows": 8504,
+      "addedRows": 7504,
+      "writeBatches": {
+        "samples": 76,
+        "p50Ms": 56.572,
+        "p95Ms": 72.447,
+        "minMs": 12.432,
+        "maxMs": 150.797
+      },
+      "writeElapsedMs": 4545.423,
+      "reads": {
+        "default_first_page": {
+          "samples": 10,
+          "p50Ms": 31.624,
+          "p95Ms": 32.826,
+          "minMs": 29.643,
+          "maxMs": 32.826,
+          "firstObservedMs": 31.006,
+          "matchedRows": 8504,
+          "correct": true
+        },
+        "bytes_desc_first_page": {
+          "samples": 10,
+          "p50Ms": 136.831,
+          "p95Ms": 139.781,
+          "minMs": 135.299,
+          "maxMs": 139.781,
+          "firstObservedMs": 135.893,
+          "matchedRows": 8504,
+          "correct": true
+        },
+        "python_filter_first_page": {
+          "samples": 10,
+          "p50Ms": 60.644,
+          "p95Ms": 62.319,
+          "minMs": 59.976,
+          "maxMs": 62.319,
+          "firstObservedMs": 61.661,
+          "matchedRows": 999,
+          "correct": true
+        },
+        "python_filter_bytes_desc": {
+          "samples": 10,
+          "p50Ms": 79.963,
+          "p95Ms": 81.705,
+          "minMs": 77.304,
+          "maxMs": 81.705,
+          "firstObservedMs": 78.807,
+          "matchedRows": 999,
+          "correct": true
+        },
+        "default_last_page": {
+          "samples": 10,
+          "p50Ms": 73.833,
+          "p95Ms": 75.257,
+          "minMs": 72.346,
+          "maxMs": 75.257,
+          "firstObservedMs": 74.262,
+          "matchedRows": 8504,
+          "correct": true
+        }
+      },
+      "rawTimingsMs": {
+        "default_first_page": [
+          32.82633301569149,
+          31.724083004519343,
+          31.74725000280887,
+          31.62433300167322,
+          32.2913330164738,
+          31.913707993226126,
+          31.517416005954146,
+          29.643333982676268,
+          31.29387501394376,
+          31.52854199288413
+        ],
+        "bytes_desc_first_page": [
+          139.78095797938295,
+          137.6039999886416,
+          135.2988339785952,
+          137.84966699313372,
+          136.42900000559166,
+          136.83070900151506,
+          135.80991700291634,
+          136.5705420030281,
+          138.18016700679436,
+          137.7159169933293
+        ],
+        "python_filter_first_page": [
+          60.34520798129961,
+          61.50687500485219,
+          59.97554201167077,
+          60.64399998285808,
+          61.4004590024706,
+          60.40304098860361,
+          60.32712498563342,
+          62.09862499963492,
+          62.31879198458046,
+          60.83054101327434
+        ],
+        "python_filter_bytes_desc": [
+          80.56758300517686,
+          79.96270802686922,
+          77.30379101121798,
+          80.25795902358368,
+          80.53995898808353,
+          81.70499998959713,
+          80.1191249920521,
+          79.27445799577981,
+          79.3958330177702,
+          78.92312499461696
+        ],
+        "default_last_page": [
+          74.51062498148531,
+          74.50241700280458,
+          75.25708398316056,
+          72.87208299385384,
+          74.29641697672196,
+          72.91087502380833,
+          73.83279199711978,
+          73.4710420074407,
+          74.77066601859406,
+          72.34579199575819
+        ]
+      },
+      "fullPagination": {
+        "pages": 43,
+        "uniqueRows": 8504,
+        "exactSourceMatch": true
+      }
+    }
+  ],
+  "temporaryWorkspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-data-perf-u3swx4ng",
+  "allReadAssertionsPassed": true,
+  "sidecarStopped": true,
+  "finishedAt": "2026-09-27T17:11:24.145662+00:00",
+  "temporaryWorkspaceRemoved": true
+}

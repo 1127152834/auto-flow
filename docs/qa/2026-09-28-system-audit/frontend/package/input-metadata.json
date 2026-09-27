@@ -1,0 +1,32 @@
+{
+  "dateUtc": "2026-09-27T17:05:14.060924+00:00",
+  "head": "33ae3aa49600840b1700c83723408c494dc201a8",
+  "platform": "macOS-26.4.1-arm64-arm-64bit-Mach-O",
+  "arch": "arm64",
+  "trackedWorkingTreeChanges": [
+    "docs/migration/studio-backend-migration-validation.md",
+    "docs/migration/studio-frontend-completion/component-tools.json",
+    "docs/superpowers/plans/2026-09-15-studio-backend-webrpa-migration-implementation.md"
+  ],
+  "inputDigests": {
+    "apps/backend/uv.lock": "8730de5c49b00d48b7aa91b8222978dd45b7f2fd629ddf4b945c5e137cf88bad",
+    "package-lock.json": "3b4cc926137f033edb818bf6a41b3c50b85a60561f655df0434c47427abae205",
+    "apps/backend/autoflow-backend.spec": "e6b9cde19034d077b27bad3be7a2af40326ae306e5b2442cd9c211484f06fce5",
+    "apps/desktop/electron-builder.yml": "9316b25e6fe5cdd7e4b6e4aa4c5dd178788fc82499c948019ee606fabfaf6b49"
+  },
+  "preservedExistingInstallers": {
+    "apps/desktop/dist/AutoFlow-0.1.0-arm64.dmg.blockmap": {
+      "bytes": 274523,
+      "sha256": "f94f3a4840fb5c72f312f0d656c48d1862313db2c603195d936f68901577d1e0"
+    },
+    "apps/desktop/dist/AutoFlow-0.1.0-arm64.dmg": {
+      "bytes": 264403400,
+      "sha256": "07ea7306956744bfbebb47e03999c0ae42e35523c875fe3ea3e9e5565875b170"
+    }
+  },
+  "buildEnvironment": {
+    "UV_OFFLINE": "1",
+    "UV_FROZEN": "1"
+  },
+  "intent": "Build existing current-source backend and unpacked app; no installer build, no publishing, no Developer ID signing, no installation."
+}

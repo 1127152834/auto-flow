@@ -1,0 +1,118 @@
+FFFF..................F..                                                [100%]
+=================================== FAILURES ===================================
+____ test_browser_status_preserves_independent_reported_flags[False-False] _____
+
+is_open = False, picker_active = False
+
+    @pytest.mark.parametrize("is_open", [False, True])
+    @pytest.mark.parametrize("picker_active", [False, True])
+    def test_browser_status_preserves_independent_reported_flags(is_open, picker_active):
+        value = StudioBrowserStatus.model_validate({"isOpen": is_open, "pickerActive": picker_active})
+>       assert value.model_dump(by_alias=True) == {"isOpen": is_open, "pickerActive": picker_active}
+E       AssertionError: assert {'projectId':...': False, ...} == {'isOpen': Fa...ctive': False}
+E         
+E         Omitting 2 identical items, use -vv to show
+E         Left contains 5 more items:
+E         {'phase': 'closed',
+E          'pickerSessionId': None,
+E          'profileId': None,
+E          'projectId': None,
+E          'sessionId': None}
+E         Use -v to get more diff
+
+tests/contract/test_studio_browser_status.py:11: AssertionError
+_____ test_browser_status_preserves_independent_reported_flags[False-True] _____
+
+is_open = True, picker_active = False
+
+    @pytest.mark.parametrize("is_open", [False, True])
+    @pytest.mark.parametrize("picker_active", [False, True])
+    def test_browser_status_preserves_independent_reported_flags(is_open, picker_active):
+        value = StudioBrowserStatus.model_validate({"isOpen": is_open, "pickerActive": picker_active})
+>       assert value.model_dump(by_alias=True) == {"isOpen": is_open, "pickerActive": picker_active}
+E       AssertionError: assert {'projectId':...': False, ...} == {'isOpen': Tr...ctive': False}
+E         
+E         Omitting 2 identical items, use -vv to show
+E         Left contains 5 more items:
+E         {'phase': 'closed',
+E          'pickerSessionId': None,
+E          'profileId': None,
+E          'projectId': None,
+E          'sessionId': None}
+E         Use -v to get more diff
+
+tests/contract/test_studio_browser_status.py:11: AssertionError
+_____ test_browser_status_preserves_independent_reported_flags[True-False] _____
+
+is_open = False, picker_active = True
+
+    @pytest.mark.parametrize("is_open", [False, True])
+    @pytest.mark.parametrize("picker_active", [False, True])
+    def test_browser_status_preserves_independent_reported_flags(is_open, picker_active):
+        value = StudioBrowserStatus.model_validate({"isOpen": is_open, "pickerActive": picker_active})
+>       assert value.model_dump(by_alias=True) == {"isOpen": is_open, "pickerActive": picker_active}
+E       AssertionError: assert {'projectId':...e': True, ...} == {'isOpen': Fa...Active': True}
+E         
+E         Omitting 2 identical items, use -vv to show
+E         Left contains 5 more items:
+E         {'phase': 'closed',
+E          'pickerSessionId': None,
+E          'profileId': None,
+E          'projectId': None,
+E          'sessionId': None}
+E         Use -v to get more diff
+
+tests/contract/test_studio_browser_status.py:11: AssertionError
+_____ test_browser_status_preserves_independent_reported_flags[True-True] ______
+
+is_open = True, picker_active = True
+
+    @pytest.mark.parametrize("is_open", [False, True])
+    @pytest.mark.parametrize("picker_active", [False, True])
+    def test_browser_status_preserves_independent_reported_flags(is_open, picker_active):
+        value = StudioBrowserStatus.model_validate({"isOpen": is_open, "pickerActive": picker_active})
+>       assert value.model_dump(by_alias=True) == {"isOpen": is_open, "pickerActive": picker_active}
+E       AssertionError: assert {'projectId':...e': True, ...} == {'isOpen': Tr...Active': True}
+E         
+E         Omitting 2 identical items, use -vv to show
+E         Left contains 5 more items:
+E         {'phase': 'closed',
+E          'pickerSessionId': None,
+E          'profileId': None,
+E          'projectId': None,
+E          'sessionId': None}
+E         Use -v to get more diff
+
+tests/contract/test_studio_browser_status.py:11: AssertionError
+__ test_real_required_fields_route_preserves_frozen_rules_and_approved_scope ___
+
+client = <starlette.testclient.TestClient object at 0x1140137d0>
+
+    def test_real_required_fields_route_preserves_frozen_rules_and_approved_scope(client):
+        response = client.get('/api/system/module-required-fields')
+        assert response.status_code == 200, response.text
+        data = response.json()
+        assert StudioModuleRequiredFields.model_validate(data).model_dump(by_alias=True) == data
+>       assert set(data['coveredModules']) == APPROVED_NODE_TYPES
+E       AssertionError: assert {'ai_chat', '...e_image', ...} == frozenset({'a..._image', ...})
+E         
+E         Extra items in the right set:
+E         'proxy_query'
+E         'proxy_change_ip'
+E         'proxy_change_location'
+E         Use -v to get more diff
+
+tests/contract/test_studio_required_fields.py:42: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.11/site-packages/starlette/testclient.py:53
+  /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/contract/test_studio_browser_status.py::test_browser_status_preserves_independent_reported_flags[False-False]
+FAILED tests/contract/test_studio_browser_status.py::test_browser_status_preserves_independent_reported_flags[False-True]
+FAILED tests/contract/test_studio_browser_status.py::test_browser_status_preserves_independent_reported_flags[True-False]
+FAILED tests/contract/test_studio_browser_status.py::test_browser_status_preserves_independent_reported_flags[True-True]
+FAILED tests/contract/test_studio_required_fields.py::test_real_required_fields_route_preserves_frozen_rules_and_approved_scope
+5 failed, 20 passed, 1 warning in 3.60s

@@ -1,0 +1,92 @@
+[
+  {
+    "type": "execution:node_start",
+    "nodeId": "n0",
+    "executionId": "6588f386-7d72-4b85-94fc-793287594bc0",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-116",
+    "workflowId": "qa-116"
+  },
+  {
+    "type": "artifact:registered",
+    "runId": "qa-116",
+    "artifactId": "5664884a-dbf5-4ac1-aedf-cee16fc9e73e",
+    "nodeId": "n0",
+    "executionId": "6588f386-7d72-4b85-94fc-793287594bc0",
+    "relativePath": "runs/qa-116/artifacts/exports/a5c66c9952f243f98c6ba9ecfa935dc3.png",
+    "size": 320237,
+    "sha256": "a0b4916cee0841934bdf25e08e65fd2de2b2e12da9ee4327597a60790c132e9e",
+    "mimeType": "application/octet-stream",
+    "purpose": "result"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n0",
+    "executionId": "6588f386-7d72-4b85-94fc-793287594bc0",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "文件保存成功: images/real-studio.png (320237 字节)",
+    "error": null,
+    "isTimeout": false,
+    "data": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-extra-nodes-ei7usv_y/artifacts/runs/qa-116/outputs/images/real-studio.png",
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": false,
+    "duration": 18.6029159813188,
+    "artifactIds": [
+      "5664884a-dbf5-4ac1-aedf-cee16fc9e73e"
+    ],
+    "runId": "qa-116",
+    "workflowId": "qa-116"
+  },
+  {
+    "type": "execution:node_start",
+    "nodeId": "n1",
+    "executionId": "23c3ad40-29be-4631-bb7c-a893dc7d437e",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-116",
+    "workflowId": "qa-116"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n1",
+    "executionId": "23c3ad40-29be-4631-bb7c-a893dc7d437e",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "OCR识别完成: M5 正式调试控制流\n工作流工作台\n十  新建\n凸 打开\n保存\n已保存\n选择浏览器配置\n运行当前草稿...",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "text": "M5 正式调试控制流\n工作流工作台\n十  新建\n凸 打开\n保存\n已保存\n选择浏览器配置\n运行当前草稿\n停止\n刷新运行状态\n浏览器配置\n运行不会保存草稿\n调试.可见临时浏览器\n拾取浏览器展开\n点选元素配置节点\n手动进入页面后\n动作库\n节点属性\n流程娈量\n打开网页\n搜索名称或类型\nhttp;ll27.0.0.1;51263\nAIDUICCA(\n等待元素\nWait\nlement\n条件判断\n循环结束\n条件刊断\n提取数据\n环结束\nget_element_info\n选择一个节点\n网页截图\nSCFeenshot\n点击画布中的节点;在这里配置参数。\n条件结束\n条件判断\n条件结束\nCondition\n重复指定次数\nLOop; count\n提取数据\n#result\n点击添加。或拖到画布\n个节点\n6条连线\n运行日志\n搜索 /导出\n只读结果\n最近运行\n收起运行记录\n跟随最新\n运行当前草稿后。真实执行日志会显示在这里。",
+      "length": 402
+    },
+    "logLevel": null,
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 10044.79404099402,
+    "artifactIds": [],
+    "runId": "qa-116",
+    "workflowId": "qa-116"
+  },
+  {
+    "type": "execution:completed",
+    "runId": "qa-116",
+    "workflowId": "qa-116",
+    "executedNodes": 2,
+    "failedNodeId": null,
+    "issues": [],
+    "error": null
+  }
+]

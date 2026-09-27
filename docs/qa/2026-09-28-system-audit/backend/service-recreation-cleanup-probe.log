@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "elapsedSeconds": 12.157,
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-recreation-cleanup-w_qa33o_",
+  "source": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/tests/integration/test_workflow_real_cloakbrowser.py",
+  "changesInMemoryOnly": [
+    "app: call all registered shutdown callbacks, awaiting awaitable results",
+    "restored: call all registered shutdown callbacks, awaiting awaitable results"
+  ],
+  "originalScenarioAssertions": "all passed, including service recreation",
+  "dataProvenance": "original synthetic HTML fixture, real CloakBrowser and SQLite"
+}

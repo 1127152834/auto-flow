@@ -1,0 +1,20 @@
+Evidence: /Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/android/run-8d7ylddm
+{"name": "existing runtime has isolated capacity", "passed": true, "detail": {"cpuCount": 6, "totalMemoryBytes": 8306655232, "existingReservedBytes": 0, "newMemoryMb": 1536}}
+{"name": "production Android runtime available via HTTP", "passed": true, "detail": {"available": true, "platformSupported": true, "runtimeId": "autoflow-redroid", "message": "运行环境可用", "images": [{"id": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b", "name": "Android 13 标准 · ARM64", "reference": "redroid/redroid:13.0.0_64only-latest"}], "cpuCount": 6, "memoryMb": 7921}}
+{"name": "create stopped device with independent data", "passed": true, "detail": {"containerCount": 1, "volumeExists": true, "ownershipMatches": true}}
+{"name": "create same UUID and payload is idempotent", "passed": true, "detail": null}
+Traceback (most recent call last):
+  File "/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/android/android_real_qa.py", line 101, in <module>
+    started=time.monotonic();d=command('start');RESULT['started']=d;save()
+                               ^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/android/android_real_qa.py", line 65, in command
+    if d is not None:assert d.get('operation',{}).get('state')=='succeeded',d
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'deviceId': '5ce6d47e-2841-4aff-9566-88e2956967bc', 'name': 'QA 2026-09-28 真实隔离设备', 'runtimeId': 'autoflow-redroid', 'ownerRunId': None, 'control': 'recovery_required', 'generation': 0, 'width': 720, 'height': 1280, 'imageId': 'sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b', 'androidStatus': 'stopped', 'lastError': '安卓运行环境命令失败，请检查设备与连接', 'cpu': 1, 'memoryMb': 1536, 'dpi': 320, 'androidVersion': '13', 'architecture': 'arm64', 'dataRetained': False, 'deleted': False, 'operation': {'id': '5259a819-686a-4383-af8c-cc8b10f47251', 'action': 'start', 'state': 'failed', 'stage': '需要处理', 'error': '安卓运行环境命令失败，请检查设备与连接', 'startedAt': '2026-09-27T17:21:03.530198Z', 'finishedAt': '2026-09-27T17:21:04.353440Z'}, 'profileId': None, 'profileName': 'Android 13 标准 · ARM64', 'instanceType': 'persistent', 'locale': 'zh-CN', 'timezone': 'Asia/Shanghai'}
+
+{"state": {"Status": "created", "Running": false, "Paused": false, "Restarting": false, "OOMKilled": false, "Dead": false, "Pid": 0, "ExitCode": 128, "Error": "failed to set up container networking: failed to create endpoint autoflow-android-5ce6d47e-2841-4aff-9566-88e2956967bc on network bridge: adding interface vetha5e4009 to bridge docker0 failed: Device does not exist", "StartedAt": "0001-01-01T00:00:00Z", "FinishedAt": "0001-01-01T00:00:00Z"}, "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b", "memoryBytes": 1610612736, "nanoCpus": 1000000000, "privileged": true, "mounts": [{"name": "autoflow-android-5ce6d47e-2841-4aff-9566-88e2956967bc-data", "destination": "/data", "type": "volume"}], "logs": ""}
+{"name": "owned container and data removed", "passed": true, "detail": null}
+{"name": "deleted device absent from API list", "passed": true, "detail": null}
+{"name": "preexisting containers unchanged", "passed": true, "detail": null}
+{"name": "preexisting volume set unchanged", "passed": true, "detail": null}
+RESULT /Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/android/run-8d7ylddm/results.json

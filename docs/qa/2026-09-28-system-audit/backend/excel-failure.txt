@@ -1,0 +1,67 @@
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_formula_metadata_scans_be0')
+
+    def test_formula_metadata_scans_beyond_sample_and_streams_rows(tmp_path: Path) -> None:
+        source = tmp_path / "formulas.xlsx"
+        _save_book(
+            source,
+            {"Rows": [["id", "value"], *[[str(i), i] for i in range(21)], ["x", "=1+1"]]},
+        )
+        # Give the formula a cached value by editing the worksheet XML directly.
+        rewritten = tmp_path / "cached.xlsx"
+        with zipfile.ZipFile(source) as original, zipfile.ZipFile(rewritten, "w") as output:
+            for entry in original.infolist():
+                data = original.read(entry)
+                if entry.filename == "xl/worksheets/sheet1.xml":
+                    data = re.sub(rb"<f>1\+1</f><v\s*/>", b"<f>1+1</f><v>2</v>", data)
+                output.writestr(entry, data)
+        rewritten.replace(source)
+    
+>       inspection = inspect_workbook(source)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/unit/test_project_excel_adapter.py:320: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/autoflow/infrastructure/filesystem/project_excel.py:428: in inspect_workbook
+    for row in rows:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def rows() -> Iterator[ExcelRow]:
+        try:
+            for row_number, (source_row, value_row) in enumerate(
+                zip(source_rows, value_rows), start=2
+            ):
+                _check(deadline)
+                if row_number - 1 > MAX_ROWS:
+                    raise _error(
+                        "EXCEL_ROW_LIMIT_EXCEEDED", "Worksheet exceeds row limit"
+                    )
+                width = max(len(source_row), len(value_row))
+                budget.cells += width
+                if width > MAX_COLUMNS:
+                    raise _error(
+                        "EXCEL_COLUMN_LIMIT_EXCEEDED", "Worksheet exceeds column limit"
+                    )
+                if budget.cells > MAX_CELLS:
+                    raise _error(
+                        "EXCEL_CELL_LIMIT_EXCEEDED", "Workbook exceeds cell limit"
+                    )
+                if any(x.value is not None for x in source_row[len(headers) :]):
+                    raise _error("EXCEL_EMPTY_HEADER", "Data column has no header")
+                output = []
+                formula_columns = []
+                for column in range(len(headers)):
+                    source_cell = (
+                        source_row[column] if column < len(source_row) else None
+                    )
+                    value_cell = value_row[column] if column < len(value_row) else None
+                    value = getattr(value_cell, "value", None)
+                    if getattr(source_cell, "data_type", None) == "f":
+                        formula_columns.append(column)
+                        if value is None:
+>                           raise _error(
+                                "EXCEL_FORMULA_CACHE_MISSING",
+                                "Formula has no saved value",
+                            )
+E                           autoflow.domain.projects.models.ProjectError: Formula has no saved value
+
+src/autoflow/infrastructure/filesystem/project_excel.py:349: ProjectError

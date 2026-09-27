@@ -1,0 +1,120 @@
+[
+  {
+    "database": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_existing_migration_histor0/existing.sqlite3",
+    "head": [
+      [
+        "0023_merge_studio_android"
+      ]
+    ],
+    "runHashes": [
+      [
+        "original-hash"
+      ]
+    ],
+    "artifacts": [
+      {
+        "id": "image-one",
+        "nodeId": "screen",
+        "relativePath": "original.png"
+      }
+    ],
+    "devices": [],
+    "integrity": [
+      [
+        "ok"
+      ]
+    ],
+    "foreignKeyViolations": []
+  },
+  {
+    "database": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_existing_migration_histor1/existing.sqlite3",
+    "head": [
+      [
+        "0023_merge_studio_android"
+      ]
+    ],
+    "runHashes": [
+      [
+        "original-hash"
+      ]
+    ],
+    "artifacts": [
+      {
+        "id": "image-one",
+        "nodeId": "screen",
+        "relativePath": "original.png"
+      }
+    ],
+    "devices": [
+      {
+        "name": "Keep device",
+        "volumeId": "keep-data"
+      }
+    ],
+    "integrity": [
+      [
+        "ok"
+      ]
+    ],
+    "foreignKeyViolations": []
+  },
+  {
+    "database": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_existing_migration_histor2/existing.sqlite3",
+    "head": [
+      [
+        "0023_merge_studio_android"
+      ]
+    ],
+    "runHashes": [
+      [
+        "original-hash"
+      ]
+    ],
+    "artifacts": [
+      {
+        "id": "image-one",
+        "nodeId": "screen",
+        "relativePath": "original.png"
+      }
+    ],
+    "devices": [],
+    "integrity": [
+      [
+        "ok"
+      ]
+    ],
+    "foreignKeyViolations": []
+  },
+  {
+    "database": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-pytest-ojzjngj4/test_existing_migration_histor3/existing.sqlite3",
+    "head": [
+      [
+        "0023_merge_studio_android"
+      ]
+    ],
+    "runHashes": [
+      [
+        "original-hash"
+      ]
+    ],
+    "artifacts": [
+      {
+        "id": "image-one",
+        "nodeId": "screen",
+        "relativePath": "original.png"
+      }
+    ],
+    "devices": [
+      {
+        "name": "Keep device",
+        "volumeId": "keep-data"
+      }
+    ],
+    "integrity": [
+      [
+        "ok"
+      ]
+    ],
+    "foreignKeyViolations": []
+  }
+]

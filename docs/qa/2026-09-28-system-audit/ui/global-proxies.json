@@ -1,0 +1,10 @@
+{
+  "hash": "#/proxies",
+  "text": "AutoFlow\n总览\n项目\n浏览器配置\n安卓设备\n代理管理\n模型管理\n实验室\n设置\n本地服务正常\n代理管理\n\n管理 ProxyPanel 移动代理，并为浏览器配置维护 AutoFlow 本地代理组。\n\n连接 ProxyPanel\n\n连接后同步专用移动代理。API Key 会保存到系统凭据库。\n\n连接 ProxyPanel",
+  "viewport": [
+    1440,
+    992
+  ],
+  "width": 1428,
+  "alerts": []
+}

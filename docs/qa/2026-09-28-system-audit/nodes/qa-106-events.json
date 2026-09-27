@@ -1,0 +1,48 @@
+[
+  {
+    "type": "execution:node_start",
+    "nodeId": "n0",
+    "executionId": "9dcef71c-811d-430a-8654-69893203fde9",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-106",
+    "workflowId": "qa-106"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n0",
+    "executionId": "9dcef71c-811d-430a-8654-69893203fde9",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": true,
+    "message": "文件事件已触发: created - package.json",
+    "error": null,
+    "isTimeout": false,
+    "data": {
+      "eventType": "created",
+      "filePath": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-extra-nodes-hj7mnv_l/watch/package.json",
+      "fileName": "package.json",
+      "timestamp": "2026-09-28T01:11:04.852806+08:00"
+    },
+    "logLevel": null,
+    "isUserLog": false,
+    "isSystemLog": true,
+    "duration": 2003.8520000234712,
+    "artifactIds": [],
+    "runId": "qa-106",
+    "workflowId": "qa-106"
+  },
+  {
+    "type": "execution:completed",
+    "runId": "qa-106",
+    "workflowId": "qa-106",
+    "executedNodes": 1,
+    "failedNodeId": null,
+    "issues": [],
+    "error": null
+  }
+]

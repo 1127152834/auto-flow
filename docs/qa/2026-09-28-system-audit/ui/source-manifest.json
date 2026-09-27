@@ -1,0 +1,27 @@
+[
+  {
+    "path": "README.md",
+    "bytes": 1575,
+    "sha256": "b3f7f413926ee62c04aba0c253b8453e69d5d834ed0f798401875db55c8221ee"
+  },
+  {
+    "path": "package.json",
+    "bytes": 1055,
+    "sha256": "6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92"
+  },
+  {
+    "path": "apps/backend/pyproject.toml",
+    "bytes": 1460,
+    "sha256": "4e49812742d3362808878fc11614cbb6884b94a1f6c13b93a9775d6b2d6d84f1"
+  },
+  {
+    "path": "docs/PROJECT_STRUCTURE.md",
+    "bytes": 58979,
+    "sha256": "dfbe76523c99d0dc49292fe11c71de346dc7475da611fb2890032d72b4dda924"
+  },
+  {
+    "path": "AGENTS.md",
+    "bytes": 2335,
+    "sha256": "f59c274adb1d4144cc8a351f111702e21b92be2d9b0bd459e572a0243a1c48a8"
+  }
+]

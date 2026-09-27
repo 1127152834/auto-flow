@@ -1,0 +1,15 @@
+{
+  "command": [
+    "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/bin/python",
+    "/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/backend/probe_browser_chain_cleanup.py",
+    "--workspace",
+    "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-audit-chain-cleanup-2lr2vuih/workspace",
+    "--out",
+    "/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/backend/browser-chain-cleanup-probe",
+    "--kernel",
+    "/Users/zhangtiancheng/Library/Application Support/@autoflow/desktop/data/kernels/chromium-145.0.7632.109.2/Chromium.app/Contents/MacOS/Chromium"
+  ],
+  "returncode": 0,
+  "elapsedSeconds": 9.574,
+  "variant": "Original QA script with only TestClient.__exit__ added to finally, compiled in memory; no application or original script edits."
+}

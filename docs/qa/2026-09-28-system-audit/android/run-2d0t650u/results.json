@@ -1,0 +1,351 @@
+{
+  "startedAt": "2026-09-27T17:20:09.079344+00:00",
+  "gitHead": "33ae3aa49600840b1700c83723408c494dc201a8",
+  "deviceId": "bb73b0cd-8c44-4b18-a49f-9e52ecfb6124",
+  "containerName": "autoflow-android-bb73b0cd-8c44-4b18-a49f-9e52ecfb6124",
+  "volumeName": "autoflow-android-bb73b0cd-8c44-4b18-a49f-9e52ecfb6124-data",
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-android-realqa-koh1o683",
+  "workspaceLabel": "cb81b5e2712171e037db1197c4cdd2517e0a40838d526a03f1af0ebb29345410",
+  "checks": [
+    {
+      "name": "existing runtime has isolated capacity",
+      "passed": true,
+      "detail": {
+        "cpuCount": 6,
+        "totalMemoryBytes": 8306655232,
+        "existingReservedBytes": 0,
+        "newMemoryMb": 1536
+      }
+    },
+    {
+      "name": "production Android runtime available via HTTP",
+      "passed": true,
+      "detail": {
+        "available": true,
+        "platformSupported": true,
+        "runtimeId": "autoflow-redroid",
+        "message": "运行环境可用",
+        "images": [
+          {
+            "id": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+            "name": "Android 13 标准 · ARM64",
+            "reference": "redroid/redroid:13.0.0_64only-latest"
+          }
+        ],
+        "cpuCount": 6,
+        "memoryMb": 7921
+      }
+    },
+    {
+      "name": "create stopped device with independent data",
+      "passed": true,
+      "detail": {
+        "containerCount": 1,
+        "volumeExists": true,
+        "ownershipMatches": true
+      }
+    },
+    {
+      "name": "create same UUID and payload is idempotent",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "owned container and data removed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "deleted device absent from API list",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "preexisting containers unchanged",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "preexisting volume set unchanged",
+      "passed": true,
+      "detail": null
+    }
+  ],
+  "cleanup": {
+    "beforeDeletion": {
+      "containerCount": 1,
+      "volumeExists": true,
+      "ownershipMatches": true
+    },
+    "afterDeletion": {
+      "containerCount": 0,
+      "volumeExists": false,
+      "ownershipMatches": true
+    }
+  },
+  "before": {
+    "containers": [
+      {
+        "id": "a16690c74f02c67610234d41cb281459ee5de572f6c73fa19e121fcb93ef0ca9",
+        "name": "/autoflow-android-f5c99e27-a272-486b-9e04-05b506d2b0df",
+        "state": "exited",
+        "startedAt": "2026-09-22T07:06:57.074990964Z",
+        "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+        "memoryBytes": 1610612736,
+        "labels": {
+          "io.autoflow.android.device": "f5c99e27-a272-486b-9e04-05b506d2b0df",
+          "io.autoflow.android.workspace": "a0f4594029bbec28ef357b47e8c5c6f12d83437e7c6b34f0fb60b6dd00b6f36b",
+          "io.buildah.version": "1.33.1"
+        }
+      },
+      {
+        "id": "5aa5cb6bb46345eefcde805e7a281e35676771b4b556b54a90378f48f7e65235",
+        "name": "/autoflow-android-f4b86f69-bf45-4adf-853d-b9c687ab3985",
+        "state": "exited",
+        "startedAt": "2026-09-13T02:44:41.739973642Z",
+        "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+        "memoryBytes": 1610612736,
+        "labels": {
+          "io.autoflow.android.device": "f4b86f69-bf45-4adf-853d-b9c687ab3985",
+          "io.autoflow.android.workspace": "9be4c5eb2fcfde95481454e5c93b05957d716ba9cbc386d7dac3cc8df3bb9b43",
+          "io.buildah.version": "1.33.1"
+        }
+      },
+      {
+        "id": "db81f3555d925cb62ca44b99fd5aed4f6ad1507a73834dcb5f4a225c02071702",
+        "name": "/afd-5a7beadf6de2468d",
+        "state": "exited",
+        "startedAt": "2026-09-13T08:51:56.598542403Z",
+        "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+        "memoryBytes": 2147483648,
+        "labels": {
+          "autoflow.redroid-demo": "1",
+          "autoflow.redroid-demo.config": "{\"name\": \"安卓 Demo\", \"image\": \"redroid/redroid:13.0.0_64only-latest\", \"width\": 720, \"height\": 1280, \"dpi\": 320, \"cpu\": 2, \"memory_mb\": 2048, \"image_id\": \"sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b\"}",
+          "autoflow.redroid-demo.instance": "afd-5a7beadf6de2468d",
+          "io.buildah.version": "1.33.1"
+        }
+      },
+      {
+        "id": "e29079a97dff5d4189cac91a09161c876615d060b4ab49c3f415e5781c133611",
+        "name": "/autoflow-redroid-demo-manager-1",
+        "state": "exited",
+        "startedAt": "2026-09-12T19:56:37.003170458Z",
+        "imageId": "sha256:5fa0f62d5cdaf941752ad2f2eed81f0aaa0be32d004b9a2bef8cc9f991ee1c6c",
+        "memoryBytes": 0,
+        "labels": {
+          "com.docker.compose.config-hash": "219125341e2be424f2a9b93434f4976cdb42c44ee84ec992f91c2f16691f84cb",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "",
+          "com.docker.compose.image": "sha256:5fa0f62d5cdaf941752ad2f2eed81f0aaa0be32d004b9a2bef8cc9f991ee1c6c",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "autoflow-redroid-demo",
+          "com.docker.compose.project.config_files": "/home/zhangtiancheng.guest/redroid-demo/compose.yaml",
+          "com.docker.compose.project.working_dir": "/home/zhangtiancheng.guest/redroid-demo",
+          "com.docker.compose.replace": "manager-1",
+          "com.docker.compose.service": "manager",
+          "com.docker.compose.version": "2.40.3"
+        }
+      },
+      {
+        "id": "37a74f8c3ec782d13eea9f8389c052e288933a8c25f508c3b9a11450cbe26de1",
+        "name": "/afd-635e8a215e194178",
+        "state": "exited",
+        "startedAt": "2026-09-13T07:49:54.94374302Z",
+        "imageId": "sha256:0e8b779981d61a11ec1dd230b23dddc454fba2c75794abe8a7583037984e5f8b",
+        "memoryBytes": 2147483648,
+        "labels": {
+          "autoflow.redroid-demo": "1",
+          "autoflow.redroid-demo.config": "{\"name\": \"Mac Magisk 对照\", \"image\": \"autoflow/redroid:13-magisk\", \"width\": 540, \"height\": 960, \"dpi\": 240, \"cpu\": 2, \"memory_mb\": 2048, \"image_id\": \"sha256:0e8b779981d61a11ec1dd230b23dddc454fba2c75794abe8a7583037984e5f8b\"}",
+          "autoflow.redroid-demo.instance": "afd-635e8a215e194178",
+          "io.buildah.version": "1.33.1"
+        }
+      },
+      {
+        "id": "245b229f93a149ce7e6d2adf5f27b8522b7d6897fc979ff0e0acd3cf394a234a",
+        "name": "/afd-ef3857a550924052",
+        "state": "exited",
+        "startedAt": "2026-09-13T07:09:22.382847468Z",
+        "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+        "memoryBytes": 2147483648,
+        "labels": {
+          "autoflow.redroid-demo": "1",
+          "autoflow.redroid-demo.config": "{\"name\": \"Mac 日常测试\", \"image\": \"redroid/redroid:13.0.0_64only-latest\", \"width\": 720, \"height\": 1280, \"dpi\": 320, \"cpu\": 2, \"memory_mb\": 2048, \"image_id\": \"sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b\"}",
+          "autoflow.redroid-demo.instance": "afd-ef3857a550924052",
+          "io.buildah.version": "1.33.1"
+        }
+      }
+    ],
+    "volumes": [
+      "afd-5a7beadf6de2468d-data",
+      "afd-635e8a215e194178-data",
+      "afd-ef3857a550924052-data",
+      "autoflow-android-f4b86f69-bf45-4adf-853d-b9c687ab3985-data",
+      "autoflow-android-f5c99e27-a272-486b-9e04-05b506d2b0df-data",
+      "autoflow-redroid-demo_uploads"
+    ]
+  },
+  "sidecarPid": 28730,
+  "environment": {
+    "available": true,
+    "platformSupported": true,
+    "runtimeId": "autoflow-redroid",
+    "message": "运行环境可用",
+    "images": [
+      {
+        "id": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+        "name": "Android 13 标准 · ARM64",
+        "reference": "redroid/redroid:13.0.0_64only-latest"
+      }
+    ],
+    "cpuCount": 6,
+    "memoryMb": 7921
+  },
+  "created": {
+    "deviceId": "bb73b0cd-8c44-4b18-a49f-9e52ecfb6124",
+    "name": "QA 2026-09-28 真实隔离设备",
+    "runtimeId": "autoflow-redroid",
+    "ownerRunId": null,
+    "control": "idle",
+    "generation": 0,
+    "width": 720,
+    "height": 1280,
+    "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+    "androidStatus": "stopped",
+    "lastError": null,
+    "cpu": 1,
+    "memoryMb": 1536,
+    "dpi": 320,
+    "androidVersion": "13",
+    "architecture": "arm64",
+    "dataRetained": false,
+    "deleted": false,
+    "operation": {
+      "id": "bb73b0cd-8c44-4b18-a49f-9e52ecfb6124",
+      "action": "create",
+      "state": "succeeded",
+      "stage": "已完成",
+      "error": null,
+      "startedAt": "2026-09-27T17:20:12.337742Z",
+      "finishedAt": "2026-09-27T17:20:12.809399Z"
+    },
+    "profileId": null,
+    "profileName": "Android 13 标准 · ARM64",
+    "instanceType": "persistent",
+    "locale": "zh-CN",
+    "timezone": "Asia/Shanghai"
+  },
+  "error": "Traceback (most recent call last):\n  File \"/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/android/android_real_qa.py\", line 100, in <module>\n    started=time.monotonic();d=command('start');RESULT['started']=d;save()\n                               ^^^^^^^^^^^^^^^^\n  File \"/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/android/android_real_qa.py\", line 64, in command\n    if d is not None:assert d.get('operation',{}).get('state')=='succeeded',d\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: {'deviceId': 'bb73b0cd-8c44-4b18-a49f-9e52ecfb6124', 'name': 'QA 2026-09-28 真实隔离设备', 'runtimeId': 'autoflow-redroid', 'ownerRunId': None, 'control': 'recovery_required', 'generation': 0, 'width': 720, 'height': 1280, 'imageId': 'sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b', 'androidStatus': 'stopped', 'lastError': '安卓运行环境命令失败，请检查设备与连接', 'cpu': 1, 'memoryMb': 1536, 'dpi': 320, 'androidVersion': '13', 'architecture': 'arm64', 'dataRetained': False, 'deleted': False, 'operation': {'id': 'edd8d003-9d5a-4a84-81b6-72a563b3b1d4', 'action': 'start', 'state': 'failed', 'stage': '需要处理', 'error': '安卓运行环境命令失败，请检查设备与连接', 'startedAt': '2026-09-27T17:20:13.902215Z', 'finishedAt': '2026-09-27T17:20:14.801394Z'}, 'profileId': None, 'profileName': 'Android 13 标准 · ARM64', 'instanceType': 'persistent', 'locale': 'zh-CN', 'timezone': 'Asia/Shanghai'}\n",
+  "after": {
+    "containers": [
+      {
+        "id": "a16690c74f02c67610234d41cb281459ee5de572f6c73fa19e121fcb93ef0ca9",
+        "name": "/autoflow-android-f5c99e27-a272-486b-9e04-05b506d2b0df",
+        "state": "exited",
+        "startedAt": "2026-09-22T07:06:57.074990964Z",
+        "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+        "memoryBytes": 1610612736,
+        "labels": {
+          "io.autoflow.android.device": "f5c99e27-a272-486b-9e04-05b506d2b0df",
+          "io.autoflow.android.workspace": "a0f4594029bbec28ef357b47e8c5c6f12d83437e7c6b34f0fb60b6dd00b6f36b",
+          "io.buildah.version": "1.33.1"
+        }
+      },
+      {
+        "id": "5aa5cb6bb46345eefcde805e7a281e35676771b4b556b54a90378f48f7e65235",
+        "name": "/autoflow-android-f4b86f69-bf45-4adf-853d-b9c687ab3985",
+        "state": "exited",
+        "startedAt": "2026-09-13T02:44:41.739973642Z",
+        "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+        "memoryBytes": 1610612736,
+        "labels": {
+          "io.autoflow.android.device": "f4b86f69-bf45-4adf-853d-b9c687ab3985",
+          "io.autoflow.android.workspace": "9be4c5eb2fcfde95481454e5c93b05957d716ba9cbc386d7dac3cc8df3bb9b43",
+          "io.buildah.version": "1.33.1"
+        }
+      },
+      {
+        "id": "db81f3555d925cb62ca44b99fd5aed4f6ad1507a73834dcb5f4a225c02071702",
+        "name": "/afd-5a7beadf6de2468d",
+        "state": "exited",
+        "startedAt": "2026-09-13T08:51:56.598542403Z",
+        "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+        "memoryBytes": 2147483648,
+        "labels": {
+          "autoflow.redroid-demo": "1",
+          "autoflow.redroid-demo.config": "{\"name\": \"安卓 Demo\", \"image\": \"redroid/redroid:13.0.0_64only-latest\", \"width\": 720, \"height\": 1280, \"dpi\": 320, \"cpu\": 2, \"memory_mb\": 2048, \"image_id\": \"sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b\"}",
+          "autoflow.redroid-demo.instance": "afd-5a7beadf6de2468d",
+          "io.buildah.version": "1.33.1"
+        }
+      },
+      {
+        "id": "e29079a97dff5d4189cac91a09161c876615d060b4ab49c3f415e5781c133611",
+        "name": "/autoflow-redroid-demo-manager-1",
+        "state": "exited",
+        "startedAt": "2026-09-12T19:56:37.003170458Z",
+        "imageId": "sha256:5fa0f62d5cdaf941752ad2f2eed81f0aaa0be32d004b9a2bef8cc9f991ee1c6c",
+        "memoryBytes": 0,
+        "labels": {
+          "com.docker.compose.config-hash": "219125341e2be424f2a9b93434f4976cdb42c44ee84ec992f91c2f16691f84cb",
+          "com.docker.compose.container-number": "1",
+          "com.docker.compose.depends_on": "",
+          "com.docker.compose.image": "sha256:5fa0f62d5cdaf941752ad2f2eed81f0aaa0be32d004b9a2bef8cc9f991ee1c6c",
+          "com.docker.compose.oneoff": "False",
+          "com.docker.compose.project": "autoflow-redroid-demo",
+          "com.docker.compose.project.config_files": "/home/zhangtiancheng.guest/redroid-demo/compose.yaml",
+          "com.docker.compose.project.working_dir": "/home/zhangtiancheng.guest/redroid-demo",
+          "com.docker.compose.replace": "manager-1",
+          "com.docker.compose.service": "manager",
+          "com.docker.compose.version": "2.40.3"
+        }
+      },
+      {
+        "id": "37a74f8c3ec782d13eea9f8389c052e288933a8c25f508c3b9a11450cbe26de1",
+        "name": "/afd-635e8a215e194178",
+        "state": "exited",
+        "startedAt": "2026-09-13T07:49:54.94374302Z",
+        "imageId": "sha256:0e8b779981d61a11ec1dd230b23dddc454fba2c75794abe8a7583037984e5f8b",
+        "memoryBytes": 2147483648,
+        "labels": {
+          "autoflow.redroid-demo": "1",
+          "autoflow.redroid-demo.config": "{\"name\": \"Mac Magisk 对照\", \"image\": \"autoflow/redroid:13-magisk\", \"width\": 540, \"height\": 960, \"dpi\": 240, \"cpu\": 2, \"memory_mb\": 2048, \"image_id\": \"sha256:0e8b779981d61a11ec1dd230b23dddc454fba2c75794abe8a7583037984e5f8b\"}",
+          "autoflow.redroid-demo.instance": "afd-635e8a215e194178",
+          "io.buildah.version": "1.33.1"
+        }
+      },
+      {
+        "id": "245b229f93a149ce7e6d2adf5f27b8522b7d6897fc979ff0e0acd3cf394a234a",
+        "name": "/afd-ef3857a550924052",
+        "state": "exited",
+        "startedAt": "2026-09-13T07:09:22.382847468Z",
+        "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+        "memoryBytes": 2147483648,
+        "labels": {
+          "autoflow.redroid-demo": "1",
+          "autoflow.redroid-demo.config": "{\"name\": \"Mac 日常测试\", \"image\": \"redroid/redroid:13.0.0_64only-latest\", \"width\": 720, \"height\": 1280, \"dpi\": 320, \"cpu\": 2, \"memory_mb\": 2048, \"image_id\": \"sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b\"}",
+          "autoflow.redroid-demo.instance": "afd-ef3857a550924052",
+          "io.buildah.version": "1.33.1"
+        }
+      }
+    ],
+    "volumes": [
+      "afd-5a7beadf6de2468d-data",
+      "afd-635e8a215e194178-data",
+      "afd-ef3857a550924052-data",
+      "autoflow-android-f4b86f69-bf45-4adf-853d-b9c687ab3985-data",
+      "autoflow-android-f5c99e27-a272-486b-9e04-05b506d2b0df-data",
+      "autoflow-redroid-demo_uploads"
+    ]
+  },
+  "finishedAt": "2026-09-27T17:20:20.696262+00:00",
+  "outcomes": {
+    "create": "PASS",
+    "create_idempotency": "PASS",
+    "start": "FAIL",
+    "preview": "NOT_RUN_START_FAILED",
+    "stop_running_device": "NOT_RUN_START_FAILED",
+    "recover": "PASS",
+    "delete_owned_device_and_data": "PASS",
+    "existing_resources_unchanged": "PASS"
+  },
+  "ownedProcessesAfterTest": []
+}

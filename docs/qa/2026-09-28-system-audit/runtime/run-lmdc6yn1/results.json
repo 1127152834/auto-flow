@@ -1,0 +1,878 @@
+{
+  "startedAt": "2026-09-27T17:02:32.895180+00:00",
+  "gitHead": "33ae3aa49600840b1700c83723408c494dc201a8",
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-real-runtime-_90x1kqw",
+  "evidence": "/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/runtime/run-lmdc6yn1",
+  "checks": [
+    {
+      "name": "real loopback service ready",
+      "passed": true,
+      "detail": {
+        "url": "http://127.0.0.1:61791",
+        "pid": 11863
+      }
+    },
+    {
+      "name": "record idempotency package.json",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "record idempotency apps/backend/pyproject.toml",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "record idempotency AGENTS.md",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "actual file metadata roundtrip",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "stale revision rejects overwrite",
+      "passed": true,
+      "detail": {
+        "error": {
+          "code": "REVISION_CONFLICT",
+          "message": "Content was modified",
+          "details": {
+            "expectedRevision": 1,
+            "currentRevision": 2,
+            "domainCode": "revision_conflict",
+            "retryable": false
+          },
+          "requestId": "6149bc5c-b7a2-4203-b87f-da34961a7bbd"
+        }
+      }
+    },
+    {
+      "name": "table_semantics validation ready",
+      "passed": true,
+      "detail": {
+        "status": "ready",
+        "valid": true,
+        "runnable": true,
+        "issues": [],
+        "capabilityRequirements": [
+          {
+            "capability": "browser.cloakbrowser",
+            "required": false,
+            "available": true,
+            "reason": "本地浏览器执行能力"
+          },
+          {
+            "capability": "project.data",
+            "required": false,
+            "available": true,
+            "reason": "项目数据执行能力可用"
+          }
+        ],
+        "checkedAt": "2026-09-27T17:02:37.005358Z"
+      }
+    },
+    {
+      "name": "table nodes run on real source metadata",
+      "passed": true,
+      "detail": {
+        "timed_out": 0,
+        "succeeded": 2,
+        "cancelled": 0,
+        "failed": 0,
+        "interrupted": 0
+      }
+    },
+    {
+      "name": "table node boundary - project business table remains unchanged",
+      "passed": true,
+      "detail": {
+        "before": 3,
+        "after": 3,
+        "observation": "table_add_row operates on workflow result rows, not project business records; no target-table capability exposed"
+      }
+    }
+  ],
+  "scenarios": {
+    "table_semantics": {
+      "workflowId": "316727e3-d5d9-453a-8362-e97b12aec587",
+      "automationId": "d4bc557a-6656-47d0-b553-4f01c84d330e",
+      "batchId": "75ccad9e-461b-4431-902a-2c24313ed286",
+      "startRequest": {
+        "expectedAutomationRevision": 1,
+        "parameters": {},
+        "maxTasks": 2,
+        "concurrency": 1
+      },
+      "idempotencyKey": "003e5ec6-21a9-41f7-b067-0c3e1b64c9c0",
+      "accepted": {
+        "operation": {
+          "operationId": "9fc2a0cf-4123-4cec-8fd5-2c7933b7ec42",
+          "projectId": "a194e840-648f-48f9-bc9f-d6d641042d2d",
+          "idempotencyKey": "003e5ec6-21a9-41f7-b067-0c3e1b64c9c0",
+          "kind": "startBatch",
+          "status": "succeeded",
+          "statusRevision": 2,
+          "resource": {
+            "type": "batch",
+            "projectId": "a194e840-648f-48f9-bc9f-d6d641042d2d",
+            "batchId": "75ccad9e-461b-4431-902a-2c24313ed286"
+          },
+          "result": {
+            "batch": {
+              "batchId": "75ccad9e-461b-4431-902a-2c24313ed286",
+              "projectId": "a194e840-648f-48f9-bc9f-d6d641042d2d",
+              "automationId": "d4bc557a-6656-47d0-b553-4f01c84d330e",
+              "automationName": "真实源码-table_semantics",
+              "startOperationId": "9fc2a0cf-4123-4cec-8fd5-2c7933b7ec42",
+              "status": "accepted",
+              "statusRevision": 1,
+              "managementRevision": 1,
+              "requestedCount": 2,
+              "createdTaskCount": 2,
+              "activeTaskCount": 2,
+              "claimGateState": "closed",
+              "selectionOutcome": null,
+              "createdAt": "2026-09-27T17:02:37.067397+00:00"
+            }
+          },
+          "error": null,
+          "createdAt": "2026-09-27T17:02:37.067397Z",
+          "updatedAt": "2026-09-27T17:02:37.067397Z",
+          "completedAt": "2026-09-27T17:02:37.067397Z"
+        }
+      },
+      "result": {
+        "batch": {
+          "batch": {
+            "batchId": "75ccad9e-461b-4431-902a-2c24313ed286",
+            "projectId": "a194e840-648f-48f9-bc9f-d6d641042d2d",
+            "automationId": "d4bc557a-6656-47d0-b553-4f01c84d330e",
+            "automationName": "真实源码-table_semantics",
+            "startOperationId": "9fc2a0cf-4123-4cec-8fd5-2c7933b7ec42",
+            "status": "completed",
+            "statusRevision": 3,
+            "managementRevision": 1,
+            "requestedCount": 2,
+            "createdTaskCount": 2,
+            "activeTaskCount": 0,
+            "claimGateState": "closed",
+            "selectionOutcome": null,
+            "createdAt": "2026-09-27T17:02:37.067397Z",
+            "completedAt": "2026-09-27T17:02:41.614247Z"
+          },
+          "statusCounts": {
+            "timed_out": 0,
+            "succeeded": 2,
+            "cancelled": 0,
+            "failed": 0,
+            "interrupted": 0
+          },
+          "taskCount": 2,
+          "reusedInputGroupCount": 0,
+          "unchangedInputStreak": 0,
+          "stopOperation": null,
+          "forceStopAllowed": false,
+          "forceStopAvailableAt": null,
+          "configurationSnapshot": {
+            "automation": {
+              "automationId": "d4bc557a-6656-47d0-b553-4f01c84d330e",
+              "projectId": "a194e840-648f-48f9-bc9f-d6d641042d2d",
+              "workflowId": "316727e3-d5d9-453a-8362-e97b12aec587",
+              "name": "真实源码-table_semantics",
+              "description": "QA实际仓库文件和真实执行器",
+              "managementRevision": 1,
+              "inputPlan": {
+                "inputs": []
+              },
+              "parameterSchema": [],
+              "environmentPolicy": {
+                "source": "newFromProfile",
+                "profileId": "f7f3fe97-6f62-4ab8-a3da-2ccbe0ddf157",
+                "proxyOverride": {
+                  "mode": "none"
+                },
+                "modelProviderId": null
+              },
+              "runPolicy": {
+                "maxTasks": 2,
+                "concurrency": 1,
+                "maxLiveInstances": 1,
+                "continueAfterFailure": false,
+                "automaticExecutionTimeoutSeconds": 120,
+                "manualDeadlineSeconds": 300
+              },
+              "capabilityRequirements": [],
+              "createdAt": "2026-09-27T17:02:36.940812+00:00",
+              "updatedAt": "2026-09-27T17:02:36.940812+00:00"
+            },
+            "parameters": {},
+            "maxTasks": 2,
+            "concurrency": 1,
+            "resourceRequest": {
+              "browser": "none",
+              "automaticExecutionTimeoutSeconds": 120
+            },
+            "workflowRevision": 1,
+            "dataCapabilityBinding": null
+          }
+        },
+        "tasks": [
+          {
+            "summary": {
+              "taskId": "c140057e-eaf0-46ab-9661-eff856bf5215",
+              "projectId": "a194e840-648f-48f9-bc9f-d6d641042d2d",
+              "batchId": "75ccad9e-461b-4431-902a-2c24313ed286",
+              "runId": "67169ba4-60ae-4c0b-b158-d83315d4cd5a",
+              "runRequestId": "efad863e-db40-4152-82ec-7835dc1664b6",
+              "status": "succeeded",
+              "statusRevision": 4,
+              "inputSnapshotId": "bd0b4765-f467-47d8-8b88-be9b34883404",
+              "taskOrdinal": 1,
+              "automationName": "真实源码-table_semantics",
+              "batchStartedAt": "2026-09-27T17:02:37.067397Z",
+              "inputIdentifier": "参数任务",
+              "endNodeName": "获取单元格",
+              "lastStatusAt": "2026-09-27T17:02:39.343155Z",
+              "manualItemId": null,
+              "createdAt": "2026-09-27T17:02:37.067397Z",
+              "completedAt": "2026-09-27T17:02:39.343155Z"
+            },
+            "detail": {
+              "automationName": "真实源码-table_semantics",
+              "batchStartedAt": "2026-09-27T17:02:37.067397Z",
+              "parameterDefinitions": [],
+              "nodeNames": {
+                "n0": "添加数据行",
+                "n1": "获取单元格"
+              },
+              "task": {
+                "taskId": "c140057e-eaf0-46ab-9661-eff856bf5215",
+                "projectId": "a194e840-648f-48f9-bc9f-d6d641042d2d",
+                "batchId": "75ccad9e-461b-4431-902a-2c24313ed286",
+                "runId": "67169ba4-60ae-4c0b-b158-d83315d4cd5a",
+                "runRequestId": "efad863e-db40-4152-82ec-7835dc1664b6",
+                "status": "succeeded",
+                "statusRevision": 4,
+                "inputSnapshotId": "bd0b4765-f467-47d8-8b88-be9b34883404",
+                "taskOrdinal": 1,
+                "automationName": null,
+                "batchStartedAt": null,
+                "inputIdentifier": null,
+                "endNodeName": null,
+                "lastStatusAt": null,
+                "manualItemId": null,
+                "createdAt": "2026-09-27T17:02:37.067397Z",
+                "completedAt": "2026-09-27T17:02:39.343155Z"
+              },
+              "inputSnapshot": {
+                "inputSnapshotId": "bd0b4765-f467-47d8-8b88-be9b34883404",
+                "taskId": "c140057e-eaf0-46ab-9661-eff856bf5215",
+                "batchId": "75ccad9e-461b-4431-902a-2c24313ed286",
+                "parameters": {},
+                "inputs": [],
+                "capturedAt": "2026-09-27T17:02:37.067397Z"
+              },
+              "currentInputs": [],
+              "run": {
+                "runId": "67169ba4-60ae-4c0b-b158-d83315d4cd5a",
+                "runRequestId": "efad863e-db40-4152-82ec-7835dc1664b6",
+                "status": "succeeded",
+                "statusRevision": 4,
+                "executionGeneration": 1,
+                "preparedContentId": "88a2f7b0-d2ec-47e1-ad67-b567ee465370",
+                "capabilityBindings": [],
+                "resourceRequest": {
+                  "browser": "none",
+                  "automaticExecutionTimeoutSeconds": 120
+                },
+                "lastSequence": 12,
+                "terminal": true,
+                "error": null,
+                "startedAt": "2026-09-27T17:02:37.089527Z",
+                "finishedAt": "2026-09-27T17:02:39.343155Z"
+              },
+              "dataWrites": [],
+              "cleanup": {
+                "status": "notRequired",
+                "operationId": null,
+                "message": null
+              }
+            },
+            "outputs": {
+              "items": [
+                {
+                  "outputId": "a2c6643e11ef411cb4f460de60261cb4",
+                  "kind": "value",
+                  "name": "actual_source_hash",
+                  "value": "6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92",
+                  "runId": "67169ba4-60ae-4c0b-b158-d83315d4cd5a",
+                  "sequence": 8,
+                  "nodeId": "n1",
+                  "nodeName": "获取单元格",
+                  "nodeVisitId": "39e631cd-11bb-4bf9-bf1c-cc7960568d79",
+                  "attempt": 1,
+                  "createdAt": "2026-09-27T17:02:38.867975Z",
+                  "executionContext": null
+                }
+              ],
+              "page": 1,
+              "pageSize": 50,
+              "total": 1,
+              "sort": "createdAt"
+            },
+            "node-attempts": {
+              "items": [
+                {
+                  "nodeVisitId": "b2551c0c-0fad-42fe-af95-23b4dbc5de46",
+                  "nodeId": "n0",
+                  "nodeName": "添加数据行",
+                  "attempt": 1,
+                  "status": "succeeded",
+                  "startedAt": "2026-09-27T17:02:38.796584Z",
+                  "completedAt": "2026-09-27T17:02:38.832821Z",
+                  "error": null,
+                  "executionContext": null
+                },
+                {
+                  "nodeVisitId": "39e631cd-11bb-4bf9-bf1c-cc7960568d79",
+                  "nodeId": "n1",
+                  "nodeName": "获取单元格",
+                  "attempt": 1,
+                  "status": "succeeded",
+                  "startedAt": "2026-09-27T17:02:38.843616Z",
+                  "completedAt": "2026-09-27T17:02:38.891751Z",
+                  "error": null,
+                  "executionContext": null
+                }
+              ],
+              "page": 1,
+              "pageSize": 50,
+              "total": 2,
+              "sort": "createdAt"
+            },
+            "logs": {
+              "items": [
+                {
+                  "runId": "67169ba4-60ae-4c0b-b158-d83315d4cd5a",
+                  "sequence": 3,
+                  "eventId": "8cc0cad5f0d941269884fb65de5d8593",
+                  "executionGeneration": 1,
+                  "nodeId": "n0",
+                  "nodeName": "添加数据行",
+                  "nodeVisitId": "b2551c0c-0fad-42fe-af95-23b4dbc5de46",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "开始执行节点",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:02:38.808698Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "67169ba4-60ae-4c0b-b158-d83315d4cd5a",
+                  "sequence": 4,
+                  "eventId": "517365f5c18a459f941eb565def672e3",
+                  "executionGeneration": 1,
+                  "nodeId": "n0",
+                  "nodeName": "添加数据行",
+                  "nodeVisitId": "b2551c0c-0fad-42fe-af95-23b4dbc5de46",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "节点执行完成",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:02:38.822359Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "67169ba4-60ae-4c0b-b158-d83315d4cd5a",
+                  "sequence": 7,
+                  "eventId": "2a947508c24d40fd9a38018228c792c6",
+                  "executionGeneration": 1,
+                  "nodeId": "n1",
+                  "nodeName": "获取单元格",
+                  "nodeVisitId": "39e631cd-11bb-4bf9-bf1c-cc7960568d79",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "开始执行节点",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:02:38.855563Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "67169ba4-60ae-4c0b-b158-d83315d4cd5a",
+                  "sequence": 9,
+                  "eventId": "6cb31046635e48f0b06ff279ae998b58",
+                  "executionGeneration": 1,
+                  "nodeId": "n1",
+                  "nodeName": "获取单元格",
+                  "nodeVisitId": "39e631cd-11bb-4bf9-bf1c-cc7960568d79",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "节点执行完成",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:02:38.879705Z",
+                  "executionContext": null
+                }
+              ],
+              "afterSequence": 9,
+              "lastSequence": 12,
+              "hasMore": false
+            },
+            "artifacts": {
+              "items": [],
+              "page": 1,
+              "pageSize": 50,
+              "total": 0,
+              "sort": "createdAt"
+            }
+          },
+          {
+            "summary": {
+              "taskId": "256667bd-944c-4514-99e3-52838b2edd77",
+              "projectId": "a194e840-648f-48f9-bc9f-d6d641042d2d",
+              "batchId": "75ccad9e-461b-4431-902a-2c24313ed286",
+              "runId": "a442aceb-a278-4920-9832-e6cb56c173be",
+              "runRequestId": "a808fb83-a3c6-4b39-be44-c1092539b144",
+              "status": "succeeded",
+              "statusRevision": 4,
+              "inputSnapshotId": "f23f671a-7be1-4765-a679-734b8b6cadee",
+              "taskOrdinal": 2,
+              "automationName": "真实源码-table_semantics",
+              "batchStartedAt": "2026-09-27T17:02:37.067397Z",
+              "inputIdentifier": "参数任务",
+              "endNodeName": "获取单元格",
+              "lastStatusAt": "2026-09-27T17:02:41.605857Z",
+              "manualItemId": null,
+              "createdAt": "2026-09-27T17:02:37.067397Z",
+              "completedAt": "2026-09-27T17:02:41.605857Z"
+            },
+            "detail": {
+              "automationName": "真实源码-table_semantics",
+              "batchStartedAt": "2026-09-27T17:02:37.067397Z",
+              "parameterDefinitions": [],
+              "nodeNames": {
+                "n0": "添加数据行",
+                "n1": "获取单元格"
+              },
+              "task": {
+                "taskId": "256667bd-944c-4514-99e3-52838b2edd77",
+                "projectId": "a194e840-648f-48f9-bc9f-d6d641042d2d",
+                "batchId": "75ccad9e-461b-4431-902a-2c24313ed286",
+                "runId": "a442aceb-a278-4920-9832-e6cb56c173be",
+                "runRequestId": "a808fb83-a3c6-4b39-be44-c1092539b144",
+                "status": "succeeded",
+                "statusRevision": 4,
+                "inputSnapshotId": "f23f671a-7be1-4765-a679-734b8b6cadee",
+                "taskOrdinal": 2,
+                "automationName": null,
+                "batchStartedAt": null,
+                "inputIdentifier": null,
+                "endNodeName": null,
+                "lastStatusAt": null,
+                "manualItemId": null,
+                "createdAt": "2026-09-27T17:02:37.067397Z",
+                "completedAt": "2026-09-27T17:02:41.605857Z"
+              },
+              "inputSnapshot": {
+                "inputSnapshotId": "f23f671a-7be1-4765-a679-734b8b6cadee",
+                "taskId": "256667bd-944c-4514-99e3-52838b2edd77",
+                "batchId": "75ccad9e-461b-4431-902a-2c24313ed286",
+                "parameters": {},
+                "inputs": [],
+                "capturedAt": "2026-09-27T17:02:37.067397Z"
+              },
+              "currentInputs": [],
+              "run": {
+                "runId": "a442aceb-a278-4920-9832-e6cb56c173be",
+                "runRequestId": "a808fb83-a3c6-4b39-be44-c1092539b144",
+                "status": "succeeded",
+                "statusRevision": 4,
+                "executionGeneration": 1,
+                "preparedContentId": "88a2f7b0-d2ec-47e1-ad67-b567ee465370",
+                "capabilityBindings": [],
+                "resourceRequest": {
+                  "browser": "none",
+                  "automaticExecutionTimeoutSeconds": 120
+                },
+                "lastSequence": 12,
+                "terminal": true,
+                "error": null,
+                "startedAt": "2026-09-27T17:02:39.353222Z",
+                "finishedAt": "2026-09-27T17:02:41.605857Z"
+              },
+              "dataWrites": [],
+              "cleanup": {
+                "status": "notRequired",
+                "operationId": null,
+                "message": null
+              }
+            },
+            "outputs": {
+              "items": [
+                {
+                  "outputId": "3cc38ddfe6ac40ef84dfb6bb8737bb0c",
+                  "kind": "value",
+                  "name": "actual_source_hash",
+                  "value": "6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92",
+                  "runId": "a442aceb-a278-4920-9832-e6cb56c173be",
+                  "sequence": 8,
+                  "nodeId": "n1",
+                  "nodeName": "获取单元格",
+                  "nodeVisitId": "bbeac02b-41b7-488a-b362-6b108108be26",
+                  "attempt": 1,
+                  "createdAt": "2026-09-27T17:02:41.133585Z",
+                  "executionContext": null
+                }
+              ],
+              "page": 1,
+              "pageSize": 50,
+              "total": 1,
+              "sort": "createdAt"
+            },
+            "node-attempts": {
+              "items": [
+                {
+                  "nodeVisitId": "b34cdcdd-8f70-4361-b005-06b3fb5c8477",
+                  "nodeId": "n0",
+                  "nodeName": "添加数据行",
+                  "attempt": 1,
+                  "status": "succeeded",
+                  "startedAt": "2026-09-27T17:02:41.061236Z",
+                  "completedAt": "2026-09-27T17:02:41.097181Z",
+                  "error": null,
+                  "executionContext": null
+                },
+                {
+                  "nodeVisitId": "bbeac02b-41b7-488a-b362-6b108108be26",
+                  "nodeId": "n1",
+                  "nodeName": "获取单元格",
+                  "attempt": 1,
+                  "status": "succeeded",
+                  "startedAt": "2026-09-27T17:02:41.109350Z",
+                  "completedAt": "2026-09-27T17:02:41.157458Z",
+                  "error": null,
+                  "executionContext": null
+                }
+              ],
+              "page": 1,
+              "pageSize": 50,
+              "total": 2,
+              "sort": "createdAt"
+            },
+            "logs": {
+              "items": [
+                {
+                  "runId": "a442aceb-a278-4920-9832-e6cb56c173be",
+                  "sequence": 3,
+                  "eventId": "582041c605d24f0aafae94567dadcaeb",
+                  "executionGeneration": 1,
+                  "nodeId": "n0",
+                  "nodeName": "添加数据行",
+                  "nodeVisitId": "b34cdcdd-8f70-4361-b005-06b3fb5c8477",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "开始执行节点",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:02:41.073313Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "a442aceb-a278-4920-9832-e6cb56c173be",
+                  "sequence": 4,
+                  "eventId": "47ce2eafc8954c76acd86a91000fd21c",
+                  "executionGeneration": 1,
+                  "nodeId": "n0",
+                  "nodeName": "添加数据行",
+                  "nodeVisitId": "b34cdcdd-8f70-4361-b005-06b3fb5c8477",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "节点执行完成",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:02:41.086928Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "a442aceb-a278-4920-9832-e6cb56c173be",
+                  "sequence": 7,
+                  "eventId": "2f29153415e84a928c37b4d47f3bec5b",
+                  "executionGeneration": 1,
+                  "nodeId": "n1",
+                  "nodeName": "获取单元格",
+                  "nodeVisitId": "bbeac02b-41b7-488a-b362-6b108108be26",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "开始执行节点",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:02:41.121301Z",
+                  "executionContext": null
+                },
+                {
+                  "runId": "a442aceb-a278-4920-9832-e6cb56c173be",
+                  "sequence": 9,
+                  "eventId": "2efa6d9ead974770a1f46ba1b6ee0c7a",
+                  "executionGeneration": 1,
+                  "nodeId": "n1",
+                  "nodeName": "获取单元格",
+                  "nodeVisitId": "bbeac02b-41b7-488a-b362-6b108108be26",
+                  "attempt": 1,
+                  "level": "info",
+                  "message": "节点执行完成",
+                  "isUserLog": false,
+                  "occurredAt": "2026-09-27T17:02:41.145411Z",
+                  "executionContext": null
+                }
+              ],
+              "afterSequence": 9,
+              "lastSequence": 12,
+              "hasMore": false
+            },
+            "artifacts": {
+              "items": [],
+              "page": 1,
+              "pageSize": 50,
+              "total": 0,
+              "sort": "createdAt"
+            }
+          }
+        ],
+        "history": [
+          {
+            "at": 1790528557.206895,
+            "batchStatus": "running",
+            "counts": {
+              "timed_out": 0,
+              "succeeded": 0,
+              "cancelled": 0,
+              "failed": 0,
+              "interrupted": 0,
+              "running": 1,
+              "queued": 1
+            }
+          },
+          {
+            "at": 1790528557.5262988,
+            "batchStatus": "running",
+            "counts": {
+              "timed_out": 0,
+              "succeeded": 0,
+              "cancelled": 0,
+              "failed": 0,
+              "interrupted": 0,
+              "running": 1,
+              "queued": 1
+            }
+          },
+          {
+            "at": 1790528557.842458,
+            "batchStatus": "running",
+            "counts": {
+              "timed_out": 0,
+              "succeeded": 0,
+              "cancelled": 0,
+              "failed": 0,
+              "interrupted": 0,
+              "running": 1,
+              "queued": 1
+            }
+          },
+          {
+            "at": 1790528558.1625001,
+            "batchStatus": "running",
+            "counts": {
+              "timed_out": 0,
+              "succeeded": 0,
+              "cancelled": 0,
+              "failed": 0,
+              "interrupted": 0,
+              "running": 1,
+              "queued": 1
+            }
+          },
+          {
+            "at": 1790528558.477408,
+            "batchStatus": "running",
+            "counts": {
+              "timed_out": 0,
+              "succeeded": 0,
+              "cancelled": 0,
+              "failed": 0,
+              "interrupted": 0,
+              "running": 1,
+              "queued": 1
+            }
+          },
+          {
+            "at": 1790528558.795278,
+            "batchStatus": "running",
+            "counts": {
+              "timed_out": 0,
+              "succeeded": 0,
+              "cancelled": 0,
+              "failed": 0,
+              "interrupted": 0,
+              "running": 1,
+              "queued": 1
+            }
+          },
+          {
+            "at": 1790528559.114957,
+            "batchStatus": "running",
+            "counts": {
+              "timed_out": 0,
+              "succeeded": 0,
+              "cancelled": 0,
+              "failed": 0,
+              "interrupted": 0,
+              "running": 1,
+              "queued": 1
+            }
+          },
+          {
+            "at": 1790528559.439685,
+            "batchStatus": "running",
+            "counts": {
+              "timed_out": 0,
+              "succeeded": 1,
+              "cancelled": 0,
+              "failed": 0,
+              "interrupted": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790528559.7591639,
+            "batchStatus": "running",
+            "counts": {
+              "timed_out": 0,
+              "succeeded": 1,
+              "cancelled": 0,
+              "failed": 0,
+              "interrupted": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790528560.0751328,
+            "batchStatus": "running",
+            "counts": {
+              "timed_out": 0,
+              "succeeded": 1,
+              "cancelled": 0,
+              "failed": 0,
+              "interrupted": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790528560.3942778,
+            "batchStatus": "running",
+            "counts": {
+              "timed_out": 0,
+              "succeeded": 1,
+              "cancelled": 0,
+              "failed": 0,
+              "interrupted": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790528560.7114098,
+            "batchStatus": "running",
+            "counts": {
+              "timed_out": 0,
+              "succeeded": 1,
+              "cancelled": 0,
+              "failed": 0,
+              "interrupted": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790528561.032555,
+            "batchStatus": "running",
+            "counts": {
+              "timed_out": 0,
+              "succeeded": 1,
+              "cancelled": 0,
+              "failed": 0,
+              "interrupted": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790528561.3521202,
+            "batchStatus": "running",
+            "counts": {
+              "timed_out": 0,
+              "succeeded": 1,
+              "cancelled": 0,
+              "failed": 0,
+              "interrupted": 0,
+              "running": 1
+            }
+          },
+          {
+            "at": 1790528561.686186,
+            "batchStatus": "completed",
+            "counts": {
+              "timed_out": 0,
+              "succeeded": 2,
+              "cancelled": 0,
+              "failed": 0,
+              "interrupted": 0
+            }
+          }
+        ]
+      }
+    }
+  },
+  "processes": [
+    11863
+  ],
+  "realInputFiles": [
+    {
+      "path": "package.json",
+      "size": 1055,
+      "sha256": "6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92"
+    },
+    {
+      "path": "apps/backend/pyproject.toml",
+      "size": 1460,
+      "sha256": "4e49812742d3362808878fc11614cbb6884b94a1f6c13b93a9775d6b2d6d84f1"
+    },
+    {
+      "path": "AGENTS.md",
+      "size": 2335,
+      "sha256": "f59c274adb1d4144cc8a351f111702e21b92be2d9b0bd459e572a0243a1c48a8"
+    }
+  ],
+  "projectId": "a194e840-648f-48f9-bc9f-d6d641042d2d",
+  "table": {
+    "projectId": "a194e840-648f-48f9-bc9f-d6d641042d2d",
+    "tableId": "d1343433-fd6e-4372-81cb-f48d88fc16b3",
+    "name": "当前源码文件清单",
+    "description": "来自真实工作树字节与SHA-256",
+    "sourceKind": "local",
+    "source": {
+      "kind": "local"
+    },
+    "datasetGeneration": "0405d31d-a281-46bb-8ddc-171792f63530",
+    "tableRevision": 1,
+    "identity": {
+      "mode": "system"
+    },
+    "slotDefinitions": [],
+    "recordCount": 0,
+    "syncSummary": {
+      "status": "notApplicable",
+      "pendingCount": 0,
+      "unknownCount": 0
+    },
+    "createdAt": "2026-09-27T17:02:36.107661Z",
+    "updatedAt": "2026-09-27T17:02:36.107661Z"
+  },
+  "fatalError": "Traceback (most recent call last):\n  File \"/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/runtime/real_runtime_qa.py\", line 181, in main\n    await create_scenario(prefix,profile,'concurrent_real_file',steps,concurrency=2)\n  File \"/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/runtime/real_runtime_qa.py\", line 81, in create_scenario\n    automation=await api('POST',prefix+'/automations',{'name':'真实源码-'+scenario,'description':'QA实际仓库文件和真实执行器','workflowId':workflow['id'],'inputPlan':{'inputs':[]},'parameterSchema':[],'environmentPolicy':{'source':'newFromProfile','profileId':profile['id'],'proxyOverride':{'mode':'none'},'modelProviderId':None},'runPolicy':{'maxTasks':2,'concurrency':concurrency,'maxLiveInstances':concurrency,'continueAfterFailure':False,'automaticExecutionTimeoutSeconds':timeout,'manualDeadlineSeconds':300}},str(uuid4()))\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-system-audit/runtime/real_runtime_qa.py\", line 71, in api\n    assert response.status_code in expected,(method,path,response.status_code,data)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ('POST', '/api/v1/projects/a194e840-648f-48f9-bc9f-d6d641042d2d/automations', 422, {'error': {'code': 'VALIDATION_ERROR', 'message': 'Request validation failed', 'details': {'fields': {'runPolicy.concurrency': '参数型运行当前仅支持一个活动实例'}, 'domainCode': 'validation_error', 'retryable': False}, 'requestId': 'ad0bc79d-16d6-4c52-99cc-3bccbcdec7b8'}})\n",
+  "finishedAt": "2026-09-27T17:02:43.257734+00:00"
+}

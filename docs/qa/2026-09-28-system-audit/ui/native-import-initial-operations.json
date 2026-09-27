@@ -1,0 +1,29 @@
+[
+  {
+    "id": "2922395b-c7ef-45fd-bd00-b2cabbc88bc0",
+    "kind": "importExcel",
+    "status": "failed",
+    "resource": "{\"type\": \"project\", \"projectId\": \"53d16290-6c85-4cfe-ae5c-df1abb1510aa\"}",
+    "result": "null",
+    "error": "{\"code\": \"INVALID_PROJECT_DATA\", \"message\": \"\\u6765\\u6e90\\u5355\\u5143\\u683c\\u4e0d\\u6ee1\\u8db3\\u5b57\\u6bb5\\u8981\\u6c42\\u3002\", \"details\": {\"field\": \"bytes\", \"reason\": \"must be a finite JSON-safe number\", \"rule\": \"type\", \"rowNumber\": 2, \"columnIndex\": 1}}",
+    "created_at": "2026-09-27 17:17:47.118510"
+  },
+  {
+    "id": "dc6d4215-f33a-4133-a8bd-2bd1be8d0c72",
+    "kind": "inspectExcel",
+    "status": "succeeded",
+    "resource": "{\"type\": \"project\", \"projectId\": \"53d16290-6c85-4cfe-ae5c-df1abb1510aa\"}",
+    "result": "{\"inspectionId\": \"5ea22139-a18f-40ab-8f74-61ecb0babf88\", \"fingerprint\": \"bf06f186706e9dcdeb68f8c9b288217b2c97d45d1c78f975b5d25ce512e6a1a6\", \"filename\": \"\\u771f\\u5b9e\\u6e90\\u7801\\u6e05\\u5355-\\u539f\\u751f\\u5bfc\\u51fa.xlsx\", \"expiresAt\": \"2026-09-27T17:19:12.198000+00:00\", \"sheets\": [{\"sheetId\": \"1\", \"name\": \"Data\", \"headers\": [\"\\u6e90\\u6587\\u4ef6\\u8def\\u5f84\", \"\\u5b57\\u8282\\u6570\", \"SHA-256\", \"\\u72b6\\u6001\"], \"sample\": [[\"docs/PROJECT_STRUCTURE.md\", \"58979\", \"dfbe76523c99d0dc49292fe11c71de346dc7475da611fb2890032d72b4dda924\", null], [\"package.json\", \"1055\", \"6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92\", null], [\"apps/backend/pyproject.toml\", \"1460\", \"4e49812742d3362808878fc11614cbb6884b94a1f6c13b93a9775d6b2d6d84f1\", null], [\"AGENTS.md\", \"2335\", \"f59c274adb1d4144cc8a351f111702e21b92be2d9b0bd459e572a0243a1c48a8\", null], [\"/Users/zhangtiancheng/Documents/projects/autoflow/README.md\", \"1575\", \"b3f7f413926ee62c04aba0c253b8453e69d5d834ed0f798401875db55c8221ee\", null]], \"rowCount\": 5, \"ignoredEmptyRowCount\": 0, \"formulaRowCount\": [0, 0, 0, 0], \"identityCandidates\": [0, 1, 2, 3], \"issues\": []}], \"issues\": []}",
+    "error": "null",
+    "created_at": "2026-09-27 17:17:03.961390"
+  },
+  {
+    "id": "1459aa75-f0ba-48e6-a333-87357dd725f1",
+    "kind": "exportXlsx",
+    "status": "succeeded",
+    "resource": "{\"type\": \"table\", \"projectId\": \"53d16290-6c85-4cfe-ae5c-df1abb1510aa\", \"tableId\": \"55bc4481-a21d-47b2-86a6-3c42084562ca\"}",
+    "result": "{\"filename\": \"\\u771f\\u5b9e\\u6e90\\u7801\\u6e05\\u5355-\\u539f\\u751f\\u5bfc\\u51fa.xlsx\", \"sha256\": \"bf06f186706e9dcdeb68f8c9b288217b2c97d45d1c78f975b5d25ce512e6a1a6\", \"recordCount\": 5}",
+    "error": "null",
+    "created_at": "2026-09-27 17:12:59.593858"
+  }
+]

@@ -1,0 +1,8 @@
+Would use project environment at: .venv
+Resolved 217 packages in 5ms
+Would uninstall 4 packages
+ - altgraph==0.17.5
+ - macholib==1.16.4
+ - pyinstaller==6.22.2
+ - pyinstaller-hooks-contrib==2026.7
+The environment is outdated; run `uv sync` to update the environment

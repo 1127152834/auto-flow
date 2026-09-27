@@ -1,0 +1,48 @@
+{
+  "dateUtc": "2026-09-27T17:08:57.482354+00:00",
+  "head": "33ae3aa49600840b1700c83723408c494dc201a8",
+  "artifacts": {
+    "apps/backend/dist/autoflow-backend/autoflow-backend": {
+      "bytes": 95492608,
+      "sha256": "3465540609115db432cb362b738e4b5773a79b0260fd3b08becc04ac274d3f54",
+      "file": "apps/backend/dist/autoflow-backend/autoflow-backend: Mach-O 64-bit executable arm64"
+    },
+    "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/MacOS/AutoFlow": {
+      "bytes": 33968,
+      "sha256": "afa086d829713c1385c6f15999898a8b959af24abb46df949ac324047afc30a7",
+      "file": "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/MacOS/AutoFlow: Mach-O 64-bit executable arm64"
+    },
+    "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/backend/autoflow-backend": {
+      "bytes": 95492608,
+      "sha256": "3465540609115db432cb362b738e4b5773a79b0260fd3b08becc04ac274d3f54",
+      "file": "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/backend/autoflow-backend: Mach-O 64-bit executable arm64"
+    },
+    "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/app.asar": {
+      "bytes": 355190195,
+      "sha256": "a130369898f67f34dc1ef9495c2d6d16a085597dc61c6da57106ed2ac6e8d143",
+      "file": "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/app.asar: data"
+    }
+  },
+  "codeSignatureInspection": {
+    "apps/backend/dist/autoflow-backend/autoflow-backend": {
+      "exitCode": 0,
+      "output": "Executable=/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/dist/autoflow-backend/autoflow-backend\nIdentifier=autoflow-backend-55554944ec10c5b55af1158a16f8d177b1a7e3be\nFormat=Mach-O thin (arm64)\nCodeDirectory v=20400 size=186322 flags=0x2(adhoc) hashes=5816+2 location=embedded\nVersionPlatform=1\nVersionMin=720896\nVersionSDK=918016\nHash type=sha256 size=32\nCandidateCDHash sha256=3888b45b412b34a7882e74ecec6044ce4d5c763a\nCandidateCDHashFull sha256=3888b45b412b34a7882e74ecec6044ce4d5c763ab3177ec744350f41473b9ca1\nHash choices=sha256\nCMSDigest=3888b45b412b34a7882e74ecec6044ce4d5c763ab3177ec744350f41473b9ca1\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=49152\nExecutable Segment flags=0x1\nPage size=16384\nCDHash=3888b45b412b34a7882e74ecec6044ce4d5c763a\nSignature=adhoc\nInfo.plist=not bound\nTeamIdentifier=not set\nSealed Resources=none\nInternal requirements count=0 size=12\n"
+    },
+    "apps/desktop/dist/mac-arm64/AutoFlow.app": {
+      "exitCode": 0,
+      "output": "Executable=/Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/MacOS/AutoFlow\nIdentifier=Electron\nFormat=app bundle with Mach-O thin (arm64)\nCodeDirectory v=20400 size=392 flags=0x20002(adhoc,linker-signed) hashes=9+0 location=embedded\nVersionPlatform=1\nVersionMin=786432\nVersionSDK=1704448\nHash type=sha256 size=32\nCandidateCDHash sha256=d48d810e7b110d8d70a793f827dd23a7b2506405\nCandidateCDHashFull sha256=d48d810e7b110d8d70a793f827dd23a7b2506405a0d83e484ff7df14dc039375\nHash choices=sha256\nCMSDigest=d48d810e7b110d8d70a793f827dd23a7b2506405a0d83e484ff7df14dc039375\nCMSDigestType=2\nExecutable Segment base=0\nExecutable Segment limit=16384\nExecutable Segment flags=0x1\nPage size=4096\nCDHash=d48d810e7b110d8d70a793f827dd23a7b2506405\nSignature=adhoc\nInfo.plist=not bound\nTeamIdentifier=not set\nSealed Resources=none\nInternal requirements=none\n"
+    }
+  },
+  "embeddedSidecarMatchesFrozen": true,
+  "inputDigestsUnchanged": {
+    "apps/backend/uv.lock": true,
+    "package-lock.json": true,
+    "apps/backend/autoflow-backend.spec": true,
+    "apps/desktop/electron-builder.yml": true
+  },
+  "existingInstallersUnchanged": {
+    "apps/desktop/dist/AutoFlow-0.1.0-arm64.dmg.blockmap": true,
+    "apps/desktop/dist/AutoFlow-0.1.0-arm64.dmg": true
+  },
+  "outputSizes": "1581880\tapps/backend/dist/autoflow-backend\n2332424\tapps/desktop/dist/mac-arm64/AutoFlow.app"
+}

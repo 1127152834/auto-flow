@@ -1,0 +1,6 @@
+
+> smoke:desktop
+> node scripts/smoke-desktop.mjs --executable apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/MacOS/AutoFlow
+
+desktop connected (packaged, darwin/arm64)
+sidecar exited after desktop termination

@@ -1,0 +1,29 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+________ test_runtime_mounts_proxies_but_never_publishes_host_contract _________
+
+runtime = (<starlette.testclient.TestClient object at 0x11397c250>, <tests.contract.test_proxy_runtime.MemoryCredentials object at 0x1134bef10>)
+
+    def test_runtime_mounts_proxies_but_never_publishes_host_contract(runtime):
+        client, _ = runtime
+        assert client.get("/api/v1/proxies").status_code == 401
+        assert client.get("/api/v1/proxies", headers={"x-autoflow-token": "renderer-token"}).json()["items"] == []
+        document = client.get("/openapi.json").json()
+        assert "/api/v1/proxies/{projection_id}/probe" in document["paths"]
+        assert not any(path.startswith("/internal") for path in document["paths"])
+        schemas = document["components"]["schemas"]
+        assert schemas["ConnectionCreate"]["properties"]["api_key"]["writeOnly"]
+>       assert all("password" not in schema.get("properties", {}) for schema in schemas.values())
+E       assert False
+E        +  where False = all(<generator object test_runtime_mounts_proxies_but_never_publishes_host_contract.<locals>.<genexpr> at 0x11347d6c0>)
+
+tests/contract/test_proxy_runtime.py:67: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.11/site-packages/starlette/testclient.py:53
+  /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/contract/test_proxy_runtime.py::test_runtime_mounts_proxies_but_never_publishes_host_contract
+1 failed, 1 warning in 4.06s

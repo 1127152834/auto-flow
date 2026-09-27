@@ -1,0 +1,597 @@
+{
+  "counts": {
+    "passed": 4150,
+    "failure": 64,
+    "skipped": 43
+  },
+  "byFolder": {
+    "compatibility": {
+      "passed": 3
+    },
+    "contract": {
+      "passed": 711,
+      "failure": 6
+    },
+    "differential": {
+      "passed": 1054
+    },
+    "integration": {
+      "failure": 55,
+      "skipped": 43,
+      "passed": 1056
+    },
+    "migration": {
+      "failure": 1,
+      "passed": 2
+    },
+    "unit": {
+      "passed": 1324,
+      "failure": 2
+    }
+  },
+  "failureFiles": {
+    "tests.contract.test_proxy_runtime": 1,
+    "tests.contract.test_studio_browser_status": 4,
+    "tests.contract.test_studio_required_fields": 1,
+    "tests.integration.test_android_m4_migration": 4,
+    "tests.integration.test_custom_module_revision_compatibility": 1,
+    "tests.integration.test_database_compatibility_inspector": 1,
+    "tests.integration.test_merged_model_migrations": 8,
+    "tests.integration.test_project_automation_migration": 4,
+    "tests.integration.test_project_claim_migration": 1,
+    "tests.integration.test_project_credential_worker": 6,
+    "tests.integration.test_project_data_migrations": 4,
+    "tests.integration.test_project_data_status_migration": 3,
+    "tests.integration.test_project_migration": 2,
+    "tests.integration.test_project_run_migration": 4,
+    "tests.integration.test_sidecar_shutdown": 1,
+    "tests.integration.test_studio_migration_compatibility": 7,
+    "tests.integration.test_studio_project_inspection": 1,
+    "tests.integration.test_workflow_document_migration": 2,
+    "tests.integration.test_workflow_proxy_workers": 1,
+    "tests.integration.test_workflow_recordings": 1,
+    "tests.integration.test_workflow_runtime_migration": 4,
+    "tests.migration.test_studio_backend_source_mapping": 1,
+    "tests.unit.test_project_excel_adapter": 1,
+    "tests.unit.workflows.test_executor_registry": 1
+  },
+  "failures": [
+    {
+      "node": "tests.contract.test_proxy_runtime::test_runtime_mounts_proxies_but_never_publishes_host_contract",
+      "seconds": 1.919,
+      "message": "assert False\n +  where False = all(<generator object test_runtime_mounts_proxies_but_never_publishes_host_contract.<locals>.<genexpr> at 0x1334788b0>)"
+    },
+    {
+      "node": "tests.contract.test_studio_browser_status::test_browser_status_preserves_independent_reported_flags[False-False]",
+      "seconds": 0.001,
+      "message": "AssertionError: assert {'projectId':...': False, ...} == {'isOpen': Fa...ctive': False}\n  \n  Omitting 2 identical items, use -vv to show\n  Left contains 5 more items:\n  {'phase': 'closed',\n   'pickerSessionId': None,\n   'profileId': None,\n   'projectId': None,\n   'sessionId': None}\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.contract.test_studio_browser_status::test_browser_status_preserves_independent_reported_flags[False-True]",
+      "seconds": 0.0,
+      "message": "AssertionError: assert {'projectId':...': False, ...} == {'isOpen': Tr...ctive': False}\n  \n  Omitting 2 identical items, use -vv to show\n  Left contains 5 more items:\n  {'phase': 'closed',\n   'pickerSessionId': None,\n   'profileId': None,\n   'projectId': None,\n   'sessionId': None}\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.contract.test_studio_browser_status::test_browser_status_preserves_independent_reported_flags[True-False]",
+      "seconds": 0.0,
+      "message": "AssertionError: assert {'projectId':...e': True, ...} == {'isOpen': Fa...Active': True}\n  \n  Omitting 2 identical items, use -vv to show\n  Left contains 5 more items:\n  {'phase': 'closed',\n   'pickerSessionId': None,\n   'profileId': None,\n   'projectId': None,\n   'sessionId': None}\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.contract.test_studio_browser_status::test_browser_status_preserves_independent_reported_flags[True-True]",
+      "seconds": 0.0,
+      "message": "AssertionError: assert {'projectId':...e': True, ...} == {'isOpen': Tr...Active': True}\n  \n  Omitting 2 identical items, use -vv to show\n  Left contains 5 more items:\n  {'phase': 'closed',\n   'pickerSessionId': None,\n   'profileId': None,\n   'projectId': None,\n   'sessionId': None}\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.contract.test_studio_required_fields::test_real_required_fields_route_preserves_frozen_rules_and_approved_scope",
+      "seconds": 0.592,
+      "message": "AssertionError: assert {'ai_chat', '...e_image', ...} == frozenset({'a..._image', ...})\n  \n  Extra items in the right set:\n  'proxy_query'\n  'proxy_change_ip'\n  'proxy_change_location'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_android_m4_migration::test_existing_migration_histories_keep_devices_runs_and_artifacts[0006_workflow_runs]",
+      "seconds": 0.233,
+      "message": "AssertionError: assert [('0023_merge...io_android',)] == [('0020_recor...ject_scope',)]\n  \n  At index 0 diff: ('0023_merge_studio_android',) != ('0020_recording_project_scope',)\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_android_m4_migration::test_existing_migration_histories_keep_devices_runs_and_artifacts[0007_android_devices]",
+      "seconds": 0.235,
+      "message": "AssertionError: assert [('0023_merge...io_android',)] == [('0020_recor...ject_scope',)]\n  \n  At index 0 diff: ('0023_merge_studio_android',) != ('0020_recording_project_scope',)\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_android_m4_migration::test_existing_migration_histories_keep_devices_runs_and_artifacts[0007_workflow_artifacts]",
+      "seconds": 0.262,
+      "message": "AssertionError: assert [('0023_merge...io_android',)] == [('0020_recor...ject_scope',)]\n  \n  At index 0 diff: ('0023_merge_studio_android',) != ('0020_recording_project_scope',)\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_android_m4_migration::test_existing_migration_histories_keep_devices_runs_and_artifacts[0008_merge_android_m4]",
+      "seconds": 0.338,
+      "message": "AssertionError: assert [('0023_merge...io_android',)] == [('0020_recor...ject_scope',)]\n  \n  At index 0 diff: ('0023_merge_studio_android',) != ('0020_recording_project_scope',)\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_custom_module_revision_compatibility::test_custom_module_database_upgrades_to_integrated_head_without_data_loss",
+      "seconds": 0.215,
+      "message": "AssertionError: assert [('0023_merge...io_android',)] == [('0015_workflow_mcp',)]\n  \n  At index 0 diff: ('0023_merge_studio_android',) != ('0015_workflow_mcp',)\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_database_compatibility_inspector::test_inspector_upgrades_a_copy_and_preserves_source_and_rows",
+      "seconds": 0.223,
+      "message": "AssertionError: assert ['0023_merge_studio_android'] == ['0015_workflow_mcp']\n  \n  At index 0 diff: '0023_merge_studio_android' != '0015_workflow_mcp'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_merged_model_migrations::test_merge_upgrade_preserves_each_branch_database[None]",
+      "seconds": 0.013,
+      "message": "AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_merged_model_migrations::test_merge_upgrade_preserves_each_branch_database[0001_browser_resources]",
+      "seconds": 0.01,
+      "message": "AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_merged_model_migrations::test_merge_upgrade_preserves_each_branch_database[0002_proxy_management]",
+      "seconds": 0.011,
+      "message": "AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_merged_model_migrations::test_merge_upgrade_preserves_each_branch_database[0002_model_management]",
+      "seconds": 0.009,
+      "message": "AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_merged_model_migrations::test_merge_upgrade_preserves_each_branch_database[0008_workflow_debug]",
+      "seconds": 0.009,
+      "message": "AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_merged_model_migrations::test_merge_upgrade_preserves_each_branch_database[pm01_projects]",
+      "seconds": 0.01,
+      "message": "AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_merged_model_migrations::test_merge_upgrade_preserves_each_branch_database[pm02_schema_drafts]",
+      "seconds": 0.009,
+      "message": "AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_merged_model_migrations::test_retired_studio_data_survives_application_startup",
+      "seconds": 0.569,
+      "message": "AssertionError: assert ('0023_merge_studio_android',) == ('0020_record...oject_scope',)\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_project_automation_migration::test_automation_upgrade_preserves_existing_rows_and_enforces_binding[None]",
+      "seconds": 0.009,
+      "message": "AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_project_automation_migration::test_automation_upgrade_preserves_existing_rows_and_enforces_binding[pm01_projects]",
+      "seconds": 0.009,
+      "message": "AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_project_automation_migration::test_automation_upgrade_preserves_existing_rows_and_enforces_binding[0011_workflow_runtime_contracts]",
+      "seconds": 0.009,
+      "message": "AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_project_automation_migration::test_empty_downgrade_roundtrip_and_nonempty_downgrade_preserves_data",
+      "seconds": 0.61,
+      "message": "AssertionError: assert ('0023_merge_studio_android',) == ('0020_record...oject_scope',)\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_project_claim_migration::test_claim_migration_is_the_single_head_and_creates_durable_facts",
+      "seconds": 0.01,
+      "message": "AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_project_credential_worker::test_project_worker_reads_private_credential_after_start_commit[private-lookup-key-\\u51ed\\u636e]",
+      "seconds": 2.723,
+      "message": "assert [] == [None]\n  \n  Right contains one more item: None\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_project_credential_worker::test_project_worker_reads_private_credential_after_start_commit[private-lookup-key-cred]",
+      "seconds": 2.358,
+      "message": "assert [] == [None]\n  \n  Right contains one more item: None\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_project_credential_worker::test_project_worker_reads_private_credential_after_start_commit[None-\\u51ed\\u636e]",
+      "seconds": 2.348,
+      "message": "assert [] == [None]\n  \n  Right contains one more item: None\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_project_credential_worker::test_project_worker_reads_private_credential_after_start_commit[None-cred]",
+      "seconds": 2.402,
+      "message": "assert [] == [None]\n  \n  Right contains one more item: None\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_project_credential_worker::test_project_empty_credential_parts_preserve_reference_without_protocol_failure[{{cred:\\u8d26\\u53f7.}}]",
+      "seconds": 2.295,
+      "message": "assert [] == [None]\n  \n  Right contains one more item: None\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_project_credential_worker::test_project_empty_credential_parts_preserve_reference_without_protocol_failure[{{cred:.password}}]",
+      "seconds": 2.276,
+      "message": "assert [] == [None]\n  \n  Right contains one more item: None\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_project_data_migrations::test_pm2_upgrade_preserves_projects_and_has_one_head[False]",
+      "seconds": 0.01,
+      "message": "AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_project_data_migrations::test_pm2_upgrade_preserves_projects_and_has_one_head[True]",
+      "seconds": 0.011,
+      "message": "AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_project_data_migrations::test_failed_upgrade_rolls_back_ddl_and_can_restart[pm01_projects]",
+      "seconds": 0.22,
+      "message": "AssertionError: assert ('0023_merge_studio_android',) == ('0020_record...oject_scope',)\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_project_data_migrations::test_failed_upgrade_rolls_back_ddl_and_can_restart[base]",
+      "seconds": 0.233,
+      "message": "AssertionError: assert ('0023_merge_studio_android',) == ('0020_record...oject_scope',)\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_project_data_status_migration::test_status_upgrade_preserves_records_and_enforces_active_names[False]",
+      "seconds": 0.197,
+      "message": "AssertionError: assert ('0023_merge_studio_android',) == ('0020_record...oject_scope',)\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_project_data_status_migration::test_status_upgrade_preserves_records_and_enforces_active_names[True]",
+      "seconds": 0.196,
+      "message": "AssertionError: assert ('0023_merge_studio_android',) == ('0020_record...oject_scope',)\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_project_data_status_migration::test_downgrade_preserves_live_data_but_refuses_to_resurrect_deleted_status",
+      "seconds": 0.689,
+      "message": "AssertionError: assert ('0023_merge_studio_android',) == ('0020_record...oject_scope',)\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_project_migration::test_pm1_upgrade_preserves_0005_resources[False]",
+      "seconds": 0.011,
+      "message": "AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_project_migration::test_pm1_upgrade_preserves_0005_resources[True]",
+      "seconds": 0.01,
+      "message": "AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_project_run_migration::test_empty_database_upgrades_to_the_single_project_run_head",
+      "seconds": 0.01,
+      "message": "AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_project_run_migration::test_pm03_upgrade_preserves_real_project_automation_and_workflow_rows",
+      "seconds": 0.21,
+      "message": "AssertionError: assert ('0023_merge_studio_android',) == ('0020_record...oject_scope',)\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_project_run_migration::test_empty_project_run_tables_can_downgrade_and_upgrade",
+      "seconds": 0.494,
+      "message": "AssertionError: assert ('0023_merge_studio_android',) == ('0020_record...oject_scope',)\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_project_run_migration::test_nonempty_project_run_evidence_refuses_downgrade_without_data_loss",
+      "seconds": 0.393,
+      "message": "AssertionError: assert ('0023_merge_studio_android',) == ('0020_record...oject_scope',)\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_sidecar_shutdown::test_workflow_shutdown_error_still_closes_other_modules",
+      "seconds": 0.515,
+      "message": "TypeError: object NoneType can't be used in 'await' expression"
+    },
+    {
+      "node": "tests.integration.test_studio_migration_compatibility::test_all_supported_histories_upgrade_without_losing_existing_rows[None]",
+      "seconds": 0.2,
+      "message": "AssertionError: assert [('0023_merge...io_android',)] == [('0020_recor...ject_scope',)]\n  \n  At index 0 diff: ('0023_merge_studio_android',) != ('0020_recording_project_scope',)\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_studio_migration_compatibility::test_all_supported_histories_upgrade_without_losing_existing_rows[0005_workflow_documents]",
+      "seconds": 0.212,
+      "message": "AssertionError: assert [('0023_merge...io_android',)] == [('0020_recor...ject_scope',)]\n  \n  At index 0 diff: ('0023_merge_studio_android',) != ('0020_recording_project_scope',)\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_studio_migration_compatibility::test_all_supported_histories_upgrade_without_losing_existing_rows[0008_workflow_debug]",
+      "seconds": 0.21,
+      "message": "AssertionError: assert [('0023_merge...io_android',)] == [('0020_recor...ject_scope',)]\n  \n  At index 0 diff: ('0023_merge_studio_android',) != ('0020_recording_project_scope',)\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_studio_migration_compatibility::test_all_supported_histories_upgrade_without_losing_existing_rows[0009_merge_android_m5]",
+      "seconds": 0.215,
+      "message": "AssertionError: assert [('0023_merge...io_android',)] == [('0020_recor...ject_scope',)]\n  \n  At index 0 diff: ('0023_merge_studio_android',) != ('0020_recording_project_scope',)\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_studio_migration_compatibility::test_all_supported_histories_upgrade_without_losing_existing_rows[0009_merge_project_data]",
+      "seconds": 0.215,
+      "message": "AssertionError: assert [('0023_merge...io_android',)] == [('0020_recor...ject_scope',)]\n  \n  At index 0 diff: ('0023_merge_studio_android',) != ('0020_recording_project_scope',)\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_studio_migration_compatibility::test_all_supported_histories_upgrade_without_losing_existing_rows[0010_android_fleet]",
+      "seconds": 0.215,
+      "message": "AssertionError: assert [('0023_merge...io_android',)] == [('0020_recor...ject_scope',)]\n  \n  At index 0 diff: ('0023_merge_studio_android',) != ('0020_recording_project_scope',)\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_studio_migration_compatibility::test_interrupted_branch_merge_rolls_back_and_can_restart",
+      "seconds": 0.276,
+      "message": "AssertionError: assert [('0023_merge...io_android',)] == [('0020_recor...ject_scope',)]\n  \n  At index 0 diff: ('0023_merge_studio_android',) != ('0020_recording_project_scope',)\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_studio_project_inspection::test_recording_scope_migration_preserves_legacy_rows_without_guessing_owner",
+      "seconds": 0.223,
+      "message": "AssertionError: assert ('0023_merge_studio_android',) == ('0020_record...oject_scope',)\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_workflow_document_migration::test_workflow_command_migration_is_durable_and_preserves_documents[False]",
+      "seconds": 0.012,
+      "message": "AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_workflow_document_migration::test_workflow_command_migration_is_durable_and_preserves_documents[True]",
+      "seconds": 0.01,
+      "message": "AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_workflow_proxy_workers::test_proxy_nodes_over_real_owned_worker_pipes[project-proxy_change_location]",
+      "seconds": 2.527,
+      "message": "TimeoutError"
+    },
+    {
+      "node": "tests.integration.test_workflow_recordings::test_recording_command_migration_preserves_existing_sessions",
+      "seconds": 0.214,
+      "message": "AssertionError: assert ('0023_merge_studio_android',) == ('0020_record...oject_scope',)\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_workflow_runtime_migration::test_empty_database_upgrades_to_one_runtime_head_with_complete_v2_schema",
+      "seconds": 0.011,
+      "message": "AssertionError: assert ['0023_merge_studio_android'] == ['0020_record...roject_scope']\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_workflow_runtime_migration::test_upgrade_from_legacy_studio_reaches_v2_without_replaying_unknown_work[0005_workflow_documents]",
+      "seconds": 0.205,
+      "message": "AssertionError: assert ('0023_merge_studio_android',) == ('0020_record...oject_scope',)\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_workflow_runtime_migration::test_upgrade_from_legacy_studio_reaches_v2_without_replaying_unknown_work[0008_workflow_debug]",
+      "seconds": 0.218,
+      "message": "AssertionError: assert ('0023_merge_studio_android',) == ('0020_record...oject_scope',)\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.integration.test_workflow_runtime_migration::test_empty_runtime_can_downgrade_and_upgrade_again",
+      "seconds": 0.494,
+      "message": "AssertionError: assert ('0023_merge_studio_android',) == ('0020_record...oject_scope',)\n  \n  At index 0 diff: '0023_merge_studio_android' != '0020_recording_project_scope'\n  Use -v to get more diff"
+    },
+    {
+      "node": "tests.migration.test_studio_backend_source_mapping::test_all_approved_nodes_have_traceable_backend_sources_and_unique_cases",
+      "seconds": 0.017,
+      "message": "AssertionError: assert 216 == 213\n +  where 216 = len([{'type': 'open_page', 'category': '网页导航', 'id': 'node:open_page', 'status': '已实现且已验收', ...}, {'type': 'use_opened_pag...': '已实现且已验收', ...}, {'type': 'go_forward', 'category': '网页导航', 'id': 'node:go_forward', 'status': '已实现且已验收', ...}, ...])"
+    },
+    {
+      "node": "tests.unit.test_project_excel_adapter::test_formula_metadata_scans_beyond_sample_and_streams_rows",
+      "seconds": 0.012,
+      "message": "autoflow.domain.projects.models.ProjectError: Formula has no saved value"
+    },
+    {
+      "node": "tests.unit.workflows.test_executor_registry::test_production_registry_contains_every_migrated_executor",
+      "seconds": 0.002,
+      "message": "AssertionError: assert {'ai_chat', '...e_image', ...} == {'ai_chat', '...e_image', ...}\n  \n  Extra items in the left set:\n  'proxy_query'\n  'proxy_change_ip'\n  'proxy_change_location'\n  Use -v to get more diff"
+    }
+  ],
+  "skips": [
+    {
+      "node": "tests.integration.test_b1_cloakbrowser_flow::test_real_cloakbrowser_runs_five_node_workflow",
+      "seconds": 0.003,
+      "reason": "set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test"
+    },
+    {
+      "node": "tests.integration.test_b2_advanced_browser_cloakbrowser_flow::test_real_cloakbrowser_runs_advanced_browser_family",
+      "seconds": 0.002,
+      "reason": "set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test"
+    },
+    {
+      "node": "tests.integration.test_b2_inspection_cloakbrowser_flow::test_real_cloakbrowser_tests_and_picks_a_selector",
+      "seconds": 0.002,
+      "reason": "set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test"
+    },
+    {
+      "node": "tests.integration.test_b2_inspection_cloakbrowser_flow::test_real_inspection_handles_selector_and_page_change_edges",
+      "seconds": 0.002,
+      "reason": "set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test"
+    },
+    {
+      "node": "tests.integration.test_b2_inspection_cloakbrowser_flow::test_real_picker_and_runtime_share_nested_cross_origin_frame_target",
+      "seconds": 0.002,
+      "reason": "set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test"
+    },
+    {
+      "node": "tests.integration.test_b2_inspection_cloakbrowser_flow::test_real_inspection_worker_owns_profile_and_cleans_process_tree",
+      "seconds": 0.002,
+      "reason": "set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test"
+    },
+    {
+      "node": "tests.integration.test_b2_large_artifacts_cloakbrowser_flow::test_real_cloakbrowser_externalizes_one_mib_web_artifacts",
+      "seconds": 0.001,
+      "reason": "set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test"
+    },
+    {
+      "node": "tests.integration.test_b2_network_monitor_cloakbrowser_flow::test_real_cloakbrowser_runs_network_monitor_family",
+      "seconds": 0.001,
+      "reason": "set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test"
+    },
+    {
+      "node": "tests.integration.test_b2_page_load_cloakbrowser_flow::test_real_cloakbrowser_runs_page_load_family",
+      "seconds": 0.001,
+      "reason": "set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test"
+    },
+    {
+      "node": "tests.integration.test_b2_remaining_browser_cloakbrowser_flow::test_real_cloakbrowser_runs_remaining_browser_family",
+      "seconds": 0.002,
+      "reason": "set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test"
+    },
+    {
+      "node": "tests.integration.test_b2_web_basic_cloakbrowser_flow::test_real_cloakbrowser_runs_web_basic_family",
+      "seconds": 0.002,
+      "reason": "set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test"
+    },
+    {
+      "node": "tests.integration.test_b5_captcha_cloakbrowser_flow::test_real_cloakbrowser_runs_captcha_family",
+      "seconds": 0.002,
+      "reason": "set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test"
+    },
+    {
+      "node": "tests.integration.test_b5_firecrawl_cloakbrowser_flow::test_real_cloakbrowser_runs_firecrawl_family",
+      "seconds": 0.002,
+      "reason": "set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test"
+    },
+    {
+      "node": "tests.integration.test_b6_element_change_cloakbrowser_flow::test_real_cloakbrowser_observes_added_element",
+      "seconds": 0.002,
+      "reason": "set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test"
+    },
+    {
+      "node": "tests.integration.test_b7_recording_cloakbrowser_flow::test_real_cloakbrowser_records_chinese_form_and_future_page",
+      "seconds": 0.002,
+      "reason": "set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test"
+    },
+    {
+      "node": "tests.integration.test_environment_persist_restore::test_real_login_persists_after_browser_close[explicit-close]",
+      "seconds": 0.002,
+      "reason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable"
+    },
+    {
+      "node": "tests.integration.test_environment_persist_restore::test_real_login_persists_after_browser_close[http-end-close]",
+      "seconds": 0.001,
+      "reason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable"
+    },
+    {
+      "node": "tests.integration.test_environment_real_browser_chain::test_management_chain_saves_linked_environment_and_restores_login",
+      "seconds": 0.001,
+      "reason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed CloakBrowser executable"
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[success]",
+      "seconds": 0.002,
+      "reason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable"
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[stop]",
+      "seconds": 0.001,
+      "reason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable"
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[budget]",
+      "seconds": 0.001,
+      "reason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable"
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[failure]",
+      "seconds": 0.001,
+      "reason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable"
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[web_basic]",
+      "seconds": 0.001,
+      "reason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable"
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[page_load]",
+      "seconds": 0.001,
+      "reason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable"
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[advanced_browser]",
+      "seconds": 0.001,
+      "reason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable"
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[tab_switch]",
+      "seconds": 0.001,
+      "reason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable"
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[table_extract]",
+      "seconds": 0.001,
+      "reason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable"
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[control_primitives]",
+      "seconds": 0.001,
+      "reason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable"
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[network_capture]",
+      "seconds": 0.001,
+      "reason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable"
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[firecrawl]",
+      "seconds": 0.001,
+      "reason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable"
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[firecrawl_failure]",
+      "seconds": 0.001,
+      "reason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable"
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[firecrawl_stop]",
+      "seconds": 0.001,
+      "reason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable"
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[element_change]",
+      "seconds": 0.001,
+      "reason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable"
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[element_timeout]",
+      "seconds": 0.001,
+      "reason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable"
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[element_stop]",
+      "seconds": 0.001,
+      "reason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable"
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[captcha]",
+      "seconds": 0.001,
+      "reason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable"
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[captcha_failure]",
+      "seconds": 0.001,
+      "reason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable"
+    },
+    {
+      "node": "tests.integration.test_project_batch_real_cloakbrowser::test_real_project_batch_http[captcha_stop]",
+      "seconds": 0.001,
+      "reason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable"
+    },
+    {
+      "node": "tests.integration.test_studio_project_model_live::test_live_project_default_model_in_real_worker",
+      "seconds": 0.0,
+      "reason": "真实模型计费验收仅由 AUTOFLOW_LIVE_MODEL_TEST=1 显式启用"
+    },
+    {
+      "node": "tests.integration.test_workflow_real_cloakbrowser::test_real_cloakbrowser_worker_lifecycle[success]",
+      "seconds": 0.003,
+      "reason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable"
+    },
+    {
+      "node": "tests.integration.test_workflow_real_cloakbrowser::test_real_cloakbrowser_worker_lifecycle[stop_before_navigation]",
+      "seconds": 0.003,
+      "reason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable"
+    },
+    {
+      "node": "tests.integration.test_workflow_real_cloakbrowser::test_real_cloakbrowser_worker_lifecycle[node_timeout]",
+      "seconds": 0.003,
+      "reason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable"
+    },
+    {
+      "node": "tests.integration.test_workflow_real_cloakbrowser::test_real_cloakbrowser_persisted_dispatch_and_service_recreation",
+      "seconds": 0.003,
+      "reason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable"
+    }
+  ]
+}

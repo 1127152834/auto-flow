@@ -1,0 +1,43 @@
+[
+  {
+    "type": "execution:node_start",
+    "nodeId": "n0",
+    "executionId": "fd189fcf-8eca-4535-b189-67ae87770df3",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "runId": "qa-063",
+    "workflowId": "qa-063"
+  },
+  {
+    "type": "execution:node_complete",
+    "nodeId": "n0",
+    "executionId": "fd189fcf-8eca-4535-b189-67ae87770df3",
+    "executionContext": {
+      "scopes": [],
+      "loops": []
+    },
+    "success": false,
+    "message": "",
+    "error": "导出失败: 产物路径无效",
+    "isTimeout": false,
+    "data": null,
+    "logLevel": null,
+    "isUserLog": true,
+    "isSystemLog": false,
+    "duration": 0.5240839964244515,
+    "artifactIds": [],
+    "runId": "qa-063",
+    "workflowId": "qa-063"
+  },
+  {
+    "type": "execution:failed",
+    "runId": "qa-063",
+    "workflowId": "qa-063",
+    "executedNodes": 1,
+    "failedNodeId": "n0",
+    "issues": [],
+    "error": "导出失败: 产物路径无效"
+  }
+]
