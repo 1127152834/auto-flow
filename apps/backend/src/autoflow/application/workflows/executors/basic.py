@@ -243,6 +243,11 @@ class InputTextExecutor(ModuleExecutor):
                 except AttributeError:
                     await locator.type_text(text, delay_ms=20)
             else:
+                if not clear_before:
+                    existing = await locator.evaluate(
+                        "el => ('value' in el ? el.value : el.textContent) || ''"
+                    )
+                    text = str(existing) + text
                 await locator.fill(text)
             suffix = f" (在内部{input_type}元素)" if input_type == "inner" else ""
             return ModuleResult(

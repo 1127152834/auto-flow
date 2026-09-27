@@ -28,3 +28,7 @@
 剩余：真实浏览器写回／状态链、响应丢失与取消组合、循环与子流程数据节点、End、持久人工检查点、重启继续及打包 UI 均须继续。新增节点的全部操作未逐一通过生产 worker；已有服务回归不是每个新入口的实测替代。完整默认回归和构建留在最终稳定版本执行。
 
 独立审查已给出并复现整行回执问题，随后审查工具被自动安全审查阻止；未重试或绕过，不能声称独立复审已全部完成。AOCI 本轮完整读取 280 条／5 块、Challenge 9/10；治理未对齐且另一任务仍初始化，未调用维护或覆盖资产。
+
+2026-09-28 补验（confirmed）：数据 RPC 切片提交 `7876acc6`。新增 `tests/integration/test_project_full_scenarios.py` 经生产 bootstrap、项目 HTTP 路由、调度器、真实 worker、真实 CloakBrowser 和真实 SQLite 完成领取→网页输入/点击/读取→正式记录写回→状态推进。数据源为当前仓库 package.json 的实际 name；本地页面对实际输入产生实际 DOM 结果，未替换浏览器、执行器或外部成功响应。数据库核验内容版本与状态版本各增加一次，领取快照不变；终态后工作副本、worker generation 目录与运行阻塞均已清理。`pm9-browser-data-fixed.log` 共 32 项通过，其中独立真实场景 1 项，既有 B1 差分回归 31 项；不能把 32 项均称为真实浏览器场景。尚未覆盖打包 UI、End 和人工恢复。
+
+真实场景首次在测试准备阶段误按字段 DTO 读取 status.ref，按现有状态 DTO 改用 status.statusId（`pm9-browser-data-initial.log`）。随后确实发现产品缺陷：现代共享 InputTextExecutor 在 clearBefore=false、非逐字模式仍直接 fill(text)，覆盖原值，与“输入前清空原有内容”开关及旧项目输入追加行为不符。`pm9-browser-data-second.log` 保留实际库值 autoflow 与期望 beforeautoflow 的失败证据；所有节点虽成功，但业务结果断言失败。最终在共享执行器的非清空快速输入分支读取原 value/textContent 后追加，未修改差分基线或降低业务断言。上述原断言通过；定向 Ruff 通过，类型检查见 browser-input-mypy.log。逐字输入和键盘回退分支保持原语义，本次未宣称跨平台输入实测通过。

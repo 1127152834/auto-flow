@@ -19,3 +19,5 @@
 - confirmed：N-04 共享错误展示保留已知单元格诊断，29项组件/状态测试通过；真实导入UI待最终包验收。Android 环境探测补真实默认bridge接口检查，非零命令保留有界脱敏原因；14后端+12前端通过。只读真实Lima确认docker0缺失，应用正确标不可用；未改共享VM，正常启动仍阻塞。详见 diagnostics.md。
 
 - confirmed（限定范围）：A-01 R2 项目数据私有 RPC、冻结节点授权与 Studio 配置接通。42 后端回归（含一个真实生产 worker + SQLite 数据链）、12前端组件、6生成脚本通过。写回执移除未授权列，节点已结束／旧代次／其他项目工作区拒绝。完整浏览器、End、持久人工和打包 UI 仍待实现或验证，见 pm9-data.md。本轮 AOCI 280条5块 Challenge9/10，治理未对齐；独立审查后续遭自动安全拦截未重试。
+
+2026-09-28：R2 数据 RPC 已提交 7876acc6；真实 bootstrap/HTTP/SQLite/生产 worker/CloakBrowser 的领取→网页→正式数据写回→状态推进场景 confirmed。新增真实发现：clearBefore=false 快速输入仍覆盖原值，已在共享执行器修复；原失败断言及 B1 差分组合 32 通过（1 真实、31 差分），退出资源检查通过。End/持久人工与打包 UI 未验收，不扩写为 PM9 完成。

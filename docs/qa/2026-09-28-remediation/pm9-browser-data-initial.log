@@ -1,0 +1,67 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____________ test_browser_result_updates_claimed_record_and_status _____________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-523/test_browser_result_updates_cl0')
+valid_profile_values = {'name': 'Default profile', 'description': '', 'start_url': 'about:blank', 'locale': None, ...}
+real_cloak_page = (PosixPath('/Users/zhangtiancheng/Library/Application Support/@autoflow/desktop/data/kernels/chromium-145.0.7632.109.2/Chromium.app/Contents/MacOS/Chromium'), 'http://127.0.0.1:56188/fixture', [])
+
+    @pytest.mark.asyncio
+    async def test_browser_result_updates_claimed_record_and_status(
+        tmp_path, valid_profile_values, real_cloak_page,
+    ):
+        executable, url, requests = real_cloak_page
+        source = next(parent for parent in executable.parents if parent.name.startswith('chromium-'))
+        workspace = tmp_path / 'pm9-real-workspace'
+        await asyncio.to_thread(shutil.copytree, source, workspace / 'data' / 'kernels' / source.name, symlinks=True)
+        settings = Settings(data_dir=str(workspace), instance_id=uid(), instance_token=uid())
+        app = create_app(settings)
+        factory = app.state.session_factory
+        if frozen_worker := os.environ.get('AUTOFLOW_TEST_PROJECT_WORKER'):
+            app.state.project_workflow_worker_manager._command = (str(Path(frozen_worker).resolve(strict=True)), '--project-workflow-worker')
+        try:
+            profile = app.state.profile_service.create(ProfileSpec.from_values({
+                **valid_profile_values, 'headless': True,
+                'browser_version': source.name.removeprefix('chromium-'),
+            }))
+            await app.state.project_workflow_dispatcher.startup()
+            await app.state.project_run_scheduler.startup()
+            async with httpx.AsyncClient(transport=httpx.ASGITransport(app), base_url='http://test', headers={'x-autoflow-token': settings.instance_token}) as client:
+                created = await client.post('/api/v1/projects', headers={'Idempotency-Key': uid()}, json={'name': 'PM9 仓库元数据浏览器回写验收', 'description': ''})
+                assert created.status_code == 201, created.text
+                project = created.json()['projectId']
+                prefix = f'/api/v1/projects/{project}'
+                # Real repository metadata enters the page through the claimed input.
+                package = json.loads((Path(__file__).resolve().parents[4] / 'package.json').read_text())
+                original = package['name']
+                table, field = _table(factory, project, '仓库包', original)
+                field_id = field['ref']['fieldId']
+                catalog = DataCatalogService(SqlAlchemyProjectDataCatalog(factory))
+                status = catalog.create_status(project, table['tableId'], uid(), {
+                    'name': '浏览器已核验', 'color': '#8f4b2b', 'order': 1,
+                    'expectedTableRevision': catalog.fields(project, table['tableId'])['tableRevision'],
+                })[0]['status']
+                binding = {'tableId': table['tableId'], 'datasetGeneration': table['datasetGeneration'], 'fieldIds': [field_id]}
+                ref = "{snapshot['inputs'][0]['recordRef']}"
+                def arguments(values):
+                    text = json.dumps(values, ensure_ascii=False)
+                    for expression in (ref, "{record['result']['contentRevision']}", "{record['result']['statusRevision']}", "{written['result']['contentRevision']}"):
+                        text = text.replace(json.dumps(expression), expression)
+                    return text
+                steps = [
+                    ('inputs', 'project_data', {'action': 'inputs', 'resultVariable': 'snapshot'}),
+                    ('read', 'project_data', {'action': 'read', 'binding': binding, 'resultVariable': 'record', 'arguments': arguments({'recordRef': ref, 'fieldIds': [field_id], 'readPurpose': 'workflow'})}),
+                    ('open', 'open_page', {'url': url, 'openMode': 'current_tab'}),
+                    ('input', 'input_text', {'selector': '#field', 'text': "{snapshot['inputs'][0]['values'][0]['value']}", 'clearBefore': False}),
+                    ('click', 'click_element', {'selector': '#button'}),
+                    ('result', 'get_element_info', {'selector': '#result', 'attribute': 'text', 'variableName': 'page_result'}),
+                    ('write', 'project_data', {'action': 'update', 'binding': binding, 'resultVariable': 'written', 'arguments': arguments({'recordRef': ref, 'changes': {field_id: '{page_result}'}, 'expectedContentRevision': "{record['result']['contentRevision']}"})}),
+>                   ('status', 'project_data', {'action': 'status', 'binding': binding, 'resultVariable': 'advanced', 'arguments': arguments({'recordRef': ref, 'statusId': status['ref']['statusId'], 'expectedStatusRevision': "{record['result']['statusRevision']}", 'expectedContentRevisionWhenDerived': "{written['result']['contentRevision']}", 'allowedFrom': [None]})}),
+                                                                                                                                                                            ^^^^^^^^^^^^^
+                ]
+E               KeyError: 'ref'
+
+tests/integration/test_project_full_scenarios.py:78: KeyError
+=========================== short test summary info ============================
+FAILED tests/integration/test_project_full_scenarios.py::test_browser_result_updates_claimed_record_and_status
+1 failed in 3.56s
