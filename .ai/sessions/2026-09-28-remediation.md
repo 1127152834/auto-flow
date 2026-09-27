@@ -1,0 +1,7 @@
+# 2026-09-28 审计修复
+
+状态：in_progress。来源：本轮用户明确授权有界修复、PM9批准能力与真实回归。历史审计f853d7ee不改写；现有未提交文档与AOCI资产不接管。
+
+共享安全切片：统一GET/HEAD/download/preview/thumb/list和上传/目录写操作边界，排他创建与目录句柄防替换，单文件共享不暴露兄弟文件。预览明确415与页面提示。修复前16失败/5通过；修复后24项真实HTTP/磁盘 + 6项host/executor共30通过。平台差异集中于共享文件适配器；Windows安全句柄分支未实机验收。详细证据见docs/qa/2026-09-28-remediation/share.md。
+
+本轮AOCI仍由另一任务建立，checkpoint明确deferred_until_stable，未改写正式索引。总任务仍需凭据/Electron、PM9、正确性、诊断、质量门禁与最终全量/打包真实验收。

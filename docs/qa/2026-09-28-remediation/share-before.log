@@ -1,0 +1,266 @@
+F...FFFFFF.FF.FFFFFFF                                                    [100%]
+=================================== FAILURES ===================================
+_____________ test_every_read_route_rejects_outside_symlink[GET-] ______________
+
+files = (PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-484/test_every_re...se += chunk\n        assert b" 400 " in response.split(b"\\r\\n", 1)[0]\n    assert set(shared.iterdir()) == before\n')
+route = '', method = 'GET'
+
+    @pytest.mark.parametrize("route", ["", "download/", "preview/", "thumb/"])
+    @pytest.mark.parametrize("method", ["GET", "HEAD"])
+    def test_every_read_route_rejects_outside_symlink(files, route, method):
+        shared, outside, _ = files
+        (shared / "linked.txt").symlink_to(outside)
+        with shared_server(shared) as port:
+            status, _ = request(port, method, f"/{route}linked.txt")
+>       assert status == 403
+E       assert 200 == 403
+
+tests/integration/test_share_file_boundaries.py:73: AssertionError
+_____________ test_every_read_route_rejects_outside_symlink[HEAD-] _____________
+
+files = (PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-484/test_every_re...se += chunk\n        assert b" 400 " in response.split(b"\\r\\n", 1)[0]\n    assert set(shared.iterdir()) == before\n')
+route = '', method = 'HEAD'
+
+    @pytest.mark.parametrize("route", ["", "download/", "preview/", "thumb/"])
+    @pytest.mark.parametrize("method", ["GET", "HEAD"])
+    def test_every_read_route_rejects_outside_symlink(files, route, method):
+        shared, outside, _ = files
+        (shared / "linked.txt").symlink_to(outside)
+        with shared_server(shared) as port:
+            status, _ = request(port, method, f"/{route}linked.txt")
+>       assert status == 403
+E       assert 200 == 403
+
+tests/integration/test_share_file_boundaries.py:73: AssertionError
+________ test_every_read_route_rejects_outside_symlink[HEAD-download/] _________
+
+files = (PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-484/test_every_re...se += chunk\n        assert b" 400 " in response.split(b"\\r\\n", 1)[0]\n    assert set(shared.iterdir()) == before\n')
+route = 'download/', method = 'HEAD'
+
+    @pytest.mark.parametrize("route", ["", "download/", "preview/", "thumb/"])
+    @pytest.mark.parametrize("method", ["GET", "HEAD"])
+    def test_every_read_route_rejects_outside_symlink(files, route, method):
+        shared, outside, _ = files
+        (shared / "linked.txt").symlink_to(outside)
+        with shared_server(shared) as port:
+            status, _ = request(port, method, f"/{route}linked.txt")
+>       assert status == 403
+E       assert 404 == 403
+
+tests/integration/test_share_file_boundaries.py:73: AssertionError
+_________ test_every_read_route_rejects_outside_symlink[HEAD-preview/] _________
+
+files = (PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-484/test_every_re...se += chunk\n        assert b" 400 " in response.split(b"\\r\\n", 1)[0]\n    assert set(shared.iterdir()) == before\n')
+route = 'preview/', method = 'HEAD'
+
+    @pytest.mark.parametrize("route", ["", "download/", "preview/", "thumb/"])
+    @pytest.mark.parametrize("method", ["GET", "HEAD"])
+    def test_every_read_route_rejects_outside_symlink(files, route, method):
+        shared, outside, _ = files
+        (shared / "linked.txt").symlink_to(outside)
+        with shared_server(shared) as port:
+            status, _ = request(port, method, f"/{route}linked.txt")
+>       assert status == 403
+E       assert 404 == 403
+
+tests/integration/test_share_file_boundaries.py:73: AssertionError
+__________ test_every_read_route_rejects_outside_symlink[HEAD-thumb/] __________
+
+files = (PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-484/test_every_re...se += chunk\n        assert b" 400 " in response.split(b"\\r\\n", 1)[0]\n    assert set(shared.iterdir()) == before\n')
+route = 'thumb/', method = 'HEAD'
+
+    @pytest.mark.parametrize("route", ["", "download/", "preview/", "thumb/"])
+    @pytest.mark.parametrize("method", ["GET", "HEAD"])
+    def test_every_read_route_rejects_outside_symlink(files, route, method):
+        shared, outside, _ = files
+        (shared / "linked.txt").symlink_to(outside)
+        with shared_server(shared) as port:
+            status, _ = request(port, method, f"/{route}linked.txt")
+>       assert status == 403
+E       assert 404 == 403
+
+tests/integration/test_share_file_boundaries.py:73: AssertionError
+_________ test_invalid_paths_are_explicitly_rejected[/../outside.txt] __________
+
+files = (PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-484/test_invalid_...se += chunk\n        assert b" 400 " in response.split(b"\\r\\n", 1)[0]\n    assert set(shared.iterdir()) == before\n')
+path = '/../outside.txt'
+
+    @pytest.mark.parametrize("path", [
+        "/../outside.txt", "/%2e%2e/outside.txt", "/download/%2e%2e%2foutside.txt",
+        "/download/..%5coutside.txt", "/download/C:%5coutside.txt", "/download/%00",
+    ])
+    def test_invalid_paths_are_explicitly_rejected(files, path):
+        with shared_server(files[0]) as port:
+>           assert request(port, "GET", path)[0] == 403
+E           assert 404 == 403
+
+tests/integration/test_share_file_boundaries.py:82: AssertionError
+_______ test_invalid_paths_are_explicitly_rejected[/%2e%2e/outside.txt] ________
+
+files = (PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-484/test_invalid_...se += chunk\n        assert b" 400 " in response.split(b"\\r\\n", 1)[0]\n    assert set(shared.iterdir()) == before\n')
+path = '/%2e%2e/outside.txt'
+
+    @pytest.mark.parametrize("path", [
+        "/../outside.txt", "/%2e%2e/outside.txt", "/download/%2e%2e%2foutside.txt",
+        "/download/..%5coutside.txt", "/download/C:%5coutside.txt", "/download/%00",
+    ])
+    def test_invalid_paths_are_explicitly_rejected(files, path):
+        with shared_server(files[0]) as port:
+>           assert request(port, "GET", path)[0] == 403
+E           assert 404 == 403
+
+tests/integration/test_share_file_boundaries.py:82: AssertionError
+____ test_invalid_paths_are_explicitly_rejected[/download/..%5coutside.txt] ____
+
+files = (PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-484/test_invalid_...se += chunk\n        assert b" 400 " in response.split(b"\\r\\n", 1)[0]\n    assert set(shared.iterdir()) == before\n')
+path = '/download/..%5coutside.txt'
+
+    @pytest.mark.parametrize("path", [
+        "/../outside.txt", "/%2e%2e/outside.txt", "/download/%2e%2e%2foutside.txt",
+        "/download/..%5coutside.txt", "/download/C:%5coutside.txt", "/download/%00",
+    ])
+    def test_invalid_paths_are_explicitly_rejected(files, path):
+        with shared_server(files[0]) as port:
+>           assert request(port, "GET", path)[0] == 403
+E           assert 404 == 403
+
+tests/integration/test_share_file_boundaries.py:82: AssertionError
+____ test_invalid_paths_are_explicitly_rejected[/download/C:%5coutside.txt] ____
+
+files = (PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-484/test_invalid_...se += chunk\n        assert b" 400 " in response.split(b"\\r\\n", 1)[0]\n    assert set(shared.iterdir()) == before\n')
+path = '/download/C:%5coutside.txt'
+
+    @pytest.mark.parametrize("path", [
+        "/../outside.txt", "/%2e%2e/outside.txt", "/download/%2e%2e%2foutside.txt",
+        "/download/..%5coutside.txt", "/download/C:%5coutside.txt", "/download/%00",
+    ])
+    def test_invalid_paths_are_explicitly_rejected(files, path):
+        with shared_server(files[0]) as port:
+>           assert request(port, "GET", path)[0] == 403
+E           assert 404 == 403
+
+tests/integration/test_share_file_boundaries.py:82: AssertionError
+______________ test_authorized_file_unicode_query_range_and_head _______________
+
+files = (PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-484/test_authoriz...se += chunk\n        assert b" 400 " in response.split(b"\\r\\n", 1)[0]\n    assert set(shared.iterdir()) == before\n')
+
+    def test_authorized_file_unicode_query_range_and_head(files):
+        shared, _, content = files
+        (shared / "中文 空格.txt").write_bytes(content)
+        with shared_server(shared) as port:
+            assert request(port, "GET", "/report.txt?download=1") == (200, content)
+            assert request(port, "GET", "/download/%E4%B8%AD%E6%96%87%20%E7%A9%BA%E6%A0%BC.txt") == (200, content)
+>           assert request(port, "HEAD", "/download/report.txt") == (200, b"")
+E           AssertionError: assert (404, b'') == (200, b'')
+E             
+E             At index 0 diff: 404 != 200
+E             Use -v to get more diff
+
+tests/integration/test_share_file_boundaries.py:91: AssertionError
+__________________ test_single_file_head_cannot_read_sibling ___________________
+
+files = (PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-484/test_single_f...se += chunk\n        assert b" 400 " in response.split(b"\\r\\n", 1)[0]\n    assert set(shared.iterdir()) == before\n')
+
+    def test_single_file_head_cannot_read_sibling(files):
+        shared, _, content = files
+        (shared / "sibling.txt").write_bytes(content)
+        with shared_server(shared / "report.txt", "file") as port:
+            assert request(port, "GET", "/download") == (200, content)
+>           assert request(port, "HEAD", "/sibling.txt")[0] == 404
+E           assert 200 == 404
+
+tests/integration/test_share_file_boundaries.py:100: AssertionError
+_________________ test_preview_explicitly_reports_unsupported __________________
+
+files = (PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-484/test_preview_...se += chunk\n        assert b" 400 " in response.split(b"\\r\\n", 1)[0]\n    assert set(shared.iterdir()) == before\n')
+
+    def test_preview_explicitly_reports_unsupported(files):
+        with shared_server(files[0]) as port:
+            status, body = request(port, "GET", "/preview/report.txt")
+>       assert status == 415
+E       assert 500 == 415
+
+tests/integration/test_share_file_boundaries.py:107: AssertionError
+________ test_duplicate_upload_never_follows_existing_or_dangling_links ________
+
+files = (PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-484/test_duplicat...se += chunk\n        assert b" 400 " in response.split(b"\\r\\n", 1)[0]\n    assert set(shared.iterdir()) == before\n')
+
+    def test_duplicate_upload_never_follows_existing_or_dangling_links(files):
+        shared, outside, content = files
+        absent = outside.with_name("not-created.txt")
+        (shared / "report_1.txt").symlink_to(absent)
+        (shared / "report_2.txt").symlink_to(outside)
+        with shared_server(shared) as port:
+            status, body = upload(port, "report.txt", content)
+        assert status == 200
+>       assert not absent.exists()
+E       AssertionError: assert not True
+E        +  where True = exists()
+E        +    where exists = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-484/test_duplicate_upload_never_fo0/not-created.txt').exists
+
+tests/integration/test_share_file_boundaries.py:120: AssertionError
+___________________ test_concurrent_uploads_do_not_overwrite ___________________
+
+files = (PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-484/test_concurre...se += chunk\n        assert b" 400 " in response.split(b"\\r\\n", 1)[0]\n    assert set(shared.iterdir()) == before\n')
+
+    def test_concurrent_uploads_do_not_overwrite(files):
+        shared, _, content = files
+        with shared_server(shared) as port, ThreadPoolExecutor(max_workers=6) as pool:
+            results = list(pool.map(lambda _: upload(port, "same.txt", content), range(12)))
+        assert all(status == 200 for status, _ in results)
+        names = [json.loads(body)["files"][0] for _, body in results]
+>       assert len(set(names)) == 12
+E       AssertionError: assert 1 == 12
+E        +  where 1 = len({'same.txt'})
+E        +    where {'same.txt'} = set(['same.txt', 'same.txt', 'same.txt', 'same.txt', 'same.txt', 'same.txt', ...])
+
+tests/integration/test_share_file_boundaries.py:132: AssertionError
+______________________ test_upload_rejects_linked_parent _______________________
+
+files = (PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-484/test_upload_r...se += chunk\n        assert b" 400 " in response.split(b"\\r\\n", 1)[0]\n    assert set(shared.iterdir()) == before\n')
+
+    def test_upload_rejects_linked_parent(files):
+        shared, outside, content = files
+        (shared / "escape").symlink_to(outside.parent, target_is_directory=True)
+        with shared_server(shared) as port:
+>           assert upload(port, "new.txt", content, "escape")[0] == 403
+E           assert 400 == 403
+
+tests/integration/test_share_file_boundaries.py:140: AssertionError
+____________________ test_incomplete_upload_creates_nothing ____________________
+
+files = (PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-484/test_incomple...se += chunk\n        assert b" 400 " in response.split(b"\\r\\n", 1)[0]\n    assert set(shared.iterdir()) == before\n')
+
+    def test_incomplete_upload_creates_nothing(files):
+        shared, _, _ = files
+        before = set(shared.iterdir())
+        body = b'--cut\r\nContent-Disposition: form-data; name="file"; filename="partial.txt"\r\n\r\npartial'
+        with shared_server(shared) as port:
+            with socket.create_connection(("127.0.0.1", port), timeout=5) as connection:
+                connection.sendall((f"POST /api/upload HTTP/1.0\r\nContent-Type: multipart/form-data; boundary=cut\r\nContent-Length: {len(body)+100}\r\n\r\n").encode()+body)
+                connection.shutdown(socket.SHUT_WR)
+                response = b""
+                while chunk := connection.recv(8192):
+                    response += chunk
+>           assert b" 400 " in response.split(b"\r\n", 1)[0]
+E           AssertionError: assert b' 400 ' in b'HTTP/1.0 200 OK'
+
+tests/integration/test_share_file_boundaries.py:155: AssertionError
+=========================== short test summary info ============================
+FAILED tests/integration/test_share_file_boundaries.py::test_every_read_route_rejects_outside_symlink[GET-]
+FAILED tests/integration/test_share_file_boundaries.py::test_every_read_route_rejects_outside_symlink[HEAD-]
+FAILED tests/integration/test_share_file_boundaries.py::test_every_read_route_rejects_outside_symlink[HEAD-download/]
+FAILED tests/integration/test_share_file_boundaries.py::test_every_read_route_rejects_outside_symlink[HEAD-preview/]
+FAILED tests/integration/test_share_file_boundaries.py::test_every_read_route_rejects_outside_symlink[HEAD-thumb/]
+FAILED tests/integration/test_share_file_boundaries.py::test_invalid_paths_are_explicitly_rejected[/../outside.txt]
+FAILED tests/integration/test_share_file_boundaries.py::test_invalid_paths_are_explicitly_rejected[/%2e%2e/outside.txt]
+FAILED tests/integration/test_share_file_boundaries.py::test_invalid_paths_are_explicitly_rejected[/download/..%5coutside.txt]
+FAILED tests/integration/test_share_file_boundaries.py::test_invalid_paths_are_explicitly_rejected[/download/C:%5coutside.txt]
+FAILED tests/integration/test_share_file_boundaries.py::test_authorized_file_unicode_query_range_and_head
+FAILED tests/integration/test_share_file_boundaries.py::test_single_file_head_cannot_read_sibling
+FAILED tests/integration/test_share_file_boundaries.py::test_preview_explicitly_reports_unsupported
+FAILED tests/integration/test_share_file_boundaries.py::test_duplicate_upload_never_follows_existing_or_dangling_links
+FAILED tests/integration/test_share_file_boundaries.py::test_concurrent_uploads_do_not_overwrite
+FAILED tests/integration/test_share_file_boundaries.py::test_upload_rejects_linked_parent
+FAILED tests/integration/test_share_file_boundaries.py::test_incomplete_upload_creates_nothing
+16 failed, 5 passed in 10.88s

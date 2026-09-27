@@ -332,7 +332,7 @@ def get_browser_page(share_name: str, allow_write: bool = True) -> str:
                 body.innerHTML = '<iframe src="' + url + '"></iframe>';
             } else if (fileType === "doc" || fileType === "xls" || fileType === "ppt") {
                 // Office 文档使用 iframe 加载预览页面
-                body.innerHTML = '<iframe src="' + previewUrl + '"></iframe>';
+                body.textContent = '此文件暂不支持在线文档预览，请下载后打开';
             } else if (fileType === "text" || fileType === "code") {
                 fetch(url).then(function(res) { return res.text(); }).then(function(text) {
                     body.innerHTML = '<pre>' + escapeHtml(text) + '</pre>';

@@ -19,32 +19,12 @@ from urllib.parse import quote, unquote, urlparse
 import json
 import html
 
-
-# 视频缩略图缓存目录
-_thumb_cache_dir: Optional[Path] = None
-
-def get_thumb_cache_dir() -> Path:
-    """获取缩略图缓存目录"""
-    global _thumb_cache_dir
-    if _thumb_cache_dir is None:
-        _thumb_cache_dir = Path(tempfile.gettempdir()) / "webrpa_video_thumbs"
-        _thumb_cache_dir.mkdir(exist_ok=True)
-    return _thumb_cache_dir
+from .paths import ShareDirectory
 
 
-def generate_video_thumbnail(video_path: Path) -> Optional[Path]:
+def generate_video_thumbnail(video_path: Path, thumb_path: Path) -> Optional[Path]:
     """使用 ffmpeg 生成视频缩略图"""
     try:
-        # 生成缓存文件名
-        file_hash = hashlib.md5(str(video_path).encode()).hexdigest()
-        mtime = int(video_path.stat().st_mtime)
-        thumb_name = f"{file_hash}_{mtime}.jpg"
-        thumb_path = get_thumb_cache_dir() / thumb_name
-
-        # 如果缓存存在，直接返回
-        if thumb_path.exists():
-            return thumb_path
-
         # 查找 ffmpeg
         ffmpeg_path = "ffmpeg"
         # 检查 backend 目录是否有 ffmpeg.exe
@@ -112,6 +92,17 @@ class FileShareHandler(SimpleHTTPRequestHandler):
         self.share_name = self.share_config.get('name', '共享')
         super().__init__(*args, directory=self.share_path if self.share_type == 'folder' else str(Path(self.share_path).parent), **kwargs)
 
+    @property
+    def files(self):
+        return self.server.shared_directory
+
+    def _write_body(self, content):
+        if self.command != 'HEAD':
+            self.wfile.write(content)
+
+    def do_HEAD(self):
+        self.do_GET()
+
     def log_message(self, format, *args):
         """静默日志"""
         pass
@@ -126,9 +117,9 @@ class FileShareHandler(SimpleHTTPRequestHandler):
 
     def do_POST(self):
         """处理 POST 请求（上传文件、创建文件夹）"""
-        path = unquote(self.path)
+        path = unquote(urlparse(self.path).path)
 
-        if not self.allow_write:
+        if not self.allow_write or self.share_type != 'folder':
             self._send_json({'success': False, 'error': '此共享不允许写操作'}, 403)
             return
 
@@ -141,9 +132,9 @@ class FileShareHandler(SimpleHTTPRequestHandler):
 
     def do_DELETE(self):
         """处理 DELETE 请求（删除文件/文件夹）"""
-        path = unquote(self.path)
+        path = unquote(urlparse(self.path).path)
 
-        if not self.allow_write:
+        if not self.allow_write or self.share_type != 'folder':
             self._send_json({'success': False, 'error': '此共享不允许写操作'}, 403)
             return
 
@@ -158,9 +149,10 @@ class FileShareHandler(SimpleHTTPRequestHandler):
         response = json.dumps(data, ensure_ascii=False)
         self.send_response(status)
         self.send_header('Content-Type', 'application/json; charset=utf-8')
+        self.send_header('Content-Length', str(len(response.encode('utf-8'))))
         self.send_header('Access-Control-Allow-Origin', '*')
         self.end_headers()
-        self.wfile.write(response.encode('utf-8'))
+        self._write_body(response.encode('utf-8'))
 
     # 单次上传请求体最大值（默认 500MB），防止 OOM
     MAX_UPLOAD_BODY_SIZE = 500 * 1024 * 1024
@@ -171,6 +163,9 @@ class FileShareHandler(SimpleHTTPRequestHandler):
             content_type = self.headers.get('Content-Type', '')
             content_length = int(self.headers.get('Content-Length', 0))
 
+            if content_length <= 0:
+                self._send_json({'success': False, 'error': '无效的请求长度'}, 400)
+                return
             # 拒绝过大请求体
             if content_length > self.MAX_UPLOAD_BODY_SIZE:
                 self._send_json({
@@ -197,7 +192,13 @@ class FileShareHandler(SimpleHTTPRequestHandler):
 
             # 读取请求体
             body = self.rfile.read(content_length)
+            if len(body) != content_length:
+                self._send_json({'success': False, 'error': '上传请求未完整接收'}, 400)
+                return
             boundary_bytes = ('--' + boundary).encode()
+            if not body.rstrip(b'\r\n').endswith(boundary_bytes + b'--'):
+                self._send_json({'success': False, 'error': '上传请求未完整接收'}, 400)
+                return
             parts = body.split(boundary_bytes)
 
             upload_path = '/'
@@ -242,42 +243,8 @@ class FileShareHandler(SimpleHTTPRequestHandler):
                         self._send_json({'success': False, 'error': '文件名无效'}, 400)
                         return
 
-                    # 保存文件
-                    base_path = Path(self.share_path)
-                    target_dir = base_path / upload_path.lstrip('/')
-
-                    # 安全检查
-                    try:
-                        target_dir.resolve().relative_to(base_path.resolve())
-                    except ValueError:
-                        self._send_json({'success': False, 'error': '无效的上传路径'}, 400)
-                        return
-
-                    if not target_dir.exists():
-                        target_dir.mkdir(parents=True, exist_ok=True)
-
-                    file_path = target_dir / filename
-
-                    # 二次检查：file_path 仍要在共享目录内
-                    try:
-                        file_path.resolve().relative_to(base_path.resolve())
-                    except ValueError:
-                        self._send_json({'success': False, 'error': '无效的文件路径'}, 400)
-                        return
-
-                    # 如果文件已存在，添加数字后缀
-                    if file_path.exists():
-                        base = file_path.stem
-                        ext = file_path.suffix
-                        counter = 1
-                        while file_path.exists():
-                            file_path = target_dir / f"{base}_{counter}{ext}"
-                            counter += 1
-
-                    with open(file_path, 'wb') as f:
-                        f.write(content)
-
-                    uploaded_files.append(filename)
+                    saved_name = self.files.upload(upload_path, filename, content)
+                    uploaded_files.append(saved_name)
 
             if uploaded_files:
                 self._send_json({
@@ -288,104 +255,42 @@ class FileShareHandler(SimpleHTTPRequestHandler):
             else:
                 self._send_json({'success': False, 'error': '没有找到要上传的文件'}, 400)
 
+        except PermissionError:
+            self._send_json({'success': False, 'error': '共享路径访问被拒绝'}, 403)
+        except (ValueError, UnicodeError):
+            self._send_json({'success': False, 'error': '上传参数无效'}, 400)
         except Exception as e:
             self._send_json({'success': False, 'error': f'上传失败: {str(e)}'}, 500)
 
     def _handle_mkdir(self):
-        """处理创建文件夹"""
         try:
-            content_length = int(self.headers.get('Content-Length', 0))
-            body = self.rfile.read(content_length)
-            data = json.loads(body.decode('utf-8'))
-
-            parent_path = data.get('path', '/')
-            folder_name = data.get('name', '')
-
-            if not folder_name:
-                self._send_json({'success': False, 'error': '文件夹名称不能为空'}, 400)
+            length = int(self.headers.get('Content-Length', 0))
+            if length < 1 or length > 65536:
+                self._send_json({'success': False, 'error': '无效的请求长度'}, 400)
                 return
-
-            # 检查文件夹名称是否合法
-            invalid_chars = ['/', '\\', ':', '*', '?', '"', '<', '>', '|']
-            for char in invalid_chars:
-                if char in folder_name:
-                    self._send_json({'success': False, 'error': f'文件夹名称不能包含字符: {char}'}, 400)
-                    return
-
-            base_path = Path(self.share_path)
-            target_dir = base_path / parent_path.lstrip('/')
-
-            # 安全检查
-            try:
-                target_dir.resolve().relative_to(base_path.resolve())
-            except ValueError:
-                self._send_json({'success': False, 'error': '无效的路径'}, 400)
-                return
-
-            new_folder = target_dir / folder_name
-
-            if new_folder.exists():
-                self._send_json({'success': False, 'error': '文件夹已存在'}, 400)
-                return
-
-            new_folder.mkdir(parents=True, exist_ok=True)
-
-            self._send_json({
-                'success': True,
-                'message': f'文件夹 "{folder_name}" 创建成功'
-            })
-
-        except json.JSONDecodeError:
-            self._send_json({'success': False, 'error': '无效的 JSON 数据'}, 400)
-        except Exception as e:
-            self._send_json({'success': False, 'error': f'创建文件夹失败: {str(e)}'}, 500)
+            data = json.loads(self.rfile.read(length))
+            self.files.mkdir(data.get('path', '/'), data.get('name', ''))
+            self._send_json({'success': True, 'message': '文件夹创建成功'})
+        except PermissionError:
+            self._send_json({'success': False, 'error': '共享路径访问被拒绝'}, 403)
+        except (ValueError, TypeError, FileExistsError):
+            self._send_json({'success': False, 'error': '目录参数无效或已存在'}, 400)
+        except FileNotFoundError:
+            self._send_json({'success': False, 'error': '父目录不存在'}, 404)
 
     def _handle_delete(self, file_path: str):
-        """处理删除文件/文件夹"""
-        import shutil
-
         try:
-            base_path = Path(self.share_path)
-            target_path = base_path / file_path
-
-            # 安全检查
-            try:
-                target_path.resolve().relative_to(base_path.resolve())
-            except ValueError:
-                self._send_json({'success': False, 'error': '无效的路径'}, 400)
-                return
-
-            if not target_path.exists():
-                self._send_json({'success': False, 'error': '文件或文件夹不存在'}, 404)
-                return
-
-            # 不允许删除根目录
-            if target_path.resolve() == base_path.resolve():
-                self._send_json({'success': False, 'error': '不能删除根目录'}, 400)
-                return
-
-            if target_path.is_file():
-                target_path.unlink()
-                self._send_json({
-                    'success': True,
-                    'message': f'文件 "{target_path.name}" 已删除'
-                })
-            else:
-                shutil.rmtree(target_path)
-                self._send_json({
-                    'success': True,
-                    'message': f'文件夹 "{target_path.name}" 已删除'
-                })
-
+            self.files.delete(file_path)
+            self._send_json({'success': True, 'message': '删除成功'})
         except PermissionError:
-            self._send_json({'success': False, 'error': '没有权限删除此文件/文件夹'}, 403)
-        except Exception as e:
-            self._send_json({'success': False, 'error': f'删除失败: {str(e)}'}, 500)
+            self._send_json({'success': False, 'error': '共享路径访问被拒绝'}, 403)
+        except FileNotFoundError:
+            self._send_json({'success': False, 'error': '文件或目录不存在'}, 404)
 
     def do_GET(self):
         """处理GET请求"""
         # 解码URL路径
-        path = unquote(self.path)
+        path = unquote(urlparse(self.path).path)
 
         # 如果是单文件共享
         if self.share_type == 'file':
@@ -394,7 +299,7 @@ class FileShareHandler(SimpleHTTPRequestHandler):
                 # 返回文件下载页面
                 self.send_file_download_page(file_path)
                 return
-            elif path == '/download' or path.endswith('/' + file_path.name):
+            elif path in ('/download', '/' + file_path.name):
                 # 直接下载文件
                 self.send_file(file_path)
                 return
@@ -436,270 +341,118 @@ class FileShareHandler(SimpleHTTPRequestHandler):
             return
         else:
             # 尝试作为静态文件处理
-            super().do_GET()
+            self.send_file_download(path.lstrip('/'))
 
     def send_video_thumbnail(self, file_path: str):
-        """发送视频缩略图"""
+        """ffmpeg receives a private snapshot, never a mutable shared pathname."""
         try:
-            base_path = Path(self.share_path)
-            target_path = base_path / file_path
-
-            # 安全检查
-            try:
-                target_path.resolve().relative_to(base_path.resolve())
-            except ValueError:
-                self.send_error(403, "Access denied")
-                return
-
-            if not target_path.exists() or not target_path.is_file():
-                self.send_error(404, "File not found")
-                return
-
-            # 生成缩略图
-            thumb_path = generate_video_thumbnail(target_path)
-            if thumb_path and thumb_path.exists():
-                self.send_response(200)
-                self.send_header('Content-Type', 'image/jpeg')
-                self.send_header('Content-Length', str(thumb_path.stat().st_size))
-                self.send_header('Cache-Control', 'max-age=86400')
-                self.send_header('Access-Control-Allow-Origin', '*')
-                self.end_headers()
-                with open(thumb_path, 'rb') as f:
-                    self.wfile.write(f.read())
-            else:
-                # 返回空的透明图片或404
-                self.send_error(404, "Thumbnail not available")
-
-        except (ConnectionResetError, ConnectionAbortedError, BrokenPipeError):
+            with self.files.open_file(file_path) as source:
+                with tempfile.TemporaryDirectory(prefix='autoflow-thumb-') as temporary:
+                    snapshot = Path(temporary) / ('source' + Path(file_path).suffix)
+                    with snapshot.open('wb') as output:
+                        shutil.copyfileobj(source, output)
+                    thumb = generate_video_thumbnail(snapshot, Path(temporary) / "thumbnail.jpg")
+                    if thumb is None:
+                        self.send_error(404, 'Thumbnail not available')
+                        return
+                    try:
+                        content = thumb.read_bytes()
+                    finally:
+                        thumb.unlink(missing_ok=True)
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'image/jpeg')
+                    self.send_header('Content-Length', str(len(content)))
+                    self.end_headers()
+                    self._write_body(content)
+        except PermissionError:
+            self.send_error(403, 'Access denied')
+        except FileNotFoundError:
+            self.send_error(404, 'File not found')
+        except (ConnectionError, BrokenPipeError):
             pass
-        except Exception:
-            self.send_error(500, "Internal Server Error")
 
     def send_file_list(self, sub_path: str):
-        """发送文件列表JSON"""
         try:
-            base_path = Path(self.share_path)
-            target_path = base_path / sub_path.lstrip('/')
-
-            # 安全检查：确保路径在共享目录内
-            try:
-                target_path.resolve().relative_to(base_path.resolve())
-            except ValueError:
-                self.send_error(403, "Access denied")
-                return
-
-            if not target_path.exists():
-                self.send_error(404, "Directory not found")
-                return
-
-            if not target_path.is_dir():
-                self.send_error(400, "Not a directory")
-                return
-
-            items = []
-            for item in sorted(target_path.iterdir(), key=lambda x: (not x.is_dir(), x.name.lower())):
-                try:
-                    stat = item.stat()
-                    items.append({
-                        'name': item.name,
-                        'type': 'folder' if item.is_dir() else 'file',
-                        'size': stat.st_size if item.is_file() else 0,
-                        'modified': stat.st_mtime,
-                        'path': str(item.relative_to(base_path)).replace('\\', '/')
-                    })
-                except (PermissionError, OSError):
-                    continue
-
-            response = json.dumps({
-                'success': True,
-                'path': sub_path,
-                'items': items,
-                'shareName': self.share_name
-            }, ensure_ascii=False)
-
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json; charset=utf-8')
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.end_headers()
-            self.wfile.write(response.encode('utf-8'))
-
-        except (ConnectionResetError, ConnectionAbortedError, BrokenPipeError):
-            # 客户端断开连接，静默处理
-            pass
-        except Exception as e:
-            try:
-                self.send_error(500, "Internal Server Error")
-            except Exception:
-                pass
+            items = self.files.entries(sub_path)
+            self._send_json({'success': True, 'path': sub_path, 'items': items, 'shareName': self.share_name})
+        except PermissionError:
+            self.send_error(403, 'Access denied')
+        except FileNotFoundError:
+            self.send_error(404, 'Directory not found')
 
     def send_file_download(self, file_path: str):
-        """发送文件下载（用于预览，不强制下载）"""
-        try:
-            base_path = Path(self.share_path)
-            target_path = base_path / file_path
-
-            # 安全检查
-            try:
-                target_path.resolve().relative_to(base_path.resolve())
-            except ValueError:
-                self.send_error(403, "Access denied")
-                return
-
-            if not target_path.exists() or not target_path.is_file():
-                self.send_error(404, "File not found")
-                return
-
-            # 预览时不强制下载
-            self.send_file(target_path, force_download=False)
-
-        except (ConnectionResetError, ConnectionAbortedError, BrokenPipeError):
-            # 客户端断开连接，静默处理
-            pass
-        except Exception as e:
-            try:
-                self.send_error(500, "Internal Server Error")
-            except Exception:
-                pass
+        self.send_file(file_path, force_download=False)
 
     def send_document_preview(self, file_path: str):
-        """发送文档预览（Excel、Word、PPT）"""
+        # No document renderer has been migrated. Preserve file download and the
+        # browser's existing image/audio/video/text previews; do not fake success.
         try:
-            base_path = Path(self.share_path)
-            target_path = base_path / file_path
+            with self.files.open_file(file_path):
+                self._send_json({'success': False, 'error': '此文件暂不支持在线文档预览，请下载后打开'}, 415)
+        except PermissionError:
+            self.send_error(403, 'Access denied')
+        except FileNotFoundError:
+            self.send_error(404, 'File not found')
 
-            # 安全检查
-            try:
-                target_path.resolve().relative_to(base_path.resolve())
-            except ValueError:
-                self.send_error(403, "Access denied")
-                return
-
-            if not target_path.exists() or not target_path.is_file():
-                self.send_error(404, "File not found")
-                return
-
-            # 导入文档预览服务
-            from .file_preview import get_preview_content
-
-            result = get_preview_content(target_path)
-            if result:
-                content_bytes, content_type = result
-                self.send_response(200)
-                self.send_header('Content-Type', f'{content_type}; charset=utf-8')
-                self.send_header('Content-Length', str(len(content_bytes)))
-                self.send_header('Access-Control-Allow-Origin', '*')
-                self.end_headers()
-                self.wfile.write(content_bytes)
-            else:
-                # 不支持的文件类型，返回提示
-                error_html = f'''<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>不支持预览</title>
-<style>body{{font-family:sans-serif;background:#18181b;color:#fafafa;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;}}
-.msg{{text-align:center;padding:40px;}}.msg h2{{margin-bottom:16px;}}</style></head>
-<body><div class="msg"><h2>📄 {html.escape(target_path.name)}</h2><p>此文件类型暂不支持在线预览</p></div></body></html>'''
-                content = error_html.encode('utf-8')
-                self.send_response(200)
-                self.send_header('Content-Type', 'text/html; charset=utf-8')
-                self.send_header('Content-Length', str(len(content)))
-                self.end_headers()
-                self.wfile.write(content)
-
-        except (ConnectionResetError, ConnectionAbortedError, BrokenPipeError):
-            pass
-        except Exception as e:
-            try:
-                error_html = f'<html><body><h1>预览失败</h1><p>{html.escape(str(e))}</p></body></html>'
-                content = error_html.encode('utf-8')
-                self.send_response(500)
-                self.send_header('Content-Type', 'text/html; charset=utf-8')
-                self.send_header('Content-Length', str(len(content)))
-                self.end_headers()
-                self.wfile.write(content)
-            except Exception:
-                pass
-
-    def send_file(self, file_path: Path, force_download: bool = True):
-        """发送文件"""
+    def send_file(self, file_path, force_download: bool = True):
+        relative = Path(file_path).name if self.share_type == 'file' else str(file_path)
         try:
-            file_size = file_path.stat().st_size
-            mime_type, _ = mimetypes.guess_type(str(file_path))
-            if not mime_type:
-                mime_type = 'application/octet-stream'
-
-            # 检查是否是 Range 请求（用于视频流）
-            range_header = self.headers.get('Range')
-            if range_header and range_header.startswith('bytes='):
-                # 处理 Range 请求
-                range_spec = range_header[6:]
-                start, end = 0, file_size - 1
-                if '-' in range_spec:
-                    parts = range_spec.split('-')
-                    if parts[0]:
-                        start = int(parts[0])
-                    if parts[1]:
-                        end = int(parts[1])
-
-                if start >= file_size:
-                    self.send_error(416, "Range Not Satisfiable")
-                    return
-
-                end = min(end, file_size - 1)
-                content_length = end - start + 1
-
-                self.send_response(206)
+            with self.files.open_file(relative) as stream:
+                size = os.fstat(stream.fileno()).st_size
+                mime_type = mimetypes.guess_type(relative)[0] or 'application/octet-stream'
+                start, end, status = 0, size - 1, 200
+                requested = self.headers.get('Range')
+                if requested:
+                    try:
+                        if not requested.startswith('bytes=') or ',' in requested:
+                            raise ValueError
+                        first, last = requested[6:].split('-')
+                        if first:
+                            start = int(first)
+                            end = min(int(last), size - 1) if last else size - 1
+                        else:
+                            length = int(last)
+                            if length <= 0:
+                                raise ValueError
+                            start = max(0, size - length)
+                        if start < 0 or start > end or start >= size:
+                            raise ValueError
+                    except ValueError:
+                        self.send_error(416, 'Range Not Satisfiable')
+                        return
+                    status = 206
+                self.send_response(status)
                 self.send_header('Content-Type', mime_type)
-                self.send_header('Content-Length', str(content_length))
-                self.send_header('Content-Range', f'bytes {start}-{end}/{file_size}')
+                self.send_header('Content-Length', str(max(0, end - start + 1)))
                 self.send_header('Accept-Ranges', 'bytes')
                 self.send_header('Access-Control-Allow-Origin', '*')
-                self.end_headers()
-
-                with open(file_path, 'rb') as f:
-                    f.seek(start)
-                    remaining = content_length
-                    while remaining > 0:
-                        chunk_size = min(8192, remaining)
-                        chunk = f.read(chunk_size)
-                        if not chunk:
-                            break
-                        try:
-                            self.wfile.write(chunk)
-                            remaining -= len(chunk)
-                        except (ConnectionResetError, ConnectionAbortedError, BrokenPipeError):
-                            return
-            else:
-                # 普通请求
-                self.send_response(200)
-                self.send_header('Content-Type', mime_type)
-                self.send_header('Content-Length', str(file_size))
-                self.send_header('Accept-Ranges', 'bytes')
+                self.send_header('X-Content-Type-Options', 'nosniff')
+                if status == 206:
+                    self.send_header('Content-Range', f'bytes {start}-{end}/{size}')
                 if force_download:
-                    self.send_header('Content-Disposition', f'attachment; filename="{quote(file_path.name)}"')
-                self.send_header('Access-Control-Allow-Origin', '*')
+                    self.send_header('Content-Disposition', f'attachment; filename="{quote(Path(relative).name)}"')
                 self.end_headers()
-
-                with open(file_path, 'rb') as f:
-                    while True:
-                        chunk = f.read(8192)
-                        if not chunk:
-                            break
-                        try:
-                            self.wfile.write(chunk)
-                        except (ConnectionResetError, ConnectionAbortedError, BrokenPipeError):
-                            return
-
-        except (ConnectionResetError, ConnectionAbortedError, BrokenPipeError):
-            # 客户端断开连接，静默处理
+                if self.command == 'HEAD':
+                    return
+                stream.seek(start)
+                remaining = end - start + 1
+                while remaining > 0:
+                    chunk = stream.read(min(8192, remaining))
+                    if not chunk:
+                        break
+                    self._write_body(chunk)
+                    remaining -= len(chunk)
+        except PermissionError:
+            self.send_error(403, 'Access denied')
+        except FileNotFoundError:
+            self.send_error(404, 'File not found')
+        except (ConnectionError, BrokenPipeError):
             pass
-        except Exception as e:
-            try:
-                self.send_error(500, "Internal Server Error")
-            except Exception:
-                pass
 
     def send_file_download_page(self, file_path: Path):
         """发送单文件下载页面"""
-        file_size = file_path.stat().st_size
+        with self.files.open_file(file_path.name) as stream:
+            file_size = os.fstat(stream.fileno()).st_size
         size_str = format_size(file_size)
 
         html_content = get_single_file_page(file_path.name, size_str)
@@ -707,7 +460,7 @@ class FileShareHandler(SimpleHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-Type', 'text/html; charset=utf-8')
         self.end_headers()
-        self.wfile.write(html_content.encode('utf-8'))
+        self._write_body(html_content.encode('utf-8'))
 
     def send_browser_page(self):
         """发送文件浏览器页面"""
@@ -716,7 +469,7 @@ class FileShareHandler(SimpleHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-Type', 'text/html; charset=utf-8')
         self.end_headers()
-        self.wfile.write(html_content.encode('utf-8'))
+        self._write_body(html_content.encode('utf-8'))
 
     @staticmethod
     def format_size(size: int) -> str:
@@ -747,6 +500,20 @@ _share_servers: Dict[int, tuple] = {}  # port -> (server, thread, config)
 class ThreadedHTTPServer(HTTPServer):
     """支持多线程的 HTTP 服务器，允许多个客户端同时访问"""
     allow_reuse_address = True
+
+    def __init__(self, address, handler):
+        config = handler.share_config
+        path = Path(config['path'])
+        self.shared_directory = ShareDirectory(path if config.get('type', 'folder') == 'folder' else path.parent)
+        try:
+            super().__init__(address, handler)
+        except BaseException:
+            self.shared_directory.close()
+            raise
+
+    def server_close(self):
+        super().server_close()
+        self.shared_directory.close()
 
     def process_request(self, request, client_address):
         """为每个请求创建新线程"""
