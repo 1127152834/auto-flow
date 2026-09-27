@@ -1,0 +1,14 @@
+✔ all three frozen metadata targets regenerate exactly without executing source modules (131.644667ms)
+✔ 213 frozen entries plus 3 native proxy entries cover the exact approved scope (130.738208ms)
+✔ AUTOFIX then PRIORITY and mode overrides retain exact field names and empty rules (117.642167ms)
+✔ source and license digests cover both frozen schema files and preserve provenance (1.367792ms)
+✔ production domain literal matches frontend metadata and has no runtime source dependency (42.510125ms)
+✔ Python runtime description preserves the explicit AutoFlow adaptation (114.074708ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 602.195459

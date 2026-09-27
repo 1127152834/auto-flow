@@ -1,0 +1,98 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/workflows/tests/proxy-required-fields.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:84681) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/proxy-required-fields.test.ts (6 tests | 6 failed) 9ms
+     × requires an explicit proxy only for specified targets 5ms
+     × requires a location for relocation and reports readable labels 1ms
+     × requires an explicit proxy only for specified targets 0ms
+     × requires a location for relocation and reports readable labels 0ms
+     × requires an explicit proxy only for specified targets 0ms
+     × requires a location for relocation and reports readable labels 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/proxy-required-fields.test.ts > proxy_query configuration admission > requires an explicit proxy only for specified targets
+ FAIL  src/renderer/domains/workflows/tests/proxy-required-fields.test.ts > proxy_change_ip configuration admission > requires an explicit proxy only for specified targets
+ FAIL  src/renderer/domains/workflows/tests/proxy-required-fields.test.ts > proxy_change_location configuration admission > requires an explicit proxy only for specified targets
+AssertionError: expected [] to deeply equal [ 'proxyId' ]
+
+- Expected
++ Received
+
+- [
+-   "proxyId",
+- ]
++ []
+
+ ❯ src/renderer/domains/workflows/tests/proxy-required-fields.test.ts:8:66
+      6|   const missing = (data: Record<string, unknown>) => getMissingRequire…
+      7|   it('requires an explicit proxy only for specified targets', () => {
+      8|     expect(missing({ target: 'specified', locationId: 'city' })).toEqu…
+       |                                                                  ^
+      9|     expect(missing({ locationId: 'city' })).toEqual([])
+     10|     expect(missing({ target: 'specified', proxyId: '${proxy}', locatio…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/proxy-required-fields.test.ts > proxy_query configuration admission > requires a location for relocation and reports readable labels
+ FAIL  src/renderer/domains/workflows/tests/proxy-required-fields.test.ts > proxy_change_ip configuration admission > requires a location for relocation and reports readable labels
+AssertionError: expected [] to deeply equal [ '代理 ID／变量' ]
+
+- Expected
++ Received
+
+- [
+-   "代理 ID／变量",
+- ]
++ []
+
+ ❯ src/renderer/domains/workflows/tests/proxy-required-fields.test.ts:14:124
+     12|   it('requires a location for relocation and reports readable labels',…
+     13|     expect(missing({ proxyId: 'proxy' })).toEqual(type === 'proxy_chan…
+     14|     expect(getMissingRequiredLabels(type, { target: 'specified', locat…
+       |                                                                                                                            ^
+     15|   })
+     16| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/proxy-required-fields.test.ts > proxy_change_location configuration admission > requires a location for relocation and reports readable labels
+AssertionError: expected [] to deeply equal [ 'locationId' ]
+
+- Expected
++ Received
+
+- [
+-   "locationId",
+- ]
++ []
+
+ ❯ src/renderer/domains/workflows/tests/proxy-required-fields.test.ts:13:43
+     11|   })
+     12|   it('requires a location for relocation and reports readable labels',…
+     13|     expect(missing({ proxyId: 'proxy' })).toEqual(type === 'proxy_chan…
+       |                                           ^
+     14|     expect(getMissingRequiredLabels(type, { target: 'specified', locat…
+     15|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed (6)
+   Start at  03:06:05
+   Duration  827ms (transform 216ms, setup 166ms, import 94ms, tests 9ms, environment 442ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/workflows/tests/proxy-required-fields.test.ts

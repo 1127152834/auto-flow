@@ -59,19 +59,30 @@ test('all three frozen metadata targets regenerate exactly without executing sou
   assert.equal(result.status, 0, result.stderr + result.stdout)
 })
 
-test('all 213 entries match final source update order and every excluded source node is absent', () => {
+test('213 frozen entries plus 3 native proxy entries cover the exact approved scope', () => {
   const schemas = sourceOracle()
   const approved = read('docs/migration/studio-frontend-completion/capabilities.json').map(entry => entry.type).sort()
   const coverage = read('docs/migration/studio-frontend-completion/required-field-source-coverage.json')
   const data = metadata()
-  assert.equal(approved.length, 213)
-  assert.equal(new Set(approved).size, 213)
-  assert.equal(coverage.approvedCount, 213)
-  assert.equal(coverage.coveredCount, 213)
+  assert.equal(approved.length, 216)
+  assert.equal(new Set(approved).size, 216)
+  assert.equal(coverage.approvedCount, 216)
+  assert.equal(coverage.coveredCount, 216)
   assert.deepEqual(coverage.uncovered, [])
   assert.deepEqual(coverage.covered, approved)
   assert.deepEqual(data.coveredModules, approved)
-  const expected = projectRules(schemas, approved)
+  const native = ['proxy_change_ip', 'proxy_change_location', 'proxy_query']
+  assert.deepEqual(coverage.nativeModules, native)
+  assert.equal(coverage.nativeSource, 'apps/backend/src/autoflow/application/workflows/executors/proxy_control.py')
+  for (const type of native) assert.ok(!Object.hasOwn(schemas, type))
+  const frozen = approved.filter(type => !native.includes(type))
+  assert.equal(frozen.length, 213)
+  const expected = projectRules(schemas, frozen)
+  expected.requiredFields.proxy_change_location = ['locationId']
+  for (const type of native) {
+    expected.conditionalRequired[type] = {field:'target', default:'current', map:{current:[], specified:['proxyId']}}
+    expected.fieldLabels[type] = {proxyId:'代理 ID／变量', locationId:'地点 ID／变量'}
+  }
   for (const name of ['requiredFields','conditionalRequired','fieldLabels']) assert.deepEqual(data[name], expected[name])
   for (const excluded of Object.keys(schemas).filter(name => !approved.includes(name))) {
     assert.ok(!data.coveredModules.includes(excluded), `${excluded} must not reappear`)
@@ -96,7 +107,7 @@ test('AUTOFIX then PRIORITY and mode overrides retain exact field names and empt
   assert.equal(data.requiredFields.keyboard_action, undefined)
   assert.ok(!data.coveredModules.includes('keyboard_action'))
   assert.deepEqual(data.requiredFields.open_page, ['url'])
-  assert.deepEqual(data.conditionalRequired, {wait: {field: 'waitType', default: 'time', map: {time: [], selector: ['selector'], navigation: []}}})
+  assert.deepEqual(data.conditionalRequired.wait, {field: 'waitType', default: 'time', map: {time: [], selector: ['selector'], navigation: []}})
   assert.equal(data.requiredFields.wait, undefined)
   for (const empty of ['group','note','screenshot']) {
     assert.ok(data.coveredModules.includes(empty))

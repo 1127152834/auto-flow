@@ -40,7 +40,13 @@ def test_real_required_fields_route_preserves_frozen_rules_and_approved_scope(cl
     data = response.json()
     assert StudioModuleRequiredFields.model_validate(data).model_dump(by_alias=True) == data
     assert set(data['coveredModules']) == APPROVED_NODE_TYPES
-    assert len(data['coveredModules']) == 213
+    assert len(data['coveredModules']) == 216
+    assert data['requiredFields']['proxy_change_location'] == ['locationId']
+    for node in ('proxy_query', 'proxy_change_ip', 'proxy_change_location'):
+        assert data['conditionalRequired'][node] == {
+            'field': 'target', 'default': 'current',
+            'map': {'current': [], 'specified': ['proxyId']},
+        }
     assert data == json.loads(FIXTURE.read_text())
     assert data['conditionalRequired']['wait'] == {
         'field': 'waitType', 'default': 'time',

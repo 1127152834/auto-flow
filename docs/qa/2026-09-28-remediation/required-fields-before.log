@@ -1,0 +1,63 @@
+✖ all three frozen metadata targets regenerate exactly without executing source modules (133.5925ms)
+✖ all 213 entries match final source update order and every excluded source node is absent (126.111834ms)
+✔ AUTOFIX then PRIORITY and mode overrides retain exact field names and empty rules (116.504667ms)
+✔ source and license digests cover both frozen schema files and preserve provenance (2.274542ms)
+✔ production domain literal matches frontend metadata and has no runtime source dependency (44.267375ms)
+✔ Python runtime description preserves the explicit AutoFlow adaptation (117.338041ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 4
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 607.327708
+
+✖ failing tests:
+
+test at scripts/studio-required-fields.test.mjs:57:1
+✖ all three frozen metadata targets regenerate exactly without executing source modules (133.5925ms)
+  AssertionError [ERR_ASSERTION]: Traceback (most recent call last):
+    File "/Users/zhangtiancheng/Documents/projects/autoflow/scripts/export-studio-required-fields.py", line 126, in <module>
+      metadata, manifest = extract()
+                           ~~~~~~~^^
+    File "/Users/zhangtiancheng/Documents/projects/autoflow/scripts/export-studio-required-fields.py", line 80, in extract
+      raise ValueError(f'Approved 213-node scope changed: {len(retained)}')
+  ValueError: Approved 213-node scope changed: 216
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/studio-required-fields.test.mjs:59:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.start (node:internal/test_runner/test:1257:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/studio-required-fields.test.mjs:62:1
+✖ all 213 entries match final source update order and every excluded source node is absent (126.111834ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  216 !== 213
+  
+      at TestContext.<anonymous> (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/studio-required-fields.test.mjs:67:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 216,
+    expected: 213,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

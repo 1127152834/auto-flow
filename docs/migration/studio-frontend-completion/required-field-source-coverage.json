@@ -12,13 +12,19 @@
     }
   ],
   "sourceRevision": "WebRPA@5ccb900e8dcf1530aae66f676d87593c416c7ebb",
+  "nativeModules": [
+    "proxy_change_ip",
+    "proxy_change_location",
+    "proxy_query"
+  ],
+  "nativeSource": "apps/backend/src/autoflow/application/workflows/executors/proxy_control.py",
   "license": {
     "path": "reference/WebRPA/LICENSE",
     "sha256": "24753455b187a47243e0dc82071450a114b5de99aac2909aa0f437e0eac8e409"
   },
   "modifications": [
     "Read final literal groups in frozen merge order, including AUTOFIX and later manual overrides.",
-    "Filter all metadata to the approved 213-node scope; add explicit revision and coverage.",
+    "Filter frozen metadata to 213 retained source nodes; add three AutoFlow proxy node rules for the approved 216-node scope.",
     "Describe AutoFlow bundled Python instead of the source Python313 environment."
   ],
   "mergeOrder": [
@@ -52,8 +58,8 @@
     "WORD_SCHEMAS",
     "RUN_WORKFLOW_SCHEMAS"
   ],
-  "approvedCount": 213,
-  "coveredCount": 213,
+  "approvedCount": 216,
+  "coveredCount": 216,
   "covered": [
     "ai_chat",
     "ai_classify",
@@ -198,6 +204,9 @@
     "print_log",
     "printer_call",
     "probability_trigger",
+    "proxy_change_ip",
+    "proxy_change_location",
+    "proxy_query",
     "python_script",
     "random_number",
     "random_password_generator",
@@ -270,5 +279,5 @@
     "webhook_trigger"
   ],
   "uncovered": [],
-  "boundary": "Source metadata coverage only, not complete node configuration validation."
+  "boundary": "Frozen source plus explicit AutoFlow native metadata coverage, not complete node configuration validation."
 }

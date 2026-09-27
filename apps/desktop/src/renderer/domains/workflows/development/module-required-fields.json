@@ -144,6 +144,9 @@
     "print_log",
     "printer_call",
     "probability_trigger",
+    "proxy_change_ip",
+    "proxy_change_location",
+    "proxy_query",
     "python_script",
     "random_number",
     "random_password_generator",
@@ -476,6 +479,9 @@
     "printer_call": [
       "filePath"
     ],
+    "proxy_change_location": [
+      "locationId"
+    ],
     "python_script": [
       "scriptContent"
     ],
@@ -594,6 +600,36 @@
     ]
   },
   "conditionalRequired": {
+    "proxy_change_ip": {
+      "field": "target",
+      "default": "current",
+      "map": {
+        "current": [],
+        "specified": [
+          "proxyId"
+        ]
+      }
+    },
+    "proxy_change_location": {
+      "field": "target",
+      "default": "current",
+      "map": {
+        "current": [],
+        "specified": [
+          "proxyId"
+        ]
+      }
+    },
+    "proxy_query": {
+      "field": "target",
+      "default": "current",
+      "map": {
+        "current": [],
+        "specified": [
+          "proxyId"
+        ]
+      }
+    },
     "wait": {
       "field": "waitType",
       "default": "time",
@@ -870,6 +906,18 @@
     },
     "probability_trigger": {
       "probability": "百分比 0-100，路径1 概率"
+    },
+    "proxy_change_ip": {
+      "proxyId": "代理 ID／变量",
+      "locationId": "地点 ID／变量"
+    },
+    "proxy_change_location": {
+      "proxyId": "代理 ID／变量",
+      "locationId": "地点 ID／变量"
+    },
+    "proxy_query": {
+      "proxyId": "代理 ID／变量",
+      "locationId": "地点 ID／变量"
     },
     "python_script": {
       "scriptContent": "Python 代码字符串。**重要规则**:(1) 用户代码会被自动包装在 def _user_script(): 函数里,所以使用 `return 值` 把结果回传给 resultVariable;(2) 想读取上游工作流变量,**必须用 `vars.变量名`**(例如 `vars.user_input` 而不是直接 `user_input`);(3) 想写入工作流变量,直接 `vars.变量名 = 值`(脚本结束后整套 vars 会自动 sync 回工作流);",

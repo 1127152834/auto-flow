@@ -14,6 +14,17 @@ CAPABILITIES = ROOT / 'docs/migration/studio-frontend-completion/capabilities.js
 TARGET = ROOT / 'apps/desktop/src/renderer/domains/workflows/development/module-required-fields.json'
 MANIFEST = ROOT / 'docs/migration/studio-frontend-completion/required-field-source-coverage.json'
 PRODUCTION = ROOT / 'apps/backend/src/autoflow/domain/workflows/required_fields.py'
+# AutoFlow-owned rules, reviewed against ProxyControlExecutor.execute and its UI.
+# These nodes do not come from the frozen WebRPA source.
+NATIVE_SCHEMAS = {
+    name: {
+        'required': ['locationId'] if name == 'proxy_change_location' else [],
+        'conditional_required': {'field': 'target', 'default': 'current',
+                                 'map': {'current': [], 'specified': ['proxyId']}},
+        'desc': {'proxyId': '代理 ID／变量', 'locationId': '地点 ID／变量'},
+    }
+    for name in ('proxy_query', 'proxy_change_ip', 'proxy_change_location')
+}
 
 
 def _update_name(statement):
@@ -76,12 +87,15 @@ def _final_schemas():
 def extract():
     schemas, merge_order = _final_schemas()
     retained = {entry['type'] for entry in json.loads(CAPABILITIES.read_text(encoding='utf-8'))}
-    if len(retained) != 213:
-        raise ValueError(f'Approved 213-node scope changed: {len(retained)}')
+    if len(retained) != 216:
+        raise ValueError(f'Approved 216-node scope changed: {len(retained)}')
+    if schemas.keys() & NATIVE_SCHEMAS.keys():
+        raise ValueError('Native metadata must not override frozen source rules')
+    schemas.update(NATIVE_SCHEMAS)
     covered = sorted(retained & schemas.keys())
     missing = sorted(retained - schemas.keys())
     if missing:
-        raise ValueError(f'Frozen metadata does not cover approved nodes: {missing}')
+        raise ValueError(f'Source and native metadata do not cover approved nodes: {missing}')
     result = {'schemaRevision': REVISION, 'coveredModules': covered, 'requiredFields': {}, 'conditionalRequired': {}, 'fieldLabels': {}}
     for name in covered:
         schema = schemas[name]
@@ -99,13 +113,15 @@ def extract():
     sources = [{'source': path.relative_to(ROOT).as_posix(), 'sha256': hashlib.sha256(path.read_bytes()).hexdigest()} for path in (SOURCE, AUTOFIX)]
     manifest = {
         **sources[0], 'sources': sources, 'sourceRevision': REVISION,
+        'nativeModules': sorted(NATIVE_SCHEMAS),
+        'nativeSource': 'apps/backend/src/autoflow/application/workflows/executors/proxy_control.py',
         'license': {'path': LICENSE.relative_to(ROOT).as_posix(), 'sha256': hashlib.sha256(LICENSE.read_bytes()).hexdigest()},
         'modifications': ['Read final literal groups in frozen merge order, including AUTOFIX and later manual overrides.',
-                          'Filter all metadata to the approved 213-node scope; add explicit revision and coverage.',
+                          'Filter frozen metadata to 213 retained source nodes; add three AutoFlow proxy node rules for the approved 216-node scope.',
                           'Describe AutoFlow bundled Python instead of the source Python313 environment.'],
         'mergeOrder': merge_order, 'approvedCount': len(retained), 'coveredCount': len(covered),
         'covered': covered, 'uncovered': missing,
-        'boundary': 'Source metadata coverage only, not complete node configuration validation.',
+        'boundary': 'Frozen source plus explicit AutoFlow native metadata coverage, not complete node configuration validation.',
     }
     return result, manifest
 
