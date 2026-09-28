@@ -1,0 +1,258 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___________ test_fresh_migrated_database_matches_registered_metadata ___________
+
+tables = [Table('android_devices', MetaData(), Column('id', String(length=36), table=<android_devices>, primary_key=True, nulla...able=False), Column('updated_at', DateTime(timezone=True), table=<model_providers>, nullable=False), schema=None), ...]
+filter_fn = None, extra_dependencies = None, _warn_for_cycles = True
+
+    def sort_tables_and_constraints(
+        tables, filter_fn=None, extra_dependencies=None, _warn_for_cycles=False
+    ):
+        """Sort a collection of :class:`_schema.Table`  /
+        :class:`_schema.ForeignKeyConstraint`
+        objects.
+    
+        This is a dependency-ordered sort which will emit tuples of
+        ``(Table, [ForeignKeyConstraint, ...])`` such that each
+        :class:`_schema.Table` follows its dependent :class:`_schema.Table`
+        objects.
+        Remaining :class:`_schema.ForeignKeyConstraint`
+        objects that are separate due to
+        dependency rules not satisfied by the sort are emitted afterwards
+        as ``(None, [ForeignKeyConstraint ...])``.
+    
+        Tables are dependent on another based on the presence of
+        :class:`_schema.ForeignKeyConstraint` objects, explicit dependencies
+        added by :meth:`_schema.Table.add_is_dependent_on`,
+        as well as dependencies
+        stated here using the :paramref:`~.sort_tables_and_constraints.skip_fn`
+        and/or :paramref:`~.sort_tables_and_constraints.extra_dependencies`
+        parameters.
+    
+        :param tables: a sequence of :class:`_schema.Table` objects.
+    
+        :param filter_fn: optional callable which will be passed a
+         :class:`_schema.ForeignKeyConstraint` object,
+         and returns a value based on
+         whether this constraint should definitely be included or excluded as
+         an inline constraint, or neither.   If it returns False, the constraint
+         will definitely be included as a dependency that cannot be subject
+         to ALTER; if True, it will **only** be included as an ALTER result at
+         the end.   Returning None means the constraint is included in the
+         table-based result unless it is detected as part of a dependency cycle.
+    
+        :param extra_dependencies: a sequence of 2-tuples of tables which will
+         also be considered as dependent on each other.
+    
+        .. seealso::
+    
+            :func:`.sort_tables`
+    
+    
+        """
+    
+        fixed_dependencies = set()
+        mutable_dependencies = set()
+    
+        if extra_dependencies is not None:
+            fixed_dependencies.update(extra_dependencies)
+    
+        remaining_fkcs = set()
+        for table in tables:
+            for fkc in table.foreign_key_constraints:
+                if fkc.use_alter is True:
+                    remaining_fkcs.add(fkc)
+                    continue
+    
+                if filter_fn:
+                    filtered = filter_fn(fkc)
+    
+                    if filtered is True:
+                        remaining_fkcs.add(fkc)
+                        continue
+    
+                dependent_on = fkc.referred_table
+                if dependent_on is not table:
+                    mutable_dependencies.add((dependent_on, table))
+    
+            fixed_dependencies.update(
+                (parent, table) for parent in table._extra_dependencies
+            )
+    
+        try:
+>           candidate_sort = list(
+                topological.sort(
+                    fixed_dependencies.union(mutable_dependencies),
+                    tables,
+                )
+            )
+
+apps/backend/.venv/lib/python3.11/site-packages/sqlalchemy/sql/ddl.py:1404: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+apps/backend/.venv/lib/python3.11/site-packages/sqlalchemy/util/topological.py:73: in sort
+    for set_ in sort_as_subsets(tuples, allitems):
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tuples = {(Table('project_tasks', MetaData(), Column('id', String(length=36), table=<project_tasks>, primary_key=True, nullable...), Column('created_at', DateTime(timezone=True), table=<project_data_generations>, nullable=False), schema=None)), ...}
+allitems = [Table('android_devices', MetaData(), Column('id', String(length=36), table=<android_devices>, primary_key=True, nulla...able=False), Column('updated_at', DateTime(timezone=True), table=<model_providers>, nullable=False), schema=None), ...]
+
+    def sort_as_subsets(
+        tuples: Collection[Tuple[_T, _T]], allitems: Collection[_T]
+    ) -> Iterator[Sequence[_T]]:
+        edges: DefaultDict[_T, Set[_T]] = util.defaultdict(set)
+        for parent, child in tuples:
+            edges[child].add(parent)
+    
+        todo = list(allitems)
+        todo_set = set(allitems)
+    
+        while todo_set:
+            output = []
+            for node in todo:
+                if todo_set.isdisjoint(edges[node]):
+                    output.append(node)
+    
+            if not output:
+>               raise CircularDependencyError(
+                    "Circular dependency detected.",
+                    find_cycles(tuples, allitems),
+                    _gen_edges(edges),
+                )
+E               sqlalchemy.exc.CircularDependencyError: Circular dependency detected. (Table('project_data_generations', MetaData(), Column('id', String(length=36), table=<project_data_generations>, primary_key=True, nullable=False), Column('project_id', String(length=36), ForeignKey('project_data_tables.project_id'), table=<project_data_generations>, nullable=False), Column('table_id', String(length=36), ForeignKey('project_data_tables.id'), table=<project_data_generations>, nullable=False), Column('identity', JSON(), table=<project_data_generations>, nullable=False), Column('source', JSON(), table=<project_data_generations>, nullable=False), Column('created_at', DateTime(timezone=True), table=<project_data_generations>, nullable=False), schema=None), Table('project_data_tables', MetaData(), Column('id', String(length=36), ForeignKey('project_data_generations.table_id'), table=<project_data_tables>, primary_key=True, nullable=False), Column('project_id', String(length=36), ForeignKey('project_data_generations.project_id'), ForeignKey('projects.id'), table=<project_data_tables>, nullable=False), Column('name', Text(), table=<project_data_tables>, nullable=False), Column('name_key', Text(), table=<project_data_tables>, nullable=False), Column('search_text', Text(), table=<project_data_tables>, nullable=False), Column('description', Text(), table=<project_data_tables>, nullable=False), Column('source_kind', String(length=20), table=<project_data_tables>, nullable=False), Column('published', Boolean(), table=<project_data_tables>, nullable=False, default=ScalarElementColumnDefault(True), server_default=DefaultClause(<sqlalchemy.sql.elements.True_ object at 0x10c6a0c50>, for_update=False)), Column('current_generation', String(length=36), ForeignKey('project_data_generations.id'), table=<project_data_tables>, nullable=False), Column('table_revision', Integer(), table=<project_data_tables>, nullable=False), Column('schema_guard_revision', Integer(), table=<project_data_tables>, nullable=False, default=ScalarElementColumnDefault(1), server_default=DefaultClause('1', for_update=False)), Column('identity', JSON(), table=<project_data_tables>, nullable=False), Column('slot_definitions', JSON(), table=<project_data_tables>, nullable=False), Column('created_at', DateTime(timezone=True), table=<project_data_tables>, nullable=False), Column('updated_at', DateTime(timezone=True), table=<project_data_tables>, nullable=False), schema=None))
+
+apps/backend/.venv/lib/python3.11/site-packages/sqlalchemy/util/topological.py:47: CircularDependencyError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-534/test_fresh_migrated_database_m0')
+
+    def test_fresh_migrated_database_matches_registered_metadata(tmp_path):
+        database = tmp_path / "metadata.sqlite3"
+        database_session.migrate_database(database)
+        database_session.migrate_database(database)
+        config = Config(str(Path(database_session.__file__).with_name("alembic.ini")))
+        config.set_main_option("sqlalchemy.url", f"sqlite:///{database}")
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", SAWarning)
+>           command.check(config)
+
+apps/backend/tests/integration/test_migration_metadata.py:22: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+apps/backend/.venv/lib/python3.11/site-packages/alembic/command.py:360: in check
+    script_directory.run_env()
+apps/backend/.venv/lib/python3.11/site-packages/alembic/script/base.py:550: in run_env
+    util.load_python_file(self.dir, "env.py")
+apps/backend/.venv/lib/python3.11/site-packages/alembic/util/pyfiles.py:114: in load_python_file
+    module = load_module_py(module_id, path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+apps/backend/.venv/lib/python3.11/site-packages/alembic/util/pyfiles.py:132: in load_module_py
+    spec.loader.exec_module(module)  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap_external>:940: in exec_module
+    ???
+<frozen importlib._bootstrap>:241: in _call_with_frames_removed
+    ???
+apps/backend/src/autoflow/infrastructure/database/migrations/env.py:55: in <module>
+    run_migrations_online()
+apps/backend/src/autoflow/infrastructure/database/migrations/env.py:47: in run_migrations_online
+    context.run_migrations()
+<string>:8: in run_migrations
+    ???
+apps/backend/.venv/lib/python3.11/site-packages/alembic/runtime/environment.py:970: in run_migrations
+    self.get_context().run_migrations(**kw)
+apps/backend/.venv/lib/python3.11/site-packages/alembic/runtime/migration.py:609: in run_migrations
+    for step in self._migrations_fn(heads, self):
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+apps/backend/.venv/lib/python3.11/site-packages/alembic/command.py:349: in retrieve_migrations
+    revision_context.run_autogenerate(rev, context)
+apps/backend/.venv/lib/python3.11/site-packages/alembic/autogenerate/api.py:580: in run_autogenerate
+    self._run_environment(rev, migration_context, True)
+apps/backend/.venv/lib/python3.11/site-packages/alembic/autogenerate/api.py:627: in _run_environment
+    compare._populate_migration_script(
+apps/backend/.venv/lib/python3.11/site-packages/alembic/autogenerate/compare/__init__.py:40: in _populate_migration_script
+    _produce_net_changes(autogen_context, upgrade_ops)
+apps/backend/.venv/lib/python3.11/site-packages/alembic/autogenerate/compare/__init__.py:49: in _produce_net_changes
+    autogen_context.comparators.dispatch(
+apps/backend/.venv/lib/python3.11/site-packages/alembic/util/langhelpers.py:415: in go
+    result = fn(*arg, **kw)
+             ^^^^^^^^^^^^^^
+apps/backend/.venv/lib/python3.11/site-packages/alembic/autogenerate/compare/schema.py:49: in _produce_net_changes
+    autogen_context.comparators.dispatch(
+apps/backend/.venv/lib/python3.11/site-packages/alembic/util/langhelpers.py:415: in go
+    result = fn(*arg, **kw)
+             ^^^^^^^^^^^^^^
+apps/backend/.venv/lib/python3.11/site-packages/alembic/autogenerate/compare/tables.py:68: in _autogen_for_tables
+    [(table.schema, table.name) for table in autogen_context.sorted_tables]
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+apps/backend/.venv/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py:1122: in __get__
+    obj.__dict__[self.__name__] = result = self.fget(obj)
+                                           ^^^^^^^^^^^^^^
+apps/backend/.venv/lib/python3.11/site-packages/alembic/autogenerate/api.py:494: in sorted_tables
+    result.extend(m.sorted_tables)
+                  ^^^^^^^^^^^^^^^
+apps/backend/.venv/lib/python3.11/site-packages/sqlalchemy/sql/schema.py:5683: in sorted_tables
+    return ddl.sort_tables(
+apps/backend/.venv/lib/python3.11/site-packages/sqlalchemy/sql/ddl.py:1319: in sort_tables
+    for (t, fkcs) in sort_tables_and_constraints(
+apps/backend/.venv/lib/python3.11/site-packages/sqlalchemy/sql/ddl.py:1412: in sort_tables_and_constraints
+    util.warn(
+apps/backend/.venv/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py:1805: in warn
+    _warnings_warn(msg, exc.SAWarning)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+message = 'Cannot correctly sort tables; there are unresolvable cycles between tables "project_data_generations, project_data_ta...gn key constraints involving these tables will not be considered; this warning may raise an error in a future release.'
+category = <class 'sqlalchemy.exc.SAWarning'>, stacklevel = 19
+
+    def _warnings_warn(
+        message: Union[str, Warning],
+        category: Optional[Type[Warning]] = None,
+        stacklevel: int = 2,
+    ) -> None:
+        # adjust the given stacklevel to be outside of SQLAlchemy
+        try:
+            frame = sys._getframe(stacklevel)
+        except ValueError:
+            # being called from less than 3 (or given) stacklevels, weird,
+            # but don't crash
+            stacklevel = 0
+        except:
+            # _getframe() doesn't work, weird interpreter issue, weird,
+            # ok, but don't crash
+            stacklevel = 0
+        else:
+            stacklevel_found = warning_tag_found = False
+            while frame is not None:
+                # using __name__ here requires that we have __name__ in the
+                # __globals__ of the decorated string functions we make also.
+                # we generate this using {"__name__": fn.__module__}
+                if not stacklevel_found and not re.match(
+                    _not_sa_pattern, frame.f_globals.get("__name__", "")
+                ):
+                    # stop incrementing stack level if an out-of-SQLA line
+                    # were found.
+                    stacklevel_found = True
+    
+                    # however, for the warning tag thing, we have to keep
+                    # scanning up the whole traceback
+    
+                if frame.f_code in _warning_tags:
+                    warning_tag_found = True
+                    _suffix, _category = _warning_tags[frame.f_code]
+                    category = category or _category
+                    message = f"{message} ({_suffix})"
+    
+                frame = frame.f_back  # type: ignore[assignment]
+    
+                if not stacklevel_found:
+                    stacklevel += 1
+                elif stacklevel_found and warning_tag_found:
+                    break
+    
+        if category is not None:
+>           warnings.warn(message, category, stacklevel=stacklevel + 1)
+E           sqlalchemy.exc.SAWarning: Cannot correctly sort tables; there are unresolvable cycles between tables "project_data_generations, project_data_tables", which is usually caused by mutually dependent foreign key constraints.  Foreign key constraints involving these tables will not be considered; this warning may raise an error in a future release.
+
+apps/backend/.venv/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py:1880: SAWarning
+=========================== short test summary info ============================
+FAILED apps/backend/tests/integration/test_migration_metadata.py::test_fresh_migrated_database_matches_registered_metadata
+1 failed in 0.76s

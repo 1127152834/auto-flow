@@ -6,10 +6,12 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
     UniqueConstraint,
+    text,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -98,6 +100,10 @@ class ProxyGroupResolutionRow(Base):
 
 class ProxyOperationRow(Base):
     __tablename__ = "proxy_operations"
+    __table_args__ = (
+        Index("uq_proxy_remote_active", "target_id", unique=True,
+              sqlite_where=text("status IN ('queued','running','unknown') AND kind IN ('change_ip','relocate','save_rotation','clear_rotation')")),
+    )
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     kind: Mapped[str] = mapped_column(String(80), nullable=False)
     connection_id: Mapped[str | None] = mapped_column(String(36))

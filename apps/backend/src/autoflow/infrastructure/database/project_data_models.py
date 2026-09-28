@@ -21,6 +21,7 @@ class DataTableRow(Base):
                 "project_data_generations.id",
             ],
             name="fk_project_data_current_generation",
+            use_alter=True,  # Break metadata sort cycle; SQLite still creates inline FK.
             ondelete="RESTRICT",
             deferrable=True,
             initially="DEFERRED",

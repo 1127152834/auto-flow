@@ -10,6 +10,7 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+    text,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -20,6 +21,8 @@ class ProjectEnvironmentRow(Base):
     __tablename__ = "project_environments"
     __table_args__ = (
         Index("ix_project_environments_project_updated", "project_id", "updated_at"),
+        Index("uq_project_environments_active_name", "project_id", "name_key",
+              unique=True, sqlite_where=text("state != 'deleted'")),
     )
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     project_id: Mapped[str] = mapped_column(

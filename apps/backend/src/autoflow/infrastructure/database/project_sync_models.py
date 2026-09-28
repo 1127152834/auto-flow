@@ -1,6 +1,7 @@
 """Persistence of Google Sheets connections, bindings and outbound sync facts."""
 
 from datetime import datetime
+from typing import Any
 
 import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column
@@ -66,6 +67,7 @@ class SheetsBindingRow(Base):
     spreadsheet_title: Mapped[str] = mapped_column(sa.Text, nullable=False)
     sheet_name: Mapped[str] = mapped_column(sa.Text, nullable=False)
     binding_epoch: Mapped[int] = mapped_column(sa.Integer, nullable=False)
+    identity_verification: Mapped[dict[str, Any] | None] = mapped_column(sa.JSON, nullable=True)
     identity_strategy: Mapped[dict] = mapped_column(sa.JSON, nullable=False)
     mapping: Mapped[list[dict]] = mapped_column(sa.JSON, nullable=False)
     sync_paused: Mapped[bool] = mapped_column(sa.Boolean, nullable=False)

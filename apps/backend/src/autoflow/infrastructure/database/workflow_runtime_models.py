@@ -99,7 +99,7 @@ class WorkflowRunRow(Base):
 class WorkflowRunEventRow(Base):
     __tablename__ = "project_workflow_run_events"
     __table_args__ = (
-        UniqueConstraint("run_id", "event_id", name="uq_project_workflow_run_event_id"),
+        UniqueConstraint("run_id", "event_id", name="uq_workflow_run_event_id"),
         CheckConstraint("sequence >= 1", name="ck_project_workflow_run_event_sequence"),
         CheckConstraint(
             "execution_generation >= 0",
@@ -132,7 +132,7 @@ class WorkflowRunEventRow(Base):
 class WorkflowRunArtifactRow(Base):
     __tablename__ = "project_workflow_run_artifacts"
     __table_args__ = (
-        UniqueConstraint("run_id", "ordinal", name="uq_project_workflow_artifact_ordinal"),
+        UniqueConstraint("run_id", "ordinal", name="uq_workflow_artifact_ordinal"),
         Index("ix_project_workflow_artifacts_node", "run_id", "node_id", "ordinal"),
         Index(
             "ix_project_workflow_artifacts_execution",
