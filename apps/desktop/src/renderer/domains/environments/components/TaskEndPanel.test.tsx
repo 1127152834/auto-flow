@@ -2,11 +2,12 @@ import '@testing-library/jest-dom/vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import type { StreamingApiClient } from '../../../shared/api/client'
 import { TaskEndPanel } from './TaskEndPanel'
 
-afterEach(() => { cleanup(); vi.restoreAllMocks() })
+beforeEach(() => { const values = new Map<string, string>(); vi.stubGlobal('localStorage', { getItem: (key: string) => values.get(key) ?? null, setItem: (key: string, value: string) => values.set(key, value), removeItem: (key: string) => values.delete(key) }) })
+afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals() })
 
 const instance = {
   instanceId: 'inst-1',
@@ -80,10 +81,10 @@ it('reopens durable partial End, confirms fresh versions, and repairs by save id
   const ref = { projectId: 'p', tableId: 't', datasetGeneration: 'g', recordKey: { type: 'text', value: 'account' } }
   const durable = { operationId: 'end-1', saveOperationId: 'save-1', phase: 'saved_unlinked', associationPhase: 'saved_unlinked', businessResult: 'succeeded', outcome: { saved: { environmentId: 'env' }, targets: [ref] }, repairTargets: [{ recordRef: ref, exists: true, currentLinkRevision: 2, currentEnvironmentId: null }] }
   let repaired = false
-  const request = vi.fn(async (path: string) => {
+  const request = vi.fn(async (path: string, init?: { headers?: Record<string, string> }) => {
     if (path.includes('/environment-instances')) return { items: [] }
     if (path.endsWith('/tasks/task-1')) return { end: { ...durable, associationPhase: repaired ? 'completed' : 'saved_unlinked', repairTargets: [{ ...durable.repairTargets[0], currentLinkRevision: 7, currentEnvironmentId: 'other-env' }] }, run: { status: 'failed' } }
-    if (path.endsWith('/environment-operations/save-1/repair')) { repaired = true; return { outcome: { phase: 'completed' } } }
+    if (path.endsWith('/environment-operations/save-1/repair')) { repaired = true; return { operation: { operationId: 'repair-1', projectId: 'p', idempotencyKey: init!.headers!['Idempotency-Key'], kind: 'repairEndAssociation', status: 'succeeded' }, outcome: { phase: 'completed' } } }
     throw new Error(`unexpected ${path}`)
   })
   const client = { request } as unknown as StreamingApiClient
@@ -101,4 +102,94 @@ it('reopens durable partial End, confirms fresh versions, and repairs by save id
   expect(request).toHaveBeenCalledWith('/api/v1/projects/p/environment-operations/save-1/repair', expect.objectContaining({ body: { recordTargets: [{ recordRef: ref, expectedLinkRevision: 7, replaceAllowed: true }] } }))
   expect(await screen.findByRole('status')).toHaveTextContent('关联已修复，历史运行失败事实保持不变')
   expect(screen.queryByRole('button', { name: '确认修复关联' })).not.toBeInTheDocument()
+})
+
+const repairRef = { projectId: 'p', tableId: 't', datasetGeneration: 'g', recordKey: { type: 'text', value: 'account' } }
+const partialEnd = { operationId: 'end-1', saveOperationId: 'save-1', phase: 'saved_unlinked', associationPhase: 'saved_unlinked', repairTargets: [{ recordRef: repairRef, exists: true, currentLinkRevision: 7, currentEnvironmentId: null }] }
+const approval = '确认按以上当前版本关联全部目标，并允许替换已有环境'
+function repairUi(client: StreamingApiClient, instanceId = 'i') {
+  return <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><TaskEndPanel workspaceKey="w" instanceId={instanceId} projectId="p" taskId="task-1" runId="run-1" executionGeneration={1} client={client} disabled={false} durableEnd={partialEnd} /></QueryClientProvider>
+}
+async function approveRepair() {
+  await userEvent.click(screen.getByRole('button', { name: '读取当前关联并修复' }))
+  await userEvent.click(await screen.findByRole('checkbox', { name: approval }))
+  await userEvent.click(screen.getByRole('button', { name: '确认修复关联' }))
+}
+
+it.each([false, true])('recovers a committed repair with the original key, including reopen=%s', async reopen => {
+  let key = '', committed = false, available = !reopen
+  const request = vi.fn(async (path: string, init?: { headers?: Record<string, string> }) => {
+    if (path.includes('/environment-instances')) return { items: [] }
+    if (path.endsWith('/tasks/task-1')) return { end: { ...partialEnd, associationPhase: committed ? 'completed' : 'saved_unlinked' } }
+    if (path.endsWith('/repair')) { key = init!.headers!['Idempotency-Key']; committed = true; throw new TypeError('response lost after commit') }
+    if (path.includes('/operations/by-idempotency-key/')) {
+      expect(path).toBe(`/api/v1/projects/p/operations/by-idempotency-key/${key}`)
+      if (!available) throw new TypeError('offline')
+      return { operationId: 'repair-1', projectId: 'p', idempotencyKey: key, kind: 'repairEndAssociation', status: 'succeeded' }
+    }
+    throw new Error(path)
+  })
+  const client = { request } as unknown as StreamingApiClient
+  const mounted = render(repairUi(client))
+  await approveRepair()
+  if (reopen) {
+    expect(await screen.findByRole('button', { name: '核对原修复操作' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: '读取当前关联并修复' })).toBeDisabled()
+    expect(screen.queryByRole('checkbox', { name: approval })).not.toBeInTheDocument()
+    mounted.unmount()
+    render(repairUi(client, 'reconnected'))
+    expect(screen.getByRole('button', { name: '核对原修复操作' })).toBeEnabled()
+    available = true
+    await userEvent.click(screen.getByRole('button', { name: '核对原修复操作' }))
+  }
+  expect(await screen.findByText('关联已修复，历史运行失败事实保持不变。')).toBeVisible()
+  expect(request.mock.calls.filter(([path]) => path.endsWith('/repair'))).toHaveLength(1)
+})
+
+it('revokes a late repair response on connection change and keeps its original pending key', async () => {
+  let finish: (value: unknown) => void = () => undefined
+  let key = ''
+  const request = vi.fn(async (path: string, init?: { headers?: Record<string, string> }) => {
+    if (path.includes('/environment-instances')) return { items: [] }
+    if (path.endsWith('/tasks/task-1')) return { end: partialEnd }
+    if (path.endsWith('/repair')) { key = init!.headers!['Idempotency-Key']; return new Promise(resolve => { finish = resolve }) }
+    throw new Error(path)
+  })
+  const first = { request } as unknown as StreamingApiClient
+  const nextRequest = vi.fn(async (path: string) => {
+    if (path.includes('/environment-instances')) return { items: [] }
+    throw new TypeError('new connection still offline')
+  })
+  const next = { request: nextRequest } as unknown as StreamingApiClient
+  const mounted = render(repairUi(first))
+  await approveRepair()
+  mounted.rerender(repairUi(next))
+  finish({ operation: { operationId: 'repair-1', projectId: 'p', idempotencyKey: key, kind: 'repairEndAssociation', status: 'succeeded' } })
+  expect(await screen.findByRole('button', { name: '核对原修复操作' })).toBeEnabled()
+  await userEvent.click(screen.getByRole('button', { name: '核对原修复操作' }))
+  expect(nextRequest).toHaveBeenCalledWith(`/api/v1/projects/p/operations/by-idempotency-key/${key}`, undefined)
+  expect(screen.getByRole('button', { name: '读取当前关联并修复' })).toBeDisabled()
+  expect(nextRequest.mock.calls.some(([path]) => path.endsWith('/repair'))).toBe(false)
+})
+
+it('does not send a repair when its recovery key cannot be persisted', async () => {
+  vi.spyOn(localStorage, 'setItem').mockImplementation(() => { throw new Error('storage unavailable') })
+  const request = vi.fn(async (path: string) => path.includes('/environment-instances') ? { items: [] } : { end: partialEnd })
+  render(repairUi({ request } as unknown as StreamingApiClient))
+  await approveRepair()
+  expect(await screen.findByRole('alert')).toBeVisible()
+  expect(request.mock.calls.some(([path]) => path.endsWith('/repair'))).toBe(false)
+})
+
+it('does not carry pending repair authority into another workspace', async () => {
+  const scope = `autoflow:end-repair:${JSON.stringify(['w', 'p', 'task-1', 'end-1'])}`
+  localStorage.setItem(scope, JSON.stringify({ key: 'old-workspace-key' }))
+  const request = vi.fn(async (_path: string) => ({ items: [] }))
+  const client = { request } as unknown as StreamingApiClient
+  const mounted = render(repairUi(client))
+  expect(screen.getByRole('button', { name: '核对原修复操作' })).toBeEnabled()
+  mounted.rerender(<QueryClientProvider client={new QueryClient()}><TaskEndPanel workspaceKey="other" instanceId="i" projectId="p" taskId="task-1" runId="run-1" executionGeneration={1} client={client} disabled={false} durableEnd={partialEnd} /></QueryClientProvider>)
+  expect(screen.queryByRole('button', { name: '核对原修复操作' })).not.toBeInTheDocument()
+  expect(request.mock.calls.some(call => String(call[0]).includes('old-workspace-key'))).toBe(false)
+  expect(localStorage.getItem(scope)).toContain('old-workspace-key')
 })

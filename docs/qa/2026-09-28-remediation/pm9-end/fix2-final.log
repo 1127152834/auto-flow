@@ -1,0 +1,19 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/environments/components/TaskEndPanel.test.tsx src/renderer/domains/project-data/operation-command.test.ts src/renderer/domains/project-runs/pages/TaskDetailPage.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:17314) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:17315) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:17313) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  3 passed (3)
+      Tests  29 passed (29)
+   Start at  13:38:15
+   Duration  4.88s (transform 642ms, setup 504ms, import 2.78s, tests 3.17s, environment 1.19s)
+

@@ -184,3 +184,14 @@ ruff 剩余为 `test_competing_end` 附近未使用 factory，需核实后改为
 验证（精确 cwd/argv/env/exitCode 见 QA `fix1-*.command.json`）：100 后端聚焦通过（End、调度、嵌套协议、环境与store）；最后事件绑定锁闸门加入后20 runtime测试通过；前端 TaskEndPanel/TaskDetail 14通过，最后状态标题微调后5通过；6源码mypy、后端cwd Ruff、ESLint、TypeScript、OpenAPI一致性通过；strict最终1041/1041、新增0。集合重叠不相加。保留全部红日志，包括错误root cwd的Ruff/strict命令与正确cwd复验；strict一次检查跨越源码两行追加产生符号位置差异，停止修改后的稳定复验通过，未改baseline。
 
 未验证边界：实际关闭回执丢失/物理未知进程清理、本轮Electron人工修复操作、冻结worker、Windows/Intel；未扩大为全部PM9或人工跨重启恢复。AOCI完成本Run新传输与一次校验，治理仍dirty/stale，按隔离要求不维护资产。没有修改主控process probe的一行WIP、进程清理helper或其他任务资产；不push。
+
+## 2026-09-28 独立审查修复 round 2/5（FIX_BASE 1fdda1c8）
+
+状态：DONE（新增P2未知修复结果处理，待主控复审）；已验证范围置信高。保留round1结果与边界。
+
+- 生产DurableEndResult复用 `createOperationCommand` 原键提交/查询。发送前在localStorage持久保存修复键（workspace/project/task/End身份分区，不含连接instance以便重连恢复）；存储失败不发POST。连接client/instance/workspace/task变化重建页面资格，旧异步结果不更新新页面或删除旧键。只有确定终态或明确未接纳才清除pending；未知/仍在进行只允许“核对原修复操作”，不允许重新确认后用新键发送。键恢复是既有操作对话框模式，无新框架、无自动重发网页/修复。
+- 已确认终态后刷新持久End/Task缓存；旧preview不作为下一次授权。跨工作区不读取/查询旧键；同工作区重开或换连接保留原键供只读核验。修复历史Run语义不变。
+- 类型检查暴露必要的公共查询契约缺口：`ProjectOperationView` 未包含现有 `repairEndAssociation`、environment定位器及EnvironmentOutcome结果，真实FastAPI by-key响应会失败。仅补这三个既有形状与Outcome.error字段，重新生成类型；没有新操作、权限、运行状态或所有权改变。主控已确认该补齐属本轮范围。
+- 红证据：`fix2-red` 3新增组件失败/5旧项通过；`fix2-typecheck` 拒绝repair kind；`fix2-http-red` 是真实SQLite已保存修复操作被FastAPI响应模型拒绝。绿：`fix2-final` 29项（TaskEndPanel、operation-command、TaskDetail）；`fix2-http-final` 1项真实SQLite + TestClient/ASGI路由校验项目/key/operationId及完整结果；`fix2-contracts` 6项；TypeScript、OpenAPI、ESLint、后端cwd Ruff和2模型mypy通过。所有精确命令/退出码归档同QA `fix2-*`，集合不累计。
+- 新组件回归覆盖：服务器提交后丢响应立即原键查回；提交与查询双未知后按钮禁新发；卸载重开/instance重连原键只查（共仅1次repair POST）；旧连接迟到成功不清新页面pending；跨workspace隔离；存储失败阻止POST。传输由组件替身明确模拟，不冒称物理网络断连验收；后端单例验证实际SQLite事实和FastAPI序列化，未经过真实TCP断连。
+- 无需重跑原100项后端或真实浏览器；本轮未构建冻结包、未做Electron手工、Windows/Intel或物理故障测试。未改AOCI、主控QA脚本、清理helper、其他WIP；不push。

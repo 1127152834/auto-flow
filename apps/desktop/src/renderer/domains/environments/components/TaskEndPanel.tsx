@@ -1,12 +1,14 @@
 import type { components } from '../../../shared/api/generated'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useMemo, useState } from 'react'
-import type { StreamingApiClient } from '../../../shared/api/client'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { ApiClientError, type StreamingApiClient } from '../../../shared/api/client'
 import { notify } from '../../../shared/components/Toaster'
 import { Button } from '../../../shared/components/ui/button'
 import { Checkbox } from '../../../shared/components/ui/checkbox'
 import { Input } from '../../../shared/components/ui/input'
 import { safeProjectError } from '../../projects/presentation-error'
+import { DataCommandNotAccepted } from '../../project-data/data-command'
+import { createOperationCommand } from '../../project-data/operation-command'
 import { createProjectRunsApi } from '../../project-runs/api'
 import { createEnvironmentApi } from '../api'
 import { bindableRecords, selectedTargets } from '../record-targets'
@@ -25,6 +27,7 @@ export function TaskEndPanel({ workspaceKey, instanceId, projectId, taskId, runI
   environmentCleaned?: boolean
 }) {
   const api = useMemo(() => createEnvironmentApi(client, projectId), [client, projectId])
+  const connectionKey = useMemo(() => crypto.randomUUID(), [client, workspaceKey, instanceId, projectId, taskId])
   const instance = useQuery({
     queryKey: [workspaceKey, instanceId, 'environments', projectId, 'task-instance', taskId],
     queryFn: ({ signal }) => api.listInstances({ page: 1, pageSize: 5, taskId }, signal).then(page => page.items[0] ?? null),
@@ -83,7 +86,7 @@ export function TaskEndPanel({ workspaceKey, instanceId, projectId, taskId, runI
     },
     onError: error => notify({ title: safeProjectError(error), tone: 'error' }),
   })
-  if (durableEnd) return <DurableEndResult durableEnd={durableEnd} client={client} projectId={projectId} taskId={taskId} workspaceKey={workspaceKey} instanceId={instanceId} disabled={disabled} />
+  if (durableEnd) return <DurableEndResult key={`${connectionKey}:${durableEnd.operationId}`} durableEnd={durableEnd} client={client} projectId={projectId} taskId={taskId} workspaceKey={workspaceKey} instanceId={instanceId} disabled={disabled} />
   if (instance.isLoading) return <section role="status" className="rounded-control border border-line bg-surface p-4 text-sm">正在读取任务环境…</section>
   if (!current) return <section className="rounded-control border border-line bg-surface p-4 text-sm text-muted">当前任务还没有可保留的环境实例。</section>
   const phase = end.data?.outcome && 'phase' in end.data.outcome ? String(end.data.outcome.phase) : null
@@ -132,41 +135,90 @@ function DurableEndResult({ durableEnd, client, projectId, taskId, workspaceKey,
   disabled: boolean
 }) {
   const cache = useQueryClient()
-  const api = useMemo(() => createEnvironmentApi(client, projectId), [client, projectId])
+  const operations = useMemo(() => createOperationCommand(client, projectId), [client, projectId])
   const runs = useMemo(() => createProjectRunsApi(client, projectId), [client, projectId])
-  const [confirmed, setConfirmed] = useState(false)
-  const refresh = useMutation({
-    mutationFn: () => runs.getTask(taskId),
-    onMutate: () => setConfirmed(false),
-    onError: error => notify({ title: safeProjectError(error), tone: 'error' }),
+  // Like the existing durable operation dialogs, keep only recovery identity
+  // in workspace-scoped storage. Instance changes revoke UI authority, not keys.
+  const storageKey = `autoflow:end-repair:${JSON.stringify([workspaceKey, projectId, taskId, durableEnd.operationId])}`
+  const [stored] = useState(() => {
+    try {
+      const raw = localStorage.getItem(storageKey)
+      if (!raw) return { key: null, error: null }
+      const value: unknown = JSON.parse(raw)
+      if (!value || typeof value !== 'object' || !('key' in value) || typeof value.key !== 'string' || !value.key) throw new Error('关联修复恢复记录损坏，请核验原操作')
+      return { key: value.key, error: null }
+    } catch (cause) { return { key: null, error: safeProjectError(cause) } }
   })
-  const visible = refresh.data?.end ?? durableEnd
-  const preview = refresh.isSuccess ? refresh.data.end : null
+  const [pending, setPending] = useState<string | null>(stored.key)
+  const [error, setError] = useState<string | null>(stored.error)
+  const [preview, setPreview] = useState<components['schemas']['TaskEndView'] | null>(null)
+  const [confirmed, setConfirmed] = useState(false)
+  const [working, setWorking] = useState(false)
+  const active = useRef(false), lock = useRef(false), pendingKey = useRef(stored.key)
+  useLayoutEffect(() => { active.current = true; return () => { active.current = false } }, [])
+  const current = () => active.current
+  const visible = preview ?? durableEnd
   const targets = preview?.repairTargets ?? []
   const repairable = Boolean(preview?.saveOperationId && preview.associationPhase === 'saved_unlinked' && targets.length && targets.every(target => target.exists && typeof target.currentLinkRevision === 'number'))
-  const repair = useMutation({
-    mutationFn: () => {
-      if (!confirmed || !repairable || !preview?.saveOperationId) throw new Error('请读取并确认当前关联版本')
-      return api.repair(preview.saveOperationId, { recordTargets: targets.map(target => ({ recordRef: target.recordRef, expectedLinkRevision: target.currentLinkRevision!, replaceAllowed: true })) }, crypto.randomUUID())
-    },
-    onSuccess: async () => {
-      await refresh.mutateAsync()
-      await cache.invalidateQueries({ queryKey: [workspaceKey, instanceId, 'project-runs', projectId, 'task', taskId] })
-    },
-    onError: error => { setConfirmed(false); notify({ title: safeProjectError(error), tone: 'error' }) },
-  })
-  const busy = disabled || refresh.isPending || repair.isPending
+  const readCurrent = async () => {
+    const detail = await runs.getTask(taskId)
+    if (current()) setPreview(detail.end ?? null)
+  }
+  const refresh = async () => {
+    if (disabled || !current() || lock.current || pendingKey.current || stored.error) return
+    lock.current = true; setWorking(true); setConfirmed(false); setPreview(null); setError(null)
+    try { await readCurrent() } catch (cause) { if (current()) setError(safeProjectError(cause)) }
+    finally { if (current()) { lock.current = false; setWorking(false) } }
+  }
+  const clearPending = () => {
+    localStorage.removeItem(storageKey)
+    pendingKey.current = null; setPending(null); setPreview(null)
+  }
+  const repair = async (lookupOnly: boolean) => {
+    if (disabled || !current() || lock.current || stored.error || (lookupOnly && !pendingKey.current) || (!lookupOnly && (pendingKey.current || !confirmed || !repairable))) return
+    const key = pendingKey.current ?? crypto.randomUUID()
+    lock.current = true; setWorking(true); setConfirmed(false); setError(null)
+    try {
+      if (!lookupOnly) {
+        // Persist before sending: failure to retain the key prevents the write.
+        localStorage.setItem(storageKey, JSON.stringify({ key }))
+        pendingKey.current = key; setPending(key)
+      }
+      const operation = lookupOnly
+        ? await operations.lookup(key, 'repairEndAssociation', current)
+        : await operations.submit(`/api/v1/projects/${encodeURIComponent(projectId)}/environment-operations/${encodeURIComponent(preview!.saveOperationId!)}/repair`, {
+          recordTargets: targets.map(target => ({ recordRef: target.recordRef, expectedLinkRevision: target.currentLinkRevision!, replaceAllowed: true })),
+        }, key, 'repairEndAssociation', current)
+      if (!current()) return
+      if (operation.status === 'succeeded' || operation.status === 'failed') {
+        clearPending()
+        if (operation.status === 'failed') setError(safeProjectError(operation.error))
+        await readCurrent()
+        if (current()) await cache.invalidateQueries({ queryKey: [workspaceKey, instanceId, 'project-runs', projectId, 'task', taskId] })
+      }
+    } catch (cause) {
+      if (!current()) return
+      const notAccepted = cause instanceof DataCommandNotAccepted || (!lookupOnly && cause instanceof ApiClientError && cause.status >= 400 && cause.status < 500 && cause.status !== 408)
+      if (notAccepted) {
+        try { clearPending() } catch (storageError) { setError(safeProjectError(storageError)); return }
+      }
+      setError(pendingKey.current ? '关联修复结果尚未确认，请核对原操作。' : safeProjectError(cause))
+    } finally { if (current()) { lock.current = false; setWorking(false) } }
+  }
+  const busy = disabled || working || Boolean(stored.error)
   return <section className="grid gap-2 rounded-control border border-line bg-surface p-4" aria-label="项目结束结果">
     <h3 className="m-0 text-base">{visible.phase === 'saved_unlinked' ? (visible.associationPhase === 'completed' ? '上下文已保存，关联已修复' : '上下文已保存，关联未完成') : visible.phase === 'completed' ? 'End 已完成' : visible.phase === 'failed' ? 'End 失败' : '正在保留 · 结果待核验'}</h3>
     <p className="m-0 text-sm">原定业务结果：{visible.businessResult === 'succeeded' ? '成功' : visible.businessResult === 'failed' ? '失败' : '未记录'}</p>
     {visible.outcome ? <pre className="m-0 max-h-64 overflow-auto whitespace-pre-wrap text-xs">{JSON.stringify(visible.outcome, null, 2)}</pre> : null}
     {visible.error ? <pre role="alert" className="m-0 whitespace-pre-wrap text-sm">{JSON.stringify(visible.error, null, 2)}</pre> : null}
+    {error ? <p role="alert">{error}</p> : null}
+    {pending ? <div className="grid gap-2"><p role="status">关联修复结果待核验，暂不能提交新修复。</p><Button size="sm" disabled={busy} onClick={() => void repair(true)}>核对原修复操作</Button></div> : null}
     {visible.associationPhase === 'completed' && visible.phase === 'saved_unlinked' ? <p role="status">关联已修复，历史运行失败事实保持不变。</p> : visible.phase === 'saved_unlinked' && visible.saveOperationId ? <>
-      <Button size="sm" variant="secondary" disabled={busy} onClick={() => refresh.mutate()}>读取当前关联并修复</Button>
-      {preview ? <>
+      <Button size="sm" variant="secondary" disabled={busy || Boolean(pending)} onClick={() => void refresh()}>读取当前关联并修复</Button>
+      {preview && !pending ? <>
         <ul className="text-sm">{targets.map((target, index) => <li key={index}>{JSON.stringify(target.recordRef)} · {target.exists ? `当前版本 ${target.currentLinkRevision} · ${target.currentEnvironmentId ?? '未关联环境'}` : '记录已不存在，无法修复'}</li>)}</ul>
         <label className="flex items-center gap-2 text-sm"><Checkbox checked={confirmed} disabled={busy || !repairable} onCheckedChange={value => setConfirmed(value === true)} /><span>确认按以上当前版本关联全部目标，并允许替换已有环境</span></label>
-        <Button size="sm" disabled={busy || !confirmed || !repairable} onClick={() => repair.mutate()}>确认修复关联</Button>
+        <Button size="sm" disabled={busy || !confirmed || !repairable} onClick={() => void repair(false)}>确认修复关联</Button>
       </> : null}
     </> : null}
   </section>

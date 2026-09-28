@@ -41,3 +41,9 @@
 - 真实浏览器：`fix1-real-green` 中 linear/loop/workflow/module 4通过，canvas旧header形状准入拒绝；正式group形状 `fix1-real-canvas` 1通过。对应5份JSON为唯一本轮真实正向，含持久工作区、Task/Run和HTTP观察；每条包含后续登录复用，四种控制流没有End后副作用请求。`fix1-real` 是夹具错误的初次失败。
 - 门禁：`fix1-ruff-final`（cwd backend）、`fix1-mypy`、`fix1-eslint`、`fix1-typecheck`、`fix1-openapi`、`fix1-strict-stable` 均exit0。root cwd Ruff/strict错误与被源码编辑交叉的strict诊断保留，不作为最终状态。strict未改baseline，最终1041既有/0新增。
 - `AUTOFLOW_TEST_PROJECT_WORKER` 选择冻结worker入口已接线；本轮未设置，未构建冻结包。无Electron手工、Windows/Intel、物理未知关闭证据。以前的关闭回执测试仍只算“实际浏览器运行后内部回执故障注入”。
+
+## Fix round 2：未知关联修复按原键核验
+
+FIX_BASE `1fdda1c8`。`fix2-red` 3新增组件红；`fix2-typecheck` 暴露公共操作kind缺口；`fix2-http-red` 证明真实SQLite修复操作无法通过原公共by-key FastAPI响应校验。修复后 `fix2-final` 29前端、`fix2-http-final` 1 SQLite/ASGI合同、`fix2-contracts` 6项目合同通过；`fix2-typecheck-final`、`fix2-eslint-final`、`fix2-openapi`、`fix2-ruff`、`fix2-mypy` 全exit0。`fix2-green` 18项是更早较小集合，`fix2-http-green` 是补身份断言前的同一场景，不能重复计数。
+
+组件传输模拟服务器提交后丢响应/查询不可用；验证固定持久键、未知禁新提交、重开和连接/workspace资格隔离及仅1次POST。后端通过TestClient实际ASGI路由验证SQLite持久操作的原key/project/operationId，不是物理TCP断连。本轮未再跑真实浏览器或冻结包，没有新外部成功声明。完整说明见task-1-report round2。

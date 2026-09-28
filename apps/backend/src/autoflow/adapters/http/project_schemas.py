@@ -22,6 +22,7 @@ from .project_data_status_batch_schemas import (
     CancelRecordStatusesResult,
     RecordStatusBatchOutcome,
 )
+from .project_environment_schemas import EnvironmentOutcomeView
 from .project_excel_schemas import (
     ExcelExportResult,
     ExcelImportResult,
@@ -304,6 +305,7 @@ class ProjectOperationView(ApiModel):
         "deleteProject",
         "deleteAutomation",
         "deleteEnvironment",
+        "repairEndAssociation",
     ]
     status: Literal["accepted", "running", "reconciling", "succeeded", "failed"]
     status_revision: int
@@ -317,7 +319,8 @@ class ProjectOperationView(ApiModel):
         | RecordResourceLocator
         | TaskResourceLocator
         | WorkflowInteractionResourceLocator
-        | SheetsConnectionResourceLocator,
+        | SheetsConnectionResourceLocator
+        | EnvironmentResourceLocator,
         Field(discriminator="type"),
     ]
     result: (
@@ -346,6 +349,7 @@ class ProjectOperationView(ApiModel):
         | SyncRunResult
         | SyncOperation
         | DeletedResourceResult
+        | EnvironmentOutcomeView
         | None
     )
     error: dict[str, Any] | None

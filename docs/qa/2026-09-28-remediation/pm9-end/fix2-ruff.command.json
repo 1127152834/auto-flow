@@ -1,0 +1,15 @@
+{
+  "command": [
+    ".venv/bin/python",
+    "-m",
+    "ruff",
+    "check",
+    "src/autoflow/adapters/http/project_schemas.py",
+    "src/autoflow/adapters/http/project_environment_schemas.py",
+    "tests/integration/test_project_end_worker.py"
+  ],
+  "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend",
+  "exitCode": 0,
+  "seconds": 0.04,
+  "environment": {}
+}

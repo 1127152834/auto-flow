@@ -232,6 +232,7 @@ class AssociationConflictView(ApiModel):
 
 
 class EnvironmentOutcomeView(ApiModel):
+    error: dict[str, Any] | None = None
     phase: str
     complete: bool
     instance: EnvironmentInstanceView | None

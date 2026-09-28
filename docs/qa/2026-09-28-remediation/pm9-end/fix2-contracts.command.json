@@ -1,0 +1,14 @@
+{
+  "command": [
+    ".venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/contract/test_projects.py",
+    "-q",
+    "--basetemp=/tmp/autoflow-pm9-end.oxCAz4"
+  ],
+  "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend",
+  "exitCode": 0,
+  "seconds": 3.94,
+  "environment": {}
+}

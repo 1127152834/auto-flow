@@ -5791,6 +5791,17 @@ export type components = {
             /** Messages */
             messages: components["schemas"]["AssistantMessage"][];
         };
+        /** AssociationConflictView */
+        AssociationConflictView: {
+            /** Record */
+            record: {
+                [key: string]: unknown;
+            };
+            /** Expectedlinkrevision */
+            expectedLinkRevision: number;
+            /** Currentlinkrevision */
+            currentLinkRevision: number;
+        };
         /** AttentionItem */
         AttentionItem: {
             /**
@@ -7459,6 +7470,26 @@ export type components = {
             value: string;
             /** Label */
             label: string;
+        };
+        /** EnvironmentOutcomeView */
+        EnvironmentOutcomeView: {
+            /** Error */
+            error?: {
+                [key: string]: unknown;
+            } | null;
+            /** Phase */
+            phase: string;
+            /** Complete */
+            complete: boolean;
+            instance: components["schemas"]["EnvironmentInstanceView"] | null;
+            source: components["schemas"]["EnvironmentRefView"] | null;
+            saved: components["schemas"]["EnvironmentRefView"] | null;
+            /** Targets */
+            targets: {
+                [key: string]: unknown;
+            }[];
+            /** Conflicts */
+            conflicts: components["schemas"]["AssociationConflictView"][];
         };
         /** EnvironmentPage */
         EnvironmentPage: {
@@ -9472,7 +9503,7 @@ export type components = {
              * Kind
              * @enum {string}
              */
-            kind: "createProject" | "updateProject" | "createAutomation" | "updateAutomation" | "startBatch" | "stopBatch" | "forceStopBatch" | "followUpBatch" | "workflowInteraction" | "createTable" | "updateTable" | "mutateField" | "saveTableSchema" | "mutateStatus" | "createRecord" | "createRecords" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation" | "connectSheets" | "disconnectSheets" | "inspectSheets" | "changeSheetsBinding" | "removeSheetsBinding" | "syncPull" | "syncPush" | "reconcileSync" | "archiveProject" | "restoreProject" | "deleteProject" | "deleteAutomation" | "deleteEnvironment";
+            kind: "createProject" | "updateProject" | "createAutomation" | "updateAutomation" | "startBatch" | "stopBatch" | "forceStopBatch" | "followUpBatch" | "workflowInteraction" | "createTable" | "updateTable" | "mutateField" | "saveTableSchema" | "mutateStatus" | "createRecord" | "createRecords" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation" | "connectSheets" | "disconnectSheets" | "inspectSheets" | "changeSheetsBinding" | "removeSheetsBinding" | "syncPull" | "syncPush" | "reconcileSync" | "archiveProject" | "restoreProject" | "deleteProject" | "deleteAutomation" | "deleteEnvironment" | "repairEndAssociation";
             /**
              * Status
              * @enum {string}
@@ -9481,9 +9512,9 @@ export type components = {
             /** Statusrevision */
             statusRevision: number;
             /** Resource */
-            resource: components["schemas"]["ProjectResourceLocator"] | components["schemas"]["AutomationResourceLocator"] | components["schemas"]["BatchResourceLocator"] | components["schemas"]["TableResourceLocator"] | components["schemas"]["FieldResourceLocator"] | components["schemas"]["StatusResourceLocator"] | components["schemas"]["RecordResourceLocator"] | components["schemas"]["TaskResourceLocator"] | components["schemas"]["WorkflowInteractionResourceLocator"] | components["schemas"]["SheetsConnectionResourceLocator"];
+            resource: components["schemas"]["ProjectResourceLocator"] | components["schemas"]["AutomationResourceLocator"] | components["schemas"]["BatchResourceLocator"] | components["schemas"]["TableResourceLocator"] | components["schemas"]["FieldResourceLocator"] | components["schemas"]["StatusResourceLocator"] | components["schemas"]["RecordResourceLocator"] | components["schemas"]["TaskResourceLocator"] | components["schemas"]["WorkflowInteractionResourceLocator"] | components["schemas"]["SheetsConnectionResourceLocator"] | components["schemas"]["EnvironmentResourceLocator"];
             /** Result */
-            result: components["schemas"]["ProjectView"] | components["schemas"]["AutomationView"] | components["schemas"]["ProjectBatchResult"] | components["schemas"]["DataTableView"] | components["schemas"]["FieldMutationResult"] | components["schemas"]["DataSchemaResult"] | components["schemas"]["StatusMutationResult"] | components["schemas"]["StatusDeleteResult"] | components["schemas"]["DataRecordView"] | components["schemas"]["DataRecordBatchResult"] | components["schemas"]["RecordDeleteResult"] | components["schemas"]["RecordStatusBatchOutcome"] | components["schemas"]["ExcelInspectionView"] | components["schemas"]["ExcelImportResult"] | components["schemas"]["ExcelExportResult"] | components["schemas"]["ExcelReconcileResult"] | components["schemas"]["CancelRecordStatusesResult"] | components["schemas"]["SheetsConnection"] | components["schemas"]["SheetsDisconnectResult"] | components["schemas"]["SheetsInspection"] | components["schemas"]["SheetsBinding"] | components["schemas"]["SheetsUnbindResult"] | components["schemas"]["SyncRunResult"] | components["schemas"]["SyncOperation"] | components["schemas"]["DeletedResourceResult"] | null;
+            result: components["schemas"]["ProjectView"] | components["schemas"]["AutomationView"] | components["schemas"]["ProjectBatchResult"] | components["schemas"]["DataTableView"] | components["schemas"]["FieldMutationResult"] | components["schemas"]["DataSchemaResult"] | components["schemas"]["StatusMutationResult"] | components["schemas"]["StatusDeleteResult"] | components["schemas"]["DataRecordView"] | components["schemas"]["DataRecordBatchResult"] | components["schemas"]["RecordDeleteResult"] | components["schemas"]["RecordStatusBatchOutcome"] | components["schemas"]["ExcelInspectionView"] | components["schemas"]["ExcelImportResult"] | components["schemas"]["ExcelExportResult"] | components["schemas"]["ExcelReconcileResult"] | components["schemas"]["CancelRecordStatusesResult"] | components["schemas"]["SheetsConnection"] | components["schemas"]["SheetsDisconnectResult"] | components["schemas"]["SheetsInspection"] | components["schemas"]["SheetsBinding"] | components["schemas"]["SheetsUnbindResult"] | components["schemas"]["SyncRunResult"] | components["schemas"]["SyncOperation"] | components["schemas"]["DeletedResourceResult"] | components["schemas"]["EnvironmentOutcomeView"] | null;
             /** Error */
             error: {
                 [key: string]: unknown;

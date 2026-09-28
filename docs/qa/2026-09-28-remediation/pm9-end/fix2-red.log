@@ -1,0 +1,443 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/environments/components/TaskEndPanel.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:16714) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/environments/components/TaskEndPanel.test.tsx (8 tests | 3 failed) 3336ms
+   × recovers a committed repair with the original key, including reopen=false 1038ms
+   × recovers a committed repair with the original key, including reopen=true 1034ms
+   × revokes a late repair response on connection change and keeps its original pending key 1037ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/environments/components/TaskEndPanel.test.tsx > recovers a committed repair with the original key, including reopen=false
+TestingLibraryElementError: Unable to find an element with the text: 关联已修复，历史运行失败事实保持不变。. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33maria-label[39m=[32m"项目结束结果"[39m
+      [33mclass[39m=[32m"grid gap-2 rounded-control border border-line bg-surface p-4"[39m
+    [36m>[39m
+      [36m<h3[39m
+        [33mclass[39m=[32m"m-0 text-base"[39m
+      [36m>[39m
+        [0m上下文已保存，关联未完成[0m
+      [36m</h3>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"m-0 text-sm"[39m
+      [36m>[39m
+        [0m原定业务结果：[0m
+        [0m未记录[0m
+      [36m</p>[39m
+      [36m<button[39m
+        [33mclass[39m=[32m"af-button relative inline-flex shrink-0 items-center justify-center gap-2 rounded-control border font-semibold transition-colors [transition-duration:var(--motion-control)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed border-control-border bg-surface text-ink enabled:hover:bg-surface-hover enabled:active:bg-clay-soft h-[var(--control-sm)] px-3 text-xs"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"grid min-w-0"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2"[39m
+          [36m>[39m
+            [0m读取当前关联并修复[0m
+          [36m</span>[39m
+        [36m</span>[39m
+      [36m</button>[39m
+      [36m<ul[39m
+        [33mclass[39m=[32m"text-sm"[39m
+      [36m>[39m
+        [36m<li>[39m
+          [0m{"projectId":"p","tableId":"t","datasetGeneration":"g","recordKey":{"type":"text","value":"account"}}[0m
+          [0m · [0m
+          [0m当前版本 7 · 未关联环境[0m
+        [36m</li>[39m
+      [36m</ul>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"flex items-center gap-2 text-sm"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33maria-checked[39m=[32m"false"[39m
+          [33mclass[39m=[32m"h-4 w-4 rounded border border-line bg-surface data-[state=checked]:bg-clay"[39m
+          [33mdata-state[39m=[32m"unchecked"[39m
+          [33mrole[39m=[32m"checkbox"[39m
+          [33mtype[39m=[32m"button"[39m
+          [33mvalue[39m=[32m"on"[39m
+        [36m/>[39m
+        [36m<span>[39m
+          [0m确认按以上当前版本关联全部目标，并允许替换已有环境[0m
+        [36m</span>[39m
+      [36m</label>[39m
+      [36m<button[39m
+        [33mclass[39m=[32m"af-button relative inline-flex shrink-0 items-center justify-center gap-2 rounded-control border font-semibold transition-colors [transition-duration:var(--motion-control)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed border-control-border bg-surface text-ink enabled:hover:bg-surface-hover enabled:active:bg-clay-soft h-[var(--control-sm)] px-3 text-xs"[39m
+        [33mdisabled[39m=[32m""[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"grid min-w-0"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2"[39m
+          [36m>[39m
+            [0m确认修复关联[0m
+          [36m</span>[39m
+        [36m</span>[39m
+      [36m</button>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33maria-label[39m=[32m"项目结束结果"[39m
+      [33mclass[39m=[32m"grid gap-2 rounded-control border border-line bg-surface p-4"[39m
+    [36m>[39m
+      [36m<h3[39m
+        [33mclass[39m=[32m"m-0 text-base"[39m
+      [36m>[39m
+        [0m上下文已保存，关联未完成[0m
+      [36m</h3>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"m-0 text-sm"[39m
+      [36m>[39m
+        [0m原定业务结果：[0m
+        [0m未记录[0m
+      [36m</p>[39m
+      [36m<button[39m
+        [33mclass[39m=[32m"af-button relative inline-flex shrink-0 items-center justify-center gap-2 rounded-control border font-semibold transition-colors [transition-duration:var(--motion-control)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed border-control-border bg-surface text-ink enabled:hover:bg-surface-hover enabled:active:bg-clay-soft h-[var(--control-sm)] px-3 text-xs"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"grid min-w-0"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2"[39m
+          [36m>[39m
+            [0m读取当前关联并修复[0m
+          [36m</span>[39m
+        [36m</span>[39m
+      [36m</button>[39m
+      [36m<ul[39m
+        [33mclass[39m=[32m"text-sm"[39m
+      [36m>[39m
+        [36m<li>[39m
+          [0m{"projectId":"p","tableId":"t","datasetGeneration":"g","recordKey":{"type":"text","value":"account"}}[0m
+          [0m · [0m
+          [0m当前版本 7 · 未关联环境[0m
+        [36m</li>[39m
+      [36m</ul>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"flex items-center gap-2 text-sm"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33maria-checked[39m=[32m"false"[39m
+          [33mclass[39m=[32m"h-4 w-4 rounded border border-line bg-surface data-[state=checked]:bg-clay"[39m
+          [33mdata-state[39m=[32m"unchecked"[39m
+          [33mrole[39m=[32m"checkbox"[39m
+          [33mtype[39m=[32m"button"[39m
+          [33mvalue[39m=[32m"on"[39m
+        [36m/>[39m
+        [36m<span>[39m
+          [0m确认按以上当前版本关联全部目标，并允许替换已有环境[0m
+        [36m</span>[39m
+      [36m</label>[39m
+      [36m<button[39m
+        [33mclass[39m=[32m"af-button relative inline-flex shrink-0 items-center justify-center gap-2 rounded-control border font-semibold transition-colors [transition-duration:var(--motion-control)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed border-control-border bg-surface text-ink enabled:hover:bg-surface-hover enabled:active:bg-clay-soft h-[var(--control-sm)] px-3 text-xs"[39m
+        [33mdisabled[39m=[32m""[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"grid min-w-0"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2"[39m
+          [36m>[39m
+            [0m确认修复关联[0m
+          [36m</span>[39m
+        [36m</span>[39m
+      [36m</button>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../../node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/renderer/domains/environments/components/TaskEndPanel.test.tsx:145:23
+    143|     await userEvent.click(screen.getByRole('button', { name: '核对原修复操作'…
+    144|   }
+    145|   expect(await screen.findByText('关联已修复，历史运行失败事实保持不变。')).toBeVisible()
+       |                       ^
+    146|   expect(request.mock.calls.filter(([path]) => path.endsWith('/repair'…
+    147| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/renderer/domains/environments/components/TaskEndPanel.test.tsx > recovers a committed repair with the original key, including reopen=true
+TestingLibraryElementError: Unable to find role="button" and name "核对原修复操作"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33maria-label[39m=[32m"项目结束结果"[39m
+      [33mclass[39m=[32m"grid gap-2 rounded-control border border-line bg-surface p-4"[39m
+    [36m>[39m
+      [36m<h3[39m
+        [33mclass[39m=[32m"m-0 text-base"[39m
+      [36m>[39m
+        [0m上下文已保存，关联未完成[0m
+      [36m</h3>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"m-0 text-sm"[39m
+      [36m>[39m
+        [0m原定业务结果：[0m
+        [0m未记录[0m
+      [36m</p>[39m
+      [36m<button[39m
+        [33mclass[39m=[32m"af-button relative inline-flex shrink-0 items-center justify-center gap-2 rounded-control border font-semibold transition-colors [transition-duration:var(--motion-control)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed border-control-border bg-surface text-ink enabled:hover:bg-surface-hover enabled:active:bg-clay-soft h-[var(--control-sm)] px-3 text-xs"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"grid min-w-0"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2"[39m
+          [36m>[39m
+            [0m读取当前关联并修复[0m
+          [36m</span>[39m
+        [36m</span>[39m
+      [36m</button>[39m
+      [36m<ul[39m
+        [33mclass[39m=[32m"text-sm"[39m
+      [36m>[39m
+        [36m<li>[39m
+          [0m{"projectId":"p","tableId":"t","datasetGeneration":"g","recordKey":{"type":"text","value":"account"}}[0m
+          [0m · [0m
+          [0m当前版本 7 · 未关联环境[0m
+        [36m</li>[39m
+      [36m</ul>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"flex items-center gap-2 text-sm"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33maria-checked[39m=[32m"false"[39m
+          [33mclass[39m=[32m"h-4 w-4 rounded border border-line bg-surface data-[state=checked]:bg-clay"[39m
+          [33mdata-state[39m=[32m"unchecked"[39m
+          [33mrole[39m=[32m"checkbox"[39m
+          [33mtype[39m=[32m"button"[39m
+          [33mvalue[39m=[32m"on"[39m
+        [36m/>[39m
+        [36m<span>[39m
+          [0m确认按以上当前版本关联全部目标，并允许替换已有环境[0m
+        [36m</span>[39m
+      [36m</label>[39m
+      [36m<button[39m
+        [33mclass[39m=[32m"af-button relative inline-flex shrink-0 items-center justify-center gap-2 rounded-control border font-semibold transition-colors [transition-duration:var(--motion-control)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed border-control-border bg-surface text-ink enabled:hover:bg-surface-hover enabled:active:bg-clay-soft h-[var(--control-sm)] px-3 text-xs"[39m
+        [33mdisabled[39m=[32m""[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"grid min-w-0"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2"[39m
+          [36m>[39m
+            [0m确认修复关联[0m
+          [36m</span>[39m
+        [36m</span>[39m
+      [36m</button>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33maria-label[39m=[32m"项目结束结果"[39m
+      [33mclass[39m=[32m"grid gap-2 rounded-control border border-line bg-surface p-4"[39m
+    [36m>[39m
+      [36m<h3[39m
+        [33mclass[39m=[32m"m-0 text-base"[39m
+      [36m>[39m
+        [0m上下文已保存，关联未完成[0m
+      [36m</h3>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"m-0 text-sm"[39m
+      [36m>[39m
+        [0m原定业务结果：[0m
+        [0m未记录[0m
+      [36m</p>[39m
+      [36m<button[39m
+        [33mclass[39m=[32m"af-button relative inline-flex shrink-0 items-center justify-center gap-2 rounded-control border font-semibold transition-colors [transition-duration:var(--motion-control)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed border-control-border bg-surface text-ink enabled:hover:bg-surface-hover enabled:active:bg-clay-soft h-[var(--control-sm)] px-3 text-xs"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"grid min-w-0"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2"[39m
+          [36m>[39m
+            [0m读取当前关联并修复[0m
+          [36m</span>[39m
+        [36m</span>[39m
+      [36m</button>[39m
+      [36m<ul[39m
+        [33mclass[39m=[32m"text-sm"[39m
+      [36m>[39m
+        [36m<li>[39m
+          [0m{"projectId":"p","tableId":"t","datasetGeneration":"g","recordKey":{"type":"text","value":"account"}}[0m
+          [0m · [0m
+          [0m当前版本 7 · 未关联环境[0m
+        [36m</li>[39m
+      [36m</ul>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"flex items-center gap-2 text-sm"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33maria-checked[39m=[32m"false"[39m
+          [33mclass[39m=[32m"h-4 w-4 rounded border border-line bg-surface data-[state=checked]:bg-clay"[39m
+          [33mdata-state[39m=[32m"unchecked"[39m
+          [33mrole[39m=[32m"checkbox"[39m
+          [33mtype[39m=[32m"button"[39m
+          [33mvalue[39m=[32m"on"[39m
+        [36m/>[39m
+        [36m<span>[39m
+          [0m确认按以上当前版本关联全部目标，并允许替换已有环境[0m
+        [36m</span>[39m
+      [36m</label>[39m
+      [36m<button[39m
+        [33mclass[39m=[32m"af-button relative inline-flex shrink-0 items-center justify-center gap-2 rounded-control border font-semibold transition-colors [transition-duration:var(--motion-control)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed border-control-border bg-surface text-ink enabled:hover:bg-surface-hover enabled:active:bg-clay-soft h-[var(--control-sm)] px-3 text-xs"[39m
+        [33mdisabled[39m=[32m""[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"grid min-w-0"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2"[39m
+          [36m>[39m
+            [0m确认修复关联[0m
+          [36m</span>[39m
+        [36m</span>[39m
+      [36m</button>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../../node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/renderer/domains/environments/components/TaskEndPanel.test.tsx:136:25
+    134|   await approveRepair()
+    135|   if (reopen) {
+    136|     expect(await screen.findByRole('button', { name: '核对原修复操作' })).toB…
+       |                         ^
+    137|     expect(screen.getByRole('button', { name: '读取当前关联并修复' })).toBeDisa…
+    138|     expect(screen.queryByRole('checkbox', { name: approval })).not.toB…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/renderer/domains/environments/components/TaskEndPanel.test.tsx > revokes a late repair response on connection change and keeps its original pending key
+TestingLibraryElementError: Unable to find role="button" and name "核对原修复操作"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33maria-label[39m=[32m"项目结束结果"[39m
+      [33mclass[39m=[32m"grid gap-2 rounded-control border border-line bg-surface p-4"[39m
+    [36m>[39m
+      [36m<h3[39m
+        [33mclass[39m=[32m"m-0 text-base"[39m
+      [36m>[39m
+        [0m上下文已保存，关联未完成[0m
+      [36m</h3>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"m-0 text-sm"[39m
+      [36m>[39m
+        [0m原定业务结果：[0m
+        [0m未记录[0m
+      [36m</p>[39m
+      [36m<button[39m
+        [33mclass[39m=[32m"af-button relative inline-flex shrink-0 items-center justify-center gap-2 rounded-control border font-semibold transition-colors [transition-duration:var(--motion-control)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed border-control-border bg-surface text-ink enabled:hover:bg-surface-hover enabled:active:bg-clay-soft h-[var(--control-sm)] px-3 text-xs"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"grid min-w-0"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2"[39m
+          [36m>[39m
+            [0m读取当前关联并修复[0m
+          [36m</span>[39m
+        [36m</span>[39m
+      [36m</button>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33maria-label[39m=[32m"项目结束结果"[39m
+      [33mclass[39m=[32m"grid gap-2 rounded-control border border-line bg-surface p-4"[39m
+    [36m>[39m
+      [36m<h3[39m
+        [33mclass[39m=[32m"m-0 text-base"[39m
+      [36m>[39m
+        [0m上下文已保存，关联未完成[0m
+      [36m</h3>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"m-0 text-sm"[39m
+      [36m>[39m
+        [0m原定业务结果：[0m
+        [0m未记录[0m
+      [36m</p>[39m
+      [36m<button[39m
+        [33mclass[39m=[32m"af-button relative inline-flex shrink-0 items-center justify-center gap-2 rounded-control border font-semibold transition-colors [transition-duration:var(--motion-control)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed border-control-border bg-surface text-ink enabled:hover:bg-surface-hover enabled:active:bg-clay-soft h-[var(--control-sm)] px-3 text-xs"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"grid min-w-0"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"col-start-1 row-start-1 inline-flex min-w-0 items-center justify-center gap-2"[39m
+          [36m>[39m
+            [0m读取当前关联并修复[0m
+          [36m</span>[39m
+        [36m</span>[39m
+      [36m</button>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../../node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/renderer/domains/environments/components/TaskEndPanel.test.tsx:168:23
+    166|   mounted.rerender(repairUi(next))
+    167|   finish({ operation: { operationId: 'repair-1', projectId: 'p', idemp…
+    168|   expect(await screen.findByRole('button', { name: '核对原修复操作' })).toBeE…
+       |                       ^
+    169|   await userEvent.click(screen.getByRole('button', { name: '核对原修复操作' }…
+    170|   expect(nextRequest).toHaveBeenCalledWith(`/api/v1/projects/p/operati…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 5 passed (8)
+   Start at  13:35:28
+   Duration  5.24s (transform 203ms, setup 158ms, import 1.19s, tests 3.34s, environment 393ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/environments/components/TaskEndPanel.test.tsx

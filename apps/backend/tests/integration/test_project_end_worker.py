@@ -792,8 +792,26 @@ def test_reopened_partial_end_repairs_all_targets_without_reviving_run(end_conte
     approved = [{"recordRef": target["recordRef"], "expectedLinkRevision": target["currentLinkRevision"], "replaceAllowed": True} for target in reopened["repairTargets"]]
     # A fresh service uses SQLite facts; no previous End mutation state is used.
     service = EnvironmentService(ProjectService(SqlAlchemyProjects(factory)), SqlAlchemyEnvironments(factory), ends.environments.store)
-    repaired, _, _ = service.repair(task.project_id, str(uuid4()), reopened["saveOperationId"], {"recordTargets": approved})
+    repaired, repair_operation, _ = service.repair(task.project_id, str(uuid4()), reopened["saveOperationId"], {"recordTargets": approved})
     assert repaired["phase"] == "completed"
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+
+    from autoflow.adapters.http.projects import projects_router
+    from autoflow.application.projects.overview import ProjectOverviewService
+
+    app = FastAPI()
+    app.include_router(projects_router(service.projects, ProjectOverviewService(factory)))
+    with TestClient(app) as client:
+        recovered = client.get(f"/api/v1/projects/{task.project_id}/operations/by-idempotency-key/{repair_operation.idempotency_key}")
+    assert recovered.status_code == 200
+    assert recovered.json()["kind"] == "repairEndAssociation"
+    assert recovered.json()["idempotencyKey"] == repair_operation.idempotency_key
+    assert recovered.json()["operationId"] == repair_operation.operation_id
+    assert recovered.json()["projectId"] == task.project_id
+    assert recovered.json()["resource"]["environmentId"] == outcome["saved"]["environmentId"]
+    assert recovered.json()["result"]["phase"] == "completed"
+    assert recovered.json()["result"]["error"] is None
     detail = ProjectRunQueries(factory).task_detail(task.project_id, task.task_id)
     assert detail["end"]["associationPhase"] == "completed"
     assert detail["end"]["phase"] == "saved_unlinked"
