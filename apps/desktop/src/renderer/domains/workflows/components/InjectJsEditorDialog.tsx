@@ -9,7 +9,7 @@ import * as monaco from 'monaco-editor'
 import type { editor } from 'monaco-editor'
 import { X, Play, RotateCcw, Loader2 } from 'lucide-react'
 import { Button } from './controls/button'
-import { useWorkflowStore } from '../editor-store'
+import { getNodeConfigData, useWorkflowStore } from '../editor-store'
 import { AICodeAssistant } from './AICodeAssistant'
 
 // 配置 Monaco Editor 使用本地包，避免从 CDN 加载
@@ -90,7 +90,7 @@ export function InjectJsEditorDialog({ isOpen, code, onClose, onSave }: InjectJs
         const varNames = new Set<string>()
         variables.forEach(v => varNames.add(v.name))
         nodes.forEach(node => {
-          const data = node.data as Record<string, unknown>
+          const data = getNodeConfigData(node.data) as Record<string, unknown>
           const fields = ['variableName', 'resultVariable', 'itemVariable', 'indexVariable', 'loopIndexVariable',
                           'saveToVariable', 'saveNewElementSelector', 'saveChangeInfo', 'variableNameX', 'variableNameY',
                           'stdoutVariable', 'stderrVariable', 'returnCodeVariable', 'columnName', 'outputVariable',

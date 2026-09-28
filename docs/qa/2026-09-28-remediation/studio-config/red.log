@@ -1,0 +1,17 @@
+2026-09-28 Task 6 UI-03 red evidence
+Status: confirmed
+Evidence kind: tool-result summary transcribed from the observed console result; not full stdout
+
+Command (cwd: apps/desktop):
+npm test -- --run src/renderer/domains/workflows/tests/node-config-shape.test.tsx
+
+Meaningful pre-fix result after correcting the test matcher:
+Test Files  1 failed (1)
+Tests       2 failed | 2 passed (4)
+Duration    2.40s
+
+Failures:
+- Nested Project End retainEnvironment was true in node.data.config, but ConfigPanel rendered the checkbox unchecked.
+- Nested Open Page timeout was -1 in node.data.config, but staticNumberIssues returned no issue.
+
+The red fixture also had stale same-named outer configuration fields. It intentionally was not flattened because production WorkflowRuntime selects the entire nested config object when it exists.

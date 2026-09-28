@@ -1,7 +1,7 @@
 // Source: WebRPA@5ccb900e, components/ui/variable-input.tsx; see SOURCE.md for license and adaptation boundaries.
 import * as React from 'react'
 import { cn } from '../../lib/utils'
-import { useWorkflowStore, moduleTypeLabels } from '../../editor-store'
+import { getNodeConfigData, useWorkflowStore, moduleTypeLabels } from '../../editor-store'
 import { getModuleDefaultVar, VARIABLE_NAME_FIELDS } from '../../lib/moduleDefaultVars'
 import type { Variable } from '../../types/index'
 
@@ -58,7 +58,7 @@ const VariableInput = React.forwardRef<HTMLInputElement | HTMLTextAreaElement, V
       
       // 从节点配置中提取变量名
       nodes.forEach(node => {
-        const data = node.data as Record<string, unknown>
+        const data = getNodeConfigData(node.data) as Record<string, unknown>
         const moduleType = data.moduleType as string
 
         VARIABLE_NAME_FIELDS.forEach(field => {
@@ -108,7 +108,7 @@ const VariableInput = React.forwardRef<HTMLInputElement | HTMLTextAreaElement, V
               value: undefined,
               type: varType,
               scope: 'local',
-              description: `来自「${(data.name as string) || moduleTypeLabels[moduleType as keyof typeof moduleTypeLabels] || moduleType}」`,
+              description: `来自「${(node.data.name as string) || moduleTypeLabels[moduleType as keyof typeof moduleTypeLabels] || moduleType}」`,
             })
           }
         })

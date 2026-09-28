@@ -1,0 +1,20 @@
+2026-09-28 Task 6 UI-03 frontend green evidence
+Status: confirmed
+Evidence kind: tool-result summary transcribed from the observed console result; not full stdout
+
+Command (cwd: apps/desktop):
+npm test -- --run src/renderer/domains/workflows/tests/node-config-shape.test.tsx src/renderer/domains/workflows/tests/node-config-history.test.ts src/renderer/domains/workflows/tests/selector-healing-context.test.ts src/renderer/domains/workflows/tests/common-advanced-config.test.tsx src/renderer/domains/workflows/tests/import-structure.test.ts src/renderer/domains/workflows/tests/config-field-context.test.tsx src/renderer/domains/workflows/components/__tests__/blockFlowModel.test.ts src/renderer/domains/workflows/tests/editor-roundtrip.test.ts src/renderer/domains/workflows/tests/web-config-text.test.tsx src/renderer/domains/workflows/tests/web-config-branches.test.tsx src/renderer/domains/workflows/tests/number-input-validation.test.tsx src/renderer/domains/workflows/tests/output-variable-rename.test.tsx src/renderer/domains/workflows/tests/variable-history.test.ts src/renderer/domains/workflows/tests/code-editor-completions.test.tsx src/renderer/domains/workflows/tests/complex-structure-interactions.test.tsx src/renderer/domains/workflows/tests/browser-script-editor.test.tsx src/renderer/domains/workflows/tests/structure-copy-references.test.ts
+
+Result:
+Test Files  17 passed (17)
+Tests       230 passed (230)
+Duration    8.17s
+
+Command (cwd: apps/desktop): npm run typecheck
+Result: tsc --noEmit, exit 0
+
+Command (cwd: apps/desktop): npm run lint -- src/renderer/domains/workflows
+Result: eslint . src/renderer/domains/workflows, exit 0
+
+Command (cwd: repository root): git diff --check
+Result: exit 0

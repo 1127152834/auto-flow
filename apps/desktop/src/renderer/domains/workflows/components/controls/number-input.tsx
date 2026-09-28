@@ -2,7 +2,7 @@
 import * as React from 'react'
 import { parseFiniteNumber } from '../../lib/finiteNumber'
 import { cn } from '../../lib/utils'
-import { useWorkflowStore } from '../../editor-store'
+import { getNodeConfigData, useWorkflowStore } from '../../editor-store'
 import { getModuleDefaultVar, VARIABLE_NAME_FIELDS } from '../../lib/moduleDefaultVars'
 import type { Variable } from '../../types/index'
 
@@ -57,7 +57,7 @@ const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
       
       // 从节点配置中提取变量名
       nodes.forEach(node => {
-        const data = node.data as Record<string, unknown>
+        const data = getNodeConfigData(node.data) as Record<string, unknown>
         
         const moduleType = data.moduleType as string
         VARIABLE_NAME_FIELDS.forEach(field => {

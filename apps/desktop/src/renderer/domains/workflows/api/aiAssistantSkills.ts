@@ -610,7 +610,7 @@ export async function executeClientAction(
             config.name = labelVal
           }
         }
-        useWorkflowStore.getState().updateNodeData(nodeId, config as any)
+        useWorkflowStore.getState().updateNodeConfig(nodeId, config as any)
         return { success: true, message: `已更新节点 ${nodeId}` }
       }
 
@@ -635,7 +635,7 @@ export async function executeClientAction(
           }
           if (store.nodes.some(node => node.id === p.node_id)) updates.push({ nodeId: p.node_id, data: cfg })
         }
-        store.updateNodesData(updates)
+        store.updateNodesConfig(updates)
         return { success: true, message: `已批量更新 ${updates.length} 个节点` }
       }
 

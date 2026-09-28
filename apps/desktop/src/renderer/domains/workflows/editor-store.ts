@@ -164,14 +164,14 @@ function hasValidImportGraph(value: unknown): boolean {
 // Keep copied graph references inside the copied set; references to definitions not copied remain unchanged.
 function remapNodeReferences(node: Node<NodeData>, idMap: Map<string, string>): Node<NodeData> {
   const mapped = (id: string | undefined) => id ? idMap.get(id) || id : id
+  const config = getNodeConfigData(node.data)
   return {
     ...node,
     ...(node.parentId ? { parentId: mapped(node.parentId) } : {}),
-    data: {
-      ...node.data,
-      ...(node.data.subflowGroupId ? { subflowGroupId: mapped(node.data.subflowGroupId) } : {}),
-      ...(node.data.errorPolicy?.targetId ? { errorPolicy: { ...node.data.errorPolicy, targetId: mapped(node.data.errorPolicy.targetId) } } : {}),
-    },
+    data: patchNodeConfigData(node.data, {
+      ...(config.subflowGroupId ? { subflowGroupId: mapped(config.subflowGroupId) } : {}),
+      ...(config.errorPolicy?.targetId ? { errorPolicy: { ...config.errorPolicy, targetId: mapped(config.errorPolicy.targetId) } } : {}),
+    }),
   }
 }
 
@@ -201,6 +201,26 @@ export interface NodeData extends ModuleConfig {
   url?: string  // 部分模块的 URL
   // 错误策略（错误回流 / 原地重试 / 跳过继续）。缺省即"失败即停"的原有行为
   errorPolicy?: ErrorPolicy
+}
+
+function isNodeConfig(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object' && !Array.isArray(value)
+}
+
+/** Runtime-compatible view: nested config wins as a whole; editor identity stays explicit. */
+export function getNodeConfigData(data: NodeData): NodeData {
+  if (!isNodeConfig(data.config)) return data
+  return {
+    ...data.config,
+    moduleType: data.moduleType,
+    label: data.label,
+  } as NodeData
+}
+
+export function patchNodeConfigData(data: NodeData, patch: Partial<NodeData>): NodeData {
+  return isNodeConfig(data.config)
+    ? { ...data, config: { ...data.config, ...patch } } as NodeData
+    : { ...data, ...patch }
 }
 
 // 节点出错时的处理策略
@@ -284,6 +304,8 @@ interface WorkflowState {
   // 更新节点数据
   updateNodeData: (nodeId: string, data: Partial<NodeData>) => void
   updateNodesData: (patches: { nodeId: string; data: Partial<NodeData> }[], variables?: Variable[]) => void
+  updateNodeConfig: (nodeId: string, data: Partial<NodeData>) => void
+  updateNodesConfig: (patches: { nodeId: string; data: Partial<NodeData> }[], variables?: Variable[]) => void
   
   // 删除节点
   deleteNode: (nodeId: string) => void
@@ -2544,6 +2566,29 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
 
   updateNodeData: (nodeId, data) => {
     get().updateNodesData([{ nodeId, data }])
+  },
+
+  updateNodeConfig: (nodeId, data) => {
+    get().updateNodesConfig([{ nodeId, data }])
+  },
+
+  updateNodesConfig: (patches, variables) => {
+    const nodes = new Map(get().nodes.map(node => [node.id, node]))
+    const patchMap = new Map<string, Partial<NodeData>>()
+    for (const patch of patches) patchMap.set(patch.nodeId, { ...patchMap.get(patch.nodeId), ...patch.data })
+    get().updateNodesData([...patchMap].map(([nodeId, data]) => {
+      const current = nodes.get(nodeId)?.data
+      const currentConfig = current?.config
+      const nested = isNodeConfig(currentConfig)
+      const unchanged = nested
+        && Object.entries(data).every(([key, value]) => Object.is(currentConfig[key], value))
+      return {
+        nodeId,
+        data: current && nested
+          ? { config: unchanged ? currentConfig : patchNodeConfigData(current, data).config } as Partial<NodeData>
+          : data,
+      }
+    }), variables)
   },
 
   updateNodesData: (patches, variables) => {

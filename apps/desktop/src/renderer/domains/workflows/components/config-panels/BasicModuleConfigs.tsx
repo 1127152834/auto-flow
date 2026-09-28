@@ -1607,7 +1607,7 @@ const GROUP_COLORS = [
   { name: '灰色', value: '#6b7280' },
 ]
 
-export function GroupConfig({ data, onChange }: { data: NodeData; onChange: (key: string, value: unknown) => void }) {
+export function GroupConfig({ nodeId, data, onChange }: { nodeId: string; data: NodeData; onChange: (key: string, value: unknown) => void }) {
   const isSubflow = data.isSubflow === true
   const nodes = useWorkflowStore((state) => state.nodes)
   const edges = useWorkflowStore((state) => state.edges)
@@ -1616,7 +1616,7 @@ export function GroupConfig({ data, onChange }: { data: NodeData; onChange: (key
   
   // 转换为子流程头节点
   const convertToSubflowHeader = useCallback(() => {
-    const currentNode = nodes.find(n => n.data === data)
+    const currentNode = nodes.find(n => n.id === nodeId)
     
     if (!currentNode) return
     
@@ -1679,7 +1679,7 @@ export function GroupConfig({ data, onChange }: { data: NodeData; onChange: (key
     onNodesChange([{ type: 'add', item: headerNode }])
     // 添加连接边
     onEdgesChange([{ type: 'add', item: headerEdge }])
-  }, [data, nodes, edges, onNodesChange, onEdgesChange])
+  }, [data, nodeId, nodes, edges, onNodesChange, onEdgesChange])
   
   return (
     <>
@@ -1731,9 +1731,8 @@ export function GroupConfig({ data, onChange }: { data: NodeData; onChange: (key
               const currentName = (data.subflowName as string) || (data.label as string) || ''
               if (!currentName) return null
               
-              const currentNodeId = nodes.find(n => n.data === data)?.id
               const duplicates = nodes.filter(n => {
-                if (n.id === currentNodeId) return false
+                if (n.id === nodeId) return false
                 if (n.type === 'groupNode' && n.data.isSubflow && n.data.subflowName === currentName) return true
                 if (n.type === 'subflowHeaderNode' && n.data.subflowName === currentName) return true
                 return false
@@ -1817,23 +1816,22 @@ export function GroupConfig({ data, onChange }: { data: NodeData; onChange: (key
 }
 
 // 子流程头配置
-export function SubflowHeaderConfig({ data, onChange }: { data: NodeData; onChange: (key: string, value: unknown) => void }) {
+export function SubflowHeaderConfig({ nodeId, data, onChange }: { nodeId: string; data: NodeData; onChange: (key: string, value: unknown) => void }) {
   const nodes = useWorkflowStore((state) => state.nodes)
   
   // 检查是否有重名的子流程
   const checkDuplicateName = useCallback((name: string) => {
     if (!name) return false
     
-    const currentNodeId = nodes.find(n => n.data === data)?.id
     const duplicates = nodes.filter(n => {
-      if (n.id === currentNodeId) return false
+      if (n.id === nodeId) return false
       if (n.type === 'groupNode' && n.data.isSubflow && n.data.subflowName === name) return true
       if (n.type === 'subflowHeaderNode' && n.data.subflowName === name) return true
       return false
     })
     
     return duplicates.length > 0
-  }, [nodes, data])
+  }, [nodes, nodeId])
   
   const currentName = (data.subflowName as string) || (data.label as string) || ''
   const hasDuplicate = checkDuplicateName(currentName)

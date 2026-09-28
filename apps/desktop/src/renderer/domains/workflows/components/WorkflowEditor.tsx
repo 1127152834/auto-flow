@@ -16,7 +16,7 @@ import {
 import '@xyflow/react/dist/style.css'
 import { Keyboard, ChevronDown, ChevronUp, FileJson, AlertTriangle, Boxes, Search, X, LayoutList, Workflow } from 'lucide-react'
 
-import { useWorkflowStore, type NodeData } from '../editor-store'
+import { getNodeConfigData, useWorkflowStore, type NodeData } from '../editor-store'
 import { DebugBar } from './DebugBar'
 import { useLayoutStore } from '../hooks/stores/layoutStore'
 import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
@@ -1688,7 +1688,7 @@ export function WorkflowEditor() {
             })),
               // 由各模块 errorPolicy 派生的「错误回流」可视化连线（红色虚线，只读不可选删）
               ...nodes.flatMap((n) => {
-                const p = (n.data as NodeData)?.errorPolicy
+                const p = getNodeConfigData(n.data as NodeData).errorPolicy
                 if (p && p.mode === 'retry-from' && p.targetId && nodes.some((t) => t.id === p.targetId)) {
                   return [{
                     id: `__reflow-${n.id}`,

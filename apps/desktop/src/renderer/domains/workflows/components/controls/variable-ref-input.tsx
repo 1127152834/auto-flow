@@ -1,7 +1,7 @@
 // Source: WebRPA@5ccb900e, components/ui/variable-ref-input.tsx; see SOURCE.md for license and adaptation boundaries.
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { Input } from './input'
-import { useWorkflowStore } from '../../editor-store'
+import { getNodeConfigData, useWorkflowStore } from '../../editor-store'
 import { getModuleAllDefaultVars, VARIABLE_NAME_FIELDS } from '../../lib/moduleDefaultVars'
 import { cn } from '../../lib/utils'
 
@@ -55,9 +55,9 @@ export function VariableRefInput({
 
     // 从节点配置中提取变量
     for (const node of nodes) {
-      const data = node.data as Record<string, unknown>
+      const data = getNodeConfigData(node.data) as Record<string, unknown>
       const moduleType = data.moduleType as string
-      const nodeLabel = (data.name as string) || (data.label as string) || moduleType
+      const nodeLabel = (node.data.name as string) || (data.label as string) || moduleType
       
       const defaultVars = getModuleAllDefaultVars(moduleType)
       

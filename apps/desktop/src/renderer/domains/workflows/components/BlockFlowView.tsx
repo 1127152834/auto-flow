@@ -8,7 +8,7 @@
 import { useMemo, useState, useEffect, useRef, useLayoutEffect } from 'react'
 import { createPortal } from 'react-dom'
 import type React from 'react'
-import { useWorkflowStore, moduleTypeLabels, type NodeData, type ErrorPolicy } from '../editor-store'
+import { getNodeConfigData, useWorkflowStore, moduleTypeLabels, type NodeData, type ErrorPolicy } from '../editor-store'
 import { useNodeRunStore } from '../hooks/stores/nodeRunStore'
 import { moduleIcons, moduleCategories, moduleKeywords } from './ModuleSidebar'
 import { getBlockRowColorClasses } from './moduleColors'
@@ -116,7 +116,7 @@ export function BlockFlowView() {
   const selectNode = useWorkflowStore((s) => s.selectNode)
   const setGraph = useWorkflowStore((s) => s.setGraph)
   const toggleNodesDisabled = useWorkflowStore((s) => s.toggleNodesDisabled)
-  const updateNodeData = useWorkflowStore((s) => s.updateNodeData)
+  const updateNodeConfig = useWorkflowStore((s) => s.updateNodeConfig)
   const ensureGlobalVariables = useWorkflowStore((s) => s.ensureGlobalVariables)
   const runStatuses = useNodeRunStore((s) => s.statuses)
 
@@ -231,13 +231,14 @@ export function BlockFlowView() {
   }
   // 设置某节点错误策略（mode='stop' 视为清除）
   const setPolicy = (nodeId: string, patch: Partial<ErrorPolicy>) => {
-    const cur = (nodes.find((n) => n.id === nodeId)?.data?.errorPolicy) as ErrorPolicy | undefined
+    const raw = nodes.find((n) => n.id === nodeId)?.data
+    const cur = raw ? getNodeConfigData(raw).errorPolicy as ErrorPolicy | undefined : undefined
     const base: ErrorPolicy = cur || { mode: 'stop' }
     const next: ErrorPolicy = { maxRetries: 1, interval: 0, onExhausted: 'stop', ...base, ...patch }
     if (next.mode === 'stop') {
-      updateNodeData(nodeId, { errorPolicy: undefined })
+      updateNodeConfig(nodeId, { errorPolicy: undefined })
     } else {
-      updateNodeData(nodeId, { errorPolicy: next })
+      updateNodeConfig(nodeId, { errorPolicy: next })
     }
   }
   // 回流目标候选：可见顺序里排在当前块之前的所有模块（不含自己）
@@ -491,7 +492,7 @@ export function BlockFlowView() {
   // ===== 影刀风格紧凑步骤行（本身即投放区：按上/下半判断插到该行前/后）=====
   const StepRow = ({ block, num, kind, collapsible, isCollapsed, onToggle, childCount }: { block: Block; num: number; kind: 'step' | 'if' | 'loop' | 'parallel'; collapsible?: boolean; isCollapsed?: boolean; onToggle?: () => void; childCount?: number }) => {
     const node = block.node
-    const data = node.data as NodeData
+    const data = getNodeConfigData(node.data as NodeData)
     const type = data.moduleType as ModuleType
     const Icon = moduleIcons[type]
     // 配色与画布节点同源：统一由 getBlockRowColorClasses 从画布节点样式类派生，
@@ -503,10 +504,10 @@ export function BlockFlowView() {
     const multiSelected = selectedIds.has(node.id)
     const isSel = selected || multiSelected
     const isRun = runStatuses[node.id] === 'running' || runStatuses[node.id] === 'success' || runStatuses[node.id] === 'failed'
-    const disabled = !!data.disabled
+    const disabled = !!node.data.disabled
     // 容器块（如果/循环/并行）用语义标签作主名，不再叠加模块名，避免“循环 循环”这类重复
     const semanticTag = kind === 'if' ? branchLabels(type).head : kind === 'loop' ? '循环' : kind === 'parallel' ? '并行' : ''
-    const customName = (data.name as string) || ''
+    const customName = (node.data.name as string) || ''
     const primaryName = kind === 'step'
       ? (customName || moduleTypeLabels[type] || type)
       : kind === 'parallel'
@@ -586,9 +587,9 @@ export function BlockFlowView() {
           {disabled && (
             <span className="flex-shrink-0 px-1.5 py-0.5 rounded-[5px] text-[10px] font-bold bg-[hsl(var(--slate-200))] text-[hsl(var(--slate-500))] border border-[hsl(var(--slate-300))]">已禁用</span>
           )}
-          {policyText(node.data.errorPolicy as ErrorPolicy) && (
+          {policyText(data.errorPolicy as ErrorPolicy) && (
             <span className="flex-shrink-0 px-1.5 py-0.5 rounded-[5px] text-[10px] font-bold bg-[hsl(var(--warning-500)/0.12)] text-[hsl(var(--warning-700))] border border-[hsl(var(--warning-500)/0.3)] inline-flex items-center gap-1" title="该模块的出错处理策略">
-              <RotateCcw className="w-2.5 h-2.5" /> {policyText(node.data.errorPolicy as ErrorPolicy)}
+              <RotateCcw className="w-2.5 h-2.5" /> {policyText(data.errorPolicy as ErrorPolicy)}
             </span>
           )}
           {isCollapsed && childCount ? <span className="text-[10.5px] text-[hsl(var(--slate-400))] flex-shrink-0">· 已折叠 {childCount} 步</span> : null}
@@ -600,7 +601,7 @@ export function BlockFlowView() {
               const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
               setErrPopover({ nodeId: node.id, x: Math.min(r.left - 280, window.innerWidth - 320), y: r.bottom + 4 })
             }}
-            className={'p-1 rounded-[6px] transition-colors hover:bg-[hsl(var(--warning-500)/0.12)] ' + (policyText(node.data.errorPolicy as ErrorPolicy) ? 'text-[hsl(var(--warning-600))]' : 'text-[hsl(var(--slate-400))] hover:text-[hsl(var(--warning-600))]')}
+            className={'p-1 rounded-[6px] transition-colors hover:bg-[hsl(var(--warning-500)/0.12)] ' + (policyText(data.errorPolicy as ErrorPolicy) ? 'text-[hsl(var(--warning-600))]' : 'text-[hsl(var(--slate-400))] hover:text-[hsl(var(--warning-600))]')}
             title="出错处理（原地重试 / 回流上层重试 / 跳过继续）"
           ><RotateCcw className="w-3.5 h-3.5" /></button>
           <button onClick={(e) => { e.stopPropagation(); handleMove(block.id, -1) }} className="p-1 rounded-[6px] text-[hsl(var(--slate-400))] hover:text-[hsl(var(--brand-600))] hover:bg-[hsl(var(--brand-50))] transition-colors" title="上移"><ChevronUp className="w-3.5 h-3.5" /></button>

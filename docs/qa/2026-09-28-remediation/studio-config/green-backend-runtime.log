@@ -1,0 +1,14 @@
+2026-09-28 Task 6 UI-03 production extraction evidence
+Status: confirmed
+Evidence kind: tool-result summary transcribed from the observed console result; not full stdout
+
+Command (cwd: apps/backend):
+.venv/bin/pytest -q tests/unit/workflows/test_runtime_log_delivery.py::test_real_print_executor_marks_user_log_at_each_execution tests/unit/test_workflow_run_validation.py::test_studio_nested_config_empty_input_and_snapshot_preserved
+
+Result:
+2 passed in 0.41s
+
+Applicability:
+- test_real_print_executor_marks_user_log_at_each_execution exercises WorkflowRuntime with a real registered PrintLog executor and proves the nested configuration reaches executor behavior.
+- test_studio_nested_config_empty_input_and_snapshot_preserved proves the accepted Studio nested document remains nested in the frozen execution snapshot.
+- No backend production source was changed for Task 6. Runtime's existing whole-object priority remains authoritative: a valid node.data.config mapping wins; fields do not fall back individually to stale outer data.

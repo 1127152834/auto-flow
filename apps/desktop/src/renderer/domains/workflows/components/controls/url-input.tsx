@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
 import { Link } from 'lucide-react'
 import { VariableInput } from './variable-input'
-import { useWorkflowStore } from '../../editor-store'
+import { getNodeConfigData, useWorkflowStore } from '../../editor-store'
 import { cn } from '../../lib/utils'
 
 interface UrlInputProps {
@@ -20,8 +20,8 @@ export function UrlInput({ value, onChange, placeholder, className }: UrlInputPr
   // 从工作流节点中提取所有URL（去重）
   const workflowUrls = useMemo(() => {
     return nodes
-      .filter(n => n.data.moduleType === 'open_page' && n.data.url)
-      .map(n => n.data.url as string)
+      .filter(n => n.data.moduleType === 'open_page' && getNodeConfigData(n.data).url)
+      .map(n => getNodeConfigData(n.data).url as string)
       .filter((url, index, self) => self.indexOf(url) === index)
       .filter(url => url !== value) // 排除当前值
   }, [nodes, value])

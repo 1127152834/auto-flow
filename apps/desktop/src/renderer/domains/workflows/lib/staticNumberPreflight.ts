@@ -1,5 +1,5 @@
 import type { Edge, Node } from '@xyflow/react'
-import type { NodeData } from '../editor-store'
+import { getNodeConfigData, type NodeData } from '../editor-store'
 import { parseFiniteNumber } from './finiteNumber'
 
 export type StaticNumberIssue = { nodeId: string; path: string; message: string }
@@ -22,8 +22,8 @@ export function staticNumberIssues(nodes: Node<NodeData>[], edges: Edge[] = [], 
   }
   const issues: StaticNumberIssue[] = []
   for (const node of candidates) {
-    const data = node.data
-    if (data.disabled || ['group','note'].includes(data.moduleType)) continue
+    const data = getNodeConfigData(node.data)
+    if (node.data.disabled || ['group','note'].includes(data.moduleType)) continue
     const check = (field: string, label: string, max = Infinity, integer = false, raw: unknown = data[field], min = 0) => {
       // Dynamic templates remain the execution service's responsibility, not a local expression evaluator.
       if (raw === undefined || raw === null || (typeof raw === 'string' && raw.includes('{'))) return

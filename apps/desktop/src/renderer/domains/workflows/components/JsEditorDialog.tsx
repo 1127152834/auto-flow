@@ -8,7 +8,7 @@ import * as monaco from 'monaco-editor'
 import type { editor } from 'monaco-editor'
 import { X, Play, RotateCcw, Loader2 } from 'lucide-react'
 import { Button } from './controls/button'
-import { useWorkflowStore } from '../editor-store'
+import { getNodeConfigData, useWorkflowStore } from '../editor-store'
 import { AICodeAssistant } from './AICodeAssistant'
 import { runJsScript } from '../lib/runJsScript'
 
@@ -99,7 +99,7 @@ export function JsEditorDialog({ isOpen, code, onClose, onSave }: JsEditorDialog
         const varNames = new Set<string>()
         variables.forEach(v => varNames.add(v.name))
         nodes.forEach(node => {
-          const data = node.data as Record<string, unknown>
+          const data = getNodeConfigData(node.data) as Record<string, unknown>
           const fields = ['variableName', 'resultVariable', 'itemVariable', 'indexVariable']
           fields.forEach(field => {
             const val = data[field]

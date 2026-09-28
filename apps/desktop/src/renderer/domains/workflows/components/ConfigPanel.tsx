@@ -3,7 +3,7 @@ import { ProjectDataConfig } from './config-panels/ProjectDataConfig'
 import { ProxyControlConfig } from './config-panels/ProxyControlConfig'
 import { excludedModuleTypes } from '../lib/moduleCatalog'
 // Source: WebRPA@5ccb900e, components/workflow/ConfigPanel.tsx; see SOURCE.md for license and adaptation boundaries.
-import { useWorkflowStore, moduleTypeLabels, getModuleDefaultTimeout, type NodeData, type ErrorPolicy } from '../editor-store'
+import { useWorkflowStore, moduleTypeLabels, getModuleDefaultTimeout, getNodeConfigData, type NodeData, type ErrorPolicy } from '../editor-store'
 import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
 import { ScrollArea } from './controls/scroll-area'
 import { useRequiredFields, getMissingRequiredLabels } from '../lib/requiredFields'
@@ -227,6 +227,7 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
   const documentId = useWorkflowStore((state) => state.id)
   const requiredFields = useRequiredFields()
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData)
+  const updateNodeConfig = useWorkflowStore((state) => state.updateNodeConfig)
   const deleteNode = useWorkflowStore((state) => state.deleteNode)
   const addLog = useWorkflowStore((state) => state.addLog)
   const toggleNodesDisabled = useWorkflowStore((state) => state.toggleNodesDisabled)
@@ -287,7 +288,8 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
   } | null>(null)
 
   const selectedNode = nodes.find((n) => n.id === selectedNodeId)
-  const nodeData = selectedNode?.data as NodeData | undefined
+  const rawNodeData = selectedNode?.data as NodeData | undefined
+  const nodeData = rawNodeData ? getNodeConfigData(rawNodeData) : undefined
 
   // Invalidate every awaited picker response when the owning document/panel changes.
   useEffect(() => {
@@ -311,13 +313,13 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
 
   const handleChange = useCallback((key: string, value: unknown) => {
     if (selectedNodeId) {
-      updateNodeData(selectedNodeId, { [key]: value })
+      updateNodeConfig(selectedNodeId, { [key]: value })
     }
-  }, [selectedNodeId, updateNodeData])
+  }, [selectedNodeId, updateNodeConfig])
 
   const handleBatchChange = useCallback((data: Partial<NodeData>) => {
-    if (selectedNodeId) updateNodeData(selectedNodeId, data)
-  }, [selectedNodeId, updateNodeData])
+    if (selectedNodeId) updateNodeConfig(selectedNodeId, data)
+  }, [selectedNodeId, updateNodeConfig])
 
   const handleDelete = () => {
     if (selectedNodeId) {
@@ -343,7 +345,7 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
     if (cfgStr.length > 1200) cfgStr = cfgStr.slice(0, 1200) + '…'
     const prompt = `请帮我看下当前工作流里这个模块：\n` +
       `模块类型：${label}（${mt}）\n` +
-      `节点备注：${(nodeData.name as string) || '无'}\n` +
+      `节点备注：${(rawNodeData?.name as string) || '无'}\n` +
       `当前配置：${cfgStr}\n\n` +
       `请：1) 简要说明它的作用；2) 指出配置是否有问题或可优化之处；3) 给出具体修改建议。`
     emitAssistantUiEvent('ask_ai', { prompt, autoSend: true })
@@ -380,7 +382,7 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
   // 打开URL输入对话框
   const openUrlDialog = useCallback((fieldName: string) => {
     const openPageNode = nodes.find(n => (n.data as NodeData).moduleType === 'open_page')
-    const defaultUrl = (openPageNode?.data as NodeData)?.url as string || ''
+    const defaultUrl = openPageNode ? getNodeConfigData(openPageNode.data as NodeData).url as string || '' : ''
     setPickerUrl(defaultUrl)
     setPendingField(fieldName)
     setShowUrlDialog(true)
@@ -404,12 +406,14 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
     const originDocument = state.id
     const connection = getStudioTransportRevision()
     pickerConnection.current = connection
-    const target = JSON.stringify([originNode.data[fieldName], originNode.data.selectorHints ?? null])
+    const originConfig = getNodeConfigData(originNode.data as NodeData)
+    const target = JSON.stringify([originConfig[fieldName], originConfig.selectorHints ?? null])
     const isCurrent = () => {
       const current = useWorkflowStore.getState()
       const node = current.nodes.find(node => node.id === originNode.id)
+      const config = node ? getNodeConfigData(node.data as NodeData) : undefined
       return connection === getStudioTransportRevision() && request === pickerSequence.current && current.id === originDocument && !!node &&
-        JSON.stringify([node.data[fieldName], node.data.selectorHints ?? null]) === target
+        JSON.stringify([config?.[fieldName], config?.selectorHints ?? null]) === target
     }
     pickerContext.current = isCurrent
     pickerActive.current = true
@@ -467,7 +471,7 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
             const el = selectedResult.data.element
             const selector = el.selector
             if (pollingRef.current) { clearInterval(pollingRef.current); pollingRef.current = null }
-            updateNodeData(originNode.id, {
+            updateNodeConfig(originNode.id, {
               [fieldName]: selector,
               ...(fieldName === 'selector' ? { selectorHints: {
                 tag: el.tagName || '', text: el.text || '', attributes: (el.attributes || {}) as Record<string, unknown>,
@@ -526,7 +530,7 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
       setIsPicking(false)
       setPickingField(null)
     }
-  }, [addLog, updateNodeData, selectedNodeId, resolveVariables, browserConfig, confirmPickerStop])
+  }, [addLog, updateNodeConfig, selectedNodeId, resolveVariables, browserConfig, confirmPickerStop])
 
   // 确认相似元素选择
   const handleSimilarConfirm = useCallback(async (variableName: string) => {
@@ -544,7 +548,7 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
     const variables = existing
       ? state.variables.map(variable => variable.name === variableName ? { ...variable, value: similarResult.minIndex } : variable)
       : [...state.variables, { name: variableName, value: similarResult.minIndex, type: 'number' as const, scope: 'global' as const }]
-    state.updateNodesData([{ nodeId: selectedNodeId!, data: { [pickingField]: finalSelector } }], variables)
+    state.updateNodesConfig([{ nodeId: selectedNodeId!, data: { [pickingField]: finalSelector } }], variables)
 
     addLog({ 
       level: 'success', 
@@ -653,8 +657,9 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
     const isCurrent = () => {
       const state = useWorkflowStore.getState()
       const currentNode = state.nodes.find(node => node.id === originNode)
+      const currentConfig = currentNode ? getNodeConfigData(currentNode.data as NodeData) : undefined
       return request === selectorTestSequence.current && state.id === originDocument && currentNode &&
-        JSON.stringify([currentNode.data[id], currentNode.data.selectorHints ?? null]) === target
+        JSON.stringify([currentConfig?.[id], currentConfig?.selectorHints ?? null]) === target
     }
     setTestingField(id)
     try {
@@ -1394,9 +1399,9 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
       case 'page_load_complete':
         return <PageLoadCompleteConfig data={nodeData} onChange={handleChange} />
       case 'group':
-        return <GroupConfig data={nodeData} onChange={handleChange} />
+        return <GroupConfig nodeId={selectedNodeId!} data={nodeData} onChange={handleChange} />
       case 'subflow_header':
-        return <SubflowHeaderConfig data={nodeData} onChange={handleChange} />
+        return <SubflowHeaderConfig nodeId={selectedNodeId!} data={nodeData} onChange={handleChange} />
       case 'note':
         return (
           <div className="space-y-2">
@@ -1496,7 +1501,7 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
                   <h2 className="text-[14px] font-bold text-[hsl(var(--slate-900))] truncate tracking-tight">{String(moduleTypeLabels[nodeData.moduleType as keyof typeof moduleTypeLabels] ?? nodeData.moduleType)}</h2>
                   <p className="text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5 flex items-center gap-1.5">
                     <span className="badge badge-brand !py-0 !text-[9.5px]">{String(nodeData.moduleType)}</span>
-                    {Boolean(nodeData.disabled) && <span className="badge badge-warning !py-0 !text-[9.5px]">已禁用</span>}
+                    {Boolean(rawNodeData?.disabled) && <span className="badge badge-warning !py-0 !text-[9.5px]">已禁用</span>}
                   </p>
                 </div>
               </div>
@@ -1510,13 +1515,13 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
                   <Sparkles className="w-3.5 h-3.5" />
                 </Button>
                 <Button
-                  variant={nodeData.disabled ? 'tonal-warning' : 'tonal'}
+                  variant={rawNodeData?.disabled ? 'tonal-warning' : 'tonal'}
                   size="icon-sm"
                   onClick={() => {
                     toggleNodesDisabled([selectedNode.id])
-                    addLog({ level: 'info', message: nodeData.disabled ? '已启用模块' : '已禁用模块' })
+                    addLog({ level: 'info', message: rawNodeData?.disabled ? '已启用模块' : '已禁用模块' })
                   }}
-                  title={nodeData.disabled ? '启用模块 (Ctrl+D)' : '禁用模块 (Ctrl+D)'}
+                  title={rawNodeData?.disabled ? '启用模块 (Ctrl+D)' : '禁用模块 (Ctrl+D)'}
                 >
                   <Ban className="w-3.5 h-3.5" />
                 </Button>
@@ -1572,8 +1577,8 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
                   <Label htmlFor="name">节点备注</Label>
                   <Input
                     id="name"
-                    value={(nodeData.name as string) || ''}
-                    onChange={(e) => handleChange('name', e.target.value)}
+                    value={(rawNodeData?.name as string) || ''}
+                    onChange={(e) => selectedNodeId && updateNodeData(selectedNodeId, { name: e.target.value })}
                     placeholder="可选的节点备注"
                     className="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                   />

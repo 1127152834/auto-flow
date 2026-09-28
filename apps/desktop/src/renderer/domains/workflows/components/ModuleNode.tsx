@@ -2,7 +2,7 @@
 import { memo } from 'react'
 import { Handle, Position, type NodeProps, useReactFlow } from '@xyflow/react'
 import { cn } from '../lib/utils'
-import type { NodeData } from '../editor-store'
+import { getNodeConfigData, type NodeData } from '../editor-store'
 import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
 import { Globe, ExternalLink, LocateFixed, Play } from 'lucide-react'
 import { moduleIcons, excludedModuleTypes } from './ModuleSidebar'
@@ -11,14 +11,15 @@ import { useNodeRunStore } from '../hooks/stores/nodeRunStore'
 import { useDebugStore } from '../hooks/stores/debugStore'
 
 function ModuleNodeComponent({ id, data, selected }: NodeProps) {
-  const nodeData = data as NodeData
+  const rawNodeData = data as NodeData
+  const nodeData = getNodeConfigData(rawNodeData)
   const { fitView, getNodes, setCenter } = useReactFlow()
   const runStatus = useNodeRunStore((s) => s.statuses[id])
   const hasBreakpoint = useDebugStore((s) => s.breakpoints.has(id))
   const isPausedHere = useDebugStore((s) => s.isPaused && s.pausedNodeId === id)
   const toggleBreakpoint = useDebugStore((s) => s.toggleBreakpoint)
-  const isDisabled = nodeData.disabled === true
-  const isHighlighted = nodeData.isHighlighted === true
+  const isDisabled = rawNodeData.disabled === true
+  const isHighlighted = rawNodeData.isHighlighted === true
   const handleSize = useGlobalConfigStore((state) => state.config.display?.handleSize || 12)
 
   // 对于自定义模块，使用节点数据中的图标和颜色
@@ -111,7 +112,7 @@ function ModuleNodeComponent({ id, data, selected }: NodeProps) {
     text.length <= maxLen ? text : text.slice(0, maxLen) + '...'
 
   const summary = truncateText(getSummary(), 30)
-  const customName = nodeData.name as string | undefined
+  const customName = rawNodeData.name as string | undefined
   const isSubflow = nodeData.moduleType === 'subflow'
 
   return (

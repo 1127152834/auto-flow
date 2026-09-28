@@ -8,8 +8,7 @@
  */
 import { nanoid } from 'nanoid'
 import type { Node, Edge } from '@xyflow/react'
-import type { NodeData } from '../editor-store'
-import { moduleTypeLabels } from '../editor-store'
+import { getNodeConfigData, moduleTypeLabels, patchNodeConfigData, type NodeData } from '../editor-store'
 import { getModuleAllDefaultVars, getModuleConfigDefaults } from '../lib/moduleDefaultVars'
 import type { ModuleType } from '../types/index'
 
@@ -336,11 +335,14 @@ export function cloneBlock(b: Block): Block {
 
   const clone = (block: Block): Block => {
     const newId = idMap.get(block.id)!
-    const data = JSON.parse(JSON.stringify(block.node.data)) as NodeData
-    if (data.subflowGroupId && idMap.has(data.subflowGroupId)) data.subflowGroupId = idMap.get(data.subflowGroupId)
-    if (data.errorPolicy?.targetId && idMap.has(data.errorPolicy.targetId)) {
-      data.errorPolicy = { ...data.errorPolicy, targetId: idMap.get(data.errorPolicy.targetId) }
+    let data = JSON.parse(JSON.stringify(block.node.data)) as NodeData
+    const config = getNodeConfigData(data)
+    const patch: Partial<NodeData> = {}
+    if (config.subflowGroupId && idMap.has(config.subflowGroupId)) patch.subflowGroupId = idMap.get(config.subflowGroupId)
+    if (config.errorPolicy?.targetId && idMap.has(config.errorPolicy.targetId)) {
+      patch.errorPolicy = { ...config.errorPolicy, targetId: idMap.get(config.errorPolicy.targetId) }
     }
+    data = patchNodeConfigData(data, patch)
     const node: Node<NodeData> = {
       ...block.node,
       id: newId,
