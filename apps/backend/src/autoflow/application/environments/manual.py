@@ -4,7 +4,11 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import uuid4
 
-from autoflow.application.environments.retention import _jsonable, end_task
+from autoflow.application.environments.retention import (
+    _jsonable,
+    _reject_replayed_failure,
+    end_task,
+)
 from autoflow.domain.environments.rules import environment_error
 from autoflow.domain.projects.models import ProjectError
 
@@ -42,7 +46,6 @@ def resume_manual(service, project_id: str, key: str, manual_item_id: str, paylo
     service._writable(project_id)
     now = datetime.now(UTC)
     current = service.environments.get_manual_item(project_id, manual_item_id)
-    _reject_expired(current, now)
     canonical = {
         "scope": "resumeManual",
         "projectId": project_id,
@@ -54,8 +57,10 @@ def resume_manual(service, project_id: str, key: str, manual_item_id: str, paylo
     )
     accepted, replayed = service.environments.accept_operation(operation)
     if replayed:
+        _reject_replayed_failure(accepted)
         return accepted.result, accepted, True
     try:
+        _reject_expired(current, now)
         item = service.environments.transition_manual(
             project_id,
             manual_item_id,
@@ -67,7 +72,7 @@ def resume_manual(service, project_id: str, key: str, manual_item_id: str, paylo
         service.environments.complete_operation(
             accepted,
             None,
-            {"code": error.code, "message": error.message, "details": error.details},
+            {"code": error.code, "message": error.message, "status": error.status, "details": error.details},
             datetime.now(UTC),
         )
         raise
@@ -94,7 +99,6 @@ def finish_manual(service, project_id: str, key: str, manual_item_id: str, paylo
     service._writable(project_id)
     now = datetime.now(UTC)
     current = service.environments.get_manual_item(project_id, manual_item_id)
-    _reject_expired(current, now)
     canonical = {
         "scope": "finishManual",
         "projectId": project_id,
@@ -106,8 +110,10 @@ def finish_manual(service, project_id: str, key: str, manual_item_id: str, paylo
     )
     accepted, replayed = service.environments.accept_operation(operation)
     if replayed:
+        _reject_replayed_failure(accepted)
         return accepted.result, accepted, True
     try:
+        _reject_expired(current, now)
         item = service.environments.transition_manual(
             project_id,
             manual_item_id,
@@ -119,7 +125,7 @@ def finish_manual(service, project_id: str, key: str, manual_item_id: str, paylo
         service.environments.complete_operation(
             accepted,
             None,
-            {"code": error.code, "message": error.message, "details": error.details},
+            {"code": error.code, "message": error.message, "status": error.status, "details": error.details},
             datetime.now(UTC),
         )
         raise

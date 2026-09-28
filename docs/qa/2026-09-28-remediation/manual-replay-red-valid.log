@@ -1,0 +1,70 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_ test_manual_failed_command_replays_original_error[resume-checkpointRevision] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-546/test_manual_failed_command_rep0')
+action = 'resume', checkpoint_key = 'checkpointRevision'
+
+    @pytest.mark.parametrize("action,checkpoint_key", [
+        ("resume", "checkpointRevision"),
+        ("finish", "expectedCheckpointRevision"),
+    ])
+    def test_manual_failed_command_replays_original_error(tmp_path, action, checkpoint_key):
+        client, projects, service = make(tmp_path)
+        project_id = _project(projects)
+        item = service.open_manual(project_id, {"taskId": str(uuid4()), "runId": str(uuid4())})
+        url = f"/api/v1/projects/{project_id}/manual-items/{item['manualItemId']}/{action}"
+        headers = {"Idempotency-Key": str(uuid4())}
+        body = {checkpoint_key: 1, "expectedStatusRevision": 99}
+        if action == "finish":
+            body.update(outcome="failed", reason="真实 SQLite 冲突回放", retainEnvironment={"enabled": False})
+        with client:
+            first = client.post(url, headers=headers, json=body)
+            assert first.status_code == 409, first.text
+            repeated = client.post(url, headers=headers, json=body)
+>           assert repeated.status_code == first.status_code, repeated.text
+E           AssertionError: {"operation":{"operationId":"1cb1691e-0b51-4abd-9c5d-b4c215492cf8","projectId":"cf753d57-da6c-4570-9727-900b5fdc812c","idempotencyKey":"f623f8f2-8024-4a9c-b22d-d9438b0ed50d","kind":"resumeManual","status":"failed","statusRevision":2,"resource":{"type":"environment","projectId":"cf753d57-da6c-4570-9727-900b5fdc812c","environmentId":null},"result":null,"error":{"code":"MANUAL_TRANSITION_LOST","message":"Manual transition lost the race","details":{"domainCode":"manual_transition_lost","expectedRevision":99,"currentRevision":1,"retryable":false}},"createdAt":"2026-09-28T03:48:56.682509","updatedAt":"2026-09-28T03:48:56.686318","completedAt":"2026-09-28T03:48:56.686318"},"outcome":null}
+E           assert 202 == 409
+E            +  where 202 = <Response [202 Accepted]>.status_code
+E            +  and   409 = <Response [409 Conflict]>.status_code
+
+apps/backend/tests/contract/test_project_environments.py:1101: AssertionError
+_ test_manual_failed_command_replays_original_error[finish-expectedCheckpointRevision] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-546/test_manual_failed_command_rep1')
+action = 'finish', checkpoint_key = 'expectedCheckpointRevision'
+
+    @pytest.mark.parametrize("action,checkpoint_key", [
+        ("resume", "checkpointRevision"),
+        ("finish", "expectedCheckpointRevision"),
+    ])
+    def test_manual_failed_command_replays_original_error(tmp_path, action, checkpoint_key):
+        client, projects, service = make(tmp_path)
+        project_id = _project(projects)
+        item = service.open_manual(project_id, {"taskId": str(uuid4()), "runId": str(uuid4())})
+        url = f"/api/v1/projects/{project_id}/manual-items/{item['manualItemId']}/{action}"
+        headers = {"Idempotency-Key": str(uuid4())}
+        body = {checkpoint_key: 1, "expectedStatusRevision": 99}
+        if action == "finish":
+            body.update(outcome="failed", reason="真实 SQLite 冲突回放", retainEnvironment={"enabled": False})
+        with client:
+            first = client.post(url, headers=headers, json=body)
+            assert first.status_code == 409, first.text
+            repeated = client.post(url, headers=headers, json=body)
+>           assert repeated.status_code == first.status_code, repeated.text
+E           AssertionError: {"operation":{"operationId":"afe2cd0e-1f17-497f-9c07-3a5a92fe0cdc","projectId":"c0b741e5-6948-489d-98bd-84bd1014cf04","idempotencyKey":"487607e5-57a2-49c2-98f1-d2e84a0c425e","kind":"finishManual","status":"failed","statusRevision":2,"resource":{"type":"environment","projectId":"c0b741e5-6948-489d-98bd-84bd1014cf04","environmentId":null},"result":null,"error":{"code":"MANUAL_TRANSITION_LOST","message":"Manual transition lost the race","details":{"domainCode":"manual_transition_lost","expectedRevision":99,"currentRevision":1,"retryable":false}},"createdAt":"2026-09-28T03:48:57.067752","updatedAt":"2026-09-28T03:48:57.071177","completedAt":"2026-09-28T03:48:57.071177"},"outcome":null}
+E           assert 202 == 409
+E            +  where 202 = <Response [202 Accepted]>.status_code
+E            +  and   409 = <Response [409 Conflict]>.status_code
+
+apps/backend/tests/contract/test_project_environments.py:1101: AssertionError
+=============================== warnings summary ===============================
+apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53
+  /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED apps/backend/tests/contract/test_project_environments.py::test_manual_failed_command_replays_original_error[resume-checkpointRevision]
+FAILED apps/backend/tests/contract/test_project_environments.py::test_manual_failed_command_replays_original_error[finish-expectedCheckpointRevision]
+2 failed, 17 deselected, 1 warning in 0.82s

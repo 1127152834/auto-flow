@@ -31,3 +31,5 @@
 2026-09-28：DB-01 metadata补充 confirmed：代理注册、Sheets identity_verification、索引/约束名/凭据列类型按现有迁移对齐；精确保护两个仅迁移保留的历史表，不排除未知表。真实SQLite Alembic check无差异/无排序警告；35项组合（含3种实际结构破坏必须失败）通过，strict0新增、Ruff通过。无历史迁移改动、无用户数据库写入；见metadata.md。
 
 2026-09-28：UI-09 confirmed：真实目录包发现打开已有流程后错误 POST 导致409，根因为载入后的身份回调捕获旧文档；修复共享回调并添加当前文档保存错误横幅。48项定向、完整前端5650项、类型/lint/build通过；重新打包后原生保存修订1→2、刷新重开、正常退出重启后读取均通过。原生Excel导出5条、错误映射显示行列字段、修正映射导入5条及重启读回通过。源码浏览器补跑43项、冻结项目数据真实场景1项通过。PM9 End/人工恢复未完成，不能合并计为闭环通过。
+
+2026-09-28：A-01有界补充confirmed：人工resume/finish失败操作的同键重试从错误202改为回放原失败HTTP/code/message/details；先查原结果再验到期。两个真实SQLite/HTTP红灯及修复后相关19项、定向Ruff/mypy通过。未改变恢复/End业务语义，生产CoreRun恢复缺口仍存在；详见manual-command-errors.md。

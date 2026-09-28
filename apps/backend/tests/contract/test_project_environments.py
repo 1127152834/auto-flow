@@ -1079,3 +1079,26 @@ def test_end_links_only_the_selected_records(tmp_path):
         assert linked.link_revision == 2
         assert untouched.current_environment_id is None
         assert untouched.link_revision == 1
+
+
+@pytest.mark.parametrize("action,checkpoint_key", [
+    ("resume", "checkpointRevision"),
+    ("finish", "expectedCheckpointRevision"),
+])
+def test_manual_failed_command_replays_original_error(tmp_path, action, checkpoint_key):
+    client, projects, service = make(tmp_path)
+    project_id = _project(projects)
+    item = service.open_manual(project_id, {"taskId": str(uuid4()), "runId": str(uuid4())})
+    url = f"/api/v1/projects/{project_id}/manual-items/{item['manualItemId']}/{action}"
+    headers = {"Idempotency-Key": str(uuid4())}
+    body = {checkpoint_key: 1, "expectedStatusRevision": 99}
+    if action == "finish":
+        body.update(outcome="failed", reason="真实 SQLite 冲突回放", retainEnvironment={"enabled": False})
+    with client:
+        first = client.post(url, headers=headers, json=body)
+        assert first.status_code == 409, first.text
+        repeated = client.post(url, headers=headers, json=body)
+        assert repeated.status_code == first.status_code, repeated.text
+        for field in ("code", "message", "details"):
+            assert repeated.json()["error"][field] == first.json()["error"][field]
+        assert service.get_manual(project_id, item["manualItemId"])["status"] == "waiting"
