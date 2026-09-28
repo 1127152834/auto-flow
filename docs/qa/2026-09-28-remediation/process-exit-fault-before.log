@@ -1,0 +1,17 @@
+{
+  "stateAfterSignal": "Z",
+  "existsAfterSignal": true,
+  "birthAfterSignal": 4541497999525,
+  "nativeArgumentsAvailable": false,
+  "capture": {
+    "status": "raised",
+    "error": "Candidate browser process ownership is unavailable"
+  },
+  "childReaped": true,
+  "childReturnCode": -9
+}
+Traceback (most recent call last):
+  File "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/../../docs/qa/2026-09-28-remediation/process-exit-fault-probe.py", line 70, in <module>
+    assert evidence["capture"]["status"] == "returned", evidence["capture"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'status': 'raised', 'error': 'Candidate browser process ownership is unavailable'}

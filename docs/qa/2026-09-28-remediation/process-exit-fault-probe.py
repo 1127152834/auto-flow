@@ -66,3 +66,6 @@ with tempfile.TemporaryDirectory(prefix="autoflow-process-fault-") as raw:
         evidence["childReaped"] = child.returncode is not None
         evidence["childReturnCode"] = child.returncode
 print(json.dumps(evidence, indent=2))
+if "--expect-cleanup" in sys.argv:
+    assert evidence["capture"]["status"] == "returned", evidence["capture"]
+    assert evidence["childReaped"] and evidence["childReturnCode"] == -signal.SIGKILL

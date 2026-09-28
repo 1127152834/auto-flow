@@ -17,3 +17,5 @@
 下一步必须先取得可归因的候选身份或有效的确定性复现，再决定修复；不关闭strict_ownership、不忽略未知活进程、不扩大超时、不把interrupted加入预期。若已有已确认启动身份足以判断归属，应核对是否存在冗余原生参数读取错误，但当前还不能据此断言全部问题已定位。
 
 后续取得确定性真实证据（`process-exit-fault-probe.py/json`）：在本次已核对启动身份的子进程即将读取原生参数时发送真实SIGKILL，系统实际报告Z、kill(0)仍存在、birth仍匹配，而原生参数不可读。`capture_processes`即使已把该worker列入owned，仍重复执行候选参数判断并抛同一异常。没有伪造返回值；最终真实wait回收，返回码-9。这证明“已确认所有权后冗余归属检查”有缺陷，置信度高；原三个全量失败没有PID证据，仍不能断言全部由此导致。修复切片见实施计划Task 4。
+
+探针新增`--expect-cleanup`有效断言。修复前执行`.venv/bin/python ../../docs/qa/2026-09-28-remediation/process-exit-fault-probe.py --expect-cleanup`退出1，原始错误和系统状态见`process-exit-fault-before.log`。此处是可用于修复后复验的红灯，不是仅观察后始终退出0的脚本。
