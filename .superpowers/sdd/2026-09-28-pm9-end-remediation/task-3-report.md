@@ -116,6 +116,16 @@ SQLite 读取 `project_workflow_run_events` 和 `project_workflow_runs`：
 
 这里 `script_attempt_events=2` 是同一 `attempt=1` 的开始/完成生命周期事件；`COUNT(DISTINCT attempt)=1`。输出事件只有一条，结果未被恢复 poll 重写。隔离 main/sidecar 已退出。用户原有 `autoflow-android-handoff` PID 26110 在清理后仍运行，未被操作。
 
+### 可审查原始证据
+
+证据清单与精确身份记录在 [`docs/qa/2026-09-28-remediation/interaction-notice/README.md`](../../../docs/qa/2026-09-28-remediation/interaction-notice/README.md)。同目录包含：
+
+- `query-interaction-notice.sh`：以 `sqlite3 -readonly` 和 `PRAGMA query_only=ON` 复跑身份、事件与单次执行查询。
+- `sqlite-readonly-results.txt`：上述脚本对保留数据库的实际原始输出。
+- `instance-exit-readonly.txt`：隔离实例退出、原用户实例仍运行、测试目录/SQLite 仍存在及 SQLite SHA-256 的只读核验。
+
+真实测试目录 `/tmp/autoflow-task3-qa.j6AbYM` 和原 SQLite 保留供复查。实时 CUA 期间没有把截图或 AX dump 保存成文件，因此证据目录没有重建或补造这类资产。
+
 ## AOCI 会话记录
 
 按仓库约束先调用 `aoci_rules`，再建立 Whole-Index。前两条全新 Overview 链分别在继续游标时失败；两次原始返回完全相同：

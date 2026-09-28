@@ -1,0 +1,12 @@
+$ /bin/date +%Y-%m-%dT%H:%M:%S%z
+2026-09-28T14:45:53+0800
+$ ps -o pid=,ppid=,stat=,command= -p 56848,56855
+OWNED_QA_PROCESSES_PRESENT=0
+$ ps -o pid=,ppid=,stat=,command= -p 26110
+26110     1 S    /Users/zhangtiancheng/Documents/projects/autoflow-android-handoff/apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/MacOS/AutoFlow
+$ test -d /tmp/autoflow-task3-qa.j6AbYM
+QA_DIRECTORY_PRESENT=1
+$ test -f /tmp/autoflow-task3-qa.j6AbYM/data/autoflow.sqlite3
+SQLITE_PRESENT=1
+$ shasum -a 256 /tmp/autoflow-task3-qa.j6AbYM/data/autoflow.sqlite3
+08f06a3b429bcab97a10362461ea491fb6685cb6878c1e8daa6fb52b5bb8189e  /tmp/autoflow-task3-qa.j6AbYM/data/autoflow.sqlite3
