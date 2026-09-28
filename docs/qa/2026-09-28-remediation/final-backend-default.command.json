@@ -1,0 +1,22 @@
+{
+  "command": [
+    "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "-ra",
+    "--junitxml=/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-remediation/final-backend-default.xml",
+    "--basetemp=/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-final-backend-9i1sb3fr",
+    "-p",
+    "cleanup_diagnostic_plugin"
+  ],
+  "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend",
+  "head": "d6f9cb0f8f9dd99be6e4734641fe3144f232f336",
+  "sourceBefore": "5f0ce0ca0eb8ab0c7a6871d583c2aaa6d1341234494ad961aa256d96dcc53b4b",
+  "startedAt": "2026-09-28T14:10:44+0800",
+  "basetemp": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-final-backend-9i1sb3fr",
+  "diagnosticPlugin": "/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-remediation/cleanup_diagnostic_plugin.py",
+  "exitCode": 1,
+  "seconds": 1114.94,
+  "sourceAfter": "5f0ce0ca0eb8ab0c7a6871d583c2aaa6d1341234494ad961aa256d96dcc53b4b"
+}

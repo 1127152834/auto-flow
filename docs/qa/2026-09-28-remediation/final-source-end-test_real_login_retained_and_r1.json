@@ -1,0 +1,121 @@
+{
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-final-real-browser-0gfkzau9/test_real_login_retained_and_r1",
+  "kernel": "/Users/zhangtiancheng/Library/Application Support/@autoflow/desktop/data/kernels/chromium-145.0.7632.109.2/Chromium.app/Contents/MacOS/Chromium",
+  "worker": "source",
+  "controlFlow": "loop",
+  "runs": [
+    {
+      "runId": "9020c8ec-4418-40a7-bdab-c6b11a658d0d",
+      "taskId": "b6374212-b502-4a96-9490-e7a08d3a2ef4",
+      "status": "succeeded",
+      "end": {
+        "phase": "completed",
+        "error": null,
+        "complete": true,
+        "instance": {
+          "instanceId": "51bdd8c6-0aad-4cf5-8321-71ec1ae4159f",
+          "projectId": "cb851c46-4369-42f7-ae23-2d41a8bcbea0",
+          "environmentId": null,
+          "state": "cleaned",
+          "source": "newFromProfile",
+          "sourceContentGeneration": null,
+          "instanceUseGeneration": 1,
+          "activeTaskId": "b6374212-b502-4a96-9490-e7a08d3a2ef4",
+          "activeRunId": "9020c8ec-4418-40a7-bdab-c6b11a658d0d",
+          "maintenanceOperationId": null,
+          "profileId": "defcaeae-d408-4f96-b6e7-bf204f2a9eb3",
+          "createdAt": "2026-09-28T06:36:09.628755",
+          "updatedAt": "2026-09-28T06:36:12.407421"
+        },
+        "source": {
+          "projectId": "cb851c46-4369-42f7-ae23-2d41a8bcbea0",
+          "environmentId": "e3111b8a-2851-5710-bc7f-b34571c214bf",
+          "contentGeneration": 1,
+          "metadataRevision": 1
+        },
+        "saved": {
+          "projectId": "cb851c46-4369-42f7-ae23-2d41a8bcbea0",
+          "environmentId": "e3111b8a-2851-5710-bc7f-b34571c214bf",
+          "contentGeneration": 1,
+          "metadataRevision": 1
+        },
+        "targets": [
+          {
+            "projectId": "cb851c46-4369-42f7-ae23-2d41a8bcbea0",
+            "tableId": "6a31e9cb-2bb1-4a8f-b0b7-8ffcff938689",
+            "datasetGeneration": "b7a360b0-8a4d-43f9-9c30-2838dba13aa3",
+            "recordKey": {
+              "type": "uuid",
+              "value": "42f47b14-b93e-40ca-96fb-b6899ee1d1e7"
+            }
+          },
+          {
+            "projectId": "cb851c46-4369-42f7-ae23-2d41a8bcbea0",
+            "tableId": "9fe6c0b8-6c46-4a20-8f50-b3c15ea661b0",
+            "datasetGeneration": "1ec38bec-3d6e-4820-a74e-cc50c3116354",
+            "recordKey": {
+              "type": "uuid",
+              "value": "524a0282-efe1-4d54-a133-670d6fc5e02a"
+            }
+          }
+        ],
+        "conflicts": []
+      }
+    },
+    {
+      "runId": "fdad9ea7-62ea-4fc4-92cd-485f466b056f",
+      "taskId": "7f44b206-dd35-43c1-a767-efbd890b1990",
+      "status": "succeeded",
+      "end": {
+        "phase": "completed",
+        "complete": true,
+        "instance": {
+          "instanceId": "23e9cbca-7dd2-4ec6-8a50-3224c3f5aa4a",
+          "projectId": "cb851c46-4369-42f7-ae23-2d41a8bcbea0",
+          "environmentId": "e3111b8a-2851-5710-bc7f-b34571c214bf",
+          "state": "cleaned",
+          "source": "fixedEnvironment",
+          "sourceContentGeneration": 1,
+          "instanceUseGeneration": 1,
+          "activeTaskId": "7f44b206-dd35-43c1-a767-efbd890b1990",
+          "activeRunId": "fdad9ea7-62ea-4fc4-92cd-485f466b056f",
+          "maintenanceOperationId": null,
+          "profileId": "defcaeae-d408-4f96-b6e7-bf204f2a9eb3",
+          "createdAt": "2026-09-28T06:36:12.456443",
+          "updatedAt": "2026-09-28T06:36:14.855452"
+        },
+        "source": null,
+        "saved": null,
+        "targets": [],
+        "conflicts": []
+      }
+    }
+  ],
+  "requests": [
+    {
+      "path": "/login",
+      "signedIn": false
+    },
+    {
+      "path": "/favicon.ico",
+      "signedIn": true
+    },
+    {
+      "path": "/before-end",
+      "signedIn": true
+    },
+    {
+      "path": "/favicon.ico",
+      "signedIn": true
+    },
+    {
+      "path": "/status",
+      "signedIn": true
+    },
+    {
+      "path": "/favicon.ico",
+      "signedIn": true
+    }
+  ],
+  "verified": true
+}

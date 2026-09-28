@@ -2,7 +2,7 @@
 
 日期：2026-09-28；状态：in_progress。来源：已确认的 `2026-09-20-pm9-production-runtime-integration` 规格与实施卡、当前 dispatcher/runtime/environment/manual 源码。以下是本次实施细化，不把已批准 R3 再次当成待授权，也不记录为已经实现。
 
-当前事实（高置信）：生产共享 Runtime、项目数据受限 RPC 与真实领取→浏览器→写回/状态链已接通；End/人工接口仍是管理用例。`manual.resume_manual` 返回 resume_queued 的摘要但未推进实际 CoreRun；`begin_resume` 仍注明隔离执行器模拟；dispatcher startup 把所有非 queued 运行按未知中断处理。人工项 checkpointRevision 只有版本号，没有可执行续接状态。仅保存 nodeId 或展示用 executionContext 不能恢复并行、循环和嵌套调用，禁止将其包装成完整恢复。
+初始实施核验（历史；End 部分已被文末更新 superseded，高置信）：生产共享 Runtime、项目数据受限 RPC 与真实领取→浏览器→写回/状态链已接通；End/人工接口仍是管理用例。`manual.resume_manual` 返回 resume_queued 的摘要但未推进实际 CoreRun；`begin_resume` 仍注明隔离执行器模拟；dispatcher startup 把所有非 queued 运行按未知中断处理。人工项 checkpointRevision 只有版本号，没有可执行续接状态。仅保存 nodeId 或展示用 executionContext 不能恢复并行、循环和嵌套调用，禁止将其包装成完整恢复。
 
 ## 所有权与不变量
 
@@ -44,3 +44,9 @@ R3 当前仍未交付。此记录用于防止后续将管理接口返回值、�
 实施顺序：先完成不依赖此裁定的 End 最终化与现有人工命令错误/幂等修复；裁定后实现检查点格式、原子接纳和运行代次转换，再接共享 Runtime 的恢复入口及 UI；最后以真实 worker/浏览器/SQLite 重启验证一次副作用、失效代次、检查点损坏、过期、取消及资源清理。逐类图结构有正向恢复证据后才开放，不用新执行器或回放完成节点实现恢复。
 
 此差异尚待用户裁定，不能将建议记录为已批准或已交付。
+
+## 2026-09-28 End 实施更新（confirmed）
+
+上述“End 仍是管理用例”的初始结论已 superseded：生产 project_end 已在 b16e1715 接入真实 WorkflowRuntime/worker，1fdda1c8 修复循环与嵌套终止、持久部分关联修复入口，d1c18362 补原键未知结果核验。489224c5 补齐两个精确测试基线，未改变业务源码。当前源码真实浏览器 49 项中有 5 类 End 正向及 1 个内部回执注入；冻结 worker 的 6 项中包含 5 类 End 正向，均保留实际 SQLite/HTTP/Run 身份。完整计数和证据边界见 final-validation-results.md。打包应用 End 专项仍待本轮最终执行。
+
+人工检查点跨重启续接尚未实现；此前单一语义裁定问题仍待答复。End 成功和普通幂等错误重放修复不能算作人工恢复通过，完整 R3 尚未交付。

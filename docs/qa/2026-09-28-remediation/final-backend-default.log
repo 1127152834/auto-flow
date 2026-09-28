@@ -1,0 +1,327 @@
+........................................................................ [  1%]
+........................................................................ [  3%]
+........................................................................ [  4%]
+........................................................................ [  6%]
+........................................................................ [  8%]
+........................................................................ [  9%]
+........................................................................ [ 11%]
+........................................................................ [ 13%]
+........................................................................ [ 14%]
+........................................................................ [ 16%]
+........................................................................ [ 18%]
+........................................................................ [ 19%]
+........................................................................ [ 21%]
+........................................................................ [ 23%]
+........................................................................ [ 24%]
+........................................................................ [ 26%]
+........................................................................ [ 27%]
+........................................................................ [ 29%]
+........................................................................ [ 31%]
+........................................................................ [ 32%]
+........................................................................ [ 34%]
+........................................................................ [ 36%]
+........................................................................ [ 37%]
+........................................................................ [ 39%]
+....................................................s...ssssssssss...... [ 41%]
+.............ss...s....................................s..........sss... [ 42%]
+.............................................No new upgrade operations detected.
+........................... [ 44%]
+.............................ssssssssssssssssssss....................... [ 46%]
+........................................................................ [ 47%]
+........................................................................ [ 49%]
+........................................................................ [ 51%]
+........................................................................ [ 52%]
+...........................ssssss....................................... [ 54%]
+.........................................s.............................. [ 55%]
+........................................................................ [ 57%]
+........................................................................ [ 59%]
+........................................................................ [ 60%]
+........................................................................ [ 62%]
+...................................s.................................... [ 64%]
+........................................................................ [ 65%]
+..........................................ssss.......................... [ 67%]
+........................................................................ [ 69%]
+........................................................................ [ 70%]
+........................................................................ [ 72%]
+........................................................................ [ 74%]
+........................................................................ [ 75%]
+........................................................................ [ 77%]
+........................................................................ [ 78%]
+........................................................................ [ 80%]
+........................................................................ [ 82%]
+........................................................................ [ 83%]
+........................................................................ [ 85%]
+........................................................................ [ 87%]
+........................................................................ [ 88%]
+........................................................................ [ 90%]
+........................................................................ [ 92%]
+...........................................F............................ [ 93%]
+........................................................................ [ 95%]
+........................................................................ [ 97%]
+........................................................................ [ 98%]
+........................................................                 [100%]
+=================================== FAILURES ===================================
+__________ test_production_registry_contains_every_migrated_executor ___________
+
+    def test_production_registry_contains_every_migrated_executor() -> None:
+        production = build_production_executor_registry()
+    
+>       assert set(production.get_all_types()) == {
+            "project_data",
+            "proxy_query",
+            "proxy_change_ip",
+            "proxy_change_location",
+            "open_page",
+            "click_element",
+            "input_text",
+            "get_element_info",
+            "screenshot",
+            "ai_chat",
+            "ai_generate_image",
+            "ai_generate_video",
+            "ai_vision",
+            "ai_vision_act",
+            "ai_smart_scraper",
+            "ai_element_selector",
+            "ai_extract",
+            "ai_classify",
+            "ai_summarize",
+            "ai_translate",
+            "ai_sentiment",
+            "ai_normalize",
+            "ai_dedup_semantic",
+            "ai_route",
+            "firecrawl_scrape",
+            "firecrawl_map",
+            "firecrawl_crawl",
+            "face_recognition",
+            "image_ocr",
+            "ocr_captcha",
+            "slider_captcha",
+            "api_request",
+            "webhook_request",
+            "notify_webhook",
+            "print_log",
+            "export_log",
+            "notify_telegram",
+            "send_email",
+            "ssh_connect",
+            "ssh_execute_command",
+            "ssh_upload_file",
+            "ssh_download_file",
+            "ssh_disconnect",
+            "wait_page_load",
+            "page_load_complete",
+            "list_operation",
+            "list_get",
+            "list_length",
+            "list_export",
+            "dict_operation",
+            "dict_get",
+            "dict_keys",
+            "regex_extract",
+            "string_replace",
+            "string_split",
+            "string_join",
+            "string_concat",
+            "string_trim",
+            "string_case",
+            "string_substring",
+            "list_sum",
+            "list_average",
+            "list_max",
+            "list_min",
+            "list_sort",
+            "list_unique",
+            "list_slice",
+            "math_round",
+            "math_base_convert",
+            "math_floor",
+            "math_modulo",
+            "math_abs",
+            "math_sqrt",
+            "math_power",
+            "math_log",
+            "math_trig",
+            "math_exp",
+            "math_gcd",
+            "math_lcm",
+            "math_factorial",
+            "math_permutation",
+            "math_percentage",
+            "math_clamp",
+            "math_random_advanced",
+            "stat_median",
+            "stat_mode",
+            "stat_variance",
+            "stat_stdev",
+            "stat_percentile",
+            "stat_normalize",
+            "stat_standardize",
+            "random_password_generator",
+            "url_encode_decode",
+            "md5_encrypt",
+            "sha_encrypt",
+            "timestamp_converter",
+            "rgb_to_hsv",
+            "rgb_to_cmyk",
+            "hex_to_cmyk",
+            "uuid_generator",
+            "list_reverse",
+            "list_find",
+            "list_count",
+            "list_filter",
+            "list_map",
+            "list_merge",
+            "list_flatten",
+            "list_chunk",
+            "list_remove_empty",
+            "list_intersection",
+            "list_union",
+            "list_difference",
+            "list_cartesian_product",
+            "list_shuffle",
+            "list_sample",
+            "dict_merge",
+            "dict_filter",
+            "dict_map_values",
+            "dict_invert",
+            "dict_sort",
+            "dict_deep_copy",
+            "dict_get_path",
+            "dict_flatten",
+            "csv_parse",
+            "csv_generate",
+            "list_to_string_advanced",
+            "table_add_row",
+            "table_add_column",
+            "table_set_cell",
+            "table_get_cell",
+            "table_delete_row",
+            "table_clear",
+            "table_export",
+            "network_monitor_start",
+            "network_monitor_wait",
+            "network_monitor_stop",
+            "switch_tab",
+            "extract_table_data",
+            "network_capture",
+            "use_opened_page",
+            "close_page",
+            "refresh_page",
+            "go_back",
+            "go_forward",
+            "switch_iframe",
+            "switch_to_main",
+            "hover_element",
+            "handle_dialog",
+            "inject_javascript",
+            "wait_element",
+            "select_dropdown",
+            "set_checkbox",
+            "drag_element",
+            "scroll_page",
+            "upload_file",
+            "download_file",
+            "get_child_elements",
+            "get_sibling_elements",
+            "element_exists",
+            "element_visible",
+            "save_image",
+            "condition",
+            "loop",
+            "foreach",
+            "infinite_loop",
+            "foreach_dict",
+            "break_loop",
+            "continue_loop",
+            "set_variable",
+            "increment_decrement",
+            "json_parse",
+            "base64",
+            "random_number",
+            "get_time",
+            "wait",
+            "stop_workflow",
+            "assert_checkpoint",
+            "group",
+            "note",
+            "input_prompt",
+            "js_script",
+            "text_to_speech",
+            "python_script",
+            "run_command",
+            "printer_call",
+            "sound_trigger",
+            "gesture_trigger",
+            "share_file",
+            "share_folder",
+            "stop_share",
+            "start_screen_share",
+            "stop_screen_share",
+            "set_clipboard",
+            "get_clipboard",
+            "play_sound",
+            "system_notification",
+            "shutdown_system",
+            "lock_screen",
+            "allure_init",
+            "allure_start_test",
+            "allure_add_step",
+            "allure_add_attachment",
+            "allure_stop_test",
+            "allure_generate_report",
+            "scheduled_task",
+            "probability_trigger",
+            "api_trigger",
+            "webhook_trigger",
+            "file_watcher_trigger",
+            "email_trigger",
+            "element_change_trigger",
+            "hotkey_trigger",
+            "mouse_trigger",
+            "image_trigger",
+            "face_trigger",
+            "run_workflow_file",
+            "subflow",
+            "custom_module",
+        }
+E       AssertionError: assert {'ai_chat', '...e_image', ...} == {'ai_chat', '...e_image', ...}
+E         
+E         Extra items in the left set:
+E         'project_end'
+E         Use -v to get more diff
+
+tests/unit/workflows/test_executor_registry.py:69: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.11/site-packages/starlette/testclient.py:53
+  /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+SKIPPED [1] tests/integration/test_b1_cloakbrowser_flow.py:48: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_advanced_browser_cloakbrowser_flow.py:35: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_inspection_cloakbrowser_flow.py:35: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_inspection_cloakbrowser_flow.py:91: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_inspection_cloakbrowser_flow.py:207: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_inspection_cloakbrowser_flow.py:297: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_large_artifacts_cloakbrowser_flow.py:23: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_network_monitor_cloakbrowser_flow.py:26: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_page_load_cloakbrowser_flow.py:22: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_remaining_browser_cloakbrowser_flow.py:25: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_web_basic_cloakbrowser_flow.py:22: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b5_captcha_cloakbrowser_flow.py:38: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b5_firecrawl_cloakbrowser_flow.py:36: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b6_element_change_cloakbrowser_flow.py:22: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b7_recording_cloakbrowser_flow.py:22: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [2] tests/integration/test_environment_persist_restore.py:47: set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable
+SKIPPED [1] tests/integration/test_environment_real_browser_chain.py:26: set AUTOFLOW_TEST_CLOAKBROWSER to an installed CloakBrowser executable
+SKIPPED [20] tests/integration/test_project_batch_real_cloakbrowser.py:34: set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable
+SKIPPED [6] tests/integration/test_project_end_real_browser.py:57: AUTOFLOW_TEST_CLOAKBROWSER must identify a real installed kernel
+SKIPPED [1] tests/integration/test_project_full_scenarios.py:32: set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable
+SKIPPED [1] tests/integration/test_studio_project_model_live.py:61: 真实模型计费验收仅由 AUTOFLOW_LIVE_MODEL_TEST=1 显式启用
+SKIPPED [3] tests/integration/test_workflow_real_cloakbrowser.py:71: set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable
+SKIPPED [1] tests/integration/test_workflow_real_cloakbrowser.py:126: set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable
+FAILED tests/unit/workflows/test_executor_registry.py::test_production_registry_contains_every_migrated_executor
+1 failed, 4325 passed, 50 skipped, 1 warning in 1106.46s (0:18:26)

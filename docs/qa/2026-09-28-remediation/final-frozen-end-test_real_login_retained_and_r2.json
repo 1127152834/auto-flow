@@ -1,0 +1,121 @@
+{
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-final-frozen-fr8lt02m/test_real_login_retained_and_r2",
+  "kernel": "/Users/zhangtiancheng/Library/Application Support/@autoflow/desktop/data/kernels/chromium-145.0.7632.109.2/Chromium.app/Contents/MacOS/Chromium",
+  "worker": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/dist/autoflow-backend/autoflow-backend",
+  "controlFlow": "workflow",
+  "runs": [
+    {
+      "runId": "000de172-522f-4135-b551-064fb0d4bbcb",
+      "taskId": "4cccc846-1193-44c2-87fe-e636584cd995",
+      "status": "succeeded",
+      "end": {
+        "phase": "completed",
+        "error": null,
+        "complete": true,
+        "instance": {
+          "instanceId": "2b707eb6-1aa6-4f1a-89d6-9d89fd4132d6",
+          "projectId": "dea2b718-1ba9-4349-9def-6e30d51534f6",
+          "environmentId": null,
+          "state": "cleaned",
+          "source": "newFromProfile",
+          "sourceContentGeneration": null,
+          "instanceUseGeneration": 1,
+          "activeTaskId": "4cccc846-1193-44c2-87fe-e636584cd995",
+          "activeRunId": "000de172-522f-4135-b551-064fb0d4bbcb",
+          "maintenanceOperationId": null,
+          "profileId": "80183fc7-5657-4cff-834f-91ee70331eee",
+          "createdAt": "2026-09-28T06:37:35.726224",
+          "updatedAt": "2026-09-28T06:37:38.852056"
+        },
+        "source": {
+          "projectId": "dea2b718-1ba9-4349-9def-6e30d51534f6",
+          "environmentId": "02362c68-4ae2-57d3-991f-fac9d29dbcd3",
+          "contentGeneration": 1,
+          "metadataRevision": 1
+        },
+        "saved": {
+          "projectId": "dea2b718-1ba9-4349-9def-6e30d51534f6",
+          "environmentId": "02362c68-4ae2-57d3-991f-fac9d29dbcd3",
+          "contentGeneration": 1,
+          "metadataRevision": 1
+        },
+        "targets": [
+          {
+            "projectId": "dea2b718-1ba9-4349-9def-6e30d51534f6",
+            "tableId": "3607ca2b-09b5-4f6b-a1df-026e1e738b5d",
+            "datasetGeneration": "8836b296-f1fd-4752-8903-1321b4c6c7ab",
+            "recordKey": {
+              "type": "uuid",
+              "value": "d109deb0-7389-4ca9-bc92-dbd2ee5dad13"
+            }
+          },
+          {
+            "projectId": "dea2b718-1ba9-4349-9def-6e30d51534f6",
+            "tableId": "adb4cd2d-1ca8-465c-a13a-1e7a0ae87895",
+            "datasetGeneration": "6fe46131-4857-4db2-a812-41202ab98ec1",
+            "recordKey": {
+              "type": "uuid",
+              "value": "c82d8e08-b590-4f69-a417-0fa673661290"
+            }
+          }
+        ],
+        "conflicts": []
+      }
+    },
+    {
+      "runId": "b630f0d2-1cc0-4af6-91a9-2a015f552aa6",
+      "taskId": "142483f5-9cdf-40ce-b362-4e3ea14a4460",
+      "status": "succeeded",
+      "end": {
+        "phase": "completed",
+        "complete": true,
+        "instance": {
+          "instanceId": "e9adbaf6-6c12-4c37-b97e-8b1c25531fb1",
+          "projectId": "dea2b718-1ba9-4349-9def-6e30d51534f6",
+          "environmentId": "02362c68-4ae2-57d3-991f-fac9d29dbcd3",
+          "state": "cleaned",
+          "source": "fixedEnvironment",
+          "sourceContentGeneration": 1,
+          "instanceUseGeneration": 1,
+          "activeTaskId": "142483f5-9cdf-40ce-b362-4e3ea14a4460",
+          "activeRunId": "b630f0d2-1cc0-4af6-91a9-2a015f552aa6",
+          "maintenanceOperationId": null,
+          "profileId": "80183fc7-5657-4cff-834f-91ee70331eee",
+          "createdAt": "2026-09-28T06:37:38.896092",
+          "updatedAt": "2026-09-28T06:37:41.186341"
+        },
+        "source": null,
+        "saved": null,
+        "targets": [],
+        "conflicts": []
+      }
+    }
+  ],
+  "requests": [
+    {
+      "path": "/login",
+      "signedIn": false
+    },
+    {
+      "path": "/favicon.ico",
+      "signedIn": true
+    },
+    {
+      "path": "/before-end",
+      "signedIn": true
+    },
+    {
+      "path": "/favicon.ico",
+      "signedIn": true
+    },
+    {
+      "path": "/status",
+      "signedIn": true
+    },
+    {
+      "path": "/favicon.ico",
+      "signedIn": true
+    }
+  ],
+  "verified": true
+}

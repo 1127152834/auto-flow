@@ -1,0 +1,52 @@
+[
+  {
+    "name": "ruff",
+    "command": [
+      "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/bin/ruff",
+      "check",
+      "."
+    ],
+    "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend",
+    "head": "d6f9cb0f8f9dd99be6e4734641fe3144f232f336",
+    "startedAt": "2026-09-28T14:11:36+0800",
+    "exitCode": 0,
+    "seconds": 0.06
+  },
+  {
+    "name": "mypy",
+    "command": [
+      "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/bin/mypy",
+      "src"
+    ],
+    "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend",
+    "head": "d6f9cb0f8f9dd99be6e4734641fe3144f232f336",
+    "startedAt": "2026-09-28T14:11:36+0800",
+    "exitCode": 0,
+    "seconds": 6.5
+  },
+  {
+    "name": "strict",
+    "command": [
+      "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/bin/python",
+      "scripts/check_strict_types.py"
+    ],
+    "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend",
+    "head": "d6f9cb0f8f9dd99be6e4734641fe3144f232f336",
+    "startedAt": "2026-09-28T14:11:43+0800",
+    "exitCode": 0,
+    "seconds": 31.48
+  },
+  {
+    "name": "openapi",
+    "command": [
+      "node",
+      "/Users/zhangtiancheng/Documents/projects/autoflow/scripts/generate-api.mjs",
+      "--check"
+    ],
+    "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend",
+    "head": "d6f9cb0f8f9dd99be6e4734641fe3144f232f336",
+    "startedAt": "2026-09-28T14:12:14+0800",
+    "exitCode": 0,
+    "seconds": 5.58
+  }
+]

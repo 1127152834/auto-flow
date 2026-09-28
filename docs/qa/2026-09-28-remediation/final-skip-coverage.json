@@ -1,0 +1,309 @@
+{
+  "defaultEvidence": "final-backend-default.xml",
+  "realEvidence": "final-real-browser.xml",
+  "defaultSkipped": 50,
+  "defaultSkippedThenGatedPassed": 49,
+  "mapping": [
+    {
+      "classname": "tests.integration.test_b1_cloakbrowser_flow",
+      "name": "test_real_cloakbrowser_runs_five_node_workflow",
+      "skipReason": "set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_b2_advanced_browser_cloakbrowser_flow",
+      "name": "test_real_cloakbrowser_runs_advanced_browser_family",
+      "skipReason": "set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_b2_inspection_cloakbrowser_flow",
+      "name": "test_real_cloakbrowser_tests_and_picks_a_selector",
+      "skipReason": "set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_b2_inspection_cloakbrowser_flow",
+      "name": "test_real_inspection_handles_selector_and_page_change_edges",
+      "skipReason": "set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_b2_inspection_cloakbrowser_flow",
+      "name": "test_real_inspection_worker_owns_profile_and_cleans_process_tree",
+      "skipReason": "set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_b2_inspection_cloakbrowser_flow",
+      "name": "test_real_picker_and_runtime_share_nested_cross_origin_frame_target",
+      "skipReason": "set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_b2_large_artifacts_cloakbrowser_flow",
+      "name": "test_real_cloakbrowser_externalizes_one_mib_web_artifacts",
+      "skipReason": "set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_b2_network_monitor_cloakbrowser_flow",
+      "name": "test_real_cloakbrowser_runs_network_monitor_family",
+      "skipReason": "set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_b2_page_load_cloakbrowser_flow",
+      "name": "test_real_cloakbrowser_runs_page_load_family",
+      "skipReason": "set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_b2_remaining_browser_cloakbrowser_flow",
+      "name": "test_real_cloakbrowser_runs_remaining_browser_family",
+      "skipReason": "set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_b2_web_basic_cloakbrowser_flow",
+      "name": "test_real_cloakbrowser_runs_web_basic_family",
+      "skipReason": "set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_b5_captcha_cloakbrowser_flow",
+      "name": "test_real_cloakbrowser_runs_captcha_family",
+      "skipReason": "set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_b5_firecrawl_cloakbrowser_flow",
+      "name": "test_real_cloakbrowser_runs_firecrawl_family",
+      "skipReason": "set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_b6_element_change_cloakbrowser_flow",
+      "name": "test_real_cloakbrowser_observes_added_element",
+      "skipReason": "set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_b7_recording_cloakbrowser_flow",
+      "name": "test_real_cloakbrowser_records_chinese_form_and_future_page",
+      "skipReason": "set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_environment_persist_restore",
+      "name": "test_real_login_persists_after_browser_close[explicit-close]",
+      "skipReason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_environment_persist_restore",
+      "name": "test_real_login_persists_after_browser_close[http-end-close]",
+      "skipReason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_environment_real_browser_chain",
+      "name": "test_management_chain_saves_linked_environment_and_restores_login",
+      "skipReason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed CloakBrowser executable",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_project_batch_real_cloakbrowser",
+      "name": "test_real_project_batch_http[advanced_browser]",
+      "skipReason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_project_batch_real_cloakbrowser",
+      "name": "test_real_project_batch_http[budget]",
+      "skipReason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_project_batch_real_cloakbrowser",
+      "name": "test_real_project_batch_http[captcha]",
+      "skipReason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_project_batch_real_cloakbrowser",
+      "name": "test_real_project_batch_http[captcha_failure]",
+      "skipReason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_project_batch_real_cloakbrowser",
+      "name": "test_real_project_batch_http[captcha_stop]",
+      "skipReason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_project_batch_real_cloakbrowser",
+      "name": "test_real_project_batch_http[control_primitives]",
+      "skipReason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_project_batch_real_cloakbrowser",
+      "name": "test_real_project_batch_http[element_change]",
+      "skipReason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_project_batch_real_cloakbrowser",
+      "name": "test_real_project_batch_http[element_stop]",
+      "skipReason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_project_batch_real_cloakbrowser",
+      "name": "test_real_project_batch_http[element_timeout]",
+      "skipReason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_project_batch_real_cloakbrowser",
+      "name": "test_real_project_batch_http[failure]",
+      "skipReason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_project_batch_real_cloakbrowser",
+      "name": "test_real_project_batch_http[firecrawl]",
+      "skipReason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_project_batch_real_cloakbrowser",
+      "name": "test_real_project_batch_http[firecrawl_failure]",
+      "skipReason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_project_batch_real_cloakbrowser",
+      "name": "test_real_project_batch_http[firecrawl_stop]",
+      "skipReason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_project_batch_real_cloakbrowser",
+      "name": "test_real_project_batch_http[network_capture]",
+      "skipReason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_project_batch_real_cloakbrowser",
+      "name": "test_real_project_batch_http[page_load]",
+      "skipReason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_project_batch_real_cloakbrowser",
+      "name": "test_real_project_batch_http[stop]",
+      "skipReason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_project_batch_real_cloakbrowser",
+      "name": "test_real_project_batch_http[success]",
+      "skipReason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_project_batch_real_cloakbrowser",
+      "name": "test_real_project_batch_http[tab_switch]",
+      "skipReason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_project_batch_real_cloakbrowser",
+      "name": "test_real_project_batch_http[table_extract]",
+      "skipReason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_project_batch_real_cloakbrowser",
+      "name": "test_real_project_batch_http[web_basic]",
+      "skipReason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_project_end_real_browser",
+      "name": "test_real_login_retained_and_reused_by_next_production_run[confirmed-canvas]",
+      "skipReason": "AUTOFLOW_TEST_CLOAKBROWSER must identify a real installed kernel",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_project_end_real_browser",
+      "name": "test_real_login_retained_and_reused_by_next_production_run[confirmed-linear]",
+      "skipReason": "AUTOFLOW_TEST_CLOAKBROWSER must identify a real installed kernel",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_project_end_real_browser",
+      "name": "test_real_login_retained_and_reused_by_next_production_run[confirmed-loop]",
+      "skipReason": "AUTOFLOW_TEST_CLOAKBROWSER must identify a real installed kernel",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_project_end_real_browser",
+      "name": "test_real_login_retained_and_reused_by_next_production_run[confirmed-module]",
+      "skipReason": "AUTOFLOW_TEST_CLOAKBROWSER must identify a real installed kernel",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_project_end_real_browser",
+      "name": "test_real_login_retained_and_reused_by_next_production_run[confirmed-workflow]",
+      "skipReason": "AUTOFLOW_TEST_CLOAKBROWSER must identify a real installed kernel",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_project_end_real_browser",
+      "name": "test_real_login_retained_and_reused_by_next_production_run[unknown-linear]",
+      "skipReason": "AUTOFLOW_TEST_CLOAKBROWSER must identify a real installed kernel",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_project_full_scenarios",
+      "name": "test_browser_result_updates_claimed_record_and_status",
+      "skipReason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_studio_project_model_live",
+      "name": "test_live_project_default_model_in_real_worker",
+      "skipReason": "真实模型计费验收仅由 AUTOFLOW_LIVE_MODEL_TEST=1 显式启用",
+      "gatedPassed": false
+    },
+    {
+      "classname": "tests.integration.test_workflow_real_cloakbrowser",
+      "name": "test_real_cloakbrowser_persisted_dispatch_and_service_recreation",
+      "skipReason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_workflow_real_cloakbrowser",
+      "name": "test_real_cloakbrowser_worker_lifecycle[node_timeout]",
+      "skipReason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_workflow_real_cloakbrowser",
+      "name": "test_real_cloakbrowser_worker_lifecycle[stop_before_navigation]",
+      "skipReason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable",
+      "gatedPassed": true
+    },
+    {
+      "classname": "tests.integration.test_workflow_real_cloakbrowser",
+      "name": "test_real_cloakbrowser_worker_lifecycle[success]",
+      "skipReason": "set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable",
+      "gatedPassed": true
+    }
+  ],
+  "boundary": "The receipt-unknown case still uses internal injection after real browser; paid model case was not executed."
+}

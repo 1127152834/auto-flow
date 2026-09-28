@@ -1,0 +1,59 @@
+{
+  "passed": 6,
+  "failed": 0,
+  "skipped": 0,
+  "deselected": 1,
+  "formalProjectDataScenarios": 1,
+  "endControlFlowScenarios": 5,
+  "scope": "Python host dispatch + frozen production worker + real SQLite/browser; not full packaged UI input",
+  "endEvidence": [
+    {
+      "file": "final-frozen-end-test_real_login_retained_and_r0.json",
+      "controlFlow": "linear",
+      "verified": true,
+      "worker": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/dist/autoflow-backend/autoflow-backend",
+      "runs": 2
+    },
+    {
+      "file": "final-frozen-end-test_real_login_retained_and_r1.json",
+      "controlFlow": "loop",
+      "verified": true,
+      "worker": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/dist/autoflow-backend/autoflow-backend",
+      "runs": 2
+    },
+    {
+      "file": "final-frozen-end-test_real_login_retained_and_r2.json",
+      "controlFlow": "workflow",
+      "verified": true,
+      "worker": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/dist/autoflow-backend/autoflow-backend",
+      "runs": 2
+    },
+    {
+      "file": "final-frozen-end-test_real_login_retained_and_r3.json",
+      "controlFlow": "module",
+      "verified": true,
+      "worker": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/dist/autoflow-backend/autoflow-backend",
+      "runs": 2
+    },
+    {
+      "file": "final-frozen-end-test_real_login_retained_and_r4.json",
+      "controlFlow": "canvas",
+      "verified": true,
+      "worker": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/dist/autoflow-backend/autoflow-backend",
+      "runs": 2
+    }
+  ],
+  "duplicateEvidenceAliases": [
+    {
+      "file": "final-frozen-end-test_real_login_retained_and_rcurrent.json",
+      "controlFlow": "canvas",
+      "verified": true,
+      "worker": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/dist/autoflow-backend/autoflow-backend",
+      "runs": 2,
+      "sameBytesAs": [
+        "final-frozen-end-test_real_login_retained_and_r4.json"
+      ],
+      "reason": "pytest current symlink; not an additional case"
+    }
+  ]
+}

@@ -1,0 +1,121 @@
+{
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-final-real-browser-0gfkzau9/test_real_login_retained_and_r2",
+  "kernel": "/Users/zhangtiancheng/Library/Application Support/@autoflow/desktop/data/kernels/chromium-145.0.7632.109.2/Chromium.app/Contents/MacOS/Chromium",
+  "worker": "source",
+  "controlFlow": "workflow",
+  "runs": [
+    {
+      "runId": "7254fd3e-83ed-4471-a7d7-e6edf1e85f61",
+      "taskId": "191ba8c5-94f3-4a97-b817-c9d0073b489f",
+      "status": "succeeded",
+      "end": {
+        "phase": "completed",
+        "error": null,
+        "complete": true,
+        "instance": {
+          "instanceId": "f800d6ed-a1b0-4de4-b93e-184ebede5c65",
+          "projectId": "8d1a3c89-2530-462a-90cf-829e540e1cf0",
+          "environmentId": null,
+          "state": "cleaned",
+          "source": "newFromProfile",
+          "sourceContentGeneration": null,
+          "instanceUseGeneration": 1,
+          "activeTaskId": "191ba8c5-94f3-4a97-b817-c9d0073b489f",
+          "activeRunId": "7254fd3e-83ed-4471-a7d7-e6edf1e85f61",
+          "maintenanceOperationId": null,
+          "profileId": "bb77924c-8b6e-4220-8d21-ea87f9be145e",
+          "createdAt": "2026-09-28T06:36:15.651815",
+          "updatedAt": "2026-09-28T06:36:18.520765"
+        },
+        "source": {
+          "projectId": "8d1a3c89-2530-462a-90cf-829e540e1cf0",
+          "environmentId": "496ef4c0-4d48-500a-a19c-336d51ee8673",
+          "contentGeneration": 1,
+          "metadataRevision": 1
+        },
+        "saved": {
+          "projectId": "8d1a3c89-2530-462a-90cf-829e540e1cf0",
+          "environmentId": "496ef4c0-4d48-500a-a19c-336d51ee8673",
+          "contentGeneration": 1,
+          "metadataRevision": 1
+        },
+        "targets": [
+          {
+            "projectId": "8d1a3c89-2530-462a-90cf-829e540e1cf0",
+            "tableId": "37c07f79-df5a-4fd2-afd9-966277fa1229",
+            "datasetGeneration": "e1db314a-be21-4478-b5d1-ab44ec6709cb",
+            "recordKey": {
+              "type": "uuid",
+              "value": "6dd56197-6273-4d1b-a779-51a8fcc4fdde"
+            }
+          },
+          {
+            "projectId": "8d1a3c89-2530-462a-90cf-829e540e1cf0",
+            "tableId": "fec53fcd-82cb-4952-bab8-8963b6e153c3",
+            "datasetGeneration": "60883b3f-0908-424f-b0d1-8daeb065cd78",
+            "recordKey": {
+              "type": "uuid",
+              "value": "0ca2e9f5-b6a3-40e5-abfa-23f2226379cf"
+            }
+          }
+        ],
+        "conflicts": []
+      }
+    },
+    {
+      "runId": "a53f24da-c0a4-4dd0-bb2a-6dd6d99454f7",
+      "taskId": "5ceae64a-4b4f-432e-98a7-9388ebc2b849",
+      "status": "succeeded",
+      "end": {
+        "phase": "completed",
+        "complete": true,
+        "instance": {
+          "instanceId": "1aee8a0d-4e04-49f6-8484-16f0c7239872",
+          "projectId": "8d1a3c89-2530-462a-90cf-829e540e1cf0",
+          "environmentId": "496ef4c0-4d48-500a-a19c-336d51ee8673",
+          "state": "cleaned",
+          "source": "fixedEnvironment",
+          "sourceContentGeneration": 1,
+          "instanceUseGeneration": 1,
+          "activeTaskId": "5ceae64a-4b4f-432e-98a7-9388ebc2b849",
+          "activeRunId": "a53f24da-c0a4-4dd0-bb2a-6dd6d99454f7",
+          "maintenanceOperationId": null,
+          "profileId": "bb77924c-8b6e-4220-8d21-ea87f9be145e",
+          "createdAt": "2026-09-28T06:36:18.568007",
+          "updatedAt": "2026-09-28T06:36:20.842154"
+        },
+        "source": null,
+        "saved": null,
+        "targets": [],
+        "conflicts": []
+      }
+    }
+  ],
+  "requests": [
+    {
+      "path": "/login",
+      "signedIn": false
+    },
+    {
+      "path": "/favicon.ico",
+      "signedIn": true
+    },
+    {
+      "path": "/before-end",
+      "signedIn": true
+    },
+    {
+      "path": "/favicon.ico",
+      "signedIn": true
+    },
+    {
+      "path": "/status",
+      "signedIn": true
+    },
+    {
+      "path": "/favicon.ico",
+      "signedIn": true
+    }
+  ],
+  "verified": true
+}

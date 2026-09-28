@@ -1,0 +1,16 @@
+{
+  "baselineHead": "f853d7ee5d93b734b46dc63db02938a509aa1b8d",
+  "currentHead": "d6f9cb0f8f9dd99be6e4734641fe3144f232f336",
+  "paths": [
+    ".gitignore",
+    "AGENTS.md",
+    "docs/PROJECT_STRUCTURE.md",
+    "docs/migration/studio-backend-migration-validation.md",
+    "docs/migration/studio-frontend-completion/component-tools.json",
+    "docs/superpowers/plans/2026-09-15-studio-backend-webrpa-migration-implementation.md"
+  ],
+  "baselineTrackedDiffSha256": "8c3209d4e46037f6b230f84feab68e758b95c069f19a15f80b2fc46f56e9aef5",
+  "currentTrackedDiffSha256": "8c3209d4e46037f6b230f84feab68e758b95c069f19a15f80b2fc46f56e9aef5",
+  "sameDiffBytes": true,
+  "notes": "Compares six preexisting tracked diffs only; untracked AOCI and other task assets are excluded and untouched by this task."
+}

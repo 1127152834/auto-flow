@@ -53,3 +53,7 @@ Monaco0.57的exports映射让 `require.resolve('monaco-editor/package.json')` �
 2026-09-28 后续全量结果：`frontend-final.log`为431文件5650项通过。`backend-final.log/xml`为4278通过、3失败、44跳过；失败集中于三个负向生产worker场景，预期failed而实际为WORKFLOW_RESULT_UNKNOWN/interrupted。原断言和时限保留，不能改成接受interrupted来消除失败。
 
 这三个文件的21项定向复跑通过，并在带诊断的5次重复中仍各21通过。它只能证明未稳定复现，不能证明缺陷消失。`cleanup_diagnostic_plugin.py`只调用真实原方法，捕获异常打印栈后原样抛出，不提供成功响应或改变清理结果。全量诊断期间PM9 End实施开始修改源码，部分后启动worker可能读取新源码，因此这轮诊断只能用于定位，最终默认回归必须在稳定源码上另执行。
+
+2026-09-28 End两轮修复及共享进程修复后的最终静态门禁（HEAD d6f9cb0f）：`final-ruff.log`全后端通过；`final-mypy.log`509个源文件通过；`final-strict.log`仍1041历史债务、0新增；`final-openapi.log`生成一致性通过。`final-root-scripts.log`完整102通过。`final-backend-build.log`冻结后端构建exit0、168.53秒，构建开始/结束源码摘要一致。对应command.json保留命令、cwd、HEAD及退出码。后端完整运行回归尚未完成，以上不代表运行验收。
+
+最终默认回归第一轮（`final-backend-default.log/xml/command.json`，HEAD d6f9cb0f，源码摘要前后一致）：4325通过、1失败、50跳过，1106.46秒pytest时间。唯一失败是`test_production_registry_contains_every_migrated_executor`的精确集合遗漏本轮正式新增`project_end`；不是产品执行失败，不允许因此删除完整集合断言。Task5按批准End契约补齐，复验结果另记。历史三项负向worker终态异常在本轮均通过；因当时缺候选PID诊断，不倒推其根因。迁移相关80项是本轮默认回归子集，清单见`final-backend-default-summary.json`，不额外累计。50项跳过分为本机浏览器门控与付费模型实网门控，补跑单独记账。

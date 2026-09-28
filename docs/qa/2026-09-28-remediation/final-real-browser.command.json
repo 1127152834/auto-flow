@@ -1,0 +1,41 @@
+{
+  "command": [
+    "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/integration/test_b1_cloakbrowser_flow.py",
+    "tests/integration/test_b2_advanced_browser_cloakbrowser_flow.py",
+    "tests/integration/test_b2_inspection_cloakbrowser_flow.py",
+    "tests/integration/test_b2_large_artifacts_cloakbrowser_flow.py",
+    "tests/integration/test_b2_network_monitor_cloakbrowser_flow.py",
+    "tests/integration/test_b2_page_load_cloakbrowser_flow.py",
+    "tests/integration/test_b2_remaining_browser_cloakbrowser_flow.py",
+    "tests/integration/test_b2_web_basic_cloakbrowser_flow.py",
+    "tests/integration/test_b5_captcha_cloakbrowser_flow.py",
+    "tests/integration/test_b5_firecrawl_cloakbrowser_flow.py",
+    "tests/integration/test_b6_element_change_cloakbrowser_flow.py",
+    "tests/integration/test_b7_recording_cloakbrowser_flow.py",
+    "tests/integration/test_environment_persist_restore.py",
+    "tests/integration/test_environment_real_browser_chain.py",
+    "tests/integration/test_project_batch_real_cloakbrowser.py",
+    "tests/integration/test_project_full_scenarios.py",
+    "tests/integration/test_workflow_real_cloakbrowser.py",
+    "tests/integration/test_project_end_real_browser.py",
+    "-q",
+    "-ra",
+    "--junitxml=/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-remediation/final-real-browser.xml",
+    "--basetemp=/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-final-real-browser-0gfkzau9"
+  ],
+  "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend",
+  "head": "d6f9cb0f8f9dd99be6e4734641fe3144f232f336",
+  "sourceBefore": "5f0ce0ca0eb8ab0c7a6871d583c2aaa6d1341234494ad961aa256d96dcc53b4b",
+  "startedAt": "2026-09-28T14:31:17+0800",
+  "environment": {
+    "AUTOFLOW_TEST_CLOAKBROWSER": "/Users/zhangtiancheng/Library/Application Support/@autoflow/desktop/data/kernels/chromium-145.0.7632.109.2/Chromium.app/Contents/MacOS/Chromium",
+    "AUTOFLOW_B1_CLOAK_EXECUTABLE": "/Users/zhangtiancheng/Library/Application Support/@autoflow/desktop/data/kernels/chromium-145.0.7632.109.2/Chromium.app/Contents/MacOS/Chromium"
+  },
+  "basetemp": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-final-real-browser-0gfkzau9",
+  "exitCode": 0,
+  "seconds": 323.9,
+  "sourceAfter": "5f0ce0ca0eb8ab0c7a6871d583c2aaa6d1341234494ad961aa256d96dcc53b4b"
+}

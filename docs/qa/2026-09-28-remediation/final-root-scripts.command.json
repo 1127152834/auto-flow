@@ -1,0 +1,12 @@
+{
+  "command": [
+    "npm",
+    "run",
+    "test:scripts"
+  ],
+  "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow",
+  "head": "d6f9cb0f8f9dd99be6e4734641fe3144f232f336",
+  "startedAt": "2026-09-28T14:11:53+0800",
+  "exitCode": 0,
+  "seconds": 2.61
+}

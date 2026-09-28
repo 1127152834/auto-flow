@@ -23,3 +23,5 @@
 为避免修复删除冗余参数读取后连故障注入也被跳过，最终探针将注入点前移到真实启动身份读取后：原样保留该次系统读取值，随后真实终止本次子进程，再继续产品函数。`process-exit-identity-fault-before.log`仍退出1并复现同一Z状态/原生参数不可读错误。这样修复前后都实际发生SIGKILL，检查独立于是否调用后续参数读取；没有替换系统事实。
 
 Task 4于2026-09-28完成有界修复（confirmed；源码、单元回归与真实SIGKILL探针）。`capture_processes`对已经由匹配内核birth确认归属的worker和previous PID不再重复读取原生参数；不匹配或复用PID以及未知活候选仍走原生归属判断，发信号前仍复验birth。`process-exit-fault-probe.py --expect-cleanup`真实观察到Z状态、birth匹配、原生参数不可读，capture返回1项且child由真实wait回收。相关59项测试、Ruff与mypy通过，证据见`process-exit-identity-fault-after-task4.log`和`process-cleanup-task4-validation.log`。原全量凭据空值、非法概率、webhook超时三项没有PID证据，仍不得归因为本缺陷；sidecar早期四项READY失败也只改善诊断，不改写为已确认根因。
+
+最终稳定源码默认回归第一轮（d6f9cb0f，`final-backend-default.*`）：4325通过/1失败/50跳过；唯一失败为注册表遗漏project_end的精确集合，历史三个终态失败与sidecar启动失败均未重现。此结果支持当前组合可正常执行，不足以补造历史根因归属；本轮没有捕获新的REAL_CLEANUP_DIAGNOSTIC异常。

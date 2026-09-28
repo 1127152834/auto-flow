@@ -1,0 +1,10 @@
+{
+  "checkedAt": "2026-09-28T14:43:10+0800",
+  "checkedRoots": [
+    "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-final-backend-9i1sb3fr",
+    "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-final-real-browser-0gfkzau9",
+    "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-final-frozen-fr8lt02m"
+  ],
+  "matchingLiveProcesses": [],
+  "method": "Read-only ps argv scan for exact dedicated roots; tests separately verify production manager shutdown. No signals sent. Temporary files retained for evidence/review."
+}

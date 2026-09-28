@@ -1,0 +1,66 @@
+{
+  "source": "final-real-browser.xml",
+  "passed": 49,
+  "failed": 0,
+  "skipped": 0,
+  "realBrowserChecks": 48,
+  "realBrowserThenInternalReceiptInjection": 1,
+  "notSupplierLiveTests": true,
+  "not48CompleteProjectChains": true,
+  "internalInjectionCase": {
+    "classname": "tests.integration.test_project_end_real_browser",
+    "name": "test_real_login_retained_and_reused_by_next_production_run[unknown-linear]",
+    "time": "3.060"
+  },
+  "endEvidence": [
+    {
+      "file": "final-source-end-test_real_login_retained_and_r0.json",
+      "controlFlow": "linear",
+      "verified": true,
+      "worker": "source",
+      "runs": 2
+    },
+    {
+      "file": "final-source-end-test_real_login_retained_and_r1.json",
+      "controlFlow": "loop",
+      "verified": true,
+      "worker": "source",
+      "runs": 2
+    },
+    {
+      "file": "final-source-end-test_real_login_retained_and_r2.json",
+      "controlFlow": "workflow",
+      "verified": true,
+      "worker": "source",
+      "runs": 2
+    },
+    {
+      "file": "final-source-end-test_real_login_retained_and_r3.json",
+      "controlFlow": "module",
+      "verified": true,
+      "worker": "source",
+      "runs": 2
+    },
+    {
+      "file": "final-source-end-test_real_login_retained_and_r4.json",
+      "controlFlow": "canvas",
+      "verified": true,
+      "worker": "source",
+      "runs": 2
+    },
+    {
+      "file": "final-source-end-test_real_login_retained_and_r5.json",
+      "controlFlow": "linear",
+      "verified": true,
+      "worker": "source",
+      "runs": 1
+    }
+  ],
+  "duplicateEvidenceAliases": [
+    {
+      "file": "final-source-end-test_real_login_retained_and_rcurrent.json",
+      "sameBytesAs": "final-source-end-test_real_login_retained_and_r5.json",
+      "reason": "pytest current directory symlink copied by glob; not an additional test or run"
+    }
+  ]
+}

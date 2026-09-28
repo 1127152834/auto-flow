@@ -1,0 +1,26 @@
+{
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-final-real-browser-0gfkzau9/test_real_login_retained_and_r5",
+  "kernel": "/Users/zhangtiancheng/Library/Application Support/@autoflow/desktop/data/kernels/chromium-145.0.7632.109.2/Chromium.app/Contents/MacOS/Chromium",
+  "worker": "source",
+  "controlFlow": "linear",
+  "runs": [
+    {
+      "runId": "3fae32be-7285-4bf7-b245-2b7d66f2038d",
+      "taskId": "4391f3d4-4cb3-464d-a26f-926126fdaa83",
+      "status": "reconciling",
+      "published": false,
+      "leaseHeld": true
+    }
+  ],
+  "requests": [
+    {
+      "path": "/login",
+      "signedIn": false
+    },
+    {
+      "path": "/favicon.ico",
+      "signedIn": true
+    }
+  ],
+  "verified": true
+}
