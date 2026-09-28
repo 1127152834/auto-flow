@@ -1,0 +1,126 @@
+Task 4 validation transcript
+date: 2026-09-28
+
+[red regression before product fix]
+cwd: /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend
+argv: .venv/bin/pytest tests/unit/test_browser_processes.py::test_confirmed_worker_and_previous_birth_do_not_need_native_arguments -q --basetemp=/tmp/autoflow-task4-red
+environment: inherited process environment; no command-level overrides
+exit_code: 1
+output:
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____ test_confirmed_worker_and_previous_birth_do_not_need_native_arguments _____
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10ac79f90>
+tmp_path = PosixPath('/private/tmp/autoflow-task4-red/test_confirmed_worker_and_prev0')
+
+    def test_confirmed_worker_and_previous_birth_do_not_need_native_arguments(monkeypatch, tmp_path):
+        from autoflow.infrastructure.process import project_browser_processes as module
+
+        rows = '\n'.join((
+            '700 1 700 python --project-workflow-worker',
+            '701 1 701 python --project-workflow-worker',
+        ))
+        monkeypatch.setattr(module.subprocess, 'check_output', lambda *_args, **_kwargs: rows)
+        monkeypatch.setattr(module, 'process_birth', lambda pid: {700: 710, 701: 711}[pid])
+        monkeypatch.setattr(
+            module, '_native_arguments',
+            lambda _pid: pytest.fail('confirmed ownership must not reread native arguments'),
+        )
+
+>       assert module.capture_processes(
+            700, 710, tmp_path, None, {701: (701, 711)}, strict_ownership=True,
+        ) == {700: (700, 710), 701: (701, 711)}
+
+tests/unit/test_browser_processes.py:229:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src/autoflow/infrastructure/process/project_browser_processes.py:140: in capture_processes
+    belongs = _belongs_to_run(item, directory, executable)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/infrastructure/process/project_browser_processes.py:87: in _belongs_to_run
+    native = _native_arguments(pid)
+             ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+_pid = 700
+
+>       lambda _pid: pytest.fail('confirmed ownership must not reread native arguments'),
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+E   Failed: confirmed ownership must not reread native arguments
+
+tests/unit/test_browser_processes.py:226: Failed
+=========================== short test summary info ============================
+FAILED tests/unit/test_browser_processes.py::test_confirmed_worker_and_previous_birth_do_not_need_native_arguments
+1 failed in 0.08s
+
+[process ownership and cancellation unit regression]
+cwd: /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend
+argv: .venv/bin/pytest tests/unit/test_browser_processes.py -q --basetemp=/tmp/autoflow-task4-unit-green
+environment: inherited process environment; no command-level overrides
+exit_code: 0
+output:
+..............                                                           [100%]
+14 passed in 1.04s
+
+[real SIGKILL probe]
+cwd: /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend
+argv: .venv/bin/python ../../docs/qa/2026-09-28-remediation/process-exit-fault-probe.py --expect-cleanup
+environment: inherited process environment; no command-level overrides
+exit_code: 0
+output:
+{
+  "stateAfterSignal": "Z",
+  "existsAfterSignal": true,
+  "birthAfterSignal": 4649899216527,
+  "nativeArgumentsAvailable": false,
+  "capture": {
+    "status": "returned",
+    "ownedCount": 1
+  },
+  "childReaped": true,
+  "childReturnCode": -9
+}
+
+[sidecar shutdown and bounded READY diagnostics]
+cwd: /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend
+argv: .venv/bin/pytest tests/integration/test_sidecar_shutdown.py -q --basetemp=/tmp/autoflow-task4-sidecar-final
+environment: inherited process environment; no command-level overrides
+exit_code: 0
+output:
+.....                                                                    [100%]
+5 passed in 30.73s
+
+[credential timing webhook interactive regression]
+cwd: /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend
+argv: .venv/bin/pytest -q tests/integration/test_project_credential_worker.py tests/integration/test_project_timing_worker.py tests/integration/test_project_webhook.py tests/integration/test_project_interactive_worker.py --basetemp=/tmp/autoflow-task4-focused-green
+environment: inherited process environment; no command-level overrides
+exit_code: 0
+output:
+...............................                                          [100%]
+31 passed in 38.28s
+
+[orphan ownership recovery regression]
+cwd: /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend
+argv: .venv/bin/pytest -q tests/integration/test_workflow_recovery.py --basetemp=/tmp/autoflow-task4-recovery-green
+environment: inherited process environment; no command-level overrides
+exit_code: 0
+output:
+.........                                                                [100%]
+9 passed in 2.03s
+
+[ruff]
+cwd: /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend
+argv: .venv/bin/ruff check src/autoflow/infrastructure/process/project_browser_processes.py tests/unit/test_browser_processes.py tests/integration/test_sidecar_shutdown.py
+environment: inherited process environment; no command-level overrides
+exit_code: 0
+output:
+All checks passed!
+
+[mypy]
+cwd: /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend
+argv: .venv/bin/mypy src/autoflow/infrastructure/process/project_browser_processes.py tests/unit/test_browser_processes.py tests/integration/test_sidecar_shutdown.py
+environment: inherited process environment; no command-level overrides
+exit_code: 0
+output:
+Success: no issues found in 3 source files

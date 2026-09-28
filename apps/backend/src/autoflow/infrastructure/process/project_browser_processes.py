@@ -130,6 +130,8 @@ def capture_processes(
         executable = executable.resolve() if executable is not None else None
         for row in rows:
             item = int(row[0])
+            if item in owned:
+                continue
             # Text is only a cheap candidate filter. Native executable, argv and the
             # inherited per-run marker make the ownership decision below.
             command = row[3] if len(row) == 4 else ""

@@ -17,6 +17,25 @@ from autoflow.infrastructure.database.kernel_operations import (
 from autoflow.infrastructure.database.session import create_session_factory
 
 
+def _read_ready(process: subprocess.Popen[str], stderr_path: Path) -> dict[str, object]:
+    assert process.stdout is not None
+    line = process.stdout.readline()
+    try:
+        assert line.startswith("AUTOFLOW_READY ")
+        ready = json.loads(line.removeprefix("AUTOFLOW_READY "))
+        port = ready.get("port") if isinstance(ready, dict) else None
+        assert isinstance(port, int) and not isinstance(port, bool) and port > 0
+        return ready
+    except (AssertionError, json.JSONDecodeError) as error:
+        with stderr_path.open("rb") as stderr:
+            stderr.seek(0, os.SEEK_END)
+            stderr.seek(max(0, stderr.tell() - 4096))
+            tail = stderr.read().decode(errors="replace")
+        raise AssertionError(
+            f"sidecar emitted invalid READY {line[:256]!r}; stderr tail: {tail}"
+        ) from error
+
+
 @pytest.mark.asyncio
 async def test_workflow_shutdown_error_still_closes_other_modules(tmp_path, monkeypatch):
     from unittest.mock import AsyncMock, Mock
@@ -73,15 +92,15 @@ def ensure_binary(**kwargs):
         "PYTHONPATH": os.pathsep.join((str(Path(__file__).parents[2] / "src"), str(wrapper.parent))),
     }
     data = tmp_path / "data"
-    with (tmp_path / "stderr.log").open("w+") as stderr:
+    stderr_path = tmp_path / "stderr.log"
+    with stderr_path.open("w+") as stderr:
         process = subprocess.Popen(
             [sys.executable, "-m", "autoflow", "--instance-id", "shutdown-test",
              "--data-dir", str(data), "--port", "0"],
             env=env, stdout=subprocess.PIPE, stderr=stderr, text=True,
         )
         try:
-            assert process.stdout is not None
-            ready = json.loads(process.stdout.readline().removeprefix("AUTOFLOW_READY "))
+            ready = _read_ready(process, stderr_path)
             with httpx.Client(base_url=f"http://127.0.0.1:{ready['port']}", trust_env=False, timeout=5) as client:
                 headers = {"x-autoflow-token": "shutdown-test-token"}
                 for bad_headers in ({}, headers, {

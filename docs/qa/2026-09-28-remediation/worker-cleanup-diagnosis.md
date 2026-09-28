@@ -21,3 +21,5 @@
 探针新增`--expect-cleanup`有效断言。修复前执行`.venv/bin/python ../../docs/qa/2026-09-28-remediation/process-exit-fault-probe.py --expect-cleanup`退出1，原始错误和系统状态见`process-exit-fault-before.log`。此处是可用于修复后复验的红灯，不是仅观察后始终退出0的脚本。
 
 为避免修复删除冗余参数读取后连故障注入也被跳过，最终探针将注入点前移到真实启动身份读取后：原样保留该次系统读取值，随后真实终止本次子进程，再继续产品函数。`process-exit-identity-fault-before.log`仍退出1并复现同一Z状态/原生参数不可读错误。这样修复前后都实际发生SIGKILL，检查独立于是否调用后续参数读取；没有替换系统事实。
+
+Task 4于2026-09-28完成有界修复（confirmed；源码、单元回归与真实SIGKILL探针）。`capture_processes`对已经由匹配内核birth确认归属的worker和previous PID不再重复读取原生参数；不匹配或复用PID以及未知活候选仍走原生归属判断，发信号前仍复验birth。`process-exit-fault-probe.py --expect-cleanup`真实观察到Z状态、birth匹配、原生参数不可读，capture返回1项且child由真实wait回收。相关59项测试、Ruff与mypy通过，证据见`process-exit-identity-fault-after-task4.log`和`process-cleanup-task4-validation.log`。原全量凭据空值、非法概率、webhook超时三项没有PID证据，仍不得归因为本缺陷；sidecar早期四项READY失败也只改善诊断，不改写为已确认根因。

@@ -67,4 +67,5 @@ with tempfile.TemporaryDirectory(prefix="autoflow-process-fault-") as raw:
 print(json.dumps(evidence, indent=2))
 if "--expect-cleanup" in sys.argv:
     assert evidence["capture"]["status"] == "returned", evidence["capture"]
+    assert evidence["capture"]["ownedCount"] == 1, evidence["capture"]
     assert evidence["childReaped"] and evidence["childReturnCode"] == -signal.SIGKILL

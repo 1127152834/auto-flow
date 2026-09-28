@@ -212,6 +212,48 @@ def test_pure_data_recovery_does_not_assume_unreadable_live_candidate_is_gone(mo
         module.capture_processes(0, None, tmp_path, None, strict_ownership=True)
 
 
+def test_confirmed_worker_and_previous_birth_do_not_need_native_arguments(monkeypatch, tmp_path):
+    from autoflow.infrastructure.process import project_browser_processes as module
+
+    rows = (
+        '700 1 700 python --project-workflow-worker\n'
+        '701 1 701 python --project-workflow-worker'
+    )
+    monkeypatch.setattr(module.subprocess, 'check_output', lambda *_args, **_kwargs: rows)
+    monkeypatch.setattr(module, 'process_birth', lambda pid: {700: 710, 701: 711}[pid])
+    monkeypatch.setattr(
+        module, '_native_arguments',
+        lambda _pid: pytest.fail('confirmed ownership must not reread native arguments'),
+    )
+
+    assert module.capture_processes(
+        700, 710, tmp_path, None, {701: (701, 711)}, strict_ownership=True,
+    ) == {700: (700, 710), 701: (701, 711)}
+
+
+@pytest.mark.parametrize(
+    ('pid', 'birth', 'previous'),
+    ((700, 999, None), (0, None, {700: (700, 999)})),
+)
+def test_recycled_pid_still_requires_native_ownership(
+    monkeypatch, tmp_path, pid, birth, previous,
+):
+    from autoflow.infrastructure.process import project_browser_processes as module
+
+    monkeypatch.setattr(
+        module.subprocess, 'check_output',
+        lambda *_args, **_kwargs: '700 1 700 python --project-workflow-worker\n',
+    )
+    monkeypatch.setattr(module, 'process_birth', lambda _pid: 710)
+    monkeypatch.setattr(module, '_native_arguments', lambda _pid: None)
+    monkeypatch.setattr(module, '_process_exists', lambda _pid: True)
+
+    with pytest.raises(RuntimeError, match='ownership is unavailable'):
+        module.capture_processes(
+            pid, birth, tmp_path, None, previous, strict_ownership=True,
+        )
+
+
 @pytest.mark.asyncio
 async def test_unverified_worker_exit_has_bounded_cleanup_failure(monkeypatch):
     from autoflow.infrastructure.process import test_browser_worker as module

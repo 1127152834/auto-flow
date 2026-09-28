@@ -1,0 +1,20 @@
+Task 4 real process-exit identity probe after shared-helper fix
+date: 2026-09-28
+cwd: /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend
+argv: .venv/bin/python ../../docs/qa/2026-09-28-remediation/process-exit-fault-probe.py --expect-cleanup
+environment: inherited process environment; no command-level overrides
+exit_code: 0
+stdout:
+{
+  "stateAfterSignal": "Z",
+  "existsAfterSignal": true,
+  "birthAfterSignal": 4649899216527,
+  "nativeArgumentsAvailable": false,
+  "capture": {
+    "status": "returned",
+    "ownedCount": 1
+  },
+  "childReaped": true,
+  "childReturnCode": -9
+}
+stderr: <empty>
