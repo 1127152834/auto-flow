@@ -1,0 +1,291 @@
+........................................................................ [  1%]
+........................................................................ [  3%]
+........................................................................ [  4%]
+........................................................................ [  6%]
+........................................................................ [  8%]
+........................................................................ [  9%]
+........................................................................ [ 11%]
+........................................................................ [ 13%]
+........................................................................ [ 14%]
+........................................................................ [ 16%]
+........................................................................ [ 18%]
+........................................................................ [ 19%]
+........................................................................ [ 21%]
+........................................................................ [ 23%]
+........................................................................ [ 24%]
+........................................................................ [ 26%]
+........................................................................ [ 28%]
+........................................................................ [ 29%]
+........................................................................ [ 31%]
+........................................................................ [ 33%]
+........................................................................ [ 34%]
+........................................................................ [ 36%]
+........................................................................ [ 38%]
+........................................................................ [ 39%]
+..................................................s...ssssssssss........ [ 41%]
+...........ss...s....................................s..........sss..... [ 43%]
+...........................................No new upgrade operations detected.
+............................. [ 44%]
+...........................ssssssssssssssssssss......................... [ 46%]
+................F....................................................... [ 48%]
+........................................................................ [ 49%]
+........................................................................ [ 51%]
+........................................................................ [ 53%]
+........................................................................ [ 54%]
+.s...................................................................... [ 56%]
+........................................................................ [ 58%]
+...................................................................F.... [ 59%]
+.F...................................................................... [ 61%]
+...................................................................s.... [ 63%]
+........................................................................ [ 64%]
+........................................................................ [ 66%]
+..ssss.................................................................. [ 68%]
+........................................................................ [ 69%]
+........................................................................ [ 71%]
+........................................................................ [ 73%]
+........................................................................ [ 74%]
+........................................................................ [ 76%]
+........................................................................ [ 78%]
+........................................................................ [ 79%]
+........................................................................ [ 81%]
+........................................................................ [ 83%]
+........................................................................ [ 84%]
+........................................................................ [ 86%]
+........................................................................ [ 88%]
+........................................................................ [ 89%]
+........................................................................ [ 91%]
+........................................................................ [ 93%]
+........................................................................ [ 94%]
+........................................................................ [ 96%]
+........................................................................ [ 98%]
+........................................................................ [ 99%]
+.....                                                                    [100%]
+=================================== FAILURES ===================================
+_ test_project_worker_reads_private_credential_after_start_commit[-\u51ed\u636e] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-543/test_project_worker_reads_priv2')
+prefix = '凭据', value = ''
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("prefix", ["凭据", "cred"])
+    @pytest.mark.parametrize("value", ["private-lookup-key", "", None])
+    async def test_project_worker_reads_private_credential_after_start_commit(tmp_path, prefix, value):
+        reference = "{{" + prefix + ":账号.password}}"
+        factory, queued = _queued_pure_data_run(
+            tmp_path,
+            node_data={"moduleType": "dict_get_path", "dictVariable": "record", "path": reference, "resultVariable": "out"},
+            variables={"record": {"private-lookup-key": "resolved", reference: "preserved"}},
+        )
+        reads = []
+    
+        def resolve(name):
+            with factory() as session:
+                events = SqlAlchemyWorkflowRuntimeRepository(session).list_events(queued.run_id, after_sequence=0, limit=100)
+            assert any(event.kind == "nodeAttempt" and event.payload.get("status") == "started" for event in events)
+            reads.append(name)
+            return {"password": value}
+    
+        worker = ProjectWorkflowWorkerManager(tmp_path / "temp", resolve_credential=resolve)
+        dispatcher = _dispatcher(factory, worker, _NoBrowserResources())
+        try:
+            await dispatcher.dispatch(queued.run_id, expected_status_revision=queued.status_revision, execution_generation=queued.execution_generation)
+            async with asyncio.timeout(15):
+                await dispatcher.wait_idle()
+            with factory() as session:
+                repository = SqlAlchemyWorkflowRuntimeRepository(session)
+                run = repository.get_run(run_id=queued.run_id)
+                events = repository.list_events(queued.run_id, after_sequence=0, limit=100)
+>           assert run.status == ("failed" if value == "" else "succeeded")
+E           AssertionError: assert 'interrupted' == 'failed'
+E             
+E             - failed
+E             + interrupted
+
+tests/integration/test_project_credential_worker.py:53: AssertionError
+_____ test_project_timer_probability_routing_and_cleanup[bad_probability] ______
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-543/test_project_timer_probability4')
+scenario = 'bad_probability'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("scenario", ["path1", "path2", "past", "bad_delay", "bad_probability", "stop"])
+    async def test_project_timer_probability_routing_and_cleanup(tmp_path: Path, scenario: str) -> None:
+        factory, _, _, coordinator, _, project, automation = setup(tmp_path)
+        timer = {"scheduleType": "delay", "delaySeconds": 30 if scenario == "stop" else 0 if scenario == "bad_delay" else 1}
+        if scenario == "past":
+            timer = {"scheduleType": "datetime", "targetDate": "2000-01-01", "targetTime": "00:00"}
+        document = _studio_payload(automation.workflow_id)
+        document.update(schemaVersion=3, nodes=[
+            {"id": "timer", "type": "scheduled_task", "position": {"x": 0, "y": 0}, "data": {"moduleType": "scheduled_task", "config": timer}},
+            {"id": "choose", "type": "probability_trigger", "position": {"x": 180, "y": 0}, "data": {"moduleType": "probability_trigger", "config": {"probability": 0 if scenario == "path2" else 101 if scenario == "bad_probability" else 100}}},
+            *[{"id": path, "type": "print_log", "position": {"x": 360, "y": index * 100}, "data": {"moduleType": "print_log", "config": {"logMessage": path}}} for index, path in enumerate(("path1", "path2"))],
+        ], edges=[
+            {"id": "begin", "source": "timer", "target": "choose"},
+            *[{"id": path, "source": "choose", "target": path, "sourceHandle": path} for path in ("path1", "path2")],
+        ], variables=[])
+        worker = ProjectWorkflowWorkerManager(tmp_path / "worker")
+        resources = _NoBrowserResources()
+        dispatcher = _dispatcher(factory, worker, resources)
+        try:
+            WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory)).update(
+                automation.workflow_id, document, expected_revision=1, client_request_id=str(uuid4()),
+            )
+            runtime = WorkflowRuntimeService(factory, SqlAlchemyWorkflowRepository(factory))
+            coordinator._core = runtime
+            batch, _, _ = coordinator.start(project.project_id, automation.automation_id, str(uuid4()), start_payload(automation))
+            task = coordinator.list_tasks(project.project_id, batch.batch_id)[0]
+            run = runtime.query_run(run_id=task.run_id)
+            assert run is not None
+            started = monotonic()
+            running = await dispatcher.dispatch(run.run_id, expected_status_revision=run.status_revision, execution_generation=run.execution_generation)
+            if scenario == "stop":
+                for _ in range(200):
+                    with factory() as session:
+                        events = SqlAlchemyWorkflowRuntimeRepository(session).list_events(run.run_id, after_sequence=0, limit=100)
+                    if any(event.kind == "nodeAttempt" and event.node_id == "timer" for event in events):
+                        break
+                    await asyncio.sleep(0.05)
+                else:
+                    pytest.fail("timer did not begin")
+                stopped = monotonic()
+                await dispatcher.cancel(run.run_id, expected_status_revision=running.status_revision, execution_generation=running.execution_generation)
+            await dispatcher.wait_idle()
+            with factory() as session:
+                repository = SqlAlchemyWorkflowRuntimeRepository(session)
+                finished = repository.get_run(run_id=run.run_id)
+                events = repository.list_events(run.run_id, after_sequence=0, limit=100)
+            expected = "cancelled" if scenario == "stop" else "failed" if scenario.startswith("bad_") else "succeeded"
+>           assert finished is not None and finished.status == expected, (finished, events)
+E           AssertionError: (CoreRun(run_id='a7931f17-862a-4186-bcac-0af779d58f14', run_request_id='dd03b7bd-ed35-4e1b-bfb7-23e56ca1c0df', request...time(2026, 9, 28, 3, 47, 53, 881314, tzinfo=datetime.timezone.utc), payload=mappingproxy({'status': 'started'})), ...])
+E           assert (CoreRun(run_id='a7931f17-862a-4186-bcac-0af779d58f14', run_request_id='dd03b7bd-ed35-4e1b-bfb7-23e56ca1c0df', request_...e.utc), error=mappingproxy({'code': 'WORKFLOW_RESULT_UNKNOWN', 'message': '执行结果不明确，已撤销旧执行写入权限'}), _event_identities=()) is not None and 'interrupted' == 'failed'
+E             
+E             - failed
+E             + interrupted)
+
+tests/integration/test_project_timing_worker.py:80: AssertionError
+_______ test_project_webhook_real_network_delivery_and_cleanup[timeout] ________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-543/test_project_webhook_real_netw4')
+scenario = 'timeout'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize('scenario', ['deliver', 'nested', 'lost_response', 'stop', 'timeout'])
+    async def test_project_webhook_real_network_delivery_and_cleanup(tmp_path: Path, scenario: str):
+        assert 'webhook_trigger' in runnable_module_types()
+        factory, _, _, coordinator, _, project, automation = setup(tmp_path)
+        document = _studio_payload(automation.workflow_id)
+        document.update(schemaVersion=3, nodes=[
+            {'id': 'hook', 'type': 'webhook_trigger', 'position': {'x': 0, 'y': 0}, 'data': {'moduleType': 'webhook_trigger', 'config': {
+                'webhookId': 'project-hook', 'method': 'POST', 'timeout': 1 if scenario == 'timeout' else 30,
+                'validateHeaders': '{"X-Hook-Check":"fixture-secret"}', 'validateParams': '{"key":"fixture-query"}',
+                'responseBody': '{"accepted":true}', 'responseStatus': 202,
+            }}},
+            {'id': 'after', 'type': 'print_log', 'position': {'x': 150, 'y': 0}, 'data': {'moduleType': 'print_log', 'config': {'logMessage': '收到:{webhook_name}'}}},
+        ], edges=[{'id': 'next', 'source': 'hook', 'target': 'after'}], variables=[])
+        documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory))
+        child_id = None
+        if scenario == 'nested':
+            child = {**document, 'id': str(uuid4()), 'projectId': project.project_id, 'name': 'Webhook子流程'}
+            child_id = documents.create(child, client_request_id=str(uuid4())).id
+            document = {**document, 'nodes': [{
+                'id': 'call', 'type': 'run_workflow_file', 'position': {'x': 0, 'y': 0},
+                'data': {'moduleType': 'run_workflow_file', 'config': {'workflowFile': child_id}},
+            }], 'edges': []}
+        documents.update(
+            automation.workflow_id, document, expected_revision=1, client_request_id=str(uuid4()))
+        runtime = WorkflowRuntimeService(factory, SqlAlchemyWorkflowRepository(factory))
+        coordinator._core = runtime
+        frozen = os.environ.get('AUTOFLOW_TEST_PROJECT_WORKER')
+        manager = ProjectWorkflowWorkerManager(tmp_path / 'worker',
+            **({'command': (str(Path(frozen).resolve(strict=True)), '--project-workflow-worker')} if frozen else {}))
+        resources = _NoBrowserResources()
+        dispatcher = _dispatcher(factory, manager, resources)
+        app = FastAPI()
+        install_error_handlers(app)
+        app.include_router(workflow_trigger_router(PendingWorkflowRunCommands(), project_interactions=dispatcher.interactions))
+        app.include_router(project_run_events_router(ProjectRunEvents(factory)))
+        sock = socket.socket()
+        sock.bind(('127.0.0.1', 0))
+        sock.listen()
+        port = sock.getsockname()[1]
+        server = uvicorn.Server(uvicorn.Config(app, log_level='error', lifespan='off'))
+        serving = asyncio.create_task(server.serve(sockets=[sock]))
+        try:
+            batch, _, _ = coordinator.start(project.project_id, automation.automation_id, str(uuid4()), start_payload(automation))
+            task = coordinator.list_tasks(project.project_id, batch.batch_id)[0]
+            run = runtime.query_run(run_id=task.run_id)
+            running = await dispatcher.dispatch(run.run_id, expected_status_revision=run.status_revision, execution_generation=run.execution_generation)
+            async with asyncio.timeout(15):
+                while not server.started or not dispatcher.interactions.has_webhook('project-hook'):
+                    assert not dispatcher.query_run(run.run_id).terminal
+                    await asyncio.sleep(.01)
+            assert dispatcher.interactions.pending() == []  # Webhook never becomes a UI dialog.
+            base = f'/api/v1/projects/{project.project_id}/tasks/{task.task_id}'
+            url = '/api/triggers/webhook/project-hook?key=fixture-query'
+            headers = {'X-Hook-Check': 'fixture-secret', 'Authorization': 'private-authorization', 'Cookie': 'private-cookie'}
+            async with httpx.AsyncClient(base_url=f'http://127.0.0.1:{port}', trust_env=False) as client:
+                if scenario in {'deliver', 'nested'}:
+                    assert (await client.get(url, headers=headers)).status_code == 404
+                    assert (await client.post(url, json={'name': '错误'})).status_code == 403
+                    assert (await client.post('/api/triggers/webhook/project-hook', headers=headers, json={})).status_code == 403
+                    assert (await client.post(url, headers=headers, content=b'x' * (1024 * 1024 + 1))).status_code == 413
+                    waiting = (await client.get(base + '/events')).json()
+                    assert 'fixture-secret' not in json.dumps(waiting)
+                    responses = await asyncio.gather(*[
+                        client.post(url, headers=headers, json={'name': '项目触发'}) for _ in range(2)
+                    ])
+                    assert sorted(response.status_code for response in responses) == [202, 404]
+                    assert next(response for response in responses if response.status_code == 202).json() == {'accepted': True}
+                    assert (await client.post(url, headers=headers, json={'name': '再次触发'})).status_code == 404
+                elif scenario == 'lost_response':
+                    _, writer = await asyncio.open_connection('127.0.0.1', port)
+                    body = json.dumps({'name': '项目触发'}, ensure_ascii=False).encode()
+                    request = f'POST {url} HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\nContent-Type: application/json\r\nContent-Length: {len(body)}\r\nX-Hook-Check: fixture-secret\r\nConnection: close\r\n\r\n'.encode() + body
+                    writer.write(request)
+                    await writer.drain()
+                    writer.close()  # Request written, response deliberately not received.
+                    await writer.wait_closed()
+                elif scenario == 'stop':
+                    await dispatcher.cancel(run.run_id, expected_status_revision=running.status_revision, execution_generation=running.execution_generation)
+                await asyncio.wait_for(dispatcher.wait_idle(), 15)
+                expected = {'deliver': 'succeeded', 'nested': 'succeeded', 'lost_response': 'succeeded', 'stop': 'cancelled', 'timeout': 'failed'}[scenario]
+>               assert dispatcher.query_run(run.run_id).status == expected
+E               AssertionError: assert 'interrupted' == 'failed'
+E                 
+E                 - failed
+E                 + interrupted
+
+tests/integration/test_project_webhook.py:122: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.11/site-packages/starlette/testclient.py:53
+  /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+SKIPPED [1] tests/integration/test_b1_cloakbrowser_flow.py:48: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_advanced_browser_cloakbrowser_flow.py:35: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_inspection_cloakbrowser_flow.py:35: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_inspection_cloakbrowser_flow.py:91: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_inspection_cloakbrowser_flow.py:207: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_inspection_cloakbrowser_flow.py:297: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_large_artifacts_cloakbrowser_flow.py:23: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_network_monitor_cloakbrowser_flow.py:26: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_page_load_cloakbrowser_flow.py:22: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_remaining_browser_cloakbrowser_flow.py:25: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_web_basic_cloakbrowser_flow.py:22: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b5_captcha_cloakbrowser_flow.py:38: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b5_firecrawl_cloakbrowser_flow.py:36: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b6_element_change_cloakbrowser_flow.py:22: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b7_recording_cloakbrowser_flow.py:22: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [2] tests/integration/test_environment_persist_restore.py:47: set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable
+SKIPPED [1] tests/integration/test_environment_real_browser_chain.py:26: set AUTOFLOW_TEST_CLOAKBROWSER to an installed CloakBrowser executable
+SKIPPED [20] tests/integration/test_project_batch_real_cloakbrowser.py:34: set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable
+SKIPPED [1] tests/integration/test_project_full_scenarios.py:32: set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable
+SKIPPED [1] tests/integration/test_studio_project_model_live.py:61: 真实模型计费验收仅由 AUTOFLOW_LIVE_MODEL_TEST=1 显式启用
+SKIPPED [3] tests/integration/test_workflow_real_cloakbrowser.py:71: set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable
+SKIPPED [1] tests/integration/test_workflow_real_cloakbrowser.py:126: set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable
+FAILED tests/integration/test_project_credential_worker.py::test_project_worker_reads_private_credential_after_start_commit[-\u51ed\u636e]
+FAILED tests/integration/test_project_timing_worker.py::test_project_timer_probability_routing_and_cleanup[bad_probability]
+FAILED tests/integration/test_project_webhook.py::test_project_webhook_real_network_delivery_and_cleanup[timeout]
+3 failed, 4278 passed, 44 skipped, 1 warning in 1091.26s (0:18:11)

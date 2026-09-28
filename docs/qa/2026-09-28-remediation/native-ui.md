@@ -1,6 +1,6 @@
 # 本机真实应用验收补充
 
-日期2026-09-28；平台macOS arm64；来源真实Electron、冻结sidecar、SQLite、实际仓库文件与原生对话框；置信度高。仅本次独立工作区；没有供应商账号/外部消息。UI动作经CUA，`native-evidence.mjs`只读保存截图/正文，不修改UI/响应。工作区保留供复核，本次三轮原生会话进程及调试端口已退出（native-sessions-cleanup.json）；原首次退出还独立确认sidecar退出（native-quit.json）。
+日期2026-09-28；平台macOS arm64；来源真实Electron、冻结sidecar、SQLite、实际仓库文件与原生对话框；置信度高。仅本次独立工作区；没有供应商账号/外部消息。UI动作经CUA，`native-evidence.mjs`只读保存截图/正文，不修改UI/响应。本次三轮原生会话进程及调试端口已退出（native-sessions-cleanup.json）；原首次退出还独立确认sidecar退出（native-quit.json）。核验目录归属、专属标记及无进程引用后，专属工作区和克隆内核已删除（native-workspace-cleanup.json）；导出xlsx、截图与SQLite只读核验结果保留在本目录。历史会话脚本引用的临时目录已不存在，重跑应创建新的专属工作区。
 
 ## 范围及独立计数
 

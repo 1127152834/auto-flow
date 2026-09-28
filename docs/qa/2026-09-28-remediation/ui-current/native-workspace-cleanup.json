@@ -1,0 +1,6 @@
+{
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow 修复回归-LarBgx",
+  "removed": true,
+  "scope": "Only dedicated QA workspace and its cloned kernel; SQLite verification and exported XLSX retained in evidence",
+  "processReferencesBeforeRemoval": 0
+}

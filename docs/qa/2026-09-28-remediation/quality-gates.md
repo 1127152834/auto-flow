@@ -49,3 +49,7 @@ CI 工作目录下 Ruff 本轮原始 138 条（含本次新增测试导入顺序
 2026-09-28 默认 Studio smoke 追加核验（confirmed）：生产路由 `/api/workflows` 已取代退役 Mock 阶段；默认入口验证真实空 SQLite 文档目录及正式画布。主窗口关闭后保留隐藏的交互宿主，Studio继续运行，正常退出再确认 sidecar 停止。built HTML、开发 Vite URL、macOS arm64 目录包各5项通过，见 `studio-smoke-{built,dev,packaged}/`。默认验收输出改为唯一新目录，避免覆盖历史资产；未改写旧Mock验收报告。
 
 Monaco0.57的exports映射让 `require.resolve('monaco-editor/package.json')` 指向不存在文件：这是升级后新增的门禁脚本路径错误。`scripts-final.log`保留101通过/1失败；改为公开模块子路径定位实际嵌入DOMPurify，原版本断言保持，`scripts-final-fixed.log`完整102项通过。此前101项的通过时点在此依赖升级之前，不能据此声称升级后门禁已绿。
+
+2026-09-28 后续全量结果：`frontend-final.log`为431文件5650项通过。`backend-final.log/xml`为4278通过、3失败、44跳过；失败集中于三个负向生产worker场景，预期failed而实际为WORKFLOW_RESULT_UNKNOWN/interrupted。原断言和时限保留，不能改成接受interrupted来消除失败。
+
+这三个文件的21项定向复跑通过，并在带诊断的5次重复中仍各21通过。它只能证明未稳定复现，不能证明缺陷消失。`cleanup_diagnostic_plugin.py`只调用真实原方法，捕获异常打印栈后原样抛出，不提供成功响应或改变清理结果。全量诊断期间PM9 End实施开始修改源码，部分后启动worker可能读取新源码，因此这轮诊断只能用于定位，最终默认回归必须在稳定源码上另执行。
