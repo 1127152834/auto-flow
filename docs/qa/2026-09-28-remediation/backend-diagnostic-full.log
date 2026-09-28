@@ -1,0 +1,541 @@
+........................................................................ [  1%]
+........................................................................ [  3%]
+........................................................................ [  4%]
+........................................................................ [  6%]
+........................................................................ [  8%]
+........................................................................ [  9%]
+........................................................................ [ 11%]
+........................................................................ [ 13%]
+........................................................................ [ 14%]
+........................................................................ [ 16%]
+........................................................................ [ 18%]
+........................................................................ [ 19%]
+........................................................................ [ 21%]
+........................................................................ [ 23%]
+........................................................................ [ 24%]
+........................................................................ [ 26%]
+........................................................................ [ 28%]
+........................................................................ [ 29%]
+........................................................................ [ 31%]
+........................................................................ [ 33%]
+........................................................................ [ 34%]
+........................................................................ [ 36%]
+........................................................................ [ 38%]
+........................................................................ [ 39%]
+....................................................s...ssssssssss...... [ 41%]
+.............ss...s....................................s..........sss... [ 43%]
+.............................................No new upgrade operations detected.
+........................... [ 44%]
+.............................ssssssssssssssssssss....................... [ 46%]
+........................................................................ [ 48%]
+........................................................................ [ 49%]
+........................................................................ [ 51%]
+........................................................................ [ 53%]
+........................................................................ [ 54%]
+...s.........................................F.......................... [ 56%]
+........................................................................ [ 58%]
+........................................................................ [ 59%]
+........................................................................ [ 61%]
+.FFFF................................................................s.. [ 63%]
+........................................................................ [ 64%]
+........................................................................ [ 66%]
+....ssss................................................................ [ 68%]
+........................................................................ [ 69%]
+........................................................................ [ 71%]
+........................................................................ [ 73%]
+........................................................................ [ 74%]
+........................................................................ [ 76%]
+........................................................................ [ 78%]
+........................................................................ [ 79%]
+........................................................................ [ 81%]
+........................................................................ [ 83%]
+........................................................................ [ 84%]
+........................................................................ [ 86%]
+........................................................................ [ 88%]
+........................................................................ [ 89%]
+........................................................................ [ 91%]
+........................................................................ [ 93%]
+........................................................................ [ 94%]
+........................................................................ [ 96%]
+........................................................................ [ 98%]
+........................................................................ [ 99%]
+.......                                                                  [100%]
+=================================== FAILURES ===================================
+______ test_stop_cancels_project_prompt_without_starting_next_node[True] _______
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-555/test_stop_cancels_project_prom1')
+competing_reply = True
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("competing_reply", [False, True])
+    async def test_stop_cancels_project_prompt_without_starting_next_node(tmp_path, competing_reply):
+        manager = ProjectWorkflowWorkerManager(tmp_path / "worker")
+        run_id = str(uuid4())
+        events = []
+        requested = asyncio.Event()
+    
+        async def persist(event):
+            events.append(event)
+            if event["kind"] == "interaction" and event["payload"]["type"] == "execution:input_prompt":
+                requested.set()
+    
+        task = asyncio.create_task(manager.run(
+            run_id=run_id, execution_generation=1,
+            execution_plan=plan("input_prompt", {"variableName": "answer", "timeout": 0}),
+            parameters={}, variables={}, browser={}, executable=None, on_event=persist,
+        ))
+        try:
+            await asyncio.wait_for(requested.wait(), 15)
+            if competing_reply:
+                worker = manager._worker
+                assert worker is not None
+                request = next(e["payload"] for e in events if e["kind"] == "interaction")
+                await worker.write_lock.acquire()
+                reply = asyncio.create_task(manager.send_command(run_id, 1, {
+                    "type": "input_prompt_result", "commandId": str(uuid4()),
+                    "requestId": request["requestId"], "value": "late",
+                }))
+                await asyncio.sleep(0)
+                stop = asyncio.create_task(manager.stop(run_id))
+                await asyncio.sleep(0)
+                worker.write_lock.release()
+                with pytest.raises(WorkflowWorkerError, match="交互请求已结束"):
+                    await reply
+                await stop
+            else:
+                await manager.stop(run_id)
+>           outcome = await asyncio.wait_for(task, 5)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/integration/test_project_interactive_worker.py:134: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/tasks.py:489: in wait_for
+    return fut.result()
+           ^^^^^^^^^^^^
+../../docs/qa/2026-09-28-remediation/cleanup_diagnostic_plugin.py:25: in observed_run
+    return await run(self, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/infrastructure/process/project_workflow_worker.py:187: in run
+    await self._cleanup(worker)
+src/autoflow/infrastructure/process/project_workflow_worker.py:450: in _cleanup
+    await wait_for_cleanup(worker.cleanup)
+src/autoflow/infrastructure/process/project_test_browser_worker.py:400: in wait_for_cleanup
+    await asyncio.shield(task)
+src/autoflow/infrastructure/process/project_workflow_worker.py:462: in _cleanup_owned
+    await force_process_tree(
+src/autoflow/infrastructure/process/project_test_browser_worker.py:439: in force_process_tree
+    owned = await asyncio.to_thread(capture_processes, process.pid, birth, directory, executable, owned, strict_ownership=strict_ownership)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/threads.py:25: in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/concurrent/futures/thread.py:58: in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../docs/qa/2026-09-28-remediation/cleanup_diagnostic_plugin.py:14: in capture
+    return original(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+pid = 5433, birth = 4502503347792
+directory = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-555/test_stop_cancels_project_prom1/worker/workflow-runs/6f646abf-551e-4b20-b222-672f5f6b560f/generation-1')
+executable = None, previous = None, strict_ownership = True
+
+    def capture_processes(
+        pid: int, birth: int | None, directory: Path | None, executable: Path | None,
+        previous: OwnedProcesses | None = None, *, strict_ownership: bool = False,
+    ) -> OwnedProcesses:
+        output = subprocess.check_output(["ps", "-ax", "-o", "pid=,ppid=,pgid=,command="], text=True)
+        rows = [line.split(None, 3) for line in output.splitlines()]
+        identities = {int(row[0]): process_birth(int(row[0])) for row in rows}
+        uncertain = {
+            item: identity for item, identity in (previous or {}).items()
+            if identities.get(item) is None and _process_exists(item)
+        }
+        if birth is not None and identities.get(pid) is None and _process_exists(pid):
+            uncertain[pid] = (pid, birth)  # The worker was launched as this session/group leader.
+        owned = {item for item, (_, started) in (previous or {}).items() if identities.get(item) == started}
+        if birth is not None and identities.get(pid) == birth:
+            owned.add(pid)
+        if directory is not None:
+            directory = directory.resolve()
+            executable = executable.resolve() if executable is not None else None
+            for row in rows:
+                item = int(row[0])
+                # Text is only a cheap candidate filter. Native executable, argv and the
+                # inherited per-run marker make the ownership decision below.
+                command = row[3] if len(row) == 4 else ""
+                if (str(directory) in command or "--test-browser-worker" in command
+                    or "--workflow-worker" in command or "--inspection-worker" in command
+                    or "--project-workflow-worker" in command
+                    or "/playwright/driver/" in command):
+                    belongs = _belongs_to_run(item, directory, executable)
+                    if belongs is None and strict_ownership and _process_exists(item):
+>                       raise RuntimeError("Candidate browser process ownership is unavailable")
+E                       RuntimeError: Candidate browser process ownership is unavailable
+
+src/autoflow/infrastructure/process/project_browser_processes.py:142: RuntimeError
+----------------------------- Captured stdout call -----------------------------
+REAL_CLEANUP_DIAGNOSTIC Traceback (most recent call last):
+  File "/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-remediation/cleanup_diagnostic_plugin.py", line 14, in capture
+    return original(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/src/autoflow/infrastructure/process/project_browser_processes.py", line 142, in capture_processes
+    raise RuntimeError("Candidate browser process ownership is unavailable")
+RuntimeError: Candidate browser process ownership is unavailable
+
+REAL_WORKER_DIAGNOSTIC Traceback (most recent call last):
+  File "/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-remediation/cleanup_diagnostic_plugin.py", line 25, in observed_run
+    return await run(self, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/src/autoflow/infrastructure/process/project_workflow_worker.py", line 187, in run
+    await self._cleanup(worker)
+  File "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/src/autoflow/infrastructure/process/project_workflow_worker.py", line 450, in _cleanup
+    await wait_for_cleanup(worker.cleanup)
+  File "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/src/autoflow/infrastructure/process/project_test_browser_worker.py", line 400, in wait_for_cleanup
+    await asyncio.shield(task)
+  File "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/src/autoflow/infrastructure/process/project_workflow_worker.py", line 462, in _cleanup_owned
+    await force_process_tree(
+  File "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/src/autoflow/infrastructure/process/project_test_browser_worker.py", line 439, in force_process_tree
+    owned = await asyncio.to_thread(capture_processes, process.pid, birth, directory, executable, owned, strict_ownership=strict_ownership)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/concurrent/futures/thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-remediation/cleanup_diagnostic_plugin.py", line 14, in capture
+    return original(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/src/autoflow/infrastructure/process/project_browser_processes.py", line 142, in capture_processes
+    raise RuntimeError("Candidate browser process ownership is unavailable")
+RuntimeError: Candidate browser process ownership is unavailable
+
+_____ test_open_sse_does_not_block_shutdown_or_worker_cleanup[False-host] ______
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-555/test_open_sse_does_not_block_s0')
+shutdown = 'host', active_worker = False
+
+    @pytest.mark.parametrize("shutdown", ["host", "signal"])
+    @pytest.mark.parametrize("active_worker", [False, True])
+    def test_open_sse_does_not_block_shutdown_or_worker_cleanup(
+        tmp_path: Path, shutdown: str, active_worker: bool,
+    ) -> None:
+        if shutdown == "signal" and sys.platform == "win32":
+            pytest.skip("Windows terminate is not a cooperative signal; host HTTP is tested")
+        # Only the external wrapper is replaced. The real entrypoint, HTTP/SSE,
+        # worker subprocess, manager, application cleanup and database all run.
+        wrapper = tmp_path / "wrapper" / "cloakbrowser"
+        wrapper.mkdir(parents=True)
+        (wrapper / "__init__.py").write_text('''
+    import os, signal, time
+    from pathlib import Path
+    
+    def ensure_binary(**kwargs):
+        signal.signal(signal.SIGTERM, signal.SIG_IGN)
+        cache = Path(os.environ["CLOAKBROWSER_CACHE_DIR"])
+        (cache / "partial").write_bytes(b"partial download")
+        (cache / "worker.pid").write_text(str(os.getpid()))
+        time.sleep(60)
+    ''')
+        env = {
+            **os.environ,
+            "AUTOFLOW_INSTANCE_TOKEN": "shutdown-test-token",
+            "AUTOFLOW_HOST_TOKEN": "shutdown-host-token",
+            "PYTHONPATH": os.pathsep.join((str(Path(__file__).parents[2] / "src"), str(wrapper.parent))),
+        }
+        data = tmp_path / "data"
+        with (tmp_path / "stderr.log").open("w+") as stderr:
+            process = subprocess.Popen(
+                [sys.executable, "-m", "autoflow", "--instance-id", "shutdown-test",
+                 "--data-dir", str(data), "--port", "0"],
+                env=env, stdout=subprocess.PIPE, stderr=stderr, text=True,
+            )
+            try:
+                assert process.stdout is not None
+>               ready = json.loads(process.stdout.readline().removeprefix("AUTOFLOW_READY "))
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/integration/test_sidecar_shutdown.py:84: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/json/decoder.py:337: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.decoder.JSONDecoder object at 0x10569cf10>, s = '', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/json/decoder.py:355: JSONDecodeError
+____ test_open_sse_does_not_block_shutdown_or_worker_cleanup[False-signal] _____
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-555/test_open_sse_does_not_block_s1')
+shutdown = 'signal', active_worker = False
+
+    @pytest.mark.parametrize("shutdown", ["host", "signal"])
+    @pytest.mark.parametrize("active_worker", [False, True])
+    def test_open_sse_does_not_block_shutdown_or_worker_cleanup(
+        tmp_path: Path, shutdown: str, active_worker: bool,
+    ) -> None:
+        if shutdown == "signal" and sys.platform == "win32":
+            pytest.skip("Windows terminate is not a cooperative signal; host HTTP is tested")
+        # Only the external wrapper is replaced. The real entrypoint, HTTP/SSE,
+        # worker subprocess, manager, application cleanup and database all run.
+        wrapper = tmp_path / "wrapper" / "cloakbrowser"
+        wrapper.mkdir(parents=True)
+        (wrapper / "__init__.py").write_text('''
+    import os, signal, time
+    from pathlib import Path
+    
+    def ensure_binary(**kwargs):
+        signal.signal(signal.SIGTERM, signal.SIG_IGN)
+        cache = Path(os.environ["CLOAKBROWSER_CACHE_DIR"])
+        (cache / "partial").write_bytes(b"partial download")
+        (cache / "worker.pid").write_text(str(os.getpid()))
+        time.sleep(60)
+    ''')
+        env = {
+            **os.environ,
+            "AUTOFLOW_INSTANCE_TOKEN": "shutdown-test-token",
+            "AUTOFLOW_HOST_TOKEN": "shutdown-host-token",
+            "PYTHONPATH": os.pathsep.join((str(Path(__file__).parents[2] / "src"), str(wrapper.parent))),
+        }
+        data = tmp_path / "data"
+        with (tmp_path / "stderr.log").open("w+") as stderr:
+            process = subprocess.Popen(
+                [sys.executable, "-m", "autoflow", "--instance-id", "shutdown-test",
+                 "--data-dir", str(data), "--port", "0"],
+                env=env, stdout=subprocess.PIPE, stderr=stderr, text=True,
+            )
+            try:
+                assert process.stdout is not None
+>               ready = json.loads(process.stdout.readline().removeprefix("AUTOFLOW_READY "))
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/integration/test_sidecar_shutdown.py:84: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/json/decoder.py:337: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.decoder.JSONDecoder object at 0x10569cf10>, s = '', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/json/decoder.py:355: JSONDecodeError
+______ test_open_sse_does_not_block_shutdown_or_worker_cleanup[True-host] ______
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-555/test_open_sse_does_not_block_s2')
+shutdown = 'host', active_worker = True
+
+    @pytest.mark.parametrize("shutdown", ["host", "signal"])
+    @pytest.mark.parametrize("active_worker", [False, True])
+    def test_open_sse_does_not_block_shutdown_or_worker_cleanup(
+        tmp_path: Path, shutdown: str, active_worker: bool,
+    ) -> None:
+        if shutdown == "signal" and sys.platform == "win32":
+            pytest.skip("Windows terminate is not a cooperative signal; host HTTP is tested")
+        # Only the external wrapper is replaced. The real entrypoint, HTTP/SSE,
+        # worker subprocess, manager, application cleanup and database all run.
+        wrapper = tmp_path / "wrapper" / "cloakbrowser"
+        wrapper.mkdir(parents=True)
+        (wrapper / "__init__.py").write_text('''
+    import os, signal, time
+    from pathlib import Path
+    
+    def ensure_binary(**kwargs):
+        signal.signal(signal.SIGTERM, signal.SIG_IGN)
+        cache = Path(os.environ["CLOAKBROWSER_CACHE_DIR"])
+        (cache / "partial").write_bytes(b"partial download")
+        (cache / "worker.pid").write_text(str(os.getpid()))
+        time.sleep(60)
+    ''')
+        env = {
+            **os.environ,
+            "AUTOFLOW_INSTANCE_TOKEN": "shutdown-test-token",
+            "AUTOFLOW_HOST_TOKEN": "shutdown-host-token",
+            "PYTHONPATH": os.pathsep.join((str(Path(__file__).parents[2] / "src"), str(wrapper.parent))),
+        }
+        data = tmp_path / "data"
+        with (tmp_path / "stderr.log").open("w+") as stderr:
+            process = subprocess.Popen(
+                [sys.executable, "-m", "autoflow", "--instance-id", "shutdown-test",
+                 "--data-dir", str(data), "--port", "0"],
+                env=env, stdout=subprocess.PIPE, stderr=stderr, text=True,
+            )
+            try:
+                assert process.stdout is not None
+>               ready = json.loads(process.stdout.readline().removeprefix("AUTOFLOW_READY "))
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/integration/test_sidecar_shutdown.py:84: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/json/decoder.py:337: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.decoder.JSONDecoder object at 0x10569cf10>, s = '', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/json/decoder.py:355: JSONDecodeError
+_____ test_open_sse_does_not_block_shutdown_or_worker_cleanup[True-signal] _____
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-555/test_open_sse_does_not_block_s3')
+shutdown = 'signal', active_worker = True
+
+    @pytest.mark.parametrize("shutdown", ["host", "signal"])
+    @pytest.mark.parametrize("active_worker", [False, True])
+    def test_open_sse_does_not_block_shutdown_or_worker_cleanup(
+        tmp_path: Path, shutdown: str, active_worker: bool,
+    ) -> None:
+        if shutdown == "signal" and sys.platform == "win32":
+            pytest.skip("Windows terminate is not a cooperative signal; host HTTP is tested")
+        # Only the external wrapper is replaced. The real entrypoint, HTTP/SSE,
+        # worker subprocess, manager, application cleanup and database all run.
+        wrapper = tmp_path / "wrapper" / "cloakbrowser"
+        wrapper.mkdir(parents=True)
+        (wrapper / "__init__.py").write_text('''
+    import os, signal, time
+    from pathlib import Path
+    
+    def ensure_binary(**kwargs):
+        signal.signal(signal.SIGTERM, signal.SIG_IGN)
+        cache = Path(os.environ["CLOAKBROWSER_CACHE_DIR"])
+        (cache / "partial").write_bytes(b"partial download")
+        (cache / "worker.pid").write_text(str(os.getpid()))
+        time.sleep(60)
+    ''')
+        env = {
+            **os.environ,
+            "AUTOFLOW_INSTANCE_TOKEN": "shutdown-test-token",
+            "AUTOFLOW_HOST_TOKEN": "shutdown-host-token",
+            "PYTHONPATH": os.pathsep.join((str(Path(__file__).parents[2] / "src"), str(wrapper.parent))),
+        }
+        data = tmp_path / "data"
+        with (tmp_path / "stderr.log").open("w+") as stderr:
+            process = subprocess.Popen(
+                [sys.executable, "-m", "autoflow", "--instance-id", "shutdown-test",
+                 "--data-dir", str(data), "--port", "0"],
+                env=env, stdout=subprocess.PIPE, stderr=stderr, text=True,
+            )
+            try:
+                assert process.stdout is not None
+>               ready = json.loads(process.stdout.readline().removeprefix("AUTOFLOW_READY "))
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/integration/test_sidecar_shutdown.py:84: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/json/decoder.py:337: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.decoder.JSONDecoder object at 0x10569cf10>, s = '', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/json/decoder.py:355: JSONDecodeError
+=============================== warnings summary ===============================
+.venv/lib/python3.11/site-packages/starlette/testclient.py:53
+  /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+SKIPPED [1] tests/integration/test_b1_cloakbrowser_flow.py:48: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_advanced_browser_cloakbrowser_flow.py:35: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_inspection_cloakbrowser_flow.py:35: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_inspection_cloakbrowser_flow.py:91: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_inspection_cloakbrowser_flow.py:207: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_inspection_cloakbrowser_flow.py:297: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_large_artifacts_cloakbrowser_flow.py:23: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_network_monitor_cloakbrowser_flow.py:26: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_page_load_cloakbrowser_flow.py:22: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_remaining_browser_cloakbrowser_flow.py:25: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_web_basic_cloakbrowser_flow.py:22: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b5_captcha_cloakbrowser_flow.py:38: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b5_firecrawl_cloakbrowser_flow.py:36: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b6_element_change_cloakbrowser_flow.py:22: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b7_recording_cloakbrowser_flow.py:22: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [2] tests/integration/test_environment_persist_restore.py:47: set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable
+SKIPPED [1] tests/integration/test_environment_real_browser_chain.py:26: set AUTOFLOW_TEST_CLOAKBROWSER to an installed CloakBrowser executable
+SKIPPED [20] tests/integration/test_project_batch_real_cloakbrowser.py:34: set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable
+SKIPPED [1] tests/integration/test_project_full_scenarios.py:32: set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable
+SKIPPED [1] tests/integration/test_studio_project_model_live.py:61: 真实模型计费验收仅由 AUTOFLOW_LIVE_MODEL_TEST=1 显式启用
+SKIPPED [3] tests/integration/test_workflow_real_cloakbrowser.py:71: set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable
+SKIPPED [1] tests/integration/test_workflow_real_cloakbrowser.py:126: set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable
+FAILED tests/integration/test_project_interactive_worker.py::test_stop_cancels_project_prompt_without_starting_next_node[True]
+FAILED tests/integration/test_sidecar_shutdown.py::test_open_sse_does_not_block_shutdown_or_worker_cleanup[False-host]
+FAILED tests/integration/test_sidecar_shutdown.py::test_open_sse_does_not_block_shutdown_or_worker_cleanup[False-signal]
+FAILED tests/integration/test_sidecar_shutdown.py::test_open_sse_does_not_block_shutdown_or_worker_cleanup[True-host]
+FAILED tests/integration/test_sidecar_shutdown.py::test_open_sse_does_not_block_shutdown_or_worker_cleanup[True-signal]
+5 failed, 4278 passed, 44 skipped, 1 warning in 1060.16s (0:17:40)

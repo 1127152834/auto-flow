@@ -1,0 +1,7 @@
+{
+  "kind": "real POSIX process ownership boundary, not workflow execution",
+  "attempts": 100,
+  "failures": [],
+  "unavailableObservations": [],
+  "ownedChildrenReaped": true
+}
