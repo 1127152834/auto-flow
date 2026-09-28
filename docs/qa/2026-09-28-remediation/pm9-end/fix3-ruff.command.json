@@ -1,0 +1,13 @@
+{
+  "command": [
+    ".venv/bin/python",
+    "-m",
+    "ruff",
+    "check",
+    "tests/unit/workflows/test_executor_registry.py"
+  ],
+  "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend",
+  "exitCode": 0,
+  "seconds": 0.09,
+  "environment": {}
+}

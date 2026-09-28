@@ -1,0 +1,33 @@
+ FAIL  src/renderer/domains/workflows/lib/__tests__/moduleColors.audit.test.ts > 模块配色三处同源审计 - module-integrity-audit Property 7 > Property 7: 画布节点、缩略图 hex、模块条视图三处取色同源于分类 color
+AssertionError: 被核验的模块数异常偏少，审计可能空跑: expected 218 to be 217 // Object.is equality
+
+- Expected
++ Received
+
+- 217
++ 218
+
+ ❯ src/renderer/domains/workflows/lib/__tests__/moduleColors.audit.test.ts:235:43
+    233|     // 防空跑：分类清单为空或解析异常时，上面的循环不会报错却什么也没测。
+    234|     // 用户追加排除48个数据库及9个DP节点；保留严格数量与逐项配色断言。
+    235|     expect(checked, '被核验的模块数异常偏少，审计可能空跑').toBe(217)
+       |                                           ^
+    236|     expect(
+    237|       mismatches,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 431 passed (432)
+      Tests  1 failed | 5663 passed (5664)
+   Start at  14:50:43
+   Duration  190.11s (transform 8.30s, setup 9.31s, import 225.82s, tests 318.94s, environment 161.60s)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run
+

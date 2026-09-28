@@ -1,0 +1,27 @@
+            "api_trigger",
+            "webhook_trigger",
+            "file_watcher_trigger",
+            "email_trigger",
+            "element_change_trigger",
+            "hotkey_trigger",
+            "mouse_trigger",
+            "image_trigger",
+            "face_trigger",
+            "run_workflow_file",
+            "subflow",
+            "custom_module",
+        }
+E       AssertionError: assert {'ai_chat', '...e_image', ...} == {'ai_chat', '...e_image', ...}
+E         
+E         Extra items in the left set:
+E         'project_end'
+E         Use -v to get more diff
+
+tests/unit/workflows/test_executor_registry.py:69: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.11/site-packages/starlette/testclient.py:53
+  /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+FAILED tests/unit/workflows/test_executor_registry.py::test_production_registry_contains_every_migrated_executor
+1 failed, 4325 passed, 50 skipped, 1 warning in 1106.46s (0:18:26)

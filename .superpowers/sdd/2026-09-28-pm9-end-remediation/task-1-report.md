@@ -195,3 +195,15 @@ ruff 剩余为 `test_competing_end` 附近未使用 factory，需核实后改为
 - 红证据：`fix2-red` 3新增组件失败/5旧项通过；`fix2-typecheck` 拒绝repair kind；`fix2-http-red` 是真实SQLite已保存修复操作被FastAPI响应模型拒绝。绿：`fix2-final` 29项（TaskEndPanel、operation-command、TaskDetail）；`fix2-http-final` 1项真实SQLite + TestClient/ASGI路由校验项目/key/operationId及完整结果；`fix2-contracts` 6项；TypeScript、OpenAPI、ESLint、后端cwd Ruff和2模型mypy通过。所有精确命令/退出码归档同QA `fix2-*`，集合不累计。
 - 新组件回归覆盖：服务器提交后丢响应立即原键查回；提交与查询双未知后按钮禁新发；卸载重开/instance重连原键只查（共仅1次repair POST）；旧连接迟到成功不清新页面pending；跨workspace隔离；存储失败阻止POST。传输由组件替身明确模拟，不冒称物理网络断连验收；后端单例验证实际SQLite事实和FastAPI序列化，未经过真实TCP断连。
 - 无需重跑原100项后端或真实浏览器；本轮未构建冻结包、未做Electron手工、Windows/Intel或物理故障测试。未改AOCI、主控QA脚本、清理helper、其他WIP；不push。
+
+
+## 2026-09-28 独立审查修复 round 3/5（FIX_BASE 7ca46614）
+
+状态：DONE（已批准 End 引起的两处精确测试基线遗漏）；置信：高，限本轮定向验证。按 task-5-brief 最新裁定归入 Task1，保留前阶段事实。
+
+- 源码绑定：生产 `executors/production.py` 已显式导入并注册 `ProjectEndExecutor`，执行器 module_type 为 `project_end`；前端 `lib/moduleCatalog.ts` 的“项目数据”分类已有 project_data/project_end。批准来源为 PM9 production-runtime-integration 规格及 Task1 brief，不新增产品能力。
+- 后端仅给 `test_production_registry_contains_every_migrated_executor` 的精确预期集合补入 `project_end`；保留集合相等、所有旧项及整个文件其余断言。前端仅将三处同源审计精确 checked 基线 217 改为 218，并注明 PM9 project_end 来源；保留独立逐项推导、全部颜色断言、防空跑与历史来源说明。
+- RED 复用主控稳定全量：d6f9cb0f 后端 4325 pass / 1 fail / 50 skip（唯一多出 project_end）；30ae0138 前端 5663 pass / 1 fail（expected 217, received 218）。本轮没有重复全量。精确原 argv/cwd/exitCode/head、源日志 SHA256 和截取输出归档 `fix3-red-evidence.json`、`fix3-{backend,frontend}-red-excerpt.log`；原始 final 日志由主控保留，没有修改。
+- GREEN：完整 registry 文件 + production End worker/SQLite 准入 + End 控制流共 51 pass；完整 moduleColors.audit + ProjectEndConfig 共 11 pass；后端 cwd Ruff 与定向 ESLint 均 exit 0。精确 argv/cwd/exitCode/output 在 QA `fix3-{backend,frontend,ruff,eslint}.command.json/.log`，pytest 独立 basetemp `/tmp/autoflow-pm9-end.VJiYLQ` 保留。现有 Starlette 弃用和 Node localStorage 实验警告保留，不误报零警告。
+- 本轮没有业务源码、契约、迁移、依赖或生成文件变化；没有重跑全量、构建、真实浏览器、类型/OpenAPI。主控负责最终全量复验，本轮不把既有真实成功计作新增证据，不宣称全部 PM9 完成。
+- 压缩后在主控独占窗口完成一次 AOCI 普通完整交付（358条、6块），确认交付、首次 Challenge pass 9/10；治理 dirty/stale，后续判断源码绑定，不进行维护或更改 AOCI 资产。窗口已通知主控解除。仅显式暂存本轮文件，不 push、不碰其他任务 WIP。

@@ -1,0 +1,13 @@
+{
+  "command": [
+    "npm",
+    "test",
+    "--",
+    "src/renderer/domains/workflows/lib/__tests__/moduleColors.audit.test.ts",
+    "src/renderer/domains/workflows/components/config-panels/ProjectEndConfig.test.tsx"
+  ],
+  "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop",
+  "exitCode": 0,
+  "seconds": 1.79,
+  "environment": {}
+}

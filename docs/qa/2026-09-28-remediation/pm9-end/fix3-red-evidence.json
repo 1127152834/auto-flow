@@ -1,0 +1,51 @@
+[
+  {
+    "sourceLog": "docs/qa/2026-09-28-remediation/final-backend-default.log",
+    "sourceSha256": "dbc2bcd7025d0ca5921d571d6fdb295b818f03469f9a07bf2f055a1d5d9717a5",
+    "sourceCommand": "docs/qa/2026-09-28-remediation/final-backend-default.command.json",
+    "record": {
+      "command": [
+        "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "-ra",
+        "--junitxml=/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-remediation/final-backend-default.xml",
+        "--basetemp=/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-final-backend-9i1sb3fr",
+        "-p",
+        "cleanup_diagnostic_plugin"
+      ],
+      "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend",
+      "head": "d6f9cb0f8f9dd99be6e4734641fe3144f232f336",
+      "sourceBefore": "5f0ce0ca0eb8ab0c7a6871d583c2aaa6d1341234494ad961aa256d96dcc53b4b",
+      "startedAt": "2026-09-28T14:10:44+0800",
+      "basetemp": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-final-backend-9i1sb3fr",
+      "diagnosticPlugin": "/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-remediation/cleanup_diagnostic_plugin.py",
+      "exitCode": 1,
+      "seconds": 1114.94,
+      "sourceAfter": "5f0ce0ca0eb8ab0c7a6871d583c2aaa6d1341234494ad961aa256d96dcc53b4b"
+    },
+    "excerpt": "docs/qa/2026-09-28-remediation/pm9-end/fix3-backend-red-excerpt.log",
+    "method": "Existing root full regression; not rerun in round3."
+  },
+  {
+    "sourceLog": "docs/qa/2026-09-28-remediation/final-frontend-default.log",
+    "sourceSha256": "5b1d3b3b2a532fdaae2b4a05b63ea71eac79905d672d51539f9e2efac1f94caf",
+    "sourceCommand": "docs/qa/2026-09-28-remediation/final-frontend-gates.command.json",
+    "record": {
+      "command": [
+        "npm",
+        "test"
+      ],
+      "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow",
+      "head": "30ae01383212bd7d39600611e44707832ca97fc9",
+      "sourceBefore": "1bdaf9f38230f9c0772705acb41fbdb5ccc4fb70e9a4f6ea2888deb5cb0c623c",
+      "startedAt": "2026-09-28T14:50:42+0800",
+      "exitCode": 1,
+      "seconds": 190.82,
+      "sourceAfter": "1bdaf9f38230f9c0772705acb41fbdb5ccc4fb70e9a4f6ea2888deb5cb0c623c"
+    },
+    "excerpt": "docs/qa/2026-09-28-remediation/pm9-end/fix3-frontend-red-excerpt.log",
+    "method": "Existing root full regression; not rerun in round3."
+  }
+]

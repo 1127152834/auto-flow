@@ -47,3 +47,10 @@
 FIX_BASE `1fdda1c8`。`fix2-red` 3新增组件红；`fix2-typecheck` 暴露公共操作kind缺口；`fix2-http-red` 证明真实SQLite修复操作无法通过原公共by-key FastAPI响应校验。修复后 `fix2-final` 29前端、`fix2-http-final` 1 SQLite/ASGI合同、`fix2-contracts` 6项目合同通过；`fix2-typecheck-final`、`fix2-eslint-final`、`fix2-openapi`、`fix2-ruff`、`fix2-mypy` 全exit0。`fix2-green` 18项是更早较小集合，`fix2-http-green` 是补身份断言前的同一场景，不能重复计数。
 
 组件传输模拟服务器提交后丢响应/查询不可用；验证固定持久键、未知禁新提交、重开和连接/workspace资格隔离及仅1次POST。后端通过TestClient实际ASGI路由验证SQLite持久操作的原key/project/operationId，不是物理TCP断连。本轮未再跑真实浏览器或冻结包，没有新外部成功声明。完整说明见task-1-report round2。
+
+
+### Round 3 — 精确注册表与配色审计基线
+
+批准 project_end 后遗漏的两处测试基线已补齐；业务源码不变。`fix3-red-evidence.json` 保存主控既有完整回归的精确命令、退出码、源码身份、日志 SHA256；两个 `fix3-*-red-excerpt.log` 保存唯一失败输出。既有红灯未重复执行。
+
+`fix3-backend`：完整注册表、End worker/准入与控制流 51通过；`fix3-frontend`：完整配色审计及 ProjectEndConfig 11通过；`fix3-ruff`/`fix3-eslint` 通过。每组都有精确 `.command.json` 和 `.log`。pytest 临时目录保留。未新增真实浏览器、冻结或平台证据，最终全量仍归主控。
