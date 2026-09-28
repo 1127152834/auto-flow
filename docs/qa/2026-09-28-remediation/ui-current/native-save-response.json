@@ -1,0 +1,12 @@
+{
+  "status": 409,
+  "path": "/api/workflows",
+  "body": {
+    "error": {
+      "code": "WORKFLOW_ID_CONFLICT",
+      "message": "工作流 ID 已存在",
+      "details": {},
+      "requestId": "21d04017-0b15-4ee8-b014-8ea3cc73cae4"
+    }
+  }
+}

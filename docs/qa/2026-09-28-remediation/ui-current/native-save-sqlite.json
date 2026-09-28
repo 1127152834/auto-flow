@@ -1,0 +1,15 @@
+{
+  "documents": [
+    {
+      "id": "6a1b5743-f4fe-496f-887c-6a0f49e17e50",
+      "name": "实际package.json脚本审计 · 保存修复验收",
+      "revision": 2
+    }
+  ],
+  "integrity": [
+    [
+      "ok"
+    ]
+  ],
+  "foreignKeys": []
+}

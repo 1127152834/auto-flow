@@ -1,0 +1,10 @@
+{
+  "hash": "#/lab",
+  "text": "AutoFlow\n总览\n项目\n浏览器配置\n安卓设备\n代理管理\n模型管理\n实验室\n设置\n本地服务正常\n\nAUTOFLOW / LAB\n\n实验室\n\n用本地模型把消息转成可观察的决策，再预览它将如何参与自动化。这里的动作只做模拟。\n\nLaya 决策实验\n\n从示例开始，或直接修改输入和问题。首次运行某个模型时需下载权重。\n\n客服工单分流\n重复扣款识别\n紧急程度判断\n退款请求识别\nPrompt Injection 检测\n中文多语言路由\n选择模型\nRouter · 自动路由\n\nTyped Decisions 仅适合其训练过的英语工作流；中文建议使用 Router 或 Multilingual。\n\n文本 / 邮件 / 工单\nJSON 数据\n待判断内容\n\n最多 16 KiB；具体 token 限额取决于所选模型和候选项长度。\n\n判断问题\n\n一次最多提出 8 个问题，模型会在同一次推理中回答。\n\n添加问题\n问题 1\n移除\n问题 ID\n类型\nchoice · 分类\n问题说明\n候选项与说明\n移除\n移除\n移除\n移除\n添加候选\n问题 2\n移除\n问题 ID\n类型\nscore · 评分\n问题说明\n评分等级（从低到高）\n移除\n移除\n移除\n添加等级\n运行 Laya 推理\n正在判断…\nenglish：未下载\nmultilingual：未下载\ntyped-decisions：未下载\nauto：可路由\n等待一次判断\n\n选择示例或编辑问题，然后运行 Laya。结果和路由信息会显示在这里。\n\n实验记录\n\n手动保存，最多保留当前工作区最近 20 条。原始输入存于此设备。\n\n尚未保存实验。",
+  "viewport": [
+    1440,
+    992
+  ],
+  "width": 1428,
+  "alerts": []
+}

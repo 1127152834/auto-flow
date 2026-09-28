@@ -1,0 +1,416 @@
+{
+  "operations": [
+    {
+      "id": "817a65b4-c2a7-41c8-b9f9-9746698a4651",
+      "project_id": "53782b65-c34a-449a-9fad-fd25b49bfa0d",
+      "idempotency_key": "15344300-29eb-4130-90e8-c57f578cc6fe",
+      "kind": "exportXlsx",
+      "request_digest": "509565413e0e25ea0a565d18350e0a0462f8867c481fc5bf3a82dcf5abd770c2",
+      "status": "succeeded",
+      "status_revision": 3,
+      "resource": {
+        "type": "table",
+        "projectId": "53782b65-c34a-449a-9fad-fd25b49bfa0d",
+        "tableId": "87ab9bd1-a83b-4efe-a563-0d8cea2272d5"
+      },
+      "result": {
+        "filename": ":Users:zhangtiancheng:Documents:projects:autoflow:docs:qa:2026-09-28-remediation:ui-current:native-export.xlsx",
+        "sha256": "87a1a384d19c834dbc6e3d20aa09e9a9365912f502bcdea716bece0459617c43",
+        "recordCount": 5
+      },
+      "error": "null",
+      "created_at": "2026-09-28 03:27:03.058260",
+      "updated_at": "2026-09-28 03:27:03.078607",
+      "completed_at": "2026-09-28 03:27:03.078607"
+    },
+    {
+      "id": "6a5afd2e-3617-415c-8bc7-33bfa8c7d491",
+      "project_id": "53782b65-c34a-449a-9fad-fd25b49bfa0d",
+      "idempotency_key": "5404359e-8f49-448a-9c99-be754077690f",
+      "kind": "inspectExcel",
+      "request_digest": "fb847626cc15c23f256051836fc83db60ae4290ac4e393f6a2e8d0c6c1b9dd7d",
+      "status": "succeeded",
+      "status_revision": 3,
+      "resource": {
+        "type": "project",
+        "projectId": "53782b65-c34a-449a-9fad-fd25b49bfa0d"
+      },
+      "result": {
+        "inspectionId": "db7eb58a-bef0-42e8-b3c6-9fd1902c3fa8",
+        "fingerprint": "87a1a384d19c834dbc6e3d20aa09e9a9365912f502bcdea716bece0459617c43",
+        "filename": "native-export.xlsx",
+        "expiresAt": "2026-09-28T03:34:10.250000+00:00",
+        "sheets": [
+          {
+            "sheetId": "1",
+            "name": "Data",
+            "headers": [
+              "源文件路径",
+              "字节数",
+              "SHA-256",
+              "状态"
+            ],
+            "sample": [
+              [
+                "docs/PROJECT_STRUCTURE.md",
+                "59250",
+                "bf468c23f3732b1f8719078b91e0ef908ce795df925628e1aa766f654b1364a8",
+                null
+              ],
+              [
+                "package.json",
+                "1055",
+                "6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92",
+                null
+              ],
+              [
+                "AGENTS.md",
+                "15594",
+                "4d0f5761fc2b047e9f10c2fc37d3849ac291dc6a0aeb065f0c935c6350598154",
+                null
+              ],
+              [
+                "/Users/zhangtiancheng/Documents/projects/autoflow/README.md",
+                "1575",
+                "b3f7f413926ee62c04aba0c253b8453e69d5d834ed0f798401875db55c8221ee",
+                null
+              ],
+              [
+                "apps/backend/pyproject.toml",
+                "1460",
+                "4e49812742d3362808878fc11614cbb6884b94a1f6c13b93a9775d6b2d6d84f1",
+                null
+              ]
+            ],
+            "rowCount": 5,
+            "ignoredEmptyRowCount": 0,
+            "formulaRowCount": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "identityCandidates": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "issues": []
+          }
+        ],
+        "issues": []
+      },
+      "error": "null",
+      "created_at": "2026-09-28 03:29:16.643094",
+      "updated_at": "2026-09-28 03:29:16.655370",
+      "completed_at": "2026-09-28 03:29:16.655370"
+    },
+    {
+      "id": "3bd5adb0-1892-4ba4-8c61-703835c6549b",
+      "project_id": "53782b65-c34a-449a-9fad-fd25b49bfa0d",
+      "idempotency_key": "5a0b6113-4a53-458e-b7ef-f77deef275f4",
+      "kind": "importExcel",
+      "request_digest": "45a2926ebbe6bdc1c2461f21be2fd1e8ab8366209ff0e179e0ad5f80363f145c",
+      "status": "failed",
+      "status_revision": 3,
+      "resource": {
+        "type": "project",
+        "projectId": "53782b65-c34a-449a-9fad-fd25b49bfa0d"
+      },
+      "result": "null",
+      "error": {
+        "code": "INVALID_PROJECT_DATA",
+        "message": "来源单元格不满足字段要求。",
+        "details": {
+          "field": "bytes",
+          "reason": "must be a finite JSON-safe number",
+          "rule": "type",
+          "rowNumber": 2,
+          "columnIndex": 1
+        }
+      },
+      "created_at": "2026-09-28 03:30:12.196550",
+      "updated_at": "2026-09-28 03:30:12.214720",
+      "completed_at": "2026-09-28 03:30:12.214720"
+    },
+    {
+      "id": "eec1feb6-26f6-4f99-8b01-75714f38f385",
+      "project_id": "53782b65-c34a-449a-9fad-fd25b49bfa0d",
+      "idempotency_key": "617ea137-a0b3-48c7-9987-93abea1110b0",
+      "kind": "importExcel",
+      "request_digest": "88c5564be7429fe6ee52db3b6c07c712e5b924c395dae44d40812155795b9cfe",
+      "status": "succeeded",
+      "status_revision": 3,
+      "resource": {
+        "type": "table",
+        "projectId": "53782b65-c34a-449a-9fad-fd25b49bfa0d",
+        "tableId": "6a6b0659-a66e-4031-966e-950bdd194b19"
+      },
+      "result": {
+        "table": {
+          "projectId": "53782b65-c34a-449a-9fad-fd25b49bfa0d",
+          "tableId": "6a6b0659-a66e-4031-966e-950bdd194b19",
+          "name": "原生导入源码清单",
+          "description": "",
+          "sourceKind": "excel",
+          "source": {
+            "kind": "excel",
+            "filename": "native-export.xlsx",
+            "sheetName": "Data",
+            "importedAt": "2026-09-28T03:31:33.693668+00:00"
+          },
+          "datasetGeneration": "05c5f74c-c1e7-40a3-b342-ab7fb3e0d5aa",
+          "tableRevision": 1,
+          "identity": {
+            "mode": "system"
+          },
+          "slotDefinitions": [],
+          "recordCount": 5,
+          "syncSummary": {
+            "status": "notApplicable",
+            "pendingCount": 0,
+            "unknownCount": 0
+          },
+          "createdAt": "2026-09-28T03:31:33.700678+00:00",
+          "updatedAt": "2026-09-28T03:31:33.713357+00:00"
+        },
+        "importedRecordCount": 5
+      },
+      "error": "null",
+      "created_at": "2026-09-28 03:31:33.693668",
+      "updated_at": "2026-09-28 03:31:33.713357",
+      "completed_at": "2026-09-28 03:31:33.713357"
+    }
+  ],
+  "runs": [
+    {
+      "id": "bc0795a2-9e32-4e89-ad0e-8c886669d957",
+      "workflow_id": "6a1b5743-f4fe-496f-887c-6a0f49e17e50",
+      "request_hash": "290297c41a7b9c39661988ae69546c031e0668ef7bd46fd99ce97f8128bcf7a7",
+      "started_at": "2026-09-28T03:12:15.914189+00:00",
+      "active_slot": null,
+      "payload": {
+        "documentId": "6a1b5743-f4fe-496f-887c-6a0f49e17e50",
+        "projectId": "53782b65-c34a-449a-9fad-fd25b49bfa0d",
+        "workflowName": "实际package.json脚本审计",
+        "documentSnapshot": {
+          "nodes": [
+            {
+              "id": "js-audit",
+              "type": "js_script",
+              "data": {
+                "moduleType": "js_script",
+                "label": "JS脚本",
+                "code": "// 真实 package.json 回归；Monaco 0.57.0 编辑保存检查\nfunction main(vars) { const pkg = {\"name\":\"autoflow\",\"private\":true,\"workspaces\":[\"apps/desktop\"],\"scripts\":{\"test:structure\":\"node --test scripts/structure.test.mjs\",\"dev\":\"npm --workspace @autoflow/desktop run dev\",\"test\":\"npm --workspace @autoflow/desktop test\",\"typecheck\":\"npm --workspace @autoflow/desktop run typecheck\",\"lint\":\"npm --workspace @autoflow/desktop run lint\",\"build\":\"npm --workspace @autoflow/desktop run build\",\"backend:build\":\"node scripts/build-backend.mjs\",\"package:dir\":\"npm --workspace @autoflow/desktop run package:dir\",\"openapi:generate\":\"node scripts/generate-api.mjs\",\"openapi:check\":\"node scripts/generate-api.mjs --check\",\"smoke:sidecar\":\"node scripts/smoke-sidecar.mjs\",\"test:scripts\":\"node --test scripts/*.test.mjs\",\"smoke:desktop\":\"node scripts/smoke-desktop.mjs\",\"smoke:studio\":\"node scripts/smoke-studio-window.mjs\",\"test:pm2\":\"node scripts/verify-pm2-delivery.mjs\"},\"devDependencies\":{\"openapi-typescript\":\"^7.13.0\"}}; return {name: pkg.name, scripts: Object.keys(pkg.scripts).sort(), workspaces: pkg.workspaces}; }",
+                "resultVariable": "source_audit"
+              }
+            }
+          ],
+          "edges": [],
+          "variables": []
+        },
+        "layoutSnapshot": {
+          "nodes": {
+            "js-audit": {
+              "position": {
+                "x": 100,
+                "y": 100
+              }
+            }
+          }
+        },
+        "profileId": "e79a5e32-c414-4c38-8a56-1894e53d0bce",
+        "profileSnapshot": {
+          "id": "e79a5e32-c414-4c38-8a56-1894e53d0bce",
+          "fingerprintSeed": 19004,
+          "name": "源码审计运行配置",
+          "description": "公开内核，独立工作区",
+          "locale": "zh-CN",
+          "timezone": "Asia/Shanghai",
+          "geoip": false,
+          "headless": true,
+          "humanize": false,
+          "human_preset": "default",
+          "user_agent": null,
+          "viewport": null,
+          "color_scheme": "light",
+          "extension_paths": [],
+          "expert_args": [],
+          "browser_version": "145.0.7632.109.2",
+          "browser_edition": "public",
+          "release_channel": "stable",
+          "proxy_mode": "none",
+          "proxy_id": null,
+          "proxy_pool_id": null,
+          "runOptions": {
+            "headless": false,
+            "startNodeId": null,
+            "runToNodeId": null,
+            "mode": "run",
+            "stepMode": false,
+            "breakpoints": []
+          }
+        },
+        "mode": "run",
+        "customModuleSnapshots": {},
+        "status": "completed",
+        "cleanupState": "completed",
+        "startedAt": "2026-09-28T03:12:15.914189+00:00",
+        "finishedAt": "2026-09-28T03:12:16.901879+00:00",
+        "currentNodeId": "js-audit",
+        "eventCount": 7,
+        "logCount": 2,
+        "stopRequested": false,
+        "error": null
+      }
+    }
+  ],
+  "runEvents": [
+    {
+      "run_id": "bc0795a2-9e32-4e89-ad0e-8c886669d957",
+      "seq": 1,
+      "payload": {
+        "type": "execution:running",
+        "occurredAt": "2026-09-28T03:12:16.522704+00:00",
+        "payload": {},
+        "nodeId": null,
+        "executionId": null
+      }
+    },
+    {
+      "run_id": "bc0795a2-9e32-4e89-ad0e-8c886669d957",
+      "seq": 2,
+      "payload": {
+        "type": "execution:node_start",
+        "occurredAt": "2026-09-28T03:12:16.533971+00:00",
+        "payload": {
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        },
+        "nodeId": "js-audit",
+        "executionId": "64b0652e-5ece-4e27-87b9-975329bfd3e3"
+      }
+    },
+    {
+      "run_id": "bc0795a2-9e32-4e89-ad0e-8c886669d957",
+      "seq": 3,
+      "payload": {
+        "type": "execution:js_script",
+        "occurredAt": "2026-09-28T03:12:16.537119+00:00",
+        "payload": {
+          "requestId": "79c00cdb-18d8-4c8e-bb4d-5b4ee15dedb9",
+          "nodeId": "js-audit",
+          "executionId": "64b0652e-5ece-4e27-87b9-975329bfd3e3",
+          "code": "// 真实 package.json 回归；Monaco 0.57.0 编辑保存检查\nfunction main(vars) { const pkg = {\"name\":\"autoflow\",\"private\":true,\"workspaces\":[\"apps/desktop\"],\"scripts\":{\"test:structure\":\"node --test scripts/structure.test.mjs\",\"dev\":\"npm --workspace @autoflow/desktop run dev\",\"test\":\"npm --workspace @autoflow/desktop test\",\"typecheck\":\"npm --workspace @autoflow/desktop run typecheck\",\"lint\":\"npm --workspace @autoflow/desktop run lint\",\"build\":\"npm --workspace @autoflow/desktop run build\",\"backend:build\":\"node scripts/build-backend.mjs\",\"package:dir\":\"npm --workspace @autoflow/desktop run package:dir\",\"openapi:generate\":\"node scripts/generate-api.mjs\",\"openapi:check\":\"node scripts/generate-api.mjs --check\",\"smoke:sidecar\":\"node scripts/smoke-sidecar.mjs\",\"test:scripts\":\"node --test scripts/*.test.mjs\",\"smoke:desktop\":\"node scripts/smoke-desktop.mjs\",\"smoke:studio\":\"node scripts/smoke-studio-window.mjs\",\"test:pm2\":\"node scripts/verify-pm2-delivery.mjs\"},\"devDependencies\":{\"openapi-typescript\":\"^7.13.0\"}}; return {name: pkg.name, scripts: Object.keys(pkg.scripts).sort(), workspaces: pkg.workspaces}; }",
+          "variables": {},
+          "workflowId": "6a1b5743-f4fe-496f-887c-6a0f49e17e50"
+        },
+        "nodeId": "js-audit",
+        "executionId": "64b0652e-5ece-4e27-87b9-975329bfd3e3"
+      }
+    },
+    {
+      "run_id": "bc0795a2-9e32-4e89-ad0e-8c886669d957",
+      "seq": 4,
+      "payload": {
+        "type": "execution:node-succeeded",
+        "occurredAt": "2026-09-28T03:12:16.574502+00:00",
+        "payload": {
+          "result": {
+            "success": true,
+            "message": "JS脚本执行成功，返回值: {'name': 'autoflow', 'scripts': ['backend:build', 'build', 'dev', 'lint', 'openapi:check', 'openapi:...",
+            "error": null,
+            "data": {
+              "result": {
+                "name": "autoflow",
+                "scripts": [
+                  "backend:build",
+                  "build",
+                  "dev",
+                  "lint",
+                  "openapi:check",
+                  "openapi:generate",
+                  "package:dir",
+                  "smoke:desktop",
+                  "smoke:sidecar",
+                  "smoke:studio",
+                  "test",
+                  "test:pm2",
+                  "test:scripts",
+                  "test:structure",
+                  "typecheck"
+                ],
+                "workspaces": [
+                  "apps/desktop"
+                ]
+              }
+            }
+          },
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        },
+        "nodeId": "js-audit",
+        "executionId": "64b0652e-5ece-4e27-87b9-975329bfd3e3"
+      }
+    },
+    {
+      "run_id": "bc0795a2-9e32-4e89-ad0e-8c886669d957",
+      "seq": 5,
+      "payload": {
+        "type": "execution:log",
+        "occurredAt": "2026-09-28T03:12:16.576445+00:00",
+        "payload": {
+          "level": "success",
+          "message": "JS脚本执行成功，返回值: {'name': 'autoflow', 'scripts': ['backend:build', 'build', 'dev', 'lint', 'openapi:check', 'openapi:...",
+          "isUserLog": true,
+          "isSystemLog": false,
+          "duration": 48.47624999820255,
+          "executionContext": {
+            "scopes": [],
+            "loops": []
+          }
+        },
+        "nodeId": "js-audit",
+        "executionId": "64b0652e-5ece-4e27-87b9-975329bfd3e3"
+      }
+    },
+    {
+      "run_id": "bc0795a2-9e32-4e89-ad0e-8c886669d957",
+      "seq": 6,
+      "payload": {
+        "type": "execution:log",
+        "occurredAt": "2026-09-28T03:12:16.901879+00:00",
+        "payload": {
+          "level": "success",
+          "message": "执行完成，共执行 1 个节点，失败 0 个"
+        },
+        "nodeId": null,
+        "executionId": null
+      }
+    },
+    {
+      "run_id": "bc0795a2-9e32-4e89-ad0e-8c886669d957",
+      "seq": 7,
+      "payload": {
+        "type": "execution:completed",
+        "occurredAt": "2026-09-28T03:12:16.901879+00:00",
+        "payload": {
+          "error": null
+        },
+        "nodeId": null,
+        "executionId": null
+      }
+    }
+  ],
+  "integrity": [
+    [
+      "ok"
+    ]
+  ],
+  "foreignKeys": []
+}

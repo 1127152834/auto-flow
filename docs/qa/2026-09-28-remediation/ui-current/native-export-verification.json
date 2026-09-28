@@ -1,0 +1,38 @@
+{
+  "source": "native macOS Save dialog + production export",
+  "rows": [
+    [
+      "源文件路径",
+      "字节数",
+      "SHA-256",
+      "状态"
+    ],
+    [
+      "docs/PROJECT_STRUCTURE.md",
+      "59250",
+      "bf468c23f3732b1f8719078b91e0ef908ce795df925628e1aa766f654b1364a8"
+    ],
+    [
+      "package.json",
+      "1055",
+      "6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92"
+    ],
+    [
+      "AGENTS.md",
+      "15594",
+      "4d0f5761fc2b047e9f10c2fc37d3849ac291dc6a0aeb065f0c935c6350598154"
+    ],
+    [
+      "/Users/zhangtiancheng/Documents/projects/autoflow/README.md",
+      "1575",
+      "b3f7f413926ee62c04aba0c253b8453e69d5d834ed0f798401875db55c8221ee"
+    ],
+    [
+      "apps/backend/pyproject.toml",
+      "1460",
+      "4e49812742d3362808878fc11614cbb6884b94a1f6c13b93a9775d6b2d6d84f1"
+    ]
+  ],
+  "sha256": "87a1a384d19c834dbc6e3d20aa09e9a9365912f502bcdea716bece0459617c43",
+  "relocation": "Native name field converted slashes to colons under its remembered directory. Moved only the newly created file into this run evidence directory; historical evidence was not replaced."
+}

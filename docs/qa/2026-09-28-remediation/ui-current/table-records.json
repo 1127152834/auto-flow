@@ -1,0 +1,10 @@
+{
+  "hash": "#/projects/53782b65-c34a-449a-9fad-fd25b49bfa0d/data/87ab9bd1-a83b-4efe-a563-0d8cea2272d5/records",
+  "text": "AutoFlow\n总览\n项目\n浏览器配置\n安卓设备\n代理管理\n模型管理\n实验室\n设置\n本地服务正常\n项目已创建\n关闭\n记录已保存\n关闭\n项目 / AutoFlow 源码审计 9ecb3db9 / 数据 / 仓库文件清单\nAutoFlow 源码审计 9ecb3db9\n\n当前代码 9ecb3db9a7d26bc433150ada203d3779f353d0cb；真实源文件体积与 SHA-256，2026-09-28 审计。\n\n概览\n自动化\n运行记录\n统计\n数据\n环境\n仓库文件清单\n\n暂无说明\n\n本地数据　|　本地可维护\n\n数据记录\n字段与校验\n数据状态\n来源设置\n数据表设置\n5 条\n本地记录\n源文件路径\n源文件路径\n字节数\nSHA-256\n筛选\n排序\n显示列\n新增行\n\t记录\t\n源文件路径\n\t\n字节数\n\t\nSHA-256\n\t业务状态\t最近修改\t操作\n\t\ndocs/PROJECT_STRUCTURE.md\n\t\ndocs/PROJECT_STRUCTURE.md\n\t\n59250\n\t\nbf468c23f3732b1f8719078b91e0ef908ce795df925628e1aa766f654b1364a8\n\t\n未设置\n\t\n9/28 10:56\n\t\n查看\n编辑\n\n\t\npackage.json\n\t\npackage.json\n\t\n1055\n\t\n6540097624333d15193d058972dc8ecc412d887bf021c775e881cb0e11fa7d92\n\t\n未设置\n\t\n9/28 10:56\n\t\n查看\n编辑\n\n\t\nAGENTS.md\n\t\nAGENTS.md\n\t\n15594\n\t\n4d0f5761fc2b047e9f10c2fc37d3849ac291dc6a0aeb065f0c935c6350598154\n\t\n未设置\n\t\n9/28 10:56\n\t\n查看\n编辑\n\n\t\n/Users/zhangtiancheng/Documents/projects/autoflow/README.md\n\t\n/Users/zhangtiancheng/Documents/projects/autoflow/README.md\n\t\n1575\n\t\nb3f7f413926ee62c04aba0c253b8453e69d5d834ed0f798401875db55c8221ee\n\t\n未设置\n\t\n9/28 10:56\n\t\n查看\n编辑\n\n\t\napps/backend/pyproject.toml\n\t\napps/backend/pyproject.toml\n\t\n1460\n\t\n4e49812742d3362808878fc11614cbb6884b94a1f6c13b93a9775d6b2d6d84f1\n\t\n未设置\n\t\n9/28 10:56\n\t\n查看\n编辑\n\n\n＋ 点击新增一行\n1–5 / 5\n上一页\n第 1 页\n下一页\n\n业务状态由本项目维护，修改记录内容不会自动改变业务状态。",
+  "viewport": [
+    1440,
+    992
+  ],
+  "width": 1440,
+  "alerts": []
+}

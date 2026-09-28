@@ -1,0 +1,20 @@
+[
+  {
+    "session": "native-session-before-save-fix.json",
+    "pid": 25473,
+    "processExited": true,
+    "debugEndpointClosed": true
+  },
+  {
+    "session": "native-session-save-fixed.json",
+    "pid": 24494,
+    "processExited": true,
+    "debugEndpointClosed": true
+  },
+  {
+    "session": "native-session.json",
+    "pid": 45288,
+    "processExited": true,
+    "debugEndpointClosed": true
+  }
+]
