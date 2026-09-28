@@ -1,0 +1,28 @@
+✖ Monaco ships a sanitizer at or above the reviewed 3.4.15 security baseline (3.649291ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 63.8265
+
+✖ failing tests:
+
+test at scripts/editor-sanitizer.test.mjs:9:1
+✖ Monaco ships a sanitizer at or above the reviewed 3.4.15 security baseline (3.649291ms)
+  Error: Cannot find module '/Users/zhangtiancheng/Documents/projects/autoflow/node_modules/monaco-editor/esm/vs/package.json.js'
+      at createEsmNotFoundErr (node:internal/modules/cjs/loader:1616:15)
+      at finalizeEsmResolution (node:internal/modules/cjs/loader:1605:9)
+      at resolveExports (node:internal/modules/cjs/loader:759:14)
+      at Module._findPath (node:internal/modules/cjs/loader:826:31)
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1562:27)
+      at wrapResolveFilename (node:internal/modules/cjs/loader:1123:27)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1174:12)
+      at require.resolve (node:internal/modules/helpers:214:31)
+      at TestContext.<anonymous> (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/editor-sanitizer.test.mjs:12:34)
+      at Test.runInAsyncScope (node:async_hooks:226:14) {
+    code: 'MODULE_NOT_FOUND',
+    path: '/Users/zhangtiancheng/Documents/projects/autoflow/node_modules/monaco-editor'
+  }

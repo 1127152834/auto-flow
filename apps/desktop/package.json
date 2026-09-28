@@ -41,7 +41,7 @@
     "lucide-react": "^0.562.0",
     "marked": "^18.0.13",
     "mermaid": "^11.17.2",
-    "monaco-editor": "^0.55.1",
+    "monaco-editor": "0.57.0",
     "nanoid": "^5.1.16",
     "pinyin-pro": "^3.29.4",
     "react": "^19.3.0",

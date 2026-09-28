@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "marked": "14.0.0",
+    "dompurify": "3.4.15"
+  },
+  "version": "0.57.0",
+  "dist.integrity": "sha512-5BkI9KGoqrNvBGUe15/QlZq3OooZ8WLg1AxTpaqHRCP3HNpzPPZKE2EDz8M7c+VRmCeUw1Brp4cx/PWm3kI/5A=="
+}
