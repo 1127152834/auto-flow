@@ -7,10 +7,12 @@ import { createProjectInteractions, executeProjectScript, type InteractionIdenti
 
 /** Main-window owner: route changes must not dispose a claimed script or input. */
 export function ProjectInteractionHost({ client, connected }: { client: StreamingApiClient; connected: boolean }) {
-  const latest = useRef({ client, connected }); latest.current = { client, connected }
+  const latest = useRef({ client, connected, revision: 0 })
+  if (latest.current.client !== client || latest.current.connected !== connected) latest.current = { client, connected, revision: latest.current.revision + 1 }
   const api = useMemo(() => createProjectInteractions(() => latest.current.client), [])
   const [prompt, setPrompt] = useState<InputPromptRequest | null>(null)
-  const [error, setError] = useState<string>()
+  const [connectionError, setConnectionError] = useState<string>()
+  const [operationError, setOperationError] = useState<string>()
   const activeInput = useRef<InteractionIdentity | null>(null)
   const commandTargets = useRef(new Map<string, InteractionIdentity>())
   const commands = useMemo(() => ({
@@ -42,21 +44,23 @@ export function ProjectInteractionHost({ client, connected }: { client: Streamin
     let timer: ReturnType<typeof setTimeout>
     const identity = (target: InteractionIdentity) => JSON.stringify([target.projectId, target.taskId, target.runId, target.executionGeneration, target.requestId])
     const poll = async () => {
+      const revision = latest.current.revision
+      const isCurrent = () => !controller.signal.aborted && latest.current.connected && latest.current.revision === revision
       try {
         if (!latest.current.connected) return
         const pending = await api.pending(controller.signal)
-        if (controller.signal.aborted) return
+        if (!isCurrent()) return
         const keys = new Set(pending.map(identity))
         for (const [key, script] of scripts) if (!keys.has(key)) { script.abort(); scripts.delete(key) }
         const input = pending.find(target => target.type === 'execution:input_prompt')
         if (!input) { activeInput.current = null; setPrompt(null) }
         else if (!activeInput.current || identity(activeInput.current) !== identity(input)) {
           const request = await api.request(input, controller.signal)
-          if (controller.signal.aborted) return
+          if (!isCurrent()) return
           if (request.status !== 'cancelled' && request.type === 'execution:input_prompt') {
             if (request.commandId) commandTargets.current.set(request.commandId, input)
             activeInput.current = input; setPrompt(request)
-            void window.autoflow?.showProjectInteraction?.().catch(() => setError('无法显示项目输入窗口，请从 Dock 或任务栏打开 AutoFlow'))
+            void window.autoflow?.showProjectInteraction?.().catch(() => { if (isCurrent()) setOperationError('无法显示项目输入窗口，请从 Dock 或任务栏打开 AutoFlow') })
           }
         }
         for (const target of pending.filter(item => item.type === 'execution:js_script')) {
@@ -65,11 +69,12 @@ export function ProjectInteractionHost({ client, connected }: { client: Streamin
           const script = new AbortController()
           scripts.set(key, script)
           void executeProjectScript(api, target, script.signal).catch(caught => {
-            if (!script.signal.aborted && !controller.signal.aborted) setError(caught instanceof Error ? caught.message : '项目脚本交互失败')
+            if (!script.signal.aborted && isCurrent()) setOperationError(caught instanceof Error ? caught.message : '项目脚本交互失败')
           })
         }
+        if (isCurrent()) setConnectionError(undefined)
       } catch (caught) {
-        if (!controller.signal.aborted && !(caught instanceof ApiClientError && [404, 410].includes(caught.status))) setError('项目交互连接中断，正在查询原请求；未重新执行脚本')
+        if (isCurrent() && !(caught instanceof ApiClientError && [404, 410].includes(caught.status))) setConnectionError('项目交互连接中断，正在查询原请求；未重新执行脚本')
       } finally {
         if (!controller.signal.aborted) timer = setTimeout(() => void poll(), 1000)
       }
@@ -78,7 +83,10 @@ export function ProjectInteractionHost({ client, connected }: { client: Streamin
     return () => { controller.abort(); clearTimeout(timer); for (const script of scripts.values()) script.abort(); activeInput.current = null }
   }, [api])
   return <>
-    {error ? <div role="alert" className="fixed bottom-4 right-4 z-[10000] max-w-lg rounded-control border border-line bg-surface p-4 text-sm text-ink">{error}<button type="button" className="ml-3 underline" onClick={() => setError(undefined)}>关闭提示</button></div> : null}
+    {connectionError || operationError ? <div className="fixed bottom-4 right-4 z-[10000] flex max-w-lg flex-col gap-2">
+      {connectionError ? <div role="alert" className="rounded-control border border-line bg-surface p-4 text-sm text-ink">{connectionError}<button type="button" className="ml-3 underline" onClick={() => setConnectionError(undefined)}>关闭提示</button></div> : null}
+      {operationError ? <div role="alert" className="rounded-control border border-line bg-surface p-4 text-sm text-ink">{operationError}<button type="button" className="ml-3 underline" onClick={() => setOperationError(undefined)}>关闭提示</button></div> : null}
+    </div> : null}
     <InputPromptDialog request={prompt} commands={commands} paths={paths} />
   </>
 }

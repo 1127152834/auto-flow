@@ -5,7 +5,7 @@ import { ProjectInteractionHost } from './ProjectInteractionHost'
 import { runJsScript } from '../../workflows/lib/runJsScript'
 import { socketService } from '../../workflows/events'
 vi.mock('../../workflows/lib/runJsScript', () => ({ runJsScript: vi.fn() }))
-afterEach(() => { cleanup(); vi.restoreAllMocks() })
+afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.useRealTimers() })
 const identity = { projectId: 'project', taskId: 'task', runId: 'run', executionGeneration: 1, requestId: 'req', type: 'execution:input_prompt', status: 'pending' }
 const prompt = { ...identity, nodeId: 'node', executionId: 'visit', inputMode: 'single', variableName: 'answer', title: '项目需要输入', message: '请输入任务值', defaultValue: 'before' }
 const client = (request: ReturnType<typeof vi.fn>) => ({ request }) as unknown as StreamingApiClient
@@ -41,6 +41,51 @@ it('does not restart a running JS tool when the main window reconnects', async (
   expect(runJsScript).toHaveBeenCalledTimes(1)
   expect(request.mock.calls.filter(([, init]) => init?.body?.event === 'js_script_result')).toHaveLength(1)
   unmount()
+})
+
+it('clears the transport notice after the next complete poll succeeds', async () => {
+  vi.useFakeTimers()
+  const request = vi.fn()
+    .mockRejectedValueOnce(new TypeError('offline'))
+    .mockResolvedValue([])
+  render(<ProjectInteractionHost client={client(request)} connected />)
+  await act(async () => { await vi.advanceTimersByTimeAsync(0) })
+  expect(screen.getByText(/项目交互连接中断/)).toBeDefined()
+  await act(async () => { await vi.advanceTimersByTimeAsync(1000) })
+  expect(screen.queryByText(/项目交互连接中断/)).toBeNull()
+})
+
+it('keeps an actual script failure after later transport polls succeed', async () => {
+  vi.useFakeTimers()
+  const target = { ...identity, type: 'execution:js_script' }
+  let pendingCalls = 0
+  const request = vi.fn(async (path, init) => {
+    if (path === '/api/v1/project-run-interactions') return pendingCalls++ === 0 ? [target] : []
+    if (path.includes('/requests/')) return { ...target, code: 'function main(){throw new Error()}', variables: {}, nodeId: 'n', executionId: 'v' }
+    return { commandId: init.body.commandId, requestId: 'req', status: 'applied' }
+  })
+  vi.mocked(runJsScript).mockRejectedValue(new Error('脚本执行失败'))
+  render(<ProjectInteractionHost client={client(request)} connected />)
+  await act(async () => { await vi.advanceTimersByTimeAsync(0) })
+  expect(screen.getByText('脚本执行失败')).toBeDefined()
+  await act(async () => { await vi.advanceTimersByTimeAsync(1000) })
+  expect(screen.getByText('脚本执行失败')).toBeDefined()
+})
+
+it('does not let a late successful poll from an invalidated connection clear its notice', async () => {
+  vi.useFakeTimers()
+  let resolveLate!: (value: unknown[]) => void
+  const request = vi.fn()
+    .mockRejectedValueOnce(new TypeError('offline'))
+    .mockImplementationOnce(() => new Promise(resolve => { resolveLate = resolve }))
+  const api = client(request)
+  const view = render(<ProjectInteractionHost client={api} connected />)
+  await act(async () => { await vi.advanceTimersByTimeAsync(0) })
+  expect(screen.getByText(/项目交互连接中断/)).toBeDefined()
+  await act(async () => { await vi.advanceTimersByTimeAsync(1000) })
+  view.rerender(<ProjectInteractionHost client={api} connected={false} />)
+  await act(async () => { resolveLate([]); await Promise.resolve() })
+  expect(screen.getByText(/项目交互连接中断/)).toBeDefined()
 })
 
 it('aborts the JS tool on window disposal and ignores its late result', async () => {
