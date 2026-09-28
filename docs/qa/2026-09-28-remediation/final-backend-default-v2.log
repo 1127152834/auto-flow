@@ -1,0 +1,93 @@
+........................................................................ [  1%]
+........................................................................ [  3%]
+........................................................................ [  4%]
+........................................................................ [  6%]
+........................................................................ [  8%]
+........................................................................ [  9%]
+........................................................................ [ 11%]
+........................................................................ [ 13%]
+........................................................................ [ 14%]
+........................................................................ [ 16%]
+........................................................................ [ 18%]
+........................................................................ [ 19%]
+........................................................................ [ 21%]
+........................................................................ [ 23%]
+........................................................................ [ 24%]
+........................................................................ [ 26%]
+........................................................................ [ 27%]
+........................................................................ [ 29%]
+........................................................................ [ 31%]
+........................................................................ [ 32%]
+........................................................................ [ 34%]
+........................................................................ [ 36%]
+........................................................................ [ 37%]
+........................................................................ [ 39%]
+....................................................s...ssssssssss...... [ 41%]
+.............ss...s....................................s..........sss... [ 42%]
+.............................................No new upgrade operations detected.
+........................... [ 44%]
+.............................ssssssssssssssssssss....................... [ 46%]
+........................................................................ [ 47%]
+........................................................................ [ 49%]
+........................................................................ [ 51%]
+........................................................................ [ 52%]
+...........................ssssss....................................... [ 54%]
+.........................................s.............................. [ 55%]
+........................................................................ [ 57%]
+........................................................................ [ 59%]
+........................................................................ [ 60%]
+........................................................................ [ 62%]
+...................................s.................................... [ 64%]
+........................................................................ [ 65%]
+..........................................ssss.......................... [ 67%]
+........................................................................ [ 69%]
+........................................................................ [ 70%]
+........................................................................ [ 72%]
+........................................................................ [ 74%]
+........................................................................ [ 75%]
+........................................................................ [ 77%]
+........................................................................ [ 78%]
+........................................................................ [ 80%]
+........................................................................ [ 82%]
+........................................................................ [ 83%]
+........................................................................ [ 85%]
+........................................................................ [ 87%]
+........................................................................ [ 88%]
+........................................................................ [ 90%]
+........................................................................ [ 92%]
+........................................................................ [ 93%]
+........................................................................ [ 95%]
+........................................................................ [ 97%]
+........................................................................ [ 98%]
+........................................................                 [100%]
+=============================== warnings summary ===============================
+.venv/lib/python3.11/site-packages/starlette/testclient.py:53
+  /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+SKIPPED [1] tests/integration/test_b1_cloakbrowser_flow.py:48: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_advanced_browser_cloakbrowser_flow.py:35: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_inspection_cloakbrowser_flow.py:35: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_inspection_cloakbrowser_flow.py:91: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_inspection_cloakbrowser_flow.py:207: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_inspection_cloakbrowser_flow.py:297: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_large_artifacts_cloakbrowser_flow.py:23: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_network_monitor_cloakbrowser_flow.py:26: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_page_load_cloakbrowser_flow.py:22: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_remaining_browser_cloakbrowser_flow.py:25: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_web_basic_cloakbrowser_flow.py:22: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b5_captcha_cloakbrowser_flow.py:38: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b5_firecrawl_cloakbrowser_flow.py:36: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b6_element_change_cloakbrowser_flow.py:22: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b7_recording_cloakbrowser_flow.py:22: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [2] tests/integration/test_environment_persist_restore.py:47: set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable
+SKIPPED [1] tests/integration/test_environment_real_browser_chain.py:26: set AUTOFLOW_TEST_CLOAKBROWSER to an installed CloakBrowser executable
+SKIPPED [20] tests/integration/test_project_batch_real_cloakbrowser.py:34: set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable
+SKIPPED [6] tests/integration/test_project_end_real_browser.py:57: AUTOFLOW_TEST_CLOAKBROWSER must identify a real installed kernel
+SKIPPED [1] tests/integration/test_project_full_scenarios.py:32: set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable
+SKIPPED [1] tests/integration/test_studio_project_model_live.py:61: 真实模型计费验收仅由 AUTOFLOW_LIVE_MODEL_TEST=1 显式启用
+SKIPPED [3] tests/integration/test_workflow_real_cloakbrowser.py:71: set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable
+SKIPPED [1] tests/integration/test_workflow_real_cloakbrowser.py:126: set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable
+4326 passed, 50 skipped, 1 warning in 1897.86s (0:31:37)

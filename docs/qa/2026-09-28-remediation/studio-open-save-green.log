@@ -1,0 +1,35 @@
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:69199) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:69198) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:69200) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stdout | src/renderer/domains/workflows/tests/toolbar-document-http.test.tsx > shows save rejection independently of the selected run log and keeps the draft dirty
+[Toolbar] 保存按钮被点击
+
+ ❯ src/renderer/domains/workflows/tests/toolbar-document-http.test.tsx (4 tests | 1 failed) 403ms
+   × shows save rejection independently of the selected run log and keeps the draft dirty 51ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/toolbar-document-http.test.tsx > shows save rejection independently of the selected run log and keeps the draft dirty
+Error: Invalid Chai property: toHaveTextContent
+ ❯ src/renderer/domains/workflows/tests/toolbar-document-http.test.tsx:96:42
+     94|   render(<Toolbar />)
+     95|   fireEvent.click(screen.getByRole('button', { name: '保存' }))
+     96|   expect(await screen.findByRole('alert')).toHaveTextContent('流程已被其他窗口…
+       |                                          ^
+     97|   expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(true)
+     98| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 47 passed (48)
+   Start at  11:22:57
+   Duration  3.93s (transform 2.07s, setup 515ms, import 2.90s, tests 2.63s, environment 1.24s)
+

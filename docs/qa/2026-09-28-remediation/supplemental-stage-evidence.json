@@ -1,0 +1,91 @@
+{
+  "date": "2026-09-28",
+  "status": "historical-evidence-preserved",
+  "finalResults": "final-validation-results.md",
+  "files": [
+    {
+      "file": "backend-build-current.log",
+      "bytes": 40329,
+      "sha256": "5756bba3cc8d9136ec753c45e4bf5d00c2a6e5b6a50734545f5d57107436f3c9",
+      "scope": "Earlier remediation-stage raw evidence; not the final stable validation result",
+      "note": "Retained unchanged; exact executable identity/command is only claimed where the associated prior report records it"
+    },
+    {
+      "file": "package-current.log",
+      "bytes": 6979,
+      "sha256": "547838d53ff891e48c36d939b8733c38ca806c2ba3815fbad083ca8a585306e3",
+      "scope": "Earlier remediation-stage raw evidence; not the final stable validation result",
+      "note": "Retained unchanged; exact executable identity/command is only claimed where the associated prior report records it"
+    },
+    {
+      "file": "package-save-fixed.log",
+      "bytes": 6816,
+      "sha256": "238e38a1006bc42687b3cd76646452cbdc803a8dd76fe670545f4a151762e262",
+      "scope": "Earlier remediation-stage raw evidence; not the final stable validation result",
+      "note": "Retained unchanged; exact executable identity/command is only claimed where the associated prior report records it"
+    },
+    {
+      "file": "studio-open-save-build.log",
+      "bytes": 19198,
+      "sha256": "15fba392b54c471cb726ef05ad21e7836a8b110d2d650158ff028b0e8c663167",
+      "scope": "Earlier remediation-stage raw evidence; not the final stable validation result",
+      "note": "Retained unchanged; exact executable identity/command is only claimed where the associated prior report records it"
+    },
+    {
+      "file": "manual-replay-red.log",
+      "bytes": 5017,
+      "sha256": "c0bd55125b106be2cf42dde56d00886246d2028d7e18170afb04fe40a567d86c",
+      "scope": "Earlier remediation-stage raw evidence; not the final stable validation result",
+      "note": "Retained unchanged; exact executable identity/command is only claimed where the associated prior report records it"
+    },
+    {
+      "file": "studio-open-save-before.log",
+      "bytes": 17402,
+      "sha256": "509af000963317ac21c9cf25e6c119e4fcf8abaaa25d54a3d664a0fce326a5f5",
+      "scope": "Earlier remediation-stage raw evidence; not the final stable validation result",
+      "note": "Retained unchanged; exact executable identity/command is only claimed where the associated prior report records it"
+    },
+    {
+      "file": "studio-open-save-green.log",
+      "bytes": 1992,
+      "sha256": "5f4495475a4f0db8fd46562d3e71899407f47230c268c997d0f68e72b0c6c3a2",
+      "scope": "Earlier remediation-stage raw evidence; not the final stable validation result",
+      "note": "Retained unchanged; exact executable identity/command is only claimed where the associated prior report records it"
+    },
+    {
+      "file": "ruff-gate-import.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "scope": "Earlier remediation-stage raw evidence; not the final stable validation result",
+      "note": "Empty artifact from the failed diagnostic harness; proves no ready state"
+    },
+    {
+      "file": "ruff-import-final.log",
+      "bytes": 19,
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "scope": "Earlier remediation-stage raw evidence; not the final stable validation result",
+      "note": "Retained unchanged; exact executable identity/command is only claimed where the associated prior report records it"
+    },
+    {
+      "file": "ruff-remaining.json",
+      "bytes": 54649,
+      "sha256": "c3b111c091f53f82a4198d8cc38bc904db9e3054a82a9f45846e148cb220c337",
+      "scope": "Earlier remediation-stage raw evidence; not the final stable validation result",
+      "note": "Retained unchanged; exact executable identity/command is only claimed where the associated prior report records it"
+    },
+    {
+      "file": "ruff-types-import.log",
+      "bytes": 15,
+      "sha256": "43bcd851a50940ffb2cfbd9f51ddcf777108d76046a9cc0bfde63ef0118e9083",
+      "scope": "Earlier remediation-stage raw evidence; not the final stable validation result",
+      "note": "Retained unchanged; exact executable identity/command is only claimed where the associated prior report records it"
+    },
+    {
+      "file": "process-exit-probe-ready.json",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "scope": "Earlier remediation-stage raw evidence; not the final stable validation result",
+      "note": "Empty artifact from the failed diagnostic harness; proves no ready state"
+    }
+  ]
+}

@@ -1,0 +1,412 @@
+{
+  "source": "final-backend-default-v2.xml",
+  "total": 4376,
+  "failed": 0,
+  "errors": 0,
+  "skipped": 50,
+  "passed": 4326,
+  "migrationCases": [
+    {
+      "classname": "tests.integration.test_android_m4_migration",
+      "name": "test_existing_migration_histories_keep_devices_runs_and_artifacts[0006_workflow_runs]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_android_m4_migration",
+      "name": "test_existing_migration_histories_keep_devices_runs_and_artifacts[0007_android_devices]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_android_m4_migration",
+      "name": "test_existing_migration_histories_keep_devices_runs_and_artifacts[0007_workflow_artifacts]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_android_m4_migration",
+      "name": "test_existing_migration_histories_keep_devices_runs_and_artifacts[0008_merge_android_m4]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_merged_model_migrations",
+      "name": "test_merge_upgrade_preserves_each_branch_database[None]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_merged_model_migrations",
+      "name": "test_merge_upgrade_preserves_each_branch_database[0001_browser_resources]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_merged_model_migrations",
+      "name": "test_merge_upgrade_preserves_each_branch_database[0002_proxy_management]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_merged_model_migrations",
+      "name": "test_merge_upgrade_preserves_each_branch_database[0002_model_management]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_merged_model_migrations",
+      "name": "test_merge_upgrade_preserves_each_branch_database[0008_workflow_debug]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_merged_model_migrations",
+      "name": "test_merge_upgrade_preserves_each_branch_database[pm01_projects]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_merged_model_migrations",
+      "name": "test_merge_upgrade_preserves_each_branch_database[pm02_schema_drafts]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_merged_model_migrations",
+      "name": "test_retired_studio_data_survives_application_startup",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_migration_heads",
+      "name": "test_studio_backend_history_has_one_merged_head",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_migration_heads",
+      "name": "test_restored_android_revisions_match_the_recorded_source_bytes",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_migration_heads",
+      "name": "test_integrated_workspace_history_is_recognized_and_preserved[0021_assistant_project_scope]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_migration_heads",
+      "name": "test_integrated_workspace_history_is_recognized_and_preserved[0023_merge_studio_android]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_migration_metadata",
+      "name": "test_fresh_migrated_database_matches_registered_metadata",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_migration_metadata",
+      "name": "test_metadata_gate_still_detects_real_drift[DROP INDEX uq_proxy_remote_active]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_migration_metadata",
+      "name": "test_metadata_gate_still_detects_real_drift[ALTER TABLE project_sheets_bindings DROP COLUMN identity_verification]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_migration_metadata",
+      "name": "test_metadata_gate_still_detects_real_drift[CREATE TABLE unexpected_unmapped_table (id INTEGER PRIMARY KEY)]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_pm2_durable_migrations",
+      "name": "test_durable_status_migration_preserves_existing_project[None]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_pm2_durable_migrations",
+      "name": "test_durable_status_migration_preserves_existing_project[pm01_projects]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_pm2_durable_migrations",
+      "name": "test_durable_status_migration_preserves_existing_project[pm02_status_tombstones]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_automation_migration",
+      "name": "test_automation_upgrade_preserves_existing_rows_and_enforces_binding[None]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_automation_migration",
+      "name": "test_automation_upgrade_preserves_existing_rows_and_enforces_binding[pm01_projects]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_automation_migration",
+      "name": "test_automation_upgrade_preserves_existing_rows_and_enforces_binding[0011_workflow_runtime_contracts]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_automation_migration",
+      "name": "test_empty_downgrade_roundtrip_and_nonempty_downgrade_preserves_data",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_claim_migration",
+      "name": "test_claim_migration_is_the_single_head_and_creates_durable_facts",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_claim_migration",
+      "name": "test_claim_tables_use_restrictive_project_task_run_and_lease_references",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_claim_migration",
+      "name": "test_empty_claim_tables_can_downgrade_and_upgrade",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_data_migrations",
+      "name": "test_pm2_upgrade_preserves_projects_and_has_one_head[False]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_data_migrations",
+      "name": "test_pm2_upgrade_preserves_projects_and_has_one_head[True]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_data_migrations",
+      "name": "test_typed_identity_generation_uniqueness_and_record_revisions",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_data_migrations",
+      "name": "test_generation_and_status_cannot_cross_project_or_table",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_data_migrations",
+      "name": "test_status_references_in_historical_generation_prevent_delete",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_data_migrations",
+      "name": "test_field_key_is_literal_and_unique_per_generation",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_data_migrations",
+      "name": "test_pm2_orm_metadata_matches_shipped_migration",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_data_migrations",
+      "name": "test_current_generation_must_belong_to_table_at_commit",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_data_migrations",
+      "name": "test_change_operation_cannot_cross_project",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_data_migrations",
+      "name": "test_impact_confirmation_ids_are_not_reused_after_restart",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_data_migrations",
+      "name": "test_downgrade_then_upgrade_preserves_pm1_projects",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_data_migrations",
+      "name": "test_failed_upgrade_rolls_back_ddl_and_can_restart[pm01_projects]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_data_migrations",
+      "name": "test_failed_upgrade_rolls_back_ddl_and_can_restart[base]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_data_schema_migration",
+      "name": "test_upgrade_preserves_existing_records_and_adds_guard",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_data_schema_migration",
+      "name": "test_current_record_mutations_and_rollback_share_guard_transaction",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_data_schema_migration",
+      "name": "test_hidden_generation_does_not_invalidate_current_preview",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_data_schema_migration",
+      "name": "test_moving_a_record_out_of_current_generation_invalidates_preview",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_data_schema_migration",
+      "name": "test_guard_downgrade_removes_only_new_schema",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_data_status_migration",
+      "name": "test_status_upgrade_preserves_records_and_enforces_active_names[False]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_data_status_migration",
+      "name": "test_status_upgrade_preserves_records_and_enforces_active_names[True]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_data_status_migration",
+      "name": "test_status_migration_failure_rolls_back_rebuild_and_restarts",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_data_status_migration",
+      "name": "test_downgrade_preserves_live_data_but_refuses_to_resurrect_deleted_status",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_migration",
+      "name": "test_pm1_upgrade_preserves_0005_resources[False]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_migration",
+      "name": "test_pm1_upgrade_preserves_0005_resources[True]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_run_migration",
+      "name": "test_empty_database_upgrades_to_the_single_project_run_head",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_run_migration",
+      "name": "test_pm03_upgrade_preserves_real_project_automation_and_workflow_rows",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_run_migration",
+      "name": "test_project_run_foreign_keys_are_restrictive_and_complete",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_run_migration",
+      "name": "test_empty_project_run_tables_can_downgrade_and_upgrade",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_project_run_migration",
+      "name": "test_nonempty_project_run_evidence_refuses_downgrade_without_data_loss",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_studio_migration_compatibility",
+      "name": "test_all_supported_histories_upgrade_without_losing_existing_rows[None]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_studio_migration_compatibility",
+      "name": "test_all_supported_histories_upgrade_without_losing_existing_rows[0005_workflow_documents]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_studio_migration_compatibility",
+      "name": "test_all_supported_histories_upgrade_without_losing_existing_rows[0008_workflow_debug]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_studio_migration_compatibility",
+      "name": "test_all_supported_histories_upgrade_without_losing_existing_rows[0009_merge_android_m5]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_studio_migration_compatibility",
+      "name": "test_all_supported_histories_upgrade_without_losing_existing_rows[0009_merge_project_data]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_studio_migration_compatibility",
+      "name": "test_all_supported_histories_upgrade_without_losing_existing_rows[0010_android_fleet]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_studio_migration_compatibility",
+      "name": "test_unknown_revision_fails_without_clearing_or_stamping_database",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_studio_migration_compatibility",
+      "name": "test_interrupted_branch_merge_rolls_back_and_can_restart",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_workflow_document_migration",
+      "name": "test_workflow_command_migration_is_durable_and_preserves_documents[False]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_workflow_document_migration",
+      "name": "test_workflow_command_migration_is_durable_and_preserves_documents[True]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_workflow_runtime_migration",
+      "name": "test_empty_database_upgrades_to_one_runtime_head_with_complete_v2_schema",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_workflow_runtime_migration",
+      "name": "test_upgrade_from_legacy_studio_reaches_v2_without_replaying_unknown_work[0005_workflow_documents]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_workflow_runtime_migration",
+      "name": "test_upgrade_from_legacy_studio_reaches_v2_without_replaying_unknown_work[0008_workflow_debug]",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_workflow_runtime_migration",
+      "name": "test_0009_upgrade_preserves_shared_facts_and_maps_legacy_provenance",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_workflow_runtime_migration",
+      "name": "test_missing_source_keeps_run_document_snapshot",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_workflow_runtime_migration",
+      "name": "test_downgrade_refuses_persisted_evidence_before_schema_changes",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_workflow_runtime_migration",
+      "name": "test_empty_runtime_can_downgrade_and_upgrade_again",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_workflow_runtime_migration",
+      "name": "test_0006_embedded_artifact_survives_full_upgrade",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_workflow_runtime_migration",
+      "name": "test_previous_interrupted_terminal_keeps_error_and_finished_at",
+      "passed": true
+    },
+    {
+      "classname": "tests.integration.test_workflow_runtime_migration",
+      "name": "test_failed_upgrade_rolls_back_schema_and_original_evidence",
+      "passed": true
+    },
+    {
+      "classname": "tests.migration.test_cursor_constraint_alignment",
+      "name": "test_cursor_identity_matches_migrated_record_ref_constraint",
+      "passed": true
+    }
+  ],
+  "migrationSubsetCount": 80,
+  "migrationSelection": "Database migration/metadata cases; excludes test_studio_backend_source_mapping, which audits executor mappings rather than database upgrades."
+}

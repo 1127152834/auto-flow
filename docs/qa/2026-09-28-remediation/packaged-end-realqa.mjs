@@ -81,9 +81,8 @@ async function api(path, { method = 'GET', body, status = 200, prefix = '/api/v1
   assert.equal(response.status, status, `${method} ${path}: ${JSON.stringify(value)}`)
   return value
 }
-async function showTask(projectId, taskId, label) {
-  await desktop.cdp.evaluate(`location.hash=${JSON.stringify(`#/projects/${projectId}/runs/tasks/${taskId}/logs`)}`)
-  await waitFor(desktop.cdp, 'document.body.innerText.includes("End 已完成")', 'persistent End result')
+async function captureApp(label) {
+  // Read-only provenance; native navigation and End UI assertions are a separate CUA check.
   const text = await desktop.cdp.evaluate('document.body.innerText')
   const { data } = await desktop.cdp.command('Page.captureScreenshot', { format: 'png' })
   await writeFile(join(output, `${label}.txt`), text, { flag: 'wx' })
@@ -121,13 +120,13 @@ try {
     assert.equal(detail.end?.phase, 'completed', JSON.stringify(detail))
     if (!index) saved = detail.end.outcome.saved
     report.tasks.push({ workflowId: workflow.id, automationId: automation.automationId, ...detail })
-    await showTask(project.projectId, detail.task.taskId, `task-${index + 1}`)
+    await captureApp(`app-after-task-${index + 1}`)
     if (!index) {
       await close()
       await launch()
       const restored = await api(`${prefix}/tasks/${detail.task.taskId}`)
       assert.deepEqual(restored.end, detail.end, 'End persistent result must survive full application restart')
-      await showTask(project.projectId, detail.task.taskId, 'task-1-after-restart')
+      await captureApp('app-after-task-1-restart')
     }
   }
   assert.ok(report.requests.some(req => req.path === '/status' && req.signedIn), 'new run must send the cookie retained by the previous real browser')

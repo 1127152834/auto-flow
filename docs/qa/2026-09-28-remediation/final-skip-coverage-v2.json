@@ -1,0 +1,13 @@
+{
+  "defaultEvidence": "final-backend-default-v2.xml",
+  "realEvidence": "final-real-browser.xml",
+  "defaultSkipped": 50,
+  "gatedPassed": 49,
+  "notExecuted": [
+    {
+      "classname": "tests.integration.test_studio_project_model_live",
+      "name": "test_live_project_default_model_in_real_worker",
+      "reason": "真实模型计费验收仅由 AUTOFLOW_LIVE_MODEL_TEST=1 显式启用"
+    }
+  ]
+}

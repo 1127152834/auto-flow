@@ -1,0 +1,18 @@
+{
+  "revision": 3,
+  "endNode": {
+    "id": "end",
+    "type": "project_end",
+    "data": {
+      "moduleType": "project_end",
+      "label": "project_end",
+      "config": {
+        "retainEnvironment": true,
+        "name": "打包真实登录",
+        "inputIds": []
+      },
+      "retainEnvironment": true,
+      "name": "原生 End 保存重载验收"
+    }
+  }
+}

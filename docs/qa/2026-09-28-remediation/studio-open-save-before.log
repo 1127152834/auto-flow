@@ -1,0 +1,310 @@
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:68440) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stdout | src/renderer/domains/workflows/tests/toolbar-document-http.test.tsx > shows save rejection independently of the selected run log and keeps the draft dirty
+[Toolbar] 保存按钮被点击
+
+ ❯ src/renderer/domains/workflows/tests/toolbar-document-http.test.tsx (4 tests | 2 failed) 1348ms
+   × updates an opened document after the store identity changes before React renders 105ms
+   × shows save rejection independently of the selected run log and keeps the draft dirty 1029ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/toolbar-document-http.test.tsx > updates an opened document after the store identity changes before React renders
+TypeError: useWorkflowStore.getState(...).setName is not a function
+ ❯ src/renderer/domains/workflows/tests/toolbar-document-http.test.tsx:83:41
+     81|   fireEvent.click(await screen.findByRole('button', { name: `打开工作流 ${s…
+     82|   await waitFor(() => expect(useWorkflowStore.getState().id).toBe(save…
+     83|   act(() => useWorkflowStore.getState().setName('编辑后名称'))
+       |                                         ^
+     84|   fireEvent.click(screen.getByRole('button', { name: '保存' }))
+     85|   await waitFor(() => expect(writes).toHaveLength(1))
+ ❯ ../../node_modules/@testing-library/react/dist/act-compat.js:47:24
+ ❯ process.env.NODE_ENV.exports.act ../../node_modules/react/cjs/react.development.js:890:22
+ ❯ Proxy.<anonymous> ../../node_modules/@testing-library/react/dist/act-compat.js:46:25
+ ❯ src/renderer/domains/workflows/tests/toolbar-document-http.test.tsx:83:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/toolbar-document-http.test.tsx > shows save rejection independently of the selected run log and keeps the draft dirty
+TestingLibraryElementError: Unable to find role="alert"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<header[39m
+      [33mclass[39m=[32m"relative min-h-12 border-b border-[hsl(var(--border))] bg-[hsl(var(--card))] flex flex-wrap items-center px-3 py-1.5 gap-2 @[48rem]:gap-3 flex-shrink-0 shadow-soft
+        before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[2px]
+        before:bg-gradient-to-r before:from-[hsl(var(--brand-500))] before:via-[hsl(var(--brand-400))] before:to-[hsl(var(--info-500))]
+        before:opacity-90"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center select-none"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33maria-label[39m=[32m"AutoFlow"[39m
+          [33mclass[39m=[32m"text-[15px] font-bold tracking-tight text-[hsl(var(--brand-700))]"[39m
+        [36m>[39m
+          [0mAutoFlow[0m
+        [36m</span>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"hidden @[48rem]:block h-5 w-px bg-[hsl(var(--border))]"[39m
+      [36m/>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"flex flex-wrap items-center gap-1 text-xs"[39m
+        [33mtitle[39m=[32m"仅使用管理端 CloakBrowser 配置；启动参数在管理端维护"[39m
+      [36m>[39m
+        [0m运行浏览器配置[0m
+        [36m<select[39m
+          [33maria-label[39m=[32m"运行浏览器配置"[39m
+          [33mclass[39m=[32m"max-w-48 rounded border bg-[hsl(var(--card))] px-2 py-1"[39m
+        [36m>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m""[39m
+          [36m>[39m
+            [0m请选择配置[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"10000000-0000-4000-8000-000000000001"[39m
+          [36m>[39m
+            [0m受控浏览器配置（Mock）[0m
+          [36m</option>[39m
+        [36m</select>[39m
+        [36m<button[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [0m刷新配置[0m
+        [36m</button>[39m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center gap-2"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"w-2 h-2 rounded-full transition-colors flex-shrink-0 bg-[hsl(var(--warning-500))]"[39m
+          [33mtitle[39m=[32m"有未保存的更改"[39m
+        [36m/>[39m
+        [36m<input[39m
+          [33mclass[39m=[32m"flex rounded-control px-2.5 py-1 border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,box-shadow,background-color] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-[hsl(var(--muted))] aria-[invalid=true]:border-[hsl(var(--danger-500))] aria-[invalid=true]:ring-[hsl(var(--danger-500)/0.18)] file:border-0 file:bg-transparent file:text-[12px] file:font-medium file:text-[hsl(var(--foreground))] w-32 @[40rem]:w-44 @[48rem]:w-56 h-7 text-[12.5px]"[39m
+          [33mplaceholder[39m=[32m"工作流名称"[39m
+          [33mvalue[39m=[32m"未命名工作流"[39m
+        [36m/>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"hidden @[48rem]:block h-5 w-px bg-[hsl(var(--border))]"[39m
+      [36m/>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center gap-1.5"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33maria-expanded[39m=[32m"false"[39m
+          [33maria-haspopup[39m=[32m"menu"[39m
+          [33maria-label[39m=[32m"运行 (F5)"[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-control font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] !bg-[hsl(var(--success-600))] !text-white !border-transparent shadow-soft hover:!bg-[hsl(var(--success-700))] hover:shadow-success-glow hover:-translate-y-[1px] active:brightness-95 h-7 px-2.5 text-[12px] rounded-control"[39m
+          [33mdata-state[39m=[32m"closed"[39m
+          [33mid[39m=[32m"radix-_r_u_"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-play w-3.5 h-3.5"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"hidden sm:inline"[39m
+          [36m>[39m
+            [0m运行[0m
+          [36m</span>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"hidden @[64rem]:inline text-[10px] opacity-70 font-normal"[39m
+          [36m>[39m
+            [0mF5[0m
+          [36m</span>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-chevron-down w-3 h-3"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m6 9 6 6 6-6"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"hidden @[48rem]:block h-5 w-px bg-[hsl(var(--border))]"[39m
+      [36m/>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"hidden @[64rem]:flex items-center gap-1"[39m
+      [36m>[39m
+        [36m...
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<header[39m
+      [33mclass[39m=[32m"relative min-h-12 border-b border-[hsl(var(--border))] bg-[hsl(var(--card))] flex flex-wrap items-center px-3 py-1.5 gap-2 @[48rem]:gap-3 flex-shrink-0 shadow-soft
+        before:content-[''] before:absolute before:top-0 before:left-0 before:right-0 before:h-[2px]
+        before:bg-gradient-to-r before:from-[hsl(var(--brand-500))] before:via-[hsl(var(--brand-400))] before:to-[hsl(var(--info-500))]
+        before:opacity-90"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center select-none"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33maria-label[39m=[32m"AutoFlow"[39m
+          [33mclass[39m=[32m"text-[15px] font-bold tracking-tight text-[hsl(var(--brand-700))]"[39m
+        [36m>[39m
+          [0mAutoFlow[0m
+        [36m</span>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"hidden @[48rem]:block h-5 w-px bg-[hsl(var(--border))]"[39m
+      [36m/>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"flex flex-wrap items-center gap-1 text-xs"[39m
+        [33mtitle[39m=[32m"仅使用管理端 CloakBrowser 配置；启动参数在管理端维护"[39m
+      [36m>[39m
+        [0m运行浏览器配置[0m
+        [36m<select[39m
+          [33maria-label[39m=[32m"运行浏览器配置"[39m
+          [33mclass[39m=[32m"max-w-48 rounded border bg-[hsl(var(--card))] px-2 py-1"[39m
+        [36m>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m""[39m
+          [36m>[39m
+            [0m请选择配置[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"10000000-0000-4000-8000-000000000001"[39m
+          [36m>[39m
+            [0m受控浏览器配置（Mock）[0m
+          [36m</option>[39m
+        [36m</select>[39m
+        [36m<button[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [0m刷新配置[0m
+        [36m</button>[39m
+      [36m</label>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center gap-2"[39m
+      [36m>[39m
+        [36m<span[39m
+          [33mclass[39m=[32m"w-2 h-2 rounded-full transition-colors flex-shrink-0 bg-[hsl(var(--warning-500))]"[39m
+          [33mtitle[39m=[32m"有未保存的更改"[39m
+        [36m/>[39m
+        [36m<input[39m
+          [33mclass[39m=[32m"flex rounded-control px-2.5 py-1 border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,box-shadow,background-color] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-[hsl(var(--muted))] aria-[invalid=true]:border-[hsl(var(--danger-500))] aria-[invalid=true]:ring-[hsl(var(--danger-500)/0.18)] file:border-0 file:bg-transparent file:text-[12px] file:font-medium file:text-[hsl(var(--foreground))] w-32 @[40rem]:w-44 @[48rem]:w-56 h-7 text-[12.5px]"[39m
+          [33mplaceholder[39m=[32m"工作流名称"[39m
+          [33mvalue[39m=[32m"未命名工作流"[39m
+        [36m/>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"hidden @[48rem]:block h-5 w-px bg-[hsl(var(--border))]"[39m
+      [36m/>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center gap-1.5"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33maria-expanded[39m=[32m"false"[39m
+          [33maria-haspopup[39m=[32m"menu"[39m
+          [33maria-label[39m=[32m"运行 (F5)"[39m
+          [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-control font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] !bg-[hsl(var(--success-600))] !text-white !border-transparent shadow-soft hover:!bg-[hsl(var(--success-700))] hover:shadow-success-glow hover:-translate-y-[1px] active:brightness-95 h-7 px-2.5 text-[12px] rounded-control"[39m
+          [33mdata-state[39m=[32m"closed"[39m
+          [33mid[39m=[32m"radix-_r_u_"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-play w-3.5 h-3.5"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"hidden sm:inline"[39m
+          [36m>[39m
+            [0m运行[0m
+          [36m</span>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"hidden @[64rem]:inline text-[10px] opacity-70 font-normal"[39m
+          [36m>[39m
+            [0mF5[0m
+          [36m</span>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-chevron-down w-3 h-3"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m6 9 6 6 6-6"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"hidden @[48rem]:block h-5 w-px bg-[hsl(var(--border))]"[39m
+      [36m/>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"hidden @[64rem]:flex items-center gap-1"[39m
+      [36m>[39m
+        [36m...
+ ❯ waitForWrapper ../../node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/renderer/domains/workflows/tests/toolbar-document-http.test.tsx:96:23
+     94|   render(<Toolbar />)
+     95|   fireEvent.click(screen.getByRole('button', { name: '保存' }))
+     96|   expect(await screen.findByRole('alert')).toHaveTextContent('流程已被其他窗口…
+       |                       ^
+     97|   expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(true)
+     98| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 2 passed (4)
+   Start at  11:21:52
+   Duration  3.62s (transform 846ms, setup 170ms, import 1.30s, tests 1.35s, environment 682ms)
+

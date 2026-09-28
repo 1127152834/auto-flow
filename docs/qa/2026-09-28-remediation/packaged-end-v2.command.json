@@ -1,0 +1,15 @@
+{
+  "command": [
+    "node",
+    "/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-remediation/packaged-end-realqa.mjs"
+  ],
+  "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow",
+  "head": "dae16113e22f70503f715b036746c7be4ad32ad3",
+  "buildEvidence": "final-frontend-v2-gates.command.json",
+  "kernelDirectory": "/Users/zhangtiancheng/Library/Application Support/@autoflow/desktop/data/kernels/chromium-145.0.7632.109.2",
+  "backendSha256": "b0b94c9c7e13372d9f97a9f941e24dc106fbf92f0db75fea72205eda75768bbe",
+  "asarSha256": "85cc084fa28ff92aa3b7e4030d94886ae234e3b3139a3b2739ad15b664c42c77",
+  "startedAt": "2026-09-28T17:57:58+0800",
+  "exitCode": 0,
+  "seconds": 28.65
+}
