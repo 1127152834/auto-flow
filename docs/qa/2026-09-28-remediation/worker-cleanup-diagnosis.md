@@ -19,3 +19,5 @@
 后续取得确定性真实证据（`process-exit-fault-probe.py/json`）：在本次已核对启动身份的子进程即将读取原生参数时发送真实SIGKILL，系统实际报告Z、kill(0)仍存在、birth仍匹配，而原生参数不可读。`capture_processes`即使已把该worker列入owned，仍重复执行候选参数判断并抛同一异常。没有伪造返回值；最终真实wait回收，返回码-9。这证明“已确认所有权后冗余归属检查”有缺陷，置信度高；原三个全量失败没有PID证据，仍不能断言全部由此导致。修复切片见实施计划Task 4。
 
 探针新增`--expect-cleanup`有效断言。修复前执行`.venv/bin/python ../../docs/qa/2026-09-28-remediation/process-exit-fault-probe.py --expect-cleanup`退出1，原始错误和系统状态见`process-exit-fault-before.log`。此处是可用于修复后复验的红灯，不是仅观察后始终退出0的脚本。
+
+为避免修复删除冗余参数读取后连故障注入也被跳过，最终探针将注入点前移到真实启动身份读取后：原样保留该次系统读取值，随后真实终止本次子进程，再继续产品函数。`process-exit-identity-fault-before.log`仍退出1并复现同一Z状态/原生参数不可读错误。这样修复前后都实际发生SIGKILL，检查独立于是否调用后续参数读取；没有替换系统事实。

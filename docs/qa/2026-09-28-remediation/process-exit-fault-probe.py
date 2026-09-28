@@ -1,4 +1,4 @@
-"""Real SIGKILL at the native ownership-read boundary; no fake API responses."""
+"""Real SIGKILL after reading process birth; no fake API responses."""
 import json
 import os
 import signal
@@ -26,16 +26,17 @@ with tempfile.TemporaryDirectory(prefix="autoflow-process-fault-") as raw:
         env={**os.environ, "CLOAKBROWSER_CACHE_DIR": str(directory)},
         start_new_session=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
     )
-    original = processes._native_arguments
+    original_birth = processes.process_birth
     evidence = {}
     try:
         assert child.stdout.readline() == b"READY\n"
         birth = processes.process_birth(child.pid)
         assert birth is not None
 
-        def terminate_before_read(pid):
-            if pid == child.pid:
-                assert processes.process_birth(pid) == birth
+        def terminate_after_identity_read(pid):
+            observed_birth = original_birth(pid)
+            if pid == child.pid and "stateAfterSignal" not in evidence:
+                assert observed_birth == birth
                 os.kill(pid, signal.SIGKILL)
                 deadline = time.monotonic() + 1
                 state = process_state(pid)
@@ -44,13 +45,11 @@ with tempfile.TemporaryDirectory(prefix="autoflow-process-fault-") as raw:
                     state = process_state(pid)
                 evidence.update({"stateAfterSignal": state or "gone",
                                  "existsAfterSignal": processes._process_exists(pid),
-                                 "birthAfterSignal": processes.process_birth(pid)})
-            result = original(pid)
-            if pid == child.pid:
-                evidence["nativeArgumentsAvailable"] = result is not None
-            return result
+                                 "birthAfterSignal": original_birth(pid),
+                                 "nativeArgumentsAvailable": processes._native_arguments(pid) is not None})
+            return observed_birth
 
-        processes._native_arguments = terminate_before_read
+        processes.process_birth = terminate_after_identity_read
         try:
             owned = processes.capture_processes(
                 child.pid, birth, directory, None, strict_ownership=True,
@@ -59,7 +58,7 @@ with tempfile.TemporaryDirectory(prefix="autoflow-process-fault-") as raw:
         except RuntimeError as error:
             evidence["capture"] = {"status": "raised", "error": str(error)}
     finally:
-        processes._native_arguments = original
+        processes.process_birth = original_birth
         child.wait(timeout=12)
         if child.stdout is not None:
             child.stdout.close()
