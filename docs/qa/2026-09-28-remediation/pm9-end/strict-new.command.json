@@ -1,0 +1,14 @@
+{
+  "command": [
+    ".venv/bin/mypy",
+    "--strict",
+    "--follow-imports=silent",
+    "src/autoflow/application/project_runs/end.py",
+    "src/autoflow/application/workflows/executors/project_end.py",
+    "src/autoflow/domain/workflows/project_end.py"
+  ],
+  "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend",
+  "exitCode": 0,
+  "seconds": 3.33,
+  "environment": {}
+}

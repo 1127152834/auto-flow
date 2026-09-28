@@ -31,7 +31,7 @@ PROJECT_DATA_ERRORS = {
 }
 
 
-def project_data_nodes(plan: Mapping[str, Any]) -> Iterator[tuple[str, Mapping[str, Any]]]:
+def project_data_nodes(plan: Mapping[str, Any], module_type: str = "project_data") -> Iterator[tuple[str, Mapping[str, Any]]]:
     documents = [plan.get("document", plan)]
     documents.extend(plan.get("workflowDependencies", {}).values())
     documents.extend(
@@ -41,7 +41,7 @@ def project_data_nodes(plan: Mapping[str, Any]) -> Iterator[tuple[str, Mapping[s
     for document in documents:
         for node in document.get("nodes", ()):
             data = node.get("data", node)
-            if data.get("moduleType", node.get("moduleType")) == "project_data":
+            if data.get("moduleType", node.get("moduleType")) == module_type:
                 yield node.get("id", node.get("nodeId")), data.get("config", data)
 
 

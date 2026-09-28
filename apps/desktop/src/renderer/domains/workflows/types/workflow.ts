@@ -210,6 +210,7 @@ export type ModuleType =
   | 'proxy_change_location'
   | 'proxy_query'
   | 'project_data'
+  | 'project_end'
   | 'api_request'
   | 'send_email'
   // QQ自动化

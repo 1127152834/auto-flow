@@ -1,0 +1,13 @@
+RUF059 Unpacked variable `factory` is never used
+   --> apps/backend/tests/integration/test_project_end_worker.py:147:5
+    |
+146 |     from autoflow.domain.projects.models import ProjectError
+147 |     factory, ends, task, request, _snapshot = end_context
+    |     ^^^^^^^
+148 |     with ThreadPoolExecutor(max_workers=2) as pool:
+149 |         results = list(pool.map(lambda _: ends.worker_call(task.run_id, 1, request), range(2)))
+    |
+help: Prefix it with an underscore or any other dummy variable pattern
+
+Found 6 errors (5 fixed, 1 remaining).
+No fixes available (1 hidden fix can be enabled with the `--unsafe-fixes` option).

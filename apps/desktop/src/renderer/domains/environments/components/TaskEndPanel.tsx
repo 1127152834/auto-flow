@@ -1,3 +1,4 @@
+import type { components } from '../../../shared/api/generated'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import type { StreamingApiClient } from '../../../shared/api/client'
@@ -9,7 +10,8 @@ import { safeProjectError } from '../../projects/presentation-error'
 import { createEnvironmentApi } from '../api'
 import { bindableRecords, selectedTargets } from '../record-targets'
 
-export function TaskEndPanel({ workspaceKey, instanceId, projectId, taskId, runId, executionGeneration, inputs = [], client, disabled, environmentCleaned = false }: {
+export function TaskEndPanel({ workspaceKey, instanceId, projectId, taskId, runId, executionGeneration, inputs = [], client, disabled, environmentCleaned = false, durableEnd }: {
+  durableEnd?: components['schemas']['TaskEndView'] | null
   workspaceKey: string
   instanceId: string
   projectId: string
@@ -80,6 +82,12 @@ export function TaskEndPanel({ workspaceKey, instanceId, projectId, taskId, runI
     },
     onError: error => notify({ title: safeProjectError(error), tone: 'error' }),
   })
+  if (durableEnd) return <section className="grid gap-2 rounded-control border border-line bg-surface p-4" aria-label="项目结束结果">
+    <h3 className="m-0 text-base">{durableEnd.phase === 'saved_unlinked' ? '上下文已保存，关联未完成' : durableEnd.phase === 'completed' ? 'End 已完成' : durableEnd.phase === 'failed' ? 'End 失败' : '正在保留 · 结果待核验'}</h3>
+    <p className="m-0 text-sm">原定业务结果：{durableEnd.businessResult === 'succeeded' ? '成功' : durableEnd.businessResult === 'failed' ? '失败' : '未记录'}</p>
+    {durableEnd.outcome ? <pre className="m-0 max-h-64 overflow-auto whitespace-pre-wrap text-xs">{JSON.stringify(durableEnd.outcome, null, 2)}</pre> : null}
+    {durableEnd.error ? <pre role="alert" className="m-0 whitespace-pre-wrap text-sm">{JSON.stringify(durableEnd.error, null, 2)}</pre> : null}
+  </section>
   if (instance.isLoading) return <section role="status" className="rounded-control border border-line bg-surface p-4 text-sm">正在读取任务环境…</section>
   if (!current) return <section className="rounded-control border border-line bg-surface p-4 text-sm text-muted">当前任务还没有可保留的环境实例。</section>
   const phase = end.data?.outcome && 'phase' in end.data.outcome ? String(end.data.outcome.phase) : null

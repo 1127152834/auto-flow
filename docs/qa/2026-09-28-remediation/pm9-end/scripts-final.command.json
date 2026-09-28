@@ -1,0 +1,13 @@
+{
+  "command": [
+    "node",
+    "--test",
+    "scripts/studio-required-fields.test.mjs",
+    "scripts/inventory-studio-completion.test.mjs",
+    "scripts/studio-docs.test.mjs"
+  ],
+  "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow",
+  "exitCode": 1,
+  "seconds": 1.02,
+  "environment": {}
+}

@@ -1,0 +1,11 @@
+{
+  "command": [
+    "node_modules/.bin/eslint",
+    "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectEndConfig.tsx",
+    "apps/desktop/src/renderer/domains/environments/components/TaskEndPanel.test.tsx"
+  ],
+  "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow",
+  "exitCode": 0,
+  "seconds": 0.54,
+  "environment": {}
+}

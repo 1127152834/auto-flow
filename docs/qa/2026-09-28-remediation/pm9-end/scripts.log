@@ -1,0 +1,130 @@
+file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/inventory-studio-completion.mjs:182
+const tests=capabilities.flatMap(n=>scenarios.map(([kind,steps,expectedUI,stateAssertion])=>({id:`NODE.${n.type}.${kind}`,capability:n.id,status:'缺验收',deliveryBlock:'F2.2',verifiedCases:n.verifiedCases.map(row=>row.id),preconditions:{workspace:'独立测试工作区',document:'空草稿',nodeType:n.type},steps,expectedUI,stateAssertion,expectedIO:kind==='roundtrip'?'工作区文档保存/读取合同；F1 冻结具体 operation ID':kind==='tools'?'逐工具操作合同；需按组件证据展开': '本地编辑；不应隐式启动运行',level:kind==='roundtrip'||kind==='tools'?'Electron E2E + contract':'component + editor rule',evidencePath:null,sourceEvidenceCapability:n.id,remaining:'需将全部字段/分支/工具拆为独立可执行用例；本条不是通过证据'})))
+                                                                                                                                                                                                          ^
+
+TypeError: Cannot read properties of undefined (reading 'map')
+    at file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/inventory-studio-completion.mjs:182:203
+    at Array.map (<anonymous>)
+    at file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/inventory-studio-completion.mjs:182:47
+    at Array.flatMap (<anonymous>)
+    at file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/inventory-studio-completion.mjs:182:26
+    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)
+    at async node:internal/modules/esm/loader:650:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v26.7.0
+node:internal/test_runner/harness:124
+      throw err;
+      ^
+
+Error: Command failed: /Users/zhangtiancheng/.hermes/node/bin/node scripts/inventory-studio-completion.mjs --output-dir /var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-inventory-gxMc8k
+file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/inventory-studio-completion.mjs:182
+const tests=capabilities.flatMap(n=>scenarios.map(([kind,steps,expectedUI,stateAssertion])=>({id:`NODE.${n.type}.${kind}`,capability:n.id,status:'缺验收',deliveryBlock:'F2.2',verifiedCases:n.verifiedCases.map(row=>row.id),preconditions:{workspace:'独立测试工作区',document:'空草稿',nodeType:n.type},steps,expectedUI,stateAssertion,expectedIO:kind==='roundtrip'?'工作区文档保存/读取合同；F1 冻结具体 operation ID':kind==='tools'?'逐工具操作合同；需按组件证据展开': '本地编辑；不应隐式启动运行',level:kind==='roundtrip'||kind==='tools'?'Electron E2E + contract':'component + editor rule',evidencePath:null,sourceEvidenceCapability:n.id,remaining:'需将全部字段/分支/工具拆为独立可执行用例；本条不是通过证据'})))
+                                                                                                                                                                                                          ^
+
+TypeError: Cannot read properties of undefined (reading 'map')
+    at file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/inventory-studio-completion.mjs:182:203
+    at Array.map (<anonymous>)
+    at file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/inventory-studio-completion.mjs:182:47
+    at Array.flatMap (<anonymous>)
+    at file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/inventory-studio-completion.mjs:182:26
+    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)
+    at async node:internal/modules/esm/loader:650:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v26.7.0
+
+    at genericNodeError (node:internal/errors:999:15)
+    at wrappedFn (node:internal/errors:544:14)
+    at checkExecSyncError (node:child_process:942:11)
+    at execFileSync (node:child_process:978:15)
+    at file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/inventory-studio-completion.test.mjs:11:1
+    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)
+    at async node:internal/modules/esm/loader:650:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  status: 1,
+  signal: null,
+  output: [
+    null,
+    Buffer(0) [Uint8Array] [],
+    Buffer(1785) [Uint8Array] [
+      102, 105, 108, 101,  58,  47,  47,  47,  85, 115, 101, 114,
+      115,  47, 122, 104,  97, 110, 103, 116, 105,  97, 110,  99,
+      104, 101, 110, 103,  47,  68, 111,  99, 117, 109, 101, 110,
+      116, 115,  47, 112, 114, 111, 106, 101,  99, 116, 115,  47,
+       97, 117, 116, 111, 102, 108, 111, 119,  47, 115,  99, 114,
+      105, 112, 116, 115,  47, 105, 110, 118, 101, 110, 116, 111,
+      114, 121,  45, 115, 116, 117, 100, 105, 111,  45,  99, 111,
+      109, 112, 108, 101, 116, 105, 111, 110,  46, 109, 106, 115,
+       58,  49,  56,  50,
+      ... 1685 more items
+    ]
+  ],
+  pid: 77288,
+  stdout: Buffer(0) [Uint8Array] [],
+  stderr: Buffer(1785) [Uint8Array] [
+    102, 105, 108, 101,  58,  47,  47,  47,  85, 115, 101, 114,
+    115,  47, 122, 104,  97, 110, 103, 116, 105,  97, 110,  99,
+    104, 101, 110, 103,  47,  68, 111,  99, 117, 109, 101, 110,
+    116, 115,  47, 112, 114, 111, 106, 101,  99, 116, 115,  47,
+     97, 117, 116, 111, 102, 108, 111, 119,  47, 115,  99, 114,
+    105, 112, 116, 115,  47, 105, 110, 118, 101, 110, 116, 111,
+    114, 121,  45, 115, 116, 117, 100, 105, 111,  45,  99, 111,
+    109, 112, 108, 101, 116, 105, 111, 110,  46, 109, 106, 115,
+     58,  49,  56,  50,
+    ... 1685 more items
+  ]
+}
+
+Node.js v26.7.0
+✖ scripts/inventory-studio-completion.test.mjs (807.503ms)
+(node:77286) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/lib/moduleCatalog.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✖ Studio Chinese documentation audit covers exactly the retained catalog (10.114125ms)
+✔ all three frozen metadata targets regenerate exactly without executing source modules (139.965875ms)
+✔ 213 frozen entries plus 5 native entries cover the exact approved scope (131.202833ms)
+✔ AUTOFIX then PRIORITY and mode overrides retain exact field names and empty rules (117.606416ms)
+✔ source and license digests cover both frozen schema files and preserve provenance (1.3435ms)
+✔ production domain literal matches frontend metadata and has no runtime source dependency (45.214167ms)
+✔ Python runtime description preserves the explicit AutoFlow adaptation (123.007ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 6
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 813.543625
+
+✖ failing tests:
+
+test at scripts/inventory-studio-completion.test.mjs:1:1
+✖ scripts/inventory-studio-completion.test.mjs (807.503ms)
+  'test failed'
+
+test at scripts/studio-docs.test.mjs:5:1
+✖ Studio Chinese documentation audit covers exactly the retained catalog (10.114125ms)
+  AssertionError [ERR_ASSERTION]: AutoFlow 保留节点中文教学覆盖审计
+  保留节点: 218；中文文档: 26
+  仅验证中文名称可检索，不代表配置说明完整或节点执行已验收。
+  未提及: project_end 项目结束
+  未提及模块数: 1
+  结果: FAIL
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/studio-docs.test.mjs:12:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.start (node:internal/test_runner/test:1257:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

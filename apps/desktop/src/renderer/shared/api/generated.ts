@@ -12392,6 +12392,24 @@ export type components = {
             /** Datawrites */
             dataWrites?: components["schemas"]["TaskDataWriteView"][];
             cleanup: components["schemas"]["CleanupSummaryView"];
+            end?: components["schemas"]["TaskEndView"] | null;
+        };
+        /** TaskEndView */
+        TaskEndView: {
+            /** Operationid */
+            operationId: string;
+            /** Phase */
+            phase: string;
+            /** Businessresult */
+            businessResult?: string | null;
+            /** Outcome */
+            outcome?: {
+                [key: string]: unknown;
+            } | null;
+            /** Error */
+            error?: {
+                [key: string]: unknown;
+            } | null;
         };
         /** TaskInputSnapshotView */
         TaskInputSnapshotView: {

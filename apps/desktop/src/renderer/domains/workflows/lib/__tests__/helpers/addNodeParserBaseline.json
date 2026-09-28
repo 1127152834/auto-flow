@@ -20,9 +20,9 @@
     "blockInsertNode:",
     "deleteNode:"
   ],
-  "branchCount": 163,
+  "branchCount": 164,
   "multiTypeBranchCount": 7,
-  "moduleTypeCount": 186,
+  "moduleTypeCount": 187,
   "varFieldCount": 188,
   "modulesWithVarFieldsCount": 175,
   "computedVarFieldCount": 8,

@@ -1,0 +1,164 @@
+FFFFFF                                                                   [100%]
+=================================== FAILURES ===================================
+__ test_end_rejects_unfrozen_targets_and_invalid_scalar_types[static_targets] __
+
+end_context = (sessionmaker(class_='Session', bind=Engine(sqlite:////private/tmp/autoflow-pm9-end.Vxf55P/test_end_rejects_unfrozen_t... 1, 'linkRevision': 1})), captured_at=datetime.datetime(2026, 9, 28, 4, 40, 34, 745931, tzinfo=datetime.timezone.utc)))
+change = 'static_targets'
+
+    @pytest.mark.parametrize('change', ['static_targets', 'generation_bool', 'attempt_bool', 'blank_name'])
+    def test_end_rejects_unfrozen_targets_and_invalid_scalar_types(end_context, change):
+        from autoflow.domain.projects.models import ProjectError
+        from autoflow.domain.workflows.runtime import thaw_json
+        factory, ends, task, request, snapshot = end_context
+        _retain(end_context)
+        generation = True if change == 'generation_bool' else 1
+        if change == 'attempt_bool':
+            request['attempt'] = True
+        elif change == 'static_targets':
+            request['arguments']['recordTargets'] = [thaw_json(snapshot.inputs[0]['recordRef'])]
+        elif change == 'blank_name':
+            _end_config(factory, task, name='   ')
+>       with pytest.raises(ProjectError):
+E       Failed: DID NOT RAISE ProjectError
+
+tests/integration/test_project_end_worker.py:323: Failed
+_ test_end_rejects_unfrozen_targets_and_invalid_scalar_types[generation_bool] __
+
+end_context = (sessionmaker(class_='Session', bind=Engine(sqlite:////private/tmp/autoflow-pm9-end.Vxf55P/test_end_rejects_unfrozen_t... 1, 'linkRevision': 1})), captured_at=datetime.datetime(2026, 9, 28, 4, 40, 35, 105641, tzinfo=datetime.timezone.utc)))
+change = 'generation_bool'
+
+    @pytest.mark.parametrize('change', ['static_targets', 'generation_bool', 'attempt_bool', 'blank_name'])
+    def test_end_rejects_unfrozen_targets_and_invalid_scalar_types(end_context, change):
+        from autoflow.domain.projects.models import ProjectError
+        from autoflow.domain.workflows.runtime import thaw_json
+        factory, ends, task, request, snapshot = end_context
+        _retain(end_context)
+        generation = True if change == 'generation_bool' else 1
+        if change == 'attempt_bool':
+            request['attempt'] = True
+        elif change == 'static_targets':
+            request['arguments']['recordTargets'] = [thaw_json(snapshot.inputs[0]['recordRef'])]
+        elif change == 'blank_name':
+            _end_config(factory, task, name='   ')
+>       with pytest.raises(ProjectError):
+E       Failed: DID NOT RAISE ProjectError
+
+tests/integration/test_project_end_worker.py:323: Failed
+___ test_end_rejects_unfrozen_targets_and_invalid_scalar_types[attempt_bool] ___
+
+end_context = (sessionmaker(class_='Session', bind=Engine(sqlite:////private/tmp/autoflow-pm9-end.Vxf55P/test_end_rejects_unfrozen_t... 1, 'linkRevision': 1})), captured_at=datetime.datetime(2026, 9, 28, 4, 40, 35, 457443, tzinfo=datetime.timezone.utc)))
+change = 'attempt_bool'
+
+    @pytest.mark.parametrize('change', ['static_targets', 'generation_bool', 'attempt_bool', 'blank_name'])
+    def test_end_rejects_unfrozen_targets_and_invalid_scalar_types(end_context, change):
+        from autoflow.domain.projects.models import ProjectError
+        from autoflow.domain.workflows.runtime import thaw_json
+        factory, ends, task, request, snapshot = end_context
+        _retain(end_context)
+        generation = True if change == 'generation_bool' else 1
+        if change == 'attempt_bool':
+            request['attempt'] = True
+        elif change == 'static_targets':
+            request['arguments']['recordTargets'] = [thaw_json(snapshot.inputs[0]['recordRef'])]
+        elif change == 'blank_name':
+            _end_config(factory, task, name='   ')
+>       with pytest.raises(ProjectError):
+E       Failed: DID NOT RAISE ProjectError
+
+tests/integration/test_project_end_worker.py:323: Failed
+____ test_end_rejects_unfrozen_targets_and_invalid_scalar_types[blank_name] ____
+
+end_context = (sessionmaker(class_='Session', bind=Engine(sqlite:////private/tmp/autoflow-pm9-end.Vxf55P/test_end_rejects_unfrozen_t... 1, 'linkRevision': 1})), captured_at=datetime.datetime(2026, 9, 28, 4, 40, 35, 751128, tzinfo=datetime.timezone.utc)))
+change = 'blank_name'
+
+    @pytest.mark.parametrize('change', ['static_targets', 'generation_bool', 'attempt_bool', 'blank_name'])
+    def test_end_rejects_unfrozen_targets_and_invalid_scalar_types(end_context, change):
+        from autoflow.domain.projects.models import ProjectError
+        from autoflow.domain.workflows.runtime import thaw_json
+        factory, ends, task, request, snapshot = end_context
+        _retain(end_context)
+        generation = True if change == 'generation_bool' else 1
+        if change == 'attempt_bool':
+            request['attempt'] = True
+        elif change == 'static_targets':
+            request['arguments']['recordTargets'] = [thaw_json(snapshot.inputs[0]['recordRef'])]
+        elif change == 'blank_name':
+            _end_config(factory, task, name='   ')
+>       with pytest.raises(ProjectError):
+E       Failed: DID NOT RAISE ProjectError
+
+tests/integration/test_project_end_worker.py:323: Failed
+________ test_restart_does_not_confirm_damaged_published_bytes[missing] ________
+
+end_context = (sessionmaker(class_='Session', bind=Engine(sqlite:////private/tmp/autoflow-pm9-end.Vxf55P/test_restart_does_not_confi... 1, 'linkRevision': 1})), captured_at=datetime.datetime(2026, 9, 28, 4, 40, 36, 111533, tzinfo=datetime.timezone.utc)))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1103846d0>
+damage = 'missing'
+
+    @pytest.mark.parametrize('damage', ['missing', 'same_size'])
+    def test_restart_does_not_confirm_damaged_published_bytes(end_context, monkeypatch, damage):
+        import shutil
+        factory, ends, task, request, _snapshot = end_context
+        _retain(end_context)
+        ends.worker_call(task.run_id, 1, request)
+        def crash(*_args, **_kwargs):
+            raise OSError('lost association receipt')
+        monkeypatch.setattr(ends.environments.environments, 'bind_records', crash)
+        with pytest.raises(OSError):
+            ends.finalize(task.run_id)
+        saved = ends.environments.environments.list(task.project_id)[0][0]
+        directory = ends.environments.store.generation_dir(saved.ref.environment_id, 1)
+        if damage == 'missing':
+            shutil.rmtree(directory)
+        else:
+            evidence = directory / 'end-evidence'
+            evidence.write_bytes(b'x' * evidence.stat().st_size)
+        with factory.begin() as session:
+            run = session.get(WorkflowRunRow, task.run_id)
+            run.status = 'reconciling'
+            run.execution_generation += 1
+        outcome = ends.recover(task.run_id)[1]
+>       assert not outcome['complete'] and outcome['phase'] != 'saved_unlinked'
+E       AssertionError: assert (not False and 'saved_unlinked' != 'saved_unlinked')
+
+tests/integration/test_project_end_worker.py:351: AssertionError
+_______ test_restart_does_not_confirm_damaged_published_bytes[same_size] _______
+
+end_context = (sessionmaker(class_='Session', bind=Engine(sqlite:////private/tmp/autoflow-pm9-end.Vxf55P/test_restart_does_not_confi... 1, 'linkRevision': 1})), captured_at=datetime.datetime(2026, 9, 28, 4, 40, 36, 414107, tzinfo=datetime.timezone.utc)))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x110028f90>
+damage = 'same_size'
+
+    @pytest.mark.parametrize('damage', ['missing', 'same_size'])
+    def test_restart_does_not_confirm_damaged_published_bytes(end_context, monkeypatch, damage):
+        import shutil
+        factory, ends, task, request, _snapshot = end_context
+        _retain(end_context)
+        ends.worker_call(task.run_id, 1, request)
+        def crash(*_args, **_kwargs):
+            raise OSError('lost association receipt')
+        monkeypatch.setattr(ends.environments.environments, 'bind_records', crash)
+        with pytest.raises(OSError):
+            ends.finalize(task.run_id)
+        saved = ends.environments.environments.list(task.project_id)[0][0]
+        directory = ends.environments.store.generation_dir(saved.ref.environment_id, 1)
+        if damage == 'missing':
+            shutil.rmtree(directory)
+        else:
+            evidence = directory / 'end-evidence'
+            evidence.write_bytes(b'x' * evidence.stat().st_size)
+        with factory.begin() as session:
+            run = session.get(WorkflowRunRow, task.run_id)
+            run.status = 'reconciling'
+            run.execution_generation += 1
+        outcome = ends.recover(task.run_id)[1]
+>       assert not outcome['complete'] and outcome['phase'] != 'saved_unlinked'
+E       AssertionError: assert (not False and 'saved_unlinked' != 'saved_unlinked')
+
+tests/integration/test_project_end_worker.py:351: AssertionError
+=========================== short test summary info ============================
+FAILED tests/integration/test_project_end_worker.py::test_end_rejects_unfrozen_targets_and_invalid_scalar_types[static_targets]
+FAILED tests/integration/test_project_end_worker.py::test_end_rejects_unfrozen_targets_and_invalid_scalar_types[generation_bool]
+FAILED tests/integration/test_project_end_worker.py::test_end_rejects_unfrozen_targets_and_invalid_scalar_types[attempt_bool]
+FAILED tests/integration/test_project_end_worker.py::test_end_rejects_unfrozen_targets_and_invalid_scalar_types[blank_name]
+FAILED tests/integration/test_project_end_worker.py::test_restart_does_not_confirm_damaged_published_bytes[missing]
+FAILED tests/integration/test_project_end_worker.py::test_restart_does_not_confirm_damaged_published_bytes[same_size]
+6 failed, 13 deselected in 2.85s

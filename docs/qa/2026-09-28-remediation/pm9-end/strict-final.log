@@ -1,0 +1,2 @@
+NEW strict error x1: ["src/autoflow/application/project_runs/end.py", "ProjectRunEnd._published_save", "dict-item", "Dict entry 2 has incompatible type \"str\": \"dict[str, Any]\"; expected \"str\": \"str\""]
+strict debt: 1042; baseline: 1041; new: 1

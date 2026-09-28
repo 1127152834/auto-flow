@@ -26,7 +26,7 @@ walk(sidebar,node=>{
 })
 if(!categories || !excluded || !extra)throw Error('Catalog structure changed; inventory cannot silently skip it')
 const retained=categories.filter(c=>!excluded.has(c.name)).flatMap(c=>c.types.filter(t=>!extra.has(t)).map(type=>({type,category:c.name})))
-const nativeTypes = new Set(['proxy_change_ip', 'proxy_change_location', 'proxy_query', 'project_data'])
+const nativeTypes = new Set(['proxy_change_ip', 'proxy_change_location', 'proxy_query', 'project_data', 'project_end'])
 const frozen = retained.filter(node => !nativeTypes.has(node.type))
 if(frozen.length!==213 || new Set(frozen.map(n=>n.type)).size!==213 || retained.length!==213+nativeTypes.size)throw Error('Approved frozen/native node scope changed')
 const files=fs.readdirSync(path.join(root,domain,'components/config-panels')).filter(f=>f.endsWith('.tsx')).map(f=>`${domain}/components/config-panels/${f}`)
@@ -167,7 +167,7 @@ const capabilities=retained.map(n=>{
   const previous=previousById.get(id)
   const cases=verified.filter(row=>['通过','已实现且已验收'].includes(row.status) && (row.capability===id || row.preconditions?.nodeType===n.type))
   if(sharedAdvancedCase && !nativeTypes.has(n.type))cases.push(sharedAdvancedCase)
-  if(nativeTypes.has(n.type)) return {...n, ...previous, evidence:[...evidence.get(n.type), ...(previous?.evidence??[])], toolDependencies:dependencies(n.type)}
+  if(nativeTypes.has(n.type)) return {...n, id, status:'缺验收', differenceClass:'AutoFlow 原生扩展', verifiedCases:[], ...previous, evidence:[...evidence.get(n.type), ...(previous?.evidence??[])], toolDependencies:dependencies(n.type)}
   const supplementalEvidence=(previous?.evidence??[]).filter(item=>typeof item==='string')
   return {...n,id,status:previous?.status??'缺验收',deliveryBlock:'F2.2',differenceClass:'原版功能迁入',
     verifiedCases:cases.map(row=>({id:row.id,status:'已实现且已验收',level:row.level,evidencePath:row.evidencePath})),
@@ -179,7 +179,7 @@ const capabilities=retained.map(n=>{
     ...(previous?.backendMigration?{backendMigration:previous.backendMigration}:{}),
   }
 })
-const tests=capabilities.flatMap(n=>scenarios.map(([kind,steps,expectedUI,stateAssertion])=>({id:`NODE.${n.type}.${kind}`,capability:n.id,status:'缺验收',deliveryBlock:'F2.2',verifiedCases:n.verifiedCases.map(row=>row.id),preconditions:{workspace:'独立测试工作区',document:'空草稿',nodeType:n.type},steps,expectedUI,stateAssertion,expectedIO:kind==='roundtrip'?'工作区文档保存/读取合同；F1 冻结具体 operation ID':kind==='tools'?'逐工具操作合同；需按组件证据展开': '本地编辑；不应隐式启动运行',level:kind==='roundtrip'||kind==='tools'?'Electron E2E + contract':'component + editor rule',evidencePath:null,sourceEvidenceCapability:n.id,remaining:'需将全部字段/分支/工具拆为独立可执行用例；本条不是通过证据'})))
+const tests=capabilities.flatMap(n=>scenarios.map(([kind,steps,expectedUI,stateAssertion])=>({id:`NODE.${n.type}.${kind}`,capability:n.id,status:'缺验收',deliveryBlock:'F2.2',verifiedCases:(n.verifiedCases ?? []).map(row=>row.id),preconditions:{workspace:'独立测试工作区',document:'空草稿',nodeType:n.type},steps,expectedUI,stateAssertion,expectedIO:kind==='roundtrip'?'工作区文档保存/读取合同；F1 冻结具体 operation ID':kind==='tools'?'逐工具操作合同；需按组件证据展开': '本地编辑；不应隐式启动运行',level:kind==='roundtrip'||kind==='tools'?'Electron E2E + contract':'component + editor rule',evidencePath:null,sourceEvidenceCapability:n.id,remaining:'需将全部字段/分支/工具拆为独立可执行用例；本条不是通过证据'})))
 fs.mkdirSync(out,{recursive:true})
 for(const [name,value] of [['capabilities.json',capabilities],['test-cases.json',tests],['component-tools.json',[...definitions.values()].flat()]])fs.writeFileSync(path.join(out,name),JSON.stringify(value,null,2)+'\n')
 console.log(JSON.stringify({nodes:capabilities.length,caseTemplates:tests.length,withoutDirectBranchEvidence:capabilities.filter(n=>!n.evidence.length).map(n=>n.type)}))

@@ -1,0 +1,24 @@
+✔ retains the approved scope and resolves an imported alias to its actual component file (0.993792ms)
+✔ excludes database and DP nodes from the delivery inventory (0.12175ms)
+✔ follows lazy imports into actual code tools and their editor dependency (0.098458ms)
+✔ does not silently discard dynamically selected icon components or reconciled node evidence (0.617583ms)
+✔ candidate generation preserves historical bytes and native acceptance limits (6.932875ms)
+(node:86670) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/src/renderer/domains/workflows/lib/moduleCatalog.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Studio Chinese documentation audit covers exactly the retained catalog (11.124917ms)
+✔ all three frozen metadata targets regenerate exactly without executing source modules (153.486292ms)
+✔ 213 frozen entries plus 5 native entries cover the exact approved scope (139.794709ms)
+✔ AUTOFIX then PRIORITY and mode overrides retain exact field names and empty rules (121.924333ms)
+✔ source and license digests cover both frozen schema files and preserve provenance (1.427709ms)
+✔ production domain literal matches frontend metadata and has no runtime source dependency (48.989417ms)
+✔ Python runtime description preserves the explicit AutoFlow adaptation (124.833667ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 911.367291

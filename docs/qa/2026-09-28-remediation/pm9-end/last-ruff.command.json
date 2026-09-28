@@ -1,0 +1,14 @@
+{
+  "command": [
+    ".venv/bin/ruff",
+    "check",
+    "src/autoflow/application/project_runs/end.py",
+    "src/autoflow/application/project_data/capabilities.py",
+    "tests/integration/test_project_end_worker.py",
+    "tests/unit/test_environment_store.py"
+  ],
+  "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend",
+  "exitCode": 0,
+  "seconds": 0.02,
+  "environment": {}
+}

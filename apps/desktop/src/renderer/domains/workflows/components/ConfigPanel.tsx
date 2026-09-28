@@ -1,3 +1,4 @@
+import { ProjectEndConfig } from './config-panels/ProjectEndConfig'
 import { ProjectDataConfig } from './config-panels/ProjectDataConfig'
 import { ProxyControlConfig } from './config-panels/ProxyControlConfig'
 import { excludedModuleTypes } from '../lib/moduleCatalog'
@@ -910,6 +911,8 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
         return <FirecrawlMapConfig data={nodeData} onChange={handleChange} />
       case 'firecrawl_crawl':
         return <FirecrawlCrawlConfig data={nodeData} onChange={handleChange} />
+      case 'project_end':
+        return <ProjectEndConfig data={nodeData} onChange={handleChange} />
       case 'project_data':
         return <ProjectDataConfig data={nodeData} onChange={handleChange} />
       case 'proxy_change_ip':

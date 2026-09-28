@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import MISSING, fields
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
 from autoflow.domain.project_data.capabilities import (
@@ -21,6 +21,9 @@ from autoflow.domain.project_data.identity import RecordKey
 from autoflow.domain.project_runs.input_selection import RecordRef
 from autoflow.domain.projects.models import ProjectError
 
+if TYPE_CHECKING:
+    from autoflow.application.project_runs.end import ProjectRunEnd
+
 _WORKER_COMMANDS = {
     "read": (ReadProjectRecordRequest, "read_record"),
     "query": (QueryProjectRecordsRequest, "query_records"),
@@ -38,11 +41,14 @@ _WORKER_COMMANDS = {
 class ProjectDataCapabilityService:
     """The internal workflow-facing boundary for explicit project data writes."""
 
-    def __init__(self, repository) -> None:
+    def __init__(self, repository, *, project_end: ProjectRunEnd | None = None) -> None:
         self.repository = repository
+        self.project_end = project_end
 
     def worker_call(self, run_id: str, generation: int, request: dict[str, Any]) -> dict[str, Any]:
         """Decode only fixed commands; identity comes from the owning host pipe."""
+        if request.get("capability") == "project.end" and self.project_end is not None:
+            return self.project_end.worker_call(run_id, generation, request)
         try:
             if set(request) != {
                 "nodeId",

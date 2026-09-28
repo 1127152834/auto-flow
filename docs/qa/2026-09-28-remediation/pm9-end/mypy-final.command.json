@@ -1,0 +1,31 @@
+{
+  "command": [
+    ".venv/bin/mypy",
+    "src/autoflow/domain/workflows/project_end.py",
+    "src/autoflow/application/workflows/executors/project_end.py",
+    "src/autoflow/application/project_runs/end.py",
+    "src/autoflow/domain/workflows/project_data.py",
+    "src/autoflow/domain/workflows/catalog.py",
+    "src/autoflow/domain/workflows/scope.py",
+    "src/autoflow/domain/workflows/run_validation.py",
+    "src/autoflow/domain/environments/rules.py",
+    "src/autoflow/application/workflows/executors/production.py",
+    "src/autoflow/application/workflows/core_runtime.py",
+    "src/autoflow/application/workflows/coordinator.py",
+    "src/autoflow/application/project_data/capabilities.py",
+    "src/autoflow/application/workflows/dispatcher.py",
+    "src/autoflow/application/environments/retention.py",
+    "src/autoflow/application/environments/service.py",
+    "src/autoflow/infrastructure/database/environments.py",
+    "src/autoflow/bootstrap/workflows.py",
+    "src/autoflow/bootstrap/app.py",
+    "src/autoflow/application/project_runs/queries.py",
+    "src/autoflow/adapters/http/project_run_schemas.py",
+    "src/autoflow/infrastructure/filesystem/environment_store.py",
+    "src/autoflow/domain/workflows/required_fields.py"
+  ],
+  "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend",
+  "exitCode": 0,
+  "seconds": 17.02,
+  "environment": {}
+}

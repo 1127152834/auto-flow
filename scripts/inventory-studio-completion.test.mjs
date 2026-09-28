@@ -13,8 +13,8 @@ const rows = JSON.parse(fs.readFileSync(path.join(directory, 'capabilities.json'
 const dependency = type => rows.find(row => row.type === type).toolDependencies
 const prefix = 'apps/desktop/src/renderer/domains/workflows/components/'
 test('retains the approved scope and resolves an imported alias to its actual component file', () => {
-  assert.equal(rows.length, 217)
-  assert.equal(new Set(rows.map(row => row.type)).size, 217)
+  assert.equal(rows.length, 218)
+  assert.equal(new Set(rows.map(row => row.type)).size, 218)
   assert.ok(dependency('open_page').resolved.includes(prefix + 'controls/select-native.tsx#SelectNative'))
   assert.ok(dependency('open_page').external.includes('@radix-ui/react-select#Trigger'))
   assert.deepEqual(dependency('open_page').unresolved, [])

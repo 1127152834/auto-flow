@@ -395,7 +395,7 @@ def validate_end_phase(current: EndPhase, nxt: EndPhase) -> EndPhase:
             403,
             {"domainCode": "end_access_revoked", "phase": current},
         )
-    if nxt == "failed":
+    if nxt == "failed" or (current == "accepted" and nxt == "completed"):
         return nxt
     if current == "saving" and nxt == "saved_unlinked":
         return nxt

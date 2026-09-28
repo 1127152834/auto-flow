@@ -130,6 +130,7 @@ def save_environment(service, project_id: str, key: str, payload: dict[str, Any]
                 digest,
                 created_from_source=instance.source,
                 created_from_task_id=instance.active_task_id,
+                authority=payload.get("workerAuthority"),
             )
         else:
             if source is None:
@@ -148,7 +149,7 @@ def save_environment(service, project_id: str, key: str, payload: dict[str, Any]
                     encoding="utf-8"
                 ).strip()
             saved = service.environments.publish_update(
-                project_id, environment_id, digest, generation=generation
+                project_id, environment_id, digest, generation=generation, authority=payload.get("workerAuthority")
             )
         service.environments.record_save(
             save_id,
@@ -164,7 +165,7 @@ def save_environment(service, project_id: str, key: str, payload: dict[str, Any]
             accepted.operation_id,
             datetime.now(UTC),
         )
-        outcome = _bind(service, project_id, saved, instance, payload.get("recordTargets") or [])
+        outcome = _bind(service, project_id, saved, instance, payload.get("recordTargets") or [], authority=payload.get("workerAuthority"))
         service.environments.record_save(
             save_id,
             project_id,
@@ -183,7 +184,7 @@ def save_environment(service, project_id: str, key: str, payload: dict[str, Any]
             closed = service.environments.set_instance_state(instance_id, "closed")
             outcome["instance"] = closed.to_dict()
         outcome = _jsonable(outcome)
-        done = service.environments.complete_operation(accepted, outcome, None, datetime.now(UTC))
+        done = service.environments.complete_operation(accepted, outcome, outcome.get("error"), datetime.now(UTC))
         return outcome, done, False
     except ProjectError as error:
         failed = {
@@ -253,7 +254,7 @@ def repair_association(service, project_id: str, key: str, save_operation_id: st
         save["operationId"],
         datetime.now(UTC),
     )
-    done = service.environments.complete_operation(accepted, outcome, None, datetime.now(UTC))
+    done = service.environments.complete_operation(accepted, outcome, outcome.get("error"), datetime.now(UTC))
     return outcome, done, False
 
 
@@ -313,8 +314,9 @@ def end_task(service, project_id: str, key: str, payload: dict[str, Any]):
     try:
         if not wants_retain:
             if ledger["phase"] not in END_TERMINAL_PHASES:
-                current = service.environments.get_instance(project_id, payload["instanceId"])
-                service.close_instance(project_id, payload["instanceId"], current.environment_id)
+                if payload["instanceId"]:
+                    current = service.environments.get_instance(project_id, payload["instanceId"])
+                    service.close_instance(project_id, payload["instanceId"], current.environment_id)
                 record("completed")
             outcome = _jsonable(_closed_outcome(service, project_id, payload["instanceId"]))
             done = service.environments.complete_operation(
@@ -339,6 +341,7 @@ def end_task(service, project_id: str, key: str, payload: dict[str, Any]):
             "notes": retain.get("notes") or "",
             "expectedContentGeneration": retain.get("expectedContentGeneration"),
             "recordTargets": retain.get("recordTargets") or [],
+            **({"workerAuthority": payload} if payload.get("workerEnd") else {}),
         }
         save_key = f"end-save:{accepted.operation_id}"
         outcome, save_operation, _save_replayed = save_environment(
@@ -355,6 +358,7 @@ def end_task(service, project_id: str, key: str, payload: dict[str, Any]):
         ledger["association"] = {
             "phase": outcome["phase"],
             "conflicts": outcome.get("conflicts"),
+            "error": outcome.get("error"),
         }
         if ledger["phase"] not in END_TERMINAL_PHASES:
             if outcome["phase"] == "completed":
@@ -373,7 +377,7 @@ def end_task(service, project_id: str, key: str, payload: dict[str, Any]):
         done = service.environments.complete_operation(
             accepted,
             outcome,
-            None if outcome["complete"] else {
+            None if outcome["complete"] else outcome.get("error") or {
                 "code": "SAVED_UNLINKED",
                 "message": "Environment saved but association is incomplete",
                 "details": {"domainCode": "saved_unlinked"},
@@ -402,7 +406,7 @@ def _closed_outcome(service, project_id: str, instance_id: str) -> dict[str, Any
     return {
         "phase": "completed",
         "complete": True,
-        "instance": service.environments.get_instance(project_id, instance_id).to_dict(),
+        "instance": service.environments.get_instance(project_id, instance_id).to_dict() if instance_id else None,
         "source": None,
         "saved": None,
         "targets": [],
@@ -425,29 +429,24 @@ def _reject_replayed_failure(accepted) -> None:
 
 
 
-def _bind(service, project_id: str, environment: PersistentEnvironment, instance, requested: list[dict[str, Any]]):
+def _bind(service, project_id: str, environment: PersistentEnvironment, instance, requested: list[dict[str, Any]], *, authority: dict[str, Any] | None = None):
     conflicts = []
+    failure = None
     try:
         targets = service.environments.load_bind_targets(project_id, requested)
         results = bind_targets(environment.ref.environment_id, targets)
-        service.environments.bind_records(project_id, environment.ref.environment_id, results)
+        service.environments.bind_records(project_id, environment.ref.environment_id, results, authority=authority)
         phase = "completed"
     except ProjectError as error:
-        if error.code in {"LINK_REVISION_CONFLICT", "ASSOCIATION_REPLACE_FORBIDDEN", "ASSOCIATION_TARGET_MISSING"}:
-            details = error.details
-            if error.code == "LINK_REVISION_CONFLICT":
-                conflicts.append(
-                    {
-                        "record": details.get("record"),
-                        "expectedLinkRevision": details.get("expectedRevision"),
-                        "currentLinkRevision": details.get("currentRevision"),
-                    }
-                )
-            phase = "saved_unlinked"
-        else:
-            raise
+        failure = {"code": error.code, "message": error.message, "status": error.status, "details": error.details}
+        if error.code == "LINK_REVISION_CONFLICT":
+            conflicts.append({"record": error.details.get("record"),
+                "expectedLinkRevision": error.details.get("expectedRevision"),
+                "currentLinkRevision": error.details.get("currentRevision")})
+        phase = "saved_unlinked"
     return {
         "phase": phase,
+        "error": failure,
         "complete": phase == "completed",
         "instance": instance.to_dict() if instance is not None else None,
         "source": environment.ref.to_dict() if hasattr(environment.ref, "to_dict") else {

@@ -483,6 +483,7 @@ def create_app(
         temp_dir=paths.temp,
         gate=quiesce_gate,
         environment_directory=environment_service.run_work_directory,
+        environments=environment_service,
         resolve_credential=studio_credentials.resolve,
         models=model_service,
     )

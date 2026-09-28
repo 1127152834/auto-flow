@@ -505,6 +505,7 @@ def configure_project_workflow_runtime(
     temp_dir: Path,
     gate: Any,
     environment_directory: Any | None = None,
+    environments: Any | None = None,
     resolve_credential: Any | None = None,
     models: Any | None = None,
 ) -> Any:
@@ -558,13 +559,15 @@ def configure_project_workflow_runtime(
     from autoflow.application.project_data.capabilities import (
         ProjectDataCapabilityService,
     )
+    from autoflow.application.project_runs.end import ProjectRunEnd
     from autoflow.infrastructure.database.project_capabilities import (
         SqlAlchemyProjectDataCapabilities,
     )
 
+    project_end = ProjectRunEnd(session_factory, environments) if environments is not None else None
     worker = ProjectWorkflowWorkerManager(
         temp_dir, resolve_credential=resolve_credential, proxy_service=proxy_service,
-        project_data=ProjectDataCapabilityService(SqlAlchemyProjectDataCapabilities(session_factory)),
+        project_data=ProjectDataCapabilityService(SqlAlchemyProjectDataCapabilities(session_factory), project_end=project_end),
     )
 
     async def recover(run: Any) -> None:
@@ -586,6 +589,7 @@ def configure_project_workflow_runtime(
 
     dispatcher = WorkflowRunDispatcher(
         session_factory, worker, resources, gate, recover,
+        project_end=project_end,
         resolve_model=models.execution_binding if models is not None else None,
         resolve_default_model=models.default_model_id if models is not None else None,
     )

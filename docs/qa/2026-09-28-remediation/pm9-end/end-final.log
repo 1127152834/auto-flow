@@ -1,0 +1,58 @@
+..............................F......................................... [ 58%]
+....................................................                     [100%]
+=================================== FAILURES ===================================
+____ test_created_record_acquires_lease_and_can_be_selected_by_dynamic_end _____
+
+end_context = (sessionmaker(class_='Session', bind=Engine(sqlite:////private/tmp/autoflow-pm9-end.ajol1L/test_created_record_acquire... 1, 'linkRevision': 1})), captured_at=datetime.datetime(2026, 9, 28, 4, 50, 13, 420898, tzinfo=datetime.timezone.utc)))
+
+    def test_created_record_acquires_lease_and_can_be_selected_by_dynamic_end(end_context):
+        from uuid import uuid4
+    
+        from autoflow.domain.project_data.capabilities import CreateProjectRecordCommand
+        from autoflow.domain.workflows.runtime import thaw_json
+        from autoflow.infrastructure.database.project_capabilities import (
+            SqlAlchemyProjectDataCapabilities,
+        )
+    
+        factory, ends, task, request, snapshot = end_context
+        _retain(end_context)
+        _end_config(factory, task, inputIds=[], recordTargets="{created_records}")
+        item = thaw_json(snapshot.inputs[0])
+        ref = item["recordRef"]
+        with factory.begin() as session:
+            run = session.get(WorkflowRunRow, task.run_id)
+            bindings = deepcopy(run.capability_bindings)
+            binding = next(b for b in bindings if b["capability"] == "project.data")
+            binding["createRecordTargets"] = [
+                {"tableId": ref["tableId"], "datasetGeneration": ref["datasetGeneration"]}
+            ]
+            for grant in binding["tableGrants"]:
+                if grant["tableId"] == ref["tableId"]:
+                    grant["operations"].append("createRecord")
+            run.capability_bindings = bindings
+        repository = SqlAlchemyProjectDataCapabilities(factory)
+        created, _replayed = repository.create_record(
+            repository.scope(task.project_id, task.task_id, task.run_id),
+            CreateProjectRecordCommand(
+                str(uuid4()),
+                1,
+                task.project_id,
+                ref["tableId"],
+                ref["datasetGeneration"],
+                {v["fieldId"]: "new-end-output" for v in item["values"]},
+            ),
+        )
+>       request["arguments"]["recordTargets"] = [created["recordRef"]]
+                                                 ^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'recordRef'
+
+tests/integration/test_project_end_worker.py:760: KeyError
+=============================== warnings summary ===============================
+.venv/lib/python3.11/site-packages/starlette/testclient.py:53
+  /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/integration/test_project_end_worker.py::test_created_record_acquires_lease_and_can_be_selected_by_dynamic_end
+1 failed, 123 passed, 1 warning in 15.70s

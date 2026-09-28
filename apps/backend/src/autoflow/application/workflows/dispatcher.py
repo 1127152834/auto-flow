@@ -15,6 +15,7 @@ from autoflow.application.project_runs.interactions import ProjectRunInteraction
 from autoflow.application.settings.runtime import QuiesceGate
 from autoflow.application.workflows.coordinator import _model_references
 from autoflow.domain.models.errors import ModelError
+from autoflow.domain.projects.models import ProjectError
 from autoflow.domain.workflows.runtime import (
     TERMINAL_STATUSES,
     CoreRun,
@@ -26,6 +27,7 @@ from autoflow.infrastructure.database.workflow_runtime import (
     SqlAlchemyWorkflowRuntimeRepository,
 )
 from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
+from autoflow.infrastructure.process.project_test_browser_worker import wait_for_cleanup
 from autoflow.infrastructure.process.project_workflow_worker import (
     WorkerOutcome,
     WorkflowWorkerError,
@@ -93,12 +95,14 @@ class WorkflowRunDispatcher:
         gate: QuiesceGate,
         recover_orphan: Recovery,
         *,
+        project_end: Any | None = None,
         resolve_model: Callable[[str], ModelExecutionBinding] | None = None,
         resolve_default_model: Callable[[str], str] | None = None,
         force_stop_grace: timedelta = timedelta(seconds=30),
         now: Callable[[], datetime] = lambda: datetime.now(UTC),
     ) -> None:
         self._sessions = session_factory
+        self._project_end = project_end
         self._worker = worker
         self.interactions = ProjectRunInteractions(session_factory, self._send_interaction)
         self._resources = resources
@@ -152,6 +156,8 @@ class WorkflowRunDispatcher:
                 await self._recover_orphan(fenced)
             except Exception:  # noqa: BLE001,S112 - failure is durable state
                 continue
+            if await self._finish_end(fenced.run_id, recovering=True):
+                continue
             self._transition_current(
                 fenced.run_id,
                 fenced.execution_generation,
@@ -203,13 +209,21 @@ class WorkflowRunDispatcher:
         expected_status_revision: int,
         execution_generation: int,
     ) -> CoreRun:
-        run = self._transition_identity(
-            run_id, "stopping", expected_status_revision, execution_generation
-        )
-        if run.execution_generation == 0:  # queued: no resource or worker ever existed
-            return self._transition_current(run_id, 0, "cancelled")
-        await self._worker.stop(run_id)
-        return self._get_run(run_id)
+        async with self._control:
+            current = self._get_run(run_id)
+            if current.status == "finishing" and self._project_end is not None and self._project_end.operation(run_id) is not None:
+                if current.status_revision != expected_status_revision:
+                    raise WorkflowRuntimeError("RUN_STATUS_CONFLICT", "运行状态已发生变化")
+                if current.execution_generation != execution_generation:
+                    raise WorkflowRuntimeError("EXECUTION_GENERATION_REVOKED", "执行代次已失效")
+                return current
+            run = self._transition_identity(
+                run_id, "stopping", expected_status_revision, execution_generation
+            )
+            if run.execution_generation == 0:  # queued: no resource or worker ever existed
+                return self._transition_current(run_id, 0, "cancelled")
+            await self._worker.stop(run_id)
+            return self._get_run(run_id)
 
     async def force_stop(
         self,
@@ -262,6 +276,11 @@ class WorkflowRunDispatcher:
         except Exception:  # noqa: BLE001 - cleanup ownership remains unknown
             return self._get_run(run_id)
         if self._worker.busy():
+            return self._get_run(run_id)
+        if await self._finish_end_locked(run_id, recovering=True):
+            if self._run_id == run_id:
+                self._release_lease()
+                self._clear_owner()
             return self._get_run(run_id)
         if self._run_id == run_id:
             self._release_lease()
@@ -328,6 +347,11 @@ class WorkflowRunDispatcher:
         except Exception:  # noqa: BLE001 - recovery adapters define their failures
             return self._get_run(run_id)
         if self._worker.busy():
+            return self._get_run(run_id)
+        if await self._finish_end_locked(run_id, recovering=True):
+            if self._run_id == run_id:
+                self._release_lease()
+                self._clear_owner()
             return self._get_run(run_id)
         if self._run_id == run_id:
             self._release_lease()
@@ -474,6 +498,9 @@ class WorkflowRunDispatcher:
                     )
             if self._worker.busy() or not outcome.cleanup_confirmed:
                 raise RuntimeError("worker cleanup unconfirmed")
+            if await self._finish_end(dispatched.run_id):
+                self._release_lease()
+                return
             self._release_lease()
             current = self._get_run(dispatched.run_id)
             if (
@@ -486,7 +513,7 @@ class WorkflowRunDispatcher:
                     current.run_id, current.execution_generation, "cancelled"
                 )
                 return
-            finishing = self._transition(current, "finishing")
+            finishing = current if current.status == "finishing" else self._transition(current, "finishing")
             target: CoreRunStatus = outcome.status
             self._transition_current(
                 finishing.run_id,
@@ -516,6 +543,9 @@ class WorkflowRunDispatcher:
                 return
             if self._worker.busy():
                 return
+            if self._project_end is not None and self._project_end.operation(current.run_id) is not None:
+                unhandled = True
+                return
             if lease is not None:
                 lease.release()
                 self._lease = None
@@ -540,6 +570,41 @@ class WorkflowRunDispatcher:
                         self._run_id = None
             for listener in tuple(self._idle_listeners):
                 listener()
+
+    async def _finish_end(self, run_id: str, *, recovering: bool = False) -> bool:
+        async with self._control:
+            return await self._finish_end_locked(run_id, recovering=recovering)
+
+    async def _finish_end_locked(self, run_id: str, *, recovering: bool = False) -> bool:
+        if self._project_end is None or self._project_end.operation(run_id) is None:
+            return False
+        current = self._get_run(run_id)
+        if current.terminal:
+            return True
+        if not recovering and current.status != "finishing":
+            return False
+        work = asyncio.create_task(asyncio.to_thread(
+            self._project_end.recover if recovering else self._project_end.finalize, run_id,
+        ))
+        try:
+            try:
+                result = await asyncio.shield(work)
+            except asyncio.CancelledError:
+                await wait_for_cleanup(work)
+                raise
+        except ProjectError as error:
+            if error.code in {"INSTANCE_NOT_QUIESCENT", "INSTANCE_OWNERSHIP_UNKNOWN"}:
+                raise RuntimeError("End browser ownership remains unknown") from error
+            self._transition_current(run_id, current.execution_generation, "failed",
+                error={"code": error.code, "message": error.message, "details": error.details})
+            return True
+        if result is None:
+            return False
+        business, outcome, result_error = result
+        target: CoreRunStatus = "succeeded" if outcome.get("complete") and business == "succeeded" else "failed"
+        self._transition_current(run_id, current.execution_generation, target,
+            error=result_error or ({"code": "END_BUSINESS_FAILED", "message": "End 业务结果为失败"} if target == "failed" else None))
+        return True
 
     def _model_bindings(
         self, plan: dict[str, Any], resource_request: Mapping[str, Any]

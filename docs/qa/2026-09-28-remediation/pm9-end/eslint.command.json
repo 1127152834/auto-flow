@@ -1,0 +1,22 @@
+{
+  "command": [
+    "../../node_modules/.bin/eslint",
+    "src/renderer/domains/workflows/types/workflow.ts",
+    "src/renderer/domains/workflows/lib/moduleCatalog.ts",
+    "src/renderer/domains/workflows/editor-store.ts",
+    "src/renderer/domains/workflows/components/ModuleSidebar.tsx",
+    "src/renderer/domains/workflows/components/ConfigPanel.tsx",
+    "src/renderer/domains/workflows/components/config-panels/ProjectEndConfig.tsx",
+    "src/renderer/domains/workflows/components/config-panels/ProjectEndConfig.test.tsx",
+    "src/renderer/domains/environments/components/TaskEndPanel.tsx",
+    "src/renderer/domains/project-runs/pages/TaskDetailPage.tsx",
+    "src/renderer/domains/workflows/tests/module-scope.test.ts",
+    "src/renderer/domains/workflows/tests/audits/audit-module-docs.mjs",
+    "src/renderer/domains/workflows/components/documentation/content-module-reference.ts",
+    "src/renderer/domains/workflows/tests/required-field-protocol.test.ts"
+  ],
+  "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop",
+  "exitCode": 0,
+  "seconds": 1.3,
+  "environment": {}
+}

@@ -191,7 +191,7 @@ class WorkflowRuntimeService:
             modules = self._module_snapshots(document)
             workflows = self._workflow_snapshots(document, workflow_project_id(session, workflow_id), modules)
             return any(
-                node.get("data", {}).get("moduleType") == "project_data"
+                node.get("data", {}).get("moduleType") in {"project_data", "project_end"}
                 for item in _related_documents(document, modules, workflows)
                 for node in item.get("nodes", ())
             )
@@ -307,7 +307,7 @@ class WorkflowRuntimeService:
             for item in _related_documents(prepared.document, modules, workflows)
         ) else [])
         if any(
-            node.get("data", {}).get("moduleType") == "project_data"
+            node.get("data", {}).get("moduleType") in {"project_data", "project_end"}
             for item in _related_documents(prepared.document, modules, workflows)
             for node in item.get("nodes", ())
         ):

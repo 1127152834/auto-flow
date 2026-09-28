@@ -19,6 +19,7 @@ from autoflow.domain.project_runs.models import (
 )
 from autoflow.domain.workflows.runtime import CoreRunStatus, thaw_json
 from autoflow.infrastructure.database.environment_models import (
+    ProjectEndOperationRow,
     ProjectEnvironmentInstanceRow,
     ProjectManualItemRow,
 )
@@ -440,6 +441,7 @@ class ProjectRunQueries:
                 "nodeNames": node_names,
                 "run": _run(run),
                 "cleanup": _cleanup(session, project_id, task_id, run),
+                "end": _end(session, project_id, task_id),
                 "currentInputs": _current_inputs(session, project_id, snapshot),
                 "dataWrites": _data_writes(
                     session,
@@ -448,6 +450,18 @@ class ProjectRunQueries:
                     visits=_visit_windows(session, task.run_id, node_names),
                 ),
             }
+
+
+def _end(session: Session, project_id: str, task_id: str) -> dict[str, Any] | None:
+    row = session.scalar(select(ProjectEndOperationRow).where(
+        ProjectEndOperationRow.project_id == project_id, ProjectEndOperationRow.task_id == task_id,
+    ).order_by(ProjectEndOperationRow.created_at).limit(1))
+    if row is None:
+        return None
+    operation = session.get(ProjectOperationRow, row.operation_id)
+    return {"operationId": row.operation_id, "phase": row.phase,
+            "businessResult": row.intended_result.get("businessResult"),
+            "outcome": operation.result if operation else None, "error": operation.error if operation else None}
 
 
 # Residue of one task's browser work copy, keyed by the instance's own durable

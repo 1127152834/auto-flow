@@ -516,6 +516,10 @@ class EnvironmentService:
         return repair_association(self, project_id, key, save_operation_id, payload)
 
     def end(self, project_id: str, key: str, payload: dict[str, Any]):
+        if not payload.get("workerEnd") and self._execution_generation_lookup is not None:
+            run = self._execution_generation_lookup(payload.get("runId"))
+            if run is not None and not getattr(run, "terminal", False):
+                raise environment_error("END_ACCESS_REVOKED", "活动任务必须由冻结的项目 End 节点结束", 409)
         with self._lifecycle_lock(payload["instanceId"]):
             return end_task(self, project_id, key, payload)
 

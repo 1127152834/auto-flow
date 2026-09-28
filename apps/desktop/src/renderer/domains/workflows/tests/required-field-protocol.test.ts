@@ -13,7 +13,7 @@ describe.each(['memory','http'] as const)('module metadata over %s',mode=>{
  afterEach(async()=>{mock.configureMock({disconnect:true});await server?.close();server=undefined;vi.unstubAllGlobals()})
  it('returns exactly the filtered frozen metadata with explicit coverage',async()=>{
   const response=await request();expect(response.status).toBe(200);const data=await response.json()
-  expect(isRequiredFieldMetadata(data)).toBe(true);expect(data).toEqual(fixture);expect(data.coveredModules).toHaveLength(217)
+  expect(isRequiredFieldMetadata(data)).toBe(true);expect(data).toEqual(fixture);expect(data.coveredModules).toHaveLength(218)
   expect(data.requiredFields.project_data).toEqual(['action','resultVariable'])
   expect(data.conditionalRequired.project_data.map.update).toEqual(['binding','arguments'])
   expect(data.conditionalRequired.project_data.map.inputs).toEqual([])

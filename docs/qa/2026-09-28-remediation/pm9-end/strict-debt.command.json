@@ -1,0 +1,10 @@
+{
+  "command": [
+    ".venv/bin/python",
+    "scripts/check_strict_types.py"
+  ],
+  "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend",
+  "exitCode": 1,
+  "seconds": 32.15,
+  "environment": {}
+}

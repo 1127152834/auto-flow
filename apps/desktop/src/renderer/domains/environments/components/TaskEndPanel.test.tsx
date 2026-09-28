@@ -63,3 +63,15 @@ it.each([['cleaned', false], ['active', true]] as const)('does not offer to reta
   expect(await screen.findByText('临时环境已清理，无法再保留此工作副本；已保存的环境不受影响。')).toBeVisible()
   expect(screen.queryByRole('button', { name: '结束并保留' })).not.toBeInTheDocument()
 })
+
+it('reads a durable partial End and preserves its full error after reopening', () => {
+  const client = { request: vi.fn() } as unknown as StreamingApiClient
+  render(<QueryClientProvider client={new QueryClient()}>
+    <TaskEndPanel workspaceKey="w" instanceId="i" projectId="p" taskId="task-1" runId="run-1" executionGeneration={2} client={client} disabled durableEnd={{ operationId: 'end-1', phase: 'saved_unlinked', businessResult: 'succeeded', outcome: { saved: { environmentId: 'saved-env', contentGeneration: 1 }, complete: false }, error: { code: 'LINK_REVISION_CONFLICT', message: '原目标关联已变化', details: { expectedRevision: 1, currentRevision: 2 } } }} />
+  </QueryClientProvider>)
+  expect(screen.getByText('上下文已保存，关联未完成')).toBeVisible()
+  expect(screen.getByRole('alert')).toHaveTextContent('LINK_REVISION_CONFLICT')
+  expect(screen.getByRole('alert')).toHaveTextContent('currentRevision')
+  expect(screen.getByText(/saved-env/)).toBeVisible()
+  expect(client.request).not.toHaveBeenCalled()
+})

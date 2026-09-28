@@ -46,6 +46,7 @@ class EnvironmentStore:
             shutil.rmtree(candidate)
         shutil.copytree(source, candidate, ignore=_ignore_runtime_locks)
         _clear_runtime_locks(candidate)
+        (candidate / ".digest-version").write_text("2", encoding="utf-8")
         digest = self.digest(candidate)
         (candidate / ".digest").write_text(digest, encoding="utf-8")
         return digest
@@ -95,15 +96,23 @@ class EnvironmentStore:
         return any((directory / name).exists() for name in _RUNTIME_LOCK_NAMES)
 
     def digest(self, directory: Path) -> str:
+        version_file = directory / ".digest-version"
+        version = version_file.read_text(encoding="utf-8").strip() if version_file.exists() else "1"
+        if version not in {"1", "2"}:
+            raise ValueError("Unsupported environment digest version")
         digest = hashlib.sha256()
         for path in sorted(directory.rglob("*")):
-            if not path.is_file() or path.name == ".digest" or path.name in _RUNTIME_LOCK_NAMES:
+            if not path.is_file() or path.name in {".digest", ".digest-version"} or path.name in _RUNTIME_LOCK_NAMES:
                 continue
             relative = path.relative_to(directory).as_posix().encode()
             digest.update(relative)
             digest.update(b"\0")
             digest.update(str(path.stat().st_size).encode())
             digest.update(b"\0")
+            if version == "2":
+                with path.open("rb") as source:
+                    for chunk in iter(lambda: source.read(1024 * 1024), b""):
+                        digest.update(chunk)
         return digest.hexdigest()
 
 

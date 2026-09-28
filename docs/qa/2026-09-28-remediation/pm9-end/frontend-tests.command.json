@@ -1,0 +1,19 @@
+{
+  "command": [
+    "npm",
+    "--workspace",
+    "@autoflow/desktop",
+    "test",
+    "--",
+    "src/renderer/domains/workflows/components/config-panels/ProjectEndConfig.test.tsx",
+    "src/renderer/domains/environments",
+    "src/renderer/domains/project-runs",
+    "src/renderer/domains/workflows/tests/module-scope.test.ts",
+    "src/renderer/domains/workflows/tests/required-field-protocol.test.ts",
+    "src/renderer/domains/workflows/lib/__tests__/helpers/addNodeDefaults.test.ts"
+  ],
+  "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow",
+  "exitCode": 1,
+  "seconds": 17.59,
+  "environment": {}
+}

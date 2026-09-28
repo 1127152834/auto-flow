@@ -43,7 +43,11 @@ from autoflow.infrastructure.database.project_data_models import (
     DataImpactRow,
     DataRecordRow,
 )
-from autoflow.infrastructure.database.project_run_models import ProjectTaskRow
+from autoflow.infrastructure.database.project_run_models import (
+    ProjectRecordLeaseRow,
+    ProjectTaskRecordCursorRow,
+    ProjectTaskRow,
+)
 from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
 
 
@@ -192,9 +196,11 @@ class SqlAlchemyEnvironments:
         *,
         created_from_source: str = "newFromProfile",
         created_from_task_id: str | None = None,
+        authority: dict[str, Any] | None = None,
     ) -> PersistentEnvironment:
         with self._session_factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
+            self.validate_end_authority(session, authority)
             existing = session.get(ProjectEnvironmentRow, record.ref.environment_id)
             if existing is not None:
                 # A retried save after a lost response republishes the same
@@ -239,9 +245,11 @@ class SqlAlchemyEnvironments:
         digest: str,
         *,
         generation: int | None = None,
+        authority: dict[str, Any] | None = None,
     ) -> PersistentEnvironment:
         with self._session_factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
+            self.validate_end_authority(session, authority)
             row = self._environment(session, project_id, environment_id, writable=True)
             if generation is not None and generation <= row.content_generation:
                 # A save that read the source before a newer publish completed
@@ -422,10 +430,11 @@ class SqlAlchemyEnvironments:
             return _instance(row)
 
     def bind_records(
-        self, project_id: str, environment_id: str, results: builtins.list[Any]
+        self, project_id: str, environment_id: str, results: builtins.list[Any], *, authority: dict[str, Any] | None = None
     ) -> None:
         with self._session_factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
+            self.validate_end_authority(session, authority)
             now = datetime.now(UTC)
             for result in results:
                 record_ref = result.record_ref
@@ -464,6 +473,34 @@ class SqlAlchemyEnvironments:
                 row.link_revision = result.link_revision
                 row.updated_at = now
             session.commit()
+
+    @staticmethod
+    def validate_end_authority(session: Session, authority: dict[str, Any] | None) -> None:
+        if authority is None:
+            return
+        run = session.get(WorkflowRunRow, authority["runId"])
+        task = session.get(ProjectTaskRow, authority["taskId"])
+        if (run is None or task is None or task.run_id != run.id
+            or run.execution_generation != authority["executionGeneration"] or run.status != "finishing"):
+            raise environment_error("END_ACCESS_REVOKED", "End 保存控制权已失效", 409)
+        instance = session.get(ProjectEnvironmentInstanceRow, authority["instanceId"])
+        if (instance is None or instance.active_run_id != run.id or instance.active_task_id != task.id
+            or instance.project_id != task.project_id or instance.instance_use_generation != authority["expectedUseGeneration"]):
+            raise environment_error("END_ACCESS_REVOKED", "End 环境使用权已失效", 409)
+        if instance.environment_id:
+            occupancy = session.get(ProjectEnvironmentOccupancyRow, instance.environment_id)
+            if occupancy is None or occupancy.instance_id != instance.id or occupancy.holder_id != task.id:
+                raise environment_error("END_ACCESS_REVOKED", "End 来源占用已失效", 409)
+        for target in authority["retainEnvironment"]["recordTargets"]:
+            ref = target["recordRef"]
+            lease = session.scalar(select(ProjectRecordLeaseRow).where(
+                ProjectRecordLeaseRow.task_id == task.id, ProjectRecordLeaseRow.run_id == run.id,
+                ProjectRecordLeaseRow.project_id == task.project_id, ProjectRecordLeaseRow.state.in_(("held", "reconciling")),
+                ProjectRecordLeaseRow.record_ref == ref))
+            cursor = None if lease is None else session.scalar(select(ProjectTaskRecordCursorRow).where(
+                ProjectTaskRecordCursorRow.task_id == task.id, ProjectTaskRecordCursorRow.lease_id == lease.id))
+            if ref["projectId"] != task.project_id or cursor is None or cursor.link_revision != target["expectedLinkRevision"]:
+                raise environment_error("END_ACCESS_REVOKED", "End 目标写入权已失效", 409)
 
     def map_environments(self, project_id: str) -> dict[str, PersistentEnvironment]:
         items, _total = self.list(project_id, page=1, page_size=200, sort="-updatedAt")

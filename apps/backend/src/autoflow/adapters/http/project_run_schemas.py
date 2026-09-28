@@ -200,6 +200,14 @@ class CleanupSummaryView(ApiModel):
     message: str | None = None
 
 
+class TaskEndView(ApiModel):
+    operation_id: str
+    phase: str
+    business_result: str | None = None
+    outcome: dict[str, Any] | None = None
+    error: dict[str, Any] | None = None
+
+
 class TaskDetail(ApiModel):
     automation_name: str | None = None
     batch_started_at: datetime | None = None
@@ -211,6 +219,7 @@ class TaskDetail(ApiModel):
     run: RunSnapshotView
     data_writes: list[TaskDataWriteView] = Field(default_factory=list)
     cleanup: CleanupSummaryView
+    end: TaskEndView | None = None
 
 
 class BatchStopRequest(ApiModel):

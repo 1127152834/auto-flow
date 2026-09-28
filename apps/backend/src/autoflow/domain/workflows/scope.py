@@ -33,6 +33,7 @@ APPROVED_NODE_TYPES: frozenset[str] = frozenset(
         "proxy_change_location",
         "proxy_query",
         "project_data",
+        "project_end",
         "api_request",
         "api_trigger",
         "assert_checkpoint",

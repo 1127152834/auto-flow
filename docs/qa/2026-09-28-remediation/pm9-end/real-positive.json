@@ -1,0 +1,111 @@
+{
+  "workspace": "/private/tmp/autoflow-pm9-end.mrO5ZX/test_real_login_retained_and_r0",
+  "kernel": "/Users/zhangtiancheng/Library/Application Support/@autoflow/desktop/data/kernels/chromium-145.0.7632.109.2/Chromium.app/Contents/MacOS/Chromium",
+  "runs": [
+    {
+      "runId": "c975d3bd-b6fb-456f-857f-febf3eee039e",
+      "taskId": "abc29f42-916b-43ee-8fef-31de875e920f",
+      "status": "succeeded",
+      "end": {
+        "phase": "completed",
+        "error": null,
+        "complete": true,
+        "instance": {
+          "instanceId": "2fd1341f-b228-4381-85b6-ac9d0532e2cf",
+          "projectId": "3e4f2af9-16ef-4221-acd8-8536eadca81c",
+          "environmentId": null,
+          "state": "cleaned",
+          "source": "newFromProfile",
+          "sourceContentGeneration": null,
+          "instanceUseGeneration": 1,
+          "activeTaskId": "abc29f42-916b-43ee-8fef-31de875e920f",
+          "activeRunId": "c975d3bd-b6fb-456f-857f-febf3eee039e",
+          "maintenanceOperationId": null,
+          "profileId": "00c38b17-4561-467f-9f13-d26bf9c62707",
+          "createdAt": "2026-09-28T04:46:19.185485",
+          "updatedAt": "2026-09-28T04:46:25.958056"
+        },
+        "source": {
+          "projectId": "3e4f2af9-16ef-4221-acd8-8536eadca81c",
+          "environmentId": "d273cedf-3f94-5248-a787-a7cc91e60be8",
+          "contentGeneration": 1,
+          "metadataRevision": 1
+        },
+        "saved": {
+          "projectId": "3e4f2af9-16ef-4221-acd8-8536eadca81c",
+          "environmentId": "d273cedf-3f94-5248-a787-a7cc91e60be8",
+          "contentGeneration": 1,
+          "metadataRevision": 1
+        },
+        "targets": [
+          {
+            "projectId": "3e4f2af9-16ef-4221-acd8-8536eadca81c",
+            "tableId": "b84ffc54-d526-4ee5-ad29-08182e827342",
+            "datasetGeneration": "77c4f91b-2d2a-4041-a4f2-828d02bd65f9",
+            "recordKey": {
+              "type": "uuid",
+              "value": "32de71e4-48f3-4d61-9759-c1db1a7e0090"
+            }
+          },
+          {
+            "projectId": "3e4f2af9-16ef-4221-acd8-8536eadca81c",
+            "tableId": "4093fcf0-5eb4-4df9-ad07-378f3049dd7b",
+            "datasetGeneration": "544191af-4f8c-4590-aa4e-52bd1dfaf10a",
+            "recordKey": {
+              "type": "uuid",
+              "value": "73eaaa82-3941-412c-a46b-b8db0dc02e8d"
+            }
+          }
+        ],
+        "conflicts": []
+      }
+    },
+    {
+      "runId": "bc63e6ae-b682-4030-bab4-28d34d809434",
+      "taskId": "9cb14ee9-4805-4f78-8725-f54be6363a8f",
+      "status": "succeeded",
+      "end": {
+        "phase": "completed",
+        "complete": true,
+        "instance": {
+          "instanceId": "a7e7de04-bee9-433a-acfa-c3930d95e97e",
+          "projectId": "3e4f2af9-16ef-4221-acd8-8536eadca81c",
+          "environmentId": "d273cedf-3f94-5248-a787-a7cc91e60be8",
+          "state": "cleaned",
+          "source": "fixedEnvironment",
+          "sourceContentGeneration": 1,
+          "instanceUseGeneration": 1,
+          "activeTaskId": "9cb14ee9-4805-4f78-8725-f54be6363a8f",
+          "activeRunId": "bc63e6ae-b682-4030-bab4-28d34d809434",
+          "maintenanceOperationId": null,
+          "profileId": "00c38b17-4561-467f-9f13-d26bf9c62707",
+          "createdAt": "2026-09-28T04:46:25.999962",
+          "updatedAt": "2026-09-28T04:46:28.205690"
+        },
+        "source": null,
+        "saved": null,
+        "targets": [],
+        "conflicts": []
+      }
+    }
+  ],
+  "requests": [
+    {
+      "path": "/login",
+      "signedIn": false
+    },
+    {
+      "path": "/favicon.ico",
+      "signedIn": true
+    },
+    {
+      "path": "/status",
+      "signedIn": true
+    },
+    {
+      "path": "/favicon.ico",
+      "signedIn": true
+    }
+  ],
+  "verified": true
+}

@@ -1,0 +1,2 @@
+src/autoflow/application/project_runs/end.py:184: error: Need type annotation for "targets" (hint: "targets: list[<type>] = ...")  [var-annotated]
+Found 1 error in 1 file (checked 22 source files)

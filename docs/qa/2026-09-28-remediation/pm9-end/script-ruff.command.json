@@ -1,0 +1,11 @@
+{
+  "command": [
+    "apps/backend/.venv/bin/ruff",
+    "check",
+    "scripts/export-studio-required-fields.py"
+  ],
+  "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow",
+  "exitCode": 0,
+  "seconds": 0.01,
+  "environment": {}
+}

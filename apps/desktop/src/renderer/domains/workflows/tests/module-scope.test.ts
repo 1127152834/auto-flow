@@ -4,9 +4,9 @@ import { getAllAvailableModules, moduleCategories } from '../components/ModuleSi
 it('keeps 213 frozen nodes plus the four approved native nodes and only approved notification channels', () => {
   const modules = getAllAvailableModules().filter(module => !module.isCustom)
   const types = modules.map(module => module.type)
-  expect(types).toHaveLength(217)
-  expect(types.filter(type => ['project_data', 'proxy_change_ip', 'proxy_change_location', 'proxy_query'].includes(type)).sort()).toEqual(['project_data', 'proxy_change_ip', 'proxy_change_location', 'proxy_query'])
-  expect(new Set(types).size).toBe(217)
+  expect(types).toHaveLength(218)
+  expect(types.filter(type => ['project_data', 'project_end', 'proxy_change_ip', 'proxy_change_location', 'proxy_query'].includes(type)).sort()).toEqual(['project_data', 'project_end', 'proxy_change_ip', 'proxy_change_location', 'proxy_query'])
+  expect(new Set(types).size).toBe(218)
   expect(types.filter(type => /^(excel_|pdf_|word_|wps_|qq_|wechat_|feishu_)/.test(type))).toEqual([])
   expect(types.filter(type => /^(dp_|db_|oracle_|postgresql_|mongodb_|sqlserver_|sqlite_|redis_)/.test(type))).toEqual([])
   expect(types).not.toContain('read_excel')

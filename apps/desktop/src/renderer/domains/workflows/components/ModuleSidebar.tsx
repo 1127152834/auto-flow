@@ -202,6 +202,7 @@ import { useLayoutStore, LAYOUT_LIMITS } from '../hooks/stores/layoutStore'
 // 模块图标映射 - 优化后更直观的图标
 const moduleIcons: Record<ModuleType, React.ElementType> = {
   project_data: Database,
+  project_end: Database,
   proxy_change_ip: Globe, proxy_change_location: Globe, proxy_query: Search,
   // 页面导航
   open_page: Globe,
@@ -859,6 +860,7 @@ const moduleKeywords: Record<ModuleType, string[]> = {
   proxy_change_ip: ['代理', 'IP', '切换', 'proxy'],
   proxy_change_location: ['代理', '地点', '地址', '切换', 'proxy'],
   project_data: ['项目', '数据', '记录', '状态'],
+  project_end: ['项目', '结束', '保留', '环境', 'End'],
   proxy_query: ['代理', '状态', '查询', '操作', 'proxy'],
   open_page: ['打开', '网页', '浏览器', 'url', '地址', 'open', 'page'],
   dp_open_page: ['drissionpage', 'dp', '反检测', '绕过', '风控', '打开', '网页', 'bypass', '隐蔽'],

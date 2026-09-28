@@ -1,0 +1,292 @@
+I001 [*] Import block is un-sorted or un-formatted
+  --> apps/backend/src/autoflow/application/environments/service.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import hashlib
+ 4 | | import json
+ 5 | | import logging
+ 6 | | from datetime import UTC, datetime
+ 7 | | from threading import Lock, RLock
+ 8 | | from typing import Any
+ 9 | | from uuid import uuid4
+10 | |
+11 | | from sqlalchemy.orm import Session
+12 | |
+13 | | from autoflow.application.environments.manual import (
+14 | |     begin_resume,
+15 | |     cancel_manual,
+16 | |     expire_manual,
+17 | |     finish_manual,
+18 | |     open_manual,
+19 | |     resume_manual,
+20 | | )
+21 | | from autoflow.application.environments.retention import (
+22 | |     _jsonable,
+23 | |     end_task,
+24 | |     repair_association,
+25 | |     save_environment,
+26 | | )
+27 | | from autoflow.domain.environments.models import (
+28 | |     EnvironmentInstance,
+29 | |     EnvironmentRef,
+30 | |     PersistentEnvironment,
+31 | | )
+32 | | from autoflow.domain.environments.rules import (
+33 | |     check_live_capacity,
+34 | |     environment_error,
+35 | |     occupy_environment,
+36 | |     resolve_environment_source,
+37 | |     validate_metadata,
+38 | |     validate_open_instance,
+39 | | )
+40 | | from autoflow.domain.projects.models import ProjectError, ProjectOperation
+41 | | from autoflow.infrastructure.database.environments import SqlAlchemyEnvironments
+42 | | from autoflow.infrastructure.filesystem.environment_store import EnvironmentStore
+   | |_________________________________________________________________________________^
+help: Organize imports
+   |
+10 |
+   - from sqlalchemy.orm import Session
+   -
+11 | from autoflow.application.environments.manual import (
+--------------------------------------------------------------------------------
+40 | from autoflow.infrastructure.filesystem.environment_store import EnvironmentStore
+41 + from sqlalchemy.orm import Session
+42 |
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> apps/backend/src/autoflow/application/project_runs/queries.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import json
+ 4 | | import re
+ 5 | | from collections import Counter
+ 6 | | from datetime import UTC, datetime
+ 7 | | from typing import Any, get_args
+ 8 | |
+ 9 | | from sqlalchemy import String, cast, exists, func, or_, select
+10 | | from sqlalchemy.orm import Session, sessionmaker
+11 | |
+12 | | from autoflow.domain.project_runs.models import (
+13 | |     BatchStatus,
+14 | |     ProjectRunError,
+15 | |     TaskInputSnapshot,
+16 | |     batch_to_dict,
+17 | |     snapshot_to_dict,
+18 | |     task_to_dict,
+19 | | )
+20 | | from autoflow.domain.workflows.runtime import CoreRunStatus, thaw_json
+21 | | from autoflow.infrastructure.database.environment_models import (
+22 | |     ProjectEnvironmentInstanceRow,
+23 | |     ProjectEndOperationRow,
+24 | |     ProjectManualItemRow,
+25 | | )
+26 | | from autoflow.infrastructure.database.models import ProjectOperationRow, ProjectRow
+27 | | from autoflow.infrastructure.database.project_data_models import (
+28 | |     DataChangeRow,
+29 | |     DataFieldRow,
+30 | |     DataRecordRow,
+31 | |     DataStatusRow,
+32 | |     DataTableRow,
+33 | | )
+34 | | from autoflow.infrastructure.database.project_run_models import (
+35 | |     ProjectBatchRow,
+36 | |     ProjectTaskInputSnapshotRow,
+37 | |     ProjectTaskRecordQueryRow,
+38 | |     ProjectTaskRecordReadRow,
+39 | |     ProjectTaskRow,
+40 | | )
+41 | | from autoflow.infrastructure.database.project_runs import SqlAlchemyProjectRuns, aware
+42 | | from autoflow.infrastructure.database.workflow_runtime import (
+43 | |     SqlAlchemyWorkflowRuntimeRepository,
+44 | | )
+45 | | from autoflow.infrastructure.database.workflow_runtime_models import (
+46 | |     WorkflowRunEventRow,
+47 | |     WorkflowRunRow,
+48 | | )
+49 | |
+50 | | from .presentation import prepared_node_names
+   | |_____________________________________________^
+51 |
+52 |   BATCH_STATUSES = frozenset(get_args(BatchStatus))
+   |
+help: Organize imports
+   |
+8  |
+   - from sqlalchemy import String, cast, exists, func, or_, select
+   - from sqlalchemy.orm import Session, sessionmaker
+   -
+9  | from autoflow.domain.project_runs.models import (
+--------------------------------------------------------------------------------
+18 | from autoflow.infrastructure.database.environment_models import (
+   -     ProjectEnvironmentInstanceRow,
+19 |     ProjectEndOperationRow,
+20 +     ProjectEnvironmentInstanceRow,
+21 |     ProjectManualItemRow,
+--------------------------------------------------------------------------------
+45 | )
+46 + from sqlalchemy import String, cast, exists, func, or_, select
+47 + from sqlalchemy.orm import Session, sessionmaker
+48 |
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> apps/backend/src/autoflow/application/workflows/core_runtime.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import hashlib
+ 4 | | from datetime import UTC, datetime
+ 5 | | from typing import Any, Protocol
+ 6 | | from uuid import uuid4
+ 7 | |
+ 8 | | from sqlalchemy import text
+ 9 | | from sqlalchemy.exc import OperationalError
+10 | | from sqlalchemy.orm import Session, sessionmaker
+11 | |
+12 | | from autoflow.application.workflows.executors.production import (
+13 | |     build_production_executor_registry,
+14 | | )
+15 | | from autoflow.application.workflows.modules import CustomModuleService
+16 | | from autoflow.domain.workflows.errors import WorkflowDocumentError
+17 | | from autoflow.domain.workflows.models import WorkflowRepository, canonical_json
+18 | | from autoflow.domain.workflows.modules import custom_module_dependencies
+19 | | from autoflow.domain.workflows.run_validation import prepare_run as compile_workflow
+20 | | from autoflow.domain.workflows.runs import WorkflowRunError
+21 | | from autoflow.domain.workflows.runtime import (
+22 | |     CoreRun,
+23 | |     CoreRunStatus,
+24 | |     PreparedContent,
+25 | |     WorkflowRuntimeError,
+26 | | )
+27 | | from autoflow.infrastructure.database.core_workflows import _record as workflow_record
+28 | | from autoflow.infrastructure.database.workflow_models import WorkflowDocumentRow
+29 | | from autoflow.infrastructure.database.workflow_project_scope import workflow_project_id
+30 | | from autoflow.infrastructure.database.workflow_runtime import (
+31 | |     SqlAlchemyWorkflowRuntimeRepository,
+32 | |     _is_sqlite_contention,
+33 | | )
+   | |_^
+help: Organize imports
+   |
+7  |
+   - from sqlalchemy import text
+   - from sqlalchemy.exc import OperationalError
+   - from sqlalchemy.orm import Session, sessionmaker
+   -
+8  | from autoflow.application.workflows.executors.production import (
+--------------------------------------------------------------------------------
+29 | )
+30 + from sqlalchemy import text
+31 + from sqlalchemy.exc import OperationalError
+32 + from sqlalchemy.orm import Session, sessionmaker
+33 |
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+   --> apps/backend/src/autoflow/bootstrap/workflows.py:559:5
+    |
+557 |           release_proxy=proxy_service.release if proxy_service else None,
+558 |       )
+559 | /     from autoflow.application.project_data.capabilities import (
+560 | |         ProjectDataCapabilityService,
+561 | |     )
+562 | |     from autoflow.infrastructure.database.project_capabilities import (
+563 | |         SqlAlchemyProjectDataCapabilities,
+564 | |     )
+565 | |
+566 | |     from autoflow.application.project_runs.end import ProjectRunEnd
+    | |___________________________________________________________________^
+567 |
+568 |       project_end = ProjectRunEnd(session_factory, environments) if environments is not None else None
+    |
+help: Organize imports
+    |
+561 |     )
+562 +     from autoflow.application.project_runs.end import ProjectRunEnd
+563 |     from autoflow.infrastructure.database.project_capabilities import (
+564 |         SqlAlchemyProjectDataCapabilities,
+565 |     )
+    -
+    -     from autoflow.application.project_runs.end import ProjectRunEnd
+566 |
+    |
+
+I001 [*] Import block is un-sorted or un-formatted
+   --> apps/backend/tests/integration/test_project_end_worker.py:412:5
+    |
+410 |   @pytest.mark.asyncio
+411 |   async def test_cancel_before_end_revokes_admission_without_creating_save(end_context):
+412 | /     from autoflow.domain.projects.models import ProjectError
+413 | |     from tests.integration.test_workflow_dispatch import SyntheticWorker, make_dispatcher
+414 | |     from tests.fixtures.workflow_runs import SyntheticResources
+    | |_______________________________________________________________^
+415 |       factory, ends, task, request, _snapshot = end_context
+416 |       _retain(end_context)
+    |
+help: Organize imports
+    |
+412 |     from autoflow.domain.projects.models import ProjectError
+    -     from tests.integration.test_workflow_dispatch import SyntheticWorker, make_dispatcher
+413 +
+414 |     from tests.fixtures.workflow_runs import SyntheticResources
+415 +     from tests.integration.test_workflow_dispatch import (
+416 +         SyntheticWorker,
+417 +         make_dispatcher,
+418 +     )
+419 |     factory, ends, task, request, _snapshot = end_context
+    |
+
+I001 [*] Import block is un-sorted or un-formatted
+   --> apps/backend/tests/integration/test_project_end_worker.py:429:5
+    |
+427 |   @pytest.mark.asyncio
+428 |   async def test_cancel_after_end_requires_current_control_identity(end_context):
+429 | /     from autoflow.domain.workflows.runtime import WorkflowRuntimeError
+430 | |     from tests.integration.test_workflow_dispatch import SyntheticWorker, make_dispatcher
+431 | |     from tests.fixtures.workflow_runs import SyntheticResources
+    | |_______________________________________________________________^
+432 |       factory, ends, task, request, _snapshot = end_context
+433 |       ends.worker_call(task.run_id, 1, request)
+    |
+help: Organize imports
+    |
+429 |     from autoflow.domain.workflows.runtime import WorkflowRuntimeError
+    -     from tests.integration.test_workflow_dispatch import SyntheticWorker, make_dispatcher
+430 +
+431 |     from tests.fixtures.workflow_runs import SyntheticResources
+432 +     from tests.integration.test_workflow_dispatch import (
+433 +         SyntheticWorker,
+434 +         make_dispatcher,
+435 +     )
+436 |     factory, ends, task, request, _snapshot = end_context
+    |
+
+I001 [*] Import block is un-sorted or un-formatted
+   --> apps/backend/tests/integration/test_project_end_worker.py:446:5
+    |
+444 |   @pytest.mark.parametrize('unknown', [True, False])
+445 |   async def test_forced_reconciliation_never_publishes_and_holds_unknown_lease(end_context, unknown):
+446 | /     from tests.integration.test_workflow_dispatch import SyntheticWorker, make_dispatcher
+447 | |     from tests.fixtures.workflow_runs import SyntheticResources
+    | |_______________________________________________________________^
+448 |       factory, ends, task, request, _snapshot = end_context
+449 |       _retain(end_context)
+    |
+help: Organize imports
+    |
+445 | async def test_forced_reconciliation_never_publishes_and_holds_unknown_lease(end_context, unknown):
+    -     from tests.integration.test_workflow_dispatch import SyntheticWorker, make_dispatcher
+446 |     from tests.fixtures.workflow_runs import SyntheticResources
+447 +     from tests.integration.test_workflow_dispatch import (
+448 +         SyntheticWorker,
+449 +         make_dispatcher,
+450 +     )
+451 |     factory, ends, task, request, _snapshot = end_context
+    |
+
+Found 7 errors.
+[*] 7 fixable with the `--fix` option.
