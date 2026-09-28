@@ -1,0 +1,86 @@
+FFF                                                                      [100%]
+=================================== FAILURES ===================================
+____________ test_gateway_rejects_sha1_but_keeps_rsa_sha2[ssh-rsa] _____________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-540/test_gateway_rejects_sha1_but_0')
+algorithm = 'ssh-rsa'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("algorithm", ["ssh-rsa", "rsa-sha2-256", "rsa-sha2-512"])
+    async def test_gateway_rejects_sha1_but_keeps_rsa_sha2(tmp_path, algorithm):
+        from autoflow.providers.integrations.gateway import WorkflowIntegrationGateway
+    
+        server = _LocalSSHServer(tmp_path / "algorithm-host", key_types=(algorithm,))
+        server.start()
+        gateway = WorkflowIntegrationGateway()
+        payload = {"host": "127.0.0.1", "port": server.port, "username": "tester",
+                   "password": "secret", "connectionName": "algorithm-check", "timeoutSeconds": 3}
+        try:
+            if algorithm == "ssh-rsa":
+>               with pytest.raises(RuntimeError, match="SSH连接失败"):
+E               Failed: DID NOT RAISE RuntimeError
+
+apps/backend/tests/integration/test_b6_ssh_worker.py:620: Failed
+__________ test_gateway_rejects_sha1_but_keeps_rsa_sha2[rsa-sha2-256] __________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-540/test_gateway_rejects_sha1_but_1')
+algorithm = 'rsa-sha2-256'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("algorithm", ["ssh-rsa", "rsa-sha2-256", "rsa-sha2-512"])
+    async def test_gateway_rejects_sha1_but_keeps_rsa_sha2(tmp_path, algorithm):
+        from autoflow.providers.integrations.gateway import WorkflowIntegrationGateway
+    
+        server = _LocalSSHServer(tmp_path / "algorithm-host", key_types=(algorithm,))
+        server.start()
+        gateway = WorkflowIntegrationGateway()
+        payload = {"host": "127.0.0.1", "port": server.port, "username": "tester",
+                   "password": "secret", "connectionName": "algorithm-check", "timeoutSeconds": 3}
+        try:
+            if algorithm == "ssh-rsa":
+                with pytest.raises(RuntimeError, match="SSH连接失败"):
+                    await gateway.call("ssh_connect", payload)
+                assert not gateway._ssh_clients
+            else:
+                assert await gateway.call("ssh_connect", payload) == {"connected": True}
+                transport = gateway._ssh_clients["algorithm-check"].get_transport()
+                assert transport is not None and transport.host_key_type == algorithm
+>               assert "ssh-rsa" not in transport.preferred_pubkeys
+E               AssertionError: assert 'ssh-rsa' not in ('ssh-ed25519', 'ecdsa-sha2-nistp256', 'ecdsa-sha2-nistp384', 'ecdsa-sha2-nistp521', 'rsa-sha2-512', 'rsa-sha2-256', ...)
+E                +  where ('ssh-ed25519', 'ecdsa-sha2-nistp256', 'ecdsa-sha2-nistp384', 'ecdsa-sha2-nistp521', 'rsa-sha2-512', 'rsa-sha2-256', ...) = <paramiko.Transport at 0xb8f7b10 (cipher aes128-ctr, 128 bits) (active; 0 open channel(s))>.preferred_pubkeys
+
+apps/backend/tests/integration/test_b6_ssh_worker.py:627: AssertionError
+__________ test_gateway_rejects_sha1_but_keeps_rsa_sha2[rsa-sha2-512] __________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-540/test_gateway_rejects_sha1_but_2')
+algorithm = 'rsa-sha2-512'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("algorithm", ["ssh-rsa", "rsa-sha2-256", "rsa-sha2-512"])
+    async def test_gateway_rejects_sha1_but_keeps_rsa_sha2(tmp_path, algorithm):
+        from autoflow.providers.integrations.gateway import WorkflowIntegrationGateway
+    
+        server = _LocalSSHServer(tmp_path / "algorithm-host", key_types=(algorithm,))
+        server.start()
+        gateway = WorkflowIntegrationGateway()
+        payload = {"host": "127.0.0.1", "port": server.port, "username": "tester",
+                   "password": "secret", "connectionName": "algorithm-check", "timeoutSeconds": 3}
+        try:
+            if algorithm == "ssh-rsa":
+                with pytest.raises(RuntimeError, match="SSH连接失败"):
+                    await gateway.call("ssh_connect", payload)
+                assert not gateway._ssh_clients
+            else:
+                assert await gateway.call("ssh_connect", payload) == {"connected": True}
+                transport = gateway._ssh_clients["algorithm-check"].get_transport()
+                assert transport is not None and transport.host_key_type == algorithm
+>               assert "ssh-rsa" not in transport.preferred_pubkeys
+E               AssertionError: assert 'ssh-rsa' not in ('ssh-ed25519', 'ecdsa-sha2-nistp256', 'ecdsa-sha2-nistp384', 'ecdsa-sha2-nistp521', 'rsa-sha2-512', 'rsa-sha2-256', ...)
+E                +  where ('ssh-ed25519', 'ecdsa-sha2-nistp256', 'ecdsa-sha2-nistp384', 'ecdsa-sha2-nistp521', 'rsa-sha2-512', 'rsa-sha2-256', ...) = <paramiko.Transport at 0xb9324d0 (cipher aes128-ctr, 128 bits) (active; 0 open channel(s))>.preferred_pubkeys
+
+apps/backend/tests/integration/test_b6_ssh_worker.py:627: AssertionError
+=========================== short test summary info ============================
+FAILED apps/backend/tests/integration/test_b6_ssh_worker.py::test_gateway_rejects_sha1_but_keeps_rsa_sha2[ssh-rsa]
+FAILED apps/backend/tests/integration/test_b6_ssh_worker.py::test_gateway_rejects_sha1_but_keeps_rsa_sha2[rsa-sha2-256]
+FAILED apps/backend/tests/integration/test_b6_ssh_worker.py::test_gateway_rejects_sha1_but_keeps_rsa_sha2[rsa-sha2-512]
+3 failed, 6 deselected in 0.70s

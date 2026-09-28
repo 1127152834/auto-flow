@@ -127,7 +127,8 @@ class _SSHServerInterface(paramiko.ServerInterface):
 
 
 class _LocalSSHServer:
-    def __init__(self, root: Path) -> None:
+    def __init__(self, root: Path, *, key_types: tuple[str, ...] | None = None) -> None:
+        self.key_types = key_types
         self.root = root
         (root / "remote").mkdir(parents=True)
         (root / "remote/source.bin").write_bytes(b"remote-source")
@@ -169,6 +170,8 @@ class _LocalSSHServer:
             transport = paramiko.Transport(client)
             self.transports.append(transport)
             transport.add_server_key(self.host_key)
+            if self.key_types is not None:
+                transport.get_security_options().key_types = self.key_types
             transport.set_subsystem_handler(
                 "sftp",
                 paramiko.SFTPServer,
@@ -181,6 +184,9 @@ class _LocalSSHServer:
                     channel = transport.accept(0.05)
                     if channel is not None:
                         self.channels.append(channel)
+            except paramiko.SSHException:
+                if self.key_types is None:
+                    raise
             finally:
                 transport.close()
 
@@ -597,3 +603,28 @@ def _serve_fixture() -> None:
 
 if __name__ == "__main__":
     _serve_fixture()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("algorithm", ["ssh-rsa", "rsa-sha2-256", "rsa-sha2-512"])
+async def test_gateway_rejects_sha1_but_keeps_rsa_sha2(tmp_path, algorithm):
+    from autoflow.providers.integrations.gateway import WorkflowIntegrationGateway
+
+    server = _LocalSSHServer(tmp_path / "algorithm-host", key_types=(algorithm,))
+    server.start()
+    gateway = WorkflowIntegrationGateway()
+    payload = {"host": "127.0.0.1", "port": server.port, "username": "tester",
+               "password": "secret", "connectionName": "algorithm-check", "timeoutSeconds": 3}
+    try:
+        if algorithm == "ssh-rsa":
+            with pytest.raises(RuntimeError, match="SSH连接失败"):
+                await gateway.call("ssh_connect", payload)
+            assert not gateway._ssh_clients
+        else:
+            assert await gateway.call("ssh_connect", payload) == {"connected": True}
+            transport = gateway._ssh_clients["algorithm-check"].get_transport()
+            assert transport is not None and transport.host_key_type == algorithm
+            assert "ssh-rsa" not in transport.preferred_pubkeys
+    finally:
+        await gateway.close()
+        server.close()

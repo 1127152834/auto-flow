@@ -92,6 +92,7 @@ class WorkflowIntegrationGateway:
                 timeout=float(payload.get("timeoutSeconds", 30)),
                 allow_agent=False,
                 look_for_keys=False,
+                disabled_algorithms={"keys": ["ssh-rsa"], "pubkeys": ["ssh-rsa"]},
             )
         except paramiko.AuthenticationException as error:
             client.close()
