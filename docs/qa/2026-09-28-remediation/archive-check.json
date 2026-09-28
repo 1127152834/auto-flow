@@ -1,0 +1,29 @@
+{
+  "date": "2026-09-28T19:59:26.307456+08:00",
+  "fullStagedWhitespaceCheck": {
+    "command": [
+      "git",
+      "diff",
+      "--cached",
+      "--check"
+    ],
+    "exitCode": 2,
+    "stdout": "docs/qa/2026-09-28-remediation/final-frontend-v3-build.log:37: trailing whitespace.\n+[plugin vite:reporter] \ndocs/qa/2026-09-28-remediation/final-frontend-v3-build.log:40: trailing whitespace.\n+[plugin vite:reporter] \ndocs/qa/2026-09-28-remediation/final-frontend-v3-default.log:883: new blank line at EOF.\ndocs/qa/2026-09-28-remediation/final-frontend-v3-lint.log:8: new blank line at EOF.\ndocs/qa/2026-09-28-remediation/final-frontend-v3-typecheck.log:8: new blank line at EOF.\ndocs/qa/2026-09-28-remediation/final-frontend-v4-build.log:37: trailing whitespace.\n+[plugin vite:reporter] \ndocs/qa/2026-09-28-remediation/final-frontend-v4-build.log:40: trailing whitespace.\n+[plugin vite:reporter] \ndocs/qa/2026-09-28-remediation/final-frontend-v4-default.log:883: new blank line at EOF.\ndocs/qa/2026-09-28-remediation/final-frontend-v4-lint.log:8: new blank line at EOF.\ndocs/qa/2026-09-28-remediation/final-frontend-v4-typecheck.log:8: new blank line at EOF.\n",
+    "stderr": ""
+  },
+  "nonRawLogWhitespaceCheck": {
+    "command": [
+      "git",
+      "diff",
+      "--cached",
+      "--check",
+      "--",
+      ".",
+      ":(exclude)*.log"
+    ],
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "decision": "Preserve exact subprocess stdout/stderr. Raw log whitespace is recorded, not removed or described as a fully clean git diff check."
+}

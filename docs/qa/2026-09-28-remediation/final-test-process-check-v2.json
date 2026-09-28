@@ -1,0 +1,23 @@
+{
+  "checkedAt": "2026-09-28T18:25:25+0800",
+  "testRoots": [
+    "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-final-backend-v2-jo2x3_ht",
+    "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-final-real-browser-0gfkzau9",
+    "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-final-frozen-fr8lt02m"
+  ],
+  "matchingPids": [
+    {
+      "root": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-final-backend-v2-jo2x3_ht",
+      "pids": []
+    },
+    {
+      "root": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-final-real-browser-0gfkzau9",
+      "pids": []
+    },
+    {
+      "root": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-final-frozen-fr8lt02m",
+      "pids": []
+    }
+  ],
+  "method": "Read-only exact owned basetemp argv match; no signals sent."
+}

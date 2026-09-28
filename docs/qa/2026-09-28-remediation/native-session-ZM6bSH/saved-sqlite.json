@@ -1,0 +1,82 @@
+{
+  "verified": true,
+  "revision": 4,
+  "document": {
+    "nodes": [
+      {
+        "id": "page",
+        "type": "open_page",
+        "data": {
+          "moduleType": "open_page",
+          "label": "open_page",
+          "config": {
+            "url": "http://127.0.0.1:49566/native-end",
+            "timeout": 15
+          }
+        }
+      },
+      {
+        "id": "read",
+        "type": "get_element_info",
+        "data": {
+          "moduleType": "get_element_info",
+          "label": "get_element_info",
+          "config": {
+            "selector": "#state",
+            "attribute": "text",
+            "variableName": "session_state",
+            "timeout": 5
+          }
+        }
+      },
+      {
+        "id": "end",
+        "type": "project_end",
+        "data": {
+          "moduleType": "project_end",
+          "label": "project_end",
+          "config": {
+            "retainEnvironment": true,
+            "name": "原生 End 修复后环境",
+            "inputIds": []
+          },
+          "retainEnvironment": true,
+          "name": "节点备注独立保存"
+        }
+      },
+      {
+        "id": "forbidden",
+        "type": "open_page",
+        "data": {
+          "moduleType": "open_page",
+          "label": "open_page",
+          "config": {
+            "url": "http://127.0.0.1:57748/forbidden",
+            "timeout": 5
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge-0",
+        "source": "page",
+        "target": "read"
+      },
+      {
+        "id": "edge-1",
+        "source": "read",
+        "target": "end"
+      },
+      {
+        "id": "edge-2",
+        "source": "end",
+        "target": "forbidden"
+      }
+    ],
+    "variables": [],
+    "createdAt": "2026-09-28T11:13:46.285Z",
+    "updatedAt": "2026-09-28T11:13:46.285Z",
+    "projectId": "557fd0e0-4b23-46ca-a1fa-c8733a7f25b8"
+  }
+}

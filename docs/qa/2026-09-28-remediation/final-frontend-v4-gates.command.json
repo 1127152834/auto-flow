@@ -1,0 +1,85 @@
+[
+  {
+    "command": [
+      "npm",
+      "test"
+    ],
+    "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow",
+    "head": "c2367a17a094d4737fcd17adeedc6730f0db2e95",
+    "sourceBefore": "362a41041b8582c938c99553a871df312588bb9227523895205d43336c158ccf",
+    "startedAt": "2026-09-28T19:39:41+0800",
+    "exitCode": 0,
+    "seconds": 187.78,
+    "sourceAfter": "362a41041b8582c938c99553a871df312588bb9227523895205d43336c158ccf"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:scripts"
+    ],
+    "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow",
+    "head": "c2367a17a094d4737fcd17adeedc6730f0db2e95",
+    "sourceBefore": "362a41041b8582c938c99553a871df312588bb9227523895205d43336c158ccf",
+    "startedAt": "2026-09-28T19:42:49+0800",
+    "exitCode": 0,
+    "seconds": 1.93,
+    "sourceAfter": "362a41041b8582c938c99553a871df312588bb9227523895205d43336c158ccf"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "lint"
+    ],
+    "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow",
+    "head": "c2367a17a094d4737fcd17adeedc6730f0db2e95",
+    "sourceBefore": "362a41041b8582c938c99553a871df312588bb9227523895205d43336c158ccf",
+    "startedAt": "2026-09-28T19:42:51+0800",
+    "exitCode": 0,
+    "seconds": 7.7,
+    "sourceAfter": "362a41041b8582c938c99553a871df312588bb9227523895205d43336c158ccf"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow",
+    "head": "c2367a17a094d4737fcd17adeedc6730f0db2e95",
+    "sourceBefore": "362a41041b8582c938c99553a871df312588bb9227523895205d43336c158ccf",
+    "startedAt": "2026-09-28T19:42:59+0800",
+    "exitCode": 0,
+    "seconds": 23.74,
+    "sourceAfter": "362a41041b8582c938c99553a871df312588bb9227523895205d43336c158ccf"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow",
+    "head": "c2367a17a094d4737fcd17adeedc6730f0db2e95",
+    "sourceBefore": "362a41041b8582c938c99553a871df312588bb9227523895205d43336c158ccf",
+    "startedAt": "2026-09-28T19:43:23+0800",
+    "exitCode": 0,
+    "seconds": 33.54,
+    "sourceAfter": "362a41041b8582c938c99553a871df312588bb9227523895205d43336c158ccf"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "package:dir"
+    ],
+    "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow",
+    "head": "c2367a17a094d4737fcd17adeedc6730f0db2e95",
+    "sourceBefore": "362a41041b8582c938c99553a871df312588bb9227523895205d43336c158ccf",
+    "startedAt": "2026-09-28T19:43:56+0800",
+    "exitCode": 0,
+    "seconds": 27.6,
+    "sourceAfter": "362a41041b8582c938c99553a871df312588bb9227523895205d43336c158ccf"
+  }
+]

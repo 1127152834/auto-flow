@@ -1,0 +1,12 @@
+{
+  "command": [
+    "node",
+    "docs/qa/2026-09-28-remediation/packaged-end-realqa.mjs"
+  ],
+  "head": "e49144f2458a5024ef2ef06d5f8bba75f67c0557",
+  "startedAt": "2026-09-28T19:11:10+0800",
+  "appAsarSha256": "7105eb1ce8633cd4005a93c7a6c245bc560daa87d8413312f30deabe363fb867",
+  "workerSha256": "b0b94c9c7e13372d9f97a9f941e24dc106fbf92f0db75fea72205eda75768bbe",
+  "exitCode": 0,
+  "seconds": 31.37
+}

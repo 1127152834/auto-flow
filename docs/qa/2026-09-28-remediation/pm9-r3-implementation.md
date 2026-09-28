@@ -47,6 +47,6 @@ R3 当前仍未交付。此记录用于防止后续将管理接口返回值、�
 
 ## 2026-09-28 End 实施更新（confirmed）
 
-上述“End 仍是管理用例”的初始结论已 superseded：生产 project_end 已在 b16e1715 接入真实 WorkflowRuntime/worker，1fdda1c8 修复循环与嵌套终止、持久部分关联修复入口，d1c18362 补原键未知结果核验。489224c5 补齐两个精确测试基线，未改变业务源码。当前源码真实浏览器 49 项中有 5 类 End 正向及 1 个内部回执注入；冻结 worker 的 6 项中包含 5 类 End 正向，均保留实际 SQLite/HTTP/Run 身份。完整计数和证据边界见 final-validation-results.md。打包应用 End 专项仍待本轮最终执行。
+上述“End 仍是管理用例”的初始结论已 superseded：生产 project_end 已在 b16e1715 接入真实 WorkflowRuntime/worker，1fdda1c8 修复循环与嵌套终止、持久部分关联修复入口，d1c18362 补原键未知结果核验。489224c5 补齐两个精确测试基线，未改变业务源码。当前源码真实浏览器 49 项中有 5 类 End 正向及 1 个内部回执注入；冻结 worker 的 6 项中包含 5 类 End 正向，均保留实际 SQLite/HTTP/Run 身份。完整计数和证据边界见 final-validation-results.md。打包应用 End 专项已在最终c2367a17目录包真实执行通过：packaged-end-v4及packaged-end-4CaggM；不含人工检查点恢复。
 
 人工检查点跨重启续接尚未实现；此前单一语义裁定问题仍待答复。End 成功和普通幂等错误重放修复不能算作人工恢复通过，完整 R3 尚未交付。

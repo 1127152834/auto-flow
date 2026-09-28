@@ -1,0 +1,72 @@
+{
+  "createdAt": "2026-09-28T19:54:26.464461+08:00",
+  "items": [
+    {
+      "path": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-packaged-end-hrIidb",
+      "resolvedPath": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-packaged-end-hrIidb",
+      "evidence": "docs/qa/2026-09-28-remediation/packaged-end-4CaggM/result.json",
+      "kind": "workspace",
+      "existsBefore": true,
+      "ownedProcessReferences": 0,
+      "fileCount": 678,
+      "logicalBytes": 379762638,
+      "removed": true
+    },
+    {
+      "path": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-packaged-end-DFc1th",
+      "resolvedPath": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-packaged-end-DFc1th",
+      "evidence": "docs/qa/2026-09-28-remediation/packaged-end-4iM7ci/result.json",
+      "kind": "workspace",
+      "existsBefore": true,
+      "ownedProcessReferences": 0,
+      "fileCount": 1023,
+      "logicalBytes": 391427001,
+      "removed": true
+    },
+    {
+      "path": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-packaged-end-T4hOdS",
+      "resolvedPath": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-packaged-end-T4hOdS",
+      "evidence": "docs/qa/2026-09-28-remediation/packaged-end-T4VaPj/result.json",
+      "kind": "workspace",
+      "existsBefore": true,
+      "ownedProcessReferences": 0,
+      "fileCount": 678,
+      "logicalBytes": 379762637,
+      "removed": true
+    },
+    {
+      "path": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-final-backend-v2-jo2x3_ht",
+      "resolvedPath": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-final-backend-v2-jo2x3_ht",
+      "evidence": "docs/qa/2026-09-28-remediation/final-backend-default-v2.command.json",
+      "kind": "pytest",
+      "existsBefore": true,
+      "ownedProcessReferences": 0,
+      "fileCount": 2745,
+      "logicalBytes": 1651536166,
+      "removed": true
+    },
+    {
+      "path": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-final-real-browser-0gfkzau9",
+      "resolvedPath": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-final-real-browser-0gfkzau9",
+      "evidence": "docs/qa/2026-09-28-remediation/final-real-browser.command.json",
+      "kind": "pytest",
+      "existsBefore": true,
+      "ownedProcessReferences": 0,
+      "fileCount": 12446,
+      "logicalBytes": 8271346647,
+      "removed": true
+    },
+    {
+      "path": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-final-frozen-fr8lt02m",
+      "resolvedPath": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-final-frozen-fr8lt02m",
+      "evidence": "docs/qa/2026-09-28-remediation/final-frozen-worker.command.json",
+      "kind": "pytest",
+      "existsBefore": true,
+      "ownedProcessReferences": 0,
+      "fileCount": 1261,
+      "logicalBytes": 422221708,
+      "removed": true
+    }
+  ],
+  "scope": "Only exact final QA directories linked by successful owned-run evidence; historical reports and other tasks untouched"
+}

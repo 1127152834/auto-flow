@@ -1,0 +1,13 @@
+{
+  "head": "c2367a17a094d4737fcd17adeedc6730f0db2e95",
+  "files": [
+    {
+      "path": "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/app.asar",
+      "sha256": "faaf7f667e92240e85699fb19b54c9e861ca5f7b133197b557b26d0fc3f97311"
+    },
+    {
+      "path": "apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/Resources/backend/autoflow-backend",
+      "sha256": "b0b94c9c7e13372d9f97a9f941e24dc106fbf92f0db75fea72205eda75768bbe"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "checkedAt": "2026-09-28T19:56:32.019874+08:00",
+  "paths": [
+    ".gitignore",
+    "AGENTS.md",
+    "docs/PROJECT_STRUCTURE.md",
+    "docs/migration/studio-backend-migration-validation.md",
+    "docs/migration/studio-frontend-completion/component-tools.json",
+    "docs/superpowers/plans/2026-09-15-studio-backend-webrpa-migration-implementation.md"
+  ],
+  "baselineSha256": "8c3209d4e46037f6b230f84feab68e758b95c069f19a15f80b2fc46f56e9aef5",
+  "currentSha256": "8c3209d4e46037f6b230f84feab68e758b95c069f19a15f80b2fc46f56e9aef5",
+  "unchanged": true,
+  "note": "Read-only tracked WIP comparison; untracked AOCI assets belong to their ongoing task and are not reset."
+}

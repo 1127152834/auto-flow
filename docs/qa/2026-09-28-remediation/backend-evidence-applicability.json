@@ -1,0 +1,12 @@
+{
+  "verifiedHead": "c2367a17a094d4737fcd17adeedc6730f0db2e95",
+  "backendImplementationBase": "d6f9cb0f",
+  "productionBackendChangedPaths": [],
+  "sourceWorkerBinarySha256": "b0b94c9c7e13372d9f97a9f941e24dc106fbf92f0db75fea72205eda75768bbe",
+  "packagedWorkerBinarySha256": "b0b94c9c7e13372d9f97a9f941e24dc106fbf92f0db75fea72205eda75768bbe",
+  "defaultEvidence": "final-backend-default-v2.command.json",
+  "realEvidence": "final-real-browser.command.json",
+  "frozenEvidence": "final-frozen-worker.command.json",
+  "note": "Test-only registry change489224c5 is covered by finaldefaultv2; frontend changes do not supersede these backend results. Subsequent backend changes require reassessment.",
+  "backendChangesAfterFinalDefault": []
+}

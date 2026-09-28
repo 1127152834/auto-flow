@@ -1,0 +1,195 @@
+{
+  "source": {
+    "path": "README.md",
+    "bytes": 1575,
+    "sha256": "b3f7f413926ee62c04aba0c253b8453e69d5d834ed0f798401875db55c8221ee"
+  },
+  "projectId": "557fd0e0-4b23-46ca-a1fa-c8733a7f25b8",
+  "table": {
+    "projectId": "557fd0e0-4b23-46ca-a1fa-c8733a7f25b8",
+    "tableId": "5338e927-dd0d-44d6-9b50-07bbf6c6c212",
+    "name": "最终 UI 真实仓库文件核验",
+    "description": "",
+    "sourceKind": "local",
+    "source": {
+      "kind": "local"
+    },
+    "datasetGeneration": "befee3dd-7f63-4c24-b030-a86cdfb0a89f",
+    "tableRevision": 1,
+    "identity": {
+      "mode": "system"
+    },
+    "slotDefinitions": [],
+    "recordCount": 0,
+    "syncSummary": {
+      "status": "notApplicable",
+      "pendingCount": 0,
+      "unknownCount": 0
+    },
+    "createdAt": "2026-09-28T11:45:09.313898Z",
+    "updatedAt": "2026-09-28T11:45:09.313898Z"
+  },
+  "record": {
+    "ref": {
+      "projectId": "557fd0e0-4b23-46ca-a1fa-c8733a7f25b8",
+      "tableId": "5338e927-dd0d-44d6-9b50-07bbf6c6c212",
+      "datasetGeneration": "befee3dd-7f63-4c24-b030-a86cdfb0a89f",
+      "recordKey": {
+        "type": "uuid",
+        "value": "9a455b41-090c-475c-bb57-5bf25d915af8"
+      }
+    },
+    "values": [
+      {
+        "fieldId": "fdf2066e-73ce-4d0e-b4ee-77a1dcfd2576",
+        "value": "{\"path\":\"README.md\",\"bytes\":1575,\"sha256\":\"b3f7f413926ee62c04aba0c253b8453e69d5d834ed0f798401875db55c8221ee\"}",
+        "source": "local",
+        "readable": true
+      }
+    ],
+    "recordSlots": [],
+    "statusId": null,
+    "currentEnvironmentId": null,
+    "contentRevision": 1,
+    "statusRevision": 1,
+    "linkRevision": 1,
+    "deleted": false,
+    "createdAt": "2026-09-28T11:45:09.336797Z",
+    "updatedAt": "2026-09-28T11:45:09.336797Z"
+  },
+  "workflow": {
+    "projectId": "557fd0e0-4b23-46ca-a1fa-c8733a7f25b8",
+    "nodes": [
+      {
+        "id": "end",
+        "type": "moduleNode",
+        "data": {
+          "moduleType": "project_end",
+          "label": "静态目标验收",
+          "config": {
+            "retainEnvironment": true,
+            "name": "最终 UI 保留环境",
+            "inputIds": [],
+            "recordTargets": [
+              {
+                "projectId": "557fd0e0-4b23-46ca-a1fa-c8733a7f25b8",
+                "tableId": "5338e927-dd0d-44d6-9b50-07bbf6c6c212",
+                "datasetGeneration": "befee3dd-7f63-4c24-b030-a86cdfb0a89f",
+                "recordKey": {
+                  "type": "uuid",
+                  "value": "9a455b41-090c-475c-bb57-5bf25d915af8"
+                }
+              }
+            ]
+          }
+        },
+        "position": {
+          "x": 40,
+          "y": 50
+        }
+      },
+      {
+        "id": "nested-call",
+        "type": "moduleNode",
+        "data": {
+          "moduleType": "subflow",
+          "label": "子流程选择验收",
+          "subflowGroupId": "stale-outer",
+          "subflowName": "外层调用旧名",
+          "config": {
+            "subflowGroupId": "",
+            "subflowName": ""
+          }
+        },
+        "position": {
+          "x": 40,
+          "y": 190
+        }
+      },
+      {
+        "id": "nested-definition",
+        "type": "groupNode",
+        "data": {
+          "moduleType": "group",
+          "label": "嵌套定义",
+          "isSubflow": false,
+          "subflowName": "外层过期名",
+          "config": {
+            "isSubflow": true,
+            "subflowName": "嵌套有效名"
+          }
+        },
+        "position": {
+          "x": 360,
+          "y": 50
+        },
+        "style": {
+          "width": 250,
+          "height": 150
+        }
+      },
+      {
+        "id": "stale-definition",
+        "type": "groupNode",
+        "data": {
+          "moduleType": "group",
+          "label": "普通分组",
+          "isSubflow": true,
+          "subflowName": "外层误列名",
+          "config": {
+            "isSubflow": false,
+            "subflowName": "内层非子流程"
+          }
+        },
+        "position": {
+          "x": 360,
+          "y": 250
+        },
+        "style": {
+          "width": 250,
+          "height": 150
+        }
+      }
+    ],
+    "edges": [],
+    "variables": [],
+    "name": "最终配置一致性原生验收",
+    "id": "f0aceb5e-5643-4c24-96cd-d5361350dfb7",
+    "revision": 1,
+    "createdAt": "2026-09-28T11:45:09.343481+00:00",
+    "updatedAt": "2026-09-28T11:45:09.343481+00:00"
+  },
+  "automation": {
+    "name": "最终配置一致性验收",
+    "description": "本次专属；编辑保存验收，不启动无记录租约的静态目标",
+    "workflowId": "f0aceb5e-5643-4c24-96cd-d5361350dfb7",
+    "inputPlan": {
+      "inputs": []
+    },
+    "parameterSchema": [],
+    "environmentPolicy": {
+      "source": "newFromProfile",
+      "profileId": "a3e277de-b5c6-45db-a77c-266a928360d1",
+      "proxyOverride": {
+        "mode": "none"
+      },
+      "modelProviderId": null
+    },
+    "runPolicy": {
+      "maxTasks": 1,
+      "concurrency": 1,
+      "maxLiveInstances": 1,
+      "continueAfterFailure": false,
+      "automaticExecutionTimeoutSeconds": 60,
+      "manualDeadlineSeconds": 300
+    },
+    "automationId": "be6777cf-7faf-4729-9d7d-7d5cc111929f",
+    "projectId": "557fd0e0-4b23-46ca-a1fa-c8733a7f25b8",
+    "managementRevision": 1,
+    "capabilityRequirements": [],
+    "createdAt": "2026-09-28T11:45:09.355679Z",
+    "updatedAt": "2026-09-28T11:45:09.355679Z"
+  },
+  "createdAt": "2026-09-28T11:45:09.361Z",
+  "scope": "Real persisted configuration acceptance; no execution or record lease is claimed"
+}

@@ -1,0 +1,28 @@
+{
+  "verified": true,
+  "environment": [
+    {
+      "id": "3ce74c89-66ee-59ce-a8bc-e25d463db195",
+      "project_id": "557fd0e0-4b23-46ca-a1fa-c8733a7f25b8",
+      "name": "原生 End 修复后环境",
+      "state": "ready",
+      "created_from_task_id": "87a4d6f5-08d8-48c9-883c-9e028bdcddfe",
+      "content_generation": 1
+    }
+  ],
+  "end": {
+    "id": "674a0714-46d2-409e-8dc7-993c7cc8eb7b",
+    "project_id": "557fd0e0-4b23-46ca-a1fa-c8733a7f25b8",
+    "task_id": "87a4d6f5-08d8-48c9-883c-9e028bdcddfe",
+    "run_id": "c9645a83-df96-4a05-9cb1-53e3ea70316d",
+    "phase": "completed",
+    "retain_environment": 1,
+    "save_operation_id": "1561f5e8-abea-49a1-8a35-da2788238d25",
+    "intended_result": "{\"taskId\": \"87a4d6f5-08d8-48c9-883c-9e028bdcddfe\", \"runId\": \"c9645a83-df96-4a05-9cb1-53e3ea70316d\", \"instanceId\": \"bfd560da-ef2b-405d-bea4-1e95004b13a7\", \"executionGeneration\": 1, \"expectedUseGeneration\": 1, \"businessResult\": \"succeeded\", \"retainEnvironment\": {\"enabled\": true, \"recordTargets\": [], \"mode\": \"save_as\", \"name\": \"\\u539f\\u751f End \\u4fee\\u590d\\u540e\\u73af\\u5883\", \"expectedContentGeneration\": null}, \"workerEnd\": true, \"workerRequest\": {\"nodeId\": \"end\", \"nodeVisitId\": \"cb1fe691-fdaa-49e0-b0cc-7f89a15c6622\", \"attempt\": 1, \"commandId\": \"669d1b1f-21ca-5c07-8040-be2408669a5c\", \"capability\": \"project.end\", \"arguments\": {\"recordTargets\": []}}}",
+    "targets": "[]",
+    "association_result": "{\"phase\": \"completed\", \"conflicts\": [], \"error\": null}",
+    "operation_id": "3a9db358-4255-42fe-88da-11637b079bd5",
+    "created_at": "2026-09-28 11:18:05.507911",
+    "updated_at": "2026-09-28 11:18:05.998018"
+  }
+}

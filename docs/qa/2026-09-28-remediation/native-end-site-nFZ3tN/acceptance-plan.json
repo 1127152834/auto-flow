@@ -1,0 +1,23 @@
+{
+  "sourceHead": "23247c28adc3963f8cf7463f4ffb52296f368ff3",
+  "status": "planned-not-executed",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-packaged-end-DFc1th",
+  "workflowId": "6b2e9cdf-38f0-472f-a3be-273bc11a97fe",
+  "projectId": "557fd0e0-4b23-46ca-a1fa-c8733a7f25b8",
+  "automationId": "b98c5949-80f7-410d-8d40-db6247451c8d",
+  "beforeRevision": 3,
+  "expectedInitialRemark": "原生 End 保存重载验收",
+  "expectedInitialEnvironmentName": "打包真实登录",
+  "targetRemark": "节点备注独立保存",
+  "targetEnvironmentName": "原生 End 修复后环境",
+  "pageUrl": "http://127.0.0.1:49566/native-end",
+  "steps": [
+    "native open preserved workflow and verify nested initial fields",
+    "native edit remark, environment name, page URL; save",
+    "read-only SQLite assert nested and outer namespaces",
+    "close and reopen Studio; fully quit and restart application",
+    "verify persisted fields; start actual automation using native UI",
+    "verify successful End and environment name from persistent facts",
+    "quit own app and close own HTTP server; inspect process/port cleanup"
+  ]
+}

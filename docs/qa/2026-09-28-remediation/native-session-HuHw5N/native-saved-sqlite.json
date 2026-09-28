@@ -1,0 +1,124 @@
+{
+  "revision": 3,
+  "document": {
+    "nodes": [
+      {
+        "id": "end",
+        "type": "project_end",
+        "data": {
+          "moduleType": "project_end",
+          "label": "静态目标验收",
+          "config": {
+            "retainEnvironment": true,
+            "name": "最终 UI 保留环境",
+            "inputIds": [],
+            "recordTargets": []
+          },
+          "name": "静态目标保留验证"
+        }
+      },
+      {
+        "id": "nested-call",
+        "type": "subflow",
+        "data": {
+          "moduleType": "subflow",
+          "label": "子流程选择验收",
+          "subflowGroupId": "stale-outer",
+          "subflowName": "外层调用旧名",
+          "config": {
+            "subflowGroupId": "nested-definition",
+            "subflowName": "嵌套有效名"
+          }
+        }
+      },
+      {
+        "id": "nested-definition",
+        "type": "group",
+        "data": {
+          "moduleType": "group",
+          "label": "嵌套定义",
+          "isSubflow": false,
+          "subflowName": "外层过期名",
+          "config": {
+            "isSubflow": true,
+            "subflowName": "嵌套有效名"
+          }
+        },
+        "zIndex": -1
+      },
+      {
+        "id": "stale-definition",
+        "type": "group",
+        "data": {
+          "moduleType": "group",
+          "label": "普通分组",
+          "isSubflow": true,
+          "subflowName": "外层误列名",
+          "config": {
+            "isSubflow": false,
+            "subflowName": "内层非子流程"
+          }
+        },
+        "zIndex": -1
+      }
+    ],
+    "edges": [],
+    "variables": [],
+    "createdAt": "2026-09-28T11:48:05.739Z",
+    "updatedAt": "2026-09-28T11:48:05.739Z",
+    "projectId": "557fd0e0-4b23-46ca-a1fa-c8733a7f25b8"
+  },
+  "layout": {
+    "nodes": {
+      "end": {
+        "position": {
+          "x": 40,
+          "y": 50
+        },
+        "measured": {
+          "width": 244,
+          "height": 47
+        }
+      },
+      "nested-call": {
+        "position": {
+          "x": 40,
+          "y": 190
+        },
+        "measured": {
+          "width": 180,
+          "height": 61
+        }
+      },
+      "nested-definition": {
+        "position": {
+          "x": 360,
+          "y": 50
+        },
+        "measured": {
+          "width": 250,
+          "height": 150
+        },
+        "style": {
+          "width": 250,
+          "height": 150
+        }
+      },
+      "stale-definition": {
+        "position": {
+          "x": 360,
+          "y": 250
+        },
+        "measured": {
+          "width": 250,
+          "height": 150
+        },
+        "style": {
+          "width": 250,
+          "height": 150
+        }
+      }
+    }
+  },
+  "verified": true
+}

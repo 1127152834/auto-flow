@@ -1,0 +1,433 @@
+# Task 3 报告：项目交互连接恢复反馈
+
+日期：2026-09-28
+
+基线：`d6f9cb0f8f9dd99be6e4734641fe3144f232f336`
+
+范围：`ProjectInteractionHost`、必要组件测试、本报告
+
+状态：实现与定向验证完成，未 push
+
+## 结论
+
+`ProjectInteractionHost` 现在分别保存通信中断提示和真实操作错误。一次完整且仍属于当前连接代次的 poll 成功后，只清除通信提示；脚本执行失败或无法显示输入窗口等真实操作错误不会被成功 poll 清除。连接或 client 改变会推进本地 revision，旧请求的迟到成功和失败都不能再改写当前提示状态。
+
+项目交互协议未改动，仍沿用原有 claim、原命令提交、未知结果查询和不重放脚本的路径。
+
+## 代码改动
+
+- `apps/desktop/src/renderer/domains/project-runs/components/ProjectInteractionHost.tsx`
+  - 将单一 `error` 拆为 `connectionError` 与 `operationError`。
+  - 当前 client/connected 变化时推进 revision；poll、输入请求、窗口显示失败和脚本异步失败都在写状态前校验同一 revision。
+  - 完整 poll 成功时仅执行 `setConnectionError(undefined)`。
+  - 两类提示同时存在时垂直排列，分别可关闭。
+- `apps/desktop/src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx`
+  - 增加通信失败后成功 poll 清除通知的回归。
+  - 增加真实脚本失败不会被后续成功 poll 清除的回归。
+  - 增加连接失效后迟到成功不改变提示的回归。
+  - 测试结束恢复真实计时器，避免 fake timer 泄漏。
+
+## RED / GREEN
+
+第一次命令误用了仓库根路径，Vitest 在 desktop workspace 中没有找到测试文件；这是测试命令路径修正，不算产品 RED：
+
+```text
+npm --workspace @autoflow/desktop test -- --run apps/desktop/src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx
+No test files found, exiting with code 1
+```
+
+修正 workspace 相对路径后，在实现前运行新增回归：
+
+```text
+npm --workspace @autoflow/desktop test -- --run src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx
+Test Files  1 failed (1)
+Tests       1 failed | 4 passed (5)
+```
+
+失败点为“下一次成功 poll 后通知仍存在”，准确复现旧行为。
+
+实现后的定向 GREEN：
+
+```text
+npm --workspace @autoflow/desktop test -- --run \
+  src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx \
+  src/renderer/domains/project-runs/interactions.test.ts
+Test Files  2 passed (2)
+Tests       12 passed (12)
+```
+
+## 静态验证
+
+```text
+npm --workspace @autoflow/desktop run typecheck
+exit 0
+
+npm exec --workspace @autoflow/desktop -- eslint \
+  src/renderer/domains/project-runs/components/ProjectInteractionHost.tsx \
+  src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx
+exit 0
+```
+
+最终提交前于 14:41 再次运行同一组 12 个定向测试、typecheck、定向 eslint 与 `git diff --check`：2 个测试文件、12 个测试全部通过，其余三项均 exit 0。
+
+## 真实原生断连/恢复验证
+
+验证使用当前源码 Electron renderer 与基线已冻结的生产 backend 二进制。工作区、user-data 和数据库均隔离在 `/tmp/autoflow-task3-qa.j6AbYM`。没有使用 HTTP 伪成功响应。
+
+隔离实例身份：
+
+```text
+main PID 56848
+/Users/zhangtiancheng/Documents/projects/autoflow/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron
+sidecar PID 56855, PPID 56848
+/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/dist/autoflow-backend/autoflow-backend
+instanceId 56848-1790577093419
+```
+
+用 CUA 在隔离实例中创建项目 `Task3 连接恢复实测`、关联真实工作流并启动一个任务。工作流的真实 `js_script` 在 dedicated worker 中运行 20 秒，将 `count` 从 0 增为 1，返回 `task3-original-result`，随后由 `print_log` 输出变量与返回值。
+
+在 API 已返回同一请求为 `status=claimed` 后，只对已核验的 sidecar PID 56855 执行 `SIGSTOP`。`ps` 显示 `T+`；2026-09-28T14:38:22+0800 仍确认该 PID/PPID/命令一致。CUA 随后真实读取到：
+
+```text
+项目交互连接中断，正在查询原请求；未重新执行脚本
+```
+
+2026-09-28T14:38:45+0800 对同一 PID 执行 `SIGCONT`。下一次完整 poll 后 CUA 的 AX diff 删除了通知节点；同一刷新中批次变为“已完成”，成功 1、进行中 0。
+
+任务详情由 CUA 显示：
+
+```text
+真实断连脚本 14:38:16 尝试 1 成功
+JS脚本执行成功，返回值: task3-original-result
+1:task3-original-result
+```
+
+SQLite 读取 `project_workflow_run_events` 和 `project_workflow_runs`：
+
+```json
+{"distinct_script_attempts":1,"script_outputs":1,"result":"task3-original-result"}
+```
+
+间隔两秒的两次稳定性读取完全一致：
+
+```json
+{"status":"succeeded","execution_generation":1,"last_sequence":15,"script_attempt_events":2,"script_outputs":1,"result":"task3-original-result"}
+```
+
+这里 `script_attempt_events=2` 是同一 `attempt=1` 的开始/完成生命周期事件；`COUNT(DISTINCT attempt)=1`。输出事件只有一条，结果未被恢复 poll 重写。隔离 main/sidecar 已退出。用户原有 `autoflow-android-handoff` PID 26110 在清理后仍运行，未被操作。
+
+### 可审查原始证据
+
+证据清单与精确身份记录在 [`docs/qa/2026-09-28-remediation/interaction-notice/README.md`](../../../docs/qa/2026-09-28-remediation/interaction-notice/README.md)。同目录包含：
+
+- `query-interaction-notice.sh`：以 `sqlite3 -readonly` 和 `PRAGMA query_only=ON` 复跑身份、事件与单次执行查询。
+- `sqlite-readonly-results.txt`：上述脚本对保留数据库的实际原始输出。
+- `instance-exit-readonly.txt`：隔离实例退出、原用户实例仍运行、测试目录/SQLite 仍存在及 SQLite SHA-256 的只读核验。
+
+真实测试目录 `/tmp/autoflow-task3-qa.j6AbYM` 和原 SQLite 保留供复查。实时 CUA 期间没有把截图或 AX dump 保存成文件，因此证据目录没有重建或补造这类资产。
+
+## AOCI 会话记录
+
+按仓库约束先调用 `aoci_rules`，再建立 Whole-Index。前两条全新 Overview 链分别在继续游标时失败；两次原始返回完全相同：
+
+```text
+[cognition_snapshot_unavailable] Overview组装期间正式认知资产发生变化；未交付混合快照
+建议: 认知资产并发变化停止后，重试显式Overview
+```
+
+两次失败响应本身没有返回时间戳，调用侧当时也没有单独记录墙钟时间，因此不能虚构精确时间。它们均发生在 2026-09-28 最终成功链开始前：第一次已交付 ordinal 1–128 后失败，第二次从新链 chunk 1 后失败。两次可核验 receipt 身份均为：
+
+```text
+index_sha256=8d03add9c0cdf5cb207f320eefcddc3c831698afdea9ed2ba9d7c6b65d3e6545
+entry_count=280
+chunk_tokens=8000
+```
+
+根任务停止其他 AOCI 调用并给出独占窗口后，只再执行一条全新完整链。该链在约 2026-09-28T14:15:17+0800 至 14:18:29+0800 完成 5 chunks、280 entries、约 31,829 tokens；Host delivery confirmed，challenge 10/10。投影为 `model_cognition_usable=true`、`governance_aligned=false`，正式索引仍 dirty/stale 且有 semantic-threshold pending。本任务据此只做 source-bound 修改，没有调用 maintain/update/report，也没有修改 AOCI 资产。
+
+## 自审与边界
+
+- 成功只清通信提示，不会清脚本/窗口操作错误。
+- poll 串行运行；revision 额外阻断 client 或连接代次变化后的迟到结果。
+- 卸载仍通过原 AbortController 取消 poll 和已领取脚本，旧用例保留。
+- `interactions.ts` 未改；未知结果仍查询同一 command，不会重发动作或重跑脚本。
+- 没有后端源码或后端测试改动，没有修改 remediation README、`packaged-end-realqa.mjs`、最终构建/日志资产或第三方 WIP。
+- 当前仓库存在其他任务/AOCI 的大量未提交文件；提交必须只显式暂存本报告和上述两个组件文件。
+
+置信度：高。真实故障注入、界面恢复、单次执行和 SQLite 稳定结果均已直接验证。
+
+---
+
+## Review fix round 1（基线 `489224c5`，2026-09-28）
+
+### 复核结论与改动
+
+Reviewer 指出的 Important 问题成立：`pending` 列表成功之后，`executeProjectScript` 内部的 request 读取仍可能发生瞬态失败；旧 Host 已经登记 `scripts` key，并把该失败写成 `operationError`，因此恢复后不会重试读取。此前“完整 poll 成功”也只覆盖了 pending 列表，不覆盖执行脚本所必需的 request/claim 读取。
+
+本轮将脚本路径分成三个显式阶段：
+
+1. `readProjectScript` 在 claim 前读取并校验原 request。瞬态失败仍属于 poll transport failure，不登记 key，下一次 poll 可以安全重读。
+2. request 成功后先登记原 identity key，再由 `claimProjectScript` 使用原 target、单一 command key 和未知结果查询完成 claim。从该边界开始不允许重放。
+3. `executeClaimedProjectScript` 才启动原 dedicated Worker，并以同一 identity 和 claimId 确认 result。
+
+Host 只有在 pending 列表、request 读取和 claim 所需读取全部完成后才清除 `connectionError`。真实 request/claim/worker/result 错误仍写入 `operationError`。原 `executeProjectScript` 保留为上述三个阶段的组合，因此 `interactions.test.ts` 的原命令提交、未知结果查询和 claim 后不重放契约继续适用。
+
+### RED / GREEN 原始命令
+
+新增回归先在旧实现上执行：
+
+```text
+npm --workspace @autoflow/desktop test -- --run src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx -t "retries a transient JS request read before claim and executes the script once"
+exit 1
+Test Files  1 failed (1)
+Tests       1 failed | 7 skipped (8)
+TestingLibraryElementError: Unable to find an element with the text: /项目交互连接中断/
+Duration 18.98s
+```
+
+旧实现把 `TypeError('offline')` 显示为真实操作错误 `offline`，并没有显示可恢复的 transport notice，准确命中 review finding。
+
+实现后的同一聚焦回归：
+
+```text
+npm --workspace @autoflow/desktop test -- --run src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx -t "retries a transient JS request read before claim and executes the script once"
+exit 0
+Test Files  1 passed (1)
+Tests       1 passed | 7 skipped (8)
+Duration 7.17s
+```
+
+第一次运行两个完整文件时，新用例读取到了前一用例遗留的模块 mock 调用历史，结果为 13 个测试中 1 failed。回归中增加 `runJsScript.mockReset()` 后，最终完整运行如下：
+
+```text
+npm --workspace @autoflow/desktop test -- --run src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx src/renderer/domains/project-runs/interactions.test.ts
+exit 0
+Test Files  2 passed (2)
+Tests       13 passed (13)
+Duration 14.23s
+```
+
+这 13 个测试同时覆盖本轮新增的 pre-claim request 恢复、真实 operation error 保留、stale/unmount，以及原有 submit/query/no-replay 协议。
+
+### 静态检查
+
+最终源码状态运行：
+
+```text
+npm --workspace @autoflow/desktop run typecheck
+exit 0
+
+npm exec --workspace @autoflow/desktop -- eslint \
+  src/renderer/domains/project-runs/interactions.ts \
+  src/renderer/domains/project-runs/interactions.test.ts \
+  src/renderer/domains/project-runs/components/ProjectInteractionHost.tsx \
+  src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx
+exit 0
+
+git diff --check -- <Task 3 owned files>
+exit 0
+```
+
+没有运行全量 frontend/build/package。为真实 UI 验收执行过源码 Electron build；main/preload 完成，renderer 输出更新至 2026-09-28T15:27:10+0800，但命令承载工具在最终退出状态返回前超时，因此不把它计为正式 build gate。最终 build/package 仍由 root 执行。
+
+### Review fix 真实 UI 验收
+
+验收使用新的独立复制工作区 `/tmp/autoflow-task3-round1-qa.UlhnXI`、当前源码 renderer 和冻结生产 backend。复制前源库与新库 SHA-256 同为 `08f06a3b429bcab97a10362461ea491fb6685cb6878c1e8daa6fb52b5bb8189e`；运行后新库 SHA-256 为 `492a09bfe9eb0e2f5c967590b1870d464e7125184bfed54390cf48bb1046a192`，因此本轮新行与旧 Task 3 行可区分。
+
+本轮独立成功运行身份：batch `2c82d320-47a6-457e-89e6-8dd462f6ce7a`、task `84908701-ce45-4571-8763-d97c02afb4d5`、run `70bae1a2-f936-455d-86fd-41ac6330f709`。SQLite 显示 `execution_generation=1`、`last_sequence=15`、一个 distinct script attempt、一个 output，结果为 `task3-original-result`。
+
+运行中断连使用 batch `c05fd0df-484e-4d4d-b5c4-be4e2e018560`、task `9c94e341-2071-447a-a24a-f5c7fa2b54ce`、run `d25462ec-6c04-4bd9-9f21-c7c987ac4762`。只对已核验的专属 sidecar PID `55301`（PPID `55287`，instance `55287-1790580512419`）在 `15:46:32+0800` 执行 `SIGSTOP`。任务仍显示运行中时，实际 CUA screenshot 与 AX 均出现：
+
+```text
+项目交互连接中断，正在查询原请求；未重新执行脚本
+```
+
+`15:47:12+0800` 对同一 PID 执行 `SIGCONT` 后，实际 screenshot/AX 显示 transport notice 消失，同时真实 operation error `交互命令不存在` 保留。40 秒暂停超过 backend interaction lifetime，SQLite 将 request `c0d1d0be-b921-44c2-a131-b9980a00bdb7` 记录为 `expired`，该 run 因此失败；这次运行只证明 notice 恢复和真实 operation error 保留，不计为成功执行。pre-claim 瞬态失败后的单次执行由确定性回归证明，真实单次成功由上述独立成功 run 证明，没有伪造 HTTP 成功。
+
+专属 Electron PID `55287` 与 sidecar PID `55301` 已退出；用户原有 android-handoff app PID `26110` 仍运行且未被控制。原 SQLite 保留。可审查截图、AX、进程身份、只读 SQL 脚本与原始结果见 [`interaction-notice-round1/README.md`](../../../docs/qa/2026-09-28-remediation/interaction-notice-round1/README.md)。
+
+### 边界与 AOCI
+
+- 本轮仅修改 desktop renderer 源码/测试、本报告及 Task 3 证据目录；没有后端/Python改动，也没有触碰 root 的最终构建、package、native End 资产。
+- 当前 AOCI 为 `recovery_pending` 且无正文；依照协调要求未接管 recovery、未调用 maintain/update、未修改 AOCI 资产。该限制不影响本轮 source-bound 修复与验证。
+- 置信度：高。代码级边界由 13 个测试覆盖，真实 UI 的 interrupted/recovered 状态有本轮实际 PNG、AX 和 SQLite 证据；真实故障持续时间导致过期这一限制已明确保留。
+
+---
+
+## Review fix round 2（基线 `dae16113`，2026-09-28）
+
+### 复核结论与协议边界
+
+Round 1 把 claim await 移进唯一 poll 后，新 finding 成立：claim submit/query 的瞬态故障会在 `confirmProjectScriptCommand` 内持续查询，但 Host 的 poll 无法返回，因此不会显示 claim 阶段的 transport notice，也不能处理同时到达的其他交互。
+
+只读追踪 backend 协议确认：`ProjectRunInteractions.pending()` 在 run 仍为当前 generation 且 `running` 时，会持续返回内存请求的 `pending`、`claimed` 或 `submitted` 状态；close 事件会删除请求，取消/过期、run 终态或 execution generation 变化也会使它不再出现在 pending 集合。因此本轮继续使用原 `scripts` identity/AbortController 清理路径：未决或已确认的 claim 保持 owner key，真正取消/过期时由下一次 pending 自动 abort；没有引入跨项目的通用状态层。
+
+### 实现
+
+- `claimProjectScript` 从全局 poll 的同步 await 中移到该 identity 自己的异步 pipeline。poll 可以按原 1 秒节拍继续读取 pending、显示 input prompt 和处理其他脚本。
+- `confirmProjectScriptCommand` 为同一 commandId 的 submit/query 循环增加局部 transport observer。每个动作仍只生成一个 commandId；瞬态 submit 后只查询该原 ID，不重发 claim 或 result。
+- Host 在当前 effect 中记录 `poll` 与各 script identity 的 transport failure。成功 poll 只恢复 `poll` source；只要任一 claim/result 仍中断，notice 就不会被提前清除。claim 尚未完成时也阻止旧 notice 被普通成功 poll 清除。
+- `claims` 只记录 claim 所属 revision。连接/client revision 改变时只 abort 尚未完成的 claim；已经启动的原 Worker 仍遵守既有 reconnect 行为。claim 返回后再次校验 revision，旧 claim 不能跨连接启动 Worker。
+- pending 不再包含 identity 时继续沿用原 cleanup：abort controller、删除 owner/claim 状态并解除相应 transport source，覆盖真实取消、过期和代次结束。
+
+### RED / GREEN
+
+旧实现上的新增边界回归：
+
+```text
+npm --workspace @autoflow/desktop test -- --run src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx -t "keeps polling other interactions while a transient claim recovers with its original command"
+exit 1
+Test Files  1 failed (1)
+Tests       1 failed | 8 skipped (9)
+TestingLibraryElementError: Unable to find an element with the text: /项目交互连接中断/
+Duration 1.50s
+```
+
+实现后的同一回归：
+
+```text
+npm --workspace @autoflow/desktop test -- --run src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx -t "keeps polling other interactions while a transient claim recovers with its original command"
+exit 0
+Test Files  1 passed (1)
+Tests       1 passed | 8 skipped (9)
+Duration 1.53s
+```
+
+该用例让 claim POST 和后续原 command 查询连续瞬态失败，同时让第二次 pending poll 返回另一个 input prompt。它验证：第二次 poll 实际发生、输入窗口出现、claim notice 不被该成功 poll 清除；原 command query 恢复后，claim POST、Worker 和 result POST 各恰好一次，所有 claim query 都使用第一次 POST 的 commandId。
+
+连接 revision 定向保护：
+
+```text
+npm --workspace @autoflow/desktop test -- --run src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx -t "aborts an unresolved claim across a connection revision without replaying it"
+exit 0
+Test Files  1 passed (1)
+Tests       1 passed | 9 skipped (10)
+Duration 1.85s
+```
+
+最终两份完整文件：
+
+```text
+npm --workspace @autoflow/desktop test -- --run src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx src/renderer/domains/project-runs/interactions.test.ts
+exit 0
+Test Files  2 passed (2)
+Tests       15 passed (15)
+Duration 1.69s
+```
+
+最终静态检查：
+
+```text
+npm --workspace @autoflow/desktop run typecheck
+exit 0
+
+npm exec --workspace @autoflow/desktop -- eslint \
+  src/renderer/domains/project-runs/interactions.ts \
+  src/renderer/domains/project-runs/interactions.test.ts \
+  src/renderer/domains/project-runs/components/ProjectInteractionHost.tsx \
+  src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx
+exit 0
+
+git diff --check -- <Task 3 round-2 owned files>
+exit 0
+```
+
+### 真实验收与限制
+
+Round 1 的实际 CUA PNG/AX、独立成功 run 和 SQLite 单次执行证据仍适用于整体 notice/operation-error/no-replay 行为，见 [`interaction-notice-round1/README.md`](../../../docs/qa/2026-09-28-remediation/interaction-notice-round1/README.md)。该物理故障发生在 claim 窄窗口之外，不能证明本轮 claim boundary；本轮没有为了仪式性覆盖而重复 40 秒 outage，因为该持续时间已证实会使 backend interaction 过期。claim 窄窗口由上述可控 submit/query 边界回归验证，缺少该窗口的物理故障截图证据如实保留。
+
+Root 在本轮源码修改前的冻结 `dae16113` 上运行了 default 5665 tests / 432 files、lint、typecheck、build 和 package，均 exit 0；这些结果只证明 round-2 基线稳定，不计作修改后的最终全量门禁。按协调约定，root 将在 round-2 review 通过后运行 final v3。
+
+没有修改 backend/Python、包目录、root 最终资产或 AOCI。AOCI 仍由外部 owner 处理 recovery pending，本任务未接管、重试或维护。
+
+---
+
+## Review fix round 3（修复基线 `d2bcae4f`，2026-09-28）
+
+### 独立边界证据
+
+Round 2 把 `client/connected` revision 变化视作 claim owner 变化并 abort 未决 claim，这一结论错误。两条独立证据确定了正确边界：
+
+- `app/App.tsx` 用 `JSON.stringify([session.workspaceKey, session.instanceId])` 作为 `ProjectInteractionHost` key。workspace 或 sidecar instance 变化会真实 remount Host，effect cleanup 会 abort 全部旧 controller；普通同实例断连、重连或 client 更新不会 remount。
+- backend `ProjectRunInteractions.pending()` 在同一 running generation 中继续返回内存请求及其 `pending`、`claimed`、`submitted` identity；command receipt 又按原 command ID 持久化查询。因此同实例恢复必须继续原 command 的只读查询，不能放弃或再发 claim。
+
+`ApiProvider` 的注释和测试也明确：同 workspace reconnect 保留 provider/query observers，仅 workspace key 变化才建立新 cache。这与 Host 的 workspace+instance remount key 一致。
+
+### 修改
+
+- `claims` 由 revision map 改为当前 Host effect 内的 identity set。同一个 mounted Host 内，client/connected revision 不再 abort claim。
+- claim transport observer 改用 effect/controller ownership 判断；每次 query 通过 `createProjectInteractions(() => latest.current.client)` 使用最新 client，但仍绑定第一次生成的 command ID。
+- claim 确认后只检查 Host/script 是否仍 owned，再启动原 Worker。真实 key remount、组件卸载、pending identity 消失、取消或过期仍会走原 AbortController cleanup。
+- poll 自身继续使用 revision fence，旧 pending/request 结果不能清除新连接状态；该 fence不再错误终止独立的原 command recovery。
+
+没有修改 `App.tsx`、`ApiProvider` 或 backend；它们只作为本次边界判断的独立证据。
+
+### RED / GREEN
+
+先把 round-2 的错误 abandonment 测试改成同实例恢复契约，旧实现 RED：
+
+```text
+npm --workspace @autoflow/desktop test -- --run src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx -t "resumes the original claim query across a same-instance reconnect without replaying it"
+exit 1
+Test Files  1 failed (1)
+Tests       1 failed | 9 skipped (10)
+AssertionError: expected connection notice to be null after recovery
+Duration 1.39s
+```
+
+实现后同一命令 GREEN：
+
+```text
+npm --workspace @autoflow/desktop test -- --run src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx -t "resumes the original claim query across a same-instance reconnect without replaying it"
+exit 0
+Test Files  1 passed (1)
+Tests       1 passed | 9 skipped (10)
+Duration 1.11s
+```
+
+该用例让初始 client 的 claim POST 及 fallback query 结果未知，随后同一 mounted Host 切换 `client/connected`。恢复后只查询第一次 claim 的 command ID；claim POST、Worker、result POST 各一次，notice 在原 command receipt 恢复后消失。
+
+真实 remount 边界回归：
+
+```text
+npm --workspace @autoflow/desktop test -- --run src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx -t "cancels an unknown claim when the workspace and instance keyed host remounts"
+exit 0
+Test Files  1 passed (1)
+Tests       1 passed | 10 skipped (11)
+Duration 1.08s
+```
+
+该用例按 App 的 workspace+instance key 更换 Host，验证旧 claim signal 被 abort；旧 Worker 和 result 均未执行，新 Host 独立 poll。
+
+最终两份完整文件：
+
+```text
+npm --workspace @autoflow/desktop test -- --run src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx src/renderer/domains/project-runs/interactions.test.ts
+exit 0
+Test Files  2 passed (2)
+Tests       16 passed (16)
+Duration 1.40s
+```
+
+最终静态检查：
+
+```text
+npm --workspace @autoflow/desktop run typecheck
+exit 0
+
+npm exec --workspace @autoflow/desktop -- eslint \
+  src/renderer/domains/project-runs/interactions.ts \
+  src/renderer/domains/project-runs/interactions.test.ts \
+  src/renderer/domains/project-runs/components/ProjectInteractionHost.tsx \
+  src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx
+exit 0
+
+git diff --check -- <Task 3 round-3 owned files>
+exit 0
+```
+
+### 验收边界
+
+本轮没有 build、package、全量 frontend 或 40 秒真实 outage。round-1 的真实 UI/SQLite 证据继续证明整体 notice、operation error 与单次执行，但不声称覆盖这个同实例 claim 窄窗口；round-3 用确定性 client/connected 迁移和真实 React key remount 分别验证两个边界。
+
+当前 HEAD 在修复前包含 root 的 docs-only `baa3bbe7`；该提交不属于 Task 3 业务 diff。本轮没有修改 Task6 Studio/workflow 文件、backend/Python、包目录、root 资产或 AOCI。

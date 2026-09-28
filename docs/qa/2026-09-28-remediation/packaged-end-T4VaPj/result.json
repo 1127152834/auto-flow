@@ -1,0 +1,351 @@
+{
+  "head": "e49144f2458a5024ef2ef06d5f8bba75f67c0557",
+  "output": "/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-remediation/packaged-end-T4VaPj",
+  "workspace": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-packaged-end-T4hOdS",
+  "appPath": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/MacOS/AutoFlow",
+  "startedAt": "2026-09-28T11:11:11.251Z",
+  "requests": [
+    {
+      "path": "/login",
+      "signedIn": false
+    },
+    {
+      "path": "/favicon.ico",
+      "signedIn": true
+    },
+    {
+      "path": "/status",
+      "signedIn": true
+    },
+    {
+      "path": "/favicon.ico",
+      "signedIn": true
+    }
+  ],
+  "sessions": [
+    {
+      "pid": 83873,
+      "debugOrigin": "http://127.0.0.1:55198",
+      "instanceId": "83873-1790593879287",
+      "processCleanup": {
+        "identities": [
+          {
+            "pid": 83873,
+            "parent": 83833,
+            "birth": "Mon Sep 28 19:11:11 2026",
+            "inWorkspace": true
+          },
+          {
+            "pid": 83917,
+            "parent": 83873,
+            "birth": "Mon Sep 28 19:11:19 2026",
+            "inWorkspace": true
+          },
+          {
+            "pid": 83918,
+            "parent": 83873,
+            "birth": "Mon Sep 28 19:11:19 2026",
+            "inWorkspace": true
+          },
+          {
+            "pid": 83919,
+            "parent": 83873,
+            "birth": "Mon Sep 28 19:11:19 2026",
+            "inWorkspace": true
+          },
+          {
+            "pid": 83920,
+            "parent": 83873,
+            "birth": "Mon Sep 28 19:11:19 2026",
+            "inWorkspace": true
+          }
+        ],
+        "remaining": []
+      },
+      "closed": true
+    },
+    {
+      "pid": 84569,
+      "debugOrigin": "http://127.0.0.1:55329",
+      "instanceId": "84569-1790593895402",
+      "processCleanup": {
+        "identities": [
+          {
+            "pid": 84569,
+            "parent": 83833,
+            "birth": "Mon Sep 28 19:11:35 2026",
+            "inWorkspace": true
+          },
+          {
+            "pid": 84575,
+            "parent": 84569,
+            "birth": "Mon Sep 28 19:11:35 2026",
+            "inWorkspace": true
+          },
+          {
+            "pid": 84576,
+            "parent": 84569,
+            "birth": "Mon Sep 28 19:11:35 2026",
+            "inWorkspace": true
+          },
+          {
+            "pid": 84579,
+            "parent": 84569,
+            "birth": "Mon Sep 28 19:11:35 2026",
+            "inWorkspace": true
+          },
+          {
+            "pid": 84583,
+            "parent": 84569,
+            "birth": "Mon Sep 28 19:11:35 2026",
+            "inWorkspace": true
+          }
+        ],
+        "remaining": []
+      },
+      "closed": true
+    }
+  ],
+  "tasks": [
+    {
+      "workflowId": "f5906a72-89af-4cca-af2f-63c131c1c1f9",
+      "automationId": "6e7cfb27-dd91-41dd-8d9a-32555d57e3fd",
+      "automationName": "保存登录",
+      "batchStartedAt": "2026-09-28T11:11:22.284188Z",
+      "parameterDefinitions": [],
+      "nodeNames": {
+        "page": "open_page",
+        "read": "get_element_info",
+        "end": "project_end",
+        "forbidden": "open_page"
+      },
+      "task": {
+        "taskId": "276b9b2a-6301-40e6-85be-4cd6264f1a0d",
+        "projectId": "5f7eeff5-e956-4b9b-ac34-d04e26783f1f",
+        "batchId": "fa504217-35a7-4f24-9671-5b4e19fe456b",
+        "runId": "83807444-a96a-4b6f-9332-d3e4c04b8603",
+        "runRequestId": "6ba557a8-da11-407c-8d99-2e3d8e8ba3a3",
+        "status": "succeeded",
+        "statusRevision": 4,
+        "inputSnapshotId": "73497c58-0186-45d8-9c62-7e4953069b03",
+        "taskOrdinal": 1,
+        "automationName": null,
+        "batchStartedAt": null,
+        "inputIdentifier": null,
+        "endNodeName": null,
+        "lastStatusAt": null,
+        "manualItemId": null,
+        "createdAt": "2026-09-28T11:11:22.284188Z",
+        "completedAt": "2026-09-28T11:11:30.245538Z"
+      },
+      "inputSnapshot": {
+        "inputSnapshotId": "73497c58-0186-45d8-9c62-7e4953069b03",
+        "taskId": "276b9b2a-6301-40e6-85be-4cd6264f1a0d",
+        "batchId": "fa504217-35a7-4f24-9671-5b4e19fe456b",
+        "parameters": {},
+        "inputs": [],
+        "capturedAt": "2026-09-28T11:11:22.284188Z"
+      },
+      "currentInputs": [],
+      "run": {
+        "runId": "83807444-a96a-4b6f-9332-d3e4c04b8603",
+        "runRequestId": "6ba557a8-da11-407c-8d99-2e3d8e8ba3a3",
+        "status": "succeeded",
+        "statusRevision": 4,
+        "executionGeneration": 1,
+        "preparedContentId": "94fa8948-dc42-474b-b975-86aea411a217",
+        "capabilityBindings": [
+          {
+            "capability": "project.data",
+            "projectId": "5f7eeff5-e956-4b9b-ac34-d04e26783f1f",
+            "createRecordTargets": [],
+            "tableGrants": [],
+            "statusInputIds": [],
+            "taskId": "276b9b2a-6301-40e6-85be-4cd6264f1a0d",
+            "executionGeneration": 1
+          }
+        ],
+        "resourceRequest": {
+          "browser": "newFromProfile",
+          "profileId": "e23bc28b-dd4e-4a84-8d54-1384f8896298",
+          "kernelId": "public:145.0.7632.109.2",
+          "proxy": {
+            "mode": "none"
+          },
+          "modelProviderId": null,
+          "automaticExecutionTimeoutSeconds": 60
+        },
+        "lastSequence": 15,
+        "terminal": true,
+        "error": null,
+        "startedAt": "2026-09-28T11:11:22.309206Z",
+        "finishedAt": "2026-09-28T11:11:30.245538Z"
+      },
+      "dataWrites": [],
+      "cleanup": {
+        "status": "succeeded",
+        "operationId": null,
+        "message": "已确认浏览器退出，临时环境已释放。"
+      },
+      "end": {
+        "saveOperationId": "b2e0ac67-5d46-4089-ab04-c0c5d7c038a5",
+        "associationPhase": "completed",
+        "repairTargets": [],
+        "operationId": "b2a12c53-f526-432f-a091-b7a7c10e4983",
+        "phase": "completed",
+        "businessResult": "succeeded",
+        "outcome": {
+          "phase": "completed",
+          "error": null,
+          "complete": true,
+          "instance": {
+            "instanceId": "4f16eb3f-3173-4a02-9e12-74ef4317f51d",
+            "projectId": "5f7eeff5-e956-4b9b-ac34-d04e26783f1f",
+            "environmentId": null,
+            "state": "cleaned",
+            "source": "newFromProfile",
+            "sourceContentGeneration": null,
+            "instanceUseGeneration": 1,
+            "activeTaskId": "276b9b2a-6301-40e6-85be-4cd6264f1a0d",
+            "activeRunId": "83807444-a96a-4b6f-9332-d3e4c04b8603",
+            "maintenanceOperationId": null,
+            "profileId": "e23bc28b-dd4e-4a84-8d54-1384f8896298",
+            "createdAt": "2026-09-28T11:11:22.293843",
+            "updatedAt": "2026-09-28T11:11:30.242620"
+          },
+          "source": {
+            "projectId": "5f7eeff5-e956-4b9b-ac34-d04e26783f1f",
+            "environmentId": "bc02c195-7bc0-5835-aad7-8608653ee00f",
+            "contentGeneration": 1,
+            "metadataRevision": 1
+          },
+          "saved": {
+            "projectId": "5f7eeff5-e956-4b9b-ac34-d04e26783f1f",
+            "environmentId": "bc02c195-7bc0-5835-aad7-8608653ee00f",
+            "contentGeneration": 1,
+            "metadataRevision": 1
+          },
+          "targets": [],
+          "conflicts": []
+        },
+        "error": null
+      }
+    },
+    {
+      "workflowId": "72bda9f5-3646-482b-8a95-e783eebb88ce",
+      "automationId": "a821bb49-49d5-486e-b438-6d3f4be6a05f",
+      "automationName": "复用登录",
+      "batchStartedAt": "2026-09-28T11:11:38.485135Z",
+      "parameterDefinitions": [],
+      "nodeNames": {
+        "page": "open_page",
+        "read": "get_element_info",
+        "end": "project_end",
+        "forbidden": "open_page"
+      },
+      "task": {
+        "taskId": "59890a5c-746c-41e0-a928-0c7ed10a005f",
+        "projectId": "5f7eeff5-e956-4b9b-ac34-d04e26783f1f",
+        "batchId": "5907a309-44e4-471b-884e-2c1eb17b4f67",
+        "runId": "c0a51e3d-f1ad-4eaf-8293-960111115e78",
+        "runRequestId": "c84123bc-645e-412e-8de3-d214dd9a5d94",
+        "status": "succeeded",
+        "statusRevision": 4,
+        "inputSnapshotId": "5c0d48b0-f605-4958-be77-abf085d3e3b9",
+        "taskOrdinal": 1,
+        "automationName": null,
+        "batchStartedAt": null,
+        "inputIdentifier": null,
+        "endNodeName": null,
+        "lastStatusAt": null,
+        "manualItemId": null,
+        "createdAt": "2026-09-28T11:11:38.485135Z",
+        "completedAt": "2026-09-28T11:11:40.959475Z"
+      },
+      "inputSnapshot": {
+        "inputSnapshotId": "5c0d48b0-f605-4958-be77-abf085d3e3b9",
+        "taskId": "59890a5c-746c-41e0-a928-0c7ed10a005f",
+        "batchId": "5907a309-44e4-471b-884e-2c1eb17b4f67",
+        "parameters": {},
+        "inputs": [],
+        "capturedAt": "2026-09-28T11:11:38.485135Z"
+      },
+      "currentInputs": [],
+      "run": {
+        "runId": "c0a51e3d-f1ad-4eaf-8293-960111115e78",
+        "runRequestId": "c84123bc-645e-412e-8de3-d214dd9a5d94",
+        "status": "succeeded",
+        "statusRevision": 4,
+        "executionGeneration": 1,
+        "preparedContentId": "617395d7-6520-4917-96f8-e93421118c03",
+        "capabilityBindings": [
+          {
+            "capability": "project.data",
+            "projectId": "5f7eeff5-e956-4b9b-ac34-d04e26783f1f",
+            "createRecordTargets": [],
+            "tableGrants": [],
+            "statusInputIds": [],
+            "taskId": "59890a5c-746c-41e0-a928-0c7ed10a005f",
+            "executionGeneration": 1
+          }
+        ],
+        "resourceRequest": {
+          "browser": "persistent",
+          "profileId": "e23bc28b-dd4e-4a84-8d54-1384f8896298",
+          "kernelId": "public:145.0.7632.109.2",
+          "proxy": {
+            "mode": "none"
+          },
+          "modelProviderId": null,
+          "automaticExecutionTimeoutSeconds": 60
+        },
+        "lastSequence": 15,
+        "terminal": true,
+        "error": null,
+        "startedAt": "2026-09-28T11:11:38.581613Z",
+        "finishedAt": "2026-09-28T11:11:40.959475Z"
+      },
+      "dataWrites": [],
+      "cleanup": {
+        "status": "succeeded",
+        "operationId": null,
+        "message": "已确认浏览器退出，临时环境已释放。"
+      },
+      "end": {
+        "saveOperationId": null,
+        "associationPhase": null,
+        "repairTargets": [],
+        "operationId": "d9bbc1fc-00b1-4542-8e9a-1d4d20a3f444",
+        "phase": "completed",
+        "businessResult": "succeeded",
+        "outcome": {
+          "phase": "completed",
+          "complete": true,
+          "instance": {
+            "instanceId": "11ffebd4-9b3c-4a21-a571-2d4e3cd93b33",
+            "projectId": "5f7eeff5-e956-4b9b-ac34-d04e26783f1f",
+            "environmentId": "bc02c195-7bc0-5835-aad7-8608653ee00f",
+            "state": "cleaned",
+            "source": "fixedEnvironment",
+            "sourceContentGeneration": 1,
+            "instanceUseGeneration": 1,
+            "activeTaskId": "59890a5c-746c-41e0-a928-0c7ed10a005f",
+            "activeRunId": "c0a51e3d-f1ad-4eaf-8293-960111115e78",
+            "maintenanceOperationId": null,
+            "profileId": "e23bc28b-dd4e-4a84-8d54-1384f8896298",
+            "createdAt": "2026-09-28T11:11:38.494167",
+            "updatedAt": "2026-09-28T11:11:40.954664"
+          },
+          "source": null,
+          "saved": null,
+          "targets": [],
+          "conflicts": []
+        },
+        "error": null
+      }
+    }
+  ],
+  "verified": true,
+  "projectId": "5f7eeff5-e956-4b9b-ac34-d04e26783f1f",
+  "finishedAt": "2026-09-28T11:11:42.528Z"
+}

@@ -1,0 +1,19 @@
+{
+  "pid": 81269,
+  "url": "http://127.0.0.1:49566/native-end",
+  "output": "/Users/zhangtiancheng/Documents/projects/autoflow/docs/qa/2026-09-28-remediation/native-end-site-nFZ3tN",
+  "startedAt": "2026-09-28T10:49:21.533Z",
+  "closedAt": "2026-09-28T11:20:43.673Z",
+  "requests": [
+    {
+      "time": "2026-09-28T11:18:05.349Z",
+      "method": "GET",
+      "path": "/native-end"
+    },
+    {
+      "time": "2026-09-28T11:18:05.379Z",
+      "method": "GET",
+      "path": "/favicon.ico"
+    }
+  ]
+}
