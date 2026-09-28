@@ -816,7 +816,26 @@ CASES += [
     ids=[f"{case['type']}-{index}" for index, case in enumerate(CASES)],
 )
 def test_advanced_data_matches_frozen_webrpa(payload: dict[str, Any]) -> None:
-    assert asyncio.run(_target_result(payload)) == _source_result(payload)
+    source = _source_result(payload)
+    target = asyncio.run(_target_result(payload))
+    # N-01: the frozen source incorrectly returns its sole header as a record.
+    # Keep proving the old result and the entire corrected envelope separately.
+    if payload["type"] == "csv_parse" and payload["config"] in (
+        {"csvContent": "only,header", "resultVariable": "out"},
+        {"csvContent": "\n", "resultVariable": "out"},
+    ):
+        old_rows = [["only", "header"]] if payload["config"]["csvContent"] == "only,header" else [[]]
+        assert source == {
+            "success": True, "message": "CSV解析完成，共 1 行",
+            "data": old_rows, "error": None, "branch": None,
+            "variables": {"out": old_rows},
+        }
+        assert target == {
+            "success": True, "message": "CSV解析完成，共 0 行",
+            "data": [], "error": None, "branch": None, "variables": {"out": []},
+        }
+    else:
+        assert target == source
 
 
 def test_frozen_source_file_has_all_approved_module_types() -> None:

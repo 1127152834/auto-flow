@@ -1,0 +1,425 @@
+........................................................................ [  1%]
+........................................................................ [  3%]
+........................................................................ [  5%]
+........................................................................ [  6%]
+........................................................................ [  8%]
+........................................................................ [ 10%]
+........................................................................ [ 11%]
+........................................................................ [ 13%]
+..........F............................................................. [ 15%]
+........................................................................ [ 16%]
+........................................................................ [ 18%]
+........................................................................ [ 20%]
+........................................................................ [ 21%]
+........................................................................ [ 23%]
+...........F..F......................................................... [ 25%]
+........................................................................ [ 26%]
+........................................................................ [ 28%]
+........................................................................ [ 30%]
+........................................................................ [ 31%]
+........................................................................ [ 33%]
+........................................................................ [ 35%]
+........................................................................ [ 36%]
+........................................................................ [ 38%]
+........................................................................ [ 40%]
+..................................................s...ssssssssss........ [ 41%]
+...........ss...s.................................s..........sss........ [ 43%]
+........................................................................ [ 45%]
+....................ssssssssssssssssssss................................ [ 46%]
+........................................................................ [ 48%]
+........................................................................ [ 50%]
+........................................................................ [ 51%]
+........................................................................ [ 53%]
+..................................................................s..... [ 55%]
+........................................................................ [ 56%]
+........................................................................ [ 58%]
+........................................................................ [ 60%]
+........................................................................ [ 61%]
+............................................................s........... [ 63%]
+........................................................................ [ 65%]
+..................................................................Fssss. [ 66%]
+........................................................................ [ 68%]
+........................................................................ [ 70%]
+........................................................................ [ 71%]
+........................................................................ [ 73%]
+........................................................................ [ 75%]
+........................................................................ [ 76%]
+........................................................................ [ 78%]
+........................................................................ [ 80%]
+........................................................................ [ 81%]
+........................................................................ [ 83%]
+........................................................................ [ 85%]
+........................................................................ [ 86%]
+........................................................................ [ 88%]
+........................................................................ [ 90%]
+........................................................................ [ 91%]
+........................................................................ [ 93%]
+........................................................................ [ 95%]
+........................................................................ [ 96%]
+...................................................F.................... [ 98%]
+....................................................................     [100%]
+=================================== FAILURES ===================================
+__ test_real_required_fields_route_preserves_frozen_rules_and_approved_scope ___
+
+client = <starlette.testclient.TestClient object at 0x12d5d5f10>
+
+    def test_real_required_fields_route_preserves_frozen_rules_and_approved_scope(client):
+        response = client.get('/api/system/module-required-fields')
+        assert response.status_code == 200, response.text
+        data = response.json()
+        assert StudioModuleRequiredFields.model_validate(data).model_dump(by_alias=True) == data
+        assert set(data['coveredModules']) == APPROVED_NODE_TYPES
+>       assert len(data['coveredModules']) == 216
+E       AssertionError: assert 217 == 216
+E        +  where 217 = len(['ai_chat', 'ai_classify', 'ai_dedup_semantic', 'ai_element_selector', 'ai_extract', 'ai_generate_image', ...])
+
+tests/contract/test_studio_required_fields.py:43: AssertionError
+____________ test_advanced_data_matches_frozen_webrpa[csv_parse-3] _____________
+
+payload = {'type': 'csv_parse', 'config': {'csvContent': 'only,header', 'resultVariable': 'out'}}
+
+    @pytest.mark.parametrize(
+        "payload",
+        CASES,
+        ids=[f"{case['type']}-{index}" for index, case in enumerate(CASES)],
+    )
+    def test_advanced_data_matches_frozen_webrpa(payload: dict[str, Any]) -> None:
+>       assert asyncio.run(_target_result(payload)) == _source_result(payload)
+E       AssertionError: assert {'success': T...r': None, ...} == {'success': T...r': None, ...}
+E         
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'data': []} != {'data': [['only', 'header']]}
+E         {'variables': {'out': []}} != {'variables': {'out': [['only', 'header']]}}
+E         {'message': 'CSV解析完成，共 0 行'} != {'message': 'CSV解析完成，共 1 行'}
+E         Use -v to get more diff
+
+tests/differential/workflows/test_b4_advanced_data_executor_parity.py:819: AssertionError
+____________ test_advanced_data_matches_frozen_webrpa[csv_parse-6] _____________
+
+payload = {'type': 'csv_parse', 'config': {'csvContent': '\n', 'resultVariable': 'out'}}
+
+    @pytest.mark.parametrize(
+        "payload",
+        CASES,
+        ids=[f"{case['type']}-{index}" for index, case in enumerate(CASES)],
+    )
+    def test_advanced_data_matches_frozen_webrpa(payload: dict[str, Any]) -> None:
+>       assert asyncio.run(_target_result(payload)) == _source_result(payload)
+E       AssertionError: assert {'success': T...r': None, ...} == {'success': T...r': None, ...}
+E         
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'data': []} != {'data': [[]]}
+E         {'variables': {'out': []}} != {'variables': {'out': [[]]}}
+E         {'message': 'CSV解析完成，共 0 行'} != {'message': 'CSV解析完成，共 1 行'}
+E         Use -v to get more diff
+
+tests/differential/workflows/test_b4_advanced_data_executor_parity.py:819: AssertionError
+_ test_proxy_nodes_over_real_owned_worker_pipes[project-proxy_change_location] _
+
+fut = <Task cancelled name='Task-16832' coro=<Process.wait() done, defined at /Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/subprocess.py:135>>
+timeout = 0.5
+
+    async def wait_for(fut, timeout):
+        """Wait for the single Future or coroutine to complete, with timeout.
+    
+        Coroutine will be wrapped in Task.
+    
+        Returns result of the Future or coroutine.  When a timeout occurs,
+        it cancels the task and raises TimeoutError.  To avoid the task
+        cancellation, wrap it in shield().
+    
+        If the wait is cancelled, the task is also cancelled.
+    
+        This function is a coroutine.
+        """
+        loop = events.get_running_loop()
+    
+        if timeout is None:
+            return await fut
+    
+        if timeout <= 0:
+            fut = ensure_future(fut, loop=loop)
+    
+            if fut.done():
+                return fut.result()
+    
+            await _cancel_and_wait(fut, loop=loop)
+            try:
+                return fut.result()
+            except exceptions.CancelledError as exc:
+                raise exceptions.TimeoutError() from exc
+    
+        waiter = loop.create_future()
+        timeout_handle = loop.call_later(timeout, _release_waiter, waiter)
+        cb = functools.partial(_release_waiter, waiter)
+    
+        fut = ensure_future(fut, loop=loop)
+        fut.add_done_callback(cb)
+    
+        try:
+            # wait until the future completes or the timeout
+            try:
+                await waiter
+            except exceptions.CancelledError:
+                if fut.done():
+                    return fut.result()
+                else:
+                    fut.remove_done_callback(cb)
+                    # We must ensure that the task is not running
+                    # after wait_for() returns.
+                    # See https://bugs.python.org/issue32751
+                    await _cancel_and_wait(fut, loop=loop)
+                    raise
+    
+            if fut.done():
+                return fut.result()
+            else:
+                fut.remove_done_callback(cb)
+                # We must ensure that the task is not running
+                # after wait_for() returns.
+                # See https://bugs.python.org/issue32751
+                await _cancel_and_wait(fut, loop=loop)
+                # In case task cancellation failed with some
+                # exception, we should re-raise it
+                # See https://bugs.python.org/issue40607
+                try:
+>                   return fut.result()
+                           ^^^^^^^^^^^^
+
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/tasks.py:500: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/subprocess.py:137: in wait
+    return await self._transport._wait()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <_UnixSubprocessTransport closed pid=6538 returncode=0 stdin=<_UnixWritePipeTransport closed fd=60 closed> stdout=<_UnixReadPipeTransport closed fd=61 closed>>
+
+    async def _wait(self):
+        """Wait until the process exit and return the process return code.
+    
+        This method is a coroutine."""
+        if self._returncode is not None:
+            return self._returncode
+    
+        waiter = self._loop.create_future()
+        self._exit_waiters.append(waiter)
+>       return await waiter
+               ^^^^^^^^^^^^
+E       asyncio.exceptions.CancelledError
+
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/base_subprocess.py:230: CancelledError
+
+The above exception was the direct cause of the following exception:
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-530/test_proxy_nodes_over_real_own5')
+host = 'project', kind = 'proxy_change_location'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "kind", ["proxy_query", "proxy_change_ip", "proxy_change_location"]
+    )
+    @pytest.mark.parametrize("host", ["studio", "project"])
+    async def test_proxy_nodes_over_real_owned_worker_pipes(tmp_path, host, kind):
+        service = ProxyService()
+        events = []
+        run_id = str(uuid4())
+        if host == "studio":
+            manager = WorkflowWorkerManager(
+                tmp_path,
+                proxy_service=service,
+                on_event=events.append,
+                termination_timeout=0.5,
+            )
+            await manager.start(
+                run_id,
+                "profile",
+                None,
+                {
+                    "runId": run_id,
+                    "workflowId": "flow",
+                    "profileId": "profile",
+                    "requiresBrowser": False,
+                    "artifactRoot": str(tmp_path / "artifacts"),
+                    "document": document(kind),
+                },
+            )
+            async with asyncio.timeout(15):
+                while manager.busy():
+                    await asyncio.sleep(0.01)
+            terminal = [
+                e
+                for e in events
+                if e.get("type") in {"execution:completed", "execution:failed"}
+            ]
+            assert terminal and terminal[-1]["type"] == "execution:completed", events
+            result = next(
+                e["data"] for e in events if e.get("type") == "execution:node_complete"
+            )
+        else:
+            manager = ProjectWorkflowWorkerManager(
+                tmp_path, proxy_service=service, termination_timeout=0.5
+            )
+    
+            async def emit(event):
+                events.append(event)
+    
+>           outcome = await manager.run(
+                run_id=run_id,
+                execution_generation=3,
+                execution_plan={"document": document(kind)},
+                parameters={},
+                variables={},
+                browser={},
+                executable=None,
+                on_event=emit,
+            )
+
+tests/integration/test_workflow_proxy_workers.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/autoflow/infrastructure/process/project_workflow_worker.py:189: in run
+    await asyncio.wait_for(worker.process.wait(), self._termination_timeout)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fut = <Task cancelled name='Task-16832' coro=<Process.wait() done, defined at /Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/subprocess.py:135>>
+timeout = 0.5
+
+    async def wait_for(fut, timeout):
+        """Wait for the single Future or coroutine to complete, with timeout.
+    
+        Coroutine will be wrapped in Task.
+    
+        Returns result of the Future or coroutine.  When a timeout occurs,
+        it cancels the task and raises TimeoutError.  To avoid the task
+        cancellation, wrap it in shield().
+    
+        If the wait is cancelled, the task is also cancelled.
+    
+        This function is a coroutine.
+        """
+        loop = events.get_running_loop()
+    
+        if timeout is None:
+            return await fut
+    
+        if timeout <= 0:
+            fut = ensure_future(fut, loop=loop)
+    
+            if fut.done():
+                return fut.result()
+    
+            await _cancel_and_wait(fut, loop=loop)
+            try:
+                return fut.result()
+            except exceptions.CancelledError as exc:
+                raise exceptions.TimeoutError() from exc
+    
+        waiter = loop.create_future()
+        timeout_handle = loop.call_later(timeout, _release_waiter, waiter)
+        cb = functools.partial(_release_waiter, waiter)
+    
+        fut = ensure_future(fut, loop=loop)
+        fut.add_done_callback(cb)
+    
+        try:
+            # wait until the future completes or the timeout
+            try:
+                await waiter
+            except exceptions.CancelledError:
+                if fut.done():
+                    return fut.result()
+                else:
+                    fut.remove_done_callback(cb)
+                    # We must ensure that the task is not running
+                    # after wait_for() returns.
+                    # See https://bugs.python.org/issue32751
+                    await _cancel_and_wait(fut, loop=loop)
+                    raise
+    
+            if fut.done():
+                return fut.result()
+            else:
+                fut.remove_done_callback(cb)
+                # We must ensure that the task is not running
+                # after wait_for() returns.
+                # See https://bugs.python.org/issue32751
+                await _cancel_and_wait(fut, loop=loop)
+                # In case task cancellation failed with some
+                # exception, we should re-raise it
+                # See https://bugs.python.org/issue40607
+                try:
+                    return fut.result()
+                except exceptions.CancelledError as exc:
+>                   raise exceptions.TimeoutError() from exc
+E                   TimeoutError
+
+../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/tasks.py:502: TimeoutError
+________________ test_runtime_scope_matches_the_node_authority _________________
+
+    def test_runtime_scope_matches_the_node_authority() -> None:
+        rows = json.loads(CAPABILITIES.read_text(encoding="utf-8"))
+    
+        assert APPROVED_NODE_TYPES == frozenset(row["type"] for row in rows)
+>       assert len(APPROVED_NODE_TYPES) == 216
+E       AssertionError: assert 217 == 216
+E        +  where 217 = len(frozenset({'ai_chat', 'ai_classify', 'ai_dedup_semantic', 'ai_element_selector', 'ai_extract', 'ai_generate_image', ...}))
+
+tests/unit/workflows/test_scope_preflight.py:98: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.11/site-packages/starlette/testclient.py:53
+  /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+============================= slowest 20 durations =============================
+12.10s call     tests/integration/test_b5_media_recognition_worker.py::test_real_worker_runs_face_recognition_and_easyocr
+10.74s call     tests/integration/test_project_data_scheduler.py::test_unlimited_batch_has_no_hidden_former_finite_cap
+10.69s call     tests/integration/test_sidecar_shutdown.py::test_open_sse_does_not_block_shutdown_or_worker_cleanup[True-host]
+10.22s call     tests/integration/test_project_interaction_commands.py::test_webhook_delivery_failure_is_unconfirmed_and_not_replayed[ack_timeout]
+9.70s call     tests/integration/test_sidecar_shutdown.py::test_open_sse_does_not_block_shutdown_or_worker_cleanup[True-signal]
+9.64s call     tests/integration/test_project_recognition_worker.py::test_project_recognition_uses_real_models_files_branches_and_cleanup[match]
+6.03s call     tests/integration/test_sidecar_shutdown.py::test_open_sse_does_not_block_shutdown_or_worker_cleanup[False-host]
+5.92s call     tests/integration/test_b6_file_watcher_worker.py::test_real_worker_observes_file_creation_and_stops_cleanly
+5.66s call     tests/contract/test_schema_export.py::test_schema_export_cli_outputs_only_json
+5.57s call     tests/integration/test_project_data_worker.py::test_project_ai_task_uses_project_default_or_explicit_model_without_persisting_secret
+5.35s call     tests/integration/test_project_data_worker.py::test_project_process_family_cleans_spawned_children[timeout-run_command]
+5.09s call     tests/integration/test_sidecar_shutdown.py::test_open_sse_does_not_block_shutdown_or_worker_cleanup[False-signal]
+5.07s call     tests/integration/test_project_webhook.py::test_project_webhook_real_network_delivery_and_cleanup[stop]
+5.01s call     tests/contract/test_workflow_runs_api.py::test_real_http_debug_step_and_resume_control_the_actual_worker
+4.88s call     tests/integration/test_b6_network_sharing_worker.py::test_file_share_outlives_start_worker_and_stop_node_cleans_it
+4.86s call     tests/contract/test_workflow_runs_api.py::test_external_webhook_resumes_real_worker_without_sidecar_token
+4.76s call     tests/migration/test_studio_backend_source_mapping.py::test_all_approved_nodes_have_traceable_backend_sources_and_unique_cases
+4.71s call     tests/contract/test_schema_export.py::test_schema_export_matches_the_formal_application
+4.50s call     tests/integration/test_project_data_worker.py::test_real_worker_runs_without_cloak_and_persists_output
+4.49s call     tests/integration/test_project_sheets_recovery.py::test_an_unknown_send_stays_unknown_across_a_restart
+=========================== short test summary info ============================
+SKIPPED [1] tests/integration/test_b1_cloakbrowser_flow.py:48: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_advanced_browser_cloakbrowser_flow.py:35: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_inspection_cloakbrowser_flow.py:35: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_inspection_cloakbrowser_flow.py:91: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_inspection_cloakbrowser_flow.py:207: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_inspection_cloakbrowser_flow.py:297: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_large_artifacts_cloakbrowser_flow.py:23: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_network_monitor_cloakbrowser_flow.py:26: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_page_load_cloakbrowser_flow.py:22: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_remaining_browser_cloakbrowser_flow.py:25: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b2_web_basic_cloakbrowser_flow.py:22: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b5_captcha_cloakbrowser_flow.py:38: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b5_firecrawl_cloakbrowser_flow.py:36: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b6_element_change_cloakbrowser_flow.py:22: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [1] tests/integration/test_b7_recording_cloakbrowser_flow.py:22: set AUTOFLOW_B1_CLOAK_EXECUTABLE for the real CloakBrowser test
+SKIPPED [2] tests/integration/test_environment_persist_restore.py:47: set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable
+SKIPPED [1] tests/integration/test_environment_real_browser_chain.py:26: set AUTOFLOW_TEST_CLOAKBROWSER to an installed CloakBrowser executable
+SKIPPED [20] tests/integration/test_project_batch_real_cloakbrowser.py:34: set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable
+SKIPPED [1] tests/integration/test_project_full_scenarios.py:32: set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable
+SKIPPED [1] tests/integration/test_studio_project_model_live.py:61: 真实模型计费验收仅由 AUTOFLOW_LIVE_MODEL_TEST=1 显式启用
+SKIPPED [3] tests/integration/test_workflow_real_cloakbrowser.py:71: set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable
+SKIPPED [1] tests/integration/test_workflow_real_cloakbrowser.py:126: set AUTOFLOW_TEST_CLOAKBROWSER to an installed real CloakBrowser executable
+FAILED tests/contract/test_studio_required_fields.py::test_real_required_fields_route_preserves_frozen_rules_and_approved_scope
+FAILED tests/differential/workflows/test_b4_advanced_data_executor_parity.py::test_advanced_data_matches_frozen_webrpa[csv_parse-3]
+FAILED tests/differential/workflows/test_b4_advanced_data_executor_parity.py::test_advanced_data_matches_frozen_webrpa[csv_parse-6]
+FAILED tests/integration/test_workflow_proxy_workers.py::test_proxy_nodes_over_real_owned_worker_pipes[project-proxy_change_location]
+FAILED tests/unit/workflows/test_scope_preflight.py::test_runtime_scope_matches_the_node_authority
+5 failed, 4267 passed, 44 skipped, 1 warning in 1327.04s (0:22:07)

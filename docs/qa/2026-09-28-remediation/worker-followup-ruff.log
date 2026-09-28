@@ -1,0 +1,110 @@
+I001 [*] Import block is un-sorted or un-formatted
+  --> apps/backend/tests/contract/test_studio_required_fields.py:1:1
+   |
+ 1 | / import json
+ 2 | | from pathlib import Path
+ 3 | |
+ 4 | | import pytest
+ 5 | | from pydantic import ValidationError
+ 6 | |
+ 7 | | from autoflow.adapters.http.workflow_studio_schemas import StudioModuleRequiredFields
+ 8 | | from autoflow.domain.workflows.scope import APPROVED_NODE_TYPES
+   | |_______________________________________________________________^
+ 9 |
+10 |   FIXTURE = Path(__file__).resolve().parents[4] / 'apps/desktop/src/renderer/domains/workflows/development/module-required-fields.json'
+   |
+help: Organize imports
+  |
+4 | import pytest
+  - from pydantic import ValidationError
+  -
+5 | from autoflow.adapters.http.workflow_studio_schemas import StudioModuleRequiredFields
+6 | from autoflow.domain.workflows.scope import APPROVED_NODE_TYPES
+7 + from pydantic import ValidationError
+8 |
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> apps/backend/tests/differential/workflows/test_b4_advanced_data_executor_parity.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import asyncio
+ 4 | | import copy
+ 5 | | import importlib
+ 6 | | import json
+ 7 | | import math
+ 8 | | import os
+ 9 | | import random
+10 | | import subprocess
+11 | | import sys
+12 | | from pathlib import Path
+13 | | from threading import Event
+14 | | from typing import Any
+15 | |
+16 | | import pytest
+17 | |
+18 | | from autoflow.domain.workflows.execution import ExecutionContext
+19 | | from autoflow.providers.browser.workflow_worker import _ThreadCancellation
+   | |__________________________________________________________________________^
+20 |
+21 |   REPOSITORY_ROOT = Path(__file__).resolve().parents[5]
+   |
+help: Organize imports
+   |
+16 | import pytest
+   -
+17 | from autoflow.domain.workflows.execution import ExecutionContext
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> apps/backend/tests/unit/test_main.py:1:1
+  |
+1 | / import subprocess
+2 | | import sys
+3 | | from unittest.mock import AsyncMock, Mock
+4 | |
+5 | | import pytest
+6 | | from fastapi.testclient import TestClient
+7 | |
+8 | | from autoflow.__main__ import main
+  | |__________________________________^
+help: Organize imports
+  |
+5 | import pytest
+  - from fastapi.testclient import TestClient
+  -
+6 | from autoflow.__main__ import main
+7 + from fastapi.testclient import TestClient
+8 |
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> apps/backend/tests/unit/workflows/test_scope_preflight.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | import copy
+ 4 | | import json
+ 5 | | from pathlib import Path
+ 6 | |
+ 7 | | import pytest
+ 8 | |
+ 9 | | from autoflow.domain.workflows.scope import (
+10 | |     APPROVED_NODE_TYPES,
+11 | |     EXCLUDED_LEGACY_NODE_TYPES,
+12 | |     validate_workflow_scope,
+13 | | )
+   | |_^
+14 |
+15 |   REPOSITORY_ROOT = Path(__file__).resolve().parents[5]
+   |
+help: Organize imports
+  |
+7 | import pytest
+  -
+8 | from autoflow.domain.workflows.scope import (
+  |
+
+Found 4 errors.
+[*] 4 fixable with the `--fix` option.

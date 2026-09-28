@@ -1,3 +1,4 @@
+import subprocess
 import sys
 from unittest.mock import AsyncMock, Mock
 
@@ -58,7 +59,7 @@ def test_main_does_not_print_ready_when_app_creation_fails(monkeypatch, tmp_path
         "argv",
         ["autoflow", "--instance-id", "test", "--data-dir", str(tmp_path)],
     )
-    monkeypatch.setattr("autoflow.__main__.create_app", lambda _settings: (_ for _ in ()).throw(RuntimeError("migration failed")))
+    monkeypatch.setattr("autoflow.bootstrap.app.create_app", lambda _settings: (_ for _ in ()).throw(RuntimeError("migration failed")))
 
     with pytest.raises(RuntimeError, match="migration failed"):
         main()
@@ -94,6 +95,14 @@ def test_main_runs_python_script_with_arguments_and_local_imports_without_http(m
     (tmp_path / 'helper.py').write_text('value = 42\n')
     script.write_text('import sys, json\nfrom helper import value\nfrom pathlib import Path\nPath(sys.argv[1]).write_text(json.dumps([value, sys.argv[2:]]))\n')
     monkeypatch.setattr(sys, 'argv', ['autoflow', '--python-script', str(script), str(output), '--flag', '甲'])
-    monkeypatch.setattr('autoflow.__main__.create_app', lambda _settings: pytest.fail('script must not start HTTP or migrate a database'))
+    monkeypatch.setattr('autoflow.bootstrap.app.create_app', lambda _settings: pytest.fail('script must not start HTTP or migrate a database'))
     main()
     assert json.loads(output.read_text()) == [42, ['--flag', '甲']]
+
+
+def test_worker_entrypoint_does_not_import_sidecar_application():
+    result = subprocess.run(
+        [sys.executable, "-c", "import sys; import autoflow.__main__; assert 'autoflow.bootstrap.app' not in sys.modules"],
+        capture_output=True, text=True, check=False,
+    )
+    assert result.returncode == 0, result.stderr

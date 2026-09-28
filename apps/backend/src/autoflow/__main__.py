@@ -6,8 +6,6 @@ import sys
 from pathlib import Path
 from threading import Event, Thread
 
-from autoflow.bootstrap.app import create_app
-
 
 def main() -> None:
     parser = argparse.ArgumentParser()
@@ -70,6 +68,7 @@ def main() -> None:
 
     import uvicorn
 
+    from autoflow.bootstrap.app import create_app
     from autoflow.bootstrap.config import Settings
     from autoflow.bootstrap.parent import watch_parent
     from autoflow.bootstrap.ready import ready_line

@@ -95,7 +95,8 @@ def test_runtime_scope_matches_the_node_authority() -> None:
     rows = json.loads(CAPABILITIES.read_text(encoding="utf-8"))
 
     assert APPROVED_NODE_TYPES == frozenset(row["type"] for row in rows)
-    assert len(APPROVED_NODE_TYPES) == 216
+    assert len(APPROVED_NODE_TYPES) == 217
+    assert {"project_data", "proxy_query", "proxy_change_ip", "proxy_change_location"} <= APPROVED_NODE_TYPES
     assert EXCLUDED_LEGACY_NODE_TYPES == EXPECTED_EXCLUDED
     assert len(EXCLUDED_LEGACY_NODE_TYPES) == 71
     assert APPROVED_NODE_TYPES.isdisjoint(EXCLUDED_LEGACY_NODE_TYPES)

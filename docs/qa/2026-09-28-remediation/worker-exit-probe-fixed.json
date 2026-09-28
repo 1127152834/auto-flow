@@ -1,0 +1,20 @@
+[
+  {
+    "iteration": 0,
+    "outcome": "succeeded",
+    "after_finished_seconds": 0.22256225001183338,
+    "busy": false
+  },
+  {
+    "iteration": 1,
+    "outcome": "succeeded",
+    "after_finished_seconds": 0.19671629098593257,
+    "busy": false
+  },
+  {
+    "iteration": 2,
+    "outcome": "succeeded",
+    "after_finished_seconds": 0.23908279201714322,
+    "busy": false
+  }
+]
