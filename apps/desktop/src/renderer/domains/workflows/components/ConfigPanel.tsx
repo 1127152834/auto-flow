@@ -321,6 +321,14 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
     if (selectedNodeId) updateNodeConfig(selectedNodeId, data)
   }, [selectedNodeId, updateNodeConfig])
 
+  const handleLabelChange = useCallback((value: string) => {
+    if (selectedNodeId) updateNodeData(selectedNodeId, { label: value })
+  }, [selectedNodeId, updateNodeData])
+
+  const handleSubflowNameChange = useCallback((value: string) => {
+    if (selectedNodeId) updateNodeConfig(selectedNodeId, { subflowName: value }, { label: value })
+  }, [selectedNodeId, updateNodeConfig])
+
   const handleDelete = () => {
     if (selectedNodeId) {
       deleteNode(selectedNodeId)
@@ -1399,9 +1407,9 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
       case 'page_load_complete':
         return <PageLoadCompleteConfig data={nodeData} onChange={handleChange} />
       case 'group':
-        return <GroupConfig nodeId={selectedNodeId!} data={nodeData} onChange={handleChange} />
+        return <GroupConfig nodeId={selectedNodeId!} data={nodeData} onChange={handleChange} onLabelChange={handleLabelChange} onSubflowNameChange={handleSubflowNameChange} />
       case 'subflow_header':
-        return <SubflowHeaderConfig nodeId={selectedNodeId!} data={nodeData} onChange={handleChange} />
+        return <SubflowHeaderConfig nodeId={selectedNodeId!} data={nodeData} onSubflowNameChange={handleSubflowNameChange} />
       case 'note':
         return (
           <div className="space-y-2">

@@ -2,7 +2,7 @@
 import { memo, useState, useCallback } from 'react'
 import { Handle, Position, NodeResizer, type NodeProps } from '@xyflow/react'
 import { MessageSquare, GripVertical, Workflow, Magnet } from 'lucide-react'
-import { useWorkflowStore, type NodeData } from '../editor-store'
+import { getNodeConfigData, useWorkflowStore, type NodeData } from '../editor-store'
 
 export interface GroupNodeData {
   label: string
@@ -34,40 +34,43 @@ const SUBFLOW_COLOR = {
 }
 
 export const GroupNode = memo(({ id, data, selected }: NodeProps) => {
-  const nodeData = data as unknown as GroupNodeData
+  const rawNodeData = data as unknown as NodeData
+  const nodeData = getNodeConfigData(rawNodeData) as unknown as GroupNodeData
   const nodes = useWorkflowStore((state) => state.nodes)
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData)
-  const updateNodesData = useWorkflowStore((state) => state.updateNodesData)
+  const updateNodesConfig = useWorkflowStore((state) => state.updateNodesConfig)
   const [isEditing, setIsEditing] = useState(false)
-  const [editValue, setEditValue] = useState(nodeData.label || '')
+  const [editValue, setEditValue] = useState(rawNodeData.label || '')
   
   const isSubflow = nodeData.isSubflow === true
   const colorConfig = isSubflow ? SUBFLOW_COLOR : (COLORS.find(c => c.value === nodeData.color) || COLORS[0])
 
   const handleDoubleClick = useCallback(() => {
     setIsEditing(true)
-    setEditValue(nodeData.label || '')
-  }, [nodeData.label])
+    setEditValue(rawNodeData.label || '')
+  }, [rawNodeData.label])
 
   const handleBlur = useCallback(() => {
     setIsEditing(false)
     const oldName = nodeData.subflowName || nodeData.label || ''
     const newName = editValue
     
-    const patches: { nodeId: string; data: Partial<NodeData> }[] = [{
+    const patches: { nodeId: string; data: Partial<NodeData>; outerData?: Partial<NodeData> }[] = [{
       nodeId: id,
-      data: { label: editValue, ...(isSubflow ? { subflowName: editValue } : {}) },
+      data: isSubflow ? { subflowName: editValue } : {},
+      outerData: { label: editValue },
     }]
     if (isSubflow && oldName !== newName) {
       for (const node of nodes) {
-        if (node.data.moduleType === 'subflow' &&
-            (node.data.subflowGroupId === id || (oldName && node.data.subflowName === oldName))) {
+        const config = getNodeConfigData(node.data)
+        if (config.moduleType === 'subflow' &&
+            (config.subflowGroupId === id || (oldName && config.subflowName === oldName))) {
           patches.push({ nodeId: node.id, data: { subflowName: newName } })
         }
       }
     }
-    updateNodesData(patches)
-  }, [editValue, nodeData, isSubflow, nodes, updateNodesData, id])
+    updateNodesConfig(patches)
+  }, [editValue, nodeData, isSubflow, nodes, updateNodesConfig, id])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -75,9 +78,9 @@ export const GroupNode = memo(({ id, data, selected }: NodeProps) => {
     }
     if (e.key === 'Escape') {
       setIsEditing(false)
-      setEditValue(nodeData.label || '')
+      setEditValue(rawNodeData.label || '')
     }
-  }, [handleBlur, nodeData.label])
+  }, [handleBlur, rawNodeData.label])
 
   // 处理尺寸变化结束，将宽高保存到 data 中
   const handleResizeEnd = useCallback((_event: unknown, params: { width: number; height: number }) => {
@@ -85,7 +88,7 @@ export const GroupNode = memo(({ id, data, selected }: NodeProps) => {
   }, [id, updateNodeData])
 
   // 吸附开关：默认开启（adhesion !== false）
-  const adhesionEnabled = (nodeData as any).adhesion !== false
+  const adhesionEnabled = (rawNodeData as any).adhesion !== false
   const toggleAdhesion = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
     updateNodeData(id, { adhesion: !adhesionEnabled })
@@ -141,7 +144,7 @@ export const GroupNode = memo(({ id, data, selected }: NodeProps) => {
             />
           ) : (
             <span className="tracking-tight">
-              {nodeData.label || (isSubflow ? '未命名子流程' : '分组')}
+              {rawNodeData.label || (isSubflow ? '未命名子流程' : '分组')}
             </span>
           )}
           {/* 吸附开关：仅普通分组显示 */}

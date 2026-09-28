@@ -24,3 +24,14 @@ The repair keeps each document's existing shape:
 The focused regression covers nested End display/edit, nested Open Page save/reload, strict whole-object priority with stale outer fields, flat compatibility, unknown field and metadata preservation, import/merge/export, assistant edits, history/no-op behavior, preflight, variable/config readers, structure copy, and editor interactions.
 
 Root still owns the same-version packaged native validation: edit End configuration in Studio, save, reopen, fully restart, compare SQLite, and execute the real Project End environment-name path. This directory does not claim that pending native acceptance.
+
+## Review fix round 1
+
+Independent review of commit `23247c28` found three namespace gaps: Group/Subflow panel labels, AI label-to-remark compatibility, and Group/Subflow canvas readers and propagation. The follow-up keeps outer label/name metadata separate from runtime configuration and makes mixed outer/config edits one atomic history operation.
+
+These files are complete subprocess stdout/stderr captured by direct shell redirection:
+
+- `review-round1-red.log`: pre-fix focused run, 2 files with 7 failed and 15 passed tests.
+- `review-round1-green.log`: final related run, 7 files with 110 passing tests.
+- `review-round1-typecheck.log`: final desktop TypeScript check.
+- `review-round1-lint.log`: final workflow lint check.

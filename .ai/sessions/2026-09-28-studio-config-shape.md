@@ -23,3 +23,11 @@ The configuration panel and shared configuration consumers use that boundary. Ou
 - Independent production boundary: 2 backend Runtime/snapshot tests passed in 0.41s.
 
 The package build and native edit/save/reopen/restart/real Project End run remain assigned to the root remediation task.
+
+## Independent review fix round 1
+
+Review of `23247c28` found three remaining confirmed gaps. Group/Subflow panel label callbacks could write nested `config.label`; AI label compatibility could overwrite nested Project End `config.name`; and GroupNode, SubflowHeaderNode, and subflow navigation still read or propagated raw outer configuration.
+
+The follow-up gives config store patches a separate optional outer-data patch, applied atomically in the same undo entry. Group/Subflow labels and AI-derived remarks use that outer patch; subflow names and runtime fields keep the document's existing flat/nested shape. Canvas definitions, duplicate checks, invocation propagation, and navigation now use the shared effective-config reader. Dimensions, collapsed/adhesion state, labels, and remarks stay outer.
+
+Directly captured evidence under `docs/qa/2026-09-28-remediation/studio-config/` records the red run (2 files, 7 failed / 15 passed) and final green run (7 files, 110 passed), plus successful typecheck and workflow lint.

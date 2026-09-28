@@ -1,0 +1,268 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --run src/renderer/domains/workflows/tests/node-config-shape.test.tsx src/renderer/domains/workflows/tests/complex-structure-interactions.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:85037) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:85036) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/complex-structure-interactions.test.tsx (10 tests | 3 failed) 566ms
+     × 嵌套子流程分组画布改名保留外层标签并传播到嵌套调用配置 13ms
+     × 嵌套子流程头画布改名以有效配置做重名检查并传播调用名 11ms
+     × 嵌套子流程调用双击按有效配置定位嵌套分组定义 9ms
+ ❯ src/renderer/domains/workflows/tests/node-config-shape.test.tsx (12 tests | 4 failed) 438ms
+   × keeps an assistant label compatibility rename outside nested End runtime config 4ms
+   × keeps assistant batch labels as outer remarks while updating nested runtime fields 1ms
+   × writes 'groupNode' label metadata outside nested subflow config 31ms
+   × writes 'subflowHeaderNode' label metadata outside nested subflow config 30ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/complex-structure-interactions.test.tsx > 分组、便签和子流程文档交互 > 嵌套子流程分组画布改名保留外层标签并传播到嵌套调用配置
+TestingLibraryElementError: Unable to find an element with the placeholder text of: 子流程名称
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<button[39m
+      [33mtitle[39m=[32m"测试调整尺寸"[39m
+      [33mtype[39m=[32m"button"[39m
+    [36m/>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"w-full h-full rounded-card relative transition-shadow duration-200"[39m
+      [33mstyle[39m=[32m"background-color: rgba(59, 130, 246, 0.1); border: 2px dashed rgb(59, 130, 246); box-shadow: 0 8px 24px -8px #3b82f640, 0 4px 8px -4px #3b82f625;"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"absolute -top-8 left-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-control text-white text-[12px] font-semibold cursor-move shadow-soft transition-all duration-200 hover:shadow-pop"[39m
+        [33mstyle[39m=[32m"background: linear-gradient(135deg, rgb(59, 130, 246), rgba(59, 130, 246, 0.867)); border: 1px solid rgb(59, 130, 246);"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-grip-vertical w-3 h-3 opacity-70"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"24"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"24"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<circle[39m
+            [33mcx[39m=[32m"9"[39m
+            [33mcy[39m=[32m"12"[39m
+            [33mr[39m=[32m"1"[39m
+          [36m/>[39m
+          [36m<circle[39m
+            [33mcx[39m=[32m"9"[39m
+            [33mcy[39m=[32m"5"[39m
+            [33mr[39m=[32m"1"[39m
+          [36m/>[39m
+          [36m<circle[39m
+            [33mcx[39m=[32m"9"[39m
+            [33mcy[39m=[32m"19"[39m
+            [33mr[39m=[32m"1"[39m
+          [36m/>[39m
+          [36m<circle[39m
+            [33mcx[39m=[32m"15"[39m
+            [33mcy[39m=[32m"12"[39m
+            [33mr[39m=[32m"1"[39m
+          [36m/>[39m
+          [36m<circle[39m
+            [33mcx[39m=[32m"15"[39m
+            [33mcy[39m=[32m"5"[39m
+            [33mr[39m=[32m"1"[39m
+          [36m/>[39m
+          [36m<circle[39m
+            [33mcx[39m=[32m"15"[39m
+            [33mcy[39m=[32m"19"[39m
+            [33mr[39m=[32m"1"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [36m<svg[39m
+          [33maria-hidden[39m=[32m"true"[39m
+          [33mclass[39m=[32m"lucide lucide-message-square w-3.5 h-3.5"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"24"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2.4"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"24"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [36m<input[39m
+          [33mclass[39m=[32m"bg-white/20 border border-white/30 rounded outline-none text-white text-[12px] w-32 px-1.5 placeholder:text-white/60"[39m
+          [33mplaceholder[39m=[32m"输入备注"[39m
+          [33mtype[39m=[32m"text"[39m
+          [33mvalue[39m=[32m"外层旧标签"[39m
+        [36m/>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"relative ml-1 flex items-center justify-center w-5 h-5 rounded transition-colors bg-white/25 hover:bg-white/40"[39m
+          [33mtitle[39m=[32m"吸附已开启：拖动分组会带动组内模块（点击关闭）"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-magnet w-3 h-3"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2.4"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m12 15 4 4"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M2.352 10.648a1.205 1.205 0 0 0 0 1.704l2.296 2.296a1.205 1.205 0 0 0 1.704 0l6.029-6.029a1 1 0 1 1 3 3l-6.029 6.029a1.205 1.205 0 0 0 0 1.704l2.296 2.296a1.205 1.205 0 0 0 1.704 0l6.365-6.367A1 1 0 0 0 8.716 4.282z"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m5 8 4 4"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/domains/workflows/tests/complex-structure-interactions.test.tsx:187:26
+    185|
+    186|     fireEvent.doubleClick(screen.getByText('外层旧标签'))
+    187|     const input = screen.getByPlaceholderText('子流程名称')
+       |                          ^
+    188|     fireEvent.change(input, { target: { value: '嵌套新名' } })
+    189|     fireEvent.blur(input)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/complex-structure-interactions.test.tsx > 分组、便签和子流程文档交互 > 嵌套子流程头画布改名以有效配置做重名检查并传播调用名
+AssertionError: expected { subflowName: '嵌套头旧名', …(1) } to match object { subflowName: '嵌套头新名', …(1) }
+
+- Expected
++ Received
+
+  {
+    "futureHeaderOption": "keep",
+-   "subflowName": "嵌套头新名",
++   "subflowName": "嵌套头旧名",
+  }
+
+ ❯ src/renderer/domains/workflows/tests/complex-structure-interactions.test.tsx:224:32
+    222|     const savedCall = store.getState().nodes[2].data as Record<string,…
+    223|     expect(savedHeader.label).toBe('嵌套头新名')
+    224|     expect(savedHeader.config).toMatchObject({ subflowName: '嵌套头新名', f…
+       |                                ^
+    225|     expect(savedCall.config).toMatchObject({ subflowName: '嵌套头新名', fut…
+    226|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/complex-structure-interactions.test.tsx > 分组、便签和子流程文档交互 > 嵌套子流程调用双击按有效配置定位嵌套分组定义
+AssertionError: expected "vi.fn()" to be called with arguments: [ 280, 320, …(1) ]
+
+Number of calls: 0
+
+ ❯ src/renderer/domains/workflows/tests/complex-structure-interactions.test.tsx:240:33
+    238|
+    239|     fireEvent.doubleClick(screen.getByText('嵌套目标'))
+    240|     expect(reactFlow.setCenter).toHaveBeenCalledWith(280, 320, { durat…
+       |                                 ^
+    241|   })
+    242| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/node-config-shape.test.tsx > keeps an assistant label compatibility rename outside nested End runtime config
+AssertionError: expected '外层节点备注' to be 'AI 单项备注' // Object.is equality
+
+Expected: "AI 单项备注"
+Received: "外层节点备注"
+
+ ❯ src/renderer/domains/workflows/tests/node-config-shape.test.tsx:196:21
+    194|   expect(response.success).toBe(true)
+    195|   const data = store.getState().nodes[0].data as Record<string, unknow…
+    196|   expect(data.name).toBe('AI 单项备注')
+       |                     ^
+    197|   expect(data.config).toMatchObject({
+    198|     name: '运行环境名称', retainEnvironment: false, futureOption: { keep: tr…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/node-config-shape.test.tsx > keeps assistant batch labels as outer remarks while updating nested runtime fields
+AssertionError: expected '外层节点备注' to be 'AI 批量 End 备注' // Object.is equality
+
+Expected: "AI 批量 End 备注"
+Received: "外层节点备注"
+
+ ❯ src/renderer/domains/workflows/tests/node-config-shape.test.tsx:212:20
+    210|   expect(response.success).toBe(true)
+    211|   const [end, open] = store.getState().nodes.map(node => node.data as …
+    212|   expect(end.name).toBe('AI 批量 End 备注')
+       |                    ^
+    213|   expect(end.config).toMatchObject({ name: '运行环境名称', retainEnvironment…
+    214|   expect(open.name).toBe('AI 批量网页备注')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/node-config-shape.test.tsx > writes 'groupNode' label metadata outside nested subflow config
+AssertionError: expected '外层分组标签' to be '修改后的分组名' // Object.is equality
+
+Expected: "修改后的分组名"
+Received: "外层分组标签"
+
+ ❯ src/renderer/domains/workflows/tests/node-config-shape.test.tsx:240:22
+    238|
+    239|   const data = store.getState().nodes[0].data as Record<string, unknow…
+    240|   expect(data.label).toBe(next)
+       |                      ^
+    241|   expect(data.config).toMatchObject({ subflowName: next, [futureKey]: …
+    242|   expect((data.config as Record<string, unknown>).label).toBeUndefined…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/node-config-shape.test.tsx > writes 'subflowHeaderNode' label metadata outside nested subflow config
+AssertionError: expected '外层函数头标签' to be '修改后的函数头名' // Object.is equality
+
+Expected: "修改后的函数头名"
+Received: "外层函数头标签"
+
+ ❯ src/renderer/domains/workflows/tests/node-config-shape.test.tsx:240:22
+    238|
+    239|   const data = store.getState().nodes[0].data as Record<string, unknow…
+    240|   expect(data.label).toBe(next)
+       |                      ^
+    241|   expect(data.config).toMatchObject({ subflowName: next, [futureKey]: …
+    242|   expect((data.config as Record<string, unknown>).label).toBeUndefined…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  7 failed | 15 passed (22)
+   Start at  18:55:02
+   Duration  2.95s (transform 1.72s, setup 324ms, import 2.54s, tests 1.00s, environment 1.25s)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --run src/renderer/domains/workflows/tests/node-config-shape.test.tsx src/renderer/domains/workflows/tests/complex-structure-interactions.test.tsx

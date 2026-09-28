@@ -2,11 +2,18 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import type { ComponentProps } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+const reactFlow = vi.hoisted(() => ({
+  fitView: vi.fn(),
+  getNodes: vi.fn(),
+  setCenter: vi.fn(),
+}))
+
 vi.mock('@xyflow/react', async (importOriginal) => {
   const original = await importOriginal<typeof import('@xyflow/react')>()
   return {
     ...original,
     Handle: () => null,
+    useReactFlow: () => reactFlow,
     NodeResizer: ({ onResizeEnd }: { onResizeEnd?: (event: unknown, size: { width: number; height: number }) => void }) => (
       <button type="button" title="测试调整尺寸" onClick={() => onResizeEnd?.({}, { width: 420, height: 260 })} />
     ),
@@ -15,6 +22,7 @@ vi.mock('@xyflow/react', async (importOriginal) => {
 
 import type { Edge, Node } from '@xyflow/react'
 import { GroupNode } from '../components/GroupNode'
+import { ModuleNode } from '../components/ModuleNode'
 import { NoteNode } from '../components/NoteNode'
 import { SubflowHeaderNode } from '../components/SubflowHeaderNode'
 import { BlockFlowView } from '../components/BlockFlowView'
@@ -28,7 +36,12 @@ import { useWorkflowStore as store, type NodeData } from '../editor-store'
 
 const node = (id: string, type: string, data: NodeData, position = { x: 0, y: 0 }): Node<NodeData> => ({ id, type, data, position })
 
-beforeEach(() => store.getState().clearWorkflow())
+beforeEach(() => {
+  store.getState().clearWorkflow()
+  reactFlow.fitView.mockReset()
+  reactFlow.getNodes.mockReset()
+  reactFlow.setCenter.mockReset()
+})
 afterEach(() => cleanup())
 
 describe('分组、便签和子流程文档交互', () => {
@@ -156,6 +169,83 @@ describe('分组、便签和子流程文档交互', () => {
     expect(store.getState().nodes.find((item) => item.id === 'call')?.hidden).not.toBe(true)
     store.getState().undo()
     expect(store.getState().nodes.find((item) => item.id === 'first')?.hidden).not.toBe(true)
+  })
+
+  it('嵌套子流程分组画布改名保留外层标签并传播到嵌套调用配置', () => {
+    const group = node('nested-group', 'groupNode', {
+      label: '外层旧标签', moduleType: 'group',
+      config: { isSubflow: true, subflowName: '嵌套旧名', futureGroupOption: 'keep' },
+    })
+    const call = node('nested-call', 'moduleNode', {
+      label: '调用', moduleType: 'subflow', subflowName: '外层过期名',
+      config: { subflowGroupId: 'nested-group', subflowName: '嵌套旧名', futureCallOption: 'keep' },
+    })
+    store.getState().loadWorkflow({ name: '嵌套分组', nodes: [group, call], edges: [] })
+    render(<GroupNode {...({ id: group.id, data: group.data, selected: true } as unknown as ComponentProps<typeof GroupNode>)} />)
+
+    fireEvent.doubleClick(screen.getByText('外层旧标签'))
+    const input = screen.getByPlaceholderText('子流程名称')
+    fireEvent.change(input, { target: { value: '嵌套新名' } })
+    fireEvent.blur(input)
+
+    const [savedGroup, savedCall] = store.getState().nodes.map(item => item.data as Record<string, unknown>)
+    expect(savedGroup.label).toBe('嵌套新名')
+    expect(savedGroup.config).toMatchObject({ isSubflow: true, subflowName: '嵌套新名', futureGroupOption: 'keep' })
+    expect(savedCall.subflowName).toBe('外层过期名')
+    expect(savedCall.config).toMatchObject({ subflowGroupId: 'nested-group', subflowName: '嵌套新名', futureCallOption: 'keep' })
+    store.getState().undo()
+    expect(store.getState().nodes[0].data.label).toBe('外层旧标签')
+    expect(store.getState().nodes[1].data.config).toMatchObject({ subflowName: '嵌套旧名' })
+  })
+
+  it('嵌套子流程头画布改名以有效配置做重名检查并传播调用名', () => {
+    const header = node('nested-header', 'subflowHeaderNode', {
+      label: '外层头标签', moduleType: 'subflow_header',
+      config: { subflowName: '嵌套头旧名', futureHeaderOption: 'keep' },
+    })
+    const other = node('other-header', 'subflowHeaderNode', {
+      label: '其他头', moduleType: 'subflow_header', config: { subflowName: '已有嵌套名' },
+    })
+    const call = node('header-call', 'moduleNode', {
+      label: '调用', moduleType: 'subflow',
+      config: { subflowGroupId: 'nested-header', subflowName: '嵌套头旧名', futureCallOption: 'keep' },
+    })
+    store.getState().loadWorkflow({ name: '嵌套函数头', nodes: [header, other, call], edges: [] })
+    render(<SubflowHeaderNode {...({ id: header.id, data: header.data, selected: true } as unknown as ComponentProps<typeof SubflowHeaderNode>)} />)
+
+    fireEvent.doubleClick(screen.getByText('外层头标签'))
+    const input = screen.getByPlaceholderText('子流程名称')
+    fireEvent.change(input, { target: { value: '已有嵌套名' } })
+    fireEvent.blur(input)
+    expect(store.getState().nodes[0].data.config).toMatchObject({ subflowName: '嵌套头旧名' })
+    expect(screen.getByText(/已存在名为「已有嵌套名」的子流程/)).toBeTruthy()
+
+    fireEvent.click(screen.getByRole('button', { name: '确定' }))
+    fireEvent.doubleClick(screen.getByText('外层头标签'))
+    const retryInput = screen.getByPlaceholderText('子流程名称')
+    fireEvent.change(retryInput, { target: { value: '嵌套头新名' } })
+    fireEvent.blur(retryInput)
+
+    const savedHeader = store.getState().nodes[0].data as Record<string, unknown>
+    const savedCall = store.getState().nodes[2].data as Record<string, unknown>
+    expect(savedHeader.label).toBe('嵌套头新名')
+    expect(savedHeader.config).toMatchObject({ subflowName: '嵌套头新名', futureHeaderOption: 'keep' })
+    expect(savedCall.config).toMatchObject({ subflowName: '嵌套头新名', futureCallOption: 'keep' })
+  })
+
+  it('嵌套子流程调用双击按有效配置定位嵌套分组定义', () => {
+    const target = node('target-group', 'groupNode', {
+      label: '目标分组', moduleType: 'group', width: 360, height: 240,
+      config: { isSubflow: true, subflowName: '嵌套目标' },
+    }, { x: 100, y: 200 })
+    reactFlow.getNodes.mockReturnValue([target])
+    const call = node('call', 'moduleNode', {
+      label: '调用子流程', moduleType: 'subflow', config: { subflowName: '嵌套目标' },
+    })
+    render(<ModuleNode {...({ id: call.id, data: call.data, selected: false } as unknown as ComponentProps<typeof ModuleNode>)} />)
+
+    fireEvent.doubleClick(screen.getByText('嵌套目标'))
+    expect(reactFlow.setCenter).toHaveBeenCalledWith(280, 320, { duration: 500, zoom: 0.8 })
   })
 })
 

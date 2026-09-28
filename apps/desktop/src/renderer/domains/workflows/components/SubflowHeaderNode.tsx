@@ -3,7 +3,7 @@ import { memo, useState, useCallback } from 'react'
 import { Handle, Position, type NodeProps } from '@xyflow/react'
 import { Workflow, GripVertical, ChevronDown, ChevronUp } from 'lucide-react'
 import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
-import { useWorkflowStore, type NodeData } from '../editor-store'
+import { getNodeConfigData, useWorkflowStore, type NodeData } from '../editor-store'
 import { useConfirm } from './controls/confirm-dialog'
 
 export interface SubflowHeaderNodeData {
@@ -15,16 +15,17 @@ export interface SubflowHeaderNodeData {
 }
 
 export const SubflowHeaderNode = memo(({ id, data, selected }: NodeProps) => {
-  const nodeData = data as unknown as SubflowHeaderNodeData
+  const rawNodeData = data as unknown as NodeData
+  const nodeData = getNodeConfigData(rawNodeData) as unknown as SubflowHeaderNodeData
   const nodes = useWorkflowStore((state) => state.nodes)
   const edges = useWorkflowStore((state) => state.edges)
   const onNodesChange = useWorkflowStore((state) => state.onNodesChange)
-  const updateNodesData = useWorkflowStore((state) => state.updateNodesData)
+  const updateNodesConfig = useWorkflowStore((state) => state.updateNodesConfig)
   const [isEditing, setIsEditing] = useState(false)
-  const [editValue, setEditValue] = useState(nodeData.label || '')
+  const [editValue, setEditValue] = useState(rawNodeData.label || '')
   const { alert: alertDialog, ConfirmDialog } = useConfirm()
   
-  const isCollapsed = nodeData.collapsed === true
+  const isCollapsed = rawNodeData.collapsed === true
   
   // 获取全局配置的连接点尺寸
   const handleSize = useGlobalConfigStore((state) => state.config.display?.handleSize || 12)
@@ -79,8 +80,8 @@ export const SubflowHeaderNode = memo(({ id, data, selected }: NodeProps) => {
 
   const handleDoubleClick = useCallback(() => {
     setIsEditing(true)
-    setEditValue(nodeData.label || '')
-  }, [nodeData.label])
+    setEditValue(rawNodeData.label || '')
+  }, [rawNodeData.label])
 
   const handleBlur = useCallback(() => {
     setIsEditing(false)
@@ -91,8 +92,9 @@ export const SubflowHeaderNode = memo(({ id, data, selected }: NodeProps) => {
     if (newName) {
       const duplicates = nodes.filter(n => {
         if (n.id === id) return false
-        if (n.type === 'groupNode' && n.data.isSubflow && n.data.subflowName === newName) return true
-        if (n.type === 'subflowHeaderNode' && n.data.subflowName === newName) return true
+        const config = getNodeConfigData(n.data)
+        if (n.type === 'groupNode' && config.isSubflow && config.subflowName === newName) return true
+        if (n.type === 'subflowHeaderNode' && config.subflowName === newName) return true
         return false
       })
       
@@ -103,19 +105,20 @@ export const SubflowHeaderNode = memo(({ id, data, selected }: NodeProps) => {
       }
     }
     
-    const patches: { nodeId: string; data: Partial<NodeData> }[] = [
-      { nodeId: id, data: { label: editValue, subflowName: editValue } },
+    const patches: { nodeId: string; data: Partial<NodeData>; outerData?: Partial<NodeData> }[] = [
+      { nodeId: id, data: { subflowName: editValue }, outerData: { label: editValue } },
     ]
     if (oldName !== newName) {
       for (const node of nodes) {
-        if (node.data.moduleType === 'subflow' &&
-            (node.data.subflowGroupId === id || (oldName && node.data.subflowName === oldName))) {
+        const config = getNodeConfigData(node.data)
+        if (config.moduleType === 'subflow' &&
+            (config.subflowGroupId === id || (oldName && config.subflowName === oldName))) {
           patches.push({ nodeId: node.id, data: { subflowName: newName } })
         }
       }
     }
-    updateNodesData(patches)
-  }, [editValue, nodeData, id, nodes, updateNodesData, alertDialog])
+    updateNodesConfig(patches)
+  }, [editValue, nodeData, id, nodes, updateNodesConfig, alertDialog])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -123,9 +126,9 @@ export const SubflowHeaderNode = memo(({ id, data, selected }: NodeProps) => {
     }
     if (e.key === 'Escape') {
       setIsEditing(false)
-      setEditValue(nodeData.label || '')
+      setEditValue(rawNodeData.label || '')
     }
-  }, [handleBlur, nodeData.label])
+  }, [handleBlur, rawNodeData.label])
 
   return (
     <>
@@ -189,7 +192,7 @@ export const SubflowHeaderNode = memo(({ id, data, selected }: NodeProps) => {
               className="text-sm font-semibold text-emerald-900 truncate cursor-text"
               onDoubleClick={handleDoubleClick}
             >
-              {nodeData.label || '未命名子流程'}
+              {rawNodeData.label || '未命名子流程'}
             </div>
           )}
         </div>

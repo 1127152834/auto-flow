@@ -186,6 +186,65 @@ it('routes assistant configuration edits through the same nested write boundary'
   })
 })
 
+it('keeps an assistant label compatibility rename outside nested End runtime config', async () => {
+  expect(store.getState().importWorkflow(nestedDocument())).toBe(true)
+  const response = await executeClientAction('update_node_config', {
+    node_id: 'end', config: { label: 'AI 单项备注', retainEnvironment: false },
+  })
+  expect(response.success).toBe(true)
+  const data = store.getState().nodes[0].data as Record<string, unknown>
+  expect(data.name).toBe('AI 单项备注')
+  expect(data.config).toMatchObject({
+    name: '运行环境名称', retainEnvironment: false, futureOption: { keep: true },
+  })
+})
+
+it('keeps assistant batch labels as outer remarks while updating nested runtime fields', async () => {
+  expect(store.getState().importWorkflow(nestedDocument())).toBe(true)
+  const response = await executeClientAction('bulk_update_nodes', {
+    patches: [
+      { node_id: 'end', config: { label: 'AI 批量 End 备注', retainEnvironment: false } },
+      { node_id: 'open', config: { label: 'AI 批量网页备注', url: 'https://batch.example/' } },
+    ],
+  })
+  expect(response.success).toBe(true)
+  const [end, open] = store.getState().nodes.map(node => node.data as Record<string, unknown>)
+  expect(end.name).toBe('AI 批量 End 备注')
+  expect(end.config).toMatchObject({ name: '运行环境名称', retainEnvironment: false })
+  expect(open.name).toBe('AI 批量网页备注')
+  expect(open.config).toMatchObject({ url: 'https://batch.example/', futureWebOption: 'keep' })
+})
+
+it.each([
+  {
+    node: {
+      id: 'group', type: 'groupNode', position: { x: 0, y: 0 },
+      data: { moduleType: 'group', label: '外层分组标签', config: { isSubflow: true, subflowName: '内层分组名', futureGroupOption: 'keep' } },
+    },
+    previousLabel: '外层分组标签', previousName: '内层分组名', next: '修改后的分组名', futureKey: 'futureGroupOption',
+  },
+  {
+    node: {
+      id: 'header', type: 'subflowHeaderNode', position: { x: 0, y: 0 },
+      data: { moduleType: 'subflow_header', label: '外层函数头标签', config: { subflowName: '内层函数头名', futureHeaderOption: 'keep' } },
+    },
+    previousLabel: '外层函数头标签', previousName: '内层函数头名', next: '修改后的函数头名', futureKey: 'futureHeaderOption',
+  },
+])('writes $node.type label metadata outside nested subflow config', ({ node, previousLabel, previousName, next, futureKey }) => {
+  expect(store.getState().importWorkflow({ id: 'nested-structure', name: 'Nested structure', nodes: [node], edges: [], variables: [] })).toBe(true)
+  render(<ConfigPanel selectedNodeId={node.id} />)
+  const input = screen.getByPlaceholderText('子流程名称')
+  fireEvent.change(input, { target: { value: next } })
+
+  const data = store.getState().nodes[0].data as Record<string, unknown>
+  expect(data.label).toBe(next)
+  expect(data.config).toMatchObject({ subflowName: next, [futureKey]: 'keep' })
+  expect((data.config as Record<string, unknown>).label).toBeUndefined()
+  store.getState().undo()
+  expect(store.getState().nodes[0].data.label).toBe(previousLabel)
+  expect(store.getState().nodes[0].data.config).toMatchObject({ subflowName: previousName, [futureKey]: 'keep' })
+})
+
 it('writes selector healing into nested config without reviving a stale outer selector', async () => {
   const document = nestedDocument()
   Object.assign(document.nodes[1].data, {

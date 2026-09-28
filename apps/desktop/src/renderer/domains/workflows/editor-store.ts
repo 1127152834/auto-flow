@@ -304,8 +304,8 @@ interface WorkflowState {
   // 更新节点数据
   updateNodeData: (nodeId: string, data: Partial<NodeData>) => void
   updateNodesData: (patches: { nodeId: string; data: Partial<NodeData> }[], variables?: Variable[]) => void
-  updateNodeConfig: (nodeId: string, data: Partial<NodeData>) => void
-  updateNodesConfig: (patches: { nodeId: string; data: Partial<NodeData> }[], variables?: Variable[]) => void
+  updateNodeConfig: (nodeId: string, data: Partial<NodeData>, outerData?: Partial<NodeData>) => void
+  updateNodesConfig: (patches: { nodeId: string; data: Partial<NodeData>; outerData?: Partial<NodeData> }[], variables?: Variable[]) => void
   
   // 删除节点
   deleteNode: (nodeId: string) => void
@@ -2568,25 +2568,36 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     get().updateNodesData([{ nodeId, data }])
   },
 
-  updateNodeConfig: (nodeId, data) => {
-    get().updateNodesConfig([{ nodeId, data }])
+  updateNodeConfig: (nodeId, data, outerData) => {
+    get().updateNodesConfig([{ nodeId, data, outerData }])
   },
 
   updateNodesConfig: (patches, variables) => {
+    // Configuration follows the document's flat/nested shape; explicit editor fields stay outer.
+    // Fold both namespaces before updateNodesData so a UI gesture remains one history entry.
     const nodes = new Map(get().nodes.map(node => [node.id, node]))
-    const patchMap = new Map<string, Partial<NodeData>>()
-    for (const patch of patches) patchMap.set(patch.nodeId, { ...patchMap.get(patch.nodeId), ...patch.data })
-    get().updateNodesData([...patchMap].map(([nodeId, data]) => {
+    const patchMap = new Map<string, { data: Partial<NodeData>; outerData: Partial<NodeData> }>()
+    for (const patch of patches) {
+      const previous = patchMap.get(patch.nodeId)
+      patchMap.set(patch.nodeId, {
+        data: { ...previous?.data, ...patch.data },
+        outerData: { ...previous?.outerData, ...patch.outerData },
+      })
+    }
+    get().updateNodesData([...patchMap].map(([nodeId, patch]) => {
       const current = nodes.get(nodeId)?.data
       const currentConfig = current?.config
       const nested = isNodeConfig(currentConfig)
       const unchanged = nested
-        && Object.entries(data).every(([key, value]) => Object.is(currentConfig[key], value))
+        && Object.entries(patch.data).every(([key, value]) => Object.is(currentConfig[key], value))
       return {
         nodeId,
-        data: current && nested
-          ? { config: unchanged ? currentConfig : patchNodeConfigData(current, data).config } as Partial<NodeData>
-          : data,
+        data: {
+          ...(current && nested
+            ? { config: unchanged ? currentConfig : patchNodeConfigData(current, patch.data).config } as Partial<NodeData>
+            : patch.data),
+          ...patch.outerData,
+        },
       }
     }), variables)
   },

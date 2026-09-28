@@ -4,7 +4,7 @@ import { useCallback, useState, lazy, Suspense } from 'react'
 import type { Node, Edge } from '@xyflow/react'
 import type { NodeData } from '../../editor-store'
 import type { ModuleType } from '../../types/workflow'
-import { useWorkflowStore } from '../../editor-store'
+import { getNodeConfigData, useWorkflowStore } from '../../editor-store'
 import { Label } from '../controls/label'
 import { NumberInput } from '../controls/number-input'
 import { SelectNative as Select } from '../controls/select-native'
@@ -1607,7 +1607,7 @@ const GROUP_COLORS = [
   { name: '灰色', value: '#6b7280' },
 ]
 
-export function GroupConfig({ nodeId, data, onChange }: { nodeId: string; data: NodeData; onChange: (key: string, value: unknown) => void }) {
+export function GroupConfig({ nodeId, data, onChange, onLabelChange, onSubflowNameChange }: { nodeId: string; data: NodeData; onChange: (key: string, value: unknown) => void; onLabelChange: (value: string) => void; onSubflowNameChange: (value: string) => void }) {
   const isSubflow = data.isSubflow === true
   const nodes = useWorkflowStore((state) => state.nodes)
   const edges = useWorkflowStore((state) => state.edges)
@@ -1721,10 +1721,7 @@ export function GroupConfig({ nodeId, data, onChange }: { nodeId: string; data: 
             <Label htmlFor="subflowName">子流程名称</Label>
             <VariableInput
               value={(data.subflowName as string) || (data.label as string) || ''}
-              onChange={(v) => {
-                onChange('subflowName', v)
-                onChange('label', v)
-              }}
+              onChange={onSubflowNameChange}
               placeholder='子流程名称'
             />
             {(() => {
@@ -1733,8 +1730,9 @@ export function GroupConfig({ nodeId, data, onChange }: { nodeId: string; data: 
               
               const duplicates = nodes.filter(n => {
                 if (n.id === nodeId) return false
-                if (n.type === 'groupNode' && n.data.isSubflow && n.data.subflowName === currentName) return true
-                if (n.type === 'subflowHeaderNode' && n.data.subflowName === currentName) return true
+                const config = getNodeConfigData(n.data)
+                if (n.type === 'groupNode' && config.isSubflow && config.subflowName === currentName) return true
+                if (n.type === 'subflowHeaderNode' && config.subflowName === currentName) return true
                 return false
               })
               
@@ -1785,7 +1783,7 @@ export function GroupConfig({ nodeId, data, onChange }: { nodeId: string; data: 
             <Label htmlFor="label">分组标签</Label>
             <VariableInput
               value={(data.label as string) ?? ''}
-              onChange={(v) => onChange('label', v)}
+              onChange={onLabelChange}
               placeholder='分组名称'
             />
           </div>
@@ -1816,7 +1814,7 @@ export function GroupConfig({ nodeId, data, onChange }: { nodeId: string; data: 
 }
 
 // 子流程头配置
-export function SubflowHeaderConfig({ nodeId, data, onChange }: { nodeId: string; data: NodeData; onChange: (key: string, value: unknown) => void }) {
+export function SubflowHeaderConfig({ nodeId, data, onSubflowNameChange }: { nodeId: string; data: NodeData; onSubflowNameChange: (value: string) => void }) {
   const nodes = useWorkflowStore((state) => state.nodes)
   
   // 检查是否有重名的子流程
@@ -1825,8 +1823,9 @@ export function SubflowHeaderConfig({ nodeId, data, onChange }: { nodeId: string
     
     const duplicates = nodes.filter(n => {
       if (n.id === nodeId) return false
-      if (n.type === 'groupNode' && n.data.isSubflow && n.data.subflowName === name) return true
-      if (n.type === 'subflowHeaderNode' && n.data.subflowName === name) return true
+      const config = getNodeConfigData(n.data)
+      if (n.type === 'groupNode' && config.isSubflow && config.subflowName === name) return true
+      if (n.type === 'subflowHeaderNode' && config.subflowName === name) return true
       return false
     })
     
@@ -1842,10 +1841,7 @@ export function SubflowHeaderConfig({ nodeId, data, onChange }: { nodeId: string
         <Label htmlFor="subflowName">子流程名称</Label>
         <VariableInput
           value={currentName}
-          onChange={(v) => {
-            onChange('subflowName', v)
-            onChange('label', v)
-          }}
+          onChange={onSubflowNameChange}
           placeholder='子流程名称'
         />
         {hasDuplicate && (

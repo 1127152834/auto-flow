@@ -74,10 +74,11 @@ function ModuleNodeComponent({ id, data, selected }: NodeProps) {
     const subflowName = nodeData.subflowName as string
     if (!subflowName) return
     const nodes = getNodes()
-    const targetNode = nodes.find(n =>
-      (n.type === 'subflowHeaderNode' && n.data.subflowName === subflowName) ||
-      (n.type === 'groupNode' && n.data.isSubflow && n.data.subflowName === subflowName)
-    )
+    const targetNode = nodes.find(n => {
+      const config = getNodeConfigData(n.data as NodeData)
+      return (n.type === 'subflowHeaderNode' && config.subflowName === subflowName) ||
+        (n.type === 'groupNode' && config.isSubflow && config.subflowName === subflowName)
+    })
     if (targetNode) {
       if (targetNode.type === 'groupNode') {
         // 分组节点用 setCenter 定位到中心

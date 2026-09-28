@@ -599,6 +599,7 @@ export async function executeClientAction(
       case 'update_node_config': {
         const nodeId = payload.node_id as string
         const config = { ...((payload.config as Record<string, any>) || {}) }
+        let outerData: Record<string, any> | undefined
         if (!nodeId) return { success: false, error: '缺少 node_id' }
         // 保护：label 是模块原名，AI 不允许通过 update_node_config 修改它
         // 如果 AI 想改"显示名"，应该改 name（节点备注）字段
@@ -607,10 +608,10 @@ export async function executeClientAction(
           delete config.label
           // 如果当前没有 name/remark，把 AI 传的 label 当作备注落到 name
           if (labelVal && !('name' in config) && !('remark' in config)) {
-            config.name = labelVal
+            outerData = { name: labelVal }
           }
         }
-        useWorkflowStore.getState().updateNodeConfig(nodeId, config as any)
+        useWorkflowStore.getState().updateNodeConfig(nodeId, config as any, outerData)
         return { success: true, message: `已更新节点 ${nodeId}` }
       }
 
@@ -621,19 +622,20 @@ export async function executeClientAction(
           return { success: false, error: '缺少 patches' }
         }
         const store = useWorkflowStore.getState()
-        const updates: { nodeId: string; data: Record<string, any> }[] = []
+        const updates: { nodeId: string; data: Record<string, any>; outerData?: Record<string, any> }[] = []
         for (const p of patches) {
           if (!p?.node_id || !p?.config) continue
           const cfg = { ...p.config }
+          let outerData: Record<string, any> | undefined
           // 同样保护 label
           if ('label' in cfg) {
             const labelVal = cfg.label
             delete cfg.label
             if (labelVal && !('name' in cfg) && !('remark' in cfg)) {
-              cfg.name = labelVal
+              outerData = { name: labelVal }
             }
           }
-          if (store.nodes.some(node => node.id === p.node_id)) updates.push({ nodeId: p.node_id, data: cfg })
+          if (store.nodes.some(node => node.id === p.node_id)) updates.push({ nodeId: p.node_id, data: cfg, outerData })
         }
         store.updateNodesConfig(updates)
         return { success: true, message: `已批量更新 ${updates.length} 个节点` }
