@@ -41,17 +41,36 @@ export function ProjectInteractionHost({ client, connected }: { client: Streamin
   useEffect(() => {
     const controller = new AbortController()
     const scripts = new Map<string, AbortController>()
+    const claims = new Map<string, number>()
+    const transportFailures = new Set<string>()
     let timer: ReturnType<typeof setTimeout>
     const identity = (target: InteractionIdentity) => JSON.stringify([target.projectId, target.taskId, target.runId, target.executionGeneration, target.requestId])
+    const interruptTransport = (source: string, current: boolean) => {
+      if (!current) return
+      transportFailures.add(source)
+      setConnectionError('项目交互连接中断，正在查询原请求；未重新执行脚本')
+    }
+    const recoverTransport = (source: string, current: boolean) => {
+      transportFailures.delete(source)
+      if (current && transportFailures.size === 0 && claims.size === 0) setConnectionError(undefined)
+    }
     const poll = async () => {
       const revision = latest.current.revision
       const isCurrent = () => !controller.signal.aborted && latest.current.connected && latest.current.revision === revision
       try {
+        for (const [key, ownerRevision] of claims) {
+          if (ownerRevision === revision) continue
+          scripts.get(key)?.abort()
+          claims.delete(key)
+          recoverTransport(key, false)
+        }
         if (!latest.current.connected) return
         const pending = await api.pending(controller.signal)
         if (!isCurrent()) return
         const keys = new Set(pending.map(identity))
-        for (const [key, script] of scripts) if (!keys.has(key)) { script.abort(); scripts.delete(key) }
+        for (const [key, script] of scripts) if (!keys.has(key)) {
+          script.abort(); scripts.delete(key); claims.delete(key); recoverTransport(key, isCurrent())
+        }
         const input = pending.find(target => target.type === 'execution:input_prompt')
         if (!input) { activeInput.current = null; setPrompt(null) }
         else if (!activeInput.current || identity(activeInput.current) !== identity(input)) {
@@ -81,18 +100,29 @@ export function ProjectInteractionHost({ client, connected }: { client: Streamin
           // From claim onward this identity stays owned; failures must never start it again.
           scripts.set(key, script)
           if (!request) continue
-          try {
-            const claimed = await claimProjectScript(api, target, request, script.signal)
-            void executeClaimedProjectScript(api, target, claimed, script.signal).catch(caught => {
-              if (!script.signal.aborted && isCurrent()) setOperationError(caught instanceof Error ? caught.message : '项目脚本交互失败')
-            })
-          } catch (caught) {
-            if (!script.signal.aborted && isCurrent()) setOperationError(caught instanceof Error ? caught.message : '项目脚本交互失败')
+          claims.set(key, revision)
+          const transport = {
+            interrupted: () => interruptTransport(key, !script.signal.aborted && isCurrent()),
+            recovered: () => recoverTransport(key, !script.signal.aborted && isCurrent()),
           }
+          void (async () => {
+            try {
+              const claimed = await claimProjectScript(api, target, request, script.signal, transport)
+              claims.delete(key)
+              recoverTransport(key, isCurrent())
+              if (!isCurrent()) { script.abort(); return }
+              await executeClaimedProjectScript(api, target, claimed, script.signal, transport)
+            } catch (caught) {
+              if (!script.signal.aborted && isCurrent()) setOperationError(caught instanceof Error ? caught.message : '项目脚本交互失败')
+            } finally {
+              claims.delete(key)
+              recoverTransport(key, !script.signal.aborted && isCurrent())
+            }
+          })()
         }
-        if (isCurrent()) setConnectionError(undefined)
+        recoverTransport('poll', isCurrent())
       } catch (caught) {
-        if (isCurrent() && !(caught instanceof ApiClientError && [404, 410].includes(caught.status))) setConnectionError('项目交互连接中断，正在查询原请求；未重新执行脚本')
+        if (isCurrent() && !(caught instanceof ApiClientError && [404, 410].includes(caught.status))) interruptTransport('poll', true)
       } finally {
         if (!controller.signal.aborted) timer = setTimeout(() => void poll(), 1000)
       }

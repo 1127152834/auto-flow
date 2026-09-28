@@ -9,6 +9,7 @@ export type InteractionIdentity = Schema['ProjectInteractionIdentity']
 export type InteractionRequest = Schema['ProjectInputPromptRequest'] | Schema['ProjectJsScriptRequest'] | Schema['ProjectInteractionClosed']
 export type ProjectScriptRequest = Schema['ProjectJsScriptRequest']
 export type ClaimedProjectScript = { request: ProjectScriptRequest; claimId: string }
+export type ProjectScriptTransportObserver = { interrupted: () => void; recovered: () => void }
 type Receipt = Schema['ProjectInteractionReceipt']
 type Command = Schema['ProjectInteractionCommand']
 export const isProjectInteractionTransportFailure = (error: unknown) => error instanceof TypeError || error instanceof DOMException && error.name === 'TimeoutError' || error instanceof ApiClientError && (error.status >= 500 || error.status === 408)
@@ -54,18 +55,24 @@ function pause(signal: AbortSignal) {
     signal.addEventListener('abort', done, { once: true })
   })
 }
-async function confirmProjectScriptCommand(api: ProjectInteractionsApi, target: InteractionIdentity, event: Command['event'], payload: Command['data'], signal: AbortSignal) {
+async function confirmProjectScriptCommand(api: ProjectInteractionsApi, target: InteractionIdentity, event: Command['event'], payload: Command['data'], signal: AbortSignal, transport?: ProjectScriptTransportObserver) {
   const commandId = crypto.randomUUID()
   let receipt: Receipt | undefined
-  try { receipt = await api.submit(target, commandId, event, payload, signal) }
-  catch (error) { if (!isProjectInteractionTransportFailure(error)) throw error }
+  try { receipt = await api.submit(target, commandId, event, payload, signal); transport?.recovered() }
+  catch (error) {
+    if (!isProjectInteractionTransportFailure(error)) { transport?.recovered(); throw error }
+    transport?.interrupted()
+  }
   while (!signal.aborted) {
     if (receipt?.status === 'applied') return
     if (receipt?.status === 'unconfirmed') throw new Error('脚本命令未被确认，不会重新执行')
     await pause(signal)
     signal.throwIfAborted()
-    try { receipt = await api.command(target, commandId, signal) }
-    catch (error) { if (!isProjectInteractionTransportFailure(error)) throw error }
+    try { receipt = await api.command(target, commandId, signal); transport?.recovered() }
+    catch (error) {
+      if (!isProjectInteractionTransportFailure(error)) { transport?.recovered(); throw error }
+      transport?.interrupted()
+    }
   }
   signal.throwIfAborted()
 }
@@ -76,22 +83,22 @@ export async function readProjectScript(api: ProjectInteractionsApi, target: Int
   if (data.type !== 'execution:js_script' || data.status !== 'pending') throw new Error('脚本已被领取，无法安全重放；请停止本次运行')
   return data
 }
-export async function claimProjectScript(api: ProjectInteractionsApi, target: InteractionIdentity, request: ProjectScriptRequest, signal: AbortSignal): Promise<ClaimedProjectScript> {
+export async function claimProjectScript(api: ProjectInteractionsApi, target: InteractionIdentity, request: ProjectScriptRequest, signal: AbortSignal, transport?: ProjectScriptTransportObserver): Promise<ClaimedProjectScript> {
   const claimId = crypto.randomUUID()
-  await confirmProjectScriptCommand(api, target, 'js_script_claim', { requestId: target.requestId, claimId }, signal)
+  await confirmProjectScriptCommand(api, target, 'js_script_claim', { requestId: target.requestId, claimId }, signal, transport)
   signal.throwIfAborted()
   return { request, claimId }
 }
-export async function executeClaimedProjectScript(api: ProjectInteractionsApi, target: InteractionIdentity, claimed: ClaimedProjectScript, signal: AbortSignal) {
+export async function executeClaimedProjectScript(api: ProjectInteractionsApi, target: InteractionIdentity, claimed: ClaimedProjectScript, signal: AbortSignal, transport?: ProjectScriptTransportObserver) {
   const result = await runJsScript(claimed.request.code, claimed.request.variables, signal)
   signal.throwIfAborted()
-  await confirmProjectScriptCommand(api, target, 'js_script_result', { ...result, requestId: target.requestId, claimId: claimed.claimId }, signal)
+  await confirmProjectScriptCommand(api, target, 'js_script_result', { ...result, requestId: target.requestId, claimId: claimed.claimId }, signal, transport)
 }
 // Source behavior: claim -> original dedicated JS Worker -> confirmed result.
 // A renderer that reconnects after losing its claim cannot replay the script.
-export async function executeProjectScript(api: ProjectInteractionsApi, target: InteractionIdentity, signal: AbortSignal) {
+export async function executeProjectScript(api: ProjectInteractionsApi, target: InteractionIdentity, signal: AbortSignal, transport?: ProjectScriptTransportObserver) {
   const request = await readProjectScript(api, target, signal)
   if (!request) return
-  const claimed = await claimProjectScript(api, target, request, signal)
-  await executeClaimedProjectScript(api, target, claimed, signal)
+  const claimed = await claimProjectScript(api, target, request, signal, transport)
+  await executeClaimedProjectScript(api, target, claimed, signal, transport)
 }

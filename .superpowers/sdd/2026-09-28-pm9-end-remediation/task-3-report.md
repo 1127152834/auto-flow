@@ -251,3 +251,91 @@ exit 0
 - 本轮仅修改 desktop renderer 源码/测试、本报告及 Task 3 证据目录；没有后端/Python改动，也没有触碰 root 的最终构建、package、native End 资产。
 - 当前 AOCI 为 `recovery_pending` 且无正文；依照协调要求未接管 recovery、未调用 maintain/update、未修改 AOCI 资产。该限制不影响本轮 source-bound 修复与验证。
 - 置信度：高。代码级边界由 13 个测试覆盖，真实 UI 的 interrupted/recovered 状态有本轮实际 PNG、AX 和 SQLite 证据；真实故障持续时间导致过期这一限制已明确保留。
+
+---
+
+## Review fix round 2（基线 `dae16113`，2026-09-28）
+
+### 复核结论与协议边界
+
+Round 1 把 claim await 移进唯一 poll 后，新 finding 成立：claim submit/query 的瞬态故障会在 `confirmProjectScriptCommand` 内持续查询，但 Host 的 poll 无法返回，因此不会显示 claim 阶段的 transport notice，也不能处理同时到达的其他交互。
+
+只读追踪 backend 协议确认：`ProjectRunInteractions.pending()` 在 run 仍为当前 generation 且 `running` 时，会持续返回内存请求的 `pending`、`claimed` 或 `submitted` 状态；close 事件会删除请求，取消/过期、run 终态或 execution generation 变化也会使它不再出现在 pending 集合。因此本轮继续使用原 `scripts` identity/AbortController 清理路径：未决或已确认的 claim 保持 owner key，真正取消/过期时由下一次 pending 自动 abort；没有引入跨项目的通用状态层。
+
+### 实现
+
+- `claimProjectScript` 从全局 poll 的同步 await 中移到该 identity 自己的异步 pipeline。poll 可以按原 1 秒节拍继续读取 pending、显示 input prompt 和处理其他脚本。
+- `confirmProjectScriptCommand` 为同一 commandId 的 submit/query 循环增加局部 transport observer。每个动作仍只生成一个 commandId；瞬态 submit 后只查询该原 ID，不重发 claim 或 result。
+- Host 在当前 effect 中记录 `poll` 与各 script identity 的 transport failure。成功 poll 只恢复 `poll` source；只要任一 claim/result 仍中断，notice 就不会被提前清除。claim 尚未完成时也阻止旧 notice 被普通成功 poll 清除。
+- `claims` 只记录 claim 所属 revision。连接/client revision 改变时只 abort 尚未完成的 claim；已经启动的原 Worker 仍遵守既有 reconnect 行为。claim 返回后再次校验 revision，旧 claim 不能跨连接启动 Worker。
+- pending 不再包含 identity 时继续沿用原 cleanup：abort controller、删除 owner/claim 状态并解除相应 transport source，覆盖真实取消、过期和代次结束。
+
+### RED / GREEN
+
+旧实现上的新增边界回归：
+
+```text
+npm --workspace @autoflow/desktop test -- --run src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx -t "keeps polling other interactions while a transient claim recovers with its original command"
+exit 1
+Test Files  1 failed (1)
+Tests       1 failed | 8 skipped (9)
+TestingLibraryElementError: Unable to find an element with the text: /项目交互连接中断/
+Duration 1.50s
+```
+
+实现后的同一回归：
+
+```text
+npm --workspace @autoflow/desktop test -- --run src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx -t "keeps polling other interactions while a transient claim recovers with its original command"
+exit 0
+Test Files  1 passed (1)
+Tests       1 passed | 8 skipped (9)
+Duration 1.53s
+```
+
+该用例让 claim POST 和后续原 command 查询连续瞬态失败，同时让第二次 pending poll 返回另一个 input prompt。它验证：第二次 poll 实际发生、输入窗口出现、claim notice 不被该成功 poll 清除；原 command query 恢复后，claim POST、Worker 和 result POST 各恰好一次，所有 claim query 都使用第一次 POST 的 commandId。
+
+连接 revision 定向保护：
+
+```text
+npm --workspace @autoflow/desktop test -- --run src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx -t "aborts an unresolved claim across a connection revision without replaying it"
+exit 0
+Test Files  1 passed (1)
+Tests       1 passed | 9 skipped (10)
+Duration 1.85s
+```
+
+最终两份完整文件：
+
+```text
+npm --workspace @autoflow/desktop test -- --run src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx src/renderer/domains/project-runs/interactions.test.ts
+exit 0
+Test Files  2 passed (2)
+Tests       15 passed (15)
+Duration 1.69s
+```
+
+最终静态检查：
+
+```text
+npm --workspace @autoflow/desktop run typecheck
+exit 0
+
+npm exec --workspace @autoflow/desktop -- eslint \
+  src/renderer/domains/project-runs/interactions.ts \
+  src/renderer/domains/project-runs/interactions.test.ts \
+  src/renderer/domains/project-runs/components/ProjectInteractionHost.tsx \
+  src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx
+exit 0
+
+git diff --check -- <Task 3 round-2 owned files>
+exit 0
+```
+
+### 真实验收与限制
+
+Round 1 的实际 CUA PNG/AX、独立成功 run 和 SQLite 单次执行证据仍适用于整体 notice/operation-error/no-replay 行为，见 [`interaction-notice-round1/README.md`](../../../docs/qa/2026-09-28-remediation/interaction-notice-round1/README.md)。该物理故障发生在 claim 窄窗口之外，不能证明本轮 claim boundary；本轮没有为了仪式性覆盖而重复 40 秒 outage，因为该持续时间已证实会使 backend interaction 过期。claim 窄窗口由上述可控 submit/query 边界回归验证，缺少该窗口的物理故障截图证据如实保留。
+
+Root 在本轮源码修改前的冻结 `dae16113` 上运行了 default 5665 tests / 432 files、lint、typecheck、build 和 package，均 exit 0；这些结果只证明 round-2 基线稳定，不计作修改后的最终全量门禁。按协调约定，root 将在 round-2 review 通过后运行 final v3。
+
+没有修改 backend/Python、包目录、root 最终资产或 AOCI。AOCI 仍由外部 owner 处理 recovery pending，本任务未接管、重试或维护。

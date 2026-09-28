@@ -82,6 +82,83 @@ it('retries a transient JS request read before claim and executes the script onc
   expect(request.mock.calls.filter(([, init]) => init?.body?.event === 'js_script_result')).toHaveLength(1)
 })
 
+it('keeps polling other interactions while a transient claim recovers with its original command', async () => {
+  vi.useFakeTimers()
+  const target = { ...identity, type: 'execution:js_script' }
+  const input = { ...identity, requestId: 'input' }
+  const inputRequest = { ...prompt, ...input }
+  let pendingCalls = 0
+  let claimRecovered = false
+  let claimCommandId = ''
+  const request = vi.fn(async (path, init) => {
+    if (path === '/api/v1/project-run-interactions') return pendingCalls++ === 0 ? [target] : [target, input]
+    if (path.includes('/requests/input')) return inputRequest
+    if (path.includes('/requests/req')) return { ...target, code: 'function main(vars){return 7}', variables: {}, nodeId: 'n', executionId: 'v' }
+    if (init?.body?.event === 'js_script_claim') {
+      claimCommandId = init.body.commandId
+      throw new TypeError('claim submit offline')
+    }
+    if (path.includes('/commands/')) {
+      if (!claimRecovered) throw new TypeError('claim query offline')
+      return { commandId: claimCommandId, requestId: 'req', status: 'applied' }
+    }
+    return { commandId: init.body.commandId, requestId: 'req', status: 'applied' }
+  })
+  vi.mocked(runJsScript).mockReset().mockResolvedValue({ success: true, result: 7, variables: {} })
+  render(<ProjectInteractionHost client={client(request)} connected />)
+
+  await act(async () => { await vi.advanceTimersByTimeAsync(0) })
+  expect(screen.getByText(/项目交互连接中断/)).toBeDefined()
+  expect(runJsScript).not.toHaveBeenCalled()
+
+  await act(async () => { await vi.advanceTimersByTimeAsync(1000) })
+  expect(pendingCalls).toBeGreaterThanOrEqual(2)
+  expect(screen.getByRole('dialog')).toBeDefined()
+  expect(screen.getByText(/项目交互连接中断/)).toBeDefined()
+  expect(runJsScript).not.toHaveBeenCalled()
+
+  claimRecovered = true
+  await act(async () => { await vi.advanceTimersByTimeAsync(500) })
+  expect(screen.queryByText(/项目交互连接中断/)).toBeNull()
+  expect(runJsScript).toHaveBeenCalledTimes(1)
+  expect(request.mock.calls.filter(([, init]) => init?.body?.event === 'js_script_claim')).toHaveLength(1)
+  expect(request.mock.calls.filter(([, init]) => init?.body?.event === 'js_script_result')).toHaveLength(1)
+  const claimQueries = request.mock.calls.filter(([path]) => path.includes('/commands/'))
+  expect(claimQueries.length).toBeGreaterThan(1)
+  expect(claimQueries.every(([path]) => path.endsWith(`/commands/${claimCommandId}`))).toBe(true)
+})
+
+it('aborts an unresolved claim across a connection revision without replaying it', async () => {
+  vi.useFakeTimers()
+  const target = { ...identity, type: 'execution:js_script' }
+  let claimSignal: AbortSignal | undefined
+  const request = vi.fn(async (path, init) => {
+    if (path === '/api/v1/project-run-interactions') return [target]
+    if (path.includes('/requests/')) return { ...target, code: 'function main(vars){return 7}', variables: {}, nodeId: 'n', executionId: 'v' }
+    if (init?.body?.event === 'js_script_claim') throw new TypeError('claim submit offline')
+    if (path.includes('/commands/')) {
+      claimSignal = init.signal
+      return new Promise((_, reject) => init.signal.addEventListener('abort', () => reject(init.signal.reason), { once: true }))
+    }
+    return { commandId: init.body.commandId, requestId: 'req', status: 'applied' }
+  })
+  vi.mocked(runJsScript).mockReset().mockResolvedValue({ success: true, result: 7, variables: {} })
+  const api = client(request)
+  const view = render(<ProjectInteractionHost client={api} connected />)
+  await act(async () => { await vi.advanceTimersByTimeAsync(0) })
+  expect(claimSignal?.aborted).toBe(false)
+
+  view.rerender(<ProjectInteractionHost client={api} connected={false} />)
+  await act(async () => { await vi.advanceTimersByTimeAsync(1000) })
+  expect(claimSignal?.aborted).toBe(true)
+  view.rerender(<ProjectInteractionHost client={api} connected />)
+  await act(async () => { await vi.advanceTimersByTimeAsync(1000) })
+
+  expect(runJsScript).not.toHaveBeenCalled()
+  expect(request.mock.calls.filter(([, init]) => init?.body?.event === 'js_script_claim')).toHaveLength(1)
+  expect(request.mock.calls.filter(([, init]) => init?.body?.event === 'js_script_result')).toHaveLength(0)
+})
+
 it('keeps an actual script failure after later transport polls succeed', async () => {
   vi.useFakeTimers()
   const target = { ...identity, type: 'execution:js_script' }
