@@ -58,3 +58,41 @@ it('keeps edits made while the document request is pending dirty', async () => {
   await waitFor(() => expect(useWorkflowStore.getState().variables[0].value).toBe('newer'))
   expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(true)
 })
+
+it('updates an opened document after the store identity changes before React renders', async () => {
+  const saved = { id: 'opened-current', name: '真实打开的流程', revision: 7, updatedAt: '2026-09-28T00:00:00Z', nodes: [], edges: [], variables: [] }
+  const writes: { method: string; body: Record<string, unknown> }[] = []
+  act(() => useWorkflowStore.getState().markAsSaved())
+  setStudioTransport(async (input, init) => {
+    const path = new URL(String(input)).pathname
+    if (path.startsWith('/api/workflows') && ['POST', 'PUT'].includes(init?.method ?? '')) {
+      const body = JSON.parse(String(init?.body))
+      writes.push({ method: init!.method!, body })
+      return init?.method === 'PUT'
+        ? Response.json({ ...saved, ...body, revision: 8 })
+        : Response.json({ error: { code: 'WORKFLOW_ID_CONFLICT', message: '工作流 ID 已存在', details: {}, requestId: 'save-conflict' } }, { status: 409 })
+    }
+    if (path === '/api/workflows') return Response.json([saved])
+    if (path === `/api/workflows/${saved.id}`) return Response.json(saved)
+    return mockRequest(input, init)
+  })
+  render(<Toolbar />)
+  fireEvent.click(screen.getByRole('button', { name: /打开/ }))
+  fireEvent.click(await screen.findByRole('button', { name: `打开工作流 ${saved.name}` }))
+  await waitFor(() => expect(useWorkflowStore.getState().id).toBe(saved.id))
+  act(() => useWorkflowStore.getState().setWorkflowName('编辑后名称'))
+  fireEvent.click(screen.getByRole('button', { name: '保存' }))
+  await waitFor(() => expect(writes).toHaveLength(1))
+  expect(writes[0]).toMatchObject({ method: 'PUT', body: { id: saved.id, expectedRevision: 7, name: '编辑后名称' } })
+  await waitFor(() => expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(false))
+})
+
+it('shows save rejection independently of the selected run log and keeps the draft dirty', async () => {
+  setStudioTransport(async (input, init) => new URL(String(input)).pathname === '/api/workflows' && init?.method === 'POST'
+    ? Response.json({ error: { code: 'WORKFLOW_REVISION_CONFLICT', message: '流程已被其他窗口修改', details: {}, requestId: 'save-conflict' } }, { status: 409 })
+    : mockRequest(input, init))
+  render(<Toolbar />)
+  fireEvent.click(screen.getByRole('button', { name: '保存' }))
+  expect((await screen.findByRole('alert')).textContent).toContain('流程已被其他窗口修改')
+  expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(true)
+})

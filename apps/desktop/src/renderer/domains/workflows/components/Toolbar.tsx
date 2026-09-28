@@ -91,8 +91,10 @@ export function Toolbar() {
   })
   const workflowId = serverWorkflow?.documentId === documentId ? serverWorkflow.id : null
   const setWorkflowId = useCallback((id: string | null) => {
-    setServerWorkflow(id ? {documentId, id} : null)
-  }, [documentId])
+    // Import changes the store synchronously before the dialog callback renders.
+    setServerWorkflow(id ? {documentId: useWorkflowStore.getState().id, id} : null)
+  }, [])
+  const [saveError, setSaveError] = useState<{documentId: string; message: string} | null>(null)
   const startPending = useRef(false)
   const transitionPending = useRef(false)
   const awaitingStart = useRef<{ workflowId: string; runId: string } | null>(null)
@@ -421,6 +423,7 @@ export function Toolbar() {
   const handleSave = useCallback(async (skipConfirm = false) => {
     if (savingDocument.current || !mounted.current) return false
     savingDocument.current = true
+    setSaveError(null)
     const revision = getStudioTransportRevision()
     const sourceDocument = useWorkflowStore.getState().id
     const active = () => mounted.current && revision === getStudioTransportRevision() && sourceDocument === useWorkflowStore.getState().id
@@ -442,10 +445,16 @@ export function Toolbar() {
         if (unchanged) markAsSaved()  // A late save response cannot acknowledge newer edits.
         return unchanged
       }
-      if (!skipConfirm) addLog({ level: 'error', message: `保存失败: ${result.error || '服务未返回有效保存确认'}` })
+      const message = `保存失败: ${result.error || '服务未返回有效保存确认'}`
+      setSaveError({documentId: sourceDocument, message})
+      addLog({ level: 'error', message })
       return false
     } catch (error) {
-      if (mounted.current && !skipConfirm) addLog({ level: 'error', message: `保存失败: ${String(error)}` })
+      if (active()) {
+        const message = `保存失败: ${String(error)}`
+        setSaveError({documentId: sourceDocument, message})
+        addLog({ level: 'error', message })
+      }
       return false
     } finally { savingDocument.current = false }
   }, [workflowId, exportWorkflow, addLog, markAsSaved, setWorkflowId])
@@ -1294,6 +1303,9 @@ export function Toolbar() {
         before:bg-gradient-to-r before:from-[hsl(var(--brand-500))] before:via-[hsl(var(--brand-400))] before:to-[hsl(var(--info-500))]
         before:opacity-90"
     >
+      {saveError?.documentId === documentId && <div role="alert" className="w-full text-sm text-[hsl(var(--destructive))]">
+        {saveError.message}<Button variant="ghost" size="sm" onClick={() => setSaveError(null)}>关闭保存提示</Button>
+      </div>}
       {/* Logo/标题 - 艺术字风格 */}
       <div className="flex items-center select-none">
         <span className="text-[15px] font-bold tracking-tight text-[hsl(var(--brand-700))]" aria-label="AutoFlow">AutoFlow</span>
