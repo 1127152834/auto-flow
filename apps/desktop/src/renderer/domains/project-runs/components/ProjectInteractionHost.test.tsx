@@ -128,11 +128,54 @@ it('keeps polling other interactions while a transient claim recovers with its o
   expect(claimQueries.every(([path]) => path.endsWith(`/commands/${claimCommandId}`))).toBe(true)
 })
 
-it('aborts an unresolved claim across a connection revision without replaying it', async () => {
+it('resumes the original claim query across a same-instance reconnect without replaying it', async () => {
+  vi.useFakeTimers()
+  const target = { ...identity, type: 'execution:js_script' }
+  let claimCommandId = ''
+  let reconnected = false
+  const oldRequest = vi.fn(async (path, init) => {
+    if (path === '/api/v1/project-run-interactions') return [target]
+    if (path.includes('/requests/')) return { ...target, code: 'function main(vars){return 7}', variables: {}, nodeId: 'n', executionId: 'v' }
+    if (init?.body?.event === 'js_script_claim') {
+      claimCommandId = init.body.commandId
+      throw new TypeError('claim submit offline')
+    }
+    if (path.includes('/commands/')) throw new TypeError('claim query offline')
+    return { commandId: init.body.commandId, requestId: 'req', status: 'applied' }
+  })
+  const nextRequest = vi.fn(async (path, init) => {
+    if (path === '/api/v1/project-run-interactions') return [target]
+    if (path.includes('/commands/')) {
+      if (!reconnected) throw new TypeError('claim query still offline')
+      return { commandId: claimCommandId, requestId: 'req', status: 'applied' }
+    }
+    return { commandId: init.body.commandId, requestId: 'req', status: 'applied' }
+  })
+  vi.mocked(runJsScript).mockReset().mockResolvedValue({ success: true, result: 7, variables: {} })
+  const view = render(<ProjectInteractionHost client={client(oldRequest)} connected />)
+  await act(async () => { await vi.advanceTimersByTimeAsync(0) })
+  expect(screen.getByText(/项目交互连接中断/)).toBeDefined()
+
+  view.rerender(<ProjectInteractionHost client={client(nextRequest)} connected={false} />)
+  await act(async () => { await vi.advanceTimersByTimeAsync(1000) })
+  expect(screen.getByText(/项目交互连接中断/)).toBeDefined()
+  reconnected = true
+  view.rerender(<ProjectInteractionHost client={client(nextRequest)} connected />)
+  await act(async () => { await vi.advanceTimersByTimeAsync(500) })
+
+  expect(screen.queryByText(/项目交互连接中断/)).toBeNull()
+  expect(runJsScript).toHaveBeenCalledTimes(1)
+  const calls = [...oldRequest.mock.calls, ...nextRequest.mock.calls]
+  expect(calls.filter(([, init]) => init?.body?.event === 'js_script_claim')).toHaveLength(1)
+  expect(calls.filter(([, init]) => init?.body?.event === 'js_script_result')).toHaveLength(1)
+  expect(calls.filter(([path]) => path.includes('/commands/')).every(([path]) => path.endsWith(`/commands/${claimCommandId}`))).toBe(true)
+})
+
+it('cancels an unknown claim when the workspace and instance keyed host remounts', async () => {
   vi.useFakeTimers()
   const target = { ...identity, type: 'execution:js_script' }
   let claimSignal: AbortSignal | undefined
-  const request = vi.fn(async (path, init) => {
+  const oldRequest = vi.fn(async (path, init) => {
     if (path === '/api/v1/project-run-interactions') return [target]
     if (path.includes('/requests/')) return { ...target, code: 'function main(vars){return 7}', variables: {}, nodeId: 'n', executionId: 'v' }
     if (init?.body?.event === 'js_script_claim') throw new TypeError('claim submit offline')
@@ -142,21 +185,21 @@ it('aborts an unresolved claim across a connection revision without replaying it
     }
     return { commandId: init.body.commandId, requestId: 'req', status: 'applied' }
   })
+  const nextRequest = vi.fn().mockResolvedValue([])
   vi.mocked(runJsScript).mockReset().mockResolvedValue({ success: true, result: 7, variables: {} })
-  const api = client(request)
-  const view = render(<ProjectInteractionHost client={api} connected />)
+  const view = render(<ProjectInteractionHost key={JSON.stringify(['workspace-a', 'instance-a'])} client={client(oldRequest)} connected />)
   await act(async () => { await vi.advanceTimersByTimeAsync(0) })
   expect(claimSignal?.aborted).toBe(false)
 
-  view.rerender(<ProjectInteractionHost client={api} connected={false} />)
-  await act(async () => { await vi.advanceTimersByTimeAsync(1000) })
+  view.rerender(<ProjectInteractionHost key={JSON.stringify(['workspace-b', 'instance-b'])} client={client(nextRequest)} connected />)
+  await act(async () => { await Promise.resolve() })
   expect(claimSignal?.aborted).toBe(true)
-  view.rerender(<ProjectInteractionHost client={api} connected />)
   await act(async () => { await vi.advanceTimersByTimeAsync(1000) })
 
   expect(runJsScript).not.toHaveBeenCalled()
-  expect(request.mock.calls.filter(([, init]) => init?.body?.event === 'js_script_claim')).toHaveLength(1)
-  expect(request.mock.calls.filter(([, init]) => init?.body?.event === 'js_script_result')).toHaveLength(0)
+  expect(oldRequest.mock.calls.filter(([, init]) => init?.body?.event === 'js_script_claim')).toHaveLength(1)
+  expect(oldRequest.mock.calls.filter(([, init]) => init?.body?.event === 'js_script_result')).toHaveLength(0)
+  expect(nextRequest).toHaveBeenCalled()
 })
 
 it('keeps an actual script failure after later transport polls succeed', async () => {

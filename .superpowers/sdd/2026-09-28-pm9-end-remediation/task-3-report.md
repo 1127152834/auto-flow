@@ -339,3 +339,95 @@ Round 1 的实际 CUA PNG/AX、独立成功 run 和 SQLite 单次执行证据仍
 Root 在本轮源码修改前的冻结 `dae16113` 上运行了 default 5665 tests / 432 files、lint、typecheck、build 和 package，均 exit 0；这些结果只证明 round-2 基线稳定，不计作修改后的最终全量门禁。按协调约定，root 将在 round-2 review 通过后运行 final v3。
 
 没有修改 backend/Python、包目录、root 最终资产或 AOCI。AOCI 仍由外部 owner 处理 recovery pending，本任务未接管、重试或维护。
+
+---
+
+## Review fix round 3（修复基线 `d2bcae4f`，2026-09-28）
+
+### 独立边界证据
+
+Round 2 把 `client/connected` revision 变化视作 claim owner 变化并 abort 未决 claim，这一结论错误。两条独立证据确定了正确边界：
+
+- `app/App.tsx` 用 `JSON.stringify([session.workspaceKey, session.instanceId])` 作为 `ProjectInteractionHost` key。workspace 或 sidecar instance 变化会真实 remount Host，effect cleanup 会 abort 全部旧 controller；普通同实例断连、重连或 client 更新不会 remount。
+- backend `ProjectRunInteractions.pending()` 在同一 running generation 中继续返回内存请求及其 `pending`、`claimed`、`submitted` identity；command receipt 又按原 command ID 持久化查询。因此同实例恢复必须继续原 command 的只读查询，不能放弃或再发 claim。
+
+`ApiProvider` 的注释和测试也明确：同 workspace reconnect 保留 provider/query observers，仅 workspace key 变化才建立新 cache。这与 Host 的 workspace+instance remount key 一致。
+
+### 修改
+
+- `claims` 由 revision map 改为当前 Host effect 内的 identity set。同一个 mounted Host 内，client/connected revision 不再 abort claim。
+- claim transport observer 改用 effect/controller ownership 判断；每次 query 通过 `createProjectInteractions(() => latest.current.client)` 使用最新 client，但仍绑定第一次生成的 command ID。
+- claim 确认后只检查 Host/script 是否仍 owned，再启动原 Worker。真实 key remount、组件卸载、pending identity 消失、取消或过期仍会走原 AbortController cleanup。
+- poll 自身继续使用 revision fence，旧 pending/request 结果不能清除新连接状态；该 fence不再错误终止独立的原 command recovery。
+
+没有修改 `App.tsx`、`ApiProvider` 或 backend；它们只作为本次边界判断的独立证据。
+
+### RED / GREEN
+
+先把 round-2 的错误 abandonment 测试改成同实例恢复契约，旧实现 RED：
+
+```text
+npm --workspace @autoflow/desktop test -- --run src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx -t "resumes the original claim query across a same-instance reconnect without replaying it"
+exit 1
+Test Files  1 failed (1)
+Tests       1 failed | 9 skipped (10)
+AssertionError: expected connection notice to be null after recovery
+Duration 1.39s
+```
+
+实现后同一命令 GREEN：
+
+```text
+npm --workspace @autoflow/desktop test -- --run src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx -t "resumes the original claim query across a same-instance reconnect without replaying it"
+exit 0
+Test Files  1 passed (1)
+Tests       1 passed | 9 skipped (10)
+Duration 1.11s
+```
+
+该用例让初始 client 的 claim POST 及 fallback query 结果未知，随后同一 mounted Host 切换 `client/connected`。恢复后只查询第一次 claim 的 command ID；claim POST、Worker、result POST 各一次，notice 在原 command receipt 恢复后消失。
+
+真实 remount 边界回归：
+
+```text
+npm --workspace @autoflow/desktop test -- --run src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx -t "cancels an unknown claim when the workspace and instance keyed host remounts"
+exit 0
+Test Files  1 passed (1)
+Tests       1 passed | 10 skipped (11)
+Duration 1.08s
+```
+
+该用例按 App 的 workspace+instance key 更换 Host，验证旧 claim signal 被 abort；旧 Worker 和 result 均未执行，新 Host 独立 poll。
+
+最终两份完整文件：
+
+```text
+npm --workspace @autoflow/desktop test -- --run src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx src/renderer/domains/project-runs/interactions.test.ts
+exit 0
+Test Files  2 passed (2)
+Tests       16 passed (16)
+Duration 1.40s
+```
+
+最终静态检查：
+
+```text
+npm --workspace @autoflow/desktop run typecheck
+exit 0
+
+npm exec --workspace @autoflow/desktop -- eslint \
+  src/renderer/domains/project-runs/interactions.ts \
+  src/renderer/domains/project-runs/interactions.test.ts \
+  src/renderer/domains/project-runs/components/ProjectInteractionHost.tsx \
+  src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx
+exit 0
+
+git diff --check -- <Task 3 round-3 owned files>
+exit 0
+```
+
+### 验收边界
+
+本轮没有 build、package、全量 frontend 或 40 秒真实 outage。round-1 的真实 UI/SQLite 证据继续证明整体 notice、operation error 与单次执行，但不声称覆盖这个同实例 claim 窄窗口；round-3 用确定性 client/connected 迁移和真实 React key remount 分别验证两个边界。
+
+当前 HEAD 在修复前包含 root 的 docs-only `baa3bbe7`；该提交不属于 Task 3 业务 diff。本轮没有修改 Task6 Studio/workflow 文件、backend/Python、包目录、root 资产或 AOCI。

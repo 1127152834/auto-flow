@@ -41,7 +41,7 @@ export function ProjectInteractionHost({ client, connected }: { client: Streamin
   useEffect(() => {
     const controller = new AbortController()
     const scripts = new Map<string, AbortController>()
-    const claims = new Map<string, number>()
+    const claims = new Set<string>()
     const transportFailures = new Set<string>()
     let timer: ReturnType<typeof setTimeout>
     const identity = (target: InteractionIdentity) => JSON.stringify([target.projectId, target.taskId, target.runId, target.executionGeneration, target.requestId])
@@ -58,12 +58,6 @@ export function ProjectInteractionHost({ client, connected }: { client: Streamin
       const revision = latest.current.revision
       const isCurrent = () => !controller.signal.aborted && latest.current.connected && latest.current.revision === revision
       try {
-        for (const [key, ownerRevision] of claims) {
-          if (ownerRevision === revision) continue
-          scripts.get(key)?.abort()
-          claims.delete(key)
-          recoverTransport(key, false)
-        }
         if (!latest.current.connected) return
         const pending = await api.pending(controller.signal)
         if (!isCurrent()) return
@@ -100,23 +94,24 @@ export function ProjectInteractionHost({ client, connected }: { client: Streamin
           // From claim onward this identity stays owned; failures must never start it again.
           scripts.set(key, script)
           if (!request) continue
-          claims.set(key, revision)
+          claims.add(key)
+          const isOwned = () => !controller.signal.aborted && !script.signal.aborted
           const transport = {
-            interrupted: () => interruptTransport(key, !script.signal.aborted && isCurrent()),
-            recovered: () => recoverTransport(key, !script.signal.aborted && isCurrent()),
+            interrupted: () => interruptTransport(key, isOwned()),
+            recovered: () => recoverTransport(key, isOwned() && latest.current.connected),
           }
           void (async () => {
             try {
               const claimed = await claimProjectScript(api, target, request, script.signal, transport)
               claims.delete(key)
-              recoverTransport(key, isCurrent())
-              if (!isCurrent()) { script.abort(); return }
+              recoverTransport(key, isOwned() && latest.current.connected)
+              if (!isOwned()) return
               await executeClaimedProjectScript(api, target, claimed, script.signal, transport)
             } catch (caught) {
-              if (!script.signal.aborted && isCurrent()) setOperationError(caught instanceof Error ? caught.message : '项目脚本交互失败')
+              if (isOwned()) setOperationError(caught instanceof Error ? caught.message : '项目脚本交互失败')
             } finally {
               claims.delete(key)
-              recoverTransport(key, !script.signal.aborted && isCurrent())
+              recoverTransport(key, isOwned() && latest.current.connected)
             }
           })()
         }
