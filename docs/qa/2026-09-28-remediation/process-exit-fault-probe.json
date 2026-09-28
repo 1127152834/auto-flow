@@ -1,0 +1,12 @@
+{
+  "stateAfterSignal": "Z",
+  "existsAfterSignal": true,
+  "birthAfterSignal": 4528967296509,
+  "nativeArgumentsAvailable": false,
+  "capture": {
+    "status": "raised",
+    "error": "Candidate browser process ownership is unavailable"
+  },
+  "childReaped": true,
+  "childReturnCode": -9
+}
