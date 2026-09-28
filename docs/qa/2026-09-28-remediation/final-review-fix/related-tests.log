@@ -1,0 +1,23 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --run src/renderer/domains/workflows/components/config-panels/ProjectEndConfig.test.tsx src/renderer/domains/workflows/tests/node-config-shape.test.tsx src/renderer/domains/workflows/tests/common-advanced-config.test.tsx src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx src/renderer/domains/workflows/tests/complex-structure-interactions.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:19196) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:19195) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:19197) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:19198) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:19214) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  5 passed (5)
+      Tests  133 passed (133)
+   Start at  19:26:05
+   Duration  5.86s (transform 4.33s, setup 653ms, import 5.98s, tests 6.49s, environment 1.95s)
+

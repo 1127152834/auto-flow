@@ -1,0 +1,983 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run --run src/renderer/domains/workflows/components/config-panels/ProjectEndConfig.test.tsx src/renderer/domains/workflows/tests/node-config-shape.test.tsx src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+
+(node:17801) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:17799) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:17800) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/components/config-panels/ProjectEndConfig.test.tsx (3 tests | 1 failed) 228ms
+     × 准确回显静态记录目标并以数组形状清空 82ms
+ ❯ src/renderer/domains/workflows/tests/node-config-shape.test.tsx (13 tests | 1 failed) 517ms
+   × shows, preserves and clears nested static End targets without converting them to a string 119ms
+ ❯ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx (53 tests | 1 failed) 3080ms
+   × NODE.subflow.nested-config: filters and selects definitions from effective config only 91ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx > NODE.subflow.nested-config: filters and selects definitions from effective config only
+TestingLibraryElementError: Unable to find an accessible element with the role "option" and name "[分组] 嵌套有效名"
+
+Here are the accessible roles:
+
+  listbox:
+
+  Name "":
+  [36m<div[39m
+    [33mclass[39m=[32m"min-w-[var(--radix-select-trigger-width)] max-h-[min(360px,var(--radix-select-content-available-height))] overflow-hidden rounded-card border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-pop-xl ring-1 ring-[hsl(var(--brand-500)/0.06)] data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2"[39m
+    [33mdata-align[39m=[32m"start"[39m
+    [33mdata-side[39m=[32m"bottom"[39m
+    [33mdata-state[39m=[32m"open"[39m
+    [33mdir[39m=[32m"ltr"[39m
+    [33mid[39m=[32m"radix-_r_eb_"[39m
+    [33mrole[39m=[32m"listbox"[39m
+    [33mstyle[39m=[32m"box-sizing: border-box; display: flex; flex-direction: column; outline: none; z-index: 2147483647; --radix-select-content-transform-origin: var(--radix-popper-transform-origin); --radix-select-content-available-width: var(--radix-popper-available-width); --radix-select-content-available-height: var(--radix-popper-available-height); --radix-select-trigger-width: var(--radix-popper-anchor-width); --radix-select-trigger-height: var(--radix-popper-anchor-height); animation: none; pointer-events: auto;"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  presentation:
+
+  Name "":
+  [36m<div[39m
+    [33mclass[39m=[32m"p-1"[39m
+    [33mdata-radix-select-viewport[39m=[32m""[39m
+    [33mrole[39m=[32m"presentation"[39m
+    [33mstyle[39m=[32m"position: relative; flex: 1 1 0%; overflow: hidden auto;"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  option:
+
+  Name "请选择子流程...":
+  [36m<div[39m
+    [33maria-labelledby[39m=[32m"radix-_r_eq_"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"relative flex select-none items-center gap-2 rounded-control py-1.5 pl-7 pr-2.5 text-[13px] leading-tight text-[hsl(var(--slate-700))] cursor-pointer outline-none transition-colors duration-100 hover:bg-[hsl(var(--brand-50))] hover:text-[hsl(var(--brand-700))] data-[highlighted]:bg-[hsl(var(--brand-50))] data-[highlighted]:text-[hsl(var(--brand-700))] data-[state=checked]:bg-[hsl(var(--brand-50))] data-[state=checked]:text-[hsl(var(--brand-700))] data-[state=checked]:font-semibold data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 data-[disabled]:hover:bg-transparent data-[disabled]:hover:text-[hsl(var(--slate-700))]"[39m
+    [33mdata-radix-collection-item[39m=[32m""[39m
+    [33mdata-state[39m=[32m"checked"[39m
+    [33mrole[39m=[32m"option"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+  [36m/>[39m
+
+  Name "[分组] 外层误列名":
+  [36m<div[39m
+    [33maria-labelledby[39m=[32m"radix-_r_er_"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"relative flex select-none items-center gap-2 rounded-control py-1.5 pl-7 pr-2.5 text-[13px] leading-tight text-[hsl(var(--slate-700))] cursor-pointer outline-none transition-colors duration-100 hover:bg-[hsl(var(--brand-50))] hover:text-[hsl(var(--brand-700))] data-[highlighted]:bg-[hsl(var(--brand-50))] data-[highlighted]:text-[hsl(var(--brand-700))] data-[state=checked]:bg-[hsl(var(--brand-50))] data-[state=checked]:text-[hsl(var(--brand-700))] data-[state=checked]:font-semibold data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 data-[disabled]:hover:bg-transparent data-[disabled]:hover:text-[hsl(var(--slate-700))]"[39m
+    [33mdata-radix-collection-item[39m=[32m""[39m
+    [33mdata-state[39m=[32m"unchecked"[39m
+    [33mrole[39m=[32m"option"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+  [36m/>[39m
+
+  Name "[函数头] 外层头旧名":
+  [36m<div[39m
+    [33maria-labelledby[39m=[32m"radix-_r_es_"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"relative flex select-none items-center gap-2 rounded-control py-1.5 pl-7 pr-2.5 text-[13px] leading-tight text-[hsl(var(--slate-700))] cursor-pointer outline-none transition-colors duration-100 hover:bg-[hsl(var(--brand-50))] hover:text-[hsl(var(--brand-700))] data-[highlighted]:bg-[hsl(var(--brand-50))] data-[highlighted]:text-[hsl(var(--brand-700))] data-[state=checked]:bg-[hsl(var(--brand-50))] data-[state=checked]:text-[hsl(var(--brand-700))] data-[state=checked]:font-semibold data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 data-[disabled]:hover:bg-transparent data-[disabled]:hover:text-[hsl(var(--slate-700))]"[39m
+    [33mdata-radix-collection-item[39m=[32m""[39m
+    [33mdata-state[39m=[32m"unchecked"[39m
+    [33mrole[39m=[32m"option"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mdata-scroll-locked[39m=[32m"1"[39m
+  [33mstyle[39m=[32m"pointer-events: none;"[39m
+[36m>[39m
+  [36m<span[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+    [33mdata-radix-focus-guard[39m=[32m""[39m
+    [33mstyle[39m=[32m"outline: none; opacity: 0; position: fixed; pointer-events: none;"[39m
+    [33mtabindex[39m=[32m"0"[39m
+  [36m/>[39m
+  [36m<div[39m
+    [33maria-hidden[39m=[32m"true"[39m
+    [33mdata-aria-hidden[39m=[32m"true"[39m
+  [36m>[39m
+    [36m<aside[39m
+      [33mclass[39m=[32m"relative border-l border-[hsl(var(--border))] bg-[hsl(var(--card))] flex flex-col"[39m
+      [33mstyle[39m=[32m"width: 320px; transition: width 200ms ease-out;"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"p-3.5 border-b border-[hsl(var(--border))] flex items-center justify-between"[39m
+        [33mstyle[39m=[32m"background: linear-gradient(180deg, hsl(var(--brand-50) / 0.5), hsl(var(--card)));"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-2.5 min-w-0"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"icon-block icon-block-brand !w-9 !h-9 !rounded-card flex-shrink-0"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-workflow w-4 h-4"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2.4"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"8"[39m
+                [33mrx[39m=[32m"2"[39m
+                [33mwidth[39m=[32m"8"[39m
+                [33mx[39m=[32m"3"[39m
+                [33my[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M7 11v4a2 2 0 0 0 2 2h4"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"8"[39m
+                [33mrx[39m=[32m"2"[39m
+                [33mwidth[39m=[32m"8"[39m
+                [33mx[39m=[32m"13"[39m
+                [33my[39m=[32m"13"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"min-w-0"[39m
+          [36m>[39m
+            [36m<h2[39m
+              [33mclass[39m=[32m"text-[14px] font-bold text-[hsl(var(--slate-900))] truncate tracking-tight"[39m
+            [36m>[39m
+              [0m子流程[0m
+            [36m</h2>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5 flex items-center gap-1.5"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"badge badge-brand !py-0 !text-[9.5px]"[39m
+              [36m>[39m
+                [0msubflow[0m
+              [36m</span>[39m
+            [36m</p>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-1"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-control text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--brand-50))] text-[hsl(var(--brand-700))] border border-[hsl(var(--brand-500)/0.25)] hover:bg-[hsl(var(--brand-100))] hover:border-[hsl(var(--brand-500)/0.45)] h-7 w-7 p-0 rounded-control"[39m
+            [33mtitle[39m=[32m"问 AI（解释 / 优化 / 修复此模块）"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-sparkles w-3.5 h-3.5"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M20 2v4"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M22 4h-4"[39m
+              [36m/>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"4"[39m
+                [33mcy[39m=[32m"20"[39m
+                [33mr[39m=[32m"2"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-control text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--brand-50))] text-[hsl(var(--brand-700))] border border-[hsl(var(--brand-500)/0.25)] hover:bg-[hsl(var(--brand-100))] hover:border-[hsl(var(--brand-500)/0.45)] h-7 w-7 p-0 rounded-control"[39m
+            [33mtitle[39m=[32m"禁用模块 (Ctrl+D)"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-ban w-3.5 h-3.5"[39m
+              [33mfill[39m=[32m"none...
+ ❯ Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx:213:17
+    211|   const select = screen.getByRole('combobox', { name: '选择子流程' })
+    212|   fireEvent.keyDown(select, { key: 'ArrowDown' })
+    213|   expect(screen.getByRole('option', { name: '[分组] 嵌套有效名' })).toBeDefin…
+       |                 ^
+    214|   expect(screen.getByRole('option', { name: '[函数头] 嵌套函数名' })).toBeDefi…
+    215|   expect(screen.queryByRole('option', { name: '[分组] 外层误列名' })).toBeNul…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/node-config-shape.test.tsx > shows, preserves and clears nested static End targets without converting them to a string
+TestingLibraryElementError: Unable to find an accessible element with the role "textbox" and name "静态记录目标"
+
+Here are the accessible roles:
+
+  complementary:
+
+  Name "":
+  [36m<aside[39m
+    [33mclass[39m=[32m"relative border-l border-[hsl(var(--border))] bg-[hsl(var(--card))] flex flex-col"[39m
+    [33mstyle[39m=[32m"width: 320px; transition: width 200ms ease-out;"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  heading:
+
+  Name "项目结束":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-[14px] font-bold text-[hsl(var(--slate-900))] truncate tracking-tight"[39m
+  [36m/>[39m
+
+  Name "错误处理":
+  [36m<h3[39m
+    [33mclass[39m=[32m"text-xs font-medium text-muted-foreground uppercase tracking-wider"[39m
+  [36m/>[39m
+
+  Name "高级配置":
+  [36m<h3[39m
+    [33mclass[39m=[32m"text-xs font-medium text-muted-foreground uppercase tracking-wider"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5 flex items-center gap-1.5"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "问 AI（解释 / 优化 / 修复此模块）":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-control text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--brand-50))] text-[hsl(var(--brand-700))] border border-[hsl(var(--brand-500)/0.25)] hover:bg-[hsl(var(--brand-100))] hover:border-[hsl(var(--brand-500)/0.45)] h-7 w-7 p-0 rounded-control"[39m
+    [33mtitle[39m=[32m"问 AI（解释 / 优化 / 修复此模块）"[39m
+  [36m/>[39m
+
+  Name "禁用模块 (Ctrl+D)":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-control text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--brand-50))] text-[hsl(var(--brand-700))] border border-[hsl(var(--brand-500)/0.25)] hover:bg-[hsl(var(--brand-100))] hover:border-[hsl(var(--brand-500)/0.45)] h-7 w-7 p-0 rounded-control"[39m
+    [33mtitle[39m=[32m"禁用模块 (Ctrl+D)"[39m
+  [36m/>[39m
+
+  Name "删除模块":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-control text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--danger-50))] text-[hsl(var(--danger-700))] border border-[hsl(var(--danger-500)/0.3)] hover:bg-[hsl(var(--danger-100))] hover:border-[hsl(var(--danger-500)/0.5)] h-7 w-7 p-0 rounded-control"[39m
+    [33mtitle[39m=[32m"删除模块"[39m
+  [36m/>[39m
+
+  Name "收起配置面板":
+  [36m<button[39m
+    [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-control text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] active:bg-[hsl(var(--brand-100))] h-7 w-7 p-0 rounded-control bg-[hsl(var(--slate-100))] hover:bg-[hsl(var(--brand-50))] text-[hsl(var(--slate-600))] hover:text-[hsl(var(--brand-700))] border border-transparent hover:border-[hsl(var(--brand-500)/0.3)]"[39m
+    [33mtitle[39m=[32m"收起配置面板"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  status:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+    [33mrole[39m=[32m"status"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  textbox:
+
+  Name "节点备注":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex h-8 w-full rounded-control px-2.5 py-1 text-[13px] border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-[hsl(var(--muted))] aria-[invalid=true]:border-[hsl(var(--danger-500))] aria-[invalid=true]:ring-[hsl(var(--danger-500)/0.18)] file:border-0 file:bg-transparent file:text-[12px] file:font-medium file:text-[hsl(var(--foreground))] transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"[39m
+    [33mid[39m=[32m"name"[39m
+    [33mplaceholder[39m=[32m"可选的节点备注"[39m
+    [33mvalue[39m=[32m"外层节点备注"[39m
+  [36m/>[39m
+
+  Name "新环境名称":
+  [36m<input[39m
+    [33mclass[39m=[32m"w-full rounded border bg-background px-2 py-1"[39m
+    [33mid[39m=[32m"_r_i_-name"[39m
+    [33mmaxlength[39m=[32m"36"[39m
+    [33mvalue[39m=[32m"运行环境名称"[39m
+  [36m/>[39m
+
+  Name "关联输入标识（逗号分隔）":
+  [36m<input[39m
+    [33mclass[39m=[32m"w-full rounded border bg-background px-2 py-1"[39m
+    [33mid[39m=[32m"_r_i_-inputs"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "新增或已写记录的 RecordRef 列表":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"[39m
+    [33mid[39m=[32m"_r_i_-targets"[39m
+    [33mplaceholder[39m=[32m"例如 {created_records}；留空不追加记录"[39m
+    [33mtype[39m=[32m"text"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "超时时间 (秒)":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"[39m
+    [33mid[39m=[32m"timeout"[39m
+    [33minputmode[39m=[32m"numeric"[39m
+    [33mtype[39m=[32m"text"[39m
+    [33mvalue[39m=[32m"0"[39m
+  [36m/>[39m
+
+  Name "重试次数":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"[39m
+    [33mid[39m=[32m"retryCount"[39m
+    [33minputmode[39m=[32m"numeric"[39m
+    [33mtype[39m=[32m"text"[39m
+    [33mvalue[39m=[32m"0"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  alert:
+
+  Name "":
+  [36m<p[39m
+    [33mrole[39m=[32m"alert"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  combobox:
+
+  Name "业务结果":
+  [36m<button[39m
+    [33maria-autocomplete[39m=[32m"none"[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33mclass[39m=[32m"group relative flex h-8 w-full items-center justify-between gap-2 rounded-control border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] px-2.5 py-1 pr-2 text-[13px] text-[hsl(var(--foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,background-color,box-shadow,transform] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] data-[state=open]:border-[hsl(var(--brand-500))] data-[state=open]:bg-[hsl(var(--card))] data-[state=open]:ring-2 data-[state=open]:ring-[hsl(var(--brand-500)/0.18)] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer text-left"[39m
+    [33mdata-state[39m=[32m"closed"[39m
+    [33mdir[39m=[32m"ltr"[39m
+    [33mid[39m=[32m"_r_i_-result"[39m
+    [33mrole[39m=[32m"combobox"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "保存方式":
+  [36m<button[39m
+    [33maria-autocomplete[39m=[32m"none"[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33mclass[39m=[32m"group relative flex h-8 w-full items-center justify-between gap-2 rounded-control border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] px-2.5 py-1 pr-2 text-[13px] text-[hsl(var(--foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,background-color,box-shadow,transform] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] data-[state=open]:border-[hsl(var(--brand-500))] data-[state=open]:bg-[hsl(var(--card))] data-[state=open]:ring-2 data-[state=open]:ring-[hsl(var(--brand-500)/0.18)] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer text-left"[39m
+    [33mdata-state[39m=[32m"closed"[39m
+    [33mdir[39m=[32m"ltr"[39m
+    [33mid[39m=[32m"_r_i_-mode"[39m
+    [33mrole[39m=[32m"combobox"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<button[39m
+    [33maria-autocomplete[39m=[32m"none"[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33mclass[39m=[32m"group relative flex h-8 w-full items-center justify-between gap-2 rounded-control border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] px-2.5 py-1 pr-2 text-[13px] text-[hsl(var(--foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,background-color,box-shadow,transform] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] data-[state=open]:border-[hsl(var(--brand-500))] data-[state=open]:bg-[hsl(var(--card))] data-[state=open]:ring-2 data-[state=open]:ring-[hsl(var(--brand-500)/0.18)] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer text-left"[39m
+    [33mdata-state[39m=[32m"closed"[39m
+    [33mdir[39m=[32m"ltr"[39m
+    [33mrole[39m=[32m"combobox"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "运行超时后":
+  [36m<button[39m
+    [33maria-autocomplete[39m=[32m"none"[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33mclass[39m=[32m"group relative flex h-8 w-full items-center justify-between gap-2 rounded-control border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] px-2.5 py-1 pr-2 text-[13px] text-[hsl(var(--foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,background-color,box-shadow,transform] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] data-[state=open]:border-[hsl(var(--brand-500))] data-[state=open]:bg-[hsl(var(--card))] data-[state=open]:ring-2 data-[state=open]:ring-[hsl(var(--brand-500)/0.18)] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer text-left"[39m
+    [33mdata-state[39m=[32m"closed"[39m
+    [33mdir[39m=[32m"ltr"[39m
+    [33mid[39m=[32m"timeoutAction"[39m
+    [33mrole[39m=[32m"combobox"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  checkbox:
+
+  Name "保留当前环境并关联记录":
+  [36m<input[39m
+    [33mchecked[39m=[32m""[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  Name "允许替换所选记录已有的环境关联":
+  [36m<input[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  code:
+
+  Name "":
+  [36m<code[39m
+    [33mclass[39m=[32m"bg-[hsl(var(--card))] px-1.5 py-0.5 rounded text-blue-600 font-mono"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  separator:
+
+  Name "":
+  [36m<div[39m
+    [33maria-orientation[39m=[32m"vertical"[39m
+    [33mclass[39m=[32m"panel-resizer "[39m
+    [33mrole[39m=[32m"separator"[39m
+    [33mstyle[39m=[32m"position: absolute; top: 0px; bottom: 0px; left: -3px; width: 6px; cursor: col-resize; z-index: 30;"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<aside[39m
+      [33mclass[39m=[32m"relative border-l border-[hsl(var(--border))] bg-[hsl(var(--card))] flex flex-col"[39m
+      [33mstyle[39m=[32m"width: 320px; transition: width 200ms ease-out;"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"p-3.5 border-b border-[hsl(var(--border))] flex items-center justify-between"[39m
+        [33mstyle[39m=[32m"background: linear-gradient(180deg, hsl(var(--brand-50) / 0.5), hsl(var(--card)));"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-2.5 min-w-0"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"icon-block icon-block-brand !w-9 !h-9 !rounded-card flex-shrink-0"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-database w-4 h-4"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2.4"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<ellipse[39m
+                [33mcx[39m=[32m"12"[39m
+                [33mcy[39m=[32m"5"[39m
+                [33mrx[39m=[32m"9"[39m
+                [33mry[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M3 5V19A9 3 0 0 0 21 19V5"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M3 12A9 3 0 0 0 21 12"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"min-w-0"[39m
+          [36m>[39m
+            [36m<h2[39m
+              [33mclass[39m=[32m"text-[14px] font-bold text-[hsl(var(--slate-900))] truncate tracking-tight"[39m
+            [36m>[39m
+              [0m项目结束[0m
+            [36m</h2>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5 flex items-center gap-1.5"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"badge badge-brand !py-0 !text-[9.5px]"[39m
+              [36m>[39m
+                [0mproject_end[0m
+              [36m</span>[39m
+            [36m</p>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-1"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-control text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--brand-50))] text-[hsl(var(--brand-700))] border border-[hsl(var(--brand-500)/0.25)] hover:bg-[hsl(var(--brand-100))] hover:border-[hsl(var(--brand-500)/0.45)] h-7 w-7 p-0 rounded-control"[39m
+            [33mtitle[39m=[32m"问 AI（解释 / 优化 / 修复此模块）"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-sparkles w-3.5 h-3.5"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M20 2v4"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M22 4h-4"[39m
+              [36m/>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"4"[39m
+                [33mcy[39m=[32m"20"[39m
+                [33mr[39m=[32m"2"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"group relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-control text-[13px] font-medium select-none transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-1 focus-visible:ring-offset-[hsl(var(--background))] disabled:pointer-events-none disabled:opacity-50 active:translate-y-[1px] active:scale-[0.99] bg-[hsl(var(--brand-50))] text-[hsl(var(--brand-700))] border border-[hsl(var(--brand-500)/0.25)] hover:bg-[hsl(var(--brand-100))] hover:border-[hsl(var(--brand-500)/0.45)] h-7 w-7 p-0 rounded-control"[39m
+            [33mtitle[39m=[32m"禁用模块 (Ctrl+D)"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-ban w-3.5 h-3.5"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M4.929 4.929 19.07 19.071"[39m
+              [36m/>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"12"[39m
+                [33mcy[39m=[32m"12"[39m
+        ...
+ ❯ Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/domains/workflows/tests/node-config-shape.test.tsx:95:29
+     93|   render(<ConfigPanel selectedNodeId="end" />)
+     94|
+     95|   expect(JSON.parse((screen.getByRole('textbox', { name: '静态记录目标' }) a…
+       |                             ^
+     96|   fireEvent.click(screen.getByRole('checkbox', { name: '允许替换所选记录已有的环境关…
+     97|   let data = store.getState().nodes[0].data as Record<string, unknown>
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/renderer/domains/workflows/components/config-panels/ProjectEndConfig.test.tsx > 项目 End 配置 > 准确回显静态记录目标并以数组形状清空
+TestingLibraryElementError: Unable to find an accessible element with the role "textbox" and name "静态记录目标"
+
+Here are the accessible roles:
+
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  combobox:
+
+  Name "业务结果":
+  [36m<button[39m
+    [33maria-autocomplete[39m=[32m"none"[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33mclass[39m=[32m"group relative flex h-8 w-full items-center justify-between gap-2 rounded-control border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] px-2.5 py-1 pr-2 text-[13px] text-[hsl(var(--foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,background-color,box-shadow,transform] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] data-[state=open]:border-[hsl(var(--brand-500))] data-[state=open]:bg-[hsl(var(--card))] data-[state=open]:ring-2 data-[state=open]:ring-[hsl(var(--brand-500)/0.18)] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer text-left"[39m
+    [33mdata-state[39m=[32m"closed"[39m
+    [33mdir[39m=[32m"ltr"[39m
+    [33mid[39m=[32m"_r_0_-result"[39m
+    [33mrole[39m=[32m"combobox"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  checkbox:
+
+  Name "保留当前环境并关联记录":
+  [36m<input[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  --------------------------------------------------paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  combobox:
+
+  Name "业务结果":
+  [36m<button[39m
+    [33maria-autocomplete[39m=[32m"none"[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33mclass[39m=[32m"group relative flex h-8 w-full items-center justify-between gap-2 rounded-control border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] px-2.5 py-1 pr-2 text-[13px] text-[hsl(var(--foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,background-color,box-shadow,transform] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] data-[state=open]:border-[hsl(var(--brand-500))] data-[state=open]:bg-[hsl(var(--card))] data-[state=open]:ring-2 data-[state=open]:ring-[hsl(var(--brand-500)/0.18)] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer text-left"[39m
+    [33mdata-state[39m=[32m"closed"[39m
+    [33mdir[39m=[32m"ltr"[39m
+    [33mid[39m=[32m"_r_4_-result"[39m
+    [33mrole[39m=[32m"combobox"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "保存方式":
+  [36m<button[39m
+    [33maria-autocomplete[39m=[32m"none"[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33mclass[39m=[32m"group relative flex h-8 w-full items-center justify-between gap-2 rounded-control border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] px-2.5 py-1 pr-2 text-[13px] text-[hsl(var(--foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,background-color,box-shadow,transform] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] data-[state=open]:border-[hsl(var(--brand-500))] data-[state=open]:bg-[hsl(var(--card))] data-[state=open]:ring-2 data-[state=open]:ring-[hsl(var(--brand-500)/0.18)] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer text-left"[39m
+    [33mdata-state[39m=[32m"closed"[39m
+    [33mdir[39m=[32m"ltr"[39m
+    [33mid[39m=[32m"_r_4_-mode"[39m
+    [33mrole[39m=[32m"combobox"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  checkbox:
+
+  Name "保留当前环境并关联记录":
+  [36m<input[39m
+    [33mchecked[39m=[32m""[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  Name "允许替换所选记录已有的环境关联":
+  [36m<input[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  textbox:
+
+  Name "新环境名称":
+  [36m<input[39m
+    [33mclass[39m=[32m"w-full rounded border bg-background px-2 py-1"[39m
+    [33mid[39m=[32m"_r_4_-name"[39m
+    [33mmaxlength[39m=[32m"36"[39m
+    [33mvalue[39m=[32m"保留环境"[39m
+  [36m/>[39m
+
+  Name "关联输入标识（逗号分隔）":
+  [36m<input[39m
+    [33mclass[39m=[32m"w-full rounded border bg-background px-2 py-1"[39m
+    [33mid[39m=[32m"_r_4_-inputs"[39m
+    [33mvalue[39m=[32m"*"[39m
+  [36m/>[39m
+
+  Name "额外记录目标":
+  [36m<input[39m
+    [33maria-label[39m=[32m"额外记录目标"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  --------------------------------------------------paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  combobox:
+
+  Name "业务结果":
+  [36m<button[39m
+    [33maria-autocomplete[39m=[32m"none"[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33mclass[39m=[32m"group relative flex h-8 w-full items-center justify-between gap-2 rounded-control border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] px-2.5 py-1 pr-2 text-[13px] text-[hsl(var(--foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,background-color,box-shadow,transform] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] data-[state=open]:border-[hsl(var(--brand-500))] data-[state=open]:bg-[hsl(var(--card))] data-[state=open]:ring-2 data-[state=open]:ring-[hsl(var(--brand-500)/0.18)] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer text-left"[39m
+    [33mdata-state[39m=[32m"closed"[39m
+    [33mdir[39m=[32m"ltr"[39m
+    [33mid[39m=[32m"_r_b_-result"[39m
+    [33mrole[39m=[32m"combobox"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "保存方式":
+  [36m<button[39m
+    [33maria-autocomplete[39m=[32m"none"[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33mclass[39m=[32m"group relative flex h-8 w-full items-center justify-between gap-2 rounded-control border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] px-2.5 py-1 pr-2 text-[13px] text-[hsl(var(--foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,background-color,box-shadow,transform] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] data-[state=open]:border-[hsl(var(--brand-500))] data-[state=open]:bg-[hsl(var(--card))] data-[state=open]:ring-2 data-[state=open]:ring-[hsl(var(--brand-500)/0.18)] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer text-left"[39m
+    [33mdata-state[39m=[32m"closed"[39m
+    [33mdir[39m=[32m"ltr"[39m
+    [33mid[39m=[32m"_r_b_-mode"[39m
+    [33mrole[39m=[32m"combobox"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  checkbox:
+
+  Name "保留当前环境并关联记录":
+  [36m<input[39m
+    [33mchecked[39m=[32m""[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  Name "允许替换所选记录已有的环境关联":
+  [36m<input[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  textbox:
+
+  Name "新环境名称":
+  [36m<input[39m
+    [33mclass[39m=[32m"w-full rounded border bg-background px-2 py-1"[39m
+    [33mid[39m=[32m"_r_b_-name"[39m
+    [33mmaxlength[39m=[32m"36"[39m
+    [33mvalue[39m=[32m"保留环境"[39m
+  [36m/>[39m
+
+  Name "关联输入标识（逗号分隔）":
+  [36m<input[39m
+    [33mclass[39m=[32m"w-full rounded border bg-background px-2 py-1"[39m
+    [33mid[39m=[32m"_r_b_-inputs"[39m
+    [33mvalue[39m=[32m"*"[39m
+  [36m/>[39m
+
+  Name "额外记录目标":
+  [36m<input[39m
+    [33maria-label[39m=[32m"额外记录目标"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-4"[39m
+    [36m>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [0m结束当前项目任务。保存与记录关联全部确认后才报告成功；不会执行后续节点。[0m
+      [36m</p>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-2"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+          [33mfor[39m=[32m"_r_0_-result"[39m
+        [36m>[39m
+          [0m业务结果[0m
+        [36m</label>[39m
+        [36m<button[39m
+          [33maria-autocomplete[39m=[32m"none"[39m
+          [33maria-expanded[39m=[32m"false"[39m
+          [33mclass[39m=[32m"group relative flex h-8 w-full items-center justify-between gap-2 rounded-control border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] px-2.5 py-1 pr-2 text-[13px] text-[hsl(var(--foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,background-color,box-shadow,transform] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] data-[state=open]:border-[hsl(var(--brand-500))] data-[state=open]:bg-[hsl(var(--card))] data-[state=open]:ring-2 data-[state=open]:ring-[hsl(var(--brand-500)/0.18)] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer text-left"[39m
+          [33mdata-state[39m=[32m"closed"[39m
+          [33mdir[39m=[32m"ltr"[39m
+          [33mid[39m=[32m"_r_0_-result"[39m
+          [33mrole[39m=[32m"combobox"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"flex-1 truncate"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mstyle[39m=[32m"pointer-events: none;"[39m
+            [36m>[39m
+              [0m成功[0m
+            [36m</span>[39m
+          [36m</span>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-chevron-down h-3.5 w-3.5 text-[hsl(var(--muted-foreground))] transition-transform duration-150 group-data-[state=open]:rotate-180 group-data-[state=open]:text-[hsl(var(--brand-600))]"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m6 9 6 6 6-6"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"flex gap-2"[39m
+      [36m>[39m
+        [36m<input[39m
+          [33mtype[39m=[32m"checkbox"[39m
+        [36m/>[39m
+        [0m保留当前环境并关联记录[0m
+      [36m</label>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-4"[39m
+    [36m>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"text-xs text-muted-foreground"[39m
+      [36m>[39m
+        [0m结束当前项目任务。保存与记录关联全部确认后才报告成功；不会执行后续节点。[0m
+      [36m</p>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-2"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"inline-flex items-center gap-1 text-[12px] font-medium leading-none text-[hsl(var(--slate-800))] peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+          [33mfor[39m=[32m"_r_4_-result"[39m
+        [36m>[39m
+          [0m业务结果[0m
+        [36m</label>[39m
+        [36m<button[39m
+          [33maria-autocomplete[39m=[32m"none"[39m
+          [33maria-expanded[39m=[32m"false"[39m
+          [33mclass[39m=[32m"group relative flex h-8 w-full items-center justify-between gap-2 rounded-control border border-[hsl(var(--slate-200))] bg-[hsl(var(--slate-50))] px-2.5 py-1 pr-2 text-[13px] text-[hsl(var(--foreground))] shadow-[inset_0_1px_2px_rgb(15_23_42_/_0.04)] transition-[border-color,background-color,box-shadow,transform] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] hover:border-[hsl(var(--slate-300))] hover:bg-[hsl(var(--card))] data-[state=open]:border-[hsl(var(--brand-500))] data-[state=open]:bg-[hsl(var(--card))] data-[state=open]:ring-2 data-[state=open]:ring-[hsl(var(--brand-500)/0.18)] focus-visible:outline-none focus-visible:border-[hsl(var(--brand-500))] focus-visible:bg-[hsl(var(--card))] focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.18)] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer text-left"[39m
+          [33mdata-state[39m=[32m"closed"[39m
+          [33mdir[39m=[32m"ltr"[39m
+          [33mid[39m=[32m"_r_4_-result"[39m
+          [33mrole[39m=[32m"combobox"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"flex-1 truncate"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mstyle[39m=[32m"pointer-events: none;"[39m
+            [36m>[39m
+              [0m成功[0m
+            [36m</span>[39m
+          [36m</span>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-chevron-down h-3.5 w-3.5 text-[hsl(var(--muted-foreground))] transition-transform duration-150 group-data-[state=open]:rotate-180 group-data-[state=open]:text-[hsl(var(--brand-600))]"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m6 9 6 6 6-6"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<label[39m
+        [33mclass[39m=[32m"flex gap-2"[39m
+      [36m>[39m
+        [36m<input[39m
+          [33mchecked[39m=[32m""[39m
+          [33mtype[39m=[32m"checkbox"[39m
+        [36m/>[39m
+     ...
+ ❯ Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/domains/workflows/components/config-panels/ProjectEndConfig.test.tsx:33:31
+     31|     render(<ProjectEndConfig data={{ moduleType: 'project_end', label:…
+     32|
+     33|     expect(JSON.parse((screen.getByRole('textbox', { name: '静态记录目标' })…
+       |                               ^
+     34|     fireEvent.click(screen.getByRole('button', { name: '清空记录目标' }))
+     35|     expect(onChange).toHaveBeenCalledWith('recordTargets', [])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  3 failed (3)
+      Tests  3 failed | 66 passed (69)
+   Start at  19:25:11
+   Duration  5.35s (transform 2.75s, setup 467ms, import 3.51s, tests 3.83s, environment 1.16s)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run --run src/renderer/domains/workflows/components/config-panels/ProjectEndConfig.test.tsx src/renderer/domains/workflows/tests/node-config-shape.test.tsx src/renderer/domains/workflows/tests/conditional-node-branches.test.tsx

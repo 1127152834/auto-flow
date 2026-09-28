@@ -84,6 +84,26 @@ it('reads and edits nested runtime config without overwriting outer editor metad
   })
 })
 
+it('shows, preserves and clears nested static End targets without converting them to a string', () => {
+  const document = nestedDocument()
+  const targets = [{ recordRef: { projectId: 'project-test', tableId: 'accounts', recordId: 'row-1' }, expectedLinkRevision: 2 }]
+  Object.assign(document.nodes[0].data, { recordTargets: [{ recordRef: { recordId: 'stale-outer' } }] })
+  Object.assign(document.nodes[0].data.config, { recordTargets: targets })
+  expect(store.getState().importWorkflow(document)).toBe(true)
+  render(<ConfigPanel selectedNodeId="end" />)
+
+  expect(JSON.parse((screen.getByRole('textbox', { name: '静态记录目标' }) as HTMLTextAreaElement).value)).toEqual(targets)
+  fireEvent.click(screen.getByRole('checkbox', { name: '允许替换所选记录已有的环境关联' }))
+  let data = store.getState().nodes[0].data as Record<string, unknown>
+  expect((data.config as Record<string, unknown>).recordTargets).toEqual(targets)
+  expect(data.recordTargets).toEqual([{ recordRef: { recordId: 'stale-outer' } }])
+
+  fireEvent.click(screen.getByRole('button', { name: '清空记录目标' }))
+  data = store.getState().nodes[0].data as Record<string, unknown>
+  expect((data.config as Record<string, unknown>).recordTargets).toEqual([])
+  expect(data.recordTargets).toEqual([{ recordRef: { recordId: 'stale-outer' } }])
+})
+
 it.each(['open', 'merge'] as const)('preserves nested config through the real %s and export entrypoints', mode => {
   const document = nestedDocument()
   const accepted = mode === 'open'

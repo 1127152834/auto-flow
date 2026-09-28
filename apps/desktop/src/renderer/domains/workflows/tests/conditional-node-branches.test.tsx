@@ -183,6 +183,44 @@ it('NODE.subflow.conditional-ui: lists group and header definitions and stores s
   expect(nodeData(id)).toMatchObject({ subflowGroupId: headerId, subflowName: '函数子流程' })
 })
 
+it('NODE.subflow.nested-config: filters and selects definitions from effective config only', () => {
+  store.getState().loadWorkflow({
+    name: '嵌套子流程选择',
+    nodes: [
+      {
+        id: 'nested-definition', type: 'groupNode', position: { x: 0, y: 0 },
+        data: { moduleType: 'group', label: '嵌套分组标签', isSubflow: false, subflowName: '外层过期名', config: { isSubflow: true, subflowName: '嵌套有效名' } },
+      },
+      {
+        id: 'stale-outer-definition', type: 'groupNode', position: { x: 0, y: 100 },
+        data: { moduleType: 'group', label: '过期分组标签', isSubflow: true, subflowName: '外层误列名', config: { isSubflow: false, subflowName: '内层非子流程' } },
+      },
+      {
+        id: 'nested-header', type: 'subflowHeaderNode', position: { x: 0, y: 200 },
+        data: { moduleType: 'subflow_header', label: '函数头标签', subflowName: '外层头旧名', config: { subflowName: '嵌套函数名' } },
+      },
+      {
+        id: 'nested-call', type: 'moduleNode', position: { x: 300, y: 0 },
+        data: { moduleType: 'subflow', label: '调用子流程', subflowGroupId: 'outer-stale-id', subflowName: '外层调用旧名', config: { subflowGroupId: '', subflowName: '', futureCallOption: 'keep' } },
+      },
+    ],
+    edges: [],
+  })
+  render(<ConfigPanel selectedNodeId="nested-call" />)
+
+  const select = screen.getByRole('combobox', { name: '选择子流程' })
+  fireEvent.keyDown(select, { key: 'ArrowDown' })
+  expect(screen.getByRole('option', { name: '[分组] 嵌套有效名' })).toBeDefined()
+  expect(screen.getByRole('option', { name: '[函数头] 嵌套函数名' })).toBeDefined()
+  expect(screen.queryByRole('option', { name: '[分组] 外层误列名' })).toBeNull()
+  fireEvent.click(screen.getByRole('option', { name: '[分组] 嵌套有效名' }))
+
+  const saved = nodeData('nested-call') as Record<string, unknown>
+  expect(saved.subflowGroupId).toBe('outer-stale-id')
+  expect(saved.subflowName).toBe('外层调用旧名')
+  expect(saved.config).toEqual({ subflowGroupId: 'nested-definition', subflowName: '嵌套有效名', futureCallOption: 'keep' })
+})
+
 it('NODE.subflow_header.entry: creates a callable header from both canvas entry points', () => {
   store.getState().addNode('subflow_header', { x: 0, y: 0 }, { subflowName: '画布函数' })
   store.getState().blockInsertNode(null, 'subflow_header', { subflowName: '模块条函数' })

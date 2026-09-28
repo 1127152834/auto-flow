@@ -8,6 +8,7 @@ import { VariableInput } from '../controls/variable-input'
 export function ProjectEndConfig({ data, onChange }: { data: NodeData; onChange: (key: string, value: unknown) => void }) {
   const id = useId()
   const retain = data.retainEnvironment === true
+  const staticTargets = Array.isArray(data.recordTargets) && data.recordTargets.length > 0 ? data.recordTargets : null
   return <div className="space-y-4">
     <p className="text-xs text-muted-foreground">结束当前项目任务。保存与记录关联全部确认后才报告成功；不会执行后续节点。</p>
     {!getStudioOpenContext().projectId && <p role="alert">请从项目打开工作流；项目 End 需要正式任务授权。</p>}
@@ -27,7 +28,10 @@ export function ProjectEndConfig({ data, onChange }: { data: NodeData; onChange:
         <input id={`${id}-inputs`} className="w-full rounded border bg-background px-2 py-1" value={Array.isArray(data.inputIds) ? data.inputIds.join(',') : '*'} onChange={event => onChange('inputIds', event.target.value.trim() === '*' ? null : event.target.value.split(',').map(value => value.trim()).filter(Boolean))} />
         <p className="text-xs text-muted-foreground">* 表示本任务全部可写输入；清空表示不关联输入。纯查询记录不具备关联写权。</p></div>
       <div className="space-y-2"><Label htmlFor={`${id}-targets`}>新增或已写记录的 RecordRef 列表</Label>
-        <VariableInput id={`${id}-targets`} value={typeof data.recordTargets === 'string' ? data.recordTargets : ''} onChange={value => onChange('recordTargets', value || [])} placeholder="例如 {created_records}；留空不追加记录" /></div>
+        {staticTargets ? <>
+          <textarea id={`${id}-targets`} aria-label="静态记录目标" className="w-full rounded border bg-muted px-2 py-1 font-mono text-xs" rows={4} readOnly value={JSON.stringify(staticTargets, null, 2)} />
+          <button type="button" className="text-xs text-destructive underline" onClick={() => onChange('recordTargets', [])}>清空记录目标</button>
+        </> : <VariableInput id={`${id}-targets`} value={typeof data.recordTargets === 'string' ? data.recordTargets : ''} onChange={value => onChange('recordTargets', value || [])} placeholder="例如 {created_records}；留空不追加记录" />}</div>
       <label className="flex gap-2"><input type="checkbox" checked={data.replaceAllowed === true} onChange={event => onChange('replaceAllowed', event.target.checked)} />允许替换所选记录已有的环境关联</label>
       <p className="text-xs text-muted-foreground">仅接受当前任务仍持有写入占用的记录，关联版本冲突会保留已保存环境并报告失败。零目标时只保存环境，不关联记录。</p>
     </>}

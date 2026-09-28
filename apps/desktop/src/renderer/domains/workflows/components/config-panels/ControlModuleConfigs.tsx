@@ -2,7 +2,7 @@
 import { Label } from '../controls/label'
 import { VariableInput } from '../controls/variable-input'
 import { SelectNative as Select } from '../controls/select-native'
-import { useWorkflowStore, type NodeData } from '../../editor-store'
+import { getNodeConfigData, useWorkflowStore, type NodeData } from '../../editor-store'
 
 interface ConfigProps {
   data: NodeData
@@ -475,7 +475,7 @@ export function SubflowConfig({ data, onChange }: ConfigProps) {
   // 2. subflowHeaderNode（函数头形式的子流程）
   const subflowGroups = nodes.filter(
     (n) =>
-      (n.type === 'groupNode' && (n.data as Record<string, unknown>).isSubflow === true) ||
+      (n.type === 'groupNode' && getNodeConfigData(n.data).isSubflow === true) ||
       n.type === 'subflowHeaderNode'
   )
 
@@ -483,8 +483,9 @@ export function SubflowConfig({ data, onChange }: ConfigProps) {
 
   const handleSelect = (id: string) => {
     const node = subflowGroups.find((n) => n.id === id)
+    const config = node ? getNodeConfigData(node.data) : undefined
     const name = node
-      ? ((node.data as Record<string, unknown>).subflowName as string) || (node.data.label as string) || ''
+      ? (config?.subflowName as string) || (config?.label as string) || ''
       : ''
     onChange('subflowGroupId', id)
     onChange('subflowName', name)
@@ -506,7 +507,8 @@ export function SubflowConfig({ data, onChange }: ConfigProps) {
           >
             <option value="">请选择子流程...</option>
             {subflowGroups.map((n) => {
-              const name = ((n.data as Record<string, unknown>).subflowName as string) || (n.data.label as string) || n.id
+              const config = getNodeConfigData(n.data)
+              const name = (config.subflowName as string) || (config.label as string) || n.id
               const typeLabel = n.type === 'subflowHeaderNode' ? '函数头' : '分组'
               return (
                 <option key={n.id} value={n.id}>

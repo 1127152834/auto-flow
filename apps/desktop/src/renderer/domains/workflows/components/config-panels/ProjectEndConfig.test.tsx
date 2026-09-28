@@ -24,4 +24,15 @@ describe('项目 End 配置', () => {
     expect(onChange).toHaveBeenCalledWith('replaceAllowed', true)
     expect(screen.getByText(/零目标时只保存环境/)).toBeTruthy()
   })
+
+  it('准确回显静态记录目标并以数组形状清空', () => {
+    const onChange = vi.fn()
+    const targets = [{ recordRef: { projectId: 'project-test', tableId: 'accounts', recordId: 'row-1' } }]
+    render(<ProjectEndConfig data={{ moduleType: 'project_end', label: '项目结束', retainEnvironment: true, recordTargets: targets }} onChange={onChange} />)
+
+    expect(JSON.parse((screen.getByRole('textbox', { name: '静态记录目标' }) as HTMLTextAreaElement).value)).toEqual(targets)
+    fireEvent.click(screen.getByRole('button', { name: '清空记录目标' }))
+    expect(onChange).toHaveBeenCalledWith('recordTargets', [])
+    expect(onChange).not.toHaveBeenCalledWith('recordTargets', expect.any(String))
+  })
 })
