@@ -155,3 +155,99 @@ chunk_tokens=8000
 - 当前仓库存在其他任务/AOCI 的大量未提交文件；提交必须只显式暂存本报告和上述两个组件文件。
 
 置信度：高。真实故障注入、界面恢复、单次执行和 SQLite 稳定结果均已直接验证。
+
+---
+
+## Review fix round 1（基线 `489224c5`，2026-09-28）
+
+### 复核结论与改动
+
+Reviewer 指出的 Important 问题成立：`pending` 列表成功之后，`executeProjectScript` 内部的 request 读取仍可能发生瞬态失败；旧 Host 已经登记 `scripts` key，并把该失败写成 `operationError`，因此恢复后不会重试读取。此前“完整 poll 成功”也只覆盖了 pending 列表，不覆盖执行脚本所必需的 request/claim 读取。
+
+本轮将脚本路径分成三个显式阶段：
+
+1. `readProjectScript` 在 claim 前读取并校验原 request。瞬态失败仍属于 poll transport failure，不登记 key，下一次 poll 可以安全重读。
+2. request 成功后先登记原 identity key，再由 `claimProjectScript` 使用原 target、单一 command key 和未知结果查询完成 claim。从该边界开始不允许重放。
+3. `executeClaimedProjectScript` 才启动原 dedicated Worker，并以同一 identity 和 claimId 确认 result。
+
+Host 只有在 pending 列表、request 读取和 claim 所需读取全部完成后才清除 `connectionError`。真实 request/claim/worker/result 错误仍写入 `operationError`。原 `executeProjectScript` 保留为上述三个阶段的组合，因此 `interactions.test.ts` 的原命令提交、未知结果查询和 claim 后不重放契约继续适用。
+
+### RED / GREEN 原始命令
+
+新增回归先在旧实现上执行：
+
+```text
+npm --workspace @autoflow/desktop test -- --run src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx -t "retries a transient JS request read before claim and executes the script once"
+exit 1
+Test Files  1 failed (1)
+Tests       1 failed | 7 skipped (8)
+TestingLibraryElementError: Unable to find an element with the text: /项目交互连接中断/
+Duration 18.98s
+```
+
+旧实现把 `TypeError('offline')` 显示为真实操作错误 `offline`，并没有显示可恢复的 transport notice，准确命中 review finding。
+
+实现后的同一聚焦回归：
+
+```text
+npm --workspace @autoflow/desktop test -- --run src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx -t "retries a transient JS request read before claim and executes the script once"
+exit 0
+Test Files  1 passed (1)
+Tests       1 passed | 7 skipped (8)
+Duration 7.17s
+```
+
+第一次运行两个完整文件时，新用例读取到了前一用例遗留的模块 mock 调用历史，结果为 13 个测试中 1 failed。回归中增加 `runJsScript.mockReset()` 后，最终完整运行如下：
+
+```text
+npm --workspace @autoflow/desktop test -- --run src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx src/renderer/domains/project-runs/interactions.test.ts
+exit 0
+Test Files  2 passed (2)
+Tests       13 passed (13)
+Duration 14.23s
+```
+
+这 13 个测试同时覆盖本轮新增的 pre-claim request 恢复、真实 operation error 保留、stale/unmount，以及原有 submit/query/no-replay 协议。
+
+### 静态检查
+
+最终源码状态运行：
+
+```text
+npm --workspace @autoflow/desktop run typecheck
+exit 0
+
+npm exec --workspace @autoflow/desktop -- eslint \
+  src/renderer/domains/project-runs/interactions.ts \
+  src/renderer/domains/project-runs/interactions.test.ts \
+  src/renderer/domains/project-runs/components/ProjectInteractionHost.tsx \
+  src/renderer/domains/project-runs/components/ProjectInteractionHost.test.tsx
+exit 0
+
+git diff --check -- <Task 3 owned files>
+exit 0
+```
+
+没有运行全量 frontend/build/package。为真实 UI 验收执行过源码 Electron build；main/preload 完成，renderer 输出更新至 2026-09-28T15:27:10+0800，但命令承载工具在最终退出状态返回前超时，因此不把它计为正式 build gate。最终 build/package 仍由 root 执行。
+
+### Review fix 真实 UI 验收
+
+验收使用新的独立复制工作区 `/tmp/autoflow-task3-round1-qa.UlhnXI`、当前源码 renderer 和冻结生产 backend。复制前源库与新库 SHA-256 同为 `08f06a3b429bcab97a10362461ea491fb6685cb6878c1e8daa6fb52b5bb8189e`；运行后新库 SHA-256 为 `492a09bfe9eb0e2f5c967590b1870d464e7125184bfed54390cf48bb1046a192`，因此本轮新行与旧 Task 3 行可区分。
+
+本轮独立成功运行身份：batch `2c82d320-47a6-457e-89e6-8dd462f6ce7a`、task `84908701-ce45-4571-8763-d97c02afb4d5`、run `70bae1a2-f936-455d-86fd-41ac6330f709`。SQLite 显示 `execution_generation=1`、`last_sequence=15`、一个 distinct script attempt、一个 output，结果为 `task3-original-result`。
+
+运行中断连使用 batch `c05fd0df-484e-4d4d-b5c4-be4e2e018560`、task `9c94e341-2071-447a-a24a-f5c7fa2b54ce`、run `d25462ec-6c04-4bd9-9f21-c7c987ac4762`。只对已核验的专属 sidecar PID `55301`（PPID `55287`，instance `55287-1790580512419`）在 `15:46:32+0800` 执行 `SIGSTOP`。任务仍显示运行中时，实际 CUA screenshot 与 AX 均出现：
+
+```text
+项目交互连接中断，正在查询原请求；未重新执行脚本
+```
+
+`15:47:12+0800` 对同一 PID 执行 `SIGCONT` 后，实际 screenshot/AX 显示 transport notice 消失，同时真实 operation error `交互命令不存在` 保留。40 秒暂停超过 backend interaction lifetime，SQLite 将 request `c0d1d0be-b921-44c2-a131-b9980a00bdb7` 记录为 `expired`，该 run 因此失败；这次运行只证明 notice 恢复和真实 operation error 保留，不计为成功执行。pre-claim 瞬态失败后的单次执行由确定性回归证明，真实单次成功由上述独立成功 run 证明，没有伪造 HTTP 成功。
+
+专属 Electron PID `55287` 与 sidecar PID `55301` 已退出；用户原有 android-handoff app PID `26110` 仍运行且未被控制。原 SQLite 保留。可审查截图、AX、进程身份、只读 SQL 脚本与原始结果见 [`interaction-notice-round1/README.md`](../../../docs/qa/2026-09-28-remediation/interaction-notice-round1/README.md)。
+
+### 边界与 AOCI
+
+- 本轮仅修改 desktop renderer 源码/测试、本报告及 Task 3 证据目录；没有后端/Python改动，也没有触碰 root 的最终构建、package、native End 资产。
+- 当前 AOCI 为 `recovery_pending` 且无正文；依照协调要求未接管 recovery、未调用 maintain/update、未修改 AOCI 资产。该限制不影响本轮 source-bound 修复与验证。
+- 置信度：高。代码级边界由 13 个测试覆盖，真实 UI 的 interrupted/recovered 状态有本轮实际 PNG、AX 和 SQLite 证据；真实故障持续时间导致过期这一限制已明确保留。

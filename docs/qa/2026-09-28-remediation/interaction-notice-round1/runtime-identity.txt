@@ -1,0 +1,17 @@
+source_renderer=/Users/zhangtiancheng/Documents/projects/autoflow/apps/desktop/out/renderer/index.html
+main_pid=55287
+sidecar_pid=55301
+instance_id=55287-1790580512419
+data_dir=/tmp/autoflow-task3-round1-qa.UlhnXI
+project_id=718795f2-40ae-4167-bb55-bec829df9a82
+automation_id=320e22b3-e2b6-4442-9287-088065c9ff6b
+successful_batch_id=2c82d320-47a6-457e-89e6-8dd462f6ce7a
+successful_task_id=84908701-ce45-4571-8763-d97c02afb4d5
+successful_run_id=70bae1a2-f936-455d-86fd-41ac6330f709
+outage_batch_id=c05fd0df-484e-4d4d-b5c4-be4e2e018560
+outage_task_id=9c94e341-2071-447a-a24a-f5c7fa2b54ce
+outage_run_id=d25462ec-6c04-4bd9-9f21-c7c987ac4762
+stopped_at=2026-09-28T15:46:32+0800
+resumed_at=2026-09-28T15:47:12+0800
+55287 51602 Ss+  /Users/zhangtiancheng/Documents/projects/autoflow/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron apps/desktop --remote-debugging-port=0 --user-data-dir=/tmp/autoflow-task3-round1-qa.UlhnXI
+55301 55287 S+   /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/dist/autoflow-backend/autoflow-backend --port 0 --instance-id 55287-1790580512419 --parent-pid 55287 --data-dir /tmp/autoflow-task3-round1-qa.UlhnXI

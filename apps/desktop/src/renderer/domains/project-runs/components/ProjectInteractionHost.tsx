@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { ApiClientError, type StreamingApiClient } from '../../../shared/api/client'
 import { InputPromptDialog } from '../../workflows/components/InputPromptDialog'
 import type { InputPromptRequest } from '../../workflows/types/workflow'
-import { createProjectInteractions, executeProjectScript, type InteractionIdentity } from '../interactions'
+import { claimProjectScript, createProjectInteractions, executeClaimedProjectScript, isProjectInteractionTransportFailure, readProjectScript, type InteractionIdentity } from '../interactions'
 
 /** Main-window owner: route changes must not dispose a claimed script or input. */
 export function ProjectInteractionHost({ client, connected }: { client: StreamingApiClient; connected: boolean }) {
@@ -67,10 +67,28 @@ export function ProjectInteractionHost({ client, connected }: { client: Streamin
           const key = identity(target)
           if (scripts.has(key)) continue
           const script = new AbortController()
+          let request: Awaited<ReturnType<typeof readProjectScript>>
+          try { request = await readProjectScript(api, target, controller.signal) }
+          catch (caught) {
+            if (!isCurrent()) return
+            // A transport failure happened before claim, so the next poll may safely retry this read.
+            if (isProjectInteractionTransportFailure(caught)) throw caught
+            scripts.set(key, script)
+            setOperationError(caught instanceof Error ? caught.message : '项目脚本交互失败')
+            continue
+          }
+          if (!isCurrent()) return
+          // From claim onward this identity stays owned; failures must never start it again.
           scripts.set(key, script)
-          void executeProjectScript(api, target, script.signal).catch(caught => {
+          if (!request) continue
+          try {
+            const claimed = await claimProjectScript(api, target, request, script.signal)
+            void executeClaimedProjectScript(api, target, claimed, script.signal).catch(caught => {
+              if (!script.signal.aborted && isCurrent()) setOperationError(caught instanceof Error ? caught.message : '项目脚本交互失败')
+            })
+          } catch (caught) {
             if (!script.signal.aborted && isCurrent()) setOperationError(caught instanceof Error ? caught.message : '项目脚本交互失败')
-          })
+          }
         }
         if (isCurrent()) setConnectionError(undefined)
       } catch (caught) {

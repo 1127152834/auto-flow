@@ -1,0 +1,5 @@
+checked_at=2026-09-28T15:49:42+0800
+pid_55287=absent
+pid_55301=absent
+untouched_user_app_pid_26110=present
+untouched_user_app_path=/Users/zhangtiancheng/Documents/projects/autoflow-android-handoff/apps/desktop/dist/mac-arm64/AutoFlow.app/Contents/MacOS/AutoFlow

@@ -1,0 +1,10 @@
+5255151a8fe90e6630351518026a0b2dcd3629c74fd3fdb5873716bc17f5c163  docs/qa/2026-09-28-remediation/interaction-notice-round1/README.md
+e7cf050cc8f5b8067e2755d4da5112ed554032545f9ca242fe280b14c96216cc  docs/qa/2026-09-28-remediation/interaction-notice-round1/active-interrupted.ax.txt
+21f9456afb5b0f13c963bf1f142281fbdcd481b938b0a6866871afb96ea3ede5  docs/qa/2026-09-28-remediation/interaction-notice-round1/active-interrupted.png
+dbc0937f356ceb16a27741a62ea51c6743499c2f96451fddef24c4a5f5d7d25c  docs/qa/2026-09-28-remediation/interaction-notice-round1/active-recovered.ax.txt
+613b622e2db7c69d62c875c17aeb58e4d02ecb8129b76060abb6263d56e47610  docs/qa/2026-09-28-remediation/interaction-notice-round1/active-recovered.png
+21eca5e7dc9cb3c6935d3a0076b7d4154de48bf808752793b80d7b75d2bc59cc  docs/qa/2026-09-28-remediation/interaction-notice-round1/instance-exit-readonly.txt
+bc62d78c31b4f3569bfbdbec3abceba23c4b1c69dcfdca3b4f52f209d6e1a539  docs/qa/2026-09-28-remediation/interaction-notice-round1/pre-run-db-identity.txt
+a4deecbc43e51e9dfbd8e6a6234a1a9f7d5d6bf123cb71aa1079ce80256eddb7  docs/qa/2026-09-28-remediation/interaction-notice-round1/query-round1.sh
+2bacdf66cc03b7b4f6177c7466ea407386942c27b1fc41734a0564edea3fb865  docs/qa/2026-09-28-remediation/interaction-notice-round1/runtime-identity.txt
+7a6e9f554f75dfbaac85b2bbfdb435a9335d1fecd55a6391c9cd2e94aed15d87  docs/qa/2026-09-28-remediation/interaction-notice-round1/sqlite-readonly-results.txt

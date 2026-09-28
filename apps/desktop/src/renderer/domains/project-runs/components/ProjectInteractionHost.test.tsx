@@ -55,6 +55,33 @@ it('clears the transport notice after the next complete poll succeeds', async ()
   expect(screen.queryByText(/项目交互连接中断/)).toBeNull()
 })
 
+it('retries a transient JS request read before claim and executes the script once', async () => {
+  vi.useFakeTimers()
+  const target = { ...identity, type: 'execution:js_script' }
+  let scriptReads = 0
+  const request = vi.fn(async (path, init) => {
+    if (path === '/api/v1/project-run-interactions') return [target]
+    if (path.includes('/requests/')) {
+      if (scriptReads++ === 0) throw new TypeError('offline')
+      return { ...target, code: 'function main(vars){return 7}', variables: {}, nodeId: 'n', executionId: 'v' }
+    }
+    return { commandId: init.body.commandId, requestId: 'req', status: 'applied' }
+  })
+  vi.mocked(runJsScript).mockReset().mockResolvedValue({ success: true, result: 7, variables: {} })
+  render(<ProjectInteractionHost client={client(request)} connected />)
+  await act(async () => { await vi.advanceTimersByTimeAsync(0) })
+  expect(screen.getByText(/项目交互连接中断/)).toBeDefined()
+  expect(runJsScript).not.toHaveBeenCalled()
+  await act(async () => { await vi.advanceTimersByTimeAsync(1000) })
+  expect(screen.queryByText(/项目交互连接中断/)).toBeNull()
+  expect(runJsScript).toHaveBeenCalledTimes(1)
+  await act(async () => { await vi.advanceTimersByTimeAsync(1000) })
+  expect(runJsScript).toHaveBeenCalledTimes(1)
+  expect(scriptReads).toBe(2)
+  expect(request.mock.calls.filter(([, init]) => init?.body?.event === 'js_script_claim')).toHaveLength(1)
+  expect(request.mock.calls.filter(([, init]) => init?.body?.event === 'js_script_result')).toHaveLength(1)
+})
+
 it('keeps an actual script failure after later transport polls succeed', async () => {
   vi.useFakeTimers()
   const target = { ...identity, type: 'execution:js_script' }

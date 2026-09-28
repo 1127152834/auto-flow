@@ -1,0 +1,15 @@
+[{"batch_id":"2c82d320-47a6-457e-89e6-8dd462f6ce7a","batch_status":"completed","task_id":"84908701-ce45-4571-8763-d97c02afb4d5","run_id":"70bae1a2-f936-455d-86fd-41ac6330f709","run_status":"succeeded","execution_generation":1,"last_sequence":15,"error":"null"},
+{"batch_id":"c05fd0df-484e-4d4d-b5c4-be4e2e018560","batch_status":"failed","task_id":"9c94e341-2071-447a-a24a-f5c7fa2b54ce","run_id":"d25462ec-6c04-4bd9-9f21-c7c987ac4762","run_status":"failed","execution_generation":1,"last_sequence":10,"error":"{\"code\": \"WORKFLOW_FAILED\", \"message\": \"\\u5de5\\u4f5c\\u6d41\\u672a\\u5b8c\\u6574\\u6210\\u529f\\uff0c\\u8bf7\\u67e5\\u770b\\u5df2\\u63d0\\u4ea4\\u7684\\u8282\\u70b9\\u8bb0\\u5f55\"}"}]
+[{"run_id":"70bae1a2-f936-455d-86fd-41ac6330f709","distinct_script_attempts":1,"script_outputs":1,"result":"task3-original-result"}]
+[{"sequence":2,"kind":"nodeAttempt","node_id":"script","attempt":1,"payload":"{\"status\": \"started\"}"},
+{"sequence":4,"kind":"interaction","node_id":"script","attempt":1,"payload":"{\"type\": \"execution:js_script\", \"requestId\": \"1c348326-b020-4daa-b5cf-1eadf4dd4efd\"}"},
+{"sequence":5,"kind":"interaction","node_id":null,"attempt":null,"payload":"{\"type\": \"execution:command_applied\", \"commandId\": \"a3a8d5fb-a005-4e40-92d8-602e9a823ed1\", \"requestId\": \"1c348326-b020-4daa-b5cf-1eadf4dd4efd\"}"},
+{"sequence":6,"kind":"interaction","node_id":"script","attempt":1,"payload":"{\"type\": \"execution:js_script_closed\", \"requestId\": \"1c348326-b020-4daa-b5cf-1eadf4dd4efd\", \"status\": \"completed\"}"},
+{"sequence":7,"kind":"output","node_id":"script","attempt":1,"payload":"{\"name\": \"result\", \"value\": \"task3-original-result\"}"},
+{"sequence":9,"kind":"nodeAttempt","node_id":"script","attempt":1,"payload":"{\"status\": \"succeeded\", \"durationMs\": 20690}"},
+{"sequence":10,"kind":"nodeAttempt","node_id":"after","attempt":1,"payload":"{\"status\": \"started\"}"},
+{"sequence":13,"kind":"nodeAttempt","node_id":"after","attempt":1,"payload":"{\"status\": \"succeeded\", \"durationMs\": 24}"}]
+[{"sequence":2,"kind":"nodeAttempt","node_id":"script","attempt":1,"payload":"{\"status\": \"started\"}"},
+{"sequence":4,"kind":"interaction","node_id":"script","attempt":1,"payload":"{\"type\": \"execution:js_script\", \"requestId\": \"c0d1d0be-b921-44c2-a131-b9980a00bdb7\"}"},
+{"sequence":5,"kind":"interaction","node_id":"script","attempt":1,"payload":"{\"type\": \"execution:js_script_closed\", \"requestId\": \"c0d1d0be-b921-44c2-a131-b9980a00bdb7\", \"status\": \"expired\"}"},
+{"sequence":7,"kind":"nodeAttempt","node_id":"script","attempt":1,"payload":"{\"status\": \"failed\", \"durationMs\": 49707, \"error\": {\"code\": \"WORKFLOW_NODE_FAILED\", \"message\": \"\\u5de5\\u4f5c\\u6d41\\u8282\\u70b9\\u6267\\u884c\\u5931\\u8d25\"}}"}]
