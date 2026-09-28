@@ -1,0 +1,14 @@
+11:50:47 AM [vite] (client) Re-optimizing dependencies because lockfile has changed
+{
+  "result": "passed",
+  "entry": "development-url",
+  "platform": "darwin",
+  "arch": "arm64",
+  "checks": [
+    "main application and sidecar start; production SQLite document route is available",
+    "overview opens source Studio; repeat open reuses and restores the same window",
+    "unchanged Studio closes and reopens its source editor",
+    "closing the main window hides its interaction owner while Studio and sidecar remain alive",
+    "normal application quit cleans up the sidecar"
+  ]
+}

@@ -45,3 +45,7 @@ CI 工作目录下 Ruff 本轮原始 138 条（含本次新增测试导入顺序
 ## 当前全量检查仍在进行
 
 前端首次默认回归：431文件，5646通过/2失败；两项必填元数据 fixture 数量漏计本次项目数据节点。修正为217并新增项目数据必填字段/写操作绑定规则断言，`frontend-required-protocol-fixed.log` 定向4通过。根脚本 `root-scripts-current.log`：101通过、0失败、0skip。后端完整回归运行中，最终计数另记；以上结果不是最终稳定发行验收。
+
+2026-09-28 默认 Studio smoke 追加核验（confirmed）：生产路由 `/api/workflows` 已取代退役 Mock 阶段；默认入口验证真实空 SQLite 文档目录及正式画布。主窗口关闭后保留隐藏的交互宿主，Studio继续运行，正常退出再确认 sidecar 停止。built HTML、开发 Vite URL、macOS arm64 目录包各5项通过，见 `studio-smoke-{built,dev,packaged}/`。默认验收输出改为唯一新目录，避免覆盖历史资产；未改写旧Mock验收报告。
+
+Monaco0.57的exports映射让 `require.resolve('monaco-editor/package.json')` 指向不存在文件：这是升级后新增的门禁脚本路径错误。`scripts-final.log`保留101通过/1失败；改为公开模块子路径定位实际嵌入DOMPurify，原版本断言保持，`scripts-final-fixed.log`完整102项通过。此前101项的通过时点在此依赖升级之前，不能据此声称升级后门禁已绿。

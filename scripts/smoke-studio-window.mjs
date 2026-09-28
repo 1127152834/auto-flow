@@ -8,7 +8,7 @@ import { stop } from './smoke-sidecar.mjs'
 const root = resolve(import.meta.dirname, '..')
 const userData = await realpath(await mkdtemp(join(tmpdir(), 'autoflow-source-studio-')))
 const qaIndex = process.argv.indexOf('--qa-directory')
-const qa = qaIndex < 0 ? join(root, 'docs/migration/studio-frontend-qa') : resolve(process.argv[qaIndex + 1])
+const qa = qaIndex < 0 ? await mkdtemp(join(root, 'docs/qa/studio-smoke-')) : resolve(process.argv[qaIndex + 1])
 await mkdir(qa, { recursive: true })
 let desktop, studio, native, devServer
 const checks = []
@@ -31,14 +31,16 @@ try {
   const headers = { 'x-autoflow-token': status.token }
   assert.equal((await fetch(`${status.baseUrl}/health`, { headers })).status, 200)
   const schema = await (await fetch(`${status.baseUrl}/openapi.json`, { headers })).json()
-  assert.equal(Object.keys(schema.paths).some(path => path.startsWith('/api/v1/workflows')), false)
-  assert.equal((await fetch(`${status.baseUrl}/api/v1/workflows`, { headers })).status, 404)
-  checks.push('main application and sidecar start; retired workflow routes are absent')
+  assert.ok(schema.paths['/api/workflows']?.get, 'production Studio document route is registered')
+  const listing = await fetch(`${status.baseUrl}/api/workflows`, { headers })
+  assert.equal(listing.status, 200)
+  assert.deepEqual(await listing.json(), [], 'dedicated workspace starts with an empty real document catalog')
+  checks.push('main application and sidecar start; production SQLite document route is available')
 
   assert.ok(await main.evaluate(`(() => { const b = [...document.querySelectorAll('button')].find(b => b.textContent.includes('工作流工作台')); if (!b) return false; b.click(); return true })()`))
   studio = await studioTarget()
   await waitFor(studio, `Boolean(document.querySelector('[aria-label="工作流工作台"]'))`, 'source Studio editor')
-  await waitFor(studio, `Boolean(document.querySelector('.react-flow')) && document.body.innerText.includes('Mock 接口')`, 'source canvas and explicit mock mode')
+  await waitFor(studio, `Boolean(document.querySelector('.react-flow')) && !document.body.innerText.includes('Mock 接口')`, 'production Studio canvas without development mock tools')
   assert.ok((await studio.evaluate(`location.pathname`)).endsWith('/studio.html'))
   const originalId = await studioId()
   await main.evaluate('window.autoflow.openAutomationStudio()')
@@ -61,10 +63,10 @@ try {
   checks.push('unchanged Studio closes and reopens its source editor')
 
   await native.evaluate(`smokeElectron.BrowserWindow.getAllWindows().find(w => w.id !== ${reopenedId}).close()`)
-  await waitFor(native, 'smokeElectron.BrowserWindow.getAllWindows().length === 1', 'main window closed')
+  await waitFor(native, `(()=>{const w=smokeElectron.BrowserWindow.getAllWindows().find(w=>w.id !== ${reopenedId});return w && !w.isVisible()})()`, 'main interaction owner retained but hidden')
   assert.equal(await studio.evaluate(`Boolean(document.querySelector('[aria-label="工作流工作台"]'))`), true)
   assert.equal((await fetch(`${status.baseUrl}/health`, { headers })).status, 200)
-  checks.push('closing only the main window leaves Studio and the shared sidecar alive')
+  checks.push('closing the main window hides its interaction owner while Studio and sidecar remain alive')
 
   const entry = desktop.packaged ? 'packaged' : devServer ? 'development-url' : 'built-html'
   const { data } = await studio.command('Page.captureScreenshot', { format: 'png' })
