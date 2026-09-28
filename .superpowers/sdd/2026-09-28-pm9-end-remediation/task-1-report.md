@@ -168,3 +168,19 @@ ruff 剩余为 `test_competing_end` 附近未使用 factory，需核实后改为
 当前新增磁盘版本规则兼容历史64位摘要，不重签或迁移历史目录。旧无版本摘要仍仅证明路径/大小，不能证明同长度内容未变。这是明确保留的历史验证上限。
 
 完整证据与命令索引：`docs/qa/2026-09-28-remediation/pm9-end/README.md`。本次提交含既有实施者尚未提交的授权End实现与本Run修复；中间主控QA提交不计入本实现。
+
+## 2026-09-28 独立审查修复 round 1/5（FIX_BASE b16e1715）
+
+状态：DONE（两项 Important 有界修复，待主控复审）。置信：高，限以下实际验证范围。原阶段记录保留。
+
+- P1：新增 Context 内 `ProjectEndState`，仅宿主接纳项目 End 后设置，子工作流、自定义模块、画布子流程共享同一对象。既有调度器在并行入口、节点领取、调试等待后、事件绑定锁内、执行器调用前、下一循环及 done 后继检查；嵌套返回后阻止父流程后继。普通 `stop_workflow` 仍是原有 Context 局部原语，没有改成项目 End。
+- 四类实际 Runtime/注册表/嵌套实现测试在修复前均失败、修复后通过；3 类普通局部 stop 保持父流程继续。替身仅返回宿主接纳结果，不计真实业务验收。初版测试误用事件名的 7 个失败单列保留，校正后的有效红证据为 `fix1-runtime-red-corrected`（4 fail/3 pass）。
+- P2：Task detail 从现有 End→save 外键读取真实 `saveOperationId` 和保存账本 `associationPhase`，投影全部原目标的存在性、当前 linkRevision/currentEnvironmentId；不新增迁移。持久结果页面可在重开后读取最新目标，明确确认当前版本及替换授权，再调用已有 repair。修复后重新读取详情并失效 Task 缓存。历史 End outcome/error 和 Run 失败事实不覆盖；另外展示“关联已修复”。
+- 新增真实 SQLite 用例：生产 End service 接纳/保存后因版本冲突 saved_unlinked，重新创建查询/服务从账本取得 save 身份，按全部最新目标修复后关联 completed，原 End saved_unlinked 和 Run failed 不变。此用例的浏览器目录/closer 是明确的内部夹具；不冒称真实浏览器冲突验收。React 用例验证卸载重开、先读新版本 7、未确认不能写、提交 save ID 而非 End ID、成功刷新。
+- 实际 SQLite + 生产源码 worker + 安装 CloakBrowser：linear、loop、workflow、module、canvas 各 1 条真实成功链（每条包含两次 Run 的保存/登录复用）。四类控制流均断言 `/before-end` 只访问 1 次、`/forbidden-inner`/`/forbidden-parent` 没有请求且没有对应节点事件。证据 `fix1-real-{linear,loop,workflow,module,canvas}.json` 含精确 Task/Run/工作区/HTTP 记录。
+- 首轮真实夹具因重复 edge ID 与未过滤 node_id=None 失败；第二轮 4 pass/1 fail，canvas 使用历史 subflow_header 被现有项目准入拒绝。改为正式 group/isSubflow 与几何成员后单独 canvas 1 pass，未修改或绕过准入。计数按 4+1 唯一场景，不把失败轮累计成通过。
+- 真实测试新增 `AUTOFLOW_TEST_PROJECT_WORKER` 环境选择入口：按现有测试惯例配置 manager._command 为指定可执行文件加 `--project-workflow-worker`。本轮全部真实证据使用源码 worker，未设置此变量；冻结构建与冻结 worker 复验由主控执行。
+
+验证（精确 cwd/argv/env/exitCode 见 QA `fix1-*.command.json`）：100 后端聚焦通过（End、调度、嵌套协议、环境与store）；最后事件绑定锁闸门加入后20 runtime测试通过；前端 TaskEndPanel/TaskDetail 14通过，最后状态标题微调后5通过；6源码mypy、后端cwd Ruff、ESLint、TypeScript、OpenAPI一致性通过；strict最终1041/1041、新增0。集合重叠不相加。保留全部红日志，包括错误root cwd的Ruff/strict命令与正确cwd复验；strict一次检查跨越源码两行追加产生符号位置差异，停止修改后的稳定复验通过，未改baseline。
+
+未验证边界：实际关闭回执丢失/物理未知进程清理、本轮Electron人工修复操作、冻结worker、Windows/Intel；未扩大为全部PM9或人工跨重启恢复。AOCI完成本Run新传输与一次校验，治理仍dirty/stale，按隔离要求不维护资产。没有修改主控process probe的一行WIP、进程清理helper或其他任务资产；不push。

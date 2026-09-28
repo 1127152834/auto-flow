@@ -1,0 +1,17 @@
+{
+  "command": [
+    ".venv/bin/python",
+    "-m",
+    "mypy",
+    "src/autoflow/domain/workflows/execution.py",
+    "src/autoflow/application/workflows/runtime.py",
+    "src/autoflow/application/workflows/executors/project_end.py",
+    "src/autoflow/providers/browser/workflow_worker.py",
+    "src/autoflow/application/project_runs/queries.py",
+    "src/autoflow/adapters/http/project_run_schemas.py"
+  ],
+  "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow/apps/backend",
+  "exitCode": 0,
+  "seconds": 8.64,
+  "environment": {}
+}

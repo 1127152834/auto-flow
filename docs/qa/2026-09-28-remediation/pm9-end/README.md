@@ -30,3 +30,14 @@
 新保存目录 `.digest-version=2` 对路径、大小、内容做SHA-256；未知版本拒绝。无版本历史目录沿用原路径＋大小摘要，不重签或迁移用户数据，其校验不能证明同长度内容未变。测试覆盖旧目录读回、新版本同长度损坏和未知版本拒绝。
 
 本Run完整 AOCI 5块交付确认与一次语义Attestation通过（9/10）；正式认知治理仍dirty/stale。按明确隔离要求未修改配置／索引、未运行维护工具，业务决策绑定当前源码。
+
+## Fix round 1：End 调度终止与持久关联修复
+
+`FIX_BASE=b16e1715`。完整实现和边界见 task-1-report.md 的 round 1 附录。所有 `fix1-*.command.json` 记录实际 argv/cwd/env/exit，配套 `.log` 保留失败原文。
+
+- 有效控制流红：`fix1-runtime-red-corrected` 4失败/3通过；修复后 `fix1-runtime-green` 7通过。`fix1-runtime-red` 是最初测试事件名写错，不能计产品红。
+- SQLite重开修复红绿：`fix1-repair-red` 缺save身份失败，`fix1-repair-green` 通过。
+- 聚焦回归：`fix1-backend-green` 100通过；最后锁内闸门后 `fix1-runtime-final` 20通过。`fix1-frontend` 14通过、最终标题调整 `fix1-frontend-final` 5通过（重叠）。
+- 真实浏览器：`fix1-real-green` 中 linear/loop/workflow/module 4通过，canvas旧header形状准入拒绝；正式group形状 `fix1-real-canvas` 1通过。对应5份JSON为唯一本轮真实正向，含持久工作区、Task/Run和HTTP观察；每条包含后续登录复用，四种控制流没有End后副作用请求。`fix1-real` 是夹具错误的初次失败。
+- 门禁：`fix1-ruff-final`（cwd backend）、`fix1-mypy`、`fix1-eslint`、`fix1-typecheck`、`fix1-openapi`、`fix1-strict-stable` 均exit0。root cwd Ruff/strict错误与被源码编辑交叉的strict诊断保留，不作为最终状态。strict未改baseline，最终1041既有/0新增。
+- `AUTOFLOW_TEST_PROJECT_WORKER` 选择冻结worker入口已接线；本轮未设置，未构建冻结包。无Electron手工、Windows/Intel、物理未知关闭证据。以前的关闭回执测试仍只算“实际浏览器运行后内部回执故障注入”。

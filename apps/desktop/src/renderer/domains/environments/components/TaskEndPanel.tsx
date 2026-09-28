@@ -1,5 +1,5 @@
 import type { components } from '../../../shared/api/generated'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import type { StreamingApiClient } from '../../../shared/api/client'
 import { notify } from '../../../shared/components/Toaster'
@@ -7,6 +7,7 @@ import { Button } from '../../../shared/components/ui/button'
 import { Checkbox } from '../../../shared/components/ui/checkbox'
 import { Input } from '../../../shared/components/ui/input'
 import { safeProjectError } from '../../projects/presentation-error'
+import { createProjectRunsApi } from '../../project-runs/api'
 import { createEnvironmentApi } from '../api'
 import { bindableRecords, selectedTargets } from '../record-targets'
 
@@ -82,12 +83,7 @@ export function TaskEndPanel({ workspaceKey, instanceId, projectId, taskId, runI
     },
     onError: error => notify({ title: safeProjectError(error), tone: 'error' }),
   })
-  if (durableEnd) return <section className="grid gap-2 rounded-control border border-line bg-surface p-4" aria-label="项目结束结果">
-    <h3 className="m-0 text-base">{durableEnd.phase === 'saved_unlinked' ? '上下文已保存，关联未完成' : durableEnd.phase === 'completed' ? 'End 已完成' : durableEnd.phase === 'failed' ? 'End 失败' : '正在保留 · 结果待核验'}</h3>
-    <p className="m-0 text-sm">原定业务结果：{durableEnd.businessResult === 'succeeded' ? '成功' : durableEnd.businessResult === 'failed' ? '失败' : '未记录'}</p>
-    {durableEnd.outcome ? <pre className="m-0 max-h-64 overflow-auto whitespace-pre-wrap text-xs">{JSON.stringify(durableEnd.outcome, null, 2)}</pre> : null}
-    {durableEnd.error ? <pre role="alert" className="m-0 whitespace-pre-wrap text-sm">{JSON.stringify(durableEnd.error, null, 2)}</pre> : null}
-  </section>
+  if (durableEnd) return <DurableEndResult durableEnd={durableEnd} client={client} projectId={projectId} taskId={taskId} workspaceKey={workspaceKey} instanceId={instanceId} disabled={disabled} />
   if (instance.isLoading) return <section role="status" className="rounded-control border border-line bg-surface p-4 text-sm">正在读取任务环境…</section>
   if (!current) return <section className="rounded-control border border-line bg-surface p-4 text-sm text-muted">当前任务还没有可保留的环境实例。</section>
   const phase = end.data?.outcome && 'phase' in end.data.outcome ? String(end.data.outcome.phase) : null
@@ -122,5 +118,56 @@ export function TaskEndPanel({ workspaceKey, instanceId, projectId, taskId, runI
     </div>
     {phase === 'saved_unlinked' ? <p role="alert" className="m-0 text-sm text-warning">环境已保存，记录关联未完成。可用原操作修复，不会重跑网页。</p> : null}
     {phase === 'completed' ? <p role="status" className="m-0 text-sm">结束事实已写入。原浏览器工作副本随后关闭。</p> : null}
+  </section>
+}
+
+
+function DurableEndResult({ durableEnd, client, projectId, taskId, workspaceKey, instanceId, disabled }: {
+  durableEnd: components['schemas']['TaskEndView']
+  client: StreamingApiClient
+  projectId: string
+  taskId: string
+  workspaceKey: string
+  instanceId: string
+  disabled: boolean
+}) {
+  const cache = useQueryClient()
+  const api = useMemo(() => createEnvironmentApi(client, projectId), [client, projectId])
+  const runs = useMemo(() => createProjectRunsApi(client, projectId), [client, projectId])
+  const [confirmed, setConfirmed] = useState(false)
+  const refresh = useMutation({
+    mutationFn: () => runs.getTask(taskId),
+    onMutate: () => setConfirmed(false),
+    onError: error => notify({ title: safeProjectError(error), tone: 'error' }),
+  })
+  const visible = refresh.data?.end ?? durableEnd
+  const preview = refresh.isSuccess ? refresh.data.end : null
+  const targets = preview?.repairTargets ?? []
+  const repairable = Boolean(preview?.saveOperationId && preview.associationPhase === 'saved_unlinked' && targets.length && targets.every(target => target.exists && typeof target.currentLinkRevision === 'number'))
+  const repair = useMutation({
+    mutationFn: () => {
+      if (!confirmed || !repairable || !preview?.saveOperationId) throw new Error('请读取并确认当前关联版本')
+      return api.repair(preview.saveOperationId, { recordTargets: targets.map(target => ({ recordRef: target.recordRef, expectedLinkRevision: target.currentLinkRevision!, replaceAllowed: true })) }, crypto.randomUUID())
+    },
+    onSuccess: async () => {
+      await refresh.mutateAsync()
+      await cache.invalidateQueries({ queryKey: [workspaceKey, instanceId, 'project-runs', projectId, 'task', taskId] })
+    },
+    onError: error => { setConfirmed(false); notify({ title: safeProjectError(error), tone: 'error' }) },
+  })
+  const busy = disabled || refresh.isPending || repair.isPending
+  return <section className="grid gap-2 rounded-control border border-line bg-surface p-4" aria-label="项目结束结果">
+    <h3 className="m-0 text-base">{visible.phase === 'saved_unlinked' ? (visible.associationPhase === 'completed' ? '上下文已保存，关联已修复' : '上下文已保存，关联未完成') : visible.phase === 'completed' ? 'End 已完成' : visible.phase === 'failed' ? 'End 失败' : '正在保留 · 结果待核验'}</h3>
+    <p className="m-0 text-sm">原定业务结果：{visible.businessResult === 'succeeded' ? '成功' : visible.businessResult === 'failed' ? '失败' : '未记录'}</p>
+    {visible.outcome ? <pre className="m-0 max-h-64 overflow-auto whitespace-pre-wrap text-xs">{JSON.stringify(visible.outcome, null, 2)}</pre> : null}
+    {visible.error ? <pre role="alert" className="m-0 whitespace-pre-wrap text-sm">{JSON.stringify(visible.error, null, 2)}</pre> : null}
+    {visible.associationPhase === 'completed' && visible.phase === 'saved_unlinked' ? <p role="status">关联已修复，历史运行失败事实保持不变。</p> : visible.phase === 'saved_unlinked' && visible.saveOperationId ? <>
+      <Button size="sm" variant="secondary" disabled={busy} onClick={() => refresh.mutate()}>读取当前关联并修复</Button>
+      {preview ? <>
+        <ul className="text-sm">{targets.map((target, index) => <li key={index}>{JSON.stringify(target.recordRef)} · {target.exists ? `当前版本 ${target.currentLinkRevision} · ${target.currentEnvironmentId ?? '未关联环境'}` : '记录已不存在，无法修复'}</li>)}</ul>
+        <label className="flex items-center gap-2 text-sm"><Checkbox checked={confirmed} disabled={busy || !repairable} onCheckedChange={value => setConfirmed(value === true)} /><span>确认按以上当前版本关联全部目标，并允许替换已有环境</span></label>
+        <Button size="sm" disabled={busy || !confirmed || !repairable} onClick={() => repair.mutate()}>确认修复关联</Button>
+      </> : null}
+    </> : null}
   </section>
 }

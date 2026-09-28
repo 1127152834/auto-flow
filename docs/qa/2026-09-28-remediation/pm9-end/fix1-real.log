@@ -1,0 +1,1260 @@
+.FFFF                                                                    [100%]
+=================================== FAILURES ===================================
+__ test_real_login_retained_and_reused_by_next_production_run[confirmed-loop] __
+
+tmp_path = PosixPath('/private/tmp/autoflow-pm9-end.EdtMXT/test_real_login_retained_and_r1')
+valid_profile_values = {'name': 'Default profile', 'description': '', 'start_url': 'about:blank', 'locale': None, ...}
+close_receipt = 'confirmed', control_flow = 'loop'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10baace90>
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("close_receipt,control_flow", [("confirmed", kind) for kind in ("linear", "loop", "workflow", "module", "canvas")] + [("unknown", "linear")])
+    async def test_real_login_retained_and_reused_by_next_production_run(
+        tmp_path, valid_profile_values, close_receipt, control_flow, monkeypatch
+    ):
+        configured = os.environ.get("AUTOFLOW_TEST_CLOAKBROWSER")
+        if not configured:
+            pytest.skip("AUTOFLOW_TEST_CLOAKBROWSER must identify a real installed kernel")
+        executable = Path(configured).resolve(strict=True)
+        observations = []
+    
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                signed_in = "session=pm9-local-login" in self.headers.get("Cookie", "")
+                observations.append({"path": self.path, "signedIn": signed_in})
+                self.send_response(200)
+                if self.path == "/login":
+                    self.send_header(
+                        "Set-Cookie",
+                        "session=pm9-local-login; Path=/; Max-Age=3600; HttpOnly; SameSite=Lax",
+                    )
+                    signed_in = True
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(
+                    (
+                        '<body><div id="state">'
+                        + ("signed-in" if signed_in else "signed-out")
+                        + "</div></body>"
+                    ).encode()
+                )
+    
+            def log_message(self, *_args):
+                pass
+    
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        thread = Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        base = f"http://127.0.0.1:{server.server_port}"
+        factory, project, automation, coordinator = _setup(
+            tmp_path,
+            resolve_status_input_ids=lambda a: [
+                i["inputId"] for i in a.input_plan["inputs"]
+            ],
+        )
+        store = EnvironmentStore(tmp_path / "environments")
+        launcher = EnvironmentBrowserLauncher(None, list, store)
+        environments = EnvironmentService(
+            ProjectService(SqlAlchemyProjects(factory)),
+            SqlAlchemyEnvironments(factory),
+            store,
+            closer=launcher.closer,
+        )
+        ends = ProjectRunEnd(factory, environments)
+        worker = ProjectWorkflowWorkerManager(
+            tmp_path / "worker",
+            project_data=ProjectDataCapabilityService(
+                SqlAlchemyProjectDataCapabilities(factory), project_end=ends
+            ),
+        )
+        if frozen_worker := os.environ.get("AUTOFLOW_TEST_PROJECT_WORKER"):
+            worker._command = (str(Path(frozen_worker).resolve(strict=True)), "--project-workflow-worker")
+        original_run = worker.run
+        original_force = worker.force_stop
+        if close_receipt == "unknown":
+            from autoflow.infrastructure.process.workflow_worker import WorkerOutcome
+    
+            async def unconfirmed(**kwargs):
+                outcome = await original_run(**kwargs)
+                assert outcome.cleanup_confirmed
+                return WorkerOutcome(outcome.status, outcome.error, False)
+    
+            async def reject_cleanup(_run_id):
+                raise RuntimeError(
+                    "injected lost browser close receipt after actual worker cleanup"
+                )
+    
+            monkeypatch.setattr(worker, "run", unconfirmed)
+            monkeypatch.setattr(worker, "force_stop", reject_cleanup)
+        now = datetime.now(UTC)
+        profile = Profile(
+            uid(),
+            ProfileSpec.from_values({**valid_profile_values, "headless": True}),
+            31415,
+            now,
+            now,
+        )
+        leases = []
+    
+        class Resources:
+            async def acquire(self, _request, run_request_id):
+                instance = environments.environments.active_instance_for_run_request(
+                    run_request_id
+                )
+                browser = browser_worker_payload(run_request_id, profile, None, None)
+                browser["headless"] = True
+                browser["userDataDir"] = str(
+                    environments.instance_path(instance.instance_id)
+                )
+                lease = SimpleNamespace(
+                    browser=browser, executable=executable, released=False
+                )
+    
+                def release():
+                    lease.released = True
+    
+                lease.release = release
+                leases.append(lease)
+                return lease
+    
+        async def recover(_run):
+            raise AssertionError("positive chain must not need unknown ownership recovery")
+    
+        dispatcher = WorkflowRunDispatcher(
+            factory, worker, Resources(), QuiesceGate(), recover, project_end=ends
+        )
+        documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory))
+        report = {"workspace": str(tmp_path), "kernel": str(executable), "worker": os.environ.get("AUTOFLOW_TEST_PROJECT_WORKER", "source"), "controlFlow": control_flow, "runs": []}
+        try:
+            save_data_workflow(factory, automation)
+            document = documents.get(automation.workflow_id).to_payload()
+            source = automation.input_plan["inputs"][0]
+            catalog = DataCatalogService(SqlAlchemyProjectDataCatalog(factory))
+            status = catalog.create_status(
+                project,
+                source["tableId"],
+                uid(),
+                {
+                    "name": "已登录",
+                    "color": "#8f4b2b",
+                    "order": 1,
+                    "expectedTableRevision": 2,
+                },
+            )[0]["status"]
+    
+            def node(node_id, kind, config, x=1000):
+                return {
+                    "id": node_id,
+                    "type": kind,
+                    "position": {"x": x, "y": 0},
+                    "data": {"moduleType": kind, "config": config},
+                }
+    
+            original = document["nodes"]
+            ref = "{snapshot['inputs'][0]['recordRef']}"
+            arguments = json.dumps(
+                {
+                    "recordRef": ref,
+                    "statusId": status["statusId"],
+                    "expectedStatusRevision": 1,
+                }
+            ).replace(json.dumps(ref), ref)
+            document["nodes"] = [
+                node("login", "open_page", {"url": base + "/login", "timeout": 15}),
+                *original,
+                node(
+                    "status",
+                    "project_data",
+                    {
+                        "action": "status",
+                        "resultVariable": "status_result",
+                        "binding": {
+                            "tableId": source["tableId"],
+                            "datasetGeneration": source["datasetGeneration"],
+                            "fieldIds": [],
+                        },
+                        "arguments": arguments,
+                    },
+                ),
+                node(
+                    "end",
+                    "project_end",
+                    {"retainEnvironment": True, "name": "PM9 actual login"},
+                ),
+            ]
+    
+            def chain(doc):
+                doc["edges"] = [
+                    {"id": f"e{i}", "source": left["id"], "target": right["id"]}
+                    for i, (left, right) in enumerate(
+                        zip(doc["nodes"], doc["nodes"][1:], strict=False)
+                    )
+                ]
+    
+            chain(document)
+            if control_flow != "linear":
+                from copy import deepcopy
+    
+                end_node = document["nodes"].pop()
+                document["edges"].pop()
+                before = node("before-end", "open_page", {"url": base + "/before-end", "timeout": 15})
+                forbidden = node("forbidden-inner", "open_page", {"url": base + "/forbidden-inner", "timeout": 15})
+                after = node("forbidden-parent", "open_page", {"url": base + "/forbidden-parent", "timeout": 15})
+                child = deepcopy(document)
+                child.update(id=uid(), name="End child", projectId=project, nodes=[before, end_node, forbidden], variables=[])
+                chain(child)
+                if control_flow == "workflow":
+                    saved_child = documents.create(child, client_request_id=uid())
+                    call = node("call", "run_workflow_file", {"workflowFile": saved_child.id})
+                elif control_flow == "module":
+                    from autoflow.application.workflows.modules import CustomModuleService
+                    from autoflow.application.workflows.runtime import WorkflowRuntimeService
+                    from autoflow.infrastructure.database.workflow_modules import SqlAlchemyWorkflowModules
+                    from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
+    
+                    modules = CustomModuleService(SqlAlchemyWorkflowModules(factory))
+                    module = modules.create({"name": "end_child", "display_name": "End child", "parameters": [], "outputs": [], "workflow": child}, client_request_id=uid())
+                    coordinator._core = WorkflowRuntimeService(factory, SqlAlchemyWorkflowRepository(factory), modules=modules)
+                    call = node("call", "custom_module", {"customModuleId": module.id})
+                elif control_flow == "canvas":
+                    call = node("call", "subflow", {"subflowGroupId": "header"})
+                else:
+                    call = node("call", "loop", {"loopCount": 3})
+                document["nodes"].extend([call, after])
+                chain(document)
+                if control_flow in {"loop", "canvas"}:
+                    document["nodes"].extend(child["nodes"])
+                    document["edges"].extend(child["edges"])
+                    if control_flow == "loop":
+                        document["edges"][-3]["sourceHandle"] = "done"
+                        document["edges"].append({"id": "body", "source": "call", "target": "before-end", "sourceHandle": "loop"})
+                    else:
+                        document["nodes"].append(node("header", "subflow_header", {}))
+                        document["edges"].append({"id": "definition", "source": "header", "target": "before-end"})
+>           documents.update(
+                automation.workflow_id,
+                document,
+                expected_revision=2,
+                client_request_id=uid(),
+            )
+
+tests/integration/test_project_end_real_browser.py:274: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/autoflow/application/workflows/documents.py:87: in update
+    draft = WorkflowDraft.from_payload(payload).with_id(workflow_id)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'autoflow.domain.workflows.document.WorkflowDraft'>
+payload = {'nodes': [{'id': 'login', 'type': 'open_page', 'position': {'x': 1000, 'y': 0}, 'data': {'moduleType': 'open_page', '...户名', 'value': '测试用户', 'type': 'string', 'scope': 'global', ...}], 'createdAt': '2026-09-28T05:23:17.340455+00:00', ...}
+
+    @classmethod
+    def from_payload(cls, payload: Mapping[str, Any]) -> WorkflowDraft:
+        source = _json_copy(dict(payload))
+        name = source.pop("name", "未命名工作流")
+        if not isinstance(name, str) or not name.strip() or len(name) > 120:
+            raise _problem(
+                "INVALID_DOCUMENT", "工作流名称必须为 1 至 120 个字符", "name"
+            )
+        workflow_id = source.pop("id", None)
+        if workflow_id is not None and (
+            not isinstance(workflow_id, str) or not workflow_id.strip()
+        ):
+            raise _problem("INVALID_DOCUMENT", "工作流 ID 无效", "id")
+        project_id = source.get("projectId")
+        if project_id is not None and (
+            not isinstance(project_id, str) or not project_id.strip() or len(project_id) > 200
+        ):
+            raise _problem("INVALID_DOCUMENT", "项目标识无效", "projectId")
+        for transport_key in ("revision", "expectedRevision", "clientRequestId"):
+            source.pop(transport_key, None)
+    
+        supplied_layout = source.pop("layout", {})
+        if not isinstance(supplied_layout, dict):
+            raise _problem("INVALID_DOCUMENT", "layout 必须是对象", "layout")
+        layout = copy.deepcopy(supplied_layout)
+        layout_nodes = layout.get("nodes", {})
+        if not isinstance(layout_nodes, dict):
+            raise _problem(
+                "INVALID_DOCUMENT", "layout.nodes 必须是对象", "layout.nodes"
+            )
+        layout["nodes"] = layout_nodes
+        if "viewport" in source:
+            layout["viewport"] = source.pop("viewport")
+    
+        nodes = _require_list(source, "nodes")
+        node_ids: set[str] = set()
+        semantic_nodes: list[dict[str, Any]] = []
+        for index, value in enumerate(nodes):
+            if not isinstance(value, dict):
+                raise _problem("INVALID_DOCUMENT", "节点必须是对象", f"nodes.{index}")
+            node = copy.deepcopy(value)
+            node_id = node.get("id")
+            if not isinstance(node_id, str) or not node_id:
+                raise _problem("INVALID_DOCUMENT", "节点 ID 无效", f"nodes.{index}.id")
+            if node_id in node_ids:
+                raise _problem("DUPLICATE_NODE_ID", "节点 ID 重复", f"nodes.{index}.id")
+            node_ids.add(node_id)
+            node_layout = (
+                dict(layout_nodes.get(node_id, {}))
+                if isinstance(layout_nodes.get(node_id), dict)
+                else {}
+            )
+            for key in _NODE_LAYOUT_KEYS:
+                if key in node:
+                    node_layout[key] = node.pop(key)
+            if node_layout:
+                layout_nodes[node_id] = node_layout
+            for key in _EPHEMERAL_NODE_KEYS:
+                node.pop(key, None)
+            semantic_nodes.append(node)
+        source["nodes"] = semantic_nodes
+    
+        edges = _require_list(source, "edges")
+        edge_ids: set[str] = set()
+        semantic_edges: list[dict[str, Any]] = []
+        for index, value in enumerate(edges):
+            if not isinstance(value, dict):
+                raise _problem("INVALID_DOCUMENT", "连线必须是对象", f"edges.{index}")
+            edge = copy.deepcopy(value)
+            edge_id = edge.get("id")
+            if not isinstance(edge_id, str) or not edge_id:
+                raise _problem("INVALID_DOCUMENT", "连线 ID 无效", f"edges.{index}.id")
+            if edge_id in edge_ids:
+>               raise _problem("DUPLICATE_EDGE_ID", "连线 ID 重复", f"edges.{index}.id")
+E               autoflow.domain.workflows.errors.WorkflowDocumentError: 连线 ID 重复
+
+src/autoflow/domain/workflows/document.py:120: WorkflowDocumentError
+_ test_real_login_retained_and_reused_by_next_production_run[confirmed-workflow] _
+
+tmp_path = PosixPath('/private/tmp/autoflow-pm9-end.EdtMXT/test_real_login_retained_and_r2')
+valid_profile_values = {'name': 'Default profile', 'description': '', 'start_url': 'about:blank', 'locale': None, ...}
+close_receipt = 'confirmed', control_flow = 'workflow'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10baad210>
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("close_receipt,control_flow", [("confirmed", kind) for kind in ("linear", "loop", "workflow", "module", "canvas")] + [("unknown", "linear")])
+    async def test_real_login_retained_and_reused_by_next_production_run(
+        tmp_path, valid_profile_values, close_receipt, control_flow, monkeypatch
+    ):
+        configured = os.environ.get("AUTOFLOW_TEST_CLOAKBROWSER")
+        if not configured:
+            pytest.skip("AUTOFLOW_TEST_CLOAKBROWSER must identify a real installed kernel")
+        executable = Path(configured).resolve(strict=True)
+        observations = []
+    
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                signed_in = "session=pm9-local-login" in self.headers.get("Cookie", "")
+                observations.append({"path": self.path, "signedIn": signed_in})
+                self.send_response(200)
+                if self.path == "/login":
+                    self.send_header(
+                        "Set-Cookie",
+                        "session=pm9-local-login; Path=/; Max-Age=3600; HttpOnly; SameSite=Lax",
+                    )
+                    signed_in = True
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(
+                    (
+                        '<body><div id="state">'
+                        + ("signed-in" if signed_in else "signed-out")
+                        + "</div></body>"
+                    ).encode()
+                )
+    
+            def log_message(self, *_args):
+                pass
+    
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        thread = Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        base = f"http://127.0.0.1:{server.server_port}"
+        factory, project, automation, coordinator = _setup(
+            tmp_path,
+            resolve_status_input_ids=lambda a: [
+                i["inputId"] for i in a.input_plan["inputs"]
+            ],
+        )
+        store = EnvironmentStore(tmp_path / "environments")
+        launcher = EnvironmentBrowserLauncher(None, list, store)
+        environments = EnvironmentService(
+            ProjectService(SqlAlchemyProjects(factory)),
+            SqlAlchemyEnvironments(factory),
+            store,
+            closer=launcher.closer,
+        )
+        ends = ProjectRunEnd(factory, environments)
+        worker = ProjectWorkflowWorkerManager(
+            tmp_path / "worker",
+            project_data=ProjectDataCapabilityService(
+                SqlAlchemyProjectDataCapabilities(factory), project_end=ends
+            ),
+        )
+        if frozen_worker := os.environ.get("AUTOFLOW_TEST_PROJECT_WORKER"):
+            worker._command = (str(Path(frozen_worker).resolve(strict=True)), "--project-workflow-worker")
+        original_run = worker.run
+        original_force = worker.force_stop
+        if close_receipt == "unknown":
+            from autoflow.infrastructure.process.workflow_worker import WorkerOutcome
+    
+            async def unconfirmed(**kwargs):
+                outcome = await original_run(**kwargs)
+                assert outcome.cleanup_confirmed
+                return WorkerOutcome(outcome.status, outcome.error, False)
+    
+            async def reject_cleanup(_run_id):
+                raise RuntimeError(
+                    "injected lost browser close receipt after actual worker cleanup"
+                )
+    
+            monkeypatch.setattr(worker, "run", unconfirmed)
+            monkeypatch.setattr(worker, "force_stop", reject_cleanup)
+        now = datetime.now(UTC)
+        profile = Profile(
+            uid(),
+            ProfileSpec.from_values({**valid_profile_values, "headless": True}),
+            31415,
+            now,
+            now,
+        )
+        leases = []
+    
+        class Resources:
+            async def acquire(self, _request, run_request_id):
+                instance = environments.environments.active_instance_for_run_request(
+                    run_request_id
+                )
+                browser = browser_worker_payload(run_request_id, profile, None, None)
+                browser["headless"] = True
+                browser["userDataDir"] = str(
+                    environments.instance_path(instance.instance_id)
+                )
+                lease = SimpleNamespace(
+                    browser=browser, executable=executable, released=False
+                )
+    
+                def release():
+                    lease.released = True
+    
+                lease.release = release
+                leases.append(lease)
+                return lease
+    
+        async def recover(_run):
+            raise AssertionError("positive chain must not need unknown ownership recovery")
+    
+        dispatcher = WorkflowRunDispatcher(
+            factory, worker, Resources(), QuiesceGate(), recover, project_end=ends
+        )
+        documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory))
+        report = {"workspace": str(tmp_path), "kernel": str(executable), "worker": os.environ.get("AUTOFLOW_TEST_PROJECT_WORKER", "source"), "controlFlow": control_flow, "runs": []}
+        try:
+            save_data_workflow(factory, automation)
+            document = documents.get(automation.workflow_id).to_payload()
+            source = automation.input_plan["inputs"][0]
+            catalog = DataCatalogService(SqlAlchemyProjectDataCatalog(factory))
+            status = catalog.create_status(
+                project,
+                source["tableId"],
+                uid(),
+                {
+                    "name": "已登录",
+                    "color": "#8f4b2b",
+                    "order": 1,
+                    "expectedTableRevision": 2,
+                },
+            )[0]["status"]
+    
+            def node(node_id, kind, config, x=1000):
+                return {
+                    "id": node_id,
+                    "type": kind,
+                    "position": {"x": x, "y": 0},
+                    "data": {"moduleType": kind, "config": config},
+                }
+    
+            original = document["nodes"]
+            ref = "{snapshot['inputs'][0]['recordRef']}"
+            arguments = json.dumps(
+                {
+                    "recordRef": ref,
+                    "statusId": status["statusId"],
+                    "expectedStatusRevision": 1,
+                }
+            ).replace(json.dumps(ref), ref)
+            document["nodes"] = [
+                node("login", "open_page", {"url": base + "/login", "timeout": 15}),
+                *original,
+                node(
+                    "status",
+                    "project_data",
+                    {
+                        "action": "status",
+                        "resultVariable": "status_result",
+                        "binding": {
+                            "tableId": source["tableId"],
+                            "datasetGeneration": source["datasetGeneration"],
+                            "fieldIds": [],
+                        },
+                        "arguments": arguments,
+                    },
+                ),
+                node(
+                    "end",
+                    "project_end",
+                    {"retainEnvironment": True, "name": "PM9 actual login"},
+                ),
+            ]
+    
+            def chain(doc):
+                doc["edges"] = [
+                    {"id": f"e{i}", "source": left["id"], "target": right["id"]}
+                    for i, (left, right) in enumerate(
+                        zip(doc["nodes"], doc["nodes"][1:], strict=False)
+                    )
+                ]
+    
+            chain(document)
+            if control_flow != "linear":
+                from copy import deepcopy
+    
+                end_node = document["nodes"].pop()
+                document["edges"].pop()
+                before = node("before-end", "open_page", {"url": base + "/before-end", "timeout": 15})
+                forbidden = node("forbidden-inner", "open_page", {"url": base + "/forbidden-inner", "timeout": 15})
+                after = node("forbidden-parent", "open_page", {"url": base + "/forbidden-parent", "timeout": 15})
+                child = deepcopy(document)
+                child.update(id=uid(), name="End child", projectId=project, nodes=[before, end_node, forbidden], variables=[])
+                chain(child)
+                if control_flow == "workflow":
+                    saved_child = documents.create(child, client_request_id=uid())
+                    call = node("call", "run_workflow_file", {"workflowFile": saved_child.id})
+                elif control_flow == "module":
+                    from autoflow.application.workflows.modules import CustomModuleService
+                    from autoflow.application.workflows.runtime import WorkflowRuntimeService
+                    from autoflow.infrastructure.database.workflow_modules import SqlAlchemyWorkflowModules
+                    from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
+    
+                    modules = CustomModuleService(SqlAlchemyWorkflowModules(factory))
+                    module = modules.create({"name": "end_child", "display_name": "End child", "parameters": [], "outputs": [], "workflow": child}, client_request_id=uid())
+                    coordinator._core = WorkflowRuntimeService(factory, SqlAlchemyWorkflowRepository(factory), modules=modules)
+                    call = node("call", "custom_module", {"customModuleId": module.id})
+                elif control_flow == "canvas":
+                    call = node("call", "subflow", {"subflowGroupId": "header"})
+                else:
+                    call = node("call", "loop", {"loopCount": 3})
+                document["nodes"].extend([call, after])
+                chain(document)
+                if control_flow in {"loop", "canvas"}:
+                    document["nodes"].extend(child["nodes"])
+                    document["edges"].extend(child["edges"])
+                    if control_flow == "loop":
+                        document["edges"][-3]["sourceHandle"] = "done"
+                        document["edges"].append({"id": "body", "source": "call", "target": "before-end", "sourceHandle": "loop"})
+                    else:
+                        document["nodes"].append(node("header", "subflow_header", {}))
+                        document["edges"].append({"id": "definition", "source": "header", "target": "before-end"})
+            documents.update(
+                automation.workflow_id,
+                document,
+                expected_revision=2,
+                client_request_id=uid(),
+            )
+            saved = None
+            for number in (1, 2):
+                batch = coordinator.start(
+                    project,
+                    automation.automation_id,
+                    uid(),
+                    {
+                        "expectedAutomationRevision": automation.management_revision,
+                        "parameters": {},
+                        "maxTasks": 1,
+                        "concurrency": 1,
+                    },
+                )[0]
+                assert (
+                    ProjectBatchScheduler.claim_data_task(factory, project, batch.batch_id)
+                    == "ready"
+                )
+                task = coordinator.list_tasks(project, batch.batch_id)[0]
+                policy = (
+                    {"source": "newFromProfile", "profileId": profile.id}
+                    if saved is None
+                    else {
+                        "source": "fixedEnvironment",
+                        "environmentId": saved["environmentId"],
+                    }
+                )
+                instance = environments.reserve(
+                    project,
+                    environments.resolve(project, policy),
+                    task_id=task.task_id,
+                    run_id=task.run_id,
+                    holder_kind="task",
+                    holder_id=task.task_id,
+                )
+                environments.environments.set_instance_state(instance.instance_id, "active")
+                run = dispatcher.query_run(task.run_id)
+                await dispatcher.dispatch(
+                    run.run_id,
+                    expected_status_revision=run.status_revision,
+                    execution_generation=run.execution_generation,
+                )
+                async with asyncio.timeout(90):
+                    await dispatcher.wait_idle()
+                with factory() as session:
+                    events = SqlAlchemyWorkflowRuntimeRepository(session).list_events(
+                        run.run_id, after_sequence=0, limit=200
+                    )
+                final = dispatcher.query_run(run.run_id)
+                if number == 1 and control_flow != "linear":
+                    assert not any(o["path"].startswith("/forbidden") for o in observations), observations
+                    assert sum(o["path"] == "/before-end" for o in observations) == 1, observations
+>                   assert not any(e.node_id.startswith("forbidden") for e in events), [(e.node_id, e.payload) for e in events]
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/integration/test_project_end_real_browser.py:331: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+.0 = <list_iterator object at 0x10bc22890>
+
+>   assert not any(e.node_id.startswith("forbidden") for e in events), [(e.node_id, e.payload) for e in events]
+                   ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'NoneType' object has no attribute 'startswith'
+
+tests/integration/test_project_end_real_browser.py:331: AttributeError
+_ test_real_login_retained_and_reused_by_next_production_run[confirmed-module] _
+
+tmp_path = PosixPath('/private/tmp/autoflow-pm9-end.EdtMXT/test_real_login_retained_and_r3')
+valid_profile_values = {'name': 'Default profile', 'description': '', 'start_url': 'about:blank', 'locale': None, ...}
+close_receipt = 'confirmed', control_flow = 'module'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10b80ba10>
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("close_receipt,control_flow", [("confirmed", kind) for kind in ("linear", "loop", "workflow", "module", "canvas")] + [("unknown", "linear")])
+    async def test_real_login_retained_and_reused_by_next_production_run(
+        tmp_path, valid_profile_values, close_receipt, control_flow, monkeypatch
+    ):
+        configured = os.environ.get("AUTOFLOW_TEST_CLOAKBROWSER")
+        if not configured:
+            pytest.skip("AUTOFLOW_TEST_CLOAKBROWSER must identify a real installed kernel")
+        executable = Path(configured).resolve(strict=True)
+        observations = []
+    
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                signed_in = "session=pm9-local-login" in self.headers.get("Cookie", "")
+                observations.append({"path": self.path, "signedIn": signed_in})
+                self.send_response(200)
+                if self.path == "/login":
+                    self.send_header(
+                        "Set-Cookie",
+                        "session=pm9-local-login; Path=/; Max-Age=3600; HttpOnly; SameSite=Lax",
+                    )
+                    signed_in = True
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(
+                    (
+                        '<body><div id="state">'
+                        + ("signed-in" if signed_in else "signed-out")
+                        + "</div></body>"
+                    ).encode()
+                )
+    
+            def log_message(self, *_args):
+                pass
+    
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        thread = Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        base = f"http://127.0.0.1:{server.server_port}"
+        factory, project, automation, coordinator = _setup(
+            tmp_path,
+            resolve_status_input_ids=lambda a: [
+                i["inputId"] for i in a.input_plan["inputs"]
+            ],
+        )
+        store = EnvironmentStore(tmp_path / "environments")
+        launcher = EnvironmentBrowserLauncher(None, list, store)
+        environments = EnvironmentService(
+            ProjectService(SqlAlchemyProjects(factory)),
+            SqlAlchemyEnvironments(factory),
+            store,
+            closer=launcher.closer,
+        )
+        ends = ProjectRunEnd(factory, environments)
+        worker = ProjectWorkflowWorkerManager(
+            tmp_path / "worker",
+            project_data=ProjectDataCapabilityService(
+                SqlAlchemyProjectDataCapabilities(factory), project_end=ends
+            ),
+        )
+        if frozen_worker := os.environ.get("AUTOFLOW_TEST_PROJECT_WORKER"):
+            worker._command = (str(Path(frozen_worker).resolve(strict=True)), "--project-workflow-worker")
+        original_run = worker.run
+        original_force = worker.force_stop
+        if close_receipt == "unknown":
+            from autoflow.infrastructure.process.workflow_worker import WorkerOutcome
+    
+            async def unconfirmed(**kwargs):
+                outcome = await original_run(**kwargs)
+                assert outcome.cleanup_confirmed
+                return WorkerOutcome(outcome.status, outcome.error, False)
+    
+            async def reject_cleanup(_run_id):
+                raise RuntimeError(
+                    "injected lost browser close receipt after actual worker cleanup"
+                )
+    
+            monkeypatch.setattr(worker, "run", unconfirmed)
+            monkeypatch.setattr(worker, "force_stop", reject_cleanup)
+        now = datetime.now(UTC)
+        profile = Profile(
+            uid(),
+            ProfileSpec.from_values({**valid_profile_values, "headless": True}),
+            31415,
+            now,
+            now,
+        )
+        leases = []
+    
+        class Resources:
+            async def acquire(self, _request, run_request_id):
+                instance = environments.environments.active_instance_for_run_request(
+                    run_request_id
+                )
+                browser = browser_worker_payload(run_request_id, profile, None, None)
+                browser["headless"] = True
+                browser["userDataDir"] = str(
+                    environments.instance_path(instance.instance_id)
+                )
+                lease = SimpleNamespace(
+                    browser=browser, executable=executable, released=False
+                )
+    
+                def release():
+                    lease.released = True
+    
+                lease.release = release
+                leases.append(lease)
+                return lease
+    
+        async def recover(_run):
+            raise AssertionError("positive chain must not need unknown ownership recovery")
+    
+        dispatcher = WorkflowRunDispatcher(
+            factory, worker, Resources(), QuiesceGate(), recover, project_end=ends
+        )
+        documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory))
+        report = {"workspace": str(tmp_path), "kernel": str(executable), "worker": os.environ.get("AUTOFLOW_TEST_PROJECT_WORKER", "source"), "controlFlow": control_flow, "runs": []}
+        try:
+            save_data_workflow(factory, automation)
+            document = documents.get(automation.workflow_id).to_payload()
+            source = automation.input_plan["inputs"][0]
+            catalog = DataCatalogService(SqlAlchemyProjectDataCatalog(factory))
+            status = catalog.create_status(
+                project,
+                source["tableId"],
+                uid(),
+                {
+                    "name": "已登录",
+                    "color": "#8f4b2b",
+                    "order": 1,
+                    "expectedTableRevision": 2,
+                },
+            )[0]["status"]
+    
+            def node(node_id, kind, config, x=1000):
+                return {
+                    "id": node_id,
+                    "type": kind,
+                    "position": {"x": x, "y": 0},
+                    "data": {"moduleType": kind, "config": config},
+                }
+    
+            original = document["nodes"]
+            ref = "{snapshot['inputs'][0]['recordRef']}"
+            arguments = json.dumps(
+                {
+                    "recordRef": ref,
+                    "statusId": status["statusId"],
+                    "expectedStatusRevision": 1,
+                }
+            ).replace(json.dumps(ref), ref)
+            document["nodes"] = [
+                node("login", "open_page", {"url": base + "/login", "timeout": 15}),
+                *original,
+                node(
+                    "status",
+                    "project_data",
+                    {
+                        "action": "status",
+                        "resultVariable": "status_result",
+                        "binding": {
+                            "tableId": source["tableId"],
+                            "datasetGeneration": source["datasetGeneration"],
+                            "fieldIds": [],
+                        },
+                        "arguments": arguments,
+                    },
+                ),
+                node(
+                    "end",
+                    "project_end",
+                    {"retainEnvironment": True, "name": "PM9 actual login"},
+                ),
+            ]
+    
+            def chain(doc):
+                doc["edges"] = [
+                    {"id": f"e{i}", "source": left["id"], "target": right["id"]}
+                    for i, (left, right) in enumerate(
+                        zip(doc["nodes"], doc["nodes"][1:], strict=False)
+                    )
+                ]
+    
+            chain(document)
+            if control_flow != "linear":
+                from copy import deepcopy
+    
+                end_node = document["nodes"].pop()
+                document["edges"].pop()
+                before = node("before-end", "open_page", {"url": base + "/before-end", "timeout": 15})
+                forbidden = node("forbidden-inner", "open_page", {"url": base + "/forbidden-inner", "timeout": 15})
+                after = node("forbidden-parent", "open_page", {"url": base + "/forbidden-parent", "timeout": 15})
+                child = deepcopy(document)
+                child.update(id=uid(), name="End child", projectId=project, nodes=[before, end_node, forbidden], variables=[])
+                chain(child)
+                if control_flow == "workflow":
+                    saved_child = documents.create(child, client_request_id=uid())
+                    call = node("call", "run_workflow_file", {"workflowFile": saved_child.id})
+                elif control_flow == "module":
+                    from autoflow.application.workflows.modules import CustomModuleService
+                    from autoflow.application.workflows.runtime import WorkflowRuntimeService
+                    from autoflow.infrastructure.database.workflow_modules import SqlAlchemyWorkflowModules
+                    from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
+    
+                    modules = CustomModuleService(SqlAlchemyWorkflowModules(factory))
+                    module = modules.create({"name": "end_child", "display_name": "End child", "parameters": [], "outputs": [], "workflow": child}, client_request_id=uid())
+                    coordinator._core = WorkflowRuntimeService(factory, SqlAlchemyWorkflowRepository(factory), modules=modules)
+                    call = node("call", "custom_module", {"customModuleId": module.id})
+                elif control_flow == "canvas":
+                    call = node("call", "subflow", {"subflowGroupId": "header"})
+                else:
+                    call = node("call", "loop", {"loopCount": 3})
+                document["nodes"].extend([call, after])
+                chain(document)
+                if control_flow in {"loop", "canvas"}:
+                    document["nodes"].extend(child["nodes"])
+                    document["edges"].extend(child["edges"])
+                    if control_flow == "loop":
+                        document["edges"][-3]["sourceHandle"] = "done"
+                        document["edges"].append({"id": "body", "source": "call", "target": "before-end", "sourceHandle": "loop"})
+                    else:
+                        document["nodes"].append(node("header", "subflow_header", {}))
+                        document["edges"].append({"id": "definition", "source": "header", "target": "before-end"})
+            documents.update(
+                automation.workflow_id,
+                document,
+                expected_revision=2,
+                client_request_id=uid(),
+            )
+            saved = None
+            for number in (1, 2):
+                batch = coordinator.start(
+                    project,
+                    automation.automation_id,
+                    uid(),
+                    {
+                        "expectedAutomationRevision": automation.management_revision,
+                        "parameters": {},
+                        "maxTasks": 1,
+                        "concurrency": 1,
+                    },
+                )[0]
+                assert (
+                    ProjectBatchScheduler.claim_data_task(factory, project, batch.batch_id)
+                    == "ready"
+                )
+                task = coordinator.list_tasks(project, batch.batch_id)[0]
+                policy = (
+                    {"source": "newFromProfile", "profileId": profile.id}
+                    if saved is None
+                    else {
+                        "source": "fixedEnvironment",
+                        "environmentId": saved["environmentId"],
+                    }
+                )
+                instance = environments.reserve(
+                    project,
+                    environments.resolve(project, policy),
+                    task_id=task.task_id,
+                    run_id=task.run_id,
+                    holder_kind="task",
+                    holder_id=task.task_id,
+                )
+                environments.environments.set_instance_state(instance.instance_id, "active")
+                run = dispatcher.query_run(task.run_id)
+                await dispatcher.dispatch(
+                    run.run_id,
+                    expected_status_revision=run.status_revision,
+                    execution_generation=run.execution_generation,
+                )
+                async with asyncio.timeout(90):
+                    await dispatcher.wait_idle()
+                with factory() as session:
+                    events = SqlAlchemyWorkflowRuntimeRepository(session).list_events(
+                        run.run_id, after_sequence=0, limit=200
+                    )
+                final = dispatcher.query_run(run.run_id)
+                if number == 1 and control_flow != "linear":
+                    assert not any(o["path"].startswith("/forbidden") for o in observations), observations
+                    assert sum(o["path"] == "/before-end" for o in observations) == 1, observations
+>                   assert not any(e.node_id.startswith("forbidden") for e in events), [(e.node_id, e.payload) for e in events]
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/integration/test_project_end_real_browser.py:331: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+.0 = <list_iterator object at 0x10b935960>
+
+>   assert not any(e.node_id.startswith("forbidden") for e in events), [(e.node_id, e.payload) for e in events]
+                   ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'NoneType' object has no attribute 'startswith'
+
+tests/integration/test_project_end_real_browser.py:331: AttributeError
+_ test_real_login_retained_and_reused_by_next_production_run[confirmed-canvas] _
+
+tmp_path = PosixPath('/private/tmp/autoflow-pm9-end.EdtMXT/test_real_login_retained_and_r4')
+valid_profile_values = {'name': 'Default profile', 'description': '', 'start_url': 'about:blank', 'locale': None, ...}
+close_receipt = 'confirmed', control_flow = 'canvas'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10c186710>
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("close_receipt,control_flow", [("confirmed", kind) for kind in ("linear", "loop", "workflow", "module", "canvas")] + [("unknown", "linear")])
+    async def test_real_login_retained_and_reused_by_next_production_run(
+        tmp_path, valid_profile_values, close_receipt, control_flow, monkeypatch
+    ):
+        configured = os.environ.get("AUTOFLOW_TEST_CLOAKBROWSER")
+        if not configured:
+            pytest.skip("AUTOFLOW_TEST_CLOAKBROWSER must identify a real installed kernel")
+        executable = Path(configured).resolve(strict=True)
+        observations = []
+    
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                signed_in = "session=pm9-local-login" in self.headers.get("Cookie", "")
+                observations.append({"path": self.path, "signedIn": signed_in})
+                self.send_response(200)
+                if self.path == "/login":
+                    self.send_header(
+                        "Set-Cookie",
+                        "session=pm9-local-login; Path=/; Max-Age=3600; HttpOnly; SameSite=Lax",
+                    )
+                    signed_in = True
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(
+                    (
+                        '<body><div id="state">'
+                        + ("signed-in" if signed_in else "signed-out")
+                        + "</div></body>"
+                    ).encode()
+                )
+    
+            def log_message(self, *_args):
+                pass
+    
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        thread = Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        base = f"http://127.0.0.1:{server.server_port}"
+        factory, project, automation, coordinator = _setup(
+            tmp_path,
+            resolve_status_input_ids=lambda a: [
+                i["inputId"] for i in a.input_plan["inputs"]
+            ],
+        )
+        store = EnvironmentStore(tmp_path / "environments")
+        launcher = EnvironmentBrowserLauncher(None, list, store)
+        environments = EnvironmentService(
+            ProjectService(SqlAlchemyProjects(factory)),
+            SqlAlchemyEnvironments(factory),
+            store,
+            closer=launcher.closer,
+        )
+        ends = ProjectRunEnd(factory, environments)
+        worker = ProjectWorkflowWorkerManager(
+            tmp_path / "worker",
+            project_data=ProjectDataCapabilityService(
+                SqlAlchemyProjectDataCapabilities(factory), project_end=ends
+            ),
+        )
+        if frozen_worker := os.environ.get("AUTOFLOW_TEST_PROJECT_WORKER"):
+            worker._command = (str(Path(frozen_worker).resolve(strict=True)), "--project-workflow-worker")
+        original_run = worker.run
+        original_force = worker.force_stop
+        if close_receipt == "unknown":
+            from autoflow.infrastructure.process.workflow_worker import WorkerOutcome
+    
+            async def unconfirmed(**kwargs):
+                outcome = await original_run(**kwargs)
+                assert outcome.cleanup_confirmed
+                return WorkerOutcome(outcome.status, outcome.error, False)
+    
+            async def reject_cleanup(_run_id):
+                raise RuntimeError(
+                    "injected lost browser close receipt after actual worker cleanup"
+                )
+    
+            monkeypatch.setattr(worker, "run", unconfirmed)
+            monkeypatch.setattr(worker, "force_stop", reject_cleanup)
+        now = datetime.now(UTC)
+        profile = Profile(
+            uid(),
+            ProfileSpec.from_values({**valid_profile_values, "headless": True}),
+            31415,
+            now,
+            now,
+        )
+        leases = []
+    
+        class Resources:
+            async def acquire(self, _request, run_request_id):
+                instance = environments.environments.active_instance_for_run_request(
+                    run_request_id
+                )
+                browser = browser_worker_payload(run_request_id, profile, None, None)
+                browser["headless"] = True
+                browser["userDataDir"] = str(
+                    environments.instance_path(instance.instance_id)
+                )
+                lease = SimpleNamespace(
+                    browser=browser, executable=executable, released=False
+                )
+    
+                def release():
+                    lease.released = True
+    
+                lease.release = release
+                leases.append(lease)
+                return lease
+    
+        async def recover(_run):
+            raise AssertionError("positive chain must not need unknown ownership recovery")
+    
+        dispatcher = WorkflowRunDispatcher(
+            factory, worker, Resources(), QuiesceGate(), recover, project_end=ends
+        )
+        documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory))
+        report = {"workspace": str(tmp_path), "kernel": str(executable), "worker": os.environ.get("AUTOFLOW_TEST_PROJECT_WORKER", "source"), "controlFlow": control_flow, "runs": []}
+        try:
+            save_data_workflow(factory, automation)
+            document = documents.get(automation.workflow_id).to_payload()
+            source = automation.input_plan["inputs"][0]
+            catalog = DataCatalogService(SqlAlchemyProjectDataCatalog(factory))
+            status = catalog.create_status(
+                project,
+                source["tableId"],
+                uid(),
+                {
+                    "name": "已登录",
+                    "color": "#8f4b2b",
+                    "order": 1,
+                    "expectedTableRevision": 2,
+                },
+            )[0]["status"]
+    
+            def node(node_id, kind, config, x=1000):
+                return {
+                    "id": node_id,
+                    "type": kind,
+                    "position": {"x": x, "y": 0},
+                    "data": {"moduleType": kind, "config": config},
+                }
+    
+            original = document["nodes"]
+            ref = "{snapshot['inputs'][0]['recordRef']}"
+            arguments = json.dumps(
+                {
+                    "recordRef": ref,
+                    "statusId": status["statusId"],
+                    "expectedStatusRevision": 1,
+                }
+            ).replace(json.dumps(ref), ref)
+            document["nodes"] = [
+                node("login", "open_page", {"url": base + "/login", "timeout": 15}),
+                *original,
+                node(
+                    "status",
+                    "project_data",
+                    {
+                        "action": "status",
+                        "resultVariable": "status_result",
+                        "binding": {
+                            "tableId": source["tableId"],
+                            "datasetGeneration": source["datasetGeneration"],
+                            "fieldIds": [],
+                        },
+                        "arguments": arguments,
+                    },
+                ),
+                node(
+                    "end",
+                    "project_end",
+                    {"retainEnvironment": True, "name": "PM9 actual login"},
+                ),
+            ]
+    
+            def chain(doc):
+                doc["edges"] = [
+                    {"id": f"e{i}", "source": left["id"], "target": right["id"]}
+                    for i, (left, right) in enumerate(
+                        zip(doc["nodes"], doc["nodes"][1:], strict=False)
+                    )
+                ]
+    
+            chain(document)
+            if control_flow != "linear":
+                from copy import deepcopy
+    
+                end_node = document["nodes"].pop()
+                document["edges"].pop()
+                before = node("before-end", "open_page", {"url": base + "/before-end", "timeout": 15})
+                forbidden = node("forbidden-inner", "open_page", {"url": base + "/forbidden-inner", "timeout": 15})
+                after = node("forbidden-parent", "open_page", {"url": base + "/forbidden-parent", "timeout": 15})
+                child = deepcopy(document)
+                child.update(id=uid(), name="End child", projectId=project, nodes=[before, end_node, forbidden], variables=[])
+                chain(child)
+                if control_flow == "workflow":
+                    saved_child = documents.create(child, client_request_id=uid())
+                    call = node("call", "run_workflow_file", {"workflowFile": saved_child.id})
+                elif control_flow == "module":
+                    from autoflow.application.workflows.modules import CustomModuleService
+                    from autoflow.application.workflows.runtime import WorkflowRuntimeService
+                    from autoflow.infrastructure.database.workflow_modules import SqlAlchemyWorkflowModules
+                    from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
+    
+                    modules = CustomModuleService(SqlAlchemyWorkflowModules(factory))
+                    module = modules.create({"name": "end_child", "display_name": "End child", "parameters": [], "outputs": [], "workflow": child}, client_request_id=uid())
+                    coordinator._core = WorkflowRuntimeService(factory, SqlAlchemyWorkflowRepository(factory), modules=modules)
+                    call = node("call", "custom_module", {"customModuleId": module.id})
+                elif control_flow == "canvas":
+                    call = node("call", "subflow", {"subflowGroupId": "header"})
+                else:
+                    call = node("call", "loop", {"loopCount": 3})
+                document["nodes"].extend([call, after])
+                chain(document)
+                if control_flow in {"loop", "canvas"}:
+                    document["nodes"].extend(child["nodes"])
+                    document["edges"].extend(child["edges"])
+                    if control_flow == "loop":
+                        document["edges"][-3]["sourceHandle"] = "done"
+                        document["edges"].append({"id": "body", "source": "call", "target": "before-end", "sourceHandle": "loop"})
+                    else:
+                        document["nodes"].append(node("header", "subflow_header", {}))
+                        document["edges"].append({"id": "definition", "source": "header", "target": "before-end"})
+>           documents.update(
+                automation.workflow_id,
+                document,
+                expected_revision=2,
+                client_request_id=uid(),
+            )
+
+tests/integration/test_project_end_real_browser.py:274: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/autoflow/application/workflows/documents.py:87: in update
+    draft = WorkflowDraft.from_payload(payload).with_id(workflow_id)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'autoflow.domain.workflows.document.WorkflowDraft'>
+payload = {'nodes': [{'id': 'login', 'type': 'open_page', 'position': {'x': 1000, 'y': 0}, 'data': {'moduleType': 'open_page', '...户名', 'value': '测试用户', 'type': 'string', 'scope': 'global', ...}], 'createdAt': '2026-09-28T05:23:25.028740+00:00', ...}
+
+    @classmethod
+    def from_payload(cls, payload: Mapping[str, Any]) -> WorkflowDraft:
+        source = _json_copy(dict(payload))
+        name = source.pop("name", "未命名工作流")
+        if not isinstance(name, str) or not name.strip() or len(name) > 120:
+            raise _problem(
+                "INVALID_DOCUMENT", "工作流名称必须为 1 至 120 个字符", "name"
+            )
+        workflow_id = source.pop("id", None)
+        if workflow_id is not None and (
+            not isinstance(workflow_id, str) or not workflow_id.strip()
+        ):
+            raise _problem("INVALID_DOCUMENT", "工作流 ID 无效", "id")
+        project_id = source.get("projectId")
+        if project_id is not None and (
+            not isinstance(project_id, str) or not project_id.strip() or len(project_id) > 200
+        ):
+            raise _problem("INVALID_DOCUMENT", "项目标识无效", "projectId")
+        for transport_key in ("revision", "expectedRevision", "clientRequestId"):
+            source.pop(transport_key, None)
+    
+        supplied_layout = source.pop("layout", {})
+        if not isinstance(supplied_layout, dict):
+            raise _problem("INVALID_DOCUMENT", "layout 必须是对象", "layout")
+        layout = copy.deepcopy(supplied_layout)
+        layout_nodes = layout.get("nodes", {})
+        if not isinstance(layout_nodes, dict):
+            raise _problem(
+                "INVALID_DOCUMENT", "layout.nodes 必须是对象", "layout.nodes"
+            )
+        layout["nodes"] = layout_nodes
+        if "viewport" in source:
+            layout["viewport"] = source.pop("viewport")
+    
+        nodes = _require_list(source, "nodes")
+        node_ids: set[str] = set()
+        semantic_nodes: list[dict[str, Any]] = []
+        for index, value in enumerate(nodes):
+            if not isinstance(value, dict):
+                raise _problem("INVALID_DOCUMENT", "节点必须是对象", f"nodes.{index}")
+            node = copy.deepcopy(value)
+            node_id = node.get("id")
+            if not isinstance(node_id, str) or not node_id:
+                raise _problem("INVALID_DOCUMENT", "节点 ID 无效", f"nodes.{index}.id")
+            if node_id in node_ids:
+                raise _problem("DUPLICATE_NODE_ID", "节点 ID 重复", f"nodes.{index}.id")
+            node_ids.add(node_id)
+            node_layout = (
+                dict(layout_nodes.get(node_id, {}))
+                if isinstance(layout_nodes.get(node_id), dict)
+                else {}
+            )
+            for key in _NODE_LAYOUT_KEYS:
+                if key in node:
+                    node_layout[key] = node.pop(key)
+            if node_layout:
+                layout_nodes[node_id] = node_layout
+            for key in _EPHEMERAL_NODE_KEYS:
+                node.pop(key, None)
+            semantic_nodes.append(node)
+        source["nodes"] = semantic_nodes
+    
+        edges = _require_list(source, "edges")
+        edge_ids: set[str] = set()
+        semantic_edges: list[dict[str, Any]] = []
+        for index, value in enumerate(edges):
+            if not isinstance(value, dict):
+                raise _problem("INVALID_DOCUMENT", "连线必须是对象", f"edges.{index}")
+            edge = copy.deepcopy(value)
+            edge_id = edge.get("id")
+            if not isinstance(edge_id, str) or not edge_id:
+                raise _problem("INVALID_DOCUMENT", "连线 ID 无效", f"edges.{index}.id")
+            if edge_id in edge_ids:
+>               raise _problem("DUPLICATE_EDGE_ID", "连线 ID 重复", f"edges.{index}.id")
+E               autoflow.domain.workflows.errors.WorkflowDocumentError: 连线 ID 重复
+
+src/autoflow/domain/workflows/document.py:120: WorkflowDocumentError
+=========================== short test summary info ============================
+FAILED tests/integration/test_project_end_real_browser.py::test_real_login_retained_and_reused_by_next_production_run[confirmed-loop]
+FAILED tests/integration/test_project_end_real_browser.py::test_real_login_retained_and_reused_by_next_production_run[confirmed-workflow]
+FAILED tests/integration/test_project_end_real_browser.py::test_real_login_retained_and_reused_by_next_production_run[confirmed-module]
+FAILED tests/integration/test_project_end_real_browser.py::test_real_login_retained_and_reused_by_next_production_run[confirmed-canvas]
+4 failed, 1 passed, 1 deselected in 15.68s

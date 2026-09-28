@@ -288,6 +288,13 @@ class WorkflowClock:
 
 
 @dataclass(slots=True)
+class ProjectEndState:
+    """Shared across nested contexts of one run, set only after host acceptance."""
+
+    accepted: bool = False
+
+
+@dataclass(slots=True)
 class ExecutionContext:
     variables: dict[str, Any] = field(default_factory=dict)
     sensitive_variables: set[str] = field(default_factory=set)
@@ -329,6 +336,7 @@ class ExecutionContext:
     current_execution_id: str | None = None
     should_break: bool = False
     should_continue: bool = False
+    project_end: ProjectEndState = field(default_factory=ProjectEndState)
     stop_workflow: bool = False
     stop_reason: str = ""
     variable_tracking_enabled: bool = False

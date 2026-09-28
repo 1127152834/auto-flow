@@ -75,3 +75,30 @@ it('reads a durable partial End and preserves its full error after reopening', (
   expect(screen.getByText(/saved-env/)).toBeVisible()
   expect(client.request).not.toHaveBeenCalled()
 })
+
+it('reopens durable partial End, confirms fresh versions, and repairs by save identity', async () => {
+  const ref = { projectId: 'p', tableId: 't', datasetGeneration: 'g', recordKey: { type: 'text', value: 'account' } }
+  const durable = { operationId: 'end-1', saveOperationId: 'save-1', phase: 'saved_unlinked', associationPhase: 'saved_unlinked', businessResult: 'succeeded', outcome: { saved: { environmentId: 'env' }, targets: [ref] }, repairTargets: [{ recordRef: ref, exists: true, currentLinkRevision: 2, currentEnvironmentId: null }] }
+  let repaired = false
+  const request = vi.fn(async (path: string) => {
+    if (path.includes('/environment-instances')) return { items: [] }
+    if (path.endsWith('/tasks/task-1')) return { end: { ...durable, associationPhase: repaired ? 'completed' : 'saved_unlinked', repairTargets: [{ ...durable.repairTargets[0], currentLinkRevision: 7, currentEnvironmentId: 'other-env' }] }, run: { status: 'failed' } }
+    if (path.endsWith('/environment-operations/save-1/repair')) { repaired = true; return { outcome: { phase: 'completed' } } }
+    throw new Error(`unexpected ${path}`)
+  })
+  const client = { request } as unknown as StreamingApiClient
+  const cache = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const ui = () => <QueryClientProvider client={cache}><TaskEndPanel workspaceKey="w" instanceId="i" projectId="p" taskId="task-1" runId="run-1" executionGeneration={1} client={client} disabled={false} durableEnd={durable} /></QueryClientProvider>
+  const first = render(ui())
+  first.unmount()
+  render(ui())
+  await userEvent.click(screen.getByRole('button', { name: '读取当前关联并修复' }))
+  expect(await screen.findByText(/当前版本 7/)).toBeVisible()
+  expect(screen.getByRole('button', { name: '确认修复关联' })).toBeDisabled()
+  expect(request.mock.calls.filter(([path]) => path.endsWith('/repair'))).toHaveLength(0)
+  await userEvent.click(screen.getByRole('checkbox', { name: '确认按以上当前版本关联全部目标，并允许替换已有环境' }))
+  await userEvent.click(screen.getByRole('button', { name: '确认修复关联' }))
+  expect(request).toHaveBeenCalledWith('/api/v1/projects/p/environment-operations/save-1/repair', expect.objectContaining({ body: { recordTargets: [{ recordRef: ref, expectedLinkRevision: 7, replaceAllowed: true }] } }))
+  expect(await screen.findByRole('status')).toHaveTextContent('关联已修复，历史运行失败事实保持不变')
+  expect(screen.queryByRole('button', { name: '确认修复关联' })).not.toBeInTheDocument()
+})

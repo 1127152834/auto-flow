@@ -49,5 +49,5 @@ class ProjectEndExecutor(ModuleExecutor):
         )
         if isinstance(result.get("error"), dict):
             return ModuleResult(False, error=result["error"]["message"])
-        context.stop_workflow = True
+        context.project_end.accepted = True
         return ModuleResult(True, data=result)

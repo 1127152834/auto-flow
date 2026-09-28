@@ -1,0 +1,164 @@
+FFFFFFF                                                                  [100%]
+=================================== FAILURES ===================================
+___________________ test_project_end_stops_entire_run[loop] ____________________
+
+kind = 'loop'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("kind", ["loop", "workflow", "module", "canvas"])
+    async def test_project_end_stops_entire_run(kind):
+        visits = []
+        async def emit(event, identity, _visit, _payload):
+            if event == "node.started":
+                visits.append(identity)
+        async def accept(_request):
+            return {"endOperationId": "accepted"}
+        graph = ProjectGraphExecutor(None, {}, emit, lambda: False)
+        graph.context.project_data = accept
+        result = await graph.run(end_plan(kind))
+        assert result["status"] == "succeeded", result
+>       assert visits.count("end") == 1, visits
+E       AssertionError: []
+E       assert 0 == 1
+E        +  where 0 = <built-in method count of list object at 0x10b0ed780>('end')
+E        +    where <built-in method count of list object at 0x10b0ed780> = [].count
+
+tests/unit/workflows/test_project_end_control_flow.py:42: AssertionError
+_________________ test_project_end_stops_entire_run[workflow] __________________
+
+kind = 'workflow'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("kind", ["loop", "workflow", "module", "canvas"])
+    async def test_project_end_stops_entire_run(kind):
+        visits = []
+        async def emit(event, identity, _visit, _payload):
+            if event == "node.started":
+                visits.append(identity)
+        async def accept(_request):
+            return {"endOperationId": "accepted"}
+        graph = ProjectGraphExecutor(None, {}, emit, lambda: False)
+        graph.context.project_data = accept
+        result = await graph.run(end_plan(kind))
+        assert result["status"] == "succeeded", result
+>       assert visits.count("end") == 1, visits
+E       AssertionError: []
+E       assert 0 == 1
+E        +  where 0 = <built-in method count of list object at 0x10b2b4680>('end')
+E        +    where <built-in method count of list object at 0x10b2b4680> = [].count
+
+tests/unit/workflows/test_project_end_control_flow.py:42: AssertionError
+__________________ test_project_end_stops_entire_run[module] ___________________
+
+kind = 'module'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("kind", ["loop", "workflow", "module", "canvas"])
+    async def test_project_end_stops_entire_run(kind):
+        visits = []
+        async def emit(event, identity, _visit, _payload):
+            if event == "node.started":
+                visits.append(identity)
+        async def accept(_request):
+            return {"endOperationId": "accepted"}
+        graph = ProjectGraphExecutor(None, {}, emit, lambda: False)
+        graph.context.project_data = accept
+        result = await graph.run(end_plan(kind))
+        assert result["status"] == "succeeded", result
+>       assert visits.count("end") == 1, visits
+E       AssertionError: []
+E       assert 0 == 1
+E        +  where 0 = <built-in method count of list object at 0x10b244bc0>('end')
+E        +    where <built-in method count of list object at 0x10b244bc0> = [].count
+
+tests/unit/workflows/test_project_end_control_flow.py:42: AssertionError
+__________________ test_project_end_stops_entire_run[canvas] ___________________
+
+kind = 'canvas'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("kind", ["loop", "workflow", "module", "canvas"])
+    async def test_project_end_stops_entire_run(kind):
+        visits = []
+        async def emit(event, identity, _visit, _payload):
+            if event == "node.started":
+                visits.append(identity)
+        async def accept(_request):
+            return {"endOperationId": "accepted"}
+        graph = ProjectGraphExecutor(None, {}, emit, lambda: False)
+        graph.context.project_data = accept
+        result = await graph.run(end_plan(kind))
+        assert result["status"] == "succeeded", result
+>       assert visits.count("end") == 1, visits
+E       AssertionError: []
+E       assert 0 == 1
+E        +  where 0 = <built-in method count of list object at 0x10b31f6c0>('end')
+E        +    where <built-in method count of list object at 0x10b31f6c0> = [].count
+
+tests/unit/workflows/test_project_end_control_flow.py:42: AssertionError
+_________ test_ordinary_stop_stays_local_to_nested_workflow[workflow] __________
+
+kind = 'workflow'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("kind", ["workflow", "module", "canvas"])
+    async def test_ordinary_stop_stays_local_to_nested_workflow(kind):
+        visits = []
+        async def emit(event, identity, _visit, _payload):
+            if event == "node.started":
+                visits.append(identity)
+        graph = ProjectGraphExecutor(None, {}, emit, lambda: False)
+        assert (await graph.run(end_plan(kind, "stop_workflow")))["status"] == "succeeded"
+>       assert visits.count("after") == 1
+E       AssertionError: assert 0 == 1
+E        +  where 0 = <built-in method count of list object at 0x10b342400>('after')
+E        +    where <built-in method count of list object at 0x10b342400> = [].count
+
+tests/unit/workflows/test_project_end_control_flow.py:56: AssertionError
+__________ test_ordinary_stop_stays_local_to_nested_workflow[module] ___________
+
+kind = 'module'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("kind", ["workflow", "module", "canvas"])
+    async def test_ordinary_stop_stays_local_to_nested_workflow(kind):
+        visits = []
+        async def emit(event, identity, _visit, _payload):
+            if event == "node.started":
+                visits.append(identity)
+        graph = ProjectGraphExecutor(None, {}, emit, lambda: False)
+        assert (await graph.run(end_plan(kind, "stop_workflow")))["status"] == "succeeded"
+>       assert visits.count("after") == 1
+E       AssertionError: assert 0 == 1
+E        +  where 0 = <built-in method count of list object at 0x10b35d4c0>('after')
+E        +    where <built-in method count of list object at 0x10b35d4c0> = [].count
+
+tests/unit/workflows/test_project_end_control_flow.py:56: AssertionError
+__________ test_ordinary_stop_stays_local_to_nested_workflow[canvas] ___________
+
+kind = 'canvas'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("kind", ["workflow", "module", "canvas"])
+    async def test_ordinary_stop_stays_local_to_nested_workflow(kind):
+        visits = []
+        async def emit(event, identity, _visit, _payload):
+            if event == "node.started":
+                visits.append(identity)
+        graph = ProjectGraphExecutor(None, {}, emit, lambda: False)
+        assert (await graph.run(end_plan(kind, "stop_workflow")))["status"] == "succeeded"
+>       assert visits.count("after") == 1
+E       AssertionError: assert 0 == 1
+E        +  where 0 = <built-in method count of list object at 0x10b367d40>('after')
+E        +    where <built-in method count of list object at 0x10b367d40> = [].count
+
+tests/unit/workflows/test_project_end_control_flow.py:56: AssertionError
+=========================== short test summary info ============================
+FAILED tests/unit/workflows/test_project_end_control_flow.py::test_project_end_stops_entire_run[loop]
+FAILED tests/unit/workflows/test_project_end_control_flow.py::test_project_end_stops_entire_run[workflow]
+FAILED tests/unit/workflows/test_project_end_control_flow.py::test_project_end_stops_entire_run[module]
+FAILED tests/unit/workflows/test_project_end_control_flow.py::test_project_end_stops_entire_run[canvas]
+FAILED tests/unit/workflows/test_project_end_control_flow.py::test_ordinary_stop_stays_local_to_nested_workflow[workflow]
+FAILED tests/unit/workflows/test_project_end_control_flow.py::test_ordinary_stop_stays_local_to_nested_workflow[module]
+FAILED tests/unit/workflows/test_project_end_control_flow.py::test_ordinary_stop_stays_local_to_nested_workflow[canvas]
+7 failed in 0.57s

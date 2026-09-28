@@ -48,9 +48,9 @@ from tests.integration.test_project_worker_capabilities import save_data_workflo
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("close_receipt", ["confirmed", "unknown"])
+@pytest.mark.parametrize("close_receipt,control_flow", [("confirmed", kind) for kind in ("linear", "loop", "workflow", "module", "canvas")] + [("unknown", "linear")])
 async def test_real_login_retained_and_reused_by_next_production_run(
-    tmp_path, valid_profile_values, close_receipt, monkeypatch
+    tmp_path, valid_profile_values, close_receipt, control_flow, monkeypatch
 ):
     configured = os.environ.get("AUTOFLOW_TEST_CLOAKBROWSER")
     if not configured:
@@ -107,6 +107,8 @@ async def test_real_login_retained_and_reused_by_next_production_run(
             SqlAlchemyProjectDataCapabilities(factory), project_end=ends
         ),
     )
+    if frozen_worker := os.environ.get("AUTOFLOW_TEST_PROJECT_WORKER"):
+        worker._command = (str(Path(frozen_worker).resolve(strict=True)), "--project-workflow-worker")
     original_run = worker.run
     original_force = worker.force_stop
     if close_receipt == "unknown":
@@ -162,7 +164,7 @@ async def test_real_login_retained_and_reused_by_next_production_run(
         factory, worker, Resources(), QuiesceGate(), recover, project_end=ends
     )
     documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory))
-    report = {"workspace": str(tmp_path), "kernel": str(executable), "runs": []}
+    report = {"workspace": str(tmp_path), "kernel": str(executable), "worker": os.environ.get("AUTOFLOW_TEST_PROJECT_WORKER", "source"), "controlFlow": control_flow, "runs": []}
     try:
         save_data_workflow(factory, automation)
         document = documents.get(automation.workflow_id).to_payload()
@@ -223,13 +225,59 @@ async def test_real_login_retained_and_reused_by_next_production_run(
 
         def chain(doc):
             doc["edges"] = [
-                {"id": f"e{i}", "source": left["id"], "target": right["id"]}
+                {"id": f"{left['id']}-{right['id']}", "source": left["id"], "target": right["id"]}
                 for i, (left, right) in enumerate(
                     zip(doc["nodes"], doc["nodes"][1:], strict=False)
                 )
             ]
 
         chain(document)
+        if control_flow != "linear":
+            from copy import deepcopy
+
+            end_node = document["nodes"].pop()
+            document["edges"].pop()
+            before = node("before-end", "open_page", {"url": base + "/before-end", "timeout": 15})
+            forbidden = node("forbidden-inner", "open_page", {"url": base + "/forbidden-inner", "timeout": 15})
+            after = node("forbidden-parent", "open_page", {"url": base + "/forbidden-parent", "timeout": 15})
+            child = deepcopy(document)
+            child.update(id=uid(), name="End child", projectId=project, nodes=[before, end_node, forbidden], variables=[])
+            chain(child)
+            if control_flow == "workflow":
+                saved_child = documents.create(child, client_request_id=uid())
+                call = node("call", "run_workflow_file", {"workflowFile": saved_child.id})
+            elif control_flow == "module":
+                from autoflow.application.workflows.modules import CustomModuleService
+                from autoflow.application.workflows.runtime import (
+                    WorkflowRuntimeService,
+                )
+                from autoflow.infrastructure.database.workflow_modules import (
+                    SqlAlchemyWorkflowModules,
+                )
+                from autoflow.infrastructure.database.workflows import (
+                    SqlAlchemyWorkflowRepository,
+                )
+
+                modules = CustomModuleService(SqlAlchemyWorkflowModules(factory))
+                module = modules.create({"name": "end_child", "display_name": "End child", "parameters": [], "outputs": [], "workflow": child}, client_request_id=uid())
+                coordinator._core = WorkflowRuntimeService(factory, SqlAlchemyWorkflowRepository(factory), modules=modules)
+                call = node("call", "custom_module", {"customModuleId": module.id})
+            elif control_flow == "canvas":
+                call = node("call", "subflow", {"subflowGroupId": "header"})
+            else:
+                call = node("call", "loop", {"loopCount": 3})
+            document["nodes"].extend([call, after])
+            chain(document)
+            if control_flow in {"loop", "canvas"}:
+                document["nodes"].extend(child["nodes"])
+                document["edges"].extend(child["edges"])
+                if control_flow == "loop":
+                    document["edges"][-3]["sourceHandle"] = "done"
+                    document["edges"].append({"id": "body", "source": "call", "target": "before-end", "sourceHandle": "loop"})
+                else:
+                    for member in child["nodes"]:
+                        member["position"] = {"x": 2100, "y": 20}
+                    document["nodes"].append({"id": "header", "type": "group", "position": {"x": 2000, "y": 0}, "data": {"moduleType": "group", "isSubflow": True, "width": 800, "height": 600}})
         documents.update(
             automation.workflow_id,
             document,
@@ -284,6 +332,10 @@ async def test_real_login_retained_and_reused_by_next_production_run(
                     run.run_id, after_sequence=0, limit=200
                 )
             final = dispatcher.query_run(run.run_id)
+            if number == 1 and control_flow != "linear":
+                assert not any(o["path"].startswith("/forbidden") for o in observations), observations
+                assert sum(o["path"] == "/before-end" for o in observations) == 1, observations
+                assert not any((e.node_id or "").startswith("forbidden") for e in events), [(e.node_id, e.payload) for e in events]
             if close_receipt == "unknown":
                 assert final.status == "reconciling" and not leases[-1].released
                 assert ends.operation(run.run_id)[0].result is None

@@ -1,0 +1,12 @@
+{
+  "command": [
+    "npx",
+    "eslint",
+    "apps/desktop/src/renderer/domains/environments/components/TaskEndPanel.tsx",
+    "apps/desktop/src/renderer/domains/environments/components/TaskEndPanel.test.tsx"
+  ],
+  "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow",
+  "exitCode": 0,
+  "seconds": 1.41,
+  "environment": {}
+}

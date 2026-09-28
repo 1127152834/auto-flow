@@ -7284,6 +7284,19 @@ export type components = {
         };
         /** EmptyCommand */
         EmptyCommand: Record<string, never>;
+        /** EndRepairTarget */
+        EndRepairTarget: {
+            /** Recordref */
+            recordRef: {
+                [key: string]: unknown;
+            };
+            /** Exists */
+            exists: boolean;
+            /** Currentlinkrevision */
+            currentLinkRevision?: number | null;
+            /** Currentenvironmentid */
+            currentEnvironmentId?: string | null;
+        };
         /** Endpoint */
         Endpoint: {
             /** Host */
@@ -12396,6 +12409,12 @@ export type components = {
         };
         /** TaskEndView */
         TaskEndView: {
+            /** Saveoperationid */
+            saveOperationId?: string | null;
+            /** Associationphase */
+            associationPhase?: string | null;
+            /** Repairtargets */
+            repairTargets?: components["schemas"]["EndRepairTarget"][];
             /** Operationid */
             operationId: string;
             /** Phase */

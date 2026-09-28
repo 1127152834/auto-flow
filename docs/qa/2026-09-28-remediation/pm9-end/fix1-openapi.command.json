@@ -1,0 +1,11 @@
+{
+  "command": [
+    "npm",
+    "run",
+    "openapi:check"
+  ],
+  "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow",
+  "exitCode": 0,
+  "seconds": 5.3,
+  "environment": {}
+}

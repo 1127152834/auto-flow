@@ -1,0 +1,14 @@
+{
+  "command": [
+    "npm",
+    "--workspace",
+    "@autoflow/desktop",
+    "test",
+    "--",
+    "src/renderer/domains/environments/components/TaskEndPanel.test.tsx"
+  ],
+  "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow",
+  "exitCode": 0,
+  "seconds": 3.08,
+  "environment": {}
+}

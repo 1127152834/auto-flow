@@ -1,0 +1,3 @@
+NEW strict error x1: ["src/autoflow/application/workflows/runtime.py", "_WorkflowScheduler._execute_node", "no-untyped-def", "Function is missing a type annotation"]
+strict debt: 1041; baseline: 1041; new: 1
+Remove 1 resolved errors from the reviewed baseline before merging.

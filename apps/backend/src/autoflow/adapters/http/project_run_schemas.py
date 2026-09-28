@@ -200,7 +200,17 @@ class CleanupSummaryView(ApiModel):
     message: str | None = None
 
 
+class EndRepairTarget(ApiModel):
+    record_ref: dict[str, Any]
+    exists: bool
+    current_link_revision: int | None = None
+    current_environment_id: str | None = None
+
+
 class TaskEndView(ApiModel):
+    save_operation_id: str | None = None
+    association_phase: str | None = None
+    repair_targets: list[EndRepairTarget] = Field(default_factory=list)
     operation_id: str
     phase: str
     business_result: str | None = None

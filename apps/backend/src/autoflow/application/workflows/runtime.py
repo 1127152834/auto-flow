@@ -203,7 +203,7 @@ class _WorkflowScheduler:
         )
 
     async def _execute_parallel(self, node_ids: list[str]) -> None:
-        if not node_ids or self.halted:
+        if not node_ids or self.halted or self.context.project_end.accepted:
             return
         self._raise_if_cancelled()
         async with self.lock:
@@ -236,6 +236,9 @@ class _WorkflowScheduler:
             self.context.reset_branch_loop_stack(token)
 
     async def _execute_claimed(self, node_id: str) -> None:
+        if self.context.project_end.accepted:
+            self.executing.discard(node_id)
+            return
         node = self.graph.get_node(node_id)
         if node is None:
             async with self.lock:
@@ -261,7 +264,7 @@ class _WorkflowScheduler:
             else:
                 self.halted = True
             return
-        if self.halted or bool(getattr(self.context, "stop_workflow", False)):
+        if self.halted or self.context.project_end.accepted or self.context.stop_workflow:
             return
         if bool(getattr(self.context, "should_break", False)) or bool(
             getattr(self.context, "should_continue", False)
@@ -311,6 +314,9 @@ class _WorkflowScheduler:
                 for parent in parents:
                     parent.leave_pause()
 
+        if self.context.project_end.accepted:
+            return ModuleResult(True, skipped=True)
+
         timing = _NodeTiming()
         token = _node_timings.set((*parents, timing))
         try:
@@ -336,6 +342,8 @@ class _WorkflowScheduler:
             else set()
         )
         async with self.event_binding_lock:
+            if self.context.project_end.accepted:
+                return ModuleResult(True, skipped=True)
             self.context.current_node_id = node.id
             self.context.current_execution_id = execution_id
             await _publish(
@@ -381,6 +389,7 @@ class _WorkflowScheduler:
         if (
             node.type == "custom_module"
             and result.success
+            and not self.context.project_end.accepted
             and self.context.custom_modules is not None
             and isinstance(result.data, Mapping)
         ):
@@ -415,6 +424,7 @@ class _WorkflowScheduler:
         if (
             node.type == "subflow"
             and result.success
+            and not self.context.project_end.accepted
             and self.context.canvas_subflows is not None
             and isinstance(result.data, Mapping)
         ):
@@ -477,6 +487,8 @@ class _WorkflowScheduler:
         return reported_result if self.context.node_uses_sensitive_values else result
 
     async def _execute_network_guarded(self, node, executor, config):
+        if self.context.project_end.accepted:
+            return ModuleResult(True, skipped=True)
         if node.type in {"proxy_change_ip", "proxy_change_location", "proxy_query"} or not executor.requires_browser_for(config):
             return await executor.execute(config, self.context)
         active = self.context.proxy_activity
@@ -498,12 +510,12 @@ class _WorkflowScheduler:
         loop_state = self.context.loop_stack[-1]
         loop_state.setdefault("node_id", loop_node.id)
         body_scope = self._collect_loop_body_nodes(loop_node.id, body_nodes, done_nodes)
-        while not self.halted and self._loop_should_continue(loop_state):
+        while not self.halted and not self.context.project_end.accepted and self._loop_should_continue(loop_state):
             self._raise_if_cancelled()
             self.context.should_continue = False
             await self._reset_nodes(body_scope)
             await self._execute_parallel(body_nodes)
-            if self.halted:
+            if self.halted or self.context.project_end.accepted:
                 break
             if bool(getattr(self.context, "should_break", False)):
                 self.context.should_break = False
@@ -515,7 +527,7 @@ class _WorkflowScheduler:
         if self.context.loop_stack and self.context.loop_stack[-1] is loop_state:
             self.context.loop_stack.pop()
         await self._exit_loop_scope(loop_node, loop_state)
-        if done_nodes and not self.halted:
+        if done_nodes and not self.halted and not self.context.project_end.accepted:
             await self._notify_successors(done_nodes, loop_node.id)
 
     def _loop_should_continue(self, state: Mapping[str, Any]) -> bool:
@@ -637,7 +649,7 @@ class _WorkflowScheduler:
     async def _notify_successors(
         self, next_nodes: list[str], completed_node_id: str
     ) -> None:
-        if not next_nodes or self.halted:
+        if not next_nodes or self.halted or self.context.project_end.accepted:
             return
         ready: list[str] = []
         async with self.lock:

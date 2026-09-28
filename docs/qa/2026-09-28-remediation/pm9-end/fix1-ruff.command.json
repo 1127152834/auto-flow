@@ -1,0 +1,21 @@
+{
+  "command": [
+    "apps/backend/.venv/bin/python",
+    "-m",
+    "ruff",
+    "check",
+    "apps/backend/src/autoflow/domain/workflows/execution.py",
+    "apps/backend/src/autoflow/application/workflows/runtime.py",
+    "apps/backend/src/autoflow/application/workflows/executors/project_end.py",
+    "apps/backend/src/autoflow/providers/browser/workflow_worker.py",
+    "apps/backend/src/autoflow/application/project_runs/queries.py",
+    "apps/backend/src/autoflow/adapters/http/project_run_schemas.py",
+    "apps/backend/tests/unit/workflows/test_project_end_control_flow.py",
+    "apps/backend/tests/integration/test_project_end_worker.py",
+    "apps/backend/tests/integration/test_project_end_real_browser.py"
+  ],
+  "cwd": "/Users/zhangtiancheng/Documents/projects/autoflow",
+  "exitCode": 1,
+  "seconds": 0.08,
+  "environment": {}
+}

@@ -1,0 +1,105 @@
+FFFF...                                                                  [100%]
+=================================== FAILURES ===================================
+___________________ test_project_end_stops_entire_run[loop] ____________________
+
+kind = 'loop'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("kind", ["loop", "workflow", "module", "canvas"])
+    async def test_project_end_stops_entire_run(kind):
+        visits = []
+        async def emit(event, identity, _visit, _payload):
+            if event == "nodeAttempt" and _payload.get("status") == "started":
+                visits.append(identity)
+        async def accept(_request):
+            return {"endOperationId": "accepted"}
+        graph = ProjectGraphExecutor(None, {}, emit, lambda: False)
+        graph.context.project_data = accept
+        result = await graph.run(end_plan(kind))
+        assert result["status"] == "succeeded", result
+        assert visits.count("end") == 1, visits
+>       assert visits.count("body") == 1, visits
+E       AssertionError: ['loop', 'body', 'end', 'body', 'body', 'after']
+E       assert 3 == 1
+E        +  where 3 = <built-in method count of list object at 0x10af6e0c0>('body')
+E        +    where <built-in method count of list object at 0x10af6e0c0> = ['loop', 'body', 'end', 'body', 'body', 'after'].count
+
+tests/unit/workflows/test_project_end_control_flow.py:43: AssertionError
+_________________ test_project_end_stops_entire_run[workflow] __________________
+
+kind = 'workflow'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("kind", ["loop", "workflow", "module", "canvas"])
+    async def test_project_end_stops_entire_run(kind):
+        visits = []
+        async def emit(event, identity, _visit, _payload):
+            if event == "nodeAttempt" and _payload.get("status") == "started":
+                visits.append(identity)
+        async def accept(_request):
+            return {"endOperationId": "accepted"}
+        graph = ProjectGraphExecutor(None, {}, emit, lambda: False)
+        graph.context.project_data = accept
+        result = await graph.run(end_plan(kind))
+        assert result["status"] == "succeeded", result
+        assert visits.count("end") == 1, visits
+        assert visits.count("body") == 1, visits
+>       assert "after" not in visits and "inner-after" not in visits, visits
+E       AssertionError: ['call', 'body', 'end', 'after']
+E       assert ('after' not in ['call', 'body', 'end', 'after'])
+
+tests/unit/workflows/test_project_end_control_flow.py:44: AssertionError
+__________________ test_project_end_stops_entire_run[module] ___________________
+
+kind = 'module'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("kind", ["loop", "workflow", "module", "canvas"])
+    async def test_project_end_stops_entire_run(kind):
+        visits = []
+        async def emit(event, identity, _visit, _payload):
+            if event == "nodeAttempt" and _payload.get("status") == "started":
+                visits.append(identity)
+        async def accept(_request):
+            return {"endOperationId": "accepted"}
+        graph = ProjectGraphExecutor(None, {}, emit, lambda: False)
+        graph.context.project_data = accept
+        result = await graph.run(end_plan(kind))
+        assert result["status"] == "succeeded", result
+        assert visits.count("end") == 1, visits
+        assert visits.count("body") == 1, visits
+>       assert "after" not in visits and "inner-after" not in visits, visits
+E       AssertionError: ['call', 'body', 'end', 'after']
+E       assert ('after' not in ['call', 'body', 'end', 'after'])
+
+tests/unit/workflows/test_project_end_control_flow.py:44: AssertionError
+__________________ test_project_end_stops_entire_run[canvas] ___________________
+
+kind = 'canvas'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("kind", ["loop", "workflow", "module", "canvas"])
+    async def test_project_end_stops_entire_run(kind):
+        visits = []
+        async def emit(event, identity, _visit, _payload):
+            if event == "nodeAttempt" and _payload.get("status") == "started":
+                visits.append(identity)
+        async def accept(_request):
+            return {"endOperationId": "accepted"}
+        graph = ProjectGraphExecutor(None, {}, emit, lambda: False)
+        graph.context.project_data = accept
+        result = await graph.run(end_plan(kind))
+        assert result["status"] == "succeeded", result
+        assert visits.count("end") == 1, visits
+        assert visits.count("body") == 1, visits
+>       assert "after" not in visits and "inner-after" not in visits, visits
+E       AssertionError: ['call', 'body', 'end', 'after']
+E       assert ('after' not in ['call', 'body', 'end', 'after'])
+
+tests/unit/workflows/test_project_end_control_flow.py:44: AssertionError
+=========================== short test summary info ============================
+FAILED tests/unit/workflows/test_project_end_control_flow.py::test_project_end_stops_entire_run[loop]
+FAILED tests/unit/workflows/test_project_end_control_flow.py::test_project_end_stops_entire_run[workflow]
+FAILED tests/unit/workflows/test_project_end_control_flow.py::test_project_end_stops_entire_run[module]
+FAILED tests/unit/workflows/test_project_end_control_flow.py::test_project_end_stops_entire_run[canvas]
+4 failed, 3 passed in 0.59s

@@ -21,6 +21,7 @@ from autoflow.domain.workflows.runtime import CoreRunStatus, thaw_json
 from autoflow.infrastructure.database.environment_models import (
     ProjectEndOperationRow,
     ProjectEnvironmentInstanceRow,
+    ProjectEnvironmentSaveRow,
     ProjectManualItemRow,
 )
 from autoflow.infrastructure.database.models import ProjectOperationRow, ProjectRow
@@ -459,7 +460,23 @@ def _end(session: Session, project_id: str, task_id: str) -> dict[str, Any] | No
     if row is None:
         return None
     operation = session.get(ProjectOperationRow, row.operation_id)
+    save = session.get(ProjectEnvironmentSaveRow, row.save_operation_id) if row.save_operation_id else None
+    repair_targets = []
+    for target in row.targets:
+        ref = target["recordRef"]
+        key = ref["recordKey"]
+        record = session.get(DataRecordRow, (ref["datasetGeneration"], key["type"], key["value"]))
+        exists = bool(record and not record.deleted and record.project_id == project_id and record.table_id == ref["tableId"])
+        repair_targets.append({
+            "recordRef": ref,
+            "exists": exists,
+            "currentLinkRevision": record.link_revision if exists and record else None,
+            "currentEnvironmentId": record.current_environment_id if exists and record else None,
+        })
     return {"operationId": row.operation_id, "phase": row.phase,
+            "saveOperationId": save.operation_id if save else None,
+            "associationPhase": save.phase if save else None,
+            "repairTargets": repair_targets,
             "businessResult": row.intended_result.get("businessResult"),
             "outcome": operation.result if operation else None, "error": operation.error if operation else None}
 

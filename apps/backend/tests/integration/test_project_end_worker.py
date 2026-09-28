@@ -577,7 +577,7 @@ async def test_end_executor_resolves_list_variable():
     result = await ProjectEndExecutor().execute(
         {"recordTargets": "{written_records}"}, context
     )
-    assert result.success and context.stop_workflow
+    assert result.success and context.project_end.accepted
     assert calls[0]["arguments"]["recordTargets"] == [{"recordKey": "selected"}]
 
 
@@ -764,3 +764,38 @@ def test_created_record_acquires_lease_and_can_be_selected_by_dynamic_end(end_co
     ends.worker_call(task.run_id, 1, request)
     outcome = ends.finalize(task.run_id)[1]
     assert outcome["complete"] and outcome["targets"] == [created["ref"]]
+
+
+def test_reopened_partial_end_repairs_all_targets_without_reviving_run(end_context):
+    from uuid import uuid4
+
+    from autoflow.application.project_runs.queries import ProjectRunQueries
+    from autoflow.infrastructure.database.project_data_models import DataRecordRow
+
+    factory, ends, task, request, _snapshot = end_context
+    _retain(end_context)
+    ends.worker_call(task.run_id, 1, request)
+    original_targets = ends.operation(task.run_id)[1]["retainEnvironment"]["recordTargets"]
+    ref = original_targets[0]["recordRef"]
+    with factory.begin() as session:
+        record = session.get(DataRecordRow, (ref["datasetGeneration"], ref["recordKey"]["type"], ref["recordKey"]["value"]))
+        record.link_revision += 1
+    outcome = ends.finalize(task.run_id)[1]
+    assert outcome["phase"] == "saved_unlinked"
+    # Dispatcher terminal bookkeeping is independent of association repair.
+    with factory.begin() as session:
+        session.get(WorkflowRunRow, task.run_id).status = "failed"
+    reopened = ProjectRunQueries(factory).task_detail(task.project_id, task.task_id)["end"]
+    assert reopened["saveOperationId"] != reopened["operationId"]
+    assert reopened["associationPhase"] == "saved_unlinked"
+    assert len(reopened["repairTargets"]) == len(original_targets)
+    approved = [{"recordRef": target["recordRef"], "expectedLinkRevision": target["currentLinkRevision"], "replaceAllowed": True} for target in reopened["repairTargets"]]
+    # A fresh service uses SQLite facts; no previous End mutation state is used.
+    service = EnvironmentService(ProjectService(SqlAlchemyProjects(factory)), SqlAlchemyEnvironments(factory), ends.environments.store)
+    repaired, _, _ = service.repair(task.project_id, str(uuid4()), reopened["saveOperationId"], {"recordTargets": approved})
+    assert repaired["phase"] == "completed"
+    detail = ProjectRunQueries(factory).task_detail(task.project_id, task.task_id)
+    assert detail["end"]["associationPhase"] == "completed"
+    assert detail["end"]["phase"] == "saved_unlinked"
+    assert detail["run"]["status"] == "failed"
+    assert all(target["currentEnvironmentId"] == outcome["saved"]["environmentId"] for target in detail["end"]["repairTargets"])

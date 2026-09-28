@@ -1,0 +1,33 @@
+I001 [*] Import block is un-sorted or un-formatted
+   --> tests/integration/test_project_end_real_browser.py:250:17
+    |
+248 |                   call = node("call", "run_workflow_file", {"workflowFile": saved_child.id})
+249 |               elif control_flow == "module":
+250 | /                 from autoflow.application.workflows.modules import CustomModuleService
+251 | |                 from autoflow.application.workflows.runtime import WorkflowRuntimeService
+252 | |                 from autoflow.infrastructure.database.workflow_modules import SqlAlchemyWorkflowModules
+253 | |                 from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
+    | |___________________________________________________________________________________________________^
+254 |
+255 |                   modules = CustomModuleService(SqlAlchemyWorkflowModules(factory))
+    |
+help: Organize imports
+    |
+250 |                 from autoflow.application.workflows.modules import CustomModuleService
+    -                 from autoflow.application.workflows.runtime import WorkflowRuntimeService
+    -                 from autoflow.infrastructure.database.workflow_modules import SqlAlchemyWorkflowModules
+    -                 from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
+251 +                 from autoflow.application.workflows.runtime import (
+252 +                     WorkflowRuntimeService,
+253 +                 )
+254 +                 from autoflow.infrastructure.database.workflow_modules import (
+255 +                     SqlAlchemyWorkflowModules,
+256 +                 )
+257 +                 from autoflow.infrastructure.database.workflows import (
+258 +                     SqlAlchemyWorkflowRepository,
+259 +                 )
+260 |
+    |
+
+Found 1 error.
+[*] 1 fixable with the `--fix` option.

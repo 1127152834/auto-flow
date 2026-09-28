@@ -1,0 +1,34 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+______ test_reopened_partial_end_repairs_all_targets_without_reviving_run ______
+
+end_context = (sessionmaker(class_='Session', bind=Engine(sqlite:////private/tmp/autoflow-pm9-end.GXp3j1/test_reopened_partial_end_r...': 1, 'linkRevision': 1})), captured_at=datetime.datetime(2026, 9, 28, 5, 20, 4, 51045, tzinfo=datetime.timezone.utc)))
+
+    def test_reopened_partial_end_repairs_all_targets_without_reviving_run(end_context):
+        from uuid import uuid4
+    
+        from autoflow.application.project_runs.queries import ProjectRunQueries
+        from autoflow.infrastructure.database.project_data_models import DataRecordRow
+    
+        factory, ends, task, request, _snapshot = end_context
+        _retain(end_context)
+        ends.worker_call(task.run_id, 1, request)
+        original_targets = ends.operation(task.run_id)[1]["retainEnvironment"]["recordTargets"]
+        ref = original_targets[0]["recordRef"]
+        with factory.begin() as session:
+            record = session.get(DataRecordRow, (ref["datasetGeneration"], ref["recordKey"]["type"], ref["recordKey"]["value"]))
+            record.link_revision += 1
+        outcome = ends.finalize(task.run_id)[1]
+        assert outcome["phase"] == "saved_unlinked"
+        # Dispatcher terminal bookkeeping is independent of association repair.
+        with factory.begin() as session:
+            session.get(WorkflowRunRow, task.run_id).status = "failed"
+        reopened = ProjectRunQueries(factory).task_detail(task.project_id, task.task_id)["end"]
+>       assert reopened["saveOperationId"] != reopened["operationId"]
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'saveOperationId'
+
+tests/integration/test_project_end_worker.py:789: KeyError
+=========================== short test summary info ============================
+FAILED tests/integration/test_project_end_worker.py::test_reopened_partial_end_repairs_all_targets_without_reviving_run
+1 failed, 31 deselected in 1.15s

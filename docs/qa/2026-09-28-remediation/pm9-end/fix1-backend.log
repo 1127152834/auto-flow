@@ -1,0 +1,38 @@
+..........................................F............................. [ 72%]
+............................                                             [100%]
+=================================== FAILURES ===================================
+___________________ test_end_executor_resolves_list_variable ___________________
+
+    @pytest.mark.asyncio
+    async def test_end_executor_resolves_list_variable():
+        from autoflow.application.workflows.executors.project_end import ProjectEndExecutor
+        from autoflow.domain.workflows.execution import ExecutionContext
+    
+        calls = []
+    
+        async def worker(request):
+            calls.append(request)
+            return {"phase": "accepted"}
+    
+        context = ExecutionContext(
+            variables={"written_records": [{"recordKey": "selected"}]}, project_data=worker
+        )
+        context.proxy_visit.set(("end", "visit"))
+        result = await ProjectEndExecutor().execute(
+            {"recordTargets": "{written_records}"}, context
+        )
+>       assert result.success and context.stop_workflow
+E       AssertionError: assert (True and False)
+E        +  where True = ModuleResult(success=True, message='', data={'phase': 'accepted'}, error=None, branch=None, duration=0, log_level=None, skipped=False, is_timeout=False).success
+E        +  and   False = ExecutionContext(variables={'written_records': [{'recordKey': 'selected'}]}, sensitive_variables=set(), browser=None, ...alse, project_end=ProjectEndState(accepted=True), stop_workflow=False, stop_reason='', variable_tracking_enabled=False).stop_workflow
+
+tests/integration/test_project_end_worker.py:580: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.11/site-packages/starlette/testclient.py:53
+  /Users/zhangtiancheng/Documents/projects/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/integration/test_project_end_worker.py::test_end_executor_resolves_list_variable
+1 failed, 99 passed, 1 warning in 35.19s
