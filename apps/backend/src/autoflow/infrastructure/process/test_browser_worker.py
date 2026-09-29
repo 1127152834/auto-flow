@@ -412,6 +412,7 @@ async def _wait_for_cleanup(task: asyncio.Task[Any]) -> Any:
 async def stop_process_tree(
     process: asyncio.subprocess.Process, termination_timeout: float,
     directory: Path | None = None, executable: Path | None = None, birth: int | None = None,
+    *, graceful_timeout: float | None = None,
 ) -> None:
     owned = await asyncio.to_thread(capture_processes, process.pid, birth, directory, executable) if sys.platform != "win32" else {}
     if process.stdin is not None:
@@ -419,7 +420,7 @@ async def stop_process_tree(
     if process.returncode is None:
         try:
             await asyncio.wait_for(
-                asyncio.shield(process.wait()), termination_timeout
+                asyncio.shield(process.wait()), graceful_timeout if graceful_timeout is not None else termination_timeout
             )
         except TimeoutError:
             pass

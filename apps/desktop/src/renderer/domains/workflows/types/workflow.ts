@@ -8,6 +8,9 @@ export interface Position {
 
 // 模块类型
 export type ModuleType =
+  | 'trace_mark'
+  | 'capture_diagnostics'
+  | 'save_trace_segment'
   | 'project_data'
   | 'project_end'
   | 'project_manual'
@@ -707,7 +710,10 @@ export type BrowserEnvironment =
   | {source:'fixedEnvironment';environmentId:string}
   | {source:'inputEnvironment';inputId:string}
 
+export type TraceMode = 'off' | 'standard' | 'enhanced'
+
 export interface Workflow {
+  traceMode?: TraceMode
   schemaVersion?: number
   browserEnvironmentVersion?: number
   id: string

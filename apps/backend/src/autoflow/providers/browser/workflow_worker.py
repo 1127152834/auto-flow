@@ -180,6 +180,25 @@ async def _run_in_session(
             artifact_root=artifact_root,
         )
         context.events = sink
+        async def attach_trace(session: Any) -> Any:
+            if hasattr(session, "start_trace"):
+                async def save_trace(name: str, content: bytes, mime: str) -> str:
+                    writer = sink._artifact_store.writer(run_id=run_id, node_id="__trace__", execution_id=None, purpose="diagnostic")
+                    target = await writer.write_bytes(name=name, content=content, mime_type=mime)
+                    relative = Path(target).resolve().relative_to(artifact_root.resolve()).as_posix()
+                    return artifacts.by_path(relative).artifact_id
+                await session.start_trace(save_trace, enabled=document.get("traceMode", "standard") != "off",
+                                          enhanced=document.get("traceMode") == "enhanced")
+            return session
+        if browser is not None:
+            await attach_trace(browser)
+        if browser_initializer is not None:
+            async def initialize_with_trace(execution: Any, declaration: Any) -> Any:
+                session = await attach_trace(await browser_initializer(execution, declaration))
+                if getattr(session, "trace", None) is not None:
+                    session.trace.gaps.add("首次启动浏览器节点的开始时间见执行日志；Trace 从浏览器就绪时开始")
+                return session
+            context.browser_initializer = initialize_with_trace
         if context.variable_tracking_enabled:
             for name, value in context.variables.items():
                 await sink.publish(
@@ -414,6 +433,9 @@ class _WorkerEventSink:
 
     async def publish(self, event: Mapping[str, Any]) -> None:
         event = dict(event)
+        trace = getattr(self._context.browser, "trace", None)
+        if trace is not None:
+            await trace.execution(event, self._context.browser)
         await self._externalize_large_diagnostics(event)
         node_id = event.get("nodeId")
         execution_id = event.get("executionId")

@@ -320,6 +320,8 @@ class WorkflowWorkerManager:
                     worker.directory,
                     worker.executable,
                     worker.birth,
+                    # Trace flush is bounded to 8s; leave time for context shutdown.
+                    graceful_timeout=max(10, self._termination_timeout),
                 )
                 await worker.monitor
             finally:

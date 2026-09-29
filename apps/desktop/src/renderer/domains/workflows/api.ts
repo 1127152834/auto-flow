@@ -311,6 +311,31 @@ export const workflowApi = {
   },
   getRunLogs: (runId: string, query: ExecutionLogQuery = {}) =>
     checkedExecutionLogPage(apiRequest<unknown>(`/workflow-runs/${encodeURIComponent(runId)}/logs${executionLogSearch(query)}`), runId),
+  getRunTrace: async (runId: string, cursor = 0, kind = '', options: { limit?: number; executionId?: string; evidenceId?: string; traceId?: string } = {}) => {
+    type Page = components['schemas']['StudioTracePage']
+    const connection = getStudioTransportRevision()
+    const params = new URLSearchParams({ cursor: String(cursor), limit: String(options.limit ?? 100) })
+    if (options.executionId) params.set('executionId', options.executionId)
+    if (options.evidenceId) params.set('evidenceId', options.evidenceId)
+    if (options.traceId) params.set('traceId', options.traceId)
+    if (kind) params.set('kind', kind)
+    const result = await apiRequest<Page>(`/workflow-runs/${encodeURIComponent(runId)}/trace?${params}`)
+    if (connection !== getStudioTransportRevision()) return { success: false, error: '服务连接已变化，请重新读取 Trace' } as ApiResponse<Page>
+    if (result.success && (!result.data || result.data.runId !== runId || !Array.isArray(result.data.events))) {
+      return { success: false, error: 'Trace 不属于当前运行' } as ApiResponse<Page>
+    }
+    return result
+  },
+  getRunArtifact: async (runId: string, artifactId: string): Promise<ApiResponse<Blob>> => {
+    const connection = getStudioTransportRevision()
+    try {
+      const response = await studioFetch(scopeStudioUrl(`${getApiBase()}/workflow-runs/${encodeURIComponent(runId)}/artifacts/${encodeURIComponent(artifactId)}`))
+      if (!response.ok) return { success: false, error: `证据读取失败：HTTP ${response.status}` }
+      const data = await response.blob()
+      if (connection !== getStudioTransportRevision()) return { success: false, error: '工作区连接已变化，请重新读取证据' }
+      return { success: true, data }
+    } catch (error) { return { success: false, error: String(error) } }
+  },
   getRunResults: async (runId:string,cursor=0,limit=100,throughSequence?:number) => {
     const params=new URLSearchParams({cursor:String(cursor),limit:String(limit)})
     if(throughSequence!==undefined)params.set('throughSequence',String(throughSequence))

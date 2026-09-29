@@ -1,3 +1,4 @@
+import { DiagnosticConfig } from './config-panels/DiagnosticConfig'
 import { ProjectLifecycleConfig } from './config-panels/ProjectLifecycleConfig'
 import { ProjectDataConfig } from './config-panels/ProjectDataConfig'
 
@@ -826,6 +827,10 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
       case 'project_manual':
       case 'project_end':
         return <ProjectLifecycleConfig key={selectedNodeId} data={nodeData} onChange={handleChange} />
+      case 'trace_mark':
+      case 'capture_diagnostics':
+      case 'save_trace_segment':
+        return <DiagnosticConfig data={nodeData} onChange={handleChange} />
       case 'project_data':
         return <ProjectDataConfig key={selectedNodeId} data={nodeData} onChange={handleChange} />
       case 'set_variable':

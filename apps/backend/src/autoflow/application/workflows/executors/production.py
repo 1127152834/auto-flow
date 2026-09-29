@@ -36,6 +36,7 @@ from .data_structure import (
     StringTrimExecutor,
 )
 from .desktop_platform import DESKTOP_PLATFORM_EXECUTORS
+from .diagnostics import DIAGNOSTIC_EXECUTORS
 from .dict_advanced import (
     DictDeepCopyExecutor,
     DictFilterExecutor,
@@ -166,6 +167,7 @@ from .workflow_chain import RunWorkflowFileExecutor
 PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     *PROXY_EXECUTORS,
     CustomModuleExecutor,
+    *DIAGNOSTIC_EXECUTORS,
     OpenPageExecutor,
     ClickElementExecutor,
     InputTextExecutor,

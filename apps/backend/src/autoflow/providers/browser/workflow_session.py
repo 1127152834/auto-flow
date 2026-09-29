@@ -556,6 +556,7 @@ class CloakBrowserWorkflowSession:
         self._active_frame: CloakBrowserWorkflowPage | None = None
         self._closed = False
         self.proxy_relay: BrowserProxyRelay | None = None
+        self.trace: Any = None
         existing = self._synchronize_pages()
         if existing:
             self._current_id = existing[0].id
@@ -669,11 +670,31 @@ class CloakBrowserWorkflowSession:
             return {"exitIp": None, "error": {"code": "PROXY_NOT_BOUND", "message": "会话未绑定代理"}}
         return await self.proxy_relay.probe(reset)
 
+    async def collect_diagnostic(self, kind: str, config: dict[str, Any], metadata: dict[str, Any]) -> dict[str, Any]:
+        if self.trace is None:
+            raise ValueError("TRACE_NOT_ENABLED: 本次浏览器未开启追踪")
+        return await self.trace.collect(kind, config, metadata, self)
+
+    async def start_trace(self, save: Any, *, enabled: bool = True, enhanced: bool = False) -> None:
+        from .workflow_trace import WorkflowTrace
+        if self.trace is None:
+            self.trace = WorkflowTrace(self._context, save, enabled=enabled, enhanced=enhanced)
+            await self.trace.start()
+
     async def close(self) -> None:
         if self._closed:
             return
         self._closed = True
-        await self._context.close()
+        try:
+            if self.trace is not None:
+                try:
+                    async with asyncio.timeout(8):
+                        await self.trace.finish()
+                except Exception:  # noqa: BLE001 -- cleanup must proceed if the disk is unavailable.
+                    import logging
+                    logging.getLogger(__name__).warning("Trace 归档未完成；浏览器继续清理")
+        finally:
+            await self._context.close()
 
 
 async def _browser_process_id(context: Any) -> int | None:

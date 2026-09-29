@@ -36,6 +36,7 @@ import { ProjectInputPanel } from './ProjectInputPanel'
 import { ImageAssetsPanel } from './ImageAssetsPanel'
 import { LogList } from './LogList'
 import { DataTable } from './DataTable'
+import { TracePanel } from './TracePanel'
 import { RunResultsPanel } from './RunResultsPanel'
 import { PanelResizer } from './PanelResizer'
 import { useLayoutStore, LAYOUT_LIMITS } from '../hooks/stores/layoutStore'
@@ -695,6 +696,9 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
                 {useWorkflowStore.getState().imageAssets.length}
               </span>
             </button>
+            <button onClick={() => { setActiveTab('trace'); setBottomHeight(Math.min(LAYOUT_LIMITS.bottom.max, Math.max(bottomHeight, window.innerHeight * 0.5))) }} aria-pressed={activeTab === 'trace'} className={cn('flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold', activeTab === 'trace' ? 'bg-primary text-primary-foreground' : 'border-transparent text-muted-foreground hover:bg-muted')}>
+              <Search className="h-3.5 w-3.5" />浏览器追踪
+            </button>
           </div>
         </div>
         <div className="flex items-center gap-1">
@@ -1184,6 +1188,17 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
 
 
 
+          {activeTab === 'trace' && <>
+            <div className="flex items-center gap-2 border-b px-3 py-1">
+              <label htmlFor="trace-run">运行记录</label>
+              <Select id="trace-run" value={selectedRunId} onChange={e => setSelectedRunId(e.target.value)} className="h-7 max-w-96">
+                <option value="">当前运行</option>
+                {recentRuns.map(run => <option key={run.runId} value={run.runId}>{run.workflowName} · {new Date(run.startedAt).toLocaleString('zh-CN', { hour12: false })}</option>)}
+              </Select>
+            </div>
+            {nextRunCursor !== null && <button disabled={runsLoading} className="px-3 py-1 text-left text-xs" onClick={() => void loadRecentRuns(nextRunCursor)}>{runsLoading ? '读取运行中…' : '更早运行'}</button>}
+            {effectiveRunId ? <TracePanel key={effectiveRunId} runId={effectiveRunId} /> : <p className="p-4 text-xs text-muted-foreground">运行流程后，在这里查看浏览器追踪证据。</p>}
+          </>}
           {activeTab === 'images' && <ImageAssetsPanel />}
         </div>
       )}

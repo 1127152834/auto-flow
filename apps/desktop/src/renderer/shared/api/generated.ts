@@ -3949,6 +3949,23 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/workflow-runs/{run_id}/trace": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Trace */
+        get: operations["get_trace_api_workflow_runs__run_id__trace_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workflow-runs/{run_id}/artifacts": {
         parameters: {
             query?: never;
@@ -13551,6 +13568,129 @@ export type components = {
             name: string;
             /** Count */
             count: number;
+        };
+        /** StudioTraceEvent */
+        StudioTraceEvent: {
+            /** Sourceid */
+            sourceId?: string | null;
+            /** Sourceorigin */
+            sourceOrigin?: string | null;
+            /** Sourcebytes */
+            sourceBytes?: number | null;
+            /** Scriptid */
+            scriptId?: string | null;
+            /** Sha256 */
+            sha256?: string | null;
+            /** Traceid */
+            traceId?: string | null;
+            /** Id */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "execution" | "network" | "console" | "exception" | "page-closed" | "mark" | "diagnostic" | "source";
+            /** Timems */
+            timeMs: number;
+            /** Timestamp */
+            timestamp: string;
+            /** Nodeid */
+            nodeId?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Correlation */
+            correlation?: string | null;
+            /** Domid */
+            domId?: string | null;
+            /** Gaps */
+            gaps?: string[];
+            /** Nodelabel */
+            nodeLabel?: string | null;
+            /** Executionid */
+            executionId?: string | null;
+            executionContext?: components["schemas"]["JsonValue"];
+            /** Pageid */
+            pageId?: string | null;
+            /** Phase */
+            phase?: string | null;
+            /** Success */
+            success?: boolean | null;
+            /** Durationms */
+            durationMs?: number | null;
+            /** Snapshotid */
+            snapshotId?: string | null;
+            /**
+             * Snapshotmissing
+             * @default false
+             */
+            snapshotMissing: boolean;
+            /** Message */
+            message?: string | null;
+            /**
+             * Truncated
+             * @default false
+             */
+            truncated: boolean;
+            /** Level */
+            level?: string | null;
+            /** Url */
+            url?: string | null;
+            /** Method */
+            method?: string | null;
+            /** Status */
+            status?: number | null;
+            /** Resourcetype */
+            resourceType?: string | null;
+            /** Attribution */
+            attribution?: string | null;
+        };
+        /** StudioTracePage */
+        StudioTracePage: {
+            /** Sessions */
+            sessions?: components["schemas"]["StudioTraceSession"][];
+            /** Runid */
+            runId: string;
+            /** Runstatus */
+            runStatus: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "unavailable" | "partial" | "saved";
+            /** Traceid */
+            traceId?: string | null;
+            /** Archiveid */
+            archiveId?: string | null;
+            /** Gaps */
+            gaps: string[];
+            /** Events */
+            events: components["schemas"]["StudioTraceEvent"][];
+            /** Total */
+            total: number;
+            /** Nextcursor */
+            nextCursor?: number | null;
+            /**
+             * Localonly
+             * @default true
+             * @constant
+             */
+            localOnly: true;
+        };
+        /** StudioTraceSession */
+        StudioTraceSession: {
+            /** Traceid */
+            traceId: string;
+            /** Archiveid */
+            archiveId?: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "partial" | "saved";
+            /** Gaps */
+            gaps: string[];
+            /** Eventcount */
+            eventCount: number;
         };
         /** StudioVariableTrackingCleared */
         StudioVariableTrackingCleared: {
@@ -29500,6 +29640,45 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_trace_api_workflow_runs__run_id__trace_get: {
+        parameters: {
+            query?: {
+                cursor?: number;
+                limit?: number;
+                kind?: ("execution" | "network" | "console" | "exception" | "page-closed" | "mark" | "diagnostic" | "source") | null;
+                executionId?: string | null;
+                evidenceId?: string | null;
+                traceId?: string | null;
+                projectId?: string | null;
+            };
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioTracePage"];
+                };
             };
             /** @description Validation Error */
             422: {
