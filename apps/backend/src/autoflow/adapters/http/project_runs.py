@@ -18,6 +18,8 @@ from .project_run_schemas import (
     BatchPage,
     BatchStartRequest,
     BatchStopRequest,
+    DebugInputRequest,
+    DebugInputResponse,
     FollowUpBatchRequest,
     InputPreviewRequest,
     InputPreviewResponse,
@@ -36,6 +38,10 @@ def project_runs_router(
     gate: QuiesceGate,
 ) -> APIRouter:
     router = APIRouter(prefix="/api/v1/projects/{projectId}")
+
+    @router.post('/automations/{automationId}/debug-inputs', response_model=DebugInputResponse)
+    def debug_inputs(projectId: UUID, automationId: UUID, body: DebugInputRequest):
+        return coordinator.debug_inputs(str(projectId), str(automationId), body.model_dump(by_alias=True))
 
     @router.post(
         "/automations/{automationId}/batches",

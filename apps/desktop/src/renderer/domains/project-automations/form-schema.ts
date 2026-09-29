@@ -26,7 +26,6 @@ export function validateAutomationForm(value: AutomationFormValues): AutomationF
   const errors: AutomationFormErrors = {}
   if (!value.name.trim() || length(value.name.trim()) > 80) errors.name = '自动化名称需要 1–80 个字符'
   if (length(value.description.trim()) > 1000) errors.description = '用途说明最多 1000 个字符'
-  if (!value.workflowId) errors.workflowId = '请选择关联工作流'
   value.parameterSchema.forEach((parameter, index, all) => {
     const prefix = `parameterSchema.${index}`
     if (parameter.description !== undefined && length(parameter.description.trim()) > 1000) errors[`${prefix}.description`] = '参数说明最多 1000 个字符'

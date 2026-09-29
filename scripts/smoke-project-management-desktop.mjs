@@ -62,6 +62,25 @@ async function poll(check, label) {
   }
   throw new Error(`Timeout: ${label}`)
 }
+// Pre-upgrade fixture: public creation now generates a new owned document.
+// This scenario deliberately retains old independent-document history.
+async function seedLegacyAutomation(projectId, body) {
+  const python = join(root, 'apps/backend/.venv', process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python')
+  const code = `import json,sys
+from uuid import uuid4
+from pathlib import Path
+from autoflow.application.project_automations.service import ProjectAutomationService
+from autoflow.domain.project_automations.models import automation_to_dict
+from autoflow.infrastructure.database.project_automations import SqlAlchemyProjectAutomations
+from autoflow.infrastructure.database.projects import SqlAlchemyProjects
+from autoflow.infrastructure.database.session import create_session_factory
+factory=create_session_factory(Path(sys.argv[1]))
+record=ProjectAutomationService(SqlAlchemyProjects(factory),SqlAlchemyProjectAutomations(factory)).create(sys.argv[2],str(uuid4()),json.loads(sys.argv[3]))[0]
+print(json.dumps(automation_to_dict(record),default=str))
+factory.dispose()`
+  const { stdout } = await promisify(execFile)(python, ['-c', code, join(userData, 'data/autoflow.sqlite3'), projectId, JSON.stringify(body)], { timeout: 10000 })
+  return JSON.parse(stdout)
+}
 async function checkAutomationDeletion(browserVersion) {
   const project = await api('/api/v1/projects', { name: '独立流程解除关联验收' })
   const prefix = `/api/v1/projects/${project.projectId}`
@@ -73,10 +92,10 @@ async function checkAutomationDeletion(browserVersion) {
   ]
   const workflow = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: '删除自动化后保留独立文档', variables: [], nodes, edges: [{ id: 'open-manual', source: 'open', target: 'manual' }, { id: 'manual-end', source: 'manual', target: 'end' }] })
   const body = { name: '解除关联测试自动化', description: '', workflowId: workflow.id, inputPlan: { inputs: [] }, parameterSchema: [], environmentPolicy: { source: 'newFromProfile', profileId: profile.id, proxyOverride: { mode: 'none' }, modelProviderId: null }, runPolicy: { maxTasks: 1, concurrency: 1, maxLiveInstances: 1, continueAfterFailure: false, automaticExecutionTimeoutSeconds: 120, manualDeadlineSeconds: 300 } }
-  const automation = await api(prefix + '/automations', body)
+  const automation = await seedLegacyAutomation(project.projectId, body)
   const automationPath = prefix + `/automations/${automation.automationId}`
-  const duplicate = await api(prefix + '/automations', { ...body, name: '不得重复关联' }, 'POST', 409)
-  assert.equal(duplicate.error.code, 'WORKFLOW_ALREADY_BOUND')
+  const duplicate = await api(prefix + '/automations', { ...body, name: '不得重复关联' }, 'POST', 422)
+  assert.equal(duplicate.error.code, 'VALIDATION_ERROR')
   const accepted = await api(automationPath + '/batches', { expectedAutomationRevision: automation.managementRevision, parameters: {}, maxTasks: 1, concurrency: 1 })
   const batchId = accepted.operation.result.batch.batchId
   const manual = await poll(async () => (await api(prefix + '/manual-items')).items.find(item => item.status === 'waiting'), 'real worker waiting before automation deletion')
@@ -139,7 +158,7 @@ async function checkAutomationDeletion(browserVersion) {
     const replay = await api(automationPath, JSON.parse(request.postData), 'DELETE', 200, key)
     assert.equal(replay.operation.operationId, operation.operationId)
     assert.equal(replay.operation.status, 'succeeded')
-    const linkedAgain = await api(prefix + '/automations', { ...body, name: '重新关联保留的独立文档' })
+    const linkedAgain = await seedLegacyAutomation(project.projectId, { ...body, name: '重新关联保留的独立文档' })
     assert.equal(linkedAgain.workflowId, workflow.id)
     await capture('automation-unlinked')
     // Project deletion must unlink the same edited independent document too.
@@ -178,13 +197,13 @@ async function checkAutomationDeletion(browserVersion) {
     const survived = await api(`/api/workflows/${workflow.id}`)
     for (const key of ['id', 'revision', 'nodes', 'edges']) assert.deepEqual(survived[key], editedDocument[key], `project deletion must preserve edited workflow ${key}`)
     const nextProject = await api('/api/v1/projects', { name: '删除项目后重新关联' })
-    const nextAutomation = await api(`/api/v1/projects/${nextProject.projectId}/automations`, { ...body, name: '原独立文档' })
+    const nextAutomation = await seedLegacyAutomation(nextProject.projectId, { ...body, name: '原独立文档' })
     assert.equal(nextAutomation.workflowId, workflow.id)
     await cdp.evaluate(`location.hash=${JSON.stringify('#/projects/' + nextProject.projectId + '/automations/' + nextAutomation.automationId)}`)
     await waitFor(cdp, "document.body.innerText.includes('原独立文档') && !document.querySelector('main [role=progressbar]')", 'same independent document linked in the new project')
     await capture('project-delete-unlinked')
     const projectDeletion = { status: 'passed', deletedProjectId: project.projectId, retainedWorkflowId: workflow.id, retainedRevision: survived.revision, stoppedTaskId: secondManual.taskId, operationId: removedOperation.operationId, nextProjectId: nextProject.projectId, nextAutomationId: nextAutomation.automationId, scope: 'public HTTP archive/delete with actual waiting worker; new project association shown in Manager; no Studio editing lock or project-owned document deletion claim' }
-    return { status: 'passed', projectDeletion, projectId: project.projectId, workflowId: workflow.id, removedAutomationId: automation.automationId, operationId: operation.operationId, checks: ['one independent workflow cannot be associated twice', 'real waiting worker blocks deletion without losing its task or document', 'stop invalidates old UI impact and clears name confirmation', 'fresh exact-name UI deletion removes automation/batch/task, terminal manual item and frozen snapshot while keeping the original document', 'replaying the accepted original delete key returns the same operation', 'retained independent document can be associated again'], limits: ['project-owned document deletion remains refused because ownership is not persisted', 'Studio editing ownership and Windows/Intel physical UI acceptance are not proved'] }
+    return { status: 'passed', projectDeletion, projectId: project.projectId, workflowId: workflow.id, removedAutomationId: automation.automationId, operationId: operation.operationId, checks: ['public creation refuses client-assigned workflow identities; seeded legacy associations remain compatible', 'real waiting worker blocks deletion without losing its task or document', 'stop invalidates old UI impact and clears name confirmation', 'fresh exact-name UI deletion removes automation/batch/task, terminal manual item and frozen snapshot while keeping the original document', 'replaying the accepted original delete key returns the same operation', 'retained legacy independent documents survive deletion and historical fixture restoration'], limits: ['project-owned document deletion remains refused because ownership is not persisted', 'Studio editing ownership and Windows/Intel physical UI acceptance are not proved'] }
   } finally { cdp.socket.removeEventListener('message', observe) }
 }
 

@@ -40,7 +40,10 @@ export async function checkBusinessCombinations(baseUrl, token, browserVersion) 
   }
   const automations = new Map()
   async function start(flow, inputPlan = { inputs: [] }, environmentPolicy = environment, policy = runPolicy) {
-    const automation = automations.get(flow.id) ?? await api(prefix + '/automations', { name: randomUUID(), description: '', workflowId: flow.id, inputPlan, parameterSchema: [], environmentPolicy, runPolicy: policy })
+    const automation = automations.get(flow.id) ?? await api(prefix + '/automations', { name: randomUUID(), description: '', inputPlan, parameterSchema: [], environmentPolicy, runPolicy: policy })
+    if (!automations.has(flow.id)) {
+      await api(`/api/workflows/${automation.workflowId}`, { ...flow, id: automation.workflowId, projectId: project.projectId, expectedRevision: 1, clientRequestId: randomUUID() }, 'PUT')
+    }
     automations.set(flow.id, automation)
     const validation = await api(`${prefix}/automations/${automation.automationId}/validation`)
     assert.equal(validation.runnable, true, JSON.stringify(validation))

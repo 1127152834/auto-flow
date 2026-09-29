@@ -23,8 +23,8 @@ from autoflow.infrastructure.database.workflow_models import WorkflowDocumentRow
 
 
 def test_overflowing_json_parameter_is_a_field_error_without_writes(tmp_path):
-    api, project_id, workflow_id = client(tmp_path)
-    payload = body(workflow_id)
+    api, project_id, _workflow_id = client(tmp_path)
+    payload = body()
     payload['parameterSchema'][0].update(type='number', defaultValue=12345)
     response = api.post(
         f'/api/v1/projects/{project_id}/automations',
@@ -88,11 +88,11 @@ def client(tmp_path):
     return TestClient(app), project_id, workflow_id
 
 
-def body(workflow_id):
+def body(workflow_id=None):
     return {
         "name": "配置",
         "description": "说明",
-        "workflowId": workflow_id,
+        **({"workflowId": workflow_id} if workflow_id else {}),
         "inputPlan": {"inputs": []},
         "parameterSchema": [
             {
@@ -136,7 +136,7 @@ def test_routes_and_dtos_match_the_frozen_contract(tmp_path):
     ) == {"get"}
     assert {
         "AutomationView",
-        "AutomationWrite",
+        "AutomationCreate",
         "AutomationUpdate",
         "AutomationPage",
         "AutomationValidationView",
@@ -153,8 +153,8 @@ def test_routes_and_dtos_match_the_frozen_contract(tmp_path):
 
 
 def test_create_list_get_put_validation_and_typed_values(tmp_path):
-    api, project_id, workflow_id = client(tmp_path)
-    payload = body(workflow_id)
+    api, project_id, _workflow_id = client(tmp_path)
+    payload = body()
     created = api.post(
         f"/api/v1/projects/{project_id}/automations",
         headers={"Idempotency-Key": "00000000-0000-0000-0000-000000000001"},
@@ -178,6 +178,7 @@ def test_create_list_get_put_validation_and_typed_values(tmp_path):
     updated_payload = {
         **payload,
         "description": "新版",
+        "workflowId": item["workflowId"],
         "expectedManagementRevision": 1,
     }
     updated_payload["runPolicy"] = {
@@ -196,7 +197,7 @@ def test_create_list_get_put_validation_and_typed_values(tmp_path):
         f"/api/v1/projects/{project_id}/automations/{automation_id}/validation"
     ).json()
     assert validation["status"] == "unavailable" and validation["runnable"] is False
-    bad = body(workflow_id)
+    bad = body()
     bad["parameterSchema"][0]["defaultValue"] = "false"
     assert (
         api.post(
@@ -209,11 +210,11 @@ def test_create_list_get_put_validation_and_typed_values(tmp_path):
 
 
 def test_parent_ownership_is_checked_on_every_item_route(tmp_path):
-    api, project_id, workflow_id = client(tmp_path)
+    api, project_id, _workflow_id = client(tmp_path)
     item = api.post(
         f"/api/v1/projects/{project_id}/automations",
         headers={"Idempotency-Key": "00000000-0000-0000-0000-000000000001"},
-        json=body(workflow_id),
+        json=body(),
     ).json()
     other = "00000000-0000-0000-0000-000000000099"
     for method, suffix, kwargs in (
@@ -223,7 +224,7 @@ def test_parent_ownership_is_checked_on_every_item_route(tmp_path):
             item["automationId"],
             {
                 "headers": {"Idempotency-Key": "00000000-0000-0000-0000-000000000002"},
-                "json": {**body(workflow_id), "expectedManagementRevision": 1},
+                "json": {**body(_workflow_id), "expectedManagementRevision": 1},
             },
         ),
         ("get", f"{item['automationId']}/validation", {}),
@@ -237,11 +238,11 @@ def test_parent_ownership_is_checked_on_every_item_route(tmp_path):
 
 
 def test_existing_typed_record_identity_and_record_query_round_trip(tmp_path):
-    api, project_id, workflow_id = client(tmp_path)
+    api, project_id, _workflow_id = client(tmp_path)
     table_id = "00000000-0000-0000-0000-000000000040"
     generation = "00000000-0000-0000-0000-000000000041"
     field_id = "00000000-0000-0000-0000-000000000042"
-    payload = body(workflow_id)
+    payload = body()
     payload["inputPlan"] = {
         "inputs": [
             {
@@ -311,7 +312,7 @@ def test_existing_typed_record_identity_and_record_query_round_trip(tmp_path):
 
 
 def test_malformed_filter_json_is_422_without_persistent_facts(tmp_path):
-    api, project_id, workflow_id = client(tmp_path)
+    api, project_id, _workflow_id = client(tmp_path)
     input_id = "00000000-0000-0000-0000-000000000061"
     table_id = "00000000-0000-0000-0000-000000000062"
     generation = "00000000-0000-0000-0000-000000000063"
@@ -353,7 +354,7 @@ def test_malformed_filter_json_is_422_without_persistent_facts(tmp_path):
         ),
     )
     for index, (filter_value, order_by) in enumerate(malformed_queries, start=1):
-        payload = body(workflow_id)
+        payload = body()
         payload["inputPlan"] = {
             "inputs": [
                 {
@@ -392,11 +393,11 @@ def test_malformed_filter_json_is_422_without_persistent_facts(tmp_path):
 
 
 def test_overflowing_timeout_is_422_without_persistent_facts(tmp_path):
-    api, project_id, workflow_id = client(tmp_path)
+    api, project_id, _workflow_id = client(tmp_path)
     for index, field in enumerate(
         ("automaticExecutionTimeoutSeconds", "manualDeadlineSeconds"), start=1
     ):
-        payload = body(workflow_id)
+        payload = body()
         payload["runPolicy"] = {**payload["runPolicy"], field: 10**400}
         response = api.post(
             f"/api/v1/projects/{project_id}/automations",

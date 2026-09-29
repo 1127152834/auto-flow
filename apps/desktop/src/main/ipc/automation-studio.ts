@@ -176,7 +176,7 @@ function normalizeContext(value: unknown): StudioOpenContext {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('工作台上下文无效')
   const source = value as Record<string, unknown>
   const result: StudioOpenContext = {}
-  for (const key of ['workspaceKey', 'instanceId', 'projectId', 'workflowId'] as const) {
+  for (const key of ['workspaceKey', 'instanceId', 'projectId', 'automationId', 'workflowId'] as const) {
     const entry = source[key]
     if (entry === undefined) continue
     if (typeof entry !== 'string' || entry.trim().length === 0 || entry.length > 200) throw new Error('工作台上下文无效')
@@ -186,7 +186,7 @@ function normalizeContext(value: unknown): StudioOpenContext {
 }
 
 function contextKey(context: StudioOpenContext): string {
-  return JSON.stringify([context.workspaceKey ?? '', context.instanceId ?? '', context.projectId ?? '', context.workflowId ?? ''])
+  return JSON.stringify([context.workspaceKey ?? '', context.instanceId ?? '', context.projectId ?? '', context.automationId ?? '', context.workflowId ?? ''])
 }
 
 function applyContext(params: URLSearchParams, context: StudioOpenContext): void {

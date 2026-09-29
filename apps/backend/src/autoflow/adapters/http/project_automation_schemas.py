@@ -142,10 +142,9 @@ class CapabilityRequirement(ApiModel):
     reason: str | None = None
 
 
-class AutomationWrite(ApiModel):
+class AutomationCreate(ApiModel):
     name: str
     description: str
-    workflow_id: str
     input_plan: InputPlan
     parameter_schema: list[ParameterDefinition]
     environment_policy: EnvironmentPolicy
@@ -153,6 +152,10 @@ class AutomationWrite(ApiModel):
 
     def payload(self):
         return self.model_dump(by_alias=True, exclude_unset=True)
+
+
+class AutomationWrite(AutomationCreate):
+    workflow_id: str
 
 
 class AutomationUpdate(AutomationWrite):

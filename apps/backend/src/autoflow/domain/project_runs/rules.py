@@ -20,6 +20,7 @@ def validate_batch_start(
     if not isinstance(payload, dict):
         raise _error("form", "请求必须是对象")
     allowed = {
+        "debugSelection",
         "expectedAutomationRevision",
         "parameters",
         "maxTasks",

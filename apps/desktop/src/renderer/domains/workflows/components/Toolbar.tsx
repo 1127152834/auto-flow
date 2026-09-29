@@ -1,3 +1,5 @@
+import { captureProjectReferenceTypes } from '../project-inputs'
+import { runProjectOnce, stopProjectOnce } from '../run-project-once'
 import {registerDocumentLeaveResource,requestDocumentLeave,getDocumentLeaveResources} from '../lib/documentLeave'
 import {stopStudioRun} from '../lib/stopStudioRun'
 import { requestSettingsClose } from '../lib/settingsLeave'
@@ -232,6 +234,39 @@ export function Toolbar() {
     }
   }, [])
 
+  const handleSave = useCallback(async (skipConfirm = false) => {
+    if (savingDocument.current || !mounted.current) return false
+    savingDocument.current = true
+    const revision = getStudioTransportRevision()
+    const sourceDocument = useWorkflowStore.getState().id
+    const active = () => mounted.current && revision === getStudioTransportRevision() && sourceDocument === useWorkflowStore.getState().id
+    const requireActive = () => { if (!active()) throw new Error('保存期间服务连接或文档已变更；当前草稿保持未保存，请在原工作区核对写入结果') }
+    try {
+      if (sessionStorage.getItem('editingCustomModuleId')) return await saveCustomModuleEditing()
+      captureProjectReferenceTypes()
+      const workflowData = JSON.parse(exportWorkflow())
+      requireActive()
+      const savedContent = snapshotKey(JSON.stringify(workflowData))
+      const result = workflowId
+        ? await workflowApi.update(workflowId, workflowData)
+        : await workflowApi.create(workflowData)
+      requireActive()
+      const data = result.data as { id?: unknown; revision?: unknown } | undefined
+      if (result.success && typeof data?.id === 'string' && data.id && Number.isSafeInteger(data.revision) && Number(data.revision) > 0) {
+        setWorkflowId(data.id)
+        if (!skipConfirm) addLog({ level: 'success', message: `工作流已保存: ${workflowData.name}` })
+        const unchanged = snapshotKey(exportWorkflow()) === savedContent
+        if (unchanged) markAsSaved()  // A late save response cannot acknowledge newer edits.
+        return unchanged
+      }
+      if (!skipConfirm) addLog({ level: 'error', message: `保存失败: ${result.error || '服务未返回有效保存确认'}` })
+      return false
+    } catch (error) {
+      if (mounted.current && !skipConfirm) addLog({ level: 'error', message: `保存失败: ${String(error)}` })
+      return false
+    } finally { savingDocument.current = false }
+  }, [workflowId, exportWorkflow, addLog, markAsSaved, setWorkflowId])
+
   // 通用执行函数
   // startNodeId 跳过上游；runToNodeId 从真实入口运行并在目标第一次调度前暂停。
   const executeWorkflow = useCallback(async (headless: boolean, startNodeId?: string, runToNodeId?: string) => {
@@ -249,6 +284,16 @@ export function Toolbar() {
       return
     }
 
+    if (getStudioOpenContext().automationId) {
+      if (startNodeId || runToNodeId) { addLog({ level: 'error', message: '项目调试从完整工作流入口运行，请使用运行一次' }); return }
+      startPending.current = true
+      try {
+        if (source.hasUnsavedChanges && !await handleSave(true)) throw new Error('请先保存工作流')
+        await runProjectOnce()
+      } catch (error) { addLog({ level: 'error', message: String(error) }) }
+      finally { startPending.current = false }
+      return
+    }
     const numericIssues = staticNumberIssues(nodes, edges, startNodeId)
     if (numericIssues.length) {
       for (const issue of numericIssues) addLog({ level: 'error', nodeId: issue.nodeId,
@@ -360,7 +405,7 @@ export function Toolbar() {
       startPending.current = false
       if (!awaitingStart.current) setStartPhase(null)
     }
-  }, [workflowId, setWorkflowId, addLog, clearLogs, clearCollectedData, setBottomPanelTab, setExecutionStatus])
+  }, [workflowId, setWorkflowId, addLog, clearLogs, clearCollectedData, setBottomPanelTab, setExecutionStatus, handleSave])
 
   // 普通运行（有头模式）
   const handleRun = useCallback(async () => {
@@ -392,6 +437,9 @@ export function Toolbar() {
   }, [executeWorkflow])
 
   const handleStop = useCallback(async () => {
+    if (getStudioOpenContext().automationId) {
+      try { return await stopProjectOnce() } catch (error) { addLog({ level: 'error', message: `停止失败：${String(error)}` }); return false }
+    }
     const state=useWorkflowStore.getState()
     const target=awaitingStart.current || (state.currentExecutionWorkflowId&&state.currentExecutionRunId?{workflowId:state.currentExecutionWorkflowId,runId:state.currentExecutionRunId}:null)
     if(!target)return false
@@ -422,39 +470,9 @@ export function Toolbar() {
     }}
   }),[handleStop])
 
-  const handleSave = useCallback(async (skipConfirm = false) => {
-    if (savingDocument.current || !mounted.current) return false
-    savingDocument.current = true
-    const revision = getStudioTransportRevision()
-    const sourceDocument = useWorkflowStore.getState().id
-    const active = () => mounted.current && revision === getStudioTransportRevision() && sourceDocument === useWorkflowStore.getState().id
-    const requireActive = () => { if (!active()) throw new Error('保存期间服务连接或文档已变更；当前草稿保持未保存，请在原工作区核对写入结果') }
-    try {
-      if (sessionStorage.getItem('editingCustomModuleId')) return await saveCustomModuleEditing()
-      const workflowData = JSON.parse(exportWorkflow())
-      requireActive()
-      const savedContent = snapshotKey(JSON.stringify(workflowData))
-      const result = workflowId
-        ? await workflowApi.update(workflowId, workflowData)
-        : await workflowApi.create(workflowData)
-      requireActive()
-      const data = result.data as { id?: unknown; revision?: unknown } | undefined
-      if (result.success && typeof data?.id === 'string' && data.id && Number.isSafeInteger(data.revision) && Number(data.revision) > 0) {
-        setWorkflowId(data.id)
-        if (!skipConfirm) addLog({ level: 'success', message: `工作流已保存: ${workflowData.name}` })
-        const unchanged = snapshotKey(exportWorkflow()) === savedContent
-        if (unchanged) markAsSaved()  // A late save response cannot acknowledge newer edits.
-        return unchanged
-      }
-      if (!skipConfirm) addLog({ level: 'error', message: `保存失败: ${result.error || '服务未返回有效保存确认'}` })
-      return false
-    } catch (error) {
-      if (mounted.current && !skipConfirm) addLog({ level: 'error', message: `保存失败: ${String(error)}` })
-      return false
-    } finally { savingDocument.current = false }
-  }, [workflowId, exportWorkflow, addLog, markAsSaved, setWorkflowId])
 
   const handleNewWorkflow = useCallback(() => {
+    if (getStudioOpenContext().automationId) return
     clearWorkflow()
     setWorkflowId(null)
     addLog({ level: 'info', message: '已创建新工作流' })
@@ -755,6 +773,7 @@ export function Toolbar() {
 
   // 通知后端当前工作流ID（用于全局热键控制）
   const handleOpen = () => {
+    if (getStudioOpenContext().automationId) return
     setShowLocalWorkflow(true)
   }
 
@@ -1079,6 +1098,7 @@ export function Toolbar() {
   const importingBundle = useRef(false)
   const [isImportingBundle, setIsImportingBundle] = useState(false)
   const handleImportBundle = useCallback(() => {
+    if (getStudioOpenContext().automationId) return
     const input = document.createElement('input')
     input.type = 'file'
     input.accept = 'application/json,.json'
@@ -1364,7 +1384,13 @@ export function Toolbar() {
         {startPhase ? <>
           <span role="status" className="text-xs text-amber-700">{startPhase === 'preparing' ? '正在准备运行' : '等待启动确认'}</span>
           {startPhase === 'awaiting' && <Button size="sm" variant="destructive" onClick={handleStop}>停止启动请求</Button>}
-        </> : !isRunning ? (
+        </> : !isRunning ? getStudioOpenContext().automationId ? (
+          <Button size="sm" variant="success" noMotion onClick={handleRun}>
+            <Play className="w-3.5 h-3.5" />
+            {hasUnsavedChanges ? '保存并运行一次' : '运行一次'}
+            <span className="hidden @[64rem]:inline text-[10px] opacity-70 font-normal">F5</span>
+          </Button>
+        ) : (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button size="sm" variant="success" noMotion aria-label="运行 (F5)">
@@ -1407,6 +1433,7 @@ export function Toolbar() {
           variant="tonal"
           size="sm"
           onClick={handleNewWorkflowClick}
+          disabled={Boolean(getStudioOpenContext().automationId)}
           title="新建工作流 (Alt+N)"
         >
           <FilePlus className="w-4 h-4 mr-1" />
@@ -1427,6 +1454,7 @@ export function Toolbar() {
           variant="tonal-warning" 
           size="sm" 
           onClick={handleOpen}
+          disabled={Boolean(getStudioOpenContext().automationId)}
         >
           <FolderOpen className="w-4 h-4 mr-1" />
           打开
@@ -1439,7 +1467,7 @@ export function Toolbar() {
           <Code className="w-4 h-4 mr-1" />
           导出
         </Button>
-        <Button variant="tonal-info" size="sm" onClick={handleImportBundle} disabled={isImportingBundle}>
+        <Button variant="tonal-info" size="sm" onClick={handleImportBundle} disabled={isImportingBundle || Boolean(getStudioOpenContext().automationId)}>
           <Package className="w-4 h-4 mr-1" />导入整包
         </Button>
       </div>
@@ -1459,7 +1487,7 @@ export function Toolbar() {
         <DropdownMenuContent align="start" className="w-40">
           <DropdownMenuLabel>文件操作</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleNewWorkflowClick}>
+          <DropdownMenuItem onClick={handleNewWorkflowClick} disabled={Boolean(getStudioOpenContext().automationId)}>
             <FilePlus className="w-4 h-4 mr-2 text-[hsl(var(--success-600))]" />
             新建
           </DropdownMenuItem>
@@ -1467,7 +1495,7 @@ export function Toolbar() {
             <Save className="w-4 h-4 mr-2 text-[hsl(var(--brand-600))]" />
             保存
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleOpen}>
+          <DropdownMenuItem onClick={handleOpen} disabled={Boolean(getStudioOpenContext().automationId)}>
             <FolderOpen className="w-4 h-4 mr-2 text-[hsl(var(--warning-500))]" />
             打开
           </DropdownMenuItem>
@@ -1475,7 +1503,7 @@ export function Toolbar() {
             <Code className="w-4 h-4 mr-2 text-[hsl(var(--info-500))]" />
             导出
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleImportBundle} disabled={isImportingBundle}>
+          <DropdownMenuItem onClick={handleImportBundle} disabled={isImportingBundle || Boolean(getStudioOpenContext().automationId)}>
             <Package className="w-4 h-4 mr-2 text-[hsl(var(--brand-600))]" />
             导入整包
           </DropdownMenuItem>

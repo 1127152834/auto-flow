@@ -8,12 +8,12 @@ from autoflow.domain.project_automations.models import automation_to_dict
 
 from .errors import browser_error_responses
 from .project_automation_schemas import (
+    AutomationCreate,
     AutomationDeleteRequest,
     AutomationPage,
     AutomationUpdate,
     AutomationValidationView,
     AutomationView,
-    AutomationWrite,
 )
 from .project_schemas import AutomationImpactView, OperationAccepted
 
@@ -58,7 +58,7 @@ def project_automations_router(service: ProjectAutomationService) -> APIRouter:
         },
     )
     def create_automation(
-        projectId: UUID, body: AutomationWrite, response: Response, idempotency_key: Key
+        projectId: UUID, body: AutomationCreate, response: Response, idempotency_key: Key
     ):
         value, _operation, replayed = service.create(
             str(projectId), str(idempotency_key), body.payload()

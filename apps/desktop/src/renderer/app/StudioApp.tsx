@@ -9,6 +9,7 @@ import { WorkflowEditor } from '../domains/workflows/components/WorkflowEditor'
 import { InputPromptDialog } from '../domains/workflows/components/InputPromptDialog'
 import { useStudioIntegration } from '../domains/workflows/hooks/useStudioIntegration'
 import { useWorkflowStore } from '../domains/workflows/editor-store'
+import { useProjectInputs } from '../domains/workflows/project-inputs'
 import { workflowApi } from '../domains/workflows/api'
 import { getStudioOpenContext } from '../domains/workflows/api/config'
 import { Button } from '../shared/components/ui/button'
@@ -27,6 +28,7 @@ export function StudioApp({ tools }: { tools?: ReactNode }) {
       const version = ++requestVersion
       setContextError(null)
       try {
+        await useProjectInputs.getState().load()
         const result = await workflowApi.get(context.workflowId!)
         if (disposed || version !== requestVersion) return
         if (!result.success || !result.data || result.data.id !== context.workflowId || !useWorkflowStore.getState().importWorkflow(result.data)) {

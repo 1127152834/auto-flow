@@ -1,3 +1,4 @@
+import { useProjectInputs, projectReferences, registerProjectReference } from '../../project-inputs'
 // Source: WebRPA@5ccb900e, components/ui/variable-input.tsx; see SOURCE.md for license and adaptation boundaries.
 import * as React from 'react'
 import { cn } from '../../lib/utils'
@@ -39,6 +40,8 @@ const BUILTIN_HIDDEN_VARIABLES: Variable[] = [
 ]
 const VariableInput = React.forwardRef<HTMLInputElement | HTMLTextAreaElement, VariableInputProps>(
   ({ className, value, onChange, disableVariableHint = false, multiline = false, rows = 3, ...props }, ref) => {
+    const projectAutomation = useProjectInputs(state => state.automation)
+    const projectFields = useProjectInputs(state => state.fields)
     const globalVariables = useWorkflowStore((state) => state.variables)
     const nodes = useWorkflowStore((state) => state.nodes)
     
@@ -114,8 +117,9 @@ const VariableInput = React.forwardRef<HTMLInputElement | HTMLTextAreaElement, V
         })
       })
       
+      for (const reference of projectReferences(projectAutomation, projectFields)) variableMap.set(reference.name, { name: reference.name, value: undefined, type: (reference.type === 'date' ? 'string' : reference.type) as Variable['type'], scope: 'local', description: reference.label })
       return Array.from(variableMap.values())
-    }, [globalVariables, nodes])
+    }, [globalVariables, nodes, projectAutomation, projectFields])
     
     const [showSuggestions, setShowSuggestions] = React.useState(false)
     const [selectedIndex, setSelectedIndex] = React.useState(0)
@@ -131,7 +135,7 @@ const VariableInput = React.forwardRef<HTMLInputElement | HTMLTextAreaElement, V
     const filteredVariables = React.useMemo(() => {
       if (!searchText) return allVariables
       const lower = searchText.toLowerCase()
-      return allVariables.filter(v => v.name.toLowerCase().includes(lower))
+      return allVariables.filter(v => (v.name + ' ' + (v.description ?? '')).toLowerCase().includes(lower))
     }, [allVariables, searchText])
 
     // 检测是否在输入变量引用
@@ -201,6 +205,7 @@ const VariableInput = React.forwardRef<HTMLInputElement | HTMLTextAreaElement, V
     }
 
     const insertVariable = (varName: string) => {
+      registerProjectReference(varName)
       const input = inputRef.current
       if (!input) return
 
@@ -355,7 +360,7 @@ const VariableInput = React.forwardRef<HTMLInputElement | HTMLTextAreaElement, V
                   onMouseEnter={() => setSelectedIndex(index)}
                 >
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-blue-600">{variable.name}</span>
+                    <span className="font-mono text-blue-600">{variable.name.startsWith('PROJECT_') ? variable.description : variable.name}</span>
                     <span className={cn('text-xs', getTypeColor(variable.type))}>
                       ({variable.type})
                     </span>

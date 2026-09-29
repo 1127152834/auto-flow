@@ -409,6 +409,7 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
                     external_integrations=integrations,
                     command_bus=command_bus,
                     capability=capability,
+                    project_input_context=command["executionPlan"].get("projectInputContext", {}),
                     browser_initializer=initialize_browser if node_mode else None,
 
                     proxy_probe=relay.probe if relay is not None else None,

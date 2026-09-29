@@ -2,7 +2,7 @@ import type { components } from '../../shared/api/generated'
 
 type Schema = components['schemas']
 export type ParameterDefinition = Schema['ParameterDefinition']
-export type EnvironmentPolicy = Schema['AutomationWrite']['environmentPolicy']
+export type EnvironmentPolicy = Omit<Schema['AutomationUpdate'], 'expectedManagementRevision'>['environmentPolicy']
 export type JsonScalar = string | number | boolean | null
 export type ParameterDraftValue = JsonScalar | { raw: string }
 export type BatchStartDraft = { parameters: Record<string, ParameterDraftValue>; maxTasks: string; unlimited?: boolean; concurrency?: string; environmentOverride?: EnvironmentPolicy }

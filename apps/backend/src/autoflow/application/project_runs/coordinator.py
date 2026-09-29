@@ -472,6 +472,14 @@ class ProjectRunCoordinator:
             payload,
             allow_data_inputs="project.data" in self._capabilities,
         )
+        if 'debugSelection' in payload:
+            from .debug_inputs import validate_debug_selection
+            if payload.get('maxTasks') != 1 or payload.get('concurrency') != 1:
+                raise ProjectRunError('VALIDATION_ERROR', '调试必须只运行一个任务，并发为 1', 422)
+            if has_data_inputs:
+                validate_debug_selection(session, project_id, automation.input_plan, payload['debugSelection'])
+            elif payload['debugSelection'] != {}:
+                raise ProjectRunError('VALIDATION_ERROR', '没有声明数据输入', 422)
         effective = (
             replace(
                 automation, environment_policy=thaw_json(start.environment_override)
@@ -489,6 +497,9 @@ class ProjectRunCoordinator:
             _record as workflow_record,
         )
         document = workflow_record(workflow).document
+        from autoflow.domain.workflows.project_inputs import validate_references
+        field_types = {field.id: field.type for field in session.scalars(select(DataFieldRow).where(DataFieldRow.project_id == project_id))}
+        validate_references(document, automation, field_types)
         resources = self._resolve_resources(effective, dict(project.default_resources), document=document) if node_browser_environments(document) is not None else self._resolve_resources(effective, dict(project.default_resources))
         if not has_data_inputs and any(node.get('environmentResolution') == 'atTaskStart' for node in resources.get('nodeBrowserEnvironments', {}).values()):
             raise ProjectRunError('VALIDATION_ERROR', '输入环境节点需要自动化声明输入', 422)
@@ -511,6 +522,8 @@ class ProjectRunCoordinator:
                 "workflowRevision": workflow.revision,
             }
         )
+        if "debugSelection" in payload:
+            frozen["debugSelection"] = payload["debugSelection"]
         create_record_targets = [
             {"tableId": table_id, "datasetGeneration": generation}
             for table_id, generation in self._resolve_create_record_targets(
@@ -698,6 +711,17 @@ class ProjectRunCoordinator:
         with self._factory() as session:
             self._project(session, project_id)
             return SqlAlchemyProjectRuns(session).batch(project_id, batch_id)
+
+    def debug_inputs(self, project_id: str, automation_id: str, payload: dict[str, Any]) -> dict[str, Any]:
+        from .debug_inputs import debug_inputs
+        with self._factory() as session:
+            self._project(session, project_id)
+            row = session.get(ProjectAutomationRow, automation_id)
+            if row is None or row.project_id != project_id:
+                raise ProjectRunError('NOT_FOUND', '自动化不存在', 404)
+            if row.management_revision != payload['expectedAutomationRevision']:
+                raise ProjectRunError('REVISION_CONFLICT', '自动化配置已变化，请刷新', 409)
+            return debug_inputs(session, project_id, row.input_plan, payload.get('choices', {}), input_id=payload.get('inputId'), cursor=payload.get('cursor'), page_size=payload.get('pageSize', 50), search=payload.get('search', ''))
 
     def preview_inputs(
         self, project_id: str, automation_id: str, expected_revision: int

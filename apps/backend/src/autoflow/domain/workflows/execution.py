@@ -292,6 +292,7 @@ class WorkflowClock:
 @dataclass(slots=True)
 class ExecutionContext:
     variables: dict[str, Any] = field(default_factory=dict)
+    project_input_context: dict[str, Any] = field(default_factory=dict)
     sensitive_variables: set[str] = field(default_factory=set)
     browser: BrowserSessionPort | None = None
     browser_initializer: Callable[[ExecutionContext, dict[str, Any]], Awaitable[BrowserSessionPort]] | None = None
@@ -380,7 +381,7 @@ class ExecutionContext:
     def resolve_value(self, value: Any, *, preserve_types: bool = False) -> Any:
         if references_sensitive_value(value, self.sensitive_variables):
             self.mark_sensitive_use()
-        return resolve_value(value, self.variables, self.credentials, preserve_types=preserve_types)
+        return copy.deepcopy(resolve_value(value, {**self.variables, **self.project_input_context}, self.credentials, preserve_types=preserve_types))
 
     def resolve_value_with_sensitivity(self, value: Any) -> tuple[Any, bool]:
         sensitive = references_sensitive_value(value, self.sensitive_variables)
