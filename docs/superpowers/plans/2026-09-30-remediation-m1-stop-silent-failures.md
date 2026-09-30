@@ -217,7 +217,7 @@ diff --git a/apps/backend/src/autoflow/bootstrap/app.py b/apps/backend/src/autof
 +                try:
 +                    checkpoint_wal(session_factory)
 +                except Exception:
-+                    logging.getLogger(__name__).warning("SQLite WAL checkpoint did not complete at shutdown")
++                    logging.getLogger(__name__).warning("SQLite WAL checkpoint did not complete at shutdown", exc_info=True)
                  session_factory.dispose()
  
      app.router.add_event_handler("shutdown", shutdown)
