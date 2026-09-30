@@ -885,7 +885,7 @@ git commit -m "test(golden): 带故障注入的本地黄金场景站点"
 **Interfaces:**
 - Produces: `measure(root: string) -> { unreadConfigKeys: string[], paletteClasses: number, secondIconLibraryFiles: number, docsPng: number }`；`compare(current, baseline) -> { failures: string[], improvements: string[] }`；CLI：`node scripts/ratchets.mjs`（比较）与 `node scripts/ratchets.mjs --write-baseline`（写基线）。M1 起每个里程碑在基线下降时运行 `--write-baseline`。
 
-- [ ] **Step 1: 写失败的测试**
+- [x] **Step 1: 写失败的测试**
 
 ```javascript
 import assert from 'node:assert/strict'
@@ -945,12 +945,12 @@ test('reports improvements without failing', () => {
 })
 ```
 
-- [ ] **Step 2: 运行，确认失败**
+- [x] **Step 2: 运行，确认失败**
 
 Run: `node --test scripts/ratchets.test.mjs`
 Expected: FAIL，`Cannot find module .../scripts/ratchets.mjs`。
 
-- [ ] **Step 3: 实现 scripts/ratchets.mjs**
+- [x] **Step 3: 实现 scripts/ratchets.mjs**
 
 ```javascript
 #!/usr/bin/env node
@@ -1027,17 +1027,17 @@ function main() {
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main()
 ```
 
-- [ ] **Step 4: 运行测试**
+- [x] **Step 4: 运行测试**
 
 Run: `node --test scripts/ratchets.test.mjs`
-Expected: 3 pass。
+Expected: 原计划3项；实现增加独立四项反例与引号绕过检查，实际8项通过。
 
-- [ ] **Step 5: 生成并检查基线**
+- [x] **Step 5: 生成并检查基线**
 
 Run: `node scripts/ratchets.mjs --write-baseline && node scripts/ratchets.mjs`
 Expected: 第二条输出 `unreadConfigKeys=127 paletteClasses=2008 secondIconLibraryFiles=80 docsPng=3247`（ea2cc5b 实测；若主线已变，以实际为准），退出码 0。人工确认 `scripts/ratchets-baseline.json` 的 `unreadConfigKeys` 含 errorPolicy、onTimeout、retryBackoff、retryCount、retryDelay、retryExhaustedAction、timeoutAction。
 
-- [ ] **Step 6: 提交**
+- [x] **Step 6: 提交**
 
 ```bash
 git add scripts/ratchets.mjs scripts/ratchets.test.mjs scripts/ratchets-baseline.json
