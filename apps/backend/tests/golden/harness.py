@@ -69,6 +69,7 @@ class GoldenRun:
     verified_success_refs: list[dict] = field(default_factory=list)
     loop_lag_p99_ms: float = 0.0
     concurrency: int = 2
+    manifest: dict | None = None
 
     def metrics(self) -> dict[str, tuple[float | None, Unit]]:
         if not math.isfinite(self.elapsed_seconds) or self.elapsed_seconds <= 0:
@@ -135,22 +136,23 @@ class GoldenRun:
             for parent in browser_kernel.parents
             if parent.name.startswith("chromium-")
         )
+        if self.manifest is None:
+            raise ValueError("Golden report requires pre-execution metadata")
+        dataset = {
+            "rows": len(values),
+            "valuesSha256": hashlib.sha256(json.dumps(values).encode()).hexdigest(),
+        }
+        if (
+            self.manifest["dataset"] != dataset
+            or self.manifest["browserKernel"] != version
+        ):
+            raise ValueError(
+                "Golden report dimensions differ from the executed workload"
+            )
         path = write_report(
             name,
             self.metrics(),
-            manifest=build_manifest(
-                scenario_version,
-                {
-                    "rows": len(values),
-                    "valuesSha256": hashlib.sha256(
-                        json.dumps(values).encode()
-                    ).hexdigest(),
-                },
-                execution_profile="controlled-one-row-batches-v1",
-                browser_kernel=version,
-                concurrency=self.concurrency,
-                fault_seed="name-prefix-v1",
-            ),
+            manifest={**self.manifest, "scenarioVersion": scenario_version},
         )
         evidence = path.with_suffix(".rows.json")
         evidence.write_text(
@@ -229,6 +231,17 @@ async def run_golden(
         )
     kernel = next(
         parent for parent in executable.parents if parent.name.startswith("chromium-")
+    )
+    manifest = build_manifest(
+        "golden-v1",
+        {
+            "rows": len(values),
+            "valuesSha256": hashlib.sha256(json.dumps(values).encode()).hexdigest(),
+        },
+        execution_profile="controlled-one-row-batches-v1",
+        browser_kernel=kernel.name,
+        concurrency=concurrency,
+        fault_seed="name-prefix-v1",
     )
     await asyncio.to_thread(
         shutil.copytree,
@@ -419,6 +432,7 @@ async def run_golden(
                     expected_refs=expected_refs,
                     loop_lag_p99_ms=app.state.loop_lag.snapshot().p99_ms,
                     concurrency=concurrency,
+                    manifest=manifest,
                 )
                 assert_complete_coverage(expected_refs, result.details)
                 return result

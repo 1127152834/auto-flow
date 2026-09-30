@@ -25,3 +25,7 @@ Task 8 本地配置完成，远端验证未执行：checks增加守门、离线�
 Task9文档已加入整改硬性规则、目录职责及实际观察表；表明确sourceDirty/并行测量不可作收益基线、CI未执行，未填写计划预期。结构4项通过。Task6定向汇总41 passed/3 deselected/1既有anyio警告；Ruff全后端通过、mypy547通过（既有annotation-unchecked提示）。101行G2已完成99成功/2预期失败，G3和全后端回归仍运行。
 
 Task6真实harness已接通并完成30行验证（202.69s，2 passed/1 strict xfailed/8 deselected）：公开自动化创建后保存其自有工作流，open_page显式profile；真实TCP/SQLite/worker/内核、分页选行、单任务批次并发2、等待任务终态与清理、逐行输出/站点回执核验、manifest及rows证据。初始fixture沿用旧workflowId创建契约触发422，修正为当前API；2秒open超时发生于浏览器初始化，修正15秒仍小于20秒故障延迟。3行冒烟2通过/1预期失败；未配内核3跳过只证明选择正常。101行完整验收仍待G3完成，Task6不标全部完成。
+
+Task6完成真实覆盖验证：101行G2为99成功/2预期失败，G3为100成功/1丢响应失败且每行恰好提交一次；2 passed/9 deselected，538.99s。独立整阶段review_m0_implementation发现1个P2：保存时Git状态不能代表起点源码。一次修复将三个CLI与golden均前置manifest采集，保留sourceBefore/sourceAfter、开始commit，两端变化或脏禁止比较；4个状态反例RED→GREEN、golden保存反例RED→GREEN，合计30 passed/3 deselected。修复后真实3行2 passed/1 strict xfailed/9 deselected（67.79s），三个实际CLI及五份报告元数据/文件对应检查通过。独立定点复核确认P2闭合，无其他重要问题；AC0-07仍pending。旧本地manifest标注缺起点快照、不可比较，实际正确性证据保留。
+
+全后端验证首轮发现共享venv子进程可能导入原checkout，SIGINT中止PID89991并保留backend-full.log（中断清理出现stash KeyError，非通过）；已以绝对worktree/src PYTHONPATH重跑，日志backend-full-worktree.log。评审者一次uv启动意外建立忽略的worktree .venv后中止，未改生产源码，后续继续使用原目录既有解释器。阶段全量结果尚未返回，不标M0完成。

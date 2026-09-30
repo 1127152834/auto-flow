@@ -51,7 +51,9 @@ def _source_dirty() -> bool | None:
         return None
 
 
-def build_report(metrics: dict[str, tuple[float | None, Unit]]) -> dict:
+def build_report(
+    metrics: dict[str, tuple[float | None, Unit]], *, commit: str | None = None
+) -> dict:
     values = {}
     for name, (value, unit) in sorted(metrics.items()):
         if unit not in get_args(Unit):
@@ -67,7 +69,7 @@ def build_report(metrics: dict[str, tuple[float | None, Unit]]) -> dict:
         }
     return {
         "schemaVersion": 1,
-        "commit": _commit(),
+        "commit": _commit() if commit is None else commit,
         "platform": f"{platform.system().lower()}-{platform.machine().lower()}",
         "metrics": values,
     }
@@ -90,6 +92,7 @@ def build_manifest(
     except (AttributeError, OSError, ValueError):
         memory = "unknown"
     return {
+        "sourceBefore": {"commit": _commit(), "dirty": _source_dirty()},
         "scenarioVersion": scenario_version,
         "executionProfile": execution_profile,
         "dataset": dataset,
@@ -116,6 +119,7 @@ def write_report(
     manifest: dict,
 ) -> Path:
     required = {
+        "sourceBefore",
         "scenarioVersion",
         "executionProfile",
         "dataset",
@@ -152,18 +156,30 @@ def write_report(
             raise ValueError(f"Missing {key}")
     if Path(name).name != name or not name:
         raise ValueError("Report name must be a filename")
-    raw = build_report(metrics)
+    before = manifest["sourceBefore"]
+    if (
+        not isinstance(before, dict)
+        or not isinstance(before.get("commit"), str)
+        or not before["commit"]
+        or "dirty" not in before
+        or (before["dirty"] is not None and type(before["dirty"]) is not bool)
+    ):
+        raise ValueError("A pre-measurement source snapshot is required")
+    after = {"commit": _commit(), "dirty": _source_dirty()}
+    raw = build_report(metrics, commit=before["commit"])
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ")
     path = directory / f"{name}-{stamp}-{uuid4().hex}.json"
     metadata = {
         **manifest,
         "commit": raw["commit"],
         "reports": [path.name],
-        "sourceDirty": _source_dirty(),
+        "sourceAfter": after,
+        "sourceDirty": before["dirty"],
     }
     metadata["comparable"] = (
         raw["commit"] != "unknown"
-        and metadata["sourceDirty"] is False
+        and before["dirty"] is False
+        and before == after
         and all(value not in ("unknown", None, "") for value in hardware.values())
         and all(
             manifest[key] != "unknown"

@@ -77,12 +77,13 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--iterations", type=int, default=1000)
     arguments = parser.parse_args()
+    manifest = build_manifest(
+        "runtime-overhead-v1", {"iterations": arguments.iterations}
+    )
     write_report(
         "runtime-overhead",
         run(arguments.iterations),
-        manifest=build_manifest(
-            "runtime-overhead-v1", {"iterations": arguments.iterations}
-        ),
+        manifest=manifest,
     )
 
 

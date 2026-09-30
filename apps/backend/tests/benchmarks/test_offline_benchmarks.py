@@ -168,3 +168,38 @@ def test_event_commit_rejects_empty_sample():
 
     with pytest.raises(ValueError):
         bench_event_commit.run(0)
+
+
+@pytest.mark.parametrize(
+    "initial_dirty, final_commit, final_dirty, comparable",
+    [
+        (True, "B", False, False),
+        (False, "B", False, False),
+        (False, "A", True, False),
+        (False, "A", False, True),
+    ],
+)
+def test_report_preserves_measured_source_not_only_save_time_state(
+    monkeypatch, tmp_path, initial_dirty, final_commit, final_dirty, comparable
+):
+    monkeypatch.setattr(report, "_commit", lambda: "A")
+    monkeypatch.setattr(report, "_source_dirty", lambda: initial_dirty)
+    manifest = report.build_manifest("test-v1", {"rows": 1})
+    # Keep hardware known so only the source consistency gate is exercised.
+    manifest["hardware"] = {
+        "os": "test",
+        "arch": "test",
+        "logicalCpu": 1,
+        "totalMemoryBytes": 1,
+    }
+    monkeypatch.setattr(report, "_commit", lambda: final_commit)
+    monkeypatch.setattr(report, "_source_dirty", lambda: final_dirty)
+    path = report.write_report(
+        "changed", {"rows": (1, "count")}, tmp_path, manifest=manifest
+    )
+    raw = json.loads(path.read_text())
+    metadata = json.loads(path.with_suffix(".manifest.json").read_text())
+    assert raw["commit"] == "A"
+    assert metadata["sourceBefore"] == {"commit": "A", "dirty": initial_dirty}
+    assert metadata["sourceAfter"] == {"commit": final_commit, "dirty": final_dirty}
+    assert metadata["comparable"] is comparable

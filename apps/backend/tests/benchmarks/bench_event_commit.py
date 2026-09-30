@@ -78,10 +78,11 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--events", type=int, default=1000)
     arguments = parser.parse_args()
+    manifest = build_manifest("event-commit-v1", {"events": arguments.events})
     write_report(
         "event-commit",
         run(arguments.events),
-        manifest=build_manifest("event-commit-v1", {"events": arguments.events}),
+        manifest=manifest,
     )
 
 

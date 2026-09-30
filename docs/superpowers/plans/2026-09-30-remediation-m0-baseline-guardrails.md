@@ -197,7 +197,8 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--rows", type=int, default=2000)
     arguments = parser.parse_args()
-    write_report(f"claims-{arguments.rows}", run(arguments.rows), manifest=build_manifest("claims-v1", {"rows": arguments.rows}))
+    manifest = build_manifest("claims-v1", {"rows": arguments.rows})
+    write_report(f"claims-{arguments.rows}", run(arguments.rows), manifest=manifest)
 
 
 if __name__ == "__main__":
@@ -316,7 +317,8 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--iterations", type=int, default=1000)
     arguments = parser.parse_args()
-    write_report("runtime-overhead", run(arguments.iterations), manifest=build_manifest("runtime-overhead-v1", {"iterations": arguments.iterations}))
+    manifest = build_manifest("runtime-overhead-v1", {"iterations": arguments.iterations})
+    write_report("runtime-overhead", run(arguments.iterations), manifest=manifest)
 
 
 if __name__ == "__main__":
@@ -422,7 +424,8 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--events", type=int, default=1000)
     arguments = parser.parse_args()
-    write_report("event-commit", run(arguments.events), manifest=build_manifest("event-commit-v1", {"events": arguments.events}))
+    manifest = build_manifest("event-commit-v1", {"events": arguments.events})
+    write_report("event-commit", run(arguments.events), manifest=manifest)
 
 
 if __name__ == "__main__":
@@ -870,8 +873,8 @@ git commit -m "test(golden): 带故障注入的本地黄金场景站点"
 - [x] **Step 3: 实现指标与显式 fixture 注册。** golden/conftest.py 导入并暴露 real_cloak_page（复用现有 fixture，若有耦合则提到 tests/fixtures 后由两个范围共同导入）；不依赖兄弟测试模块自动发现。report 允许 None 且输出合法 JSON null。同目录 manifest 保存总纲第4节维度，硬件或版本未知要显式记录并禁止用于收益比较。
 - [x] **Step 4: 实现受控输入 harness。** 创建真实项目、表、流程和自动化；枚举每个完整输入身份，通过现有调试预检获取该行 debugSelection；每行调用公开启动批次接口，maxTasks=1、concurrency=1、独立幂等键。用 Semaphore 限制并行批次为 concurrency，重试查询只能重用原命令身份。每个批次等待终态并查询唯一 Task；聚合结果后断言 refs 集合恰好等于输入全集且无重复。取消/超时记录为无效基准并停止自建批次、等待清理，不算已处理成功。禁止为此改动生产代码、筛选器或台账。
 - [x] **Step 5: G2/G3 行为验收。** G2：普通行五个字段逐值校验；timeout/gone 样本确认站点收到指定请求和预期失败。G3：所有正常行返回正确 result，站点对正常/lose 每行均恰好收到一次提交。运行时丢失响应的当前终态如实记录；另一个小规模独立测试用 xfail(strict=True) 声明尚缺 needs_review，不能将基准覆盖/副作用断言放进 xfail。
-- [ ] **Step 6: 核验两种环境。** 未配置浏览器：`uv run --directory apps/backend pytest -q -m golden tests/golden` 应仅跳过浏览器用例，不得有 fixture not found；`uv run --directory apps/backend pytest -q tests/golden` 应通过全部指标与站点测试。配置浏览器：`AUTOFLOW_TEST_CLOAKBROWSER=<真实路径> AUTOFLOW_GOLDEN_ROWS=30 uv run --directory apps/backend pytest -q -m golden tests/golden -s`，正确性用例必须通过；独立已知缺口为 xfail，其余失败不可豁免。再用101行验证没有100行上限/提前停止。上传数值报告、manifest、逐行预期与实际摘要，不入库。
-- [ ] **Step 7: 记录 controlled-one-row-batches-v1 基线并提交。** 当前单任务批次的调度开销计入端到端数据；不声称代表原生万行批次吞吐。`git add apps/backend/tests/golden apps/backend/tests/benchmarks/report.py` 后提交 `test(golden): verify unique row coverage and truthful metrics`。
+- [x] **Step 6: 核验两种环境。** 未配置浏览器：`uv run --directory apps/backend pytest -q -m golden tests/golden` 应仅跳过浏览器用例，不得有 fixture not found；`uv run --directory apps/backend pytest -q tests/golden` 应通过全部指标与站点测试。配置浏览器：`AUTOFLOW_TEST_CLOAKBROWSER=<真实路径> AUTOFLOW_GOLDEN_ROWS=30 uv run --directory apps/backend pytest -q -m golden tests/golden -s`，正确性用例必须通过；独立已知缺口为 xfail，其余失败不可豁免。再用101行验证没有100行上限/提前停止。上传数值报告、manifest、逐行预期与实际摘要，不入库。
+- [x] **Step 7: 记录 controlled-one-row-batches-v1 基线并提交。** 当前单任务批次的调度开销计入端到端数据；不声称代表原生万行批次吞吐。`git add apps/backend/tests/golden apps/backend/tests/benchmarks/report.py` 后提交 `test(golden): verify unique row coverage and truthful metrics`。
 
 ---
 
@@ -1271,3 +1274,5 @@ Expected: 全部通过；默认 pytest 不包含 benchmark / golden。
 Task 1 的 report 函数扩展 value 为 float | None；摘要格式化时 None 显示 n/a，JSON 为 null。新增 `write_manifest(context, reports, directory)`：必填 scenarioVersion、executionProfile、datasetSeed、faultSeed、hardware、browserVersion、concurrency、repetitions、commit；拒绝缺项，未知值显式标 unavailable 并禁止收益比较。离线 CLI 和 golden harness 每轮调用，CI 上传整个结果目录；测试覆盖 null、缺元数据、多个报告同属一轮和禁止不可比结果算倍数。
 
 Task 8 的 YAML 校验不能只查制表符：复用仓库现有 YAML 解析能力，并实际手动触发30行运行，核验用例没有意外 skip且全部产物存在。Task 10 中真实浏览器不具备时登记 blocked，不以 skip 关闭 AC0-05；Task 11 不属于退出条件。所有预期测试数量以实际收集为准，不抄写旧“2 skipped”数字。
+
+2026-09-30独立代码评审修订：build_manifest必须在测量开始前调用，捕获sourceBefore={commit,dirty}；write_report保留起点commit并写sourceAfter，只有两端一致且干净才可比较。GoldenRun携带执行前manifest，save不得重采集起点；CLI先build_manifest再run。新增状态变化与黄金保存反例通过，旧缺起点元数据结果仅作观察。

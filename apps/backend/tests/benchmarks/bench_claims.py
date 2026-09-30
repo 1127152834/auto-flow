@@ -104,10 +104,11 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--rows", type=int, default=2000)
     arguments = parser.parse_args()
+    manifest = build_manifest("claims-v1", {"rows": arguments.rows})
     write_report(
         f"claims-{arguments.rows}",
         run(arguments.rows),
-        manifest=build_manifest("claims-v1", {"rows": arguments.rows}),
+        manifest=manifest,
     )
 
 

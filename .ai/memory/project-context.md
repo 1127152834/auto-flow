@@ -1,6 +1,6 @@
 # 项目上下文
 
-2026-09-30 M0实施（in_progress）：文档547a0785后在受管codex/remediation-m0工作树开始；报告与真实SQLite领取基准已实现，阶段验收未完成。来源与验证见 [实施记录](../sessions/2026-09-30-remediation-m0-implementation.md)。后续阶段按用户持续授权细化审查后自主实施，不再逐阶段确认。
+2026-09-30 M0实施（in_progress）：文档547a0785后在受管codex/remediation-m0工作树开始；M0本地实现、101行真实黄金验证与独立评审已完成，全后端回归及远端CI验收仍未完成。来源与验证见 [实施记录](../sessions/2026-09-30-remediation-m0-implementation.md)。后续阶段按用户持续授权细化审查后自主实施，不再逐阶段确认。
 
 2026-09-30 整改方案 r2（confirmed 文档修订；实现未开始）：用户要求按评审修订 M0–M6。拆分 M2A/B/C、前置最小输出与后端预览契约、perIdentity 移至 M4、M5 先业务后视觉；M0 区分受控正确性基准与 M2B 原生吞吐基准。旧原型验证/固定排期声明已 superseded。当前阶段与依据见 [索引](../plans/2026-09-30-remediation-program.md) 和 [决策](../decisions/2026-09-30-remediation-program.md)。本次没有修改业务代码，也没有完成任何里程碑的运行验收。
 

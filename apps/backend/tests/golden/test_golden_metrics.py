@@ -87,3 +87,50 @@ def test_incomplete_attempts_or_invalid_timing_are_not_reportable():
         ).metrics()
     with pytest.raises(ValueError):
         GoldenRun(details=[detail()], elapsed_seconds=0, expected_refs=[REF]).metrics()
+
+
+def test_golden_save_keeps_pre_execution_source(monkeypatch, tmp_path):
+    import hashlib
+    import json
+    from pathlib import Path
+
+    from tests.benchmarks import report
+
+    from . import harness
+
+    monkeypatch.setattr(report, "_commit", lambda: "before")
+    monkeypatch.setattr(report, "_source_dirty", lambda: True)
+    manifest = report.build_manifest(
+        "golden-v1",
+        {
+            "rows": 1,
+            "valuesSha256": hashlib.sha256(json.dumps(["row"]).encode()).hexdigest(),
+        },
+        browser_kernel="chromium-test",
+    )
+    run = GoldenRun(
+        details=[detail(status="succeeded")],
+        expected_refs=[REF],
+        elapsed_seconds=1,
+        verified_success_refs=[REF],
+        manifest=manifest,
+    )
+    monkeypatch.setattr(report, "_commit", lambda: "after")
+    monkeypatch.setattr(report, "_source_dirty", lambda: False)
+    monkeypatch.setattr(
+        harness,
+        "write_report",
+        lambda name, metrics, *, manifest: report.write_report(
+            name, metrics, tmp_path, manifest=manifest
+        ),
+    )
+    path = run.save(
+        "test",
+        browser_kernel=Path("/chromium-test/browser"),
+        scenario_version="g2-v1",
+        values=["row"],
+    )
+    metadata = json.loads(path.with_suffix(".manifest.json").read_text())
+    assert metadata["commit"] == "before"
+    assert metadata["comparable"] is False
+    assert metadata["evidence"] == [path.with_suffix(".rows.json").name]
