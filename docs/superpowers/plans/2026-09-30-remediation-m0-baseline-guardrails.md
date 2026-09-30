@@ -457,7 +457,7 @@ git commit -m "test(bench): 运行事件同步提交延迟基准"
 **Interfaces:**
 - Produces: `LoopLagMonitor(*, interval: float = 0.05, warn_ms: float = 100.0, capacity: int = 6000)`，方法 `async start()`（幂等）、`async stop()`（可重复）、`snapshot() -> LoopLagSnapshot`、`reset()`、属性 `running: bool`；`LoopLagSnapshot(p50_ms, p99_ms, max_ms, samples)`；日志记录器名 `autoflow.loop_lag`；`app.state.loop_lag`。
 
-- [ ] **Step 1: 写失败的单元测试**
+- [x] **Step 1: 写失败的单元测试**
 
 ```python
 import asyncio
@@ -504,12 +504,12 @@ async def test_start_is_idempotent_and_stop_can_repeat():
     assert monitor.snapshot().samples == 0
 ```
 
-- [ ] **Step 2: 运行，确认失败**
+- [x] **Step 2: 运行，确认失败**
 
 Run: `uv run --directory apps/backend pytest -q tests/unit/test_loop_lag.py`
 Expected: FAIL，`ModuleNotFoundError: autoflow.infrastructure.observability`。
 
-- [ ] **Step 3: 实现**
+- [x] **Step 3: 实现**
 
 `observability/__init__.py`：
 
@@ -594,12 +594,12 @@ class LoopLagMonitor:
                 LOGGER.warning("event loop lag %.0f ms", lag_ms)
 ```
 
-- [ ] **Step 4: 运行单元测试**
+- [x] **Step 4: 运行单元测试**
 
 Run: `uv run --directory apps/backend pytest -q tests/unit/test_loop_lag.py`
 Expected: 2 passed。
 
-- [ ] **Step 5: 写失败的接入测试**
+- [x] **Step 5: 写失败的接入测试**
 
 `tests/contract/test_loop_lag_wiring.py`（使用 `tests/contract/conftest.py` 的 `client` 夹具；`TestClient` 会执行启动与关闭钩子）：
 
@@ -616,7 +616,7 @@ def test_sidecar_runs_one_loop_lag_monitor_for_its_lifetime(client):
 Run: `uv run --directory apps/backend pytest -q tests/contract/test_loop_lag_wiring.py`
 Expected: FAIL，`AttributeError: 'State' object has no attribute 'loop_lag'`。
 
-- [ ] **Step 6: 在 create_app 中接入**
+- [x] **Step 6: 在 create_app 中接入**
 
 `bootstrap/app.py` 顶部 import 区加入：
 
@@ -647,14 +647,14 @@ from autoflow.infrastructure.observability import LoopLagMonitor
                 session_factory.dispose()
 ```
 
-- [ ] **Step 7: 运行**
+- [x] **Step 7: 运行**
 
 Run: `uv run --directory apps/backend pytest -q tests/unit/test_loop_lag.py tests/contract/test_loop_lag_wiring.py tests/contract/test_settings_dashboard.py`
 Expected: 全部通过。
 Run: `uv run --directory apps/backend ruff check src tests/unit/test_loop_lag.py && uv run --directory apps/backend mypy src`
 Expected: 无错误。
 
-- [ ] **Step 8: 提交**
+- [x] **Step 8: 提交**
 
 ```bash
 git add apps/backend/src/autoflow/infrastructure/observability apps/backend/src/autoflow/bootstrap/app.py apps/backend/tests/unit/test_loop_lag.py apps/backend/tests/contract/test_loop_lag_wiring.py

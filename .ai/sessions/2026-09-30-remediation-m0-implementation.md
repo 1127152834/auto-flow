@@ -11,3 +11,5 @@ Task 1 已实现：真实SQLite领取基准、统一数值报告与必填manifes
 Task 2 已实现：G4无浏览器执行基准，按实际成功nodeAttempt核对每个循环体节点次数，不用计划次数冒充实际执行。空流程反例、零次输入、真实50×5节点测试通过；全部基准15项通过，Ruff通过。默认1000×5实际5000节点，本机单次0.227ms/节点、5.001事件/节点。该次源码尚有未提交改动，manifest明确不可用于提升比较。
 
 Task 3 已实现：每条日志通过真实SqlAlchemyWorkflowRuntimeRepository.append_event独立事务提交，计时后新Session核对实际持久条数。RED2缺模块→GREEN2，累计17项通过；Ruff通过。默认1000条本机观察p50=1.238ms、p99=1.854ms；非跨平台结论，也未改SQLite配置。
+
+Task 4 已实现：50ms心跳、100ms告警、真实5分钟样本窗口/有界缓存与只读快照；接入sidecar启动/最终关闭，不新增HTTP契约。RED缺模块、RED缺app.state后实现；单元+生命周期+既有settings_dashboard共16 passed/1依赖弃用警告（anyio BlockingPortal），Ruff全src通过，mypy547源文件通过（1条既有annotation-unchecked提示）。首次异常关闭注入在前置shutdown直接抛错，跳过其他服务清理而挂起，7项后人工终止；改为既有gather内服务完成真实清理后抛错，验证监测器仍关闭，未声称修复原先全应用异常关闭链。

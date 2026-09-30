@@ -200,6 +200,7 @@ from autoflow.infrastructure.filesystem.profile_data import (
 from autoflow.infrastructure.filesystem.profile_environment import (
     read_profile_environment_options,
 )
+from autoflow.infrastructure.observability import LoopLagMonitor
 from autoflow.infrastructure.process.kernel_worker import KernelWorkerManager
 from autoflow.infrastructure.process.test_browser_worker import TestBrowserWorkerManager
 from autoflow.providers.android.image_catalog import ImageCatalog
@@ -296,6 +297,9 @@ def create_app(
 
     app = FastAPI()
     app.state.config = settings
+    loop_lag = LoopLagMonitor()
+    app.state.loop_lag = loop_lag
+    app.router.add_event_handler("startup", loop_lag.start)
     configure_openapi(app, api_version=settings.api_version)
     install_error_handlers(app)
     quiesce_gate = QuiesceGate()
@@ -649,7 +653,10 @@ def create_app(
                 if isawaitable(closing):
                     await closing
             finally:
-                session_factory.dispose()
+                try:
+                    await loop_lag.stop()
+                finally:
+                    session_factory.dispose()
 
     app.router.add_event_handler("shutdown", shutdown)
     register_management_routes(
