@@ -8,7 +8,8 @@ const read = path => JSON.parse(fs.readFileSync(new URL(path, root), 'utf8'))
 const metadata = () => read('apps/desktop/src/renderer/domains/workflows/development/module-required-fields.json')
 const removedNotifications = ['notify_discord','notify_dingtalk','notify_wecom','notify_bark','notify_slack','notify_msteams','notify_pushover','notify_pushbullet','notify_gotify','notify_serverchan','notify_pushplus','notify_ntfy','notify_matrix','notify_rocketchat']
 const python = code => {
-  const result = spawnSync('python3', ['-c', code], {cwd: root, encoding: 'utf8'})
+  // Both frozen source files and the JSON pipe use UTF-8 on every host.
+  const result = spawnSync('python3', ['-X', 'utf8', '-c', code], {cwd: root, encoding: 'utf8'})
   assert.equal(result.status, 0, result.stderr + result.stdout)
   return JSON.parse(result.stdout)
 }
