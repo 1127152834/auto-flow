@@ -1,6 +1,6 @@
 # M0 基准与守门 设计规格
 
-- 日期：2026-09-30；修订：r2；状态：in_progress（Task1–4已实现；其余任务及阶段验收未完成，证据见.ai/sessions/2026-09-30-remediation-m0-implementation.md）
+- 日期：2026-09-30；修订：r2；状态：in_progress（Task1–5已实现；其余任务及阶段验收未完成，证据见.ai/sessions/2026-09-30-remediation-m0-implementation.md）
 - 总纲：[整改里程碑总纲](2026-09-30-remediation-roadmap.md)；对应整改方案"验收基准"一节与 N3、N4、N5
 - 实施计划：[M0 实施计划](../plans/2026-09-30-remediation-m0-baseline-guardrails.md)
 

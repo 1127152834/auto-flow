@@ -673,7 +673,7 @@ git commit -m "feat(observability): 服务主循环延迟监测，超过 100 毫
 **Interfaces:**
 - Produces: `GoldenSite`（上下文管理器）：`base_url: str`、`hits(prefix: str) -> int`、`submissions(name: str) -> int`；模块常量 `FIELDS = ("title","price","sku","stock","seller")`、`FIRST_LOAD_DELAY_SECONDS = 20.0`、`LOST_RESPONSE_HOLD_SECONDS = 30.0`。规则：`/item/timeout-*` 首次请求延迟、`/item/gone-*` 固定 404、提交名以 `lose-` 开头时不返回响应。
 
-- [ ] **Step 1: 写失败的测试**（站点测试不需要浏览器，不加 golden 标记，普通 CI 会运行）
+- [x] **Step 1: 写失败的测试**（站点测试不需要浏览器，不加 golden 标记，普通 CI 会运行）
 
 ```python
 """The golden site itself; runs without a browser."""
@@ -713,12 +713,12 @@ def test_form_submits_once_and_lost_responses_never_answer(monkeypatch):
         assert site.submissions("lose-1") == 1
 ```
 
-- [ ] **Step 2: 运行，确认失败**
+- [x] **Step 2: 运行，确认失败**
 
 Run: `uv run --directory apps/backend pytest -q tests/golden/test_golden_site.py`
 Expected: FAIL，`ModuleNotFoundError: tests.golden.site`。
 
-- [ ] **Step 3: 实现 site.py**
+- [x] **Step 3: 实现 site.py**
 
 ```python
 """Local golden-scenario site with fault injection (remediation M0, spec §5.4)."""
@@ -840,12 +840,12 @@ class GoldenSite:
 
 说明：`time.sleep` 读取的是模块全局常量，测试通过 `monkeypatch.setattr(site_module, ...)` 缩短等待。
 
-- [ ] **Step 4: 运行**
+- [x] **Step 4: 运行**
 
 Run: `uv run --directory apps/backend pytest -q tests/golden/test_golden_site.py`
 Expected: 2 passed。
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```bash
 git add apps/backend/tests/golden/__init__.py apps/backend/tests/golden/site.py apps/backend/tests/golden/test_golden_site.py

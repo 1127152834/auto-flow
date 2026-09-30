@@ -13,3 +13,5 @@ Task 2 已实现：G4无浏览器执行基准，按实际成功nodeAttempt核对
 Task 3 已实现：每条日志通过真实SqlAlchemyWorkflowRuntimeRepository.append_event独立事务提交，计时后新Session核对实际持久条数。RED2缺模块→GREEN2，累计17项通过；Ruff通过。默认1000条本机观察p50=1.238ms、p99=1.854ms；非跨平台结论，也未改SQLite配置。
 
 Task 4 已实现：50ms心跳、100ms告警、真实5分钟样本窗口/有界缓存与只读快照；接入sidecar启动/最终关闭，不新增HTTP契约。RED缺模块、RED缺app.state后实现；单元+生命周期+既有settings_dashboard共16 passed/1依赖弃用警告（anyio BlockingPortal），Ruff全src通过，mypy547源文件通过（1条既有annotation-unchecked提示）。首次异常关闭注入在前置shutdown直接抛错，跳过其他服务清理而挂起，7项后人工终止；改为既有gather内服务完成真实清理后抛错，验证监测器仍关闭，未声称修复原先全应用异常关闭链。
+
+Task 5 已实现：仅loopback随机端口的黄金站点、五字段、首次延迟/永久404/提交丢响应、线程安全命中与提交计数。普通CI运行3项HTTP测试通过（RED缺模块→GREEN3），Ruff通过。按规格保留表单查询参数并支持lose=1，同时兼容lose-名字；关闭站点用Event提前结束故障等待，预期客户端断线不输出服务端堆栈。真实浏览器完整链仍待Task6，不把站点测试记成G2/G3通过。
