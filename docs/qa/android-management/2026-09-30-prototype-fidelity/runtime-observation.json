@@ -1,0 +1,13 @@
+{
+  "date": "2026-09-30",
+  "source": "adb devices -l; limactl list --json",
+  "adbDevices": [],
+  "lima": {
+    "name": "autoflow-redroid",
+    "status": "Stopped",
+    "arch": "aarch64",
+    "cpus": 6,
+    "memory": 8589934592
+  },
+  "liveDeviceAcceptance": "blocked: runtime stopped and no ADB devices"
+}

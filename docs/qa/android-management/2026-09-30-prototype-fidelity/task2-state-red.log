@@ -1,0 +1,47 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/android/tests/AndroidPage.test.tsx -t retains selected batch
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-prototype-fidelity/autoflow/apps/desktop
+
+(node:76752) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/android/tests/AndroidPage.test.tsx (45 tests | 1 failed | 44 skipped) 4073ms
+   × retains selected batch targets when visiting management tools 4056ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/android/tests/AndroidPage.test.tsx > retains selected batch targets when visiting management tools
+Error: expect(element).toBeChecked()
+
+Received element is not checked:
+  <input
+  aria-label="测试设备 01"
+  disabled=""
+  id="bulk-00000000-0000-4000-8000-000000000001"
+  type="checkbox"
+/>
+ ❯ src/renderer/domains/android/tests/AndroidPage.test.tsx:743:67
+    741|   await userEvent.click(screen.getByRole('button', { name: '环境配置' }))
+    742|   await userEvent.click(screen.getByRole('button', { name: '返回资源看板' }))
+    743|   expect(screen.getByRole('checkbox', { name: devices[0].name })).toBe…
+       |                                                                   ^
+    744|   expect(screen.getByRole('combobox', { name: '批量动作' })).toHaveValue('…
+    745| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 44 skipped (45)
+   Start at  13:17:34
+   Duration  29.98s (transform 4.00s, setup 1.50s, import 19.14s, tests 4.07s, environment 4.20s)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/.codex/worktrees/android-prototype-fidelity/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/.codex/worktrees/android-prototype-fidelity/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/android/tests/AndroidPage.test.tsx -t 'retains selected batch'

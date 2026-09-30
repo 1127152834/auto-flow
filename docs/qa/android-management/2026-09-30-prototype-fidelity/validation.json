@@ -1,0 +1,33 @@
+{
+  "date": "2026-09-30",
+  "base": "77d0bb28",
+  "branch": "codex/android-prototype-fidelity",
+  "frontend": {
+    "command": "npm --workspace @autoflow/desktop test -- --maxWorkers=2",
+    "exitCode": 0,
+    "filesPassed": 455,
+    "testsPassed": 5977,
+    "durationSeconds": 532.48
+  },
+  "typecheck": {
+    "exitCode": 0
+  },
+  "lint": {
+    "exitCode": 0
+  },
+  "openapi": {
+    "exitCode": 0,
+    "initialColdStartTimedOut": true
+  },
+  "build": {
+    "exitCode": 0
+  },
+  "review": {
+    "unresolvedCritical": 0,
+    "unresolvedImportant": 0
+  },
+  "desktopEntrypoints": "passed: production sidecar, isolated user data",
+  "liveDeviceControl": "blocked: Lima stopped; no ADB devices",
+  "browserZoom200": "not_run; 744px reflow checked separately",
+  "fixtureMarkerInProductionFiles": []
+}

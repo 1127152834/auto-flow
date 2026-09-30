@@ -1,0 +1,14 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/android/tests/AndroidPage.test.tsx -t reconnecting the same backend|opens tools explicitly|retains selected batch
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-prototype-fidelity/autoflow/apps/desktop
+
+(node:18192) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  1 passed (1)
+      Tests  3 passed | 43 skipped (46)
+   Start at  13:28:31
+   Duration  21.21s (transform 2.04s, setup 657ms, import 10.32s, tests 6.70s, environment 2.96s)

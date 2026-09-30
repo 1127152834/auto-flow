@@ -42,7 +42,7 @@ it('ends the control session before returning to the management list and stops h
   await waitFor(() => expect(mocks.client.request.mock.calls.some(([path, init]) => path.endsWith('/heartbeat') && init?.method === 'POST')).toBe(true))
   await userEvent.click(screen.getByRole('button', { name: /返回资源看板/ }))
   await waitFor(() => expect(mocks.client.request).toHaveBeenCalledWith('/api/v1/android/sessions/fixture/actions', expect.objectContaining({ body: expect.objectContaining({ action: 'end' }) })))
-  await screen.findByText('实例管理')
+  await screen.findByRole('heading', { name: '安卓模拟器' })
   const heartbeatCount = mocks.client.request.mock.calls.filter(([path, init]) => path.endsWith('/heartbeat') && init?.method === 'POST').length
   await new Promise((resolve) => setTimeout(resolve, 30))
   expect(mocks.client.request.mock.calls.filter(([path, init]) => path.endsWith('/heartbeat') && init?.method === 'POST')).toHaveLength(heartbeatCount)
@@ -58,11 +58,11 @@ it('ends a session whose open response arrives after returning to the management
   await userEvent.click(await screen.findByRole('button', { name: /打开测试设备 01/ }))
   await waitFor(() => expect(mocks.client.request.mock.calls.some(([path, init]) => path.endsWith('/sessions') && init?.method === 'POST')).toBe(true))
   await userEvent.click(screen.getByRole('button', { name: /返回资源看板/ }))
-  expect(screen.queryByText('实例管理')).not.toBeInTheDocument()
+  expect(screen.queryByRole('heading', { name: '安卓模拟器' })).not.toBeInTheDocument()
   await act(async () => { resolveOpen(fixtureSession(true)); await opening })
   await waitFor(() => expect(mocks.client.request).toHaveBeenCalledWith('/api/v1/android/sessions/fixture/actions', expect.objectContaining({ body: expect.objectContaining({ action: 'end' }) })))
   expect(screen.queryByRole('heading', { name: '手动控制中' })).not.toBeInTheDocument()
-  await screen.findByText('实例管理')
+  await screen.findByRole('heading', { name: '安卓模拟器' })
 })
 
 it('keeps a late session visible for recovery when ending it is not confirmed', async () => {
@@ -78,10 +78,10 @@ it('keeps a late session visible for recovery when ending it is not confirmed', 
   await userEvent.click(await screen.findByRole('button', { name: /打开测试设备 01/ }))
   await waitFor(() => expect(mocks.client.request.mock.calls.some(([path]) => path.endsWith('/sessions'))).toBe(true))
   await userEvent.click(screen.getByRole('button', { name: /返回资源看板/ }))
-  expect(screen.queryByText('实例管理')).not.toBeInTheDocument()
+  expect(screen.queryByRole('heading', { name: '安卓模拟器' })).not.toBeInTheDocument()
   await act(async () => { resolveOpen(fixtureSession(true)); await opening })
   await screen.findByText('控制会话状态未知', { selector: 'strong' })
-  expect(screen.queryByText('实例管理')).not.toBeInTheDocument()
+  expect(screen.queryByRole('heading', { name: '安卓模拟器' })).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: /返回资源看板/ })).toBeInTheDocument()
 })
 
@@ -96,7 +96,7 @@ it('lets the user leave after a confirmed busy rejection creates no session', as
   await userEvent.click(await screen.findByRole('button', { name: /打开测试设备 01/ }))
   await waitFor(() => expect(screen.getByText('控制台已占用')).toBeInTheDocument())
   await userEvent.click(screen.getByRole('button', { name: /返回资源看板/ }))
-  await screen.findByText('实例管理')
+  await screen.findByRole('heading', { name: '安卓模拟器' })
 })
 
 it('ends a late session after the Android page is unmounted', async () => {
@@ -134,7 +134,7 @@ it('blocks route navigation when ending embedded control is unconfirmed', async 
   const guard = registerLeaveGuard.mock.lastCall?.[0]
   expect(typeof guard).toBe('function')
   expect(await guard()).toBe(false)
-  expect(screen.queryByText('实例管理')).not.toBeInTheDocument()
+  expect(screen.queryByRole('heading', { name: '安卓模拟器' })).not.toBeInTheDocument()
   await waitFor(() => expect(document.querySelector('.ad-console-status')).toHaveTextContent('控制会话状态未知'))
 })
 
@@ -149,7 +149,7 @@ it('leaves after server lease expiry only when the session and device owner both
   await userEvent.click(await screen.findByRole('button', { name: /打开测试设备 01/ }))
   await screen.findByRole('heading', { name: '手动控制中' })
   await userEvent.click(screen.getByRole('button', { name: /返回资源看板/ }))
-  await screen.findByText('实例管理')
+  await screen.findByRole('heading', { name: '安卓模拟器' })
   expect(mocks.client.request).toHaveBeenCalledWith('/api/v1/android/sessions/fixture')
 })
 
@@ -167,7 +167,7 @@ it('keeps control unknown when the session says closed but ownership is still he
   await screen.findByRole('heading', { name: '手动控制中' })
   await userEvent.click(screen.getByRole('button', { name: /返回资源看板/ }))
   await waitFor(() => expect(mocks.client.request).toHaveBeenCalledWith('/api/v1/android/sessions/fixture'))
-  expect(screen.queryByText('实例管理')).not.toBeInTheDocument()
+  expect(screen.queryByRole('heading', { name: '安卓模拟器' })).not.toBeInTheDocument()
   expect(document.querySelector('.ad-console-status')).toHaveTextContent('控制会话状态未知')
 })
 
@@ -198,7 +198,7 @@ it('recovers an owned native session from the management snapshot after route re
   })
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const first = render(<QueryClientProvider client={queryClient}><AndroidPage /></QueryClientProvider>)
-  await screen.findByText('实例管理')
+  await screen.findByRole('heading', { name: '安卓模拟器' })
   first.unmount()
   render(<QueryClientProvider client={queryClient}><AndroidPage /></QueryClientProvider>)
   await userEvent.click(await screen.findByRole('button', { name: '查看测试设备 01控制会话' }))
@@ -206,7 +206,7 @@ it('recovers an owned native session from the management snapshot after route re
   await screen.findByText('正在独立 Mac 窗口操作')
   expect(mocks.client.request.mock.calls.filter(([path, init]) => path.endsWith('/sessions') && init?.method === 'POST')).toHaveLength(0)
   await userEvent.click(screen.getByRole('button', { name: /返回资源看板/ }))
-  await screen.findByText('实例管理')
+  await screen.findByRole('heading', { name: '安卓模拟器' })
   expect(mocks.client.request.mock.calls.filter(([path, init]) => path.endsWith('/actions') && init?.body?.action === 'end')).toHaveLength(0)
 })
 
@@ -218,6 +218,7 @@ it('ends a persisted native session from the management list only after an expli
     return fallback(path, init)
   })
   render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: `${devices[0].name}更多操作` }))
   await screen.findByRole('button', { name: '结束测试设备 01控制会话' })
   expect(mocks.client.request.mock.calls.filter(([path, init]) => path.endsWith('/actions') && init?.body?.action === 'end')).toHaveLength(0)
   await userEvent.click(screen.getByRole('button', { name: '结束测试设备 01控制会话' }))
@@ -316,13 +317,13 @@ it('waits for a confirmed session end before returning to the management list', 
   await userEvent.click(await screen.findByRole('button', { name: /打开测试设备 01/ }))
   await screen.findByRole('heading', { name: '手动控制中' })
   await userEvent.click(screen.getByRole('button', { name: /返回资源看板/ }))
-  expect(screen.queryByText('实例管理')).not.toBeInTheDocument()
+  expect(screen.queryByRole('heading', { name: '安卓模拟器' })).not.toBeInTheDocument()
   expect(screen.getByText('控制会话状态未知', { selector: 'strong' })).toBeInTheDocument()
   const heartbeatCount = mocks.client.request.mock.calls.filter(([path, init]) => path.endsWith('/heartbeat') && init?.method === 'POST').length
   await new Promise((resolve) => setTimeout(resolve, 30))
   expect(mocks.client.request.mock.calls.filter(([path, init]) => path.endsWith('/heartbeat') && init?.method === 'POST')).toHaveLength(heartbeatCount)
   resolveEnd(undefined)
-  await screen.findByText('实例管理')
+  await screen.findByRole('heading', { name: '安卓模拟器' })
 })
 
 it('marks a heartbeat failure as unknown and exposes no connected control state', async () => {
@@ -345,7 +346,7 @@ it('marks a heartbeat failure as unknown and exposes no connected control state'
 })
 it('management home does not request retired workflow, allocation, or run endpoints', async () => {
   render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
-  await screen.findByText('实例管理')
+  await screen.findByRole('heading', { name: '安卓模拟器' })
   await waitFor(() => expect(mocks.client.request).toHaveBeenCalled())
   expect(mocks.client.request.mock.calls.map(([path]) => path).filter((path) => /workflows|allocations|\/runs/.test(path))).toEqual([])
   expect(screen.queryByRole('button', { name: '分配给工作流' })).not.toBeInTheDocument()
@@ -362,7 +363,7 @@ it('manual device details do not offer retired workflow allocation', async () =>
 
 it('management home does not poll the retired device list endpoint', async () => {
   render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
-  await screen.findByText('实例管理')
+  await screen.findByRole('heading', { name: '安卓模拟器' })
   await waitFor(() => expect(mocks.client.request).toHaveBeenCalled())
   expect(mocks.client.request.mock.calls.filter(([path]) => path === '/api/v1/android/devices')).toHaveLength(0)
 })
@@ -387,6 +388,7 @@ it('verifies a management operation with its original request id', async () => {
     return []
   })
   render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: `${devices[0].name}更多操作` }))
   await userEvent.click(await screen.findByRole('button', { name: `查看${devices[0].name}操作历史` }))
   await userEvent.click(await screen.findByRole('button', { name: '核实操作 operation-1' }))
   expect(screen.getByRole('heading', { name: '核实状态' })).toBeVisible()
@@ -457,6 +459,8 @@ it('cleanup preview includes registered backups while diagnostics remain device 
     return []
   })
   render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: '环境配置' }))
+  await userEvent.click(screen.getByRole('button', { name: '数据维护' }))
   await screen.findByRole('heading', { name: '数据维护' })
   await userEvent.click(await screen.findByRole('checkbox', { name: /保留的数据：/ }))
   await userEvent.click(screen.getByRole('checkbox', { name: /备份：backup-1/ }))
@@ -661,6 +665,7 @@ it('creates a stopped backup through device maintenance without starting or clai
     return fallback(path, init)
   })
   render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: `${devices[0].name}更多操作` }))
   await userEvent.click(await screen.findByRole('button', { name: `维护${devices[0].name}` }))
   await userEvent.click(screen.getByRole('button', { name: '创建停机备份' }))
   await screen.findByText('备份已创建')
@@ -677,6 +682,8 @@ it('restores a workspace backup after its source device has been deleted', async
     return fallback(path, init)
   })
   render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: '环境配置' }))
+  await userEvent.click(screen.getByRole('button', { name: '备份恢复' }))
   await userEvent.click(await screen.findByRole('button', { name: '恢复为新实例' }))
   await screen.findByText(/恢复已提交，操作 restore-new/)
   expect(mocks.client.request).toHaveBeenCalledWith('/api/v1/android/management/backups/orphan-backup/restore', expect.objectContaining({ body: expect.objectContaining({ newName: '恢复实例', allowUnknownDiskEstimate: false }) }))
@@ -698,6 +705,7 @@ it.each(['failed lifecycle', 'unknown without operation', 'pending restore'])('r
   await userEvent.click(screen.getByRole('button', { name: '确认操作' }))
   await waitFor(() => expect(mocks.client.request).toHaveBeenCalledWith(`/api/v1/android/devices/${devices[0].deviceId}/operations`, expect.objectContaining({ body: expect.objectContaining({ action: 'recover' }) })))
   expect(mocks.client.request.mock.calls.some(([path]) => path.includes('/management/operations/historical-failed/verify'))).toBe(false)
+  await userEvent.click(await screen.findByRole('button', { name: `${devices[0].name}更多操作` }))
   await screen.findByRole('button', { name: '删除实例' })
   if (pendingRestore) {
     expect(screen.queryByRole('button', { name: '启动设备' })).not.toBeInTheDocument()
@@ -705,5 +713,72 @@ it.each(['failed lifecycle', 'unknown without operation', 'pending restore'])('r
     expect(screen.getByRole('button', { name: '创建停机备份' })).toBeDisabled()
   } else {
     expect(screen.getByRole('button', { name: '启动设备' })).toBeEnabled()
+  }
+})
+
+ it('opens tools explicitly and preserves an unknown environment check across navigation', async () => {
+  const fallback = mocks.client.request.getMockImplementation()!
+  mocks.client.request.mockImplementation((path: string, init?: { method?: string }) => {
+    if (path.endsWith('/management/environment/checks')) return Promise.reject(new Error('检查响应丢失'))
+    if (path.endsWith('/management/environment')) return Promise.resolve({ ...environment, checkedAt: '2026-09-22T00:00:00Z', checks: {}, capabilities: {} })
+    if (path.endsWith('/management/capabilities')) return Promise.resolve({ management: true, control: true, images: true, reasons: {} })
+    return fallback(path, init)
+  })
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  expect(screen.queryByRole('region', { name: '安卓运行环境诊断' })).not.toBeInTheDocument()
+  await userEvent.click(await screen.findByRole('button', { name: '环境配置' }))
+  await userEvent.click(await screen.findByRole('button', { name: '重新检查' }))
+  await screen.findByText('检查响应丢失')
+  await userEvent.click(screen.getByRole('button', { name: '镜像管理' }))
+  expect(screen.queryByRole('button', { name: '核实原检查请求' })).not.toBeInTheDocument()
+  await userEvent.click(screen.getByRole('button', { name: '返回资源看板' }))
+  await userEvent.click(screen.getByRole('button', { name: '环境配置' }))
+  expect(screen.getByRole('button', { name: '核实原检查请求' })).toBeVisible()
+  expect(screen.getByRole('button', { name: '请先核实' })).toBeDisabled()
+})
+
+it('retains selected batch targets when visiting management tools', async () => {
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByText('批量操作'))
+  await userEvent.selectOptions(screen.getByRole('combobox', { name: '批量动作' }), 'stop')
+  await userEvent.click(screen.getByRole('checkbox', { name: devices[0].name }))
+  await userEvent.click(screen.getByRole('button', { name: '环境配置' }))
+  await userEvent.click(screen.getByRole('button', { name: '返回资源看板' }))
+  expect(screen.getByRole('checkbox', { name: devices[0].name })).toBeChecked()
+  expect(screen.getByRole('combobox', { name: '批量动作' })).toHaveValue('stop')
+})
+
+it('preserves an unknown check receipt when reconnecting the same backend with a new client', async () => {
+  const originalClient = mocks.client
+  const fallback = originalClient.request.getMockImplementation()!
+  let requestId = ''
+  const request = vi.fn(async (path: string, init?: { method?: string; body?: { requestId?: string } }) => {
+    if (path.endsWith('/management/environment/checks')) {
+      requestId = init?.body?.requestId ?? ''
+      throw new Error('检查响应丢失')
+    }
+    if (path.endsWith('/management/environment')) return { ...environment, checkedAt: '2026-09-22T00:00:00Z', checks: {}, capabilities: {} }
+    if (path.endsWith('/management/capabilities')) return { management: true, control: true, images: true, reasons: {} }
+    if (path.includes('/management/operations/by-request/')) return { operationId: 'reconnected-check', requestId, state: 'needs_verification' }
+    if (path.endsWith('/management/operations/reconnected-check/verify')) return { operationId: 'reconnected-check', requestId, state: 'succeeded' }
+    return fallback(path, init)
+  })
+  originalClient.request.mockImplementation(request)
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const view = render(<QueryClientProvider client={queryClient}><AndroidPage /></QueryClientProvider>)
+  try {
+    await userEvent.click(await screen.findByRole('button', { name: '环境配置' }))
+    await userEvent.click(await screen.findByRole('button', { name: '重新检查' }))
+    await screen.findByText('检查响应丢失')
+    mocks.client = { request, stream: vi.fn() }
+    view.rerender(<QueryClientProvider client={queryClient}><AndroidPage /></QueryClientProvider>)
+    await userEvent.click(await screen.findByRole('button', { name: '环境配置' }))
+    expect(screen.getByRole('button', { name: '请先核实' })).toBeDisabled()
+    await userEvent.click(screen.getByRole('button', { name: '核实原检查请求' }))
+    await waitFor(() => expect(request).toHaveBeenCalledWith('/api/v1/android/management/operations/reconnected-check/verify', expect.objectContaining({ body: { requestId } })))
+    expect(request.mock.calls.filter(([path]) => path.endsWith('/management/environment/checks'))).toHaveLength(1)
+  } finally {
+    view.unmount()
+    mocks.client = originalClient
   }
 })

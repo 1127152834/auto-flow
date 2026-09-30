@@ -16,6 +16,10 @@ import { TemplateManager } from '../components/TemplateManager'
 import { DataMaintenance } from '../components/DataMaintenance'
 import { BackupPanel } from '../components/BackupPanel'
 import '../android.css'
+import '../management-tools.css'
+
+const toolLabels = { environment: '运行环境', images: '镜像管理', templates: '实例模板', backups: '备份恢复', maintenance: '数据维护' } as const
+type Tool = keyof typeof toolLabels
 
 const specValue = (spec: Record<string, unknown>, key: string, fallback: unknown) => spec[key] ?? spec[key.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)] ?? fallback
 
@@ -65,9 +69,17 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
     managementApi = useMemo(() => androidManagementApi(client), [client]),
     fleet = useMemo(() => fleetApi(client), [client])
   const queryClient = useQueryClient()
-  const [page, setPage] = useState<'board' | 'create' | 'detail' | 'maintenance'>('board'),
+  const [page, setPage] = useState<'board' | 'create' | 'detail' | 'maintenance' | 'tools'>('board'),
     [selected, setSelected] = useState<string | null>(null),
     [source, setSource] = useState<AndroidDevice>()
+  const [tool, setTool] = useState<Tool>('environment')
+  // Keep visited tools mounted so unknown mutations retain their original request receipts.
+  const [visitedTools, setVisitedTools] = useState<Tool[]>([])
+  const openTool = (next: Tool) => {
+    setTool(next)
+    setVisitedTools((visited) => visited.includes(next) ? visited : [...visited, next])
+    setPage('tools')
+  }
   const [session, setSession] = useState<ConsoleSession | null>(null),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false),
@@ -93,6 +105,7 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
   useEffect(() => { currentSession.current = session }, [session])
   useEffect(() => {
     if (backend.current.client !== client || backend.current.instanceId !== instanceId) {
+      if (backend.current.instanceId !== instanceId) setVisitedTools([])
       backend.current = { client, instanceId }
       pendingOpen.current = null
       pendingLeave.current = null
@@ -504,10 +517,11 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
         />
         </>
       ) : (
-        <div className="space-y-5"><RuntimeDiagnostics api={managementApi} /><ManagementOverview
+        <main className="ad-page ad-management-page" hidden={page === 'tools'} key={`board-${instanceId}`}><ManagementOverview
           api={managementApi}
           previewApi={api}
           instanceId={instanceId}
+          onEnvironment={() => openTool('environment')}
           onCreate={() => {
             setSource(undefined)
             setPage('create')
@@ -526,8 +540,22 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
               setError('实例详情暂不可用，请刷新后重试')
             }).catch((cause) => setError(cause instanceof Error ? cause.message : '实例详情暂不可用，请刷新后重试'))
           }}
-        /><ImageManager key={instanceId} instanceId={instanceId} api={managementApi} /><TemplateManager api={{ ...fleet, images: managementApi.images, archiveProfile: managementApi.archiveProfile }} /><BackupPanel key={instanceId} api={managementApi} /><DataMaintenance api={managementApi} saveDiagnostic={saveAndroidDiagnostic} resourceIds={[...all.map((item) => item.deviceId), ...(backups.data ?? []).map((item) => item.id)]} diagnosticDeviceIds={all.map((item) => item.deviceId)} /></div>
+        /></main>
       )}
+      {visitedTools.length > 0 && <main className="ad-page ad-tools-page" hidden={page !== 'tools'} key={`tools-${instanceId}`}>
+        <Action onClick={() => setPage('board')}>返回资源看板</Action>
+        <header className="ad-page-heading"><div><h1>环境配置</h1><p>管理运行环境、系统镜像与实例数据。</p></div></header>
+        <nav className="ad-tools-tabs" aria-label="安卓管理工具">
+          {Object.entries(toolLabels).map(([id, label]) => <button key={id} type="button" aria-current={tool === id ? 'page' : undefined} onClick={() => openTool(id as Tool)}>{label}</button>)}
+        </nav>
+        {visitedTools.map((id) => <section key={id} aria-label={toolLabels[id]} hidden={tool !== id} className="ad-tool-panel">
+          {id === 'environment' && <RuntimeDiagnostics api={managementApi} />}
+          {id === 'images' && <ImageManager instanceId={instanceId} api={managementApi} />}
+          {id === 'templates' && <TemplateManager api={{ ...fleet, images: managementApi.images, archiveProfile: managementApi.archiveProfile }} />}
+          {id === 'backups' && <BackupPanel api={managementApi} />}
+          {id === 'maintenance' && <DataMaintenance api={managementApi} saveDiagnostic={saveAndroidDiagnostic} resourceIds={[...all.map((item) => item.deviceId), ...(backups.data ?? []).map((item) => item.id)]} diagnosticDeviceIds={all.map((item) => item.deviceId)} />}
+        </section>)}
+      </main>}
       <Dialog
         open={Boolean(management)}
         onOpenChange={(v) => {

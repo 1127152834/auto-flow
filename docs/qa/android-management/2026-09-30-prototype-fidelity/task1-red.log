@@ -1,0 +1,820 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/android/tests/ManagementOverview.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-prototype-fidelity/autoflow/apps/desktop
+
+(node:54132) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/android/tests/ManagementOverview.test.tsx (23 tests | 2 failed) 1860ms
+   × groups authoritative devices by availability and keeps filters when switching to the list 1007ms
+   × puts secondary operations behind an accessible device disclosure 14ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/android/tests/ManagementOverview.test.tsx > groups authoritative devices by availability and keeps filters when switching to the list
+TestingLibraryElementError: Unable to find role="region" and name "可用设备分组"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33maria-label[39m=[32m"安卓管理实例"[39m
+      [33mclass[39m=[32m"rounded-card border border-line bg-surface p-5"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"flex items-center justify-between gap-3"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<h2[39m
+            [33mclass[39m=[32m"font-semibold"[39m
+          [36m>[39m
+            [0m实例管理[0m
+          [36m</h2>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-1 text-sm text-muted"[39m
+          [36m>[39m
+            [0m显示 [0m
+            [0m3[0m
+            [0m / [0m
+            [0m3[0m
+            [0m 台实例 · 快照读取不触发运行时探测[0m
+          [36m</p>[39m
+        [36m</div>[39m
+      [36m</header>[39m
+      [36m<div[39m
+        [33maria-label[39m=[32m"实例统计"[39m
+        [33mclass[39m=[32m"mt-4 grid grid-cols-2 gap-2 text-sm md:grid-cols-4"[39m
+      [36m>[39m
+        [36m<span>[39m
+          [0m总数 [0m
+          [0m3[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m运行中 [0m
+          [0m3[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m已停止 [0m
+          [0m0[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m需处理 [0m
+          [0m1[0m
+        [36m</span>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mt-4 flex flex-wrap gap-2"[39m
+      [36m>[39m
+        [36m<input[39m
+          [33maria-label[39m=[32m"搜索实例"[39m
+          [33mplaceholder[39m=[32m"搜索实例"[39m
+          [33mvalue[39m=[32m""[39m
+        [36m/>[39m
+        [36m<select[39m
+          [33maria-label[39m=[32m"筛选状态"[39m
+        [36m>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m""[39m
+          [36m>[39m
+            [0m全部状态[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"ready"[39m
+          [36m>[39m
+            [0m已就绪[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"stopped"[39m
+          [36m>[39m
+            [0m已停止[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"retained"[39m
+          [36m>[39m
+            [0m数据已保留[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"unknown"[39m
+          [36m>[39m
+            [0m待核实[0m
+          [36m</option>[39m
+        [36m</select>[39m
+        [36m<select[39m
+          [33maria-label[39m=[32m"筛选模板"[39m
+        [36m>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m""[39m
+          [36m>[39m
+            [0m全部模板[0m
+          [36m</option>[39m
+        [36m</select>[39m
+        [36m<select[39m
+          [33maria-label[39m=[32m"筛选数据"[39m
+        [36m>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m""[39m
+          [36m>[39m
+            [0m全部数据[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"retained"[39m
+          [36m>[39m
+            [0m数据已保留[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"not-retained"[39m
+          [36m>[39m
+            [0m未保留数据[0m
+          [36m</option>[39m
+        [36m</select>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3"[39m
+      [36m>[39m
+        [36m<article[39m
+          [33mclass[39m=[32m"rounded-control border border-line p-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-start justify-between gap-3"[39m
+          [36m>[39m
+            [36m<strong[39m
+              [33mclass[39m=[32m"break-words"[39m
+            [36m>[39m
+              [0m可用设备[0m
+            [36m</strong>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"shrink-0 whitespace-nowrap text-xs text-muted"[39m
+            [36m>[39m
+              [0m已就绪[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-2 text-xs text-muted"[39m
+          [36m>[39m
+            [0m修订 [0m
+            [0m1[0m
+            [0m · [0m
+            [0m快照有效[0m
+          [36m</p>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-2 text-xs"[39m
+          [36m>[39m
+            [0m可操作：[0m
+            [0mopen[0m
+          [36m</p>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-3 flex flex-wrap gap-2"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33maria-label[39m=[32m"打开可用设备"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0m打开可用设备[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33maria-controls[39m=[32m"_r_l_"[39m
+              [33maria-expanded[39m=[32m"false"[39m
+              [33maria-label[39m=[32m"查看可用设备操作历史"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0m操作历史[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</article>[39m
+        [36m<article[39m
+          [33mclass[39m=[32m"rounded-control border border-line p-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-start justify-between gap-3"[39m
+          [36m>[39m
+            [36m<strong[39m
+              [33mclass[39m=[32m"break-words"[39m
+            [36m>[39m
+              [0m控制设备[0m
+            [36m</strong>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"shrink-0 whitespace-nowrap text-xs text-muted"[39m
+            [36m>[39m
+              [0m已就绪[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-2 text-xs text-muted"[39m
+          [36m>[39m
+            [0m修订 [0m
+            [0m1[0m
+            [0m · [0m
+            [0m快照有效[0m
+          [36m</p>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-2 text-xs"[39m
+          [36m>[39m
+            [0m手动控制会话占用中[0m
+          [36m</p>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-2 text-xs"[39m
+          [36m>[39m
+            [0m可操作：[0m
+            [0mopen[0m
+          [36m</p>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-3 flex flex-wrap gap-2"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33maria-label[39m=[32m"查看控制设备控制会话"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0m查看控制会话[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33maria-controls[39m=[32m"_r_l_"[39m
+              [33maria-expanded[39m=[32m"false"[39m
+              [33maria-label[39m=[32m"查看控制设备操作历史"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0m操作历史[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</article>[39m
+        [36m<article[39m
+          [33mclass[39m=[32m"rounded-control border border-line p-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-start justify-between gap-3"[39m
+          [36m>[39m
+            [36m<strong[39m
+              [33mclass[39m=[32m"break-words"[39m
+            [36m>[39m
+              [0m陈旧设备[0m
+            [36m</strong>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"shrink-0 whitespace-nowrap text-xs text-muted"[39m
+            [36m>[39m
+              [0m已就绪[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-2 text-xs text-muted"[39m
+          [36m>[39m
+            [0m修订 [0m
+            [0m1[0m
+            [0m · [0m
+            [0m状态陈旧 · 已就绪[0m
+          [36m</p>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-2 text-xs"[39m
+          [36m>[39m
+            [0m可操作：[0m
+            [0mopen[0m
+          [36m</p>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-3 flex flex-wrap gap-2"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33maria-label[39m=[32m"打开陈旧设备"[39m
+              [33mdisabled[39m=[32m""[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0m打开陈旧设备[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33maria-controls[39m=[32m"_r_l_"[39m
+              [33maria-expanded[39m=[32m"false"[39m
+              [33maria-label[39m=[32m"查看陈旧设备操作历史"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0m操作历史[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</article>[39m
+      [36m</div>[39m
+      [36m<fieldset[39m
+        [33mclass[39m=[32m"mt-5"[39m
+      [36m>[39m
+        [36m<section[39m
+          [33maria-busy[39m=[32m"false"[39m
+          [33maria-label[39m=[32m"批量操作"[39m
+          [33mclass[39m=[32m"rounded-card border border-line bg-surface p-5"[39m
+        [36m>[39m
+          [36m<header>[39m
+            [36m<h2[39m
+              [33mclass[39m=[32m"font-semibold"[39m
+            [36m>[39m
+              [0m批量操作[0m
+            [36m</h2>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"mt-1 text-sm text-muted"[39m
+            [36m>[39m
+              [0m目标在提交时冻结，单批最多 20 台。[0m
+            [36m</p>[39m
+          [36m</header>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-3 grid gap-2"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"flex items-center gap-2 text-sm"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33maria-label[39m=[32m"可用设备"[39m
+                [33mdisabled[39m=[32m""[39m
+                [33mid[39m=[32m"bulk-a"[39m
+                [33mtype[39m=[32m"checkbox"[39m
+              [36m/>[39m
+              [0m可用设备[0m
+              [0m · 修订 [0m
+              [0m1[0m
+              [0m · 待核实或不可操作[0m
+            [36m</label>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"flex items-center gap-2 text-sm"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33maria-label[39m=[32m"控制设备"[39m
+                [33mdisabled[39m=[32m""[39m
+                [33mid[39m=[32m"bulk-b"[39m
+                [33mtype[39m=[32m"checkbox"[39m
+              [36m/>[39m
+              [0m控制设备[0m
+              [0m · 修订 [0m
+              [0m1[0m
+              [0m · 待核实或不可操作[0m
+            [36m</label>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"flex items-center gap-2 text-sm"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33maria-label[39m=[32m"陈旧设备"[39m
+                [33mdisabled[39m=[32m""[39m
+                [33mid[39m=[32m"bulk-c"[39m
+                [33mtype[39m=[32m"checkbox"[39m
+              [36m/>[39m
+              [0m陈旧设备[0m
+              [0m · 修订 [0m
+              [0m1[0m
+              [0m · 待核实或不可操作[0m
+            [36m</label>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-3 flex flex-wrap items-center gap-2"[39m
+          [36m>[39m
+            [36m<select[39m
+              [33maria-label[39m=[32m"批量动作"[39m
+            [36m>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"start"[39m
+              [36m>[39m
+                [0m启动[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"stop"[39m
+              [36m>[39m
+                [0m停止[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"restart"[39m
+              [36m>[39m
+                [0m重启[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"delete"[39m
+              [36m>[39m
+                [0m删除[0m
+              [36m</option>[39m
+            [36m</select>[39m
+            [36m<button[39m
+              [33mdisabled[39m=[32m""[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0m提交批量操作[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+      [36m</fieldset>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33maria-label[39m=[32m"安卓管理实例"[39m
+      [33mclass[39m=[32m"rounded-card border border-line bg-surface p-5"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"flex items-center justify-between gap-3"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<h2[39m
+            [33mclass[39m=[32m"font-semibold"[39m
+          [36m>[39m
+            [0m实例管理[0m
+          [36m</h2>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-1 text-sm text-muted"[39m
+          [36m>[39m
+            [0m显示 [0m
+            [0m3[0m
+            [0m / [0m
+            [0m3[0m
+            [0m 台实例 · 快照读取不触发运行时探测[0m
+          [36m</p>[39m
+        [36m</div>[39m
+      [36m</header>[39m
+      [36m<div[39m
+        [33maria-label[39m=[32m"实例统计"[39m
+        [33mclass[39m=[32m"mt-4 grid grid-cols-2 gap-2 text-sm md:grid-cols-4"[39m
+      [36m>[39m
+        [36m<span>[39m
+          [0m总数 [0m
+          [0m3[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m运行中 [0m
+          [0m3[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m已停止 [0m
+          [0m0[0m
+        [36m</span>[39m
+        [36m<span>[39m
+          [0m需处理 [0m
+          [0m1[0m
+        [36m</span>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mt-4 flex flex-wrap gap-2"[39m
+      [36m>[39m
+        [36m<input[39m
+          [33maria-label[39m=[32m"搜索实例"[39m
+          [33mplaceholder[39m=[32m"搜索实例"[39m
+          [33mvalue[39m=[32m""[39m
+        [36m/>[39m
+        [36m<select[39m
+          [33maria-label[39m=[32m"筛选状态"[39m
+        [36m>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m""[39m
+          [36m>[39m
+            [0m全部状态[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"ready"[39m
+          [36m>[39m
+            [0m已就绪[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"stopped"[39m
+          [36m>[39m
+            [0m已停止[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"retained"[39m
+          [36m>[39m
+            [0m数据已保留[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"unknown"[39m
+          [36m>[39m
+            [0m待核实[0m
+          [36m</option>[39m
+        [36m</select>[39m
+        [36m<select[39m
+          [33maria-label[39m=[32m"筛选模板"[39m
+        [36m>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m""[39m
+          [36m>[39m
+            [0m全部模板[0m
+          [36m</option>[39m
+        [36m</select>[39m
+        [36m<select[39m
+          [33maria-label[39m=[32m"筛选数据"[39m
+        [36m>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m""[39m
+          [36m>[39m
+            [0m全部数据[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"retained"[39m
+          [36m>[39m
+            [0m数据已保留[0m
+          [36m</option>[39m
+          [36m<option[39m
+            [33mvalue[39m=[32m"not-retained"[39m
+          [36m>[39m
+            [0m未保留数据[0m
+          [36m</option>[39m
+        [36m</select>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3"[39m
+      [36m>[39m
+        [36m<article[39m
+          [33mclass[39m=[32m"rounded-control border border-line p-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-start justify-between gap-3"[39m
+          [36m>[39m
+            [36m<strong[39m
+              [33mclass[39m=[32m"break-words"[39m
+            [36m>[39m
+              [0m可用设备[0m
+            [36m</strong>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"shrink-0 whitespace-nowrap text-xs text-muted"[39m
+            [36m>[39m
+              [0m已就绪[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-2 text-xs text-muted"[39m
+          [36m>[39m
+            [0m修订 [0m
+            [0m1[0m
+            [0m · [0m
+            [0m快照有效[0m
+          [36m</p>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-2 text-xs"[39m
+          [36m>[39m
+            [0m可操作：[0m
+            [0mopen[0m
+          [36m</p>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-3 flex flex-wrap gap-2"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33maria-label[39m=[32m"打开可用设备"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0m打开可用设备[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33maria-controls[39m=[32m"_r_l_"[39m
+              [33maria-expanded[39m=[32m"false"[39m
+              [33maria-label[39m=[32m"查看可用设备操作历史"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0m操作历史[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</article>[39m
+        [36m<article[39m
+          [33mclass[39m=[32m"rounded-control border border-line p-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-start justify-between gap-3"[39m
+          [36m>[39m
+            [36m<strong[39m
+              [33mclass[39m=[32m"break-words"[39m
+            [36m>[39m
+              [0m控制设备[0m
+            [36m</strong>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"shrink-0 whitespace-nowrap text-xs text-muted"[39m
+            [36m>[39m
+              [0m已就绪[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-2 text-xs text-muted"[39m
+          [36m>[39m
+            [0m修订 [0m
+            [0m1[0m
+            [0m · [0m
+            [0m快照有效[0m
+          [36m</p>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-2 text-xs"[39m
+          [36m>[39m
+            [0m手动控制会话占用中[0m
+          [36m</p>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-2 text-xs"[39m
+          [36m>[39m
+            [0m可操作：[0m
+            [0mopen[0m
+          [36m</p>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-3 flex flex-wrap gap-2"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33maria-label[39m=[32m"查看控制设备控制会话"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0m查看控制会话[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33maria-controls[39m=[32m"_r_l_"[39m
+              [33maria-expanded[39m=[32m"false"[39m
+              [33maria-label[39m=[32m"查看控制设备操作历史"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0m操作历史[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</article>[39m
+        [36m<article[39m
+          [33mclass[39m=[32m"rounded-control border border-line p-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-start justify-between gap-3"[39m
+          [36m>[39m
+            [36m<strong[39m
+              [33mclass[39m=[32m"break-words"[39m
+            [36m>[39m
+              [0m陈旧设备[0m
+            [36m</strong>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"shrink-0 whitespace-nowrap text-xs text-muted"[39m
+            [36m>[39m
+              [0m已就绪[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-2 text-xs text-muted"[39m
+          [36m>[39m
+            [0m修订 [0m
+            [0m1[0m
+            [0m · [0m
+            [0m状态陈旧 · 已就绪[0m
+          [36m</p>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"mt-2 text-xs"[39m
+          [36m>[39m
+            [0m可操作：[0m
+            [0mopen[0m
+          [36m</p>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-3 flex flex-wrap gap-2"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33maria-label[39m=[32m"打开陈旧设备"[39m
+              [33mdisabled[39m=[32m""[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0m打开陈旧设备[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33maria-controls[39m=[32m"_r_l_"[39m
+              [33maria-expanded[39m=[32m"false"[39m
+              [33maria-label[39m=[32m"查看陈旧设备操作历史"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0m操作历史[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</article>[39m
+      [36m</div>[39m
+      [36m<fieldset[39m
+        [33mclass[39m=[32m"mt-5"[39m
+      [36m>[39m
+        [36m<section[39m
+          [33maria-busy[39m=[32m"false"[39m
+          [33maria-label[39m=[32m"批量操作"[39m
+          [33mclass[39m=[32m"rounded-card border border-line bg-surface p-5"[39m
+        [36m>[39m
+          [36m<header>[39m
+            [36m<h2[39m
+              [33mclass[39m=[32m"font-semibold"[39m
+            [36m>[39m
+              [0m批量操作[0m
+            [36m</h2>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"mt-1 text-sm text-muted"[39m
+            [36m>[39m
+              [0m目标在提交时冻结，单批最多 20 台。[0m
+            [36m</p>[39m
+          [36m</header>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-3 grid gap-2"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"flex items-center gap-2 text-sm"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33maria-label[39m=[32m"可用设备"[39m
+                [33mdisabled[39m=[32m""[39m
+                [33mid[39m=[32m"bulk-a"[39m
+                [33mtype[39m=[32m"checkbox"[39m
+              [36m/>[39m
+              [0m可用设备[0m
+              [0m · 修订 [0m
+              [0m1[0m
+              [0m · 待核实或不可操作[0m
+            [36m</label>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"flex items-center gap-2 text-sm"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33maria-label[39m=[32m"控制设备"[39m
+                [33mdisabled[39m=[32m""[39m
+                [33mid[39m=[32m"bulk-b"[39m
+                [33mtype[39m=[32m"checkbox"[39m
+              [36m/>[39m
+              [0m控制设备[0m
+              [0m · 修订 [0m
+              [0m1[0m
+              [0m · 待核实或不可操作[0m
+            [36m</label>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"flex items-center gap-2 text-sm"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33maria-label[39m=[32m"陈旧设备"[39m
+                [33mdisabled[39m=[32m""[39m
+                [33mid[39m=[32m"bulk-c"[39m
+                [33mtype[39m=[32m"checkbox"[39m
+              [36m/>[39m
+              [0m陈旧设备[0m
+              [0m · 修订 [0m
+              [0m1[0m
+              [0m · 待核实或不可操作[0m
+            [36m</label>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-3 flex flex-wrap items-center gap-2"[39m
+          [36m>[39m
+            [36m<select[39m
+              [33maria-label[39m=[32m"批量动作"[39m
+            [36m>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"start"[39m
+              [36m>[39m
+                [0m启动[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"stop"[39m
+              [36m>[39m
+                [0m停止[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"restart"[39m
+              [36m>[39m
+                [0m重启[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"delete"[39m
+              [36m>[39m
+                [0m删除[0m
+              [36m</option>[39m
+            [36m</select>[39m
+            [36m<button[39m
+              [33mdisabled[39m=[32m""[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0m提交批量操作[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+      [36m</fieldset>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../../../../../../Documents/projects/autoflow/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../../../../../Documents/projects/autoflow/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/renderer/domains/android/tests/ManagementOverview.test.tsx:334:30
+    332|   const api = { devices: async () => ({ items, total: 3, nextCursor: n…
+    333|   render(<QueryClientProvider client={new QueryClient()}><ManagementOv…
+    334|   expect(within(await screen.findByRole('region', { name: '可用设备分组' }))…
+       |                              ^
+    335|   expect(within(screen.getByRole('region', { name: '使用中设备分组' })).getBy…
+    336|   expect(within(screen.getByRole('region', { name: '启动与停止设备分组' })).get…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/renderer/domains/android/tests/ManagementOverview.test.tsx > puts secondary operations behind an accessible device disclosure
+Error: expect(element).not.toBeInTheDocument()
+
+expected document not to contain element, found <button
+  type="button"
+>
+  停止设备
+</button> instead
+ ❯ src/renderer/domains/android/tests/ManagementOverview.test.tsx:348:62
+    346|   render(<QueryClientProvider client={new QueryClient()}><ManagementOv…
+    347|   expect(await screen.findByText('菜单设备')).toBeVisible()
+    348|   expect(screen.queryByRole('button', { name: '停止设备' })).not.toBeInThe…
+       |                                                              ^
+    349|   await userEvent.click(screen.getByLabelText('菜单设备更多操作'))
+    350|   expect(screen.getByRole('button', { name: '停止设备' })).toBeVisible()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 21 passed (23)
+   Start at  13:07:30
+   Duration  2.83s (transform 199ms, setup 156ms, import 193ms, tests 1.86s, environment 514ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/.codex/worktrees/android-prototype-fidelity/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/.codex/worktrees/android-prototype-fidelity/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/android/tests/ManagementOverview.test.tsx
