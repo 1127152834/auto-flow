@@ -26,7 +26,7 @@
 
 ## Review Focus
 
-1. **开启 WAL 后按文件复制数据库**：未 checkpoint 的写入只在 `-wal` 文件里，直接复制主文件会丢数据。任何复制 / 备份数据库文件的代码与测试必须先调用 `checkpoint_wal`（Task 1 修正了 `test_identical_ids_in_two_workspaces_do_not_share_stop_or_claim_gate`，并要求执行者 grep 全仓库确认没有其他复制点）。
+1. **开启 WAL 后按文件复制数据库**：未 checkpoint 的写入只在 `-wal` 文件里，直接复制主文件会丢数据。仅在写入已静止、复制期间也不会恢复的前提下，确认 `checkpoint_wal` 成功后才能复制主文件；不能静止的在线备份使用 SQLite backup API。checkpoint 返回 busy 必须报错，不能继续复制（Task 1 修正了 `test_identical_ids_in_two_workspaces_do_not_share_stop_or_claim_gate`，并要求执行者排查全仓库复制调用及其上下文）。
 2. **运行中调低并发**：`set_capacity` 只影响之后的派发，不停止已有 owner（Task 7 的 `test_capacity_accepts_machine_sized_limits_and_rejects_invalid_values` 与契约测试覆盖）。
 3. **人工继续时名额已满**：继续直接恢复，暂时超出执行名额，期间不派发新任务（Task 7 的 `test_waiting_manual_frees_its_execution_slot_but_keeps_its_live_browser`）。
 4. **失败原因里含凭据**：节点使用凭据派生值时原因为"节点执行失败（错误包含凭据派生值）"（既有测试 `tests/unit/workflows/test_executor_registry.py::test_runtime_propagates_sensitive_values_without_persisting_them_in_events` 固定该行为；Task 2 不改变 `_reported_result`）。
@@ -63,8 +63,8 @@ def test_every_connection_uses_wal_normal_sync_and_busy_timeout(tmp_path):
     migrate_database(path)
     factory = create_session_factory(path)
     try:
-        for _ in range(2):  # a second pooled connection gets the same settings
-            with factory() as session:
+        with factory() as first, factory() as second:
+            for session in (first, second):  # hold both so the pool must open two connections
                 assert session.execute(text("PRAGMA journal_mode")).scalar() == "wal"
                 assert session.execute(text("PRAGMA synchronous")).scalar() == 1
                 assert session.execute(text("PRAGMA busy_timeout")).scalar() == 5000
@@ -80,6 +80,8 @@ def test_every_connection_uses_wal_normal_sync_and_busy_timeout(tmp_path):
 
 Run: `uv run --directory apps/backend pytest -q tests/unit/test_sqlite_session.py`
 Expected: FAIL，`ImportError: cannot import name 'checkpoint_wal'`。
+
+补充必须先失败的反例：真实第二连接持有旧读快照、第一连接提交新行后，`wal_checkpoint(TRUNCATE)` 可返回 `(1, 1, 0)` 而不抛 SQLite 异常；helper 必须报错并阻止后续主文件复制。释放读事务后 checkpoint 成功，再复制并从新数据库核验新行存在。测试仅将 busy_timeout 缩短以避免等待五秒。停机时失败可以记录告警后继续 dispose，但不能静默吞掉，也不能删除仍有效的 WAL。
 
 - [ ] **Step 3: 实现连接配置与 checkpoint**
 
@@ -111,9 +113,11 @@ diff --git a/apps/backend/src/autoflow/infrastructure/database/session.py b/apps
 +
 +
 +def checkpoint_wal(factory) -> None:
-+    """Fold the WAL back into the main file, e.g. before shutdown or a workspace copy."""
++    """Checkpoint a quiescent database; callers must keep writes stopped during a copy."""
 +    with factory() as session:
-+        session.execute(text("PRAGMA wal_checkpoint(TRUNCATE)"))
++        busy, _, _ = session.execute(text("PRAGMA wal_checkpoint(TRUNCATE)")).one()
++        if busy:
++            raise RuntimeError("SQLite WAL checkpoint is busy")
 +
 +
  def create_session_factory(path: Path):
@@ -183,7 +187,7 @@ diff --git a/apps/backend/src/autoflow/bootstrap/app.py b/apps/backend/src/autof
 --- a/apps/backend/src/autoflow/bootstrap/app.py
 +++ b/apps/backend/src/autoflow/bootstrap/app.py
 @@ -1,3 +1,4 @@
-+import contextlib
++import logging
  import secrets
  from concurrent.futures import ThreadPoolExecutor
  from functools import partial
@@ -210,8 +214,10 @@ diff --git a/apps/backend/src/autoflow/bootstrap/app.py b/apps/backend/src/autof
                  if isawaitable(closing):
                      await closing
              finally:
-+                with contextlib.suppress(Exception):
++                try:
 +                    checkpoint_wal(session_factory)
++                except Exception:
++                    logging.getLogger(__name__).warning("SQLite WAL checkpoint did not complete at shutdown")
                  session_factory.dispose()
  
      app.router.add_event_handler("shutdown", shutdown)
@@ -241,15 +247,15 @@ diff --git a/apps/backend/tests/integration/test_project_data_scheduler.py b/app
      try:
 ```
 
-Run: `git grep -nE "copy2|copyfile|copytree" -- apps/backend | grep -iE "sqlite|database|\.db"`
-Expected: 除上面这处测试外没有复制数据库文件的代码；若有，同样先调用 `checkpoint_wal(factory)`。
+Run: `rg -n 'copy2|copyfile|copytree|\.backup\(|read_bytes\(|write_bytes\(' apps/backend scripts`
+逐个检查可能复制数据库的调用上下文，不能只过滤同一行的 sqlite/database 字样。浏览器 Profile 中的数据库与应用主数据库分开判断；不对所有 copytree 机械添加主库 checkpoint。复制主库前必须停止写入并保持到复制结束；活跃数据库改用 backup API。当前调度测试在尚未 tick 的静止 fixture 上复制，不代表生产在线备份已实现。
 
 - [ ] **Step 6: 运行**
 
 Run: `uv run --directory apps/backend pytest -q tests/unit/test_sqlite_session.py tests/integration/test_project_data_scheduler.py tests/contract/test_settings_dashboard.py`
 Expected: 全部通过。
 Run: `uv run --directory apps/backend python -m tests.benchmarks.bench_event_commit`
-Expected: `event_commit_ms_p50` 相对 `.ai/knowledge/2026-09-30-remediation-baseline.md` 中的 M0 基线下降 ≥ 50%（原型：4.1 → 1.4 毫秒）。把数字追加到该文件。
+验收目标仍为 `event_commit_ms_p50` 相对 M0 下降 ≥ 50%；以 `.ai/knowledge/2026-09-30-remediation-baseline.md` 的干净源码、同环境五样本基线比较（当前本机中位数1.177ms），本阶段也取五样本并检查manifest维度。未达到就如实记录未达到，不沿用旧原型4.1→1.4ms充当证据。把实际数字追加到该文件。
 
 - [ ] **Step 7: 提交**
 
