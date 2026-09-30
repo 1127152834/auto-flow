@@ -235,7 +235,7 @@ git commit -m "test(bench): 领取耗时基准与统一结果格式"
 - Consumes: `report.Unit`、`report.write_report`（Task 1）。
 - Produces: `bench_runtime_overhead.run(iterations: int) -> dict[str, tuple[float | None, Unit]]`（键：`nodes_executed`、`framework_ms_per_node`、`events_per_node`）；`bench_runtime_overhead.g4_document(iterations: int) -> dict`。
 
-- [ ] **Step 1: 写失败的测试**（追加到 `test_offline_benchmarks.py`，并在文件顶部 import 中加入 `bench_runtime_overhead`）
+- [x] **Step 1: 写失败的测试**（追加到 `test_offline_benchmarks.py`，并在文件顶部 import 中加入 `bench_runtime_overhead`）
 
 ```python
 def test_runtime_overhead_benchmark_records_current_event_volume():
@@ -245,12 +245,12 @@ def test_runtime_overhead_benchmark_records_current_event_volume():
     assert metrics["events_per_node"][0] >= 4  # AC0-02: records the current volume (≈5.0)
 ```
 
-- [ ] **Step 2: 运行，确认失败**
+- [x] **Step 2: 运行，确认失败**
 
 Run: `uv run --directory apps/backend pytest -q -m benchmark tests/benchmarks/test_offline_benchmarks.py -k runtime_overhead`
 Expected: FAIL，`ImportError: cannot import name 'bench_runtime_overhead'`。
 
-- [ ] **Step 3: 实现**
+- [x] **Step 3: 实现**
 
 ```python
 """Runtime framework overhead benchmark, golden scenario G4 (remediation M0, R0-02).
@@ -323,14 +323,14 @@ if __name__ == "__main__":
     main()
 ```
 
-- [ ] **Step 4: 运行**
+- [x] **Step 4: 运行**
 
 Run: `uv run --directory apps/backend pytest -q -m benchmark tests/benchmarks/test_offline_benchmarks.py`
 Expected: 3 passed。
 Run: `uv run --directory apps/backend python -m tests.benchmarks.bench_runtime_overhead`
 Expected: `events_per_node≈5.0`，`framework_ms_per_node` 约 0.2 毫秒量级。
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```bash
 git add apps/backend/tests/benchmarks/bench_runtime_overhead.py apps/backend/tests/benchmarks/test_offline_benchmarks.py

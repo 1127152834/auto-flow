@@ -127,3 +127,29 @@ def test_uncommitted_source_is_identified_and_not_comparable(monkeypatch, tmp_pa
     metadata = json.loads(path.with_suffix(".manifest.json").read_text())
     assert metadata["sourceDirty"] is True
     assert metadata["comparable"] is False
+
+
+def test_runtime_overhead_benchmark_records_actual_completed_nodes():
+    from . import bench_runtime_overhead
+
+    metrics = bench_runtime_overhead.run(50)
+    assert metrics["nodes_executed"] == (250, "count")
+    assert metrics["framework_ms_per_node"][0] > 0
+    assert metrics["events_per_node"][0] >= 4
+
+
+def test_runtime_overhead_rejects_successful_but_empty_workload(monkeypatch):
+    from . import bench_runtime_overhead
+
+    monkeypatch.setattr(
+        bench_runtime_overhead, "g4_document", lambda _: {"nodes": [], "edges": []}
+    )
+    with pytest.raises(RuntimeError):
+        bench_runtime_overhead.run(2)
+
+
+def test_runtime_overhead_rejects_zero_iterations():
+    from . import bench_runtime_overhead
+
+    with pytest.raises(ValueError):
+        bench_runtime_overhead.run(0)
