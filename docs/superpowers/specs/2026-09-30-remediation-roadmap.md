@@ -1,7 +1,7 @@
 # AutoFlow 整改里程碑总纲
 
 - 日期：2026-09-30
-- 状态：proposed，待用户审批。本文件及各里程碑规格属于架构级改动，按 `AGENTS.md` 须经用户确认后才进入实现。
+- 状态：approved（2026-09-30 用户确认第 6 节全部决定）。M2–M6 的步骤级计划细化后仍需用户确认再执行。
 - 上位方案：[AutoFlow 整改方案](2026-09-30-autoflow-remediation-proposal.md)
 - 评审依据：[系统设计评审](../../qa/2026-09-30-remediation-reviews/system-design-review.md)、[前端交互评审](../../qa/2026-09-30-remediation-reviews/frontend-interaction-review.md)
 - 基线提交：`ea2cc5b`（分支 `codex/architecture-baseline`）
@@ -63,12 +63,12 @@ flowchart LR
 | 运行时可增删改字段 | `domain/project_data/capabilities.py` 的 addField/modifyField/deleteField | 表结构只在设计期修改 | M2 |
 | 指纹种子属于浏览器配置 | `application/profiles/service.py:30` | 种子属于身份，全局唯一 | M4 |
 
-## 6. 需要用户确认的决定
+## 6. 用户已确认的决定（2026-09-30）
 
-1. 是否批准以上替代关系（第 5 节）。
-2. M0 中是否清理 git 历史里的约 3,200 张 QA 截图（会改写历史，需要所有协作者重新克隆）；默认只阻止新增，不改写历史。
-3. M4 身份迁移时，多个环境共用同一种子的情况是否默认保留原种子（推荐保留，由用户逐个决定是否重新生成）。
-4. 冻结范围（Android/iOS 模拟器管理、桌面触发器、Google Sheets 双向同步扩展）是否同意。
+1. 同意第 5 节全部替代关系。各里程碑合并时把对应旧决定标记为 superseded。
+2. **清除** git 历史中的 QA 截图（约 3,200 张 PNG）。作为 M0 的独立任务执行（见 M0 计划 Task 11）：先完整备份仓库（`git clone --mirror`），用 `git filter-repo` 删除历史中的 `docs/**/*.png`，强制推送前通知所有协作者，推送后所有人重新克隆。这是破坏性操作，执行前仍需用户在当时再次确认推送。
+3. 身份迁移时，共用同一种子的环境**默认保留原种子**，只列清单由用户逐个决定是否重新生成（M4）。
+4. **同意**冻结范围：Android / iOS 模拟器管理、桌面触发器、Google Sheets 双向同步扩展在整改期间不再投入（M6 移入实验功能）。
 
 ## 7. 分支与交付约定
 

@@ -1569,6 +1569,44 @@ git commit -m "docs: 整改期硬性规则、目录职责与 M0 基线记录"
 
 ---
 
+### Task 11: 清除 git 历史中的 QA 截图（用户已批准，破坏性）
+
+**前置：** Task 1–9 已合并到主线，Task 7 的守门检查已在 CI 阻止新增 PNG。
+
+- [ ] **Step 1: 备份**
+
+Run: `git clone --mirror https://github.com/1127152834/auto-flow.git ../auto-flow-backup-$(date +%Y%m%d).git`
+Expected: 备份仓库完整（`git -C ../auto-flow-backup-*.git count-objects -vH` 有输出）。
+
+- [ ] **Step 2: 在全新镜像克隆上改写**
+
+```bash
+git clone --mirror https://github.com/1127152834/auto-flow.git ../auto-flow-rewrite.git
+cd ../auto-flow-rewrite.git
+pip install git-filter-repo
+git filter-repo --path-glob 'docs/**/*.png' --path-glob 'docs/*.png' --invert-paths
+git count-objects -vH
+```
+Expected: `size-pack` 明显下降；`git log --all -- 'docs/**/*.png'` 无输出。
+
+- [ ] **Step 3: 验证改写后的仓库**
+
+在改写后的镜像上 `git clone` 出工作副本，运行 `npm ci && npm test` 与 `uv run --directory apps/backend pytest -q`，结果与改写前一致（引用了截图路径的 Markdown 链接会失效，这是预期；`docs` 下的报告保留文字与链接说明）。
+
+- [ ] **Step 4: 推送前再次确认**
+
+停下来向用户报告：备份位置、改写前后仓库大小、验证结果、需要重新克隆的分支列表。**得到用户当时的明确同意后**再执行：
+```bash
+git push --force --mirror origin
+```
+然后通知所有协作者删除旧克隆并重新克隆；打开中的 PR 需要基于新历史重建。
+
+- [ ] **Step 5: 记录**
+
+在 `.ai/decisions/2026-09-30-remediation-program.md` 记录执行日期、改写前后大小、备份位置。
+
+---
+
 ### Task 10: 里程碑验收
 
 - [ ] **Step 1: 全量检查**
