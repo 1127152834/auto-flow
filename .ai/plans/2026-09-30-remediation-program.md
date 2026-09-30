@@ -12,4 +12,6 @@
 | M5 体验重构 | 5A 待 M1 后细化 | docs/superpowers/specs/2026-09-30-remediation-m5-experience.md | docs/superpowers/plans/2026-09-30-remediation-m5-experience.md | 任务级 |
 | M6 收敛与清理 | 待 M4、M5 后细化 | docs/superpowers/specs/2026-09-30-remediation-m6-convergence.md | docs/superpowers/plans/2026-09-30-remediation-m6-convergence.md | 任务级 |
 
+后续计划（独立于整改、依赖其成果，状态 proposed）：执行环境扩展 E1–E6 与 iOS 决定——规格 docs/superpowers/specs/2026-09-30-execution-environments-design.md，计划 docs/superpowers/plans/2026-09-30-execution-environments-milestones.md，决定 .ai/decisions/2026-09-30-execution-environments.md。E1 在 M1 后、E2 在 M4 后、E3–E5 在 M6 后细化。
+
 总纲：docs/superpowers/specs/2026-09-30-remediation-roadmap.md。上位方案：docs/superpowers/specs/2026-09-30-autoflow-remediation-proposal.md。评审：docs/qa/2026-09-30-remediation-reviews/。
