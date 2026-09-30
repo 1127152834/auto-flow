@@ -1282,6 +1282,8 @@ diff --git a/apps/backend/tests/integration/test_workflow_dispatch.py b/apps/bac
 +    finally: await dispatcher.shutdown()
 ```
 
+补充真实调度循环测试（同属Step 1）：在 `test_project_capacity_counts.py` 使用真实 `ProjectBatchScheduler.startup()` 和派发器，保留受控worker。确认调度循环已因容量满而等待，再分别触发 A 进入人工等待、执行容量从1提高到2；B 必须由订阅唤醒后自动派发。测试不得手动调用 `tick()`、`wake()` 或 `dispatch(B)`，用worker启动事件在5秒内完成作为轮询兜底30秒之前被唤醒的证据。仍断言A的存活租约不释放、调低容量不停止已有owner、无新增超额派发。失败必须指向缺失的唤醒链，不能仅检查计数或setter赋值。Task8的PUT契约再覆盖设置服务应用后的同一唤醒链。
+
 - [ ] **Step 2: 运行，确认失败**
 
 Run: `uv run --directory apps/backend pytest -q tests/integration/test_project_capacity_counts.py tests/integration/test_workflow_dispatch.py`
@@ -1359,6 +1361,7 @@ diff --git a/apps/backend/src/autoflow/application/workflows/dispatcher.py b/app
 +    def set_capacity(self, capacity: int, live_capacity: int | None = None) -> None:
 +        """Apply a new limit; lowering it never stops runs that already own a slot."""
 +        self._capacity, self._live_capacity = validate_capacity(capacity, live_capacity)
++        self._wake_idle_listeners()
 +
      def subscribe_idle(self, listener: Callable[[], None]) -> Callable[[], None]:
          self._idle_listeners.add(listener)
@@ -1388,6 +1391,7 @@ diff --git a/apps/backend/src/autoflow/application/workflows/dispatcher.py b/app
              raise WorkflowRuntimeError('EXECUTION_GENERATION_REVOKED', '执行代次已失效')
          self._transition(run, 'waiting_manual')
 +        owner.waiting_manual = True
++        self._wake_idle_listeners()
          if owner.automatic_timeout is not None:
              deadline = owner.automatic_timeout.when()
              owner.automatic_remaining = max(0, deadline - asyncio.get_running_loop().time()) if deadline is not None else None
@@ -2994,7 +2998,7 @@ Expected: 全部通过。
 | AC1-04 | `test_handled_failure_semantics.py`、`test_project_graph_failure_reason.py` |
 | AC1-05 | `execution-semantics.test.tsx` |
 | AC1-06 | `tests/contract/test_execution_settings.py` |
-| AC1-07 | `test_waiting_manual_frees_its_execution_slot_but_keeps_its_live_browser`、`test_project_capacity_counts.py` |
+| AC1-07 | `test_waiting_manual_frees_its_execution_slot_but_keeps_its_live_browser`、`test_project_capacity_counts.py` 的真实调度循环唤醒用例；Task8 PUT提高容量后自动派发 |
 | AC1-08 | `test_memory_pressure_pauses_new_dispatch_and_rewakes_the_scheduler` |
 | AC1-09 | `bench_claim_loop_lag`（1 万行） |
 | AC1-10 | `bench_event_commit` 对比 M0 |
