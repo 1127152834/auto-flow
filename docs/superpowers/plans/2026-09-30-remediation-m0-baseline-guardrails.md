@@ -349,7 +349,7 @@ git commit -m "test(bench): G4 长循环执行开销与每节点事件数基准"
 - Consumes: `tests.fixtures.workflow_runs.create_queued_run(factory) -> (CoreRun, content)`；`SqlAlchemyWorkflowRuntimeRepository(session).append_event(dict)`。
 - Produces: `bench_event_commit.run(events: int) -> dict[str, tuple[float | None, Unit]]`（键：`events`、`event_commit_ms_p50`、`event_commit_ms_p99`）。M1 用它验证 WAL 效果。
 
-- [ ] **Step 1: 写失败的测试**（import 中加入 `bench_event_commit`）
+- [x] **Step 1: 写失败的测试**（import 中加入 `bench_event_commit`）
 
 ```python
 def test_event_commit_benchmark_reports_percentiles():
@@ -358,12 +358,12 @@ def test_event_commit_benchmark_reports_percentiles():
     assert metrics["event_commit_ms_p99"][0] >= metrics["event_commit_ms_p50"][0] > 0
 ```
 
-- [ ] **Step 2: 运行，确认失败**
+- [x] **Step 2: 运行，确认失败**
 
 Run: `uv run --directory apps/backend pytest -q -m benchmark tests/benchmarks/test_offline_benchmarks.py -k event_commit`
 Expected: FAIL，`ImportError`。
 
-- [ ] **Step 3: 实现**
+- [x] **Step 3: 实现**
 
 ```python
 """Run-event commit latency benchmark (remediation M0, R0-03).
@@ -429,14 +429,14 @@ if __name__ == "__main__":
     main()
 ```
 
-- [ ] **Step 4: 运行**
+- [x] **Step 4: 运行**
 
 Run: `uv run --directory apps/backend pytest -q -m benchmark tests/benchmarks/test_offline_benchmarks.py`
 Expected: 4 passed。
 Run: `uv run --directory apps/backend python -m tests.benchmarks.bench_event_commit`
 Expected: p50 数毫秒量级（原型 Linux 4.1 毫秒）。
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```bash
 git add apps/backend/tests/benchmarks/bench_event_commit.py apps/backend/tests/benchmarks/test_offline_benchmarks.py

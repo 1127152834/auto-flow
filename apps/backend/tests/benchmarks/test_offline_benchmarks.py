@@ -153,3 +153,18 @@ def test_runtime_overhead_rejects_zero_iterations():
 
     with pytest.raises(ValueError):
         bench_runtime_overhead.run(0)
+
+
+def test_event_commit_benchmark_reports_real_commit_percentiles():
+    from . import bench_event_commit
+
+    metrics = bench_event_commit.run(50)
+    assert metrics["events"] == (50, "count")
+    assert metrics["event_commit_ms_p99"][0] >= metrics["event_commit_ms_p50"][0] > 0
+
+
+def test_event_commit_rejects_empty_sample():
+    from . import bench_event_commit
+
+    with pytest.raises(ValueError):
+        bench_event_commit.run(0)

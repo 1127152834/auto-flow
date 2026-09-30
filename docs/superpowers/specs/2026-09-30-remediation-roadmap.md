@@ -1,7 +1,7 @@
 # AutoFlow 整改里程碑总纲
 
 - 日期：2026-09-30；修订：r2（同日评审后修订）
-- 状态：confirmed（用户已确认整改方向及本轮文档修订）；实施尚未开始。M2–M6 保持任务级，步骤级细化并审查后继续实施，无需逐阶段批准。
+- 状态：confirmed（用户已确认整改方向及本轮文档修订）；M0实施中，其他阶段尚未开始。M2–M6 保持任务级，步骤级细化并审查后继续实施，无需逐阶段批准。
 - 来源：用户要求按 M0–M6 评审意见修订；文档基线 `d2c89aeb`，被评审业务源码基线 `ea2cc5b`。
 - 上位方案：[AutoFlow 整改方案](2026-09-30-autoflow-remediation-proposal.md)
 - 评审依据：[系统设计评审](../../qa/2026-09-30-remediation-reviews/system-design-review.md)、[前端交互评审](../../qa/2026-09-30-remediation-reviews/frontend-interaction-review.md)。原评审是历史观察，不替代本轮契约修订或真实平台验收。
