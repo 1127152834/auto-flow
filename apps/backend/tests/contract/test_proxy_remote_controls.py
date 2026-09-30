@@ -428,7 +428,7 @@ def workflow_fixture(remote):
     service = WorkflowProxyService(controls, controls.usage, Probe())
     config = {'nodeId': 'node', 'executionId': 'visit', 'action': 'change_ip', 'target': 'specified',
               'proxyId': proxy['id'], 'retryIntervalSeconds': 0.001, 'maxAttempts': 5,
-              'confirmationTimeoutSeconds': 0.05, 'generation': 1}
+              'confirmationTimeoutSeconds': 1, 'generation': 1}
 
     def call(method, **values):
         return client.portal.call(service.call, 'run', {**config, 'method': method, **values})
@@ -549,6 +549,9 @@ def test_success_confirmed_between_rounds_is_returned_without_second_post(remote
         if provider.calls and not waited:
             waited = True
             await asyncio.Event().wait()
+        if provider.calls:
+            # A normal readback need not finish inside a 50 ms scheduler slice.
+            await asyncio.sleep(0.1)
         return await original_probe(projection)
     service.probe.probe = probe
     call('prepare')

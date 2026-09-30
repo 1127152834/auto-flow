@@ -60,7 +60,9 @@ def manager(tmp_path: Path, mode: str = "normal"):
     instance = ProjectWorkflowWorkerManager(
         tmp_path / 'temp', command=(sys.executable, '-c', CHILD),
         worker_env={'PROOF': str(tmp_path / 'proof'), 'MODE': mode},
-        start_timeout=2, termination_timeout=.1,
+        # Protocol/lifetime tests use a bounded startup budget and the production
+        # exit grace; cold imports and interpreter exit are not timing assertions.
+        start_timeout=10,
     )
     return instance, executable
 
@@ -269,15 +271,17 @@ async def test_failed_event_commit_never_acknowledges_or_runs_next_action(tmp_pa
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('mode', ['wrong-run', 'boolean-identity', 'float-version'])
-async def test_wrong_event_owner_is_rejected_before_callback(tmp_path, mode):
+@pytest.mark.parametrize('start_delay', [0, 2.2])
+async def test_wrong_event_owner_is_rejected_before_callback(tmp_path, mode, start_delay):
     instance, executable = manager(tmp_path, mode)
+    instance._command = (sys.executable, '-c', f'import time; time.sleep({start_delay!r})\n' + CHILD)
     events = []
 
     async def persist(event):
         events.append(event)
 
     with pytest.raises(WorkflowWorkerError) as caught:
-        await asyncio.wait_for(start(instance, executable, persist), 5)
+        await asyncio.wait_for(start(instance, executable, persist), 15)
     assert caught.value.code == 'WORKFLOW_WORKER_PROTOCOL_INVALID'
     assert events == []
     assert not (tmp_path / 'proof').exists()
@@ -599,9 +603,11 @@ async def test_windows_cleanup_confirms_exit_after_kill_access_denied(tmp_path, 
 
 
 @pytest.mark.asyncio
-async def test_two_actual_workers_keep_ack_cancellation_and_cleanup_owned_by_run(tmp_path):
+@pytest.mark.parametrize('exit_delay', [0, 0.2])
+async def test_two_actual_workers_keep_ack_cancellation_and_cleanup_owned_by_run(tmp_path, exit_delay):
     from uuid import uuid4
     instance, executable = manager(tmp_path)
+    instance._command = (sys.executable, '-c', CHILD + f'\nimport time; time.sleep({exit_delay!r})\n')
     instance._capacity = 2
     identities = [str(uuid4()), str(uuid4())]
     gates = {identity: asyncio.Event() for identity in identities}
