@@ -82,11 +82,12 @@ def test_ai_scraper_outputs_match_frozen_source(
     env = dict(os.environ)
     env["PYTHONPATH"] = str(FROZEN_BACKEND)
     completed = subprocess.run(
-        [sys.executable, str(FROZEN_HARNESS)],
+        [sys.executable, "-X", "utf8", str(FROZEN_HARNESS)],
         input=json.dumps({"type": module_type, "config": source_config}, ensure_ascii=False),
         check=True,
         capture_output=True,
         text=True,
+        encoding="utf-8",
         env=env,
     )
     source = json.loads(completed.stdout.splitlines()[-1])

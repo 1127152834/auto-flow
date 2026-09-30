@@ -65,3 +65,5 @@ M1测量方案实跑预检（2026-09-30，confirmed）：等待CI期间，从计
 M1领取热点定位（2026-09-30，confirmed诊断）：在55274af2对现有真实万行领取剖析，发现10,000次Candidate构造、330,032次递归冻结及46,836次Python比较回调；记录键显式排序也走通用回调路径。已记录原始来源与计时不可比较边界，为M1未达标项提供定位方向；未据此修改调度或提前实施M3。当前候选1219e824的Windows已进入mypy，ARM完整回归运行中；继续保留原远端任务。
 
 M0首份CI构件核验（2026-09-30，confirmed）：e27b1814 ARM job110133876955已通过后端回归/离线基准/守门/上传；下载构件11132310685，SHA256与GitHub一致，核验3指标+3manifest及源码身份。全部dirty=true且comparable=false，不能算性能基线。工作流HTTP预检写入的artifacts/pm9目录原未忽略；隔离Git仓库RED复现报告使源码变脏，新增该精确生成目录忽略后GREEN，真正source.py仍可见。不改comparable判定，不追认旧数据；当前1219e824全矩阵仍在运行，本次忽略规则及证据只本地提交。
+
+Windows完整回归编码修复（2026-09-30，confirmed本地、原生复验pending）：1219e824的job110139691053在完整回归20 failed/1750 passed/1 skipped/24 deselected（817.51s）终止；其中18项B5差分失败为父进程中文JSON的CP1252编码或子进程中文输出。27个B5/B6调用统一复用B1–B4既有-X utf8与encoding=utf-8，required-fields fixture补显式UTF-8。验证码真实子进程在父CP1252/子C locale下先复现输入与输出两个RED，修复后中文空选择器失败和非空成功两场景GREEN；正常环境104 passed/1既有警告（25.34s），仅父CP1252故障注入84 passed（18.57s），Ruff/diff通过。首次全局C locale故障注入103 passed/1 failed：嵌套Python脚本source只传PYTHONPATH、target继承环境造成非对称输出，保留失败，不算通过。独立复审确认27文件逐字逆向还原等于HEAD、未改冻结源码/harness/断言或生产代码，无重要问题。Android平台相关1项失败另行处理；M0仍未验收。

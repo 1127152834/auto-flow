@@ -25,9 +25,10 @@ def source(payload: dict[str, Any]) -> dict[str, Any]:
     environment = os.environ.copy()
     environment["PYTHONPATH"] = str(ROOT / "reference" / "WebRPA" / "backend")
     completed = subprocess.run(
-        [sys.executable, str(HARNESS)],
+        [sys.executable, "-X", "utf8", str(HARNESS)],
         input=json.dumps(payload, ensure_ascii=False),
         text=True,
+        encoding="utf-8",
         capture_output=True,
         check=True,
         env=environment,

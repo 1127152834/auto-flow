@@ -82,7 +82,7 @@ def test_real_required_fields_route_preserves_frozen_rules_and_approved_scope(cl
             'field': 'target', 'default': 'current',
             'map': {'current': [], 'specified': ['proxyId']},
         }
-    assert data == json.loads(FIXTURE.read_text())
+    assert data == json.loads(FIXTURE.read_text(encoding="utf-8"))
     assert data['conditionalRequired']['wait'] == {
         'field': 'waitType', 'default': 'time',
         'map': {'time': [], 'selector': ['selector'], 'navigation': []},

@@ -22,9 +22,10 @@ def _source(payload: dict[str, Any], fake_bin: Path) -> dict[str, Any]:
     environment["PYTHONPATH"] = str(FROZEN_BACKEND)
     environment["PATH"] = os.pathsep.join((str(fake_bin), environment.get("PATH", "")))
     completed = subprocess.run(
-        [sys.executable, str(FROZEN_HARNESS)],
+        [sys.executable, "-X", "utf8", str(FROZEN_HARNESS)],
         input=json.dumps(payload, ensure_ascii=False),
         text=True,
+        encoding="utf-8",
         capture_output=True,
         check=True,
         env=environment,

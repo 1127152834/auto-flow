@@ -63,11 +63,12 @@ def test_ai_vision_act_coordinate_algorithm_matches_frozen_source() -> None:
     env = dict(os.environ)
     env["PYTHONPATH"] = str(FROZEN_BACKEND)
     completed = subprocess.run(
-        [sys.executable, str(FROZEN_HARNESS)],
+        [sys.executable, "-X", "utf8", str(FROZEN_HARNESS)],
         input=json.dumps({"config": source_config}, ensure_ascii=False),
         check=True,
         capture_output=True,
         text=True,
+        encoding="utf-8",
         env=env,
     )
     source = json.loads(completed.stdout.splitlines()[-1])

@@ -96,11 +96,12 @@ def _source(payload: dict[str, Any]) -> dict[str, Any]:
     environment = dict(os.environ)
     environment["PYTHONPATH"] = str(FROZEN_BACKEND)
     completed = subprocess.run(
-        [sys.executable, str(FROZEN_HARNESS)],
+        [sys.executable, "-X", "utf8", str(FROZEN_HARNESS)],
         input=json.dumps(payload, ensure_ascii=False),
         capture_output=True,
         check=True,
         text=True,
+        encoding="utf-8",
         env=environment,
     )
     return json.loads(completed.stdout.splitlines()[-1])
