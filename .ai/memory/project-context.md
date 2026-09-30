@@ -1,5 +1,7 @@
 # 项目上下文
 
+2026-09-30 M0实施（in_progress）：文档547a0785后在受管codex/remediation-m0工作树开始；报告与真实SQLite领取基准已实现，阶段验收未完成。来源与验证见 [实施记录](../sessions/2026-09-30-remediation-m0-implementation.md)。后续阶段按用户持续授权细化审查后自主实施，不再逐阶段确认。
+
 2026-09-30 整改方案 r2（confirmed 文档修订；实现未开始）：用户要求按评审修订 M0–M6。拆分 M2A/B/C、前置最小输出与后端预览契约、perIdentity 移至 M4、M5 先业务后视觉；M0 区分受控正确性基准与 M2B 原生吞吐基准。旧原型验证/固定排期声明已 superseded。当前阶段与依据见 [索引](../plans/2026-09-30-remediation-program.md) 和 [决策](../decisions/2026-09-30-remediation-program.md)。本次没有修改业务代码，也没有完成任何里程碑的运行验收。
 
 2026-09-30 Laya 退役（confirmed，来源：用户明确要求完全删除并舍弃该能力）：移除实验室唯一的 Laya 功能及其导航、HTTP/OpenAPI、运行时、专用依赖和打包配置；现有模型管理、OCR、语音与自动化能力保持原边界。旧实验记录和权重缓存不主动删除，不为此修改数据库迁移历史。旧 Laya 实施决策与计划标记 superseded，验证见 [退役记录](../sessions/2026-09-30-remove-laya.md)。

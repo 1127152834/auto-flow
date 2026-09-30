@@ -1,10 +1,10 @@
 # 整改计划索引
 
-日期：2026-09-30；修订：r2。状态：confirmed（方向和本轮文档修订），实施未开始。正式正文在 docs/superpowers；旧“已原型验证、M0 可直接执行”标记 superseded。M2–M6 在前置接口和测量完成后细化、审查，不预先展开整套实现。
+日期：2026-09-30；修订：r2。状态：confirmed（方向和本轮文档修订），M0 实施中，其余未开始。正式正文在 docs/superpowers；旧“已原型验证、M0 可直接执行”标记 superseded。M2–M6 在前置接口和测量完成后细化、审查，不预先展开整套实现。
 
 | 里程碑 | 规格 | 计划 | 粒度与依赖 |
 | --- | --- | --- | --- |
-| M0 基准与守门 | [规格](../../docs/superpowers/specs/2026-09-30-remediation-m0-baseline-guardrails.md) | [计划](../../docs/superpowers/plans/2026-09-30-remediation-m0-baseline-guardrails.md) | 步骤级；修订待实施 |
+| M0 基准与守门 | [规格](../../docs/superpowers/specs/2026-09-30-remediation-m0-baseline-guardrails.md) | [计划](../../docs/superpowers/plans/2026-09-30-remediation-m0-baseline-guardrails.md) | 步骤级；Task1已实现，阶段验收未完成 |
 | M1 止血 | [规格](../../docs/superpowers/specs/2026-09-30-remediation-m1-stop-silent-failures.md) | [计划](../../docs/superpowers/plans/2026-09-30-remediation-m1-stop-silent-failures.md) | 步骤级；M0 退出后 |
 | M2A/B/C 可靠性、数据契约、扩展 | [规格](../../docs/superpowers/specs/2026-09-30-remediation-m2-business-model-reliability.md) | [计划](../../docs/superpowers/plans/2026-09-30-remediation-m2-business-model-reliability.md) | 任务级；分切片细化审查 |
 | M3 吞吐与性能 | [规格](../../docs/superpowers/specs/2026-09-30-remediation-m3-throughput.md) | [计划](../../docs/superpowers/plans/2026-09-30-remediation-m3-throughput.md) | 任务级；M2A/B 与原生基准后 |

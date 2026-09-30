@@ -26,3 +26,6 @@ logs/
 .cursor/
 .codex/config.toml
 AGENTS.md.backup.*
+
+# Remediation benchmark measurements (local / CI artifacts)
+apps/backend/tests/benchmarks/results/

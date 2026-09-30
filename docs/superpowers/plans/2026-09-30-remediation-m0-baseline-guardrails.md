@@ -17,7 +17,7 @@
 - JSON 结构固定为 `{"schemaVersion":1,"commit":"<sha>","platform":"<os-arch>","metrics":{"<name>":{"value":<number|null>,"unit":"ms|count|per_node|ratio|rows_per_min|tasks_per_min"}}}`。
 - 黄金场景在未设置 `AUTOFLOW_TEST_CLOAKBROWSER` 时必须 skip，不能 fail。
 - pytest 标记 `benchmark`、`golden` 默认被排除（`addopts = -m "not benchmark and not golden"`）。
-- 分支：`remediation/m0-baseline-guardrails`；每个任务一次清晰提交；不写不存在的协作者或其他工具会话标记。
+- 分支：`codex/remediation-m0`；每个任务一次清晰提交；不写不存在的协作者或其他工具会话标记。
 - 所有命令从仓库根目录执行。后端命令形如 `uv run --directory apps/backend pytest ...`。
 
 ## Review Focus
@@ -43,7 +43,7 @@
 **Interfaces:**
 - Produces: `report.build_report(metrics: dict[str, tuple[float | None, Unit]]) -> dict`、`report.write_report(name: str, metrics, directory: Path = RESULTS_DIR, *, manifest: dict) -> Path`、`report.Unit = Literal["ms","count","per_node","ratio","rows_per_min","tasks_per_min"]`、`report.RESULTS_DIR`；`bench_claims.run(rows: int) -> dict[str, tuple[float | None, Unit]]`（键：`rows`、`claim_ms_key_order`、`claim_ms_field_order`）；`bench_claims._seed(directory: Path, rows: int)`（M1 Task 10 的主循环延迟基准会复用）。
 
-- [ ] **Step 1: 注册 pytest 标记并忽略结果目录**
+- [x] **Step 1: 注册 pytest 标记并忽略结果目录**
 
 `apps/backend/pyproject.toml`：
 
@@ -64,7 +64,7 @@ markers = [
 apps/backend/tests/benchmarks/results/
 ```
 
-- [ ] **Step 2: 写失败的测试**
+- [x] **Step 2: 写失败的测试**
 
 `apps/backend/tests/benchmarks/test_offline_benchmarks.py`：
 
@@ -102,12 +102,12 @@ def test_report_survives_missing_git(monkeypatch):
     assert build_report({"rows": (1, "count")})["commit"] == "unknown"
 ```
 
-- [ ] **Step 3: 运行，确认失败**
+- [x] **Step 3: 运行，确认失败**
 
 Run: `uv run --directory apps/backend pytest -q -m benchmark tests/benchmarks/test_offline_benchmarks.py`
 Expected: FAIL，`ImportError`（`bench_claims` / `report` 不存在）。
 
-- [ ] **Step 4: 实现 report.py**
+- [x] **Step 4: 实现 report.py**
 
 实现 `build_report(metrics)` 和 `write_report(name, metrics, directory=RESULTS_DIR, *, manifest)`；保留schemaVersion=1的数值报告结构，manifest为必填参数，同目录写独立JSON。`build_report` 对数值保留三位小数、None写null，终端摘要显示n/a，不能float(None)。git不可用时commit=unknown，不伪造版本。
 
@@ -118,7 +118,7 @@ Expected: FAIL，`ImportError`（`bench_claims` / `report` 不存在）。
 Task1–3及M1新增基准入口都从report导入build_manifest并传参；下面的入口调用同步更新。黄金场景额外传入真实browser_kernel、受控execution_profile、并发和故障种子。CI须上传manifest与数值报告；缺manifest的历史结果不参与倍数计算。
 
 
-- [ ] **Step 5: 实现 bench_claims.py**
+- [x] **Step 5: 实现 bench_claims.py**
 
 ```python
 """Claim latency benchmark (remediation M0, R0-01).
@@ -204,19 +204,19 @@ if __name__ == "__main__":
     main()
 ```
 
-- [ ] **Step 6: 运行测试与脚本**
+- [x] **Step 6: 运行测试与脚本**
 
 Run: `uv run --directory apps/backend pytest -q -m benchmark tests/benchmarks/test_offline_benchmarks.py`
 Expected: 2 passed。
 Run: `uv run --directory apps/backend python -m tests.benchmarks.bench_claims --rows 2000`
 Expected: 打印 `[claims-2000] claim_ms_field_order=…ms claim_ms_key_order=…ms rows=2000.0count -> …/results/claims-2000-….json`（原型：500 行约 70 毫秒）。
 
-- [ ] **Step 7: 确认默认测试不收集基准**
+- [x] **Step 7: 确认默认测试排除基准**
 
-Run: `uv run --directory apps/backend pytest -q tests/benchmarks`
-Expected: `2 deselected`，0 失败。
+Run: `uv run --directory apps/backend pytest -q tests/benchmarks tests/integration/test_project_input_groups.py`
+Expected: 既有输入选择测试通过，基准被排除；仅跑全被排除目录时pytest退出5，不算失败测试或验收通过。
 
-- [ ] **Step 8: 提交**
+- [x] **Step 8: 提交**
 
 ```bash
 git add apps/backend/pyproject.toml .gitignore apps/backend/tests/benchmarks/__init__.py apps/backend/tests/benchmarks/report.py apps/backend/tests/benchmarks/bench_claims.py apps/backend/tests/benchmarks/test_offline_benchmarks.py
