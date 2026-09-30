@@ -8,6 +8,28 @@
 - 验证：源码基线 `codex/architecture-baseline@d099c042`；直接观察运行中的 AutoFlow Electron（开发入口 `localhost:5174/#/android`），使用 CUA 截图并重新打开五张保存图片核对。不是打包应用验收。
 - 本轮没有修改业务代码、安装运行时、启动模拟器、操作 Google 账号或创建/删除设备。已有未提交内容保留。
 
+## 用户澄清：真实厂商行为与硬件能力（2026-09-30 追加）
+
+状态：confirmed（用户需求）；proposed（以下路线）；未知（具体应用兼容性与硬件桥接效果）。来源：用户在初版研究后明确要求真实厂商设置、权限和系统应用，尽可能接近真机，期望应用不能识别为模拟器，并支持定位、电话号码、摄像头及录音。
+
+这已经排除“仅品牌桌面/主题即可”的解释。下文初版把真实 OEM 是否必需列为待确认的问题已 superseded；Google 原生 + Play 的方案仍可作为一个设备类型，但不足以独立覆盖全部目标。用户尚未选择实体手机、云端物理手机或纯虚拟化，因此不将真机接入写成已批准架构。
+
+| 能力 | 模拟器/虚拟化边界 | 物理手机路线及仍需核实项 |
+| --- | --- | --- |
+| 真实 One UI/HyperOS | 需要实际系统框架与厂商组件适配；skin/Launcher 不足 | 对应机型原厂系统直接提供；版本和 Google 服务随机型、地区、固件而异。 |
+| 定位 | 官方模拟器支持位置/路线输入；Android 标准 mock location 可以被 `isMock()` 识别 | 使用手机实际所在地的定位；电脑位置、手机位置、指定测试位置必须分开。 |
+| 电话号码、短信、通话 | 模拟来电/短信仅是测试事件；填写号码不建立运营商服务 | 真实蜂窝业务需要有效通信服务以及对应 SIM/eSIM、基带链路；是否要求真实收短信/打电话待细化。 |
+| 摄像头、麦克风 | 官方模拟器可接宿主 webcam/mic；当前 ReDroid provider 是否具备同等桥接未验 | 应用可使用手机传感器；把电脑摄像头/麦克风送进远端手机又是独立的输入桥接能力。 |
+| 不被应用识别为模拟器 | 不能承诺任意应用不可识别；完整性检查不只读取品牌/型号 | 原厂系统物理设备更贴近目标，但应用仍可能限制调试、录屏、远程控制或设备状态，需要目标应用测试。 |
+
+新事实的官方来源：[模拟器扩展控制](https://developer.android.com/studio/run/emulator-extended-controls)、[摄像头输入参数](https://developer.android.com/studio/run/emulator-commandline)、[Android Location.isMock](https://developer.android.com/reference/android/location/Location)、[Play Integrity verdicts](https://developer.android.com/google/play/integrity/verdicts)。Android 13+ 的 MEETS_DEVICE_INTEGRITY 包括硬件支持的锁定 bootloader 与厂商认证系统证明；因此“任意自定义内核/ROM”和“原厂设备完整性”存在实际取舍，不能承诺随意组合。
+
+[scrcpy 摄像头文档](https://github.com/Genymobile/scrcpy/blob/master/doc/camera.md)和[音频文档](https://github.com/Genymobile/scrcpy/blob/master/doc/audio.md)说明的是从设备采集/传出。不能据此声称已实现电脑向手机内任意应用注入相机、麦克风，或双向运营商通话。受保护画面与通话音频也要按设备/应用验证。
+
+调整后的建议是研究统一 Android 设备工作台：物理设备承担原厂系统和真实通信/传感器；虚拟设备承担版本测试、可恢复环境和可扩展实例。所谓云手机要核实是物理设备托管还是 Android 容器，不能只凭 ARM 或云手机名称判定等同真机。此建议未实施。
+
+下一项架构决策：用户是否接受实际接入三星/小米/Pixel 物理手机（本地或托管），还是要求全部运行在电脑/服务器上且不使用实体手机。后续验收应按具体应用与实际动作定义，不使用“任何应用都无法识别”这种不可穷尽的验收承诺。
+
 ## 核心判断
 
 安卓模块已有管理和控制基础，用户感受到的简陋主要来自使用路径和界面组织，而不是所有底层能力都不存在。当前创建流程围绕环境配置、镜像摘要和运行时诊断展开，用户却希望得到一台能直接使用的安卓手机。安卓页面还使用独立的样式和控件，与产品共享设计系统产生偏差。最值得借鉴的组合是 Genymotion 的设备与镜像组织、MuMu/BlueStacks 的日常多开管理、scrcpy 的直接操控。默认 Google 原生风格、Google Play、最新或指定 Android 版本可作为主路径，但真实 One UI/HyperOS 和任意自定义内核不能被当成普通主题选项。建议先确定独立工具的完整使用闭环，再通过小规模验证评估官方 Android Emulator，保留已实现的 ReDroid 管理能力。

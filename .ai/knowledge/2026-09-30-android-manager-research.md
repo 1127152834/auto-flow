@@ -5,6 +5,7 @@
 - 来源/验证：当前 `codex/architecture-baseline@d099c042` 源码、正在运行的 Electron 开发入口、CUA 新截图及公开官方文档/仓库。五张截图已重新打开核对。
 - 用户本轮要求：先研究讨论 UI、布局、最新/指定系统版本、Google 服务、系统定制与直接操作，先成为可独立使用的模拟器管理工具，再接自动化；没有授权本轮直接重构业务实现。
 - 研究与来源：[完整报告](../../docs/research/android-manager-2026-09-30/README.md)。
+- 同日用户澄清（confirmed）：必须是真实厂商设置、权限与系统应用，尽可能接近真机；希望应用不识别为模拟器，并具备定位、电话号码、相机及录音能力。“仅外观即可”和“真实 OEM 是否必需仍待确认”的旧假设 superseded。是否接受实际手机硬件尚未确认；不可自动视为已授权真机/云手机架构。详细技术边界与官方来源见报告追加节。
 - 现状：安卓独立 CSS/PrototypeControls 与共享设计系统分离；创建页当前只有 Android 13 配置；镜像目录为零；运行环境页面报告 Lima 已停止；在线操控本轮 blocked。
 - 代码：现有生命周期、批量、备份、镜像和 scrcpy 控制应复用；当前 provider 限定 Mac ARM64。音频和自动剪贴板同步关闭，但已有 Unicode 文本注入。不能以代码存在宣称本轮真实设备验收通过。
 - 提议：借鉴 Genymotion 信息架构、MuMu/BlueStacks 多开体验；评估官方 Android Emulator 的 Google Play 主路径，保留 ReDroid。真实 One UI/HyperOS 优先评估真机；内核/厂商 ROM 定制另作研究。
