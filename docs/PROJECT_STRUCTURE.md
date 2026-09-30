@@ -160,6 +160,9 @@ reference/
 | `reference/vphone-aio/`、`reference/vphone-cli/` | 2026-09-13 用户授权克隆的 iOS 上游参考仓库，独立 Git、固定 commit；aio 镜像保留 LFS 指针，CLI 递归子模块已初始化并生成本机编译产物。源码不纳入主仓库。 |
 | `reference/vphone-demo/` | 用户授权的独立 Python + React iOS 实验：宿主诊断、设备管理、截图触控与步骤回放；当前实际 iOS 启动受宿主研究虚拟机策略阻塞，见 `VERIFICATION.md`。未接入正式工作流。 |
 | `scripts/` | 现有构建、类型生成、冒烟和仓库验证脚本。 |
+| `apps/backend/tests/benchmarks/` | 整改基准（领取、执行开销、事件提交），结果写 `results/`（不入库）。2026-09-30，confirmed。 |
+| `apps/backend/tests/golden/` | 黄金场景：本地故障注入站点、真实 API + 浏览器的 G2/G3，`-m golden` 运行。 |
+| `apps/backend/src/autoflow/infrastructure/observability/` | 运行期可观测组件；`loop_lag.py` 监测服务主循环延迟。 |
 
 ## 依赖与维护规则
 

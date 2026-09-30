@@ -1162,7 +1162,7 @@ git commit -m "ci: 每次推送运行守门检查与离线基准，新增夜间�
 - Modify: `docs/PROJECT_STRUCTURE.md`（目录职责清单）
 - Create: `.ai/knowledge/2026-09-30-remediation-baseline.md`
 
-- [ ] **Step 1: 在 AGENTS.md 中加入规则**
+- [x] **Step 1: 在 AGENTS.md 中加入规则**
 
 在 `## 完成定义` 之前插入：
 
@@ -1178,7 +1178,7 @@ git commit -m "ci: 每次推送运行守门检查与离线基准，新增夜间�
 7. QA 截图与证据不再提交到 `docs/`；放 CI 产物，仓库只留汇总与链接。
 ```
 
-- [ ] **Step 2: 更新 PROJECT_STRUCTURE**
+- [x] **Step 2: 更新 PROJECT_STRUCTURE**
 
 在"目录职责清单"表格末尾追加三行：
 
@@ -1188,7 +1188,7 @@ git commit -m "ci: 每次推送运行守门检查与离线基准，新增夜间�
 | `apps/backend/src/autoflow/infrastructure/observability/` | 运行期可观测组件；`loop_lag.py` 监测服务主循环延迟。 |
 ```
 
-- [ ] **Step 3: 记录基线**
+- [x] **Step 3: 记录基线**
 
 `.ai/knowledge/2026-09-30-remediation-baseline.md`：
 
@@ -1213,7 +1213,7 @@ git commit -m "ci: 每次推送运行守门检查与离线基准，新增夜间�
 
 表中"填"由执行者用 Task 1–3、6 的实际输出替换；这是记录实测值的步骤，不是占位——不得填写估计值。
 
-- [ ] **Step 4: 提交**
+- [x] **Step 4: 提交**
 
 ```bash
 git add AGENTS.md docs/PROJECT_STRUCTURE.md .ai/knowledge/2026-09-30-remediation-baseline.md
