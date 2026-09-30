@@ -132,7 +132,7 @@ async def test_real_worker_delayed_browser_keeps_cookie_in_one_task(capability_c
         session.get(WorkflowPreparedContentRow, run.prepared_content_id).execution_plan = plan
     capabilities = ProjectWorkerCapabilities(factory, environments)
     manager = ProjectWorkflowWorkerManager(tmp_path / 'worker', on_capability=capabilities.handle)
-    dispatcher = WorkflowRunDispatcher(factory, manager, resources, QuiesceGate(), None)
+    dispatcher = WorkflowRunDispatcher(factory, manager, resources, QuiesceGate(), None, project_end=capabilities.project_end)
     owner = _RunOwner(task.run_id, 1); dispatcher._owners[task.run_id] = owner
     capabilities.browser_dispatcher = dispatcher
     events = []
@@ -142,6 +142,12 @@ async def test_real_worker_delayed_browser_keeps_cookie_in_one_task(capability_c
     try:
         result = await asyncio.wait_for(manager.run(run_id=task.run_id, execution_generation=1, execution_plan=plan, parameters={}, variables={}, browser={}, executable=None, on_event=persist), 45)
         assert result.status == 'succeeded' and result.cleanup_confirmed, [e['payload'] for e in events if e['kind'] == 'nodeAttempt' and e['payload']['status'] == 'failed']
+        # Direct worker execution stops at End admission; the host publishes after cleanup.
+        with factory() as db:
+            assert db.get(WorkflowRunRow, task.run_id).status == 'finishing'
+        assert await dispatcher._finish_end(task.run_id)
+        with factory() as db:
+            assert db.get(WorkflowRunRow, task.run_id).status == 'succeeded'
         assert '/login' in requests and '/account' in requests
         assert any(event['kind'] == 'output' and event['payload'].get('value') == 'signed-in' for event in events), events
         instance = environments.environments.find_instance_by_task(project_id, task.task_id)
