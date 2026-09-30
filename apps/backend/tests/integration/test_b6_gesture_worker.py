@@ -6,8 +6,23 @@ from pathlib import Path
 
 import pytest
 
-from autoflow.infrastructure.gesture import gesture_model_path
+from autoflow.infrastructure.gesture import (
+    GestureRecognitionService,
+    gesture_model_path,
+)
 from autoflow.infrastructure.process.workflow_worker import WorkflowWorkerManager
+
+
+def test_gesture_model_detects_blank_frame_with_installed_native_libraries(
+    tmp_path: Path,
+) -> None:
+    import numpy as np
+
+    service = GestureRecognitionService(tmp_path / "gestures.json")
+    try:
+        assert service._detect(np.zeros((128, 128, 3), dtype=np.uint8)) == []
+    finally:
+        service.close()
 
 
 async def _wait(manager: WorkflowWorkerManager) -> None:
