@@ -1147,7 +1147,7 @@ jobs:
 - [ ] **Step 4: 本地校验 YAML**
 
 Run: `node -e "for (const f of ['.github/workflows/ci.yml','.github/workflows/golden.yml']) { const t=require('fs').readFileSync(f,'utf8'); if (/\t/.test(t)) throw new Error(f+' has tabs'); } console.log('ok')"`
-Expected: `ok`。推送分支后在 Actions 页面确认 `checks` 出现两个新步骤、`Golden scenarios` 可手动触发（填 rows=30 试跑一次）。
+Expected: `ok`。先推送整改分支并核对 `checks` 的两个新步骤及产物。GitHub 要求 workflow_dispatch 的工作流文件已存在于默认分支；因此新建的 golden.yml 不能仅靠推送功能分支获得手动入口。完成代码审查和分支 CI 后，在有合并授权时将同一实现合入默认分支，再手动触发 rows=30 并核对黄金产物；没有该授权或实际运行记录时，AC0-07 保持未验收。依据：[GitHub 官方手动运行说明](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/manually-run-a-workflow)。
 
 - [x] **Step 5: 提交**
 
