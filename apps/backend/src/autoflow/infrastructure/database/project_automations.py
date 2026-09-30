@@ -14,6 +14,7 @@ from autoflow.domain.project_automations.models import (
 )
 from autoflow.domain.projects.models import ProjectError, ProjectOperation
 
+from .environment_models import ProjectManualItemRow
 from .models import ProjectOperationRow
 from .project_automation_models import ProjectAutomationRow
 from .project_data_models import DataImpactRow
@@ -46,7 +47,7 @@ class SqlAlchemyProjectAutomations:
     def __init__(self, session_factory: sessionmaker[Session]):
         self._session_factory = session_factory
 
-    def create(self, record, operation):
+    def create(self, record, operation, *, create_workflow=False):
         with self._session_factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
             existing = self._operation_by_key(session, operation)
@@ -55,7 +56,12 @@ class SqlAlchemyProjectAutomations:
                 session.rollback()
                 return saved, _operation(existing), True
             self._guard_project(session, record.project_id)
-            if session.get(WorkflowDocumentRow, record.workflow_id) is None:
+            if create_workflow:
+                from autoflow.domain.workflows.document import WorkflowDraft
+
+                draft = WorkflowDraft.from_payload({"id": record.workflow_id, "name": record.name, "projectId": record.project_id, "nodes": [], "edges": [], "variables": [], "browserEnvironmentVersion": 1})
+                session.add(WorkflowDocumentRow(id=record.workflow_id, name=draft.name, document=draft.document, layout=draft.layout, revision=1, created_at=record.created_at, updated_at=record.updated_at))
+            if not create_workflow and session.get(WorkflowDocumentRow, record.workflow_id) is None:
                 session.rollback()
                 raise ProjectError(
                     "WORKFLOW_NOT_FOUND",
@@ -197,7 +203,9 @@ class SqlAlchemyProjectAutomations:
             ).all()
             return [_record(row) for row in rows], total
 
-    def impact(self, project_id: str, automation_id: str, action: str) -> dict[str, Any]:
+    def impact(
+        self, project_id: str, automation_id: str, action: str
+    ) -> dict[str, Any]:
         """Describe what deleting one automation really touches.
 
         The confirmation is persisted in the shared impact table so a command
@@ -442,7 +450,13 @@ def _facts(
         session.scalar(
             select(func.count())
             .select_from(WorkflowPreparedContentRow)
-            .where(WorkflowPreparedContentRow.workflow_id == row.workflow_id)
+            .where(
+                WorkflowPreparedContentRow.id.in_(
+                    select(ProjectBatchRow.prepared_content_id).where(
+                        ProjectBatchRow.automation_id == row.id
+                    )
+                )
+            )
         )
         or 0
     )
@@ -454,7 +468,11 @@ def _facts(
     impacts = [
         _impact(resource, "AUTOMATION_CONFIGURATION", "自动化名称、说明与草稿配置"),
         _impact(resource, "DATA_TABLE_USE", f"数据表使用项 {len(tables)} 项"),
-        _impact(resource, "AUTOMATION_PARAMETERS", f"自动化参数 {len(row.parameter_schema)} 个"),
+        _impact(
+            resource,
+            "AUTOMATION_PARAMETERS",
+            f"自动化参数 {len(row.parameter_schema)} 个",
+        ),
         _impact(resource, "AUTOMATION_FILTERS", f"筛选条件 {conditions} 条"),
         _impact(resource, "RUN_PLANS", f"运行方案 {len(batches)} 个及其任务与事件"),
         _impact(resource, "PREPARED_CONTENTS", f"配置升级恢复副本 {prepared} 个"),
@@ -475,6 +493,27 @@ def _facts(
         for batch_id, status in batches
         if status not in TERMINAL_BATCH_STATUSES
     ]
+    # A terminal batch is not proof that a manual command has settled.
+    tasks = select(ProjectTaskRow.id).where(
+        ProjectTaskRow.batch_id.in_(
+            select(ProjectBatchRow.id).where(ProjectBatchRow.automation_id == row.id)
+        )
+    )
+    blockers.extend(
+        _blocker(
+            "MANUAL_PENDING",
+            {"type": "task", "projectId": project_id, "taskId": task_id},
+            status,
+            "人工事项尚未结束，请先完成或取消处理",
+        )
+        for task_id, status in session.execute(
+            select(ProjectManualItemRow.task_id, ProjectManualItemRow.status).where(
+                ProjectManualItemRow.project_id == project_id,
+                ProjectManualItemRow.task_id.in_(tasks),
+                ProjectManualItemRow.status.in_(("waiting", "resume_requested")),
+            )
+        )
+    )
     return {
         "impacts": impacts,
         "blockers": blockers,
@@ -526,8 +565,15 @@ def _purge_automation(
     )
     plan: tuple[tuple[Table, Any], ...] = (
         (
+            cast(Table, ProjectManualItemRow.__table__),
+            (ProjectManualItemRow.project_id == project_id)
+            & ProjectManualItemRow.task_id.in_(tasks),
+        ),
+        (
             cast(Table, ProjectTaskRecordQueryItemRow.__table__),
-            cast(Table, ProjectTaskRecordQueryItemRow.__table__).c.query_id.in_(queries),
+            cast(Table, ProjectTaskRecordQueryItemRow.__table__).c.query_id.in_(
+                queries
+            ),
         ),
         (
             cast(Table, ProjectTaskRecordQueryRow.__table__),
@@ -559,7 +605,6 @@ def _purge_automation(
         ),
         (cast(Table, WorkflowRunRow.__table__), WorkflowRunRow.id.in_(runs)),
         (cast(Table, ProjectTaskRow.__table__), ProjectTaskRow.batch_id.in_(batches)),
-        (cast(Table, ProjectBatchRow.__table__), ProjectBatchRow.automation_id == row.id),
         (
             cast(Table, WorkflowPreparedContentRow.__table__),
             WorkflowPreparedContentRow.id.in_(
@@ -567,6 +612,11 @@ def _purge_automation(
                     ProjectBatchRow.automation_id == row.id
                 )
             ),
+        ),
+        # Prepared-content selection still needs the owning batches to exist.
+        (
+            cast(Table, ProjectBatchRow.__table__),
+            ProjectBatchRow.automation_id == row.id,
         ),
     )
     for table, predicate in plan:
@@ -589,7 +639,9 @@ def _purge_automation(
         updated_at=now,
         completed_at=now,
     )
-    session.execute(delete(ProjectAutomationRow).where(ProjectAutomationRow.id == row.id))
+    session.execute(
+        delete(ProjectAutomationRow).where(ProjectAutomationRow.id == row.id)
+    )
     return done
 
 

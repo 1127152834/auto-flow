@@ -1,0 +1,38 @@
+{
+  "deviceId": "f4d93103-5b4c-4a5f-9688-c02c604192f7",
+  "volumeId": "autoflow-android-f4d93103-5b4c-4a5f-9688-c02c604192f7-data",
+  "source": {
+    "files": 1794,
+    "counts": {
+      "user.serial": 4,
+      "user.inode_cache": 126,
+      "user.inode_code_cache": 126,
+      "user.default": 101,
+      "system.posix_acl_default": 24,
+      "user.extdbnextrowid0": 1,
+      "user.extdbsessionid0": 2,
+      "system.posix_acl_access": 31,
+      "user.uuid": 2
+    },
+    "samples": {
+      "user.serial": "system_ce/0",
+      "user.inode_cache": "user_de/0/com.android.permissioncontroller",
+      "user.inode_code_cache": "user_de/0/com.android.permissioncontroller",
+      "user.default": "user_de/0/com.android.permissioncontroller",
+      "system.posix_acl_default": "media/0",
+      "user.extdbnextrowid0": "media/0",
+      "user.extdbsessionid0": "media/0",
+      "system.posix_acl_access": "media/0/Podcasts",
+      "user.uuid": "data/com.android.providers.media.module/databases/internal.db"
+    }
+  },
+  "dockerArchivePax": {
+    "path": 10
+  },
+  "status": "observed",
+  "cleanup": {
+    "deleted": true,
+    "containers": 0,
+    "volumes": 0
+  }
+}

@@ -1,0 +1,499 @@
+{
+  "date": "2026-09-24",
+  "status": "local_source_real_chain_passed_packaged_native_pending",
+  "releaseAccepted": false,
+  "requirements": [
+    "DATA-CLAIM-14"
+  ],
+  "productionSource": "a7059dc6bfa19fb80c8fe9de5f173eacb3dce3bc",
+  "testedBaseCommit": "1044e6196e33959bdc02fea8a89901aae1ef9739",
+  "productionChanged": false,
+  "scope": "Actual TCP HTTP, SQLite, production scheduler/dispatcher and six real worker/CloakBrowser instances on local macOS ARM. Local table service fixture; no synthetic Task/Run/lease/outcome. This slice does not test native UI or packaged runtime.",
+  "testSource": {
+    "file": "apps/backend/tests/integration/test_project_unlimited_real_cloakbrowser.py",
+    "symbol": "test_unlimited_final_record_reclaim_stops_after_five_successes"
+  },
+  "observed": {
+    "batch": {
+      "batch": {
+        "batchId": "36d3516e-02ae-4b46-8f73-cddd1b66bc71",
+        "projectId": "0da935fa-6614-4292-a5fd-1766fef09e06",
+        "automationId": "fa36ec03-875a-4de8-99f7-e0eed301c824",
+        "automationName": "不限最终态复用",
+        "startOperationId": "565b4df7-c884-4c28-8dd9-8454b5cd60b9",
+        "status": "stopped",
+        "statusRevision": 4,
+        "managementRevision": 1,
+        "requestedCount": null,
+        "createdTaskCount": 6,
+        "activeTaskCount": 0,
+        "claimGateState": "closed",
+        "selectionOutcome": {
+          "status": "ready",
+          "lastClaim": {
+            "prepareOperationId": "199c2104-32a3-40cd-970f-a61e0db3efb6",
+            "taskId": "1e736ec7-9647-4f12-b3c6-436ae12b49e5",
+            "runRequestId": "93c5821e-b446-46d1-8762-0f079ba52df3",
+            "state": "committed"
+          }
+        },
+        "createdAt": "2026-09-23T22:49:54.954120Z",
+        "completedAt": "2026-09-23T22:50:19.256184Z"
+      },
+      "statusCounts": {
+        "interrupted": 0,
+        "timed_out": 0,
+        "succeeded": 5,
+        "failed": 0,
+        "cancelled": 1
+      },
+      "taskCount": 6,
+      "reusedInputGroupCount": 5,
+      "unchangedInputStreak": 5,
+      "stopOperation": {
+        "operationId": "776e73c8-0271-4e46-9724-cee5c9475343",
+        "projectId": "0da935fa-6614-4292-a5fd-1766fef09e06",
+        "idempotencyKey": "5f56961c-4f0e-457a-853f-35f95dbc4bd1",
+        "kind": "stopBatch",
+        "status": "succeeded",
+        "statusRevision": 2,
+        "resource": {
+          "type": "batch",
+          "projectId": "0da935fa-6614-4292-a5fd-1766fef09e06",
+          "batchId": "36d3516e-02ae-4b46-8f73-cddd1b66bc71"
+        },
+        "result": {
+          "batch": {
+            "batchId": "36d3516e-02ae-4b46-8f73-cddd1b66bc71",
+            "projectId": "0da935fa-6614-4292-a5fd-1766fef09e06",
+            "automationId": "fa36ec03-875a-4de8-99f7-e0eed301c824",
+            "automationName": "不限最终态复用",
+            "startOperationId": "565b4df7-c884-4c28-8dd9-8454b5cd60b9",
+            "status": "stopped",
+            "statusRevision": 4,
+            "managementRevision": 1,
+            "requestedCount": null,
+            "createdTaskCount": 6,
+            "activeTaskCount": 0,
+            "claimGateState": "closed",
+            "selectionOutcome": {
+              "status": "ready",
+              "lastClaim": {
+                "prepareOperationId": "199c2104-32a3-40cd-970f-a61e0db3efb6",
+                "taskId": "1e736ec7-9647-4f12-b3c6-436ae12b49e5",
+                "runRequestId": "93c5821e-b446-46d1-8762-0f079ba52df3",
+                "state": "committed"
+              }
+            },
+            "createdAt": "2026-09-23T22:49:54.954120+00:00",
+            "completedAt": "2026-09-23T22:50:19.256184+00:00"
+          }
+        },
+        "error": null,
+        "createdAt": "2026-09-23T22:50:18.716847",
+        "updatedAt": "2026-09-23T22:50:19.256184",
+        "completedAt": "2026-09-23T22:50:19.256184"
+      },
+      "forceStopAllowed": false,
+      "forceStopAvailableAt": null,
+      "configurationSnapshot": {
+        "automation": {
+          "automationId": "fa36ec03-875a-4de8-99f7-e0eed301c824",
+          "projectId": "0da935fa-6614-4292-a5fd-1766fef09e06",
+          "workflowId": "110fa0e0-3dd5-47b4-9e52-d80453230546",
+          "name": "不限最终态复用",
+          "description": "",
+          "managementRevision": 1,
+          "inputPlan": {
+            "inputs": [
+              {
+                "inputId": "2f6e6eb2-3ba4-4c3b-8266-455c1ea817ce",
+                "alias": "A01",
+                "tableId": "d6ef2e1f-78dc-44e7-a5b3-bb815c9df73d",
+                "datasetGeneration": "9723a277-6b2f-4e1e-a256-0fdd3f8c1708",
+                "mode": "independent",
+                "required": true,
+                "fieldBindings": [
+                  {
+                    "inputFieldId": "db08b655-1c5e-4ce0-bc9d-59c845ad28ba",
+                    "inputFieldAlias": "值",
+                    "fieldRef": {
+                      "projectId": "0da935fa-6614-4292-a5fd-1766fef09e06",
+                      "tableId": "d6ef2e1f-78dc-44e7-a5b3-bb815c9df73d",
+                      "datasetGeneration": "9723a277-6b2f-4e1e-a256-0fdd3f8c1708",
+                      "fieldId": "05c9c36e-c019-4959-b84e-796d7ab45806"
+                    }
+                  }
+                ],
+                "filter": {
+                  "type": "status",
+                  "operator": "eq",
+                  "statusId": "cba78b3b-bea0-4680-ae58-e9592784e415"
+                },
+                "orderBy": [
+                  {
+                    "systemField": "recordKey",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ]
+          },
+          "parameterSchema": [],
+          "environmentPolicy": {
+            "source": "newFromProfile",
+            "profileId": "3bdc7eda-c215-40b5-a66c-4b91e9bd0652",
+            "proxyOverride": {
+              "mode": "none"
+            },
+            "modelProviderId": null
+          },
+          "runPolicy": {
+            "maxTasks": 1,
+            "concurrency": 1,
+            "maxLiveInstances": 1,
+            "continueAfterFailure": false,
+            "automaticExecutionTimeoutSeconds": 60,
+            "manualDeadlineSeconds": 120
+          },
+          "capabilityRequirements": [],
+          "createdAt": "2026-09-23T22:49:54.753329+00:00",
+          "updatedAt": "2026-09-23T22:49:54.753329+00:00"
+        },
+        "parameters": {},
+        "maxTasks": null,
+        "concurrency": 1,
+        "resourceRequest": {
+          "browser": "newFromProfile",
+          "profileId": "3bdc7eda-c215-40b5-a66c-4b91e9bd0652",
+          "kernelId": "public:145.0.7632.109.2",
+          "proxy": {
+            "mode": "none"
+          },
+          "modelProviderId": null,
+          "frozenConfiguration": {
+            "profileSpec": {
+              "name": "Default profile",
+              "description": "",
+              "start_url": "about:blank",
+              "locale": null,
+              "timezone": null,
+              "geoip": false,
+              "headless": true,
+              "humanize": false,
+              "human_preset": "default",
+              "user_agent": null,
+              "viewport": null,
+              "color_scheme": null,
+              "extension_paths": [],
+              "expert_args": [],
+              "browser_version": "145.0.7632.109.2",
+              "browser_edition": "public",
+              "release_channel": "stable",
+              "proxy_mode": "none",
+              "proxy_id": null,
+              "proxy_pool_id": null
+            },
+            "fingerprintSeed": 70325,
+            "createdAt": "2026-09-23T22:49:54.425302+00:00",
+            "updatedAt": "2026-09-23T22:49:54.425302+00:00"
+          },
+          "manualDeadlineSeconds": 120,
+          "automaticExecutionTimeoutSeconds": 60
+        },
+        "workflowRevision": 1,
+        "dataCapabilityBinding": {
+          "capability": "project.data",
+          "projectId": "0da935fa-6614-4292-a5fd-1766fef09e06",
+          "createRecordTargets": [],
+          "tableGrants": [],
+          "statusInputIds": []
+        }
+      }
+    },
+    "stopOperation": {
+      "operationId": "776e73c8-0271-4e46-9724-cee5c9475343",
+      "projectId": "0da935fa-6614-4292-a5fd-1766fef09e06",
+      "idempotencyKey": "5f56961c-4f0e-457a-853f-35f95dbc4bd1",
+      "kind": "stopBatch",
+      "status": "succeeded",
+      "statusRevision": 2,
+      "resource": {
+        "type": "batch",
+        "projectId": "0da935fa-6614-4292-a5fd-1766fef09e06",
+        "batchId": "36d3516e-02ae-4b46-8f73-cddd1b66bc71"
+      },
+      "result": {
+        "batch": {
+          "batchId": "36d3516e-02ae-4b46-8f73-cddd1b66bc71",
+          "projectId": "0da935fa-6614-4292-a5fd-1766fef09e06",
+          "automationId": "fa36ec03-875a-4de8-99f7-e0eed301c824",
+          "automationName": "不限最终态复用",
+          "startOperationId": "565b4df7-c884-4c28-8dd9-8454b5cd60b9",
+          "status": "stopped",
+          "statusRevision": 4,
+          "managementRevision": 1,
+          "requestedCount": null,
+          "createdTaskCount": 6,
+          "activeTaskCount": 0,
+          "claimGateState": "closed",
+          "selectionOutcome": {
+            "status": "ready",
+            "lastClaim": {
+              "prepareOperationId": "199c2104-32a3-40cd-970f-a61e0db3efb6",
+              "taskId": "1e736ec7-9647-4f12-b3c6-436ae12b49e5",
+              "runRequestId": "93c5821e-b446-46d1-8762-0f079ba52df3",
+              "state": "committed"
+            }
+          },
+          "createdAt": "2026-09-23T22:49:54.954120+00:00",
+          "completedAt": "2026-09-23T22:50:19.256184+00:00"
+        }
+      },
+      "error": null,
+      "createdAt": "2026-09-23T22:50:18.716847Z",
+      "updatedAt": "2026-09-23T22:50:19.256184Z",
+      "completedAt": "2026-09-23T22:50:19.256184Z"
+    },
+    "recordBefore": [
+      {
+        "ref": {
+          "projectId": "0da935fa-6614-4292-a5fd-1766fef09e06",
+          "tableId": "d6ef2e1f-78dc-44e7-a5b3-bb815c9df73d",
+          "datasetGeneration": "9723a277-6b2f-4e1e-a256-0fdd3f8c1708",
+          "recordKey": {
+            "type": "uuid",
+            "value": "525d7ba6-aae7-4048-8a42-51698819f139"
+          }
+        },
+        "values": [
+          {
+            "fieldId": "05c9c36e-c019-4959-b84e-796d7ab45806",
+            "value": "A01",
+            "source": "local",
+            "readable": true
+          }
+        ],
+        "validationIssues": [],
+        "recordSlots": [],
+        "statusId": "cba78b3b-bea0-4680-ae58-e9592784e415",
+        "currentEnvironmentId": null,
+        "contentRevision": 1,
+        "statusRevision": 2,
+        "linkRevision": 1,
+        "deleted": false,
+        "createdAt": "2026-09-23T22:49:54.636715Z",
+        "updatedAt": "2026-09-23T22:49:54.736470Z"
+      }
+    ],
+    "recordAfter": [
+      {
+        "ref": {
+          "projectId": "0da935fa-6614-4292-a5fd-1766fef09e06",
+          "tableId": "d6ef2e1f-78dc-44e7-a5b3-bb815c9df73d",
+          "datasetGeneration": "9723a277-6b2f-4e1e-a256-0fdd3f8c1708",
+          "recordKey": {
+            "type": "uuid",
+            "value": "525d7ba6-aae7-4048-8a42-51698819f139"
+          }
+        },
+        "values": [
+          {
+            "fieldId": "05c9c36e-c019-4959-b84e-796d7ab45806",
+            "value": "A01",
+            "source": "local",
+            "readable": true
+          }
+        ],
+        "validationIssues": [],
+        "recordSlots": [],
+        "statusId": "cba78b3b-bea0-4680-ae58-e9592784e415",
+        "currentEnvironmentId": null,
+        "contentRevision": 1,
+        "statusRevision": 2,
+        "linkRevision": 1,
+        "deleted": false,
+        "createdAt": "2026-09-23T22:49:54.636715Z",
+        "updatedAt": "2026-09-23T22:49:54.736470Z"
+      }
+    ],
+    "workerStarts": [
+      {
+        "runId": "391e8b1a-86a2-4238-becb-14551c39e674",
+        "recordRef": {
+          "projectId": "0da935fa-6614-4292-a5fd-1766fef09e06",
+          "tableId": "d6ef2e1f-78dc-44e7-a5b3-bb815c9df73d",
+          "datasetGeneration": "9723a277-6b2f-4e1e-a256-0fdd3f8c1708",
+          "recordKey": {
+            "type": "uuid",
+            "value": "525d7ba6-aae7-4048-8a42-51698819f139"
+          }
+        }
+      },
+      {
+        "runId": "07283ae1-7548-4ba9-9619-a7eddd7f3c46",
+        "recordRef": {
+          "projectId": "0da935fa-6614-4292-a5fd-1766fef09e06",
+          "tableId": "d6ef2e1f-78dc-44e7-a5b3-bb815c9df73d",
+          "datasetGeneration": "9723a277-6b2f-4e1e-a256-0fdd3f8c1708",
+          "recordKey": {
+            "type": "uuid",
+            "value": "525d7ba6-aae7-4048-8a42-51698819f139"
+          }
+        }
+      },
+      {
+        "runId": "e018c206-f9e6-48e5-acf3-8944aaacfe33",
+        "recordRef": {
+          "projectId": "0da935fa-6614-4292-a5fd-1766fef09e06",
+          "tableId": "d6ef2e1f-78dc-44e7-a5b3-bb815c9df73d",
+          "datasetGeneration": "9723a277-6b2f-4e1e-a256-0fdd3f8c1708",
+          "recordKey": {
+            "type": "uuid",
+            "value": "525d7ba6-aae7-4048-8a42-51698819f139"
+          }
+        }
+      },
+      {
+        "runId": "ef36f76a-f75a-44d2-adcb-60018ea5339f",
+        "recordRef": {
+          "projectId": "0da935fa-6614-4292-a5fd-1766fef09e06",
+          "tableId": "d6ef2e1f-78dc-44e7-a5b3-bb815c9df73d",
+          "datasetGeneration": "9723a277-6b2f-4e1e-a256-0fdd3f8c1708",
+          "recordKey": {
+            "type": "uuid",
+            "value": "525d7ba6-aae7-4048-8a42-51698819f139"
+          }
+        }
+      },
+      {
+        "runId": "1230d109-e3d6-4d47-8e84-78a282b6a334",
+        "recordRef": {
+          "projectId": "0da935fa-6614-4292-a5fd-1766fef09e06",
+          "tableId": "d6ef2e1f-78dc-44e7-a5b3-bb815c9df73d",
+          "datasetGeneration": "9723a277-6b2f-4e1e-a256-0fdd3f8c1708",
+          "recordKey": {
+            "type": "uuid",
+            "value": "525d7ba6-aae7-4048-8a42-51698819f139"
+          }
+        }
+      },
+      {
+        "runId": "a74656e4-041a-4003-bf94-0f14a11538fc",
+        "recordRef": {
+          "projectId": "0da935fa-6614-4292-a5fd-1766fef09e06",
+          "tableId": "d6ef2e1f-78dc-44e7-a5b3-bb815c9df73d",
+          "datasetGeneration": "9723a277-6b2f-4e1e-a256-0fdd3f8c1708",
+          "recordKey": {
+            "type": "uuid",
+            "value": "525d7ba6-aae7-4048-8a42-51698819f139"
+          }
+        }
+      }
+    ],
+    "resumedManualCount": 5,
+    "cancelledManual": "5a844c72-d731-4bb7-aaa7-644c85650aa6",
+    "releasedLeaseCount": 6,
+    "fixtureRequests": 6
+  },
+  "assertions": [
+    "Saved automation default maxTasks=1; public batch starts maxTasks=null and requestedCount remains null. Only one required final-state record qualifies.",
+    "Five separate Tasks complete all seven nodes; sixth reaches real browser/manual checkpoint and is cancelled through public batch stop. All six freeze the same typed RecordRef and content/status revisions 1/2, read actual DOM value A01.",
+    "At each real worker start exactly one lease is held by that Run and all earlier leases are released; all six end released with identical lease key.",
+    "Entire source record DTO unchanged, including value, business state, versions, environment link and update time.",
+    "Stop operation lookup and same-key replay equal after parsing batch timestamps to the same instants; start replay returns original operation.",
+    "Three explicit production scheduler ticks after stopped create no Task; admission gate closed, active count zero, manager/dispatcher/scheduler blockers clear, no generation work directories."
+  ],
+  "checks": {
+    "real": "1 passed in28.11s",
+    "related": "50 passed in26.99s: test_project_data_scheduler.py + test_project_run_dispatch.py",
+    "ruff": "passed",
+    "ciSelection": "1/51 collected,50 deselected; collection only; both existing native-worker jobs include new file/selector",
+    "fullRegression": "Not repeated: production/desktop scripts unchanged from a7059dc6; retain its existing full3505/86skip/2warnings and ARM24 screenshot scope. New test is not part of that historical full run.",
+    "native": "Fresh gh api user401; no new matrix dispatched; historical35902129697 is not current-source validation.",
+    "mapping": "4 passed;251 valid references. Initial mapping metadata used unsupported level label; corrected to existing automated_real_application. No requirement status promotion."
+  },
+  "fixtureFailures": [
+    {
+      "log": "initial.log",
+      "reason": "Saved automation runPolicy requires positive integer, unlike batch-start override which accepts null. Fixed fixture default to1, kept actual unlimited start null; no production contract change."
+    },
+    {
+      "log": "real-final.log",
+      "reason": "Attempted edit with unavailable python command did not apply; repeated same422 fixture failure. Applied edit with python3."
+    },
+    {
+      "log": "real-run.log",
+      "reason": "Real chain reached5success/1cancel; receipt comparison differed in typed lookup vs raw command ISO timestamp formatting. Reused existing datetime.fromisoformat comparison; retained full operation equality, not only IDs."
+    }
+  ],
+  "remaining": [
+    "Packaged/native UI unlimited warning, reuse/no-condition-change explanation/counts and stop interaction are not exercised by this HTTP test.",
+    "New Windows/Intel/ARM CI execution and physical/native acceptance remain pending; local source success is not three-platform completion.",
+    "Competing automations, external ownership loss and real Google shared identity are separate conditions; this serial local-source scenario does not prove them.",
+    "All existing unapproved architecture proposals and external acceptance remain; releaseAccepted=false."
+  ],
+  "commands": {
+    "real": "AUTOFLOW_TEST_CLOAKBROWSER=<installed kernel> uv run --directory apps/backend pytest -s -q tests/integration/test_project_unlimited_real_cloakbrowser.py",
+    "related": "uv run --directory apps/backend pytest -q tests/integration/test_project_data_scheduler.py tests/integration/test_project_run_dispatch.py",
+    "ruff": "uv run --directory apps/backend ruff check tests/integration/test_project_unlimited_real_cloakbrowser.py"
+  },
+  "artifacts": {
+    "ci-selection.log": {
+      "path": ".tmp-tests/pm9-unlimited-reclaim-2026-09-24/ci-selection.log",
+      "sha256": "95470b57dd6d6dfaa7714ff5570f6be3e54e15a2f5a65e174386e0dde7452546"
+    },
+    "gh-auth.log": {
+      "path": ".tmp-tests/pm9-unlimited-reclaim-2026-09-24/gh-auth.log",
+      "sha256": "ba173275c4e18ac221de6d0560a76198a5ae465cc57915cc26da6e3bad25f14d"
+    },
+    "initial.log": {
+      "path": ".tmp-tests/pm9-unlimited-reclaim-2026-09-24/initial.log",
+      "sha256": "d99585d805244fc205b0f0db9971e2581bea13453cfd1e70ec3914a6c2d70a5b"
+    },
+    "real-final-success.log": {
+      "path": ".tmp-tests/pm9-unlimited-reclaim-2026-09-24/real-final-success.log",
+      "sha256": "9a85820582f624b25f625af864f216ab3c600e149e6be212e496b5caa16a40c6"
+    },
+    "real-final.log": {
+      "path": ".tmp-tests/pm9-unlimited-reclaim-2026-09-24/real-final.log",
+      "sha256": "fc83cb6f4c5fa9fa3cb599222842804b3d04818494489158eeae297a06a98682"
+    },
+    "real-run.log": {
+      "path": ".tmp-tests/pm9-unlimited-reclaim-2026-09-24/real-run.log",
+      "sha256": "e16b8bc5d9588086d8b524d047846efb06b2412ed659b0a5dc0405d94ffc576f"
+    },
+    "related.log": {
+      "path": ".tmp-tests/pm9-unlimited-reclaim-2026-09-24/related.log",
+      "sha256": "523a7f2a9f8e3d6519627a5e970a0de19b435bb14850ae1d8997cb7802778272"
+    },
+    "ruff-final.log": {
+      "path": ".tmp-tests/pm9-unlimited-reclaim-2026-09-24/ruff-final.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    "ruff.log": {
+      "path": ".tmp-tests/pm9-unlimited-reclaim-2026-09-24/ruff.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    "runtime-evidence.json": {
+      "path": ".tmp-tests/pm9-unlimited-reclaim-2026-09-24/runtime-evidence.json",
+      "sha256": "d833c86e546b550bd86edd4697ee0ce99a915ce852b9663f013b47f220842164"
+    },
+    "mapping.log": {
+      "path": ".tmp-tests/pm9-unlimited-reclaim-2026-09-24/mapping.log",
+      "sha256": "47340b26e539e75e2f5a68b447680224e14b432e0f2f36b48a183cfb30357377"
+    },
+    "mapping-tests.log": {
+      "path": ".tmp-tests/pm9-unlimited-reclaim-2026-09-24/mapping-tests.log",
+      "sha256": "7fa920d31c4388ec1a095b7cce739dbf1313621c04d1a07eb7d4d9185a9ef0ef"
+    },
+    "mapping-final.log": {
+      "path": ".tmp-tests/pm9-unlimited-reclaim-2026-09-24/mapping-final.log",
+      "sha256": "2c9825d53e355cdb7edd6eb56b87caa68f679f88dfb237f6cddf1a9453e4f29f"
+    },
+    "mapping-tests-final.log": {
+      "path": ".tmp-tests/pm9-unlimited-reclaim-2026-09-24/mapping-tests-final.log",
+      "sha256": "a7f1ccb78bfb8b7424f9927f03546e0dea0b227dda67ccd95a4a9141e7d37f64"
+    }
+  }
+}

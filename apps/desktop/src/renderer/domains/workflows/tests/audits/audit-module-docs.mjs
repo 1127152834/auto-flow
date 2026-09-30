@@ -23,8 +23,14 @@ export function parseModuleTypeLabels() {
 export function realModules() {
   const labels = new Map(parseModuleTypeLabels().map(entry => [entry.type, entry.label]))
   const types = moduleCategories.flatMap(category => category.modules)
-  const nativeTypes = ['project_data', 'project_end', 'proxy_change_ip', 'proxy_change_location', 'proxy_query']
-  if (types.length !== 218 || new Set(types).size !== 218 || !nativeTypes.every(type => types.includes(type))) throw new Error('已批准的 213 冻结节点加 5 原生节点范围发生变化')
+  const extensionTypes = [
+    'project_data', 'project_manual', 'project_end',
+    'proxy_change_ip', 'proxy_change_location', 'proxy_query',
+    'trace_mark', 'capture_diagnostics', 'save_trace_segment',
+  ]
+  if (types.length !== 222 || new Set(types).size !== 222 || !extensionTypes.every(type => types.includes(type))) {
+    throw new Error('已批准的 213 冻结节点加 9 个 AutoFlow 扩展节点范围发生变化')
+  }
   return types.map(type => {
     const label = labels.get(type)
     if (!label) throw new Error(`保留节点缺少中文名称: ${type}`)

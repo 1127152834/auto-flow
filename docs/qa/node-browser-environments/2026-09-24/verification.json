@@ -1,0 +1,74 @@
+{
+  "date": "2026-09-24",
+  "implementationStatus": "implemented",
+  "releaseAccepted": false,
+  "frontend": {
+    "files": 445,
+    "passed": 5859,
+    "failed": 0
+  },
+  "backend": {
+    "collected": 5213,
+    "initialFullRun": {
+      "passed": 5083,
+      "failed": 3,
+      "skipped": 127
+    },
+    "followup": {
+      "test_project_run_start.py": "16 passed; two old incomplete-resource fixtures replaced with real frozen resources"
+    },
+    "remainingFailure": "test_project_recognition_uses_real_models_files_branches_and_cleanup[ocr_stop] <3s: current ~3.3s, clean baseline ~3.27s"
+  },
+  "checks": {
+    "typecheck": "passed",
+    "lint": "passed",
+    "build": "passed",
+    "openapi": "passed",
+    "scripts": "108 passed",
+    "ruff": "passed",
+    "scopedMypy": "45 changed source files passed",
+    "fullMypy": "65 existing Android errors; same count reproduced on clean 15088ecb"
+  },
+  "desktop": {
+    "result": "desktop-result.json",
+    "status": "passed"
+  },
+  "independentReview": {
+    "range": "15088ecb..1527848e",
+    "findings": 2,
+    "fixed": 2
+  },
+  "ci": {
+    "status": "completed_with_failures",
+    "candidate": "27e93a40621975f8635df2440a3b33e07f2bd658",
+    "runUrl": "https://github.com/1127152834/auto-flow/actions/runs/35978138740",
+    "pullRequest": "https://github.com/1127152834/auto-flow/pull/2",
+    "platforms": {
+      "windows-2022": {
+        "nodeBrowserInitialization": "passed",
+        "fullJob": "failed at test:scripts; detailed failure requires authenticated logs"
+      },
+      "macos-15": {
+        "nodeBrowserInitialization": "passed",
+        "fullJob": "failed at full mypy"
+      },
+      "macos-15-intel": {
+        "nodeBrowserInitialization": "not_run",
+        "fullJob": "failed at dependency installation"
+      }
+    },
+    "intelDependencyReproduction": "Current and clean 15088ecb: uv sync --locked --group build --python-platform x86_64-apple-darwin --dry-run rejects mediapipe==0.10.35 because no Intel macOS wheel or source distribution exists",
+    "fullMypyEvidence": "CI fails at mypy on macOS ARM; local current and clean 15088ecb reproduce the same 65 Android diagnostics. Authenticated CI logs unavailable; remote diagnostic count not asserted.",
+    "publicStepEvidence": "ci-results.json",
+    "limits": "GitHub CLI credentials invalid; configured Git credential helper has no usable HTTPS credential; public step status verified, authenticated job logs inaccessible."
+  },
+  "limits": [
+    "No signing/notarization/OAuth or Windows/Intel physical-device proof",
+    "Cross-kernel migration of saved instances refused without compatibility evidence",
+    "Subflow uses initialized parent browser; no first initialization inside subflow"
+  ],
+  "nativeChain": {
+    "passed": 5,
+    "scope": "real PM/Studio worker initialization, cookie continuity, save/restore with and without End"
+  }
+}

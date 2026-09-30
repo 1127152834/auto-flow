@@ -156,7 +156,7 @@ class WorkflowRunService:
         self._clock = clock
 
     def start(self, start: WorkflowRunStart) -> WorkflowRun:
-        if not start.run_id or not start.workflow_id or not start.profile_id:
+        if not start.run_id or not start.workflow_id or (not start.profile_id and start.profile_snapshot.get("browserEnvironmentVersion") != 1):
             raise WorkflowRunError(
                 "RUN_REQUEST_INVALID", "运行标识、工作流和浏览器配置不能为空", 422
             )

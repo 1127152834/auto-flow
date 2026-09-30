@@ -1,0 +1,15 @@
+{
+  "apps/backend/src/autoflow/application/android/backups.py": "618f75b439ff647d5344b646f9dceda02b06668e1b69a699e72ba2bd6c543b5f",
+  "apps/backend/src/autoflow/providers/android/backup_storage.py": "fed0c787b7812ce9e7a20205879124c1f150d093c8aea65f66d7230ac75213f4",
+  "apps/backend/src/autoflow/providers/android/mac_runtime.py": "2d82fa3bb745cd147e3305b45bc7a0bd812bdbc300bb930b810d7140d1200f9a",
+  "apps/backend/tests/contract/test_android_backups.py": "ac2029efbf69412d0671afc9c8556cd15bf650f5f9e561bcbfdce7c18d4206e4",
+  "apps/backend/tests/integration/test_android_backup_restore.py": "c266da0dfde8ae41e7b02e7958f89eaa951177d3319b7d7f12f7a57fb245cd48",
+  "apps/backend/tests/integration/test_android_backups.py": "ef01e7095b64b335c31c73484c62c7e6d6ba65df6533d24b9d35a8fb475bee7f",
+  "apps/backend/tests/integration/test_android_cleanup_files.py": "9289b0b991ceadcbfe76677116b7917f04a97dfb7a8a073905664dcd5cb76381",
+  "apps/backend/tests/unit/test_android_backup.py": "534214a753d3d43a7180d0170f43014bbfd8136d560954cd5128221d68b1f8c5",
+  "apps/backend/tests/unit/test_android_backup_storage.py": "14f22e496eea4890e09d960b285a10583484d5ba52cb153caab03183e42d6ea9",
+  "apps/backend/tests/unit/test_android_runtime.py": "4f3cd7ce7700f8a4c98fc431bb181367d846ce2f880e53b5dfeb78e4fc51ee40",
+  "apps/desktop/src/renderer/domains/android/components/BackupPanel.tsx": "405698af682b8e92dba2c6aea8adb656ed0ad1d5930d20cbaf026a3dbf43b709",
+  "apps/desktop/src/renderer/domains/android/tests/ManagementTools.test.tsx": "85c581e705dc7af010acd5265b52a536903e208c14dc183457e5c983218c6d44",
+  "docs/qa/android-management/scripts/disk-full-smoke.py": "2cd19d1a929672fdb3b0860cb4c7c25fd872adbbccdab31e65618d443ff6c096"
+}

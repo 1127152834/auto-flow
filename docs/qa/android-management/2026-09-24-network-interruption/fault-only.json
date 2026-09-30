@@ -1,0 +1,80 @@
+{
+  "status": "passed",
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-network-cut-ocdn8j6b",
+  "guestRoot": "/tmp/autoflow-network-cut-aee4c6a7c27742a89f17021c6db2c59c",
+  "scope": "production HTTP/services/Mac adapter; Docker command transport selects dedicated real daemon; real TLS proxy fault; no mock response",
+  "reference": "redroid/redroid@sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "existingImageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "existingContainerIds": [
+    "a16690c74f02",
+    "5aa5cb6bb463",
+    "db81f3555d92",
+    "e29079a97dff",
+    "37a74f8c3ec7",
+    "245b229f93a1"
+  ],
+  "supervisor": {
+    "root": "/tmp/autoflow-network-cut-aee4c6a7c27742a89f17021c6db2c59c",
+    "daemonPid": 425493
+  },
+  "responseStatus": 502,
+  "responseBody": {
+    "error": {
+      "code": "ANDROID_COMMAND_FAILED",
+      "message": "安卓运行环境命令失败，请检查设备与连接: unexpected EOF",
+      "details": {},
+      "requestId": "04f7138f-eae3-46dc-84f5-5f7cbd6c3d54"
+    }
+  },
+  "fault": {
+    "upstreamBytes": 4197275,
+    "fault": "close TLS tunnels; reject subsequent proxy connects",
+    "hostAtCut": "production.cloudfront.docker.com",
+    "partialFiles": [
+      {
+        "path": "data/tmp/GetImageBlob4085794928",
+        "bytes": 4102796
+      }
+    ]
+  },
+  "partialDownloadObserved": true,
+  "operation": {
+    "operationId": "f9c21e27-0a56-4e1e-b30a-63218d4e8a91",
+    "requestId": "2b890645-e8c8-47c3-98fc-43f63e8ced85",
+    "targetId": "306a6a32-6779-5b9f-96bb-dee2cf3b3021",
+    "action": "pull",
+    "state": "failed",
+    "stageCode": "failed",
+    "stageLabel": "失败",
+    "attempt": 1,
+    "retryOf": null,
+    "createdAt": "2026-09-24T02:43:35.841037",
+    "startedAt": "2026-09-24T02:43:35.843652",
+    "finishedAt": "2026-09-24T02:43:43.596544",
+    "resultCode": "ANDROID_COMMAND_FAILED",
+    "message": "安卓运行环境命令失败，请检查设备与连接: unexpected EOF",
+    "allowedActions": []
+  },
+  "afterRestart": {
+    "operationId": "f9c21e27-0a56-4e1e-b30a-63218d4e8a91",
+    "requestId": "2b890645-e8c8-47c3-98fc-43f63e8ced85",
+    "targetId": "306a6a32-6779-5b9f-96bb-dee2cf3b3021",
+    "action": "pull",
+    "state": "failed",
+    "stageCode": "failed",
+    "stageLabel": "失败",
+    "attempt": 1,
+    "retryOf": null,
+    "createdAt": "2026-09-24T02:43:35.841037",
+    "startedAt": "2026-09-24T02:43:35.843652",
+    "finishedAt": "2026-09-24T02:43:43.596544",
+    "resultCode": "ANDROID_COMMAND_FAILED",
+    "message": "安卓运行环境命令失败，请检查设备与连接: unexpected EOF",
+    "allowedActions": []
+  },
+  "actualPullCalls": 1,
+  "noRegisteredImage": true,
+  "daemonLog": "time=\"2026-09-24T10:43:33.507842995+08:00\" level=warning msg=\"overriding existing proxy variable with value from configuration\" name=HTTP_PROXY new-value=\"http://127.0.0.1:33677\" old-value=\"http://192.168.5.2:7892\"\ntime=\"2026-09-24T10:43:33.507904359+08:00\" level=warning msg=\"overriding existing proxy variable with value from configuration\" name=http_proxy new-value=\"http://127.0.0.1:33677\" old-value=\"http://192.168.5.2:7892\"\ntime=\"2026-09-24T10:43:33.507912530+08:00\" level=warning msg=\"overriding existing proxy variable with value from configuration\" name=HTTPS_PROXY new-value=\"http://127.0.0.1:33677\" old-value=\"http://192.168.5.2:7892\"\ntime=\"2026-09-24T10:43:33.507937417+08:00\" level=warning msg=\"overriding existing proxy variable with value from configuration\" name=https_proxy new-value=\"http://127.0.0.1:33677\" old-value=\"http://192.168.5.2:7892\"\ntime=\"2026-09-24T10:43:33.507945463+08:00\" level=info msg=\"Starting up\"\ntime=\"2026-09-24T10:43:33.508628596+08:00\" level=info msg=\"OTEL tracing is not configured, using no-op tracer provider\"\ntime=\"2026-09-24T10:43:33.508697463+08:00\" level=info msg=\"CDI directory does not exist, skipping: failed to monitor for changes: no such file or directory\" dir=/etc/cdi\ntime=\"2026-09-24T10:43:33.508706426+08:00\" level=info msg=\"CDI directory does not exist, skipping: failed to monitor for changes: no such file or directory\" dir=/var/run/cdi\ntime=\"2026-09-24T10:43:33.508759995+08:00\" level=info msg=\"detected 127.0.0.53 nameserver, assuming systemd-resolved, so using resolv.conf: /run/systemd/resolve/resolv.conf\"\ntime=\"2026-09-24T10:43:33.515564020+08:00\" level=info msg=\"Creating a containerd client\" address=/tmp/autoflow-network-cut-aee4c6a7c27742a89f17021c6db2c59c/containerd.sock timeout=1m0s\ntime=\"2026-09-24T10:43:33.520498444+08:00\" level=info msg=\"Loading containers: start.\"\ntime=\"2026-09-24T10:43:33.520522748+08:00\" level=info msg=\"[graphdriver] trying configured driver: vfs\"\ntime=\"2026-09-24T10:43:33.521321147+08:00\" level=info msg=\"Restoring containers: start.\"\ntime=\"2026-09-24T10:43:33.524879259+08:00\" level=info msg=\"Loading containers: done.\"\ntime=\"2026-09-24T10:43:33.530781625+08:00\" level=info msg=\"Docker daemon\" commit=\"29.1.3-0ubuntu3~24.04.2\" containerd-snapshotter=false storage-driver=vfs version=29.1.3\ntime=\"2026-09-24T10:43:33.530845824+08:00\" level=info msg=\"Initializing buildkit\"\ntime=\"2026-09-24T10:43:33.538001150+08:00\" level=info msg=\"Completed buildkit initialization\"\ntime=\"2026-09-24T10:43:33.540716965+08:00\" level=info msg=\"Daemon has completed initialization\"\ntime=\"2026-09-24T10:43:33.540744687+08:00\" level=info msg=\"API listen on /tmp/autoflow-network-cut-aee4c6a7c27742a89f17021c6db2c59c/docker.sock\"\ntime=\"2026-09-24T10:43:37.406581142+08:00\" level=warning msg=\"reference for unknown type: \" digest=\"sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b\" remote=\"docker.io/redroid/redroid@sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b\"\ntime=\"2026-09-24T10:43:43.635215322+08:00\" level=error msg=\"Download failed after 1 attempts: unexpected EOF\"\ntime=\"2026-09-24T10:43:43.637072750+08:00\" level=info msg=\"Attempting next endpoint for pull after error: unexpected EOF\"\ntime=\"2026-09-24T10:43:46.425571262+08:00\" level=info msg=\"Processing signal 'terminated'\"\ntime=\"2026-09-24T10:43:46.427402552+08:00\" level=info msg=\"stopping event stream following graceful shutdown\" error=\"<nil>\" module=libcontainerd namespace=moby\ntime=\"2026-09-24T10:43:46.427684527+08:00\" level=info msg=\"Daemon shutdown complete\"\ntime=\"2026-09-24T10:43:46.427741430+08:00\" level=info msg=\"stopping event stream following graceful shutdown\" error=\"context canceled\" module=libcontainerd namespace=plugins.moby\n",
+  "isolatedDaemonRemoved": true,
+  "existingResourcesUnchanged": true
+}

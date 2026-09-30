@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import replace
 from datetime import UTC, datetime
 from typing import Any
@@ -67,7 +67,7 @@ class ProjectRunCoordinator:
         session_factory: sessionmaker[Session],
         core_runtime: WorkflowRuntimeService,
         *,
-        resolve_resources: Callable[[AutomationRecord, dict[str, Any]], dict[str, Any]],
+        resolve_resources: Callable[..., dict[str, Any]],
         available_capabilities: Sequence[str],
         resolve_create_record_targets: Callable[
             [Session, AutomationRecord], Sequence[tuple[str, str]]
@@ -91,9 +91,7 @@ class ProjectRunCoordinator:
         self._resolve_status_input_ids = resolve_status_input_ids or (
             lambda _automation: ()
         )
-        self._resolve_data_capability_manifest = resolve_data_capability_manifest or (
-            lambda _session, _automation: {}
-        )
+        self._resolve_data_capability_manifest = resolve_data_capability_manifest or _workflow_data_manifest
 
     def inspect_capabilities(self, workflow_id: str) -> list[dict[str, Any]]:
         # Workflow shape and actual resource availability are checked separately.
@@ -474,6 +472,14 @@ class ProjectRunCoordinator:
             payload,
             allow_data_inputs="project.data" in self._capabilities,
         )
+        if 'debugSelection' in payload:
+            from .debug_inputs import validate_debug_selection
+            if payload.get('maxTasks') != 1 or payload.get('concurrency') != 1:
+                raise ProjectRunError('VALIDATION_ERROR', '调试必须只运行一个任务，并发为 1', 422)
+            if has_data_inputs:
+                validate_debug_selection(session, project_id, automation.input_plan, payload['debugSelection'])
+            elif payload['debugSelection'] != {}:
+                raise ProjectRunError('VALIDATION_ERROR', '没有声明数据输入', 422)
         effective = (
             replace(
                 automation, environment_policy=thaw_json(start.environment_override)
@@ -481,12 +487,22 @@ class ProjectRunCoordinator:
             if start.environment_override is not None
             else automation
         )
-        resources = self._resolve_resources(
-            effective, dict(project.default_resources)
-        )
         workflow = session.get(WorkflowDocumentRow, automation.workflow_id)
         if workflow is None:
             raise ProjectRunError("NOT_FOUND", "关联工作流不存在", 404)
+        from autoflow.domain.workflows.browser_environment import (
+            node_browser_environments,
+        )
+        from autoflow.infrastructure.database.core_workflows import (
+            _record as workflow_record,
+        )
+        document = workflow_record(workflow).document
+        from autoflow.domain.workflows.project_inputs import validate_references
+        field_types = {field.id: field.type for field in session.scalars(select(DataFieldRow).where(DataFieldRow.project_id == project_id))}
+        validate_references(document, automation, field_types)
+        resources = self._resolve_resources(effective, dict(project.default_resources), document=document) if node_browser_environments(document) is not None else self._resolve_resources(effective, dict(project.default_resources))
+        if not has_data_inputs and any(node.get('environmentResolution') == 'atTaskStart' for node in resources.get('nodeBrowserEnvironments', {}).values()):
+            raise ProjectRunError('VALIDATION_ERROR', '输入环境节点需要自动化声明输入', 422)
         now, batch_id, operation_id = datetime.now(UTC), str(uuid4()), str(uuid4())
         prepared = self._core.prepare_content(
             prepare_operation_id=operation_id,
@@ -496,14 +512,6 @@ class ProjectRunCoordinator:
             created_at=now,
             uow=session,
         )
-        from autoflow.domain.workflows.project_data import project_data_manifest
-
-        try:
-            declared_table_grants.extend(self._validate_capability_manifest(
-                session, automation, project_data_manifest(prepared.execution_plan),
-            ))
-        except (ValueError, TypeError) as error:
-            raise ProjectRunError("CAPABILITY_FACTS_INCOMPLETE", "项目数据节点缺少有效的固定能力绑定", 409) from error
         frozen = _json_dates(
             {
                 "automation": _json_dates(automation_to_dict(automation)),
@@ -514,6 +522,8 @@ class ProjectRunCoordinator:
                 "workflowRevision": workflow.revision,
             }
         )
+        if "debugSelection" in payload:
+            frozen["debugSelection"] = payload["debugSelection"]
         create_record_targets = [
             {"tableId": table_id, "datasetGeneration": generation}
             for table_id, generation in self._resolve_create_record_targets(
@@ -671,9 +681,10 @@ class ProjectRunCoordinator:
                 )
             )
             session.flush()
-            if self._environments is not None and resources.get("browser") != "none":
+            if self._environments is not None and resources.get("browser") not in {"none", "node"}:
                 self._environments.reserve_task_instance(
-                    session, project_id, task_id, run.run_id, policy
+                    session, project_id, task_id, run.run_id, policy,
+                    resource_request=resources,
                 )
             created_tasks.append((task_id, run.run_id))
         batch = SqlAlchemyProjectRuns(session).batch(project_id, batch_id)
@@ -690,7 +701,7 @@ class ProjectRunCoordinator:
             # SQLAlchemy marks it inactive. Never return that connection to the pool.
             session.invalidate()
             raise
-        if self._environments is not None and resources.get("browser") != "none":
+        if self._environments is not None and resources.get("browser") not in {"none", "node"}:
             for task_id, run_id in created_tasks:
                 self._environments.attach_task_instance(
                     project_id, task_id, run_id, policy
@@ -701,6 +712,17 @@ class ProjectRunCoordinator:
         with self._factory() as session:
             self._project(session, project_id)
             return SqlAlchemyProjectRuns(session).batch(project_id, batch_id)
+
+    def debug_inputs(self, project_id: str, automation_id: str, payload: dict[str, Any]) -> dict[str, Any]:
+        from .debug_inputs import debug_inputs
+        with self._factory() as session:
+            self._project(session, project_id)
+            row = session.get(ProjectAutomationRow, automation_id)
+            if row is None or row.project_id != project_id:
+                raise ProjectRunError('NOT_FOUND', '自动化不存在', 404)
+            if row.management_revision != payload['expectedAutomationRevision']:
+                raise ProjectRunError('REVISION_CONFLICT', '自动化配置已变化，请刷新', 409)
+            return debug_inputs(session, project_id, row.input_plan, payload.get('choices', {}), input_id=payload.get('inputId'), cursor=payload.get('cursor'), page_size=payload.get('pageSize', 50), search=payload.get('search', ''))
 
     def preview_inputs(
         self, project_id: str, automation_id: str, expected_revision: int
@@ -867,3 +889,39 @@ def _present_input_issue(message: str) -> str:
         "candidate binding budget exceeded": "完整输入组的候选组合过多，请收紧筛选条件",
     }
     return messages.get(message, "输入筛选、字段或状态配置已失效")
+
+
+def _workflow_data_manifest(session: Session, automation: AutomationRecord) -> dict[str, Any]:
+    workflow = session.get(WorkflowDocumentRow, automation.workflow_id)
+    if workflow is None:
+        return {}
+    from autoflow.infrastructure.database.core_workflows import _record
+    return {
+        'tableGrants': _canonical_data_grants(
+            _record(workflow).document['content']['nodes'],
+            automation.project_id,
+        )
+    }
+
+
+def _canonical_data_grants(
+    nodes: Iterable[Mapping[str, Any]], project_id: str
+) -> list[dict[str, Any]]:
+    grants: list[dict[str, Any]] = []
+    for node in nodes:
+        data = node['data']
+        config = data.get('config', data)
+        if data['moduleType'] == 'project_data' and config.get('operation') != 'inputs':
+            if config.get('bindingProjectId') != project_id:
+                raise ProjectRunError('CAPABILITY_FACTS_INCOMPLETE', '数据节点绑定项目与自动化项目不一致', 422)
+            grant = config.get('tableGrant')
+            operation = config.get('operation')
+            if not isinstance(operation, str):
+                raise ProjectRunError('CAPABILITY_FACTS_INCOMPLETE', '数据节点操作必须是明确名称', 422)
+            required = {'previewFieldChange': 'modifyField', 'previewFieldDeletion': 'deleteField'}.get(operation, operation)
+            if not isinstance(grant, dict) or grant.get('operations') != [required]:
+                raise ProjectRunError('CAPABILITY_FACTS_INCOMPLETE', '数据节点授权必须与节点操作一致', 422)
+            if required in {'queryTableSchema', 'deleteField'} and not grant.get('fieldIds'):
+                raise ProjectRunError('CAPABILITY_FACTS_INCOMPLETE', '结构操作必须明确选择字段', 422)
+            grants.append(grant)
+    return grants

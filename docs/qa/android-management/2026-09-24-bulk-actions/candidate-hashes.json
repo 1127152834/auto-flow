@@ -1,0 +1,11 @@
+{
+  "base": "aaa67b97",
+  "sha256": {
+    "apps/backend/src/autoflow/application/android/bulk.py": "699eed89c348dc7d97f2bef64048aaae57c6cc0fbf0f695e6a724dabc8eb48aa",
+    "apps/backend/tests/integration/test_android_multi_device.py": "1412700411ffa88cbdec1f618e6b800244f12a3189da2b1ea58f6b208f73ee1d",
+    "apps/desktop/src/renderer/domains/android/components/BulkActions.tsx": "1a61d8da5488259f92b37f2c5255ec81e17bfc8b23d620bf0d9aa84a8684d120",
+    "apps/desktop/src/renderer/domains/android/components/ManagementOverview.tsx": "cd705336c0060f57f88947b24d99dc11b18451de3ca66ae4c720fccca8576e44",
+    "apps/desktop/src/renderer/domains/android/tests/ManagementTools.test.tsx": "7403f1a0a9982c9f23f9d7018beda12a86bf96af1ec6ae86c9ff05aeaa403e61",
+    "apps/desktop/src/renderer/domains/android/tests/ManagementOverview.test.tsx": "6b3802b863ea83f00d95082395d0635d41bc1ad3d19b083bbb32f6a9cc5aaae6"
+  }
+}

@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { EventEmitter } from 'node:events'
 import { spawn } from 'node:child_process'
 import { mkdirSync } from 'node:fs'
+import { join } from 'node:path'
 import { applySidecarEvent, initialSidecarStatus, validateSidecarHealth } from './supervisor'
 
 vi.mock('node:child_process', () => ({ spawn: vi.fn() }))
@@ -82,7 +83,7 @@ describe('sidecar startup paths', () => {
       expect.anything(),
     )
     // The local service's own output has to be readable after a failed start.
-    expect(vi.mocked(mkdirSync)).toHaveBeenCalledWith('/tmp/autoflow-pm4-qa/logs', { recursive: true })
+    expect(vi.mocked(mkdirSync)).toHaveBeenCalledWith(join('/tmp/autoflow-pm4-qa', 'logs'), { recursive: true })
     vi.unstubAllGlobals()
   })
 

@@ -1,0 +1,42 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/android/tests/ManagementOverview.test.tsx -t does not freeze an empty
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+
+ ❯ src/renderer/domains/android/tests/ManagementOverview.test.tsx (21 tests | 1 failed | 20 skipped) 298ms
+   × does not freeze an empty batch when selected targets leave the filter before submission 296ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/android/tests/ManagementOverview.test.tsx > does not freeze an empty batch when selected targets leave the filter before submission
+Error: expect(element).toBeDisabled()
+
+Received element is not disabled:
+  <button
+  type="button"
+/>
+ ❯ src/renderer/domains/android/tests/ManagementOverview.test.tsx:319:58
+    317|   await userEvent.click(await screen.findByRole('checkbox', { name: '已…
+    318|   await userEvent.type(screen.getByLabelText('搜索实例'), 'no-match')
+    319|   expect(screen.getByRole('button', { name: '提交批量操作' })).toBeDisabled()
+       |                                                          ^
+    320|   await userEvent.click(screen.getByRole('button', { name: '提交批量操作' }))
+    321|   expect(api.bulk).not.toHaveBeenCalled()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 20 skipped (21)
+   Start at  06:27:05
+   Duration  2.12s (transform 463ms, setup 384ms, import 367ms, tests 298ms, environment 887ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/android/tests/ManagementOverview.test.tsx -t 'does not freeze an empty'

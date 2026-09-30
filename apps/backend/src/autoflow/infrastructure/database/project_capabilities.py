@@ -3,7 +3,6 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
-from dataclasses import replace
 from datetime import UTC, datetime
 from functools import cmp_to_key
 from typing import Any
@@ -16,11 +15,14 @@ from sqlalchemy.orm import Session, sessionmaker
 from autoflow.domain.project_data.capabilities import (
     AddProjectFieldCommand,
     CreateProjectRecordCommand,
+    DeleteProjectFieldCommand,
     DeleteProjectRecordCommand,
     EnsureProjectFieldCommand,
     ModifyProjectFieldCommand,
     PreviewProjectFieldChangeRequest,
+    PreviewProjectFieldDeletionRequest,
     QueryProjectRecordsRequest,
+    QueryProjectTableSchemaRequest,
     ReadProjectRecordRequest,
     RecordReadGrant,
     RecordWriteGrant,
@@ -48,16 +50,15 @@ from autoflow.domain.project_data.schema import (
 )
 from autoflow.domain.project_runs.input_selection import (
     MAX_CANDIDATE_EVALUATIONS,
-    LeaseKey,
     RecordRef,
 )
 from autoflow.domain.projects.models import ProjectError, ProjectOperation
-from autoflow.domain.workflows.project_data import (
-    project_data_manifest,
-    project_data_nodes,
-)
 from autoflow.infrastructure.database.models import ProjectOperationRow
-from autoflow.infrastructure.database.project_claims import _lease_key
+from autoflow.infrastructure.database.project_claims import (
+    _lease_key,
+    active_record_lease,
+    resolve_record_lease,
+)
 from autoflow.infrastructure.database.project_data import (
     _operation_result,
     _operation_row,
@@ -89,9 +90,9 @@ from autoflow.infrastructure.database.project_run_models import (
     ProjectTaskRecordReadRow,
     ProjectTaskRow,
 )
+from autoflow.infrastructure.database.project_sync import enqueue_intent
+from autoflow.infrastructure.database.project_sync_models import SheetsBindingRow
 from autoflow.infrastructure.database.workflow_runtime_models import (
-    WorkflowPreparedContentRow,
-    WorkflowRunEventRow,
     WorkflowRunRow,
 )
 
@@ -104,61 +105,6 @@ class SqlAlchemyProjectDataCapabilities:
 
     def __init__(self, factory: sessionmaker[Session]):
         self._factory = factory
-
-    def worker_context(self, run_id: str, generation: int, request: dict[str, Any]) -> tuple[TaskCapabilityScope, list[dict[str, Any]]]:
-        """Resolve authority from this workspace and a durably admitted node visit."""
-        with self._factory() as session:
-            task = session.scalar(select(ProjectTaskRow).where(ProjectTaskRow.run_id == run_id))
-            if task is None:
-                raise ProjectError('CAPABILITY_SCOPE_DENIED', 'Run has no project task', 403)
-            _task, run, snapshot = self._facts(session, task.project_id, task.id, run_id)
-            if type(generation) is not int or generation != run.execution_generation:
-                raise ProjectError('LEASE_REVOKED', 'Worker execution generation is no longer active', 409)
-            visit = session.scalar(select(WorkflowRunEventRow).where(
-                WorkflowRunEventRow.run_id == run_id,
-                WorkflowRunEventRow.execution_generation == generation,
-                WorkflowRunEventRow.node_id == request['nodeId'],
-                WorkflowRunEventRow.node_visit_id == request['nodeVisitId'],
-                WorkflowRunEventRow.attempt == request['attempt'],
-                WorkflowRunEventRow.kind == 'nodeAttempt',
-            ).order_by(WorkflowRunEventRow.sequence.desc()).limit(1))
-            if visit is None or visit.payload.get('status') != 'started':
-                raise ProjectError('CAPABILITY_SCOPE_DENIED', 'Node visit is not durably active', 403)
-            prepared = session.get(WorkflowPreparedContentRow, run.prepared_content_id)
-            configs = [] if prepared is None else [
-                config for node_id, config in project_data_nodes(prepared.execution_plan)
-                if node_id == request['nodeId']
-            ]
-            if not configs or any(
-                request['capability'] != 'project.data.' + config.get('action', 'inputs')
-                or config != configs[0] for config in configs
-            ):
-                raise ProjectError('CAPABILITY_SCOPE_DENIED', 'Node capability is absent from the frozen workflow', 403)
-            config = configs[0]
-            project_id, task_id, inputs = task.project_id, task.id, list(snapshot.inputs)
-        scope = self.scope(project_id, task_id, run_id)
-        if scope.execution_generation != generation:
-            raise ProjectError('LEASE_REVOKED', 'Worker execution generation changed', 409)
-        if config.get('action', 'inputs') not in {'inputs', 'operation'}:
-            manifest = project_data_manifest({'nodes': [{'data': {'moduleType': 'project_data', 'config': config}}]})
-            grant = manifest['tableGrants'][0]
-            allowed = TableCapabilityGrant(
-                grant['tableId'], grant['datasetGeneration'], frozenset(grant['operations']),
-                frozenset(grant['fieldIds']), frozenset(grant['readPurposes']),
-            )
-            if not any(
-                existing.table_id == allowed.table_id
-                and existing.dataset_generation == allowed.dataset_generation
-                and allowed.operations <= existing.operations
-                and allowed.field_ids <= existing.field_ids
-                and allowed.read_purposes <= existing.read_purposes
-                for existing in scope.table_grants
-            ):
-                raise ProjectError('CAPABILITY_SCOPE_DENIED', 'Node declaration exceeds the run grant', 403)
-            scope = replace(scope, status_record_refs=frozenset(), create_record_targets=frozenset(),
-                            record_read_grants=frozenset(), record_write_grants=frozenset(),
-                            table_grants=frozenset({allowed}))
-        return scope, inputs
 
     def scope(
         self,
@@ -296,7 +242,7 @@ class SqlAlchemyProjectDataCapabilities:
 
     def read_record(
         self, scope: TaskCapabilityScope, request: ReadProjectRecordRequest
-    ) -> dict:
+    ) -> dict[str, Any]:
         with self._factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
             _task, run, _snapshot = self._facts(
@@ -327,9 +273,41 @@ class SqlAlchemyProjectDataCapabilities:
             self._commit(session)
             return value
 
+    def query_table_schema(
+        self,
+        scope: TaskCapabilityScope,
+        request: QueryProjectTableSchemaRequest,
+    ) -> dict[str, Any]:
+        with self._factory() as session:
+            # A short transaction keeps Run, table and field facts consistent;
+            # no read evidence, lease or operation is created by a schema query.
+            session.execute(text("BEGIN IMMEDIATE"))
+            _task, run, _snapshot = self._facts(session, scope.project_id, scope.task_id, scope.run_id)
+            scope.authorize_query_table_schema(request, current_execution_generation=run.execution_generation)
+            table = SqlAlchemyProjectDataRecords._table(
+                session, scope.project_id, request.table_id, request.dataset_generation, True
+            )
+            fields = {row.id: row for row in SqlAlchemyProjectDataRecords._fields(session, table)}
+            if not set(request.field_ids) <= fields.keys():
+                raise ProjectError("FIELD_NOT_FOUND", "Selected schema field no longer exists", 404)
+            binding = session.get(SheetsBindingRow, table.id) if table.source_kind == "sheets" else None
+            columns = {item["fieldId"]: {"columnId": item["columnId"], "direction": item["direction"]}
+                       for item in binding.mapping} if binding else {}
+            result_fields = []
+            for field_id in request.field_ids:
+                row = fields[field_id]
+                metadata = _catalog_field(row)
+                result_fields.append({"fieldId": field_id,
+                    **{key: metadata[key] for key in ("key", "name", "type", "required", "writable", "formula")},
+                    "sourceColumn": columns.get(field_id)})
+            return {"projectId": scope.project_id, "tableId": table.id,
+                    "datasetGeneration": table.current_generation, "tableRevision": table.table_revision,
+                    "fields": result_fields,
+                    "systemProperties": {"statusId": {"type": "status", "nullable": True, "writable": False}}}
+
     def query_records(
         self, scope: TaskCapabilityScope, request: QueryProjectRecordsRequest
-    ) -> dict:
+    ) -> dict[str, Any]:
         with self._factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
             _task, run, _snapshot = self._facts(
@@ -408,7 +386,7 @@ class SqlAlchemyProjectDataCapabilities:
                 )
                 query_id, offset = str(uuid4()), 0
                 field_ids = tuple(request.field_ids)
-                snapshots: list[dict] = []
+                snapshots: list[dict[str, Any]] = []
                 snapshot_bytes = 0
                 for row in rows:
                     snapshot = _projected_snapshot(
@@ -495,7 +473,7 @@ class SqlAlchemyProjectDataCapabilities:
 
     def set_record_status(
         self, scope: TaskCapabilityScope, command: SetRecordStatusCommand
-    ) -> tuple[dict, bool]:
+    ) -> tuple[dict[str, Any], bool]:
         with self._factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
             task, run, _snapshot = self._facts(
@@ -611,7 +589,7 @@ class SqlAlchemyProjectDataCapabilities:
 
     def update_record(
         self, scope: TaskCapabilityScope, command: UpdateProjectRecordCommand
-    ) -> tuple[dict, bool]:
+    ) -> tuple[dict[str, Any], bool]:
         with self._factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
             task, run, _snapshot = self._facts(
@@ -675,7 +653,8 @@ class SqlAlchemyProjectDataCapabilities:
                 )
             canonical = records._validate(fields, dict(command.changes), False)
             before = records._snapshot(row, fields)
-            merged = {**row.values_json, **canonical}
+            old_values = row.values_json
+            merged = {**old_values, **canonical}
             if merged != row.values_json:
                 row.values_json = merged
                 row.content_revision += 1
@@ -694,13 +673,17 @@ class SqlAlchemyProjectDataCapabilities:
             session.add(_operation_row(operation))
             session.flush()
             if before != after:
+                enqueue_intent(session, table, command.record_ref.record_key, row.content_revision, {
+                    field_id: value for field_id, value in canonical.items()
+                    if field_id not in old_values or old_values[field_id] != value
+                })
                 session.add(_change(operation, before, after))
             self._commit(session)
             return after, False
 
     def delete_record(
         self, scope: TaskCapabilityScope, command: DeleteProjectRecordCommand
-    ) -> tuple[dict, bool]:
+    ) -> tuple[dict[str, Any], bool]:
         with self._factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
             task, run, _snapshot = self._facts(
@@ -809,7 +792,7 @@ class SqlAlchemyProjectDataCapabilities:
 
     def create_record(
         self, scope: TaskCapabilityScope, command: CreateProjectRecordCommand
-    ) -> tuple[dict, bool]:
+    ) -> tuple[dict[str, Any], bool]:
         with self._factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
             task, run, _snapshot = self._facts(
@@ -899,12 +882,12 @@ class SqlAlchemyProjectDataCapabilities:
 
     def add_field(
         self, scope: TaskCapabilityScope, command: AddProjectFieldCommand
-    ) -> tuple[dict, bool]:
+    ) -> tuple[dict[str, Any], bool]:
         return self._add_or_ensure_field(scope, command, ensure=False)
 
     def ensure_field(
         self, scope: TaskCapabilityScope, command: EnsureProjectFieldCommand
-    ) -> tuple[dict, bool]:
+    ) -> tuple[dict[str, Any], bool]:
         return self._add_or_ensure_field(scope, command, ensure=True)
 
     def _add_or_ensure_field(
@@ -913,7 +896,7 @@ class SqlAlchemyProjectDataCapabilities:
         command: AddProjectFieldCommand | EnsureProjectFieldCommand,
         *,
         ensure: bool,
-    ) -> tuple[dict, bool]:
+    ) -> tuple[dict[str, Any], bool]:
         kind = "ensureField" if ensure else "addField"
         with self._factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
@@ -945,6 +928,13 @@ class SqlAlchemyProjectDataCapabilities:
                     "DATASET_GENERATION_GONE", "Dataset was replaced", 410
                 )
             catalog._cas(table.table_revision, command.expected_table_revision)
+            if session.scalar(select(DataChangeRow.id).where(
+                DataChangeRow.project_id == command.project_id,
+                DataChangeRow.resource["fieldRef"]["datasetGeneration"].as_string() == command.dataset_generation,
+                DataChangeRow.resource["fieldRef"]["fieldId"].as_string() == command.field_id,
+                DataChangeRow.after["deleted"].as_boolean().is_(True),
+            ).limit(1)):
+                raise ProjectError("FIELD_ID_RETIRED", "Deleted field identity cannot be reused", 409)
             definition = command.request_payload["definition"]
             matching = session.scalar(
                 select(DataFieldRow).where(
@@ -1121,9 +1111,59 @@ class SqlAlchemyProjectDataCapabilities:
                 ) from error
             return result, False
 
+    def preview_field_deletion(
+        self,
+        scope: TaskCapabilityScope,
+        request: PreviewProjectFieldDeletionRequest,
+    ) -> dict[str, Any]:
+        from .project_data_schema import SqlAlchemyProjectDataSchema
+        with self._factory() as session:
+            _task, run, _snapshot = self._facts(session, scope.project_id, scope.task_id, scope.run_id)
+            scope.authorize_delete_field(request, current_execution_generation=run.execution_generation)
+            candidate = self._field_deletion_candidate(session, request)
+        report = SqlAlchemyProjectDataSchema(self._factory).preview(
+            scope.project_id, request.table_id, candidate, deleting_task_id=scope.task_id
+        )
+        return {**report, "tableRevision": candidate["expectedTableRevision"]}
+
+    def delete_field(
+        self, scope: TaskCapabilityScope, command: DeleteProjectFieldCommand
+    ) -> tuple[dict[str, Any], bool]:
+        from .project_data_schema import SqlAlchemyProjectDataSchema
+        with self._factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            _task, run, _snapshot = self._facts(session, scope.project_id, scope.task_id, scope.run_id)
+            existing = self._existing(session, scope, "deleteField", command.operation_id, command.request_digest)
+            if existing is not None:
+                return _operation_result(existing), True
+            scope.authorize_delete_field(command, current_execution_generation=run.execution_generation)
+            candidate = self._field_deletion_candidate(session, command)
+            SqlAlchemyProjectDataCatalog._cas(candidate["expectedTableRevision"], command.expected_table_revision)
+            operation = _completed_operation(scope, command.operation_id, "deleteField", command.request_digest, {})
+            result, _done, replayed = SqlAlchemyProjectDataSchema(self._factory).commit_in_session(
+                session, scope.project_id, command.table_id, candidate, command.impact_revision, operation, deleting_task_id=scope.task_id
+            )
+            self._commit(session)
+            return result, replayed
+
+    @staticmethod
+    def _field_deletion_candidate(
+        session: Session,
+        request: DeleteProjectFieldCommand | PreviewProjectFieldDeletionRequest,
+    ) -> dict[str, Any]:
+        table = SqlAlchemyProjectDataRecords._table(session, request.project_id, request.table_id, request.dataset_generation, True)
+        fields = SqlAlchemyProjectDataRecords._fields(session, table)
+        if not any(row.id == request.field_id for row in fields):
+            raise ProjectError("FIELD_NOT_FOUND", "Field was not found", 404)
+        return {"datasetGeneration": table.current_generation, "expectedTableRevision": table.table_revision,
+                "removedFieldIds": [request.field_id], "fields": [
+                    {"kind": "existing", "fieldId": row.id, "expectedFieldRevision": row.field_revision,
+                     "definition": {key: getattr(row, key) for key in ("key", "name", "type", "required", "validation")}}
+                    for row in fields if row.id != request.field_id]}
+
     def modify_field(
         self, scope: TaskCapabilityScope, command: ModifyProjectFieldCommand
-    ) -> tuple[dict, bool]:
+    ) -> tuple[dict[str, Any], bool]:
         with self._factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
             _task, run, _snapshot = self._facts(
@@ -1229,7 +1269,7 @@ class SqlAlchemyProjectDataCapabilities:
         self,
         scope: TaskCapabilityScope,
         request: PreviewProjectFieldChangeRequest,
-    ) -> dict:
+    ) -> dict[str, Any]:
         with self._factory() as session:
             _task, run, _snapshot = self._facts(
                 session, scope.project_id, scope.task_id, scope.run_id
@@ -1302,7 +1342,7 @@ class SqlAlchemyProjectDataCapabilities:
 
     def query_operation(
         self, scope: TaskCapabilityScope, operation_id: str
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         with self._factory() as session:
             row = session.get(ProjectOperationRow, operation_id)
             if row is None:
@@ -1316,7 +1356,7 @@ class SqlAlchemyProjectDataCapabilities:
         scope: TaskCapabilityScope,
         purpose: str,
         field_ids: tuple[str, ...],
-        snapshot: dict,
+        snapshot: dict[str, Any],
     ) -> None:
         ref = snapshot["ref"]
         key = ref["recordKey"]
@@ -1348,7 +1388,7 @@ class SqlAlchemyProjectDataCapabilities:
         kind: str,
         operation_id: str,
         digest: str,
-    ):
+    ) -> ProjectOperationRow | None:
         row = session.scalar(
             select(ProjectOperationRow).where(
                 ProjectOperationRow.idempotency_key == operation_id
@@ -1383,7 +1423,9 @@ class SqlAlchemyProjectDataCapabilities:
             )
 
     @staticmethod
-    def _facts(session: Session, project_id: str, task_id: str, run_id: str):
+    def _facts(
+        session: Session, project_id: str, task_id: str, run_id: str
+    ) -> tuple[ProjectTaskRow, WorkflowRunRow, ProjectTaskInputSnapshotRow]:
         task = session.get(ProjectTaskRow, task_id)
         run = session.get(WorkflowRunRow, run_id)
         snapshot = session.scalar(
@@ -1411,15 +1453,19 @@ class SqlAlchemyProjectDataCapabilities:
         return task, run, snapshot
 
     @staticmethod
-    def _leased_cursor(session: Session, scope: TaskCapabilityScope, ref: RecordRef):
+    def _leased_cursor(
+        session: Session, scope: TaskCapabilityScope, ref: RecordRef
+    ) -> tuple[ProjectRecordLeaseRow, ProjectTaskRecordCursorRow]:
         ref_payload = _ref_payload(ref)
         lease = session.scalar(
-            select(ProjectRecordLeaseRow).where(
+            select(ProjectRecordLeaseRow).join(ProjectTaskRecordCursorRow,
+                ProjectTaskRecordCursorRow.lease_id == ProjectRecordLeaseRow.id).where(
                 ProjectRecordLeaseRow.project_id == scope.project_id,
                 ProjectRecordLeaseRow.task_id == scope.task_id,
                 ProjectRecordLeaseRow.run_id == scope.run_id,
                 ProjectRecordLeaseRow.state.in_(("held", "reconciling")),
-                ProjectRecordLeaseRow.record_ref == ref_payload,
+                ProjectTaskRecordCursorRow.task_id == scope.task_id,
+                ProjectTaskRecordCursorRow.record_ref == ref_payload,
             )
         )
         if lease is None:
@@ -1430,6 +1476,7 @@ class SqlAlchemyProjectDataCapabilities:
             select(ProjectTaskRecordCursorRow).where(
                 ProjectTaskRecordCursorRow.task_id == scope.task_id,
                 ProjectTaskRecordCursorRow.lease_id == lease.id,
+                ProjectTaskRecordCursorRow.record_ref == ref_payload,
             )
         )
         if cursor is None:
@@ -1451,45 +1498,25 @@ class SqlAlchemyProjectDataCapabilities:
         expected_content: int | None = None,
         expected_status: int | None = None,
         expected_link: int | None = None,
-    ):
+    ) -> tuple[ProjectRecordLeaseRow, ProjectTaskRecordCursorRow]:
         if lease_mode == "existing":
             return cls._leased_cursor(session, scope, ref)
-        active = session.scalar(
-            select(ProjectRecordLeaseRow).where(
-                ProjectRecordLeaseRow.lease_key
-                == _lease_key(
-                    LeaseKey(
-                        "local",
-                        scope.project_id,
-                        ref.table_id,
-                        ref.dataset_generation,
-                        ref.record_key,
-                    )
-                ),
-                ProjectRecordLeaseRow.state.in_(("held", "reconciling")),
-            )
-        )
+        active = active_record_lease(session, scope.project_id, ref.table_id, ref.dataset_generation, ref.record_key)
         if active is not None:
             if active.task_id == scope.task_id and active.run_id == scope.run_id:
                 cursor = session.scalar(
                     select(ProjectTaskRecordCursorRow).where(
                         ProjectTaskRecordCursorRow.task_id == scope.task_id,
                         ProjectTaskRecordCursorRow.lease_id == active.id,
+                        ProjectTaskRecordCursorRow.record_ref == _ref_payload(ref),
                     )
                 )
-                if cursor is None:
-                    raise ProjectError(
-                        "CAPABILITY_FACTS_INCOMPLETE",
-                        "Task write cursor is missing",
-                        409,
-                    )
-                return active, cursor
-            raise ProjectError(
-                "LEASE_BUSY",
-                "Record is currently used by another task",
-                409,
-                {"retryable": True},
-            )
+                if cursor is not None:
+                    return active, cursor
+                # Another local binding of this source row still needs its own
+                # task-scoped read evidence and version cursor below.
+            else:
+                raise ProjectError("LEASE_BUSY", "Record is currently used by another task", 409, {"retryable": True})
         evidence = session.scalar(
             select(ProjectTaskRecordReadRow)
             .where(
@@ -1545,15 +1572,17 @@ class SqlAlchemyProjectDataCapabilities:
         key: RecordKey,
         row: DataRecordRow,
         source: str,
-    ):
+    ) -> tuple[ProjectRecordLeaseRow, ProjectTaskRecordCursorRow]:
         now = datetime.now(UTC)
         ref = RecordRef(scope.project_id, table_id, generation, key)
         payload = _ref_payload(ref)
-        lease = ProjectRecordLeaseRow(
+        source_key, _identity = resolve_record_lease(session, ref, allow_unseen=source == "createdRecord")
+        active = active_record_lease(session, scope.project_id, table_id, generation, key)
+        if active is not None and (active.task_id != scope.task_id or active.run_id != scope.run_id or active.lease_key != _lease_key(source_key)):
+            raise ProjectError("LEASE_BUSY", "Record is currently used by another task", 409, {"retryable": True})
+        lease = active or ProjectRecordLeaseRow(
             id=str(uuid4()),
-            lease_key=_lease_key(
-                LeaseKey("local", scope.project_id, table_id, generation, key)
-            ),
+            lease_key=_lease_key(source_key),
             project_id=scope.project_id,
             batch_id=task.batch_id,
             task_id=scope.task_id,
@@ -1591,7 +1620,11 @@ class SqlAlchemyProjectDataCapabilities:
 
 
 def _completed_operation(
-    scope: TaskCapabilityScope, operation_id: str, kind: str, digest: str, result: dict
+    scope: TaskCapabilityScope,
+    operation_id: str,
+    kind: str,
+    digest: str,
+    result: dict[str, Any],
 ) -> ProjectOperation:
     now = datetime.now(UTC)
     resource = {
@@ -1630,7 +1663,9 @@ def _completed_operation(
 
 
 def _change(
-    operation: ProjectOperation, before: dict | None, after: dict
+    operation: ProjectOperation,
+    before: dict[str, Any] | None,
+    after: dict[str, Any],
 ) -> DataChangeRow:
     return DataChangeRow(
         id=str(uuid4()),
@@ -1647,8 +1682,8 @@ def _change(
 
 def _field_change(
     operation: ProjectOperation,
-    before: dict | None,
-    after: dict,
+    before: dict[str, Any] | None,
+    after: dict[str, Any],
     *,
     sequence: int,
 ) -> DataChangeRow:
@@ -1668,7 +1703,7 @@ def _field_change(
 def _record_value_change(
     operation: ProjectOperation,
     row: DataRecordRow,
-    before: dict,
+    before: dict[str, Any],
     *,
     sequence: int,
 ) -> DataChangeRow:
@@ -1694,7 +1729,7 @@ def _record_value_change(
     )
 
 
-def _ref(payload: dict) -> RecordRef:
+def _ref(payload: dict[str, Any]) -> RecordRef:
     key = payload["recordKey"]
     return RecordRef(
         payload["projectId"],
@@ -1704,7 +1739,7 @@ def _ref(payload: dict) -> RecordRef:
     )
 
 
-def _ref_payload(ref: RecordRef) -> dict:
+def _ref_payload(ref: RecordRef) -> dict[str, Any]:
     return {
         "projectId": ref.project_id,
         "tableId": ref.table_id,
@@ -1735,17 +1770,25 @@ def _content_revision_conflict(expected: int, current: int) -> ProjectError:
     )
 
 
-def _projected_snapshot(snapshot: dict, field_ids: tuple[str, ...]) -> dict:
+def _projected_snapshot(
+    snapshot: dict[str, Any], field_ids: tuple[str, ...]
+) -> dict[str, Any]:
     allowed = set(field_ids)
     return {
         **snapshot,
+        "validationIssues": [
+            issue for issue in snapshot.get("validationIssues", [])
+            if issue["fieldId"] in allowed
+        ],
         "values": [
             value for value in snapshot["values"] if value["fieldId"] in allowed
         ],
     }
 
 
-def _query_shape_digest(scope: TaskCapabilityScope, payload: dict) -> str:
+def _query_shape_digest(
+    scope: TaskCapabilityScope, payload: dict[str, Any]
+) -> str:
     shape = {
         "projectId": scope.project_id,
         "taskId": scope.task_id,

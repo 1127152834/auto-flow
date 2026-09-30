@@ -14,8 +14,8 @@ describe.each(['memory','http'] as const)('module metadata over %s',mode=>{
  it('returns exactly the filtered frozen metadata with explicit coverage',async()=>{
   const response=await request();expect(response.status).toBe(200);const data=await response.json()
   expect(isRequiredFieldMetadata(data)).toBe(true);expect(data).toEqual(fixture);expect(data.coveredModules).toHaveLength(218)
-  expect(data.requiredFields.project_data).toEqual(['action','resultVariable'])
-  expect(data.conditionalRequired.project_data.map.update).toEqual(['binding','arguments'])
+  expect(data.requiredFields.project_data).toEqual(['operation','arguments','variableName'])
+  expect(data.conditionalRequired.project_data.map.updateRecord).toEqual(['bindingProjectId','tableGrant'])
   expect(data.conditionalRequired.project_data.map.inputs).toEqual([])
   expect(data.requiredFields.open_page).toEqual(['url']);expect(data.requiredFields.wait).toBeUndefined()
   expect(data.coveredModules).not.toContain('real_keyboard');expect(data.fieldLabels.open_page.url).toContain('URL')

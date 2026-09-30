@@ -1,3 +1,4 @@
+import { getStudioTransportRevision } from './transport'
 import { requestSettingsClose } from '../lib/settingsLeave'
 import { requestDocumentLeave } from '../lib/documentLeave'
 import { snapshotKey } from '../lib/snapshotKey'
@@ -347,6 +348,7 @@ export async function executeClientAction(
           action,
           label: AI_ACTION_LABELS[action] || action,
           before: {
+            browserEnvironmentVersion: ws.browserEnvironmentVersion,
             nodes: JSON.parse(JSON.stringify(ws.nodes)),
             edges: JSON.parse(JSON.stringify(ws.edges)),
             name: ws.name,
@@ -402,6 +404,7 @@ export async function executeClientAction(
         const rawNodes = (payload.nodes as any[]) || []
         let edges = (payload.edges as any[]) || []
         const name = (payload.name as string) || '未命名工作流'
+        const browserEnvironmentVersion = payload.browserEnvironmentVersion as number | undefined
         const animate = payload.animate !== false  // 默认开启可视化逐步搭建动画
         // 🛡️ 过滤掉不存在的模块，绝不把虚构模块装入画布
         const { valid: nodes, invalidTypes } = partitionValidAiNodes(rawNodes)
@@ -420,6 +423,7 @@ export async function executeClientAction(
         if (!animate) {
           // 兼容老调用方式：一次性装入
           store.loadWorkflow({
+            browserEnvironmentVersion,
             nodes: xyNodes as any,
             edges: edges as any,
             name,
@@ -431,7 +435,7 @@ export async function executeClientAction(
 
         // === 可视化逐步搭建：让用户亲眼看着 AI 把节点一个个画出来 ===
         // 1) 先清空画布、设置工作流名
-        store.loadWorkflow({ nodes: [], edges: [], name, variables: Array.isArray(payload.variables) ? payload.variables : [] })
+        store.loadWorkflow({ browserEnvironmentVersion, nodes: [], edges: [], name, variables: Array.isArray(payload.variables) ? payload.variables : [] })
         useWorkflowStore.setState({ hasUnsavedChanges: true })
 
         // 2) 节点排序：先便签（zIndex=-1），再按 position 从左上到右下
@@ -1039,6 +1043,41 @@ export async function executeClientAction(
             hasUnsavedChanges: s.hasUnsavedChanges,
           },
         }
+      }
+
+      case 'get_trace_summary':
+      case 'query_trace_events':
+      case 'read_trace_evidence': {
+        const connection = getStudioTransportRevision()
+        if (typeof payload.runId !== 'string' || !payload.runId.trim()) return { success: false, error: '必须指定要诊断的 runId' }
+        if (action === 'read_trace_evidence' && (typeof payload.evidenceId !== 'string' || !payload.evidenceId)) return { success: false, error: '必须指定 evidenceId' }
+        const cursor = payload.cursor ?? 0
+        if (!Number.isSafeInteger(cursor) || cursor < 0) return { success: false, error: 'cursor 必须是非负整数' }
+        const result = await workflowApi.getRunTrace(payload.runId, cursor, typeof payload.kind === 'string' ? payload.kind : '', {
+          limit: action === 'query_trace_events' ? 20 : 1,
+          executionId: typeof payload.executionId === 'string' ? payload.executionId : undefined,
+          evidenceId: action === 'read_trace_evidence' ? payload.evidenceId : undefined,
+        })
+        if (!result.success || !result.data) return { success: false, error: result.error || '追踪读取失败' }
+        if (connection !== getStudioTransportRevision()) return { success: false, error: '工作区连接已变化，请重新读取证据' }
+        const data = result.data
+        if (action === 'get_trace_summary') return { success: true, data: { runId: data.runId, runStatus: data.runStatus, status: data.status, gaps: data.gaps, total: data.total, traceId: data.traceId, sessions: data.sessions } }
+        if (action === 'read_trace_evidence' && data.events.length === 0) return { success: false, error: '证据不存在或不属于本次运行' }
+        if (action === 'read_trace_evidence' && (payload.part === 'dom' || payload.part === 'source')) {
+          const offset = payload.offset ?? 0, limit = payload.limit ?? 2000
+          if (!Number.isSafeInteger(offset) || offset < 0 || !Number.isSafeInteger(limit) || limit < 1 || limit > 8000) return { success: false, error: 'offset 必须是非负整数，limit 范围为 1–8000 字符' }
+          const evidence = data.events[0]
+          const artifactId = payload.part === 'source' ? evidence.sourceId : evidence.domId
+          if (!artifactId) return { success: false, error: '该证据未采集所需原文' }
+          const artifact = await workflowApi.getRunArtifact(payload.runId, artifactId)
+          if (!artifact.success || !artifact.data) return { success: false, error: artifact.error || 'DOM 证据读取失败' }
+          if (artifact.data.size > 8 * 1024 * 1024 || !artifact.data.type.startsWith(payload.part === 'source' ? 'text/javascript' : 'text/html')) return { success: false, error: '原文证据格式或大小无效' }
+          const content = await artifact.data.text()
+          if (connection !== getStudioTransportRevision()) return { success: false, error: '工作区连接已变化，请重新读取证据' }
+          return { success: true, data: { runId: data.runId, evidenceId: evidence.id, part: payload.part, offset, text: content.slice(offset, offset + limit), totalCharacters: content.length, nextOffset: offset + limit < content.length ? offset + limit : null } }
+        }
+        // Model-bound tool results are redacted again by the existing assistant service.
+        return { success: true, data: { runId: data.runId, events: data.events, nextCursor: data.nextCursor, total: data.total, gaps: data.gaps } }
       }
 
       case 'get_logs': {

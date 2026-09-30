@@ -2,7 +2,6 @@
 import type { ModuleType } from '../types/index'
 
 const sourceModuleCategories = [
-  { name: '项目数据', color: 'bg-teal-600', modules: ['project_data', 'project_end'] as ModuleType[] },
   { name: '代理控制', color: 'bg-teal-600', modules: ['proxy_change_ip', 'proxy_change_location', 'proxy_query'] as ModuleType[] },
   // ===== 浏览器自动化 =====
   {
@@ -337,9 +336,10 @@ export const excludedModuleTypes = new Set<ModuleType>([
   'notify_gotify', 'notify_serverchan', 'notify_pushplus', 'notify_ntfy',
   'notify_matrix', 'notify_rocketchat',
 ])
-export const moduleCategories = sourceModuleCategories
+export const diagnosticModuleTypes: ModuleType[] = ['trace_mark', 'capture_diagnostics', 'save_trace_segment']
+export const moduleCategories = [{ name: '浏览器诊断', color: 'bg-amber-600', modules: diagnosticModuleTypes }, { name: '项目能力', color: 'bg-teal-500', modules: ['project_data', 'project_manual', 'project_end'] as ModuleType[] }, ...sourceModuleCategories
   .filter(c => !excludedCategories.has(c.name))
-  .map(c => ({ ...c, modules: c.modules.filter(type => !excludedModuleTypes.has(type)) }))
+  .map(c => ({ ...c, modules: c.modules.filter(type => !excludedModuleTypes.has(type)) }))]
 
 /** Check imported custom-module contents as well as top-level nodes, without modifying documents. */
 export function findExcludedModuleType(nodes: readonly unknown[], resolveCustomNodes: (id: string) => readonly unknown[] | undefined = () => undefined): string | null {

@@ -130,6 +130,7 @@ it('keeps the same startup identity when both acknowledgement and recovery query
 })
 
 it('releases an unaccepted startup identity after a definite status rejection',async()=>{
+ selectBrowserNode('managed')
  const ids:string[]=[]
  const restore=configureStudioConnection('http://picker-unaccepted.test',async(input,init)=>{
   if(String(input).endsWith('/v1/profiles'))return Response.json({items:[{id:'managed',name:'管理配置'}],total:1})
@@ -172,3 +173,7 @@ it.each([{selected:'true'}, {selected:true}, {selected:true,element:{selector:''
   :{success:true,sessionId:'picker',active:true,...patch}))
  try{expect(await elementPickerApi.getSelected()).toMatchObject({success:false,error:'拾取结果格式错误，未应用定位信息'})}finally{restore()}
 })
+
+import {beforeEach as beforeBrowserNode} from 'vitest'
+import {selectBrowserNode} from './select-browser-node'
+beforeBrowserNode(()=>selectBrowserNode())

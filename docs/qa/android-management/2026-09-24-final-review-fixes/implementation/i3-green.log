@@ -1,0 +1,15 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/android/tests/AndroidPage.test.tsx -t hidden lease
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+
+(node:95547) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 37 skipped (38)
+   Start at  09:44:00
+   Duration  2.07s (transform 337ms, setup 140ms, import 1.29s, tests 196ms, environment 355ms)
+

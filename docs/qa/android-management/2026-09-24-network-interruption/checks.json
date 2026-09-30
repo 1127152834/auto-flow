@@ -1,0 +1,12 @@
+{
+  "productCommit": "0f6f8fac",
+  "sourceUnchangedFromHead": true,
+  "command": "uv run --project apps/backend python docs/qa/android-management/scripts/image-network-interruption-smoke.py --allow-image-pull --output /private/tmp/android-network-interruption-final.json",
+  "exit": 0,
+  "ruff": "passed",
+  "helpExit": 0,
+  "missingOptInExit": 2,
+  "guestSyntax": "passed",
+  "macUi": "blocked: Native apps: Error: The Mac is locked and automatic unlock could not unlock it. Ask the user to unlock the Mac manually before continuing.",
+  "artifactNormalization": "initial-harness-failure.log: removed trailing empty line only; diagnostic text unchanged"
+}

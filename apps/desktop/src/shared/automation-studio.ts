@@ -2,6 +2,7 @@ export type StudioLeaveRequest = {id:string; reason:'close'|'quit'|'workspace'|'
 export type StudioOpenContext = {
   workspaceKey?: string
   instanceId?: string
+  automationId?: string
   projectId?: string
   workflowId?: string
 }

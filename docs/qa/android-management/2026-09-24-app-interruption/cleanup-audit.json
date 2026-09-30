@@ -1,0 +1,27 @@
+[
+  {
+    "deviceId": "f068f555-2ee9-467d-a076-eee7c6fb40cb",
+    "workspaceId": "fc453347fdaaaaa8b44a19bf26de20a03dc9e474a05cc1366530a4551f2ecf58",
+    "state": "missing"
+  },
+  {
+    "deviceId": "ccdd870e-b5d7-40eb-8594-5e08606809ac",
+    "workspaceId": "1cca131a9bd02fb1a0e6f7ff8b2c11e3e7512996950857d0e869d7ddac37bd88",
+    "state": "missing"
+  },
+  {
+    "deviceId": "abbd3073-fccf-408e-83b4-eb4a3e9f7f84",
+    "workspaceId": "1cca131a9bd02fb1a0e6f7ff8b2c11e3e7512996950857d0e869d7ddac37bd88",
+    "state": "missing"
+  },
+  {
+    "deviceId": "170808fa-51d9-41de-b9dd-5128d68689ee",
+    "workspaceId": "18a2875e546b1572cdc377ce4910d7b74e69676b1c5d9e06018d0eee4f90e1a6",
+    "state": "missing"
+  },
+  {
+    "deviceId": "f0271721-cdef-48ee-a215-b65b5288a161",
+    "workspaceId": "18a2875e546b1572cdc377ce4910d7b74e69676b1c5d9e06018d0eee4f90e1a6",
+    "state": "missing"
+  }
+]

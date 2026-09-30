@@ -13,6 +13,7 @@ export type DeviceAction = DeviceCommand['action'] | 'rename' | 'copy'
 type Props = { device: AndroidDevice; onOpen?(): void; onDetail?(): void; onAction?(action: DeviceAction): void; disabled?: boolean; api?: AndroidApi; previewEnabled?: boolean }
 export function DeviceCard({ device, onOpen, onDetail, onAction, disabled = false, api, previewEnabled = true }: Props) {
   const idle = device.control === 'idle'
+  const system = device.androidVersion ? `Android ${device.androidVersion}` : 'Android 版本待核实'
   const tone = deviceGroup(device) === '可分配' ? 'bg-sage-soft text-sage-strong' : deviceGroup(device) === '使用中' ? 'bg-clay-soft text-clay' : 'bg-surface-subtle text-muted'
   return <article className="rounded-control border border-line bg-surface p-4" aria-label={device.name}>
     <div className="flex items-start gap-4">
@@ -24,9 +25,9 @@ export function DeviceCard({ device, onOpen, onDetail, onAction, disabled = fals
 <DropdownMenuItem disabled={disabled || device.control !== 'recovery_required'} onSelect={() => onAction('recover')}>核实状态</DropdownMenuItem>
 <DropdownMenuItem onSelect={onDetail}>查看详情</DropdownMenuItem>
 <DropdownMenuItem disabled={disabled || !idle || device.androidStatus === 'ready'} onSelect={() => onAction('start')}>{device.dataRetained ? '恢复实例' : '启动设备'}</DropdownMenuItem><DropdownMenuSeparator /><DropdownMenuItem disabled={disabled || !idle} className="text-red-700" onSelect={() => onAction('delete')}>删除实例…</DropdownMenuItem></DropdownMenuContent></DropdownMenu>}</div>
-        <p className="mt-2 text-sm text-muted">Android {device.androidVersion ?? '13'} · {device.width} × {device.height}</p>
+        <p className="mt-2 text-sm text-muted">{system} · {device.width} × {device.height}</p>
         <div className="mt-3 flex flex-wrap gap-2"><span className={`rounded-full px-2.5 py-1 text-xs ${tone}`}>{deviceStatus(device)}</span><span className="rounded-full bg-clay-soft px-2.5 py-1 text-xs text-clay">持久实例</span></div>
-        <p className="mt-3 text-xs text-muted">{device.ownerRunId ? <><LockSimple size={12} className="mr-1 inline" />独占使用 · 查看详情处理运行</> : device.dataRetained ? '应用和数据已保留，可恢复运行环境。' : `${device.cpu ?? 1} CPU · ${device.memoryMb ?? 1536} MiB · ARM64`}</p>
+        <p className="mt-3 text-xs text-muted">{device.ownerRunId ? <><LockSimple size={12} className="mr-1 inline" />独占使用 · 查看详情处理运行</> : device.dataRetained ? '应用和数据已保留，可恢复运行环境。' : `${device.cpu ?? 1} CPU · ${device.memoryMb ?? 1536} MiB · ${device.architecture ?? '架构待核实'}`}</p>
       </div>
     </div>
     {device.lastError && <p role="alert" className="mt-3 text-xs text-red-700">{device.lastError}</p>}

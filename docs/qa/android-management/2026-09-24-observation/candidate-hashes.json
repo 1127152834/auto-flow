@@ -1,0 +1,5 @@
+{
+  "apps/desktop/src/renderer/domains/android/components/BulkActions.tsx": "8a8c0e7553ff710404c5222cd0070c879f8f0400b98e636a5555a93438c08808",
+  "apps/desktop/src/renderer/domains/android/tests/ManagementTools.test.tsx": "8fb3319aabd782fd8bcf7be1968f7522b7e539b0fd9d23b51c1ea02fcfe64ae3",
+  "docs/qa/android-management/scripts/observation-smoke.py": "77d8be62d083ed9233fd43c91728cea8cccb96ee4379175c6c2ba976e6d461ca"
+}

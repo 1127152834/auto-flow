@@ -1,0 +1,47 @@
+{
+  "evidenceId": "BE-B6-file-watcher-formal-electron",
+  "checkedAt": "2026-09-21T20:16:33.173Z",
+  "gitHead": "5f49626e3b512af8b67fa703d4c70910f416f751",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflowId": "BPyePgRB_yYx9E7GlMTWa",
+  "profileId": "26ac811e-dd1f-4dce-9540-6ff155d81882",
+  "runId": "6a5cb65e-7812-47e3-a188-466162bbd123",
+  "checks": [
+    "主窗口真实打开正式 Studio；动作库为 213，运行配置来自主应用 Profile",
+    "通过正式 Studio 真实 UI 配置监控目录、文件模式、事件变量并连接后续日志节点",
+    "正式保存接口写入临时监控目录、文件模式、后续日志节点和连线",
+    "真实 worker 观察到本地文件创建事件，写入事件变量并执行后续日志节点",
+    "文件监控流程完成后无 CloakBrowser、worker 或资源残留"
+  ],
+  "nodes": [
+    {
+      "moduleType": "file_watcher_trigger",
+      "nodeId": "4AmpQx-EM9bfsZD-INUDe",
+      "result": {
+        "eventType": "created",
+        "filePath": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-file-watch-fixture-VjTEwq/created.txt",
+        "fileName": "created.txt",
+        "timestamp": "2026-09-22T04:16:28.911517+08:00"
+      }
+    },
+    {
+      "moduleType": "print_log",
+      "nodeId": "ywGAPGrJl8iyqUWSI0F-Q",
+      "result": {
+        "level": "info",
+        "message": "文件事件已触发"
+      }
+    }
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserLaunch": "none",
+    "fixture": "local temporary directory; created event only",
+    "interaction": "formal Electron via CDP mouse and keyboard; public sidecar APIs only for fixture setup and evidence reads; no Store or page-internal business function access",
+    "platformPending": "Windows/macOS Intel, deletion/modification precision and packaged-entry reachability remain separately unverified"
+  },
+  "buildSha256": "464d9a3d31b8bbdf11677ab31923253ab762c532ff46d4fb8a55a9563c09eb48"
+}

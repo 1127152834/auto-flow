@@ -73,7 +73,7 @@ test('213 frozen entries plus 5 native entries cover the exact approved scope', 
   assert.deepEqual(data.coveredModules, approved)
   const native = ['project_data', 'project_end', 'proxy_change_ip', 'proxy_change_location', 'proxy_query']
   assert.deepEqual(coverage.nativeModules, native)
-  assert.deepEqual(coverage.nativeSources, ['apps/backend/src/autoflow/application/workflows/executors/proxy_control.py', 'apps/backend/src/autoflow/application/workflows/executors/project_data.py', 'apps/backend/src/autoflow/application/workflows/executors/project_end.py'])
+  assert.deepEqual(coverage.nativeSources, ['apps/backend/src/autoflow/application/workflows/executors/proxy_control.py', 'apps/backend/src/autoflow/providers/browser/project_graph.py', 'apps/backend/src/autoflow/application/project_runs/worker_capabilities.py'])
   for (const type of native) assert.ok(!Object.hasOwn(schemas, type))
   const frozen = approved.filter(type => !native.includes(type))
   assert.equal(frozen.length, 213)
@@ -83,13 +83,13 @@ test('213 frozen entries plus 5 native entries cover the exact approved scope', 
     expected.conditionalRequired[type] = {field:'target', default:'current', map:{current:[], specified:['proxyId']}}
     expected.fieldLabels[type] = {proxyId:'代理 ID／变量', locationId:'地点 ID／变量'}
   }
-  expected.requiredFields.project_data = ['action', 'resultVariable']
-  expected.conditionalRequired.project_data = {field:'action', default:'inputs', map:{
-    ...Object.fromEntries(['read','query','update','status','create','delete','addField','ensureField','modifyField','previewField'].map(action => [action, ['binding','arguments']])),
-    inputs: [], operation: ['arguments'],
+  expected.requiredFields.project_data = ['operation', 'arguments', 'variableName']
+  expected.conditionalRequired.project_data = {field:'operation', default:'inputs', map:{
+    ...Object.fromEntries(['readRecord','queryRecords','queryTableSchema','createRecord','updateRecord','deleteRecord','setRecordStatus','addField','ensureField','modifyField','previewFieldChange','deleteField','previewFieldDeletion'].map(operation => [operation, ['bindingProjectId','tableGrant']])),
+    inputs: [],
   }}
-  expected.fieldLabels.project_data = {binding:'授权数据表和字段', arguments:'操作参数', action:'项目数据操作', resultVariable:'结果变量'}
-  expected.fieldLabels.project_end = {name: '新环境名称', recordTargets: '新增或已写记录的 RecordRef 列表'}
+  expected.fieldLabels.project_data = {bindingProjectId:'绑定项目', tableGrant:'授权数据表和字段', arguments:'操作参数', operation:'项目数据操作', variableName:'结果变量'}
+  expected.fieldLabels.project_end = {retainEnvironment: '环境保留策略', name: '新环境名称', recordTargets: '新增或已写记录的 RecordRef 列表'}
   for (const name of ['requiredFields','conditionalRequired','fieldLabels']) assert.deepEqual(data[name], expected[name])
   for (const excluded of Object.keys(schemas).filter(name => !approved.includes(name))) {
     assert.ok(!data.coveredModules.includes(excluded), `${excluded} must not reappear`)

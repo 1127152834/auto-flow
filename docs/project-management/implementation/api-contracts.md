@@ -184,7 +184,7 @@ type RunOutput = {outputId:string; kind:'value'|'table'|'file'|'screenshot'; nam
 type CleanupSummary = {status:'notRequired'|'pending'|'running'|'succeeded'|'failed'|'unknown'; operationId?:string; message?:string}
 
 type SyncStatus = 'notApplicable'|'idle'|'pending'|'sending'|'verifying'|'confirmed'|'failed'|'unknown'|'paused'
-type SyncSummary = {status:SyncStatus; pendingCount:number; unknownCount:number; lastConfirmedAt?:string}
+type SyncSummary = {status:SyncStatus; pendingCount:number; unknownCount:number; lastConfirmedAt?:string; lastPulledAt?:string}
 type SyncOperation = {syncOperationId:string; projectId:string; tableId:string; record?:RecordRef; bindingEpoch:number; targetContentRevision:number; status:SyncStatus; statusRevision:number; operationId:string; evidence?:SyncEvidence}
 type SyncEvidence = {checkedAt:string; target:string; fields:string[]; outcome:'matched'|'notMatched'|'ambiguous'}
 type PersistentEnvironmentState = 'ready'|'unavailable'|'deleting'|'deleted'
@@ -331,7 +331,7 @@ type RecordStatusBatchOutcome = {outcome:'processing'|'completed'|'conflicted'|'
 | `POST /api/v1/projects/{projectId}/tables/{tableId}/sheets/inspect` | PM6-A | header key；`{connectionId:string,spreadsheetId:string,sheetId:number,identityStrategy,mapping}` | 200 `SheetsInspection` | Google `sheetId` 按来源的 JSON 安全整数传输，不与字符串 spreadsheetId 混同；读取、身份、结构、重叠映射分别报告。 |
 | `PUT /api/v1/projects/{projectId}/tables/{tableId}/sheets/binding` | PM6-A/C | header key；`SheetsBindingWrite` | 202 `OperationAccepted` | 首绑/改绑统一；412 impact/epoch；新代次不继承状态/关联。 |
 | `DELETE /api/v1/projects/{projectId}/tables/{tableId}/sheets/binding` | PM6-C | header key；`{impactRevision,expectedTableRevision}` | 202 `OperationAccepted` | 保留本地副本与历史证据，表变 unconfigured。 |
-| `GET /api/v1/projects/{projectId}/tables/{tableId}/sync` | PM6-B | — | `{summary:SyncSummary;binding?:SheetsBinding}` | table。 |
+| `GET /api/v1/projects/{projectId}/tables/{tableId}/sync` | PM6-B | — | `{summary:SyncSummary;binding?:SheetsBinding;latestPull?:SyncOperation}` | table；latestPull 仅当前绑定代次。 |
 | `POST /api/v1/projects/{projectId}/tables/{tableId}/sync/pull` | PM6-B | header key；`{expectedTableRevision}` | 202 `OperationAccepted` | 不覆盖本地普通值；公式刷新推进内容版本。 |
 | `POST /api/v1/projects/{projectId}/tables/{tableId}/sync/push` | PM6-B | header key；`{mode:'due'|'allPending',expectedBindingEpoch}` | 202 `OperationAccepted` | timeout→verifying/unknown，不盲发。 |
 | `POST /api/v1/projects/{projectId}/tables/{tableId}/sync/pause` | PM6-C | header key；`{expectedBindingEpoch}` | 200 `{summary:SyncSummary}` | 在途发送仍登记结果。 |
@@ -354,6 +354,8 @@ type SheetsBinding = {connectionId:string;spreadsheetId:string;sheetId:number;bi
 type SheetsInspection = {valid:boolean;issues:{code:string;message:string;columnId?:string}[];columns:{columnId:string;name:string;formula:boolean}[];identitySummary:{unique:boolean;missing:number;duplicates:number};overlaps:{projectId:string;tableId:string;columnIds:string[]}[]}
 type SheetsBindingWrite = {connectionId:string;spreadsheetId:string;sheetId:number;identityStrategy:SheetsBinding['identityStrategy'];mapping:SheetsBinding['mapping'];impactRevision:number;expectedTableRevision:number;expectedBindingEpoch?:number}
 ```
+
+2026-09-24 DATA-CLAIM-09 补齐（confirmed 契约）：`lastPulledAt` 是当前绑定代次最近一次成功完成拉取的确认时间；推送成功、失败拉取和旧绑定历史不会推进它，未成功读取则省略。它不是身份仍可信的保证，也不是新增加的缓存 TTL。`latestPull` 复用 `SyncOperation`，返回当前绑定最近一次拉取的状态、时间和错误；`sync-operations` 保持出站变化队列，不用该列表推断拉取状态。页面从同步状态展示成功来源时间及失败提示，不直接展示远端原始错误文本。
 
 ### 3.5 批次、任务、人工与统计
 

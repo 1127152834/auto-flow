@@ -1,0 +1,209 @@
+{
+  "status": "passed",
+  "platform": "darwin",
+  "arch": "arm64",
+  "packaged": true,
+  "startedAt": "2026-09-23T13:50:02.569Z",
+  "checks": [
+    "real project/table/field/record CRUD, typed identity, long Chinese text, CAS, original-key recovery and project isolation",
+    "archive blocks writes, repeat command recovers one operation, restore preserves data",
+    "wrong deletion name rejected; safe deletion preserves neighbouring project records",
+    "Electron UI creates project with keyboard focus and real preload/sidecar authentication",
+    "all six project tabs open settled production pages",
+    "manual detail submits declared input to the same real worker and selects one direct successor",
+    "200% native window zoom keeps document within viewport; Studio second window shares the authenticated service",
+    "Electron and its production sidecar restart retain the same data"
+  ],
+  "screenshots": [
+    "project-概览.png",
+    "project-自动化.png",
+    "project-运行记录.png",
+    "project-统计.png",
+    "project-数据.png",
+    "project-环境.png",
+    "project-automation-delete-busy.png",
+    "project-automation-delete-stale.png",
+    "project-automation-delete-ready.png",
+    "project-automation-unlinked.png",
+    "project-manual-declared-input.png",
+    "project-volume.png",
+    "project-zoom-200.png",
+    "project-restarted.png"
+  ],
+  "projectId": "c603b21e-1f9e-4f90-bdea-346e3c212f56",
+  "tableId": "943ccbd4-5b6d-4593-98c1-cf6cbb14a574",
+  "tablePath": "/projects/c603b21e-1f9e-4f90-bdea-346e3c212f56/tables/943ccbd4-5b6d-4593-98c1-cf6cbb14a574",
+  "boundary": "production management, real runtime and renderer volume; live Sheets and physical installation remain pending",
+  "automationDeletion": {
+    "status": "passed",
+    "projectId": "e63f78d6-5b79-428e-bdb7-847c8145051f",
+    "workflowId": "195bc80e-409c-416c-99ba-2c1571eb093f",
+    "removedAutomationId": "218b18c3-9203-4adb-8e22-aefd1f2447a0",
+    "operationId": "70d393d1-9c1b-4193-996e-fa87f8e6c570",
+    "checks": [
+      "one independent workflow cannot be associated twice",
+      "real waiting worker blocks deletion without losing its task or document",
+      "stop invalidates old UI impact and clears name confirmation",
+      "fresh exact-name UI deletion removes automation/run facts and keeps the original document",
+      "replaying the accepted original delete key returns the same operation",
+      "retained independent document can be associated again"
+    ],
+    "limits": [
+      "project-owned document deletion remains refused because ownership is not persisted",
+      "Studio editing ownership and Windows/Intel physical UI acceptance are not proved"
+    ]
+  },
+  "runtime": {
+    "projectId": "3ce0fdec-e289-4595-bc7c-c9fc7766c761",
+    "environmentId": "be140d51-2120-59b9-9842-c4f0226d2458",
+    "logLoad": {
+      "logCount": 1004,
+      "logPages": 6,
+      "elapsedMs": 31795,
+      "logsPerMinute": 1895,
+      "scope": "real worker throughput and server pagination; no renderer memory claim"
+    },
+    "taskIds": [
+      "dd6bc57d-7ddf-4664-be01-0c91f4628077",
+      "a458d98d-7c0a-4b1b-9eae-ee2fa29a6166",
+      "ed4f4b95-6e2a-472d-877f-6fd5d70c873d"
+    ],
+    "checks": [
+      "Studio HTTP saved graph",
+      "real browser and UUID parameters",
+      "cross-table query/condition/create",
+      "manual checkpoint continues without replay",
+      "End closes, saves and links",
+      "second automation restores login",
+      "1000 worker logs and paginated retrieval",
+      "real browser timeout and original-input follow-up succeeds",
+      "two inputs are frozen and reclaimed after release",
+      "task writes advance their own cursor",
+      "human newer content defeats stale worker write",
+      "later browser failure preserves committed content and status",
+      "End links initial and newly created records",
+      "unauthorized replacement preserves prior environment",
+      "saved_unlinked repair does not save or run again",
+      "stale save generation cannot replace published content",
+      "statistics drilldown reaches real task",
+      "archive and restore preserve executed project"
+    ]
+  },
+  "volume": {
+    "synthetic": {
+      "samples": [
+        {
+          "received": 83,
+          "logReadMs": 8,
+          "pageMs": 116,
+          "heapBytes": 11387556
+        },
+        {
+          "received": 183,
+          "logReadMs": 9,
+          "pageMs": 113,
+          "heapBytes": 11423700
+        },
+        {
+          "received": 283,
+          "logReadMs": 7,
+          "pageMs": 116,
+          "heapBytes": 11449728
+        },
+        {
+          "received": 383,
+          "logReadMs": 7,
+          "pageMs": 117,
+          "heapBytes": 11475712
+        },
+        {
+          "received": 500,
+          "logReadMs": 9,
+          "pageMs": 115,
+          "heapBytes": 11501768
+        },
+        {
+          "received": 600,
+          "logReadMs": 7,
+          "pageMs": 113,
+          "heapBytes": 11536584
+        },
+        {
+          "received": 700,
+          "logReadMs": 8,
+          "pageMs": 118,
+          "heapBytes": 11551680
+        },
+        {
+          "received": 800,
+          "logReadMs": 8,
+          "pageMs": 116,
+          "heapBytes": 11595752
+        },
+        {
+          "received": 900,
+          "logReadMs": 11,
+          "pageMs": 121,
+          "heapBytes": 11621200
+        },
+        {
+          "received": 1000,
+          "logReadMs": 7,
+          "pageMs": 116,
+          "heapBytes": 11657852
+        }
+      ],
+      "received": 1000,
+      "scope": "60-second synthetic repository input; real HTTP pagination and renderer interaction during ingestion, not worker throughput or long-duration leak proof",
+      "producer": {
+        "targetLogsPerMinute": 1000,
+        "seconds": 60,
+        "emitted": 1000,
+        "elapsedMs": 60019,
+        "maxBatchLagMs": 28
+      }
+    },
+    "concurrentWrites": {
+      "status": "passed",
+      "producers": 5,
+      "records": 10000,
+      "busyRetries": 0
+    },
+    "records": 10000,
+    "seedMode": "five concurrent single-record HTTP writers",
+    "renderedRecordRows": 50,
+    "logRows": 1004,
+    "seedMs": 57937,
+    "logPageMs": [
+      146,
+      108,
+      105,
+      114,
+      107
+    ],
+    "recordPageMs": [
+      122,
+      133,
+      119,
+      130,
+      121,
+      131,
+      132,
+      116,
+      121,
+      117
+    ],
+    "twoFramesMs": 6,
+    "heapBytes": {
+      "before": 7579792,
+      "withLogs": 12438320,
+      "recordPageSamples": [
+        10436288,
+        11072124,
+        11362320
+      ],
+      "recordPageGrowth": 926032
+    },
+    "scope": "one disposable production Electron run; retained query pages included, no sustained-load or leak-free claim"
+  }
+}

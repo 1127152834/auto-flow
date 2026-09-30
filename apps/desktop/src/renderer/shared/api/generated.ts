@@ -1313,6 +1313,23 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{projectId}/automations/{automationId}/debug-inputs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Debug Inputs */
+        post: operations["debug_inputs_api_v1_projects__projectId__automations__automationId__debug_inputs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{projectId}/automations/{automationId}/batches": {
         parameters: {
             query?: never;
@@ -2268,7 +2285,8 @@ export type paths = {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Get Task End */
+        get: operations["get_task_end_api_v1_projects__projectId__tasks__taskId__end_get"];
         put?: never;
         /** End Task */
         post: operations["end_task_api_v1_projects__projectId__tasks__taskId__end_post"];
@@ -2485,6 +2503,178 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{projectId}/tables/{tableId}/sheets/system-identity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Identity Operations */
+        get: operations["identity_operations_api_v1_projects__projectId__tables__tableId__sheets_system_identity_get"];
+        put?: never;
+        /** Initialize Identity */
+        post: operations["initialize_identity_api_v1_projects__projectId__tables__tableId__sheets_system_identity_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tables/{tableId}/sheets/system-identity/{operationId}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview Identity */
+        post: operations["preview_identity_api_v1_projects__projectId__tables__tableId__sheets_system_identity__operationId__preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tables/{tableId}/sheets/system-identity/{operationId}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Retry Identity */
+        post: operations["retry_identity_api_v1_projects__projectId__tables__tableId__sheets_system_identity__operationId__retry_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tables/{tableId}/sheets/system-identity/{operationId}/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Verify Identity */
+        post: operations["verify_identity_api_v1_projects__projectId__tables__tableId__sheets_system_identity__operationId__verify_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tables/{tableId}/sheets/columns/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview */
+        post: operations["preview_api_v1_projects__projectId__tables__tableId__sheets_columns_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tables/{tableId}/sheets/columns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Operations */
+        get: operations["operations_api_v1_projects__projectId__tables__tableId__sheets_columns_get"];
+        put?: never;
+        /** Create */
+        post: operations["create_api_v1_projects__projectId__tables__tableId__sheets_columns_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tables/{tableId}/sheets/columns/{operationId}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview Original */
+        post: operations["preview_original_api_v1_projects__projectId__tables__tableId__sheets_columns__operationId__preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tables/{tableId}/sheets/columns/{operationId}/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Verify */
+        post: operations["verify_api_v1_projects__projectId__tables__tableId__sheets_columns__operationId__verify_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tables/{tableId}/sheets/columns/{operationId}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel */
+        post: operations["cancel_api_v1_projects__projectId__tables__tableId__sheets_columns__operationId__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tables/{tableId}/sheets/columns/{operationId}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Retry */
+        post: operations["retry_api_v1_projects__projectId__tables__tableId__sheets_columns__operationId__retry_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{projectId}/tables/{tableId}/sync": {
         parameters: {
             query?: never;
@@ -2494,6 +2684,23 @@ export type paths = {
         };
         /** Sync State */
         get: operations["sync_state_api_v1_projects__projectId__tables__tableId__sync_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/tables/{tableId}/records/{recordKey}/source-observations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Source Observations */
+        get: operations["source_observations_api_v1_projects__projectId__tables__tableId__records__recordKey__source_observations_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2645,8 +2852,8 @@ export type paths = {
             path?: never;
             cookie?: never;
         };
-        /** Required Fields */
-        get: operations["required_fields_api_system_module_required_fields_get"];
+        /** Module Required Fields */
+        get: operations["module_required_fields_api_system_module_required_fields_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3742,6 +3949,23 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/workflow-runs/{run_id}/trace": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Trace */
+        get: operations["get_trace_api_workflow_runs__run_id__trace_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workflow-runs/{run_id}/artifacts": {
         parameters: {
             query?: never;
@@ -4067,6 +4291,433 @@ export type paths = {
         patch: operations["rename_api_v1_android_devices__device_id__patch"];
         trace?: never;
     };
+    "/api/v1/android/management/environment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Environment */
+        get: operations["environment_api_v1_android_management_environment_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/capabilities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Capabilities */
+        get: operations["capabilities_api_v1_android_management_capabilities_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Management Devices */
+        get: operations["management_devices_api_v1_android_management_devices_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/environment/checks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Environment Check */
+        post: operations["environment_check_api_v1_android_management_environment_checks_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/operations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Operation Page */
+        get: operations["operation_page_api_v1_android_management_operations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/operations/by-request/{request_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Operation By Request */
+        get: operations["operation_by_request_api_v1_android_management_operations_by_request__request_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/operations/{operation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Operation */
+        get: operations["operation_api_v1_android_management_operations__operation_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/operations/{operation_id}/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Verify */
+        post: operations["verify_api_v1_android_management_operations__operation_id__verify_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/images": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Image Page */
+        get: operations["image_page_api_v1_android_management_images_get"];
+        put?: never;
+        /** Register Image */
+        post: operations["register_image_api_v1_android_management_images_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/image-pulls": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Image Pull */
+        post: operations["image_pull_api_v1_android_management_image_pulls_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/images/{identifier}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Image */
+        delete: operations["delete_image_api_v1_android_management_images__identifier__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/images/{identifier}/verifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Verify Image */
+        post: operations["verify_image_api_v1_android_management_images__identifier__verifications_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/images/{identifier}/delete-verifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Verify Image Delete */
+        post: operations["verify_image_delete_api_v1_android_management_images__identifier__delete_verifications_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/profiles/{identifier}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Profile */
+        get: operations["profile_api_v1_android_management_profiles__identifier__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/profiles/{identifier}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Archive Profile */
+        post: operations["archive_profile_api_v1_android_management_profiles__identifier__archive_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/backups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Backup Page */
+        get: operations["backup_page_api_v1_android_management_backups_get"];
+        put?: never;
+        /** Create Backup */
+        post: operations["create_backup_api_v1_android_management_backups_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/devices/{identifier}/backups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Backup */
+        post: operations["backup_api_v1_android_management_devices__identifier__backups_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/backups/{identifier}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Restore Backup */
+        post: operations["restore_backup_api_v1_android_management_backups__identifier__restore_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/bulk-operations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Bulk Create */
+        post: operations["bulk_create_api_v1_android_management_bulk_operations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/bulk-operations/{identifier}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Bulk Get */
+        get: operations["bulk_get_api_v1_android_management_bulk_operations__identifier__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/bulk-operations/{identifier}/actions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Bulk Action */
+        post: operations["bulk_action_api_v1_android_management_bulk_operations__identifier__actions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/cleanup/resources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Cleanup Resources */
+        get: operations["cleanup_resources_api_v1_android_management_cleanup_resources_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/cleanup/previews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cleanup Preview */
+        post: operations["cleanup_preview_api_v1_android_management_cleanup_previews_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/cleanup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cleanup Execute */
+        post: operations["cleanup_execute_api_v1_android_management_cleanup_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/management/diagnostics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Diagnostics */
+        post: operations["diagnostics_api_v1_android_management_diagnostics_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/android/profiles": {
         parameters: {
             query?: never;
@@ -4078,6 +4729,23 @@ export type paths = {
         get: operations["profiles_api_v1_android_profiles_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/profiles/standard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Standard Profile */
+        post: operations["standard_profile_api_v1_android_profiles_standard_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4222,6 +4890,23 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/android/sessions/{identifier}/heartbeat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Heartbeat */
+        post: operations["heartbeat_api_v1_android_sessions__identifier__heartbeat_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/android/sessions/{identifier}/actions": {
         parameters: {
             query?: never;
@@ -4301,6 +4986,40 @@ export type paths = {
         put?: never;
         /** Launch */
         post: operations["launch_api_v1_android_sessions__identifier__apps_launch_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/sessions/{identifier}/apps/actions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** App Action */
+        post: operations["app_action_api_v1_android_sessions__identifier__apps_actions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/sessions/{identifier}/apps/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Verify App */
+        post: operations["verify_app_api_v1_android_sessions__identifier__apps_verify_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -5337,6 +6056,11 @@ export type components = {
              * @default true
              */
             start: boolean;
+            /**
+             * Allowunknowndiskestimate
+             * @default false
+             */
+            allowUnknownDiskEstimate: boolean;
         };
         /** AndroidDeviceCommand */
         AndroidDeviceCommand: {
@@ -5349,12 +6073,17 @@ export type components = {
              * Action
              * @enum {string}
              */
-            action: "start" | "stop" | "restart" | "delete" | "recover";
+            action: "start" | "stop" | "restart" | "restore" | "delete" | "recover";
             /**
              * Deletedata
              * @default false
              */
             deleteData: boolean;
+            /**
+             * Allowunknowndiskestimate
+             * @default false
+             */
+            allowUnknownDiskEstimate: boolean;
         };
         /** AndroidDeviceRead */
         AndroidDeviceRead: {
@@ -5395,16 +6124,10 @@ export type components = {
              * @default 320
              */
             dpi: number;
-            /**
-             * Androidversion
-             * @default 13
-             */
-            androidVersion: string;
-            /**
-             * Architecture
-             * @default arm64
-             */
-            architecture: string;
+            /** Androidversion */
+            androidVersion?: string | null;
+            /** Architecture */
+            architecture?: string | null;
             /**
              * Dataretained
              * @default false
@@ -5418,11 +6141,8 @@ export type components = {
             operation?: components["schemas"]["AndroidOperation"] | null;
             /** Profileid */
             profileId?: string | null;
-            /**
-             * Profilename
-             * @default Android 13 标准 · ARM64
-             */
-            profileName: string;
+            /** Profilename */
+            profileName?: string | null;
             /**
              * Instancetype
              * @default persistent
@@ -5526,10 +6246,26 @@ export type components = {
              */
             api_key: string;
         };
+        /** AppAction */
+        AppAction: {
+            /** Requestid */
+            requestId: string;
+            /** Generation */
+            generation: number;
+            /** Packagename */
+            packageName: string;
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "stop" | "uninstall" | "clearData";
+        };
         /** AppInfo */
         AppInfo: {
             /** Packages */
             packages: string[];
+            /** Applications */
+            applications?: components["schemas"]["AppRecord"][];
             /** Currentpackage */
             currentPackage: string | null;
             /** Shellroot */
@@ -5539,10 +6275,32 @@ export type components = {
         };
         /** AppLaunch */
         AppLaunch: {
+            /** Requestid */
+            requestId: string;
             /** Generation */
             generation: number;
             /** Packagename */
             packageName: string;
+        };
+        /** AppRecord */
+        AppRecord: {
+            /** Packagename */
+            packageName: string;
+            /** Versioncode */
+            versionCode?: number | null;
+            /** Versionname */
+            versionName?: string | null;
+            /** System */
+            system: boolean;
+            /** Protected */
+            protected: boolean;
+        };
+        /** AppVerify */
+        AppVerify: {
+            /** Requestid */
+            requestId: string;
+            /** Generation */
+            generation: number;
         };
         /** ArchiveProjectRequest */
         ArchiveProjectRequest: {
@@ -5824,6 +6582,19 @@ export type components = {
              */
             occurredAt: string;
         };
+        /** AutomationCreate */
+        AutomationCreate: {
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            inputPlan: components["schemas"]["InputPlan"];
+            /** Parameterschema */
+            parameterSchema: components["schemas"]["ParameterDefinition"][];
+            /** Environmentpolicy */
+            environmentPolicy: components["schemas"]["NewFromProfile"] | components["schemas"]["FixedEnvironment"] | components["schemas"]["InputEnvironment"];
+            runPolicy: components["schemas"]["RunPolicy"];
+        };
         /** AutomationDeleteRequest */
         AutomationDeleteRequest: {
             /** Impactrevision */
@@ -5876,14 +6647,14 @@ export type components = {
             name: string;
             /** Description */
             description: string;
-            /** Workflowid */
-            workflowId: string;
             inputPlan: components["schemas"]["InputPlan"];
             /** Parameterschema */
             parameterSchema: components["schemas"]["ParameterDefinition"][];
             /** Environmentpolicy */
             environmentPolicy: components["schemas"]["NewFromProfile"] | components["schemas"]["FixedEnvironment"] | components["schemas"]["InputEnvironment"];
             runPolicy: components["schemas"]["RunPolicy"];
+            /** Workflowid */
+            workflowId: string;
             /** Expectedmanagementrevision */
             expectedManagementRevision: number;
         };
@@ -5927,14 +6698,14 @@ export type components = {
             name: string;
             /** Description */
             description: string;
-            /** Workflowid */
-            workflowId: string;
             inputPlan: components["schemas"]["InputPlan"];
             /** Parameterschema */
             parameterSchema: components["schemas"]["ParameterDefinition"][];
             /** Environmentpolicy */
             environmentPolicy: components["schemas"]["NewFromProfile"] | components["schemas"]["FixedEnvironment"] | components["schemas"]["InputEnvironment"];
             runPolicy: components["schemas"]["RunPolicy"];
+            /** Workflowid */
+            workflowId: string;
             /** Automationid */
             automationId: string;
             /** Projectid */
@@ -5954,20 +6725,63 @@ export type components = {
              */
             updatedAt: string;
         };
-        /** AutomationWrite */
-        AutomationWrite: {
-            /** Name */
-            name: string;
-            /** Description */
-            description: string;
-            /** Workflowid */
-            workflowId: string;
-            inputPlan: components["schemas"]["InputPlan"];
-            /** Parameterschema */
-            parameterSchema: components["schemas"]["ParameterDefinition"][];
-            /** Environmentpolicy */
-            environmentPolicy: components["schemas"]["NewFromProfile"] | components["schemas"]["FixedEnvironment"] | components["schemas"]["InputEnvironment"];
-            runPolicy: components["schemas"]["RunPolicy"];
+        /** BackupCreate */
+        BackupCreate: {
+            /** Requestid */
+            requestId: string;
+            /** Deviceid */
+            deviceId?: string | null;
+            /** Expectedrevision */
+            expectedRevision?: number | null;
+        };
+        /** BackupRead */
+        BackupRead: {
+            /** Id */
+            id: string;
+            /** Deviceid */
+            deviceId: string;
+            /** Imageid */
+            imageId: string;
+            /** Formatversion */
+            formatVersion: number;
+            /** Sha256 */
+            sha256: string;
+            /** Bytes */
+            bytes: number;
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /** State */
+            state: string;
+        };
+        /** BackupRestore */
+        BackupRestore: {
+            /** Requestid */
+            requestId: string;
+            /** Newname */
+            newName: string;
+            /**
+             * Allowunknowndiskestimate
+             * @default false
+             */
+            allowUnknownDiskEstimate: boolean;
+        };
+        /** BackupRestoreRead */
+        BackupRestoreRead: {
+            /** Operationid */
+            operationId?: string | null;
+            /** Requestid */
+            requestId: string;
+            /** Targetid */
+            targetId: string;
+            /** Deviceid */
+            deviceId: string;
+            /** Backupid */
+            backupId: string;
+            /** State */
+            state: string;
         };
         /** BatchAction */
         BatchAction: {
@@ -5993,9 +6807,11 @@ export type components = {
             profileId: string;
             /** Profilerevision */
             profileRevision: number;
+            /** Sourcedeviceid */
+            sourceDeviceId?: string | null;
             /**
              * Quantity
-             * @default 3
+             * @default 1
              */
             quantity: number;
             /**
@@ -6009,6 +6825,11 @@ export type components = {
              * @default true
              */
             start: boolean;
+            /**
+             * Allowunknowndiskestimate
+             * @default false
+             */
+            allowUnknownDiskEstimate: boolean;
             /**
              * Width
              * @default 720
@@ -6109,6 +6930,12 @@ export type components = {
         };
         /** BatchStartRequest */
         BatchStartRequest: {
+            /** Debugselection */
+            debugSelection?: {
+                [key: string]: {
+                    [key: string]: components["schemas"]["JsonValue"];
+                } | null;
+            } | null;
             /** Expectedautomationrevision */
             expectedAutomationRevision: number;
             /** Parameters */
@@ -6220,9 +7047,69 @@ export type components = {
         /** BrowserOpenRequest */
         BrowserOpenRequest: {
             /** Profileid */
-            profileId: string;
+            profileId?: string | null;
+            /** Browserenvironment */
+            browserEnvironment?: {
+                [key: string]: unknown;
+            } | null;
             /** Url */
             url?: string | null;
+        };
+        /** BulkAction */
+        BulkAction: {
+            /** Requestid */
+            requestId: string;
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "cancelPending" | "retryFailed" | "verify";
+        };
+        /** BulkCreate */
+        BulkCreate: {
+            /** Requestid */
+            requestId: string;
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "start" | "stop" | "restart" | "delete";
+            /** Items */
+            items: components["schemas"]["BulkItemCreate"][];
+            /**
+             * Deletedata
+             * @default false
+             */
+            deleteData: boolean;
+        };
+        /** BulkItemCreate */
+        BulkItemCreate: {
+            /** Deviceid */
+            deviceId: string;
+            /** Expectedrevision */
+            expectedRevision: number;
+        };
+        /** BulkRead */
+        BulkRead: {
+            /** Id */
+            id: string;
+            /** Requestid */
+            requestId: string;
+            /** Action */
+            action: string;
+            /** Deletedata */
+            deleteData: boolean;
+            /** State */
+            state: string;
+            /** Items */
+            items: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
         };
         /** BundleExport */
         BundleExport: {
@@ -6306,6 +7193,89 @@ export type components = {
             criteria: {
                 [key: string]: string;
             };
+        };
+        /** CleanupExecute */
+        CleanupExecute: {
+            /** Requestid */
+            requestId: string;
+            /** Previewid */
+            previewId?: string | null;
+            /** Confirmationdigest */
+            confirmationDigest: string;
+        };
+        /** CleanupPreviewCreate */
+        CleanupPreviewCreate: {
+            /** Resourceids */
+            resourceIds: string[];
+        };
+        /** CleanupPreviewItem */
+        CleanupPreviewItem: {
+            /** Id */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Purpose */
+            purpose: string;
+            /** Revision */
+            revision: number;
+            /** References */
+            references?: {
+                [key: string]: unknown;
+            }[];
+            /** Workspaceid */
+            workspaceId: string;
+            /** Ownership */
+            ownership: {
+                [key: string]: unknown;
+            };
+            /** Size */
+            size: number;
+            /** Irreversibleimpact */
+            irreversibleImpact: string;
+            /** Sha256 */
+            sha256?: string | null;
+            /** Pathsummary */
+            pathSummary?: {
+                [key: string]: string;
+            } | null;
+            /** Summary */
+            summary: {
+                [key: string]: unknown;
+            };
+            /** Fingerprint */
+            fingerprint: string;
+            /**
+             * Reversible
+             * @default false
+             */
+            reversible: boolean;
+        };
+        /** CleanupPreviewRead */
+        CleanupPreviewRead: {
+            /** Items */
+            items: components["schemas"]["CleanupPreviewItem"][];
+            /** Confirmationdigest */
+            confirmationDigest: string;
+            /** Previewid */
+            previewId: string;
+        };
+        /** CleanupRead */
+        CleanupRead: {
+            /** Items */
+            items: components["schemas"]["CleanupPreviewItem"][];
+            /** State */
+            state: string;
+            /** Operationid */
+            operationId?: string | null;
+            /** Requestid */
+            requestId?: string | null;
+            /** Previewid */
+            previewId?: string | null;
+        };
+        /** CleanupResourcePage */
+        CleanupResourcePage: {
+            /** Items */
+            items: components["schemas"]["CleanupPreviewItem"][];
         };
         /** CleanupSummaryView */
         CleanupSummaryView: {
@@ -6903,6 +7873,8 @@ export type components = {
             ref: components["schemas"]["DataRecordRef"];
             /** Values */
             values: components["schemas"]["DataCellView"][];
+            /** Validationissues */
+            validationIssues?: components["schemas"]["DataValidationIssue"][];
             /** Recordslots */
             recordSlots: components["schemas"]["DataRecordSlot"][];
             /** Statusid */
@@ -6934,6 +7906,8 @@ export type components = {
             datasetGeneration: string;
             /** Expectedtablerevision */
             expectedTableRevision: number;
+            /** Removedfieldids */
+            removedFieldIds?: string[];
             /** Fields */
             fields: (components["schemas"]["DataSchemaExisting"] | components["schemas"]["DataSchemaNew"])[];
         };
@@ -7015,14 +7989,14 @@ export type components = {
         DataSchemaReferenceAvailability: {
             /**
              * Automations
-             * @constant
+             * @enum {string}
              */
-            automations: "notImplemented";
+            automations: "notImplemented" | "available";
             /**
              * Sync
-             * @constant
+             * @enum {string}
              */
-            sync: "notImplemented";
+            sync: "notImplemented" | "available";
         };
         /** DataSchemaResult */
         DataSchemaResult: {
@@ -7205,6 +8179,63 @@ export type components = {
              */
             updatedAt: string;
         };
+        /** DataValidationIssue */
+        DataValidationIssue: {
+            /** Fieldid */
+            fieldId: string;
+            /** Code */
+            code: string;
+            /** Rule */
+            rule: string;
+            /** Message */
+            message: string;
+        };
+        /** DebugInputRequest */
+        DebugInputRequest: {
+            /** Expectedautomationrevision */
+            expectedAutomationRevision: number;
+            /** Choices */
+            choices?: {
+                [key: string]: {
+                    [key: string]: components["schemas"]["JsonValue"];
+                } | null;
+            };
+            /** Inputid */
+            inputId?: string | null;
+            /** Cursor */
+            cursor?: string | null;
+            /**
+             * Pagesize
+             * @default 50
+             */
+            pageSize: number;
+            /**
+             * Search
+             * @default
+             */
+            search: string;
+        };
+        /** DebugInputResponse */
+        DebugInputResponse: {
+            /** Selectionstatus */
+            selectionStatus: string;
+            /** Selection */
+            selection: {
+                [key: string]: {
+                    [key: string]: components["schemas"]["JsonValue"];
+                } | null;
+            };
+            /** Inputs */
+            inputs: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[];
+            /** Items */
+            items: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[];
+            /** Nextcursor */
+            nextCursor: string | null;
+        };
         /** DefaultKernelRead */
         DefaultKernelRead: {
             /** Revision */
@@ -7293,6 +8324,43 @@ export type components = {
             /** Startedat */
             startedAt: string;
         };
+        /** DiagnosticRead */
+        DiagnosticRead: {
+            /** Id */
+            id: string;
+            /** Requestid */
+            requestId: string;
+            /** State */
+            state: string;
+            /** Payload */
+            payload: {
+                [key: string]: unknown;
+            };
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /** Expiresat */
+            expiresAt?: string | null;
+        };
+        /** DiagnosticsCreate */
+        DiagnosticsCreate: {
+            /** Requestid */
+            requestId: string;
+            /** Deviceids */
+            deviceIds?: string[];
+            /**
+             * Includeadvancedlogs
+             * @default false
+             */
+            includeAdvancedLogs: boolean;
+            /**
+             * Advancedlogsconsent
+             * @default false
+             */
+            advancedLogsConsent: boolean;
+        };
         /** EmptyCommand */
         EmptyCommand: Record<string, never>;
         /** EndRepairTarget */
@@ -7314,6 +8382,31 @@ export type components = {
             host: string;
             /** Port */
             port: number;
+        };
+        /** EnvironmentBrowserConfiguration */
+        EnvironmentBrowserConfiguration: {
+            /** Proxy */
+            proxy: components["schemas"]["NoProxy"] | components["schemas"]["FixedProxy"] | components["schemas"]["PoolProxy"];
+            kernel: components["schemas"]["EnvironmentKernel"];
+        };
+        /** EnvironmentCheckCommand */
+        EnvironmentCheckCommand: {
+            /** Requestid */
+            requestId: string;
+        };
+        /** EnvironmentCheckRead */
+        EnvironmentCheckRead: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pass" | "fail" | "unknown" | "unsupported";
+            /** Code */
+            code?: string | null;
+            /** Message */
+            message: string;
+            /** Action */
+            action?: string | null;
         };
         /** EnvironmentDeleteRequest */
         EnvironmentDeleteRequest: {
@@ -7412,6 +8505,16 @@ export type components = {
              */
             updatedAt: string;
         };
+        /** EnvironmentKernel */
+        EnvironmentKernel: {
+            /**
+             * Edition
+             * @enum {string}
+             */
+            edition: "public" | "licensed";
+            /** Version */
+            version: string;
+        };
         /** EnvironmentOpenRequest */
         EnvironmentOpenRequest: {
             /** Expectedusegeneration */
@@ -7425,8 +8528,11 @@ export type components = {
             projectId: string | null;
             /** Idempotencykey */
             idempotencyKey: string;
-            /** Kind */
-            kind: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "deleteEnvironment" | "updateEnvironment" | "openInstance" | "startMaintenance" | "discardEnvironment" | "resumeManual" | "finishManual" | "saveEnvironment" | "repairEndAssociation";
             /** Status */
             status: string;
             /** Statusrevision */
@@ -7512,6 +8618,9 @@ export type components = {
             name?: string | null;
             /** Notes */
             notes?: string | null;
+            browserConfiguration?: components["schemas"]["EnvironmentBrowserConfiguration"] | null;
+            /** Expectedcontentgeneration */
+            expectedContentGeneration?: number | null;
         };
         /** EnvironmentProfile */
         EnvironmentProfile: {
@@ -7576,6 +8685,11 @@ export type components = {
              * @enum {string}
              */
             applicationRoot: "unknown" | "available" | "unavailable";
+            /**
+             * Archived
+             * @default false
+             */
+            archived: boolean;
         };
         /** EnvironmentRefView */
         EnvironmentRefView: {
@@ -7664,6 +8778,7 @@ export type components = {
              * @default 0
              */
             linkedRecordCount: number;
+            browserConfiguration?: components["schemas"]["EnvironmentBrowserConfiguration"] | null;
         };
         /** ErrorResponse */
         ErrorResponse: {
@@ -8112,6 +9227,105 @@ export type components = {
             source: "local_probe" | "provider_probe" | "none";
             error?: components["schemas"]["ApiError"] | null;
         };
+        /** ImageDelete */
+        ImageDelete: {
+            /** Requestid */
+            requestId: string;
+            /** Expectedrevision */
+            expectedRevision: number;
+            /**
+             * Deletecontent
+             * @default false
+             */
+            deleteContent: boolean;
+        };
+        /** ImageDeleteVerification */
+        ImageDeleteVerification: {
+            /** Requestid */
+            requestId: string;
+        };
+        /** ImagePageRead */
+        ImagePageRead: {
+            /** Items */
+            items: components["schemas"]["ImageRead"][];
+            /** Nextcursor */
+            nextCursor?: string | null;
+            /** Total */
+            total: number;
+        };
+        /** ImagePullCreate */
+        ImagePullCreate: {
+            /** Requestid */
+            requestId: string;
+            /** Reference */
+            reference: string;
+            /**
+             * Allowunknowndiskestimate
+             * @default false
+             */
+            allowUnknownDiskEstimate: boolean;
+        };
+        /** ImageRead */
+        ImageRead: {
+            /** Id */
+            id: string;
+            /** Imageid */
+            imageId: string;
+            /** Name */
+            name: string;
+            /** Reference */
+            reference: string;
+            /** Revision */
+            revision: number;
+            /** State */
+            state: string;
+            /** Verification */
+            verification: {
+                [key: string]: unknown;
+            };
+            /**
+             * Validation
+             * @default not_tested
+             */
+            validation: string;
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /** Sourcedigest */
+            sourceDigest?: string | null;
+            /** Architecture */
+            architecture?: string | null;
+            /** Os */
+            os?: string | null;
+            /** Androidversion */
+            androidVersion?: string | null;
+            /** Googlecomponents */
+            googleComponents?: string | null;
+            /** References */
+            references?: {
+                [key: string]: unknown;
+            }[];
+        };
+        /** ImageRegister */
+        ImageRegister: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Reference */
+            reference: string;
+        };
+        /** ImageVerificationCreate */
+        ImageVerificationCreate: {
+            /** Check */
+            check: string;
+            /** Evidence */
+            evidence?: {
+                [key: string]: unknown;
+            };
+        };
         /** Impact */
         Impact: {
             /** Code */
@@ -8526,6 +9740,111 @@ export type components = {
             /** Expectedcontentgeneration */
             expectedContentGeneration: number;
         };
+        /** ManagementCapabilitiesRead */
+        ManagementCapabilitiesRead: {
+            /** Management */
+            management: boolean | string;
+            /** Control */
+            control: boolean | string;
+            /** Images */
+            images: boolean | string;
+            /** Bulk */
+            bulk: boolean | string;
+            /** Backups */
+            backups: boolean | string;
+            /** Workflow */
+            workflow: boolean;
+            /** Reasons */
+            reasons: {
+                [key: string]: string;
+            };
+        };
+        /** ManagementDevicePageRead */
+        ManagementDevicePageRead: {
+            /** Items */
+            items: components["schemas"]["ManagementDeviceRead"][];
+            /** Nextcursor */
+            nextCursor?: string | null;
+            /** Total */
+            total: number;
+        };
+        /** ManagementDeviceRead */
+        ManagementDeviceRead: {
+            /** Deviceid */
+            deviceId: string;
+            /** Revision */
+            revision: number;
+            /** Name */
+            name: string;
+            /**
+             * Runtimestate
+             * @enum {string}
+             */
+            runtimeState: "stopped" | "starting" | "ready" | "retained" | "missing" | "unknown";
+            /** Restorestate */
+            restoreState?: ("pending" | "restored") | null;
+            owner: components["schemas"]["OwnerRead"];
+            /** Observedat */
+            observedAt: string | null;
+            /** Stale */
+            stale: boolean;
+            /** Specsnapshot */
+            specSnapshot: {
+                [key: string]: unknown;
+            };
+            /** Latestoperation */
+            latestOperation: {
+                [key: string]: unknown;
+            } | null;
+            /** Allowedactions */
+            allowedActions: string[];
+            /** Blockedreasons */
+            blockedReasons: {
+                [key: string]: string;
+            };
+        };
+        /** ManagementEnvironmentRead */
+        ManagementEnvironmentRead: {
+            /** Available */
+            available: boolean;
+            /** Platformsupported */
+            platformSupported: boolean | null;
+            /** Runtimeid */
+            runtimeId: string;
+            /** Message */
+            message: string;
+            /** Images */
+            images?: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Cpucount
+             * @default 0
+             */
+            cpuCount: number;
+            /**
+             * Memorymb
+             * @default 0
+             */
+            memoryMb: number;
+            /** Hostworkspacefreebytes */
+            hostWorkspaceFreeBytes?: number | null;
+            /** Vmdockerfreebytes */
+            vmDockerFreeBytes?: number | null;
+            /**
+             * Checkedat
+             * Format: date-time
+             */
+            checkedAt: string;
+            /** Checks */
+            checks: {
+                [key: string]: components["schemas"]["EnvironmentCheckRead"];
+            };
+            /** Capabilities */
+            capabilities: {
+                [key: string]: boolean | string;
+            };
+        };
         /** ManualFinishRequest */
         ManualFinishRequest: {
             /** Expectedcheckpointrevision */
@@ -8543,6 +9862,25 @@ export type components = {
             retainEnvironment: {
                 [key: string]: unknown;
             };
+        };
+        /** ManualInputFieldView */
+        ManualInputFieldView: {
+            /** Name */
+            name: string;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "string" | "number" | "integer" | "boolean" | "array" | "object";
+            /**
+             * Required
+             * @default false
+             */
+            required: boolean;
+            /** Enum */
+            enum?: unknown[] | null;
+            /** Title */
+            title?: string | null;
         };
         /** ManualItemPage */
         ManualItemPage: {
@@ -8577,6 +9915,13 @@ export type components = {
             expiresAt: string | null;
             /** Allowedtargets */
             allowedTargets: unknown[];
+            /** Inputschema */
+            inputSchema?: components["schemas"]["ManualInputFieldView"][];
+            /**
+             * Canresume
+             * @default false
+             */
+            canResume: boolean;
             /** Resumestarted */
             resumeStarted: boolean;
             /** Reason */
@@ -8951,6 +10296,56 @@ export type components = {
         OperationAccepted: {
             operation: components["schemas"]["ProjectOperationView"];
         };
+        /** OperationPageRead */
+        OperationPageRead: {
+            /** Items */
+            items: components["schemas"]["OperationRead"][];
+            /** Nextcursor */
+            nextCursor?: string | null;
+            /** Total */
+            total: number;
+        };
+        /** OperationRead */
+        OperationRead: {
+            /** Operationid */
+            operationId: string;
+            /** Requestid */
+            requestId: string;
+            /** Targetid */
+            targetId: string;
+            /** Action */
+            action: string;
+            /** State */
+            state: string;
+            /** Stagecode */
+            stageCode: string;
+            /** Stagelabel */
+            stageLabel: string;
+            /** Attempt */
+            attempt: number;
+            /** Retryof */
+            retryOf?: string | null;
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /** Startedat */
+            startedAt?: string | null;
+            /** Finishedat */
+            finishedAt?: string | null;
+            /** Resultcode */
+            resultCode?: string | null;
+            /** Message */
+            message?: string | null;
+            /** Allowedactions */
+            allowedActions?: string[];
+        };
+        /** OperationVerifyCommand */
+        OperationVerifyCommand: {
+            /** Requestid */
+            requestId: string;
+        };
         /** OperationView */
         OperationView: {
             /** Id */
@@ -8977,6 +10372,16 @@ export type components = {
              * Format: date-time
              */
             updated_at: string;
+        };
+        /** OwnerRead */
+        OwnerRead: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "none" | "manualSession" | "legacyWorkflow" | "unknown";
+            /** Id */
+            id?: string | null;
         };
         /** ParameterDefinition */
         ParameterDefinition: {
@@ -9021,6 +10426,13 @@ export type components = {
              * @enum {string}
              */
             protocol: "http" | "socks5";
+        };
+        /** ProfileArchiveCommand */
+        ProfileArchiveCommand: {
+            /** Requestid */
+            requestId: string;
+            /** Expectedrevision */
+            expectedRevision: number;
         };
         /** ProfileDuplicate */
         ProfileDuplicate: {
@@ -9481,7 +10893,7 @@ export type components = {
         /** ProjectOperationPage */
         ProjectOperationPage: {
             /** Items */
-            items: components["schemas"]["ProjectOperationView"][];
+            items: (components["schemas"]["ProjectOperationView"] | components["schemas"]["EnvironmentOperationSnapshot"])[];
             /** Page */
             page: number;
             /** Pagesize */
@@ -9503,7 +10915,7 @@ export type components = {
              * Kind
              * @enum {string}
              */
-            kind: "createProject" | "updateProject" | "createAutomation" | "updateAutomation" | "startBatch" | "stopBatch" | "forceStopBatch" | "followUpBatch" | "workflowInteraction" | "createTable" | "updateTable" | "mutateField" | "saveTableSchema" | "mutateStatus" | "createRecord" | "createRecords" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation" | "connectSheets" | "disconnectSheets" | "inspectSheets" | "changeSheetsBinding" | "removeSheetsBinding" | "syncPull" | "syncPush" | "reconcileSync" | "archiveProject" | "restoreProject" | "deleteProject" | "deleteAutomation" | "deleteEnvironment" | "repairEndAssociation";
+            kind: "createProject" | "updateProject" | "createAutomation" | "updateAutomation" | "startBatch" | "stopBatch" | "forceStopBatch" | "followUpBatch" | "workflowInteraction" | "createTable" | "updateTable" | "mutateField" | "saveTableSchema" | "mutateStatus" | "createRecord" | "createRecords" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation" | "connectSheets" | "disconnectSheets" | "inspectSheets" | "changeSheetsBinding" | "initializeSheetsIdentity" | "createSheetsColumn" | "removeSheetsBinding" | "syncPull" | "syncPush" | "reconcileSync" | "archiveProject" | "restoreProject" | "deleteProject" | "deleteAutomation" | "deleteEnvironment" | "repairEndAssociation";
             /**
              * Status
              * @enum {string}
@@ -9608,7 +11020,7 @@ export type components = {
              * Kind
              * @enum {string}
              */
-            kind: "runStatus" | "nodeAttempt" | "log" | "output" | "artifact" | "interaction";
+            kind: "runStatus" | "nodeAttempt" | "log" | "output" | "artifact" | "checkpoint" | "interaction";
             /** Nodeid */
             nodeId?: string | null;
             /** Nodevisitid */
@@ -10441,6 +11853,15 @@ export type components = {
              * @enum {string}
              */
             access: "manual" | "readonly";
+            /** Clientsessionid */
+            clientSessionId?: string | null;
+        };
+        /** SessionHeartbeat */
+        SessionHeartbeat: {
+            /** Clientsessionid */
+            clientSessionId: string;
+            /** Generation */
+            generation: number;
         };
         /** SessionRead */
         SessionRead: {
@@ -10469,6 +11890,8 @@ export type components = {
             height: number;
             /** Latestoperation */
             latestOperation?: string | null;
+            /** Clientsessionid */
+            clientSessionId?: string | null;
         };
         /** SheetsBinding */
         SheetsBinding: {
@@ -10551,6 +11974,46 @@ export type components = {
             name: string;
             /** Formula */
             formula: boolean;
+        };
+        /** SheetsColumnCreate */
+        SheetsColumnCreate: {
+            /** Fieldid */
+            fieldId: string;
+            /** Columnname */
+            columnName: string;
+            /** Datasetgeneration */
+            datasetGeneration: string;
+            /** Connectionid */
+            connectionId: string;
+            /** Spreadsheetid */
+            spreadsheetId: string;
+            /** Sheetid */
+            sheetId: number;
+            /** Expectedbindingepoch */
+            expectedBindingEpoch: number;
+            /** Expectedtablerevision */
+            expectedTableRevision: number;
+            /** Impactrevision */
+            impactRevision: number;
+        };
+        /** SheetsColumnPreview */
+        SheetsColumnPreview: {
+            /** Fieldid */
+            fieldId: string;
+            /** Columnname */
+            columnName: string;
+            /** Datasetgeneration */
+            datasetGeneration: string;
+            /** Connectionid */
+            connectionId: string;
+            /** Spreadsheetid */
+            spreadsheetId: string;
+            /** Sheetid */
+            sheetId: number;
+            /** Expectedbindingepoch */
+            expectedBindingEpoch: number;
+            /** Expectedtablerevision */
+            expectedTableRevision: number;
         };
         /** SheetsConnection */
         SheetsConnection: {
@@ -10664,6 +12127,13 @@ export type components = {
             missing: number;
             /** Duplicates */
             duplicates: number;
+        };
+        /** SheetsIdentityVerification */
+        SheetsIdentityVerification: {
+            /** Expectedtablerevision */
+            expectedTableRevision: number;
+            /** Impactrevision */
+            impactRevision: number;
         };
         /**
          * SheetsImpactReport
@@ -10794,6 +12264,34 @@ export type components = {
              * @enum {string}
              */
             mode: "sourceDefault";
+        };
+        /** SourceFieldObservation */
+        SourceFieldObservation: {
+            /** Fieldid */
+            fieldId: string;
+            /** Remotevalue */
+            remoteValue: string | number | boolean | components["schemas"]["DataDateScalar"] | null;
+            /** Localvalue */
+            localValue: string | number | boolean | components["schemas"]["DataDateScalar"] | null;
+            /** Localpresent */
+            localPresent: boolean;
+            /** Localcontentrevision */
+            localContentRevision: number;
+            /**
+             * Observedat
+             * Format: date-time
+             */
+            observedAt: string;
+            /** Differs */
+            differs: boolean;
+        };
+        /** SourceRecordObservations */
+        SourceRecordObservations: {
+            record: components["schemas"]["DataRecordRef"];
+            /** Bindingepoch */
+            bindingEpoch: number | null;
+            /** Items */
+            items: components["schemas"]["SourceFieldObservation"][];
         };
         /** StatisticsBucket */
         StatisticsBucket: {
@@ -11503,6 +13001,10 @@ export type components = {
         StudioPickerSessionStartRequest: {
             /** Sessionid */
             sessionId: string;
+            /** Browserenvironment */
+            browserEnvironment?: {
+                [key: string]: unknown;
+            } | null;
             /** Url */
             url?: string | null;
             /** Profileid */
@@ -12111,6 +13613,129 @@ export type components = {
             /** Count */
             count: number;
         };
+        /** StudioTraceEvent */
+        StudioTraceEvent: {
+            /** Sourceid */
+            sourceId?: string | null;
+            /** Sourceorigin */
+            sourceOrigin?: string | null;
+            /** Sourcebytes */
+            sourceBytes?: number | null;
+            /** Scriptid */
+            scriptId?: string | null;
+            /** Sha256 */
+            sha256?: string | null;
+            /** Traceid */
+            traceId?: string | null;
+            /** Id */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "execution" | "network" | "console" | "exception" | "page-closed" | "mark" | "diagnostic" | "source";
+            /** Timems */
+            timeMs: number;
+            /** Timestamp */
+            timestamp: string;
+            /** Nodeid */
+            nodeId?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Correlation */
+            correlation?: string | null;
+            /** Domid */
+            domId?: string | null;
+            /** Gaps */
+            gaps?: string[];
+            /** Nodelabel */
+            nodeLabel?: string | null;
+            /** Executionid */
+            executionId?: string | null;
+            executionContext?: components["schemas"]["JsonValue"];
+            /** Pageid */
+            pageId?: string | null;
+            /** Phase */
+            phase?: string | null;
+            /** Success */
+            success?: boolean | null;
+            /** Durationms */
+            durationMs?: number | null;
+            /** Snapshotid */
+            snapshotId?: string | null;
+            /**
+             * Snapshotmissing
+             * @default false
+             */
+            snapshotMissing: boolean;
+            /** Message */
+            message?: string | null;
+            /**
+             * Truncated
+             * @default false
+             */
+            truncated: boolean;
+            /** Level */
+            level?: string | null;
+            /** Url */
+            url?: string | null;
+            /** Method */
+            method?: string | null;
+            /** Status */
+            status?: number | null;
+            /** Resourcetype */
+            resourceType?: string | null;
+            /** Attribution */
+            attribution?: string | null;
+        };
+        /** StudioTracePage */
+        StudioTracePage: {
+            /** Sessions */
+            sessions?: components["schemas"]["StudioTraceSession"][];
+            /** Runid */
+            runId: string;
+            /** Runstatus */
+            runStatus: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "unavailable" | "partial" | "saved";
+            /** Traceid */
+            traceId?: string | null;
+            /** Archiveid */
+            archiveId?: string | null;
+            /** Gaps */
+            gaps: string[];
+            /** Events */
+            events: components["schemas"]["StudioTraceEvent"][];
+            /** Total */
+            total: number;
+            /** Nextcursor */
+            nextCursor?: number | null;
+            /**
+             * Localonly
+             * @default true
+             * @constant
+             */
+            localOnly: true;
+        };
+        /** StudioTraceSession */
+        StudioTraceSession: {
+            /** Traceid */
+            traceId: string;
+            /** Archiveid */
+            archiveId?: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "partial" | "saved";
+            /** Gaps */
+            gaps: string[];
+            /** Eventcount */
+            eventCount: number;
+        };
         /** StudioVariableTrackingCleared */
         StudioVariableTrackingCleared: {
             /** Message */
@@ -12292,6 +13917,7 @@ export type components = {
         /** SyncStateView */
         SyncStateView: {
             summary: components["schemas"]["SyncSummary"];
+            latestPull?: components["schemas"]["SyncOperation"] | null;
             binding?: components["schemas"]["SheetsBinding"] | null;
         };
         /** SyncStatusRevisionRequest */
@@ -12312,6 +13938,11 @@ export type components = {
             unknownCount: number;
             /** Lastconfirmedat */
             lastConfirmedAt?: string | null;
+            /**
+             * Lastpulledat
+             * @description Last completed source pull for the current binding epoch; not a claim-validity guarantee.
+             */
+            lastPulledAt?: string | null;
         };
         /** SystemExcelIdentity */
         SystemExcelIdentity: {
@@ -12365,6 +13996,11 @@ export type components = {
             unknownCount: number;
             /** Lastconfirmedat */
             lastConfirmedAt?: string | null;
+            /**
+             * Lastpulledat
+             * @description Last completed source pull for the current binding epoch; not a claim-validity guarantee.
+             */
+            lastPulledAt?: string | null;
         };
         /** TaskCurrentInputView */
         TaskCurrentInputView: {
@@ -12437,6 +14073,20 @@ export type components = {
             dataWrites?: components["schemas"]["TaskDataWriteView"][];
             cleanup: components["schemas"]["CleanupSummaryView"];
             end?: components["schemas"]["TaskEndView"] | null;
+        };
+        /** TaskEndResultView */
+        TaskEndResultView: {
+            operation: components["schemas"]["EnvironmentOperationSnapshot"];
+            /** Outcome */
+            outcome: {
+                [key: string]: unknown;
+            } | null;
+            /** Saveoperationid */
+            saveOperationId: string | null;
+            /** Associationphase */
+            associationPhase: string | null;
+            /** Recordtargets */
+            recordTargets: components["schemas"]["RecordTargetWrite"][];
         };
         /** TaskEndView */
         TaskEndView: {
@@ -12629,6 +14279,8 @@ export type components = {
             revision: number;
             /** Checksum */
             checksum: string;
+            /** Browserenvironmentversion */
+            browserEnvironmentVersion?: number | null;
             validation: components["schemas"]["WorkflowCatalogValidation"];
             /**
              * Createdat
@@ -12662,6 +14314,8 @@ export type components = {
             revision: number;
             /** Checksum */
             checksum: string;
+            /** Browserenvironmentversion */
+            browserEnvironmentVersion?: number | null;
             validation: components["schemas"]["WorkflowCatalogValidation"];
             /**
              * Createdat
@@ -12703,7 +14357,7 @@ export type components = {
             /** Documentid */
             documentId: string;
             /** Profileid */
-            profileId: string;
+            profileId?: string | null;
             /** Projectid */
             projectId?: string | null;
             /**
@@ -15556,6 +17210,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     list_providers_api_v1_model_providers_get: {
@@ -16971,6 +18634,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     get_workflow_api_v1_workflows__workflowId__get: {
@@ -17022,6 +18694,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     list_projects_api_v1_projects_get: {
@@ -17059,6 +18740,15 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -17128,6 +18818,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     get_project_api_v1_projects__projectId__get: {
@@ -17170,6 +18869,15 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -17268,6 +18976,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     patch_project_api_v1_projects__projectId__patch: {
@@ -17341,6 +19058,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     open_project_api_v1_projects__projectId__open_post: {
@@ -17399,6 +19125,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     overview_api_v1_projects__projectId__overview_get: {
@@ -17443,6 +19178,15 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -17505,6 +19249,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     operation_api_v1_projects__projectId__operations__operationId__get: {
@@ -17525,7 +19278,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectOperationView"];
+                    "application/json": components["schemas"]["ProjectOperationView"] | components["schemas"]["EnvironmentOperationSnapshot"];
                 };
             };
             /** @description Unauthorized */
@@ -17548,6 +19301,15 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -17575,7 +19337,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectOperationView"];
+                    "application/json": components["schemas"]["ProjectOperationView"] | components["schemas"]["EnvironmentOperationSnapshot"];
                 };
             };
             /** @description Unauthorized */
@@ -17598,6 +19360,15 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -17647,6 +19418,15 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -17707,6 +19487,15 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -17805,6 +19594,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     restore_project_api_v1_projects__projectId__restore_post: {
@@ -17887,6 +19685,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     studio_statistics_api_v1_projects__projectId__statistics_studio_get: {
@@ -17943,6 +19750,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     project_statistics_api_v1_projects__projectId__statistics_get: {
@@ -17992,6 +19808,15 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -18071,6 +19896,51 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    debug_inputs_api_v1_projects__projectId__automations__automationId__debug_inputs_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                automationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DebugInputRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DebugInputResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -18311,6 +20181,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     stop_batch_api_v1_projects__projectId__batches__batchId__stop_post: {
@@ -18376,6 +20255,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     force_stop_batch_api_v1_projects__projectId__batches__batchId__force_stop_post: {
@@ -18434,6 +20322,15 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -19075,6 +20972,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     create_automation_api_v1_projects__projectId__automations_post: {
@@ -19090,7 +20996,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AutomationWrite"];
+                "application/json": components["schemas"]["AutomationCreate"];
             };
         };
         responses: {
@@ -19157,6 +21063,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     get_automation_api_v1_projects__projectId__automations__automationId__get: {
@@ -19200,6 +21115,15 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -19274,6 +21198,15 @@ export interface operations {
             };
             /** @description Locked */
             423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -19373,6 +21306,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     automation_impact_api_v1_projects__projectId__automations__automationId__impact_get: {
@@ -19418,6 +21360,15 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -19549,6 +21500,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     create_api_v1_projects__projectId__tables__tableId__records_post: {
@@ -19643,6 +21603,15 @@ export interface operations {
             };
             /** @description Locked */
             423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -19760,6 +21729,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     get_api_v1_projects__projectId__tables__tableId__records__recordKey__get: {
@@ -19816,6 +21794,15 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -19916,6 +21903,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     update_api_v1_projects__projectId__tables__tableId__records__recordKey__patch: {
@@ -20002,6 +21998,15 @@ export interface operations {
             };
             /** @description Locked */
             423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -20102,6 +22107,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     list_tables_api_v1_projects__projectId__tables_get: {
@@ -20150,6 +22164,15 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -20239,6 +22262,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     get_table_api_v1_projects__projectId__tables__tableId__get: {
@@ -20291,6 +22323,15 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -20372,6 +22413,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     list_fields_api_v1_projects__projectId__tables__tableId__fields_get: {
@@ -20415,6 +22465,15 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -20505,6 +22564,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     list_statuses_api_v1_projects__projectId__tables__tableId__statuses_get: {
@@ -20548,6 +22616,15 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -20638,6 +22715,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     status_usage_api_v1_projects__projectId__tables__tableId__statuses_usage_get: {
@@ -20681,6 +22767,15 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -20781,6 +22876,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     update_status_api_v1_projects__projectId__tables__tableId__statuses__statusId__patch: {
@@ -20849,6 +22953,15 @@ export interface operations {
             };
             /** @description Locked */
             423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -20949,6 +23062,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     preview_api_v1_projects__projectId__mutation_impact_post: {
@@ -21013,6 +23135,15 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -21103,6 +23234,15 @@ export interface operations {
             };
             /** @description Locked */
             423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -21202,6 +23342,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     preview_api_v1_projects__projectId__tables__tableId__record_status_batches_preview_post: {
@@ -21276,6 +23425,15 @@ export interface operations {
             };
             /** @description Locked */
             423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -21375,6 +23533,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     cancel_api_v1_projects__projectId__tables__tableId__record_status_batches__operationId__cancel_post: {
@@ -21434,6 +23601,15 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -21528,6 +23704,15 @@ export interface operations {
             };
             /** @description Locked */
             423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -21787,6 +23972,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     get_environment_api_v1_projects__projectId__environments__environmentId__get: {
@@ -21830,6 +24024,15 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -21920,6 +24123,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     patch_environment_api_v1_projects__projectId__environments__environmentId__patch: {
@@ -21994,6 +24206,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     environment_impact_api_v1_projects__projectId__environments__environmentId__impact_get: {
@@ -22039,6 +24260,15 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -22101,6 +24331,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     get_instance_api_v1_projects__projectId__environment_instances__instanceId__get: {
@@ -22144,6 +24383,15 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -22234,6 +24482,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     save_environment_api_v1_projects__projectId__environment_saves_post: {
@@ -22309,6 +24566,74 @@ export interface operations {
             };
             /** @description Locked */
             423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_task_end_api_v1_projects__projectId__tasks__taskId__end_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                taskId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskEndResultView"] | null;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -22399,6 +24724,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     start_maintenance_api_v1_projects__projectId__environments__environmentId__maintenance_post: {
@@ -22473,6 +24807,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     discard_maintenance_api_v1_projects__projectId__environments__environmentId__maintenance_discard_post: {
@@ -22531,6 +24874,15 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -22603,6 +24955,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     get_environment_operation_api_v1_projects__projectId__environment_operations__operationId__get: {
@@ -22646,6 +25007,15 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -22708,6 +25078,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     get_manual_item_api_v1_projects__projectId__manual_items__manualItemId__get: {
@@ -22751,6 +25130,15 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -22823,6 +25211,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     finish_manual_item_api_v1_projects__projectId__manual_items__manualItemId__finish_post: {
@@ -22888,6 +25285,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     list_connections_api_v1_projects__projectId__sheets_connections_get: {
@@ -22930,6 +25336,15 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -22994,6 +25409,15 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -23068,6 +25492,15 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -23172,6 +25605,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     put_binding_api_v1_projects__projectId__tables__tableId__sheets_binding_put: {
@@ -23239,6 +25681,15 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -23320,6 +25771,538 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    identity_operations_api_v1_projects__projectId__tables__tableId__sheets_system_identity_get: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path: {
+                projectId: string;
+                tableId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SyncOperationPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    initialize_identity_api_v1_projects__projectId__tables__tableId__sheets_system_identity_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                tableId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SheetsBindingWrite"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationAccepted"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Precondition Failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    preview_identity_api_v1_projects__projectId__tables__tableId__sheets_system_identity__operationId__preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                tableId: string;
+                operationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SheetsImpactReport"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    retry_identity_api_v1_projects__projectId__tables__tableId__sheets_system_identity__operationId__retry_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                tableId: string;
+                operationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["SheetsIdentityVerification"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationAccepted"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    verify_identity_api_v1_projects__projectId__tables__tableId__sheets_system_identity__operationId__verify_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                tableId: string;
+                operationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["SheetsIdentityVerification"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationAccepted"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Precondition Failed */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    preview_api_v1_projects__projectId__tables__tableId__sheets_columns_preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                tableId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SheetsColumnPreview"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SheetsImpactReport"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    operations_api_v1_projects__projectId__tables__tableId__sheets_columns_get: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+            };
+            header?: never;
+            path: {
+                projectId: string;
+                tableId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SyncOperationPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_api_v1_projects__projectId__tables__tableId__sheets_columns_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                tableId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SheetsColumnCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationAccepted"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_original_api_v1_projects__projectId__tables__tableId__sheets_columns__operationId__preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                tableId: string;
+                operationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SheetsImpactReport"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    verify_api_v1_projects__projectId__tables__tableId__sheets_columns__operationId__verify_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                tableId: string;
+                operationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["SheetsIdentityVerification"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationAccepted"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_api_v1_projects__projectId__tables__tableId__sheets_columns__operationId__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                tableId: string;
+                operationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SyncStatusRevisionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SyncOperation"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    retry_api_v1_projects__projectId__tables__tableId__sheets_columns__operationId__retry_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                tableId: string;
+                operationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SheetsIdentityVerification"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationAccepted"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
     };
     sync_state_api_v1_projects__projectId__tables__tableId__sync_get: {
@@ -23363,6 +26346,87 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    source_observations_api_v1_projects__projectId__tables__tableId__records__recordKey__source_observations_get: {
+        parameters: {
+            query: {
+                datasetGeneration: string;
+                recordKeyType: "text" | "integer" | "uuid";
+            };
+            header?: never;
+            path: {
+                projectId: string;
+                tableId: string;
+                recordKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceRecordObservations"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Gone */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -23444,6 +26508,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     push_api_v1_projects__projectId__tables__tableId__sync_push_post: {
@@ -23511,6 +26584,15 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -23592,6 +26674,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     resume_api_v1_projects__projectId__tables__tableId__sync_resume_post: {
@@ -23666,6 +26757,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     list_operations_api_v1_projects__projectId__tables__tableId__sync_operations_get: {
@@ -23720,6 +26820,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     read_operation_api_v1_projects__projectId__tables__tableId__sync_operations__syncOperationId__get: {
@@ -23764,6 +26873,15 @@ export interface operations {
             };
             /** @description Unprocessable Entity */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -23846,6 +26964,15 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
     abandon_api_v1_projects__projectId__tables__tableId__sync_operations__syncOperationId__abandon_post: {
@@ -23921,9 +27048,18 @@ export interface operations {
                     "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
         };
     };
-    required_fields_api_system_module_required_fields_get: {
+    module_required_fields_api_system_module_required_fields_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -23952,6 +27088,15 @@ export interface operations {
             };
             /** @description Internal Server Error */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -26575,6 +29720,45 @@ export interface operations {
             };
         };
     };
+    get_trace_api_workflow_runs__run_id__trace_get: {
+        parameters: {
+            query?: {
+                cursor?: number;
+                limit?: number;
+                kind?: ("execution" | "network" | "console" | "exception" | "page-closed" | "mark" | "diagnostic" | "source") | null;
+                executionId?: string | null;
+                evidenceId?: string | null;
+                traceId?: string | null;
+                projectId?: string | null;
+            };
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StudioTracePage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_artifacts_api_workflow_runs__run_id__artifacts_get: {
         parameters: {
             query?: {
@@ -27264,6 +30448,844 @@ export interface operations {
             };
         };
     };
+    environment_api_v1_android_management_environment_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagementEnvironmentRead"];
+                };
+            };
+        };
+    };
+    capabilities_api_v1_android_management_capabilities_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagementCapabilitiesRead"];
+                };
+            };
+        };
+    };
+    management_devices_api_v1_android_management_devices_get: {
+        parameters: {
+            query?: {
+                status?: string | null;
+                profileId?: string | null;
+                retained?: boolean | null;
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagementDevicePageRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    environment_check_api_v1_android_management_environment_checks_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnvironmentCheckCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    operation_page_api_v1_android_management_operations_get: {
+        parameters: {
+            query?: {
+                deviceId?: string | null;
+                cursor?: string | null;
+                limit?: number;
+                action?: string | null;
+                state?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationPageRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    operation_by_request_api_v1_android_management_operations_by_request__request_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    operation_api_v1_android_management_operations__operation_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                operation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    verify_api_v1_android_management_operations__operation_id__verify_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                operation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OperationVerifyCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    image_page_api_v1_android_management_images_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImagePageRead"];
+                };
+            };
+        };
+    };
+    register_image_api_v1_android_management_images_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImageRegister"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImageRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    image_pull_api_v1_android_management_image_pulls_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImagePullCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperationRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_image_api_v1_android_management_images__identifier__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImageDelete"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImageRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    verify_image_api_v1_android_management_images__identifier__verifications_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImageVerificationCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImageRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    verify_image_delete_api_v1_android_management_images__identifier__delete_verifications_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImageDeleteVerification"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImageRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    profile_api_v1_android_management_profiles__identifier__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnvironmentProfile"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    archive_profile_api_v1_android_management_profiles__identifier__archive_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProfileArchiveCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnvironmentProfile"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    backup_page_api_v1_android_management_backups_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupRead"][];
+                };
+            };
+        };
+    };
+    create_backup_api_v1_android_management_backups_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BackupCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    backup_api_v1_android_management_devices__identifier__backups_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BackupCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    restore_backup_api_v1_android_management_backups__identifier__restore_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BackupRestore"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupRestoreRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    bulk_create_api_v1_android_management_bulk_operations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BulkCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    bulk_get_api_v1_android_management_bulk_operations__identifier__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    bulk_action_api_v1_android_management_bulk_operations__identifier__actions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BulkAction"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cleanup_resources_api_v1_android_management_cleanup_resources_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CleanupResourcePage"];
+                };
+            };
+        };
+    };
+    cleanup_preview_api_v1_android_management_cleanup_previews_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CleanupPreviewCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CleanupPreviewRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cleanup_execute_api_v1_android_management_cleanup_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CleanupExecute"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CleanupRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    diagnostics_api_v1_android_management_diagnostics_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DiagnosticsCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DiagnosticRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     profiles_api_v1_android_profiles_get: {
         parameters: {
             query?: never;
@@ -27280,6 +31302,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EnvironmentProfile"][];
+                };
+            };
+        };
+    };
+    standard_profile_api_v1_android_profiles_standard_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnvironmentProfile"];
                 };
             };
         };
@@ -27589,6 +31631,41 @@ export interface operations {
             };
         };
     };
+    heartbeat_api_v1_android_sessions__identifier__heartbeat_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SessionHeartbeat"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     action_api_v1_android_sessions__identifier__actions_post: {
         parameters: {
             query?: never;
@@ -27754,10 +31831,81 @@ export interface operations {
             };
         };
     };
+    app_action_api_v1_android_sessions__identifier__apps_actions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AppAction"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    verify_app_api_v1_android_sessions__identifier__apps_verify_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                identifier: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AppVerify"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     install_api_v1_android_sessions__identifier__apps_install_post: {
         parameters: {
             query: {
                 generation: number;
+                requestId: string;
             };
             header?: never;
             path: {

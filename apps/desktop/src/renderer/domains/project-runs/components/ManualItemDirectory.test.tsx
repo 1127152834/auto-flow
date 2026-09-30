@@ -71,11 +71,11 @@ it('routes every entry to its real target instead of a synthetic identifier', ()
 
 it('separates an empty directory from a failed read and keeps the last page on refresh failure', () => {
   const first = renderDirectory({ page: undefined })
-  expect(screen.getByText('当前没有等待人工处理的事项。')).toBeVisible()
+  expect(screen.getByRole('heading', { name: '当前没有等待人工处理的事项', level: 2 })).toBeVisible()
   cleanup()
   renderDirectory({ page: undefined, error: '读取内容失败，请重试' })
   expect(screen.getByRole('alert')).toHaveTextContent('等待人工事项读取失败：读取内容失败，请重试')
-  expect(screen.queryByText('当前没有等待人工处理的事项。')).not.toBeInTheDocument()
+  expect(screen.queryByText('当前没有等待人工处理的事项')).not.toBeInTheDocument()
   cleanup()
   // 刷新失败必须保留上次读取的内容，不能把已知数据显示成空
   renderDirectory({ page: { items: [item()], page: 1, pageSize: 50, total: 1 }, error: '读取内容失败，请重试' })

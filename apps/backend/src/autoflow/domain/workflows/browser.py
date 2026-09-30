@@ -235,6 +235,6 @@ class BrowserSessionPort(Protocol):
 @dataclass(frozen=True, slots=True)
 class WorkflowWorkerSession:
     run_id: str
-    profile_id: str
+    profile_id: str | None
     pid: int
     child_pid: int | None = None

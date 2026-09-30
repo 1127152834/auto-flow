@@ -18,6 +18,8 @@ from .project_run_schemas import (
     BatchPage,
     BatchStartRequest,
     BatchStopRequest,
+    DebugInputRequest,
+    DebugInputResponse,
     FollowUpBatchRequest,
     InputPreviewRequest,
     InputPreviewResponse,
@@ -37,6 +39,12 @@ def project_runs_router(
 ) -> APIRouter:
     router = APIRouter(prefix="/api/v1/projects/{projectId}")
 
+    @router.post('/automations/{automationId}/debug-inputs', response_model=DebugInputResponse)
+    def debug_inputs(
+        projectId: UUID, automationId: UUID, body: DebugInputRequest
+    ) -> dict[str, Any]:
+        return coordinator.debug_inputs(str(projectId), str(automationId), body.model_dump(by_alias=True))
+
     @router.post(
         "/automations/{automationId}/batches",
         status_code=202,
@@ -48,7 +56,7 @@ def project_runs_router(
         automationId: UUID,
         body: BatchStartRequest,
         idempotency_key: Key,
-    ):
+    ) -> dict[str, Any]:
         with gate.mutation() as admitted:
             if not admitted:
                 raise ProjectRunError(
@@ -71,7 +79,7 @@ def project_runs_router(
     )
     async def follow_up_batch(
         projectId: UUID, taskId: UUID, body: FollowUpBatchRequest, idempotency_key: Key
-    ):
+    ) -> dict[str, Any]:
         with gate.mutation() as admitted:
             if not admitted:
                 raise ProjectRunError(
@@ -93,7 +101,7 @@ def project_runs_router(
     )
     def preview_inputs(
         projectId: UUID, automationId: UUID, body: InputPreviewRequest
-    ):
+    ) -> dict[str, Any]:
         return coordinator.preview_inputs(
             str(projectId),
             str(automationId),
@@ -108,7 +116,7 @@ def project_runs_router(
     )
     async def stop_batch(
         projectId: UUID, batchId: UUID, body: BatchStopRequest, idempotency_key: Key
-    ):
+    ) -> dict[str, Any]:
         operation = await scheduler.stop(
             str(projectId),
             str(batchId),
@@ -125,7 +133,7 @@ def project_runs_router(
     )
     async def force_stop_batch(
         projectId: UUID, batchId: UUID, body: BatchStopRequest, idempotency_key: Key
-    ):
+    ) -> dict[str, Any]:
         operation = await scheduler.stop(
             str(projectId),
             str(batchId),
@@ -146,7 +154,7 @@ def project_runs_router(
         page: int = Query(1, ge=1, le=2_147_483_647),
         page_size: int = Query(50, alias="pageSize", ge=1, le=200),
         sort: str = "-createdAt",
-    ):
+    ) -> dict[str, Any]:
         items, total = queries.list_batches(
             str(projectId),
             query_text=q,
@@ -167,7 +175,7 @@ def project_runs_router(
         }
 
     @router.get("/batches/{batchId}", response_model=BatchDetail)
-    def get_batch(projectId: UUID, batchId: UUID):
+    def get_batch(projectId: UUID, batchId: UUID) -> dict[str, Any]:
         result = queries.batch_detail(str(projectId), str(batchId))
         allowed, available_at = scheduler.force_stop_availability(
             str(projectId), str(batchId)
@@ -190,7 +198,7 @@ def project_runs_router(
         page: int = Query(1, ge=1, le=2_147_483_647),
         page_size: int = Query(50, alias="pageSize", ge=1, le=200),
         sort: str = "-createdAt",
-    ):
+    ) -> dict[str, Any]:
         items, total = queries.list_tasks(
             str(projectId),
             query_text=q,
@@ -212,7 +220,7 @@ def project_runs_router(
         }
 
     @router.get("/tasks/{taskId}", response_model=TaskDetail)
-    def get_task(projectId: UUID, taskId: UUID):
+    def get_task(projectId: UUID, taskId: UUID) -> dict[str, Any]:
         return queries.task_detail(str(projectId), str(taskId))
 
     return router

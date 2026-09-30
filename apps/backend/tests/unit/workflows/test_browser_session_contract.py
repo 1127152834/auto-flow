@@ -624,6 +624,7 @@ async def test_workflow_worker_executes_document_and_emits_identified_events(
         "execution:node_start",
         "execution:node_complete",
         "execution:completed",
+        "artifact:registered",
     ]
     assert events[1]["runId"] == events[2]["runId"] == "run-execute"
     assert events[1]["executionId"] == events[2]["executionId"]
@@ -880,8 +881,8 @@ async def test_workflow_worker_exports_list_and_emits_registered_artifact(
 
     result = await _run(command, Event(), output)
 
-    assert result == 0, output.getvalue()
     events = [json.loads(line) for line in output.getvalue().splitlines()]
+    assert result == 0, output.getvalue()
     assert [event["type"] for event in events] == [
         "ready",
         "execution:node_start",
@@ -1281,7 +1282,7 @@ async def test_workflow_worker_runs_table_family_and_registers_excel_artifact(
             "table_export",
             {
                 "exportFormat": "excel",
-                "savePath": "reports/result.xlsx",
+                "savePath": str(tmp_path / "reports/result.xlsx"),
                 "sheetName": "结果",
                 "variableName": "path",
             },
@@ -1318,8 +1319,8 @@ async def test_workflow_worker_runs_table_family_and_registers_excel_artifact(
 
     result = await _run(command, Event(), output)
 
-    assert result == 0, output.getvalue()
     events = [json.loads(line) for line in output.getvalue().splitlines()]
+    assert result == 0, output.getvalue()
     completions = [
         event for event in events if event["type"] == "execution:node_complete"
     ]
@@ -1328,7 +1329,7 @@ async def test_workflow_worker_runs_table_family_and_registers_excel_artifact(
     ]
     assert completions[4]["data"] == 3
     assert len(completions[5]["artifactIds"]) == 1
-    target = artifact_root / "runs/run-table/outputs/reports/result.xlsx"
+    target = tmp_path / "reports/result.xlsx"
     assert target.read_bytes().startswith(b"PK")
     artifact_events = [
         event for event in events if event["type"] == "artifact:registered"

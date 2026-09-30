@@ -1,0 +1,430 @@
+FFFFFFFFF                                                                [100%]
+=================================== FAILURES ===================================
+__ test_environment_reports_each_runtime_check[1073741824-2147483648\n-pass] ___
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-212/test_environment_reports_each_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x113501b90>
+host_free = 1073741824, vm_free = b'2147483648\n', disk_status = 'pass'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(("host_free", "vm_free", "disk_status"), [
+        (1073741824, b"2147483648\n", "pass"),
+        (0, b"2147483648\n", "fail"),
+        (1073741824, b"0\n", "fail"),
+        (1073741824, b"-1\n", "unknown"),
+        (1073741824, None, "unknown"),
+        (None, b"2147483648\n", "unknown"),
+    ])
+    async def test_environment_reports_each_runtime_check(tmp_path, monkeypatch, host_free, vm_free, disk_status):
+        monkeypatch.setattr(mac.platform, "system", lambda: "Darwin")
+        monkeypatch.setattr(mac.platform, "machine", lambda: "arm64")
+        monkeypatch.setattr(mac.shutil, "which", lambda tool: "/usr/bin/" + tool)
+        vendor = tmp_path / mac.VENDOR
+        vendor.mkdir()
+        (vendor / "scrcpy").write_bytes(b"binary")
+
+        async def fake_run(argv, *_args, **_kwargs):
+            if argv[:2] == ["limactl", "list"]:
+                return b"autoflow-redroid Running\n"
+            if "/proc/filesystems" in argv:
+                return b"nodev\tbinder\n"
+            if "python3" in argv:
+                assert argv[-1] == "/srv/docker data", "Probe the actual Docker root, never assume /var/lib/docker"
+                if vm_free is None:
+                    raise TimeoutError("VM disk unavailable")
+                return vm_free
+            raise AssertionError(argv)
+
+        def host_usage(path):
+            assert path == tmp_path
+            if host_free is None:
+                raise OSError("host disk unavailable")
+            return mac.shutil._ntuple_diskusage(4294967296, 0, host_free)
+
+        monkeypatch.setattr(mac.shutil, "disk_usage", host_usage)
+        monkeypatch.setattr(mac, "run", fake_run)
+        monkeypatch.setattr(mac, "docker", AsyncMock(return_value=json.dumps({"OSType": "linux", "Architecture": "aarch64", "NCPU": 6, "MemTotal": 8 * 1024**3, "DockerRootDir": "/srv/docker data"}).encode()))
+        from autoflow.providers.android import management
+        monkeypatch.setattr(management, "images", AsyncMock(return_value=[{"id": "sha256:image"}]))
+        environment = await mac.MacAndroidRuntime(tmp_path, tmp_path).environment()
+        checks = environment["checks"]
+>       assert environment.get("hostWorkspaceFreeBytes", "missing") == host_free
+E       AssertionError: assert 'missing' == 1073741824
+E        +  where 'missing' = <built-in method get of dict object at 0x113501880>('hostWorkspaceFreeBytes', 'missing')
+E        +    where <built-in method get of dict object at 0x113501880> = {'images': [{'id': 'sha256:image'}], 'cpuCount': 6, 'memoryMb': 8192, 'available': True, ...}.get
+
+apps/backend/tests/unit/test_android_runtime.py:223: AssertionError
+_______ test_environment_reports_each_runtime_check[0-2147483648\n-fail] _______
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-212/test_environment_reports_each_1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1135ab950>
+host_free = 0, vm_free = b'2147483648\n', disk_status = 'fail'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(("host_free", "vm_free", "disk_status"), [
+        (1073741824, b"2147483648\n", "pass"),
+        (0, b"2147483648\n", "fail"),
+        (1073741824, b"0\n", "fail"),
+        (1073741824, b"-1\n", "unknown"),
+        (1073741824, None, "unknown"),
+        (None, b"2147483648\n", "unknown"),
+    ])
+    async def test_environment_reports_each_runtime_check(tmp_path, monkeypatch, host_free, vm_free, disk_status):
+        monkeypatch.setattr(mac.platform, "system", lambda: "Darwin")
+        monkeypatch.setattr(mac.platform, "machine", lambda: "arm64")
+        monkeypatch.setattr(mac.shutil, "which", lambda tool: "/usr/bin/" + tool)
+        vendor = tmp_path / mac.VENDOR
+        vendor.mkdir()
+        (vendor / "scrcpy").write_bytes(b"binary")
+
+        async def fake_run(argv, *_args, **_kwargs):
+            if argv[:2] == ["limactl", "list"]:
+                return b"autoflow-redroid Running\n"
+            if "/proc/filesystems" in argv:
+                return b"nodev\tbinder\n"
+            if "python3" in argv:
+                assert argv[-1] == "/srv/docker data", "Probe the actual Docker root, never assume /var/lib/docker"
+                if vm_free is None:
+                    raise TimeoutError("VM disk unavailable")
+                return vm_free
+            raise AssertionError(argv)
+
+        def host_usage(path):
+            assert path == tmp_path
+            if host_free is None:
+                raise OSError("host disk unavailable")
+            return mac.shutil._ntuple_diskusage(4294967296, 0, host_free)
+
+        monkeypatch.setattr(mac.shutil, "disk_usage", host_usage)
+        monkeypatch.setattr(mac, "run", fake_run)
+        monkeypatch.setattr(mac, "docker", AsyncMock(return_value=json.dumps({"OSType": "linux", "Architecture": "aarch64", "NCPU": 6, "MemTotal": 8 * 1024**3, "DockerRootDir": "/srv/docker data"}).encode()))
+        from autoflow.providers.android import management
+        monkeypatch.setattr(management, "images", AsyncMock(return_value=[{"id": "sha256:image"}]))
+        environment = await mac.MacAndroidRuntime(tmp_path, tmp_path).environment()
+        checks = environment["checks"]
+>       assert environment.get("hostWorkspaceFreeBytes", "missing") == host_free
+E       AssertionError: assert 'missing' == 0
+E        +  where 'missing' = <built-in method get of dict object at 0x11353b740>('hostWorkspaceFreeBytes', 'missing')
+E        +    where <built-in method get of dict object at 0x11353b740> = {'images': [{'id': 'sha256:image'}], 'cpuCount': 6, 'memoryMb': 8192, 'available': True, ...}.get
+
+apps/backend/tests/unit/test_android_runtime.py:223: AssertionError
+_______ test_environment_reports_each_runtime_check[1073741824-0\n-fail] _______
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-212/test_environment_reports_each_2')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x113503010>
+host_free = 1073741824, vm_free = b'0\n', disk_status = 'fail'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(("host_free", "vm_free", "disk_status"), [
+        (1073741824, b"2147483648\n", "pass"),
+        (0, b"2147483648\n", "fail"),
+        (1073741824, b"0\n", "fail"),
+        (1073741824, b"-1\n", "unknown"),
+        (1073741824, None, "unknown"),
+        (None, b"2147483648\n", "unknown"),
+    ])
+    async def test_environment_reports_each_runtime_check(tmp_path, monkeypatch, host_free, vm_free, disk_status):
+        monkeypatch.setattr(mac.platform, "system", lambda: "Darwin")
+        monkeypatch.setattr(mac.platform, "machine", lambda: "arm64")
+        monkeypatch.setattr(mac.shutil, "which", lambda tool: "/usr/bin/" + tool)
+        vendor = tmp_path / mac.VENDOR
+        vendor.mkdir()
+        (vendor / "scrcpy").write_bytes(b"binary")
+
+        async def fake_run(argv, *_args, **_kwargs):
+            if argv[:2] == ["limactl", "list"]:
+                return b"autoflow-redroid Running\n"
+            if "/proc/filesystems" in argv:
+                return b"nodev\tbinder\n"
+            if "python3" in argv:
+                assert argv[-1] == "/srv/docker data", "Probe the actual Docker root, never assume /var/lib/docker"
+                if vm_free is None:
+                    raise TimeoutError("VM disk unavailable")
+                return vm_free
+            raise AssertionError(argv)
+
+        def host_usage(path):
+            assert path == tmp_path
+            if host_free is None:
+                raise OSError("host disk unavailable")
+            return mac.shutil._ntuple_diskusage(4294967296, 0, host_free)
+
+        monkeypatch.setattr(mac.shutil, "disk_usage", host_usage)
+        monkeypatch.setattr(mac, "run", fake_run)
+        monkeypatch.setattr(mac, "docker", AsyncMock(return_value=json.dumps({"OSType": "linux", "Architecture": "aarch64", "NCPU": 6, "MemTotal": 8 * 1024**3, "DockerRootDir": "/srv/docker data"}).encode()))
+        from autoflow.providers.android import management
+        monkeypatch.setattr(management, "images", AsyncMock(return_value=[{"id": "sha256:image"}]))
+        environment = await mac.MacAndroidRuntime(tmp_path, tmp_path).environment()
+        checks = environment["checks"]
+>       assert environment.get("hostWorkspaceFreeBytes", "missing") == host_free
+E       AssertionError: assert 'missing' == 1073741824
+E        +  where 'missing' = <built-in method get of dict object at 0x11359ea40>('hostWorkspaceFreeBytes', 'missing')
+E        +    where <built-in method get of dict object at 0x11359ea40> = {'images': [{'id': 'sha256:image'}], 'cpuCount': 6, 'memoryMb': 8192, 'available': True, ...}.get
+
+apps/backend/tests/unit/test_android_runtime.py:223: AssertionError
+_____ test_environment_reports_each_runtime_check[1073741824--1\n-unknown] _____
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-212/test_environment_reports_each_3')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1134d6390>
+host_free = 1073741824, vm_free = b'-1\n', disk_status = 'unknown'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(("host_free", "vm_free", "disk_status"), [
+        (1073741824, b"2147483648\n", "pass"),
+        (0, b"2147483648\n", "fail"),
+        (1073741824, b"0\n", "fail"),
+        (1073741824, b"-1\n", "unknown"),
+        (1073741824, None, "unknown"),
+        (None, b"2147483648\n", "unknown"),
+    ])
+    async def test_environment_reports_each_runtime_check(tmp_path, monkeypatch, host_free, vm_free, disk_status):
+        monkeypatch.setattr(mac.platform, "system", lambda: "Darwin")
+        monkeypatch.setattr(mac.platform, "machine", lambda: "arm64")
+        monkeypatch.setattr(mac.shutil, "which", lambda tool: "/usr/bin/" + tool)
+        vendor = tmp_path / mac.VENDOR
+        vendor.mkdir()
+        (vendor / "scrcpy").write_bytes(b"binary")
+
+        async def fake_run(argv, *_args, **_kwargs):
+            if argv[:2] == ["limactl", "list"]:
+                return b"autoflow-redroid Running\n"
+            if "/proc/filesystems" in argv:
+                return b"nodev\tbinder\n"
+            if "python3" in argv:
+                assert argv[-1] == "/srv/docker data", "Probe the actual Docker root, never assume /var/lib/docker"
+                if vm_free is None:
+                    raise TimeoutError("VM disk unavailable")
+                return vm_free
+            raise AssertionError(argv)
+
+        def host_usage(path):
+            assert path == tmp_path
+            if host_free is None:
+                raise OSError("host disk unavailable")
+            return mac.shutil._ntuple_diskusage(4294967296, 0, host_free)
+
+        monkeypatch.setattr(mac.shutil, "disk_usage", host_usage)
+        monkeypatch.setattr(mac, "run", fake_run)
+        monkeypatch.setattr(mac, "docker", AsyncMock(return_value=json.dumps({"OSType": "linux", "Architecture": "aarch64", "NCPU": 6, "MemTotal": 8 * 1024**3, "DockerRootDir": "/srv/docker data"}).encode()))
+        from autoflow.providers.android import management
+        monkeypatch.setattr(management, "images", AsyncMock(return_value=[{"id": "sha256:image"}]))
+        environment = await mac.MacAndroidRuntime(tmp_path, tmp_path).environment()
+        checks = environment["checks"]
+>       assert environment.get("hostWorkspaceFreeBytes", "missing") == host_free
+E       AssertionError: assert 'missing' == 1073741824
+E        +  where 'missing' = <built-in method get of dict object at 0x1135921c0>('hostWorkspaceFreeBytes', 'missing')
+E        +    where <built-in method get of dict object at 0x1135921c0> = {'images': [{'id': 'sha256:image'}], 'cpuCount': 6, 'memoryMb': 8192, 'available': True, ...}.get
+
+apps/backend/tests/unit/test_android_runtime.py:223: AssertionError
+_____ test_environment_reports_each_runtime_check[1073741824-None-unknown] _____
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-212/test_environment_reports_each_4')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1134b2490>
+host_free = 1073741824, vm_free = None, disk_status = 'unknown'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(("host_free", "vm_free", "disk_status"), [
+        (1073741824, b"2147483648\n", "pass"),
+        (0, b"2147483648\n", "fail"),
+        (1073741824, b"0\n", "fail"),
+        (1073741824, b"-1\n", "unknown"),
+        (1073741824, None, "unknown"),
+        (None, b"2147483648\n", "unknown"),
+    ])
+    async def test_environment_reports_each_runtime_check(tmp_path, monkeypatch, host_free, vm_free, disk_status):
+        monkeypatch.setattr(mac.platform, "system", lambda: "Darwin")
+        monkeypatch.setattr(mac.platform, "machine", lambda: "arm64")
+        monkeypatch.setattr(mac.shutil, "which", lambda tool: "/usr/bin/" + tool)
+        vendor = tmp_path / mac.VENDOR
+        vendor.mkdir()
+        (vendor / "scrcpy").write_bytes(b"binary")
+
+        async def fake_run(argv, *_args, **_kwargs):
+            if argv[:2] == ["limactl", "list"]:
+                return b"autoflow-redroid Running\n"
+            if "/proc/filesystems" in argv:
+                return b"nodev\tbinder\n"
+            if "python3" in argv:
+                assert argv[-1] == "/srv/docker data", "Probe the actual Docker root, never assume /var/lib/docker"
+                if vm_free is None:
+                    raise TimeoutError("VM disk unavailable")
+                return vm_free
+            raise AssertionError(argv)
+
+        def host_usage(path):
+            assert path == tmp_path
+            if host_free is None:
+                raise OSError("host disk unavailable")
+            return mac.shutil._ntuple_diskusage(4294967296, 0, host_free)
+
+        monkeypatch.setattr(mac.shutil, "disk_usage", host_usage)
+        monkeypatch.setattr(mac, "run", fake_run)
+        monkeypatch.setattr(mac, "docker", AsyncMock(return_value=json.dumps({"OSType": "linux", "Architecture": "aarch64", "NCPU": 6, "MemTotal": 8 * 1024**3, "DockerRootDir": "/srv/docker data"}).encode()))
+        from autoflow.providers.android import management
+        monkeypatch.setattr(management, "images", AsyncMock(return_value=[{"id": "sha256:image"}]))
+        environment = await mac.MacAndroidRuntime(tmp_path, tmp_path).environment()
+        checks = environment["checks"]
+>       assert environment.get("hostWorkspaceFreeBytes", "missing") == host_free
+E       AssertionError: assert 'missing' == 1073741824
+E        +  where 'missing' = <built-in method get of dict object at 0x1134e12c0>('hostWorkspaceFreeBytes', 'missing')
+E        +    where <built-in method get of dict object at 0x1134e12c0> = {'images': [{'id': 'sha256:image'}], 'cpuCount': 6, 'memoryMb': 8192, 'available': True, ...}.get
+
+apps/backend/tests/unit/test_android_runtime.py:223: AssertionError
+____ test_environment_reports_each_runtime_check[None-2147483648\n-unknown] ____
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-212/test_environment_reports_each_5')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1131dd090>
+host_free = None, vm_free = b'2147483648\n', disk_status = 'unknown'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(("host_free", "vm_free", "disk_status"), [
+        (1073741824, b"2147483648\n", "pass"),
+        (0, b"2147483648\n", "fail"),
+        (1073741824, b"0\n", "fail"),
+        (1073741824, b"-1\n", "unknown"),
+        (1073741824, None, "unknown"),
+        (None, b"2147483648\n", "unknown"),
+    ])
+    async def test_environment_reports_each_runtime_check(tmp_path, monkeypatch, host_free, vm_free, disk_status):
+        monkeypatch.setattr(mac.platform, "system", lambda: "Darwin")
+        monkeypatch.setattr(mac.platform, "machine", lambda: "arm64")
+        monkeypatch.setattr(mac.shutil, "which", lambda tool: "/usr/bin/" + tool)
+        vendor = tmp_path / mac.VENDOR
+        vendor.mkdir()
+        (vendor / "scrcpy").write_bytes(b"binary")
+
+        async def fake_run(argv, *_args, **_kwargs):
+            if argv[:2] == ["limactl", "list"]:
+                return b"autoflow-redroid Running\n"
+            if "/proc/filesystems" in argv:
+                return b"nodev\tbinder\n"
+            if "python3" in argv:
+                assert argv[-1] == "/srv/docker data", "Probe the actual Docker root, never assume /var/lib/docker"
+                if vm_free is None:
+                    raise TimeoutError("VM disk unavailable")
+                return vm_free
+            raise AssertionError(argv)
+
+        def host_usage(path):
+            assert path == tmp_path
+            if host_free is None:
+                raise OSError("host disk unavailable")
+            return mac.shutil._ntuple_diskusage(4294967296, 0, host_free)
+
+        monkeypatch.setattr(mac.shutil, "disk_usage", host_usage)
+        monkeypatch.setattr(mac, "run", fake_run)
+        monkeypatch.setattr(mac, "docker", AsyncMock(return_value=json.dumps({"OSType": "linux", "Architecture": "aarch64", "NCPU": 6, "MemTotal": 8 * 1024**3, "DockerRootDir": "/srv/docker data"}).encode()))
+        from autoflow.providers.android import management
+        monkeypatch.setattr(management, "images", AsyncMock(return_value=[{"id": "sha256:image"}]))
+        environment = await mac.MacAndroidRuntime(tmp_path, tmp_path).environment()
+        checks = environment["checks"]
+>       assert environment.get("hostWorkspaceFreeBytes", "missing") == host_free
+E       AssertionError: assert 'missing' == None
+E        +  where 'missing' = <built-in method get of dict object at 0x11349c400>('hostWorkspaceFreeBytes', 'missing')
+E        +    where <built-in method get of dict object at 0x11349c400> = {'images': [{'id': 'sha256:image'}], 'cpuCount': 6, 'memoryMb': 8192, 'available': True, ...}.get
+
+apps/backend/tests/unit/test_android_runtime.py:223: AssertionError
+_ test_environment_route_preserves_independent_disk_bytes_and_unknowns[disk0] __
+
+disk = {'hostWorkspaceFreeBytes': 1073741824, 'vmDockerFreeBytes': 2147483648}
+
+    @pytest.mark.parametrize("disk", [
+        {"hostWorkspaceFreeBytes": 1073741824, "vmDockerFreeBytes": 2147483648},
+        {"hostWorkspaceFreeBytes": 0, "vmDockerFreeBytes": None},
+        {},
+    ])
+    def test_environment_route_preserves_independent_disk_bytes_and_unknowns(disk):
+        runtime = AsyncMock()
+        runtime.environment.return_value = {
+            "available": True, "platformSupported": True,
+            "runtimeId": "autoflow-redroid", "message": "可用", **disk,
+        }
+        app = FastAPI()
+        app.include_router(android_management_router(EnvironmentCheckService(runtime)))
+        with TestClient(app) as client:
+            response = client.get("/api/v1/android/management/environment")
+        assert response.status_code == 200
+        body = response.json()
+>       assert body.get("hostWorkspaceFreeBytes", "missing") == disk.get("hostWorkspaceFreeBytes")
+E       AssertionError: assert 'missing' == 1073741824
+E        +  where 'missing' = <built-in method get of dict object at 0x113571600>('hostWorkspaceFreeBytes', 'missing')
+E        +    where <built-in method get of dict object at 0x113571600> = {'available': True, 'platformSupported': True, 'runtimeId': 'autoflow-redroid', 'message': '可用', ...}.get
+E        +  and   1073741824 = <built-in method get of dict object at 0x113580280>('hostWorkspaceFreeBytes')
+E        +    where <built-in method get of dict object at 0x113580280> = {'hostWorkspaceFreeBytes': 1073741824, 'vmDockerFreeBytes': 2147483648}.get
+
+apps/backend/tests/contract/test_android_management_environment.py:149: AssertionError
+_ test_environment_route_preserves_independent_disk_bytes_and_unknowns[disk1] __
+
+disk = {'hostWorkspaceFreeBytes': 0, 'vmDockerFreeBytes': None}
+
+    @pytest.mark.parametrize("disk", [
+        {"hostWorkspaceFreeBytes": 1073741824, "vmDockerFreeBytes": 2147483648},
+        {"hostWorkspaceFreeBytes": 0, "vmDockerFreeBytes": None},
+        {},
+    ])
+    def test_environment_route_preserves_independent_disk_bytes_and_unknowns(disk):
+        runtime = AsyncMock()
+        runtime.environment.return_value = {
+            "available": True, "platformSupported": True,
+            "runtimeId": "autoflow-redroid", "message": "可用", **disk,
+        }
+        app = FastAPI()
+        app.include_router(android_management_router(EnvironmentCheckService(runtime)))
+        with TestClient(app) as client:
+            response = client.get("/api/v1/android/management/environment")
+        assert response.status_code == 200
+        body = response.json()
+>       assert body.get("hostWorkspaceFreeBytes", "missing") == disk.get("hostWorkspaceFreeBytes")
+E       AssertionError: assert 'missing' == 0
+E        +  where 'missing' = <built-in method get of dict object at 0x1134812c0>('hostWorkspaceFreeBytes', 'missing')
+E        +    where <built-in method get of dict object at 0x1134812c0> = {'available': True, 'platformSupported': True, 'runtimeId': 'autoflow-redroid', 'message': '可用', ...}.get
+E        +  and   0 = <built-in method get of dict object at 0x113580780>('hostWorkspaceFreeBytes')
+E        +    where <built-in method get of dict object at 0x113580780> = {'hostWorkspaceFreeBytes': 0, 'vmDockerFreeBytes': None}.get
+
+apps/backend/tests/contract/test_android_management_environment.py:149: AssertionError
+_ test_environment_route_preserves_independent_disk_bytes_and_unknowns[disk2] __
+
+disk = {}
+
+    @pytest.mark.parametrize("disk", [
+        {"hostWorkspaceFreeBytes": 1073741824, "vmDockerFreeBytes": 2147483648},
+        {"hostWorkspaceFreeBytes": 0, "vmDockerFreeBytes": None},
+        {},
+    ])
+    def test_environment_route_preserves_independent_disk_bytes_and_unknowns(disk):
+        runtime = AsyncMock()
+        runtime.environment.return_value = {
+            "available": True, "platformSupported": True,
+            "runtimeId": "autoflow-redroid", "message": "可用", **disk,
+        }
+        app = FastAPI()
+        app.include_router(android_management_router(EnvironmentCheckService(runtime)))
+        with TestClient(app) as client:
+            response = client.get("/api/v1/android/management/environment")
+        assert response.status_code == 200
+        body = response.json()
+>       assert body.get("hostWorkspaceFreeBytes", "missing") == disk.get("hostWorkspaceFreeBytes")
+E       AssertionError: assert 'missing' == None
+E        +  where 'missing' = <built-in method get of dict object at 0x1134608c0>('hostWorkspaceFreeBytes', 'missing')
+E        +    where <built-in method get of dict object at 0x1134608c0> = {'available': True, 'platformSupported': True, 'runtimeId': 'autoflow-redroid', 'message': '可用', ...}.get
+E        +  and   None = <built-in method get of dict object at 0x113580680>('hostWorkspaceFreeBytes')
+E        +    where <built-in method get of dict object at 0x113580680> = {}.get
+
+apps/backend/tests/contract/test_android_management_environment.py:149: AssertionError
+=============================== warnings summary ===============================
+apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53
+  /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED apps/backend/tests/unit/test_android_runtime.py::test_environment_reports_each_runtime_check[1073741824-2147483648\n-pass]
+FAILED apps/backend/tests/unit/test_android_runtime.py::test_environment_reports_each_runtime_check[0-2147483648\n-fail]
+FAILED apps/backend/tests/unit/test_android_runtime.py::test_environment_reports_each_runtime_check[1073741824-0\n-fail]
+FAILED apps/backend/tests/unit/test_android_runtime.py::test_environment_reports_each_runtime_check[1073741824--1\n-unknown]
+FAILED apps/backend/tests/unit/test_android_runtime.py::test_environment_reports_each_runtime_check[1073741824-None-unknown]
+FAILED apps/backend/tests/unit/test_android_runtime.py::test_environment_reports_each_runtime_check[None-2147483648\n-unknown]
+FAILED apps/backend/tests/contract/test_android_management_environment.py::test_environment_route_preserves_independent_disk_bytes_and_unknowns[disk0]
+FAILED apps/backend/tests/contract/test_android_management_environment.py::test_environment_route_preserves_independent_disk_bytes_and_unknowns[disk1]
+FAILED apps/backend/tests/contract/test_android_management_environment.py::test_environment_route_preserves_independent_disk_bytes_and_unknowns[disk2]
+9 failed, 76 deselected, 1 warning in 0.45s

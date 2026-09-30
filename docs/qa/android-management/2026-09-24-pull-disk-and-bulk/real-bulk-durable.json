@@ -1,0 +1,107 @@
+[
+  {
+    "kind": "image",
+    "id": "22e1e3f0-f0cc-47a3-944a-125469b995a8",
+    "payload": {
+      "id": "22e1e3f0-f0cc-47a3-944a-125469b995a8",
+      "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+      "name": "Owned desktop acceptance base",
+      "reference": "redroid/redroid:13.0.0_64only-latest",
+      "revision": 1,
+      "state": "registered",
+      "verification": {
+        "state": "unknown",
+        "evidence": null
+      },
+      "validation": "not_tested",
+      "sourceDigest": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+      "architecture": "arm64",
+      "os": "linux",
+      "androidVersion": null,
+      "googleComponents": "unknown",
+      "references": [
+        {
+          "kind": "source",
+          "id": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+          "name": "redroid/redroid:13.0.0_64only-latest"
+        }
+      ],
+      "requestId": null,
+      "allowUnknownDiskEstimate": false,
+      "createdAt": "2026-09-24T00:44:07.021257+00:00",
+      "workspaceId": "53667a0497fa620aacf8574ef437f7214d17ec1012e7bff95976d425462b6936"
+    }
+  },
+  {
+    "kind": "bulk",
+    "id": "76489eba-bd33-412f-93c6-628560eee7b2",
+    "payload": {
+      "id": "76489eba-bd33-412f-93c6-628560eee7b2",
+      "workspaceIdentity": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-desktop-bulk-rjmmkzqz/workspace",
+      "requestId": "0510c244-387d-4d44-9d54-e4d20f4d6831",
+      "action": "start",
+      "deleteData": false,
+      "state": "succeeded",
+      "items": [
+        {
+          "deviceId": "82e7b719-1efc-49f6-8865-83adec14e860",
+          "expectedRevision": 2,
+          "state": "succeeded",
+          "operationId": "8bec094c-3e38-4be9-92bf-7d63544b6c1f",
+          "retryOf": null,
+          "error": null,
+          "name": "QA批量验收1",
+          "attempt": 1
+        },
+        {
+          "deviceId": "eedfe939-1e94-4d13-82e8-c5b658db7945",
+          "expectedRevision": 2,
+          "state": "succeeded",
+          "operationId": "91502ad3-e52f-4d1e-8372-c8290a83926b",
+          "retryOf": null,
+          "error": null,
+          "name": "QA批量验收2",
+          "attempt": 1
+        }
+      ],
+      "createdAt": "2026-09-24T00:45:15.497484+00:00"
+    }
+  },
+  {
+    "kind": "bulk",
+    "id": "7fd63776-1439-48b9-9ccb-57d999b62e98",
+    "payload": {
+      "id": "7fd63776-1439-48b9-9ccb-57d999b62e98",
+      "workspaceIdentity": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-desktop-bulk-rjmmkzqz/workspace",
+      "requestId": "f1bcc333-ecaf-461e-964c-675c00ceb427",
+      "action": "stop",
+      "deleteData": false,
+      "state": "partially_failed",
+      "items": [
+        {
+          "deviceId": "82e7b719-1efc-49f6-8865-83adec14e860",
+          "expectedRevision": 3,
+          "state": "succeeded",
+          "operationId": "7fb3e860-cf04-437a-9df7-5bbc0ba2411f",
+          "retryOf": null,
+          "error": null,
+          "name": "QA批量验收1",
+          "attempt": 1
+        },
+        {
+          "deviceId": "eedfe939-1e94-4d13-82e8-c5b658db7945",
+          "expectedRevision": 3,
+          "state": "cancelled",
+          "operationId": "23ffc69a-8f23-4d70-8ae5-768faf829f49",
+          "retryOf": null,
+          "error": null,
+          "name": "QA批量验收2"
+        }
+      ],
+      "createdAt": "2026-09-24T00:48:46.182719+00:00",
+      "actionReceipts": {
+        "fe3c25d8-09d2-46ef-8c8f-ed0b0e180aa9": "cancelPending"
+      }
+    }
+  }
+]

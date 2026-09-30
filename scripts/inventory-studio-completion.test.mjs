@@ -12,9 +12,10 @@ execFileSync(process.execPath, ['scripts/inventory-studio-completion.mjs', '--ou
 const rows = JSON.parse(fs.readFileSync(path.join(directory, 'capabilities.json')))
 const dependency = type => rows.find(row => row.type === type).toolDependencies
 const prefix = 'apps/desktop/src/renderer/domains/workflows/components/'
+const nativeTypes = ['trace_mark','capture_diagnostics','save_trace_segment','proxy_change_ip','proxy_change_location','proxy_query','project_data','project_manual','project_end']
 test('retains the approved scope and resolves an imported alias to its actual component file', () => {
-  assert.equal(rows.length, 218)
-  assert.equal(new Set(rows.map(row => row.type)).size, 218)
+  assert.equal(rows.length, 222)
+  assert.equal(new Set(rows.map(row => row.type)).size, 222)
   assert.ok(dependency('open_page').resolved.includes(prefix + 'controls/select-native.tsx#SelectNative'))
   assert.ok(dependency('open_page').external.includes('@radix-ui/react-select#Trigger'))
   assert.deepEqual(dependency('open_page').unresolved, [])
@@ -39,6 +40,7 @@ test('does not silently discard dynamically selected icon components or reconcil
   const unresolved = new Set(rows.flatMap(row => row.toolDependencies.unresolved))
   assert.ok(unresolved.has(prefix + 'controls/custom-dialogs.tsx#Icon'))
   const frozen = rows.filter(row => row.differenceClass !== 'AutoFlow 原生扩展')
+  assert.deepEqual(rows.filter(row => row.differenceClass === 'AutoFlow 原生扩展').map(row => row.type).sort(), [...nativeTypes].sort())
   assert.equal(frozen.length, 213)
   assert.ok(frozen.every(row => row.status === '已实现且已验收'))
   assert.ok(frozen.every(row => row.verifiedCases.some(item => item.id === `NODE.${row.type}.panel-registration`) && row.verifiedCases.some(item => item.id === `NODE.${row.type}.roundtrip`)))
@@ -51,10 +53,10 @@ test('does not silently discard dynamically selected icon components or reconcil
 test('candidate generation preserves historical bytes and native acceptance limits', () => {
   for (const [name, before] of historical) assert.deepEqual(fs.readFileSync(new URL(`docs/migration/studio-frontend-completion/${name}`, root)), before, name)
   const previous = JSON.parse(historical[0][1])
-  for (const type of ['proxy_change_ip','proxy_change_location','proxy_query','project_data']) {
+  for (const type of nativeTypes) {
     const actual = rows.find(row => row.type === type)
     const expected = previous.find(row => row.type === type)
-    for (const key of ['status','verifiedCases','remaining','deliveryBlock']) assert.deepEqual(actual[key], expected[key], `${type}.${key}`)
+    if (expected) for (const key of ['status','verifiedCases','remaining','deliveryBlock']) assert.deepEqual(actual[key], expected[key], `${type}.${key}`)
     assert.notEqual(actual.status, '已实现且已验收')
   }
 })

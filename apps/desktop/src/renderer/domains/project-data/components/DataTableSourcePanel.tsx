@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableRow, TableScroll } from '.
 import { safeProjectError } from '../../projects/presentation-error'
 import type { SheetsApi, SheetsImpact } from '../sheets-api'
 import { SheetsBindingWizard } from './SheetsBindingWizard'
+import { SheetsColumnCreation } from './SheetsColumnCreation'
 import { SyncBoundaryCard, SyncOperationPanel } from './SyncOperationPanel'
 
 type Schema = components['schemas']
@@ -203,6 +204,8 @@ function SheetsSourceSection({ table, context, readonly, disabled, onReimport }:
   return <div className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
     <div className="grid min-w-0 content-start gap-5">
       <SourceFactsCard table={table} readonly={readonly} disabled={disabled} onReimport={onReimport} sheets={context} actions={bindingActions} />
+      {bound && binding ? <SheetsColumnCreation key={`${context.scopeKey}:${context.contextKey}:${context.tableId}:${context.datasetGeneration}:${binding.bindingEpoch}`}
+        context={{ ...context, onChanged: () => { void bindingQuery.refetch(); context.onChanged?.() } }} binding={binding} disabled={readonly || disabled || busy} /> : null}
       {bound ? unbindConfirm : null}
       {error ? <p role="alert" className="m-0 text-sm text-danger">{error}</p> : null}
       {bound

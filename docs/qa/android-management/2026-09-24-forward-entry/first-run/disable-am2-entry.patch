@@ -1,0 +1,22 @@
+diff --git a/apps/desktop/src/renderer/domains/android/pages/AndroidPage.tsx b/apps/desktop/src/renderer/domains/android/pages/AndroidPage.tsx
+index 92b09eea..0d6ac1e3 100644
+--- a/apps/desktop/src/renderer/domains/android/pages/AndroidPage.tsx
++++ b/apps/desktop/src/renderer/domains/android/pages/AndroidPage.tsx
+@@ -11,8 +11,6 @@ import { Action } from '../components/PrototypeControls'
+ import { Dialog, DialogContent, DialogTitle, DialogDescription } from '../../../shared/components/ui/dialog'
+ import { RuntimeDiagnostics } from '../components/RuntimeDiagnostics'
+ import { ManagementOverview } from '../components/ManagementOverview'
+-import { ImageManager } from '../components/ImageManager'
+-import { TemplateManager } from '../components/TemplateManager'
+ import { DataMaintenance } from '../components/DataMaintenance'
+ import { BackupPanel } from '../components/BackupPanel'
+ import '../android.css'
+@@ -500,7 +498,7 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
+               setError('实例详情暂不可用，请刷新后重试')
+             }).catch((cause) => setError(cause instanceof Error ? cause.message : '实例详情暂不可用，请刷新后重试'))
+           }}
+-        /><ImageManager api={managementApi} /><TemplateManager api={{ ...fleet, images: managementApi.images, archiveProfile: managementApi.archiveProfile }} /><DataMaintenance api={managementApi} saveDiagnostic={saveAndroidDiagnostic} resourceIds={[...all.map((item) => item.deviceId), ...(backups.data ?? []).map((item) => item.id)]} diagnosticDeviceIds={all.map((item) => item.deviceId)} /></div>
++        /><DataMaintenance api={managementApi} saveDiagnostic={saveAndroidDiagnostic} resourceIds={[...all.map((item) => item.deviceId), ...(backups.data ?? []).map((item) => item.id)]} diagnosticDeviceIds={all.map((item) => item.deviceId)} /></div>
+       )}
+       <Dialog
+         open={Boolean(management)}

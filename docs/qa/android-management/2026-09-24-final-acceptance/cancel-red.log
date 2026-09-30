@@ -1,0 +1,37 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_ test_cancelled_backup_estimation_records_no_write_and_releases_for_new_request _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-204/test_cancelled_backup_estimati0')
+
+    @pytest.mark.asyncio
+    async def test_cancelled_backup_estimation_records_no_write_and_releases_for_new_request(tmp_path):
+        sessions = _sessions(tmp_path)
+        resources = AndroidResourceRepository(sessions)
+        operations = SqlAlchemyAndroidOperationRepository(sessions)
+        service = AndroidBackupService(resources, tmp_path, operations)
+        runtime = _Runtime(_tar(b"preserved"))
+        entered = asyncio.Event()
+        original_estimate = runtime.estimate_backup_bytes
+
+        async def suspended_estimate(_device):
+            entered.set()
+            await asyncio.Event().wait()
+
+        runtime.estimate_backup_bytes = suspended_estimate
+        task = asyncio.create_task(service.create_with_runtime(_device(), None, runtime, "cancel-estimate", 1))
+        await asyncio.wait_for(entered.wait(), 2)
+        task.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await task
+        record = operations.by_request(str(tmp_path.resolve()), "cancel-estimate")
+>       assert record.state == "failed" and record.result_code == "BACKUP_PREFLIGHT_CANCELLED"
+E       AssertionError: assert ('needs_verification' == 'failed'
+E
+E         - failed
+E         + needs_verification)
+
+apps/backend/tests/integration/test_android_backups.py:371: AssertionError
+=========================== short test summary info ============================
+FAILED apps/backend/tests/integration/test_android_backups.py::test_cancelled_backup_estimation_records_no_write_and_releases_for_new_request
+1 failed, 14 deselected in 0.59s

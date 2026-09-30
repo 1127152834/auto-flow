@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import subprocess
 import sys
 from datetime import UTC, datetime
@@ -28,13 +29,13 @@ FROZEN_HARNESS = Path(__file__).with_name("frozen_b1_harness.py")
 
 def frozen_result(case: str) -> dict[str, Any]:
     completed = subprocess.run(
-        [sys.executable, str(FROZEN_HARNESS), case],
+        [sys.executable, "-X", "utf8", str(FROZEN_HARNESS), case],
         check=True,
         capture_output=True,
-        text=True,
-        env={"PYTHONPATH": str(FROZEN_BACKEND)},
+        text=True, encoding="utf-8",
+        env={**os.environ, "PYTHONPATH": str(FROZEN_BACKEND)},
     )
-    return json.loads(completed.stdout)
+    return json.loads(completed.stdout.splitlines()[-1])
 
 
 class FakeLocator:
@@ -412,7 +413,7 @@ async def test_screenshot_element_mode_and_custom_path_use_artifact_boundary(
     )
 
     assert result.success is True
-    assert artifacts.writes[0][0].startswith("subdirectory/元素_")
+    assert Path(artifacts.writes[0][0]).as_posix().startswith("subdirectory/元素_")
     assert ("screenshot", None) in session.current.locator("#target").calls
 
 

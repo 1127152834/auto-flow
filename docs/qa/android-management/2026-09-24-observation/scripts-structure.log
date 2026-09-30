@@ -1,0 +1,626 @@
+
+> test:structure
+> node --test scripts/structure.test.mjs
+
+TAP version 13
+# Subtest: required path exists: apps/desktop/package.json
+ok 1 - required path exists: apps/desktop/package.json
+  ---
+  duration_ms: 0.879958
+  type: 'test'
+  ...
+# Subtest: required path exists: apps/backend/pyproject.toml
+ok 2 - required path exists: apps/backend/pyproject.toml
+  ---
+  duration_ms: 0.079958
+  type: 'test'
+  ...
+# Subtest: root scripts expose the foundation checks
+ok 3 - root scripts expose the foundation checks
+  ---
+  duration_ms: 0.211875
+  type: 'test'
+  ...
+# Subtest: renderer table headers never nest a <td> inside <thead>
+ok 4 - renderer table headers never nest a <td> inside <thead>
+  ---
+  duration_ms: 83.881375
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 141.304125
+
+> test:scripts
+> node --test scripts/*.test.mjs
+
+TAP version 13
+# Subtest: retains the approved scope and resolves an imported alias to its actual component file
+ok 1 - retains the approved scope and resolves an imported alias to its actual component file
+  ---
+  duration_ms: 1.016875
+  type: 'test'
+  ...
+# Subtest: excludes database and DP nodes from the delivery inventory
+ok 2 - excludes database and DP nodes from the delivery inventory
+  ---
+  duration_ms: 0.111792
+  type: 'test'
+  ...
+# Subtest: follows lazy imports into actual code tools and their editor dependency
+ok 3 - follows lazy imports into actual code tools and their editor dependency
+  ---
+  duration_ms: 0.089334
+  type: 'test'
+  ...
+# Subtest: does not silently discard dynamically selected icon components or reconciled node evidence
+ok 4 - does not silently discard dynamically selected icon components or reconciled node evidence
+  ---
+  duration_ms: 0.482041
+  type: 'test'
+  ...
+# Subtest: history output guard resolves symlinks before any nested directory is created
+ok 5 - history output guard resolves symlinks before any nested directory is created
+  ---
+  duration_ms: 14.411834
+  type: 'test'
+  ...
+# Subtest: containment handles Windows separators and sibling prefixes
+ok 6 - containment handles Windows separators and sibling prefixes
+  ---
+  duration_ms: 0.3495
+  type: 'test'
+  ...
+# Subtest: R1 acceptance tools refuse paths outside the marked disposable root
+ok 7 - R1 acceptance tools refuse paths outside the marked disposable root
+  ---
+  duration_ms: 16.274667
+  type: 'test'
+  ...
+# Subtest: R2 wrapper reuses the exported R1 harness
+ok 8 - R2 wrapper reuses the exported R1 harness
+  ---
+  duration_ms: 5.254958
+  type: 'test'
+  ...
+# Subtest: record-pages mode records required evidence levels and leaves visual review pending
+ok 9 - record-pages mode records required evidence levels and leaves visual review pending
+  ---
+  duration_ms: 2.547084
+  type: 'test'
+  ...
+# Subtest: R3 runner exposes automatic and retained manual modes
+ok 10 - R3 runner exposes automatic and retained manual modes
+  ---
+  duration_ms: 0.890209
+  type: 'test'
+  ...
+# Subtest: R3 evidence matrix names every required real interaction
+ok 11 - R3 evidence matrix names every required real interaction
+  ---
+  duration_ms: 0.166292
+  type: 'test'
+  ...
+# Subtest: R3 runner uses the real desktop harness and never auto-approves visual review
+ok 12 - R3 runner uses the real desktop harness and never auto-approves visual review
+  ---
+  duration_ms: 7.613458
+  type: 'test'
+  ...
+# Subtest: R3 visual fixtures use UI states and label the synthetic file selection
+ok 13 - R3 visual fixtures use UI states and label the synthetic file selection
+  ---
+  duration_ms: 1.67225
+  type: 'test'
+  ...
+# Subtest: self-test accepts only a marker-owned workspace below its owner
+ok 14 - self-test accepts only a marker-owned workspace below its owner
+  ---
+  duration_ms: 93.016291
+  type: 'test'
+  ...
+# Subtest: arguments reject missing kernel paths before launching Electron
+ok 15 - arguments reject missing kernel paths before launching Electron
+  ---
+  duration_ms: 71.254584
+  type: 'test'
+  ...
+# Subtest: arguments reject unknown switches before launching Electron
+ok 16 - arguments reject unknown switches before launching Electron
+  ---
+  duration_ms: 60.843167
+  type: 'test'
+  ...
+# Subtest: scenario selection is validated before any workspace or Electron launch
+ok 17 - scenario selection is validated before any workspace or Electron launch
+  ---
+  duration_ms: 122.699208
+  type: 'test'
+  ...
+# Subtest: PM4 QA arguments keep V1 automatic and preparation modes explicit
+ok 18 - PM4 QA arguments keep V1 automatic and preparation modes explicit
+  ---
+  duration_ms: 1.5185
+  type: 'test'
+  ...
+# Subtest: PM4 workspace ownership requires both marker and containment
+ok 19 - PM4 workspace ownership requires both marker and containment
+  ---
+  duration_ms: 0.229083
+  type: 'test'
+  ...
+# Subtest: V1 plan names every user-visible step and real fact
+ok 20 - V1 plan names every user-visible step and real fact
+  ---
+  duration_ms: 0.085417
+  type: 'test'
+  ...
+# Subtest: runner uses only UI for business object creation and labels fake executor boundary
+ok 21 - runner uses only UI for business object creation and labels fake executor boundary
+  ---
+  duration_ms: 7.497625
+  type: 'test'
+  ...
+# Subtest: PM6 QA arguments keep automatic and manual modes explicit
+ok 22 - PM6 QA arguments keep automatic and manual modes explicit
+  ---
+  duration_ms: 4.938458
+  type: 'test'
+  ...
+# Subtest: PM6 workspace ownership requires both marker and containment
+ok 23 - PM6 workspace ownership requires both marker and containment
+  ---
+  duration_ms: 1.671875
+  type: 'test'
+  ...
+# Subtest: the QA service-account fixture only carries the frozen Google shape
+ok 24 - the QA service-account fixture only carries the frozen Google shape
+  ---
+  duration_ms: 82.913709
+  type: 'test'
+  ...
+# Subtest: PM6 steps name every user-visible stage of the management chain
+ok 25 - PM6 steps name every user-visible stage of the management chain
+  ---
+  duration_ms: 0.125584
+  type: 'test'
+  ...
+# Subtest: the runner drives business objects through the UI and labels its stand-ins
+ok 26 - the runner drives business objects through the UI and labels its stand-ins
+  ---
+  duration_ms: 5.705166
+  type: 'test'
+  ...
+# Subtest: the QA sidecar swaps only the two declared ports and keeps a real bootstrap
+ok 27 - the QA sidecar swaps only the two declared ports and keeps a real bootstrap
+  ---
+  duration_ms: 1.15175
+  type: 'test'
+  ...
+# Subtest: PM7 QA arguments keep manual, preparation and cleanup modes explicit
+ok 28 - PM7 QA arguments keep manual, preparation and cleanup modes explicit
+  ---
+  duration_ms: 1.192959
+  type: 'test'
+  ...
+# Subtest: PM7 workspace ownership requires both marker and containment
+ok 29 - PM7 workspace ownership requires both marker and containment
+  ---
+  duration_ms: 0.226584
+  type: 'test'
+  ...
+# Subtest: every PM7 end-to-end step and fault injection is named
+ok 30 - every PM7 end-to-end step and fault injection is named
+  ---
+  duration_ms: 0.180541
+  type: 'test'
+  ...
+# Subtest: runner drives the product through the renderer and labels the executor boundary
+ok 31 - runner drives the product through the renderer and labels the executor boundary
+  ---
+  duration_ms: 5.756209
+  type: 'test'
+  ...
+# Subtest: fault injection only exists in the QA sidecar and never in production modules
+ok 32 - fault injection only exists in the QA sidecar and never in production modules
+  ---
+  duration_ms: 2.574667
+  type: 'test'
+  ...
+# Subtest: PM8 QA arguments keep manual, preparation and cleanup modes explicit
+ok 33 - PM8 QA arguments keep manual, preparation and cleanup modes explicit
+  ---
+  duration_ms: 1.342041
+  type: 'test'
+  ...
+# Subtest: PM8 workspace ownership requires both marker and containment
+ok 34 - PM8 workspace ownership requires both marker and containment
+  ---
+  duration_ms: 0.22675
+  type: 'test'
+  ...
+# Subtest: every PM8 end-to-end step and fault injection is named
+ok 35 - every PM8 end-to-end step and fault injection is named
+  ---
+  duration_ms: 0.195
+  type: 'test'
+  ...
+# Subtest: manual injections expose the executor faults the hand-test plan needs
+ok 36 - manual injections expose the executor faults the hand-test plan needs
+  ---
+  duration_ms: 0.103833
+  type: 'test'
+  ...
+# Subtest: runner drives the product through the renderer and labels the executor boundary
+ok 37 - runner drives the product through the renderer and labels the executor boundary
+  ---
+  duration_ms: 5.578458
+  type: 'test'
+  ...
+# Subtest: lifecycle fault injection only exists in the QA sidecar and never in production modules
+ok 38 - lifecycle fault injection only exists in the QA sidecar and never in production modules
+  ---
+  duration_ms: 3.428708
+  type: 'test'
+  ...
+# Subtest: reports a known full system UUID in visible text and perceptible attributes
+ok 39 - reports a known full system UUID in visible text and perceptible attributes
+  ---
+  duration_ms: 1.335209
+  type: 'test'
+  ...
+# Subtest: reports a known eight-character system prefix without scanning arbitrary UUIDs
+ok 40 - reports a known eight-character system prefix without scanning arbitrary UUIDs
+  ---
+  duration_ms: 0.1565
+  type: 'test'
+  ...
+# Subtest: keeps a user-owned UUID visible and excludes its shared prefix from prefix checks
+ok 41 - keeps a user-owned UUID visible and excludes its shared prefix from prefix checks
+  ---
+  duration_ms: 0.553542
+  type: 'test'
+  ...
+# Subtest: does not inspect DOM value, href, hash, data attributes, or hidden implementation state
+ok 42 - does not inspect DOM value, href, hash, data attributes, or hidden implementation state
+  ---
+  duration_ms: 0.123417
+  type: 'test'
+  ...
+# Subtest: checkCdpPage sends a self-contained audit to evaluate and rejects missing business UUIDs
+ok 43 - checkCdpPage sends a self-contained audit to evaluate and rejects missing business UUIDs
+  ---
+  duration_ms: 1.161541
+  type: 'test'
+  ...
+# Subtest: checkCdpPage audit expression executes without module bindings in the renderer
+ok 44 - checkCdpPage audit expression executes without module bindings in the renderer
+  ---
+  duration_ms: 0.379875
+  type: 'test'
+  ...
+# Subtest: a business UUID sharing a prefix does not hide a separate technical short ID
+ok 45 - a business UUID sharing a prefix does not hide a separate technical short ID
+  ---
+  duration_ms: 0.094709
+  type: 'test'
+  ...
+# Subtest: cleanup rejects an unmarked or wrongly marked workspace
+ok 46 - cleanup rejects an unmarked or wrongly marked workspace
+  ---
+  duration_ms: 12.005083
+  type: 'test'
+  ...
+# Subtest: cleanup removes only a marked temporary workspace and returns the preserved evidence path
+ok 47 - cleanup removes only a marked temporary workspace and returns the preserved evidence path
+  ---
+  duration_ms: 3.887209
+  type: 'test'
+  ...
+# Subtest: browser management smoke accepts an explicit packaged sidecar
+ok 48 - browser management smoke accepts an explicit packaged sidecar
+  ---
+  duration_ms: 2.04975
+  type: 'test'
+  ...
+# Subtest: browser management smoke creates the platform kernel layout
+ok 49 - browser management smoke creates the platform kernel layout
+  ---
+  duration_ms: 0.174708
+  type: 'test'
+  ...
+# Subtest: profile test browser smoke parses kernel and sidecar paths
+ok 50 - profile test browser smoke parses kernel and sidecar paths
+  ---
+  duration_ms: 1.190792
+  type: 'test'
+  ...
+# Subtest: profile test browser smoke validates a public kernel directory
+ok 51 - profile test browser smoke validates a public kernel directory
+  ---
+  duration_ms: 17.277625
+  type: 'test'
+  ...
+# Subtest: profile test browser smoke finds a session below the manager root
+ok 52 - profile test browser smoke finds a session below the manager root
+  ---
+  duration_ms: 3.805375
+  type: 'test'
+  ...
+# Subtest: Windows kernels do not require POSIX executable bits
+ok 53 - Windows kernels do not require POSIX executable bits
+  ---
+  duration_ms: 4.063792
+  type: 'test'
+  ...
+# Subtest: smoke-project-management.mjs rejects invalid arguments before launching: --output-dir --dev
+ok 54 - smoke-project-management.mjs rejects invalid arguments before launching: --output-dir --dev
+  ---
+  duration_ms: 70.011125
+  type: 'test'
+  ...
+# Subtest: smoke-project-management.mjs rejects invalid arguments before launching: --output-dir
+ok 55 - smoke-project-management.mjs rejects invalid arguments before launching: --output-dir
+  ---
+  duration_ms: 51.142583
+  type: 'test'
+  ...
+# Subtest: smoke-project-management.mjs rejects invalid arguments before launching: --unknown
+ok 56 - smoke-project-management.mjs rejects invalid arguments before launching: --unknown
+  ---
+  duration_ms: 44.634792
+  type: 'test'
+  ...
+# Subtest: smoke-project-management.mjs rejects invalid arguments before launching: --executable
+ok 57 - smoke-project-management.mjs rejects invalid arguments before launching: --executable
+  ---
+  duration_ms: 47.246583
+  type: 'test'
+  ...
+# Subtest: smoke-project-management.mjs rejects invalid arguments before launching: --executable
+ok 58 - smoke-project-management.mjs rejects invalid arguments before launching: --executable
+  ---
+  duration_ms: 47.319916
+  type: 'test'
+  ...
+# Subtest: smoke-project-management.mjs rejects invalid arguments before launching: --output-dir /tmp/a --output-dir /tmp/b
+ok 59 - smoke-project-management.mjs rejects invalid arguments before launching: --output-dir /tmp/a --output-dir /tmp/b
+  ---
+  duration_ms: 48.209625
+  type: 'test'
+  ...
+# Subtest: smoke-project-management-desktop.mjs rejects invalid arguments before launching: --output-dir --dev
+ok 60 - smoke-project-management-desktop.mjs rejects invalid arguments before launching: --output-dir --dev
+  ---
+  duration_ms: 49.997458
+  type: 'test'
+  ...
+# Subtest: smoke-project-management-desktop.mjs rejects invalid arguments before launching: --output-dir
+ok 61 - smoke-project-management-desktop.mjs rejects invalid arguments before launching: --output-dir
+  ---
+  duration_ms: 48.601667
+  type: 'test'
+  ...
+# Subtest: smoke-project-management-desktop.mjs rejects invalid arguments before launching: --unknown
+ok 62 - smoke-project-management-desktop.mjs rejects invalid arguments before launching: --unknown
+  ---
+  duration_ms: 51.318125
+  type: 'test'
+  ...
+# Subtest: smoke-project-management-desktop.mjs rejects invalid arguments before launching: --executable
+ok 63 - smoke-project-management-desktop.mjs rejects invalid arguments before launching: --executable
+  ---
+  duration_ms: 53.206125
+  type: 'test'
+  ...
+# Subtest: smoke-project-management-desktop.mjs rejects invalid arguments before launching: --executable
+ok 64 - smoke-project-management-desktop.mjs rejects invalid arguments before launching: --executable
+  ---
+  duration_ms: 49.199625
+  type: 'test'
+  ...
+# Subtest: smoke-project-management-desktop.mjs rejects invalid arguments before launching: --output-dir /tmp/a --output-dir /tmp/b
+ok 65 - smoke-project-management-desktop.mjs rejects invalid arguments before launching: --output-dir /tmp/a --output-dir /tmp/b
+  ---
+  duration_ms: 48.173459
+  type: 'test'
+  ...
+# Subtest: smoke-project-management.mjs rejects fake sidecar environment before launch
+ok 66 - smoke-project-management.mjs rejects fake sidecar environment before launch
+  ---
+  duration_ms: 45.347125
+  type: 'test'
+  ...
+# Subtest: smoke-project-management-desktop.mjs rejects fake sidecar environment before launch
+ok 67 - smoke-project-management-desktop.mjs rejects fake sidecar environment before launch
+  ---
+  duration_ms: 47.425542
+  type: 'test'
+  ...
+# Subtest: packaged smoke cannot silently select external health mode
+ok 68 - packaged smoke cannot silently select external health mode
+  ---
+  duration_ms: 0.757375
+  type: 'test'
+  ...
+# Subtest: cleanup rejects after the final deadline if the child never exits
+ok 69 - cleanup rejects after the final deadline if the child never exits
+  ---
+  duration_ms: 14.566167
+  type: 'test'
+  ...
+# Subtest: cleanup observes close without requiring exit
+ok 70 - cleanup observes close without requiring exit
+  ---
+  duration_ms: 0.212792
+  type: 'test'
+  ...
+# Subtest: cleanup rejects a child process error
+ok 71 - cleanup rejects a child process error
+  ---
+  duration_ms: 0.159875
+  type: 'test'
+  ...
+# Subtest: required path exists: apps/desktop/package.json
+ok 72 - required path exists: apps/desktop/package.json
+  ---
+  duration_ms: 0.95575
+  type: 'test'
+  ...
+# Subtest: required path exists: apps/backend/pyproject.toml
+ok 73 - required path exists: apps/backend/pyproject.toml
+  ---
+  duration_ms: 0.156041
+  type: 'test'
+  ...
+# Subtest: root scripts expose the foundation checks
+ok 74 - root scripts expose the foundation checks
+  ---
+  duration_ms: 0.545833
+  type: 'test'
+  ...
+# Subtest: renderer table headers never nest a <td> inside <thead>
+ok 75 - renderer table headers never nest a <td> inside <thead>
+  ---
+  duration_ms: 153.015125
+  type: 'test'
+  ...
+# (node:95095) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/src/renderer/domains/workflows/lib/moduleCatalog.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: Studio Chinese documentation audit covers exactly the retained catalog
+ok 76 - Studio Chinese documentation audit covers exactly the retained catalog
+  ---
+  duration_ms: 17.922458
+  type: 'test'
+  ...
+# Subtest: production Studio entry keeps preview mocks behind the Vite development boundary
+ok 77 - production Studio entry keeps preview mocks behind the Vite development boundary
+  ---
+  duration_ms: 0.931792
+  type: 'test'
+  ...
+# Subtest: frozen required-field data regenerates exactly without executing source modules
+ok 78 - frozen required-field data regenerates exactly without executing source modules
+  ---
+  duration_ms: 98.868083
+  type: 'test'
+  ...
+# Subtest: coverage accounts for every retained node and excludes removed nodes
+ok 79 - coverage accounts for every retained node and excludes removed nodes
+  ---
+  duration_ms: 12.18175
+  type: 'test'
+  ...
+# Subtest: resource upload keeps multipart body and generated response type in the handoff inventory
+ok 80 - resource upload keeps multipart body and generated response type in the handoff inventory
+  ---
+  duration_ms: 0.72
+  type: 'test'
+  ...
+# Subtest: transport forwarding is marked dynamic instead of inventing a GET contract
+ok 81 - transport forwarding is marked dynamic instead of inventing a GET contract
+  ---
+  duration_ms: 0.088416
+  type: 'test'
+  ...
+# Subtest: the matrix registers every discovered service and event without treating registration as runtime backend proof
+ok 82 - the matrix registers every discovered service and event without treating registration as runtime backend proof
+  ---
+  duration_ms: 3.46125
+  type: 'test'
+  ...
+# Subtest: every service family is assigned to the frozen frontend contract matrix
+ok 83 - every service family is assigned to the frozen frontend contract matrix
+  ---
+  duration_ms: 0.635917
+  type: 'test'
+  ...
+# Subtest: inventory and matrix regenerate deterministically
+ok 84 - inventory and matrix regenerate deterministically
+  ---
+  duration_ms: 801.971208
+  type: 'test'
+  ...
+# Subtest: direct apiRequest helpers outside Api objects remain visible in the contract inventory
+ok 85 - direct apiRequest helpers outside Api objects remain visible in the contract inventory
+  ---
+  duration_ms: 0.154625
+  type: 'test'
+  ...
+# Subtest: plain Event emissions are recorded alongside CustomEvent emissions
+ok 86 - plain Event emissions are recorded alongside CustomEvent emissions
+  ---
+  duration_ms: 0.168167
+  type: 'test'
+  ...
+# Subtest: MCP requests nested in validation helpers keep explicit endpoints and consumers
+ok 87 - MCP requests nested in validation helpers keep explicit endpoints and consumers
+  ---
+  duration_ms: 0.167
+  type: 'test'
+  ...
+# Subtest: checks sources without inventing application or visual acceptance
+ok 88 - checks sources without inventing application or visual acceptance
+  ---
+  duration_ms: 13.029167
+  type: 'test'
+  ...
+# Subtest: rejects source hash drift, dimensions and unknown mapped sources
+ok 89 - rejects source hash drift, dimensions and unknown mapped sources
+  ---
+  duration_ms: 5.14775
+  type: 'test'
+  ...
+# Subtest: does not allow a passed page without real evidence or missing required states
+ok 90 - does not allow a passed page without real evidence or missing required states
+  ---
+  duration_ms: 4.526708
+  type: 'test'
+  ...
+# Subtest: rejects duplicate source and page identities and evidence traversal
+ok 91 - rejects duplicate source and page identities and evidence traversal
+  ---
+  duration_ms: 4.654792
+  type: 'test'
+  ...
+# Subtest: requires actual evidence files instead of an existing directory or blank path
+ok 92 - requires actual evidence files instead of an existing directory or blank path
+  ---
+  duration_ms: 5.353542
+  type: 'test'
+  ...
+# Subtest: PM2 static coverage does not certify pending business or real application acceptance
+ok 93 - PM2 static coverage does not certify pending business or real application acceptance
+  ---
+  duration_ms: 2.345792
+  type: 'test'
+  ...
+# Subtest: PM2 rejects lost requirement identifiers and invented evidence paths
+ok 94 - PM2 rejects lost requirement identifiers and invented evidence paths
+  ---
+  duration_ms: 1.0155
+  type: 'test'
+  ...
+# Subtest: a green machine report cannot substitute for real application evidence
+ok 95 - a green machine report cannot substitute for real application evidence
+  ---
+  duration_ms: 0.246542
+  type: 'test'
+  ...
+1..95
+# tests 95
+# suites 0
+# pass 95
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1882.549

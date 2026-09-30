@@ -1,0 +1,96 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___ test_verification_allows_confirmed_permanent_disposal_of_pending_restore ___
+
+repository = <autoflow.infrastructure.database.android_operations.SqlAlchemyAndroidOperationRepository object at 0x10a14af10>
+
+    @pytest.mark.asyncio
+    async def test_verification_allows_confirmed_permanent_disposal_of_pending_restore(repository):
+        from autoflow.application.android.devices import AndroidDeviceService
+        from autoflow.application.android.verification import verify_lifecycle_operation
+    
+        devices = SqlAlchemyDeviceRepository(repository.sessions)
+        operation = repository.accept('ws', 'delete-pending', 'd', 'delete', 'digest', {'deleteData': True})
+        repository.transition(operation.operation_id, 'queued', 'running', {})
+        operation = repository.transition(operation.operation_id, 'running', 'needs_verification', {})
+        devices.save({'deviceId': 'd', 'generation': 2, 'control': 'recovery_required', 'restoreState': 'pending',
+                      'operation': {'id': operation.operation_id, 'state': 'needs_verification'}})
+    
+        class Runtime:
+            async def verify_deleted(self, device):
+                return {'androidStatus': 'missing'}
+    
+>       result = await verify_lifecycle_operation(repository, AndroidDeviceService(devices, Runtime()), operation, workspace_identity='ws')
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+apps/backend/tests/integration/test_android_management_operations.py:199: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+operations = <autoflow.infrastructure.database.android_operations.SqlAlchemyAndroidOperationRepository object at 0x10a14af10>
+devices = <autoflow.application.android.devices.AndroidDeviceService object at 0x108a87c10>
+record = <autoflow.infrastructure.database.android_operations.OperationRecord object at 0x10a25e050>
+workspace_identity = 'ws'
+
+    async def verify_lifecycle_operation(
+        operations: Any,
+        devices: Any,
+        record: Any,
+        *,
+        workspace_identity: str,
+    ) -> Any:
+        """Verify a lifecycle result without replaying the lifecycle command.
+    
+        A missing repository/runtime observation is deliberately inconclusive. The
+        caller must keep the durable operation in ``needs_verification`` until a
+        concrete, owned runtime state is observed.
+        """
+        if devices is None or not hasattr(devices, "runtime"):
+            raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "尚未接入运行时核实，操作保持待核实", 503)
+        try:
+            device = devices.get(record.target_id)
+        except (AndroidError, KeyError, LookupError, OSError, TimeoutError) as error:
+            raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "设备记录不存在，操作结果仍无法核实", 503) from error
+        if not isinstance(device, dict):
+            raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "设备记录不存在，操作结果仍无法核实", 503)
+    
+        runtime_workspace = getattr(devices.runtime, "workspace_id", None)
+        if runtime_workspace is not None and device.get("workspaceId") != runtime_workspace:
+            raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "设备归属无法核实，操作保持待核实", 503)
+        if runtime_workspace is None and device.get("workspaceId") not in {None, workspace_identity}:
+            raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "设备归属无法核实，操作保持待核实", 503)
+    
+        expected_device = deepcopy(device)
+        try:
+            verifier = getattr(devices.runtime, "verify_deleted", None) if record.action == "delete" else None
+            observed = await (verifier(device) if callable(verifier) else devices.runtime.inspect(device))
+        except (AndroidError, TimeoutError, OSError) as error:
+            raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "设备状态仍无法核实", 503) from error
+        except Exception as error:
+            raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "设备状态仍无法核实", 503) from error
+        status = observed.get("androidStatus") if isinstance(observed, dict) else None
+        expected = {"start": {"ready"}, "restart": {"ready"}, "stop": {"stopped", "retained"}}.get(record.action)
+        if record.action == "delete":
+            expected = {"missing"} if (record.payload or {}).get("deleteData") else {"retained", "missing"}
+        if expected is None or status not in expected:
+            raise AndroidError("ANDROID_VERIFICATION_UNAVAILABLE", "设备状态与操作结果不一致，请继续核实", 503)
+    
+        lock = getattr(devices.runtime, "lock", None)
+        if callable(lock):
+            lock()
+        try:
+            current = devices.get(record.target_id)
+            if (
+                current != expected_device
+                or current.get("ownerRunId")
+                or current.get("control") not in {"idle", "recovery_required"}
+                or current.get("pendingCommand")
+                or restore_pending(current)
+                or (current.get("operation") or {}).get("id") != record.operation_id
+            ):
+>               raise AndroidError("ANDROID_OPERATION_STATE_CONFLICT", "设备或控制归属已变化，不能应用历史操作状态", 409)
+E               autoflow.domain.android.ports.AndroidError: 设备或控制归属已变化，不能应用历史操作状态
+
+apps/backend/src/autoflow/application/android/verification.py:67: AndroidError
+=========================== short test summary info ============================
+FAILED apps/backend/tests/integration/test_android_management_operations.py::test_verification_allows_confirmed_permanent_disposal_of_pending_restore
+1 failed, 13 deselected in 0.54s

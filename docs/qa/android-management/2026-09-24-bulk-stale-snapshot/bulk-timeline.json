@@ -1,0 +1,9 @@
+{
+  "deviceId": "34e87958-33c6-4a1f-a787-7693deadaa03",
+  "matchingBulkCount": 1,
+  "createdAt": "2026-09-23T22:03:10.486187+00:00",
+  "resumedAt": 1790200973.16831,
+  "allBulkCreatedAfterResume": true,
+  "state": "succeeded",
+  "passed": true
+}

@@ -8,6 +8,7 @@ from typing import Any
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session, sessionmaker
 
+from autoflow.domain.workflows.document import WorkflowDraft
 from autoflow.domain.workflows.models import (
     LegacyWorkflowRecord,
     WorkflowError,
@@ -194,10 +195,11 @@ def _canonical_document_shape(document: object) -> bool:
 def _studio_document_shape(document: object) -> bool:
     return (
         isinstance(document, dict)
+        and "format" not in document and "source" not in document
         and ("schemaVersion" not in document or document["schemaVersion"] == 3)
         and isinstance(document.get("nodes"), list)
         and isinstance(document.get("edges"), list)
-        and isinstance(document.get("variables"), list)
+        and isinstance(document.get("variables", []), list)
         and all(
             isinstance(node, dict)
             and isinstance(node.get("data"), dict)
@@ -220,20 +222,8 @@ def _canonical_document(row: WorkflowDocumentRow) -> dict[str, Any] | None:
     if not _studio_document_shape(raw):
         return None
     assert isinstance(raw, dict)
-    content = deepcopy(raw)
+    content = WorkflowDraft(row.id, row.name, raw, row.layout).to_payload()
     content.setdefault("schemaVersion", 3)
-    content.pop("name", None)
-    content["id"] = row.id
-    content["name"] = row.name
-    layout_nodes = row.layout.get("nodes", {}) if isinstance(row.layout, dict) else {}
-    if isinstance(layout_nodes, dict):
-        for node in content.get("nodes", []):
-            if not isinstance(node, dict):
-                continue
-            layout = layout_nodes.get(node.get("id"))
-            if isinstance(layout, dict):
-                for key, value in layout.items():
-                    node.setdefault(key, deepcopy(value))
     return {
         "id": row.id,
         "source": {"product": SOURCE_PRODUCT, "commit": SOURCE_COMMIT},

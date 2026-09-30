@@ -1,0 +1,66 @@
+{
+  "evidenceId": "BE-B6-allure-formal-electron",
+  "checkedAt": "2026-09-21T20:25:33.598Z",
+  "gitHead": "f07abdef5cdb99ad942f7682adcf02138b9eb337",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflowId": "tbtAEPrHpq7FWcjfKMeGR",
+  "profileId": "10544175-a54a-4ec7-ade0-b2e5d2b000f4",
+  "runId": "98e7e759-d30e-45fe-a145-8a0581f141b7",
+  "checks": [
+    "主窗口真实打开正式 Studio；动作库为 213，运行配置来自主应用 Profile",
+    "通过正式 Studio 真实 UI 编排 Allure 六节点、测试套件、步骤、附件和报告目录",
+    "正式保存接口写入 Allure 六节点、附件路径、报告目录和五条连线",
+    "真实 worker 生成含附件的 Allure HTML 报告并登记运行产物；流程正常完成",
+    "Allure 流程完成后无 CloakBrowser、worker 或资源残留"
+  ],
+  "nodes": [
+    {
+      "moduleType": "allure_init",
+      "nodeId": "7jroiIe57IN1y9mHH1cQU",
+      "result": {
+        "suite_id": "d5bbe8c8-5768-447c-b085-c6d73f943c37"
+      }
+    },
+    {
+      "moduleType": "allure_start_test",
+      "nodeId": "gqeLTArGF96Y-Egm_eZCh"
+    },
+    {
+      "moduleType": "allure_add_step",
+      "nodeId": "PmxAjYDHHV7FUvug4TsWq"
+    },
+    {
+      "moduleType": "allure_add_attachment",
+      "nodeId": "wFLCPOq13cnXnN4Ib__JN"
+    },
+    {
+      "moduleType": "allure_stop_test",
+      "nodeId": "O-tvD5P6qpvDibsUZGjzT"
+    },
+    {
+      "moduleType": "allure_generate_report",
+      "nodeId": "Lu4T5ear1pqTK8LuxZNd_",
+      "result": {
+        "report_path": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-studio-b6-allure-YURbKE/report/report_20260921_202530.html"
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "artifactId": "4430a8ab-b38f-44bc-a053-1faaac5cd72d",
+      "nodeId": "Lu4T5ear1pqTK8LuxZNd_",
+      "mimeType": "text/html"
+    }
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserLaunch": "none",
+    "fixture": "local temporary text attachment",
+    "interaction": "formal Electron via CDP mouse and keyboard; public sidecar APIs only for fixture setup and evidence reads; no Store or page-internal business function access",
+    "platformPending": "Windows/macOS Intel and packaged-entry shell.openPath reachability remain separately unverified"
+  },
+  "buildSha256": "464d9a3d31b8bbdf11677ab31923253ab762c532ff46d4fb8a55a9563c09eb48"
+}

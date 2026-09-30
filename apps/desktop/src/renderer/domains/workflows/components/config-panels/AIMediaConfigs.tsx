@@ -36,7 +36,7 @@ export function AIGenerateImageConfig({ data, onChange, onBatchChange }: MediaCo
         <Label>提示词</Label>
         <Textarea
           value={(data.prompt as string) || ''}
-          onChange={(e) => onChange('prompt', e.target.value)}
+          onChange={(event) => onChange('prompt', event.target.value)}
           placeholder="一只可爱的猫咪在花园里玩耍"
           rows={4}
         />
@@ -138,7 +138,7 @@ export function AIGenerateVideoConfig({ data, onChange, onBatchChange }: MediaCo
         <Label>提示词</Label>
         <Textarea
           value={(data.prompt as string) || ''}
-          onChange={(e) => onChange('prompt', e.target.value)}
+          onChange={(event) => onChange('prompt', event.target.value)}
           placeholder="一只猫咪在草地上奔跑"
           rows={4}
         />

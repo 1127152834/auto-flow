@@ -1,0 +1,411 @@
+{
+  "date": "2026-09-24",
+  "status": "local_real_tcp_http_worker_passed_packaged_native_pending",
+  "releaseAccepted": false,
+  "requirements": [
+    "DATA-E2E-03",
+    "DATA-WRITE-05",
+    "DATA-WRITE-08",
+    "DATA-WRITE-09"
+  ],
+  "productionSource": "a7059dc6bfa19fb80c8fe9de5f173eacb3dce3bc",
+  "testedBaseCommit": "a016a65288a9143ca2439b7655ccc6915304d02e",
+  "productionChanged": false,
+  "testSource": {
+    "file": "apps/backend/tests/integration/test_project_write_conflict_real_cloakbrowser.py",
+    "symbol": "test_real_write_versions_and_partial_failure"
+  },
+  "scope": "Two local macOS ARM source executions through actual TCP HTTP, SQLite, production scheduler/dispatcher and real worker/CloakBrowser. Existing service creates a local UUID-keyed record logically named W01; initial FX-04 business facts only (content7/status3/link2,pending) seeded explicitly. No synthetic Task/Run/lease/cursor/outcome. Not native UI, packaged or external Google evidence.",
+  "observations": [
+    {
+      "humanEdit": false,
+      "batchId": "81159e8c-8855-4511-b124-bccb959dc718",
+      "taskId": "5358d578-213c-499c-ba11-716e2a5066da",
+      "taskStatus": "failed",
+      "runError": {
+        "code": "WORKFLOW_FAILED",
+        "message": "工作流未完整成功，请查看已提交的节点记录"
+      },
+      "recordBefore": {
+        "ref": {
+          "projectId": "78d08c32-3e5e-4288-a38b-45636f035d48",
+          "tableId": "6b2f1fa1-a17c-49fc-81f6-1cc81bf7757b",
+          "datasetGeneration": "2141576d-7d92-47da-9b83-3dd35b90b2ac",
+          "recordKey": {
+            "type": "uuid",
+            "value": "58c16e92-5fcb-440e-8b6a-914dd861f125"
+          }
+        },
+        "values": [
+          {
+            "fieldId": "38ea26c5-a83e-4e24-8b33-79476d43f80b",
+            "value": "旧值",
+            "source": "local",
+            "readable": true
+          }
+        ],
+        "validationIssues": [],
+        "recordSlots": [],
+        "statusId": "1eefe137-eec7-4d15-9f62-6d361aa54688",
+        "currentEnvironmentId": null,
+        "contentRevision": 7,
+        "statusRevision": 3,
+        "linkRevision": 2,
+        "deleted": false,
+        "createdAt": "2026-09-23T22:59:44.956536Z",
+        "updatedAt": "2026-09-23T22:59:44.956536Z"
+      },
+      "recordsAfter": [
+        {
+          "ref": {
+            "projectId": "78d08c32-3e5e-4288-a38b-45636f035d48",
+            "tableId": "6b2f1fa1-a17c-49fc-81f6-1cc81bf7757b",
+            "datasetGeneration": "2141576d-7d92-47da-9b83-3dd35b90b2ac",
+            "recordKey": {
+              "type": "uuid",
+              "value": "58c16e92-5fcb-440e-8b6a-914dd861f125"
+            }
+          },
+          "values": [
+            {
+              "fieldId": "38ea26c5-a83e-4e24-8b33-79476d43f80b",
+              "value": "任务新值",
+              "source": "local",
+              "readable": true
+            }
+          ],
+          "validationIssues": [],
+          "recordSlots": [],
+          "statusId": "19a204a8-faf8-4de7-9694-4be5403e11af",
+          "currentEnvironmentId": null,
+          "contentRevision": 8,
+          "statusRevision": 4,
+          "linkRevision": 2,
+          "deleted": false,
+          "createdAt": "2026-09-23T22:59:44.956536Z",
+          "updatedAt": "2026-09-23T22:59:52.930819Z"
+        },
+        {
+          "ref": {
+            "projectId": "78d08c32-3e5e-4288-a38b-45636f035d48",
+            "tableId": "6b2f1fa1-a17c-49fc-81f6-1cc81bf7757b",
+            "datasetGeneration": "2141576d-7d92-47da-9b83-3dd35b90b2ac",
+            "recordKey": {
+              "type": "uuid",
+              "value": "d07fe3f8-95d0-4c2f-afa0-a24de627da2c"
+            }
+          },
+          "values": [
+            {
+              "fieldId": "38ea26c5-a83e-4e24-8b33-79476d43f80b",
+              "value": "前序成功保留",
+              "source": "local",
+              "readable": true
+            }
+          ],
+          "validationIssues": [],
+          "recordSlots": [],
+          "statusId": null,
+          "currentEnvironmentId": null,
+          "contentRevision": 1,
+          "statusRevision": 1,
+          "linkRevision": 1,
+          "deleted": false,
+          "createdAt": "2026-09-23T22:59:52.669387Z",
+          "updatedAt": "2026-09-23T22:59:52.669387Z"
+        }
+      ],
+      "cursorVersions": [
+        8,
+        4,
+        2
+      ],
+      "dataWrites": [
+        {
+          "kind": "recordCreated",
+          "tableDisplay": "W01",
+          "recordDisplay": "uuid · d07fe3f8-95d0-4c2f-afa0-a24de627da2c",
+          "outcome": "succeeded",
+          "nodeId": "create",
+          "nodeName": "项目数据",
+          "previousStatus": null,
+          "nextStatus": null,
+          "referenceDisplay": "uuid · d07fe3f8-95d0-4c2f-afa0-a24de627da2c",
+          "beforeSummary": null,
+          "afterSummary": "值：前序成功保留",
+          "detail": null
+        },
+        {
+          "kind": "recordUpdated",
+          "tableDisplay": "W01",
+          "recordDisplay": "uuid · 58c16e92-5fcb-440e-8b6a-914dd861f125",
+          "outcome": "succeeded",
+          "nodeId": "write",
+          "nodeName": "项目数据",
+          "previousStatus": null,
+          "nextStatus": null,
+          "referenceDisplay": "uuid · 58c16e92-5fcb-440e-8b6a-914dd861f125",
+          "beforeSummary": "值：旧值",
+          "afterSummary": "值：任务新值",
+          "detail": null
+        },
+        {
+          "kind": "statusChange",
+          "tableDisplay": "W01",
+          "recordDisplay": "uuid · 58c16e92-5fcb-440e-8b6a-914dd861f125",
+          "outcome": "succeeded",
+          "nodeId": "status",
+          "nodeName": "项目数据",
+          "previousStatus": "待处理",
+          "nextStatus": "已申请",
+          "referenceDisplay": null,
+          "beforeSummary": null,
+          "afterSummary": null,
+          "detail": null
+        }
+      ],
+      "failedNodes": [
+        {
+          "nodeId": "failure",
+          "error": {
+            "code": "WORKFLOW_NODE_TIMEOUT",
+            "message": "工作流节点执行超时"
+          }
+        }
+      ],
+      "releasedLeaseCount": 2
+    },
+    {
+      "humanEdit": true,
+      "batchId": "caf533bd-0ba3-4dbb-9fc0-a8d206d6d7b6",
+      "taskId": "0cfdfe7f-8677-488b-a8fb-766b263767e9",
+      "taskStatus": "failed",
+      "runError": {
+        "code": "WORKFLOW_FAILED",
+        "message": "工作流未完整成功，请查看已提交的节点记录"
+      },
+      "recordBefore": {
+        "ref": {
+          "projectId": "6c57c67f-5b0b-4357-8f31-bdfe259f3f66",
+          "tableId": "50815aa1-55e1-4d4d-a8de-28804b208f60",
+          "datasetGeneration": "3e819e4a-3321-48d2-a6b3-ec88657883af",
+          "recordKey": {
+            "type": "uuid",
+            "value": "6666348a-ac93-4d57-a11d-a3df4a6d1bc5"
+          }
+        },
+        "values": [
+          {
+            "fieldId": "9d67d62c-21a8-41c4-97c2-26594e0cb992",
+            "value": "旧值",
+            "source": "local",
+            "readable": true
+          }
+        ],
+        "validationIssues": [],
+        "recordSlots": [],
+        "statusId": "e11f9ff1-5482-44f3-bd72-7dffd805db27",
+        "currentEnvironmentId": null,
+        "contentRevision": 7,
+        "statusRevision": 3,
+        "linkRevision": 2,
+        "deleted": false,
+        "createdAt": "2026-09-23T22:59:56.762732Z",
+        "updatedAt": "2026-09-23T22:59:56.762732Z"
+      },
+      "recordsAfter": [
+        {
+          "ref": {
+            "projectId": "6c57c67f-5b0b-4357-8f31-bdfe259f3f66",
+            "tableId": "50815aa1-55e1-4d4d-a8de-28804b208f60",
+            "datasetGeneration": "3e819e4a-3321-48d2-a6b3-ec88657883af",
+            "recordKey": {
+              "type": "uuid",
+              "value": "6666348a-ac93-4d57-a11d-a3df4a6d1bc5"
+            }
+          },
+          "values": [
+            {
+              "fieldId": "9d67d62c-21a8-41c4-97c2-26594e0cb992",
+              "value": "人工新值",
+              "source": "local",
+              "readable": true
+            }
+          ],
+          "validationIssues": [],
+          "recordSlots": [],
+          "statusId": "e11f9ff1-5482-44f3-bd72-7dffd805db27",
+          "currentEnvironmentId": null,
+          "contentRevision": 8,
+          "statusRevision": 3,
+          "linkRevision": 2,
+          "deleted": false,
+          "createdAt": "2026-09-23T22:59:56.762732Z",
+          "updatedAt": "2026-09-23T23:00:04.042079Z"
+        },
+        {
+          "ref": {
+            "projectId": "6c57c67f-5b0b-4357-8f31-bdfe259f3f66",
+            "tableId": "50815aa1-55e1-4d4d-a8de-28804b208f60",
+            "datasetGeneration": "3e819e4a-3321-48d2-a6b3-ec88657883af",
+            "recordKey": {
+              "type": "uuid",
+              "value": "d33c8e34-9715-49b5-a9b5-05816ff6b7d4"
+            }
+          },
+          "values": [
+            {
+              "fieldId": "9d67d62c-21a8-41c4-97c2-26594e0cb992",
+              "value": "前序成功保留",
+              "source": "local",
+              "readable": true
+            }
+          ],
+          "validationIssues": [],
+          "recordSlots": [],
+          "statusId": null,
+          "currentEnvironmentId": null,
+          "contentRevision": 1,
+          "statusRevision": 1,
+          "linkRevision": 1,
+          "deleted": false,
+          "createdAt": "2026-09-23T23:00:03.925737Z",
+          "updatedAt": "2026-09-23T23:00:03.925737Z"
+        }
+      ],
+      "cursorVersions": [
+        7,
+        3,
+        2
+      ],
+      "dataWrites": [
+        {
+          "kind": "recordCreated",
+          "tableDisplay": "W01",
+          "recordDisplay": "uuid · d33c8e34-9715-49b5-a9b5-05816ff6b7d4",
+          "outcome": "succeeded",
+          "nodeId": "create",
+          "nodeName": "项目数据",
+          "previousStatus": null,
+          "nextStatus": null,
+          "referenceDisplay": "uuid · d33c8e34-9715-49b5-a9b5-05816ff6b7d4",
+          "beforeSummary": null,
+          "afterSummary": "值：前序成功保留",
+          "detail": null
+        }
+      ],
+      "failedNodes": [
+        {
+          "nodeId": "write",
+          "error": {
+            "code": "REVISION_CONFLICT",
+            "message": "工作流节点执行失败"
+          }
+        },
+        {
+          "nodeId": "status",
+          "error": {
+            "code": "REVISION_CONFLICT",
+            "message": "工作流节点执行失败"
+          }
+        },
+        {
+          "nodeId": "failure",
+          "error": {
+            "code": "WORKFLOW_NODE_TIMEOUT",
+            "message": "工作流节点执行超时"
+          }
+        }
+      ],
+      "releasedLeaseCount": 2
+    }
+  ],
+  "assertions": [
+    "Frozen original input keeps old value and exact revisions7/3/2 after all later writes; actual browser displays old input.",
+    "Before original-record write, a real createRecord commits another record and acquires second lease owned by this Task.",
+    "No-human branch writes content7→8, passes returned content8 to status command, status3→4; task cursor8/4/2.",
+    "Human branch public PATCH during live manual checkpoint commits new content8. Old field write and old-content-derived status both REVISION_CONFLICT and enter declared manual branches; continuing does not absorb human version, cursor remains7/3/2 and status3/pending.",
+    "Explicit subsequent missing-element click fails WORKFLOW_NODE_TIMEOUT. Final Task failed, End not visited, every other eligible node succeeded.",
+    "Entire two-record DTO snapshot before browser failure equals final snapshot; created record and successful previous writes survive, human value is never overwritten.",
+    "Public task dataWrites exactly lists successful create/update/status for no-human branch, only create for human-conflict branch; no success output for rejected writes.",
+    "Both input and created-record leases released with timestamps; no worker/dispatcher/scheduler blockers or generation directories."
+  ],
+  "checks": {
+    "real": "2 passed in24.56s",
+    "initialReal": "2 passed in24.98s before final error/write-summary assertions",
+    "related": "15 passed in4.36s: test_project_node_writes.py + test_project_run_data_start.py",
+    "ruff": "passed",
+    "ciSelection": "2/53 collected,51 deselected; collection only. Both existing native-worker jobs include file/selector.",
+    "fullRegression": "Not repeated: no production/desktop changes. Prior a7059dc6 full3505/86skip/2warnings and ARM24 screenshots remain scoped historical regression; new assertions were not in that historical run.",
+    "native": "Fresh gh api user returned401; no new all-platform matrix dispatched. Historical35902129697 does not cover current source.",
+    "mapping": "4 passed;251 valid references,not complete acceptance"
+  },
+  "fixtureFailures": [
+    {
+      "log": "initial.log",
+      "result": "2 failed in4.93s",
+      "reason": "Fixture incorrectly gave every data node a combined three-operation grant. Production rejects422 CAPABILITY_FACTS_INCOMPLETE before batch creation. Corrected each grant to exactly its own operation; guard unchanged."
+    }
+  ],
+  "remaining": [
+    "Packaged/UI original-versus-current value/version explanation, conflict feedback and manual workflow interaction remain pending.",
+    "Sheets outbox continuing after later failure and live Google confirmation are not tested by this local-table scenario; existing controlled/historical evidence remains scoped.",
+    "New Windows/Intel/ARM execution and physical/native acceptance remain pending.",
+    "No acceptance of automatic current-value adoption, cross-process manual recovery or all Studio nodes. Existing unapproved architecture proposals and external conditions remain; releaseAccepted=false."
+  ],
+  "commands": {
+    "real": "AUTOFLOW_TEST_CLOAKBROWSER=<installed kernel> uv run --directory apps/backend pytest -s -q tests/integration/test_project_write_conflict_real_cloakbrowser.py",
+    "related": "uv run --directory apps/backend pytest -q tests/integration/test_project_node_writes.py tests/integration/test_project_run_data_start.py",
+    "ruff": "uv run --directory apps/backend ruff check tests/integration/test_project_write_conflict_real_cloakbrowser.py"
+  },
+  "artifacts": {
+    "ci-selection.log": {
+      "path": ".tmp-tests/pm9-manual-write-conflict-2026-09-24/ci-selection.log",
+      "sha256": "ca2893399b378557afb700e6adbe9564bbd0c059704c660de5ba94fa06deefe1"
+    },
+    "gh-auth.log": {
+      "path": ".tmp-tests/pm9-manual-write-conflict-2026-09-24/gh-auth.log",
+      "sha256": "ba173275c4e18ac221de6d0560a76198a5ae465cc57915cc26da6e3bad25f14d"
+    },
+    "initial-runtime-evidence.json": {
+      "path": ".tmp-tests/pm9-manual-write-conflict-2026-09-24/initial-runtime-evidence.json",
+      "sha256": "1e9f5f91047897dba4d5576770d2ef87d4d60f8951fae9e6b6c70c0727c9b1b9"
+    },
+    "initial.log": {
+      "path": ".tmp-tests/pm9-manual-write-conflict-2026-09-24/initial.log",
+      "sha256": "ba405351c967631279f4078274a4475e4944e16d424fc8f9a9f5c21af6cdb335"
+    },
+    "real-final.log": {
+      "path": ".tmp-tests/pm9-manual-write-conflict-2026-09-24/real-final.log",
+      "sha256": "ed4ce19d3a182c959a6aefedcb2b7f0ae251bee413f1716f9eeefe84be8d0adf"
+    },
+    "real.log": {
+      "path": ".tmp-tests/pm9-manual-write-conflict-2026-09-24/real.log",
+      "sha256": "af47d75c603a901d2676f5603c49b1274cd4426d995b0164ad49fe1fef4a7703"
+    },
+    "related.log": {
+      "path": ".tmp-tests/pm9-manual-write-conflict-2026-09-24/related.log",
+      "sha256": "c3a04165c6ab95cd7d7aec26c42d85fdf24f200981babede61c564d899931f5d"
+    },
+    "ruff-final.log": {
+      "path": ".tmp-tests/pm9-manual-write-conflict-2026-09-24/ruff-final.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    "ruff.log": {
+      "path": ".tmp-tests/pm9-manual-write-conflict-2026-09-24/ruff.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    "runtime-evidence.json": {
+      "path": ".tmp-tests/pm9-manual-write-conflict-2026-09-24/runtime-evidence.json",
+      "sha256": "ef00590ddb338bc250863e957cf46812feda9101420467bbd7ad7ed651b8f46f"
+    },
+    "mapping.log": {
+      "path": ".tmp-tests/pm9-manual-write-conflict-2026-09-24/mapping.log",
+      "sha256": "2c9825d53e355cdb7edd6eb56b87caa68f679f88dfb237f6cddf1a9453e4f29f"
+    },
+    "mapping-tests.log": {
+      "path": ".tmp-tests/pm9-manual-write-conflict-2026-09-24/mapping-tests.log",
+      "sha256": "2716c9450e0f90e24ccfeea5cce4a54d901986b9b615e6150cef07fcb6ec63a7"
+    }
+  }
+}

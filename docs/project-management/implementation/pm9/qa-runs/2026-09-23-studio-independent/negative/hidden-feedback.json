@@ -1,0 +1,16 @@
+{
+  "status": "failed",
+  "platform": "darwin",
+  "arch": "arm64",
+  "packaged": true,
+  "startedAt": "2026-09-23T14:59:20.055Z",
+  "checks": [],
+  "screenshots": [
+    "project-studio-independent-run.png",
+    "project-studio-project-context.png",
+    "project-studio-failure.png",
+    "project-failure.png"
+  ],
+  "error": "Error: timed out waiting for project capability run refused: false\n    at waitFor (file:///Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow/scripts/electron-cdp.mjs:99:9)\n    at async checkStandaloneStudio (file:///private/tmp/pm9-studio-probe.mjs:195:5)\n    at async file:///private/tmp/pm9-studio-probe.mjs:227:49",
+  "sidecarLog": "\n=== local service start 2026-09-23T14:59:21.636Z pid=78049 ===\n"
+}

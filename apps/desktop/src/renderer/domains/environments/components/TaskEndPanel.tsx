@@ -10,10 +10,10 @@ import { safeProjectError } from '../../projects/presentation-error'
 import { DataCommandNotAccepted } from '../../project-data/data-command'
 import { createOperationCommand } from '../../project-data/operation-command'
 import { createProjectRunsApi } from '../../project-runs/api'
-import { createEnvironmentApi } from '../api'
+import { createEnvironmentApi, type EnvironmentOperation } from '../api'
 import { bindableRecords, selectedTargets } from '../record-targets'
 
-export function TaskEndPanel({ workspaceKey, instanceId, projectId, taskId, runId, executionGeneration, inputs = [], client, disabled, environmentCleaned = false, durableEnd }: {
+export function TaskEndPanel({ workspaceKey, instanceId, projectId, taskId, runId, executionGeneration, statusRevision = 0, inputs = [], client, disabled, environmentCleaned = false, durableEnd }: {
   durableEnd?: components['schemas']['TaskEndView'] | null
   workspaceKey: string
   instanceId: string
@@ -21,6 +21,7 @@ export function TaskEndPanel({ workspaceKey, instanceId, projectId, taskId, runI
   taskId: string
   runId: string
   executionGeneration: number
+  statusRevision?: number
   inputs?: unknown[]
   client: StreamingApiClient
   disabled: boolean
@@ -29,9 +30,14 @@ export function TaskEndPanel({ workspaceKey, instanceId, projectId, taskId, runI
   const api = useMemo(() => createEnvironmentApi(client, projectId), [client, projectId])
   const connectionKey = useMemo(() => crypto.randomUUID(), [client, workspaceKey, instanceId, projectId, taskId])
   const instance = useQuery({
-    queryKey: [workspaceKey, instanceId, 'environments', projectId, 'task-instance', taskId],
+    queryKey: [workspaceKey, instanceId, 'environments', projectId, 'task-instance', taskId, statusRevision],
     queryFn: ({ signal }) => api.listInstances({ page: 1, pageSize: 5, taskId }, signal).then(page => page.items[0] ?? null),
-    enabled: !disabled,
+    enabled: !disabled && !durableEnd,
+  })
+  const persistedEnd = useQuery({
+    queryKey: [workspaceKey, instanceId, 'environments', projectId, 'task-end', taskId, statusRevision],
+    queryFn: ({ signal }) => api.taskEnd(taskId, signal),
+    enabled: !disabled && !durableEnd,
   })
   const records = useMemo(() => bindableRecords(inputs), [inputs])
   const [retain, setRetain] = useState(true)
@@ -39,6 +45,9 @@ export function TaskEndPanel({ workspaceKey, instanceId, projectId, taskId, runI
   const [notes, setNotes] = useState('')
   const [selected, setSelected] = useState<Set<string>>(() => new Set(records.map(item => item.key)))
   const [replaceAllowed, setReplaceAllowed] = useState(false)
+  const [repairReplaceAllowed, setRepairReplaceAllowed] = useState(false)
+  const [excludedRepairTargets, setExcludedRepairTargets] = useState<Set<string>>(() => new Set())
+  const [repairVersions, setRepairVersions] = useState<Map<string, number>>(() => new Map())
   const current = instance.data
   const targets = selectedTargets(records, selected, replaceAllowed)
   const end = useMutation({
@@ -55,7 +64,8 @@ export function TaskEndPanel({ workspaceKey, instanceId, projectId, taskId, runI
           : { enabled: false },
       }, crypto.randomUUID())
     },
-    onSuccess: result => {
+    onSuccess: async result => {
+      await Promise.all([instance.refetch(), persistedEnd.refetch()])
       const phase = result.outcome && 'phase' in result.outcome ? String(result.outcome.phase) : 'completed'
       notify({
         title: phase === 'saved_unlinked' ? '环境已保存，关联未完成' : phase === 'completed' ? (retain ? '已保留登录环境' : '已结束并关闭环境') : '结束结果已记录',
@@ -64,33 +74,55 @@ export function TaskEndPanel({ workspaceKey, instanceId, projectId, taskId, runI
     },
     onError: error => notify({ title: safeProjectError(error), tone: 'error' }),
   })
-  const conflicts = Array.isArray(end.data?.outcome?.conflicts) ? end.data.outcome.conflicts as Array<Record<string, unknown>> : []
-  const repair = useMutation({
+  const endOutcome = persistedEnd.data?.outcome ?? end.data?.outcome
+  const repair = useMutation<EnvironmentOperation>({
     mutationFn: () => {
-      const operationId = end.data?.operation.operationId
+      const operationId = persistedEnd.data?.saveOperationId
       if (!operationId) throw new Error('没有可修复的结束操作')
       return api.repair(operationId, {
-        recordTargets: conflicts.length
-          ? conflicts.flatMap(conflict => {
-            const recordRef = conflict.record && typeof conflict.record === 'object' ? conflict.record as Record<string, unknown> : null
-            const revision = conflict.currentLinkRevision
-            if (!recordRef || typeof revision !== 'number') return []
-            return [{ recordRef, expectedLinkRevision: revision, replaceAllowed: true }]
-          })
-          : targets.map(item => ({ ...item, replaceAllowed: true })),
+        recordTargets: repairTargets,
       }, crypto.randomUUID())
     },
-    onSuccess: result => {
+    onSuccess: async result => {
+      const conflicts = Array.isArray(result.outcome?.conflicts) ? result.outcome.conflicts as Array<Record<string, unknown>> : []
+      setRepairVersions(previous => new Map([...previous, ...bindableRecords(conflicts.map(conflict => ({ recordRef: conflict.record, linkRevision: conflict.currentLinkRevision }))).map(item => [item.key, item.expectedLinkRevision] as const)]))
+      await Promise.all([instance.refetch(), persistedEnd.refetch()])
       const phase = result.outcome && 'phase' in result.outcome ? String(result.outcome.phase) : 'completed'
       notify({ title: phase === 'completed' ? '已按原操作修复关联' : '修复未完成，请核对当前关联事实', tone: phase === 'completed' ? 'success' : 'error' })
     },
     onError: error => notify({ title: safeProjectError(error), tone: 'error' }),
   })
   if (durableEnd) return <DurableEndResult key={`${connectionKey}:${durableEnd.operationId}`} durableEnd={durableEnd} client={client} projectId={projectId} taskId={taskId} workspaceKey={workspaceKey} instanceId={instanceId} disabled={disabled} />
-  if (instance.isLoading) return <section role="status" className="rounded-control border border-line bg-surface p-4 text-sm">正在读取任务环境…</section>
+  const conflicts = Array.isArray(endOutcome?.conflicts) ? endOutcome.conflicts as Array<Record<string, unknown>> : []
+  const conflictVersions = new Map([...bindableRecords(conflicts.map(conflict => ({ recordRef: conflict.record, linkRevision: conflict.currentLinkRevision }))).map(item => [item.key, item.expectedLinkRevision] as const), ...repairVersions])
+  const repairRecords = bindableRecords((persistedEnd.data?.recordTargets ?? []).map((target, index) => ({ recordRef: target.recordRef, linkRevision: target.expectedLinkRevision, alias: `原目标 ${index + 1}` }))).map(item => ({ ...item, expectedLinkRevision: conflictVersions.get(item.key) ?? item.expectedLinkRevision }))
+  const repairTargets = selectedTargets(repairRecords, new Set(repairRecords.filter(item => !excludedRepairTargets.has(item.key)).map(item => item.key)), repairReplaceAllowed)
+  if (instance.isLoading || persistedEnd.isLoading) return <section role="status" className="rounded-control border border-line bg-surface p-4 text-sm">正在读取任务环境…</section>
+  if (persistedEnd.isError) return <p role="alert">保留结果读取失败，请重新打开任务后重试。</p>
   if (!current) return <section className="rounded-control border border-line bg-surface p-4 text-sm text-muted">当前任务还没有可保留的环境实例。</section>
-  const phase = end.data?.outcome && 'phase' in end.data.outcome ? String(end.data.outcome.phase) : null
-  if ((environmentCleaned || current.state === 'cleaned') && phase !== 'saved_unlinked') return <section role="status" className="rounded-control border border-line bg-surface p-4 text-sm text-muted">临时环境已清理，无法再保留此工作副本；已保存的环境不受影响。</section>
+  const phase = persistedEnd.data?.associationPhase ?? (endOutcome && 'phase' in endOutcome ? String(endOutcome.phase) : null)
+  const repairControls = phase === 'saved_unlinked' ? <fieldset className="grid gap-2">
+    <legend>核对本次修复的原关联目标</legend>
+    {repairRecords.map(item => <label key={item.key} className="flex items-center gap-2">
+      <Checkbox checked={!excludedRepairTargets.has(item.key)} disabled={disabled || repair.isPending} onCheckedChange={checked => setExcludedRepairTargets(previous => {
+        const next = new Set(previous)
+        if (checked === true) next.delete(item.key)
+        else next.add(item.key)
+        return next
+      })} />
+      <span>{item.alias} · {String((item.recordRef.recordKey as Record<string, unknown> | undefined)?.value ?? item.recordRef.tableId)} · 关联版本 {item.expectedLinkRevision}</span>
+    </label>)}
+    <label className="flex items-center gap-2"><Checkbox checked={repairReplaceAllowed} disabled={disabled || repair.isPending} onCheckedChange={checked => setRepairReplaceAllowed(checked === true)} /><span>允许本次修复替换所选记录的现有关联</span></label>
+    <Button size="sm" variant="secondary" disabled={disabled || repair.isPending || !persistedEnd.data?.saveOperationId || !repairTargets.length} onClick={() => repair.mutate()}>修复关联</Button>
+  </fieldset> : null
+  if (environmentCleaned || current.state === 'cleaned' || phase === 'saved_unlinked' || phase === 'completed') return <section className="grid gap-3 rounded-control border border-line bg-surface p-4 text-sm" aria-label="环境结束结果">
+    <p role="status" className="m-0">{environmentCleaned || current.state === 'cleaned' ? '本次浏览器工作副本已清理，不能再次保存本次会话。' : '本次保留结果已记录，不能再次保存本次会话。'}</p>
+    {phase === 'completed' && endOutcome?.phase === 'saved_unlinked' ? <p role="status" className="m-0">已修复记录关联，原任务的失败结果保持不变。</p> : null}
+    {phase === 'saved_unlinked' ? <>
+      <p role="alert" className="m-0 text-warning">环境已保存，记录关联未完成。可用原操作修复，不会重跑网页。</p>
+      {repairControls}
+    </> : null}
+  </section>
   const toggle = (key: string, checked: boolean) => {
     setSelected(currentSelected => {
       const next = new Set(currentSelected)
@@ -116,9 +148,9 @@ export function TaskEndPanel({ workspaceKey, instanceId, projectId, taskId, runI
       <label className="flex items-center gap-2 text-sm"><Checkbox checked={replaceAllowed} onCheckedChange={value => setReplaceAllowed(value === true)} disabled={disabled || end.isPending} /><span>允许替换已有关联</span></label>
     </fieldset> : retain ? <p className="m-0 text-sm text-muted">当前任务没有可关联的记录目标，可以只保存环境。</p> : null}
     <div className="flex flex-wrap gap-2">
-      <Button size="sm" disabled={disabled || end.isPending || environmentCleaned || current.state === 'cleaned' || phase === 'saved_unlinked' || phase === 'completed'} onClick={() => end.mutate()}>{retain ? '结束并保留' : '结束并关闭'}</Button>
-      {phase === 'saved_unlinked' ? <Button size="sm" variant="secondary" disabled={disabled || repair.isPending} onClick={() => repair.mutate()}>修复关联</Button> : null}
+      <Button size="sm" disabled={disabled || end.isPending} onClick={() => end.mutate()}>{retain ? '结束并保留' : '结束并关闭'}</Button>
     </div>
+    {repairControls}
     {phase === 'saved_unlinked' ? <p role="alert" className="m-0 text-sm text-warning">环境已保存，记录关联未完成。可用原操作修复，不会重跑网页。</p> : null}
     {phase === 'completed' ? <p role="status" className="m-0 text-sm">结束事实已写入。原浏览器工作副本随后关闭。</p> : null}
   </section>

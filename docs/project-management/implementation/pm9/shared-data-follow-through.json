@@ -1,0 +1,360 @@
+{
+  "date": "2026-09-22",
+  "status": "D1_implemented_scoped_three_platform_ci_passed_external_acceptance_pending",
+  "releaseAccepted": false,
+  "approvedOrder": [
+    "C1",
+    "C2",
+    "C3",
+    "C4",
+    "R1",
+    "R2",
+    "R5",
+    "R3",
+    "R4"
+  ],
+  "baseline": "e71785da7353760ea8bfd567d272dd27865c0188",
+  "completedSlices": [
+    "C1",
+    "C2",
+    "C3",
+    "R1",
+    "R2",
+    "R5",
+    "C4",
+    "R3",
+    "R4"
+  ],
+  "verification": {
+    "scopedBackend": "158 passed, 2 warnings in 57.88s",
+    "mypy": "404 source files passed",
+    "ruff": "passed",
+    "realWorkerOnPreviousF580": "26 passed in 279.99s; no C1 production code was edited until this run finished",
+    "C2Backend": "147 passed, 2 warnings in 95.58s",
+    "C2Downgrade": "Shared cursor downgrade refused without deleting either cursor; 1 passed",
+    "C3RealWorker": "29 passed, 2 warnings in 376.37s; 26 existing plus 3 new owner handoff cases",
+    "C3IndependentStatuses": "Latest 3 shared-source cases with distinct P/Q statuses and explicit owner-cleanup assertion: 3 passed, 2 warnings in 76.38s",
+    "frontend": "5460 passed / 406 files in 238.86s",
+    "C3UI": "22 passed / 1 file",
+    "typecheck": "passed",
+    "lint": "passed",
+    "openapi": "passed",
+    "scripts": "101 passed",
+    "fullBackend": "4 failed, 3345 passed, 63 skipped, 2 warnings in 738.51s; exactly four historical Android migration-head assertions. Corrected pm08→pm10; all 4 then passed in 1.09s, C3 gate 14 passed. No other failures. This combined evidence is not a single green full-suite invocation; native full-suite confirmation follows.",
+    "build": "passed",
+    "C3Migration": "Four historical paths upgraded to pm10 preserving devices, runs, artifacts and foreign keys: 4 passed in 1.09s; stale pm08 assertion RED→GREEN",
+    "C3Gate": "14 passed, 2 warnings in 12.46s",
+    "R1": {
+      "backend": "91 passed in 16.83s across capabilities, RPC and field impacts; latest schema-specific suite 14 passed in 5.63s",
+      "realWorker": "data-schema: 1 passed / 26 deselected in 18.33s; two project Tasks read schema then perform existing allowed writes, End save and login restore",
+      "frontend": "4 passed / 1 file in 1.33s",
+      "ruff": "passed",
+      "mypy": "404 source files passed",
+      "typecheck": "passed",
+      "lint": "passed",
+      "openapi": "passed",
+      "build": "passed"
+    },
+    "R2": {
+      "backend": "180 passed, 2 warnings in 66.72s across schema, capability, RPC, shared claims and impact tests",
+      "ownershipAndDependencies": "12 passed, 2 warnings in 6.38s",
+      "realWorker": "Final R1/R2 combined: 3 passed / 26 deselected in 36.84s; includes R2 success/conflict and latest prepare guard",
+      "frontend": "18 passed / 3 files in 5.40s",
+      "ruff": "passed",
+      "mypy": "404 source files passed",
+      "typecheck": "passed",
+      "lint": "passed",
+      "openapi": "passed and generated type updated",
+      "scripts": "101 passed",
+      "build": "passed in 32.78s"
+    },
+    "R5": {
+      "backend": "59 passed / 2 warnings in 60.40s (observations, sync, identity, shared claims and HTTP contract)",
+      "frontend": "18 passed / 3 files in 2.89s (source observations, record fields and Sheets API)",
+      "ruff": "passed",
+      "mypy": "404 source files passed",
+      "typecheck": "passed",
+      "lint": "passed",
+      "openapi": "passed; read-only DTO and client regenerated",
+      "build": "passed in 32.79s"
+    },
+    "R3": {
+      "backend": "90 passed, 2 warnings in 94.21s; HTTP/SQLite/controlled Google transport, original identity recovery, shared claims and source regression",
+      "dedicated": "13 system identity integration cases; 8 pure plan/verification cases",
+      "frontend": "25 passed / 3 files in 4.62s; explicit source confirmation, durable original operation, late-scope result refusal and existing binding/sync clients",
+      "mypy": "406 source files passed",
+      "ruff": "passed",
+      "typecheck": "passed",
+      "lint": "passed",
+      "openapi": "passed",
+      "build": "passed in 34.52s",
+      "releaseScope": "No current real Google or packaged system initialization proof",
+      "recoveryListingFix": "Real GET /sheets/system-identity returns accepted structural commands; content-only sync queue excluded them. RED failed missing items; 23 HTTP/source + 25 UI/client checks passed. Full R3 before listing fix 90 passed remains scoped."
+    },
+    "R4": {
+      "backend": "113 passed, 2 warnings in 138.65s across columns, identity, shared claims, field deletion and HTTP contracts; before the separate generic-abandon boundary fix",
+      "dedicated": "11 controlled-transport HTTP column cases, including real frozen Task capability compatibility",
+      "frontend": "38 passed / 5 files in 8.46s",
+      "ruff": "passed",
+      "mypy": "407 source files passed",
+      "typecheck": "passed",
+      "lint": "passed",
+      "openapi": "passed",
+      "build": "passed in 49.78s",
+      "releaseScope": "Current real Google and packaged column creation chain pending; whole C/R review complete with all three Important fixes.",
+      "abandonBoundaryFix": "Two HTTP counterexamples reproduced (foreign project, structural operation); shared guard fixed. Full sync suite 33 passed, 2 warnings in 37.79s including both deterministic send/abandon races."
+    },
+    "finalFrontend": "9afe3be5: 5469 passed / 409 files in 198.85s; no frontend source edits after this run",
+    "finalBackend": "3440 passed / 67 skipped / 772.39s; final production source, test import layout-only follow-up separately checked by full-directory Ruff",
+    "postReviewScenarios": {
+      "backend": "21 passed, 2 warnings in 17.71s across field deletion capabilities and Sheets recovery",
+      "ruff": "full-directory check passed",
+      "sourceScope": "Tests only, production source identical to d75297fb native candidate; these two new cases are local supplemental evidence, not included in that frozen CI test count",
+      "requirements": [
+        "DATA-LIFE-09",
+        "DATA-SCHEMA-08"
+      ]
+    },
+    "postReviewStatus": "17 passed in 19.73s; includes two held/reconciling cases with explicit preexisting invalid-value fixture. Local supplemental checks after frozen CI candidate.",
+    "postReviewOverlappingWrites": "35 passed in 39.99s; two ordered shared-field writes, original confirmed history, local snapshots and source observations",
+    "D1": "138 related backend tests passed, 2 warnings; 11 UI; mypy407/Ruff/OpenAPI/typecheck pass; 5 existing PM9 worker scenarios passed locally; D1 dedicated bad-value worker proof remains open.",
+    "nativeMatrix": "Actions 35677887974 passed on all three platforms; native/worker probe jobs were skipped and physical installation remains pending."
+  },
+  "assertionScope": [
+    "Two real HTTP bindings and actual SQLite batch claim transactions share one public physical key",
+    "Busy second claim leaves no extra Task/input snapshot/lease",
+    "After simulated confirmed owner termination, Q claims using its own content revision and local value",
+    "Epoch, column identity, missing row, duplicates and changed header reject prepared claims",
+    "Peer invalid identity observation blocks stale proof",
+    "Legacy local Sheets held/reconciling leases block public claims",
+    "Dynamic query write refuses another project source owner without committing values or a command",
+    "Same Task writes two local bindings four times, holding one public lease and two cursors at revision 3",
+    "Workflow local create holds public identity, replays original operation and atomically refuses duplicate creation by another project; zero Google writes",
+    "Rebind/unbind/archive include shared source occupancy; blockers disclose only current local table",
+    "Latest valid compatible source scan can serve other existing bindings; newer missing identity blocks stale local rows",
+    "Removing a peer invalidates the old binding-set proof instead of erasing a known bad source observation",
+    "Different identity columns may be bound and read locally, but cannot claim without identity equivalence proof",
+    "Capacity-two actual workers: P manual continuation, cancellation and exact-owned-child loss each release the public key only after confirmed owner cleanup; Q busy has no Task",
+    "P nonempty business status and Q null remain independent; Q later freezes its own null/revision 1; stale P manual continuation rejected; two page visits, two final Tasks, zero active leases and zero Google writes",
+    "Existing shared-source UI renders local input alias and repair reason without rendering foreign project identity/link",
+    "R1 explicit nonempty selected field IDs, current metadata/table revision and source-column projection; schema read adds no lease/read evidence/operation or data revisions",
+    "R1 stale grant/generation, inactive project, finished Run, revoked execution, missing field and ungranted targets refuse; source schema read cannot authorize a write",
+    "R1 child query uses frozen node intersection with parent Task grants and requires a live parent call; explicit schema selection/result variable UI tested",
+    "R2 extends the existing full schema candidate with one explicit removedFieldIds target; rechecks dependency and impact fences inside the Task-owned transaction",
+    "R2 own delete/preview declarations do not self-block; own other node, separate Task, identity, automation reference, source mapping and pending sync references block",
+    "R2 deletion removes local definition/current values, retains status/link facts and immutable Task snapshots; original operation replay, retired field IDs and current-own-cursor versus human-new-value fencing tested",
+    "R2 configuration previews complete candidate and requires target confirmation before granting the deletion field; blocked source mapping cannot confirm; no cloud write",
+    "来源普通值变化持久记录，保留本地整条记录和原 pending 意图；push 核验与观察并存，下一拉取更新为无差异且仅最近每字段一条",
+    "旧代次 410、旧 epoch 及解绑不可见、迟到观察不能覆盖当前、删除记录 404",
+    "公式仍由来源刷新修订，不进入普通差异列表，无出站意图",
+    "重复远端身份不能把含糊值登记到原记录观察",
+    "详情只读区分来源/观察时本地值及修订；切换代次旧观察不可见，无写操作入口",
+    "R3 freezes original UUID/column/row evidence before a single atomic Sheets batch; only proven-unsent plans retry. Unknown sends reconcile original ownership and UUIDs; local binding commit and operation completion are atomic. System UUID/text views share a physical lease, unresolved structure fences peer values/claims/binding/lifecycle. Explicit binding may reuse a locally proven owned system column without cloud writes.",
+    "R4 freezes explicit local field/target/epoch/revision and owner before one append/header/metadata batch; unknown sends verify only. Confirmed column extends the same generation/epoch and queues existing local values with original column dependency. Old Task grants stay narrow. Same-name/moved/renamed/foreign/nonempty columns fail closed; proven-unsent cancellation retains local data."
+  ],
+  "limits": [
+    "C1 release test simulates confirmed owner termination; not a worker cleanup claim",
+    "M1-M3 not approved",
+    "Google real authorization, signing and full native platform acceptance external",
+    "Local pull preserves existing readable rows and skipped blank identities; those tables remain ineligible for shared claims until identity is complete",
+    "Source namespace currently uses verified column coordinate/header and exact key encoding; moved/renamed columns require explicit repair",
+    "Actual worker integration uses TestClient HTTP and controlled Google transport, not packaged Google network authorization",
+    "29-case run predates the extra status assertions; the separate latest 3-case run proves those assertions on identical production source",
+    "C/R source and one whole review complete; current native validation pending. Supplemental status/overlapping-write tests run locally after frozen CI candidate."
+  ],
+  "previousCandidateCI": {
+    "run": 35590418456,
+    "head": "0303924d1546f3924fa7f0d29cbb988fa194ecf9",
+    "windows": "failed: 3317 passed / 71 skipped / 1 failed (live manual test 100ms automatic budget expired before second pause)",
+    "macos": "ARM full pass; Intel backend pass/frontend 5458 pass +1 initial-proxy-load failure",
+    "fixtureFixes": "Local dispatcher 28 pass and proxy 14 pass; native CI confirmation pending stable new candidate"
+  },
+  "sourceHashes": {
+    "apps/backend/src/autoflow/infrastructure/database/project_claims.py": "e62da35bb944523ffe85c4b6f50fdfb8051a29f465f790407961fbfa7b4d5c36",
+    "apps/backend/src/autoflow/infrastructure/database/project_capabilities.py": "3be353e88be56957acc2a5cf98d1050ac6795984fc1647256faa7c190b6f0026",
+    "apps/backend/src/autoflow/infrastructure/database/project_lifecycle.py": "64def103d2f691bf999e446c21319a7fac758e97c0c2f5b1a5d45ab5ddcfe830",
+    "apps/backend/src/autoflow/infrastructure/database/project_run_models.py": "faa63b215beaa1687b1a2b803cc62885426d75f53c03dd5082caf6eaaf8cf66e",
+    "apps/backend/src/autoflow/infrastructure/database/project_sync.py": "ca5be9fbcf33665748066c46f237f01cc124f35355fc2cb258b8cb80d5189493",
+    "apps/backend/src/autoflow/infrastructure/database/project_sync_impacts.py": "2cc413cbf1645b65344e78819a6a4d016f6271a49ddbf74e955498db472bba16",
+    "apps/backend/src/autoflow/infrastructure/database/project_sync_models.py": "eb2845b6060a92823630ddc9b71badeffe491ae70e3475a1170f0b2f6f6c85bb"
+  },
+  "productionCandidate": "ae347de9f5fc1922efa7c4af99c0e606e6bde26a",
+  "testCandidate": "ae347de9f5fc1922efa7c4af99c0e606e6bde26a",
+  "nativeSharedCandidate": {
+    "status": "completed_per_platform",
+    "scope": "C4 native evidence uses Mac @21f8bb1e and Windows @07619b6d; does not replace final current R3/R4 matrix",
+    "macRun": 35597323657,
+    "macHead": "21f8bb1e645e596c360cbcc8ce8f64e9fd51a237",
+    "windowsRun": 35605861737,
+    "windowsHead": "07619b6d8f6b8ffcc0dfe88bcd8983206e6da831",
+    "windows": "3384 passed/77 skipped backend, 5464/407 frontend, 21 real worker cases, six source/packaged reports and installer uploaded",
+    "reports": [
+      "ci-capabilities-darwin-arm64.json",
+      "ci-capabilities-darwin-x64.json",
+      "ci-capabilities-win32-x64.json"
+    ]
+  },
+  "R1SourceHashes": {
+    "apps/backend/src/autoflow/domain/project_data/capabilities.py": "10d08f1c442c13d225c029f171ad50001cc557c30ccd1e403ae885a37551b312",
+    "apps/backend/src/autoflow/infrastructure/database/project_capabilities.py": "0008737ceff1a8c4df6571ca92c900b7a12bfb943a3f662e0ed49fd68b2b881c",
+    "apps/backend/src/autoflow/application/project_runs/worker_capabilities.py": "4d8f6851bcd5f7e57bbce07ae0cbe300ac44a9e5421d637e8a6e5769e4eba454",
+    "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx": "101e92b93a7dcb79d1f240883cb92bb593249c872469029bac040cd8f71a1bbd"
+  },
+  "R2SourceHashes": {
+    "apps/backend/src/autoflow/infrastructure/database/project_data_schema.py": "c8fa4aba990f9ac68242aa40ceca9a45f6739436cf5d3a8e69926acf553b386e",
+    "apps/backend/src/autoflow/infrastructure/database/project_data_impacts.py": "da70581264156398ec66772265cb367c7e431b8c64562886a9b7b6fdcd998b91",
+    "apps/backend/src/autoflow/infrastructure/database/project_capabilities.py": "bab042ef9245aeac7b97e876eec4fcbe3e4bacb7f0373bb33c714f6c4b9b6b57",
+    "apps/backend/src/autoflow/application/project_runs/coordinator.py": "2f6466b378e45c63d1bfe26cc61689b348914b46c4ff1b789061914772598121",
+    "apps/backend/src/autoflow/application/project_runs/worker_capabilities.py": "5b88061fcdbb3a228d5390799028cb90d08d4b02ba959cc889017f5e1f07a32f",
+    "apps/backend/src/autoflow/domain/project_data/schema.py": "7cd989246be50f7894a8b8d935fe4713ab0d488301c8cc09a9e9b8c8ce478e57",
+    "apps/backend/src/autoflow/domain/project_data/capabilities.py": "490af0fe9d05f521c2a254e5b6fcd18dfb511b00052944b69195dcc47fb62ea7"
+  },
+  "R5SourceHashes": {
+    "apps/backend/src/autoflow/infrastructure/database/project_sync.py": "c2c26ebaf62f527e7a9ed0d5083b6b7db83d702d32cd1cab5ce4fa4a75298b25",
+    "apps/backend/src/autoflow/application/project_sync/outbound.py": "398bfe4590c57db6d8be4ba70cef601650c54c3201210ebfa7970b5c53512cd0",
+    "apps/backend/src/autoflow/adapters/http/project_sheets.py": "55cfe34917d6af46778401ca1283cf09c84b82b55e13ec0f55a406c194076532",
+    "apps/backend/src/autoflow/adapters/http/project_sheets_schemas.py": "c0c32465b5661b9701c4be86ba4b690f8ffa0d74603216b3a809ed861d6803be",
+    "apps/desktop/src/renderer/domains/project-data/components/RecordSourceObservations.tsx": "42d781a26f1e66f4d7aca96dbc9311b4b19efe1ee2fb3bfb47e6fe12daa2e69d",
+    "apps/desktop/src/renderer/domains/project-data/sheets-api.ts": "8a4db638969c3082f395519deeeff47279d2de7d8620a7698e62b08f7edf044d",
+    "apps/desktop/src/renderer/domains/project-data/pages/DataTableDetailPage.tsx": "03a8e55b3a7684808e4679c59b99896ee58263f5d3f00b097df55edb6b40e079"
+  },
+  "R3SourceHashes": {
+    "apps/backend/src/autoflow/adapters/http/project_schemas.py": "64254ee53fef0312959c40d802d1fc1b881114dff3f96ac0c739df1b825cf53e",
+    "apps/backend/src/autoflow/adapters/http/project_sheets.py": "ee466966224ae4e45e54fe51f95556d25b616a0a11c2575259f0f2d4fb69c34a",
+    "apps/backend/src/autoflow/adapters/http/project_sheets_schemas.py": "18b5c3fdf54e743dd6945b5ba3c8ecce9662ab9887ad9ec52caf78f19b4ee86c",
+    "apps/backend/src/autoflow/application/project_sync/access.py": "5a78b6cfd3730b673aa0c563431892c4dad240f50668e1b947a54f17f0e528e2",
+    "apps/backend/src/autoflow/application/project_sync/bindings.py": "cc6ac49d4a4ad05faa121dab717e0cd0e529455bc63382850d698c936c742c09",
+    "apps/backend/src/autoflow/application/project_sync/outbound.py": "f88549555f3f799299bf75593882f79efe87ad25b2497cf6e7228edaaf7f2409",
+    "apps/backend/src/autoflow/bootstrap/app.py": "55e49493b9b376b4d1faece94700ba51403a25e713b85830c38021afc4240439",
+    "apps/backend/src/autoflow/infrastructure/database/project_claims.py": "e45d1840cb655145349cf1852a152379caebe289bb507a6d02f013ed44a07616",
+    "apps/backend/src/autoflow/infrastructure/database/project_lifecycle.py": "112aea091cbae4d638b553604a5951fa40c9f2028d0747f5ffd314103f469139",
+    "apps/backend/src/autoflow/infrastructure/database/project_sync.py": "9f695c966476178532ca6ae5b33e8d90743674e949e9964980459dc5e88330fc",
+    "apps/backend/src/autoflow/infrastructure/database/project_sync_impacts.py": "07c224391b6ee100ee7570e1bac97812a3db224927cf296e2340c1ce296ba393",
+    "apps/backend/src/autoflow/providers/data/google_sheets.py": "056e0ae2a724343c0582d5cb948ab101c39fd8dff8b44b9949a7400a08ee4ee4",
+    "apps/desktop/src/renderer/domains/project-data/components/SheetsBindingWizard.tsx": "e348cff28192681b0222757f2aebd28d1f9addb142ef997c729f42e9cd8f6d24",
+    "apps/desktop/src/renderer/domains/project-data/components/SheetsSync.test.tsx": "d26c075275b3f889f015ffe09930cb000c2dfa2ae5c3500efc7ab90c8a7b71bf",
+    "apps/desktop/src/renderer/domains/project-data/sheets-api.ts": "27bedbc183a7e9464e6cc0877f41bd27f1e0769dc4aafac6c0fa9b7e9160c65c",
+    "apps/desktop/src/renderer/shared/api/generated.ts": "2d4a37f64d33bbd976cc6eafffb7b0bf7a8f970576f57e5822cb441443ec25cd",
+    "apps/backend/src/autoflow/application/project_sync/system_identity.py": "5f41d3b2a6979c688accdf75f6aeed73087ae559cce4712f9c24129b36c56e09",
+    "apps/backend/src/autoflow/infrastructure/database/project_sync_sends.py": "5b405920446a433c74e25e3022da76fc2d0f81ff406a5f608f43116113b491ed",
+    "apps/desktop/src/renderer/domains/project-data/components/SheetsIdentityInitialization.tsx": "22a9df1c2f27d6bfafc85e0f52b30508236e82461ee1e681a9c3e6f8cd5370a0"
+  },
+  "remaining": [
+    "One whole C/R review complete; three Important findings fixed. Local affected/full regression passed; current native follow-ups pending.",
+    "Current packaged complete Sheets chain, OAuth, real Google system UUID tests, physical native acceptance and signing identities remain external acceptance.",
+    "S4 Windows existing-file overwrite/append/read and unapproved M1-M3 remain actual capability gaps.",
+    "D1 source ordinary business format errors: Sheets 422 reproduced; Excel strict failure code inspected only. Proposed contract awaits separate confirmation.",
+    "D1 is locally implemented for safe source business-format diagnostics; current packaged/real-worker UI and external Google evidence remain pending."
+  ],
+  "R4SourceHashes": {
+    "apps/backend/src/autoflow/adapters/http/project_schemas.py": "d4c92eb57a4cce6719b8cfcababf1d5b0216793cd8f99473b589423d5bbfa01f",
+    "apps/backend/src/autoflow/adapters/http/project_sheets.py": "ad0625c7eba0abab42c3585d9c1d99becae66e0595f62c5edcaf6488a66200c0",
+    "apps/backend/src/autoflow/adapters/http/project_sheets_schemas.py": "66f0cccfb4d2cf890b22cd5a31f686974954d330f0328a9cf41d500a24eb560d",
+    "apps/backend/src/autoflow/application/project_sync/outbound.py": "624c5342808bc038845f2fedddebedcc0c60bb2874dd30259352937f992a69a2",
+    "apps/backend/src/autoflow/application/project_sync/system_identity.py": "f78d4b627b028769f70d99fc189106df73b38a2967575605fae6494d135a66ae",
+    "apps/backend/src/autoflow/bootstrap/app.py": "966330cae768dfc7d6f8a8c276cf1fedb29861f3a97f9a979fa18fe82655197f",
+    "apps/backend/src/autoflow/bootstrap/project_http_routes.py": "ba85e388c5fdedc53e70973ddd721a7ee15b33da0b122cff5ca21733fb5e93ca",
+    "apps/backend/src/autoflow/infrastructure/database/project_data_impacts.py": "9420119feab2b784034106724b2d8847ace52695d85d47a90845fe6c83902417",
+    "apps/backend/src/autoflow/infrastructure/database/project_sync.py": "ae0b4fc254903e8f17223f15e4c0e50e6fb98fcc252c4a3a3b829ff5218ffc0f",
+    "apps/backend/src/autoflow/infrastructure/database/project_sync_impacts.py": "427396553a10fa264954fca3edf710bc585d9e2bcac3c69263169a7a6f3fca4d",
+    "apps/desktop/src/renderer/domains/project-data/components/DataTableSourcePanel.test.tsx": "e01e3801d10ff4c2717e682e27967514203e6d34a972762e0eca59ea18365929",
+    "apps/desktop/src/renderer/domains/project-data/components/DataTableSourcePanel.tsx": "3e53ff6436582c4a58d57b240c5b618e7d641909ef605de36d08333c10341813",
+    "apps/desktop/src/renderer/domains/project-data/sheets-api.ts": "7ef3f0a50aea6d7f9f0494ab8825257758e30642bf3a4e94cd7a0a961c6fd868",
+    "apps/desktop/src/renderer/shared/api/generated.ts": "c754b890f4d2963d67c2e50973718f0926767b5053fb6b78283dfebd5ddd9a21",
+    "apps/backend/src/autoflow/application/project_sync/columns.py": "e1f5fad5e56fa9f29c9e32608de9c2c1ca62d9e72d1e38419dc780cbd553aca7",
+    "apps/desktop/src/renderer/domains/project-data/components/SheetsColumnCreation.tsx": "e0f38652ace057947f3d3317bd6304c37d1ab9854db0d7e7637bab8d07b065d9"
+  },
+  "finalReview": "shared-data-final-review.json",
+  "finalCICandidate": {
+    "status": "passed_all_platforms",
+    "runId": 35677887974,
+    "headSha": "ae347de9f5fc1922efa7c4af99c0e606e6bde26a",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35677887974",
+    "platforms": {
+      "darwin-arm64": "ci-d1-final-darwin-arm64.json",
+      "darwin-x64": "ci-d1-final-darwin-x64.json",
+      "win32-x64": "ci-d1-final-win32-x64.json"
+    },
+    "nativeProbe": "skipped",
+    "workerProbe": "skipped",
+    "physicalInstallation": "pending"
+  },
+  "priorC2ProductionCandidate": "376b8a59",
+  "priorC3TestCandidate": "85bb8c7c",
+  "nativeD1Candidate": {
+    "runId": 35677887974,
+    "headSha": "ae347de9f5fc1922efa7c4af99c0e606e6bde26a",
+    "status": "passed",
+    "platforms": [
+      "darwin-arm64",
+      "win32-x64",
+      "darwin-x64"
+    ],
+    "reports": [
+      "ci-d1-final-darwin-arm64.json",
+      "ci-d1-final-darwin-x64.json",
+      "ci-d1-final-win32-x64.json"
+    ]
+  },
+  "historicalFinalCICandidate": {
+    "status": "failed_platforms_diagnosed_intel_pending",
+    "runId": 35629585683,
+    "headSha": "d75297fb0274c60fe9390181c75b0137e2e5b401",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35629585683",
+    "supersededRuns": [
+      {
+        "status": "superseded_test_import_lint",
+        "runId": 35628831527,
+        "headSha": "a8adc43adb172ef799d50b918fda61824d3751e3",
+        "url": "https://github.com/1127152834/auto-flow/actions/runs/35628831527",
+        "platforms": [
+          "win32-x64",
+          "darwin-x64",
+          "darwin-arm64"
+        ],
+        "supersededDispatch": {
+          "runId": 35628776939,
+          "headSha": "3c02b51f88c8a64a9cef3e1d1b167a7dd3ca0ba7",
+          "conclusion": "cancelled",
+          "reason": "Branch push had not completed; detected old commit and canceled. This is not validation evidence."
+        },
+        "reason": "macOS jobs failed five I001 import-layout checks in tests. Local prior ruff scope was src only; exact CI ruff check . reproduced and now passes. Production source unchanged; next candidate reruns all platforms."
+      }
+    ],
+    "productionSource": "unchanged since 3c02b51f; later commits update rules/import layout and reports",
+    "platformFailures": [
+      {
+        "platform": "win32-x64",
+        "jobId": 106432247096,
+        "stage": "full backend",
+        "result": "1 failed, 3429 passed, 77 skipped, 2 warnings in 1244.13s",
+        "cause": "Scheduler test bounded SQLite setup plus execution plus event wake to one second. Now observes parked scheduler and real terminal notification directly; 34 passed in 20.23s. Suppressing subscribe_idle in a temporary counterexample fails exactly the notification assertion."
+      },
+      {
+        "platform": "darwin-arm64",
+        "jobId": 106432247480,
+        "stage": "full frontend",
+        "result": "1 failed, 5468 passed / 409 files in 387.05s",
+        "cause": "Real HTTP UI test used default one-second findByRole while browser status and profiles were still loading. Controlled 1100ms status delay reproduced same failure. Await actual HTTP-driven controls with bounded five-second waits; command exclusion assertions and production code unchanged.",
+        "localVerification": "Controlled delayed HTTP counterexample: original 1 failed/1 passed; corrected 4 passed in 3.66s including normal and delayed copies. Temporary copy removed; committed browser command/lifecycle files 20 passed in 2.09s."
+      }
+    ],
+    "next": "Rerun only failed platforms after test fix; preserve Intel run if it passes. Production source unchanged.",
+    "followUpRuns": [
+      {
+        "platform": "win32-x64",
+        "runId": 35633602923,
+        "headSha": "0d7524d9c5a4981227e402fb711415097f190617",
+        "url": "https://github.com/1127152834/auto-flow/actions/runs/35633602923",
+        "status": "in_progress"
+      },
+      {
+        "platform": "darwin-arm64",
+        "runId": 35633607909,
+        "headSha": "0d7524d9c5a4981227e402fb711415097f190617",
+        "url": "https://github.com/1127152834/auto-flow/actions/runs/35633607909",
+        "status": "in_progress"
+      }
+    ]
+  }
+}

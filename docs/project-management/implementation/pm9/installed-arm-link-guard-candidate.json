@@ -1,0 +1,77 @@
+{
+  "date": "2026-09-23",
+  "status": "c16532d7_arm_ci_and_isolated_installed_full_desktop_smoke_passed_other_platforms_pending",
+  "releaseAccepted": false,
+  "productionSourceCommit": "c16532d79fe8db87a8f9b371d9045a02fb89e362",
+  "sourceRun": "35846519367",
+  "platform": "darwin-arm64",
+  "localOS": "macOS 26.4.1",
+  "artifact": {
+    "name": "AutoFlow-0.1.0-arm64.dmg",
+    "sha256": "bde5e6b263c9cb86fadd3e9f1bc9ca5aa66e83bb7f3283c4901226545bdba40f",
+    "origin": "GitHub Actions run 35846519367 artifact pm9-macos-15",
+    "verification": "hdiutil verify VALID; mounted read-only, copied AutoFlow.app with ditto into isolated temporary install directory, detached disk image before launching copied app"
+  },
+  "ciArm": {
+    "status": "success",
+    "backend": "3479 passed / 77 skipped",
+    "frontend": "5471 passed",
+    "selectedRealWorker": "29 passed / 11 deselected",
+    "packagedReport": "qa-runs/2026-09-23-ci-c165-arm/project-desktop.json",
+    "packagedStatus": "passed"
+  },
+  "localInstalled": {
+    "status": "passed",
+    "report": "qa-runs/2026-09-23-arm-link-guard/project-desktop.json",
+    "script": "scripts/smoke-project-management-desktop.mjs (unchanged)",
+    "browser": "public Chromium 145.0.7632.109.2 from previously verified local release archive",
+    "checks": [
+      "real project/table/field/record CRUD, typed identity, long Chinese text, CAS, original-key recovery and project isolation",
+      "archive blocks writes, repeat command recovers one operation, restore preserves data",
+      "wrong deletion name rejected; safe deletion preserves neighbouring project records",
+      "Electron UI creates project with keyboard focus and real preload/sidecar authentication",
+      "all six project tabs open settled production pages",
+      "manual detail submits declared input to the same real worker and selects one direct successor",
+      "200% native window zoom keeps document within viewport; Studio second window shares the authenticated service",
+      "Electron and its production sidecar restart retain the same data"
+    ],
+    "runtimeChecks": [
+      "Studio HTTP saved graph",
+      "real browser and UUID parameters",
+      "cross-table query/condition/create",
+      "manual checkpoint continues without replay",
+      "End closes, saves and links",
+      "second automation restores login",
+      "1000 worker logs and paginated retrieval",
+      "real browser timeout and original-input follow-up succeeds",
+      "two inputs are frozen and reclaimed after release",
+      "task writes advance their own cursor",
+      "human newer content defeats stale worker write",
+      "later browser failure preserves committed content and status",
+      "End links initial and newly created records",
+      "unauthorized replacement preserves prior environment",
+      "saved_unlinked repair does not save or run again",
+      "stale save generation cannot replace published content",
+      "statistics drilldown reaches real task",
+      "archive and restore preserve executed project"
+    ],
+    "measurements": {
+      "realWorkerLogs": 1004,
+      "realWorkerElapsedMs": 38740,
+      "realWorkerLogsPerMinuteObserved": 1555,
+      "concurrentProducers": 5,
+      "records": 10000,
+      "seedMs": 141442,
+      "busyRetries": 0,
+      "syntheticLogs": 1000,
+      "syntheticElapsedMs": 60024,
+      "syntheticMaxBatchLagMs": 243
+    }
+  },
+  "limits": [
+    "One command-line isolated copy on this ARM Mac; Finder/Gatekeeper, quarantine, native file panels, credential lifecycle, full import/export/uninstall, signing and notarization remain unverified.",
+    "Windows and Intel physical installer acceptance are pending; their CI results are recorded separately when complete.",
+    "Current packaged live Google Sheets/OAuth and system UUID/remote-column real Google chains remain pending; historical PM6 service-account Sheets/system credential evidence is retained.",
+    "Real worker and synthetic log rates are separate single-run observations, not a performance SLA or long-duration stability proof."
+  ]
+}

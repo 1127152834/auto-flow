@@ -2,7 +2,8 @@ import { ApiClientError, type StreamingApiClient } from '../../shared/api/client
 import type { components } from '../../shared/api/generated'
 import { assertFiniteNumbers, DataCommandNotAccepted, DataCommandUncertain } from './data-command'
 
-type Operation = components['schemas']['ProjectOperationView']
+type ProjectOperation = components['schemas']['ProjectOperationView']
+type EnvironmentOperation = components['schemas']['EnvironmentOperationSnapshot']
 const definitive = (error: unknown) => error instanceof ApiClientError && error.status >= 400 && error.status < 500 && error.status !== 408
 
 export class OperationIdentityMismatch extends Error {
@@ -10,7 +11,7 @@ export class OperationIdentityMismatch extends Error {
 }
 
 /** Acceptance is a durable fact; callers observe its terminal result separately. */
-export function createOperationCommand(client: Pick<StreamingApiClient, 'request'>, projectId: string) {
+export function createOperationCommand<Operation extends ProjectOperation | EnvironmentOperation = ProjectOperation>(client: Pick<StreamingApiClient, 'request'>, projectId: string) {
   const base = `/api/v1/projects/${encodeURIComponent(projectId)}/operations`
   const validate = (operation: Operation, key: string, kind: Operation['kind']) => {
     if (!operation || operation.projectId !== projectId || operation.idempotencyKey !== key || operation.kind !== kind) throw new OperationIdentityMismatch()

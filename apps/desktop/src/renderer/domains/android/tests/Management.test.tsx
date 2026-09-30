@@ -14,14 +14,15 @@ afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
 it('copy creates a fresh identity and config without copying runtime ownership or data', async () => {
   const client = api(), done = vi.fn()
-  render(<CreateDeviceForm source={device} environment={environment} api={client} disabled={false} onCancel={vi.fn()} onCreated={done} />)
+  const sourceWithConsent = { ...device, allowUnknownDiskEstimate: true }
+  render(<CreateDeviceForm source={sourceWithConsent} environment={environment} api={client} disabled={false} onCancel={vi.fn()} onCreated={done} />)
   expect(screen.getByText('新实例使用独立空白数据，不复制已安装应用或登录状态。')).toBeVisible()
   await userEvent.click(screen.getByRole('switch', { name: '创建后启动' }))
   await userEvent.click(screen.getByRole('button', { name: '创建实例' }))
   await waitFor(() => expect(done).toHaveBeenCalled())
   const submitted = vi.mocked(client.create).mock.calls[0][0]
   expect(submitted.deviceId).not.toBe(device.deviceId)
-  expect(submitted).toMatchObject({ name: '原设备 副本', start: false, width: 720, memoryMb: 1536 })
+  expect(submitted).toMatchObject({ name: '原设备 副本', start: false, width: 720, memoryMb: 1536, allowUnknownDiskEstimate: false })
   expect(submitted).not.toHaveProperty('ownerRunId')
 })
 
@@ -35,6 +36,35 @@ it('a lost creation response keeps the same immutable request for an explicit re
   await userEvent.click(screen.getByRole('button', { name: '按原编号重试创建' }))
   await waitFor(() => expect(client.create).toHaveBeenCalledTimes(2))
   expect(vi.mocked(client.create).mock.calls[0][0]).toEqual(vi.mocked(client.create).mock.calls[1][0])
+})
+
+it('requires a fresh disk estimate confirmation for a copied device and freezes it on an unknown result', async () => {
+  const client = api()
+  vi.mocked(client.create).mockRejectedValueOnce(new Error('lost response'))
+  render(<CreateDeviceForm source={device} environment={environment} api={client} disabled={false} onCancel={vi.fn()} onCreated={vi.fn()} />)
+  const consent = screen.getByRole('checkbox', { name: /最终磁盘占用无法可靠估计/ })
+  expect(consent).not.toBeChecked()
+  await userEvent.click(consent)
+  await userEvent.click(screen.getByRole('button', { name: '创建并启动' }))
+  await screen.findByRole('alert')
+  expect(consent).toBeDisabled()
+  await userEvent.click(screen.getByRole('button', { name: '按原编号重试创建' }))
+  await waitFor(() => expect(client.create).toHaveBeenCalledTimes(2))
+  expect(vi.mocked(client.create).mock.calls[0][0]).toMatchObject({ allowUnknownDiskEstimate: true })
+  expect(vi.mocked(client.create).mock.calls[1][0]).toEqual(vi.mocked(client.create).mock.calls[0][0])
+})
+
+it('resets disk confirmation when single-device settings change', async () => {
+  const client = api()
+  render(<CreateDeviceForm environment={environment} api={client} disabled={false} onCancel={vi.fn()} onCreated={vi.fn()} />)
+  const consent = screen.getByRole('checkbox', { name: /最终磁盘占用无法可靠估计/ })
+  await userEvent.click(consent)
+  await userEvent.clear(screen.getByLabelText('实例名称'))
+  await userEvent.type(screen.getByLabelText('实例名称'), '新名称')
+  expect(consent).not.toBeChecked()
+  await userEvent.click(screen.getByRole('button', { name: '创建并启动' }))
+  await waitFor(() => expect(client.create).toHaveBeenCalled())
+  expect(vi.mocked(client.create).mock.calls[0][0]).toMatchObject({ allowUnknownDiskEstimate: false })
 })
 
 it('busy, stopped and unverified devices are never counted as allocatable', () => {

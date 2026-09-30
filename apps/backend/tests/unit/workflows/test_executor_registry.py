@@ -67,8 +67,9 @@ def test_production_registry_contains_every_migrated_executor() -> None:
     production = build_production_executor_registry()
 
     assert set(production.get_all_types()) == {
-        "project_data",
-        "project_end",
+        "trace_mark",
+        "capture_diagnostics",
+        "save_trace_segment",
         "proxy_query",
         "proxy_change_ip",
         "proxy_change_location",

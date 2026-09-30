@@ -38,6 +38,10 @@ class TableSyncSummary(ApiModel):
     last_confirmed_at: datetime | None = Field(
         default=None, exclude_if=lambda value: value is None
     )
+    last_pulled_at: datetime | None = Field(
+        default=None, exclude_if=lambda value: value is None,
+        description="Last completed source pull for the current binding epoch; not a claim-validity guarantee.",
+    )
 
 
 class TableSlotDefinition(ApiModel):

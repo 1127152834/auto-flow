@@ -1,0 +1,62 @@
+{
+  "status": "pending_desktop_verification",
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-image-pull-interruption-4vowoybi",
+  "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "requestId": "bdddecf6-bdad-48f9-bf73-0158c78d245e",
+  "reference": "redroid/redroid@sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "cleanup": "Owned registration intentionally retained for desktop verification; no devices or image content created.",
+  "unconfirmedPreflight": {
+    "state": "failed",
+    "resultCode": "ANDROID_DISK_ESTIMATE_UNKNOWN",
+    "actualDockerPullCalls": 0,
+    "replayPreserved": true,
+    "changedConfirmationRejected": true
+  },
+  "killedOwnedProcessGroups": 1,
+  "lostResponse": "RemoteProtocolError",
+  "afterRestart": {
+    "operationId": "8b4576a4-7b9b-499e-86ab-32eeea022076",
+    "requestId": "bdddecf6-bdad-48f9-bf73-0158c78d245e",
+    "targetId": "53e2e9ee-d573-56e3-8b15-7a87ce1e4283",
+    "action": "pull",
+    "state": "needs_verification",
+    "stageCode": "verify",
+    "stageLabel": "待核实",
+    "attempt": 1,
+    "retryOf": null,
+    "createdAt": "2026-09-24T00:56:29.278167",
+    "startedAt": "2026-09-24T00:56:29.279668",
+    "finishedAt": "2026-09-24T00:56:34.241305",
+    "resultCode": "SERVICE_RESTART_RESULT_UNKNOWN",
+    "message": "服务已重启，请核实外部操作结果",
+    "allowedActions": [
+      "verify"
+    ]
+  },
+  "discoveredAfterRestart": {
+    "items": [
+      {
+        "operationId": "8b4576a4-7b9b-499e-86ab-32eeea022076",
+        "requestId": "bdddecf6-bdad-48f9-bf73-0158c78d245e",
+        "targetId": "53e2e9ee-d573-56e3-8b15-7a87ce1e4283",
+        "action": "pull",
+        "state": "needs_verification",
+        "stageCode": "verify",
+        "stageLabel": "待核实",
+        "attempt": 1,
+        "retryOf": null,
+        "createdAt": "2026-09-24T00:56:29.278167",
+        "startedAt": "2026-09-24T00:56:29.279668",
+        "finishedAt": "2026-09-24T00:56:34.241305",
+        "resultCode": "SERVICE_RESTART_RESULT_UNKNOWN",
+        "message": "服务已重启，请核实外部操作结果",
+        "allowedActions": [
+          "verify"
+        ]
+      }
+    ],
+    "nextCursor": null,
+    "total": 1
+  },
+  "actualDockerPullCalls": 1
+}

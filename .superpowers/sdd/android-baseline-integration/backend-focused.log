@@ -1,0 +1,93 @@
+........................................................................ [ 51%]
+.................F..................................................     [100%]
+=================================== FAILURES ===================================
+________ test_real_worker_runs_to_node_inside_canvas_subflow_with_scope ________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-269/test_real_worker_runs_to_node_0')
+
+    @pytest.mark.asyncio
+    async def test_real_worker_runs_to_node_inside_canvas_subflow_with_scope(
+        tmp_path: Path,
+    ) -> None:
+        events: list[dict[str, object]] = []
+        manager = WorkflowWorkerManager(
+            tmp_path,
+            termination_timeout=0.5,
+            on_event=lambda event: events.append(event),
+        )
+        payload = {
+            "runId": "canvas-subflow-debug",
+            "workflowId": "canvas-debug-flow",
+            "profileId": "profile-1",
+            "requiresBrowser": False,
+            "debug": True,
+            "runToNodeId": "inner",
+            "artifactRoot": str(tmp_path / "artifacts"),
+            "workflowDependencies": {},
+            "document": {
+                "nodes": [
+                    {
+                        "id": "definition",
+                        "type": "groupNode",
+                        "position": {"x": 0, "y": 0},
+                        "width": 400,
+                        "height": 300,
+                        "data": {
+                            "moduleType": "group",
+                            "isSubflow": True,
+                            "subflowName": "登录",
+                        },
+                    },
+                    {
+                        "id": "inner",
+                        "type": "moduleNode",
+                        "position": {"x": 50, "y": 50},
+                        "data": {
+                            "moduleType": "set_variable",
+                            "config": {"variableName": "inside", "variableValue": "1"},
+                        },
+                    },
+                    {
+                        "id": "call",
+                        "type": "moduleNode",
+                        "position": {"x": 500, "y": 50},
+                        "data": {
+                            "moduleType": "subflow",
+                            "config": {"subflowName": "登录"},
+                        },
+                    },
+                ],
+                "edges": [],
+                "variables": [],
+            },
+        }
+        await manager.start("canvas-subflow-debug", "profile-1", None, payload)
+        for _ in range(300):
+            if any(event.get("type") == "execution:paused" for event in events):
+                break
+            await asyncio.sleep(0.01)
+        pause = next(event for event in events if event.get("type") == "execution:paused")
+    
+        assert pause["node_id"] == "inner"
+        assert pause["reason"] == "target"
+>       assert pause["executionContext"] == {
+            "scopes": [{"kind": "subflow", "id": "definition", "name": "登录"}],
+            "loops": [],
+        }
+E       AssertionError: assert {'scopes': [{..., 'loops': []} == {'scopes': [{..., 'loops': []}
+E         
+E         Omitting 1 identical items, use -vv to show
+E         Differing items:
+E         {'scopes': [{'kind': 'subflow', 'id': 'definition', 'name': '登录', 'callNodeId': 'call', ...}]} != {'scopes': [{'kind': 'subflow', 'id': 'definition', 'name': '登录'}]}
+E         Use -v to get more diff
+
+tests/integration/test_workflow_worker_protocol.py:565: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.11/site-packages/starlette/testclient.py:53
+  /Users/zhangtiancheng/.codex/worktrees/android-baseline-integration/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/integration/test_workflow_worker_protocol.py::test_real_worker_runs_to_node_inside_canvas_subflow_with_scope
+1 failed, 139 passed, 1 warning in 50.80s

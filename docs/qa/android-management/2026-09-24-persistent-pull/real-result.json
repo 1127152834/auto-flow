@@ -1,0 +1,78 @@
+{
+  "status": "passed",
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-image-pull-interruption-0blrpwr8",
+  "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "requestId": "46343612-8bc1-45cd-9468-852c4928901f",
+  "reference": "redroid/redroid@sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "cleanup": "Only owned workspace registration removed; existing image content retained; no devices created.",
+  "killedOwnedProcessGroups": 1,
+  "lostResponse": "RemoteProtocolError",
+  "afterRestart": {
+    "operationId": "e79100cf-f3b3-4022-aefc-c15d29e9fcb5",
+    "requestId": "46343612-8bc1-45cd-9468-852c4928901f",
+    "targetId": "4fc20381-ef48-542a-8221-8c7dafd1256b",
+    "action": "pull",
+    "state": "needs_verification",
+    "stageCode": "verify",
+    "stageLabel": "待核实",
+    "attempt": 1,
+    "retryOf": null,
+    "createdAt": "2026-09-23T23:50:29.450264",
+    "startedAt": "2026-09-23T23:50:29.452819",
+    "finishedAt": "2026-09-23T23:50:34.018757",
+    "resultCode": "SERVICE_RESTART_RESULT_UNKNOWN",
+    "message": "服务已重启，请核实外部操作结果",
+    "allowedActions": [
+      "verify"
+    ]
+  },
+  "discoveredAfterRestart": {
+    "items": [
+      {
+        "operationId": "e79100cf-f3b3-4022-aefc-c15d29e9fcb5",
+        "requestId": "46343612-8bc1-45cd-9468-852c4928901f",
+        "targetId": "4fc20381-ef48-542a-8221-8c7dafd1256b",
+        "action": "pull",
+        "state": "needs_verification",
+        "stageCode": "verify",
+        "stageLabel": "待核实",
+        "attempt": 1,
+        "retryOf": null,
+        "createdAt": "2026-09-23T23:50:29.450264",
+        "startedAt": "2026-09-23T23:50:29.452819",
+        "finishedAt": "2026-09-23T23:50:34.018757",
+        "resultCode": "SERVICE_RESTART_RESULT_UNKNOWN",
+        "message": "服务已重启，请核实外部操作结果",
+        "allowedActions": [
+          "verify"
+        ]
+      }
+    ],
+    "nextCursor": null,
+    "total": 1
+  },
+  "verified": {
+    "operationId": "e79100cf-f3b3-4022-aefc-c15d29e9fcb5",
+    "requestId": "46343612-8bc1-45cd-9468-852c4928901f",
+    "targetId": "4fc20381-ef48-542a-8221-8c7dafd1256b",
+    "action": "pull",
+    "state": "succeeded",
+    "stageCode": "verified",
+    "stageLabel": "已完成",
+    "attempt": 1,
+    "retryOf": null,
+    "createdAt": "2026-09-23T23:50:29.450264",
+    "startedAt": "2026-09-23T23:50:29.452819",
+    "finishedAt": "2026-09-23T23:50:34.268097",
+    "resultCode": "IMAGE_PULL_VERIFIED",
+    "message": "服务已重启，请核实外部操作结果",
+    "allowedActions": []
+  },
+  "unknownHistoryAfterVerify": {
+    "items": [],
+    "nextCursor": null,
+    "total": 0
+  },
+  "actualCatalogPullCalls": 1,
+  "originalTagUnchanged": true
+}

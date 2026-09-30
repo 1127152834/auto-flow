@@ -1,0 +1,12 @@
+--- a/scripts/smoke-project-business-combinations.mjs
++++ b/scripts/smoke-project-business-combinations.mjs
+@@ -195,7 +195,8 @@
+     data('ensure', source, 'ensureField', { tableId: source.tableId, datasetGeneration: source.datasetGeneration, fieldId: addedFieldId, definition: { key: 'receipt', name: '回执', type: 'string', required: false, validation: {} }, hasDefault: false, default: null, expectedTableRevision: 3 }),
+     data('create', target, 'createRecord', { tableId: target.tableId, datasetGeneration: target.datasetGeneration, values: { [target.fieldId]: 'created-by-T1' } }),
+     query('row-1'), update('new-task-written'),
+-    data('status', source, 'setRecordStatus', { recordRef: "{query['items'][0]['ref']}", statusId: status.statusId, expectedStatusRevision: "{query['items'][0]['statusRevision']}", expectedContentRevisionWhenDerived: "{update['contentRevision']}" }), end(),
++    data('receipt', source, 'updateRecord', { recordRef: "{update['ref']}", changes: { [addedFieldId]: 'receipt-from-T1' }, expectedContentRevision: "{update['contentRevision']}" }),
++    data('status', source, 'setRecordStatus', { recordRef: "{query['items'][0]['ref']}", statusId: status.statusId, expectedStatusRevision: "{query['items'][0]['statusRevision']}", expectedContentRevisionWhenDerived: "{receipt['contentRevision']}" }), end(),
+   ]))
+   const t2WaitingBefore = await api(`${prefix}/tasks/${checkpoint.taskId}`)
+   assert.equal(t2WaitingBefore.run.status, 'waiting_manual')

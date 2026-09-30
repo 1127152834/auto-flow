@@ -1,0 +1,56 @@
+{
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-backup-permission-zwhq4phe",
+  "status": "passed",
+  "deviceId": "fa461538-12c0-4461-a994-33955c940cbd",
+  "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "containerId": "a27d175cf10e2162caf88b1c2ff3369cee879dcf49ae87d52ce33b78aff7c132",
+  "volumeId": "autoflow-android-fa461538-12c0-4461-a994-33955c940cbd-data",
+  "filesystemDenialErrno": 1,
+  "refusedResponse": {
+    "error": {
+      "code": "ANDROID_BACKUP_RESULT_UNKNOWN",
+      "message": "备份结果未知，请先核实后重试",
+      "details": {},
+      "requestId": "86171ddf-fd59-4861-ac6e-5de628bd6920"
+    }
+  },
+  "receipt": {
+    "operationId": "9f23fd47-3c6d-4429-b6a9-57004323c618",
+    "requestId": "d9b53187-b65a-4205-9543-368a8f5b9f18",
+    "targetId": "fa461538-12c0-4461-a994-33955c940cbd",
+    "action": "backup",
+    "state": "needs_verification",
+    "stageCode": "needs_verification",
+    "stageLabel": "待核实",
+    "attempt": 1,
+    "retryOf": null,
+    "createdAt": "2026-09-24T02:12:50.494913",
+    "startedAt": "2026-09-24T02:12:50.497571",
+    "finishedAt": "2026-09-24T02:12:50.829871",
+    "resultCode": "BACKUP_RESULT_UNKNOWN",
+    "message": "[Errno 1] Operation not permitted: '/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-backup-permission-zwhq4phe/workspace/android-backups'",
+    "allowedActions": [
+      "verify"
+    ]
+  },
+  "noPublishedBackup": true,
+  "noStaging": true,
+  "replayProtected": true,
+  "permissionRestoredBackup": {
+    "id": "97386572-a9cf-44fc-a1f2-5a31289cbf32",
+    "deviceId": "fa461538-12c0-4461-a994-33955c940cbd",
+    "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+    "formatVersion": 1,
+    "sha256": "90c35469bd5b36d5ed9be9f941d35094a2353a98a0f90ba87c6a374372996a3a",
+    "bytes": 18616779,
+    "createdAt": "2026-09-24T02:12:51.453136Z",
+    "state": "available"
+  },
+  "sourceProbePreserved": true,
+  "permissionRestrictionRemoved": true,
+  "cleanup": {
+    "containersAndVolumes": 0,
+    "backups": 0,
+    "ownedDeviceId": "fa461538-12c0-4461-a994-33955c940cbd"
+  }
+}

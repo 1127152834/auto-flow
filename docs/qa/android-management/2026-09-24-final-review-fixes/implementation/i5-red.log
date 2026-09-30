@@ -1,0 +1,1374 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/android/tests/AndroidPage.test.tsx -t recovers current device
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+
+(node:97256) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/renderer/domains/android/tests/AndroidPage.test.tsx > recovers current device state for failed lifecycle without rewriting a historical receipt
+Encountered two children with the same key, `instance`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+stderr | src/renderer/domains/android/tests/AndroidPage.test.tsx > recovers current device state for failed lifecycle without rewriting a historical receipt
+Encountered two children with the same key, `instance`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+stderr | src/renderer/domains/android/tests/AndroidPage.test.tsx > recovers current device state for failed lifecycle without rewriting a historical receipt
+Encountered two children with the same key, `instance`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+stderr | src/renderer/domains/android/tests/AndroidPage.test.tsx > recovers current device state for failed lifecycle without rewriting a historical receipt
+Encountered two children with the same key, `instance`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+stderr | src/renderer/domains/android/tests/AndroidPage.test.tsx > recovers current device state for failed lifecycle without rewriting a historical receipt
+Encountered two children with the same key, `instance`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+stderr | src/renderer/domains/android/tests/AndroidPage.test.tsx > recovers current device state for unknown without operation without rewriting a historical receipt
+Encountered two children with the same key, `instance`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+stderr | src/renderer/domains/android/tests/AndroidPage.test.tsx > recovers current device state for unknown without operation without rewriting a historical receipt
+Encountered two children with the same key, `instance`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+stderr | src/renderer/domains/android/tests/AndroidPage.test.tsx > recovers current device state for unknown without operation without rewriting a historical receipt
+Encountered two children with the same key, `instance`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+stderr | src/renderer/domains/android/tests/AndroidPage.test.tsx > recovers current device state for unknown without operation without rewriting a historical receipt
+Encountered two children with the same key, `instance`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+stderr | src/renderer/domains/android/tests/AndroidPage.test.tsx > recovers current device state for unknown without operation without rewriting a historical receipt
+Encountered two children with the same key, `instance`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+stderr | src/renderer/domains/android/tests/AndroidPage.test.tsx > recovers current device state for pending restore without rewriting a historical receipt
+Encountered two children with the same key, `instance`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+stderr | src/renderer/domains/android/tests/AndroidPage.test.tsx > recovers current device state for pending restore without rewriting a historical receipt
+Encountered two children with the same key, `instance`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+stderr | src/renderer/domains/android/tests/AndroidPage.test.tsx > recovers current device state for pending restore without rewriting a historical receipt
+Encountered two children with the same key, `instance`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+stderr | src/renderer/domains/android/tests/AndroidPage.test.tsx > recovers current device state for pending restore without rewriting a historical receipt
+Encountered two children with the same key, `instance`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+stderr | src/renderer/domains/android/tests/AndroidPage.test.tsx > recovers current device state for pending restore without rewriting a historical receipt
+Encountered two children with the same key, `instance`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+ ❯ src/renderer/domains/android/tests/AndroidPage.test.tsx (43 tests | 3 failed | 40 skipped) 3598ms
+   × recovers current device state for failed lifecycle without rewriting a historical receipt 1286ms
+   × recovers current device state for unknown without operation without rewriting a historical receipt 1167ms
+   × recovers current device state for pending restore without rewriting a historical receipt 1144ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/android/tests/AndroidPage.test.tsx > recovers current device state for failed lifecycle without rewriting a historical receipt
+AssertionError: expected "vi.fn()" to be called with arguments: [ …(2) ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/environment",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  2nd vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/capabilities",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  3rd vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/devices?limit=50",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  4th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/images",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  5th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/operations?action=pull&state=needs_verification&limit=50",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  6th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/profiles",
++   {
++     "timeoutMs": 25000,
+    },
+  ]
+
+  7th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/images",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  8th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/backups",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  9th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/cleanup/resources",
++   {
++     "timeoutMs": 30000,
+    },
+  ]
+
+  10th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/environment",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  11th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/profiles",
++   {
++     "timeoutMs": 25000,
+    },
+  ]
+
+  12th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/backups",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  13th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
++   "/api/v1/android/management/operations/historical-failed/verify",
++   {
++     "body": {
++       "requestId": "old-request",
+      },
++     "method": "POST",
++     "timeoutMs": 40000,
+    },
+  ]
+
+  14th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/devices?limit=50",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  15th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/backups",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  16th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/images",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  17th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/operations?action=pull&state=needs_verification&limit=50",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+
+Number of calls: 17
+
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body[39m
+    [33mstyle[39m=[32m""[39m
+  [36m>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"ad-page"[39m
+        [33mstyle[39m=[32m"display: none; min-height: 0px; padding-bottom: 0px;"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"ad-error"[39m
+          [33mrole[39m=[32m"alert"[39m
+        [36m/>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-5"[39m
+      [36m>[39m
+        [36m<section[39m
+          [33maria-busy[39m=[32m"false"[39m
+          [33maria-label[39m=[32m"安卓运行环境诊断"[39m
+          [33mclass[39m=[32m"space-y-5 rounded-card border border-line bg-surface p-5"[39m
+        [36m>[39m
+          [36m<header>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-start justify-between gap-3"[39m
+            [36m>[39m
+              [36m<div>[39m
+                [36m<h2[39m
+                  [33mclass[39m=[32m"font-semibold"[39m
+                [36m>[39m
+                  [0m运行环境诊断[0m
+                [36m</h2>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"mt-1 text-sm text-muted"[39m
+                [36m>[39m
+                  [0m运行环境可用[0m
+                  [0m · [0m
+                  [0mlima[0m
+                [36m</p>[39m
+              [36m</div>[39m
+              [36m<button[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m重新检查[0m
+              [36m</button>[39m
+            [36m</div>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"mt-2 text-xs text-muted"[39m
+            [36m>[39m
+              [0m检查时间：[0m
+              [36m<time />[39m
+            [36m</p>[39m
+          [36m</header>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid gap-2 sm:grid-cols-2 lg:grid-cols-3"[39m
+          [36m/>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid gap-2 sm:grid-cols-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33maria-label[39m=[32m"宿主工作区可用空间"[39m
+              [33mclass[39m=[32m"rounded-control border border-line p-3"[39m
+              [33mrole[39m=[32m"group"[39m
+            [36m>[39m
+              [36m<h3[39m
+                [33mclass[39m=[32m"text-sm font-medium"[39m
+              [36m>[39m
+                [0m宿主工作区可用空间[0m
+              [36m</h3>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"mt-1 text-sm"[39m
+              [36m>[39m
+                [0m未知[0m
+              [36m</p>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33maria-label[39m=[32m"Linux VM Docker 可用空间"[39m
+              [33mclass[39m=[32m"rounded-control border border-line p-3"[39m
+              [33mrole[39m=[32m"group"[39m
+            [36m>[39m
+              [36m<h3[39m
+                [33mclass[39m=[32m"text-sm font-medium"[39m
+              [36m>[39m
+                [0mLinux VM Docker 可用空间[0m
+              [36m</h3>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"mt-1 text-sm"[39m
+              [36m>[39m
+                [0m未知[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"rounded-control bg-surface-subtle p-3 text-sm"[39m
+          [36m>[39m
+            [36m<h3[39m
+              [33mclass[39m=[32m"font-medium"[39m
+            [36m>[39m
+              [0m能力[0m
+            [36m</h3>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"mt-2"[39m
+            [36m>[39m
+              [0m管理：[0m
+              [0mundefined[0m
+              [0m · 控制：[0m
+              [0mundefined[0m
+              [0m · 镜像：[0m
+              [0mundefined[0m
+            [36m</p>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"安卓管理实例"[39m
+          [33mclass[39m=[32m"rounded-card border border-line bg-surface p-5"[39m
+        [36m>[39m
+          [36m<header[39m
+            [33mclass[39m=[32m"flex items-center justify-between gap-3"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<h2[39m
+                [33mclass[39m=[32m"font-semibold"[39m
+              [36m>[39m
+                [0m实例管理[0m
+              [36m</h2>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"mt-1 text-sm text-muted"[39m
+              [36m>[39m
+                [0m显示 [0m
+                [0m1[0m
+                [0m / [0m
+                [0m1[0m
+                [0m 台实例 · 快照读取不触发运行时探测[0m
+              [36m</p>[39m
+            [36m</div>[39m
+            [36m<button[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0m创建实例[0m
+            [36m</button>[39m
+          [36m</header>[39m
+          [36m<div[39m
+            [33maria-label[39m=[32m"实例统计"[39m
+            [33mclass[39m=[32m"mt-4 grid grid-cols-2 gap-2 text-sm md:grid-cols-4"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m总数 [0m
+              [0m1[0m
+            [36m</span>[39m
+            [36m<span>[39m
+              [0m运行中 [0m
+              [0m0[0m
+            [36m</span>[39m
+            [36m<span>[39m
+              [0m已停止 [0m
+              [0m0[0m
+            [36m</span>[39m
+            [36m<span>[39m
+              [0m需处理 [0m
+              [0m1[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-4 flex flex-wrap gap-2"[39m
+          [36m>[39m
+            [36m<input[39m
+              [33maria-label[39m=[32m"搜索实例"[39m
+              [33mplaceholder[39m=[32m"搜索实例"[39m
+              [33mvalue[39m=[32m""[39m
+            [36m/>[39m
+            [36m<select[39m
+              [33maria-label[39m=[32m"筛选状态"[39m
+            [36m>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m""[39m
+              [36m>[39m
+                [0m全部状态[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"ready"[39m
+              [36m>[39m
+                [0m已就绪[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"stopped"[39m
+              [36m>[39m
+                [0m已停止[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"retained"[39m
+              [36m>[39m
+                [0m数据已保留[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"unknown"[39m
+              [36m>[39m
+                [0m待核实[0m
+              [36m</option>[39m
+    ...
+ ❯ src/renderer/domains/android/tests/AndroidPage.test.tsx:699:52
+
+ ❯ runWithExpensiveErrorDiagnosticsDisabled ../../node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback ../../node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback ../../node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/renderer/domains/android/tests/AndroidPage.test.tsx > recovers current device state for unknown without operation without rewriting a historical receipt
+AssertionError: expected "vi.fn()" to be called with arguments: [ …(2) ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/environment",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  2nd vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/capabilities",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  3rd vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/devices?limit=50",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  4th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/images",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  5th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/operations?action=pull&state=needs_verification&limit=50",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  6th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/profiles",
++   {
++     "timeoutMs": 25000,
+    },
+  ]
+
+  7th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/images",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  8th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/backups",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  9th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/cleanup/resources",
++   {
++     "timeoutMs": 30000,
+    },
+  ]
+
+  10th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/environment",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  11th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/profiles",
++   {
++     "timeoutMs": 25000,
+    },
+  ]
+
+  12th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/backups",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+
+Number of calls: 12
+
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body[39m
+    [33mdata-scroll-locked[39m=[32m"1"[39m
+    [33mstyle[39m=[32m"pointer-events: none;"[39m
+  [36m>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mdata-aria-hidden[39m=[32m"true"[39m
+      [33mdata-radix-focus-guard[39m=[32m""[39m
+      [33mstyle[39m=[32m"outline: none; opacity: 0; position: fixed; pointer-events: none;"[39m
+      [33mtabindex[39m=[32m"0"[39m
+    [36m/>[39m
+    [36m<div[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mdata-aria-hidden[39m=[32m"true"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"ad-page"[39m
+        [33mstyle[39m=[32m"display: none; min-height: 0px; padding-bottom: 0px;"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"ad-error"[39m
+          [33mrole[39m=[32m"alert"[39m
+        [36m>[39m
+          [0m缺少待核实操作编号，请从操作历史打开[0m
+        [36m</p>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-5"[39m
+      [36m>[39m
+        [36m<section[39m
+          [33maria-busy[39m=[32m"false"[39m
+          [33maria-label[39m=[32m"安卓运行环境诊断"[39m
+          [33mclass[39m=[32m"space-y-5 rounded-card border border-line bg-surface p-5"[39m
+        [36m>[39m
+          [36m<header>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-start justify-between gap-3"[39m
+            [36m>[39m
+              [36m<div>[39m
+                [36m<h2[39m
+                  [33mclass[39m=[32m"font-semibold"[39m
+                [36m>[39m
+                  [0m运行环境诊断[0m
+                [36m</h2>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"mt-1 text-sm text-muted"[39m
+                [36m>[39m
+                  [0m运行环境可用[0m
+                  [0m · [0m
+                  [0mlima[0m
+                [36m</p>[39m
+              [36m</div>[39m
+              [36m<button[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m重新检查[0m
+              [36m</button>[39m
+            [36m</div>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"mt-2 text-xs text-muted"[39m
+            [36m>[39m
+              [0m检查时间：[0m
+              [36m<time />[39m
+            [36m</p>[39m
+          [36m</header>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid gap-2 sm:grid-cols-2 lg:grid-cols-3"[39m
+          [36m/>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid gap-2 sm:grid-cols-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33maria-label[39m=[32m"宿主工作区可用空间"[39m
+              [33mclass[39m=[32m"rounded-control border border-line p-3"[39m
+              [33mrole[39m=[32m"group"[39m
+            [36m>[39m
+              [36m<h3[39m
+                [33mclass[39m=[32m"text-sm font-medium"[39m
+              [36m>[39m
+                [0m宿主工作区可用空间[0m
+              [36m</h3>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"mt-1 text-sm"[39m
+              [36m>[39m
+                [0m未知[0m
+              [36m</p>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33maria-label[39m=[32m"Linux VM Docker 可用空间"[39m
+              [33mclass[39m=[32m"rounded-control border border-line p-3"[39m
+              [33mrole[39m=[32m"group"[39m
+            [36m>[39m
+              [36m<h3[39m
+                [33mclass[39m=[32m"text-sm font-medium"[39m
+              [36m>[39m
+                [0mLinux VM Docker 可用空间[0m
+              [36m</h3>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"mt-1 text-sm"[39m
+              [36m>[39m
+                [0m未知[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"rounded-control bg-surface-subtle p-3 text-sm"[39m
+          [36m>[39m
+            [36m<h3[39m
+              [33mclass[39m=[32m"font-medium"[39m
+            [36m>[39m
+              [0m能力[0m
+            [36m</h3>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"mt-2"[39m
+            [36m>[39m
+              [0m管理：[0m
+              [0mundefined[0m
+              [0m · 控制：[0m
+              [0mundefined[0m
+              [0m · 镜像：[0m
+              [0mundefined[0m
+            [36m</p>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"安卓管理实例"[39m
+          [33mclass[39m=[32m"rounded-card border border-line bg-surface p-5"[39m
+        [36m>[39m
+          [36m<header[39m
+            [33mclass[39m=[32m"flex items-center justify-between gap-3"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<h2[39m
+                [33mclass[39m=[32m"font-semibold"[39m
+              [36m>[39m
+                [0m实例管理[0m
+              [36m</h2>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"mt-1 text-sm text-muted"[39m
+              [36m>[39m
+                [0m显示 [0m
+                [0m1[0m
+                [0m / [0m
+                [0m1[0m
+                [0m 台实例 · 快照读取不触发运行时探测[0m
+              [36m</p>[39m
+            [36m</div>[39m
+            [36m<button[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0m创建实例[0m
+            [36m</button>[39m
+          [36m</header>[39m
+          [36m<div[39m
+            [33maria-label[39m=[32m"实例统计"[39m
+            [33mclass[39m=[32m"mt-4 grid grid-cols-2 gap-2 text-sm md:grid-cols-4"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m总数 [0m
+              [0m1[0m
+            [36m</span>[39m
+            [36m<span>[39m
+              [0m运行中 [0m
+              [0m0[0m
+            [36m</span>[39m
+            [36m<span>[39m
+              [0m已停止 [0m
+              [0m0[0m
+            [36m</span>[39m
+            [36m<span>[39m
+              [0m需处理 [0m
+              [0m1[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-4 flex flex-wrap gap-2"[39m
+          [36m>[39m
+            [36m<input[39m
+              [33maria-label[39m=[32m"搜索实例"[39m
+              [33mplaceholder[39m=[32m"搜索实例"[39m
+              [33mvalue[39m=[32m""[39m
+            [36m/>[39m
+            [36m<select[39m
+              [33maria-label[39m=[32m"筛选状态"[39m
+            [36m>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m""[39m
+              [36m>[39m
+                [0m全部状态[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"ready"[39m
+              [36m>[39m
+                [0m已就绪[...
+ ❯ src/renderer/domains/android/tests/AndroidPage.test.tsx:699:52
+
+ ❯ runWithExpensiveErrorDiagnosticsDisabled ../../node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback ../../node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback ../../node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/renderer/domains/android/tests/AndroidPage.test.tsx > recovers current device state for pending restore without rewriting a historical receipt
+AssertionError: expected "vi.fn()" to be called with arguments: [ …(2) ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/environment",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  2nd vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/capabilities",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  3rd vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/devices?limit=50",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  4th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/images",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  5th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/operations?action=pull&state=needs_verification&limit=50",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  6th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/profiles",
++   {
++     "timeoutMs": 25000,
+    },
+  ]
+
+  7th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/images",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  8th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/backups",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  9th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/cleanup/resources",
++   {
++     "timeoutMs": 30000,
+    },
+  ]
+
+  10th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/environment",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  11th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/profiles",
++   {
++     "timeoutMs": 25000,
+    },
+  ]
+
+  12th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/backups",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  13th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
++   "/api/v1/android/management/operations/historical-failed/verify",
++   {
++     "body": {
++       "requestId": "old-request",
+      },
++     "method": "POST",
++     "timeoutMs": 40000,
+    },
+  ]
+
+  14th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/devices?limit=50",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  15th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/backups",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  16th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/images",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+  17th vi.fn() call:
+
+  [
+-   "/api/v1/android/devices/00000000-0000-4000-8000-000000000001/operations",
+-   ObjectContaining {
+-     "body": ObjectContaining {
+-       "action": "recover",
+-     },
++   "/api/v1/android/management/operations?action=pull&state=needs_verification&limit=50",
++   {
++     "timeoutMs": 20000,
+    },
+  ]
+
+
+Number of calls: 17
+
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body[39m
+    [33mstyle[39m=[32m""[39m
+  [36m>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"ad-page"[39m
+        [33mstyle[39m=[32m"display: none; min-height: 0px; padding-bottom: 0px;"[39m
+      [36m>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"ad-error"[39m
+          [33mrole[39m=[32m"alert"[39m
+        [36m/>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-5"[39m
+      [36m>[39m
+        [36m<section[39m
+          [33maria-busy[39m=[32m"false"[39m
+          [33maria-label[39m=[32m"安卓运行环境诊断"[39m
+          [33mclass[39m=[32m"space-y-5 rounded-card border border-line bg-surface p-5"[39m
+        [36m>[39m
+          [36m<header>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-start justify-between gap-3"[39m
+            [36m>[39m
+              [36m<div>[39m
+                [36m<h2[39m
+                  [33mclass[39m=[32m"font-semibold"[39m
+                [36m>[39m
+                  [0m运行环境诊断[0m
+                [36m</h2>[39m
+                [36m<p[39m
+                  [33mclass[39m=[32m"mt-1 text-sm text-muted"[39m
+                [36m>[39m
+                  [0m运行环境可用[0m
+                  [0m · [0m
+                  [0mlima[0m
+                [36m</p>[39m
+              [36m</div>[39m
+              [36m<button[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m重新检查[0m
+              [36m</button>[39m
+            [36m</div>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"mt-2 text-xs text-muted"[39m
+            [36m>[39m
+              [0m检查时间：[0m
+              [36m<time />[39m
+            [36m</p>[39m
+          [36m</header>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid gap-2 sm:grid-cols-2 lg:grid-cols-3"[39m
+          [36m/>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"grid gap-2 sm:grid-cols-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33maria-label[39m=[32m"宿主工作区可用空间"[39m
+              [33mclass[39m=[32m"rounded-control border border-line p-3"[39m
+              [33mrole[39m=[32m"group"[39m
+            [36m>[39m
+              [36m<h3[39m
+                [33mclass[39m=[32m"text-sm font-medium"[39m
+              [36m>[39m
+                [0m宿主工作区可用空间[0m
+              [36m</h3>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"mt-1 text-sm"[39m
+              [36m>[39m
+                [0m未知[0m
+              [36m</p>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33maria-label[39m=[32m"Linux VM Docker 可用空间"[39m
+              [33mclass[39m=[32m"rounded-control border border-line p-3"[39m
+              [33mrole[39m=[32m"group"[39m
+            [36m>[39m
+              [36m<h3[39m
+                [33mclass[39m=[32m"text-sm font-medium"[39m
+              [36m>[39m
+                [0mLinux VM Docker 可用空间[0m
+              [36m</h3>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"mt-1 text-sm"[39m
+              [36m>[39m
+                [0m未知[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"rounded-control bg-surface-subtle p-3 text-sm"[39m
+          [36m>[39m
+            [36m<h3[39m
+              [33mclass[39m=[32m"font-medium"[39m
+            [36m>[39m
+              [0m能力[0m
+            [36m</h3>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"mt-2"[39m
+            [36m>[39m
+              [0m管理：[0m
+              [0mundefined[0m
+              [0m · 控制：[0m
+              [0mundefined[0m
+              [0m · 镜像：[0m
+              [0mundefined[0m
+            [36m</p>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+        [36m<section[39m
+          [33maria-label[39m=[32m"安卓管理实例"[39m
+          [33mclass[39m=[32m"rounded-card border border-line bg-surface p-5"[39m
+        [36m>[39m
+          [36m<header[39m
+            [33mclass[39m=[32m"flex items-center justify-between gap-3"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<h2[39m
+                [33mclass[39m=[32m"font-semibold"[39m
+              [36m>[39m
+                [0m实例管理[0m
+              [36m</h2>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"mt-1 text-sm text-muted"[39m
+              [36m>[39m
+                [0m显示 [0m
+                [0m1[0m
+                [0m / [0m
+                [0m1[0m
+                [0m 台实例 · 快照读取不触发运行时探测[0m
+              [36m</p>[39m
+            [36m</div>[39m
+            [36m<button[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0m创建实例[0m
+            [36m</button>[39m
+          [36m</header>[39m
+          [36m<div[39m
+            [33maria-label[39m=[32m"实例统计"[39m
+            [33mclass[39m=[32m"mt-4 grid grid-cols-2 gap-2 text-sm md:grid-cols-4"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m总数 [0m
+              [0m1[0m
+            [36m</span>[39m
+            [36m<span>[39m
+              [0m运行中 [0m
+              [0m0[0m
+            [36m</span>[39m
+            [36m<span>[39m
+              [0m已停止 [0m
+              [0m1[0m
+            [36m</span>[39m
+            [36m<span>[39m
+              [0m需处理 [0m
+              [0m1[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-4 flex flex-wrap gap-2"[39m
+          [36m>[39m
+            [36m<input[39m
+              [33maria-label[39m=[32m"搜索实例"[39m
+              [33mplaceholder[39m=[32m"搜索实例"[39m
+              [33mvalue[39m=[32m""[39m
+            [36m/>[39m
+            [36m<select[39m
+              [33maria-label[39m=[32m"筛选状态"[39m
+            [36m>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m""[39m
+              [36m>[39m
+                [0m全部状态[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"ready"[39m
+              [36m>[39m
+                [0m已就绪[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"stopped"[39m
+              [36m>[39m
+                [0m已停止[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"retained"[39m
+              [36m>[39m
+                [0m数据已保留[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"unknown"[39m
+              [36m>[39m
+                [0m待核实[0m
+              [36m</option>[39m
+    ...
+ ❯ src/renderer/domains/android/tests/AndroidPage.test.tsx:699:52
+
+ ❯ runWithExpensiveErrorDiagnosticsDisabled ../../node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback ../../node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback ../../node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 40 skipped (43)
+   Start at  09:46:11
+   Duration  5.44s (transform 328ms, setup 141ms, import 1.26s, tests 3.60s, environment 346ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/android/tests/AndroidPage.test.tsx -t 'recovers current device'

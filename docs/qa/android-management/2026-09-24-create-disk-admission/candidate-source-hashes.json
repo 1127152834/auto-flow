@@ -1,0 +1,23 @@
+{
+  "head": "ef0af03f",
+  "files": {
+    "apps/backend/src/autoflow/adapters/http/android.py": "6ba905f4ab44198bccf7147bd9020a4222bd8c2c0a818c332a5382bc58aec8be",
+    "apps/backend/src/autoflow/adapters/http/android_fleet_schemas.py": "00a2f1bdfc579ba924ed2c9e09883fc8caf20ddf07192b55bfa89071d13f1e04",
+    "apps/backend/src/autoflow/adapters/http/android_management.py": "40ff34e5f3b2f84fc80b446cc694597e825a0d5627a3436a3e88dce7eab2a332",
+    "apps/backend/src/autoflow/adapters/http/android_management_schemas.py": "9c26ead4f8c53f729984bc7371d5ea68a8161595ea9e93ca1976bf456eea4a0d",
+    "apps/backend/src/autoflow/application/android/backups.py": "bb445213abb03568c25e1757bfa6900d02411724272b2790329106f98c15b91e",
+    "apps/backend/src/autoflow/application/android/fleet.py": "375544418ef3ef1ff2cbd2693ad0429b5760b0482709cc2506371a8416b8bc6a",
+    "apps/backend/src/autoflow/application/android/management.py": "52c3d41365a524fdaf7a2798f77fe59dbddc66150d5e3c39b85901b1f4e45aa9",
+    "apps/backend/src/autoflow/providers/android/mac_runtime.py": "85acc7c60030e32bec36d6c9653929d183d7dd32c33410c44224edf6ae41942b",
+    "apps/backend/src/autoflow/providers/android/management.py": "c9d2b627763d22e90530ff73b90d0a798be4fc079d9af2cd3e0b28c7fbbefe60",
+    "apps/desktop/src/renderer/domains/android/components/BackupPanel.tsx": "ca8e679bf1fc0eb2d1dc62b924e78863e1098eaf576a0934e29c18e9ad0897bd",
+    "apps/desktop/src/renderer/domains/android/components/CreateDeviceForm.tsx": "3837ddbb47667e309b87144d920787fef5966da0c9b7d615483f1bf026fc475b",
+    "apps/desktop/src/renderer/domains/android/components/CreateInstances.tsx": "620730334eed1d6954b0c46f2b0014057ff3f9e3c4dfdb82bf2a9de895686341",
+    "apps/desktop/src/renderer/domains/android/management-api.ts": "b88e746edde2a6762570efa730f8409cb3ac9f6c9de6ecac79ff3cec3cd111d4",
+    "apps/desktop/src/renderer/domains/android/pages/AndroidPage.tsx": "a3bc48d5529686d809584cb38f503e153e14bccd75834282cac242e01252a603",
+    "apps/desktop/src/renderer/domains/android/tests/AndroidPage.test.tsx": "107d7b65a0a269671ffb45fb3f4c1b07cdbb3b561cb12c35bfe68adde8e28ad9",
+    "apps/desktop/src/renderer/domains/android/tests/Management.test.tsx": "301fd700c0140a9045bce3d983d866d59028613043e4f0b8517c01f4a4f4050d",
+    "apps/desktop/src/renderer/domains/android/tests/ManagementTools.test.tsx": "0077b1f397ee9c8bb88f63732361b63cc298922a84ed0fbbeb2301a0a1e92aa7",
+    "apps/desktop/src/renderer/shared/api/generated.ts": "aa73837fb0004c3ca15111a9553f5046d46d6517aa9c201d424dd34e44067b75"
+  }
+}

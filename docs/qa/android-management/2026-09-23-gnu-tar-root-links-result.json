@@ -1,0 +1,51 @@
+{
+  "status": "passed",
+  "members": {
+    "data": {
+      "type": "5",
+      "linkname": ""
+    },
+    "data/link": {
+      "type": "2",
+      "linkname": "_data/nested"
+    },
+    "data/proof": {
+      "type": "0",
+      "linkname": ""
+    },
+    "data/hard": {
+      "type": "1",
+      "linkname": "data/proof"
+    },
+    "data/_data": {
+      "type": "5",
+      "linkname": ""
+    },
+    "data/_data/nested": {
+      "type": "0",
+      "linkname": ""
+    }
+  },
+  "report": {
+    "source": {
+      "uid": 10001,
+      "gid": 2000,
+      "mode": "0o750",
+      "rootXattr": "root-metadata",
+      "hardlinkSameInode": true,
+      "hardlinkCount": 2,
+      "symlinkText": "_data/nested",
+      "symlinkContent": "nested"
+    },
+    "target": {
+      "uid": 10001,
+      "gid": 2000,
+      "mode": "0o750",
+      "rootXattr": "root-metadata",
+      "hardlinkSameInode": true,
+      "hardlinkCount": 2,
+      "symlinkText": "_data/nested",
+      "symlinkContent": "nested"
+    }
+  }
+}

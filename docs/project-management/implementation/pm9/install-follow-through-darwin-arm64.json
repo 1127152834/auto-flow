@@ -1,0 +1,77 @@
+{
+  "date": "2026-09-21",
+  "status": "partial_acceptance",
+  "codeCandidate": "52936b6a6c3613a2a9a03563f337abed70dc3301",
+  "ciRunId": 35560163432,
+  "artifact": "ci-follow-through-darwin-arm64.json#/artifact",
+  "platform": "darwin-arm64",
+  "os": "ProductName:\t\tmacOS\nProductVersion:\t\t26.4.1\nBuildVersion:\t\t25E253",
+  "installer": "AutoFlow-0.1.0-arm64.dmg",
+  "sha256": "e40998731fbf16300504cc6457a9aeed617d1c5313516b2d53854255aa7f4288",
+  "checks": {
+    "dmgIntegrity": "hdiutil verify passed",
+    "mount": "hdiutil attach -readonly -nobrowse passed; detached after copy",
+    "copy": "ditto into a new temporary isolated installation directory passed",
+    "launch": "scripts/smoke-desktop.mjs --executable <isolated app>/Contents/MacOS/AutoFlow passed",
+    "authenticatedSidecar": "preload bridge matched sidecar instanceId and authenticated health returned ok",
+    "parentExit": "backend exited after owned desktop process stopped"
+  },
+  "stdout": [
+    "desktop connected (packaged, darwin/arm64)",
+    "sidecar exited after desktop termination"
+  ],
+  "isolation": "New temporary user-data-dir, no /Applications replacement, existing app/profile/credential stores untouched. Read-only DMG detached.",
+  "unverified": [
+    "browser-download quarantine and Gatekeeper prompts",
+    "signed/notarized release identity",
+    "other native file/save routes, Google config chooser and non-ARM dialogs",
+    "system credential create/read/delete from this installed build",
+    "installer/uninstaller residual-data acceptance",
+    "complete native manual acceptance on Intel and Windows"
+  ],
+  "releaseAccepted": false,
+  "nativeFileUi": {
+    "status": "passed",
+    "method": "Computer Use native AutoFlow UI, packaged app from the recorded DMG, separate user-data-dir; no QA dialog override",
+    "projectId": "d5a8fd30-d3e7-44f4-9d1b-a269ed92333f",
+    "tableId": "3a3b6e09-2b5d-4db2-8cf8-8eb6506a54d4",
+    "input": {
+      "file": "native-picker-fixture.xlsx",
+      "sha256": "34c0031f0a0c9c7824803ad5ddc190021dd8a662d50a0c8c80cfb23db6061c66",
+      "sheet": "人员",
+      "rows": [
+        [
+          "personNo",
+          "显示名称"
+        ],
+        [
+          "001",
+          "原生面板验收"
+        ]
+      ]
+    },
+    "observed": [
+      "Native macOS open-panel selected the generated workbook",
+      "Inspection showed one sheet / one data row with 001 and Chinese text",
+      "UI field mapping and confirmed import created one Excel local-copy table",
+      "Imported record UI showed string 001 and 原生面板验收",
+      "Native macOS save-panel selected a new file in the QA temporary directory",
+      "Export completed; openpyxl readback preserved 001 as string and Chinese text",
+      "Original input SHA-256 unchanged after import and export"
+    ],
+    "output": {
+      "file": "native-picker-output.xlsx",
+      "sha256": "d0f619d8efbeb98f67443c9cf4c051e3ce06d538f421d2b82f70d441a9c81ae9",
+      "header": [
+        "personNo",
+        "显示名称",
+        "状态"
+      ],
+      "row": [
+        "001",
+        "原生面板验收"
+      ]
+    },
+    "boundary": "One real open/import/save/export route on ARM; not every native dialog, Google config chooser or three-platform manual acceptance."
+  }
+}

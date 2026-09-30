@@ -2,6 +2,7 @@ import { ArrowRight, ClockCountdown, MagnifyingGlass, X } from '@phosphor-icons/
 import { FormEvent, useEffect, useState } from 'react'
 import type { ManualItem, ManualSort } from '../../environments/api'
 import { Button } from '../../../shared/components/ui/button'
+import { EmptyState } from '../../../shared/components/ui/empty-state'
 import { Input } from '../../../shared/components/ui/input'
 import { Pagination } from '../../../shared/components/ui/pagination'
 import { Select } from '../../../shared/components/ui/select'
@@ -58,6 +59,6 @@ export function ManualItemDirectory({ page, filters, loading = false, refreshing
         </TableCell>
         <TableCell><Button variant="ghost" className="text-clay" onClick={() => onOpen(item)}>查看事项<ArrowRight aria-hidden/></Button></TableCell>
       </TableRow>
-    })}</TableBody></Table></TableScroll> : !error ? <div className="grid min-h-72 place-items-center text-center"><div><ClockCountdown size={52} className="mx-auto text-muted"/><h3>{filtered ? '没有匹配的等待人工事项' : '当前没有等待人工处理的事项。'}</h3><p className="text-muted">{filtered ? '调整搜索或状态筛选后再试。' : '工作流在人工检查点暂停后会显示在这里；等待人工不暂停整个批次。'}</p>{filtered ? <Button onClick={() => { setSearch(''); onFiltersChange({ q: null, status: null, sort: 'expiresAt' }) }}>清除筛选</Button> : null}</div></div> : null}
+    })}</TableBody></Table></TableScroll> : !error ? <EmptyState icon={<ClockCountdown size={52} />} title={filtered ? '没有匹配的等待人工事项' : '当前没有等待人工处理的事项'} description={filtered ? '调整搜索或状态筛选后再试。' : '工作流在人工检查点暂停后会显示在这里；等待人工不暂停整个批次。'} action={filtered ? <Button onClick={() => { setSearch(''); onFiltersChange({ q: null, status: null, sort: 'expiresAt' }) }}>清除筛选</Button> : null} /> : null}
     {page ? <><Pagination showPage offset={(page.page - 1) * page.pageSize} limit={page.pageSize} total={page.total} count={page.items.length} disabled={refreshing} onOffsetChange={offset => onPageChange(Math.floor(offset / page.pageSize) + 1)}/><p className="m-0 text-xs text-muted">共 {page.total} 项 · 保留时间以服务端记录为准。</p></> : null}</section>
 }

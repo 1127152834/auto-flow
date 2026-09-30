@@ -1,0 +1,10 @@
+The following is a diff from the previous accessibility tree for Window: "AutoFlow" with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.
+Removed element IDs: 55
+~							54 搜索文本字段 (settable) Description: 搜索应用, Value: com.android.launcher3, Placeholder: 搜索包名
++							77 container
++								78 text com.android.launcher3 受保护应用  ·  版本 33
++								79 按钮 启动
++								80 按钮 停止
++								81 按钮 (disabled) 清除数据
++								82 按钮 (disabled) 卸载
+The focused UI element is 54 搜索文本字段 (settable) Description: 搜索应用, Value: com.android.launcher3, Placeholder: 搜索包名

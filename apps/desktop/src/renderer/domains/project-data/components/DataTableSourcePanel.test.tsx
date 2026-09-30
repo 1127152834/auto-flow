@@ -69,7 +69,8 @@ it('previews an unbind, shows what stops, and only removes the binding after con
     readBinding: vi.fn().mockResolvedValue(bindingView),
     connections: vi.fn().mockResolvedValue({ items: [] }),
     state: vi.fn().mockResolvedValue({ summary: { status: 'idle', pendingCount: 0, unknownCount: 0 }, binding: bindingView }),
-    operations: vi.fn().mockResolvedValue({ items: [], page: 1, pageSize: 50, total: 0 }),
+    columnOperations: vi.fn().mockResolvedValue({ items: [], page: 1, pageSize: 100, total: 0 }),
+  operations: vi.fn().mockResolvedValue({ items: [], page: 1, pageSize: 50, total: 0 }),
     previewUnbind: vi.fn().mockResolvedValue(impactReport({ impacts: [{ code: 'SHEETS_LOCAL_COPY_KEPT', resource: { type: 'table', projectId: 'p', tableId: 't' }, message: '本地记录、状态和同步历史都会保留，表回到待配置状态。', blocking: false }] })),
     removeBinding,
   }
@@ -90,7 +91,8 @@ it('keeps the binding when the unbind preview reports a blocker', async () => {
     readBinding: vi.fn().mockResolvedValue(bindingView),
     connections: vi.fn().mockResolvedValue({ items: [] }),
     state: vi.fn().mockResolvedValue({ summary: { status: 'idle', pendingCount: 0, unknownCount: 0 }, binding: bindingView }),
-    operations: vi.fn().mockResolvedValue({ items: [], page: 1, pageSize: 50, total: 0 }),
+    columnOperations: vi.fn().mockResolvedValue({ items: [], page: 1, pageSize: 100, total: 0 }),
+  operations: vi.fn().mockResolvedValue({ items: [], page: 1, pageSize: 50, total: 0 }),
     previewUnbind: vi.fn().mockResolvedValue(impactReport({ blockers: [{ code: 'SHEETS_SYNC_IN_FLIGHT', resource: { type: 'table', projectId: 'p', tableId: 't' }, state: 'blocked', message: '还有发送中的修改，请先停止或等待结果。' }] })),
     removeBinding,
   }
@@ -114,6 +116,7 @@ const sheetsApi = (readBinding: () => Promise<unknown>) => ({
   readBinding: vi.fn(readBinding),
   connections: vi.fn().mockResolvedValue({ items: [{ connectionId: 'c1', accountLabel: '测试账号' }] }),
   state: vi.fn().mockResolvedValue({ summary: { status: 'idle', pendingCount: 0, unknownCount: 0 }, binding: namedBindingView }),
+  columnOperations: vi.fn().mockResolvedValue({ items: [], page: 1, pageSize: 100, total: 0 }),
   operations: vi.fn().mockResolvedValue({ items: [], page: 1, pageSize: 50, total: 0 }),
 })
 

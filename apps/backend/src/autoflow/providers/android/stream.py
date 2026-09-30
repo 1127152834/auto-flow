@@ -14,6 +14,7 @@ from typing import Any
 from uuid import uuid4
 
 from autoflow.domain.android.ports import AndroidError
+from autoflow.providers.android import mac_runtime
 from autoflow.providers.android.mac_runtime import VENDOR, MacAndroidRuntime
 
 
@@ -225,7 +226,18 @@ class AndroidStream:
         await self.runtime._stop(self.process, "embedded")
         self.process = None
         if self.port is not None:
-            await self.runtime._adb("forward", "--remove", "tcp:" + str(self.port))
+            try:
+                await self.runtime._adb("forward", "--remove", "tcp:" + str(self.port))
+            except (AndroidError, OSError, TimeoutError):
+                forwards = (await mac_runtime.run(["adb", "forward", "--list"])).splitlines()
+                if any(len(parts) != 3 or parts[1] == f"tcp:{self.port}".encode() for line in forwards if (parts := line.split())):
+                    raise
             self.port = None
         if self.runtime.serial:
-            await self.runtime._adb("shell", "rm", "-f", self.remote)
+            try:
+                await self.runtime._adb("shell", "rm", "-f", self.remote)
+            except (AndroidError, OSError, TimeoutError):
+                if not self.runtime.device:
+                    raise
+                await self.runtime.inspect(self.runtime.device)
+                await mac_runtime.docker("exec", self.runtime.device["containerId"], "rm", "-f", self.remote, timeout=5)

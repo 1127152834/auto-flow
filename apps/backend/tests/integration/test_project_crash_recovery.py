@@ -177,7 +177,7 @@ async def test_accepted_archive_finishes_on_a_restarted_service(tmp_path):
 
 @pytest.mark.asyncio
 async def test_delete_residue_survives_a_restart_and_settles_once_files_are_gone(
-    tmp_path,
+    tmp_path, monkeypatch,
 ):
     environment_root = tmp_path / "environments"
     context = Context(tmp_path, environment_root=environment_root)
@@ -188,7 +188,8 @@ async def test_delete_residue_survives_a_restart_and_settles_once_files_are_gone
     context.archive_to_settled()
     operation = context.delete()
     container = environment_root / "instances"
-    container.chmod(0o500)
+    original_rmtree = shutil.rmtree
+    monkeypatch.setattr(shutil, "rmtree", lambda *_args, **_kwargs: (_ for _ in ()).throw(PermissionError("injected deletion denial")))
     try:
         context.repository.advance(context.project_id)
         assert context.state() == "deleting"
@@ -203,7 +204,7 @@ async def test_delete_residue_survives_a_restart_and_settles_once_files_are_gone
         assert saved.error["code"] == "DELETE_CLEANUP_FAILED"
         assert str(work_dir) in saved.error["details"]["cleanup"]["residue"]
     finally:
-        container.chmod(0o755)
+        monkeypatch.setattr(shutil, "rmtree", original_rmtree)
 
     # The user retries from the archived directory once the files are usable again.
     retry = context.delete()
@@ -220,7 +221,7 @@ async def test_delete_residue_survives_a_restart_and_settles_once_files_are_gone
 
 @pytest.mark.asyncio
 async def test_delete_residue_that_clears_on_its_own_still_reports_its_operation(
-    tmp_path,
+    tmp_path, monkeypatch,
 ):
     """Residue must never make the project disappear without a queryable fact."""
     environment_root = tmp_path / "environments"
@@ -232,11 +233,12 @@ async def test_delete_residue_that_clears_on_its_own_still_reports_its_operation
     context.archive_to_settled()
     operation = context.delete()
     container = environment_root / "instances"
-    container.chmod(0o500)
+    original_rmtree = shutil.rmtree
+    monkeypatch.setattr(shutil, "rmtree", lambda *_args, **_kwargs: (_ for _ in ()).throw(PermissionError("injected deletion denial")))
     try:
         context.repository.advance(context.project_id)
     finally:
-        container.chmod(0o755)
+        monkeypatch.setattr(shutil, "rmtree", original_rmtree)
     assert context.state() == "deleting"
 
     repository, restarted = _restarted_lifecycle(context)

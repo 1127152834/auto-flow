@@ -313,10 +313,8 @@ def test_formula_metadata_scans_beyond_sample_and_streams_rows(tmp_path: Path) -
         for entry in original.infolist():
             data = original.read(entry)
             if entry.filename == "xl/worksheets/sheet1.xml":
-                data, replacements = re.subn(
-                    rb"<f>1\+1</f><v(?:\s*/>|></v>)", b"<f>1+1</f><v>2</v>", data
-                )
-                assert replacements == 1, "formula cache fixture was not written"
+                data, replaced = re.subn(rb"<f>1\+1</f><v(?:\s*/>|>\s*</v>)", b"<f>1+1</f><v>2</v>", data)
+                assert replaced == 1, "formula cache fixture was not written"
             output.writestr(entry, data)
     rewritten.replace(source)
 

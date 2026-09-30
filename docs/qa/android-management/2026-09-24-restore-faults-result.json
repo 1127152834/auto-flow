@@ -1,0 +1,53 @@
+{
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-am4-restore-faults-jckp7wa4",
+  "status": "passed",
+  "scenarios": [
+    {
+      "mode": "disk_full",
+      "requestId": "81416a1b-c813-47b1-aa59-fc6181ea85c1",
+      "targetId": "c3a16325-f060-5a27-bd8b-4339ea791c52",
+      "mount": "/var/lib/docker/volumes/autoflow-android-c3a16325-f060-5a27-bd8b-4339ea791c52-data/_data",
+      "errno": 28,
+      "limitBytes": 16777216,
+      "httpStatus": 503,
+      "freeBytes": 0,
+      "usedBytes": 16777216,
+      "operationState": "needs_verification",
+      "restorePending": true,
+      "controlIsolated": true,
+      "runtimeLockReleased": true,
+      "replayProtected": true,
+      "preservedAfterRestart": true,
+      "recoverCannotReleaseIncompleteRestore": true,
+      "targetDeleted": true
+    },
+    {
+      "mode": "cancel",
+      "requestId": "823a1234-00fd-445d-8352-55827dc44f58",
+      "targetId": "e6956006-d6ab-5a4e-b51c-3da220d397ff",
+      "mount": "/var/lib/docker/volumes/autoflow-android-e6956006-d6ab-5a4e-b51c-3da220d397ff-data/_data",
+      "bytesAtCancel": 1757184,
+      "requestTaskCancelled": true,
+      "stablePartialBytes": 6189056,
+      "operationState": "needs_verification",
+      "restorePending": true,
+      "controlIsolated": true,
+      "runtimeLockReleased": true,
+      "replayProtected": true,
+      "preservedAfterRestart": true,
+      "recoverCannotReleaseIncompleteRestore": true,
+      "targetDeleted": true
+    }
+  ],
+  "sourceId": "f08df172-6691-4ae6-9af5-ab5ea6d7d3d9",
+  "backupId": "280ff34a-eb80-491d-b038-d8e9fb81aa97",
+  "backupBytes": 288563631,
+  "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "probeSha256": "d03b01768e106db2033849dc4d29f3e59f1a2217a34fe1d6300cef0fbda95e46",
+  "newRequestRestored": true,
+  "sourceAndTargetHashesMatch": true,
+  "sourceBackupUnchanged": true,
+  "ownedResourcesDeleted": true,
+  "ownedBackupsDeleted": true,
+  "privateMountsRemoved": true
+}

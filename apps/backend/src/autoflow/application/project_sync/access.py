@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from threading import RLock
 
 from autoflow.domain.credentials import CredentialStore, CredentialStoreUnavailableError
 from autoflow.domain.projects.models import ProjectError
@@ -25,6 +26,8 @@ class GoogleAccess:
     ) -> None:
         self._sync, self._credentials = sync, credentials
         self._tokens, self._transports = tokens, transports
+        # ponytail: one workspace send lock; per-spreadsheet locks if throughput requires it.
+        self.send_lock = RLock()
 
     def credential(self, project: str, connection_id: str) -> google_auth.GoogleCredential:
         row = self._sync.connection(project, connection_id)

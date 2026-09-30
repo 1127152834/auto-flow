@@ -1,4 +1,5 @@
-from typing import Annotated, Literal
+from collections.abc import Callable
+from typing import Annotated, Any, Literal, cast
 from uuid import UUID
 
 from fastapi import APIRouter, Header, Query
@@ -26,10 +27,12 @@ from .project_environment_schemas import (
     ManualItemPage,
     ManualItemView,
     ManualResumeRequest,
+    TaskEndResultView,
 )
-from .projects import _op
+from .projects import _op as _raw_op
 
 Key = Annotated[UUID, Header(alias="Idempotency-Key")]
+_op = cast(Callable[[Any], dict[str, Any]], _raw_op)
 
 
 def project_environments_router(service: EnvironmentService) -> APIRouter:
@@ -47,7 +50,7 @@ def project_environments_router(service: EnvironmentService) -> APIRouter:
         page: int = Query(1, ge=1),
         page_size: int = Query(50, alias="pageSize", ge=1, le=200),
         sort: str = "-updatedAt",
-    ):
+    ) -> dict[str, Any]:
         items, total, linked = service.list_with_counts(
             str(projectId), state=state, q=q, page=page, page_size=page_size, sort=sort
         )
@@ -70,7 +73,9 @@ def project_environments_router(service: EnvironmentService) -> APIRouter:
         response_model=EnvironmentDetailView,
         responses=browser_error_responses(401, 404, 422),
     )
-    def get_environment(projectId: UUID, environmentId: UUID):
+    def get_environment(
+        projectId: UUID, environmentId: UUID
+    ) -> dict[str, Any]:
         environment, instance, linked = service.get(str(projectId), str(environmentId))
         return {
             "environment": environment.to_dict(),
@@ -83,8 +88,13 @@ def project_environments_router(service: EnvironmentService) -> APIRouter:
         response_model=EnvironmentImpactView,
         responses=browser_error_responses(401, 404, 422),
     )
-    def environment_impact(projectId: UUID, environmentId: UUID, action: str = "delete"):
-        return service.impact(str(projectId), str(environmentId), action)
+    def environment_impact(
+        projectId: UUID, environmentId: UUID, action: str = "delete"
+    ) -> dict[str, Any]:
+        return cast(
+            dict[str, Any],
+            service.impact(str(projectId), str(environmentId), action),
+        )
 
     @router.delete(
         "/environments/{environmentId}",
@@ -97,9 +107,12 @@ def project_environments_router(service: EnvironmentService) -> APIRouter:
         environmentId: UUID,
         body: EnvironmentDeleteRequest,
         idempotency_key: Key,
-    ):
+    ) -> dict[str, Any]:
         _result, operation = service.delete(
-            str(projectId), str(environmentId), str(idempotency_key), body.payload()
+            str(projectId),
+            str(environmentId),
+            str(idempotency_key),
+            cast(Callable[[], dict[str, Any]], body.payload)(),
         )
         return {"operation": _op(operation), "outcome": None}
 
@@ -113,11 +126,11 @@ def project_environments_router(service: EnvironmentService) -> APIRouter:
         environmentId: UUID,
         body: EnvironmentPatch,
         idempotency_key: Key,
-    ):
+    ) -> dict[str, Any]:
         environment, _operation, _replayed = service.patch(
             str(projectId), str(environmentId), str(idempotency_key), body.payload()
         )
-        return environment.to_dict()
+        return cast(dict[str, Any], environment.to_dict())
 
     @router.get(
         "/environment-instances",
@@ -131,7 +144,7 @@ def project_environments_router(service: EnvironmentService) -> APIRouter:
         page: int = Query(1, ge=1),
         page_size: int = Query(50, alias="pageSize", ge=1, le=200),
         sort: str = "-updatedAt",
-    ):
+    ) -> dict[str, Any]:
         items, total = service.list_instances(
             str(projectId), state=state, task_id=task_id, page=page, page_size=page_size
         )
@@ -148,8 +161,11 @@ def project_environments_router(service: EnvironmentService) -> APIRouter:
         response_model=EnvironmentInstanceView,
         responses=browser_error_responses(401, 404, 422),
     )
-    def get_instance(projectId: UUID, instanceId: UUID):
-        return service.get_instance(str(projectId), str(instanceId)).to_dict()
+    def get_instance(projectId: UUID, instanceId: UUID) -> dict[str, Any]:
+        return cast(
+            dict[str, Any],
+            service.get_instance(str(projectId), str(instanceId)).to_dict(),
+        )
 
     @router.post(
         "/environment-instances/{instanceId}/open",
@@ -162,7 +178,7 @@ def project_environments_router(service: EnvironmentService) -> APIRouter:
         instanceId: UUID,
         body: EnvironmentOpenRequest,
         idempotency_key: Key,
-    ):
+    ) -> dict[str, Any]:
         outcome, operation, _replayed = service.open_instance(
             str(projectId), str(instanceId), str(idempotency_key), body.payload()
         )
@@ -172,28 +188,42 @@ def project_environments_router(service: EnvironmentService) -> APIRouter:
         "/environment-saves",
         status_code=202,
         response_model=EnvironmentOperationView,
-        responses=browser_error_responses(401, 404, 409, 410, 422, 423),
+        responses=browser_error_responses(401, 404, 409, 410, 422, 423, 503),
     )
     def save_environment(
         projectId: UUID, body: EnvironmentSaveRequest, idempotency_key: Key
-    ):
+    ) -> dict[str, Any]:
         outcome, operation, _replayed = service.save(
             str(projectId), str(idempotency_key), body.payload()
         )
         return {"operation": _op(operation), "outcome": outcome}
 
+    @router.get(
+        "/tasks/{taskId}/end",
+        response_model=TaskEndResultView | None,
+        responses=browser_error_responses(401, 404, 422),
+    )
+    def get_task_end(
+        projectId: UUID, taskId: UUID
+    ) -> dict[str, Any] | None:
+        result = service.query_task_end(str(projectId), str(taskId))
+        if result is None:
+            return None
+        operation, save_id, phase, targets = result
+        return {"operation": _op(operation), "saveOperationId": save_id, "associationPhase": phase, "recordTargets": targets, "outcome": operation.result}
+
     @router.post(
         "/tasks/{taskId}/end",
         status_code=202,
         response_model=EnvironmentOperationView,
-        responses=browser_error_responses(401, 404, 409, 410, 422, 423),
+        responses=browser_error_responses(401, 404, 409, 410, 422, 423, 503),
     )
     def end_task(
         projectId: UUID,
         taskId: UUID,
         body: EnvironmentEndRequest,
         idempotency_key: Key,
-    ):
+    ) -> dict[str, Any]:
         payload = body.payload()
         payload["taskId"] = str(taskId)
         outcome, operation, _replayed = service.end(
@@ -212,7 +242,7 @@ def project_environments_router(service: EnvironmentService) -> APIRouter:
         environmentId: UUID,
         body: MaintenanceStartRequest,
         idempotency_key: Key,
-    ):
+    ) -> dict[str, Any]:
         outcome, operation, _replayed = service.start_maintenance(
             str(projectId),
             str(environmentId),
@@ -232,7 +262,7 @@ def project_environments_router(service: EnvironmentService) -> APIRouter:
         environmentId: UUID,
         body: MaintenanceDiscardRequest,
         idempotency_key: Key,
-    ):
+    ) -> dict[str, Any]:
         outcome, operation, _replayed = service.discard_maintenance(
             str(projectId),
             str(idempotency_key),
@@ -252,7 +282,7 @@ def project_environments_router(service: EnvironmentService) -> APIRouter:
         operationId: UUID,
         body: EnvironmentRepairRequest,
         idempotency_key: Key,
-    ):
+    ) -> dict[str, Any]:
         outcome, operation, _replayed = service.repair(
             str(projectId), str(idempotency_key), str(operationId), body.payload()
         )
@@ -263,7 +293,9 @@ def project_environments_router(service: EnvironmentService) -> APIRouter:
         response_model=EnvironmentOperationView,
         responses=browser_error_responses(401, 404, 422),
     )
-    def get_environment_operation(projectId: UUID, operationId: UUID):
+    def get_environment_operation(
+        projectId: UUID, operationId: UUID
+    ) -> dict[str, Any]:
         operation = service.projects.operation(
             operation_id=str(operationId), project_id=str(projectId)
         )
@@ -281,7 +313,7 @@ def project_environments_router(service: EnvironmentService) -> APIRouter:
         sort: Literal["-updatedAt", "expiresAt"] = "-updatedAt",
         page: int = Query(1, ge=1),
         page_size: int = Query(50, alias="pageSize", ge=1, le=200),
-    ):
+    ) -> dict[str, Any]:
         items, total = service.list_manual(
             str(projectId),
             status=status,
@@ -302,8 +334,12 @@ def project_environments_router(service: EnvironmentService) -> APIRouter:
         response_model=ManualItemView,
         responses=browser_error_responses(401, 404, 422),
     )
-    def get_manual_item(projectId: UUID, manualItemId: UUID):
-        return service.get_manual(str(projectId), str(manualItemId))
+    def get_manual_item(
+        projectId: UUID, manualItemId: UUID
+    ) -> dict[str, Any]:
+        return cast(
+            dict[str, Any], service.get_manual(str(projectId), str(manualItemId))
+        )
 
     @router.post(
         "/manual-items/{manualItemId}/resume",
@@ -316,7 +352,7 @@ def project_environments_router(service: EnvironmentService) -> APIRouter:
         manualItemId: UUID,
         body: ManualResumeRequest,
         idempotency_key: Key,
-    ):
+    ) -> dict[str, Any]:
         outcome, operation, _replayed = service.resume_manual(
             str(projectId),
             str(idempotency_key),
@@ -341,7 +377,7 @@ def project_environments_router(service: EnvironmentService) -> APIRouter:
         manualItemId: UUID,
         body: ManualFinishRequest,
         idempotency_key: Key,
-    ):
+    ) -> dict[str, Any]:
         outcome, operation, _replayed = service.finish_manual(
             str(projectId),
             str(idempotency_key),

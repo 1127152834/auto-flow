@@ -129,7 +129,9 @@ def test_unknown_and_missing_required_parameters_are_rejected_by_id():
         ("maxTasks", 0),
         ("maxTasks", 101),
         ("maxTasks", True),
-        ("concurrency", 2),
+        ("concurrency", 101),
+        ("concurrency", 0),
+        ("concurrency", 1.5),
         ("concurrency", True),
     ],
 )
@@ -294,3 +296,21 @@ def test_snapshot_freezes_parameters_and_pm4_data_inputs():
     )
     raw_inputs[0]["values"][0]["value"] = "changed"
     assert data_snapshot.inputs[0]["values"][0]["value"] == "one"
+
+
+@pytest.mark.parametrize('required', [None, False, True])
+def test_unlimited_start_requires_a_required_data_input(required):
+    inputs = [] if required is None else [{'inputId': 'input', 'required': required}]
+    selected = automation(inputs=inputs)
+    if required is True:
+        assert validate_batch_start(selected, request(maxTasks=None), allow_data_inputs=True).max_tasks is None
+    else:
+        with pytest.raises(ProjectRunError) as error:
+            validate_batch_start(selected, request(maxTasks=None), allow_data_inputs=True)
+        assert error.value.code == 'VALIDATION_ERROR'
+        assert 'maxTasks' in error.value.details['fields']
+
+
+@pytest.mark.parametrize("concurrency", [1, 2, 100])
+def test_parameter_batch_accepts_bounded_concurrency(concurrency):
+    assert validate_batch_start(automation(), request(concurrency=concurrency)).concurrency == concurrency

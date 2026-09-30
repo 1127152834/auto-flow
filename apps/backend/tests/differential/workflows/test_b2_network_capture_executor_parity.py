@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import importlib
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -31,12 +32,12 @@ def _executor() -> Any:
 
 def _source_result(payload: dict[str, Any]) -> dict[str, Any]:
     completed = subprocess.run(
-        [sys.executable, str(FROZEN_HARNESS)],
+        [sys.executable, "-X", "utf8", str(FROZEN_HARNESS)],
         input=json.dumps(payload),
-        text=True,
+        text=True, encoding="utf-8",
         capture_output=True,
         check=True,
-        env={"PYTHONPATH": str(FROZEN_BACKEND)},
+        env={**os.environ, "PYTHONPATH": str(FROZEN_BACKEND)},
     )
     return json.loads(completed.stdout.splitlines()[-1])
 

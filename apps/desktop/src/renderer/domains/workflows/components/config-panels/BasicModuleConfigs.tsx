@@ -1,5 +1,6 @@
 // Source: WebRPA@5ccb900e, components/workflow/config-panels/BasicModuleConfigs.tsx; see SOURCE.md for license and adaptation boundaries.
 import type React from 'react'
+import {BrowserEnvironmentFields} from './BrowserEnvironmentFields'
 import { useCallback, useState, lazy, Suspense } from 'react'
 import type { Node, Edge } from '@xyflow/react'
 import type { NodeData } from '../../editor-store'
@@ -41,6 +42,7 @@ export function OpenPageConfig({ data, onChange }: { data: NodeData; onChange: (
   
   return (
     <>
+      <BrowserEnvironmentFields data={data} onChange={onChange}/>
       <div className="space-y-2">
         <Label htmlFor="url">网址</Label>
         <UrlInput

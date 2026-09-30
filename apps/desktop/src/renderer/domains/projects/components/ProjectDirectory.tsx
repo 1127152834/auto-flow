@@ -1,6 +1,7 @@
-import { ArrowClockwise, ArrowLeft, CaretRight, Plus } from '@phosphor-icons/react'
+import { ArrowClockwise, ArrowLeft, CaretRight, Clock, FolderOpen, Plus } from '@phosphor-icons/react'
 import { useEffect, useRef } from 'react'
 import { Button } from '../../../shared/components/ui/button'
+import { EmptyState } from '../../../shared/components/ui/empty-state'
 import { Pagination } from '../../../shared/components/ui/pagination'
 import { ScrollArea } from '../../../shared/components/ui/scroll-area'
 import { SearchInput } from '../../../shared/components/ui/search-input'
@@ -62,7 +63,7 @@ export function ProjectDirectory({ mode = 'all', onModeChange, recentItems = [],
     <div className="flex flex-wrap items-center gap-3"><h2 className="m-0 text-xl font-semibold text-ink">{mode === 'recent' ? '最近项目' : '全部项目'}</h2>{(mode === 'recent' ? items.length > 0 || !currentLoading && !currentError : Boolean(page)) ? <span className="text-sm text-muted">{mode === 'recent' ? `${items.length} 个项目` : page ? `${page.total} 个项目` : ''}</span> : null}{mode === 'all' ? <Button className="ml-auto" variant="ghost" onClick={() => onModeChange?.('recent')}><ArrowLeft aria-hidden="true" />返回最近</Button> : null}</div>
     <ScrollArea ref={viewport} onScroll={event => onScrollTopChange?.(event.currentTarget.scrollTop)} className="max-h-[min(62vh,44rem)]" viewportClassName="max-h-[min(62vh,44rem)]">
       {items.length ? <div className="grid gap-5 lg:grid-cols-2">{items.map(project => <ProjectCard key={project.projectId} project={project} disabled={disabled} cleanupResidue={cleanupResidue[project.projectId]} onOpen={onOpen} onEdit={onEdit} onLifecycle={onLifecycle} />)}</div> : null}
-      {currentLoading ? <p role="status" className="m-0 rounded-card border border-line bg-surface px-6 py-14 text-center text-muted">正在加载项目…</p> : !items.length && !currentError ? <div role="status" className="rounded-card border border-line bg-surface px-6 py-14 text-center text-muted"><p className="m-0">{mode === 'recent' ? '尚无最近访问，可查看全部项目或新建项目。' : conditions.query.trim() || conditions.lifecycle !== 'active' ? '没有匹配的项目' : '还没有项目'}</p></div> : null}
+      {currentLoading ? <p role="status" className="m-0 rounded-card border border-line bg-surface px-6 py-14 text-center text-muted">正在加载项目…</p> : !items.length && !currentError ? <EmptyState icon={mode === 'recent' ? <Clock size={52} /> : <FolderOpen size={52} />} title={mode === 'recent' ? '尚无最近访问' : conditions.query.trim() || conditions.lifecycle !== 'active' ? '没有匹配的项目' : '还没有项目'} description={mode === 'recent' ? '可以查看全部项目，或新建一个项目。' : undefined} /> : null}
     </ScrollArea>
     {mode === 'recent' ? <div><Button variant="ghost" className="px-0 text-ink" aria-label="查看全部项目" onClick={() => onModeChange?.('all')}>全部项目<CaretRight aria-hidden="true" /></Button></div> : null}
     {mode === 'all' && page && page.total > page.pageSize ? <Pagination offset={(page.page - 1) * page.pageSize} limit={page.pageSize} total={page.total} count={page.items.length} disabled={refreshing} onOffsetChange={offset => update({ page: Math.floor(offset / page.pageSize) + 1 })} /> : null}

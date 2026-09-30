@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import sys
 import textwrap
-import time
 from dataclasses import replace
 from pathlib import Path
 
@@ -717,6 +716,7 @@ async def test_shutdown_reaps_multiple_uncooperative_workers_in_parallel_and_clo
     tmp_path: Path,
     repository: SqlAlchemyKernelOperationRepository,
     fake_worker: Path,
+    monkeypatch,
 ) -> None:
     manager = _manager(
         tmp_path,
@@ -733,10 +733,21 @@ async def test_shutdown_reaps_multiple_uncooperative_workers_in_parallel_and_clo
         *(manager.wait_for_state(item.id, "downloading") for item in operations)
     )
 
-    started = time.monotonic()
-    await asyncio.wait_for(manager.shutdown(), timeout=0.2)
+    stop_process = manager._stop_process
+    all_stopping = asyncio.Event()
+    stopping = 0
 
-    assert time.monotonic() - started < 0.2
+    async def stop_together(process):
+        nonlocal stopping
+        stopping += 1
+        if stopping == len(operations):
+            all_stopping.set()
+        await all_stopping.wait()
+        await stop_process(process)
+
+    monkeypatch.setattr(manager, "_stop_process", stop_together)
+    await asyncio.wait_for(manager.shutdown(), timeout=5)
+    assert stopping == len(operations)
     assert manager.active_processes() == []
     assert [manager.get(item.id).state for item in operations] == ["cancelled"] * 3
     assert all(

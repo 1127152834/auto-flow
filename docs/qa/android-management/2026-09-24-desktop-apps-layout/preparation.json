@@ -1,0 +1,24 @@
+{
+  "dataDir": "/private/tmp/autoflow-android-desktop-qa-20260924",
+  "deviceId": "3d819343-8b92-4e66-9db1-4dfd468b54c5",
+  "name": "QA 应用确认与窗口布局 这是用于长名称换行与操作可达性验收的独立设备",
+  "probe": "/data/user/0/moe.shizuku.privileged.api/files/autoflow-ui-proof",
+  "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "apkSha256": "6e273ab0e991c4e79bc8b1bbb9b9dd739ccac1a8712a541a214078886b7b790f",
+  "backup": {
+    "id": "6bd56bb0-1b06-4b8e-8e61-53618812c183",
+    "deviceId": "3d819343-8b92-4e66-9db1-4dfd468b54c5",
+    "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+    "formatVersion": 1,
+    "sha256": "2e2f4646c7c0c4defe5d8110f374ce865de72d1577fcbf0ba32318be7e9f22ab",
+    "bytes": 25457142,
+    "createdAt": "2026-09-23T20:54:55.017930Z",
+    "state": "available"
+  },
+  "restoreDeviceId": "92e05444-eb16-5bac-8678-742b9d89e112",
+  "backupRestoreVerified": true,
+  "restoreTestCleaned": true,
+  "containerId": "37dc4b52b7353b2fad4d10ddeb815707e357a327d72efc53ac4b3c397ba93494",
+  "workspaceId": "7bed261c99941c029723bf5520664d7b0cd6c5cb668334a3ca02cbad073adfe6",
+  "prepared": true
+}

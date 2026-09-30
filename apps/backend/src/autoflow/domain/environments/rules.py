@@ -43,7 +43,6 @@ LIVE_INSTANCE_STATES = frozenset(
         "waiting_manual",
         "closing",
         "saving",
-        "retained_unsaved",
     }
 )
 OPENABLE_INSTANCE_STATES = frozenset({"reserved", "starting", "active", "waiting_manual"})
@@ -147,12 +146,7 @@ def resolve_environment_source(
             source,
             environment.ref,
             environment.profile_id,
-            {
-                "source": source,
-                "environmentId": environment.ref.environment_id,
-                "contentGeneration": environment.ref.content_generation,
-                "profileId": environment.profile_id,
-            },
+            environment.identity_package or {},
         )
     input_id = policy.get("inputId")
     snapshots = inputs or {}
@@ -192,13 +186,7 @@ def resolve_environment_source(
         source,
         environment.ref,
         environment.profile_id,
-        {
-            "source": source,
-            "inputId": input_id,
-            "environmentId": environment.ref.environment_id,
-            "contentGeneration": environment.ref.content_generation,
-            "profileId": environment.profile_id,
-        },
+        environment.identity_package or {},
     )
 
 
@@ -395,6 +383,8 @@ def validate_end_phase(current: EndPhase, nxt: EndPhase) -> EndPhase:
             403,
             {"domainCode": "end_access_revoked", "phase": current},
         )
+    if current == "quiescing" and nxt == "completed":
+        return nxt  # No retention requested; confirmed closure is sufficient.
     if nxt == "failed" or (current == "accepted" and nxt == "completed"):
         return nxt
     if current == "saving" and nxt == "saved_unlinked":

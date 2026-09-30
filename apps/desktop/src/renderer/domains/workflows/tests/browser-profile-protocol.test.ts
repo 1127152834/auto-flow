@@ -1,3 +1,6 @@
+import {beforeEach} from 'vitest'
+import {selectBrowserNode} from './select-browser-node'
+beforeEach(()=>selectBrowserNode('managed'))
 import {afterEach,expect,it,vi} from 'vitest'
 vi.hoisted(()=>{const data=new Map<string,string>();vi.stubGlobal('localStorage',{getItem:(key:string)=>data.get(key)??null,setItem:(key:string,value:string)=>data.set(key,value),removeItem:(key:string)=>data.delete(key)})})
 import {browserApi,currentBrowserSession,elementPickerApi} from '../api'
@@ -19,7 +22,7 @@ it('uses managed profile identity and never forwards legacy launch settings',asy
   expect((await browserApi.open('https://local.test',{browserType:'chrome',chromePath:'/old'})).success).toBe(true)
   useGlobalConfigStore.getState().setBrowserProfileId('deleted')
   expect((await elementPickerApi.start(undefined,{browserType:'edge'})).success).toBe(true)
-  expect(sent[0].body).toEqual({url:'https://local.test',profileId:'managed'})
+  expect(sent[0].body).toEqual({url:'https://local.test',profileId:'managed',browserEnvironment:{source:'newFromProfile',profileId:'managed'}})
   expect(sent.find(item=>item.path.endsWith('/start'))?.body).toEqual({sessionId:expect.any(String),url:null,profileId:'managed'})
  }finally{restore()}
 })
@@ -36,11 +39,12 @@ it('holds startup occupancy during profile lookup and releases it when lookup fa
   expect((await browserApi.close()).success).toBe(false)
   expect(sent).toHaveLength(1)
   finish(Response.json({items:[],total:0}))
-  expect(await pending).toMatchObject({success:false,error:'请先在管理端创建 CloakBrowser 配置'})
+  expect(await pending).toMatchObject({success:false,error:'所选模板不存在或已不可用，请在节点重新选择'})
   expect(currentBrowserSession()).toBeNull()
  }finally{restore()}
 })
-it('does not silently replace a deleted selection',async()=>{
+it('does not silently replace a deleted node template',async()=>{
+ selectBrowserNode('deleted')
  useGlobalConfigStore.getState().setBrowserProfileId('deleted')
  const post=vi.fn()
  const restore=configureStudioConnection('http://deleted-profile.test',async(_input,init)=>{

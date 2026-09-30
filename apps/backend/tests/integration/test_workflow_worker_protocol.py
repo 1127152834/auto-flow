@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import json
-import os
 import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -10,6 +9,7 @@ from threading import Thread
 
 import pytest
 
+from autoflow.infrastructure.process.browser_processes import process_identity_is_alive
 from autoflow.infrastructure.process.workflow_worker import (
     WorkflowWorkerBusy,
     WorkflowWorkerManager,
@@ -30,7 +30,7 @@ time.sleep(300)
 """,
         encoding="utf-8",
     )
-    return (sys.executable, str(script))
+    return (sys.executable, "-X", "utf8", str(script))
 
 
 def _command_worker(tmp_path: Path) -> tuple[str, ...]:
@@ -45,7 +45,7 @@ print(json.dumps({**reply, 'type':'command-observed'}), flush=True)
 """,
         encoding="utf-8",
     )
-    return (sys.executable, str(script))
+    return (sys.executable, "-X", "utf8", str(script))
 
 
 def _crashing_worker(tmp_path: Path) -> tuple[str, ...]:
@@ -53,6 +53,8 @@ def _crashing_worker(tmp_path: Path) -> tuple[str, ...]:
     script.write_text(
         """
 import json, os, subprocess, sys, time
+from autoflow.bootstrap.test_browser_worker import _windows_kill_on_exit_job
+job = _windows_kill_on_exit_job()
 command = json.loads(sys.stdin.readline())
 child = subprocess.Popen(
     [
@@ -70,7 +72,7 @@ sys.exit(17)
 """,
         encoding="utf-8",
     )
-    return (sys.executable, str(script))
+    return (sys.executable, "-X", "utf8", str(script))
 
 
 @pytest.mark.asyncio
@@ -102,8 +104,7 @@ async def test_worker_start_stream_and_stop_clean_the_real_process_tree(
 
     assert manager.active_processes() == []
     assert manager.busy() is False
-    with pytest.raises(ProcessLookupError):
-        os.kill(session.child_pid, 0)
+    assert not process_identity_is_alive(session.child_pid, None)
     assert not any((tmp_path / "workflow-worker").rglob("run-1"))
 
 
@@ -560,8 +561,16 @@ async def test_real_worker_runs_to_node_inside_canvas_subflow_with_scope(
 
     assert pause["node_id"] == "inner"
     assert pause["reason"] == "target"
+    call_start = next(
+        event for event in events
+        if event.get("type") == "execution:node_start" and event.get("nodeId") == "call"
+    )
+    assert isinstance(call_start["executionId"], str) and call_start["executionId"]
     assert pause["executionContext"] == {
-        "scopes": [{"kind": "subflow", "id": "definition", "name": "登录"}],
+        "scopes": [{
+            "kind": "subflow", "id": "definition", "name": "登录",
+            "callNodeId": "call", "callVisitId": call_start["executionId"],
+        }],
         "loops": [],
     }
     await manager.send_command(
@@ -1268,8 +1277,7 @@ async def test_event_consumer_failure_still_cleans_worker_tree(tmp_path: Path) -
     assert manager.active_processes() == []
     assert manager.failure("run-event-failure") == "WORKER_EVENT_CONSUMER_FAILED"
     if session.child_pid is not None:
-        with pytest.raises(ProcessLookupError):
-            os.kill(session.child_pid, 0)
+        assert not process_identity_is_alive(session.child_pid, None)
 
 
 @pytest.mark.asyncio
@@ -1306,7 +1314,7 @@ async def test_worker_exit_callback_runs_after_process_and_temp_cleanup(
 
     await manager.stop("run-exit")
 
-    assert observed == [("run-exit", -15, False, False)]
+    assert observed == [("run-exit", 1 if sys.platform == "win32" else -15, False, False)]
 
 
 @pytest.mark.asyncio
@@ -1349,8 +1357,7 @@ async def test_worker_crash_cleans_descendants_before_reporting_nonzero_exit(
     assert manager.active_processes() == []
     assert manager.busy() is False
     if session.child_pid is not None:
-        with pytest.raises(ProcessLookupError):
-            os.kill(session.child_pid, 0)
+        assert not process_identity_is_alive(session.child_pid, None)
 
 
 @pytest.mark.asyncio

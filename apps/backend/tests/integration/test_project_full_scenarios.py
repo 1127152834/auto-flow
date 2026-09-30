@@ -102,44 +102,40 @@ async def test_browser_result_updates_claimed_record_and_status(
                     ],
                 },
             )[0]["status"]
-            binding = {
-                "tableId": table["tableId"],
-                "datasetGeneration": table["datasetGeneration"],
-                "fieldIds": [field_id],
-            }
-            ref = "{snapshot['inputs'][0]['recordRef']}"
+            def grant(operation: str, *, read_purposes: list[str] | None = None):
+                return {
+                    "tableId": table["tableId"],
+                    "datasetGeneration": table["datasetGeneration"],
+                    "operations": [operation],
+                    "fieldIds": [field_id],
+                    "readPurposes": read_purposes or [],
+                }
 
-            def arguments(values):
-                text = json.dumps(values, ensure_ascii=False)
-                for expression in (
-                    ref,
-                    "{record['result']['contentRevision']}",
-                    "{record['result']['statusRevision']}",
-                    "{written['result']['contentRevision']}",
-                ):
-                    text = text.replace(json.dumps(expression), expression)
-                return text
+            ref = "{snapshot[0]['recordRef']}"
 
             steps = [
                 (
                     "inputs",
                     "project_data",
-                    {"action": "inputs", "resultVariable": "snapshot"},
+                    {
+                        "operation": "inputs",
+                        "arguments": {},
+                        "variableName": "snapshot",
+                    },
                 ),
                 (
                     "read",
                     "project_data",
                     {
-                        "action": "read",
-                        "binding": binding,
-                        "resultVariable": "record",
-                        "arguments": arguments(
-                            {
-                                "recordRef": ref,
-                                "fieldIds": [field_id],
-                                "readPurpose": "workflow",
-                            }
-                        ),
+                        "operation": "readRecord",
+                        "bindingProjectId": project,
+                        "tableGrant": grant("readRecord", read_purposes=["workflow"]),
+                        "variableName": "record",
+                        "arguments": {
+                            "recordRef": ref,
+                            "fieldIds": [field_id],
+                            "readPurpose": "workflow",
+                        },
                     },
                 ),
                 ("open", "open_page", {"url": url, "openMode": "current_tab"}),
@@ -148,7 +144,7 @@ async def test_browser_result_updates_claimed_record_and_status(
                     "input_text",
                     {
                         "selector": "#field",
-                        "text": "{snapshot['inputs'][0]['values'][0]['value']}",
+                        "text": "{snapshot[0]['values'][0]['value']}",
                         "clearBefore": False,
                     },
                 ),
@@ -166,34 +162,32 @@ async def test_browser_result_updates_claimed_record_and_status(
                     "write",
                     "project_data",
                     {
-                        "action": "update",
-                        "binding": binding,
-                        "resultVariable": "written",
-                        "arguments": arguments(
-                            {
-                                "recordRef": ref,
-                                "changes": {field_id: "{page_result}"},
-                                "expectedContentRevision": "{record['result']['contentRevision']}",
-                            }
-                        ),
+                        "operation": "updateRecord",
+                        "bindingProjectId": project,
+                        "tableGrant": grant("updateRecord"),
+                        "variableName": "written",
+                        "arguments": {
+                            "recordRef": ref,
+                            "changes": {field_id: "{page_result}"},
+                            "expectedContentRevision": "{record['contentRevision']}",
+                        },
                     },
                 ),
                 (
                     "status",
                     "project_data",
                     {
-                        "action": "status",
-                        "binding": binding,
-                        "resultVariable": "advanced",
-                        "arguments": arguments(
-                            {
-                                "recordRef": ref,
-                                "statusId": status["statusId"],
-                                "expectedStatusRevision": "{record['result']['statusRevision']}",
-                                "expectedContentRevisionWhenDerived": "{written['result']['contentRevision']}",
-                                "allowedFrom": [None],
-                            }
-                        ),
+                        "operation": "setRecordStatus",
+                        "bindingProjectId": project,
+                        "tableGrant": grant("setRecordStatus"),
+                        "variableName": "advanced",
+                        "arguments": {
+                            "recordRef": ref,
+                            "statusId": status["statusId"],
+                            "expectedStatusRevision": "{record['statusRevision']}",
+                            "expectedContentRevisionWhenDerived": "{written['contentRevision']}",
+                            "allowedFrom": [None],
+                        },
                     },
                 ),
             ]

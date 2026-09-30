@@ -53,13 +53,13 @@ class AndroidDeviceRead(ApiModel):
     cpu: int = 1
     memory_mb: int = 1536
     dpi: int = 320
-    android_version: str = "13"
-    architecture: str = "arm64"
+    android_version: str | None = None
+    architecture: str | None = None
     data_retained: bool = False
     deleted: bool = False
     operation: AndroidOperation | None = None
     profile_id: str | None = None
-    profile_name: str = "Android 13 标准 · ARM64"
+    profile_name: str | None = None
     instance_type: str = "persistent"
     locale: str = "zh-CN"
     timezone: str = "Asia/Shanghai"
@@ -86,6 +86,7 @@ class AndroidCreate(AndroidRename):
     cpu: int = Field(default=1, ge=1, le=8, strict=True)
     memory_mb: int = Field(default=1536, ge=768, le=8192, strict=True)
     start: bool = True
+    allow_unknown_disk_estimate: bool = Field(default=False, strict=True)
 
     @model_validator(mode="after")
     def even_dimensions(self) -> "AndroidCreate":
@@ -96,8 +97,9 @@ class AndroidCreate(AndroidRename):
 
 class AndroidDeviceCommand(ApiModel):
     request_id: UUID
-    action: Literal["start", "stop", "restart", "delete", "recover"]
+    action: Literal["start", "stop", "restart", "restore", "delete", "recover"]
     delete_data: bool = False
+    allow_unknown_disk_estimate: bool = Field(default=False, strict=True)
 
     @model_validator(mode="after")
     def deletion_scope(self) -> "AndroidDeviceCommand":
@@ -111,7 +113,9 @@ def android_router(service: AndroidDeviceService) -> APIRouter:
 
     @router.get("/environment", response_model=AndroidEnvironment)
     async def environment() -> AndroidEnvironment:
-        return AndroidEnvironment.model_validate(await service.environment())
+        observed = await service.environment()
+        public_fields = {field.alias for field in AndroidEnvironment.model_fields.values()}
+        return AndroidEnvironment.model_validate({key: value for key, value in observed.items() if key in public_fields})
 
     @router.get("/devices", response_model=list[AndroidDeviceRead])
     async def devices() -> list[AndroidDeviceRead]:

@@ -1,0 +1,46 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/android/tests/ImageManager.test.tsx -t keeps the second pull identity
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+
+ ❯ src/renderer/domains/android/tests/ImageManager.test.tsx (8 tests | 1 failed | 7 skipped) 272ms
+   × keeps the second pull identity after a lost response instead of verifying the previous success 271ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/android/tests/ImageManager.test.tsx > keeps the second pull identity after a lost response instead of verifying the previous success
+AssertionError: expected last "vi.fn()" call to have been called with [ Array(1) ]
+
+- Expected
++ Received
+
+  [
+-   "1b4ff44f-494d-4bc4-9160-adc1d6e75277",
++   "facc7682-a257-44cd-9154-913305f4109b",
+  ]
+
+ ❯ src/renderer/domains/android/tests/ImageManager.test.tsx:153:30
+    151|   expect(await screen.findByRole('alert')).toHaveTextContent('第二次拉取响应丢…
+    152|   await userEvent.click(screen.getByRole('button', { name: '按原编号核实拉取' …
+    153|   expect(operationByRequest).toHaveBeenLastCalledWith(second)
+       |                              ^
+    154|   expect(await screen.findByRole('alert')).toHaveTextContent('第二次核实暂不可…
+    155|   expect(verify).toHaveBeenLastCalledWith(`op-${second}`, { requestId:…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 skipped (8)
+   Start at  07:22:45
+   Duration  1.62s (transform 196ms, setup 195ms, import 255ms, tests 272ms, environment 777ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/android/tests/ImageManager.test.tsx -t 'keeps the second pull identity'

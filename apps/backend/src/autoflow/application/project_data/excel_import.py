@@ -7,6 +7,7 @@ from threading import Event
 from autoflow.application.settings.runtime import QuiesceGate
 from autoflow.domain.project_data.excel import _uuid, normalize_import
 from autoflow.domain.project_data.identity import record_key, system_record_key
+from autoflow.domain.project_data.records import validate_record_scalar
 from autoflow.domain.project_data.rules import validate_value
 from autoflow.domain.projects.models import ProjectError
 from autoflow.infrastructure.database.project_excel_imports import (
@@ -62,6 +63,7 @@ class ExcelImportService:
             stage, data = job.request["_staging"], job.request
             columns = {int(column): field for column, field in stage["columns"].items()}
             identity_column = data["identity"].get("columnIndex")
+            identity_field = columns.get(identity_column) if identity_column is not None else None
             batch = []
             with read_sheet(
                 Path(job.path), data["sheetId"], data["fingerprint"]
@@ -77,21 +79,29 @@ class ExcelImportService:
                         continue
                     values = {}
                     for column, field in columns.items():
+                        raw_value = row.values[column]
                         try:
-                            values[field] = validate_value(
-                                stage["fields"][field], row.values[column]
-                            )
+                            values[field] = validate_value(stage["fields"][field], raw_value)
                         except ProjectError as error:
-                            raise ProjectError(
-                                error.code,
-                                "来源单元格不满足字段要求。",
-                                422,
-                                {
-                                    **error.details,
-                                    "rowNumber": row.row_number,
-                                    "columnIndex": column,
-                                },
-                            ) from error
+                            # Identity is a trust boundary: a business-format error
+                            # must reject the import instead of becoming a text key.
+                            if field == identity_field:
+                                raise ProjectError(
+                                    error.code, "来源身份单元格不满足字段要求。", 422,
+                                    {**error.details, "rowNumber": row.row_number, "columnIndex": column},
+                                ) from error
+                            # A missing source cell stays missing.  Other safe source
+                            # scalars are retained so the published record can expose
+                            # a structured issue without inventing a replacement.
+                            if raw_value is None:
+                                continue
+                            try:
+                                values[field] = validate_record_scalar(raw_value)
+                            except ProjectError:
+                                raise ProjectError(
+                                    error.code, "来源单元格不满足字段要求。", 422,
+                                    {**error.details, "rowNumber": row.row_number, "columnIndex": column},
+                                ) from error
                     key = (
                         system_record_key()
                         if identity_column is None

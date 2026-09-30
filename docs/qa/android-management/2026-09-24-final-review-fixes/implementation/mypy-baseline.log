@@ -1,0 +1,16 @@
+/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/android-final-mypy-baseline-bs_r2om1/verification.py:6: error: Skipping analyzing "autoflow.domain.android.ports": module is installed, but missing library stubs or py.typed marker  [import-untyped]
+/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/android-final-mypy-baseline-bs_r2om1/images.py:10: error: Skipping analyzing "autoflow.domain.android.image_verification": module is installed, but missing library stubs or py.typed marker  [import-untyped]
+/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/android-final-mypy-baseline-bs_r2om1/images.py:10: note: See https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
+/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/android-final-mypy-baseline-bs_r2om1/images.py:14: error: Skipping analyzing "autoflow.domain.android.ports": module is installed, but missing library stubs or py.typed marker  [import-untyped]
+/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/android-final-mypy-baseline-bs_r2om1/images.py:248: error: Item "None" of "Any | None" has no attribute "inspect"  [union-attr]
+/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/android-final-mypy-baseline-bs_r2om1/images.py:276: error: Function "images.AndroidImageService.list" is not valid as a type  [valid-type]
+/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/android-final-mypy-baseline-bs_r2om1/images.py:276: note: Perhaps you need "Callable[...]" or a callback protocol?
+/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/android-final-mypy-baseline-bs_r2om1/android_operations.py:12: error: Skipping analyzing "autoflow.domain.android.ports": module is installed, but missing library stubs or py.typed marker  [import-untyped]
+/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/android-final-mypy-baseline-bs_r2om1/android_operations.py:14: error: Cannot find implementation or library stub for module named ".android_models"  [import-not-found]
+/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/android-final-mypy-baseline-bs_r2om1/android_operations.py:164: error: Incompatible types in assignment (expression has type "datetime", target has type "str")  [assignment]
+/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/android-final-mypy-baseline-bs_r2om1/android_operations.py:166: error: Incompatible types in assignment (expression has type "datetime", target has type "str")  [assignment]
+/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/android-final-mypy-baseline-bs_r2om1/android_operations.py:188: error: Incompatible types in assignment (expression has type "datetime", target has type "str")  [assignment]
+/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/android-final-mypy-baseline-bs_r2om1/android_operations.py:190: error: Incompatible types in assignment (expression has type "datetime", target has type "str")  [assignment]
+Found 11 errors in 3 files (checked 3 source files)
+
+exit=1

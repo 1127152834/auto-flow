@@ -1,0 +1,55 @@
+{
+  "date": "2026-09-23",
+  "status": "attempt_1_failed_intel_dmg_detach_windows_and_arm_success",
+  "releaseAccepted": false,
+  "runId": "35846519367",
+  "attempt": 1,
+  "sourceHeadSha": "c16532d79fe8db87a8f9b371d9045a02fb89e362",
+  "url": "https://github.com/1127152834/auto-flow/actions/runs/35846519367/attempts/1",
+  "platforms": {
+    "win32-x64": {
+      "status": "success",
+      "jobId": "107133892482",
+      "nativeBoundary": "251 passed / 28 skipped",
+      "backend": "3471 passed / 85 skipped",
+      "frontend": "5471 passed",
+      "selectedRealWorker": "29 passed / 11 deselected",
+      "installer": "NSIS built; physical acceptance pending",
+      "packagedReport": "qa-runs/2026-09-23-ci-c165-windows/project-desktop.json",
+      "observed": {
+        "realWorkerLogs": 1004,
+        "realWorkerElapsedMs": 169159,
+        "realWorkerLogsPerMinute": 356,
+        "records": 10000,
+        "seedMs": 1033383,
+        "busyRetries": 7,
+        "syntheticLogs": 1000,
+        "syntheticElapsedMs": 60063,
+        "syntheticMaxBatchLagMs": 473
+      }
+    },
+    "darwin-arm64": {
+      "status": "success",
+      "jobId": "107133892764",
+      "backend": "3479 passed / 77 skipped",
+      "frontend": "5471 passed",
+      "selectedRealWorker": "29 passed / 11 deselected",
+      "installer": "DMG built; isolated installed full desktop smoke passed locally"
+    },
+    "darwin-x64": {
+      "status": "failure_at_installer",
+      "jobId": "107133892878",
+      "backend": "3479 passed / 77 skipped",
+      "frontend": "5471 passed",
+      "selectedRealWorker": "29 passed / 11 deselected",
+      "packagedSidecar": "passed",
+      "installerFailure": "electron-builder dmgbuild created DMG then hdiutil could not eject temporary disk4: Resource busy; job ended exit 1",
+      "originalArtifactId": "10746258696",
+      "originalArtifactPreservedAt": "qa-runs/2026-09-23-ci-c165-intel-attempt1/pm9 (complete extracted contents, diff -rq matched before remote failed-artifact cleanup)",
+      "retry": "attempt 2 re-runs only Intel job on identical source hash",
+      "packagedReport": "qa-runs/2026-09-23-ci-c165-intel-attempt1/pm9/packaged/project-desktop.json",
+      "packagedStatus": "passed",
+      "originalArtifactCleanup": "Original 1.6 MB failed artifact was removed only after full extraction into repository QA evidence and diff -rq equality check, so the identical-hash attempt 2 can upload an installer under the same artifact name; original failed job log remains on GitHub."
+    }
+  }
+}

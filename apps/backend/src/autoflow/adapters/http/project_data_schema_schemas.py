@@ -31,6 +31,7 @@ class DataSchemaNew(ApiModel):
 class DataSchemaCandidate(ApiModel):
     dataset_generation: StrictStr
     expected_table_revision: Revision
+    removed_field_ids: list[StrictStr] = Field(default_factory=list, max_length=1, exclude_if=lambda value: not value)
     fields: list[
         Annotated[DataSchemaExisting | DataSchemaNew, Field(discriminator="kind")]
     ]
@@ -55,8 +56,8 @@ class DataSchemaIssue(ApiModel):
 
 
 class DataSchemaReferenceAvailability(ApiModel):
-    automations: Literal["notImplemented"]
-    sync: Literal["notImplemented"]
+    automations: Literal["notImplemented", "available"]
+    sync: Literal["notImplemented", "available"]
 
 
 class DataSchemaImpact(ApiModel):

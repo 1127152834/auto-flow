@@ -1,0 +1,150 @@
+{
+  "status": "passed",
+  "head": "5210e3885fb3b8fb852e0b8e10e9f795a1db9999",
+  "checkout": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-am2-forward-entry-jthvshsy/checkout",
+  "databaseAccess": false,
+  "commands": [
+    {
+      "name": "checkout",
+      "argv": [
+        "git",
+        "worktree",
+        "add",
+        "--detach",
+        "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-am2-forward-entry-jthvshsy/checkout",
+        "5210e3885fb3b8fb852e0b8e10e9f795a1db9999"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "candidate-apply",
+      "argv": [
+        "git",
+        "apply",
+        "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/docs/qa/android-management/2026-09-24-forward-entry/candidate.patch"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "enabled-before",
+      "argv": [
+        "npm",
+        "exec",
+        "--offline",
+        "--yes",
+        "--package=node@22.23.2",
+        "-c",
+        "npm test -w @autoflow/desktop -- src/renderer/domains/android/tests/AndroidPage.test.tsx -t \"QA AM2 forward entry rollback\""
+      ],
+      "exit": 0
+    },
+    {
+      "name": "disabled-red",
+      "argv": [
+        "npm",
+        "exec",
+        "--offline",
+        "--yes",
+        "--package=node@22.23.2",
+        "-c",
+        "npm test -w @autoflow/desktop -- src/renderer/domains/android/tests/AndroidPage.test.tsx -t \"QA AM2 forward entry rollback\""
+      ],
+      "exit": 1
+    },
+    {
+      "name": "disabled-green",
+      "argv": [
+        "npm",
+        "exec",
+        "--offline",
+        "--yes",
+        "--package=node@22.23.2",
+        "-c",
+        "npm test -w @autoflow/desktop -- src/renderer/domains/android/tests/AndroidPage.test.tsx -t \"QA AM2 forward entry rollback\""
+      ],
+      "exit": 0
+    },
+    {
+      "name": "disabled-build",
+      "argv": [
+        "npm",
+        "exec",
+        "--offline",
+        "--yes",
+        "--package=node@22.23.2",
+        "-c",
+        "npm run typecheck && npm run build"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "restore-check",
+      "argv": [
+        "git",
+        "apply",
+        "--reverse",
+        "--check",
+        "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/docs/qa/android-management/2026-09-24-forward-entry/disable-am2-entry.patch"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "restore",
+      "argv": [
+        "git",
+        "apply",
+        "--reverse",
+        "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/docs/qa/android-management/2026-09-24-forward-entry/disable-am2-entry.patch"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "restored-green",
+      "argv": [
+        "npm",
+        "exec",
+        "--offline",
+        "--yes",
+        "--package=node@22.23.2",
+        "-c",
+        "npm test -w @autoflow/desktop -- src/renderer/domains/android/tests/AndroidPage.test.tsx -t \"QA AM2 forward entry rollback\""
+      ],
+      "exit": 0
+    },
+    {
+      "name": "restored-build",
+      "argv": [
+        "npm",
+        "exec",
+        "--offline",
+        "--yes",
+        "--package=node@22.23.2",
+        "-c",
+        "npm run typecheck && npm run build"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "remove-owned-checkout",
+      "argv": [
+        "git",
+        "worktree",
+        "remove",
+        "--force",
+        "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-am2-forward-entry-jthvshsy/checkout"
+      ],
+      "exit": 0
+    }
+  ],
+  "candidateHashes": {
+    "apps/desktop/src/renderer/domains/android/components/BulkActions.tsx": "9831653d72e491e8e5c9ad712de236ecb7f7b36f20a3fe68ca91203fe05381d8",
+    "apps/desktop/src/renderer/domains/android/components/ImageManager.tsx": "27c2523429451dda6940b1d46bc0154e7e44766057cde6fdf97f65168350fe15",
+    "apps/desktop/src/renderer/domains/android/tests/ManagementTools.test.tsx": "8c48fe12b7dd2805294e608f9c59b98c8e571cf88948923a065785a02cac491b",
+    "apps/desktop/src/renderer/domains/android/tests/ImageManager.test.tsx": "ec4c9c7b1152d593172a374a94a8581942f12cdc95de08e992d9ed51b64a26af"
+  },
+  "pageHashBefore": "ba70b0e6fc76e56d9346a3c88b39422e157ad04992ba15a68c8cff949dc02a2e",
+  "pageHashAfter": "ba70b0e6fc76e56d9346a3c88b39422e157ad04992ba15a68c8cff949dc02a2e",
+  "originalMigrationFilesUnchanged": 44,
+  "candidateFilesUnchanged": 4,
+  "ownedCheckoutRemoved": true
+}

@@ -80,9 +80,9 @@ async def test_queued_secret_reply_is_discarded_after_owner_changes(tmp_path, st
 
     lock = asyncio.Lock()
     await lock.acquire()
-    worker = SimpleNamespace(write_lock=lock, stop_requested=False, cleanup=None, process=SimpleNamespace(returncode=None, stdin=Input()))
+    worker = SimpleNamespace(run_id="run", write_lock=lock, stop_requested=False, cleanup=None, process=SimpleNamespace(returncode=None, stdin=Input()))
     manager = ProjectWorkflowWorkerManager(tmp_path)
-    manager._worker = worker
+    manager._workers[worker.run_id] = worker
     pending = asyncio.create_task(manager._send(worker, {"type": "credential:result", "value": "do-not-write"}))
     await asyncio.sleep(0)
     if state == "stop":
@@ -90,7 +90,7 @@ async def test_queued_secret_reply_is_discarded_after_owner_changes(tmp_path, st
     elif state == "cleanup":
         worker.cleanup = asyncio.current_task()
     else:
-        manager._worker = None
+        manager._workers.pop(worker.run_id)
     lock.release()
     await pending
     assert writes == []

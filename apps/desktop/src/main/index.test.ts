@@ -173,21 +173,35 @@ it('does not shut down the sidecar when the user keeps the unsaved Studio open',
   await vi.waitFor(()=>expect(settings.shutdown).toHaveBeenCalledOnce())
 })
 
-it('hides the main window while Studio owns a session and reuses it on activation', async () => {
+it('retains the hidden main owner while Studio is open and reuses it on activation', async () => {
   const studio = await openStudio()
-  const main = FakeWindow.instances[0]!
-  main.close()
-  expect(main.destroyed).toBe(false)
-  expect(main.isVisible()).toBe(false)
+  const original = FakeWindow.instances[0]!
+  original.close()
+  expect(original.destroyed).toBe(false)
+  expect(original.isVisible()).toBe(false)
   expect(studio.destroyed).toBe(false)
   expect(settings.shutdown).not.toHaveBeenCalled()
   app.emit('activate')
+  await vi.waitFor(() => expect(original.isVisible()).toBe(true))
+  await invoke('autoflow:open-automation-studio', original)
   expect(FakeWindow.instances).toHaveLength(2)
-  expect(main.isVisible()).toBe(true)
-  await invoke('autoflow:open-automation-studio', main)
-  expect(FakeWindow.instances).toHaveLength(2)
-  await invoke('autoflow:settings:preferences', main, {})
-  expect(main.webContents.setZoomFactor).toHaveBeenCalledWith(1.25)
+  await invoke('autoflow:settings:preferences', original, {})
+  expect(original.webContents.setZoomFactor).toHaveBeenCalledWith(1.25)
+  expect(studio.webContents.setZoomFactor).toHaveBeenCalledWith(1.25)
+})
+
+it('rejects an unexpectedly destroyed main owner after its replacement is created', async () => {
+  const studio = await openStudio()
+  const original = FakeWindow.instances[0]!
+  original.destroy()
+  app.emit('activate')
+  await vi.waitFor(() => expect(FakeWindow.instances).toHaveLength(3))
+  const replacement = FakeWindow.instances[2]!
+  await invoke('autoflow:open-automation-studio', replacement)
+  expect(FakeWindow.instances).toHaveLength(3)
+  expect(() => invoke('autoflow:runtime-context', original)).toThrow()
+  await invoke('autoflow:settings:preferences', replacement, {})
+  expect(replacement.webContents.setZoomFactor).toHaveBeenCalledWith(1.25)
   expect(studio.webContents.setZoomFactor).toHaveBeenCalledWith(1.25)
 })
 it('wires project file selection and denies Studio and subframe callers', async () => {

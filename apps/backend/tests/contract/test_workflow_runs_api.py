@@ -784,7 +784,7 @@ def test_real_run_coordinator_is_reached_through_http_and_stop_waits_for_cleanup
             self.active = False
             await coordinator.on_worker_exit(run_id, 0)
 
-        def busy(self) -> bool:
+        def busy(self, run_id=None) -> bool:
             return self.active
 
     monkeypatch.setattr(coordinator, "_resources", Resources())
@@ -950,7 +950,7 @@ def test_page_load_family_is_admitted_by_the_real_http_coordinator(
         async def stop(self, _run_id: str) -> None:
             self.payload = None
 
-        def busy(self) -> bool:
+        def busy(self, run_id=None) -> bool:
             return self.payload is not None
 
     resources = Resources()
@@ -1051,7 +1051,7 @@ def test_network_monitor_family_is_admitted_by_the_real_http_coordinator(
         async def stop(self, _run_id: str) -> None:
             self.payload = None
 
-        def busy(self) -> bool:
+        def busy(self, run_id=None) -> bool:
             return self.payload is not None
 
     workers = Workers()
@@ -1169,7 +1169,7 @@ def test_web_browser_families_are_admitted_by_the_real_http_coordinator(
         async def stop(self, _run_id: str) -> None:
             self.payload = None
 
-        def busy(self) -> bool:
+        def busy(self, run_id=None) -> bool:
             return self.payload is not None
 
     workers = Workers()
@@ -1353,7 +1353,7 @@ def test_pure_data_family_runs_through_http_without_browser_requirement(
         async def stop(self, _run_id: str) -> None:
             self.payload = None
 
-        def busy(self) -> bool:
+        def busy(self, run_id=None) -> bool:
             return self.payload is not None
 
     resources = Resources()
@@ -1458,7 +1458,7 @@ def test_control_variable_family_is_admitted_by_the_real_http_coordinator(
         async def stop(self, _run_id: str) -> None:
             self.payload = None
 
-        def busy(self) -> bool:
+        def busy(self, run_id=None) -> bool:
             return self.payload is not None
 
     workers = Workers()
@@ -1525,7 +1525,7 @@ def test_execute_accepts_an_unsaved_document_snapshot_without_creating_a_workflo
         async def stop(self, _run_id: str) -> None:
             return None
 
-        def busy(self) -> bool:
+        def busy(self, run_id=None) -> bool:
             return self.payload is not None
 
     resources = Resources()

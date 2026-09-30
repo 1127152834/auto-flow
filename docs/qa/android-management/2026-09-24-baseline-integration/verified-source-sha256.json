@@ -1,0 +1,6 @@
+{
+  "apps/backend/src": "46b8bb437fa80cb73c0042eb28144c6418bc806df23a4b482b856a8aa10fc25d",
+  "apps/backend/tests": "660f5617c3fbf7df1418d156519ed8a0ee870ce80d3164f420ad81b4777a77ae",
+  "apps/desktop/src": "e6efcdc7914e8545b65c225bada1c74c6c70a7a0d9c2a02b0e3f8373d3816210",
+  "apps/backend/autoflow-backend.spec": "53cde4150dc39cc00b7d0eeebc86bcd4ea123dd471ceb35cf72d0fc8314ca2bf"
+}

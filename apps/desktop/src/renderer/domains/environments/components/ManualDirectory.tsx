@@ -1,5 +1,6 @@
 import { WarningCircle } from '@phosphor-icons/react'
 import { Button } from '../../../shared/components/ui/button'
+import { EmptyState } from '../../../shared/components/ui/empty-state'
 import { Skeleton } from '../../../shared/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableScroll } from '../../../shared/components/ui/table'
 import type { ManualItem } from '../api'
@@ -46,6 +47,6 @@ export function ManualDirectory({ items, loading = false, error, onRetry, onResu
       <TableCell>{openable(item.status)
         ? <div className="flex flex-wrap gap-2">{onOpen ? <Button size="sm" disabled={disabled} onClick={() => onOpen(item)}>进入人工处理</Button> : null}<Button size="sm" variant="ghost" disabled={disabled} onClick={() => onResume(item)}>继续原任务</Button><Button size="sm" variant="ghost" disabled={disabled} onClick={() => onFinish(item)}>明确结束</Button></div>
         : '—'}</TableCell>
-    </TableRow>)}</TableBody></Table></TableScroll> : !error ? <div className="grid min-h-56 place-items-center text-center"><div><WarningCircle size={48} className="mx-auto text-muted" /><h3>当前没有等待人工处理的环境。</h3></div></div> : null}
+    </TableRow>)}</TableBody></Table></TableScroll> : !error ? <EmptyState icon={<WarningCircle size={52} />} title="当前没有等待人工处理的环境" description="工作流在人工检查点暂停后会显示在这里。" /> : null}
   </section>
 }

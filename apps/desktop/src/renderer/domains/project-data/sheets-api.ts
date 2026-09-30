@@ -1,6 +1,7 @@
 import type { StreamingApiClient } from '../../shared/api/client'
 import type { components } from '../../shared/api/generated'
 import type { GoogleSheetsBridge } from '../../../shared/google-sheets'
+import { encodeRecordKey } from './record-route'
 import { createOperationCommand } from './operation-command'
 
 type Schema = components['schemas']
@@ -89,6 +90,29 @@ export function createSheetsApi(client: StreamingApiClient, desktop: Partial<Goo
       // The binding resource is replaced, not posted to: the frozen contract and
       // the route both answer PUT, and a POST is a 405, not a retryable failure.
       (await command.submit(`${table(tableId)}/sheets/binding`, body, key, 'changeSheetsBinding', current, 'PUT')),
+    columnOperations: (tableId: string, page: number, signal?: AbortSignal) =>
+      client.request<SyncOperationPage>(`${table(tableId)}/sheets/columns?page=${page}&pageSize=100`, signal ? { signal } : undefined),
+    previewColumn: (tableId: string, body: Schema['SheetsColumnPreview']) =>
+      client.request<SheetsImpactReport>(`${table(tableId)}/sheets/columns/preview`, { method: 'POST', body }),
+    createColumn: (tableId: string, body: Schema['SheetsColumnCreate'], key: string, current: () => boolean) =>
+      command.submit(`${table(tableId)}/sheets/columns`, body, key, 'createSheetsColumn', current),
+    previewOriginalColumn: (tableId: string, operationId: string) =>
+      client.request<SheetsImpactReport>(`${table(tableId)}/sheets/columns/${encodeURIComponent(operationId)}/preview`, { method: 'POST' }),
+    verifyColumn: async (tableId: string, operationId: string, body: Schema['SheetsIdentityVerification']) =>
+      (await client.request<Schema['OperationAccepted']>(`${table(tableId)}/sheets/columns/${encodeURIComponent(operationId)}/verify`, { method: 'POST', body })).operation,
+    retryColumn: async (tableId: string, operationId: string, body: Schema['SheetsIdentityVerification']) =>
+      (await client.request<Schema['OperationAccepted']>(`${table(tableId)}/sheets/columns/${encodeURIComponent(operationId)}/retry`, { method: 'POST', body })).operation,
+    cancelColumn: (tableId: string, operationId: string, expectedStatusRevision: number) =>
+      client.request<SyncOperation>(`${table(tableId)}/sheets/columns/${encodeURIComponent(operationId)}/cancel`, { method: 'POST', body: { expectedStatusRevision } }),
+    identityOperations: (tableId: string, page: number, signal?: AbortSignal) =>
+      client.request<SyncOperationPage>(`${table(tableId)}/sheets/system-identity?page=${page}&pageSize=100`, signal ? { signal } : undefined),
+    initializeIdentity: (tableId: string, body: SheetsBindingWrite, key: string, current: () => boolean) =>
+      command.submit(`${table(tableId)}/sheets/system-identity`, body, key, 'initializeSheetsIdentity', current),
+    previewIdentity: (tableId: string, operationId: string) => client.request<SheetsImpactReport>(`${table(tableId)}/sheets/system-identity/${encodeURIComponent(operationId)}/preview`, { method: 'POST' }),
+    verifyIdentity: async (tableId: string, operationId: string, body: Schema['SheetsIdentityVerification']) =>
+      (await client.request<Schema['OperationAccepted']>(`${table(tableId)}/sheets/system-identity/${encodeURIComponent(operationId)}/verify`, { method: 'POST', body })).operation,
+    retryIdentity: async (tableId: string, operationId: string, body: Schema['SheetsIdentityVerification']) =>
+      (await client.request<Schema['OperationAccepted']>(`${table(tableId)}/sheets/system-identity/${encodeURIComponent(operationId)}/retry`, { method: 'POST', body })).operation,
     lookupBinding: async (key: string, current: () => boolean) =>
       (await command.lookup(key, 'changeSheetsBinding', current)),
     /** Removing a binding keeps the local copy; the confirmation says as much. */
@@ -98,6 +122,10 @@ export function createSheetsApi(client: StreamingApiClient, desktop: Partial<Goo
       (await command.lookup(key, 'removeSheetsBinding', current)),
     state: (tableId: string, signal?: AbortSignal) =>
       client.request<SyncStateView>(`${table(tableId)}/sync`, signal ? { signal } : undefined),
+    observations: (record: Schema['DataRecordRef'], signal?: AbortSignal) => {
+      const search = new URLSearchParams({ datasetGeneration: record.datasetGeneration, recordKeyType: record.recordKey.type })
+      return client.request<Schema['SourceRecordObservations']>(`${table(record.tableId)}/records/${encodeRecordKey(record.recordKey)}/source-observations?${search}`, signal ? { signal } : undefined)
+    },
     pull: async (tableId: string, expectedTableRevision: number, key: string, current: () => boolean) =>
       (await command.submit(`${table(tableId)}/sync/pull`, { expectedTableRevision }, key, 'syncPull', current)),
     lookupPull: async (key: string, current: () => boolean) => (await command.lookup(key, 'syncPull', current)),

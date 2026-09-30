@@ -34,10 +34,12 @@ from .environment_models import (
 )
 from .models import Base, ProjectOperationRow, ProjectRow
 from .project_automation_models import ProjectAutomationRow
+from .project_claims import source_record_leases
 from .project_data_models import DataImpactRow, DataTableRow
 from .project_excel_models import ProjectExcelExportJobRow, ProjectExcelPublicationRow
 from .project_run_models import ProjectBatchRow, ProjectTaskRow
-from .project_sync_models import SyncOperationRow
+from .project_sync_models import SheetsBindingRow, SyncOperationRow
+from .project_sync_sends import unresolved_structure, unresolved_values
 from .workflow_models import WorkflowDocumentRequestRow, WorkflowDocumentRow
 from .workflow_models import WorkflowRunRow as StudioRunRow
 from .workflow_project_scope import (
@@ -89,11 +91,13 @@ class SqlAlchemyProjectLifecycle:
         session_factory: sessionmaker[Session],
         *,
         environment_root: Path | None = None,
+        run_root: Path | None = None,
         workflow_artifact_root: Path | None = None,
         inspection_blockers: Callable[[str], list[dict[str, Any]]] | None = None,
     ) -> None:
         self._inspection_blockers = inspection_blockers or (lambda _project_id: [])
         self._factory = session_factory
+        self._run_root = Path(run_root).absolute() if run_root else None
         self._workflow_artifact_root = workflow_artifact_root.resolve() if workflow_artifact_root is not None else None
         self._environment_root = (
             Path(environment_root).absolute() if environment_root else None
@@ -312,6 +316,15 @@ class SqlAlchemyProjectLifecycle:
                 session.rollback()
                 return
             targets = _local_targets(session, project_id, self._environment_root)
+            if self._run_root is not None:
+                targets.extend(
+                    self._run_root / run_id
+                    for run_id in session.scalars(
+                        select(ProjectTaskRow.run_id).where(
+                            ProjectTaskRow.project_id == project_id
+                        )
+                    )
+                )
             studio_targets, unsafe_targets = _studio_run_targets(session, project_id, self._workflow_artifact_root)
             targets.extend(studio_targets)
             operation = _open_lifecycle_operation(session, project_id)
@@ -438,6 +451,18 @@ def _blockers(
     delete's own target and must never refuse the retry.
     """
     blockers: list[dict[str, Any]] = []
+    for sync in unresolved_values(session):
+        if sync.project_id == project_id:
+            blockers.append(_blocker(
+                "SYNC_UNCONFIRMED",
+                {"type": "sync", "projectId": project_id, "tableId": sync.table_id, "syncOperationId": sync.id},
+                sync.status, "来源写入结果尚未确认，请核验原操作后再完成归档。",
+            ))
+    if any(row.project_id == project_id for row in unresolved_structure(session)):
+        blockers.append(_blocker("SHEETS_SOURCE_SEND_IN_PROGRESS", {"type": "project", "projectId": project_id}, "blocked", "来源结构写入尚未确认，请先核验原操作。"))
+    for binding in session.scalars(select(SheetsBindingRow).where(SheetsBindingRow.project_id == project_id)):
+        if source_record_leases(session, binding.spreadsheet_id, binding.sheet_id):
+            blockers.append(_blocker("SHEETS_SOURCE_IN_USE", {"type": "table", "projectId": project_id, "tableId": binding.table_id}, "blocked", "共享来源仍被任务占用，请等待任务完成或恢复占用后重试。"))
     # Older live Studio runs did not persist projectId. Their saved document
     # still identifies the owner for lifecycle protection; never rewrite them.
     for run in session.scalars(
@@ -519,13 +544,13 @@ def _blockers(
             ProjectOperationRow.id, ProjectOperationRow.kind, ProjectOperationRow.status
         ).where(
             ProjectOperationRow.project_id == project_id,
-            ProjectOperationRow.kind.in_(FILE_OPERATION_KINDS),
+            ProjectOperationRow.kind.in_((*FILE_OPERATION_KINDS, 'saveEnvironment')),
             ProjectOperationRow.status.in_(OPEN_OPERATION_STATUSES),
         )
     ):
         blockers.append(
             _blocker(
-                "FILE_OPERATION_ACTIVE",
+                "ENVIRONMENT_SAVE_ACTIVE" if kind == 'saveEnvironment' else "FILE_OPERATION_ACTIVE",
                 {"type": "project", "projectId": project_id},
                 status,
                 f"{kind} 尚未结束",

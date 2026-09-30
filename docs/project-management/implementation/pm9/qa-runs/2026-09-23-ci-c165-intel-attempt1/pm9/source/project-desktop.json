@@ -1,0 +1,30 @@
+{
+  "status": "passed",
+  "platform": "darwin",
+  "arch": "x64",
+  "packaged": false,
+  "startedAt": "2026-09-23T11:08:00.766Z",
+  "checks": [
+    "real project/table/field/record CRUD, typed identity, long Chinese text, CAS, original-key recovery and project isolation",
+    "archive blocks writes, repeat command recovers one operation, restore preserves data",
+    "wrong deletion name rejected; safe deletion preserves neighbouring project records",
+    "Electron UI creates project with keyboard focus and real preload/sidecar authentication",
+    "all six project tabs open settled production pages",
+    "200% native window zoom keeps document within viewport; Studio second window shares the authenticated service",
+    "Electron and its production sidecar restart retain the same data"
+  ],
+  "screenshots": [
+    "project-概览.png",
+    "project-自动化.png",
+    "project-运行记录.png",
+    "project-统计.png",
+    "project-数据.png",
+    "project-环境.png",
+    "project-zoom-200.png",
+    "project-restarted.png"
+  ],
+  "projectId": "669c0e56-df6d-47d7-ac94-3ec3ed3e2dd1",
+  "tableId": "4b177242-e2d5-43fc-baf1-45abe3ad509d",
+  "tablePath": "/projects/669c0e56-df6d-47d7-ac94-3ec3ed3e2dd1/tables/4b177242-e2d5-43fc-baf1-45abe3ad509d",
+  "boundary": "production HTTP management chain; no workflow execution, browser, Sheets live or native file picker claimed"
+}

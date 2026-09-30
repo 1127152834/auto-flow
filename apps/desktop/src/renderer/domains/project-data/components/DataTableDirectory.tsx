@@ -3,6 +3,7 @@ import { ArrowRight, Cloud, Database, DotsThree, FileXls, PencilSimple, Plus, Qu
 import type { components } from '../../../shared/api/generated'
 import { Button } from '../../../shared/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../../shared/components/ui/dropdown-menu'
+import { EmptyState } from '../../../shared/components/ui/empty-state'
 import { Skeleton } from '../../../shared/components/ui/skeleton'
 
 type DataTableView = components['schemas']['DataTableView']
@@ -15,7 +16,7 @@ export function DataTableDirectory({ toolbar, items, totalCount, loading = false
   return <section aria-label="数据表目录" className="grid gap-4">
     <header className="flex flex-wrap items-end justify-between gap-3"><div><div className="flex items-baseline gap-3"><h2 className="m-0 text-3xl font-semibold text-ink">数据表</h2>{totalCount == null ? null : <span className="text-base text-muted">{totalCount} 张</span>}</div><p className="mb-0 mt-1 text-base text-muted">按用途找到数据，进入表内维护记录。</p></div><div role="group" aria-label="数据表工具" className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-3">{toolbar}{readonly ? null : <><Button type="button" variant="secondary" disabled={disabled} onClick={onImportExcel}><FileXls />从 Excel 导入</Button><Button type="button" variant="primary" disabled={disabled} onClick={onCreate}><Plus />新建数据表</Button></>}</div></header>
     {error ? <div role="alert" className="flex items-center justify-between gap-3 rounded-control border border-clay/30 bg-clay/10 px-4 py-3 text-sm"><span>{error}{items.length ? '。当前仍显示上次成功载入的内容。' : ''}</span><Button type="button" variant="ghost" onClick={onRetry}>重试</Button></div> : null}
-    {loading && items.length === 0 ? <div role="status" className="grid gap-4 md:grid-cols-2" aria-label="正在加载数据表"><Skeleton className="h-[270px]" /><Skeleton className="h-[270px]" /><span className="sr-only">正在加载数据表</span></div> : items.length === 0 && !error ? <div className="rounded-card border border-dashed border-line bg-surface px-6 py-14 text-center"><p className="m-0 font-medium text-ink">{hasFilters ? '没有匹配的数据表' : '还没有数据表'}</p><p className="mb-0 mt-2 text-sm text-muted">{hasFilters ? '调整筛选条件后重试。' : '创建第一张本地数据表以开始录入记录。'}</p></div> : <div className="grid gap-4 md:grid-cols-2">{items.map(table => {
+    {loading && items.length === 0 ? <div role="status" className="grid gap-4 md:grid-cols-2" aria-label="正在加载数据表"><Skeleton className="h-[270px]" /><Skeleton className="h-[270px]" /><span className="sr-only">正在加载数据表</span></div> : items.length === 0 && !error ? <EmptyState icon={<Database size={52} />} title={hasFilters ? '没有匹配的数据表' : '还没有数据表'} description={hasFilters ? '调整筛选条件后重试。' : '创建第一张本地数据表以开始录入记录。'} /> : <div className="grid gap-4 md:grid-cols-2">{items.map(table => {
       const SourceIcon = sourceIcon[table.sourceKind], local = table.sourceKind === 'local'
       const access = disabled ? '连接恢复中' : table.sourceKind === 'unconfigured' ? '待配置' : readonly ? '只读' : table.sourceKind === 'sheets' ? '同步暂未开放' : '本地可维护'
       return <article key={table.tableId} className="relative flex min-h-[270px] min-w-0 flex-col rounded-card border border-line bg-surface p-6 shadow-card">

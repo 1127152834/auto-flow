@@ -22,13 +22,17 @@ from .project_data_status_batch_schemas import (
     CancelRecordStatusesResult,
     RecordStatusBatchOutcome,
 )
-from .project_environment_schemas import EnvironmentOutcomeView
+from .project_environment_schemas import (
+    EnvironmentOperationSnapshot,
+    EnvironmentOutcomeView,
+)
 from .project_excel_schemas import (
     ExcelExportResult,
     ExcelImportResult,
     ExcelInspectionView,
     ExcelReconcileResult,
 )
+from .project_resource_schemas import ProjectProxy
 from .project_run_schemas import BatchView
 from .project_sheets_schemas import (
     SheetsBinding,
@@ -41,29 +45,6 @@ from .project_sheets_schemas import (
     SyncRunResult,
 )
 from .schemas import ApiModel
-
-
-class SourceDefaultProxy(ApiModel):
-    mode: Literal["sourceDefault"]
-
-
-class NoProxy(ApiModel):
-    mode: Literal["none"]
-
-
-class FixedProxy(ApiModel):
-    mode: Literal["fixed"]
-    proxy_id: str
-
-
-class PoolProxy(ApiModel):
-    mode: Literal["pool"]
-    proxy_pool_id: str
-
-
-ProjectProxy = Annotated[
-    SourceDefaultProxy | NoProxy | FixedProxy | PoolProxy, Field(discriminator="mode")
-]
 
 
 class ProjectDefaultResources(ApiModel):
@@ -296,6 +277,8 @@ class ProjectOperationView(ApiModel):
         "disconnectSheets",
         "inspectSheets",
         "changeSheetsBinding",
+        "initializeSheetsIdentity",
+        "createSheetsColumn",
         "removeSheetsBinding",
         "syncPull",
         "syncPush",
@@ -376,7 +359,7 @@ class ProjectOperationView(ApiModel):
 
 
 class ProjectOperationPage(ApiModel):
-    items: list[ProjectOperationView]
+    items: list[ProjectOperationView | EnvironmentOperationSnapshot]
     page: int
     page_size: int
     total: int

@@ -1,0 +1,152 @@
+{
+  "date": "2026-09-23",
+  "status": "manual_cleanup_local_full_and_packaged_passed_ci_pending_artifact_cleanup_missing",
+  "releaseAccepted": false,
+  "requirements": [
+    "AU-08"
+  ],
+  "priorPackagedEvidence": {
+    "productionSourceCommit": "c16532d79fe8db87a8f9b371d9045a02fb89e362",
+    "backendSha256": "99a262d7c15c95276ed7012a6ae21fb220fc4ddaade735a1a66bcba91cc3fcaa",
+    "report": "qa-runs/2026-09-23-automation-delete/before-snapshot-fix/project-desktop.json",
+    "scope": "Installed ARM CI app, real browser worker and Electron UI: duplicate association rejected, waiting worker prevents deletion, stopping invalidates old impact and resets exact-name confirmation, fresh deletion preserves workflow document, original command replay returns one operation, independent document can be linked again. Full existing desktop smoke passed. This earlier script did not inspect frozen snapshot deletion; it does not prove the later fix.",
+    "screenshots": "Only four automation-deletion screenshots are archived with this report; other generic full-smoke screenshots remain in the temporary local output."
+  },
+  "rootCause": [
+    "Deletion impact counted every prepared snapshot of the same workflow, including independent preparations outside this automation.",
+    "The purge deleted ProjectBatchRow before evaluating the prepared-content subquery that selected through those batches, so owned snapshots remained."
+  ],
+  "change": "Count only snapshots referenced by this automation batches; execute the existing snapshot delete before deleting its owning batches in the same deferred-FK transaction. Preserve independent workflow and unowned snapshots; no ownership inference or new executor.",
+  "redGreen": [
+    "Original direct test failed with impact count 2 instead of 1 when an independent snapshot shared the same workflow.",
+    "After fixing scope, the same test failed because two snapshots remained instead of only the independent one.",
+    "Moving the existing purge step before batch deletion passed; the test asserts independent document and snapshot remain and owned batch/snapshot are removed."
+  ],
+  "checks": {
+    "targetedBackend": "34 passed / 2 dependency warnings (automation deletion, contract, repository, batch start), 7.19 seconds; final deletion test file after naming/fixture cleanup: 7 passed / 2 dependency warnings in 2.00s",
+    "frontend": "AutomationDeleteDialog: 6 passed, 6.65 seconds; existing UI source unchanged",
+    "scripts": "npm run test:scripts: 101 passed / 0 failed / 0 skipped, 3024.03ms after final SQLite assertions",
+    "static": "Ruff passed; mypy407 passed",
+    "fullBackend": "uv run pytest -q --maxfail=5: 3479 passed / 78 skipped / 2 dependency warnings, 793.08 seconds; opt-in actual-browser test remains a separate run (one more opt-in skipped case than prior c165 suite)",
+    "newPackagedDesktop": {
+      "status": "passed",
+      "productionSourceCommit": "5346cecab54b337673dd0ba01c304a1579ee9c9e",
+      "backendSha256": "bc7344d854babb0c3defbf342e9563dd4c74a99b32bba7e7b4913efd8821fd61",
+      "report": "qa-runs/2026-09-23-automation-delete/fixed/project-desktop.json",
+      "scope": "New local packaged ARM application, actual worker and read-only SQLite: deletion removes task/batch/frozen snapshot; original workflow remains and relinks. Full desktop business/volume/zoom/second-window/restart also passed. Four deletion screenshots archived; other generic screenshots retained in temporary local output.",
+      "runtimeLogLoad": {
+        "logCount": 1004,
+        "logPages": 6,
+        "elapsedMs": 32035,
+        "logsPerMinute": 1880,
+        "scope": "real worker throughput and server pagination; no renderer memory claim"
+      },
+      "synthetic": {
+        "targetLogsPerMinute": 1000,
+        "seconds": 60,
+        "emitted": 1000,
+        "elapsedMs": 60021,
+        "maxBatchLagMs": 84
+      },
+      "recordSeedMs": 51959,
+      "concurrentWrites": {
+        "status": "passed",
+        "producers": 5,
+        "records": 10000,
+        "busyRetries": 0
+      }
+    },
+    "threePlatformCI": {
+      "runId": 35871462256,
+      "url": "https://github.com/1127152834/auto-flow/actions/runs/35871462256",
+      "status": "cancelled_superseded_by_confirmed_manual_residue_defect",
+      "sourceCommit": "5346cecab54b337673dd0ba01c304a1579ee9c9e",
+      "scope": "one workflow_dispatch full Windows x64 / macOS Intel / Apple Silicon matrix; standalone native/worker probes skipped"
+    }
+  },
+  "limits": [
+    "AU-08 remains partially_verified. Project-owned workflow deletion is still refused with WORKFLOW_OWNERSHIP_UNKNOWN because ownership is not persisted; that proposed design scope is an implementation gap.",
+    "This automated UI slice does not prove Studio simultaneous-edit ownership, existing-association navigation, project-level unlink, or complete Windows/Intel physical installation acceptance.",
+    "The earlier c165 CI cannot validate the new snapshot fix. No merge or release.",
+    "This fix prevents new owned-snapshot residue; preexisting orphan snapshots without batch ownership are not swept because ownership can no longer be established safely. Later actual-worker failure probe confirms filesystem artifact cleanup is missing; see manualAndArtifactFollowThrough."
+  ],
+  "productionSourceCommit": "5346cecab54b337673dd0ba01c304a1579ee9c9e",
+  "manualAndArtifactFollowThrough": {
+    "baseSourceCommit": "5346cecab54b337673dd0ba01c304a1579ee9c9e",
+    "baseScriptCommit": "53d6e9861cefa30caed3e6dfdc8a5e7ad6f76776",
+    "negativeEvidence": [
+      {
+        "report": "qa-runs/2026-09-23-automation-delete/residue/manual-cancelled.json",
+        "patch": "qa-runs/2026-09-23-automation-delete/residue/manual-reproduction.patch",
+        "scope": "Actual packaged worker stop then UI delete leaves cancelled manual item referencing deleted task. This first probe used an incorrect run-directory prefix and therefore is not file-cleanup evidence."
+      },
+      {
+        "report": "qa-runs/2026-09-23-automation-delete/residue/manual-resolved-and-artifact.json",
+        "patch": "qa-runs/2026-09-23-automation-delete/residue/artifact-reproduction.patch",
+        "scope": "Actual manual resume then missing-element browser failure creates a registered available PNG, byteSize7469 with SHA25640684ca380dbedcbb3ed9895392ace2a123a5f067707e12fac841743cbb0439c. Correct workspace/runs path is nonempty before deletion; UI deletion removes task but resolved manual item and exactly the same generation/PNG files remain."
+      }
+    ],
+    "diagnosticExclusions": [
+      "An explicit screenshot node probe was rejected at batch preparation by the current supported-node boundary. It is not file-cleanup evidence and no whitelist was expanded.",
+      "The first direct regression fixture used a non-contract resumed status; it was corrected to resolved, which the actual worker negative report proves. Final tests cover cancelled/resolved/waiting/resume_requested."
+    ],
+    "boundedFix": "Project-scoped pending manual items are included in impact and rechecked under the delete transaction even when batch is terminal. Terminal items belonging to the target tasks are deleted before tasks; other task items remain.",
+    "checks": {
+      "backend": "38 related backend tests passed / 2 dependency warnings in7.63s; final deletion file rerun recorded separately",
+      "static": "Ruff/mypy407 passed after import-format correction",
+      "fullBackend": "uv run pytest -q --maxfail=5: 3483 passed / 78 skipped / 2 dependency warnings, 792.43 seconds",
+      "newPackagedDesktop": {
+        "status": "passed",
+        "productionSourceCommit": "eb50e1effb7e32149528f27ac257361f4212b4f7",
+        "backendSha256": "cb6b8166723b1c4b103b69e100f1037af9e0b8dcaa48c9920a4e0c2c9f366908",
+        "report": "qa-runs/2026-09-23-automation-delete/manual-fixed/project-desktop.json",
+        "scope": "Full rebuilt ARM Electron/sidecar/actual worker: cancelled manual item absent after UI deletion, task/batch/snapshot removed, independent document preserved/relinked, original operation replay stable. Existing full business/log/volume/zoom/second-window/restart checks passed. Filesystem deletion deliberately not claimed; separate negative probe still fails that gate. Four deletion screenshots archived, busy dialog visually reviewed with both batch and manual blockers visible.",
+        "runtimeLogLoad": {
+          "logCount": 1004,
+          "logPages": 6,
+          "elapsedMs": 31665,
+          "logsPerMinute": 1902,
+          "scope": "real worker throughput and server pagination; no renderer memory claim"
+        },
+        "synthetic": {
+          "targetLogsPerMinute": 1000,
+          "seconds": 60,
+          "emitted": 1000,
+          "elapsedMs": 60019,
+          "maxBatchLagMs": 51
+        },
+        "recordSeedMs": 56381,
+        "concurrentWrites": {
+          "status": "passed",
+          "producers": 5,
+          "records": 10000,
+          "busyRetries": 0
+        }
+      },
+      "threePlatformCI": {
+        "runId": 35874897768,
+        "url": "https://github.com/1127152834/auto-flow/actions/runs/35874897768",
+        "sourceCommit": "eb50e1effb7e32149528f27ac257361f4212b4f7",
+        "status": "completed",
+        "supersededCancelledRun": 35871462256,
+        "conclusion": "cancelled",
+        "supersededByRun": 35881272086,
+        "reason": "Newly reproduced independent Studio identity/feedback defects fixed in632caf6d; do not count this old candidate as full success."
+      },
+      "frontend": "6 passed including MANUAL_PENDING visibility, 3.41s",
+      "scripts": "101 passed / 0 failed / 0 skipped, 2219.39ms",
+      "finalBackend": "11 deletion contracts passed / 2 dependency warnings, 2.98s",
+      "frontendStatic": "npm run typecheck and npm run lint passed"
+    },
+    "artifactStatus": "implementation_missing; file cleanup and durable failure/restart semantics require proposed AD1-AD3, awaiting confirmation",
+    "spec": "docs/superpowers/specs/2026-09-23-pm9-automation-delete-cleanup.md",
+    "plan": "docs/superpowers/plans/2026-09-23-pm9-automation-delete-cleanup.md",
+    "resolvedManualPostFix": {
+      "report": "qa-runs/2026-09-23-automation-delete/residue/artifact-after-manual-fix.json",
+      "backendSha256": "cb6b8166723b1c4b103b69e100f1037af9e0b8dcaa48c9920a4e0c2c9f366908",
+      "scope": "Rebuilt package, real manual resume then browser failure: manual list contains no removed-task item, but the exact generated PNG remains. Report status is correctly failed; this is not successful filesystem cleanup."
+    },
+    "productionSourceCommit": "eb50e1effb7e32149528f27ac257361f4212b4f7",
+    "reproduction": "Apply the matching patch to scripts/smoke-project-management-desktop.mjs at baseScriptCommit in an isolated checkout; run with the recorded base packaged executable and public browser. Both patches use relative imports and passed git apply --check, actual application and node --check."
+  }
+}

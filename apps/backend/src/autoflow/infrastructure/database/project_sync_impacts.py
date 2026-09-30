@@ -20,8 +20,15 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from autoflow.domain.projects.models import ProjectError
 
-from .project_data_models import DataImpactRow, DataRecordRow, DataTableRow
+from .project_claims import source_record_leases
+from .project_data_models import (
+    DataFieldRow,
+    DataImpactRow,
+    DataRecordRow,
+    DataTableRow,
+)
 from .project_sync_models import SheetsBindingRow, SheetsConnectionRow, SyncOperationRow
+from .project_sync_sends import require_source_idle, unresolved_structure
 
 IMPACT_TTL = timedelta(minutes=10)
 _OPEN_KINDS = ("push",)
@@ -110,6 +117,8 @@ class SqlAlchemySheetsImpacts:
             raise ProjectError(
                 "SHEETS_CONNECTION_NOT_FOUND", "Google 连接不存在。", 404
             )
+        if any(item.project_id == project_id and item.request.get("connectionId") == connection_id for item in unresolved_structure(session)):
+            raise ProjectError("SHEETS_SOURCE_SEND_IN_PROGRESS", "该连接仍有未确认的来源结构操作，请先核验。", 409)
         bound = sorted(
             session.scalars(
                 select(SheetsBindingRow.table_id).where(
@@ -152,10 +161,10 @@ class SqlAlchemySheetsImpacts:
     # ---------------------------------------------------------------- binding
 
     def preview_binding(
-        self, project_id: str, table_id: str, change: dict[str, Any]
+        self, project_id: str, table_id: str, change: dict[str, Any], *, own: str | None = None
     ) -> dict[str, Any]:
         with self._sessions() as session:
-            report, facts = self._binding_facts(session, project_id, table_id, change)
+            report, facts = self._binding_facts(session, project_id, table_id, change, own=own)
         return self._save(
             project_id, "changeSheetsBinding", report["target"], change, report, facts
         )
@@ -167,6 +176,7 @@ class SqlAlchemySheetsImpacts:
         table_id: str,
         change: dict[str, Any],
         impact_revision: int,
+        *, own: str | None = None,
     ) -> dict[str, Any]:
         self._require(
             session,
@@ -175,12 +185,12 @@ class SqlAlchemySheetsImpacts:
             _table_locator(project_id, table_id),
             change,
             impact_revision,
-            lambda: self._binding_facts(session, project_id, table_id, change),
+            lambda: self._binding_facts(session, project_id, table_id, change, own=own),
         )
         return change
 
     def _binding_facts(
-        self, session: Session, project_id: str, table_id: str, change: dict[str, Any]
+        self, session: Session, project_id: str, table_id: str, change: dict[str, Any], *, own: str | None = None
     ) -> tuple[dict[str, Any], dict[str, Any]]:
         table = session.get(DataTableRow, table_id)
         if table is None or table.project_id != project_id:
@@ -199,7 +209,13 @@ class SqlAlchemySheetsImpacts:
         epoch = existing.binding_epoch if existing else 0
         columns = {str(entry["columnId"]).upper() for entry in change["mapping"]}
         overlaps = _overlaps(session, project_id, table_id, change, columns)
-        blockers: list[dict[str, Any]] = []
+        require_source_idle(session, change["spreadsheetId"], own=own, structural=True)
+        targets = {(change["spreadsheetId"], change["sheetId"])}
+        if existing is not None:
+            require_source_idle(session, existing.spreadsheet_id, own=own, structural=True)
+            targets.add((existing.spreadsheet_id, existing.sheet_id))
+        leases = {lease.id: lease for spreadsheet, sheet in targets for lease in source_record_leases(session, spreadsheet, sheet)}
+        blockers: list[dict[str, Any]] = _source_blockers(project_id, table_id, bool(leases))
         if connection.state != "available":
             blockers.append(
                 {
@@ -251,6 +267,7 @@ class SqlAlchemySheetsImpacts:
             "identityStrategy": change["identityStrategy"],
             "mapping": sorted(change["mapping"], key=lambda entry: str(entry["fieldId"])),
             "overlaps": overlaps,
+            "sourceLeases": sorted((lease.id, lease.state, lease.lease_generation) for lease in leases.values()),
         }
         return report, facts
 
@@ -288,6 +305,7 @@ class SqlAlchemySheetsImpacts:
             raise ProjectError(
                 "SHEETS_BINDING_NOT_FOUND", "该表未绑定 Sheets。", 404
             )
+        require_source_idle(session, binding.spreadsheet_id, structural=True)
         open_rows = session.scalars(
             select(SyncOperationRow).where(
                 SyncOperationRow.table_id == table_id,
@@ -324,19 +342,54 @@ class SqlAlchemySheetsImpacts:
                 "blocking": False,
             },
         ]
+        leases = source_record_leases(session, binding.spreadsheet_id, binding.sheet_id)
         expected = {"tableRevision": table.table_revision, "bindingEpoch": binding.binding_epoch}
         report = {
             "target": _table_locator(project_id, table_id),
             "expectedRevisions": expected,
             "impacts": impacts,
-            "blockers": [],
+            "blockers": _source_blockers(project_id, table_id, bool(leases)),
         }
         facts = {
             "tableRevision": table.table_revision,
             "bindingEpoch": binding.binding_epoch,
             "connectionId": binding.connection_id,
             "identityStrategy": binding.identity_strategy,
+            "sourceLeases": sorted((lease.id, lease.state, lease.lease_generation) for lease in leases),
         }
+        return report, facts
+
+    def preview_column(self, project: str, table: str, change: dict[str, Any], *, own: str | None = None) -> dict[str, Any]:
+        with self._sessions() as session:
+            report, facts = self._column_facts(session, project, table, change, own=own)
+        return self._save(project, "createSheetsColumn", _table_locator(project, table), change, report, facts)
+
+    def require_column(self, session: Session, project: str, table: str, change: dict[str, Any], revision: int, *, own: str | None = None) -> None:
+        self._require(session, project, "createSheetsColumn", _table_locator(project, table), change, revision,
+                      lambda: self._column_facts(session, project, table, change, own=own))
+
+    def _column_facts(self, session: Session, project: str, table_id: str, change: dict[str, Any], *, own: str | None = None) -> tuple[dict[str, Any], dict[str, Any]]:
+        table = session.get(DataTableRow, table_id)
+        binding = session.get(SheetsBindingRow, table_id)
+        if table is None or not table.published or table.project_id != project or binding is None:
+            raise ProjectError("SHEETS_BINDING_NOT_FOUND", "数据表或来源绑定不存在。", 404)
+        expected = (change["connectionId"], change["spreadsheetId"], change["sheetId"], change["expectedBindingEpoch"], change["datasetGeneration"])
+        actual = (binding.connection_id, binding.spreadsheet_id, binding.sheet_id, binding.binding_epoch, table.current_generation)
+        if expected != actual:
+            raise _stale()
+        require_source_idle(session, binding.spreadsheet_id, own=own)
+        field = session.get(DataFieldRow, {"id":change["fieldId"], "dataset_generation":table.current_generation})
+        if field is None or field.table_id != table_id or field.formula or not field.writable:
+            raise ProjectError("SHEETS_COLUMN_FIELD_INVALID", "请选择当前代次中可写的普通字段。", 409)
+        if any(entry["fieldId"] == field.id for entry in binding.mapping):
+            raise ProjectError("SHEETS_COLUMN_ALREADY_MAPPED", "该字段已有来源映射，不会另建列。", 409)
+        connection = session.get(SheetsConnectionRow, binding.connection_id)
+        if connection is None or connection.revoked_at is not None or connection.state != "available" or not connection.writable:
+            raise ProjectError("SHEETS_CONNECTION_UNAVAILABLE", "来源连接当前不可写。", 409)
+        facts = {"tableRevision": table.table_revision, "fieldRevision": field.field_revision, "fieldType": field.type,
+                 "bindingEpoch": binding.binding_epoch, "datasetGeneration": table.current_generation, "mapping": binding.mapping}
+        report = {"target": _table_locator(project, table_id), "expectedRevisions": {"tableRevision":table.table_revision, "bindingEpoch":binding.binding_epoch},
+                  "impacts": [{"code":"SHEETS_COLUMN_CREATED", "resource":_table_locator(project,table_id), "message":f"新增来源列 {change['columnName']}；核验后仅扩展当前字段映射，已有数据、状态与关联保留。", "blocking":False}], "blockers":[]}
         return report, facts
 
     # ------------------------------------------------------------- persistence
@@ -400,6 +453,13 @@ class SqlAlchemySheetsImpacts:
             raise _stale(report["blockers"])
         if report["blockers"] or saved.report.get("blockers"):
             raise _stale(report["blockers"] or saved.report["blockers"])
+
+
+def _source_blockers(project_id: str, table_id: str, occupied: bool) -> list[dict[str, Any]]:
+    if not occupied:
+        return []
+    return [{"code": "SHEETS_SOURCE_IN_USE", "resource": _table_locator(project_id, table_id),
+             "state": "blocked", "message": "共享来源仍被任务占用，请等待任务完成或恢复占用后重试。"}]
 
 
 def _overlaps(

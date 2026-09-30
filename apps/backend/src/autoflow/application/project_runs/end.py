@@ -1,16 +1,17 @@
-"""Production End admission and finalization on the existing operation ledger."""
+"""Durable production End admission and recovery."""
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import UTC, datetime
 from typing import Any
-from uuid import NAMESPACE_URL, UUID, uuid4, uuid5
+from uuid import uuid4, uuid5
 
 from sqlalchemy import select, text
 
+from autoflow.domain.project_runs.worker_commands import project_command_id
 from autoflow.domain.projects.models import ProjectError
-from autoflow.domain.workflows.project_data import project_data_nodes
-from autoflow.domain.workflows.project_end import validate_project_end
+from autoflow.domain.workflows.project_end import normalize_project_end
 from autoflow.infrastructure.database.environment_models import ProjectEndOperationRow
 from autoflow.infrastructure.database.environments import _operation, _operation_row
 from autoflow.infrastructure.database.models import ProjectOperationRow
@@ -32,60 +33,76 @@ from autoflow.infrastructure.database.workflow_runtime_models import (
 )
 
 
+def _end_configs(plan: Mapping[str, Any], node_id: str) -> list[dict[str, Any]]:
+    documents = [plan.get("document", plan)]
+    documents.extend(plan.get("workflowDependencies", {}).values())
+    documents.extend(
+        item.get("workflow", {})
+        for item in plan.get("customModuleDependencies", {}).values()
+        if isinstance(item, Mapping)
+    )
+    configs: list[dict[str, Any]] = []
+    for document in documents:
+        if not isinstance(document, Mapping):
+            continue
+        for node in document.get("nodes", ()):
+            if not isinstance(node, Mapping):
+                continue
+            data = node.get("data", node)
+            if (
+                isinstance(data, Mapping)
+                and node.get("id", node.get("nodeId")) == node_id
+                and data.get("moduleType", node.get("moduleType")) == "project_end"
+            ):
+                raw = data.get("config", data)
+                if isinstance(raw, Mapping):
+                    configs.append(normalize_project_end(raw))
+    return configs
+
+
 class ProjectRunEnd:
     def __init__(self, sessions: Any, environments: Any) -> None:
         self.sessions = sessions
         self.environments = environments
 
-    def worker_call(
+    def accept(
         self, run_id: str, generation: int, request: dict[str, Any]
     ) -> dict[str, Any]:
-        try:
-            if (
-                type(generation) is not int
-                or generation < 1
-                or type(request.get("attempt")) is not int
-            ):
-                raise ValueError("End 执行代次和尝试必须为整数")
-            if set(request) != {
+        if (
+            type(generation) is not int
+            or generation < 1
+            or set(request)
+            != {
                 "nodeId",
                 "nodeVisitId",
                 "attempt",
                 "commandId",
-                "capability",
+                "operation",
                 "arguments",
-            }:
-                raise ValueError("End 请求字段无效")
-            for key in ("nodeId", "nodeVisitId"):
-                if (
-                    not isinstance(request[key], str)
-                    or not 1 <= len(request[key]) <= 120
-                ):
-                    raise ValueError("End 节点身份无效")
-            expected_id = str(
-                uuid5(
-                    NAMESPACE_URL,
-                    f"autoflow:project-end:{request['nodeVisitId']}:{request['nodeId']}",
-                )
-            )
-            if (
-                request["commandId"] != expected_id
-                or request["capability"] != "project.end"
-                or request["attempt"] != 1
-            ):
-                raise ValueError("End 命令身份无效")
-            UUID(run_id)
-            args = request["arguments"]
-            if (
-                not isinstance(args, dict)
-                or set(args) != {"recordTargets"}
-                or not isinstance(args["recordTargets"], list)
-                or len(args["recordTargets"]) > 100
-            ):
-                raise ValueError("End 记录目标无效")
-            return self._accept(run_id, generation, request)
-        except (ValueError, TypeError, KeyError) as error:
-            raise ProjectError("VALIDATION_ERROR", str(error), 422) from error
+                "browserClosed",
+            }
+            or request.get("operation") != "end"
+            or request.get("attempt") != 1
+            or type(request.get("attempt")) is not int
+            or request.get("browserClosed") is not True
+        ):
+            raise ProjectError("CAPABILITY_SCOPE_DENIED", "End 请求无效", 403)
+        node_id, visit = request.get("nodeId"), request.get("nodeVisitId")
+        if (
+            not isinstance(node_id, str)
+            or not isinstance(visit, str)
+            or request.get("commandId") != project_command_id(run_id, generation, visit)
+        ):
+            raise ProjectError("CAPABILITY_SCOPE_DENIED", "End 命令身份无效", 403)
+        args = request.get("arguments")
+        if (
+            not isinstance(args, dict)
+            or set(args) != {"recordTargets"}
+            or not isinstance(args["recordTargets"], list)
+            or len(args["recordTargets"]) > 100
+        ):
+            raise ProjectError("CAPABILITY_SCOPE_DENIED", "End 记录目标无效", 403)
+        return self._accept(run_id, generation, request)
 
     def _accept(
         self, run_id: str, generation: int, request: dict[str, Any]
@@ -107,13 +124,7 @@ class ProjectRunEnd:
             configs = (
                 []
                 if prepared is None
-                else [
-                    config
-                    for node_id, config in project_data_nodes(
-                        prepared.execution_plan, "project_end"
-                    )
-                    if node_id == request["nodeId"]
-                ]
+                else _end_configs(prepared.execution_plan, request["nodeId"])
             )
             visit = session.scalar(
                 select(WorkflowRunEventRow)
@@ -137,8 +148,7 @@ class ProjectRunEnd:
                 raise ProjectError(
                     "CAPABILITY_SCOPE_DENIED", "End 必须匹配冻结节点与已确认访问", 403
                 )
-            config = dict(configs[0])
-            validate_project_end(config)
+            config = configs[0]
             existing = session.scalar(
                 select(ProjectEndOperationRow).where(
                     ProjectEndOperationRow.run_id == run_id
@@ -154,16 +164,19 @@ class ProjectRunEnd:
                         "END_ALREADY_ACCEPTED", "本运行已接受另一结束意图", 409
                     )
                 return {"endOperationId": operation.id, "phase": existing.phase}
-            frozen_targets = config.get("recordTargets", [])
-            if (
-                isinstance(frozen_targets, list)
-                and request["arguments"]["recordTargets"] != frozen_targets
-            ):
-                raise ProjectError(
-                    "CAPABILITY_SCOPE_DENIED", "End 记录目标必须匹配冻结配置", 403
-                )
             if run.status != "running":
                 raise ProjectError("LEASE_REVOKED", "End 执行授权已失效", 409)
+            declared_targets = config.get("recordTargets", [])
+            if isinstance(declared_targets, list):
+                if request["arguments"]["recordTargets"] != declared_targets:
+                    raise ProjectError(
+                        "CAPABILITY_SCOPE_DENIED", "End 记录目标必须匹配冻结配置", 403
+                    )
+            elif not isinstance(declared_targets, str):
+                raise ProjectError("CAPABILITY_SCOPE_DENIED", "End 记录目标无效", 403)
+            if not config.get("retainEnvironment") and request["arguments"]["recordTargets"]:
+                raise ProjectError("CAPABILITY_SCOPE_DENIED", "End 未授权记录关联", 403)
+
             _task, _run, snapshot = SqlAlchemyProjectDataCapabilities._facts(
                 session, task.project_id, task.id, run_id
             )
@@ -188,7 +201,7 @@ class ProjectRunEnd:
                 selected = config.get("inputIds")
                 inputs = snapshot.inputs
                 if selected is not None and set(selected) - {
-                    i["inputId"] for i in inputs
+                    item["inputId"] for item in inputs
                 }:
                     raise ProjectError(
                         "CAPABILITY_SCOPE_DENIED", "End 输入目标不存在", 403
@@ -209,18 +222,26 @@ class ProjectRunEnd:
                 refs = [
                     item["recordRef"]
                     for item in inputs
-                    if (
-                        item["inputId"] in writable_inputs
-                        if selected is None
-                        else item["inputId"] in selected
-                    )
+                    if item["inputId"] in writable_inputs
+                    and (selected is None or item["inputId"] in selected)
                 ]
+                if selected is not None and set(selected) - writable_inputs:
+                    raise ProjectError(
+                        "CAPABILITY_SCOPE_DENIED",
+                        "End 输入不具备本任务有效写入授权",
+                        403,
+                    )
                 refs.extend(request["arguments"]["recordTargets"])
                 for ref in refs:
                     if (
                         not isinstance(ref, dict)
                         or set(ref)
-                        != {"projectId", "tableId", "datasetGeneration", "recordKey"}
+                        != {
+                            "projectId",
+                            "tableId",
+                            "datasetGeneration",
+                            "recordKey",
+                        }
                         or ref["projectId"] != task.project_id
                     ):
                         raise ProjectError(
@@ -316,17 +337,12 @@ class ProjectRunEnd:
                 "workerRequest": request,
             }
             now = datetime.now(UTC)
-            canonical = {
-                "scope": "endTask",
-                "projectId": task.project_id,
-                "request": payload,
-            }
             operation = self.environments._command(
                 request["commandId"],
                 "saveEnvironment",
                 task.project_id,
                 payload["instanceId"],
-                canonical,
+                {"scope": "endTask", "projectId": task.project_id, "request": payload},
                 now,
             )
             session.add(_operation_row(operation))
@@ -361,20 +377,10 @@ class ProjectRunEnd:
     def operation(self, run_id: str) -> Any:
         with self.sessions() as session:
             end = session.scalar(
-                select(ProjectEndOperationRow).where(
-                    ProjectEndOperationRow.run_id == run_id
-                )
+                select(ProjectEndOperationRow).where(ProjectEndOperationRow.run_id == run_id)
             )
-            operation = (
-                None
-                if end is None
-                else session.get(ProjectOperationRow, end.operation_id)
-            )
-            return (
-                (_operation(operation), end.intended_result)
-                if operation and end
-                else None
-            )
+            operation = None if end is None else session.get(ProjectOperationRow, end.operation_id)
+            return ((_operation(operation), end.intended_result) if operation and end else None)
 
     def finalize(self, run_id: str) -> Any:
         saved = self.operation(run_id)
@@ -383,10 +389,10 @@ class ProjectRunEnd:
         operation, payload = saved
         if operation.result is not None:
             return payload["businessResult"], operation.result, operation.error
-        result, _operation, _replayed = self.environments.end(
+        result, completed, _replayed = self.environments.end(
             operation.project_id, operation.idempotency_key, payload
         )
-        return payload["businessResult"], result, _operation.error
+        return payload["businessResult"], result, completed.error
 
     def recover(self, run_id: str) -> Any:
         """Read committed stages only; a fenced run cannot publish a new save."""
@@ -400,8 +406,7 @@ class ProjectRunEnd:
             f"end-save:{operation.operation_id}"
         )
         if save is not None and save.result is not None:
-            outcome = save.result
-            error = save.error
+            outcome, error = save.result, save.error
         else:
             outcome = {
                 "complete": False,
@@ -441,6 +446,8 @@ class ProjectRunEnd:
                     save, outcome, error, datetime.now(UTC)
                 )
         ledger = self.environments.environments.end_by_operation(operation.operation_id)
+        if ledger is None:
+            raise ProjectError("END_ACCESS_REVOKED", "End 持久记录不存在", 409)
         self.environments.environments.record_end(
             ledger["id"],
             operation.project_id,
@@ -464,8 +471,6 @@ class ProjectRunEnd:
         return payload["businessResult"], outcome, error
 
     def _published_save(self, save: Any, payload: dict[str, Any]) -> Any:
-        # Recovery only verifies committed bytes/links; revoked workers never
-        # gain another opportunity to publish or mutate project records.
         from autoflow.application.environments.retention import _SAVE_NAMESPACE
         from autoflow.infrastructure.database.environment_models import (
             ProjectEnvironmentRow,
@@ -495,9 +500,7 @@ class ProjectRunEnd:
             )
             if environment.content_generation != generation:
                 return None
-            directory = self.environments.store.generation_dir(
-                environment_id, generation
-            )
+            directory = self.environments.store.generation_dir(environment_id, generation)
             try:
                 verified = (
                     directory.is_dir()

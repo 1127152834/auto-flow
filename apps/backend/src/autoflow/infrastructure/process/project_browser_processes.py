@@ -8,6 +8,8 @@ import sys
 from functools import lru_cache
 from pathlib import Path
 
+from autoflow.infrastructure.process.browser_processes import process_identity_is_alive
+
 # PID -> (process group, kernel process-start identifier).
 OwnedProcesses = dict[int, tuple[int, int]]
 
@@ -93,6 +95,10 @@ def _belongs_to_run(pid: int, directory: Path, executable: Path | None) -> bool 
     # The worker and Playwright driver also retain the unique inherited run marker.
     if actual.resolve() == Path(sys.executable).resolve():
         return True
+    # Framework Python launches Python.app; sys.executable names its launcher.
+    current = _native_arguments(os.getpid())
+    if current is not None and actual.resolve() == current[0].resolve():
+        return True
     if executable is None:
         return False
     if actual.parts[-3:] == ("playwright", "driver", "node") and any(
@@ -163,13 +169,7 @@ def capture_processes(
 
 
 def _process_exists(pid: int) -> bool:
-    try:
-        os.kill(pid, 0)
-    except ProcessLookupError:
-        return False
-    except PermissionError:
-        return True
-    return True
+    return process_identity_is_alive(pid, None)
 
 
 def living_processes(owned: OwnedProcesses) -> OwnedProcesses:
@@ -182,6 +182,8 @@ def living_processes(owned: OwnedProcesses) -> OwnedProcesses:
 
 
 def signal_processes(owned: OwnedProcesses, number: int) -> None:
+    if sys.platform == "win32":
+        raise RuntimeError("POSIX process groups are unavailable on Windows")
     # A still-live original member proves that its group has not been recycled.
     live = living_processes(owned)
     groups = {group for group, _ in live.values()}

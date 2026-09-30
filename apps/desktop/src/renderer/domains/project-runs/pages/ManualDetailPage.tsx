@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Clock, Monitor, WarningCircle } from '@phosphor-icons/react'
-import { useEffect, useId, useMemo, useState } from 'react'
-import type { StreamingApiClient } from '../../../shared/api/client'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { ApiClientError, type StreamingApiClient } from '../../../shared/api/client'
 import { notify } from '../../../shared/components/Toaster'
 import { Button } from '../../../shared/components/ui/button'
 import { Checkbox } from '../../../shared/components/ui/checkbox'
@@ -13,6 +13,8 @@ import { createEnvironmentApi } from '../../environments/api'
 import { safeProjectError } from '../../projects/presentation-error'
 import type { ProjectRoute } from '../../projects/types'
 import { createProjectRunsApi } from '../api'
+import { ManualResumeFields, parseManualInputs } from '../components/ManualResumeFields'
+import { DataCommandNotAccepted } from '../../project-data/data-command'
 import { presentRunFailure } from '../presentation'
 
 export type ManualDetailPageProps = { workspaceKey: string; instanceId: string; projectId: string; client: StreamingApiClient; disabled: boolean; readOnly: boolean; onNavigate(route: ProjectRoute): void; manualItemId: string }
@@ -57,15 +59,21 @@ export function ManualDetailPage({ workspaceKey, instanceId, projectId, client, 
   const task = useQuery({ queryKey: [...prefix, 'task', live?.taskId], queryFn: ({ signal }) => runs.getTask(live!.taskId, signal), enabled: !disabled && Boolean(live?.taskId) })
   const targets = Array.isArray(live?.allowedTargets) ? live.allowedTargets.map(targetOption) : []
   const [decision, setDecision] = useState<string | null>(null), [target, setTarget] = useState<string | null>(null), [reason, setReason] = useState('')
+  const [inputDraft, setInputDraft] = useState<Record<string, string>>({})
+  const pendingResume = useRef<{ key: string; body: { checkpointRevision: number; expectedStatusRevision: number; targetNodeId?: string; inputs?: Record<string, unknown> } } | null>(null)
+  const [now, setNow] = useState(Date.now)
+  useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(timer) }, [])
+  const parsedInputs = parseManualInputs(live?.inputSchema ?? [], inputDraft)
   const [confirming, setConfirming] = useState(false), [agreed, setAgreed] = useState(false), [failure, setFailure] = useState<string>()
   const decisionName = useId()
   const firstTarget = targets.find(option => !option.disabled)?.value ?? null
   useEffect(() => { if (target === null && firstTarget) setTarget(firstTarget) }, [firstTarget, target])
   const terminal = live ? !['waiting', 'resume_requested'].includes(live.status) : false
-  const locked = disabled || readOnly || !live || terminal
+  const expired = Boolean(live?.expiresAt && new Date(live.expiresAt).getTime() <= now)
+  const locked = disabled || readOnly || !live || terminal || expired || live.status !== 'waiting'
   const chosen = decision ?? ''
   // 「标记完成」的知情勾选在确认弹窗内完成，此处不能再次要求 agreed，否则提交按钮永远不可用。
-  const canSubmit = !locked && (chosen === 'continue' ? Boolean(target) : chosen === 'fail' ? reason.trim().length > 0 : chosen === 'complete')
+  const canSubmit = !locked && (chosen === 'continue' ? !parsedInputs.error && (Boolean(target) || Boolean(live?.canResume) && targets.length === 0) : chosen === 'fail' ? reason.trim().length > 0 : chosen === 'complete')
   const backToList = () => onNavigate({ projectId, tab: 'runs', runView: 'manual' })
   const openEnvironment = useMutation({
     mutationFn: () => api.openInstance(instance.data!.instanceId, instance.data!.instanceUseGeneration, crypto.randomUUID()),
@@ -73,9 +81,25 @@ export function ManualDetailPage({ workspaceKey, instanceId, projectId, client, 
     onError: error => { setFailure(presentRunFailure(error, '无法进入当前浏览器')); notify({ title: safeProjectError(error), tone: 'error' }) },
   })
   const resume = useMutation({
-    mutationFn: () => api.resumeManual(manualItemId, { checkpointRevision: live!.checkpointRevision, expectedStatusRevision: live!.statusRevision, ...(target ? { targetNodeId: target } : {}) }, crypto.randomUUID()),
-    onSuccess: () => { notify({ title: '已请求继续原任务', tone: 'success' }); void queryClient.invalidateQueries({ queryKey: prefix }); backToList() },
-    onError: error => setFailure(presentRunFailure(error, '提交处理结果失败')),
+    mutationFn: async () => {
+      if (pendingResume.current) {
+        try { return { operation: await api.lookupManualResume(pendingResume.current.key) } }
+        catch (error) { if (!(error instanceof DataCommandNotAccepted) || locked) throw error }
+      } else {
+        pendingResume.current = { key: crypto.randomUUID(), body: { checkpointRevision: live!.checkpointRevision, expectedStatusRevision: live!.statusRevision, inputs: parsedInputs.values, ...(target ? { targetNodeId: target } : {}) } }
+      }
+      const command = pendingResume.current
+      return api.resumeManual(manualItemId, command.body, command.key)
+    },
+    onSuccess: result => {
+      pendingResume.current = null
+      if (result.operation.status === 'failed') { setFailure('原继续请求未完成，请刷新检查点后处理。'); void queryClient.invalidateQueries({ queryKey: prefix }); return }
+      notify({ title: '已请求继续原任务', tone: 'success' }); void queryClient.invalidateQueries({ queryKey: prefix }); backToList()
+    },
+    onError: error => {
+      if (error instanceof ApiClientError && error.status >= 400 && error.status < 500 && error.status !== 408) pendingResume.current = null
+      setFailure(presentRunFailure(error, '提交处理结果失败'))
+    },
   })
   const finish = useMutation({
     mutationFn: (outcome: 'succeeded' | 'failed') => api.finishManual(manualItemId, { expectedCheckpointRevision: live!.checkpointRevision, expectedStatusRevision: live!.statusRevision, outcome, reason: reason.trim() || (outcome === 'succeeded' ? '用户在管理页面标记完成' : '用户在管理页面标记失败'), retainEnvironment: { enabled: false } }, crypto.randomUUID()),
@@ -94,7 +118,7 @@ export function ManualDetailPage({ workspaceKey, instanceId, projectId, client, 
   const left = remaining(live.expiresAt)
   const parameters = Object.entries(task.data?.inputSnapshot.parameters ?? {})
   const choices = [
-    { value: 'continue', label: '继续工作流', description: '从所选节点继续当前任务。', disabled: targets.length === 0 },
+    { value: 'continue', label: '继续工作流', description: '从所选节点继续当前任务。', disabled: targets.length === 0 && !live.canResume },
     { value: 'complete', label: '标记完成', description: '本任务已处理完毕；完成不等于资料已保存，也不会自动写入业务数据。', disabled: false },
     { value: 'fail', label: '标记失败', description: '本任务无法继续，标记为失败。', disabled: false },
   ]
@@ -108,6 +132,7 @@ export function ManualDetailPage({ workspaceKey, instanceId, projectId, client, 
       <div className="text-right"><p className="m-0 flex items-center justify-end gap-2 text-lg font-medium"><Clock aria-hidden/>{left === null ? '没有保留截止时间' : left <= 0 ? '已超过保留时间' : `剩余 ${left} 分钟`}</p><p className="m-0 text-sm text-muted">{live.expiresAt ? `${stamp(live.expiresAt)} 到期` : '保留时间未设置'} · 进入等待 {stamp(live.createdAt)}</p></div>
     </header>
     {failure ? <div role="alert" className="flex items-center justify-between rounded-control border border-warning/30 bg-warning/10 p-3"><span>{failure}</span><Button size="sm" onClick={() => setFailure(undefined)}>关闭提示</Button></div> : null}
+    {resume.isError && pendingResume.current ? <div role="status" className="flex items-center justify-between gap-3 rounded-control border border-line p-3"><span>上次继续请求尚待核对。输入已保留，不会重复提交新命令。</span><Button disabled={resume.isPending} onClick={() => resume.mutate()}>核对继续请求</Button></div> : null}
     <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
       <section className="grid min-w-0 gap-3 rounded-card border border-line bg-surface p-5" aria-label={terminal ? '历史现场' : '当前现场'}>
         <header className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="m-0 text-lg font-semibold">{terminal ? '历史现场' : '当前现场'}</h2><p className="mb-0 mt-1 text-sm text-muted">{terminal ? '以下为本次任务留下的历史输入与现场事实，仅用于核对。' : '以下为本次任务的输入与现场事实，用于核对内容。'}</p></div>{!terminal && live.instanceId ? <Button size="sm" variant="secondary" disabled={disabled || readOnly || openEnvironment.isPending || !instance.data} loading={openEnvironment.isPending} onClick={() => openEnvironment.mutate()}><Monitor aria-hidden/>打开环境</Button> : <span className="text-sm text-muted">{terminal ? '现场已结束' : '未接入环境'}</span>}</header>
@@ -146,10 +171,11 @@ export function ManualDetailPage({ workspaceKey, instanceId, projectId, client, 
             <span className="min-w-0"><strong className="block">{choice.label}</strong><small className="block text-muted">{choice.description}</small></span>
           </label>)}
         </fieldset>
-        {targets.length === 0 ? <p className="m-0 text-xs text-muted">当前检查点没有管理页面可继续的目标节点（执行核心尚未接入）；继续工作流保持禁用，标记完成与标记失败可用。</p> : null}
-        {chosen === 'continue' ? <label className="grid gap-2 text-sm"><span>继续节点<abbr title="必填" className="ml-1 no-underline">*</abbr></span><Select aria-label="继续节点" clearable={false} placeholder="请选择继续节点" value={target} options={targets} disabled={locked} onValueChange={setTarget}/><small className="text-muted">校验本次任务快照中的节点与上下文。</small></label> : null}
+        {targets.length === 0 && !live.canResume ? <p className="m-0 text-xs text-muted">当前检查点没有管理页面可继续的目标节点（执行核心尚未接入）；继续工作流保持禁用，标记完成与标记失败可用。</p> : null}
+        {chosen === 'continue' && targets.length > 0 ? <label className="grid gap-2 text-sm"><span>继续节点<abbr title="必填" className="ml-1 no-underline">*</abbr></span><Select aria-label="继续节点" clearable={false} placeholder="请选择继续节点" value={target} options={targets} disabled={locked || resume.isPending || Boolean(pendingResume.current)} onValueChange={setTarget}/><small className="text-muted">校验本次任务快照中的节点与上下文。</small></label> : null}
+        {chosen === 'continue' ? <ManualResumeFields fields={live.inputSchema ?? []} draft={inputDraft} onChange={setInputDraft} disabled={locked || resume.isPending || Boolean(pendingResume.current)}/> : null}
         {chosen === 'fail' ? <label className="grid gap-2 text-sm"><span>失败说明<abbr title="必填" className="ml-1 no-underline">*</abbr></span><Textarea aria-label="失败说明" value={reason} maxLength={500} disabled={locked} placeholder="说明无法继续的原因，会写入原任务记录" onChange={event => setReason(event.target.value)}/></label> : null}
-        <Button disabled={!canSubmit || finish.isPending || resume.isPending} loading={finish.isPending || resume.isPending} onClick={() => { setFailure(undefined); if (chosen === 'complete') { setConfirming(true); return } if (chosen === 'continue') resume.mutate(); else if (chosen === 'fail') finish.mutate('failed') }}>提交处理结果</Button>
+        <Button disabled={!canSubmit || finish.isPending || resume.isPending || Boolean(pendingResume.current)} loading={finish.isPending || resume.isPending} onClick={() => { setFailure(undefined); if (chosen === 'complete') { setConfirming(true); return } if (chosen === 'continue') resume.mutate(); else if (chosen === 'fail') finish.mutate('failed') }}>提交处理结果</Button>
         <p className="m-0 text-xs text-muted">处理结果写入原任务记录；不会创建新任务。{readOnly ? '项目处于归档状态，只能查看。' : ''}</p>
         </>}
       </section>

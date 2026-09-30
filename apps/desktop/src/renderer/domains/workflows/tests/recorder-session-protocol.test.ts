@@ -113,3 +113,7 @@ it('reports a definite rejection when recovery confirms that the lost startup wa
   expect(result.outcomeUnknown).not.toBe(true)
  }finally{restore()}
 })
+
+import {beforeEach as beforeBrowserNode} from 'vitest'
+import {selectBrowserNode} from './select-browser-node'
+beforeBrowserNode(()=>selectBrowserNode())

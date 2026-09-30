@@ -12,6 +12,7 @@ LICENSE = ROOT / 'reference/WebRPA/LICENSE'
 REVISION = 'WebRPA@5ccb900e8dcf1530aae66f676d87593c416c7ebb'
 CAPABILITIES = ROOT / 'docs/migration/studio-frontend-completion/capabilities.json'
 TARGET = ROOT / 'apps/desktop/src/renderer/domains/workflows/development/module-required-fields.json'
+PRODUCTION_JSON = ROOT / 'apps/backend/src/autoflow/adapters/http/module-required-fields.json'
 MANIFEST = ROOT / 'docs/migration/studio-frontend-completion/required-field-source-coverage.json'
 PRODUCTION = ROOT / 'apps/backend/src/autoflow/domain/workflows/required_fields.py'
 # AutoFlow-owned rules, reviewed against ProxyControlExecutor.execute and its UI.
@@ -27,14 +28,33 @@ NATIVE_SCHEMAS = {
 }
 
 NATIVE_SCHEMAS['project_data'] = {
-    'required': ['action', 'resultVariable'],
-    'conditional_required': {'field': 'action', 'default': 'inputs', 'map': {
-        action: ['binding', 'arguments'] for action in ('read', 'query', 'update', 'status', 'create', 'delete', 'addField', 'ensureField', 'modifyField', 'previewField')
-    } | {'inputs': [], 'operation': ['arguments']}},
-    'desc': {'binding': '授权数据表和字段', 'arguments': '操作参数', 'action': '项目数据操作', 'resultVariable': '结果变量'},
+    'required': ['operation', 'arguments', 'variableName'],
+    'conditional_required': {'field': 'operation', 'default': 'inputs', 'map': {
+        operation: ['bindingProjectId', 'tableGrant']
+        for operation in (
+            'readRecord', 'queryRecords', 'queryTableSchema', 'createRecord',
+            'updateRecord', 'deleteRecord', 'setRecordStatus', 'addField',
+            'ensureField', 'modifyField', 'previewFieldChange', 'deleteField',
+            'previewFieldDeletion',
+        )
+    } | {'inputs': []}},
+    'desc': {
+        'bindingProjectId': '绑定项目',
+        'tableGrant': '授权数据表和字段',
+        'arguments': '操作参数',
+        'operation': '项目数据操作',
+        'variableName': '结果变量',
+    },
 }
 
-NATIVE_SCHEMAS['project_end'] = {'required': [], 'desc': {'name': '新环境名称', 'recordTargets': '新增或已写记录的 RecordRef 列表'}}
+NATIVE_SCHEMAS['project_end'] = {
+    'required': [],
+    'desc': {
+        'retainEnvironment': '环境保留策略',
+        'name': '新环境名称',
+        'recordTargets': '新增或已写记录的 RecordRef 列表',
+    },
+}
 
 def _update_name(statement):
     if not isinstance(statement, ast.Expr) or not isinstance(statement.value, ast.Call):
@@ -124,11 +144,11 @@ def extract():
         **sources[0], 'sources': sources, 'sourceRevision': REVISION,
         'nativeModules': sorted(NATIVE_SCHEMAS),
         'nativeSources': ['apps/backend/src/autoflow/application/workflows/executors/proxy_control.py',
-                          'apps/backend/src/autoflow/application/workflows/executors/project_data.py',
-                          'apps/backend/src/autoflow/application/workflows/executors/project_end.py'],
+                          'apps/backend/src/autoflow/providers/browser/project_graph.py',
+                          'apps/backend/src/autoflow/application/project_runs/worker_capabilities.py'],
         'license': {'path': LICENSE.relative_to(ROOT).as_posix(), 'sha256': hashlib.sha256(LICENSE.read_bytes()).hexdigest()},
         'modifications': ['Read final literal groups in frozen merge order, including AUTOFIX and later manual overrides.',
-                          'Filter frozen metadata to 213 retained source nodes; add AutoFlow proxy and PM9 project data/End rules for the approved native scope.',
+                          'Filter frozen metadata to 213 retained source nodes; add AutoFlow proxy and canonical project data/End rules for the approved native scope.',
                           'Describe AutoFlow bundled Python instead of the source Python313 environment.'],
         'mergeOrder': merge_order, 'approvedCount': len(retained), 'coveredCount': len(covered),
         'covered': covered, 'uncovered': missing,
@@ -151,7 +171,8 @@ def production_text(metadata, manifest):
 if __name__ == '__main__':
     import sys
     metadata, manifest = extract()
-    outputs = [(TARGET, json.dumps(metadata, ensure_ascii=False, indent=2) + '\n'),
+    outputs = [(PRODUCTION_JSON, json.dumps(metadata, ensure_ascii=False, indent=2) + '\n'),
+               (TARGET, json.dumps(metadata, ensure_ascii=False, indent=2) + '\n'),
                (MANIFEST, json.dumps(manifest, ensure_ascii=False, indent=2) + '\n'),
                (PRODUCTION, production_text(metadata, manifest))]
     for target, text in outputs:

@@ -1,0 +1,114 @@
+{
+  "date": "2026-09-23",
+  "status": "three_platform_ci_success_after_intel_only_retry_release_pending",
+  "releaseAccepted": false,
+  "productionSourceCommit": "c16532d79fe8db87a8f9b371d9045a02fb89e362",
+  "runId": "35846519367",
+  "url": "https://github.com/1127152834/auto-flow/actions/runs/35846519367",
+  "attempts": [
+    {
+      "attempt": 1,
+      "result": "Windows and ARM complete success; Intel all tests and packaged smoke passed but DMG build failed when hdiutil could not eject temporary disk4 (Resource busy). Full failure detail and original extracted artifact retained in ci-link-boundary-attempt-1.json."
+    },
+    {
+      "attempt": 2,
+      "result": "Intel-only job complete success on identical production source; Windows and ARM success inherited from attempt 1; native/worker probe jobs skipped."
+    }
+  ],
+  "platforms": {
+    "win32-x64": {
+      "status": "success",
+      "jobId": "107133892482",
+      "runAttempt": 1,
+      "nativeBoundary": "251 passed / 28 skipped",
+      "backend": "3471 passed / 85 skipped",
+      "frontend": "5471 passed",
+      "selectedRealWorker": "29 passed / 11 deselected",
+      "packagedDesktop": "passed",
+      "report": "qa-runs/2026-09-23-ci-c165-windows/project-desktop.json",
+      "installer": "AutoFlow Setup 0.1.0.exe",
+      "installerSha256": "9ec67f581fa770b68c229ca536e27ec9b75a60ae70ee9c88177470c97f3abeb7",
+      "observed": {
+        "realWorkerLogs": 1004,
+        "realWorkerElapsedMs": 169159,
+        "realWorkerLogsPerMinuteObserved": 356,
+        "concurrentProducers": 5,
+        "records": 10000,
+        "seedMs": 1033383,
+        "busyRetries": 7,
+        "syntheticLogs": 1000,
+        "syntheticElapsedMs": 60063,
+        "syntheticMaxBatchLagMs": 473
+      },
+      "physicalAcceptance": "pending"
+    },
+    "darwin-arm64": {
+      "status": "success",
+      "jobId": "107133892764",
+      "runAttempt": 1,
+      "backend": "3479 passed / 77 skipped",
+      "frontend": "5471 passed",
+      "selectedRealWorker": "29 passed / 11 deselected",
+      "packagedDesktop": "passed",
+      "report": "qa-runs/2026-09-23-ci-c165-arm/project-desktop.json",
+      "installer": "AutoFlow-0.1.0-arm64.dmg",
+      "installerSha256": "bde5e6b263c9cb86fadd3e9f1bc9ca5aa66e83bb7f3283c4901226545bdba40f",
+      "observed": {
+        "realWorkerLogs": 1004,
+        "realWorkerElapsedMs": 38264,
+        "realWorkerLogsPerMinuteObserved": 1574,
+        "concurrentProducers": 5,
+        "records": 10000,
+        "seedMs": 68530,
+        "busyRetries": 0,
+        "syntheticLogs": 1000,
+        "syntheticElapsedMs": 60069,
+        "syntheticMaxBatchLagMs": 195
+      },
+      "isolatedInstalledReport": "installed-arm-link-guard-candidate.json",
+      "physicalAcceptance": "Finder/Gatekeeper, signing, notarization and native panels pending"
+    },
+    "darwin-x64": {
+      "status": "success_after_retry",
+      "jobId": "107161850296",
+      "runAttempt": 2,
+      "backend": "3479 passed / 77 skipped",
+      "frontend": "5471 passed",
+      "selectedRealWorker": "29 passed / 11 deselected",
+      "packagedDesktop": "passed",
+      "report": "qa-runs/2026-09-23-ci-c165-intel-attempt2/project-desktop.json",
+      "installer": "AutoFlow-0.1.0.dmg",
+      "installerSha256": "d3618153950c99760b07f9b1289794ff811cd3e922aebbd61c82050ee6beac5d",
+      "artifactId": "10751092159",
+      "installerVerificationOnArm": "hdiutil verify VALID; read-only mount contains AutoFlow.app with Mach-O x86_64 executable; image detached; no Intel physical run claimed",
+      "observed": {
+        "realWorkerLogs": 1004,
+        "realWorkerElapsedMs": 33911,
+        "realWorkerLogsPerMinuteObserved": 1776,
+        "concurrentProducers": 5,
+        "records": 10000,
+        "seedMs": 115843,
+        "busyRetries": 0,
+        "syntheticLogs": 1000,
+        "syntheticElapsedMs": 60174,
+        "syntheticMaxBatchLagMs": 222
+      },
+      "physicalAcceptance": "pending"
+    }
+  },
+  "localChecks": {
+    "backend": "3479 passed / 77 skipped / 2 dependency warnings",
+    "contractAndRules": "33 passed",
+    "realWorkerAddedAssertion": "1 passed locally in 13.26s: worker End saves environment, forged-project repair leaves records unchanged, correct repair only associates without rerun; assertion added after c16532d7 CI source snapshot",
+    "ruff": "passed",
+    "mypy": "407 source files passed",
+    "coverageReferences": "251 valid references; 248 scoped / 3 unlocated; 205 partial / 46 planned / 0 verified"
+  },
+  "limits": [
+    "Three-platform CI success proves this source build and scoped automated chains, not complete PM9 acceptance.",
+    "Current packaged live Google Sheets/OAuth, system UUID/remote-column real Google and other external credential tests remain pending; historical PM6 service-account Sheets/system credential evidence remains valid.",
+    "Windows and Intel physical installers, native file panels/credential lifecycle, complete import/export/uninstall, Finder/Gatekeeper, signing and notarization remain pending.",
+    "Actual worker throughput and 10000-record times are single-run observations; the 60-second synthetic 1000-log result is a distinct fixed input, not a Windows worker performance target.",
+    "DATA-LINK-02 remains partially_verified: direct and real-worker repair evidence is scoped; worker-generated forged End target and full business acceptance remain open."
+  ]
+}

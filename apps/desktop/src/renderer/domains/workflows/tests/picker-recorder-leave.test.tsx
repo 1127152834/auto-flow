@@ -1,3 +1,4 @@
+import {selectBrowserNode} from './select-browser-node'
 import {act,cleanup,fireEvent,render,screen} from '@testing-library/react'
 import {afterEach,beforeEach,expect,it,vi} from 'vitest'
 import {useDraftProtection} from '../hooks/useDraftProtection'
@@ -18,7 +19,7 @@ function Editor({recorder=false}:{recorder?:boolean}){
 }
 beforeEach(()=>{
  const data=new Map<string,string>();vi.stubGlobal('localStorage',{getItem:(key:string)=>data.get(key)??null,setItem:(key:string,value:string)=>data.set(key,value),removeItem:(key:string)=>data.delete(key)})
- vi.useFakeTimers();store.getState().clearWorkflow();configureMock({offline:false,disconnect:false})
+ vi.useFakeTimers();selectBrowserNode();configureMock({offline:false,disconnect:false})
  store.getState().addVariable({name:'draft',type:'string',value:'keep',scope:'global'})
  requests=[]
  restore=configureStudioConnection('http://autoflow-studio.mock',async(input,init)=>{requests.push(new URL(String(input)).pathname);return mockRequest(input,init)})
@@ -54,7 +55,7 @@ it('stops recording and reads its tail before allowing document replacement',asy
  const decision=await leave();await click('保存并结束会话');expect(await decision.promise).toBe(true)
  expect(requests.indexOf('save')).toBeLessThan(requests.indexOf('/api/recorder/stop'))
  expect(mockSnapshot().recording).toBe(false);expect(screen.getByText(/共 1 步/)).toBeTruthy()
- expect(store.getState().nodes).toHaveLength(0)
+ expect(store.getState().nodes).toHaveLength(1)
  act(()=>store.getState().clearWorkflow())
  expect((screen.getByRole('button',{name:'生成节点'}) as HTMLButtonElement).disabled).toBe(true)
 })
@@ -96,7 +97,7 @@ it('releases the consumed review after generating nodes',async()=>{
  await browserApi.open();render(<Editor recorder/>);await click('开始录制')
  addMockRecordingEvent({type:'input',selector:'#name',value:'已生成'})
  await click('停止录制');await click('保存审查');await click('生成节点')
- expect(store.getState().nodes).toHaveLength(1)
+ expect(store.getState().nodes).toHaveLength(2)
  expect(getDocumentLeaveResources().some(item=>item.label==='未保存录制审查')).toBe(false)
 })
 it('pauses and resumes recording from the visible controls',async()=>{

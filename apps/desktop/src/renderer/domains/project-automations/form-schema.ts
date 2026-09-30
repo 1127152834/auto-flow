@@ -5,7 +5,7 @@ export type AutomationFormErrors = Record<string, string>
 const length = (value: string) => [...value].length
 
 export function emptyAutomationForm(workflowId = ''): AutomationFormValues {
-  return { name: '', description: '', workflowId, inputPlan: { inputs: [] }, parameterSchema: [], environmentPolicy: { source: 'newFromProfile' }, runPolicy: { maxTasks: 1, concurrency: 1, maxLiveInstances: 1, continueAfterFailure: false, automaticExecutionTimeoutSeconds: 900, manualDeadlineSeconds: 900 } }
+  return { name: '', description: '', workflowId, inputPlan: { inputs: [] }, parameterSchema: [], environmentPolicy: { source: 'newFromProfile' }, runPolicy: { maxTasks: 1, concurrency: 1, maxLiveInstances: 1, continueAfterFailure: true, automaticExecutionTimeoutSeconds: 900, manualDeadlineSeconds: 900 } }
 }
 
 /** Explicit projection: never submit fetched capability facts or a stale revision as form fields. */
@@ -26,7 +26,6 @@ export function validateAutomationForm(value: AutomationFormValues): AutomationF
   const errors: AutomationFormErrors = {}
   if (!value.name.trim() || length(value.name.trim()) > 80) errors.name = '自动化名称需要 1–80 个字符'
   if (length(value.description.trim()) > 1000) errors.description = '用途说明最多 1000 个字符'
-  if (!value.workflowId) errors.workflowId = '请选择关联工作流'
   value.parameterSchema.forEach((parameter, index, all) => {
     const prefix = `parameterSchema.${index}`
     if (parameter.description !== undefined && length(parameter.description.trim()) > 1000) errors[`${prefix}.description`] = '参数说明最多 1000 个字符'
@@ -38,7 +37,7 @@ export function validateAutomationForm(value: AutomationFormValues): AutomationF
   if (!Number.isInteger(policy.maxTasks) || policy.maxTasks < 1 || policy.maxTasks > 100) errors['runPolicy.maxTasks'] = '最大任务数必须是 1–100 的整数'
   for (const key of ['automaticExecutionTimeoutSeconds', 'manualDeadlineSeconds'] as const) if (!Number.isFinite(policy[key]) || policy[key] <= 0) errors[`runPolicy.${key}`] = '请输入有限的正数'
   for (const key of ['concurrency', 'maxLiveInstances'] as const) {
-    if (value.inputPlan.inputs.length ? !Number.isInteger(policy[key]) || policy[key] < 1 || policy[key] > 100 : policy[key] !== 1) errors[`runPolicy.${key}`] = value.inputPlan.inputs.length ? '必须是 1–100 的整数' : '参数型自动化固定为 1'
+    if (!Number.isInteger(policy[key]) || policy[key] < 1 || policy[key] > 100) errors[`runPolicy.${key}`] = '必须是 1–100 的整数'
   }
   const environment = value.environmentPolicy
   if (environment.source === 'newFromProfile' && Object.hasOwn(environment, 'profileId') && !environment.profileId) errors['environmentPolicy.profileId'] = '请选择浏览器配置'

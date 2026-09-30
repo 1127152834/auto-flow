@@ -76,12 +76,17 @@ async def test_unconfirmed_or_retained_copy_is_not_automatically_removed(tmp_pat
 
 @pytest.mark.asyncio
 async def test_failed_save_before_candidate_creation_protects_copy(tmp_path):
-    _factory, project, _task, service, instance, directory, scheduler = setup_copy(tmp_path, state="closed")
-    with pytest.raises(ProjectError):
+    factory, project, task, service, instance, directory, scheduler = setup_copy(tmp_path, status="running", state="closed")
+    # Admit an authorized save before the run ends; invalid metadata fails before
+    # a candidate is created. A revoked request must not create retention intent.
+    with pytest.raises(ProjectError) as failure:
         service.save(project, str(uuid4()), {
-            "instanceId": instance.instance_id, "mode": "save_as", "name": "retain",
-            "expectedUseGeneration": 99, "executionGeneration": 1,
+            "instanceId": instance.instance_id, "mode": "save_as", "name": " " * 5,
+            "expectedUseGeneration": 1, "executionGeneration": 1,
         })
+    assert failure.value.code == "VALIDATION_ERROR"
+    with factory.begin() as session:
+        session.get(WorkflowRunRow, task.run_id).status = "succeeded"
     await scheduler.tick()
     assert (directory / "Cookies").read_bytes() == b"must not lose retained login"
     assert service.environments.get_instance(project, instance.instance_id).state == "closed"
@@ -174,20 +179,31 @@ async def test_legacy_save_with_unknown_instance_is_not_a_deletion_authorization
 async def test_save_in_flight_and_cleanup_share_the_instance_lock(tmp_path, monkeypatch):
     import asyncio
     from threading import Event
-    _factory, project, _task, service, instance, directory, scheduler = setup_copy(tmp_path, state="closed")
+    factory, project, task, service, instance, directory, scheduler = setup_copy(tmp_path, status="running", state="closed")
     started, release = Event(), Event()
-    original = service._command
-    def command(*args):
+    original = service.store.stage_candidate
+    def stage_candidate(*args, **kwargs):
         started.set()
         assert release.wait(5)
-        return original(*args)
-    monkeypatch.setattr(service, "_command", command)
+        return original(*args, **kwargs)
+    # PM9 admission fences terminal runs. End the run only after this save is
+    # accepted, while candidate creation still owns the instance lifecycle lock.
+    monkeypatch.setattr(service.store, "stage_candidate", stage_candidate)
     save = asyncio.create_task(asyncio.to_thread(service.save, project, str(uuid4()), {
         "instanceId": instance.instance_id, "mode": "save_as", "name": "safe",
         "expectedUseGeneration": 1, "executionGeneration": 1,
     }))
     assert await asyncio.to_thread(started.wait, 5)
-    cleanup = asyncio.create_task(scheduler.tick())
+    with factory.begin() as session:
+        session.get(WorkflowRunRow, task.run_id).status = "succeeded"
+    # The scheduler already excludes accepted saves. A direct cleanup request
+    # must additionally wait for the same lock rather than removing a live save.
+    await scheduler.tick()
+    assert directory.exists()
+    assert service.environments.get_instance(project, instance.instance_id).state == "saving"
+    cleanup = asyncio.create_task(asyncio.to_thread(
+        service.close_instance, project, instance.instance_id, instance.environment_id,
+    ))
     try:
         await asyncio.sleep(0.05)
         assert directory.exists()
@@ -247,3 +263,36 @@ async def test_slow_terminal_cleanup_is_deferred_while_another_core_run_is_activ
         session.get(WorkflowRunRow, other.run_id).status = "cancelled"
     await scheduler.tick()
     assert not directory.exists()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("status,expected_generation,execution_generation", [
+    ("running", 99, 1), ("running", 1, 2), ("succeeded", 1, 1),
+])
+async def test_rejected_save_cannot_create_retention_intent(
+    tmp_path, status, expected_generation, execution_generation,
+):
+    from sqlalchemy import select
+
+    from autoflow.infrastructure.database.models import ProjectOperationRow
+
+    factory, project, task, service, instance, directory, scheduler = setup_copy(
+        tmp_path, status=status, state="closed",
+    )
+    with pytest.raises(ProjectError) as rejected:
+        service.save(project, str(uuid4()), {
+            "instanceId": instance.instance_id, "mode": "save_as", "name": "rejected",
+            "expectedUseGeneration": expected_generation,
+            "executionGeneration": execution_generation,
+        })
+    assert rejected.value.code == "CAPABILITY_SCOPE_DENIED"
+    assert (directory / "Cookies").read_bytes() == b"must not lose retained login"
+    with factory.begin() as session:
+        assert session.scalar(select(ProjectOperationRow).where(
+            ProjectOperationRow.project_id == project,
+            ProjectOperationRow.kind == "saveEnvironment",
+        )) is None
+        session.get(WorkflowRunRow, task.run_id).status = "succeeded"
+    await scheduler.tick()
+    assert not directory.exists()
+    assert service.environments.get_instance(project, instance.instance_id).state == "cleaned"

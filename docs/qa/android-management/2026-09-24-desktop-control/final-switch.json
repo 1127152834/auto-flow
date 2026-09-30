@@ -1,0 +1,17 @@
+{
+  "deviceId": "bf8fe420-30c6-4996-8255-98c59a44742e",
+  "generation": 11,
+  "ownerRunId": "b18978cf-b2e1-4dc1-8e99-7e911f44fbf4",
+  "control": "manual",
+  "processes": {
+    "tunnel": {
+      "pid": 90388,
+      "birth": 76994109175
+    },
+    "embedded": {
+      "pid": 92763,
+      "birth": 78183261520
+    }
+  },
+  "nativeWindowClosed": true
+}

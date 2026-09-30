@@ -1,0 +1,126 @@
+{
+  "date": "2026-09-22",
+  "status": "findings_fixed_scoped_regression_D1_local_and_three_platform_ci_pass_external_acceptance_pending",
+  "releaseAccepted": false,
+  "reviewedRange": {
+    "base": "e71785da7353760ea8bfd567d272dd27865c0188",
+    "head": "9afe3be56c6ee7093b262c1a351abb4d8205c3d8"
+  },
+  "reviewer": "One independent fresh-context gpt-6-astra, read-only; no nested agents or repeat review",
+  "findings": [
+    {
+      "id": "CR-1",
+      "severity": "Important",
+      "issue": "UUID active lease lookup missed the public text-normalized key",
+      "fix": "Normalize UUID identically in shared active_record_lease lookup; all management status/deletion and dynamic cursor callers reuse it",
+      "red": "held/reconciling HTTP status unexpectedly succeeded; same-project UUID/text dynamic alias raised UNIQUE project_record_leases.lease_key",
+      "green": "4 passed / 14 deselected in 5.08s; same Task four writes keep one public lease and two local cursors; final combined related regression 134 passed in 132.41s",
+      "status": "fixed"
+    },
+    {
+      "id": "CR-2",
+      "severity": "Important",
+      "issue": "Unknown value reconciliation skipped owned column/system identity validation",
+      "fix": "Push and reconcile use the same full source identity observation and owned column checks; failed verification leaves original intent unknown and does not send",
+      "red": "Four real HTTP cases (column/system x name/owner) incorrectly confirmed",
+      "green": "Four cases passed within initial 45-pass scoped run; final combined suite pending; final combined related regression 134 passed in 132.41s",
+      "status": "fixed"
+    },
+    {
+      "id": "CR-3",
+      "severity": "Important",
+      "issue": "Known invalid source identity retained claimable stale peer proof after push",
+      "fix": "Reuse full pull identity observation for push/reconcile; persist current membership or invalid proof before allowing values. Only successful reads publish evidence; network/value errors do not invalidate reliable identity",
+      "red": "Four push observations duplicate/blank/missing/header left a peer ready",
+      "green": "Four cases passed within initial 45-pass scoped run; ordinary rejected-value/pull/claim positive control passed; final combined related regression 134 passed in 132.41s",
+      "status": "fixed"
+    }
+  ],
+  "deferredMinors": [],
+  "limits": [
+    "Current real Google OAuth/UUID/column acceptance remains external",
+    "Current native matrix and full regression pending; previous C4 source hashes remain separate",
+    "No new remote transactional protocol, M1-M3, cross-process human recovery or all Studio admission"
+  ],
+  "sourceHashes": {
+    "apps/backend/src/autoflow/infrastructure/database/project_claims.py": "6feeb067cf081cdc204831c60aaa34c2e37a35c7e75163af01e7c62820fa433f",
+    "apps/backend/src/autoflow/infrastructure/database/project_sync.py": "7bd0c61abc200949db1e82864d0b21fda6d637c22c9b519b0f7afbbfff1f2169",
+    "apps/backend/src/autoflow/application/project_sync/outbound.py": "8befa4c2f17e03a78c2eee604bb7cf1823755e927e653fed27c0d711be38aa3d"
+  },
+  "verification": {
+    "scopedBackend": "134 passed, 2 warnings in 132.41s",
+    "frontend": "5469 passed / 409 files in 198.85s, source unchanged after 9afe3be5",
+    "mypy": "407 source files passed",
+    "ruff": "Exact CI uv run --directory apps/backend ruff check . passed, including tests",
+    "typecheck": "passed",
+    "lint": "passed",
+    "openapi": "passed",
+    "scripts": "101 passed",
+    "fullBackend": "3440 passed, 67 skipped, 2 warnings in 772.39s at a8adc43a. Later d75297fb changes only test import layout and reports; production source unchanged.",
+    "nativeMatrix": "final post-review candidate pending",
+    "preFixFullBackend": "9afe3be5: 1 failed, 3427 passed, 67 skipped in 740.91s; old system identity rule expected notImplemented, superseded by approved R3 explicit-column contract. No other failures.",
+    "legacyIdentityRule": "Pure boundary test now rejects missing column and accepts explicit system coordinate; source unchanged.",
+    "build": "Passed in 34.38s",
+    "win32Mypy": "407 source files passed",
+    "d1": "138 backend, 11 UI, mypy407, Ruff, OpenAPI, typecheck pass; existing PM9 worker scenarios 5 passed locally; D1 bad-value worker filter selected 0 and remains unclaimed."
+  },
+  "finalCICandidate": {
+    "runId": 35677887974,
+    "headSha": "ae347de9f5fc1922efa7c4af99c0e606e6bde26a",
+    "status": "passed_all_platforms",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35677887974",
+    "platforms": {
+      "darwin-arm64": {
+        "status": "passed",
+        "report": "ci-d1-final-darwin-arm64.json"
+      },
+      "win32-x64": {
+        "status": "passed",
+        "report": "ci-d1-final-win32-x64.json"
+      },
+      "darwin-x64": {
+        "status": "passed",
+        "report": "ci-d1-final-darwin-x64.json"
+      }
+    },
+    "nativeProbe": "skipped",
+    "workerProbe": "skipped"
+  },
+  "localInstaller": "install-shared-data-final-darwin-arm64.json",
+  "d1Review": {
+    "candidate": "ae347de9f5fc1922efa7c4af99c0e606e6bde26a",
+    "status": "fixed_scoped_regression_green_native_follow_up_pending",
+    "findings": [
+      {
+        "id": "D1-1",
+        "severity": "Important",
+        "issue": "Excel identity field business-format error fell back to text scalar",
+        "fix": "Identity field validation now rejects the import before fallback",
+        "green": "Dedicated identity rejection test passed; included in 138-test scoped regression"
+      },
+      {
+        "id": "D1-2",
+        "severity": "Important",
+        "issue": "Required source blanks materialized as null/empty string",
+        "fix": "Excel and Sheets omit missing cells; validationIssues derives REQUIRED_FIELD_MISSING",
+        "green": "Dedicated Excel and Sheets missing-source tests passed"
+      },
+      {
+        "id": "D1-3",
+        "severity": "Important",
+        "issue": "Sheets late-invalid identity left earlier rows partially materialized",
+        "fix": "All rows are source-validated before any ingest",
+        "green": "Dedicated late-invalid identity test passed with zero records"
+      }
+    ],
+    "deferredMinor": "UI diagnostics are rendered as one field-list panel after the values list; still distinguishes format issues from read failures.",
+    "scopedBackend": "138 passed, 2 warnings in 58.62s",
+    "nativeRun": {
+      "runId": 35677887974,
+      "headSha": "ae347de9f5fc1922efa7c4af99c0e606e6bde26a",
+      "status": "passed_all_platforms",
+      "nativeProbe": "skipped",
+      "workerProbe": "skipped"
+    }
+  }
+}

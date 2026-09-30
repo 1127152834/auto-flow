@@ -201,8 +201,6 @@ import { useLayoutStore, LAYOUT_LIMITS } from '../hooks/stores/layoutStore'
 
 // 模块图标映射 - 优化后更直观的图标
 const moduleIcons: Record<ModuleType, React.ElementType> = {
-  project_data: Database,
-  project_end: Database,
   proxy_change_ip: Globe, proxy_change_location: Globe, proxy_query: Search,
   // 页面导航
   open_page: Globe,
@@ -236,6 +234,9 @@ const moduleIcons: Record<ModuleType, React.ElementType> = {
   switch_tab: Layers,
   // 数据提取
   get_element_info: Search,
+  trace_mark: Search,
+  capture_diagnostics: Camera,
+  save_trace_segment: Download,
   screenshot: Camera,
   save_image: ImageDown,
   download_file: Download,
@@ -251,6 +252,9 @@ const moduleIcons: Record<ModuleType, React.ElementType> = {
   wait_page_load: RefreshCw,
   page_load_complete: GitBranch,
   // 变量与数据
+  project_data: Database,
+  project_end: Database,
+  project_manual: Database,
   set_variable: Variable,
   increment_decrement: TrendingUp,
   json_parse: FileJson,
@@ -859,8 +863,6 @@ const moduleIcons: Record<ModuleType, React.ElementType> = {
 const moduleKeywords: Record<ModuleType, string[]> = {
   proxy_change_ip: ['代理', 'IP', '切换', 'proxy'],
   proxy_change_location: ['代理', '地点', '地址', '切换', 'proxy'],
-  project_data: ['项目', '数据', '记录', '状态'],
-  project_end: ['项目', '结束', '保留', '环境', 'End'],
   proxy_query: ['代理', '状态', '查询', '操作', 'proxy'],
   open_page: ['打开', '网页', '浏览器', 'url', '地址', 'open', 'page'],
   dp_open_page: ['drissionpage', 'dp', '反检测', '绕过', '风控', '打开', '网页', 'bypass', '隐蔽'],
@@ -890,6 +892,9 @@ const moduleKeywords: Record<ModuleType, string[]> = {
   switch_iframe: ['切换', 'iframe', '内嵌', '框架', 'frame', '子页面', '嵌入', '内联框架', 'qhiframe', 'qh', 'nq', 'kj', 'zyym', 'qiehuan', 'neiqian', 'kuangjia', 'ziyemian', 'qianru', 'neilianku angjia'],
   switch_to_main: ['切换', '主页面', '退出', 'iframe', 'frame', '返回', '主框架', 'main', 'qhzyym', 'qh', 'zyym', 'tc', 'fh', 'zkj', 'qiehuan', 'zhuyemian', 'tuichu', 'fanhui', 'zhukuangjia'],
   switch_tab: ['切换', '标签页', 'tab', '页面', '窗口', '索引', '标题', 'url', '下一个', '上一个', 'qhbqy', 'qh', 'bqy', 'ym', 'ck', 'qiehuan', 'biaoqianye', 'yemian', 'chuangkou'],
+  project_end: ['项目', '结束', '保留', '环境', 'end'],
+  project_manual: ['人工', '暂停', '继续', 'manual'],
+  project_data: ['项目', '记录', '数据', '状态', 'project', 'record'],
   set_variable: ['设置', '变量', 'set', 'variable', '赋值'],
   increment_decrement: ['自增', '自减', '加', '减', 'increment', 'decrement', '计数', '累加', '累减', '步长'],
   json_parse: ['json', '解析', '提取', 'parse', '数据', 'jsonpath'],
@@ -1062,6 +1067,9 @@ const moduleKeywords: Record<ModuleType, string[]> = {
   get_sibling_elements: ['兄弟元素', '同级', '获取', '列表', 'sibling', 'elements', '兄弟节点'],
   download_file: ['下载', '文件', 'download', 'file'],
   save_image: ['保存', '图片', 'save', 'image'],
+  trace_mark: ['追踪', '标记', 'trace', 'mark'],
+  capture_diagnostics: ['诊断', '快照', 'DOM', 'trace'],
+  save_trace_segment: ['追踪', '片段', 'trace', 'segment'],
   screenshot: ['截图', '网页', '网页截图', 'screenshot', '快照', '页面'],
   read_excel: ['读取', 'excel', '表格', 'xlsx', 'xls', '数据', '文件', '资产'],
   // Excel 自动化（openpyxl）

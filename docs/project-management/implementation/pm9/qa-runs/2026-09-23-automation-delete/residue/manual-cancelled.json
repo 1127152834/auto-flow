@@ -1,0 +1,27 @@
+{
+  "status": "failed",
+  "platform": "darwin",
+  "arch": "arm64",
+  "packaged": true,
+  "startedAt": "2026-09-23T14:15:35.761Z",
+  "checks": [],
+  "screenshots": [
+    "project-automation-delete-busy.png",
+    "project-automation-delete-stale.png",
+    "project-automation-delete-ready.png",
+    "project-failure.png"
+  ],
+  "automationDeletionResidue": {
+    "runId": "f641e4a3-e091-4ab5-a18e-f40b5d60adde",
+    "manuals": [
+      {
+        "manualItemId": "8d33c1b9-4853-4dee-a9ee-f69ab91d0780",
+        "taskId": "e111a22e-5878-4404-8583-9d8f16a3fa24",
+        "status": "cancelled"
+      }
+    ],
+    "files": []
+  },
+  "error": "AssertionError [ERR_ASSERTION]: deleted run should leave no task-only manual item or run files\n+ actual - expected\n\n  {\n    files: [],\n+   manuals: [\n+     {\n+       manualItemId: '8d33c1b9-4853-4dee-a9ee-f69ab91d0780',\n+       status: 'cancelled',\n+       taskId: 'e111a22e-5878-4404-8583-9d8f16a3fa24'\n+     }\n+   ]\n-   manuals: []\n  }\n\n    at checkAutomationDeletion (file:///private/tmp/pm9-automation-residue-probe.mjs:137:12)\n    at async file:///private/tmp/pm9-automation-residue-probe.mjs:157:31",
+  "sidecarLog": "\n=== local service start 2026-09-23T14:15:37.430Z pid=65063 ===\n"
+}

@@ -18,11 +18,28 @@ def _config(database: Path) -> Config:
 def test_studio_backend_history_has_one_merged_head(tmp_path: Path) -> None:
     scripts = ScriptDirectory.from_config(_config(tmp_path / "heads.sqlite3"))
 
-    assert scripts.get_heads() == ["0024_studio_credential_namespace"]
+    assert scripts.get_heads() == ["0025_merge_studio_credential_environment"]
+    assert scripts.get_revision("0025_merge_studio_credential_environment").down_revision == (
+        "0024_studio_credential_namespace", "0024_environment_identity",
+    )
     assert scripts.get_revision("0024_studio_credential_namespace").down_revision == "0023_merge_studio_android"
-    assert (
-        scripts.get_revision("0020_recording_project_scope").down_revision
-        == "0019_recording_commands"
+    assert scripts.get_revision("0024_environment_identity").down_revision == "0023_merge_studio_android"
+    assert scripts.get_revision("0023_merge_studio_android").down_revision == (
+        "0022_merge_studio_pm10", "0020_merge_android_pm9",
+    )
+    assert scripts.get_revision("0022_merge_studio_pm10").down_revision == (
+        "0021_assistant_project_scope", "pm10_shared_sheet_cursors",
+    )
+    assert scripts.get_revision("0021_assistant_project_scope").down_revision == "0020_recording_project_scope"
+    assert scripts.get_revision("pm10_shared_sheet_cursors").down_revision == "pm09_shared_sheet_identity"
+    assert scripts.get_revision("pm09_shared_sheet_identity").down_revision == "pm08_project_sync"
+
+    assert scripts.get_revision("0020_recording_project_scope").down_revision == "0019_recording_commands"
+    assert scripts.get_revision("0020_merge_android_pm9").down_revision == (
+        "am01_management_operations", "pm10_shared_sheet_cursors"
+    )
+    assert scripts.get_revision("am01_management_operations").down_revision == (
+        "0019_recording_commands"
     )
     assert scripts.get_revision("0019_recording_commands").down_revision == (
         "0018_scheduled_tasks"
@@ -75,6 +92,49 @@ def test_restored_android_revisions_match_the_recorded_source_bytes() -> None:
     } == expected
 
 
+@pytest.mark.parametrize("previous_head", ["am01_management_operations", "pm10_shared_sheet_cursors"])
+def test_android_pm9_merge_upgrades_each_published_head_without_losing_data(tmp_path, previous_head):
+    database = tmp_path / "published-head.sqlite3"
+    command.upgrade(_config(database), previous_head)
+    with sqlite3.connect(database) as connection:
+        connection.execute(
+            "INSERT INTO workflow_documents VALUES (?, ?, ?, ?, ?, ?, ?)",
+            ("kept", "Original workflow", '{"nodes": []}', '{}', 7, "2026-09-24", "2026-09-24"),
+        )
+        if previous_head == "am01_management_operations":
+            connection.execute(
+                """INSERT INTO android_operations
+                (id, workspace_identity, request_id, target_id, action, request_digest,
+                 payload, state, stage_code, stage_label, attempt, created_at)
+                VALUES ('op-kept', 'workspace', 'request', 'device', 'start', 'digest',
+                        '{"deviceId":"device"}', 'succeeded', 'complete', 'Complete', 1, '2026-09-24')"""
+            )
+        before = connection.execute("SELECT * FROM workflow_documents").fetchall()
+
+    database_session.migrate_database(database)
+    database_session.migrate_database(database)
+
+    with sqlite3.connect(database) as connection:
+        assert connection.execute("SELECT version_num FROM alembic_version").fetchall() == [
+            ("0025_merge_studio_credential_environment",)
+        ]
+        assert connection.execute("SELECT * FROM workflow_documents").fetchall() == before
+        if previous_head == "am01_management_operations":
+            assert connection.execute(
+                "SELECT id, request_digest, payload, state FROM android_operations"
+            ).fetchall() == [("op-kept", "digest", '{"deviceId":"device"}', "succeeded")]
+        else:
+            assert connection.execute("SELECT * FROM android_operations").fetchall() == []
+        assert "identity_verification" in {
+            row[1] for row in connection.execute("PRAGMA table_info(project_sheets_bindings)")
+        }
+        cursor_schema = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE name='project_task_record_cursors'"
+        ).fetchone()[0]
+        assert "uq_project_task_record_cursors_ref" in cursor_schema
+        assert "uq_project_task_record_cursors_lease" not in cursor_schema
+        assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
+
 @pytest.mark.parametrize(
     "start_revision", ["0021_assistant_project_scope", "0023_merge_studio_android"]
 )
@@ -91,7 +151,7 @@ def test_integrated_workspace_history_is_recognized_and_preserved(
     with sqlite3.connect(database) as connection:
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchall() == [("0024_studio_credential_namespace",)]
+        ).fetchall() == [("0025_merge_studio_credential_environment",)]
         assert connection.execute(
             "SELECT value FROM preserved_workspace_data"
         ).fetchall() == [("keep-me",)]

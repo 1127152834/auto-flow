@@ -1,0 +1,36 @@
+{
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-am3-runtime-fault-rq_dr51l",
+  "deviceIds": [
+    "a6320a7e-8f55-4c6f-a201-6d31f82b6251",
+    "9f96149a-da31-4875-b16d-8d230f462b6c"
+  ],
+  "status": "passed",
+  "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "runtimeFailure": {
+    "batchId": "ee049797-2ad1-4aff-8573-c3db8b8d8e85",
+    "statesBefore": [
+      "succeeded",
+      "failed"
+    ],
+    "resultCode": "ANDROID_COMMAND_FAILED",
+    "retryBlockedUntilRecovery": true,
+    "retryOf": "7d769429-fd02-403f-af06-060f7d5ae8a1",
+    "finalState": "succeeded"
+  },
+  "hardKill": {
+    "batchId": "9b7ddf82-f028-4f9b-8058-426683fceff1",
+    "exitCode": -9,
+    "statesBefore": [
+      "succeeded",
+      "needs_verification"
+    ],
+    "retryDidNotReplay": true,
+    "verificationState": "succeeded",
+    "verificationDidNotAdvanceGeneration": true,
+    "deviceId": "9f96149a-da31-4875-b16d-8d230f462b6c",
+    "actualState": "stopped",
+    "beforeReceipt": "running"
+  },
+  "bothDataProbesPreserved": true,
+  "ownedResourcesDeleted": true
+}

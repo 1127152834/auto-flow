@@ -1,0 +1,37 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/android/tests/ManagementTools.test.tsx -t original durable result
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+
+ ❯ src/renderer/domains/android/tests/ManagementTools.test.tsx (43 tests | 1 failed | 42 skipped) 1150ms
+   × releases a failed backup only after reading its original durable result 1149ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/android/tests/ManagementTools.test.tsx > releases a failed backup only after reading its original durable result
+AssertionError: expected "vi.fn()" to be called 2 times, but got 1 times
+ ❯ src/renderer/domains/android/tests/ManagementTools.test.tsx:475:41
+    473|   expect(await screen.findByRole('alert')).toHaveTextContent('预检已取消，未写…
+    474|   await userEvent.click(screen.getByRole('button', { name: '创建停机备份' }))
+    475|   await vi.waitFor(() => expect(backup).toHaveBeenCalledTimes(2))
+       |                                         ^
+    476|   expect(backup.mock.calls[1][0].requestId).not.toBe(original)
+    477| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 42 skipped (43)
+   Start at  07:59:54
+   Duration  2.01s (transform 195ms, setup 170ms, import 157ms, tests 1.15s, environment 433ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/android/tests/ManagementTools.test.tsx -t 'original durable result'

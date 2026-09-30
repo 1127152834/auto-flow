@@ -11,7 +11,7 @@ from autoflow.adapters.http.workflow_studio_schemas import (
 
 def test_picker_start_and_state_roundtrip():
     request = {'sessionId': 'picker', 'url': 'https://example.test', 'profileId': 'managed-profile'}
-    assert StudioPickerSessionStartRequest.model_validate(request).model_dump(by_alias=True) == request
+    assert StudioPickerSessionStartRequest.model_validate(request).model_dump(by_alias=True) == {**request, "browserEnvironment": None}
     state = {'success': True, 'sessionId': 'picker', 'active': True, 'selected': False}
     assert StudioPickerSessionState.model_validate(state).model_dump(by_alias=True) == state
     assert StudioPickerSessionRequest.model_validate({'sessionId': 'picker'}).model_dump(by_alias=True) == {'sessionId': 'picker'}

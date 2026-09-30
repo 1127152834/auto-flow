@@ -6,14 +6,15 @@ import json
 import os
 import queue
 import sys
-from contextlib import nullcontext, redirect_stderr, redirect_stdout
+from contextlib import ExitStack, redirect_stderr, redirect_stdout
 from datetime import UTC, datetime
 from pathlib import Path, PurePosixPath
 from threading import Event, Thread
-from typing import Any, Protocol, TextIO
+from typing import Any, Protocol, TextIO, cast
 from uuid import uuid4
 
 from autoflow.application.workflows.runtime import WorkflowRuntime
+from autoflow.domain.project_runs.worker_commands import project_command_id
 from autoflow.infrastructure.filesystem.project_workflow_artifacts import (
     ProjectArtifactWriter,
 )
@@ -117,6 +118,7 @@ class _Control:
         self.command_bus = command_bus
         self.failure: ProtocolFailure | None = None
         self.pending: dict[str, asyncio.Future[None]] = {}
+        self.capabilities: dict[str, asyncio.Future[dict[str, Any]]] = {}
 
     @property
     def cancelled(self) -> bool:
@@ -133,8 +135,16 @@ class _Control:
                     if self.command_bus is not None:
                         self.command_bus.close()
                     continue
-                if message.get("type") in {"input_prompt_result", "js_script_result", "webhook_result", "proxy:result", "capability:result"} and self.command_bus is not None:
+                if message.get("type") in {"input_prompt_result", "js_script_result", "webhook_result", "proxy:result"} and self.command_bus is not None:
                     self.command_bus.receive(message)
+                    continue
+                if message.get("type") == "capability_result":
+                    command_id = message.get("commandId")
+                    if command_id not in self.capabilities or ("result" in message) == ("error" in message):
+                        raise ProtocolFailure
+                    capability_waiter = self.capabilities.pop(command_id)
+                    if not capability_waiter.done():
+                        capability_waiter.set_result(message)
                     continue
                 event_id = message.get("eventId")
                 if message.get("type") != "event_committed" or event_id not in self.pending:
@@ -150,6 +160,10 @@ class _Control:
                 if not waiter.done():
                     waiter.set_result(None)
             self.pending.clear()
+            for capability_waiter in self.capabilities.values():
+                if not capability_waiter.done():
+                    capability_waiter.set_exception(self.failure)
+            self.capabilities.clear()
 
     async def wait_cancelled(self) -> None:
         while not self.cancelled:
@@ -195,6 +209,9 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
     for snapshot in plan.get("workflowDependencies", {}).values():
         if isinstance(snapshot, dict):
             requires_browser = requires_browser or browser_runtime.requires_browser(snapshot)
+    from autoflow.domain.workflows.browser_environment import node_browser_environments
+    node_mode = node_browser_environments(document) is not None
+    requires_browser = requires_browser and not node_mode
     browser = command["browser"]
     launch = {}
     proxy = None
@@ -205,7 +222,7 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
             raise ProtocolFailure
         launch = browser_launch_options(browser, headless=_boolean(browser, "headless"))
         proxy = _optional_proxy(browser)
-    relay_context = BrowserProxyRelay(proxy) if proxy else nullcontext()
+    relay_context = ExitStack()
     command_bus = _WorkerCommandBus(
         asyncio.get_running_loop(), stopped, stdout, command,
         protocol_metadata={"protocolVersion": PROTOCOL_VERSION, "executionGeneration": generation},
@@ -217,8 +234,9 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
     context = None
     integrations = WorkflowIntegrationGateway()
     relay_guard = _CleanupGuard(relay_context)
+    exchange_lock = asyncio.Lock()
 
-    async def emit(kind: str, node_id: str, visit: str, payload: dict[str, object]) -> None:
+    async def send_event(kind: str, node_id: str, visit: str, payload: dict[str, object]) -> None:
         event_id = uuid4().hex
         event = {
             "eventId": event_id, "runId": run_id, "executionGeneration": generation,
@@ -248,41 +266,133 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
         if output_too_large:
             raise ProtocolFailure("WORKFLOW_OUTPUT_TOO_LARGE")
 
+    async def emit(kind: str, node_id: str, visit: str, payload: dict[str, object]) -> None:
+        async with exchange_lock:
+            await send_event(kind, node_id, visit, payload)
+
+    async def capability(node_id: str, visit: str, operation: str, arguments: dict[str, Any]) -> dict[str, Any]:
+        command_id = project_command_id(run_id, generation, visit)
+        async with exchange_lock:
+            if control.cancelled:
+                raise asyncio.CancelledError
+            closed = False
+            if operation in {'end', 'manualComplete'}:
+                if context is not None:
+                    await context.close()
+                closed = True
+            waiter: asyncio.Future[Any] = (
+                asyncio.get_running_loop().create_future()
+            )
+            control.capabilities[command_id] = waiter
+            _write(stdout, _envelope(command, 'capability', commandId=command_id, nodeId=node_id, nodeVisitId=visit, attempt=1, operation=operation, arguments=arguments, browserClosed=closed))
+            cancelled = asyncio.create_task(control.wait_cancelled())
+            try:
+                done, _ = await asyncio.wait({waiter, cancelled}, return_when=asyncio.FIRST_COMPLETED)
+                control.check_parent()
+                if waiter not in done:
+                    raise asyncio.CancelledError
+                reply = cast(dict[str, Any], waiter.result())
+                if reply.get('runId') != run_id:
+                    raise ProtocolFailure
+            finally:
+                cancelled.cancel()
+                await asyncio.gather(cancelled, return_exceptions=True)
+        if operation == 'manual' and 'result' in reply:
+            action = reply['result'].get('action')
+            if action == 'cancel':
+                raise asyncio.CancelledError
+            if action in {'finish', 'expired'}:
+                return await capability(node_id, visit, 'manualComplete', {})
+        return reply
+
+    session = None
+    initialized_visit = None
+    initialized_configuration = None
+
+    async def launch_browser(
+        payload: dict[str, Any], options: dict[str, Any]
+    ) -> None:
+        nonlocal context
+        browser, launch = payload, options
+        from cloakbrowser import (  # type: ignore[import-untyped]
+            launch_context_async,
+            launch_persistent_context_async,
+        )
+        user_data_dir = browser.get("userDataDir")
+        launching = asyncio.create_task(
+            launch_persistent_context_async(user_data_dir=user_data_dir, **launch)
+            if isinstance(user_data_dir, str) and user_data_dir
+            else launch_context_async(**launch)
+        )
+        launch_cancel = asyncio.create_task(control.wait_cancelled())
+        try:
+            done, _ = await asyncio.wait(
+                {launching, launch_cancel}, return_when=asyncio.FIRST_COMPLETED
+            )
+            if launching not in done:
+                launching.cancel()
+            context = await launching
+            control.check_parent()
+            if control.cancelled:
+                raise asyncio.CancelledError
+        finally:
+            launch_cancel.cancel()
+            if not launching.done():
+                launching.cancel()
+            await asyncio.gather(launch_cancel, launching, return_exceptions=True)
+        context.set_default_timeout(0)
+        context.set_default_navigation_timeout(0)
+
+    async def initialize_browser(
+        execution: Any, declaration: dict[str, Any]
+    ) -> Any:
+        nonlocal session, initialized_visit, initialized_configuration
+        from autoflow.domain.workflows.browser_environment import same_shared_browser
+        from autoflow.domain.workflows.runtime import WorkflowRuntimeError
+        from autoflow.providers.browser.workflow_session import (
+            CloakBrowserWorkflowSession,
+        )
+        if declaration.get('source') == 'current':
+            if session is None:
+                raise WorkflowRuntimeError('BROWSER_INSTANCE_REQUIRED', '请先执行创建或加载环境的打开网页节点', 409)
+            return session
+        if session is not None and same_shared_browser(declaration, initialized_configuration):
+            return session
+        if session is not None and declaration.get('source') == 'profile':
+            raise WorkflowRuntimeError('BROWSER_CONFIGURATION_MISMATCH', '本次运行已打开浏览器，请保持浏览器配置、代理和内核一致', 409)
+        if initialized_visit is not None and initialized_visit != execution.current_execution_id:
+            raise WorkflowRuntimeError('BROWSER_INSTANCE_ALREADY_INITIALIZED', '任务已有浏览器实例，请使用当前实例', 409)
+        if session is not None:
+            return session
+        initialized_visit = execution.current_execution_id
+        reply = await capability(execution.current_node_id, initialized_visit, 'initializeBrowser', {})
+        if 'error' in reply:
+            raise WorkflowRuntimeError(reply['error']['code'], '浏览器环境初始化失败', 409)
+        granted = reply['result']
+        executable = Path(granted['executablePath'])
+        if not executable.is_absolute() or not executable.is_file():
+            raise ProtocolFailure
+        os.environ['CLOAKBROWSER_BINARY_PATH'] = str(executable)
+        payload = granted['browser']
+        options = browser_launch_options(payload, headless=_boolean(payload, 'headless'))
+        selected_proxy = _optional_proxy(payload)
+        relay = relay_context.enter_context(BrowserProxyRelay(selected_proxy)) if selected_proxy else None
+        options['proxy'] = {'server': relay.url} if relay else None
+        await launch_browser(payload, options)
+        session = CloakBrowserWorkflowSession(context)
+        session.proxy_relay = relay
+        initialized_configuration = declaration.copy()
+        return session
+
     result: dict[str, object] = {"status": "failed", "error": {"code": "WORKFLOW_WORKER_FAILED", "message": "工作流执行进程失败"}}
     cleanup_failed = False
     try:
-        with relay_guard as relay:
+        with relay_guard as stack:
+            relay = stack.enter_context(BrowserProxyRelay(proxy)) if proxy else None
             launch["proxy"] = {"server": relay.url} if relay is not None else None
             with open(os.devnull, "w", encoding="utf-8") as sink, redirect_stdout(sink), redirect_stderr(sink):  # noqa: ASYNC230
                 if requires_browser:
-                    from cloakbrowser import (  # type: ignore[import-untyped]
-                        launch_context_async,
-                        launch_persistent_context_async,
-                    )
-                    user_data_dir = browser.get("userDataDir")
-                    launching = asyncio.create_task(
-                        launch_persistent_context_async(user_data_dir=user_data_dir, **launch)
-                        if isinstance(user_data_dir, str) and user_data_dir
-                        else launch_context_async(**launch)
-                    )
-                    launch_cancel = asyncio.create_task(control.wait_cancelled())
-                    try:
-                        done, _ = await asyncio.wait(
-                            {launching, launch_cancel}, return_when=asyncio.FIRST_COMPLETED
-                        )
-                        if launching not in done:
-                            launching.cancel()
-                        context = await launching
-                        control.check_parent()
-                        if control.cancelled:
-                            raise asyncio.CancelledError
-                    finally:
-                        launch_cancel.cancel()
-                        if not launching.done():
-                            launching.cancel()
-                        await asyncio.gather(launch_cancel, launching, return_exceptions=True)
-                    context.set_default_timeout(0)
-                    context.set_default_navigation_timeout(0)
+                    await launch_browser(browser, launch)
                 _write(stdout, _envelope(command, "ready"))
                 variables = dict(command.get("variables", {}))
                 variables.update(command.get("parameters", {}))
@@ -304,6 +414,10 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
                     models=WorkflowModelGateway(command.pop("modelBindings", [])),
                     external_integrations=integrations,
                     command_bus=command_bus,
+                    capability=capability,
+                    project_input_context=command["executionPlan"].get("projectInputContext", {}),
+                    browser_initializer=initialize_browser if node_mode else None,
+
                     proxy_probe=relay.probe if relay is not None else None,
                 )
                 result = await executor.run(command["executionPlan"])

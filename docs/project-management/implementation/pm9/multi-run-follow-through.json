@@ -1,0 +1,33 @@
+{
+  "date": "2026-09-21",
+  "status": "source_verified_platform_pending",
+  "releaseAccepted": false,
+  "slice": "S5 independent Run owners and two-slot admission",
+  "checks": {
+    "targeted": "125 passed",
+    "ownerResourcesAndRecovery": "45 passed including two independent budgets, historical recovery gate, retained unknown slot and OS lock exclusion",
+    "business": "multi-run-business-darwin-arm64.json: passed, including actual concurrent data claims/cookie isolation and cancelling one Run while another remains waiting",
+    "desktopRegression": "browser management Electron smoke passed after bounded ownership refresh wait",
+    "ruff": "passed",
+    "mypy": "400 source files passed"
+  },
+  "scope": [
+    "Default generic dispatcher/worker capacity remains 1; project assembly enables 2 after owner/guard tests",
+    "Each Run owner keeps its generation, task, lease, budget, cancellation and control lock",
+    "Source Profile/kernel/license/workspace OS guards are reference shared internally; external processes remain excluded",
+    "Unknown native guard cleanup pins workspace; retry cannot hide release failure",
+    "Single parameter batch remains sequential; separate parameter batches and data batch concurrency can use both slots",
+    "Historical unconfirmed cleanup closes admission even with an empty live owner map"
+  ],
+  "limitations": [
+    "Current candidate full regression and three-platform build/install-chain still pending",
+    "S4 existing-file Windows replacement and orphan recovery remain separate work",
+    "No cross-process manual continuation, all-Studio-node admission or release acceptance"
+  ],
+  "sourceHashes": {
+    "apps/backend/src/autoflow/application/workflows/dispatcher.py": "b50d84f259c58280063b34ad8d862d41b1f98917ce5007e773a982e314faec78",
+    "apps/backend/src/autoflow/application/workflows/browser_resources.py": "e6ecb9fdcb8e4a73c4b0b0e9aa486ca5f5518e9330187da6f60d5a2c96964de2",
+    "apps/backend/src/autoflow/infrastructure/process/project_workflow_worker.py": "96e31cb994486dea592982affc7e2a46ca04ed2821dbbb1042060bc727a00b76",
+    "apps/backend/src/autoflow/bootstrap/workflows.py": "3185d50260e67699a8a64b40a9f5da8ef312c4b7226fb2e995037bab965fb725"
+  }
+}

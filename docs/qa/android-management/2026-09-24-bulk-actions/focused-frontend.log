@@ -1,0 +1,12 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/android
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+
+
+ Test Files  14 passed (14)
+      Tests  160 passed (160)
+   Start at  06:27:39
+   Duration  17.82s (transform 2.93s, setup 2.38s, import 21.65s, tests 23.20s, environment 17.10s)

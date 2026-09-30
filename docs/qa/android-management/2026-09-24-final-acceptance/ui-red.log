@@ -1,0 +1,63 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/android/tests/ManagementTools.test.tsx -t confirmed preflight
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+
+ ❯ src/renderer/domains/android/tests/ManagementTools.test.tsx (42 tests | 3 failed | 39 skipped) 181ms
+   × allows a fresh backup after confirmed preflight rejection ANDROID_DISK_SPACE_INSUFFICIENT 129ms
+   × allows a fresh backup after confirmed preflight rejection ANDROID_DISK_PROBE_FAILED 26ms
+   × allows a fresh backup after confirmed preflight rejection ANDROID_DISK_ESTIMATE_UNKNOWN 25ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/android/tests/ManagementTools.test.tsx > allows a fresh backup after confirmed preflight rejection ANDROID_DISK_SPACE_INSUFFICIENT
+AssertionError: expected '35274ae6-6bf8-455d-86a2-8443c1e541c2' not to be '35274ae6-6bf8-455d-86a2-8443c1e541c2' // Object.is equality
+ ❯ src/renderer/domains/android/tests/ManagementTools.test.tsx:459:49
+    457|   await userEvent.click(screen.getByRole('button', { name: '创建停机备份' }))
+    458|   await vi.waitFor(() => expect(backup).toHaveBeenCalledTimes(2))
+    459|   expect(backup.mock.calls[1][0].requestId).not.toBe(backup.mock.calls…
+       |                                                 ^
+    460|   expect(api.operationByRequest).not.toHaveBeenCalled()
+    461| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/renderer/domains/android/tests/ManagementTools.test.tsx > allows a fresh backup after confirmed preflight rejection ANDROID_DISK_PROBE_FAILED
+AssertionError: expected '5d24b806-0bdb-4ef0-a702-1a238e02720e' not to be '5d24b806-0bdb-4ef0-a702-1a238e02720e' // Object.is equality
+ ❯ src/renderer/domains/android/tests/ManagementTools.test.tsx:459:49
+    457|   await userEvent.click(screen.getByRole('button', { name: '创建停机备份' }))
+    458|   await vi.waitFor(() => expect(backup).toHaveBeenCalledTimes(2))
+    459|   expect(backup.mock.calls[1][0].requestId).not.toBe(backup.mock.calls…
+       |                                                 ^
+    460|   expect(api.operationByRequest).not.toHaveBeenCalled()
+    461| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/renderer/domains/android/tests/ManagementTools.test.tsx > allows a fresh backup after confirmed preflight rejection ANDROID_DISK_ESTIMATE_UNKNOWN
+AssertionError: expected '01f68f55-2b3f-4d56-9cf5-635f94167d00' not to be '01f68f55-2b3f-4d56-9cf5-635f94167d00' // Object.is equality
+ ❯ src/renderer/domains/android/tests/ManagementTools.test.tsx:459:49
+    457|   await userEvent.click(screen.getByRole('button', { name: '创建停机备份' }))
+    458|   await vi.waitFor(() => expect(backup).toHaveBeenCalledTimes(2))
+    459|   expect(backup.mock.calls[1][0].requestId).not.toBe(backup.mock.calls…
+       |                                                 ^
+    460|   expect(api.operationByRequest).not.toHaveBeenCalled()
+    461| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 39 skipped (42)
+   Start at  07:59:02
+   Duration  1.30s (transform 202ms, setup 177ms, import 223ms, tests 181ms, environment 613ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/android/tests/ManagementTools.test.tsx -t 'confirmed preflight'

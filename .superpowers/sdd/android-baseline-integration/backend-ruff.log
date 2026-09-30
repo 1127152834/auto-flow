@@ -1,0 +1,117 @@
+I001 [*] Import block is un-sorted or un-formatted
+  --> src/autoflow/bootstrap/workflows.py:1:1
+   |
+ 1 | / from __future__ import annotations
+ 2 | |
+ 3 | | from collections.abc import Mapping
+ 4 | | from dataclasses import dataclass
+ 5 | | from datetime import UTC, datetime
+ 6 | | from pathlib import Path
+ 7 | | from typing import Any
+ 8 | | from uuid import uuid4
+ 9 | |
+10 | | from fastapi import FastAPI
+11 | |
+12 | | from autoflow.adapters.events.workflows import (
+13 | |     StudioEventJournal,
+14 | |     workflow_events_router,
+15 | | )
+16 | | from autoflow.adapters.http.custom_modules import custom_modules_router
+17 | | from autoflow.adapters.http.workflow_metadata import workflow_metadata_router
+18 | | from autoflow.adapters.http.workflow_ai import workflow_ai_router
+19 | | from autoflow.adapters.http.workflow_gestures import workflow_gesture_router
+20 | | from autoflow.adapters.http.workflow_inspection import workflow_inspection_router
+21 | | from autoflow.adapters.http.workflow_mcp import workflow_mcp_router
+22 | | from autoflow.adapters.http.workflow_runs import (
+23 | |     WorkflowRunCommands,
+24 | |     workflow_run_command_router,
+25 | |     workflow_runs_router,
+26 | |     workflow_trigger_router,
+27 | |     workflow_variable_tracking_router,
+28 | | )
+29 | | from autoflow.adapters.http.workflows import workflows_router
+30 | | from autoflow.application.workflows.assistant import WorkflowAssistantService
+31 | | from autoflow.application.workflows.coordinator import WorkflowRunCoordinator
+32 | | from autoflow.application.workflows.documents import WorkflowDocumentService
+33 | | from autoflow.application.workflows.executors.production import (
+34 | |     build_production_executor_registry,
+35 | | )
+36 | | from autoflow.application.workflows.inspection import WorkflowInspectionService
+37 | | from autoflow.application.workflows.mcp import WorkflowMcpService
+38 | | from autoflow.application.workflows.modules import CustomModuleService
+39 | | from autoflow.application.workflows.runs import WorkflowRunService
+40 | | from autoflow.application.workflows.runtime import WorkflowRuntime
+41 | | from autoflow.domain.workflows.runs import WorkflowRunError
+42 | | from autoflow.infrastructure.database.workflow_assistant import (
+43 | |     SqlAlchemyWorkflowAssistant,
+44 | | )
+45 | | from autoflow.infrastructure.database.workflow_mcp import SqlAlchemyWorkflowMcp
+46 | | from autoflow.infrastructure.database.workflow_modules import SqlAlchemyWorkflowModules
+47 | | from autoflow.infrastructure.database.workflow_recordings import (
+48 | |     SqlAlchemyWorkflowRecordings,
+49 | | )
+50 | | from autoflow.infrastructure.database.workflow_runs import SqlAlchemyWorkflowRuns
+51 | | from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowDocuments
+52 | | from autoflow.infrastructure.gesture import (
+53 | |     GestureRecognitionService,
+54 | |     gesture_model_path,
+55 | | )
+56 | | from autoflow.infrastructure.process.inspection_worker import inspection_worker_command
+57 | | from autoflow.infrastructure.process.workflow_worker import (
+58 | |     WorkflowResourceCoordinator,
+59 | |     WorkflowWorkerManager,
+60 | | )
+61 | | from autoflow.infrastructure.sharing import NetworkShareHost
+   | |____________________________________________________________^
+help: Organize imports
+   |
+16 | from autoflow.adapters.http.custom_modules import custom_modules_router
+   - from autoflow.adapters.http.workflow_metadata import workflow_metadata_router
+17 | from autoflow.adapters.http.workflow_ai import workflow_ai_router
+18 | from autoflow.adapters.http.workflow_gestures import workflow_gesture_router
+19 | from autoflow.adapters.http.workflow_inspection import workflow_inspection_router
+20 | from autoflow.adapters.http.workflow_mcp import workflow_mcp_router
+21 + from autoflow.adapters.http.workflow_metadata import workflow_metadata_router
+22 | from autoflow.adapters.http.workflow_runs import (
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/integration/test_migration_heads.py:1:1
+   |
+ 1 | / import sqlite3
+ 2 | | from pathlib import Path
+ 3 | |
+ 4 | | import pytest
+ 5 | | from alembic import command
+ 6 | |
+ 7 | | from alembic.config import Config
+ 8 | | from alembic.script import ScriptDirectory
+ 9 | |
+10 | | from autoflow.infrastructure.database import session as database_session
+   | |________________________________________________________________________^
+help: Organize imports
+  |
+5 | from alembic import command
+  -
+6 | from alembic.config import Config
+  |
+
+F401 [*] `os` imported but unused
+ --> tests/integration/test_workflow_worker_protocol.py:5:8
+  |
+3 | import asyncio
+4 | import json
+5 | import os
+  |        ^^
+6 | import sys
+7 | from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+  |
+help: Remove unused import: `os`
+  |
+4 | import json
+  - import os
+5 | import sys
+  |
+
+Found 3 errors.
+[*] 3 fixable with the `--fix` option.

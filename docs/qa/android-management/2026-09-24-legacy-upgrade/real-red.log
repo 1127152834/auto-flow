@@ -1,0 +1,18 @@
+Traceback (most recent call last):
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/docs/qa/android-management/scripts/legacy-upgrade-smoke.py", line 146, in <module>
+  File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/docs/qa/android-management/scripts/legacy-upgrade-smoke.py", line 114, in exercise
+    assert replay.json()['items'] == batch['items']
+    ^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/docs/qa/android-management/scripts/restore-interruption-smoke.py", line 104, in expect
+    assert response.status_code == status, (response.status_code, response.text[:400])
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: (409, '{"error":{"code":"ANDROID_REQUEST_CONFLICT","message":"请求编号已用于不同内容","details":{},"requestId":"04514072-0c2e-44ad-ac05-e4fb4ac2d52c"}}')

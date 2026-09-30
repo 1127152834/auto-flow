@@ -1,0 +1,33 @@
+{
+  "members": [
+    {
+      "name": "data",
+      "pax": {
+        "mtime": "1790139896.079475043",
+        "atime": "1790139896.079475043",
+        "ctime": "1790139896.079475043"
+      },
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o755"
+    },
+    {
+      "name": "data/proof",
+      "pax": {
+        "mtime": "1790139896.079475043",
+        "atime": "1790139896.079475043",
+        "ctime": "1790139896.079475043",
+        "SCHILY.xattr.user.autoflow_probe": "metadata"
+      },
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o640"
+    }
+  ],
+  "restored": {
+    "content": "proof",
+    "xattr": "metadata",
+    "mode": "0o640"
+  },
+  "status": "passed"
+}

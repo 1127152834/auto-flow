@@ -42,9 +42,17 @@ class DataRecordSlot(ApiModel):
     target: DataRecordRef | None
 
 
+class DataValidationIssue(ApiModel):
+    field_id: str
+    code: str
+    rule: str
+    message: str
+
+
 class DataRecordView(ApiModel):
     ref: DataRecordRef
     values: list[DataCellView]
+    validation_issues: list[DataValidationIssue] = Field(default_factory=list)
     record_slots: list[DataRecordSlot]
     status_id: str | None
     current_environment_id: str | None

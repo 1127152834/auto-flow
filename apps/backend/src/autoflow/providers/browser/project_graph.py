@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Awaitable, Callable, Mapping
+from contextvars import ContextVar
 from itertools import pairwise
 from time import monotonic
 from typing import Any
@@ -21,6 +22,7 @@ from autoflow.domain.workflows.execution import (
     ExecutionContext,
     ExternalIntegrationGateway,
 )
+from autoflow.domain.workflows.project_end import normalize_project_end
 from autoflow.domain.workflows.variables import CredentialReader
 from autoflow.infrastructure.filesystem.workflow_table_workbook import (
     OpenpyxlTableWorkbookRenderer,
@@ -28,7 +30,7 @@ from autoflow.infrastructure.filesystem.workflow_table_workbook import (
 from autoflow.infrastructure.process.workflow_subprocess import terminate_subprocess
 from autoflow.providers.model import WorkflowModelGateway
 
-from .workflow_executor import WorkflowExecutor
+from .workflow_executor import WorkflowExecutor, _scalar_text
 from .workflow_session import CloakBrowserWorkflowSession
 from .workflow_worker import (
     _CredentialDeadlineExceeded,
@@ -38,6 +40,82 @@ from .workflow_worker import (
     _WorkerCustomModules,
     _WorkerNestedWorkflows,
 )
+
+_visit: ContextVar[tuple[str, str]] = ContextVar('project_node_visit')
+
+
+class _ProjectDataNode(ModuleExecutor):
+    module_type = 'project_data'
+
+    def __init__(self, request: Callable[..., Awaitable[Any]]) -> None:
+        self.request = request
+
+    async def execute(self, config: dict[str, Any], context: ExecutionContext) -> ModuleResult:
+        node_id, visit = _visit.get()
+        reply = await self.request(node_id, visit, config['operation'], context.resolve_value(config.get('arguments', {}), preserve_types=True))
+        if 'error' in reply:
+            return ModuleResult(False, error=reply['error']['code'], data={'projectErrorCode': reply['error']['code']})
+        value = reply['result']
+        if name := config.get('variableName'):
+            context.set_variable(name, value)
+        return ModuleResult(True, data=value)
+
+
+class _ProjectEndNode(ModuleExecutor):
+    module_type = 'project_end'
+
+    def __init__(self, request: Callable[..., Awaitable[Any]]) -> None:
+        self.request = request
+
+    async def execute(self, config: dict[str, Any], context: ExecutionContext) -> ModuleResult:
+        node_id, visit = _visit.get()
+        try:
+            frozen = normalize_project_end(config)
+            targets = context.resolve_value(
+                frozen.get('recordTargets', []), preserve_types=True
+            )
+            if not isinstance(targets, list) or len(targets) > 100:
+                raise ValueError('End 记录目标必须是最多100项的列表')
+        except (TypeError, ValueError) as error:
+            return ModuleResult(False, error=str(error))
+        reply = await self.request(
+            node_id, visit, 'end', {'recordTargets': targets}
+        )
+        if 'error' in reply:
+            return ModuleResult(False, error=reply['error']['code'], data={'projectErrorCode': reply['error']['code']})
+        value = reply['result']
+        if not isinstance(value, dict) or not isinstance(value.get('endOperationId'), str):
+            return ModuleResult(False, error='ENVIRONMENT_END_INCOMPLETE')
+        context.project_end.accepted = True
+        return ModuleResult(True, data=value)
+
+
+class _ProjectManualNode(ModuleExecutor):
+    module_type = 'project_manual'
+
+    def __init__(self, request: Callable[..., Awaitable[Any]]) -> None:
+        self.request = request
+
+    async def execute(self, config: dict[str, Any], context: ExecutionContext) -> ModuleResult:
+        node_id, visit = _visit.get()
+        reply = await self.request(node_id, visit, 'manual', {
+            'reason': context.resolve_value(config.get('reason', '等待人工处理')),
+            'timeoutSeconds': config.get('timeoutSeconds', 1800),
+            'availableVariables': sorted(context.variables),
+        })
+        if 'error' in reply:
+            return ModuleResult(False, error=reply['error']['code'], data={'projectErrorCode': reply['error']['code']})
+        result = reply['result']
+        if result['action'] == 'resume':
+            if name := config.get('variableName'):
+                context.set_variable(name, result.get('inputs', {}))
+            declared = {field['name'] for field in config.get('inputSchema', [])}
+            for name, value in result.get('inputs', {}).items():
+                if name in declared:
+                    context.set_variable(name, value)
+            return ModuleResult(True, data=result.get('inputs', {}), target_node_id=result.get('targetNodeId'))
+        context.stop_workflow = True
+        return ModuleResult(result.get('complete') is True and result.get('outcome') == 'succeeded', data=result, error='MANUAL_FINISHED')
 
 
 class _Cancellation:
@@ -93,7 +171,7 @@ class _LegacyBrowserNode(ModuleExecutor):
         # Existing project documents use UUID substitutions and append semantics.
         # Reuse their actions while the shared Runtime owns graph traversal.
         try:
-            output = await self.executor._execute(self.kind, config)
+            output = await self.executor._execute(self.kind, config, resolve_text=lambda value: _scalar_text(context.resolve_value(value, preserve_types=True)))
         except Exception as error:  # noqa: BLE001 -- provider diagnostics become stable codes.
             return ModuleResult(False, error=self.executor._safe_error(error)['code'])
         if output is not None:
@@ -104,17 +182,24 @@ class _LegacyBrowserNode(ModuleExecutor):
 
 
 class _ProjectRegistry(ExecutorRegistry):
-    def __init__(self, legacy: WorkflowExecutor | None) -> None:
+    def __init__(self, legacy: WorkflowExecutor | None, capability: Callable[..., Awaitable[Any]] | None = None) -> None:
         super().__init__()
         self.source = build_production_executor_registry()
         self.legacy = legacy
+        self.capability = capability
 
     def get_all_types(self) -> list[str]:
-        return self.source.get_all_types()
+        return [*self.source.get_all_types(), *(['project_data', 'project_end', 'project_manual'] if self.capability else [])]
 
     def get(self, module_type: str) -> ModuleExecutor | None:
         executor: ModuleExecutor | None
-        if self.legacy is not None and module_type in {'open_page', 'input_text', 'click_element', 'get_element_info'}:
+        if module_type == 'project_manual' and self.capability is not None:
+            executor = _ProjectManualNode(self.capability)
+        elif module_type == 'project_end' and self.capability is not None:
+            executor = _ProjectEndNode(self.capability)
+        elif module_type == 'project_data' and self.capability is not None:
+            executor = _ProjectDataNode(self.capability)
+        elif self.legacy is not None and module_type in {'open_page', 'input_text', 'click_element', 'get_element_info'}:
             executor = _LegacyBrowserNode(module_type, self.legacy)
         else:
             executor = self.source.get(module_type)
@@ -144,10 +229,13 @@ class ProjectGraphExecutor:
         external_integrations: ExternalIntegrationGateway | None = None,
         command_bus: _WorkerCommandBus | None = None,
         proxy_probe: Callable[[bool], Awaitable[dict[str, Any]]] | None = None,
+        capability: Callable[..., Awaitable[Any]] | None = None,
+        browser_initializer: Callable[..., Awaitable[Any]] | None = None,
+        project_input_context: dict[str, Any] | None = None,
     ) -> None:
         self.browser = CloakBrowserWorkflowSession(browser_context) if browser_context is not None else None
         self.cancellation = _Cancellation(should_stop)
-        self.context = ExecutionContext(project_data=command_bus.project_data_call if command_bus else None, proxy_control=command_bus.proxy_call if command_bus else None, proxy_probe=proxy_probe, process_cleanup=terminate_subprocess, variables=dict(variables), browser=self.browser, cancellation=self.cancellation, events=self, credentials=credentials, models=models, external_integrations=external_integrations, table_workbooks=OpenpyxlTableWorkbookRenderer())
+        self.context = ExecutionContext(project_input_context=project_input_context or {}, proxy_control=command_bus.proxy_call if command_bus else None, proxy_probe=proxy_probe, process_cleanup=terminate_subprocess, variables=dict(variables), browser=self.browser, browser_initializer=browser_initializer, cancellation=self.cancellation, events=self, credentials=credentials, models=models, external_integrations=external_integrations, table_workbooks=OpenpyxlTableWorkbookRenderer())
         self.command_bus = command_bus
         if command_bus is not None:
             interactive = command_bus.for_context(self.context)
@@ -158,6 +246,7 @@ class ProjectGraphExecutor:
         self.legacy.variables = self.context.variables
         self.emit = emit
         self.capture_failure = capture_failure
+        self.capability = capability
         self.artifact_writer = artifact_writer
         self.graph_adapter = False
         self.nodes: dict[str, Any] = {}
@@ -165,6 +254,8 @@ class ProjectGraphExecutor:
         self.workflow_nodes: dict[str, dict[str, Any]] = {}
         self.started: dict[str, float] = {}
         self.error: dict[str, str] | None = None
+        self.end_completed = False
+        self.manual_outcome: str | None = None
 
     async def run(self, plan: Mapping[str, Any]) -> dict[str, object]:
         document = plan.get('document')
@@ -177,7 +268,7 @@ class ProjectGraphExecutor:
                 'edges': [{'id': f'edge-{index}', 'source': source, 'target': target} for index, (source, target) in enumerate(pairwise(identities))],
             }
         self.nodes = {node['id']: node['data'] for node in document['nodes']}
-        registry = _ProjectRegistry(None if self.graph_adapter else self.legacy)
+        registry = _ProjectRegistry(None if document.get("schemaVersion") == 3 else self.legacy, self.capability)
         workflows = plan.get('workflowDependencies')
         nested = _WorkerNestedWorkflows(
             workflows, registry=registry, parent=self.context, sink=self,  # type: ignore[arg-type]
@@ -210,7 +301,7 @@ class ProjectGraphExecutor:
             nested.custom_modules = self.context.custom_modules
         if self.graph_adapter:
             canvas_subflows = _WorkerCanvasSubflows(
-                document, registry=registry, parent=self.context, sink=self,  # type: ignore[arg-type]
+                document, registry=registry, parent=self.context, sink=self,
                 command_bus=self.command_bus, nested_workflows=nested,
             )
             self.context.canvas_subflows = canvas_subflows
@@ -220,9 +311,11 @@ class ProjectGraphExecutor:
         if result.success:
             # A child may fail while run_workflow_file explicitly continues.
             self.error = None
+        if result.success and not self.context.stop_workflow and any(node.get('moduleType') == 'project_end' for node in self.nodes.values()) and not self.end_completed:
+            return {'status': 'failed', 'error': {'code': 'WORKFLOW_END_NOT_REACHED', 'message': '执行分支未到达 End，环境收尾未完成'}}
         if not result.success and self.error is None:
             self.error = {'code': 'WORKFLOW_NODE_INVALID', 'message': '工作流包含不可执行的节点'}
-        return {'status': 'succeeded' if result.success else 'failed', 'error': self.error}
+        return {'status': self.manual_outcome or ('succeeded' if result.success else 'failed'), 'error': self.error}
 
     def for_context(self, context: ExecutionContext) -> _ProjectEventSink:
         return _ProjectEventSink(self, context)
@@ -259,11 +352,12 @@ class ProjectGraphExecutor:
         if node_data is None:
             node_data = self.nodes[node_id]
         if event['type'] == 'execution:node_start':
+            _visit.set((node_id, visit))
             self.started[visit] = monotonic()
             module_type = node_data.get("moduleType")
             if self.artifact_writer is not None and module_type in {"screenshot", "download_file", "save_image", "list_export", "export_log", "table_export", "extract_table_data", "allure_generate_report", "ssh_connect", "ssh_upload_file", "ssh_download_file", "base64", "firecrawl_scrape", "face_recognition", "image_ocr"}:
                 current.artifacts = self.artifact_writer(node_id, visit, module_type)
-            await emit('nodeAttempt', {'status': 'started'})
+            await emit('nodeAttempt', {'status': 'started', 'executionContext': execution_context})
             self.cancellation.raise_if_cancelled()
             await emit('log', {'level': 'info', 'message': '开始执行节点'})
             self.cancellation.raise_if_cancelled()
@@ -272,6 +366,8 @@ class ProjectGraphExecutor:
             return
         duration = round((monotonic() - self.started.pop(visit)) * 1000)
         success = bool(event['success'])
+        if node_data.get('moduleType') == 'project_manual' and isinstance(event.get('data'), dict) and event['data'].get('action') == 'finish':
+            self.manual_outcome = event['data'].get('outcome') if event['data'].get('complete') else 'failed'
         level = event.get('logLevel') or ('info' if success else 'error')
         if level not in {'debug', 'info', 'success', 'warning', 'error'}:
             level = 'info' if success else 'error'
@@ -284,6 +380,8 @@ class ProjectGraphExecutor:
         payload: dict[str, object] = {'status': 'succeeded' if success else 'failed', 'durationMs': duration}
         if success:
             data = node_data
+            if data.get('moduleType') == 'project_end':
+                self.end_completed = True
             config = data.get('config', data)
             if data['moduleType'] == 'switch_tab':
                 for key in ('saveIndexVariable', 'saveTitleVariable', 'saveUrlVariable'):
@@ -354,18 +452,15 @@ class ProjectGraphExecutor:
         else:
             timeout = event.get('isTimeout') is True or event.get('error') == 'WORKFLOW_NODE_TIMEOUT'
             self.error = {'code': 'WORKFLOW_NODE_TIMEOUT' if timeout else 'WORKFLOW_NODE_FAILED', 'message': '工作流节点执行超时' if timeout else '工作流节点执行失败'}
-            if node_data.get('moduleType') == 'project_data' and isinstance(event.get('data'), dict):
-                from autoflow.domain.workflows.project_data import PROJECT_DATA_ERRORS
-
-                code = event['data'].get('projectDataError')
-                if isinstance(code, str) and code in PROJECT_DATA_ERRORS:
-                    self.error = {'code': code, 'message': PROJECT_DATA_ERRORS[code]}
+            details = event.get('data')
+            if isinstance(details, dict) and isinstance(details.get('projectErrorCode'), str):
+                self.error = {**self.error, 'code': details['projectErrorCode']}
             payload['error'] = self.error
             await emit('log', {'level': 'error', 'message': self.error['message']})
         await emit('nodeAttempt', payload)
         if not success and self.capture_failure is not None:
             try:
-                page = self.browser.current_page()._raw if self.graph_adapter and self.browser is not None else self.legacy.page
+                page = getattr(current.browser.current_page(), '_raw', None) if self.graph_adapter and current.browser is not None else self.legacy.page
             except Exception:  # noqa: BLE001 -- absence of a page is valid failure evidence.
                 page = None
             await emit('artifact', await self.capture_failure(page, node_id, visit))

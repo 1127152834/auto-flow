@@ -1,0 +1,139 @@
+[
+  {
+    "name": "backend-ruff",
+    "argv": [
+      "uv",
+      "run",
+      "--project",
+      "apps/backend",
+      "ruff",
+      "check",
+      "apps/backend/src",
+      "apps/backend/tests"
+    ],
+    "exit": 0,
+    "seconds": 0.09
+  },
+  {
+    "name": "backend-compile",
+    "argv": [
+      "uv",
+      "run",
+      "--project",
+      "apps/backend",
+      "python",
+      "-m",
+      "compileall",
+      "-q",
+      "apps/backend/src/autoflow"
+    ],
+    "exit": 0,
+    "seconds": 0.1
+  },
+  {
+    "name": "migrations",
+    "argv": [
+      "uv",
+      "run",
+      "--project",
+      "apps/backend",
+      "pytest",
+      "apps/backend/tests/integration/test_android_m4_migration.py",
+      "apps/backend/tests/integration/test_migration_heads.py",
+      "-q"
+    ],
+    "exit": 0,
+    "seconds": 1.68
+  },
+  {
+    "name": "typecheck",
+    "argv": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "exit": 0,
+    "seconds": 23.45
+  },
+  {
+    "name": "lint",
+    "argv": [
+      "npm",
+      "run",
+      "lint"
+    ],
+    "exit": 0,
+    "seconds": 7.68
+  },
+  {
+    "name": "openapi",
+    "argv": [
+      "npm",
+      "run",
+      "openapi:check"
+    ],
+    "exit": 0,
+    "seconds": 4.67
+  },
+  {
+    "name": "structure",
+    "argv": [
+      "npm",
+      "run",
+      "test:structure"
+    ],
+    "exit": 0,
+    "seconds": 0.29
+  },
+  {
+    "name": "scripts",
+    "argv": [
+      "npm",
+      "run",
+      "test:scripts"
+    ],
+    "exit": 0,
+    "seconds": 1.79
+  },
+  {
+    "name": "backend-full",
+    "cwd": "apps/backend",
+    "argv": [
+      "uv",
+      "run",
+      "pytest",
+      "-x",
+      "-q"
+    ],
+    "exit": 0,
+    "summary": "4099 passed, 26 skipped, 2 warnings",
+    "seconds": 794.17,
+    "candidate": "ef0af03f"
+  },
+  {
+    "name": "frontend-full",
+    "cwd": "apps/desktop",
+    "argv": [
+      "npm",
+      "test",
+      "--",
+      "--maxWorkers=2"
+    ],
+    "exit": 0,
+    "summary": "424 files, 5683 tests passed",
+    "seconds": 351.96,
+    "node": "26.7.0",
+    "candidate": "ef0af03f"
+  },
+  {
+    "name": "build",
+    "argv": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "exit": 0,
+    "rendererSeconds": 32.59,
+    "candidate": "ef0af03f"
+  }
+]

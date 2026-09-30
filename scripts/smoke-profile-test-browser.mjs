@@ -426,6 +426,16 @@ async function smokeAuthenticatedSocksWorker(command, copiedKernel, dataDirector
   }
 }
 
+// Read only the disposable instance's main browser; never expose complete argv.
+export async function observeInstanceSeed(instanceId) {
+  assert.match(instanceId, /^[0-9a-f-]{36}$/i)
+  if (process.platform !== 'darwin') return null
+  const processes = (await browserProcesses(instanceId)).filter(item => item.command.includes('--user-data-dir=') && !item.command.includes('--type='))
+  const seeded = processes.map(item => ({ pid: item.pid, seed: item.command.match(/(?:^|\s)--fingerprint=(\d+)(?:\s|$)/)?.[1] })).filter(item => item.seed !== undefined)
+  assert.equal(seeded.length, 1, 'one owned main browser must expose the frozen seed')
+  return { pid: seeded[0].pid, seed: Number(seeded[0].seed) }
+}
+
 async function browserProcesses(copiedKernelDirectory) {
   const { stdout } = await run('ps', ['axww', '-o', 'pid=,ppid=,pgid=,command='])
   return stdout.split(/\r?\n/).flatMap(line => {

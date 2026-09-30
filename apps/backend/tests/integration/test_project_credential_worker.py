@@ -53,7 +53,7 @@ async def test_project_worker_reads_private_credential_after_start_commit(tmp_pa
         assert run.status == ("failed" if value == "" else "succeeded")
         assert reads == ["账号"]
         outputs = [event.payload["value"] for event in events if event.kind == "output"]
-        # The shared runtime deliberately redacts credential-derived results.
+        # Credential-derived variables stay private, including their output events.
         # Empty fields stay empty (invalid path); missing fields keep placeholders.
         assert outputs == []
         assert [event.payload["status"] for event in events if event.kind == "nodeAttempt"] == [
@@ -111,7 +111,7 @@ async def test_project_empty_credential_parts_preserve_reference_without_protoco
             "started", "succeeded"
         ]
         # Successful lookup proves the original placeholder reached the executor;
-        # shared source-compatible sensitive-result redaction remains in force.
+        # The project sensitive-variable boundary suppresses public output events.
         assert not any(event.kind == "output" for event in events)
         assert "preserved" not in json.dumps([thaw_json(event.payload) for event in events])
         assert not any(

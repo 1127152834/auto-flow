@@ -1,18 +1,20 @@
 """Google Sheets transport. Ownership, transactions and network calls stay in services."""
 
 import hmac
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Header, Query, Request, Response
 from pydantic import BeforeValidator
 
 from autoflow.application.project_sync.bindings import SheetsBindingService
+from autoflow.application.project_sync.columns import SheetsColumnService
 from autoflow.application.project_sync.connections import SheetsConnectionService
 from autoflow.application.project_sync.outbound import SheetsSyncService
 from autoflow.domain.projects.models import ProjectError
 
 from .errors import browser_error_responses
+from .project_data_impact_schemas import SheetsImpactReport
 from .project_schemas import OperationAccepted
 from .project_sheets_schemas import (
     GoogleAuthorization,
@@ -20,11 +22,15 @@ from .project_sheets_schemas import (
     SheetsBinding,
     SheetsBindingDelete,
     SheetsBindingWrite,
+    SheetsColumnCreate,
+    SheetsColumnPreview,
     SheetsConnectionCreate,
     SheetsConnectionDelete,
     SheetsConnectionDirectory,
+    SheetsIdentityVerification,
     SheetsInspectionCreate,
     SheetsInspectionResult,
+    SourceRecordObservations,
     SyncAbandonRequest,
     SyncOperation,
     SyncOperationPage,
@@ -58,7 +64,7 @@ def internal_google_authorizations_router(
         body: GoogleAuthorizationCreate,
         request: Request,
         x_autoflow_host_token: str = Header(alias="x-autoflow-host-token"),
-    ):
+    ) -> dict[str, Any]:
         expected = getattr(request.app.state.config, "host_token", None)
         if not expected or not hmac.compare_digest(x_autoflow_host_token, expected):
             raise ProjectError("UNAUTHORIZED", "Host authentication failed", 401)
@@ -76,7 +82,7 @@ def project_sheets_connections_router(service: SheetsConnectionService) -> APIRo
         response_model_exclude_none=True,
         responses=browser_error_responses(401, 404, 422),
     )
-    def list_connections(projectId: CanonicalId):
+    def list_connections(projectId: CanonicalId) -> dict[str, Any]:
         return service.list_connections(str(projectId))
 
     @router.post(
@@ -87,7 +93,7 @@ def project_sheets_connections_router(service: SheetsConnectionService) -> APIRo
     )
     def create_connection(
         projectId: CanonicalId, body: SheetsConnectionCreate, idempotency_key: Key
-    ):
+    ) -> dict[str, Any]:
         return service.create_connection(
             str(projectId), str(idempotency_key), body.model_dump(by_alias=True)
         )
@@ -103,7 +109,7 @@ def project_sheets_connections_router(service: SheetsConnectionService) -> APIRo
         connectionId: CanonicalId,
         body: SheetsConnectionDelete,
         idempotency_key: Key,
-    ):
+    ) -> dict[str, Any]:
         return service.delete_connection(
             str(projectId),
             str(connectionId),
@@ -128,7 +134,7 @@ def project_sheets_binding_router(service: SheetsBindingService) -> APIRouter:
         body: SheetsInspectionCreate,
         response: Response,
         idempotency_key: Key,
-    ):
+    ) -> dict[str, Any]:
         result = service.inspect(
             str(projectId),
             str(tableId),
@@ -150,13 +156,59 @@ def project_sheets_binding_router(service: SheetsBindingService) -> APIRouter:
         tableId: CanonicalId,
         body: SheetsBindingWrite,
         idempotency_key: Key,
-    ):
+    ) -> dict[str, Any]:
         return service.put_binding(
             str(projectId),
             str(tableId),
             str(idempotency_key),
             body.model_dump(by_alias=True),
         )
+
+    @router.get("/sheets/system-identity", response_model=SyncOperationPage, response_model_exclude_none=True)
+    def identity_operations(
+        projectId: CanonicalId,
+        tableId: CanonicalId,
+        page: int = Query(default=1, ge=1),
+        pageSize: int = Query(default=50, ge=1, le=100),
+    ) -> dict[str, Any]:
+        return service.identity_operations(str(projectId), str(tableId), page, pageSize)
+
+    @router.post("/sheets/system-identity", status_code=202, response_model=OperationAccepted,
+                 responses=browser_error_responses(401, 404, 409, 412, 422))
+    def initialize_identity(
+        projectId: CanonicalId,
+        tableId: CanonicalId,
+        body: SheetsBindingWrite,
+        idempotency_key: Key,
+    ) -> dict[str, Any]:
+        return service.initialize_identity(str(projectId), str(tableId), str(idempotency_key), body.model_dump(by_alias=True))
+
+    @router.post("/sheets/system-identity/{operationId}/preview", response_model=SheetsImpactReport)
+    def preview_identity(
+        projectId: CanonicalId,
+        tableId: CanonicalId,
+        operationId: CanonicalId,
+    ) -> dict[str, Any]:
+        return service.preview_identity(str(projectId), str(tableId), str(operationId))
+
+    @router.post("/sheets/system-identity/{operationId}/retry", status_code=202, response_model=OperationAccepted)
+    def retry_identity(
+        projectId: CanonicalId,
+        tableId: CanonicalId,
+        operationId: CanonicalId,
+        body: SheetsIdentityVerification | None = None,
+    ) -> dict[str, Any]:
+        return service.retry_identity(str(projectId), str(tableId), str(operationId), body.model_dump(by_alias=True) if body else None)
+
+    @router.post("/sheets/system-identity/{operationId}/verify", status_code=202, response_model=OperationAccepted,
+                 responses=browser_error_responses(401, 404, 409, 412, 422))
+    def verify_identity(
+        projectId: CanonicalId,
+        tableId: CanonicalId,
+        operationId: CanonicalId,
+        body: SheetsIdentityVerification | None = None,
+    ) -> dict[str, Any]:
+        return service.verify_identity(str(projectId), str(tableId), str(operationId), body.model_dump(by_alias=True) if body else None)
 
     @router.delete(
         "/sheets/binding",
@@ -169,7 +221,7 @@ def project_sheets_binding_router(service: SheetsBindingService) -> APIRouter:
         tableId: CanonicalId,
         body: SheetsBindingDelete,
         idempotency_key: Key,
-    ):
+    ) -> dict[str, Any]:
         return service.delete_binding(
             str(projectId),
             str(tableId),
@@ -183,7 +235,9 @@ def project_sheets_binding_router(service: SheetsBindingService) -> APIRouter:
         response_model_exclude_none=True,
         responses=browser_error_responses(401, 404, 422),
     )
-    def read_binding(projectId: CanonicalId, tableId: CanonicalId):
+    def read_binding(
+        projectId: CanonicalId, tableId: CanonicalId
+    ) -> dict[str, Any] | None:
         return service.read_binding(str(projectId), str(tableId))
 
     return router
@@ -198,8 +252,20 @@ def project_sync_router(service: SheetsSyncService) -> APIRouter:
         response_model_exclude_none=True,
         responses=browser_error_responses(401, 404, 422),
     )
-    def sync_state(projectId: CanonicalId, tableId: CanonicalId):
+    def sync_state(projectId: CanonicalId, tableId: CanonicalId) -> dict[str, Any]:
         return service.state(str(projectId), str(tableId))
+
+    @router.get(
+        "/records/{recordKey}/source-observations",
+        response_model=SourceRecordObservations,
+        responses=browser_error_responses(401, 404, 410, 422),
+    )
+    def source_observations(
+        projectId: CanonicalId, tableId: CanonicalId, recordKey: str,
+        dataset_generation: Annotated[CanonicalId, Query(alias="datasetGeneration")],
+        record_key_type: Annotated[Literal["text", "integer", "uuid"], Query(alias="recordKeyType")],
+    ) -> dict[str, Any]:
+        return service.source_observations(str(projectId), str(tableId), str(dataset_generation), recordKey, record_key_type)
 
     @router.post(
         "/sync/pull",
@@ -212,7 +278,7 @@ def project_sync_router(service: SheetsSyncService) -> APIRouter:
         tableId: CanonicalId,
         body: SyncPullRequest,
         idempotency_key: Key,
-    ):
+    ) -> dict[str, Any]:
         return service.pull(
             str(projectId),
             str(tableId),
@@ -231,7 +297,7 @@ def project_sync_router(service: SheetsSyncService) -> APIRouter:
         tableId: CanonicalId,
         body: SyncPushRequest,
         idempotency_key: Key,
-    ):
+    ) -> dict[str, Any]:
         return service.push(
             str(projectId),
             str(tableId),
@@ -250,7 +316,7 @@ def project_sync_router(service: SheetsSyncService) -> APIRouter:
         tableId: CanonicalId,
         body: SyncPauseRequest,
         idempotency_key: Key,
-    ):
+    ) -> dict[str, Any]:
         return service.pause(
             str(projectId),
             str(tableId),
@@ -269,7 +335,7 @@ def project_sync_router(service: SheetsSyncService) -> APIRouter:
         tableId: CanonicalId,
         body: SyncPauseRequest,
         idempotency_key: Key,
-    ):
+    ) -> dict[str, Any]:
         return service.resume(
             str(projectId),
             str(tableId),
@@ -298,7 +364,7 @@ def project_sync_router(service: SheetsSyncService) -> APIRouter:
         | None = None,
         page: int = Query(1, ge=1, le=2_147_483_647),
         page_size: int = Query(50, alias="pageSize", ge=1, le=200),
-    ):
+    ) -> dict[str, Any]:
         return service.list_operations(
             str(projectId), str(tableId), status, page, page_size
         )
@@ -311,7 +377,7 @@ def project_sync_router(service: SheetsSyncService) -> APIRouter:
     )
     def read_operation(
         projectId: CanonicalId, tableId: CanonicalId, syncOperationId: CanonicalId
-    ):
+    ) -> dict[str, Any]:
         return service.read_operation(
             str(projectId), str(tableId), str(syncOperationId)
         )
@@ -328,7 +394,7 @@ def project_sync_router(service: SheetsSyncService) -> APIRouter:
         syncOperationId: CanonicalId,
         body: SyncStatusRevisionRequest,
         idempotency_key: Key,
-    ):
+    ) -> dict[str, Any]:
         return service.reconcile(
             str(projectId),
             str(tableId),
@@ -349,7 +415,7 @@ def project_sync_router(service: SheetsSyncService) -> APIRouter:
         syncOperationId: CanonicalId,
         body: SyncAbandonRequest,
         idempotency_key: Key,
-    ):
+    ) -> dict[str, Any]:
         return service.abandon(
             str(projectId),
             str(tableId),
@@ -357,5 +423,72 @@ def project_sync_router(service: SheetsSyncService) -> APIRouter:
             str(idempotency_key),
             body.model_dump(by_alias=True),
         )
+
+    return router
+
+
+def project_sheets_columns_router(service: SheetsColumnService) -> APIRouter:
+    router = APIRouter(prefix="/api/v1/projects/{projectId}/tables/{tableId}/sheets/columns")
+
+    @router.post("/preview", response_model=SheetsImpactReport)
+    def preview(
+        projectId: CanonicalId,
+        tableId: CanonicalId,
+        body: SheetsColumnPreview,
+    ) -> dict[str, Any]:
+        return service.preview(str(projectId), str(tableId), body.model_dump(by_alias=True))
+
+    @router.get("", response_model=SyncOperationPage, response_model_exclude_none=True)
+    def operations(
+        projectId: CanonicalId,
+        tableId: CanonicalId,
+        page: int = Query(default=1, ge=1),
+        pageSize: int = Query(default=50, ge=1, le=100),
+    ) -> dict[str, Any]:
+        return service.operations(str(projectId), str(tableId), page, pageSize)
+
+    @router.post("", response_model=OperationAccepted, status_code=202)
+    def create(
+        projectId: CanonicalId,
+        tableId: CanonicalId,
+        body: SheetsColumnCreate,
+        idempotency_key: Key,
+    ) -> dict[str, Any]:
+        return service.create(str(projectId), str(tableId), str(idempotency_key), body.model_dump(by_alias=True))
+
+    @router.post("/{operationId}/preview", response_model=SheetsImpactReport)
+    def preview_original(
+        projectId: CanonicalId,
+        tableId: CanonicalId,
+        operationId: CanonicalId,
+    ) -> dict[str, Any]:
+        return service.preview_original(str(projectId), str(tableId), str(operationId))
+
+    @router.post("/{operationId}/verify", response_model=OperationAccepted, status_code=202)
+    def verify(
+        projectId: CanonicalId,
+        tableId: CanonicalId,
+        operationId: CanonicalId,
+        body: SheetsIdentityVerification | None = None,
+    ) -> dict[str, Any]:
+        return service.verify(str(projectId), str(tableId), str(operationId), body.model_dump(by_alias=True) if body else None)
+
+    @router.post("/{operationId}/cancel", response_model=SyncOperation, response_model_exclude_none=True)
+    def cancel(
+        projectId: CanonicalId,
+        tableId: CanonicalId,
+        operationId: CanonicalId,
+        body: SyncStatusRevisionRequest,
+    ) -> dict[str, Any]:
+        return service.cancel(str(projectId), str(tableId), str(operationId), body.expected_status_revision)
+
+    @router.post("/{operationId}/retry", response_model=OperationAccepted, status_code=202)
+    def retry(
+        projectId: CanonicalId,
+        tableId: CanonicalId,
+        operationId: CanonicalId,
+        body: SheetsIdentityVerification,
+    ) -> dict[str, Any]:
+        return service.retry(str(projectId), str(tableId), str(operationId), body.model_dump(by_alias=True))
 
     return router

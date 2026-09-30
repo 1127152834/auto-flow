@@ -286,3 +286,10 @@ def test_project_data_error_codes_project_through_the_real_http_handler() -> Non
     assert response.status_code == 422
     assert response.json()["error"]["code"] == "INVALID_PROJECT_DATA"
     assert response.json()["error"]["details"]["domainCode"] == "invalid_project_data"
+
+
+def test_validation_issues_report_business_errors_without_coercing_values():
+    from autoflow.domain.project_data.rules import validation_issues
+    fields = [{'fieldId':'amount','key':'amount','name':'金额','type':'number','required':True,'validation':{}}, {'fieldId':'title','key':'title','name':'标题','type':'string','required':True,'validation':{}}]
+    issues = validation_issues(fields, {'amount':'not-a-number'})
+    assert issues == [{'fieldId':'amount','code':'INVALID_PROJECT_DATA','rule':'type','message':'must be a finite JSON-safe number'}, {'fieldId':'title','code':'REQUIRED_FIELD_MISSING','rule':'required','message':'Required field is missing'}]

@@ -62,7 +62,8 @@ it('keeps recent search visually empty and avoids duplicate empty-state actions'
   expect(screen.getByRole('searchbox', { name: '搜索项目' })).toHaveValue('')
   expect(screen.getAllByRole('button', { name: '查看全部项目' })).toHaveLength(1)
   expect(screen.getAllByRole('button', { name: '新建项目' })).toHaveLength(1)
-  expect(screen.getByText('尚无最近访问，可查看全部项目或新建项目。')).toBeVisible()
+  expect(screen.getByRole('heading', { name: '尚无最近访问', level: 2 })).toBeVisible()
+  expect(screen.getByText('可以查看全部项目，或新建一个项目。')).toBeVisible()
 })
 
 it('does not claim stale content exists when a recent load fails empty', () => {

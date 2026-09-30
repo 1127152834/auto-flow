@@ -1,0 +1,83 @@
+Window: "AutoFlow", App: Electron.
+0 标准窗口 AutoFlow, Secondary Actions: Raise
+	1 container AutoFlow
+		2 container
+			3 HTML 内容 AutoFlow, URL: file:///Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/out/renderer/index.html#/dashboard
+				4 container
+					5 link Description: AutoFlow, Value: file:///Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/out/renderer/index.html#/dashboard
+					6 container 全局导航
+						7 按钮 总览
+						8 按钮 项目
+						9 按钮 浏览器配置
+						10 按钮 安卓设备
+						11 按钮 代理管理
+						12 按钮 模型管理
+					13 按钮 设置
+						14 图像
+						15 文本 设置
+					16 文本 本地服务正常
+					17 container
+						18 标题 总览, Value: 1
+							19 文本 总览
+						20 文本 集中查看本机资源，并进入日常管理工作。
+						21 container 资源概况
+							22 标题 资源概况, Value: 2
+								23 文本 资源概况
+							24 文本 还没有已配置的资源，可从下方工作入口开始。
+							25 container
+								26 图像
+								27 text 浏览器配置 0 个全局配置模板
+							28 container
+								29 图像
+								30 text 已启用代理 0 个代理出口已启用
+							31 container
+								32 图像
+								33 text 代理组 0 个本地代理组
+							34 container
+								35 图像
+								36 text 已安装内核 0 个浏览器内核
+							37 container
+								38 图像
+								39 text 模型供应商 0 个供应商
+							40 container
+								41 图像
+								42 text 模型 0 个已配置模型
+						43 container 工作入口
+							44 标题 工作入口, Value: 2
+								45 文本 工作入口
+							46 按钮 工作流工作台 编排并运行浏览器自动化流程
+								47 图像
+								48 文本 工作流工作台
+								49 文本 编排并运行浏览器自动化流程
+								50 图像
+							51 按钮 管理浏览器配置 维护浏览器身份、内核与代理绑定
+								52 图像
+								53 文本 管理浏览器配置
+								54 文本 维护浏览器身份、内核与代理绑定
+								55 图像
+							56 按钮 管理代理出口 维护代理连接与本地代理组
+								57 图像
+								58 文本 管理代理出口
+								59 文本 维护代理连接与本地代理组
+								60 图像
+							61 按钮 管理模型资源 连接供应商并维护模型目录
+								62 图像
+								63 文本 管理模型资源
+								64 文本 连接供应商并维护模型目录
+								65 图像
+							66 按钮 查看本地设置 管理工作区、应用偏好与诊断
+								67 图像
+								68 文本 查看本地设置
+								69 文本 管理工作区、应用偏好与诊断
+								70 图像
+	71 关闭按钮
+	72 全屏幕按钮 Help: 此按钮也可以执行缩放窗口的操作, Secondary Actions: 缩放窗口
+	73 最小化按钮
+74 menu bar
+	75 Electron
+	76 File
+	77 Edit
+	78 View
+	79 Window
+
+The focused UI element is 7 按钮 总览

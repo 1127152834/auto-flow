@@ -1187,6 +1187,118 @@ def test_project_rejects_excluded_node_inside_custom_module(tmp_path: Path) -> N
         factory.dispose()
 
 
+@pytest.mark.parametrize("dependency_kind", ["custom_module", "workflow"])
+def test_project_rejects_project_data_inside_external_dependency_before_admission(
+    tmp_path: Path, dependency_kind: str,
+) -> None:
+    from sqlalchemy import select
+
+    from autoflow.application.workflows.modules import CustomModuleService
+    from autoflow.infrastructure.database.project_run_models import (
+        ProjectBatchRow,
+        ProjectTaskRow,
+    )
+    from autoflow.infrastructure.database.workflow_modules import (
+        SqlAlchemyWorkflowModules,
+    )
+
+    factory, _, _, coordinator, _, project, automation = setup(tmp_path)
+    documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory))
+    dependency_node = {
+        "id": "dependency-data",
+        "type": "project_data",
+        "position": {"x": 0, "y": 0},
+        "data": {
+            "moduleType": "project_data",
+            "config": {
+                "operation": "inputs",
+                "arguments": {},
+                "variableName": "task_inputs",
+            },
+        },
+    }
+    modules = None
+    if dependency_kind == "custom_module":
+        modules = CustomModuleService(SqlAlchemyWorkflowModules(factory))
+        dependency = modules.create(
+            {
+                "name": "project_data_dependency",
+                "display_name": "项目数据依赖",
+                "parameters": [],
+                "outputs": [],
+                "workflow": {
+                    "nodes": [dependency_node],
+                    "edges": [],
+                    "variables": [],
+                },
+            },
+            client_request_id=str(uuid4()),
+        )
+        root_node = {
+            "id": "dependency-call",
+            "type": "custom_module",
+            "position": {"x": 0, "y": 0},
+            "data": {
+                "moduleType": "custom_module",
+                "config": {"customModuleId": dependency.id},
+            },
+        }
+        expected_type = "customModule"
+    else:
+        child = _studio_payload(str(uuid4()))
+        child.update(
+            projectId=project.project_id,
+            name="项目数据子工作流",
+            schemaVersion=3,
+            nodes=[dependency_node],
+            edges=[],
+            variables=[],
+        )
+        dependency = documents.create(child, client_request_id=str(uuid4()))
+        root_node = {
+            "id": "dependency-call",
+            "type": "run_workflow_file",
+            "position": {"x": 0, "y": 0},
+            "data": {
+                "moduleType": "run_workflow_file",
+                "config": {"workflowFile": dependency.id},
+            },
+        }
+        expected_type = "workflow"
+    parent = _studio_payload(automation.workflow_id)
+    parent.update(schemaVersion=3, nodes=[root_node], edges=[], variables=[])
+    documents.update(
+        automation.workflow_id,
+        parent,
+        expected_revision=1,
+        client_request_id=str(uuid4()),
+    )
+    coordinator._core = WorkflowRuntimeService(
+        factory,
+        SqlAlchemyWorkflowRepository(factory),
+        modules=modules,
+    )
+    try:
+        with pytest.raises(WorkflowRuntimeError) as rejected:
+            coordinator.start(
+                project.project_id,
+                automation.automation_id,
+                str(uuid4()),
+                start_payload(automation),
+            )
+        assert rejected.value.code == "PROJECT_DATA_DEPENDENCY_UNSUPPORTED"
+        assert rejected.value.details == {
+            "dependencyType": expected_type,
+            "dependencyId": dependency.id,
+            "nodeIds": ["dependency-data"],
+        }
+        with factory() as session:
+            assert session.scalars(select(ProjectBatchRow)).all() == []
+            assert session.scalars(select(ProjectTaskRow)).all() == []
+    finally:
+        factory.dispose()
+
+
 def test_project_detects_browser_requirement_inside_custom_module(tmp_path: Path) -> None:
     from autoflow.application.workflows.modules import CustomModuleService
     from autoflow.infrastructure.database.workflow_modules import (
@@ -1514,7 +1626,7 @@ async def test_project_batch_runs_condition_and_loop_in_real_worker(tmp_path: Pa
         run = runtime.query_run(run_id=task.run_id)
         assert saved.revision == 2 and run is not None
         prepared = runtime.query_prepared_content(prepared_content_id=run.prepared_content_id)
-        assert prepared is not None and prepared.adapter_version == "webrpa-graph/v1"
+        assert prepared is not None and prepared.adapter_version == "webrpa-graph/v2"
         assert [dict(edge) for edge in prepared.execution_plan["document"]["edges"]] == document["content"]["edges"]
         await dispatcher.dispatch(
             run.run_id,

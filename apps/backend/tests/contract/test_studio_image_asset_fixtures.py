@@ -6,7 +6,7 @@ from pydantic import TypeAdapter, ValidationError
 
 from autoflow.adapters.http.workflow_studio_schemas import StudioImageAsset
 
-CASES = json.loads((Path(__file__).parents[1] / 'fixtures' / 'studio-image-assets.json').read_text())
+CASES = json.loads((Path(__file__).parents[1] / 'fixtures' / 'studio-image-assets.json').read_text(encoding="utf-8"))
 
 
 @pytest.mark.parametrize('case', CASES, ids=[case['id'] for case in CASES])

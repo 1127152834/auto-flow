@@ -33,7 +33,8 @@ from .workflow_studio_schemas import (
 class BrowserOpenRequest(ApiModel):
     model_config = ConfigDict(extra="forbid", strict=True)
 
-    profile_id: str = Field(min_length=1)
+    profile_id: str | None = Field(default=None, min_length=1)
+    browser_environment: dict[str, Any] | None = None
     url: str | None = None
 
 
@@ -65,7 +66,7 @@ def workflow_inspection_router(service: WorkflowInspectionService) -> APIRouter:
 
     @router.post("/api/browser/open", response_model=StudioBrowserStatus)
     async def browser_open(request: BrowserOpenRequest, project_id: str | None = Query(default=None, alias="projectId")) -> dict[str, Any]:
-        return await service.open(profile_id=request.profile_id, url=request.url, project_id=project_id)
+        return await service.open(profile_id=request.profile_id, url=request.url, project_id=project_id, **({"browser_environment": request.browser_environment} if request.browser_environment is not None else {}))
 
     @router.post("/api/browser/close")
     async def browser_close(request: BrowserCloseRequest, project_id: str | None = Query(default=None, alias="projectId")) -> dict[str, Any]:
@@ -94,7 +95,7 @@ def workflow_inspection_router(service: WorkflowInspectionService) -> APIRouter:
         request: StudioPickerSessionStartRequest,
         project_id: str | None = Query(default=None, alias="projectId"),
     ) -> dict[str, Any]:
-        if request.profile_id is None:
+        if request.profile_id is None and request.browser_environment is None:
             from autoflow.domain.workflows.runs import WorkflowRunError
 
             raise WorkflowRunError(
@@ -103,6 +104,7 @@ def workflow_inspection_router(service: WorkflowInspectionService) -> APIRouter:
         return await service.start_picker(
             session_id=request.session_id,
             profile_id=request.profile_id,
+            **({"browser_environment": request.browser_environment} if request.browser_environment is not None else {}),
             url=request.url,
             project_id=project_id,
         )

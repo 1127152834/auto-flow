@@ -1,0 +1,17 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/android/tests/AndroidPage.test.tsx src/renderer/domains/android/tests/ManagementOverview.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+
+(node:99680) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:99681) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  2 passed (2)
+      Tests  64 passed (64)
+   Start at  09:47:06
+   Duration  6.95s (transform 545ms, setup 282ms, import 1.54s, tests 5.82s, environment 731ms)
+

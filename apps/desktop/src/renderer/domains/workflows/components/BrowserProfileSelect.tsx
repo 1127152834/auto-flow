@@ -1,4 +1,7 @@
-import {useEffect,useState} from 'react'
+import {useEffect,useId,useState} from 'react'
+import { Globe, RefreshCw } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './controls/select'
+import { Button } from './controls/button'
 import type {components} from '../../../shared/api/generated'
 import {browserApi, projectResourceApi} from '../api'
 import {getStudioResourceScope} from '../api/config'
@@ -7,6 +10,7 @@ import {useGlobalConfigStore} from '../hooks/stores/globalConfigStore'
 
 /** AutoFlow host adaptation: choose managed Profiles; never edit launch parameters here. */
 export function BrowserProfileSelect({label='浏览器配置',disabled=false,value,onChange}:{label?:string;disabled?:boolean;value?:string;onChange?:(profileId:string)=>void}) {
+  const controlId=useId()
   const globalProfileId=useGlobalConfigStore(state=>state.config.browserProfileId)
   const selectGlobal=useGlobalConfigStore(state=>state.setBrowserProfileId)
   const resources=useGlobalConfigStore(state=>state.projectResources)
@@ -37,14 +41,34 @@ export function BrowserProfileSelect({label='浏览器配置',disabled=false,val
     window.addEventListener('studio:transport-changed',reload);window.addEventListener('studio:connection-restored',reload)
     return()=>{window.removeEventListener('studio:transport-changed',reload);window.removeEventListener('studio:connection-restored',reload)}
   },[])
-  return <label className="flex flex-wrap items-center gap-1 text-xs" title="仅使用管理端 CloakBrowser 配置；启动参数在管理端维护">
-    {label}
-    <select aria-label={label} disabled={disabled||loading} value={profileId||''} onChange={event=>select(event.target.value)} className="max-w-48 rounded border bg-[hsl(var(--card))] px-2 py-1">
-      <option value="">{loading?'正在读取配置…':profiles.length?'请选择配置':'暂无配置，请在管理端创建'}</option>
-      {profileId&&!profiles.some(profile=>profile.id===profileId)&&<option value={profileId}>所选配置已不可用，请重新选择</option>}
-      {profiles.map(profile=><option key={profile.id} value={profile.id}>{profile.name}</option>)}
-    </select>
-    <button type="button" disabled={disabled||loading} onClick={()=>setAttempt(value=>value+1)}>刷新配置</button>
-    {error&&<span role="alert">{error}</span>}
-  </label>
+  const options=profiles.map(profile=>({value:profile.id,label:profile.name,disabled:false}))
+  if(profileId&&!profiles.some(profile=>profile.id===profileId)) {
+    options.unshift({value:profileId,label:'所选配置已不可用，请重新选择',disabled:true})
+  }
+  return <div className="flex max-w-full flex-wrap items-center gap-2 text-xs">
+    <label htmlFor={controlId} className="whitespace-nowrap text-[hsl(var(--muted-foreground))]"
+      title="仅使用管理端 CloakBrowser 配置；启动参数在管理端维护">{label}</label>
+    <div className="flex min-w-0 max-w-full items-center gap-1">
+      <Select value={profileId||''} onValueChange={select} disabled={disabled||loading}>
+        <SelectTrigger id={controlId} aria-label={label} data-choice-value={profileId||''}
+          aria-invalid={!!error} className="w-52 max-w-full">
+          <div className="flex min-w-0 items-center gap-2">
+            <Globe className="h-3.5 w-3.5 shrink-0 text-[hsl(var(--brand-600))]" aria-hidden="true"/>
+            <span className="truncate"><SelectValue placeholder={loading?'正在读取配置…':profiles.length?'请选择配置':'暂无配置，请在管理端创建'}/></span>
+          </div>
+        </SelectTrigger>
+        <SelectContent sideOffset={4} collisionPadding={12} className="max-w-[min(24rem,calc(100vw-2rem))]">
+          {options.map(option=><SelectItem key={option.value} value={option.value} data-choice-value={option.value}
+            disabled={option.disabled} className="whitespace-normal break-words">{option.label}</SelectItem>)}
+          {!profiles.length&&!profileId&&<p className="px-3 py-2 text-xs text-[hsl(var(--muted-foreground))]">请先在管理端创建浏览器配置</p>}
+        </SelectContent>
+      </Select>
+      <Button type="button" aria-label="刷新配置" title="刷新浏览器配置" size="icon-sm" variant="ghost"
+        disabled={disabled||loading} aria-busy={loading} className="h-8 w-8 shrink-0"
+        onClick={()=>setAttempt(value=>value+1)}>
+        <RefreshCw className={`h-3.5 w-3.5${loading?' animate-spin':''}`} aria-hidden="true"/>
+      </Button>
+    </div>
+    {error&&<span role="alert" className="basis-full text-[hsl(var(--destructive))]">{error}</span>}
+  </div>
 }

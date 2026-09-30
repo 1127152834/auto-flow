@@ -1,0 +1,7 @@
+{
+  "pid": 82157,
+  "identity": "Thu Sep 24 06:00:50 2026     /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/backend/.venv/bin/python3 -m autoflow --port 0 --instance-id 82152-1790200850034 --parent-pid 82152 --data-dir /private/tmp/autoflow-android-desktop-qa-20260924",
+  "pausedAt": 1790200883.158245,
+  "durationSeconds": 90,
+  "resumedAt": 1790200973.16831
+}

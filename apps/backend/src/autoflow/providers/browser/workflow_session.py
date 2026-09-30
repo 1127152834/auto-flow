@@ -7,7 +7,7 @@ from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from uuid import uuid4
 
@@ -556,6 +556,7 @@ class CloakBrowserWorkflowSession:
         self._active_frame: CloakBrowserWorkflowPage | None = None
         self._closed = False
         self.proxy_relay: BrowserProxyRelay | None = None
+        self.trace: Any = None
         existing = self._synchronize_pages()
         if existing:
             self._current_id = existing[0].id
@@ -669,11 +670,31 @@ class CloakBrowserWorkflowSession:
             return {"exitIp": None, "error": {"code": "PROXY_NOT_BOUND", "message": "会话未绑定代理"}}
         return await self.proxy_relay.probe(reset)
 
+    async def collect_diagnostic(self, kind: str, config: dict[str, Any], metadata: dict[str, Any]) -> dict[str, Any]:
+        if self.trace is None:
+            raise ValueError("TRACE_NOT_ENABLED: 本次浏览器未开启追踪")
+        return cast(dict[str, Any], await self.trace.collect(kind, config, metadata, self))
+
+    async def start_trace(self, save: Any, *, enabled: bool = True, enhanced: bool = False) -> None:
+        from .workflow_trace import WorkflowTrace
+        if self.trace is None:
+            self.trace = WorkflowTrace(self._context, save, enabled=enabled, enhanced=enhanced)
+            await self.trace.start()
+
     async def close(self) -> None:
         if self._closed:
             return
         self._closed = True
-        await self._context.close()
+        try:
+            if self.trace is not None:
+                try:
+                    async with asyncio.timeout(8):
+                        await self.trace.finish()
+                except Exception:  # noqa: BLE001 -- cleanup must proceed if the disk is unavailable.
+                    import logging
+                    logging.getLogger(__name__).warning("Trace 归档未完成；浏览器继续清理")
+        finally:
+            await self._context.close()
 
 
 async def _browser_process_id(context: Any) -> int | None:
@@ -720,7 +741,13 @@ async def launch_workflow_session(
             command, headless=bool(command.get("headless", False))
         )
         options["proxy"] = {"server": relay_value.url} if relay_value else None
-        context = await launch_context_async(**options)
+        if command.get('userDataDir'):
+            from cloakbrowser import (
+                launch_persistent_context_async,
+            )
+            context = await launch_persistent_context_async(str(command['userDataDir']), **options)
+        else:
+            context = await launch_context_async(**options)
         if not context.pages:
             await context.new_page()
         session = CloakBrowserWorkflowSession.from_context(

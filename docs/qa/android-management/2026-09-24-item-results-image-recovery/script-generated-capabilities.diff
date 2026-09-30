@@ -1,0 +1,20 @@
+diff --git a/docs/migration/studio-frontend-completion/capabilities.json b/docs/migration/studio-frontend-completion/capabilities.json
+index 1572afcc..b3fb6b7f 100644
+--- a/docs/migration/studio-frontend-completion/capabilities.json
++++ b/docs/migration/studio-frontend-completion/capabilities.json
+@@ -35874,6 +35874,7 @@
+         "apps/desktop/src/renderer/domains/workflows/components/controls/select.tsx#SelectScrollUpButton",
+         "apps/desktop/src/renderer/domains/workflows/components/controls/select.tsx#SelectTrigger",
+         "apps/desktop/src/renderer/domains/workflows/components/controls/textarea.tsx#Textarea",
++        "apps/desktop/src/renderer/domains/workflows/components/controls/variable-input.tsx#VariableInput",
+         "apps/desktop/src/renderer/domains/workflows/components/controls/variable-name-input.tsx#RenameConfirmDialog",
+         "apps/desktop/src/renderer/domains/workflows/components/controls/variable-name-input.tsx#VariableNameInput"
+       ],
+@@ -36228,7 +36229,6 @@
+         "apps/desktop/src/renderer/domains/workflows/components/controls/select.tsx#SelectScrollDownButton",
+         "apps/desktop/src/renderer/domains/workflows/components/controls/select.tsx#SelectScrollUpButton",
+         "apps/desktop/src/renderer/domains/workflows/components/controls/select.tsx#SelectTrigger",
+-        "apps/desktop/src/renderer/domains/workflows/components/controls/textarea.tsx#Textarea",
+         "apps/desktop/src/renderer/domains/workflows/components/controls/variable-input.tsx#VariableInput",
+         "apps/desktop/src/renderer/domains/workflows/components/controls/variable-name-input.tsx#RenameConfirmDialog",
+         "apps/desktop/src/renderer/domains/workflows/components/controls/variable-name-input.tsx#VariableNameInput"

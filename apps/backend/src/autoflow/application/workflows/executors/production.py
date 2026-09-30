@@ -36,6 +36,7 @@ from .data_structure import (
     StringTrimExecutor,
 )
 from .desktop_platform import DESKTOP_PLATFORM_EXECUTORS
+from .diagnostics import DIAGNOSTIC_EXECUTORS
 from .dict_advanced import (
     DictDeepCopyExecutor,
     DictFilterExecutor,
@@ -114,8 +115,6 @@ from .network_monitor import (
 from .network_sharing import NETWORK_SHARING_EXECUTORS
 from .page_load import PageLoadCompleteExecutor, WaitPageLoadExecutor
 from .printer import PRINTER_EXECUTORS
-from .project_data import ProjectDataExecutor
-from .project_end import ProjectEndExecutor
 from .proxy_control import PROXY_EXECUTORS
 from .python_script import PythonScriptExecutor
 from .registry import ExecutorRegistry
@@ -166,10 +165,9 @@ from .web_basic import WEB_BASIC_EXECUTORS
 from .workflow_chain import RunWorkflowFileExecutor
 
 PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
-    ProjectDataExecutor,
-    ProjectEndExecutor,
     *PROXY_EXECUTORS,
     CustomModuleExecutor,
+    *DIAGNOSTIC_EXECUTORS,
     OpenPageExecutor,
     ClickElementExecutor,
     InputTextExecutor,

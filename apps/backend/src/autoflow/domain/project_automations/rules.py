@@ -46,9 +46,7 @@ def validate_write(
         raise validation_error(
             "environmentPolicy.inputId", "Must reference an input in inputPlan"
         )
-    result["runPolicy"] = _run_policy(
-        result["runPolicy"], has_data_inputs=bool(result["inputPlan"]["inputs"])
-    )
+    result["runPolicy"] = _run_policy(result["runPolicy"])
     return result
 
 
@@ -546,7 +544,7 @@ def _proxy(value: Any) -> None:
         _uuid(value[key], f"proxyOverride.{key}")
 
 
-def _run_policy(value: Any, *, has_data_inputs: bool) -> dict[str, Any]:
+def _run_policy(value: Any) -> dict[str, Any]:
     required = {
         "maxTasks",
         "concurrency",
@@ -567,12 +565,6 @@ def _run_policy(value: Any, *, has_data_inputs: bool) -> dict[str, Any]:
             )
     if not 1 <= value["maxTasks"] <= 100:
         raise validation_error("runPolicy.maxTasks", "Must be between 1 and 100")
-    if not has_data_inputs and (
-        value["concurrency"] != 1 or value["maxLiveInstances"] != 1
-    ):
-        raise validation_error(
-            "runPolicy.concurrency", "参数型运行当前仅支持一个活动实例"
-        )
     if value["concurrency"] > 100 or value["maxLiveInstances"] > 100:
         raise validation_error(
             "runPolicy.concurrency", "并发数和最大活动实例必须在 1–100 之间"

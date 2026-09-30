@@ -9,6 +9,10 @@ from fastapi.responses import JSONResponse
 
 from autoflow.adapters.http.android import android_router
 from autoflow.adapters.http.android_fleet import android_fleet_router
+from autoflow.adapters.http.android_management import (
+    android_management_internal_router,
+    android_management_router,
+)
 from autoflow.adapters.http.errors import error_response, install_error_handlers
 from autoflow.adapters.http.image_assets import image_assets_router
 from autoflow.adapters.http.laya_lab import laya_lab_router
@@ -19,8 +23,14 @@ from autoflow.adapters.http.studio_retention import studio_retention_router
 from autoflow.adapters.http.workflow_bundles import workflow_bundles_router
 from autoflow.adapters.http.workflow_catalog import workflow_catalog_router
 from autoflow.adapters.http.workflow_schedules import workflow_schedules_router
+from autoflow.application.android.backups import AndroidBackupService
+from autoflow.application.android.bulk import AndroidBulkService
+from autoflow.application.android.cleanup import CleanupService
 from autoflow.application.android.console import AndroidConsole
+from autoflow.application.android.diagnostics import EnvironmentCheckService
 from autoflow.application.android.fleet import AndroidFleet
+from autoflow.application.android.images import AndroidImageService
+from autoflow.application.android.observations import DeviceObservationService
 from autoflow.application.environments.service import EnvironmentService
 from autoflow.application.kernels.service import KernelService
 from autoflow.application.lab.service import LayaService
@@ -52,6 +62,7 @@ from autoflow.application.project_runs.resources import ProjectRunResourceResolv
 from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
 from autoflow.application.project_sync.access import GoogleAccess, TransportFactory
 from autoflow.application.project_sync.bindings import SheetsBindingService
+from autoflow.application.project_sync.columns import SheetsColumnService
 from autoflow.application.project_sync.connections import (
     AuthorizationRegistry,
     SheetsConnectionService,
@@ -105,6 +116,9 @@ from autoflow.domain.profiles.ports import (
     ProfileUsageGuard,
 )
 from autoflow.infrastructure.credentials.cloakbrowser import CloakBrowserLicenseStore
+from autoflow.infrastructure.database.android_operations import (
+    SqlAlchemyAndroidOperationRepository,
+)
 from autoflow.infrastructure.database.android_resources import AndroidResourceRepository
 from autoflow.infrastructure.database.environments import SqlAlchemyEnvironments
 from autoflow.infrastructure.database.kernel_operations import (
@@ -190,6 +204,7 @@ from autoflow.infrastructure.filesystem.profile_environment import (
 )
 from autoflow.infrastructure.process.kernel_worker import KernelWorkerManager
 from autoflow.infrastructure.process.test_browser_worker import TestBrowserWorkerManager
+from autoflow.providers.android.image_catalog import ImageCatalog
 from autoflow.providers.android.stream import AndroidStream
 from autoflow.providers.browser.environment_browser import EnvironmentBrowserLauncher
 from autoflow.providers.data import google_auth
@@ -395,6 +410,15 @@ def create_app(
     app.router.add_event_handler("startup", workflow_schedules.startup)
     android = android_service(session_factory, paths.workspace)
     android_resources = AndroidResourceRepository(session_factory)
+    android_operations = SqlAlchemyAndroidOperationRepository(session_factory)
+    android_images = AndroidImageService(android_resources, android, ImageCatalog(android.runtime))
+    android.runtime.image_catalog = android_images
+    android_backups = AndroidBackupService(android_resources, paths.workspace, android_operations)
+    android_observations = DeviceObservationService(android.repository, android.runtime)
+    android_bulk = AndroidBulkService(android_resources, android)
+    android_cleanup = CleanupService(android_resources, android, android_backups, android_operations)
+    android.management.operations = android_operations
+    android.management.workspace_identity = str(paths.workspace.resolve())
     android_runs = CurrentAndroidRunBoundary()
     android_fleet = AndroidFleet(android, android_resources, None, android_runs)
     android_console = AndroidConsole(
@@ -403,9 +427,14 @@ def create_app(
     app.state.android_service = android
     app.state.android_fleet = android_fleet
     app.state.android_console = android_console
+    app.state.android_operations = android_operations
+    app.state.android_observations = android_observations
+    app.state.android_bulk = android_bulk
     app.router.add_event_handler("startup", android.recover)
     app.router.add_event_handler("startup", android_fleet.start)
     app.router.add_event_handler("startup", android_console.start)
+    app.router.add_event_handler("startup", android_observations.start)
+    app.router.add_event_handler("startup", android_bulk.start)
 
     environment_store = EnvironmentStore(paths.workspace / "environments")
 
@@ -430,7 +459,8 @@ def create_app(
         installed_kernel_lookup or catalog_provider, "installed", None
     ) or catalog_provider.installed
     environment_browser = EnvironmentBrowserLauncher(
-        profile_service, kernel_inventory, environment_store
+        profile_service, kernel_inventory, environment_store,
+        resource_provider=lambda: app.state.project_workflow_resources,
     )
     environment_service = EnvironmentService(
         ProjectService(SqlAlchemyProjects(session_factory)),
@@ -439,6 +469,7 @@ def create_app(
         opener=environment_browser.opener,
         closer=environment_browser.closer,
         execution_generation_lookup=_run_execution_generation,
+        validate_browser_configuration=profile_service.validate_resources,
     )
     app.state.environment_browser = environment_browser
     app.state.environment_service = environment_service
@@ -461,7 +492,9 @@ def create_app(
         sheets_runs,
         sheets_access,
         DataTableService(SqlAlchemyProjectData(session_factory)),
+        sheets_repository,
     )
+    sheets_columns = SheetsColumnService(sheets_repository, sheets_access, sheets_runs)
     sheets_impacts_service = SheetsImpactService(sheets_impacts)
     sheets_sync = SheetsSyncService(
         session_factory, sheets_runs, sheets_repository, sheets_access
@@ -487,6 +520,11 @@ def create_app(
         resolve_credential=studio_credentials.resolve,
         models=model_service,
     )
+    from autoflow.application.workflows.coordinator import WorkflowRunCoordinator
+    if isinstance(workflow_services.commands, WorkflowRunCoordinator):
+        workflow_services.commands.configure_node_browser_environments(app.state.project_workflow_resources, environment_service)
+    if workflow_services.inspection is not None:
+        workflow_services.inspection.configure_node_browser_environments(app.state.project_workflow_resources, environment_service)
     automation_resources = ProjectAutomationResourceQuery(
         SqlAlchemyProjects(session_factory),
         profile_service,
@@ -496,19 +534,19 @@ def create_app(
         environment_service,
         workflow_runtime=app.state.project_workflow_runtime,
     )
+    project_resource_resolver = ProjectRunResourceResolver(
+        automation_resources, app.state.project_workflow_resources, environment_service,
+    )
     project_run_coordinator = ProjectRunCoordinator(
         session_factory,
         app.state.project_workflow_runtime,
-        resolve_resources=ProjectRunResourceResolver(
-            automation_resources,
-            app.state.project_workflow_resources,
-            environment_service,
-        ),
+        resolve_resources=project_resource_resolver,
         available_capabilities=["browser.cloakbrowser", "project.data"],
         environments=environment_service,
     )
     project_run_scheduler = ProjectBatchScheduler(
-        session_factory, project_workflow_dispatcher, quiesce_gate, environment_service
+        session_factory, project_workflow_dispatcher, quiesce_gate, environment_service,
+        resource_resolver=project_resource_resolver,
     )
     project_pending_work = SqlAlchemyProjectPendingWork(session_factory)
     app.state.project_run_coordinator = project_run_coordinator
@@ -595,6 +633,8 @@ def create_app(
                 android.management.shutdown(),
                 android_fleet.shutdown(),
                 android_console.shutdown(),
+                android_observations.shutdown(),
+                android_bulk.shutdown(),
                 close_project_workflows(),
                 test_browser_workers.shutdown(),
                 kernel_worker_manager.shutdown(),
@@ -612,7 +652,10 @@ def create_app(
                 if isawaitable(closing):
                     await closing
             finally:
-                session_factory.dispose()
+                try:
+                    laya_runtime.close()
+                finally:
+                    session_factory.dispose()
 
     app.router.add_event_handler("shutdown", shutdown)
     register_management_routes(
@@ -633,7 +676,6 @@ def create_app(
     )
     laya_runtime = LayaRuntime(paths.cache)
     app.include_router(laya_lab_router(LayaService(laya_runtime)))
-    app.router.add_event_handler("shutdown", laya_runtime.close)
     register_workflow_routes(app, workflow_services, project_interactions=project_workflow_dispatcher.interactions)
     app.include_router(local_workflows_router(local_workflows, webdav_workflows))
     app.include_router(image_assets_router(image_assets))
@@ -642,13 +684,17 @@ def create_app(
     app.include_router(studio_retention_router(studio_retention))
     app.include_router(workflow_schedules_router(workflow_schedules))
     app.include_router(android_router(android))
+    app.include_router(android_management_router(EnvironmentCheckService(android.runtime), android_operations, android_images, android_resources, android_backups, android, android_bulk, android_cleanup, android_resources, observations=android_observations))
+    app.include_router(android_management_internal_router(android_resources, lambda: android.management.workspace_identity))
     app.include_router(android_fleet_router(android_fleet, android_console))
     project_workflow_service = WorkflowService(
         SqlAlchemyWorkflowRepository(session_factory)
     )
     app.include_router(workflow_catalog_router(project_workflow_service))
     project_lifecycle_repository = SqlAlchemyProjectLifecycle(
-        session_factory, environment_root=environment_store.root, workflow_artifact_root=paths.workspace,
+        session_factory, environment_root=environment_store.root,
+        run_root=paths.workspace / "runs",
+        workflow_artifact_root=paths.workspace,
         inspection_blockers=lambda project_id: [
             *(workflow_services.inspection.project_blockers(project_id) if workflow_services.inspection is not None else []),
             *(workflow_services.assistant.project_blockers(project_id) if workflow_services.assistant is not None else []),
@@ -695,6 +741,7 @@ def create_app(
         environments=environment_service,
         sheets_connections=sheets_connections,
         sheets_bindings=sheets_bindings,
+        sheets_columns=sheets_columns,
         sheets_impacts=sheets_impacts_service,
         sync=sheets_sync,
     ))

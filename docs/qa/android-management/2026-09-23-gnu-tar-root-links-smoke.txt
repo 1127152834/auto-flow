@@ -1,0 +1,31 @@
+import asyncio
+import io
+import json
+import tarfile
+from uuid import uuid4
+
+from autoflow.providers.android.mac_runtime import run
+
+
+async def main():
+    root = '/tmp/autoflow-root-links-' + uuid4().hex
+    setup = "import os,sys; r=sys.argv[1]; s=r+'/source/_data'; t=r+'/target/_data'; os.makedirs(s+'/_data'); os.makedirs(t); os.chown(s,10001,2000); os.chmod(s,0o750); os.setxattr(s,'user.autoflow_root',b'root-metadata'); open(s+'/proof','wb').write(b'proof'); os.link(s+'/proof',s+'/hard'); open(s+'/_data/nested','wb').write(b'nested'); os.symlink('_data/nested',s+'/link')"
+    await run(['limactl','shell','--workdir=/tmp','autoflow-redroid','sudo','python3','-c',setup,root])
+    try:
+        data = await run(['limactl','shell','--workdir=/tmp','autoflow-redroid','sudo','tar','--format=posix','--xattrs','--xattrs-include=*','--acls','--selinux','--numeric-owner','--transform=s@^_data@data@S','-C',root+'/source','-cf','-','_data'],30)
+        with tarfile.open(fileobj=io.BytesIO(data)) as archive:
+            members = {m.name: {'type': m.type.decode(), 'linkname': m.linkname} for m in archive.getmembers()}
+        await run(['limactl','shell','--workdir=/tmp','autoflow-redroid','sudo','tar','--xattrs','--xattrs-include=*','--acls','--selinux','--numeric-owner','--same-owner','--same-permissions','--transform=s@^data@_data@S','-C',root+'/target','-xf','-'],30,data)
+        inspect = "import json,os,stat,sys; r=sys.argv[1]; out={};\nfor name,p in [('source',r+'/source/_data'),('target',r+'/target/_data')]:\n i=os.stat(p); out[name]={'uid':i.st_uid,'gid':i.st_gid,'mode':oct(stat.S_IMODE(i.st_mode)),'rootXattr':os.getxattr(p,'user.autoflow_root').decode(),'hardlinkSameInode':os.path.samefile(p+'/proof',p+'/hard'),'hardlinkCount':os.stat(p+'/proof').st_nlink,'symlinkText':os.readlink(p+'/link'),'symlinkContent':open(p+'/link','rb').read().decode()}\nprint(json.dumps(out))"
+        report = json.loads(await run(['limactl','shell','--workdir=/tmp','autoflow-redroid','sudo','python3','-c',inspect,root]))
+        assert report['source'] == report['target'], 'root/link metadata was lost'
+        assert report['target']['hardlinkSameInode'] and report['target']['hardlinkCount'] == 2
+        assert report['target']['symlinkText'] == '_data/nested'
+        assert members['data/link']['linkname'] == '_data/nested'
+        assert members['data/hard']['linkname'].startswith('data/')
+        print(json.dumps({'status':'passed','members':members,'report':report},ensure_ascii=False,indent=2))
+    finally:
+        await run(['limactl','shell','--workdir=/tmp','autoflow-redroid','sudo','rm','-rf',root])
+
+
+asyncio.run(main())

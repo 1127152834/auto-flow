@@ -1,0 +1,42 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/android/tests/ManagementOverview.test.tsx -t locks selected bulk targets
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+
+ ❯ src/renderer/domains/android/tests/ManagementOverview.test.tsx (18 tests | 1 failed | 17 skipped) 171ms
+   × locks selected bulk targets on snapshot disconnect and permits them only after a successful refresh 170ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/android/tests/ManagementOverview.test.tsx > locks selected bulk targets on snapshot disconnect and permits them only after a successful refresh
+Error: expect(element).toBeDisabled()
+
+Received element is not disabled:
+  <button
+  type="button"
+/>
+ ❯ src/renderer/domains/android/tests/ManagementOverview.test.tsx:254:18
+    252|   await screen.findByText(/连接已断开/)
+    253|   const submit = screen.getByRole('button', { name: '提交批量操作' })
+    254|   expect(submit).toBeDisabled()
+       |                  ^
+    255|   expect(screen.getByRole('checkbox', { name: '批量缓存设备' })).toBeDisable…
+    256|   await userEvent.click(submit)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 17 skipped (18)
+   Start at  05:56:23
+   Duration  1.14s (transform 231ms, setup 191ms, import 189ms, tests 171ms, environment 468ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/android/tests/ManagementOverview.test.tsx -t 'locks selected bulk targets'

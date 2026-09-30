@@ -1,0 +1,3 @@
+{"scale": 1, "status": "measured", "observerCounts": {"273893c2-7352-4d8d-b0eb-0cda734ea853": 5}, "inlineInspectCount": 0}
+{"scale": 5, "status": "measured", "observerCounts": {"273893c2-7352-4d8d-b0eb-0cda734ea853": 4, "ce8cd51a-a885-4c5e-9fc9-7a1f4746a829": 4, "bb8e3982-7ee1-4f4b-a729-9941373ee819": 4, "0e1363d3-2d5f-446c-b300-a062c710982f": 4, "8ababb65-e1f6-46f4-9ed0-92ade19b67f3": 4}, "inlineInspectCount": 0}
+{"status": "passed", "cleaned": 5, "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-observation-real-z3gflinj"}

@@ -1,0 +1,42 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/android/tests/ManagementTools.test.tsx src/renderer/domains/android/tests/ImageManager.test.tsx src/renderer/domains/android/tests/ManagementOverview.test.tsx
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+
+ ❯ src/renderer/domains/android/tests/ManagementTools.test.tsx (39 tests | 1 failed) 1073ms
+   × cancels only pending batch items while admitted work remains observable 39ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/android/tests/ManagementTools.test.tsx > cancels only pending batch items while admitted work remains observable
+Error: expect(element).toHaveTextContent()
+
+Expected element to have text content:
+  结果未知
+Received:
+  批次 running · 2 项
+ ❯ src/renderer/domains/android/tests/ManagementTools.test.tsx:188:41
+    186|   expect(screen.queryByRole('button', { name: '取消未开始项' })).not.toBeInT…
+    187|   expect(screen.getByRole('button', { name: '开始新批次' })).toBeDisabled()
+    188|   expect(screen.getByLabelText('批次结果')).toHaveTextContent('结果未知')
+       |                                         ^
+    189|   expect(bulk).toHaveBeenCalledTimes(1)
+    190| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 66 passed (67)
+   Start at  07:20:06
+   Duration  2.07s (transform 709ms, setup 526ms, import 648ms, tests 2.93s, environment 1.49s)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/android/tests/ManagementTools.test.tsx src/renderer/domains/android/tests/ImageManager.test.tsx src/renderer/domains/android/tests/ManagementOverview.test.tsx

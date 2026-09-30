@@ -1,0 +1,11 @@
+{
+  "status": "blocked",
+  "reason": "Mac is locked and automatic unlock could not unlock it",
+  "candidate": "ef0af03f",
+  "fixtureWorkspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-desktop-create-disk-jd472bw7",
+  "fixtureHasDevices": false,
+  "ownedElectronPid": 48507,
+  "ownedElectronShutdown": "confirmed absent",
+  "newConfirmationUi": "not_run",
+  "hiddenForegroundPerformance": "not_run"
+}

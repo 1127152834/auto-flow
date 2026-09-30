@@ -76,7 +76,6 @@ async def test_proxy_nodes_over_real_owned_worker_pipes(tmp_path, host, kind):
             tmp_path,
             proxy_service=service,
             on_event=events.append,
-            termination_timeout=0.5,
         )
         await manager.start(
             run_id,
@@ -105,7 +104,7 @@ async def test_proxy_nodes_over_real_owned_worker_pipes(tmp_path, host, kind):
         )
     else:
         manager = ProjectWorkflowWorkerManager(
-            tmp_path, proxy_service=service, termination_timeout=0.5
+            tmp_path, proxy_service=service
         )
 
         async def emit(event):
@@ -135,3 +134,45 @@ async def test_proxy_nodes_over_real_owned_worker_pipes(tmp_path, host, kind):
     )
     assert service.released == [run_id]
     await manager.shutdown()
+
+
+@pytest.mark.asyncio
+async def test_concurrent_project_workers_keep_proxy_requests_owned(tmp_path):
+    class ConcurrentProxyService(ProxyService):
+        def __init__(self):
+            super().__init__()
+            self.entered = asyncio.Event()
+
+        async def call(self, owner, payload):
+            assert payload['method'] == 'query'
+            self.calls.append((owner, payload))
+            if len(self.calls) == 2:
+                self.entered.set()
+            await self.entered.wait()
+            return {'status': 'succeeded', 'proxyId': owner}
+
+    service = ConcurrentProxyService()
+    manager = ProjectWorkflowWorkerManager(tmp_path, proxy_service=service, capacity=2)
+    run_ids = [str(uuid4()), str(uuid4())]
+    received = {owner: [] for owner in run_ids}
+
+    async def run(owner):
+        async def emit(event):
+            received[owner].append(event)
+        return await manager.run(
+            run_id=owner, execution_generation=1,
+            execution_plan={'document': document('proxy_query')},
+            parameters={}, variables={}, browser={}, executable=None, on_event=emit,
+        )
+
+    try:
+        async with asyncio.timeout(45):
+            outcomes = await asyncio.gather(*(run(owner) for owner in run_ids))
+        assert all(outcome.status == 'succeeded' for outcome in outcomes)
+        for owner in run_ids:
+            output = next(event['payload']['value'] for event in received[owner]
+                          if event.get('kind') == 'output' and event['payload'].get('name') == 'proxy_result')
+            assert output['proxyId'] == owner
+        assert set(service.released) == set(run_ids)
+    finally:
+        await manager.shutdown()

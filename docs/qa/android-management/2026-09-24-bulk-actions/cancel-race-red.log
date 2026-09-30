@@ -1,0 +1,196 @@
+FFFF                                                                     [100%]
+=================================== FAILURES ===================================
+_______ test_cancel_pending_survives_in_flight_capacity_probe[available] _______
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-127/test_cancel_pending_survives_i0')
+probe_result = 'available'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("probe_result", ["available", "full", "error", "cancelled"])
+    async def test_cancel_pending_survives_in_flight_capacity_probe(tmp_path: Path, probe_result: str):
+        database = tmp_path / "cancel-during-capacity.sqlite3"
+        migrate_database(database)
+        sessions = create_session_factory(database)
+        resources = AndroidResourceRepository(sessions)
+        operations = SqlAlchemyAndroidOperationRepository(sessions)
+        devices = _Devices(operations)
+        entered, release = asyncio.Event(), asyncio.Event()
+
+        async def capacity(_device):
+            entered.set()
+            await release.wait()
+            if probe_result == "full":
+                raise AndroidError("ANDROID_MEMORY_BUDGET", "full")
+            if probe_result == "error":
+                raise AndroidError("ANDROID_COMMAND_FAILED", "probe unavailable")
+
+        devices.runtime.capacity = capacity
+        service = AndroidBulkService(resources, devices)
+        batch = service.create("ws", "cancel-race", "start", [{"deviceId": "d1", "expectedRevision": 2}], False)
+        tick = asyncio.create_task(service.tick())
+        try:
+            await asyncio.wait_for(entered.wait(), 2)
+            cancelled = service.action(batch["id"], "cancelPending", "cancel-original")
+            assert cancelled["state"] == "cancelled"
+            if probe_result == "cancelled":
+                tick.cancel()
+                with pytest.raises(asyncio.CancelledError):
+                    await tick
+            else:
+                release.set()
+                await tick
+            saved = service.get(batch["id"])
+>           assert saved["state"] == "cancelled"
+E           AssertionError: assert 'failed' == 'cancelled'
+E
+E             - cancelled
+E             + failed
+
+apps/backend/tests/integration/test_android_multi_device.py:184: AssertionError
+_________ test_cancel_pending_survives_in_flight_capacity_probe[full] __________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-127/test_cancel_pending_survives_i1')
+probe_result = 'full'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("probe_result", ["available", "full", "error", "cancelled"])
+    async def test_cancel_pending_survives_in_flight_capacity_probe(tmp_path: Path, probe_result: str):
+        database = tmp_path / "cancel-during-capacity.sqlite3"
+        migrate_database(database)
+        sessions = create_session_factory(database)
+        resources = AndroidResourceRepository(sessions)
+        operations = SqlAlchemyAndroidOperationRepository(sessions)
+        devices = _Devices(operations)
+        entered, release = asyncio.Event(), asyncio.Event()
+
+        async def capacity(_device):
+            entered.set()
+            await release.wait()
+            if probe_result == "full":
+                raise AndroidError("ANDROID_MEMORY_BUDGET", "full")
+            if probe_result == "error":
+                raise AndroidError("ANDROID_COMMAND_FAILED", "probe unavailable")
+
+        devices.runtime.capacity = capacity
+        service = AndroidBulkService(resources, devices)
+        batch = service.create("ws", "cancel-race", "start", [{"deviceId": "d1", "expectedRevision": 2}], False)
+        tick = asyncio.create_task(service.tick())
+        try:
+            await asyncio.wait_for(entered.wait(), 2)
+            cancelled = service.action(batch["id"], "cancelPending", "cancel-original")
+            assert cancelled["state"] == "cancelled"
+            if probe_result == "cancelled":
+                tick.cancel()
+                with pytest.raises(asyncio.CancelledError):
+                    await tick
+            else:
+                release.set()
+                await tick
+            saved = service.get(batch["id"])
+>           assert saved["state"] == "cancelled"
+E           AssertionError: assert 'running' == 'cancelled'
+E
+E             - cancelled
+E             + running
+
+apps/backend/tests/integration/test_android_multi_device.py:184: AssertionError
+_________ test_cancel_pending_survives_in_flight_capacity_probe[error] _________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-127/test_cancel_pending_survives_i2')
+probe_result = 'error'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("probe_result", ["available", "full", "error", "cancelled"])
+    async def test_cancel_pending_survives_in_flight_capacity_probe(tmp_path: Path, probe_result: str):
+        database = tmp_path / "cancel-during-capacity.sqlite3"
+        migrate_database(database)
+        sessions = create_session_factory(database)
+        resources = AndroidResourceRepository(sessions)
+        operations = SqlAlchemyAndroidOperationRepository(sessions)
+        devices = _Devices(operations)
+        entered, release = asyncio.Event(), asyncio.Event()
+
+        async def capacity(_device):
+            entered.set()
+            await release.wait()
+            if probe_result == "full":
+                raise AndroidError("ANDROID_MEMORY_BUDGET", "full")
+            if probe_result == "error":
+                raise AndroidError("ANDROID_COMMAND_FAILED", "probe unavailable")
+
+        devices.runtime.capacity = capacity
+        service = AndroidBulkService(resources, devices)
+        batch = service.create("ws", "cancel-race", "start", [{"deviceId": "d1", "expectedRevision": 2}], False)
+        tick = asyncio.create_task(service.tick())
+        try:
+            await asyncio.wait_for(entered.wait(), 2)
+            cancelled = service.action(batch["id"], "cancelPending", "cancel-original")
+            assert cancelled["state"] == "cancelled"
+            if probe_result == "cancelled":
+                tick.cancel()
+                with pytest.raises(asyncio.CancelledError):
+                    await tick
+            else:
+                release.set()
+                await tick
+            saved = service.get(batch["id"])
+>           assert saved["state"] == "cancelled"
+E           AssertionError: assert 'failed' == 'cancelled'
+E
+E             - cancelled
+E             + failed
+
+apps/backend/tests/integration/test_android_multi_device.py:184: AssertionError
+_______ test_cancel_pending_survives_in_flight_capacity_probe[cancelled] _______
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-127/test_cancel_pending_survives_i3')
+probe_result = 'cancelled'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("probe_result", ["available", "full", "error", "cancelled"])
+    async def test_cancel_pending_survives_in_flight_capacity_probe(tmp_path: Path, probe_result: str):
+        database = tmp_path / "cancel-during-capacity.sqlite3"
+        migrate_database(database)
+        sessions = create_session_factory(database)
+        resources = AndroidResourceRepository(sessions)
+        operations = SqlAlchemyAndroidOperationRepository(sessions)
+        devices = _Devices(operations)
+        entered, release = asyncio.Event(), asyncio.Event()
+
+        async def capacity(_device):
+            entered.set()
+            await release.wait()
+            if probe_result == "full":
+                raise AndroidError("ANDROID_MEMORY_BUDGET", "full")
+            if probe_result == "error":
+                raise AndroidError("ANDROID_COMMAND_FAILED", "probe unavailable")
+
+        devices.runtime.capacity = capacity
+        service = AndroidBulkService(resources, devices)
+        batch = service.create("ws", "cancel-race", "start", [{"deviceId": "d1", "expectedRevision": 2}], False)
+        tick = asyncio.create_task(service.tick())
+        try:
+            await asyncio.wait_for(entered.wait(), 2)
+            cancelled = service.action(batch["id"], "cancelPending", "cancel-original")
+            assert cancelled["state"] == "cancelled"
+            if probe_result == "cancelled":
+                tick.cancel()
+                with pytest.raises(asyncio.CancelledError):
+                    await tick
+            else:
+                release.set()
+                await tick
+            saved = service.get(batch["id"])
+>           assert saved["state"] == "cancelled"
+E           AssertionError: assert 'needs_verification' == 'cancelled'
+E
+E             - cancelled
+E             + needs_verification
+
+apps/backend/tests/integration/test_android_multi_device.py:184: AssertionError
+=========================== short test summary info ============================
+FAILED apps/backend/tests/integration/test_android_multi_device.py::test_cancel_pending_survives_in_flight_capacity_probe[available]
+FAILED apps/backend/tests/integration/test_android_multi_device.py::test_cancel_pending_survives_in_flight_capacity_probe[full]
+FAILED apps/backend/tests/integration/test_android_multi_device.py::test_cancel_pending_survives_in_flight_capacity_probe[error]
+FAILED apps/backend/tests/integration/test_android_multi_device.py::test_cancel_pending_survives_in_flight_capacity_probe[cancelled]
+4 failed, 2 deselected in 1.24s

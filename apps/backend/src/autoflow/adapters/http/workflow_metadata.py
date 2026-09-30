@@ -1,11 +1,13 @@
 """Frozen WebRPA field rules, scoped to the approved Studio catalog."""
 
-from fastapi import APIRouter
+from pathlib import Path
 
-from autoflow.domain.workflows.required_fields import MODULE_REQUIRED_FIELDS
+from fastapi import APIRouter
 
 from .errors import browser_error_responses
 from .workflow_studio_schemas import StudioModuleRequiredFields
+
+METADATA_PATH = Path(__file__).with_name("module-required-fields.json")
 
 
 def workflow_metadata_router() -> APIRouter:
@@ -16,7 +18,7 @@ def workflow_metadata_router() -> APIRouter:
     )
 
     @router.get("/module-required-fields", response_model=StudioModuleRequiredFields)
-    def required_fields() -> StudioModuleRequiredFields:
-        return StudioModuleRequiredFields.model_validate(MODULE_REQUIRED_FIELDS)
+    def module_required_fields() -> StudioModuleRequiredFields:
+        return StudioModuleRequiredFields.model_validate_json(METADATA_PATH.read_bytes())
 
     return router

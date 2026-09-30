@@ -8,17 +8,25 @@ from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID, uuid4
 
-from sqlalchemy import func, select, text
+from sqlalchemy import func, or_, select, text
 from sqlalchemy.orm import Session, sessionmaker
 
 from autoflow.application.project_runs.coordinator import ProjectRunCoordinator
+from autoflow.application.project_runs.resources import ProjectRunResourceResolver
 from autoflow.application.settings.runtime import QuiesceGate
 from autoflow.application.workflows.dispatcher import WorkflowRunDispatcher
 from autoflow.application.workflows.runtime import WorkflowRuntimeService
 from autoflow.domain.project_runs.input_selection import MAX_CANDIDATE_EVALUATIONS
 from autoflow.domain.project_runs.models import ProjectRunError, batch_to_dict
-from autoflow.domain.projects.models import ProjectOperation
-from autoflow.domain.workflows.runtime import TERMINAL_STATUSES, WorkflowRuntimeError
+from autoflow.domain.projects.models import ProjectError, ProjectOperation
+from autoflow.domain.workflows.runtime import (
+    TERMINAL_STATUSES,
+    WorkflowRuntimeError,
+    thaw_json,
+)
+from autoflow.infrastructure.database.environment_models import (
+    ProjectEnvironmentInstanceRow,
+)
 from autoflow.infrastructure.database.models import ProjectOperationRow, ProjectRow
 from autoflow.infrastructure.database.project_claims import (
     SqlAlchemyProjectInputGroups,
@@ -81,7 +89,7 @@ def _next_candidate_offsets(
 
 
 class ProjectBatchScheduler:
-    """Advance persisted parameter batches through the existing single-capacity core."""
+    """Advance persisted batches through the existing bounded execution core."""
 
     def __init__(
         self,
@@ -89,9 +97,11 @@ class ProjectBatchScheduler:
         core: WorkflowRunDispatcher,
         gate: QuiesceGate,
         environments: Any | None = None,
+        resource_resolver: ProjectRunResourceResolver | None = None,
     ):
         self._factory, self._core, self._gate = factory, core, gate
         self._environments = environments
+        self._resource_resolver = resource_resolver
         # One sidecar owns this database; serialize dispatch selection and stop admission.
         self._lock = asyncio.Lock()
         self._wake = asyncio.Event()
@@ -194,6 +204,7 @@ class ProjectBatchScheduler:
                     await self._advance(project_id, batch_id)
 
     async def _advance(self, project_id: str, batch_id: str) -> None:
+        await self._cleanup_terminal_instances(project_id, batch_id)
         self._release_terminal_leases(project_id, batch_id)
         with self._factory() as session:
             repository = SqlAlchemyProjectRuns(session)
@@ -201,17 +212,18 @@ class ProjectBatchScheduler:
             tasks = repository.list_tasks(project_id, batch_id)
             project = ProjectRunCoordinator._project(session, project_id)
             project_active = project.lifecycle_state == "active"
-            force_requested = (
-                session.scalar(
-                    select(ProjectOperationRow.id).where(
+            stop_kinds = set(
+                session.scalars(
+                    select(ProjectOperationRow.kind).where(
                         ProjectOperationRow.project_id == project_id,
-                        ProjectOperationRow.kind == "forceStopBatch",
+                        ProjectOperationRow.kind.in_(["stopBatch", "forceStopBatch"]),
                         ProjectOperationRow.status == "running",
                         ProjectOperationRow.resource["batchId"].as_string() == batch_id,
                     )
                 )
-                is not None
             )
+            stop_requested = bool(stop_kinds)
+            force_requested = "forceStopBatch" in stop_kinds
         if (
             batch.frozen_request.get("automation", {})
             .get("inputPlan", {})
@@ -223,6 +235,7 @@ class ProjectBatchScheduler:
                 batch,
                 tasks,
                 project_active=project_active,
+                stop_requested=stop_requested,
                 force_requested=force_requested,
             )
             return
@@ -234,10 +247,14 @@ class ProjectBatchScheduler:
         continue_after_failure = batch.frozen_request["automation"]["runPolicy"][
             "continueAfterFailure"
         ]
-        stopping = batch.status == "stopping" or not project_active
+        stopping = batch.status == "stopping" or stop_requested or not project_active
         if stopping or (failed and not continue_after_failure):
             self._set_status(
-                project_id, batch_id, "stopping" if stopping else "draining"
+                project_id,
+                batch_id,
+                "reconciling"
+                if any(task.status == "reconciling" for task in tasks)
+                else "stopping" if stopping else "draining",
             )
             for task in tasks:
                 current = self._core.query_run(task.run_id)
@@ -273,33 +290,53 @@ class ProjectBatchScheduler:
                 if any(task.status != "succeeded" for task in tasks)
                 else "completed"
             )
+            await self._cleanup_terminal_instances(project_id, batch_id)
+            self._release_terminal_leases(project_id, batch_id)
             self._set_status(project_id, batch_id, result)
-            return
-        if stopping or (failed and not continue_after_failure):
             return
         if any(task.status == "reconciling" for task in active):
             self._set_status(project_id, batch_id, "reconciling")
             return
-        if any(task.status != "queued" for task in active):
+        if stopping or (failed and not continue_after_failure):
             return
-        current = self._core.query_run(active[0].run_id)
-        try:
-            await self._core.dispatch(
-                current.run_id,
-                expected_status_revision=current.status_revision,
-                execution_generation=current.execution_generation,
-            )
-        except WorkflowRuntimeError as error:
-            if error.code in {"WORKFLOW_CAPACITY_FULL", "WORKFLOW_ADMISSION_CLOSED"}:
-                self._set_status(project_id, batch_id, "blocked")
+        queued = [task for task in active if task.status == "queued"]
+        for task in queued:
+            with self._factory() as session:
+                repository = SqlAlchemyProjectRuns(session)
+                row = repository.batch_row(project_id, batch_id)
+                # Recheck after each dispatch; a sibling can finish while dispatch awaits.
+                current_tasks = repository.list_tasks(project_id, batch_id)
+                if not continue_after_failure and any(
+                    item.status in {"failed", "timed_out", "interrupted"}
+                    for item in current_tasks
+                ):
+                    self.wake()
+                    return
+                available = _claim_capacity_available(
+                    session, row, batch_id, max(1, int(getattr(self._core, "capacity", 1)))
+                )
+            if not available:
+                self._set_status(project_id, batch_id, "running" if any(
+                    item.status not in TERMINAL_STATUSES | {"queued"}
+                    for item in current_tasks
+                ) else "blocked")
                 return
-            if error.code in {
-                "RUN_STATUS_CONFLICT",
-                "RUN_NOT_DISPATCHABLE",
-                "EXECUTION_GENERATION_REVOKED",
-            }:
-                return  # Another authoritative core transition won; query on the next tick.
-            raise
+            current = self._core.query_run(task.run_id)
+            try:
+                await self._core.dispatch(
+                    current.run_id,
+                    expected_status_revision=current.status_revision,
+                    execution_generation=current.execution_generation,
+                )
+            except WorkflowRuntimeError as error:
+                if error.code in {"WORKFLOW_CAPACITY_FULL", "WORKFLOW_ADMISSION_CLOSED"}:
+                    self._set_status(project_id, batch_id, "blocked")
+                    return
+                if error.code in {
+                    "RUN_STATUS_CONFLICT", "RUN_NOT_DISPATCHABLE", "EXECUTION_GENERATION_REVOKED",
+                }:
+                    continue
+                raise
         self._set_status(project_id, batch_id, "running")
 
     async def _advance_data(
@@ -310,6 +347,7 @@ class ProjectBatchScheduler:
         tasks: list[Any],
         *,
         project_active: bool,
+        stop_requested: bool,
         force_requested: bool,
     ) -> None:
         failed = any(
@@ -318,20 +356,23 @@ class ProjectBatchScheduler:
         continue_after_failure = bool(
             batch.frozen_request["automation"]["runPolicy"]["continueAfterFailure"]
         )
-        stopping = batch.status == "stopping" or not project_active
+        stopping = batch.status == "stopping" or stop_requested or not project_active
         if stopping or (failed and not continue_after_failure):
             self._close_claim_gate(project_id, batch_id)
             self._set_status(
-                project_id, batch_id, "stopping" if stopping else "draining"
+                project_id,
+                batch_id,
+                "reconciling"
+                if any(task.status == "reconciling" for task in tasks)
+                else "stopping" if stopping else "draining",
             )
-            if stopping:
-                await self._stop_active_runs(
-                    project_id,
-                    batch_id,
-                    tasks,
-                    stopping=True,
-                    force_requested=force_requested,
-                )
+            await self._stop_active_runs(
+                project_id,
+                batch_id,
+                tasks,
+                stopping=stopping,
+                force_requested=force_requested,
+            )
             with self._factory() as session:
                 tasks = SqlAlchemyProjectRuns(session).list_tasks(project_id, batch_id)
 
@@ -350,24 +391,9 @@ class ProjectBatchScheduler:
                 )
             )
             with self._factory() as session:
-                global_active = session.scalar(
-                    select(func.count())
-                    .select_from(WorkflowRunRow)
-                    .where(WorkflowRunRow.status.not_in(TERMINAL_STATUSES))
-                ) or 0
-                automation_active = session.scalar(
-                    select(func.count())
-                    .select_from(ProjectTaskRow)
-                    .join(
-                        ProjectBatchRow,
-                        ProjectBatchRow.id == ProjectTaskRow.batch_id,
-                    )
-                    .join(WorkflowRunRow, WorkflowRunRow.id == ProjectTaskRow.run_id)
-                    .where(
-                        ProjectBatchRow.automation_id == batch.automation_id,
-                        WorkflowRunRow.status.not_in(TERMINAL_STATUSES),
-                    )
-                ) or 0
+                global_active, automation_active, _ = _capacity_counts(
+                    session, batch_id, batch.automation_id
+                )
             core_capacity = max(1, int(getattr(self._core, "capacity", 1)))
             slots = max(
                 0,
@@ -443,12 +469,14 @@ class ProjectBatchScheduler:
             )
             if not tasks and selection_status == "noMatch":
                 result = "completed"
+            await self._cleanup_terminal_instances(project_id, batch_id)
+            self._release_terminal_leases(project_id, batch_id)
             self._set_status(project_id, batch_id, result)
-            return
-        if stopping:
             return
         if any(task.status == "reconciling" for task in active):
             self._set_status(project_id, batch_id, "reconciling")
+            return
+        if stopping:
             return
         queued = [task for task in active if task.status == "queued"]
         if not queued:
@@ -532,6 +560,7 @@ class ProjectBatchScheduler:
         *,
         core_capacity: int = 1,
         environments: Any | None = None,
+        resource_resolver: ProjectRunResourceResolver | None = None,
     ) -> str:
         """Prepare outside the write lock, then atomically commit one data Task."""
         prepared = ProjectBatchScheduler._prepare_data_claim(
@@ -566,6 +595,7 @@ class ProjectBatchScheduler:
             selection,
             core_capacity=core_capacity,
             environments=environments,
+            resource_resolver=resource_resolver,
         )
         return result
 
@@ -576,6 +606,7 @@ class ProjectBatchScheduler:
             batch_id,
             core_capacity=max(1, int(getattr(self._core, "capacity", 1))),
             environments=self._environments,
+            resource_resolver=self._resource_resolver,
         )
         if result == "ready" and self._environments is not None:
             self._attach_claimed_environment(project_id, batch_id)
@@ -602,9 +633,9 @@ class ProjectBatchScheduler:
                     if isinstance(item, dict) and item.get("inputId"):
                         inputs[item["inputId"]] = item
             frozen = batch.frozen_request or {}
-            if frozen.get("resourceRequest", {}).get("browser") == "none":
+            if frozen.get("resourceRequest", {}).get("browser") in {"none", "node"}:
                 return
-            policy = frozen.get("environmentOverride") or frozen.get("automation", {}).get(
+            policy = frozen.get("resourceRequest", {}).get("environmentPolicy") or frozen.get("environmentOverride") or frozen.get("automation", {}).get(
                 "environmentPolicy"
             )
         if not policy:
@@ -662,6 +693,8 @@ class ProjectBatchScheduler:
             now = datetime.now(UTC)
             follow_up = row.frozen_request.get("followUp")
             restriction = _follow_up_candidate_restriction(follow_up)
+            if 'debugSelection' in row.frozen_request:
+                restriction = {'candidateRestriction': {key: [value['recordRef']] if value is not None else [] for key, value in row.frozen_request['debugSelection'].items()}}
             attempt = previous_outcome.get("claimAttempt")
             if not isinstance(attempt, dict) or attempt.get("state") != "prepared":
                 attempt = {
@@ -705,6 +738,7 @@ class ProjectBatchScheduler:
         *,
         core_capacity: int = 1,
         environments: Any | None = None,
+        resource_resolver: ProjectRunResourceResolver | None = None,
     ) -> str:
         with factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
@@ -745,6 +779,15 @@ class ProjectBatchScheduler:
                 row.selection_outcome = {"status": "closed"}
                 ProjectBatchScheduler._commit(session)
                 return "closed"
+            if 'debugSelection' in row.frozen_request:
+                from .debug_inputs import validate_debug_selection
+                try:
+                    selection = validate_debug_selection(session, project_id, prepared['inputPlan'], row.frozen_request['debugSelection'])
+                except ProjectRunError as exc:
+                    row.claim_gate_state = 'closed'
+                    row.selection_outcome = {'status': 'configurationError', 'code': exc.code, 'message': str(exc)}
+                    ProjectBatchScheduler._commit(session)
+                    return 'configurationError'
             if _selection_guards(
                 session,
                 project_id,
@@ -843,6 +886,40 @@ class ProjectBatchScheduler:
                 if isinstance(binding, dict)
                 else []
             )
+            resource_request = prepared["resourceRequest"]
+            policy = resource_request.get("environmentPolicy") or row.frozen_request["automation"]["environmentPolicy"]
+            if resource_request.get("environmentResolution") == "atTaskStart":
+                try:
+                    if environments is None or resource_resolver is None:
+                        raise ProjectRunError("RESOURCE_UNAVAILABLE", "环境资源解析尚未接入", 409)
+                    selected_source = environments.environments.resolve_source_in_session(
+                        session, project_id, policy,
+                        {item.input_id: thaw_json(item.value) for item in selection.inputs},
+                    )
+                    resource_request = resource_resolver.freeze_input_environment(resource_request, selected_source)
+                except (ProjectError, ProjectRunError, WorkflowRuntimeError) as error:
+                    row.claim_gate_state = "closed"
+                    row.selection_outcome = {"status": "configurationError", "issueDetails": {"environmentPolicy": error.message}, "errorCode": error.code}
+                    ProjectBatchScheduler._commit(session)
+                    return "configurationError"
+            if resource_request.get("browser") == "node":
+                from copy import deepcopy
+
+                from autoflow.domain.environments.identity import request_from_identity
+                resource_request = deepcopy(resource_request)
+                try:
+                    for node_id, frozen_node in resource_request['nodeBrowserEnvironments'].items():
+                        if frozen_node.get('environmentResolution') != 'atTaskStart':
+                            continue
+                        if environments is None:
+                            raise ProjectRunError('RESOURCE_UNAVAILABLE', '环境服务尚未就绪', 409)
+                        selected = environments.environments.resolve_source_in_session(session, project_id, frozen_node['environmentPolicy'], {item.input_id: thaw_json(item.value) for item in selection.inputs})
+                        resource_request['nodeBrowserEnvironments'][node_id] = {**request_from_identity(selected.identity_package), 'identityPackage': selected.identity_package, 'environmentRef': selected.environment_ref.to_dict(), 'environmentPolicy': frozen_node['environmentPolicy']}
+                except (ProjectError, ProjectRunError, WorkflowRuntimeError) as error:
+                    row.claim_gate_state = 'closed'
+                    row.selection_outcome = {'status': 'configurationError', 'errorCode': error.code}
+                    ProjectBatchScheduler._commit(session)
+                    return 'configurationError'
             run = WorkflowRuntimeService(factory).prepare_run(
                 run_request_id=request_id,
                 prepared_content_id=prepared["preparedContentId"],
@@ -853,7 +930,7 @@ class ProjectBatchScheduler:
                     "taskId": task_id,
                     "inputSnapshotId": snapshot_id,
                 },
-                resource_request=prepared["resourceRequest"],
+                resource_request=resource_request,
                 capability_bindings=capability_bindings,
                 created_at=now,
                 uow=session,
@@ -890,11 +967,11 @@ class ProjectBatchScheduler:
                 )
             )
             session.flush()
-            if environments is not None and prepared["resourceRequest"].get("browser") != "none":
-                policy = row.frozen_request["automation"]["environmentPolicy"]
+            if environments is not None and resource_request.get("browser") not in {"none", "node"}:
                 environments.reserve_task_instance(
                     session, project_id, task_id, run.run_id, policy,
                     {item["inputId"]: item for item in inputs if item.get("inputId")},
+                    resource_request=resource_request,
                 )
             row.selection_outcome = {
                 "status": "ready",
@@ -923,6 +1000,27 @@ class ProjectBatchScheduler:
             if selection_status is not None:
                 row.selection_outcome = {"status": selection_status}
             self._commit(session)
+
+    async def _cleanup_terminal_instances(self, project_id: str, batch_id: str) -> None:
+        if self._environments is None:
+            return
+        with self._factory() as session:
+            instances = list(session.scalars(select(ProjectEnvironmentInstanceRow)
+                .join(ProjectTaskRow, ProjectTaskRow.id == ProjectEnvironmentInstanceRow.active_task_id)
+                .join(WorkflowRunRow, WorkflowRunRow.id == ProjectTaskRow.run_id)
+                .where(ProjectTaskRow.project_id == project_id, ProjectTaskRow.batch_id == batch_id,
+                       ProjectEnvironmentInstanceRow.project_id == project_id,
+                       ProjectEnvironmentInstanceRow.active_run_id == WorkflowRunRow.id,
+                       WorkflowRunRow.status.in_(TERMINAL_STATUSES),
+                       ProjectEnvironmentInstanceRow.state.in_(['reserved', 'starting', 'active', 'waiting_manual', 'closing', 'closed', 'cleaning']))))
+        for instance in instances:
+            if not self._environments.environments.disposable_task_instances(
+                instance.id
+            ):
+                continue
+            # Terminal Run means worker cleanup was confirmed; the environment
+            # service still verifies native ownership before deleting its copy.
+            await asyncio.to_thread(self._environments.close_instance, project_id, instance.id, instance.environment_id)
 
     def _release_terminal_leases(self, project_id: str, batch_id: str) -> None:
         with self._factory() as session:
@@ -1133,6 +1231,33 @@ class ProjectBatchScheduler:
             raise
 
 
+def _capacity_counts(
+    session: Session, batch_id: str, automation_id: str,
+) -> tuple[int, int, int]:
+    # Parameter batches pre-create their entire queue, without reserving slots.
+    # Data tasks already hold input leases when queued and must keep their slots.
+    counts = session.execute(
+        select(
+            func.count(),
+            func.count().filter(ProjectBatchRow.automation_id == automation_id),
+            func.count().filter(ProjectTaskRow.batch_id == batch_id),
+        )
+        .select_from(WorkflowRunRow)
+        .outerjoin(ProjectTaskRow, ProjectTaskRow.run_id == WorkflowRunRow.id)
+        .outerjoin(ProjectBatchRow, ProjectBatchRow.id == ProjectTaskRow.batch_id)
+        .where(
+            WorkflowRunRow.status.not_in(TERMINAL_STATUSES),
+            or_(
+                WorkflowRunRow.status != "queued",
+                func.json_array_length(
+                    ProjectBatchRow.frozen_request["automation"]["inputPlan"]["inputs"]
+                ) > 0,
+            ),
+        )
+    ).one()
+    return int(counts[0]), int(counts[1]), int(counts[2])
+
+
 def _claim_capacity_available(
     session: Session,
     row: ProjectBatchRow,
@@ -1143,30 +1268,9 @@ def _claim_capacity_available(
     run_policy = row.frozen_request["automation"]["runPolicy"]
     configured_concurrency = int(run_policy.get("concurrency", 1))
     configured_capacity = int(run_policy.get("maxLiveInstances", 1))
-    batch_active = session.scalar(
-        select(func.count())
-        .select_from(ProjectTaskRow)
-        .join(WorkflowRunRow, WorkflowRunRow.id == ProjectTaskRow.run_id)
-        .where(
-            ProjectTaskRow.batch_id == batch_id,
-            WorkflowRunRow.status.not_in(TERMINAL_STATUSES),
-        )
-    ) or 0
-    automation_active = session.scalar(
-        select(func.count())
-        .select_from(ProjectTaskRow)
-        .join(ProjectBatchRow, ProjectBatchRow.id == ProjectTaskRow.batch_id)
-        .join(WorkflowRunRow, WorkflowRunRow.id == ProjectTaskRow.run_id)
-        .where(
-            ProjectBatchRow.automation_id == row.automation_id,
-            WorkflowRunRow.status.not_in(TERMINAL_STATUSES),
-        )
-    ) or 0
-    global_active = session.scalar(
-        select(func.count())
-        .select_from(WorkflowRunRow)
-        .where(WorkflowRunRow.status.not_in(TERMINAL_STATUSES))
-    ) or 0
+    global_active, automation_active, batch_active = _capacity_counts(
+        session, batch_id, row.automation_id
+    )
     return (
         batch_active < request_concurrency
         and batch_active < configured_concurrency

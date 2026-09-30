@@ -1,0 +1,44 @@
+{
+  "date": "2026-09-24",
+  "status": "local_real_worker_passed_native_pending",
+  "releaseAccepted": false,
+  "requirement": "DATA-CLAIM-09",
+  "productionSource": "1c676965fb581ea3e33882b3ecb300b3abc99368",
+  "parentCommit": "79e3ee2c16e9619f3889573fffed584fe1e4d7cb",
+  "change": "Test-only real HTTP/SQLite/browser/worker proof for peer identity invalidation, public peer unbind, failed source pull and explicit fresh-batch recovery after complete repaired scan. No product change.",
+  "test": {
+    "file": "apps/backend/tests/integration/test_project_sheets_real_cloakbrowser.py",
+    "symbol": "test_real_shared_sheet_peer_removal_requires_fresh_proof_after_source_outage",
+    "sha256": "c81a23efe81d271a257ff4d0002fd04b5a59a8ef142b82cff61d98ed17144b84"
+  },
+  "checks": {
+    "realWorker": "1 passed /8 deselected /2 warnings /10.63s",
+    "initialPass": "1 passed /8 deselected /2 warnings /11.58s, before strengthening frozen values and failed-batch immutability",
+    "ruff": "changed test passed",
+    "ciSelection": "Exact existing main CI selector collected33/44 tests,11 deselected, including this new shared_sheet case; collection is not execution.",
+    "fullRegression": "Production remains1c676965, prior full3493/80 skipped and rebuilt ARM desktop22 screenshots remain valid for their collected scopes; this newly added test is separate, not included in those runs."
+  },
+  "assertions": [
+    "Second project complete scan detects duplicate physical identity.",
+    "Public unbind removes that peer; subsequent failed pull on remaining project preserves local record and successful source timestamp.",
+    "New public batch returns configurationError with zero Task/lease/browser and no additional source calls.",
+    "Removing duplicate and successfully pulling produces valid proof with only the remaining binding peer.",
+    "Explicit new batch reaches one actual worker/browser/manual checkpoint, freezes exact original values/ref/version, then writes one local revision and one pending intent.",
+    "Original failed batch stays failed/zeroTask; all leases released, worker idle, remote values never written."
+  ],
+  "environment": {
+    "firstAttempt": "Fixture setup failed because old/tmp browser path was absent, before product assertions. Log retained; not a product RED.",
+    "recovery": "Existing locked dependency ensure_binary pinned145.0.7632.109.2 into isolated worktree .tmp-tests/pm9-browser-cache; no user browser/profile changed."
+  },
+  "evidenceSha256": {
+    ".tmp-tests/pm9-peer-outage-2026-09-24/missing-browser.log": "135bf3291507de7c72a49edea44e1162e6eb7ce1fbf2ccada8e8c5cdad9460dd",
+    ".tmp-tests/pm9-peer-outage-2026-09-24/real-worker.log": "a812a159c5ef3dd9ec45eb33e2b57875c5074ee4b2f938ca8333146c84bb26d9",
+    ".tmp-tests/pm9-peer-outage-2026-09-24/initial-pass.log": "be92dc57e04adca07ceda95e7accff2fb0ac4158bbbea9f5f35dbd4ebcf17057",
+    ".tmp-tests/pm9-peer-outage-2026-09-24/ci-selection.log": "0a3241e74d25dc470a692c1be0c18cbd5c9cb11b8fc829f770a32a016d21bf26"
+  },
+  "remaining": [
+    "Full binding replacement/generation changes and peer namespace combinations in a single real-worker chain remain unproved.",
+    "Current packaged live Sheets/OAuth, physical/native new-case evidence remain pending.",
+    "Current new CI dispatch still requires restored gh authentication or user manual dispatch;35902129697@a317e1f8 excludes this test and newer guard."
+  ]
+}

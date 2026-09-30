@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom/vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import type { StreamingApiClient } from '../../../shared/api/client'
 import type { ProjectView } from '../../projects/types'
@@ -79,14 +80,14 @@ function renderPage(instances: unknown[] = [instance]) {
   return { onNavigate }
 }
 
-it('opens on the current scene, keeps the two overview shortcuts, and lists live work', async () => {
+it('opens on the current scene without duplicate overview cards and lists live work', async () => {
   const { onNavigate } = renderPage()
   // 原型 001 的默认分区是"运行环境"，主列标题是"当前现场"
   expect(await screen.findByRole('heading', { name: '当前现场', level: 2 })).toBeVisible()
   await waitFor(() => expect(screen.getByText('1 个临时现场 · 含 1 个等待人工')).toBeVisible())
-  expect(screen.getByRole('region', { name: '项目默认资源概览' })).toBeVisible()
-  expect(screen.getByRole('region', { name: '持久环境概览' })).toBeVisible()
-  expect(screen.getByRole('button', { name: '查看持久环境 0' })).toBeVisible()
+  expect(screen.queryByRole('region', { name: '项目默认资源概览' })).toBeNull()
+  expect(screen.queryByRole('region', { name: '持久环境概览' })).toBeNull()
+  expect(screen.queryByRole('complementary', { name: '环境概览' })).toBeNull()
   expect(screen.getByRole('heading', { name: '需要人工处理 1', level: 3 })).toBeVisible()
   expect(screen.getByText('需要人工完成验证码')).toBeVisible()
   expect(screen.getByText('剩余 13 分钟')).toBeVisible()
@@ -95,6 +96,13 @@ it('opens on the current scene, keeps the two overview shortcuts, and lists live
   // 人工处理在运行记录里只有一份详情，环境页不再自己开一份浏览器
   enter.click()
   expect(onNavigate).toHaveBeenCalledWith({ projectId, tab: 'runs', runView: 'manual', manualItemId: manualItem.manualItemId })
+  await userEvent.click(screen.getByRole('tab', { name: '等待人工 1' }))
+  expect(screen.getByText('保留浏览器、输入和租约；现场保留期间仍占用运行容量。')).toBeVisible()
+  screen.getByRole('button', { name: '继续原任务' }).click()
+  expect(onNavigate).toHaveBeenLastCalledWith({ projectId, tab: 'runs', runView: 'manual', manualItemId: manualItem.manualItemId })
+  screen.getByRole('button', { name: '明确结束' }).click()
+  expect(onNavigate).toHaveBeenLastCalledWith({ projectId, tab: 'runs', runView: 'manual', manualItemId: manualItem.manualItemId })
+  await userEvent.click(screen.getByRole('tab', { name: '运行环境 1' }))
   // 任务与批次入口是可点击的真实跳转，不是编造的编号
   screen.getAllByRole('button', { name: '查看任务' })[0].click()
   expect(onNavigate).toHaveBeenCalledWith({ projectId, tab: 'runs', runView: 'tasks', taskId: manualItem.taskId, taskTab: 'logs' })
@@ -119,7 +127,8 @@ it('switches the empty current scene to a plain statement instead of a zero coun
   const client = { request, stream: vi.fn(), health: vi.fn() } as unknown as StreamingApiClient
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(<QueryClientProvider client={queryClient}><EnvironmentWorkspacePage workspaceKey="workspace" instanceId="instance" projectId={projectId} project={project} client={client} disabled={false} readOnly={false} onNavigate={vi.fn()} /></QueryClientProvider>)
-  expect(await screen.findByText('当前没有临时现场')).toBeVisible()
+  expect(await screen.findByRole('heading', { name: '当前没有临时现场', level: 2 })).toBeVisible()
+  expect(screen.getByText('任务启动后，正在占用的临时环境会出现在这里。')).toBeVisible()
   expect(screen.queryByRole('heading', { name: /需要人工处理/ })).not.toBeInTheDocument()
   expect(screen.queryByRole('heading', { name: /自动运行/ })).not.toBeInTheDocument()
 })

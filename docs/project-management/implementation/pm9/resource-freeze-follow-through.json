@@ -1,0 +1,186 @@
+{
+  "date": "2026-09-24",
+  "status": "profile_packaged_api_and_full_arm_desktop_passed_proxy_gap_confirmed",
+  "releaseAccepted": false,
+  "productionSource": "69baeeb295d3cf2e10ceba945d00bfd138907a50",
+  "requirements": [
+    "ENV-05",
+    "XE-A20",
+    "XE-C02"
+  ],
+  "profile": {
+    "status": "passed",
+    "taskIds": [
+      "6af2d261-3fbc-4e6b-b264-cba49113f7f4",
+      "582ca5fe-4c31-43fe-981e-8ede1b233224"
+    ],
+    "freshTaskId": "1f20f9c1-593d-493f-8e32-1b2bb4dbe754",
+    "originalSeed": 31071,
+    "newSeed": 74401,
+    "seedObservations": [
+      {
+        "pid": 87661,
+        "seed": 31071
+      },
+      {
+        "pid": 87692,
+        "seed": 31071
+      },
+      {
+        "pid": 87724,
+        "seed": 74401
+      }
+    ],
+    "seedObservationScope": "actual disposable instance browser argv at manual barrier",
+    "canvasChanged": false,
+    "frozenObservation": {
+      "userAgent": "AutoFlow-PM9-frozen",
+      "language": "en-US",
+      "timezone": "UTC",
+      "canvasHash": "5bd5f9661debc5f29ec600cd7a13490ed67c789b9e45d9c23d8560adbc269561"
+    },
+    "freshObservation": {
+      "userAgent": "AutoFlow-PM9-edited",
+      "language": "fr-FR",
+      "timezone": "Europe/Paris",
+      "canvasHash": "5bd5f9661debc5f29ec600cd7a13490ed67c789b9e45d9c23d8560adbc269561"
+    },
+    "checks": [
+      "old batch second Task preserves original root document and browser-visible UA/locale/timezone/canvas after public Profile edit and seed reset",
+      "fresh explicit batch observes new root document and changed Profile identity"
+    ]
+  },
+  "evidence": ".tmp-tests/pm9-profile-freeze-final-2026-09-24/project-api.json",
+  "evidenceSha256": "75d8b1311e3586f6755b7bfed1f48e816138059fd17f0f54da4f04300cb228f8",
+  "backendSha256": "c446fdbaf73a68fcfc1a11d3695b21f9a86df6f357dfd5cb3b5b676b7dffffac",
+  "scripts": "101 passed",
+  "proxyGap": {
+    "status": "confirmed_implementation_gap",
+    "scope": "real WorkflowBrowserResources snapshot/acquire and SQL proxy pool selection; synthetic profile/kernel/proxy fixtures, no network or real worker",
+    "batchCandidateIds": [
+      "99cded95-c37a-4239-83c0-32887ae0a453"
+    ],
+    "selected": [
+      {
+        "id": "99cded95-c37a-4239-83c0-32887ae0a453",
+        "host": "proxy-1.example",
+        "port": 8001
+      },
+      {
+        "id": "78fee22e-65aa-45a5-b80d-ea57da38e81a",
+        "host": "proxy-2.example",
+        "port": 8002
+      },
+      {
+        "id": "78fee22e-65aa-45a5-b80d-ea57da38e81a",
+        "host": "changed-after-freeze.example",
+        "port": 8002
+      }
+    ],
+    "newMemberEnteredOldSnapshot": true,
+    "changedEndpointEnteredOldSnapshot": true,
+    "frozenConfigurationKeys": [
+      "profileSpec",
+      "fingerprintSeed",
+      "createdAt",
+      "updatedAt"
+    ]
+  },
+  "proxyEvidence": ".tmp-tests/pm9-proxy-freeze-2026-09-24/result.json",
+  "proxyEvidenceSha256": "4f70f7d5262f94db9554330415acac7da345d11fd388b0a361cddfe8c03fd0c4",
+  "proxyReproduction": [
+    "Use existing test_proxy_concurrency_review._create_healthy_group SQLite fixture with healthy candidates A/B and UnexpectedProbe; restrict initial group membership to A.",
+    "Freeze WorkflowBrowserResources using a synthetic Profile/kernel and the actual ResolveProxyForProfile SQL selector; acquire selects A.",
+    "Change group membership to B using GroupService; acquire the SAME frozen request under a new run request ID selects B.",
+    "Change the B projection endpoint in the fixture; another acquire of SAME frozen request selects the changed endpoint. Release each acquired guard."
+  ],
+  "proposal": {
+    "status": "proposed_awaiting_approval",
+    "spec": "docs/superpowers/specs/2026-09-24-pm9-proxy-resource-freeze.md",
+    "plan": "docs/superpowers/plans/2026-09-24-pm9-proxy-resource-freeze.md"
+  },
+  "negativeEvidence": {
+    "path": ".tmp-tests/pm9-profile-freeze-2026-09-24/project-api.json",
+    "reason": "Initial test incorrectly assumed changing the seed must change this canvas hash. Corrected test verifies actual owned browser fingerprint argv; unchanged canvas remains reported, not hidden.",
+    "sha256": "34c4bbb5408d565f737d62b7500413d890657ffcec06707e1c7d79023dfa6dd4"
+  },
+  "limits": [
+    "Profile proof uses newFromProfile with explicit no-proxy override; no fixed/input environment or real proxy/provider evidence is claimed.",
+    "Native argv seed observations are implemented for macOS only; other platforms report that proof pending.",
+    "Proxy diagnostic uses production snapshot/SQL selection but synthetic fixtures; it is not actual worker/network or packaged proxy validation.",
+    "Additional Profile assertions are not present in running CI35886627514. No production code changes this slice; full backend/build need not be rerun.",
+    "Other asset dependency combinations, Windows/Intel same-scenario packaged evidence, physical installation, signing and current authorized Google/OAuth remain open."
+  ],
+  "mapping": "251 valid references and4 verifier tests passed; no status promotions",
+  "desktopEvidence": ".tmp-tests/pm9-profile-freeze-desktop-2026-09-24/project-desktop.json",
+  "desktopEvidenceSha256": "56022cda4853ca56474bc1a45d7e7e0881080f0929bcaebe21d30d5e3cb721e4",
+  "desktopProfile": {
+    "status": "passed",
+    "taskIds": [
+      "57394c5c-0272-4a28-9a23-6d047d1daf36",
+      "36c29d33-09ef-4cfc-a99b-755e9bcfac91"
+    ],
+    "freshTaskId": "06ceaf1c-97e2-4409-bf4e-4ac1f0e57001",
+    "originalSeed": 94034,
+    "newSeed": 35006,
+    "seedObservations": [
+      {
+        "pid": 45838,
+        "seed": 94034
+      },
+      {
+        "pid": 45906,
+        "seed": 94034
+      },
+      {
+        "pid": 46533,
+        "seed": 35006
+      }
+    ],
+    "seedObservationScope": "actual disposable instance browser argv at manual barrier",
+    "canvasChanged": false,
+    "frozenObservation": {
+      "userAgent": "AutoFlow-PM9-frozen",
+      "language": "en-US",
+      "timezone": "UTC",
+      "canvasHash": "5bd5f9661debc5f29ec600cd7a13490ed67c789b9e45d9c23d8560adbc269561"
+    },
+    "freshObservation": {
+      "userAgent": "AutoFlow-PM9-edited",
+      "language": "fr-FR",
+      "timezone": "Europe/Paris",
+      "canvasHash": "5bd5f9661debc5f29ec600cd7a13490ed67c789b9e45d9c23d8560adbc269561"
+    },
+    "checks": [
+      "old batch second Task preserves original root document and browser-visible UA/locale/timezone/canvas after public Profile edit and seed reset",
+      "fresh explicit batch observes new root document and changed Profile identity"
+    ]
+  },
+  "desktopScreenshots": 21,
+  "fullDesktop": "passed: Profile freeze plus existing project/Studio/window/subflow/volume/zoom/restart smoke",
+  "observations": {
+    "realWorkerLogs": {
+      "logCount": 1004,
+      "logPages": 6,
+      "elapsedMs": 31011,
+      "logsPerMinute": 1943,
+      "scope": "real worker throughput and server pagination; no renderer memory claim"
+    },
+    "recordWrites": {
+      "elapsedMs": 46500,
+      "status": "passed",
+      "producers": 5,
+      "records": 10000,
+      "busyRetries": 0
+    },
+    "synthetic": {
+      "targetLogsPerMinute": 1000,
+      "seconds": 60,
+      "emitted": 1000,
+      "elapsedMs": 60019,
+      "maxBatchLagMs": 25
+    },
+    "twoFramesMs": 6,
+    "scope": "single ARM observation; synthetic input is separate from worker throughput; no new performance threshold"
+  }
+}

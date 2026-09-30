@@ -1,0 +1,73 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___ test_old_verification_cannot_overwrite_recovered_device_and_new_session ____
+
+repository = <autoflow.infrastructure.database.android_operations.SqlAlchemyAndroidOperationRepository object at 0x10a61ac90>
+
+    @pytest.mark.asyncio
+    async def test_old_verification_cannot_overwrite_recovered_device_and_new_session(repository):
+        import asyncio
+    
+        from autoflow.application.android.devices import AndroidDeviceService
+        from autoflow.application.android.verification import verify_lifecycle_operation
+    
+        devices_repo = SqlAlchemyDeviceRepository(repository.sessions)
+        old = repository.accept("ws", "old-start", "device", "start", "digest", {})
+        repository.transition(old.operation_id, "queued", "running", {})
+        old = repository.transition(old.operation_id, "running", "needs_verification", {})
+        devices_repo.save({"deviceId": "device", "workspaceId": "ws", "generation": 2,
+                           "ownerRunId": None, "control": "recovery_required", "androidStatus": "unknown",
+                           "operation": {"id": old.operation_id, "action": "start", "state": "needs_verification"}})
+        inspecting, release = asyncio.Event(), asyncio.Event()
+    
+        class Runtime:
+            workspace_id = "ws"
+            locked = False
+    
+            def lock(self):
+                if self.locked:
+                    raise AndroidError("ANDROID_RUNTIME_BUSY", "busy", 409)
+                self.locked = True
+    
+            def unlock(self):
+                self.locked = False
+    
+            async def manage(self, device, request, stage, save):
+                device["androidStatus"] = "ready"
+    
+            async def inspect(self, device):
+                inspecting.set()
+                await release.wait()
+                return {"androidStatus": "ready"}
+    
+        devices = AndroidDeviceService(devices_repo, Runtime())
+        devices.management.operations = repository
+        devices.management.workspace_identity = "ws"
+        verification = asyncio.create_task(verify_lifecycle_operation(repository, devices, old, workspace_identity="ws"))
+        await inspecting.wait()
+        devices.operate("device", {"requestId": "new-recover", "action": "recover", "deleteData": False})
+        await devices.management.task
+        current = devices_repo.claim("device", "new-session")
+        current["control"] = "manual"
+        devices_repo.save(current)
+        release.set()
+        try:
+            await verification
+        except AndroidError as error:
+            assert error.status == 409
+>       assert devices_repo.get("device") == current
+E       AssertionError: assert {'deviceId': ...d': None, ...} == {'deviceId': ...session', ...}
+E         
+E         Omitting 4 identical items, use -vv to show
+E         Differing items:
+E         {'control': 'idle'} != {'control': 'manual'}
+E         {'ownerRunId': None} != {'ownerRunId': 'new-session'}
+E         {'generation': 2} != {'generation': 4}
+E         {'operation': {'id': '10df07b9-025e-4eb4-8d8e-bc38b0066a2e', 'action': 'start', 'state': 'succeeded', 'stage': '已核实', ...}} != {'operation': {'id': 'b500ea57-6989-4911-bf16-9b73163a6a53', 'action': 'recover', 'state': 'succeeded', 'stage': '已完成', ...}}...
+E         
+E         ...Full output truncated (5 lines hidden), use '-vv' to show
+
+apps/backend/tests/integration/test_android_management_operations.py:132: AssertionError
+=========================== short test summary info ============================
+FAILED apps/backend/tests/integration/test_android_management_operations.py::test_old_verification_cannot_overwrite_recovered_device_and_new_session
+1 failed, 7 deselected in 0.64s

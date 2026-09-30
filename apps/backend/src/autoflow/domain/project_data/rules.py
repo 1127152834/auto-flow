@@ -289,3 +289,23 @@ def _validate_date(definition: FieldWrite, value: object) -> dict[str, object]:
     except ValueError as error:
         raise _invalid(definition["key"], "has an invalid calendar value or mismatched offset", "type") from error
     return cast(dict[str, object], value.copy())
+
+
+def validation_issues(fields: list[dict[str, Any]], values: dict[str, object]) -> list[dict[str, str]]:
+    """Derive safe, structured business-format issues from a record snapshot."""
+    issues: list[dict[str, str]] = []
+    for field in fields:
+        field_id = str(field["fieldId"])
+        definition = {
+            key: field[key]
+            for key in ("key", "name", "type", "required", "validation")
+        }
+        if field_id not in values:
+            if field["required"]:
+                issues.append({"fieldId": field_id, "code": "REQUIRED_FIELD_MISSING", "rule": "required", "message": "Required field is missing"})
+            continue
+        try:
+            validate_value(definition, values[field_id])
+        except ProjectError as error:
+            issues.append({"fieldId": field_id, "code": error.code, "rule": str(error.details.get("rule", "type")), "message": error.details.get("reason", error.message)})
+    return issues

@@ -1,0 +1,28 @@
+{
+  "status": "started",
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-image-pull-interruption-lx2i7dfz",
+  "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "requestId": "dbeb6cac-d9a4-4d61-945f-9851d1b9119b",
+  "reference": "redroid/redroid@sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "killedOwnedProcessGroups": 1,
+  "lostResponse": "RemoteProtocolError",
+  "afterRestart": {
+    "operationId": "fb0a1794-e7f7-4ea5-a720-ef2898f8b17e",
+    "requestId": "dbeb6cac-d9a4-4d61-945f-9851d1b9119b",
+    "targetId": "bab724f0-5436-5b6b-b0ea-310404a22e91",
+    "action": "pull",
+    "state": "needs_verification",
+    "stageCode": "verify",
+    "stageLabel": "待核实",
+    "attempt": 1,
+    "retryOf": null,
+    "createdAt": "2026-09-23T23:08:19.784896",
+    "startedAt": "2026-09-23T23:08:19.787204",
+    "finishedAt": "2026-09-23T23:08:24.620130",
+    "resultCode": "SERVICE_RESTART_RESULT_UNKNOWN",
+    "message": "服务已重启，请核实外部操作结果",
+    "allowedActions": [
+      "verify"
+    ]
+  }
+}

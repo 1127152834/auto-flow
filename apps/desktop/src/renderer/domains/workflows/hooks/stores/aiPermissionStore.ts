@@ -19,12 +19,13 @@ export const HIGH_RISK_ACTIONS = new Set<string>([
   'reset_global_config', 'update_global_config',
   'clear_data', 'clear_logs', 'clear_variables', 'delete_variable',
   'run_workflow', 'run_workflow_headless', 'delete_image_asset',
+  'query_trace_events', 'read_trace_evidence',
 
 ])
 
 // 只读 / 纯查询类 client_action：任何模式都不需要授权
 export const READONLY_ACTIONS = new Set<string>([
-  'get_workflow_detail', 'get_logs', 'get_collected_data', 'list_variables', 'get_variable',
+  'get_trace_summary', 'get_workflow_detail', 'get_logs', 'get_collected_data', 'list_variables', 'get_variable',
   'find_nodes_by_type', 'list_open_dialogs', 'get_global_config',
   'get_local_workflow_content', 'list_local_workflows', 'get_local_workflow_default_folder',
   'list_image_assets',

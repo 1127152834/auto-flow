@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 
@@ -303,6 +304,52 @@ def test_an_unknown_send_stays_unknown_across_a_restart(tmp_path):
         assert decided["result"]["evidence"]["outcome"] == "notMatched", decided
         assert client.post(path, json=body, headers=key).json() == reconciled.json()
         assert {item["status"] for item in operations(client, project, table)} == {"failed"}
+
+
+@pytest.mark.parametrize('action', ['changeSheetsBinding', 'removeSheetsBinding'])
+@pytest.mark.parametrize('preview_before_send', [True, False])
+def test_unknown_value_send_blocks_binding_change_and_unbind(
+    tmp_path, action, preview_before_send,
+):
+    transport = FakeSheetsTransport({'数据': GRID['数据'], '第二表': SECOND})
+    with open_sheets_table(tmp_path, transport, COLUMNS) as sheets:
+        client, project, table = sheets.client, sheets.project, sheets.table
+        pull(client, project, table, sheets.table_revision())
+        edit_title(client, project, table, sheets.records()[0], sheets.field_id('title'), 'old unknown')
+        change = {'mode': 'remove'} if action == 'removeSheetsBinding' else {
+            'connectionId': sheets.connection,
+            'spreadsheetId': transport.spreadsheet_id,
+            'sheetId': transport.ids['数据'],
+            'identityStrategy': {'kind': 'column', 'columnId': 'A'},
+            'mapping': [{'fieldId': sheets.field_id(key), 'columnId': column, 'direction': 'both', 'formula': False}
+                        for key, column in [('code', 'A'), ('title', 'B')]],
+        }
+        payload = {'action': action, 'target': {'type': 'table', 'projectId': project, 'tableId': table}, 'change': change}
+        if preview_before_send:
+            preview = client.post(f'/api/v1/projects/{project}/mutation-impact', json=payload)
+            assert preview.status_code == 200, preview.text
+        transport.fail_writes.append(SheetsApiError(0, 'timeout', 'response lost'))
+        push(client, project, table, sheets.binding['bindingEpoch'])
+        unknown, = operations(client, project, table, 'unknown')
+        before_rows, before_table = sheets.records(), table_detail(client, project, table)
+        before_binding = client.get(url(project, table, '/sheets/binding')).json()
+        before_writes = transport.changes()
+        if preview_before_send:
+            body = {'impactRevision': preview.json()['impactRevision'], 'expectedTableRevision': sheets.table_revision()}
+            if action == 'changeSheetsBinding':
+                body.update(change, expectedBindingEpoch=sheets.binding['bindingEpoch'])
+            rejected = client.request('PUT' if action == 'changeSheetsBinding' else 'DELETE',
+                url(project, table, '/sheets/binding'), json=body, headers=new_key())
+        else:
+            rejected = client.post(f'/api/v1/projects/{project}/mutation-impact', json=payload)
+        assert rejected.status_code == 409, rejected.text
+        assert rejected.json()['error']['code'] == 'SHEETS_SOURCE_SEND_IN_PROGRESS'
+        assert sheets.records() == before_rows
+        assert table_detail(client, project, table) == before_table
+        assert client.get(url(project, table, '/sheets/binding')).json() == before_binding
+        assert operations(client, project, table, 'unknown') == [unknown]
+        assert transport.changes() == before_writes
+        assert transport.grid('数据')[1] == ['A-1', '第一行']
 
 
 def test_a_rebind_retires_the_previous_epochs_intent(tmp_path):
@@ -607,3 +654,81 @@ def test_a_stale_impact_confirmation_is_refused_after_the_table_moves(tmp_path):
             headers=new_key(),
         )
         assert retargeted.status_code == 412, retargeted.text
+
+
+def test_archive_preserves_unsent_local_data_and_refuses_new_source_writes(tmp_path):
+    from tests.integration.test_project_sheets_sync import (
+        edit_title as edit_local_title,
+    )
+    from tests.integration.test_project_sheets_sync import (
+        pull as pull_table,
+    )
+    from tests.integration.test_project_sheets_sync import (
+        push as push_table,
+    )
+    from tests.integration.test_project_sheets_sync import (
+        sync_operations,
+    )
+
+    transport = FakeSheetsTransport(GRID)
+    with open_sheets_table(tmp_path, transport, COLUMNS) as sheets:
+        pull_table(sheets)
+        local = edit_local_title(sheets, sheets.records()[0], 'preserved after archive')
+        pending, = sync_operations(sheets, 'pending')
+        base = f'/api/v1/projects/{sheets.project}'
+        project = sheets.client.get(base).json()
+        preview = sheets.client.get(base+'/lifecycle-impact', params={'action':'archive'})
+        assert preview.status_code == 200 and preview.json()['unsyncedCount'] == 1
+        assert preview.json()['blockers'] == []
+        response = sheets.client.post(base+'/archive', headers=new_key(), json={
+            'expectedManagementRevision':project['managementRevision'],
+            'impactRevision':preview.json()['impactRevision'],
+        })
+        assert response.status_code in {200, 202}, response.text
+        sheets.client.app.state.project_lifecycle.repository.advance(sheets.project)
+        assert sheets.client.get(base).json()['lifecycleState'] == 'archived'
+        writes = transport.changes()
+        refused = push_table(sheets)
+        assert refused.status_code == 409, refused.text
+        assert sheets.records()[0] == local
+        assert sync_operations(sheets, 'pending') == [pending]
+        assert transport.changes() == writes
+        assert transport.grid('数据')[1] == ['A-1', '第一行']
+
+
+def test_archive_waits_for_unknown_value_send_and_allows_original_reconciliation(tmp_path):
+    transport = FakeSheetsTransport(GRID)
+    with open_sheets_table(tmp_path, transport, COLUMNS) as sheets:
+        client, project, table = sheets.client, sheets.project, sheets.table
+        pull(client, project, table, sheets.table_revision())
+        edit_title(client, project, table, sheets.records()[0], sheets.field_id('title'), 'unconfirmed')
+        epoch = state(client, project, table)['binding']['bindingEpoch']
+        transport.fail_writes.append(SheetsApiError(0, 'timeout', 'lost response'))
+        push(client, project, table, epoch)
+        unknown, = operations(client, project, table, 'unknown')
+        base = f'/api/v1/projects/{project}'
+        preview = client.get(base + '/lifecycle-impact', params={'action': 'archive'}).json()
+        assert any(item['code'] == 'SYNC_UNCONFIRMED' for item in preview['blockers']), preview
+        accepted = client.post(base + '/archive', headers=new_key(), json={
+            'expectedManagementRevision': client.get(base).json()['managementRevision'],
+            'impactRevision': preview['impactRevision'],
+        })
+        assert accepted.status_code == 202, accepted.text
+        archive = accepted.json()['operation']['operationId']
+        repository = client.app.state.project_lifecycle.repository
+        repository.advance(project)
+        assert client.get(base).json()['lifecycleState'] == 'closing'
+        assert client.get(base + f'/operations/{archive}').json()['status'] == 'running'
+        assert push_response(client, project, table, epoch).status_code == 423
+        writes = transport.changes()
+        target = url(project, table, f"/sync-operations/{unknown['syncOperationId']}/reconcile")
+        key = new_key()
+        body = {'expectedStatusRevision': unknown['statusRevision']}
+        reconciled = client.post(target, headers=key, json=body)
+        assert reconciled.status_code == 202, reconciled.text
+        assert reconciled.json()['operation']['result']['evidence']['outcome'] == 'notMatched'
+        repository.advance(project)
+        assert client.get(base).json()['lifecycleState'] == 'archived'
+        assert client.get(base + f'/operations/{archive}').json()['status'] == 'succeeded'
+        assert client.post(target, headers=key, json=body).json() == reconciled.json()
+        assert transport.changes() == writes

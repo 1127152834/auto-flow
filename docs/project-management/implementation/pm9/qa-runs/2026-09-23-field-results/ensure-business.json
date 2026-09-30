@@ -1,0 +1,87 @@
+{
+  "status": "passed",
+  "platform": "darwin",
+  "arch": "arm64",
+  "packaged": true,
+  "startedAt": "2026-09-23T13:32:23.408Z",
+  "executableSha256": "99a262d7c15c95276ed7012a6ae21fb220fc4ddaade735a1a66bcba91cc3fcaa",
+  "projectId": "996a1a31-dac2-4027-b6b3-1fda0ba0dccf",
+  "sharedPersonChain": {
+    "status": "passed",
+    "checks": [
+      "P1 verified state/content/environment link and revisions unchanged across both Tasks",
+      "E1 explicitly registered and excluded from original pending selection; retry batch creates no Task/account",
+      "Exactly one new A1 and E1 link the same saved login environment",
+      "Next Task starts from A1 input environment, restores cookie, and selects P1 through personNo field equality"
+    ],
+    "taskIds": [
+      "d6808cd1-b835-4153-93c0-0d80c37b0a73",
+      "7478aeb8-3fc7-4032-816c-3a78edcd1ffc"
+    ],
+    "environmentId": "9c47882a-2cff-5a18-8278-9df1e8062cb9",
+    "scope": "ARM packaged public HTTP and actual worker/browser; no full native UI flow or live Sheets claim"
+  },
+  "concurrentRecordClaims": {
+    "status": "passed",
+    "taskIds": [
+      "4572e69c-e275-4ba6-a389-ebe72d653337",
+      "5c803932-14cc-4fe5-a41a-14fa66160be8"
+    ],
+    "checks": [
+      "One data batch reaches two simultaneous manual checkpoints with distinct leased records",
+      "Same source Profile produces isolated cookie stores",
+      "Completing the first Task keeps the second live; both finish once and no third Task is claimed"
+    ]
+  },
+  "checks": [
+    "Cancelling a second live Run preserves T2 checkpoint/browser and executes no cancelled write",
+    "T1 started and completed while old-contract T2 remained waiting_manual in its original Run",
+    "T1 ensured a persistent field, created exactly one second-table record, queried/updated content and explicitly set status before T2 resumed",
+    "T2 then queried and wrote using its prepared old field contract; manual node executed once"
+  ],
+  "taskIds": [
+    "53cda134-3e97-4981-8a36-8473b9dd57a8",
+    "d0ded217-6830-46d1-8e2b-b34ab9829d92"
+  ],
+  "schemaEnsure": {
+    "status": "passed",
+    "createdFieldRef": {
+      "projectId": "996a1a31-dac2-4027-b6b3-1fda0ba0dccf",
+      "tableId": "0638d0b5-79af-4ea7-be79-f36a0847e29a",
+      "datasetGeneration": "1796a4d7-98ca-43a4-b683-a2e6e5856bfa",
+      "fieldId": "052e8c7f-2285-4f15-ac1e-e58330ab2393"
+    },
+    "reusedFieldRef": {
+      "projectId": "996a1a31-dac2-4027-b6b3-1fda0ba0dccf",
+      "tableId": "0638d0b5-79af-4ea7-be79-f36a0847e29a",
+      "datasetGeneration": "1796a4d7-98ca-43a4-b683-a2e6e5856bfa",
+      "fieldId": "052e8c7f-2285-4f15-ac1e-e58330ab2393"
+    },
+    "tableRevision": 4,
+    "conflictingTaskId": "0993654d-07ff-49a6-a04e-6b935acef4ea",
+    "conflictCode": "FIELD_DEFINITION_CONFLICT",
+    "checks": [
+      "same-definition ensure returns the original field ID without another column or schema revision",
+      "another real Task requesting the same key with a different type fails without changing fields or values",
+      "T2 remains waiting in its original Run through both ensure and conflict, then writes its original field"
+    ],
+    "limits": [
+      "writing the newly returned field is not asserted by this scenario"
+    ]
+  },
+  "concurrency": {
+    "status": "passed",
+    "overlapStartedAt": "2026-09-23T13:32:43.181Z",
+    "t1CompletedAt": "2026-09-23T13:32:47.491Z",
+    "waitingRunId": "4a8f0f27-3c59-49c8-b265-243bfbd15b05",
+    "completedRunId": "681a4f2d-d9df-4654-9a95-70af399b381f",
+    "waitingStateBefore": "waiting_manual",
+    "waitingStateAfter": "waiting_manual"
+  },
+  "remaining": [
+    "Sheets structure/value phases require authorized live resources",
+    "Excel source byte preservation belongs to separate native import/export evidence",
+    "Conflict and partial-success combinations remain separate evidence"
+  ],
+  "cleanup": "passed"
+}

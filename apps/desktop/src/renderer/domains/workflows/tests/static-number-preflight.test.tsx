@@ -13,7 +13,7 @@ import {emitAssistantUiEvent} from '../api/aiAssistantSkills'
 beforeEach(()=>store.getState().clearWorkflow())
 afterEach(()=>{cleanup();vi.restoreAllMocks()})
 function node(type='wait',data:Record<string,unknown>={}){
- store.getState().addNode(type as 'wait',{x:0,y:0},data)
+ store.getState().addNode(type as 'wait',{x:0,y:0},{...(type==='open_page'?{browserEnvironment:{source:'newFromProfile',profileId:'10000000-0000-4000-8000-000000000001'}}:{}),...data})
  return store.getState().nodes.at(-1)!
 }
 it.each(['1abc','Infinity','1e999','',-1,true])('rejects static wait duration %j without mutating its saved text',value=>{

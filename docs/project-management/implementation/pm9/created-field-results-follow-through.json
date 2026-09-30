@@ -1,0 +1,51 @@
+{
+  "date": "2026-09-23",
+  "status": "confirmed_implementation_gap_with_packaged_ensure_subscope_passed",
+  "releaseAccepted": false,
+  "requirements": [
+    "DATA-SCHEMA-02",
+    "DATA-SCHEMA-09",
+    "FLOW-A14"
+  ],
+  "productionSourceCommit": "c16532d79fe8db87a8f9b371d9045a02fb89e362",
+  "baseScriptCommit": "543194dd",
+  "executable": "current CI ARM DMG copied installation; Contents/Resources/backend/autoflow-backend",
+  "executableSha256": "99a262d7c15c95276ed7012a6ae21fb220fc4ddaade735a1a66bcba91cc3fcaa",
+  "failureEvidence": [
+    {
+      "report": "qa-runs/2026-09-23-field-results/write-denied.json",
+      "patch": "qa-runs/2026-09-23-field-results/write-reproduction.patch",
+      "result": "actual packaged worker succeeds at ensure/create/query/update of old field, then fails update of the newly created field with CAPABILITY_SCOPE_DENIED; the batch has 0 succeeded / 1 failed; cleanup passed"
+    },
+    {
+      "report": "qa-runs/2026-09-23-field-results/pregrant-denied.json",
+      "patch": "qa-runs/2026-09-23-field-results/pregrant-reproduction.patch",
+      "result": "explicitly predeclaring the prospective field UUID in the write grant is rejected at batch start with HTTP 409 CAPABILITY_FACTS_INCOMPLETE; cleanup passed"
+    }
+  ],
+  "diagnosis": [
+    "Coordinator validates every static tableGrant.fieldId against existing DataFieldRow before starting the batch.",
+    "Record writes require requested fields within frozen table-grant fields; add/ensure results do not expand that scope.",
+    "The existing successful field-operation proof is used for modifyField only; it does not authorize a subsequent record write.",
+    "Project argument values support dynamic variable references, but dictionary keys are not resolved; using an unknown ensure-reused field ID also needs an explicit value-map binding contract."
+  ],
+  "positiveEvidence": {
+    "report": "qa-runs/2026-09-23-field-results/ensure-business.json",
+    "status": "passed",
+    "scope": "Actual packaged HTTP/worker/browser: identical ensure reuses the exact field ref without advancing table revision, another Task with same key/different type fails FIELD_DEFINITION_CONFLICT without field/value changes, old-contract T2 remains in its same waiting Run and later writes old field; existing shared-person and two simultaneous record/browser chains also passed; cleanup passed"
+  },
+  "limits": [
+    "Negative evidence is not a passed acceptance test. This confirms a missing implementation, not a Google or physical-platform blocker.",
+    "Positive ensure/conflict evidence does not cover writing the new field. No production change is made in this slice.",
+    "Only current ARM packaged sidecar is exercised here; no claim of full UI, Windows/Intel or live Google acceptance.",
+    "Prospective field grant and result-derived authority require the proposed explicit field-result contract; existing permission checks remain unchanged."
+  ],
+  "proposedSpec": "docs/superpowers/specs/2026-09-23-pm9-created-field-results.md",
+  "proposedPlan": "docs/superpowers/plans/2026-09-23-pm9-created-field-results.md",
+  "reproduction": "In an isolated checkout at baseScriptCommit, apply one reproduction patch then run node scripts/smoke-project-business-combinations.mjs --executable <c165 packaged backend> --runtime-kernel <public Chromium 145> --output-dir <temporary path outside docs>; expect a failed report with the documented error.",
+  "checks": {
+    "scripts": "npm run test:scripts: 101 passed / 0 failed / 0 skipped in 2313.77ms",
+    "packagedBusiness": "node scripts/smoke-project-business-combinations.mjs --executable <current c165 ARM packaged backend> --runtime-kernel <public Chromium 145> --output-dir <temporary path>: passed, cleanup passed; see positiveEvidence",
+    "coverage": "251 valid references; statuses not upgraded"
+  }
+}

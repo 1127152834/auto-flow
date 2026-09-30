@@ -1,0 +1,44 @@
+{
+  "evidenceId": "BE-B6-text-to-speech-formal-electron",
+  "checkedAt": "2026-09-21T20:22:34.614Z",
+  "gitHead": "e9ba02ceea96e643aa7128623335e869b0085c74",
+  "result": "passed",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "workflowId": "T2LMCLj6zBf_dE5j5qGxw",
+  "profileId": "adac0738-69fd-40c7-9c4c-29e6c4e332a4",
+  "runId": "610df0fb-0450-41aa-aacb-6a06acc553eb",
+  "checks": [
+    "主窗口真实打开正式 Studio；动作库为 213，运行配置来自主应用 Profile",
+    "通过正式 Studio 真实 UI 配置中文朗读文本并连接后续日志节点",
+    "正式保存接口写入朗读文本、后续日志节点和连线",
+    "Renderer Web Speech API 返回成功，真实 worker 执行后续日志节点"
+  ],
+  "nodes": [
+    {
+      "moduleType": "text_to_speech",
+      "nodeId": "stcaeOpOo4761p5uckuH9",
+      "result": {
+        "text": "AutoFlow 朗读验收",
+        "lang": "zh-CN"
+      }
+    },
+    {
+      "moduleType": "print_log",
+      "nodeId": "WKyqgS2U3yy6VOXpdiRew",
+      "result": {
+        "level": "info",
+        "message": "朗读已完成"
+      }
+    }
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserLaunch": "none",
+    "speech": "renderer Web Speech API; no external network",
+    "interaction": "formal Electron via CDP mouse and keyboard; public sidecar APIs only for fixture setup and evidence reads; no Store or page-internal business function access",
+    "platformPending": "Windows/macOS Intel and packaged-entry reachability remain separately unverified"
+  },
+  "buildSha256": "464d9a3d31b8bbdf11677ab31923253ab762c532ff46d4fb8a55a9563c09eb48"
+}

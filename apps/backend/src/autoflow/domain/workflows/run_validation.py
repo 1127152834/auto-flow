@@ -5,9 +5,14 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any
 
+from .browser_environment import node_browser_environments
+from .canvas_subflows import CanvasSubflowGraph
 from .catalog import runnable_module_types
-from .graph import WorkflowDefinition
+from .graph import WorkflowDefinition, parse_workflow
+from .manual_contract import validate_declaration
 from .models import WorkflowError, WorkflowIssue
+from .parallel_graph import structured_fork
+from .project_end import normalize_project_end
 from .validation import project_document
 
 _DEFAULT_CONFIGS: dict[str, dict[str, Any]] = {
@@ -36,8 +41,16 @@ class PreparedWorkflow:
 
 def prepare_run(document: object) -> PreparedWorkflow:
     projected = project_document(document)
+    node_browser_environments(projected)
     assert isinstance(document, dict)
     nodes = projected["content"]["nodes"]
+    graph = CanvasSubflowGraph(projected["content"])
+    project_semantics = projected["content"].get("schemaVersion") != 3 or any(
+        node["data"]["moduleType"].startswith("project_") for node in nodes
+    )
+    scopes = graph.project_scopes() if project_semantics else {
+        "": {node["id"] for node in graph.top_level_document()["nodes"]}
+    }
     supported = runnable_module_types()
     graph_adapter = projected["content"].get("schemaVersion") == 3 or any(
         node["data"]["moduleType"] not in _DEFAULT_CONFIGS for node in nodes
@@ -51,8 +64,8 @@ def prepare_run(document: object) -> PreparedWorkflow:
     for index, node in enumerate(nodes):
         node_id = node["id"]
         module_type = node["data"]["moduleType"]
-        visual = module_type in {"group", "note"}
-        if (visual and node_id in connected) or (module_type not in supported and not (graph_adapter and (visual or module_type == "custom_module"))):
+        visual = module_type in {"group", "note"} and not graph._is_definition(node)
+        if (visual and node_id in connected) or (module_type not in supported and not graph._is_definition(node) and not (graph_adapter and (visual or module_type == "custom_module"))):
             issues.append(
                 WorkflowIssue(
                     node_id,
@@ -66,6 +79,23 @@ def prepare_run(document: object) -> PreparedWorkflow:
             "WORKFLOW_NOT_RUNNABLE", "工作流包含尚不可执行的节点", 422, issues
         )
     by_id = {node["id"]: node for node in nodes}
+    if graph_adapter and not any(node["data"]["moduleType"] not in {"group", "note", "subflow_header"} for node in nodes):
+        raise WorkflowError("WORKFLOW_NOT_RUNNABLE", "工作流没有可执行节点", 422)
+    for scope, members in scopes.items():
+        subset = graph._subset(members)
+        ends = [n['id'] for n in subset['nodes'] if n['data']['moduleType'] == 'project_end']
+        if len(ends) > 1 or any(edge['source'] in ends for edge in subset['edges']):
+            raise WorkflowError('WORKFLOW_NOT_RUNNABLE', 'End 必须是唯一的最终节点，不能有后续连线', 422)
+        for node in subset['nodes']:
+            if node['data']['moduleType'] == 'project_manual':
+                validate_declaration(node['data'].get('config', node['data']), node['id'], subset['nodes'], subset['edges'])
+        _validate_lifecycle_graph(subset['nodes'], subset['edges'], ends)
+        valid, errors = WorkflowDefinition.from_raw(subset).validate()
+        if not valid and (members or not scope) and not all(n["data"]["moduleType"] in _DEFAULT_CONFIGS for n in nodes):
+            raise WorkflowError(
+                "WORKFLOW_NOT_RUNNABLE", "；".join(errors), 422,
+                [WorkflowIssue(None, ["content", "edges"], "INVALID_EXECUTION_GRAPH", message) for message in errors],
+            )
     # Defaults validate Studio content without rewriting its frozen snapshot.
     validation_nodes = deepcopy(nodes) if graph_adapter else nodes
     for node in validation_nodes:
@@ -91,12 +121,6 @@ def prepare_run(document: object) -> PreparedWorkflow:
         node_ids = [node["id"] for node in nodes if node["data"]["moduleType"] not in {"group", "note"}]
         if not node_ids:
             raise WorkflowError("WORKFLOW_NOT_RUNNABLE", "工作流没有可执行节点", 422)
-        valid, errors = WorkflowDefinition.from_raw(projected["content"]).validate()
-        if not valid:
-            raise WorkflowError(
-                "WORKFLOW_NOT_RUNNABLE", "工作流执行图不受支持", 422,
-                [WorkflowIssue(None, ["content", "edges"], "INVALID_EXECUTION_GRAPH", message) for message in errors],
-            )
     else:
         node_ids = _ordered_chain(nodes, projected["content"]["edges"])
     return PreparedWorkflow(
@@ -221,6 +245,40 @@ def _config_issues(node: dict[str, Any], index: int, *, studio: bool = False) ->
             _nonempty_string(data.get("variableName")),
             "必须是非空字符串",
         )
+    elif module_type == 'project_data':
+        operation = data.get('operation')
+        field('operation', isinstance(operation, str) and operation in {'inputs', 'readRecord', 'queryRecords', 'queryTableSchema', 'createRecord', 'updateRecord', 'deleteRecord', 'setRecordStatus', 'addField', 'ensureField', 'modifyField', 'previewFieldChange', 'deleteField', 'previewFieldDeletion'}, '不受支持')
+        field('arguments', isinstance(data.get('arguments'), dict) and data.get('argumentsValid', True) is True, '必须是有效对象')
+        field('variableName', _nonempty_string(data.get('variableName')), '必须是非空字符串')
+        if operation != 'inputs':
+            field('bindingProjectId', _nonempty_string(data.get('bindingProjectId')), '必须是非空字符串')
+            grant = data.get('tableGrant')
+            required_operation = {'previewFieldChange': 'modifyField', 'previewFieldDeletion': 'deleteField'}.get(operation, operation)
+            field(
+                'tableGrant',
+                isinstance(grant, dict)
+                and set(grant) == {'tableId', 'datasetGeneration', 'operations', 'fieldIds', 'readPurposes'}
+                and _nonempty_string(grant.get('tableId'))
+                and _nonempty_string(grant.get('datasetGeneration'))
+                and grant.get('operations') == [required_operation]
+                and isinstance(grant.get('fieldIds'), list)
+                and all(_nonempty_string(item) for item in grant['fieldIds'])
+                and isinstance(grant.get('readPurposes'), list)
+                and all(_nonempty_string(item) for item in grant['readPurposes']),
+                '必须与节点操作一致',
+            )
+    elif module_type == 'project_manual':
+        data.setdefault('timeoutSeconds', 1800)
+        field('timeoutSeconds', _nonnegative_number(data['timeoutSeconds']) and 0 < data['timeoutSeconds'] <= 86400, '必须大于 0 且不超过 86400 秒')
+        field('reason', _nonempty_string(data.get('reason')), '必须是非空字符串')
+    elif module_type == 'project_end':
+        data.setdefault('retainEnvironment', False)
+        try:
+            normalize_project_end(data)
+            valid_end = data.get('retentionValid', True) is True
+        except (TypeError, ValueError):
+            valid_end = False
+        field('retainEnvironment', valid_end, '必须是有效的项目 End 配置')
     elif module_type == "screenshot":
         mode = data.get("screenshotType", "fullpage")
         if mode not in {"fullpage", "viewport", "element"}:
@@ -230,15 +288,10 @@ def _config_issues(node: dict[str, Any], index: int, *, studio: bool = False) ->
         for name in ("savePath", "fileNamePattern", "variableName"):
             if name in data:
                 field(name, isinstance(data[name], str), "必须是字符串")
-    elif module_type == "project_end":
-        from .project_end import validate_project_end
-        try:
-            validate_project_end(data)
-        except (ValueError, TypeError) as error:
-            field("retainEnvironment", False, str(error))
     elif module_type.startswith("ai_") and data.get("modelId") is not None:
         field("modelId", isinstance(data["modelId"], str), "必须是字符串")
-    field("timeout", _nonnegative_number(data.get("timeout")), "必须是有限非负数")
+    if module_type in _DEFAULT_CONFIGS or 'timeout' in data:
+        field("timeout", _nonnegative_number(data.get("timeout")), "必须是有限非负数")
     return issues
 
 
@@ -253,3 +306,62 @@ def _nonnegative_number(value: object) -> bool:
         and math.isfinite(value)
         and value >= 0
     )
+
+
+def _validate_lifecycle_graph(
+    nodes: list[dict[str, Any]],
+    edges: list[dict[str, Any]],
+    ends: list[str],
+) -> None:
+    _, graph = parse_workflow({'nodes': nodes, 'edges': edges})
+    forks = {identity for identity, node in graph.nodes.items() if 'parallel' in node.data.get('config', node.data)}
+    for identity in forks:
+        structured_fork(graph, identity)
+    owns_control = any(n['data']['moduleType'] in {'project_manual', 'subflow', 'loop', 'foreach', 'foreach_dict'} for n in nodes)
+    if not ends and not owns_control:
+        return
+    outgoing: dict[str, list[str]] = {node['id']: [] for node in nodes}
+    incoming: dict[str, list[str]] = {node['id']: [] for node in nodes}
+    for edge in edges:
+        if edge['source'] in outgoing and edge['target'] in incoming:
+            outgoing[edge['source']].append(edge['target'])
+            incoming[edge['target']].append(edge['source'])
+    # Only validated forks create isolated branch schedulers. Undeclared fan-out
+    # still shares control state and cannot own loops or manual checkpoints.
+    if owns_control and (
+        sum(not value for value in incoming.values()) != 1 or any(
+            len(outgoing[n['id']]) > 1 and n['id'] not in forks and not (n['data']['moduleType'] == 'project_manual' and n['data'].get('resumeTargets')) and (
+                n['data']['moduleType'] not in {'condition', 'loop', 'foreach', 'foreach_dict'}
+                or len({edge.get('sourceHandle') for edge in edges if edge['source'] == n['id']}) != len(outgoing[n['id']])
+            ) for n in nodes
+        )
+    ):
+        raise WorkflowError('WORKFLOW_NOT_RUNNABLE', '人工处理或循环节点不能与其他分支并行执行', 422)
+    if not ends:
+        return
+    reachable = set(ends)
+    while True:
+        previous = set(reachable)
+        reachable.update(source for target in tuple(reachable) for source in incoming[target])
+        if previous == reachable:
+            break
+    # Loop bodies return to their owner without explicit back edges. They must
+    # not contain End, which would close the browser in the first iteration.
+    for node in nodes:
+        if node['data']['moduleType'] not in {'loop', 'foreach', 'foreach_dict'}:
+            continue
+        body = [e['target'] for e in edges if e['source'] == node['id'] and e.get('sourceHandle') == 'loop']
+        done = {e['target'] for e in edges if e['source'] == node['id'] and e.get('sourceHandle') != 'loop'}
+        seen = {node['id'], *done}
+        while body:
+            current = body.pop()
+            if current in seen:
+                continue
+            seen.add(current)
+            if current in ends:
+                raise WorkflowError('WORKFLOW_NOT_RUNNABLE', 'End 不能放在循环体内', 422)
+            if node['id'] in reachable:
+                reachable.add(current)
+            body.extend(outgoing[current])
+    if reachable != set(outgoing):
+        raise WorkflowError('WORKFLOW_NOT_RUNNABLE', '所有执行分支必须汇合到唯一 End', 422)

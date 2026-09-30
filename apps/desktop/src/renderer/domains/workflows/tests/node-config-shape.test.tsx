@@ -23,6 +23,7 @@ Element.prototype.scrollIntoView = vi.fn()
 const nestedDocument = () => ({
   id: 'nested-document',
   name: 'Nested document',
+  browserEnvironmentVersion: 1,
   nodes: [
     {
       id: 'end',

@@ -8,6 +8,12 @@ export interface Position {
 
 // 模块类型
 export type ModuleType =
+  | 'trace_mark'
+  | 'capture_diagnostics'
+  | 'save_trace_segment'
+  | 'project_data'
+  | 'project_end'
+  | 'project_manual'
   // 浏览器操作
   | 'open_page'
   | 'use_opened_page'
@@ -209,8 +215,6 @@ export type ModuleType =
   | 'proxy_change_ip'
   | 'proxy_change_location'
   | 'proxy_query'
-  | 'project_data'
-  | 'project_end'
   | 'api_request'
   | 'send_email'
   // QQ自动化
@@ -700,7 +704,18 @@ export interface Variable {
 }
 
 // 工作流
+export type BrowserEnvironment =
+  | {source:'current'}
+  | {source:'newFromProfile'|'profile';profileId?:string|null;proxy?:components['schemas']['ProjectDefaultResources']['proxy']|{mode:'projectDefault'};kernel?:{edition:'public'|'licensed';version:string}|null}
+  | {source:'fixedEnvironment';environmentId:string}
+  | {source:'inputEnvironment';inputId:string}
+
+export type TraceMode = 'off' | 'standard' | 'enhanced'
+
 export interface Workflow {
+  traceMode?: TraceMode
+  schemaVersion?: number
+  browserEnvironmentVersion?: number
   id: string
   name: string
   nodes: WorkflowNode[]
@@ -741,6 +756,7 @@ export type LogLevel = 'debug' | 'info' | 'warning' | 'error' | 'success'
 
 // 日志条目
 export interface LogEntry {
+  origin?: 'studio' | 'run'
   id: string
   timestamp: string
   level: LogLevel

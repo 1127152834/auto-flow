@@ -15,6 +15,7 @@ from sqlalchemy import select
 from autoflow.adapters.http.errors import install_error_handlers
 from autoflow.adapters.http.workflow_catalog import workflow_catalog_router
 from autoflow.application.project_automations.service import ProjectAutomationService
+from autoflow.application.workflows.core_runtime import _digest
 from autoflow.application.workflows.documents import WorkflowDocumentService
 from autoflow.application.workflows.service import WorkflowService
 from autoflow.domain.workflows.runtime import thaw_json
@@ -23,6 +24,9 @@ from autoflow.infrastructure.database.project_automations import (
 )
 from autoflow.infrastructure.database.project_run_models import ProjectTaskRow
 from autoflow.infrastructure.database.projects import SqlAlchemyProjects
+from autoflow.infrastructure.database.workflow_runtime import (
+    SqlAlchemyWorkflowRuntimeRepository,
+)
 from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
 from autoflow.infrastructure.database.workflows import (
     SqlAlchemyWorkflowDocuments,
@@ -162,12 +166,27 @@ def test_existing_frozen_chain_v1_survives_studio_document_replacement(tmp_path)
     factory, _, _, _coordinator, runtime, project, automation = setup(tmp_path)
     try:
         operation_id = str(uuid4())
-        prepared = runtime.prepare_content(
-            prepare_operation_id=operation_id,
+        current = runtime.prepare_content(
+            prepare_operation_id=str(uuid4()),
             workflow_id=automation.workflow_id,
             source_revision=1,
             available_capabilities=["browser.cloakbrowser"],
         )
+        # Seed the persisted legacy format; new preparations correctly use graph/v2.
+        legacy_document = thaw_json(current.document)
+        legacy_plan = thaw_json(current.execution_plan)
+        legacy_plan.pop("document")
+        with factory.begin() as session:
+            prepared = SqlAlchemyWorkflowRuntimeRepository(session).prepare_content(
+                prepared_content_id=str(uuid4()), prepare_operation_id=operation_id,
+                request_digest=current.request_digest, workflow_id=automation.workflow_id,
+                source_revision=1, document=legacy_document, execution_plan=legacy_plan,
+                adapter_version="webrpa-chain/v1",
+                checksum=_digest({"document": legacy_document, "executionPlan": legacy_plan,
+                                  "adapterVersion": "webrpa-chain/v1"}),
+                capability_requirements=["browser.cloakbrowser"],
+                provenance=thaw_json(current.provenance), created_at=current.created_at,
+            )
         assert prepared.adapter_version == "webrpa-chain/v1"
         frozen_document = thaw_json(prepared.document)
         frozen_plan = thaw_json(prepared.execution_plan)
@@ -187,6 +206,8 @@ def test_existing_frozen_chain_v1_survives_studio_document_replacement(tmp_path)
         )
         assert recovered.prepared_content_id == prepared.prepared_content_id
         assert recovered.adapter_version == "webrpa-chain/v1"
+        assert recovered.checksum == prepared.checksum
+        assert recovered.source_revision == prepared.source_revision == 1
         assert thaw_json(recovered.document) == frozen_document
         assert thaw_json(recovered.execution_plan) == frozen_plan
         with factory() as session:

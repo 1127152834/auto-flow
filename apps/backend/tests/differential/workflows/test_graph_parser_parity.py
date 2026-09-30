@@ -58,9 +58,9 @@ def _frozen_output(document: dict[str, Any]) -> dict[str, Any]:
     for node in frozen_document["nodes"]:
         node["type"] = node.get("data", {}).get("moduleType", node.get("type", ""))
     process = subprocess.run(
-        [sys.executable, str(FROZEN_HARNESS), str(FROZEN_BACKEND)],
+        [sys.executable, "-X", "utf8", str(FROZEN_HARNESS), str(FROZEN_BACKEND)],
         input=json.dumps(frozen_document, ensure_ascii=False),
-        text=True,
+        text=True, encoding="utf-8",
         capture_output=True,
         check=True,
     )

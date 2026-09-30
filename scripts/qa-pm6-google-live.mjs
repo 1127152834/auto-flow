@@ -30,6 +30,7 @@ export function parseLiveArgs(args) {
   const result = { manual: false, keep: false }
   for (let index = 0; index < args.length; index += 1) {
     const value = args[index]
+    if (!['--manual', '--keep'].includes(value) && (!args[index + 1] || args[index + 1].startsWith('--'))) throw new Error(`${value} requires a value`)
     if (value === '--manual') result.manual = true
     else if (value === '--keep') result.keep = true
     else if (value === '--config') result.config = args[++index]
@@ -38,6 +39,8 @@ export function parseLiveArgs(args) {
     else if (value === '--gid') result.gid = Number(args[++index])
     else if (value === '--expect-rows') result.expectRows = Number(args[++index])
     else if (value === '--label') result.label = args[++index]
+    else if (value === '--executable') result.executable = args[++index]
+    else if (value === '--output-dir') result.outputDir = args[++index]
     else throw new Error(`unknown argument: ${value}`)
   }
   for (const key of ['config', 'spreadsheet', 'sheet', 'gid', 'label']) {
@@ -106,6 +109,7 @@ export function createSheets(sa, spreadsheetId) {
 
 export async function main(argv = process.argv.slice(2)) {
   const args = parseLiveArgs(argv)
+  if (args.executable) args.executable = await realpath(args.executable)
   const credential = JSON.parse(await readFile(args.config, 'utf8'))
   assert.equal(credential.type, 'service_account', '实时验收只接受服务账号配置')
   const sheets = createSheets(credential, args.spreadsheet)
@@ -131,14 +135,15 @@ export async function main(argv = process.argv.slice(2)) {
   const stamp = new Date().toISOString().replace(/[:.]/g, '-')
   const owner = join(tmpdir(), `pm6-google-live-${stamp}`)
   const workspace = join(owner, 'workspace')
-  const evidence = join(root, 'docs/project-management/implementation/pm6/google-live', stamp)
+  const evidence = args.outputDir ? resolve(args.outputDir, stamp) : join(root, 'docs/project-management/implementation/pm6/google-live', stamp)
   await mkdir(workspace, { recursive: true })
   await mkdir(evidence, { recursive: true })
 
   const checkpoints = []
   const screenshots = []
   const facts = {
-    kind: 'pm6-google-live',
+    kind: args.executable ? 'packaged-google-live' : 'pm6-google-live',
+    executable: args.executable ? await realpath(args.executable) : null,
     credential: { type: credential.type, clientEmail: credential.client_email, projectId: credential.project_id },
     spreadsheetId: args.spreadsheet,
     sheet: args.sheet,
@@ -261,7 +266,7 @@ export async function main(argv = process.argv.slice(2)) {
     process.env.AUTOFLOW_QA_GOOGLE_CONFIG = args.config
     desktop = await launchElectron(root, {
       launchArgs: [`--user-data-dir=${workspace}`, '--inspect=0'],
-      cliArgs: [],
+      cliArgs: args.executable ? ['--executable', args.executable] : [],
     })
     const desktopLog = join(owner, 'desktop.log')
     facts.desktopLog = desktopLog

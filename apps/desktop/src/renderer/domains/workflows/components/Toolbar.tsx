@@ -1,3 +1,5 @@
+import { captureProjectReferenceTypes } from '../project-inputs'
+import { runProjectOnce, stopProjectOnce } from '../run-project-once'
 import {registerDocumentLeaveResource,requestDocumentLeave,getDocumentLeaveResources} from '../lib/documentLeave'
 import {stopStudioRun} from '../lib/stopStudioRun'
 import { requestSettingsClose } from '../lib/settingsLeave'
@@ -34,7 +36,6 @@ import { useDebugStore } from '../hooks/stores/debugStore'
 import { ScheduledTasksDialog } from './scheduled-tasks/ScheduledTasksDialog'
 import { WorkflowOpenDialog } from './WorkflowOpenDialog'
 import { LocalWorkflowDialog } from './LocalWorkflowDialog'
-import { BrowserProfileSelect } from './BrowserProfileSelect'
 import { VariableTrackingPanel } from './VariableTrackingPanel'
 import { ScreenshotNameDialog, ScreenshotErrorDialog } from './ScreenshotNameDialog'
 import { useClipboardImageMonitor } from '../hooks/useClipboardImageMonitor'
@@ -76,6 +77,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
 } from './controls/dropdown-menu'
 
 export function Toolbar() {
@@ -139,6 +142,8 @@ export function Toolbar() {
   // 使用选择器确保配置更新时组件重新渲染
   const config = useGlobalConfigStore((state) => state.config)
   
+  const traceMode = useWorkflowStore(state => state.traceMode ?? 'standard')
+  const setTraceMode = useWorkflowStore(state => state.setTraceMode)
   const name = useWorkflowStore((state) => state.name)
   const nodes = useWorkflowStore((state) => state.nodes)
   const edges = useWorkflowStore((state) => state.edges)
@@ -235,6 +240,46 @@ export function Toolbar() {
     }
   }, [])
 
+  const handleSave = useCallback(async (skipConfirm = false) => {
+    if (savingDocument.current || !mounted.current) return false
+    savingDocument.current = true
+    setSaveError(null)
+    const revision = getStudioTransportRevision()
+    const sourceDocument = useWorkflowStore.getState().id
+    const active = () => mounted.current && revision === getStudioTransportRevision() && sourceDocument === useWorkflowStore.getState().id
+    const requireActive = () => { if (!active()) throw new Error('保存期间服务连接或文档已变更；当前草稿保持未保存，请在原工作区核对写入结果') }
+    try {
+      if (sessionStorage.getItem('editingCustomModuleId')) return await saveCustomModuleEditing()
+      captureProjectReferenceTypes()
+      const workflowData = JSON.parse(exportWorkflow())
+      requireActive()
+      const savedContent = snapshotKey(JSON.stringify(workflowData))
+      const result = workflowId
+        ? await workflowApi.update(workflowId, workflowData)
+        : await workflowApi.create(workflowData)
+      requireActive()
+      const data = result.data as { id?: unknown; revision?: unknown } | undefined
+      if (result.success && typeof data?.id === 'string' && data.id && Number.isSafeInteger(data.revision) && Number(data.revision) > 0) {
+        setWorkflowId(data.id)
+        if (!skipConfirm) addLog({ level: 'success', message: `工作流已保存: ${workflowData.name}` })
+        const unchanged = snapshotKey(exportWorkflow()) === savedContent
+        if (unchanged) markAsSaved()  // A late save response cannot acknowledge newer edits.
+        return unchanged
+      }
+      const message = `保存失败: ${result.error || '服务未返回有效保存确认'}`
+      setSaveError({ documentId: sourceDocument, message })
+      addLog({ level: 'error', message })
+      return false
+    } catch (error) {
+      if (active()) {
+        const message = `保存失败: ${String(error)}`
+        setSaveError({ documentId: sourceDocument, message })
+        addLog({ level: 'error', message })
+      }
+      return false
+    } finally { savingDocument.current = false }
+  }, [workflowId, exportWorkflow, addLog, markAsSaved, setWorkflowId])
+
   // 通用执行函数
   // startNodeId 跳过上游；runToNodeId 从真实入口运行并在目标第一次调度前暂停。
   const executeWorkflow = useCallback(async (headless: boolean, startNodeId?: string, runToNodeId?: string) => {
@@ -252,6 +297,16 @@ export function Toolbar() {
       return
     }
 
+    if (getStudioOpenContext().automationId) {
+      if (startNodeId || runToNodeId) { addLog({ level: 'error', message: '项目调试从完整工作流入口运行，请使用运行一次' }); return }
+      startPending.current = true
+      try {
+        if (source.hasUnsavedChanges && !await handleSave(true)) throw new Error('请先保存工作流')
+        await runProjectOnce()
+      } catch (error) { addLog({ level: 'error', message: String(error) }) }
+      finally { startPending.current = false }
+      return
+    }
     const numericIssues = staticNumberIssues(nodes, edges, startNodeId)
     if (numericIssues.length) {
       for (const issue of numericIssues) addLog({ level: 'error', nodeId: issue.nodeId,
@@ -264,12 +319,16 @@ export function Toolbar() {
       breakpoints: Array.from(useDebugStore.getState().breakpoints),
       stepMode: useDebugStore.getState().stepMode,
     }
-    let selectedProfileId:string
+    if(source.browserEnvironmentVersion!==1&&nodes.some(node=>node.data.moduleType==='open_page')){
+      const node=nodes.find(node=>node.data.moduleType==='open_page')
+      if(node)source.selectNode(node.id)
+      addLog({level:'error',message:'请先在打开网页节点明确迁移浏览器配置；旧文档仍可保存或导出。'})
+      return
+    }
     transitionPending.current=true
     try {
-      const profile=await browserApi.resolveProfile()
-      if(!profile.success||!profile.data){addLog({level:'error',message:profile.error||'请选择管理端浏览器配置'});return}
-      selectedProfileId=profile.data.id
+      const prepared=await browserApi.validateNodeResources(nodes)
+      if(!prepared.success){if(prepared.data?.nodeId)source.selectNode(prepared.data.nodeId);addLog({level:'error',message:prepared.error||'请检查浏览器节点配置'});return}
       if(getDocumentLeaveResources().length&&!await requestDocumentLeave({preserveMainDocument:true,sessionsOnly:true}))return
       if(sourceDocumentId!==useWorkflowStore.getState().id||sourceConnection!==getStudioTransportRevision())return
     } finally {transitionPending.current=false}
@@ -298,6 +357,8 @@ export function Toolbar() {
       const currentWorkflowId = workflowId || sourceDocumentId
       const document = {
         id: sourceDocumentId,
+        schemaVersion: 3,
+        browserEnvironmentVersion: 1,
         name,
         nodes: nodes.map(n => ({
           id: n.id,
@@ -327,7 +388,6 @@ export function Toolbar() {
       setStartPhase('awaiting')
       const executeResult = await workflowApi.execute(currentWorkflowId, { 
         headless,
-        profileId: selectedProfileId,
         ...debugOptions,
         runId,
         documentId: sourceDocumentId,
@@ -358,7 +418,7 @@ export function Toolbar() {
       startPending.current = false
       if (!awaitingStart.current) setStartPhase(null)
     }
-  }, [workflowId, setWorkflowId, addLog, clearLogs, clearCollectedData, setBottomPanelTab, setExecutionStatus])
+  }, [workflowId, setWorkflowId, addLog, clearLogs, clearCollectedData, setBottomPanelTab, setExecutionStatus, handleSave])
 
   // 普通运行（有头模式）
   const handleRun = useCallback(async () => {
@@ -390,6 +450,9 @@ export function Toolbar() {
   }, [executeWorkflow])
 
   const handleStop = useCallback(async () => {
+    if (getStudioOpenContext().automationId) {
+      try { return await stopProjectOnce() } catch (error) { addLog({ level: 'error', message: `停止失败：${String(error)}` }); return false }
+    }
     const state=useWorkflowStore.getState()
     const target=awaitingStart.current || (state.currentExecutionWorkflowId&&state.currentExecutionRunId?{workflowId:state.currentExecutionWorkflowId,runId:state.currentExecutionRunId}:null)
     if(!target)return false
@@ -420,46 +483,8 @@ export function Toolbar() {
     }}
   }),[handleStop])
 
-  const handleSave = useCallback(async (skipConfirm = false) => {
-    if (savingDocument.current || !mounted.current) return false
-    savingDocument.current = true
-    setSaveError(null)
-    const revision = getStudioTransportRevision()
-    const sourceDocument = useWorkflowStore.getState().id
-    const active = () => mounted.current && revision === getStudioTransportRevision() && sourceDocument === useWorkflowStore.getState().id
-    const requireActive = () => { if (!active()) throw new Error('保存期间服务连接或文档已变更；当前草稿保持未保存，请在原工作区核对写入结果') }
-    try {
-      if (sessionStorage.getItem('editingCustomModuleId')) return await saveCustomModuleEditing()
-      const workflowData = JSON.parse(exportWorkflow())
-      requireActive()
-      const savedContent = snapshotKey(JSON.stringify(workflowData))
-      const result = workflowId
-        ? await workflowApi.update(workflowId, workflowData)
-        : await workflowApi.create(workflowData)
-      requireActive()
-      const data = result.data as { id?: unknown; revision?: unknown } | undefined
-      if (result.success && typeof data?.id === 'string' && data.id && Number.isSafeInteger(data.revision) && Number(data.revision) > 0) {
-        setWorkflowId(data.id)
-        if (!skipConfirm) addLog({ level: 'success', message: `工作流已保存: ${workflowData.name}` })
-        const unchanged = snapshotKey(exportWorkflow()) === savedContent
-        if (unchanged) markAsSaved()  // A late save response cannot acknowledge newer edits.
-        return unchanged
-      }
-      const message = `保存失败: ${result.error || '服务未返回有效保存确认'}`
-      setSaveError({documentId: sourceDocument, message})
-      addLog({ level: 'error', message })
-      return false
-    } catch (error) {
-      if (active()) {
-        const message = `保存失败: ${String(error)}`
-        setSaveError({documentId: sourceDocument, message})
-        addLog({ level: 'error', message })
-      }
-      return false
-    } finally { savingDocument.current = false }
-  }, [workflowId, exportWorkflow, addLog, markAsSaved, setWorkflowId])
-
   const handleNewWorkflow = useCallback(() => {
+    if (getStudioOpenContext().automationId) return
     clearWorkflow()
     setWorkflowId(null)
     addLog({ level: 'info', message: '已创建新工作流' })
@@ -760,6 +785,7 @@ export function Toolbar() {
 
   // 通知后端当前工作流ID（用于全局热键控制）
   const handleOpen = () => {
+    if (getStudioOpenContext().automationId) return
     setShowLocalWorkflow(true)
   }
 
@@ -1084,6 +1110,7 @@ export function Toolbar() {
   const importingBundle = useRef(false)
   const [isImportingBundle, setIsImportingBundle] = useState(false)
   const handleImportBundle = useCallback(() => {
+    if (getStudioOpenContext().automationId) return
     const input = document.createElement('input')
     input.type = 'file'
     input.accept = 'application/json,.json'
@@ -1313,7 +1340,7 @@ export function Toolbar() {
 
       <div className="hidden @[48rem]:block h-5 w-px bg-[hsl(var(--border))]" />
 
-      <BrowserProfileSelect label="运行浏览器配置" disabled={isRunning || !!startPhase}/>
+
 
       {/* 自定义模块编辑模式按钮 */}
       {editingCustomModuleId && (
@@ -1372,7 +1399,13 @@ export function Toolbar() {
         {startPhase ? <>
           <span role="status" className="text-xs text-amber-700">{startPhase === 'preparing' ? '正在准备运行' : '等待启动确认'}</span>
           {startPhase === 'awaiting' && <Button size="sm" variant="destructive" onClick={handleStop}>停止启动请求</Button>}
-        </> : !isRunning ? (
+        </> : !isRunning ? getStudioOpenContext().automationId ? (
+          <Button size="sm" variant="success" noMotion onClick={handleRun}>
+            <Play className="w-3.5 h-3.5" />
+            {hasUnsavedChanges ? '保存并运行一次' : '运行一次'}
+            <span className="hidden @[64rem]:inline text-[10px] opacity-70 font-normal">F5</span>
+          </Button>
+        ) : (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button size="sm" variant="success" noMotion aria-label="运行 (F5)">
@@ -1391,6 +1424,16 @@ export function Toolbar() {
                 <EyeOff className="w-3.5 h-3.5 mr-2 text-[hsl(var(--muted-foreground))]" />
                 无头运行
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>浏览器追踪 · 随流程保存</DropdownMenuLabel>
+              <DropdownMenuRadioGroup value={traceMode} onValueChange={value => {
+                if (value === 'off' || value === 'standard' || value === 'enhanced') setTraceMode(value)
+              }}>
+                <DropdownMenuRadioItem value="off">关闭全程追踪</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="standard">标准：动作与页面证据</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="enhanced">增强：同时采集网页 JS</DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+              <p className="px-2 py-1 text-xs text-muted-foreground">增强模式增加本地存储，仅采集实际可用源码。</p>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
@@ -1415,6 +1458,7 @@ export function Toolbar() {
           variant="tonal"
           size="sm"
           onClick={handleNewWorkflowClick}
+          disabled={Boolean(getStudioOpenContext().automationId)}
           title="新建工作流 (Alt+N)"
         >
           <FilePlus className="w-4 h-4 mr-1" />
@@ -1435,6 +1479,7 @@ export function Toolbar() {
           variant="tonal-warning" 
           size="sm" 
           onClick={handleOpen}
+          disabled={Boolean(getStudioOpenContext().automationId)}
         >
           <FolderOpen className="w-4 h-4 mr-1" />
           打开
@@ -1447,7 +1492,7 @@ export function Toolbar() {
           <Code className="w-4 h-4 mr-1" />
           导出
         </Button>
-        <Button variant="tonal-info" size="sm" onClick={handleImportBundle} disabled={isImportingBundle}>
+        <Button variant="tonal-info" size="sm" onClick={handleImportBundle} disabled={isImportingBundle || Boolean(getStudioOpenContext().automationId)}>
           <Package className="w-4 h-4 mr-1" />导入整包
         </Button>
       </div>
@@ -1467,7 +1512,7 @@ export function Toolbar() {
         <DropdownMenuContent align="start" className="w-40">
           <DropdownMenuLabel>文件操作</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleNewWorkflowClick}>
+          <DropdownMenuItem onClick={handleNewWorkflowClick} disabled={Boolean(getStudioOpenContext().automationId)}>
             <FilePlus className="w-4 h-4 mr-2 text-[hsl(var(--success-600))]" />
             新建
           </DropdownMenuItem>
@@ -1475,7 +1520,7 @@ export function Toolbar() {
             <Save className="w-4 h-4 mr-2 text-[hsl(var(--brand-600))]" />
             保存
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleOpen}>
+          <DropdownMenuItem onClick={handleOpen} disabled={Boolean(getStudioOpenContext().automationId)}>
             <FolderOpen className="w-4 h-4 mr-2 text-[hsl(var(--warning-500))]" />
             打开
           </DropdownMenuItem>
@@ -1483,7 +1528,7 @@ export function Toolbar() {
             <Code className="w-4 h-4 mr-2 text-[hsl(var(--info-500))]" />
             导出
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleImportBundle} disabled={isImportingBundle}>
+          <DropdownMenuItem onClick={handleImportBundle} disabled={isImportingBundle || Boolean(getStudioOpenContext().automationId)}>
             <Package className="w-4 h-4 mr-2 text-[hsl(var(--brand-600))]" />
             导入整包
           </DropdownMenuItem>
@@ -1705,7 +1750,7 @@ export function Toolbar() {
         beforeReplace={confirmLeave}
         isOpen={showLocalWorkflow}
         onClose={() => setShowLocalWorkflow(false)}
-        onOpened={setWorkflowId}
+        onOpened={id => setServerWorkflow({ documentId: id, id })}
         onLog={(level, message) => addLog({ level, message })}
       />
 

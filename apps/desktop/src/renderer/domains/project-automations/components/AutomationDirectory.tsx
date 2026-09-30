@@ -2,6 +2,7 @@ import { ArrowRight, Clock, Database, DotsThree, FileText, FlowArrow, Magnifying
 import { useEffect, useState } from 'react'
 import { Button } from '../../../shared/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../../shared/components/ui/dropdown-menu'
+import { EmptyState } from '../../../shared/components/ui/empty-state'
 import { Pagination } from '../../../shared/components/ui/pagination'
 import { SearchInput } from '../../../shared/components/ui/search-input'
 import { Select } from '../../../shared/components/ui/select'
@@ -105,8 +106,8 @@ export function AutomationDirectory({ items, total, page, pageSize, query, sort,
     {errorMessage && items.length ? <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-control border border-warning/30 bg-warning/10 p-3 text-sm"><span>自动化列表刷新失败：{errorMessage}。当前显示上次读取的结果。</span><Button size="sm" onClick={onRetry}>重试读取</Button></div> : null}
     {initialLoading ? <LoadingCards /> : initialError ? <div role="alert"><CenterState icon={<FileText size={52}/>} title="自动化暂时无法加载" detail="搜索条件已保留，请重新读取" action={<Button variant="primary" onClick={onRetry}>重新加载</Button>}/></div>
       : items.length ? <div data-testid="automation-grid" className="grid min-w-0 grid-cols-1 gap-3 lg:grid-cols-2">{items.map(automation => <AutomationCard key={automation.automationId} automation={automation} validation={validationById[automation.automationId]} readOnly={readOnly} refreshing={refreshing} onOpen={onOpen} onEdit={onEdit} onDelete={onDelete}/>)}</div>
-      : query ? <CenterState icon={<FileText size={52}/>} title="没有找到匹配的自动化" detail={`未找到与「${query}」匹配的名称或用途。`} action={<Button variant="primary" onClick={clearSearch}>清除搜索条件</Button>}/>
-      : <CenterState icon={<FlowArrow size={52}/>} title="还没有自动化" detail="创建一个自动化，整理你的工作流程" action={!readOnly ? <Button variant="primary" onClick={onCreate}>新建自动化</Button> : null}/>}
+      : query ? <EmptyState icon={<FileText size={52}/>} title="没有找到匹配的自动化" description={`未找到与「${query}」匹配的名称或用途。`} action={<Button variant="primary" onClick={clearSearch}>清除搜索条件</Button>}/>
+      : <EmptyState icon={<FlowArrow size={52}/>} title="还没有自动化" description="创建一个自动化，整理你的工作流程" action={!readOnly ? <Button variant="primary" onClick={onCreate}>新建自动化</Button> : null}/>}
     {!initialLoading && !initialError ? <><Pagination offset={(page - 1) * pageSize} limit={pageSize} total={total} count={items.length} disabled={refreshing} showPage onOffsetChange={offset => onPageChange(Math.floor(offset / pageSize) + 1)}/><p className="m-0 flex items-center gap-2 text-xs text-muted"><Database size={15} aria-hidden />配置状态不代表执行状态</p></> : null}
   </section>
 }

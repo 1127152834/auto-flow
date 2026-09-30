@@ -25,7 +25,7 @@ apps/
 │   │   ├── application/{profiles,proxies,kernels,models,lab,settings,dashboard,workflows}/
 │   │   ├── adapters/{http,events}/
 │   │   ├── infrastructure/{database,filesystem,credentials,process,events}/
-│   │   └── providers/{browser,proxy,kernel,model,laya,platform}/
+│   │   └── providers/{android,browser,proxy,kernel,model,laya,platform}/
 │   └── tests/{unit,integration,contract,fixtures}/
 └── desktop/
     ├── src/
@@ -89,6 +89,7 @@ reference/
 | `apps/backend/src/autoflow/infrastructure/events/` | 进程内事件分发实现。 |
 | `apps/backend/src/autoflow/infrastructure/filesystem/` | 路径、文件和缓存目录操作。 |
 | `apps/backend/src/autoflow/infrastructure/process/` | 进程、超时、取消和资源回收。 |
+| `apps/backend/src/autoflow/providers/android/` | Mac/Lima/ReDroid适配、归属校验和受控命令；capacity_reservations.py在共享运行时根目录持久化跨工作区预算，工作区数据库继续保存设备与Operation。backup_storage.py负责受控归档、工作区文件锁及清理文件指纹；目录查询沿现有application/android/cleanup.py与management HTTP契约进入DataMaintenance。2026-09-23，confirmed，验证见docs/qa/android-management/2026-09-23-capacity-verification.md和2026-09-23-cleanup-verification.md。 |
 | `apps/backend/src/autoflow/providers/browser/` | 浏览器控制实现。 |
 | `apps/backend/src/autoflow/providers/kernel/` | 内核来源、下载和安装实现。 |
 | `apps/backend/src/autoflow/providers/laya/` | Laya 权重缓存、常驻加载与本地推理。 |
@@ -483,4 +484,4 @@ Studio共享配置位于 `renderer/domains/workflows/components/config-panels/Pr
 
 ## 本地数据库历史兼容修复（2026-09-26，confirmed）
 
-当前唯一迁移头为 `0023_merge_studio_android`。从已存在的集成提交 `1bc6b24d` 原样恢复 `pm09_shared_sheet_identity`、`pm10_shared_sheet_cursors`、`am01_management_operations` 及 `0020_merge_android_pm9`、`0022_merge_studio_pm10`、`0023_merge_studio_android`，使当前分支识别已由集成版本升级的工作区；不伪造数据库版本、不重写已有迁移。来源及验证见 `.ai/sessions/2026-09-26-sidecar-migration-history-repair.md`。
+PM9 启动修复时的迁移头为 `0023_merge_studio_android`；baseline 保留更新的 `0024_environment_identity`。从已存在的集成提交 `1bc6b24d` 原样恢复 `pm09_shared_sheet_identity`、`pm10_shared_sheet_cursors`、`am01_management_operations` 及 `0020_merge_android_pm9`、`0022_merge_studio_pm10`、`0023_merge_studio_android`，使当前分支识别已由集成版本升级的工作区；不伪造数据库版本、不重写已有迁移。来源及验证见 `.ai/sessions/2026-09-26-sidecar-migration-history-repair.md`。

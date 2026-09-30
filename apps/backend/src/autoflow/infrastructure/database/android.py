@@ -5,6 +5,7 @@ from sqlalchemy import select, update
 from sqlalchemy.engine import CursorResult
 from sqlalchemy.orm import Session, sessionmaker
 
+from autoflow.domain.android.management_rules import require_restored
 from autoflow.domain.android.ports import AndroidError
 
 from .android_models import AndroidDeviceRow
@@ -37,6 +38,7 @@ class SqlAlchemyDeviceRepository:
             device = deepcopy(row.payload)
             if device.get("deleted"):
                 raise AndroidError("ANDROID_NOT_FOUND", "设备已删除", 404)
+            require_restored(device)
             if device.get("control") != "idle":
                 raise AndroidError("ANDROID_BUSY", "设备已占用或需要恢复")
             device.update(ownerRunId=run_id, control="workflow", generation=device.get("generation", 0) + 1)

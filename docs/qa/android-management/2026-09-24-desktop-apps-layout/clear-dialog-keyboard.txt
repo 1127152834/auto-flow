@@ -1,0 +1,78 @@
+There has been no change in the accessibility tree for Window: "AutoFlow".
+The focused UI element is 88 按钮 确认清除数据
+
+There has been no change in the accessibility tree for Window: "AutoFlow".
+The focused UI element is 87 按钮 取消
+
+The following is a diff from the previous accessibility tree for Window: "AutoFlow" with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.
+Removed element IDs: 84-90
+~				82 container
+~					83 link Description: AutoFlow, Value: file:///Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/out/renderer/index.html#/dashboard
++					84 container 全局导航
++						85 按钮 总览
++						86 按钮 项目
++						87 按钮 浏览器配置
++						88 按钮 安卓设备
++						89 按钮 代理管理
++						90 按钮 模型管理
++					91 按钮 设置
++						92 图像
++						93 文本 设置
++					94 文本 本地服务正常
++					95 container
++						96 按钮 返回资源看板 / QA 应用确认与窗口布局 这是用于长名称换行与操作可达性验收的独立设备
++							97 图像
++							98 文本 返回资源看板
++							99 文本 /
++							100 文本 QA 应用确认与窗口布局 这是用于长名称换行与操作可达性验收的独立设备
++						101 标题 QA 应用确认与窗口布局 这是用于长名称换行与操作可达性验收的独立设备, Value: 1
++							102 文本 QA 应用确认与窗口布局 这是用于长名称换行与操作可达性验收的独立设备
++						103 图像
++						104 text 已就绪 持久实例
++						105 container
++							106 text Android  版本待核实  ·  720  ×  1280
++						107 按钮 复制配置
++							108 图像
++							109 文本 复制配置
++						110 按钮 更多设备操作
++							111 图像
++						112 container 设备详情
++							113 按钮 控制台
++							114 按钮 应用
++							115 按钮 环境配置
++						116 container
++							117 标题 应用, Value: 3
++								118 文本 应用
++							119 文本 当前应用
++							120 图像
++							121 文本 launcher3
++							122 文本 com.android.launcher3
++							123 按钮 上传 APK
++								124 图像
++								125 文本 上传 APK
++							126 按钮 启动应用
++								127 图像
++								128 文本 启动应用
++						129 container 应用管理
++							130 标题 应用管理, Value: 2
++								131 文本 应用管理
++							132 搜索文本字段 (settable) Description: 搜索应用, Value: moe.shizuku.privileged.api, Placeholder: 搜索包名
++							133 container
++								134 text moe.shizuku.privileged.api 用户应用  ·  版本 1086
++								135 按钮 启动
++								136 按钮 停止
++								137 按钮 清除数据
++								138 按钮 卸载
++						139 text 已连接 最新操作： 等待操作
++					140 container 实例备份
++						141 标题 数据备份, Value: 2
++							142 文本 数据备份
++						143 文本 仅允许已停止且无控制会话的实例。
++						144 文本 备份保存在本机，未加密，可能包含账号和应用私密数据。
++						145 文本 恢复会创建新实例并还原应用数据；不保证登录状态、DRM 或私有密钥可用。
++						146 文本 备份创建已禁用：实例必须已停止、状态新鲜、未被控制且没有活动控制会话。
++						147 按钮 (disabled) 创建停机备份
++						148 container
++							149 text 6bd56bb0-1b06-4b8e-8e61-53618812c183  ·  25457142  bytes
++							150 按钮 恢复为新实例
+The focused UI element is 137 按钮 清除数据

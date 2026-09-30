@@ -89,7 +89,7 @@ try {
   // real button/API path reports the startup failure on its own card.
   await activateAria(cdp, `打开 ${originalName} 的测试浏览器`)
   await waitFor(cdp, `document.querySelector('[aria-label="浏览器配置列表"] [role="alert"]')?.textContent.includes('测试浏览器启动失败')`, 'test browser startup failure', 30_000)
-  assert.ok(await cdp.evaluate(`![...document.querySelectorAll('button')].find(button => button.getAttribute('aria-label') === ${JSON.stringify(`打开 ${originalName} 的测试浏览器`)})?.disabled`))
+  await waitFor(cdp, `(() => { const button = [...document.querySelectorAll('button')].find(button => button.getAttribute('aria-label') === ${JSON.stringify(`打开 ${originalName} 的测试浏览器`)}); return button && !button.disabled })()`, 'released test browser ownership after startup failure', 30_000)
 
   await cdp.command('Page.reload', { ignoreCache: true })
   await waitFor(cdp, `document.querySelector('[aria-label="浏览器配置列表"]')?.innerText.includes(${JSON.stringify(originalName)})`, 'profile after full reload', 30_000)

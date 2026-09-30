@@ -1,0 +1,200 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/android
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+
+stderr | src/renderer/domains/android/tests/AndroidPage.test.tsx > marks a heartbeat failure as unknown and exposes no connected control state
+An error occurred in the <ImageManager> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+
+stderr | src/renderer/domains/android/tests/AndroidPage.test.tsx > verifies a management operation with its original request id
+An error occurred in the <ImageManager> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+
+stderr | src/renderer/domains/android/tests/AndroidPage.test.tsx > cleanup preview includes registered backups while diagnostics remain device scoped
+An error occurred in the <ImageManager> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+
+ ❯ src/renderer/domains/android/tests/AndroidPage.test.tsx (35 tests | 3 failed) 5787ms
+   × marks a heartbeat failure as unknown and exposes no connected control state 1008ms
+   × verifies a management operation with its original request id 1006ms
+   × cleanup preview includes registered backups while diagnostics remain device scoped 28ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/android/tests/AndroidPage.test.tsx > marks a heartbeat failure as unknown and exposes no connected control state
+TestingLibraryElementError: Unable to find role="button" and name `/打开测试设备 01/`
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../../node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/renderer/domains/android/tests/AndroidPage.test.tsx:338:38
+    336|   })
+    337|   render(<QueryClientProvider client={new QueryClient({ defaultOptions…
+    338|   await userEvent.click(await screen.findByRole('button', { name: /打开测…
+       |                                      ^
+    339|   await screen.findByRole('heading', { name: '手动控制中' })
+    340|   await waitFor(() => expect(screen.getAllByText(/控制会话状态未知/).length).t…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/renderer/domains/android/tests/AndroidPage.test.tsx > verifies a management operation with its original request id
+TestingLibraryElementError: Unable to find role="button" and name "查看测试设备 01操作历史"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../../node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/renderer/domains/android/tests/AndroidPage.test.tsx:388:38
+    386|   })
+    387|   render(<QueryClientProvider client={new QueryClient({ defaultOptions…
+    388|   await userEvent.click(await screen.findByRole('button', { name: `查看$…
+       |                                      ^
+    389|   await userEvent.click(await screen.findByRole('button', { name: '核实操…
+    390|   expect(screen.getByRole('heading', { name: '核实状态' })).toBeVisible()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/renderer/domains/android/tests/AndroidPage.test.tsx > cleanup preview includes registered backups while diagnostics remain device scoped
+TestingLibraryElementError: Unable to find an accessible element with the role "checkbox" and name `/备份：backup-1/`
+
+There are no accessible roles. But there might be some inaccessible roles. If you wish to access them, then set the `hidden` option to `true`. Learn more about this here: https://testing-library.com/docs/dom-testing-library/api-queries#byrole
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mstyle[39m=[32m""[39m
+[36m>[39m
+  [36m<div />[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/domains/android/tests/AndroidPage.test.tsx:432:32
+    430|   await screen.findByRole('heading', { name: '数据维护' })
+    431|   await userEvent.click(await screen.findByRole('checkbox', { name: /保…
+    432|   await userEvent.click(screen.getByRole('checkbox', { name: /备份：backu…
+       |                                ^
+    433|   await userEvent.click(screen.getByRole('button', { name: '预览清理' }))
+    434|   await waitFor(() => expect(mocks.client.request).toHaveBeenCalledWit…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 3 unhandled errors during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+TypeError: Cannot read properties of undefined (reading 'map')
+ ❯ ImageManager src/renderer/domains/android/components/ImageManager.tsx:137:31
+    135|       <button type="button" disabled={busy || pulls.isFetching} onClic…
+    136|       {pulls.data && <>
+    137|         <ul>{pulls.data.items.map(item => <li key={item.operationId} c…
+       |                               ^
+    138|           <button type="button" aria-label={`核实拉取 ${item.requestId}`} …
+    139|         </li>)}</ul>
+ ❯ Object.react_stack_bottom_frame ../../node_modules/react-dom/cjs/react-dom-client.development.js:28571:20
+ ❯ renderWithHooks ../../node_modules/react-dom/cjs/react-dom-client.development.js:8030:22
+ ❯ updateFunctionComponent ../../node_modules/react-dom/cjs/react-dom-client.development.js:10569:19
+ ❯ beginWork ../../node_modules/react-dom/cjs/react-dom-client.development.js:12205:18
+ ❯ runWithFiberInDEV ../../node_modules/react-dom/cjs/react-dom-client.development.js:1048:13
+ ❯ performUnitOfWork ../../node_modules/react-dom/cjs/react-dom-client.development.js:19176:22
+ ❯ workLoopSync ../../node_modules/react-dom/cjs/react-dom-client.development.js:19004:41
+ ❯ renderRootSync ../../node_modules/react-dom/cjs/react-dom-client.development.js:18985:11
+ ❯ performWorkOnRoot ../../node_modules/react-dom/cjs/react-dom-client.development.js:18094:35
+
+This error originated in "src/renderer/domains/android/tests/AndroidPage.test.tsx" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "marks a heartbeat failure as unknown and exposes no connected control state". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+TypeError: Cannot read properties of undefined (reading 'map')
+ ❯ ImageManager src/renderer/domains/android/components/ImageManager.tsx:137:31
+    135|       <button type="button" disabled={busy || pulls.isFetching} onClic…
+    136|       {pulls.data && <>
+    137|         <ul>{pulls.data.items.map(item => <li key={item.operationId} c…
+       |                               ^
+    138|           <button type="button" aria-label={`核实拉取 ${item.requestId}`} …
+    139|         </li>)}</ul>
+ ❯ Object.react_stack_bottom_frame ../../node_modules/react-dom/cjs/react-dom-client.development.js:28571:20
+ ❯ renderWithHooks ../../node_modules/react-dom/cjs/react-dom-client.development.js:8030:22
+ ❯ updateFunctionComponent ../../node_modules/react-dom/cjs/react-dom-client.development.js:10569:19
+ ❯ beginWork ../../node_modules/react-dom/cjs/react-dom-client.development.js:12205:18
+ ❯ runWithFiberInDEV ../../node_modules/react-dom/cjs/react-dom-client.development.js:1048:13
+ ❯ performUnitOfWork ../../node_modules/react-dom/cjs/react-dom-client.development.js:19176:22
+ ❯ workLoopSync ../../node_modules/react-dom/cjs/react-dom-client.development.js:19004:41
+ ❯ renderRootSync ../../node_modules/react-dom/cjs/react-dom-client.development.js:18985:11
+ ❯ performWorkOnRoot ../../node_modules/react-dom/cjs/react-dom-client.development.js:18094:35
+
+This error originated in "src/renderer/domains/android/tests/AndroidPage.test.tsx" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "verifies a management operation with its original request id". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+TypeError: Cannot read properties of undefined (reading 'map')
+ ❯ ImageManager src/renderer/domains/android/components/ImageManager.tsx:137:31
+    135|       <button type="button" disabled={busy || pulls.isFetching} onClic…
+    136|       {pulls.data && <>
+    137|         <ul>{pulls.data.items.map(item => <li key={item.operationId} c…
+       |                               ^
+    138|           <button type="button" aria-label={`核实拉取 ${item.requestId}`} …
+    139|         </li>)}</ul>
+ ❯ Object.react_stack_bottom_frame ../../node_modules/react-dom/cjs/react-dom-client.development.js:28571:20
+ ❯ renderWithHooks ../../node_modules/react-dom/cjs/react-dom-client.development.js:8030:22
+ ❯ updateFunctionComponent ../../node_modules/react-dom/cjs/react-dom-client.development.js:10569:19
+ ❯ beginWork ../../node_modules/react-dom/cjs/react-dom-client.development.js:12205:18
+ ❯ runWithFiberInDEV ../../node_modules/react-dom/cjs/react-dom-client.development.js:1048:13
+ ❯ performUnitOfWork ../../node_modules/react-dom/cjs/react-dom-client.development.js:19176:22
+ ❯ workLoopSync ../../node_modules/react-dom/cjs/react-dom-client.development.js:19004:41
+ ❯ renderRootSync ../../node_modules/react-dom/cjs/react-dom-client.development.js:18985:11
+ ❯ performWorkOnRoot ../../node_modules/react-dom/cjs/react-dom-client.development.js:18094:35
+
+This error originated in "src/renderer/domains/android/tests/AndroidPage.test.tsx" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "cleanup preview includes registered backups while diagnostics remain device scoped". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  1 failed | 13 passed (14)
+      Tests  3 failed | 166 passed (169)
+     Errors  3 errors
+   Start at  07:45:54
+   Duration  8.74s (transform 1.44s, setup 1.00s, import 8.14s, tests 12.36s, environment 6.60s)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/android

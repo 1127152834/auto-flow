@@ -25,12 +25,42 @@ from autoflow.domain.workflows.runtime import (
     WorkflowRuntimeError,
 )
 from autoflow.infrastructure.database.core_workflows import _record as workflow_record
+from autoflow.infrastructure.database.session import (
+    is_sqlite_contention as _is_sqlite_contention,
+)
 from autoflow.infrastructure.database.workflow_models import WorkflowDocumentRow
 from autoflow.infrastructure.database.workflow_project_scope import workflow_project_id
 from autoflow.infrastructure.database.workflow_runtime import (
     SqlAlchemyWorkflowRuntimeRepository,
-    _is_sqlite_contention,
 )
+
+
+def _reject_project_data_dependency(
+    document: dict[str, Any], *, dependency_type: str, dependency_id: str
+) -> None:
+    nodes = document.get("nodes")
+    node_ids = (
+        [
+            str(node.get("id", ""))
+            for node in nodes
+            if isinstance(node, dict)
+            and isinstance(node.get("data"), dict)
+            and node["data"].get("moduleType") == "project_data"
+        ]
+        if isinstance(nodes, list)
+        else []
+    )
+    if node_ids:
+        raise WorkflowRuntimeError(
+            "PROJECT_DATA_DEPENDENCY_UNSUPPORTED",
+            "外部工作流和自定义模块暂不支持项目数据节点",
+            422,
+            {
+                "dependencyType": dependency_type,
+                "dependencyId": dependency_id,
+                "nodeIds": node_ids,
+            },
+        )
 
 
 class CoreRunPort(Protocol):
@@ -105,6 +135,11 @@ class WorkflowRuntimeService:
             workflow = snapshot.get("workflow")
             if not isinstance(workflow, dict):
                 raise WorkflowRuntimeError("CUSTOM_MODULE_WORKFLOW_INVALID", "自定义模块工作流无效", 422, {"moduleId": module_id})
+            _reject_project_data_dependency(
+                workflow,
+                dependency_type="customModule",
+                dependency_id=module_id,
+            )
             issues = runtime.preflight(workflow)
             if issues:
                 raise WorkflowRuntimeError(
@@ -150,6 +185,11 @@ class WorkflowRuntimeService:
             if identity in seen:
                 continue
             seen.add(identity)
+            _reject_project_data_dependency(
+                snapshot,
+                dependency_type="workflow",
+                dependency_id=identity,
+            )
             issues = runtime.preflight(snapshot)
             if issues:
                 raise WorkflowRuntimeError(
@@ -166,6 +206,14 @@ class WorkflowRuntimeService:
                         {"moduleId": module_id, "issues": [issue.as_dict() for issue in issues]},
                     )
         return snapshots
+
+    def node_browser_mode(self, workflow_id: str) -> bool:
+        from autoflow.domain.workflows.browser_environment import (
+            node_browser_environments,
+        )
+        with self._session_factory() as session:
+            row = session.get(WorkflowDocumentRow, workflow_id)
+            return row is not None and node_browser_environments(workflow_record(row).document) is not None
 
     def requires_browser(self, workflow_id: str) -> bool:
         from .runtime import WorkflowRuntime
@@ -321,7 +369,7 @@ class WorkflowRuntimeService:
                 details={"capabilities": missing},
             )
         execution_plan = _execution_plan(prepared.document, prepared.node_ids)
-        adapter_version = "webrpa-graph/v1" if prepared.graph_adapter else "webrpa-chain/v1"
+        adapter_version = "webrpa-graph/v2"
         if prepared.graph_adapter:
             execution_plan["document"] = prepared.document["content"]
         if modules:
@@ -486,6 +534,7 @@ def _related_documents(
 def _execution_plan(document: dict[str, Any], node_ids: list[str]) -> dict[str, Any]:
     nodes = {node["id"]: node for node in document["content"]["nodes"]}
     return {
+        "document": document["content"],
         "orderedNodeIds": list(node_ids),
         "nodes": [
             {

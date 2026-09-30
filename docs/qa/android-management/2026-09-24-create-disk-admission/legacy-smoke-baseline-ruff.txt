@@ -1,0 +1,37 @@
+I001 [*] Import block is un-sorted or un-formatted
+  --> /var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-qa-lint-baseline-pnyv8i3_/smoke-android-management.py:2:1
+   |
+ 1 |   """Mac-only real API smoke: creates and cleans only its own two isolated devices."""
+ 2 | / import argparse
+ 3 | | import json
+ 4 | | import os
+ 5 | | from pathlib import Path
+ 6 | | import subprocess
+ 7 | | import time
+ 8 | | from uuid import uuid4
+ 9 | |
+10 | | import httpx
+   | |____________^
+help: Organize imports
+  |
+4 | import os
+  - from pathlib import Path
+5 | import subprocess
+6 | import time
+7 + from pathlib import Path
+8 | from uuid import uuid4
+  |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> /var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-qa-lint-baseline-pnyv8i3_/smoke-android-management.py:141:20
+    |
+139 |                 command(identifier, 'delete', True)
+140 |                 cleanup.append({'deviceId': identifier, 'deleted': True})
+141 |             except Exception as error:
+    |                    ^^^^^^^^^
+142 |                 cleanup.append({'deviceId': identifier, 'deleted': False, 'error': str(error)})
+143 |         (args.output / 'result.json').write_text(json.dumps({'checks': checks, 'cleanup': cleanup}, ensure_ascii=False, indent=2))
+    |
+
+Found 2 errors.
+[*] 1 fixable with the `--fix` option.

@@ -46,13 +46,19 @@ afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
 type Call = [string, { method?: string; body?: Record<string, unknown>; headers?: Record<string, string> } | undefined]
 
-function renderPage(options: { item?: Record<string, unknown>; failFinish?: boolean; failResume?: boolean } = {}) {
+function renderPage(options: { item?: Record<string, unknown>; failFinish?: boolean; failResume?: boolean; lostResume?: boolean } = {}) {
   const manual = { ...item, ...options.item }
+  let lookups = 0
   const request = vi.fn(async (path: string, init?: { method?: string; body?: unknown }) => {
     if (path.endsWith('/open')) return { operation: { operationId: 'op-open', kind: 'openInstance', status: 'accepted' }, outcome: {} }
+    if (path.includes('/operations/by-idempotency-key/')) {
+      if (++lookups === 1) throw new TypeError('network unavailable')
+      return { operationId: 'op-resume', projectId, idempotencyKey: '00000000-0000-4000-8000-0000000000ff', kind: 'resumeManual', status: 'succeeded' }
+    }
     if (path.endsWith('/resume')) {
+      if (options.lostResume) throw new TypeError('response lost after commit')
       if (options.failResume) throw Object.assign(new Error('conflict'), { code: 'MANUAL_STATUS_CONFLICT' })
-      return { operation: { operationId: 'op-resume', kind: 'resumeManual', status: 'succeeded' }, outcome: {} }
+      return { operation: { operationId: 'op-resume', projectId, idempotencyKey: '00000000-0000-4000-8000-0000000000ff', kind: 'resumeManual', status: 'succeeded' }, outcome: {} }
     }
     if (path.endsWith('/finish')) {
       if (options.failFinish) throw Object.assign(new Error('conflict'), { code: 'MANUAL_STATUS_CONFLICT' })
@@ -180,4 +186,40 @@ it('replaces the unusable form with confirmed facts once the item is no longer w
   expect(screen.queryByRole('button', { name: '打开环境' })).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: '查看任务日志' }))
   expect(onNavigate).toHaveBeenCalledWith({ projectId, tab: 'runs', taskId, taskTab: 'logs' })
+})
+
+it('continues a live checkpoint without alternate targets and submits declared string input unchanged', async () => {
+  const { bodyOf } = renderPage({ item: { canResume: true, inputSchema: [{ name: 'code', type: 'string', required: true }] } })
+  await open()
+  fireEvent.click(screen.getByRole('radio', { name: /继续工作流/ }))
+  expect(screen.getByRole('button', { name: '提交处理结果' })).toBeDisabled()
+  fireEvent.change(screen.getByLabelText('code'), { target: { value: '001' } })
+  fireEvent.click(screen.getByRole('button', { name: '提交处理结果' }))
+  await waitFor(() => expect(bodyOf('/resume')).toMatchObject({ inputs: { code: '001' } }))
+  expect(bodyOf('/resume')).not.toHaveProperty('targetNodeId')
+})
+
+
+it('keeps the draft and queries the original command after both response and first lookup are lost', async () => {
+  const { calls, onNavigate } = renderPage({ lostResume: true, item: { canResume: true, inputSchema: [{ name: 'code', type: 'string', required: true }] } })
+  await open()
+  fireEvent.click(screen.getByRole('radio', { name: /继续工作流/ }))
+  fireEvent.change(screen.getByLabelText('code'), { target: { value: '001' } })
+  fireEvent.click(screen.getByRole('button', { name: '提交处理结果' }))
+  const lookup = await screen.findByRole('button', { name: '核对继续请求' })
+  expect(screen.getByLabelText('code')).toHaveValue('001')
+  expect(screen.getByLabelText('code')).toBeDisabled()
+  fireEvent.click(lookup)
+  await waitFor(() => expect(onNavigate).toHaveBeenCalled())
+  expect(calls().filter(([path]) => path.endsWith('/resume'))).toHaveLength(1)
+  const paths = calls().filter(([path]) => path.includes('/operations/by-idempotency-key/')).map(([path]) => path)
+  expect(paths).toHaveLength(2)
+  expect(paths[0]).toBe(paths[1])
+})
+
+it('locks an expired live checkpoint before the next server poll', async () => {
+  renderPage({ item: { canResume: true, expiresAt: new Date(Date.now() - 1000).toISOString() } })
+  await open()
+  expect(screen.getByRole('radio', { name: /继续工作流/ })).toBeDisabled()
+  expect(screen.getByRole('button', { name: '提交处理结果' })).toBeDisabled()
 })

@@ -6,9 +6,15 @@ from autoflow.application.project_automations.resource_query import (
     ProjectAutomationResourceQuery,
 )
 from autoflow.application.workflows.browser_resources import WorkflowBrowserResources
+from autoflow.application.workflows.node_browser_resources import (
+    freeze_node_browser_resources,
+)
+from autoflow.domain.environments.identity import request_from_identity
+from autoflow.domain.environments.models import ResolvedEnvironmentSource
 from autoflow.domain.profiles.errors import KernelNotInstalled, ProfileNotFound
 from autoflow.domain.project_automations.models import AutomationRecord
 from autoflow.domain.project_runs.models import ProjectRunError
+from autoflow.domain.workflows.browser_environment import node_browser_environments
 from autoflow.domain.workflows.runtime import WorkflowRuntimeError
 
 
@@ -30,6 +36,7 @@ class ProjectRunResourceResolver:
         automation: AutomationRecord,
         project_defaults: dict[str, Any],
         inputs: dict[str, dict[str, Any]] | None = None,
+        *, document: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         issues = self._query.inspect_resources(automation)
         if issues:
@@ -46,14 +53,21 @@ class ProjectRunResourceResolver:
             if "modelProviderId" in policy
             else project_defaults.get("modelProviderId")
         )
+        timing = {
+            "manualDeadlineSeconds": automation.run_policy["manualDeadlineSeconds"],
+            "automaticExecutionTimeoutSeconds": automation.run_policy["automaticExecutionTimeoutSeconds"],
+        }
         if not self._query.requires_browser(automation):
             return {
                 "browser": "none",
                 **({"modelProviderId": model_provider_id} if model_provider_id else {}),
-                "automaticExecutionTimeoutSeconds": automation.run_policy[
-                    "automaticExecutionTimeoutSeconds"
-                ],
+                **timing,
             }
+
+        nodes = node_browser_environments(document) if document is not None else None
+        if nodes is not None:
+            frozen = freeze_node_browser_resources(self._browser, self._environments, automation.project_id, nodes, project_defaults, model_provider_id)
+            return {'browser': 'node', 'nodeBrowserEnvironments': frozen, 'modelProviderId': model_provider_id, **timing}
 
         source = policy.get("source")
         if source not in {"newFromProfile", "fixedEnvironment", "inputEnvironment"}:
@@ -69,42 +83,59 @@ class ProjectRunResourceResolver:
         elif source == "inputEnvironment":
             if self._environments is None:
                 raise _field_error("environmentPolicy.source", "保存环境尚未接入")
-            if inputs:
-                pinned = self._environments.resolve(
-                    automation.project_id, policy, inputs=inputs
-                )
-                profile_id = pinned.profile_id
+            if inputs is None:
+                return {
+                    "environmentResolution": "atTaskStart",
+                    "environmentPolicy": dict(policy),
+                    "proxy": proxy,
+                    "modelProviderId": model_provider_id,
+                    **timing,
+                }
+            pinned = self._environments.resolve(
+                automation.project_id, policy, inputs=inputs
+            )
+            profile_id = pinned.profile_id
         if not isinstance(profile_id, str) or not profile_id:
             raise _field_error("environmentPolicy.profileId", "请选择浏览器配置")
 
-        try:
-            request = self._browser.freeze(
-                profile_id,
-                proxy=proxy,
-                model_provider_id=model_provider_id,
-            )
-        except (ProfileNotFound, KernelNotInstalled, WorkflowRuntimeError) as error:
-            raise ProjectRunError(
-                "RESOURCE_UNAVAILABLE",
-                "运行所需资源不可用",
-                422,
-                {"retryable": False},
-            ) from error
+        request = (
+            request_from_identity(pinned.identity_package) if pinned is not None
+            else self._freeze_profile(profile_id, proxy, model_provider_id)
+        )
         if pinned is not None:
             request = {
                 **request,
                 "browser": "persistent",
                 "environmentRef": pinned.environment_ref.to_dict() if pinned.environment_ref else None,
                 "identityPackage": pinned.identity_package,
+                "modelProviderId": model_provider_id,
             }
-        elif source == "inputEnvironment":
-            request = {**request, "environmentResolution": "atTaskStart"}
+        return {**request, **timing}
+
+    def freeze_input_environment(
+        self, pending: dict[str, Any], selected: ResolvedEnvironmentSource,
+    ) -> dict[str, Any]:
+        """Freeze the source selected and reserved by the Task claim transaction."""
+        request = request_from_identity(selected.identity_package)
         return {
             **request,
-            "automaticExecutionTimeoutSeconds": automation.run_policy[
-                "automaticExecutionTimeoutSeconds"
-            ],
+            "browser": "persistent",
+            "environmentRef": selected.environment_ref.to_dict() if selected.environment_ref else None,
+            "identityPackage": selected.identity_package,
+            "modelProviderId": pending.get("modelProviderId"),
+            "manualDeadlineSeconds": pending["manualDeadlineSeconds"],
+            "automaticExecutionTimeoutSeconds": pending["automaticExecutionTimeoutSeconds"],
         }
+
+    def _freeze_profile(
+        self, profile_id: str, proxy: dict[str, Any] | None, model_provider_id: str | None,
+    ) -> dict[str, Any]:
+        try:
+            return self._browser.freeze(profile_id, proxy=proxy, model_provider_id=model_provider_id)
+        except (ProfileNotFound, KernelNotInstalled, WorkflowRuntimeError) as error:
+            raise ProjectRunError(
+                "RESOURCE_UNAVAILABLE", "运行所需资源不可用", 422, {"retryable": False},
+            ) from error
 
 
 def _effective_proxy(

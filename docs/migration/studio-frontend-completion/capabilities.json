@@ -73,7 +73,7 @@
       {
         "kind": "reference",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 379,
+        "line": 381,
         "condition": "(n.data as NodeData).moduleType === 'open_page'",
         "fields": [],
         "components": []
@@ -81,12 +81,50 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 768,
+        "line": 770,
         "condition": "case 'open_page':\n        return <OpenPageConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
           "OpenPageConfig"
         ]
+      },
+      {
+        "kind": "branch",
+        "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
+        "line": 1577,
+        "condition": "type === 'open_page'",
+        "fields": [],
+        "components": []
+      },
+      {
+        "kind": "reference",
+        "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
+        "line": 3171,
+        "condition": "node.data.moduleType==='open_page'",
+        "fields": [
+          "moduleType"
+        ],
+        "components": []
+      },
+      {
+        "kind": "branch",
+        "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
+        "line": 3173,
+        "condition": "node.data.moduleType==='open_page'",
+        "fields": [
+          "moduleType"
+        ],
+        "components": []
+      },
+      {
+        "kind": "reference",
+        "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
+        "line": 3380,
+        "condition": "node.data.moduleType==='open_page'",
+        "fields": [
+          "moduleType"
+        ],
+        "components": []
       },
       "docs/migration/studio-frontend-completion/evidence/f2-node-fields/validation.md",
       "docs/migration/studio-frontend-completion/common-advanced-config-validation.md"
@@ -94,6 +132,8 @@
     "toolDependencies": {
       "resolved": [
         "apps/desktop/src/renderer/domains/workflows/components/config-panels/BasicModuleConfigs.tsx#OpenPageConfig",
+        "apps/desktop/src/renderer/domains/workflows/components/config-panels/BrowserEnvironmentFields.tsx#BrowserEnvironmentFields",
+        "apps/desktop/src/renderer/domains/workflows/components/controls/button.tsx#Button",
         "apps/desktop/src/renderer/domains/workflows/components/controls/label.tsx#Label",
         "apps/desktop/src/renderer/domains/workflows/components/controls/select-native.tsx#SelectNative",
         "apps/desktop/src/renderer/domains/workflows/components/controls/url-input.tsx#UrlInput",
@@ -302,7 +342,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 788,
+        "line": 790,
         "condition": "case 'use_opened_page':\n        return <UseOpenedPageConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -488,7 +528,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 816,
+        "line": 818,
         "condition": "case 'close_page':\n        return (\n          <p className=\"text-sm text-muted-foreground\">\n            关闭当前打开的网页，无需额外配置\n          </p>\n        )",
         "fields": [],
         "components": [
@@ -646,7 +686,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 802,
+        "line": 804,
         "condition": "case 'refresh_page':\n        return <RefreshPageConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -830,7 +870,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 804,
+        "line": 806,
         "condition": "case 'go_back':\n        return <GoBackConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -1014,7 +1054,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 806,
+        "line": 808,
         "condition": "case 'go_forward':\n        return <GoForwardConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -1222,7 +1262,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 842,
+        "line": 849,
         "condition": "case 'switch_tab':\n        return <SwitchTabConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -1463,7 +1503,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 812,
+        "line": 814,
         "condition": "case 'switch_iframe':\n        return <SwitchIframeConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -1655,7 +1695,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 814,
+        "line": 816,
         "condition": "case 'switch_to_main':\n        return <SwitchToMainConfig />",
         "fields": [],
         "components": [
@@ -1840,7 +1880,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1381,
+        "line": 1388,
         "condition": "case 'wait_page_load':\n        return <WaitPageLoadConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -2028,7 +2068,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1383,
+        "line": 1390,
         "condition": "case 'page_load_complete':\n        return <PageLoadCompleteConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -2262,7 +2302,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 790,
+        "line": 792,
         "condition": "case 'click_element':\n        return <ClickElementConfig {...props} />",
         "fields": [],
         "components": [
@@ -2475,7 +2515,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 792,
+        "line": 794,
         "condition": "case 'hover_element':\n        return <HoverElementConfig {...props} />",
         "fields": [],
         "components": [
@@ -2686,7 +2726,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 794,
+        "line": 796,
         "condition": "case 'input_text':\n        return <InputTextConfig {...props} />",
         "fields": [],
         "components": [
@@ -2885,7 +2925,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 844,
+        "line": 851,
         "condition": "case 'select_dropdown':\n        return <SelectDropdownConfig {...props} />",
         "fields": [],
         "components": [
@@ -3088,7 +3128,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 846,
+        "line": 853,
         "condition": "case 'set_checkbox':\n        return <SetCheckboxConfig {...props} />",
         "fields": [],
         "components": [
@@ -3283,7 +3323,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 848,
+        "line": 855,
         "condition": "case 'drag_element':\n        return <DragElementConfig {...props} />",
         "fields": [],
         "components": [
@@ -3482,7 +3522,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 850,
+        "line": 857,
         "condition": "case 'scroll_page':\n        return <ScrollPageConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -3704,7 +3744,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 808,
+        "line": 810,
         "condition": "case 'handle_dialog':\n        return <HandleDialogConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -3916,7 +3956,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 852,
+        "line": 859,
         "condition": "case 'upload_file':\n        return <UploadFileConfig {...props} />",
         "fields": [],
         "components": [
@@ -4157,7 +4197,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 810,
+        "line": 812,
         "condition": "case 'inject_javascript':\n        return <InjectJavaScriptConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -4436,7 +4476,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 796,
+        "line": 798,
         "condition": "case 'get_element_info':\n        return <GetElementInfoConfig {...props} />",
         "fields": [],
         "components": [
@@ -4446,7 +4486,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1644,
+        "line": 1661,
         "condition": "type === 'get_element_info'",
         "fields": [],
         "components": []
@@ -4672,7 +4712,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 858,
+        "line": 865,
         "condition": "case 'get_child_elements':\n        return <GetChildElementsConfig {...props} />",
         "fields": [],
         "components": [
@@ -4877,7 +4917,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 860,
+        "line": 867,
         "condition": "case 'get_sibling_elements':\n        return <GetSiblingElementsConfig {...props} />",
         "fields": [],
         "components": [
@@ -5097,7 +5137,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 880,
+        "line": 887,
         "condition": "case 'element_exists':\n        return <ElementExistsConfig {...props} />",
         "fields": [],
         "components": [
@@ -5287,7 +5327,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 882,
+        "line": 889,
         "condition": "case 'element_visible':\n        return <ElementVisibleConfig {...props} />",
         "fields": [],
         "components": [
@@ -5511,7 +5551,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 800,
+        "line": 802,
         "condition": "case 'wait_element':\n        return <WaitElementConfig {...props} />",
         "fields": [],
         "components": [
@@ -5751,7 +5791,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 840,
+        "line": 847,
         "condition": "case 'extract_table_data':\n        return <ExtractTableDataConfig {...props} />",
         "fields": [],
         "components": [
@@ -5983,7 +6023,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 862,
+        "line": 869,
         "condition": "case 'screenshot':\n        return <ScreenshotConfig {...props} />",
         "fields": [],
         "components": [
@@ -5993,7 +6033,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1759,
+        "line": 1776,
         "condition": "type === 'screenshot'",
         "fields": [],
         "components": []
@@ -6221,7 +6261,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 856,
+        "line": 863,
         "condition": "case 'save_image':\n        return <SaveImageConfig {...props} />",
         "fields": [],
         "components": [
@@ -6464,7 +6504,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 854,
+        "line": 861,
         "condition": "case 'download_file':\n        return <DownloadFileConfig {...props} />",
         "fields": [],
         "components": [
@@ -6699,9 +6739,9 @@
       },
       {
         "id": "NODE.network_capture.field.proxyPort",
-        "status": "明确排除",
-        "level": "仅属于系统/代理抓包，旧文档保留原值但当前 Web 自动化不提供配置入口",
-        "evidencePath": "docs/migration/studio-frontend-completion/scope-database-dp-cloakbrowser.md"
+        "status": "已实现且已验收",
+        "level": "catalog mapping + Store export/import",
+        "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/catalog-field-contract.test.ts"
       },
       {
         "id": "NODE.network_capture.field.searchKeyword",
@@ -6711,15 +6751,15 @@
       },
       {
         "id": "NODE.network_capture.field.targetPorts",
-        "status": "明确排除",
-        "level": "仅属于系统/代理抓包，旧文档保留原值但当前 Web 自动化不提供配置入口",
-        "evidencePath": "docs/migration/studio-frontend-completion/scope-database-dp-cloakbrowser.md"
+        "status": "已实现且已验收",
+        "level": "catalog mapping + Store export/import",
+        "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/catalog-field-contract.test.ts"
       },
       {
         "id": "NODE.network_capture.field.targetProcess",
-        "status": "明确排除",
-        "level": "仅属于系统/代理抓包，旧文档保留原值但当前 Web 自动化不提供配置入口",
-        "evidencePath": "docs/migration/studio-frontend-completion/scope-database-dp-cloakbrowser.md"
+        "status": "已实现且已验收",
+        "level": "catalog mapping + Store export/import",
+        "evidencePath": "apps/desktop/src/renderer/domains/workflows/tests/catalog-field-contract.test.ts"
       },
       {
         "id": "NODE.network_capture.field.variableName",
@@ -6745,7 +6785,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 884,
+        "line": 891,
         "condition": "case 'network_capture':\n        return <NetworkCaptureConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -6755,7 +6795,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1804,
+        "line": 1821,
         "condition": "type === 'network_capture'",
         "fields": [],
         "components": []
@@ -6997,7 +7037,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1374,
+        "line": 1381,
         "condition": "case 'network_monitor_start':\n        return <NetworkMonitorStartConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -7243,7 +7283,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1376,
+        "line": 1383,
         "condition": "case 'network_monitor_wait':\n        return <NetworkMonitorWaitConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -7477,7 +7517,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1378,
+        "line": 1385,
         "condition": "case 'network_monitor_stop':\n        return <NetworkMonitorStopConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -7678,7 +7718,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 874,
+        "line": 881,
         "condition": "case 'shutdown_system':\n        return <ShutdownSystemConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -7864,7 +7904,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 876,
+        "line": 883,
         "condition": "case 'lock_screen':\n        return <LockScreenConfig />",
         "fields": [],
         "components": [
@@ -8056,7 +8096,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 878,
+        "line": 885,
         "condition": "case 'run_command':\n        return <RunCommandConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -8066,7 +8106,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1784,
+        "line": 1801,
         "condition": "type === 'run_command'",
         "fields": [],
         "components": []
@@ -8302,7 +8342,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 870,
+        "line": 877,
         "condition": "case 'set_clipboard':\n        return <SetClipboardConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -8513,7 +8553,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 872,
+        "line": 879,
         "condition": "case 'get_clipboard':\n        return <GetClipboardConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -8523,7 +8563,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1774,
+        "line": 1791,
         "condition": "type === 'get_clipboard'",
         "fields": [],
         "components": []
@@ -8756,7 +8796,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 913,
+        "line": 920,
         "condition": "case 'condition':\n        return <ConditionConfig {...props} />",
         "fields": [],
         "components": [
@@ -9021,7 +9061,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 917,
+        "line": 924,
         "condition": "case 'loop':\n        return <LoopConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -9031,7 +9071,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1628,
+        "line": 1645,
         "condition": "type === 'loop'",
         "fields": [],
         "components": []
@@ -9245,7 +9285,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 919,
+        "line": 926,
         "condition": "case 'infinite_loop':\n        return <InfiniteLoopConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -9427,7 +9467,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 921,
+        "line": 928,
         "condition": "case 'foreach':\n        return <ForeachConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -9437,7 +9477,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1638,
+        "line": 1655,
         "condition": "type === 'foreach'",
         "fields": [],
         "components": []
@@ -9626,7 +9666,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 923,
+        "line": 930,
         "condition": "case 'foreach_dict':\n        return <ForeachDictConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -9792,7 +9832,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 931,
+        "line": 938,
         "condition": "case 'break_loop':\n        return (\n          <p className=\"text-sm text-muted-foreground\">\n            跳出当前循环，继续执行循环后的模块\n          </p>\n        )",
         "fields": [],
         "components": [
@@ -9940,7 +9980,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 937,
+        "line": 944,
         "condition": "case 'continue_loop':\n        return (\n          <p className=\"text-sm text-muted-foreground\">\n            跳过当前循环的剩余部分，进入下一次循环\n          </p>\n        )",
         "fields": [],
         "components": [
@@ -10172,7 +10212,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 915,
+        "line": 922,
         "condition": "case 'assert_checkpoint':\n        return <AssertCheckpointConfig {...props} />",
         "fields": [],
         "components": [
@@ -10395,7 +10435,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 943,
+        "line": 950,
         "condition": "case 'stop_workflow':\n        return (\n          <div className=\"space-y-2\">\n            <p className=\"text-sm text-muted-foreground\">\n              立即停止整个工作流的执行，不再执行后续模块\n            </p>\n            <div className=\"space-y-2\">\n              <Label htmlFor=\"stopReason\">停止原因（可选）</Label>\n              <Input\n                id=\"stopReason\"\n                value={(nodeData.stopReason as string) || ''}\n                onChange={(e) => handleChange('stopReason', e.target.value)}\n                placeholder=\"输入停止原因，将显示在日志中\"\n                className=\"transition-all duration-200 focus:ring-2 focus:ring-red-500/20 focus:border-red-500\"\n              />\n            </div>\n          </div>\n        )",
         "fields": [
           "stopReason"
@@ -10602,7 +10642,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 798,
+        "line": 800,
         "condition": "case 'wait':\n        return <WaitConfig {...props} />",
         "fields": [],
         "components": [
@@ -10846,7 +10886,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 925,
+        "line": 932,
         "condition": "case 'scheduled_task':\n        return <ScheduledTaskConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -11076,7 +11116,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 927,
+        "line": 934,
         "condition": "case 'subflow':\n        return <SubflowConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -11313,7 +11353,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 929,
+        "line": 936,
         "condition": "case 'run_workflow_file':\n        return <RunWorkflowFileConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -11609,7 +11649,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 832,
+        "line": 839,
         "condition": "case 'input_prompt':\n        return <InputPromptConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -11619,7 +11659,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1664,
+        "line": 1681,
         "condition": "type === 'input_prompt'",
         "fields": [],
         "components": []
@@ -11930,7 +11970,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 962,
+        "line": 969,
         "condition": "case 'webhook_trigger':\n        return <WebhookTriggerConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -11940,7 +11980,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2080,
+        "line": 2097,
         "condition": "type === 'webhook_trigger'",
         "fields": [],
         "components": []
@@ -12197,7 +12237,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 964,
+        "line": 971,
         "condition": "case 'hotkey_trigger':\n        return <HotkeyTriggerConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -12207,7 +12247,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2085,
+        "line": 2102,
         "condition": "type === 'hotkey_trigger'",
         "fields": [],
         "components": []
@@ -12442,7 +12482,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 966,
+        "line": 973,
         "condition": "case 'file_watcher_trigger':\n        return <FileWatcherTriggerConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -12452,7 +12492,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2090,
+        "line": 2107,
         "condition": "type === 'file_watcher_trigger'",
         "fields": [],
         "components": []
@@ -12751,7 +12791,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 968,
+        "line": 975,
         "condition": "case 'email_trigger':\n        return <EmailTriggerConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -12761,7 +12801,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2095,
+        "line": 2112,
         "condition": "type === 'email_trigger'",
         "fields": [],
         "components": []
@@ -13055,7 +13095,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 970,
+        "line": 977,
         "condition": "case 'api_trigger':\n        return <ApiTriggerConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -13065,7 +13105,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2100,
+        "line": 2117,
         "condition": "type === 'api_trigger'",
         "fields": [],
         "components": []
@@ -13348,7 +13388,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 972,
+        "line": 979,
         "condition": "case 'mouse_trigger':\n        return <MouseTriggerConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -13358,7 +13398,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2105,
+        "line": 2122,
         "condition": "type === 'mouse_trigger'",
         "fields": [],
         "components": []
@@ -13638,7 +13678,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 974,
+        "line": 981,
         "condition": "case 'image_trigger':\n        return <ImageTriggerConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -13648,7 +13688,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2110,
+        "line": 2127,
         "condition": "type === 'image_trigger'",
         "fields": [],
         "components": []
@@ -13892,7 +13932,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 976,
+        "line": 983,
         "condition": "case 'sound_trigger':\n        return <SoundTriggerConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -13902,7 +13942,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2115,
+        "line": 2132,
         "condition": "type === 'sound_trigger'",
         "fields": [],
         "components": []
@@ -14143,7 +14183,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 978,
+        "line": 985,
         "condition": "case 'face_trigger':\n        return <FaceTriggerConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -14153,7 +14193,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2120,
+        "line": 2137,
         "condition": "type === 'face_trigger'",
         "fields": [],
         "components": []
@@ -14424,7 +14464,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 980,
+        "line": 987,
         "condition": "case 'gesture_trigger':\n        return <GestureTriggerConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -14434,7 +14474,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1568,
+        "line": 1585,
         "condition": "type === 'gesture_trigger'",
         "fields": [],
         "components": []
@@ -14718,7 +14758,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 982,
+        "line": 989,
         "condition": "case 'element_change_trigger':\n        return <ElementChangeTriggerConfig {...props} />",
         "fields": [],
         "components": [
@@ -14728,7 +14768,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2125,
+        "line": 2142,
         "condition": "type === 'element_change_trigger'",
         "fields": [],
         "components": []
@@ -14932,7 +14972,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1370,
+        "line": 1377,
         "condition": "case 'probability_trigger':\n        return <ProbabilityTriggerConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -15123,7 +15163,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 822,
+        "line": 829,
         "condition": "case 'set_variable':\n        return <SetVariableConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -15133,7 +15173,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1649,
+        "line": 1666,
         "condition": "type === 'set_variable'",
         "fields": [],
         "components": []
@@ -15330,7 +15370,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 824,
+        "line": 831,
         "condition": "case 'increment_decrement':\n        return <IncrementDecrementConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -15559,7 +15599,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1000,
+        "line": 1007,
         "condition": "case 'json_parse':\n        return <JsonParseConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -15569,7 +15609,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1679,
+        "line": 1696,
         "condition": "type === 'json_parse'",
         "fields": [],
         "components": []
@@ -15811,7 +15851,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1002,
+        "line": 1009,
         "condition": "case 'base64':\n        return <Base64Config data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -15821,7 +15861,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1754,
+        "line": 1771,
         "condition": "type === 'base64'",
         "fields": [],
         "components": []
@@ -16066,7 +16106,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1004,
+        "line": 1011,
         "condition": "case 'random_number':\n        return <RandomNumberConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -16076,7 +16116,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1654,
+        "line": 1671,
         "condition": "type === 'random_number'",
         "fields": [],
         "components": []
@@ -16303,7 +16343,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1006,
+        "line": 1013,
         "condition": "case 'get_time':\n        return <GetTimeConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -16313,7 +16353,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1659,
+        "line": 1676,
         "condition": "type === 'get_time'",
         "fields": [],
         "components": []
@@ -16535,7 +16575,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 992,
+        "line": 999,
         "condition": "case 'string_concat':\n        return <StringConcatConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -16545,7 +16585,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1724,
+        "line": 1741,
         "condition": "type === 'string_concat'",
         "fields": [],
         "components": []
@@ -16769,7 +16809,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 986,
+        "line": 993,
         "condition": "case 'string_replace':\n        return <StringReplaceConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -16779,7 +16819,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1729,
+        "line": 1746,
         "condition": "type === 'string_replace'",
         "fields": [],
         "components": []
@@ -17018,7 +17058,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 988,
+        "line": 995,
         "condition": "case 'string_split':\n        return <StringSplitConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -17028,7 +17068,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1719,
+        "line": 1736,
         "condition": "type === 'string_split'",
         "fields": [],
         "components": []
@@ -17238,7 +17278,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 990,
+        "line": 997,
         "condition": "case 'string_join':\n        return <StringJoinConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -17248,7 +17288,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1734,
+        "line": 1751,
         "condition": "type === 'string_join'",
         "fields": [],
         "components": []
@@ -17450,7 +17490,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 994,
+        "line": 1001,
         "condition": "case 'string_trim':\n        return <StringTrimConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -17460,7 +17500,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1739,
+        "line": 1756,
         "condition": "type === 'string_trim'",
         "fields": [],
         "components": []
@@ -17676,7 +17716,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 996,
+        "line": 1003,
         "condition": "case 'string_case':\n        return <StringCaseConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -17686,7 +17726,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1744,
+        "line": 1761,
         "condition": "type === 'string_case'",
         "fields": [],
         "components": []
@@ -17908,7 +17948,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 998,
+        "line": 1005,
         "condition": "case 'string_substring':\n        return <StringSubstringConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -17918,7 +17958,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1749,
+        "line": 1766,
         "condition": "type === 'string_substring'",
         "fields": [],
         "components": []
@@ -18133,7 +18173,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 984,
+        "line": 991,
         "condition": "case 'regex_extract':\n        return <RegexExtractConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -18143,7 +18183,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1684,
+        "line": 1701,
         "condition": "type === 'regex_extract'",
         "fields": [],
         "components": []
@@ -18391,7 +18431,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1008,
+        "line": 1015,
         "condition": "case 'list_operation':\n        return <ListOperationConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -18401,7 +18441,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1689,
+        "line": 1706,
         "condition": "type === 'list_operation'",
         "fields": [],
         "components": []
@@ -18632,7 +18672,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1010,
+        "line": 1017,
         "condition": "case 'list_get':\n        return <ListGetConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -18642,7 +18682,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1694,
+        "line": 1711,
         "condition": "type === 'list_get'",
         "fields": [],
         "components": []
@@ -18838,7 +18878,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1012,
+        "line": 1019,
         "condition": "case 'list_length':\n        return <ListLengthConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -18848,7 +18888,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1699,
+        "line": 1716,
         "condition": "type === 'list_length'",
         "fields": [],
         "components": []
@@ -19057,7 +19097,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1014,
+        "line": 1021,
         "condition": "case 'list_export':\n        return <ListExportConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -19282,7 +19322,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1016,
+        "line": 1023,
         "condition": "case 'list_sum':\n        return <ListSumConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -19464,7 +19504,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1018,
+        "line": 1025,
         "condition": "case 'list_average':\n        return <ListAverageConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -19646,7 +19686,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1020,
+        "line": 1027,
         "condition": "case 'list_max':\n        return <ListMaxConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -19828,7 +19868,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1022,
+        "line": 1029,
         "condition": "case 'list_min':\n        return <ListMinConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -20016,7 +20056,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1024,
+        "line": 1031,
         "condition": "case 'list_sort':\n        return <ListSortConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -20219,7 +20259,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1026,
+        "line": 1033,
         "condition": "case 'list_unique':\n        return <ListUniqueConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -20413,7 +20453,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1028,
+        "line": 1035,
         "condition": "case 'list_slice':\n        return <ListSliceConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -20601,7 +20641,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1030,
+        "line": 1037,
         "condition": "case 'list_reverse':\n        return <ListReverseConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -20795,7 +20835,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1032,
+        "line": 1039,
         "condition": "case 'list_find':\n        return <ListFindConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -20992,7 +21032,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1034,
+        "line": 1041,
         "condition": "case 'list_count':\n        return <ListCountConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -21189,7 +21229,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1036,
+        "line": 1043,
         "condition": "case 'list_filter':\n        return <ListFilterConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -21390,7 +21430,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1038,
+        "line": 1045,
         "condition": "case 'list_map':\n        return <ListMapConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -21591,7 +21631,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1040,
+        "line": 1047,
         "condition": "case 'list_merge':\n        return <ListMergeConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -21795,7 +21835,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1042,
+        "line": 1049,
         "condition": "case 'list_flatten':\n        return <ListFlattenConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -21993,7 +22033,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1044,
+        "line": 1051,
         "condition": "case 'list_chunk':\n        return <ListChunkConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -22184,7 +22224,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1046,
+        "line": 1053,
         "condition": "case 'list_remove_empty':\n        return <ListRemoveEmptyConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -22378,7 +22418,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1048,
+        "line": 1055,
         "condition": "case 'list_intersection':\n        return <ListIntersectionConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -22577,7 +22617,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1050,
+        "line": 1057,
         "condition": "case 'list_union':\n        return <ListUnionConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -22776,7 +22816,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1052,
+        "line": 1059,
         "condition": "case 'list_difference':\n        return <ListDifferenceConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -22975,7 +23015,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1054,
+        "line": 1061,
         "condition": "case 'list_cartesian_product':\n        return <ListCartesianProductConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -23164,7 +23204,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1056,
+        "line": 1063,
         "condition": "case 'list_shuffle':\n        return <ListShuffleConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -23359,7 +23399,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1058,
+        "line": 1065,
         "condition": "case 'list_sample':\n        return <ListSampleConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -23570,7 +23610,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1060,
+        "line": 1067,
         "condition": "case 'dict_operation':\n        return <DictOperationConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -23580,7 +23620,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1704,
+        "line": 1721,
         "condition": "type === 'dict_operation'",
         "fields": [],
         "components": []
@@ -23811,7 +23851,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1062,
+        "line": 1069,
         "condition": "case 'dict_get':\n        return <DictGetConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -23821,7 +23861,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1709,
+        "line": 1726,
         "condition": "type === 'dict_get'",
         "fields": [],
         "components": []
@@ -24026,7 +24066,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1064,
+        "line": 1071,
         "condition": "case 'dict_keys':\n        return <DictKeysConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -24036,7 +24076,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1714,
+        "line": 1731,
         "condition": "type === 'dict_keys'",
         "fields": [],
         "components": []
@@ -24247,7 +24287,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1066,
+        "line": 1073,
         "condition": "case 'dict_merge':\n        return <DictMergeConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -24445,7 +24485,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1068,
+        "line": 1075,
         "condition": "case 'dict_filter':\n        return <DictFilterConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -24646,7 +24686,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1070,
+        "line": 1077,
         "condition": "case 'dict_map_values':\n        return <DictMapValuesConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -24841,7 +24881,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1072,
+        "line": 1079,
         "condition": "case 'dict_invert':\n        return <DictInvertConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -25041,7 +25081,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1074,
+        "line": 1081,
         "condition": "case 'dict_sort':\n        return <DictSortConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -25253,7 +25293,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1076,
+        "line": 1083,
         "condition": "case 'dict_deep_copy':\n        return <DictDeepCopyConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -25454,7 +25494,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1078,
+        "line": 1085,
         "condition": "case 'dict_get_path':\n        return <DictGetPathConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -25654,7 +25694,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1080,
+        "line": 1087,
         "condition": "case 'dict_flatten':\n        return <DictFlattenConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -25857,7 +25897,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1082,
+        "line": 1089,
         "condition": "case 'math_round':\n        return <MathRoundConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -26055,7 +26095,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1084,
+        "line": 1091,
         "condition": "case 'math_base_convert':\n        return <MathBaseConvertConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -26260,7 +26300,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1086,
+        "line": 1093,
         "condition": "case 'math_floor':\n        return <MathFloorConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -26449,7 +26489,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1088,
+        "line": 1095,
         "condition": "case 'math_modulo':\n        return <MathModuloConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -26633,7 +26673,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1090,
+        "line": 1097,
         "condition": "case 'math_abs':\n        return <MathAbsConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -26815,7 +26855,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1092,
+        "line": 1099,
         "condition": "case 'math_sqrt':\n        return <MathSqrtConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -27004,7 +27044,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1094,
+        "line": 1101,
         "condition": "case 'math_power':\n        return <MathPowerConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -27200,7 +27240,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1096,
+        "line": 1103,
         "condition": "case 'math_log':\n        return <MathLogConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -27419,7 +27459,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1098,
+        "line": 1105,
         "condition": "case 'math_trig':\n        return <MathTrigConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -27627,7 +27667,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1100,
+        "line": 1107,
         "condition": "case 'math_exp':\n        return <MathExpConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -27816,7 +27856,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1102,
+        "line": 1109,
         "condition": "case 'math_gcd':\n        return <MathGcdConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -28008,7 +28048,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1104,
+        "line": 1111,
         "condition": "case 'math_lcm':\n        return <MathLcmConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -28194,7 +28234,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1106,
+        "line": 1113,
         "condition": "case 'math_factorial':\n        return <MathFactorialConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -28383,7 +28423,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1108,
+        "line": 1115,
         "condition": "case 'math_permutation':\n        return <MathPermutationConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -28581,7 +28621,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1110,
+        "line": 1117,
         "condition": "case 'math_percentage':\n        return <MathPercentageConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -28798,7 +28838,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1112,
+        "line": 1119,
         "condition": "case 'math_clamp':\n        return <MathClampConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -29018,7 +29058,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1114,
+        "line": 1121,
         "condition": "case 'math_random_advanced':\n        return <MathRandomAdvancedConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -29237,7 +29277,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1116,
+        "line": 1123,
         "condition": "case 'stat_median':\n        return <StatMedianConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -29420,7 +29460,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1118,
+        "line": 1125,
         "condition": "case 'stat_mode':\n        return <StatModeConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -29603,7 +29643,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1120,
+        "line": 1127,
         "condition": "case 'stat_variance':\n        return <StatVarianceConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -29786,7 +29826,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1122,
+        "line": 1129,
         "condition": "case 'stat_stdev':\n        return <StatStdevConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -29981,7 +30021,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1124,
+        "line": 1131,
         "condition": "case 'stat_percentile':\n        return <StatPercentileConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -30186,7 +30226,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1126,
+        "line": 1133,
         "condition": "case 'stat_normalize':\n        return <StatNormalizeConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -30394,7 +30434,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1128,
+        "line": 1135,
         "condition": "case 'stat_standardize':\n        return <StatStandardizeConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -30571,7 +30611,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1136,
+        "line": 1143,
         "condition": "case 'table_add_row':\n        return <TableAddRowConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -30756,7 +30796,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1138,
+        "line": 1145,
         "condition": "case 'table_add_column':\n        return <TableAddColumnConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -30949,7 +30989,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1140,
+        "line": 1147,
         "condition": "case 'table_set_cell':\n        return <TableSetCellConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -31151,7 +31191,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1142,
+        "line": 1149,
         "condition": "case 'table_get_cell':\n        return <TableGetCellConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -31161,7 +31201,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1794,
+        "line": 1811,
         "condition": "type === 'table_get_cell'",
         "fields": [],
         "components": []
@@ -31350,7 +31390,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1144,
+        "line": 1151,
         "condition": "case 'table_delete_row':\n        return <TableDeleteRowConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -31516,7 +31556,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1146,
+        "line": 1153,
         "condition": "case 'table_clear':\n        return <TableClearConfig />",
         "fields": [],
         "components": [
@@ -31722,7 +31762,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1148,
+        "line": 1155,
         "condition": "case 'table_export':\n        return <TableExportConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -31964,7 +32004,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1130,
+        "line": 1137,
         "condition": "case 'csv_parse':\n        return <CsvParseConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -32189,7 +32229,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1132,
+        "line": 1139,
         "condition": "case 'csv_generate':\n        return <CsvGenerateConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -32421,7 +32461,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1134,
+        "line": 1141,
         "condition": "case 'list_to_string_advanced':\n        return <ListToStringAdvancedConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -32679,7 +32719,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 886,
+        "line": 893,
         "condition": "case 'ai_chat':\n        return <AIChatConfig data={nodeData} onChange={handleChange} onBatchChange={handleBatchChange} />",
         "fields": [],
         "components": [
@@ -32689,7 +32729,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1576,
+        "line": 1593,
         "condition": "type === 'ai_chat'",
         "fields": [],
         "components": []
@@ -33004,7 +33044,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 897,
+        "line": 904,
         "condition": "case 'ai_vision':\n        return <AIVisionConfig {...props} />",
         "fields": [],
         "components": [
@@ -33014,7 +33054,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1867,
+        "line": 1884,
         "condition": "type === 'ai_vision'",
         "fields": [],
         "components": []
@@ -33318,7 +33358,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 899,
+        "line": 906,
         "condition": "case 'ai_vision_act':\n        return <AIVisionActConfig data={nodeData} onChange={handleChange} onBatchChange={handleBatchChange} />",
         "fields": [],
         "components": [
@@ -33647,7 +33687,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 888,
+        "line": 895,
         "condition": "case 'ai_extract':",
         "fields": [],
         "components": []
@@ -33655,7 +33695,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1583,
+        "line": 1600,
         "condition": "type === 'ai_extract'",
         "fields": [],
         "components": []
@@ -33663,7 +33703,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1602,
+        "line": 1619,
         "condition": "type === 'ai_extract'",
         "fields": [],
         "components": []
@@ -33957,7 +33997,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 889,
+        "line": 896,
         "condition": "case 'ai_classify':",
         "fields": [],
         "components": []
@@ -33965,7 +34005,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1583,
+        "line": 1600,
         "condition": "type === 'ai_classify'",
         "fields": [],
         "components": []
@@ -33973,7 +34013,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1601,
+        "line": 1618,
         "condition": "type === 'ai_classify'",
         "fields": [],
         "components": []
@@ -34268,7 +34308,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 890,
+        "line": 897,
         "condition": "case 'ai_summarize':",
         "fields": [],
         "components": []
@@ -34276,7 +34316,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1583,
+        "line": 1600,
         "condition": "type === 'ai_summarize'",
         "fields": [],
         "components": []
@@ -34284,7 +34324,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1603,
+        "line": 1620,
         "condition": "type === 'ai_summarize'",
         "fields": [],
         "components": []
@@ -34580,7 +34620,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 891,
+        "line": 898,
         "condition": "case 'ai_translate':",
         "fields": [],
         "components": []
@@ -34588,7 +34628,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1583,
+        "line": 1600,
         "condition": "type === 'ai_translate'",
         "fields": [],
         "components": []
@@ -34596,7 +34636,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1604,
+        "line": 1621,
         "condition": "type === 'ai_translate'",
         "fields": [],
         "components": []
@@ -34875,7 +34915,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 892,
+        "line": 899,
         "condition": "case 'ai_sentiment':",
         "fields": [],
         "components": []
@@ -34883,7 +34923,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1583,
+        "line": 1600,
         "condition": "type === 'ai_sentiment'",
         "fields": [],
         "components": []
@@ -35175,7 +35215,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 893,
+        "line": 900,
         "condition": "case 'ai_normalize':",
         "fields": [],
         "components": []
@@ -35183,7 +35223,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1583,
+        "line": 1600,
         "condition": "type === 'ai_normalize'",
         "fields": [],
         "components": []
@@ -35191,7 +35231,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1605,
+        "line": 1622,
         "condition": "type === 'ai_normalize'",
         "fields": [],
         "components": []
@@ -35504,7 +35544,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 894,
+        "line": 901,
         "condition": "case 'ai_dedup_semantic':",
         "fields": [],
         "components": []
@@ -35512,7 +35552,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1583,
+        "line": 1600,
         "condition": "type === 'ai_dedup_semantic'",
         "fields": [],
         "components": []
@@ -35520,7 +35560,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1600,
+        "line": 1617,
         "condition": "type === 'ai_dedup_semantic'",
         "fields": [],
         "components": []
@@ -35826,7 +35866,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 895,
+        "line": 902,
         "condition": "case 'ai_route':\n        return <AITaskConfig moduleType={String(nodeData.moduleType)} data={nodeData} onChange={handleChange} onBatchChange={handleBatchChange} />",
         "fields": [
           "moduleType"
@@ -35838,7 +35878,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1583,
+        "line": 1600,
         "condition": "type === 'ai_route'",
         "fields": [],
         "components": []
@@ -35846,7 +35886,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1606,
+        "line": 1623,
         "condition": "type === 'ai_route'",
         "fields": [],
         "components": []
@@ -36185,7 +36225,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1364,
+        "line": 1371,
         "condition": "case 'ai_generate_image':\n        return <AIGenerateImageConfig data={nodeData} onChange={handleChange} onBatchChange={handleBatchChange} />",
         "fields": [],
         "components": [
@@ -36213,6 +36253,7 @@
         "apps/desktop/src/renderer/domains/workflows/components/controls/select.tsx#SelectScrollUpButton",
         "apps/desktop/src/renderer/domains/workflows/components/controls/select.tsx#SelectTrigger",
         "apps/desktop/src/renderer/domains/workflows/components/controls/textarea.tsx#Textarea",
+        "apps/desktop/src/renderer/domains/workflows/components/controls/variable-input.tsx#VariableInput",
         "apps/desktop/src/renderer/domains/workflows/components/controls/variable-name-input.tsx#RenameConfirmDialog",
         "apps/desktop/src/renderer/domains/workflows/components/controls/variable-name-input.tsx#VariableNameInput"
       ],
@@ -36542,7 +36583,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1366,
+        "line": 1373,
         "condition": "case 'ai_generate_video':\n        return <AIGenerateVideoConfig data={nodeData} onChange={handleChange} onBatchChange={handleBatchChange} />",
         "fields": [],
         "components": [
@@ -36567,7 +36608,6 @@
         "apps/desktop/src/renderer/domains/workflows/components/controls/select.tsx#SelectScrollDownButton",
         "apps/desktop/src/renderer/domains/workflows/components/controls/select.tsx#SelectScrollUpButton",
         "apps/desktop/src/renderer/domains/workflows/components/controls/select.tsx#SelectTrigger",
-        "apps/desktop/src/renderer/domains/workflows/components/controls/textarea.tsx#Textarea",
         "apps/desktop/src/renderer/domains/workflows/components/controls/variable-input.tsx#VariableInput",
         "apps/desktop/src/renderer/domains/workflows/components/controls/variable-name-input.tsx#RenameConfirmDialog",
         "apps/desktop/src/renderer/domains/workflows/components/controls/variable-name-input.tsx#VariableNameInput"
@@ -36864,7 +36904,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 901,
+        "line": 908,
         "condition": "case 'ai_smart_scraper':\n        return <AISmartScraperConfig data={nodeData} onChange={handleChange} onBatchChange={handleBatchChange} />",
         "fields": [],
         "components": [
@@ -36874,7 +36914,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1608,
+        "line": 1625,
         "condition": "type === 'ai_smart_scraper'",
         "fields": [],
         "components": []
@@ -37181,7 +37221,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 903,
+        "line": 910,
         "condition": "case 'ai_element_selector':\n        return <AIElementSelectorConfig data={nodeData} onChange={handleChange} onBatchChange={handleBatchChange} />",
         "fields": [],
         "components": [
@@ -37191,7 +37231,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1615,
+        "line": 1632,
         "condition": "type === 'ai_element_selector'",
         "fields": [],
         "components": []
@@ -37480,7 +37520,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 905,
+        "line": 912,
         "condition": "case 'firecrawl_scrape':\n        return <FirecrawlScrapeConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -37754,7 +37794,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 907,
+        "line": 914,
         "condition": "case 'firecrawl_map':\n        return <FirecrawlMapConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -38058,7 +38098,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 909,
+        "line": 916,
         "condition": "case 'firecrawl_crawl':\n        return <FirecrawlCrawlConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -38308,7 +38348,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 864,
+        "line": 871,
         "condition": "case 'ocr_captcha':\n        return <OCRCaptchaConfig {...props} />",
         "fields": [],
         "components": [
@@ -38318,7 +38358,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1769,
+        "line": 1786,
         "condition": "type === 'ocr_captcha'",
         "fields": [],
         "components": []
@@ -38536,7 +38576,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 866,
+        "line": 873,
         "condition": "case 'slider_captcha':\n        return <SliderCaptchaConfig {...props} />",
         "fields": [],
         "components": [
@@ -38758,7 +38798,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1164,
+        "line": 1171,
         "condition": "case 'face_recognition':\n        return <FaceRecognitionConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -38768,7 +38808,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1920,
+        "line": 1937,
         "condition": "type === 'face_recognition'",
         "fields": [],
         "components": []
@@ -39034,7 +39074,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1166,
+        "line": 1173,
         "condition": "case 'image_ocr':\n        return <ImageOCRConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -39044,7 +39084,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1926,
+        "line": 1943,
         "condition": "type === 'image_ocr'",
         "fields": [],
         "components": []
@@ -39337,7 +39377,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 911,
+        "line": 918,
         "condition": "case 'api_request':\n        return <ApiRequestConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -39347,7 +39387,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1674,
+        "line": 1691,
         "condition": "type === 'api_request'",
         "fields": [],
         "components": []
@@ -39698,7 +39738,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1249,
+        "line": 1256,
         "condition": "case 'webhook_request':\n        return <WebhookRequestConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -39986,7 +40026,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 868,
+        "line": 875,
         "condition": "case 'send_email':\n        return <SendEmailConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -39996,7 +40036,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1623,
+        "line": 1640,
         "condition": "type === 'send_email'",
         "fields": [],
         "components": []
@@ -40199,7 +40239,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1217,
+        "line": 1224,
         "condition": "case 'notify_telegram':\n        return <NotifyTelegramConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -40381,7 +40421,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1239,
+        "line": 1246,
         "condition": "case 'notify_webhook':\n        return <NotifyWebhookConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -40622,7 +40662,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1349,
+        "line": 1356,
         "condition": "case 'ssh_connect':\n        return <SSHConnectConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -40876,7 +40916,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1351,
+        "line": 1358,
         "condition": "case 'ssh_execute_command':\n        return <SSHExecuteCommandConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -41102,7 +41142,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1353,
+        "line": 1360,
         "condition": "case 'ssh_upload_file':\n        return <SSHUploadFileConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -41316,7 +41356,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1355,
+        "line": 1362,
         "condition": "case 'ssh_download_file':\n        return <SSHDownloadFileConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -41512,7 +41552,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1357,
+        "line": 1364,
         "condition": "case 'ssh_disconnect':\n        return <SSHDisconnectConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -41737,7 +41777,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1171,
+        "line": 1178,
         "condition": "case 'share_folder':\n        return <ShareFolderConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -41967,7 +42007,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1173,
+        "line": 1180,
         "condition": "case 'share_file':\n        return <ShareFileConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -42165,7 +42205,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1175,
+        "line": 1182,
         "condition": "case 'stop_share':\n        return <StopShareConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -42371,7 +42411,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1177,
+        "line": 1184,
         "condition": "case 'start_screen_share':\n        return <StartScreenShareConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -42568,7 +42608,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1179,
+        "line": 1186,
         "condition": "case 'stop_screen_share':\n        return <StopScreenShareConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -42768,7 +42808,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1185,
+        "line": 1192,
         "condition": "case 'md5_encrypt':\n        return <MD5EncryptConfig config={nodeData} updateConfig={handleChange} />",
         "fields": [],
         "components": [
@@ -42778,7 +42818,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2045,
+        "line": 2062,
         "condition": "type === 'md5_encrypt'",
         "fields": [],
         "components": []
@@ -43011,7 +43051,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1187,
+        "line": 1194,
         "condition": "case 'sha_encrypt':\n        return <SHAEncryptConfig config={nodeData} updateConfig={handleChange} />",
         "fields": [],
         "components": [
@@ -43021,7 +43061,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2050,
+        "line": 2067,
         "condition": "type === 'sha_encrypt'",
         "fields": [],
         "components": []
@@ -43251,7 +43291,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1183,
+        "line": 1190,
         "condition": "case 'url_encode_decode':\n        return <URLEncodeDecodeConfig config={nodeData} updateConfig={handleChange} />",
         "fields": [],
         "components": [
@@ -43261,7 +43301,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2040,
+        "line": 2057,
         "condition": "type === 'url_encode_decode'",
         "fields": [],
         "components": []
@@ -43505,7 +43545,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1181,
+        "line": 1188,
         "condition": "case 'random_password_generator':\n        return <RandomPasswordGeneratorConfig config={nodeData} updateConfig={handleChange} />",
         "fields": [],
         "components": [
@@ -43515,7 +43555,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2035,
+        "line": 2052,
         "condition": "type === 'random_password_generator'",
         "fields": [],
         "components": []
@@ -43750,7 +43790,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1197,
+        "line": 1204,
         "condition": "case 'uuid_generator':\n        return <UUIDGeneratorConfig config={nodeData} updateConfig={handleChange} />",
         "fields": [],
         "components": [
@@ -43760,7 +43800,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2075,
+        "line": 2092,
         "condition": "type === 'uuid_generator'",
         "fields": [],
         "components": []
@@ -43994,7 +44034,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1191,
+        "line": 1198,
         "condition": "case 'rgb_to_hsv':\n        return <RGBToHSVConfig config={nodeData} updateConfig={handleChange} />",
         "fields": [],
         "components": [
@@ -44004,7 +44044,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2060,
+        "line": 2077,
         "condition": "type === 'rgb_to_hsv'",
         "fields": [],
         "components": []
@@ -44214,7 +44254,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1193,
+        "line": 1200,
         "condition": "case 'rgb_to_cmyk':\n        return <RGBToCMYKConfig config={nodeData} updateConfig={handleChange} />",
         "fields": [],
         "components": [
@@ -44224,7 +44264,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2065,
+        "line": 2082,
         "condition": "type === 'rgb_to_cmyk'",
         "fields": [],
         "components": []
@@ -44421,7 +44461,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1195,
+        "line": 1202,
         "condition": "case 'hex_to_cmyk':\n        return <HEXToCMYKConfig config={nodeData} updateConfig={handleChange} />",
         "fields": [],
         "components": [
@@ -44431,7 +44471,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2070,
+        "line": 2087,
         "condition": "type === 'hex_to_cmyk'",
         "fields": [],
         "components": []
@@ -44646,7 +44686,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1189,
+        "line": 1196,
         "condition": "case 'timestamp_converter':\n        return <TimestampConverterConfig config={nodeData} updateConfig={handleChange} />",
         "fields": [],
         "components": [
@@ -44656,7 +44696,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2055,
+        "line": 2072,
         "condition": "type === 'timestamp_converter'",
         "fields": [],
         "components": []
@@ -44868,7 +44908,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 826,
+        "line": 833,
         "condition": "case 'print_log':\n        return <PrintLogConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -45102,7 +45142,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1169,
+        "line": 1176,
         "condition": "case 'export_log':\n        return <ExportLogConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -45336,7 +45376,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 828,
+        "line": 835,
         "condition": "case 'play_sound':\n        return <PlaySoundConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -45537,7 +45577,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 830,
+        "line": 837,
         "condition": "case 'system_notification':\n        return <SystemNotificationConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -45751,7 +45791,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 834,
+        "line": 841,
         "condition": "case 'text_to_speech':\n        return <TextToSpeechConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -45973,7 +46013,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 836,
+        "line": 843,
         "condition": "case 'js_script':\n        return <JsScriptConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -45983,7 +46023,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 1669,
+        "line": 1686,
         "condition": "type === 'js_script'",
         "fields": [],
         "components": []
@@ -46279,7 +46319,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 838,
+        "line": 845,
         "condition": "case 'python_script':\n        return <PythonScriptConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -46577,7 +46617,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1199,
+        "line": 1206,
         "condition": "case 'printer_call':\n        return <PrinterCallConfig config={nodeData} updateConfig={handleChange} />",
         "fields": [],
         "components": [
@@ -46807,7 +46847,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1202,
+        "line": 1209,
         "condition": "case 'allure_init':\n        return <AllureInitConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -47016,7 +47056,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1204,
+        "line": 1211,
         "condition": "case 'allure_start_test':\n        return <AllureStartTestConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -47235,7 +47275,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1206,
+        "line": 1213,
         "condition": "case 'allure_add_step':\n        return <AllureAddStepConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -47456,7 +47496,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1208,
+        "line": 1215,
         "condition": "case 'allure_add_attachment':\n        return <AllureAddAttachmentConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -47670,7 +47710,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1210,
+        "line": 1217,
         "condition": "case 'allure_stop_test':\n        return <AllureStopTestConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -47876,7 +47916,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1212,
+        "line": 1219,
         "condition": "case 'allure_generate_report':\n        return <AllureGenerateReportConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -48095,7 +48135,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1385,
+        "line": 1392,
         "condition": "case 'group':\n        return <GroupConfig data={nodeData} onChange={handleChange} />",
         "fields": [],
         "components": [
@@ -48105,7 +48145,7 @@
       {
         "kind": "reference",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2466,
+        "line": 2483,
         "condition": "type === 'group'",
         "fields": [],
         "components": []
@@ -48113,7 +48153,7 @@
       {
         "kind": "reference",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2568,
+        "line": 2587,
         "condition": "type === 'group'",
         "fields": [],
         "components": []
@@ -48121,7 +48161,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 3284,
+        "line": 3323,
         "condition": "node.type === 'group'",
         "fields": [],
         "components": []
@@ -48129,7 +48169,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 3372,
+        "line": 3413,
         "condition": "node.type === 'group'",
         "fields": [],
         "components": []
@@ -48293,7 +48333,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/components/ConfigPanel.tsx",
-        "line": 1389,
+        "line": 1396,
         "condition": "case 'note':\n        return (\n          <div className=\"space-y-2\">\n            <p className=\"text-sm text-muted-foreground\">\n              便签模块用于在画布上添加注释，不会被执行\n            </p>\n            <div className=\"space-y-2\">\n              <Label htmlFor=\"noteContent\">便签内容</Label>\n              <textarea\n                id=\"noteContent\"\n                value={(nodeData.content as string) || ''}\n                onChange={(e) => handleChange('content', e.target.value)}\n                placeholder=\"在这里输入便签内容...\"\n                className=\"w-full min-h-[100px] px-3 py-2 text-sm border rounded-md resize-y\"\n              />\n            </div>\n          </div>\n        )",
         "fields": [
           "content"
@@ -48308,7 +48348,7 @@
       {
         "kind": "reference",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2467,
+        "line": 2484,
         "condition": "type === 'note'",
         "fields": [],
         "components": []
@@ -48316,7 +48356,7 @@
       {
         "kind": "reference",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 2569,
+        "line": 2588,
         "condition": "type === 'note'",
         "fields": [],
         "components": []
@@ -48324,7 +48364,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 3287,
+        "line": 3326,
         "condition": "node.type === 'note'",
         "fields": [],
         "components": []
@@ -48332,7 +48372,7 @@
       {
         "kind": "branch",
         "file": "apps/desktop/src/renderer/domains/workflows/editor-store.ts",
-        "line": 3375,
+        "line": 3416,
         "condition": "node.type === 'note'",
         "fields": [],
         "components": []

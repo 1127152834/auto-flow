@@ -1,0 +1,663 @@
+........................................................................ [  1%]
+........................................................................ [  3%]
+........................................................................ [  5%]
+........................................................................ [  7%]
+........................................................................ [  9%]
+........................................................................ [ 11%]
+........................................................................ [ 12%]
+.............F.......................................................... [ 14%]
+........................................................................ [ 16%]
+...................................................F.................... [ 18%]
+........................................................................ [ 20%]
+........................................................................ [ 22%]
+........................................................................ [ 23%]
+........................................................................ [ 25%]
+........................................................................ [ 27%]
+........................................................................ [ 29%]
+........................................................................ [ 31%]
+........................................................................ [ 33%]
+........................................................................ [ 34%]
+........................................................................ [ 36%]
+........................................................................ [ 38%]
+........................................................................ [ 40%]
+........................................................................ [ 42%]
+........................................................................ [ 44%]
+........................................................................ [ 46%]
+........................................................................ [ 47%]
+........................................................................ [ 49%]
+........................................................................ [ 51%]
+........................................................................ [ 53%]
+........................................................................ [ 55%]
+........................................................................ [ 57%]
+........................................................................ [ 58%]
+........................................................................ [ 60%]
+........................................................................ [ 62%]
+....................s...ssssssssss...................ss...s............. [ 64%]
+....................s..........sss...................................... [ 66%]
+..............................................................ssssssssss [ 68%]
+sssssssssssssssssssssssssssssssssssssssssssssssss.............F......... [ 69%]
+....................................................................FF.. [ 71%]
+FFFF.................................................................... [ 73%]
+........................................................................ [ 75%]
+........................................................................ [ 77%]
+...................................F
+=================================== FAILURES ===================================
+__________ test_formula_metadata_scans_beyond_sample_and_streams_rows __________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-279/test_formula_metadata_scans_be0')
+
+    def test_formula_metadata_scans_beyond_sample_and_streams_rows(tmp_path: Path) -> None:
+        source = tmp_path / "formulas.xlsx"
+        _save_book(
+            source,
+            {"Rows": [["id", "value"], *[[str(i), i] for i in range(21)], ["x", "=1+1"]]},
+        )
+        # Give the formula a cached value by editing the worksheet XML directly.
+        rewritten = tmp_path / "cached.xlsx"
+        with zipfile.ZipFile(source) as original, zipfile.ZipFile(rewritten, "w") as output:
+            for entry in original.infolist():
+                data = original.read(entry)
+                if entry.filename == "xl/worksheets/sheet1.xml":
+                    data = re.sub(rb"<f>1\+1</f><v\s*/>", b"<f>1+1</f><v>2</v>", data)
+                output.writestr(entry, data)
+        rewritten.replace(source)
+    
+>       inspection = inspect_workbook(source)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/unit/test_project_excel_adapter.py:320: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/autoflow/infrastructure/filesystem/project_excel.py:429: in inspect_workbook
+    for row in rows:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def rows() -> Iterator[ExcelRow]:
+        try:
+            for row_number, (source_row, value_row) in enumerate(
+                zip(source_rows, value_rows), start=2
+            ):
+                _check(deadline)
+                if row_number - 1 > MAX_ROWS:
+                    raise _error(
+                        "EXCEL_ROW_LIMIT_EXCEEDED", "Worksheet exceeds row limit"
+                    )
+                width = max(len(source_row), len(value_row))
+                budget.cells += width
+                if width > MAX_COLUMNS:
+                    raise _error(
+                        "EXCEL_COLUMN_LIMIT_EXCEEDED", "Worksheet exceeds column limit"
+                    )
+                if budget.cells > MAX_CELLS:
+                    raise _error(
+                        "EXCEL_CELL_LIMIT_EXCEEDED", "Workbook exceeds cell limit"
+                    )
+                if any(x.value is not None for x in source_row[len(headers) :]):
+                    raise _error("EXCEL_EMPTY_HEADER", "Data column has no header")
+                output = []
+                formula_columns = []
+                for column in range(len(headers)):
+                    source_cell = (
+                        source_row[column] if column < len(source_row) else None
+                    )
+                    value_cell = value_row[column] if column < len(value_row) else None
+                    value = getattr(value_cell, "value", None)
+                    if getattr(source_cell, "data_type", None) == "f":
+                        formula_columns.append(column)
+                        if value is None:
+>                           raise _error(
+                                "EXCEL_FORMULA_CACHE_MISSING",
+                                "Formula has no saved value",
+                            )
+E                           autoflow.domain.projects.models.ProjectError: Formula has no saved value
+
+src/autoflow/infrastructure/filesystem/project_excel.py:350: ProjectError
+__ test_browser_free_task_freezes_project_model_default_and_explicit_override __
+
+    def test_browser_free_task_freezes_project_model_default_and_explicit_override():
+        class NoBrowserQuery(ResourceQuery):
+            def requires_browser(self, value):
+                return False
+    
+        browser = BrowserResources()
+        resolver = ProjectRunResourceResolver(NoBrowserQuery(), browser)
+        inherited = resolver(automation({"source": "newFromProfile"}), DEFAULTS)
+        overridden = resolver(
+            automation({"source": "newFromProfile", "modelProviderId": "task-model"}),
+            DEFAULTS,
+        )
+        disabled = resolver(
+            automation({"source": "newFromProfile", "modelProviderId": None}),
+            DEFAULTS,
+        )
+    
+>       assert inherited == {"browser": "none", "modelProviderId": "project-model", "automaticExecutionTimeoutSeconds": 12.5}
+E       AssertionError: assert {'browser': '...econds': 12.5} == {'browser': '...econds': 12.5}
+E         
+E         Omitting 3 identical items, use -vv to show
+E         Left contains 1 more item:
+E         {'manualDeadlineSeconds': 300}
+E         Use -v to get more diff
+
+tests/unit/test_project_run_resources.py:100: AssertionError
+______________ test_retained_end_requires_browser_before_dispatch ______________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-279/test_retained_end_requires_bro0')
+
+    
+    
+    def test_retained_end_requires_browser_before_dispatch(tmp_path):
+        from autoflow.application.workflows.core_runtime import WorkflowRuntimeService
+        from autoflow.application.workflows.documents import WorkflowDocumentService
+        from autoflow.domain.workflows.runtime import WorkflowRuntimeError
+        from autoflow.infrastructure.database.workflows import (
+            SqlAlchemyWorkflowDocuments,
+            SqlAlchemyWorkflowRepository,
+        )
+        from tests.fixtures.workflows import workflow_payload
+        from tests.integration.test_project_run_start import setup
+    
+        factory, _, _, _, _, _, automation = setup(tmp_path)
+        try:
+            document = workflow_payload(automation.workflow_id)
+            document["content"].update(_plan({"enabled": True, "mode": "saveAs", "name": "retained"})["document"])
+            saved = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory)).update(
+                automation.workflow_id, {**document["content"], "id": automation.workflow_id},
+>               expected_revision=1, client_request_id=str(uuid4()),
+            )
+
+tests/integration/test_project_browserless_end.py:144: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/autoflow/application/workflows/core_runtime.py:240: in prepare_content
+    content = prepare(session)
+              ^^^^^^^^^^^^^^^^
+src/autoflow/application/workflows/core_runtime.py:226: in prepare
+    return self._prepare_content_in_uow(
+src/autoflow/application/workflows/core_runtime.py:283: in _prepare_content_in_uow
+    prepared = compile_workflow(record.document)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/domain/workflows/run_validation.py:41: in prepare_run
+    projected = project_document(document)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/domain/workflows/validation.py:232: in project_document
+    _raise_invalid(issues)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+issues = [WorkflowIssue(node_id='value', path=['content', 'nodes', '0', 'type'], code='INVALID_NODE_TYPE', message='React Flow ...wIssue(node_id='end', path=['content', 'nodes', '1', 'position'], code='INVALID_POSITION', message='节点位置必须包含有限数值 x/y')]
+
+    def _raise_invalid(issues: list[WorkflowIssue]) -> NoReturn:
+>       raise WorkflowError("WORKFLOW_INVALID", "工作流文档无效", 422, issues)
+E       autoflow.domain.workflows.models.WorkflowError: 工作流文档无效
+
+src/autoflow/domain/workflows/validation.py:311: WorkflowError
+_ test_project_worker_reads_private_credential_after_start_commit[private-lookup-key-\u51ed\u636e] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-279/test_project_worker_reads_priv0')
+prefix = '凭据', value = 'private-lookup-key'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("prefix", ["凭据", "cred"])
+    @pytest.mark.parametrize("value", ["private-lookup-key", "", None])
+    async def test_project_worker_reads_private_credential_after_start_commit(tmp_path, prefix, value):
+        reference = "{{" + prefix + ":账号.password}}"
+        factory, queued = _queued_pure_data_run(
+            tmp_path,
+            node_data={"moduleType": "dict_get_path", "dictVariable": "record", "path": reference, "resultVariable": "out"},
+            variables={"record": {"private-lookup-key": "resolved", reference: "preserved"}},
+        )
+        reads = []
+    
+        def resolve(name):
+            with factory() as session:
+                events = SqlAlchemyWorkflowRuntimeRepository(session).list_events(queued.run_id, after_sequence=0, limit=100)
+            assert any(event.kind == "nodeAttempt" and event.payload.get("status") == "started" for event in events)
+            reads.append(name)
+            return {"password": value}
+    
+        worker = ProjectWorkflowWorkerManager(tmp_path / "temp", resolve_credential=resolve)
+        dispatcher = _dispatcher(factory, worker, _NoBrowserResources())
+        try:
+            await dispatcher.dispatch(queued.run_id, expected_status_revision=queued.status_revision, execution_generation=queued.execution_generation)
+            async with asyncio.timeout(15):
+                await dispatcher.wait_idle()
+            with factory() as session:
+                repository = SqlAlchemyWorkflowRuntimeRepository(session)
+                run = repository.get_run(run_id=queued.run_id)
+                events = repository.list_events(queued.run_id, after_sequence=0, limit=100)
+            assert run.status == ("failed" if value == "" else "succeeded")
+            assert reads == ["账号"]
+            outputs = [event.payload["value"] for event in events if event.kind == "output"]
+            # The shared runtime deliberately redacts credential-derived results.
+            # Empty fields stay empty (invalid path); missing fields keep placeholders.
+>           assert outputs == ([] if value == "" else [None])
+E           assert [] == [None]
+E             
+E             Right contains one more item: None
+E             Use -v to get more diff
+
+tests/integration/test_project_credential_worker.py:58: AssertionError
+_ test_project_worker_reads_private_credential_after_start_commit[private-lookup-key-cred] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-279/test_project_worker_reads_priv1')
+prefix = 'cred', value = 'private-lookup-key'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("prefix", ["凭据", "cred"])
+    @pytest.mark.parametrize("value", ["private-lookup-key", "", None])
+    async def test_project_worker_reads_private_credential_after_start_commit(tmp_path, prefix, value):
+        reference = "{{" + prefix + ":账号.password}}"
+        factory, queued = _queued_pure_data_run(
+            tmp_path,
+            node_data={"moduleType": "dict_get_path", "dictVariable": "record", "path": reference, "resultVariable": "out"},
+            variables={"record": {"private-lookup-key": "resolved", reference: "preserved"}},
+        )
+        reads = []
+    
+        def resolve(name):
+            with factory() as session:
+                events = SqlAlchemyWorkflowRuntimeRepository(session).list_events(queued.run_id, after_sequence=0, limit=100)
+            assert any(event.kind == "nodeAttempt" and event.payload.get("status") == "started" for event in events)
+            reads.append(name)
+            return {"password": value}
+    
+        worker = ProjectWorkflowWorkerManager(tmp_path / "temp", resolve_credential=resolve)
+        dispatcher = _dispatcher(factory, worker, _NoBrowserResources())
+        try:
+            await dispatcher.dispatch(queued.run_id, expected_status_revision=queued.status_revision, execution_generation=queued.execution_generation)
+            async with asyncio.timeout(15):
+                await dispatcher.wait_idle()
+            with factory() as session:
+                repository = SqlAlchemyWorkflowRuntimeRepository(session)
+                run = repository.get_run(run_id=queued.run_id)
+                events = repository.list_events(queued.run_id, after_sequence=0, limit=100)
+            assert run.status == ("failed" if value == "" else "succeeded")
+            assert reads == ["账号"]
+            outputs = [event.payload["value"] for event in events if event.kind == "output"]
+            # The shared runtime deliberately redacts credential-derived results.
+            # Empty fields stay empty (invalid path); missing fields keep placeholders.
+>           assert outputs == ([] if value == "" else [None])
+E           assert [] == [None]
+E             
+E             Right contains one more item: None
+E             Use -v to get more diff
+
+tests/integration/test_project_credential_worker.py:58: AssertionError
+_ test_project_worker_reads_private_credential_after_start_commit[None-\u51ed\u636e] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-279/test_project_worker_reads_priv4')
+prefix = '凭据', value = None
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("prefix", ["凭据", "cred"])
+    @pytest.mark.parametrize("value", ["private-lookup-key", "", None])
+    async def test_project_worker_reads_private_credential_after_start_commit(tmp_path, prefix, value):
+        reference = "{{" + prefix + ":账号.password}}"
+        factory, queued = _queued_pure_data_run(
+            tmp_path,
+            node_data={"moduleType": "dict_get_path", "dictVariable": "record", "path": reference, "resultVariable": "out"},
+            variables={"record": {"private-lookup-key": "resolved", reference: "preserved"}},
+        )
+        reads = []
+    
+        def resolve(name):
+            with factory() as session:
+                events = SqlAlchemyWorkflowRuntimeRepository(session).list_events(queued.run_id, after_sequence=0, limit=100)
+            assert any(event.kind == "nodeAttempt" and event.payload.get("status") == "started" for event in events)
+            reads.append(name)
+            return {"password": value}
+    
+        worker = ProjectWorkflowWorkerManager(tmp_path / "temp", resolve_credential=resolve)
+        dispatcher = _dispatcher(factory, worker, _NoBrowserResources())
+        try:
+            await dispatcher.dispatch(queued.run_id, expected_status_revision=queued.status_revision, execution_generation=queued.execution_generation)
+            async with asyncio.timeout(15):
+                await dispatcher.wait_idle()
+            with factory() as session:
+                repository = SqlAlchemyWorkflowRuntimeRepository(session)
+                run = repository.get_run(run_id=queued.run_id)
+                events = repository.list_events(queued.run_id, after_sequence=0, limit=100)
+            assert run.status == ("failed" if value == "" else "succeeded")
+            assert reads == ["账号"]
+            outputs = [event.payload["value"] for event in events if event.kind == "output"]
+            # The shared runtime deliberately redacts credential-derived results.
+            # Empty fields stay empty (invalid path); missing fields keep placeholders.
+>           assert outputs == ([] if value == "" else [None])
+E           assert [] == [None]
+E             
+E             Right contains one more item: None
+E             Use -v to get more diff
+
+tests/integration/test_project_credential_worker.py:58: AssertionError
+__ test_project_worker_reads_private_credential_after_start_commit[None-cred] __
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-279/test_project_worker_reads_priv5')
+prefix = 'cred', value = None
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("prefix", ["凭据", "cred"])
+    @pytest.mark.parametrize("value", ["private-lookup-key", "", None])
+    async def test_project_worker_reads_private_credential_after_start_commit(tmp_path, prefix, value):
+        reference = "{{" + prefix + ":账号.password}}"
+        factory, queued = _queued_pure_data_run(
+            tmp_path,
+            node_data={"moduleType": "dict_get_path", "dictVariable": "record", "path": reference, "resultVariable": "out"},
+            variables={"record": {"private-lookup-key": "resolved", reference: "preserved"}},
+        )
+        reads = []
+    
+        def resolve(name):
+            with factory() as session:
+                events = SqlAlchemyWorkflowRuntimeRepository(session).list_events(queued.run_id, after_sequence=0, limit=100)
+            assert any(event.kind == "nodeAttempt" and event.payload.get("status") == "started" for event in events)
+            reads.append(name)
+            return {"password": value}
+    
+        worker = ProjectWorkflowWorkerManager(tmp_path / "temp", resolve_credential=resolve)
+        dispatcher = _dispatcher(factory, worker, _NoBrowserResources())
+        try:
+            await dispatcher.dispatch(queued.run_id, expected_status_revision=queued.status_revision, execution_generation=queued.execution_generation)
+            async with asyncio.timeout(15):
+                await dispatcher.wait_idle()
+            with factory() as session:
+                repository = SqlAlchemyWorkflowRuntimeRepository(session)
+                run = repository.get_run(run_id=queued.run_id)
+                events = repository.list_events(queued.run_id, after_sequence=0, limit=100)
+            assert run.status == ("failed" if value == "" else "succeeded")
+            assert reads == ["账号"]
+            outputs = [event.payload["value"] for event in events if event.kind == "output"]
+            # The shared runtime deliberately redacts credential-derived results.
+            # Empty fields stay empty (invalid path); missing fields keep placeholders.
+>           assert outputs == ([] if value == "" else [None])
+E           assert [] == [None]
+E             
+E             Right contains one more item: None
+E             Use -v to get more diff
+
+tests/integration/test_project_credential_worker.py:58: AssertionError
+_ test_project_empty_credential_parts_preserve_reference_without_protocol_failure[{{cred:\u8d26\u53f7.}}] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-279/test_project_empty_credential_0')
+reference = '{{cred:账号.}}'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("reference", ["{{cred:账号.}}", "{{cred:.password}}"])
+    async def test_project_empty_credential_parts_preserve_reference_without_protocol_failure(
+        tmp_path, reference
+    ):
+        factory, queued = _queued_pure_data_run(
+            tmp_path,
+            node_data={
+                "moduleType": "dict_get_path",
+                "dictVariable": "record",
+                "path": reference,
+                "resultVariable": "out",
+            },
+            variables={"record": {reference: "preserved"}},
+        )
+        reads = []
+    
+        def resolve(name):
+            reads.append(name)
+            raise AssertionError("空凭据名称或字段不应进入凭据存储")
+    
+        worker = ProjectWorkflowWorkerManager(tmp_path / "temp", resolve_credential=resolve)
+        dispatcher = _dispatcher(factory, worker, _NoBrowserResources())
+        try:
+            await dispatcher.dispatch(
+                queued.run_id,
+                expected_status_revision=queued.status_revision,
+                execution_generation=queued.execution_generation,
+            )
+            async with asyncio.timeout(15):
+                await dispatcher.wait_idle()
+            with factory() as session:
+                repository = SqlAlchemyWorkflowRuntimeRepository(session)
+                run = repository.get_run(run_id=queued.run_id)
+                events = repository.list_events(queued.run_id, after_sequence=0, limit=100)
+            assert run.status == "succeeded"
+            assert run.error is None
+            assert reads == []
+            assert [event.payload["status"] for event in events if event.kind == "nodeAttempt"] == [
+                "started", "succeeded"
+            ]
+            # Successful lookup proves the original placeholder reached the executor;
+            # shared source-compatible sensitive-result redaction remains in force.
+>           assert [event.payload["value"] for event in events if event.kind == "output"] == [None]
+E           assert [] == [None]
+E             
+E             Right contains one more item: None
+E             Use -v to get more diff
+
+tests/integration/test_project_credential_worker.py:112: AssertionError
+_ test_project_empty_credential_parts_preserve_reference_without_protocol_failure[{{cred:.password}}] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-279/test_project_empty_credential_1')
+reference = '{{cred:.password}}'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("reference", ["{{cred:账号.}}", "{{cred:.password}}"])
+    async def test_project_empty_credential_parts_preserve_reference_without_protocol_failure(
+        tmp_path, reference
+    ):
+        factory, queued = _queued_pure_data_run(
+            tmp_path,
+            node_data={
+                "moduleType": "dict_get_path",
+                "dictVariable": "record",
+                "path": reference,
+                "resultVariable": "out",
+            },
+            variables={"record": {reference: "preserved"}},
+        )
+        reads = []
+    
+        def resolve(name):
+            reads.append(name)
+            raise AssertionError("空凭据名称或字段不应进入凭据存储")
+    
+        worker = ProjectWorkflowWorkerManager(tmp_path / "temp", resolve_credential=resolve)
+        dispatcher = _dispatcher(factory, worker, _NoBrowserResources())
+        try:
+            await dispatcher.dispatch(
+                queued.run_id,
+                expected_status_revision=queued.status_revision,
+                execution_generation=queued.execution_generation,
+            )
+            async with asyncio.timeout(15):
+                await dispatcher.wait_idle()
+            with factory() as session:
+                repository = SqlAlchemyWorkflowRuntimeRepository(session)
+                run = repository.get_run(run_id=queued.run_id)
+                events = repository.list_events(queued.run_id, after_sequence=0, limit=100)
+            assert run.status == "succeeded"
+            assert run.error is None
+            assert reads == []
+            assert [event.payload["status"] for event in events if event.kind == "nodeAttempt"] == [
+                "started", "succeeded"
+            ]
+            # Successful lookup proves the original placeholder reached the executor;
+            # shared source-compatible sensitive-result redaction remains in force.
+>           assert [event.payload["value"] for event in events if event.kind == "output"] == [None]
+E           assert [] == [None]
+E             
+E             Right contains one more item: None
+E             Use -v to get more diff
+
+tests/integration/test_project_credential_worker.py:112: AssertionError
+______ test_project_task_executes_pure_data_family_in_real_worker[export] ______
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-279/test_project_task_executes_pur5')
+family = 'export'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("family", ["strings", "containers", "math", "utility", "variables", "export", "logging", "tables", "control_primitives", "allure", "base64"])
+    async def test_project_task_executes_pure_data_family_in_real_worker(
+        tmp_path: Path, family: str,
+    ) -> None:
+        factory, _, _, coordinator, _, project, automation = setup(tmp_path)
+        string_steps: list[tuple[str, str, dict[str, Any], Any]] = [
+            ("regex", "regex_extract", {"inputText": "订单 A-42", "pattern": r"A-\d+", "variableName": "rx"}, "A-42"),
+            ("replace", "string_replace", {"inputText": "{rx}", "searchValue": "A-", "replaceValue": "B-", "variableName": "rep"}, "B-42"),
+            ("split", "string_split", {"inputText": "甲,乙,丙", "separator": ",", "variableName": "parts"}, ("甲", "乙", "丙")),
+            ("join", "string_join", {"listVariable": "parts", "separator": "|", "variableName": "joined"}, "甲|乙|丙"),
+            ("concat", "string_concat", {"string1": "{joined}", "string2": "!", "variableName": "combined"}, "甲|乙|丙!"),
+            ("trim", "string_trim", {"inputText": "  空 白  ", "trimMode": "all", "variableName": "trimmed"}, "空白"),
+            ("case", "string_case", {"inputText": "abC", "caseMode": "upper", "variableName": "upper"}, "ABC"),
+            ("substring", "string_substring", {"inputText": "{combined}", "startIndex": "2", "endIndex": "3", "variableName": "slice"}, "乙"),
+        ]
+        container_steps: list[tuple[str, str, dict[str, Any], Any]] = [
+            ("append", "list_operation", {"listVariable": "items", "listAction": "append", "listValue": "甲"}, None),
+            ("list-get", "list_get", {"listVariable": "items", "listIndex": "0", "variableName": "item"}, "甲"),
+            ("list-length", "list_length", {"listVariable": "items", "variableName": "length"}, 1),
+            ("dict-set", "dict_operation", {"dictVariable": "record", "dictAction": "set", "dictKey": "first", "dictValue": "{item}"}, None),
+            ("dict-get", "dict_get", {"dictVariable": "record", "dictKey": "first", "variableName": "chosen"}, "甲"),
+            ("dict-keys", "dict_keys", {"dictVariable": "record", "keyType": "keys", "variableName": "keys"}, ("first",)),
+        ]
+        math_steps = [
+            (case["type"], case["type"], {
+                **case["config"], "resultVariable": f"result_{case['type']}"
+            }, None)
+            for case in MATH_CASES
+        ]
+        utility_steps: list[tuple[str, str, dict[str, Any], Any]] = [
+            ("password", "random_password_generator", {"length": 12, "includeSymbols": False, "resultVariable": "password"}, None),
+            ("url", "url_encode_decode", {"inputText": "中文 A", "resultVariable": "encoded"}, "%E4%B8%AD%E6%96%87%20A"),
+            ("md5", "md5_encrypt", {"inputText": "abc", "resultVariable": "md5"}, "900150983cd24fb0d6963f7d28e17f72"),
+            ("sha", "sha_encrypt", {"inputText": "abc", "resultVariable": "sha"}, "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"),
+            ("time", "timestamp_converter", {"operation": "to_timestamp", "inputValue": "2020-01-01 00:00:00", "resultVariable": "timestamp"}, None),
+            ("hsv", "rgb_to_hsv", {"r": 255, "g": 0, "b": 0, "resultVariable": "hsv"}, None),
+            ("rgb-cmyk", "rgb_to_cmyk", {"r": 255, "g": 0, "b": 0, "resultVariable": "rgb_cmyk"}, None),
+            ("hex-cmyk", "hex_to_cmyk", {"hexColor": "#ff0000", "resultVariable": "hex_cmyk"}, None),
+            ("uuid", "uuid_generator", {"uuidVersion": 5, "namespace": "dns", "name": "autoflow.cn", "resultVariable": "uuid"}, None),
+        ]
+        variable_steps: list[tuple[str, str, dict[str, Any], Any]] = [
+            ("json", "json_parse", {"sourceVariable": "payload", "jsonPath": "$.items[1].name", "variableName": "parsed", "resultVariable": "parsed_json"}, "乙"),
+            ("random", "random_number", {"randomType": "integer", "minValue": 7, "maxValue": 7, "variableName": "pick"}, 7),
+            ("clock", "get_time", {"timeFormat": "date", "variableName": "today"}, None),
+        ]
+        export_steps: list[tuple[str, str, dict[str, Any], Any]] = [
+            ("first", "list_export", {"listVariable": "items", "outputPath": "exports/items.txt", "separator": "\\n"}, None),
+            ("append", "list_export", {"listVariable": "items", "outputPath": "exports/items.txt", "separator": "\\n", "appendMode": True}, None),
+            ("empty", "list_export", {"listVariable": "empty_items", "outputPath": "exports/empty.txt"}, None),
+        ]
+        logging_steps: list[tuple[str, str, dict[str, Any], Any]] = [
+            ("print", "print_log", {"logMessage": "业务完成", "logLevel": "success"}, None),
+            ("print-error", "print_log", {"logMessage": "需要人工复核", "logLevel": "error"}, None),
+            ("export", "export_log", {"logFormat": "json", "outputPath": "logs/run.json", "resultVariable": "log_file"}, None),
+        ]
+        table_steps: list[tuple[str, str, dict[str, Any], Any]] = [
+            ("add", "table_add_row", {"rowData": '{"订单":"A-001","金额":88}'}, None),
+            ("column", "table_add_column", {"columnName": "状态", "defaultValue": "待处理"}, None),
+            ("set", "table_set_cell", {"rowIndex": "0", "columnName": "状态", "cellValue": "已完成"}, None),
+            ("get", "table_get_cell", {"rowIndex": "0", "columnName": "状态", "resultVariable": "cell_value", "variableName": "state"}, None),
+            ("csv", "table_export", {"exportFormat": "csv", "savePath": "reports/orders.csv", "variableName": "csv_path"}, None),
+            ("excel", "table_export", {"exportFormat": "excel", "savePath": "reports/orders.xlsx", "sheetName": "订单", "variableName": "excel_path"}, None),
+            ("delete", "table_delete_row", {"rowIndex": "0"}, None),
+            ("clear", "table_clear", {}, None),
+        ]
+        control_steps: list[tuple[str, str, dict[str, Any], Any]] = [
+            ("wait", "wait", {"waitType": "time", "duration": "0.001"}, None),
+            ("assert", "assert_checkpoint", {"actualValue": "42", "expectedValue": "42", "variableName": "checked"}, None),
+            ("stop", "stop_workflow", {"stopReason": "业务结束"}, None),
+            ("tail", "set_variable", {"variableName": "must_not_run", "variableValue": "unexpected"}, None),
+        ]
+        attachment = tmp_path / "allure-attachment.txt"
+        attachment.write_text("项目任务附件内容", encoding="utf-8")
+        allure_steps: list[tuple[str, str, dict[str, Any], Any]] = [
+            ("init", "allure_init", {"testSuite": "项目验收套件"}, None),
+            ("start", "allure_start_test", {"name": "项目任务用例"}, None),
+            ("step", "allure_add_step", {"stepName": "报告步骤"}, None),
+            ("attach", "allure_add_attachment", {"filePath": str(attachment), "name": "任务附件"}, None),
+            ("stop", "allure_stop_test", {"status": "passed"}, None),
+            ("report", "allure_generate_report", {"reportDir": "reports"}, None),
+        ]
+        base64_input = tmp_path / "base64-input.txt"
+        if family == "base64":
+            base64_input.write_text("文件甲", encoding="utf-8")
+        encoded_text = base64.b64encode("文本乙".encode()).decode()
+        encoded_file = "data:text/plain;base64," + base64.b64encode("文件甲".encode()).decode()
+        base64_steps: list[tuple[str, str, dict[str, Any], Any]] = [
+            ("encode", "base64", {"operation": "encode", "inputText": "文本乙", "variableName": "encoded"}, encoded_text),
+            ("decode", "base64", {"operation": "decode", "inputBase64": "{encoded}", "variableName": "decoded"}, "文本乙"),
+            ("read-file", "base64", {"operation": "file_to_base64", "filePath": str(base64_input), "variableName": "file_data"}, encoded_file),
+            ("write-file", "base64", {"operation": "base64_to_file", "inputBase64": "{file_data}", "outputPath": str(tmp_path / "decoded"), "fileName": "output.txt", "variableName": "file_path"}, None),
+        ]
+        steps = {"strings": string_steps, "containers": container_steps, "math": math_steps, "utility": utility_steps, "variables": variable_steps, "export": export_steps, "logging": logging_steps, "tables": table_steps, "control_primitives": control_steps, "allure": allure_steps, "base64": base64_steps}[family]
+        node_types = {module_type for _, module_type, _, _ in steps}
+        assert node_types <= runnable_module_types()
+        assert node_types <= set(build_production_executor_registry().get_all_types())
+        document = _studio_payload(automation.workflow_id)
+        document.update(
+            schemaVersion=3,
+            nodes=[{
+                "id": node_id, "type": module_type, "position": {"x": index * 160, "y": 0},
+                "data": {"moduleType": module_type, "config": {"resultVariable": "base64_result", **config} if family == "base64" else config},
+            } for index, (node_id, module_type, config, _) in enumerate(steps)],
+            edges=[{
+                "id": f"edge-{index}", "source": steps[index][0], "target": steps[index + 1][0],
+            } for index in range(len(steps) - 1)],
+            variables=([{"name": "items", "type": "array", "value": ["甲", "乙"]}, {"name": "empty_items", "type": "array", "value": []}]
+                       if family == "export" else [{"name": "items", "type": "array", "value": [1, 2, 3, 3]}]
+                       if family == "math" else [{"name": "payload", "type": "string", "value": '{"items":[{"name":"甲"},{"name":"乙"}]}'}]
+                       if family == "variables" else []),
+        )
+        WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory)).update(
+            automation.workflow_id, document, expected_revision=1,
+            client_request_id=str(uuid4()),
+        )
+        runtime = WorkflowRuntimeService(factory, SqlAlchemyWorkflowRepository(factory))
+        coordinator._core = runtime
+        worker = ProjectWorkflowWorkerManager(tmp_path / "pure-data-family-worker")
+        resources = _NoBrowserResources()
+        dispatcher = _dispatcher(factory, worker, resources)
+        try:
+            batch, _, _ = coordinator.start(
+                project.project_id, automation.automation_id, str(uuid4()), start_payload(automation),
+            )
+            task = coordinator.list_tasks(project.project_id, batch.batch_id)[0]
+            run = runtime.query_run(run_id=task.run_id)
+            assert run is not None
+            await dispatcher.dispatch(
+                run.run_id, expected_status_revision=run.status_revision,
+                execution_generation=run.execution_generation,
+            )
+            await dispatcher.wait_idle()
+            with factory() as session:
+                repository = SqlAlchemyWorkflowRuntimeRepository(session)
+                finished = repository.get_run(run_id=run.run_id)
+                events = []
+                after_sequence = 0
+                while page := repository.list_events(run.run_id, after_sequence=after_sequence, limit=100):
+                    events.extend(page)
+                    after_sequence = page[-1].sequence
+>           assert finished is not None and finished.status == "succeeded", (
+                finished.error if finished else None,
+                [(event.kind, event.node_id, dict(event.payload)) for event in events],
+            )
+E           AssertionError: (mappingproxy({'code': 'WORKFLOW_RESULT_UNKNOWN', 'message': '执行结果不明确，已撤销旧执行写入权限'}), [('status', None, {'status': 'run...据到: exports/items.txt', 'isUserLog': True}), ('nodeAttempt', 'first', {'status': 'succeeded', 'durationMs': 33}), ...])
+E           assert (CoreRun(run_id='17afe966-9287-4308-bfd1-071a4fe5faf2', run_request_id='1010e88b-f300-4252-98cf-8aae27ae11c0', request_...e.utc), error=mappingproxy({'code': 'WORKFLOW_RESULT_UNKNOWN', 'message': '执行结果不明确，已撤销旧执行写入权限'}), _event_identities=()) is not None and 'interrupted' == 'succeeded'
+E             
+E             - succeeded
+E             + interrupted)
+
+tests/integration/test_project_data_worker.py:256: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  autoflow.application.workflows.dispatcher:dispatcher.py:547 Project worker requires reconciliation: RuntimeError (unclassified)
+=============================== warnings summary ===============================
+.venv/lib/python3.11/site-packages/starlette/testclient.py:53
+  /Users/zhangtiancheng/.codex/worktrees/studio-baseline-integration/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/unit/test_project_excel_adapter.py::test_formula_metadata_scans_beyond_sample_and_streams_rows
+FAILED tests/unit/test_project_run_resources.py::test_browser_free_task_freezes_project_model_default_and_explicit_override
+FAILED tests/integration/test_project_browserless_end.py::test_retained_end_requires_browser_before_dispatch
+FAILED tests/integration/test_project_credential_worker.py::test_project_worker_reads_private_credential_after_start_commit[private-lookup-key-\u51ed\u636e]
+FAILED tests/integration/test_project_credential_worker.py::test_project_worker_reads_private_credential_after_start_commit[private-lookup-key-cred]
+FAILED tests/integration/test_project_credential_worker.py::test_project_worker_reads_private_credential_after_start_commit[None-\u51ed\u636e]
+FAILED tests/integration/test_project_credential_worker.py::test_project_worker_reads_private_credential_after_start_commit[None-cred]
+FAILED tests/integration/test_project_credential_worker.py::test_project_empty_credential_parts_preserve_reference_without_protocol_failure[{{cred:\u8d26\u53f7.}}]
+FAILED tests/integration/test_project_credential_worker.py::test_project_empty_credential_parts_preserve_reference_without_protocol_failure[{{cred:.password}}]
+FAILED tests/integration/test_project_data_worker.py::test_project_task_executes_pure_data_family_in_real_worker[export]
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 10 failures !!!!!!!!!!!!!!!!!!!!!!!!!!
+10 failed, 2973 passed, 77 skipped, 1 warning in 585.46s (0:09:45)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -29,11 +30,11 @@ FROZEN_HARNESS = Path(__file__).with_name("frozen_b3_dependency_harness.py")
 
 def frozen_result(case: str) -> dict[str, Any]:
     completed = subprocess.run(
-        [sys.executable, str(FROZEN_HARNESS), case],
+        [sys.executable, "-X", "utf8", str(FROZEN_HARNESS), case],
         check=True,
         capture_output=True,
-        text=True,
-        env={"PYTHONPATH": str(FROZEN_BACKEND)},
+        text=True, encoding="utf-8",
+        env={**os.environ, "PYTHONPATH": str(FROZEN_BACKEND)},
     )
     return json.loads(completed.stdout)
 

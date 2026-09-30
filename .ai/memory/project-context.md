@@ -1,5 +1,79 @@
 # 项目上下文
 
+2026-09-24 End结果恢复收口（confirmed本机完整回归/新包，三平台in_progress）：生产ee2524af以现有账本恢复原End/child保存ID、原目标与当前关联阶段，明确替换授权、累计冲突版本，父结果未落定或读取未知时也不允许重复保存。25后端/14前端定向及两项P2的RED→GREEN/独立复审通过；最终后端3506 passed/90 skipped/2依赖警告（741.38秒）、前端5481 passed/409文件（180.77秒）、103脚本、Ruff/mypy408、类型/lint/OpenAPI、4映射/251引用通过。显式build后未签名ARM完整桌面26截图通过并目视核对End修复/刷新：真实输入环境g1/session1→End更新同环境g2/session9→第三Task恢复，新关联修复不重跑/不重复保存/不改失败历史；Profile未改，不解决I1–I3。首次旧前端打包失败、中断回归和夹具错误均保留。新三平台push35935288512@d19d120e运行中，同仓库draft PR重复矩阵跳过；dispatch401仍在。251为212partial/39planned/0verified，249有断言/2未定位，73缺预定路径有子范围映射，重叠缺口241生产/19实现/8测试/24外部不变；releaseAccepted=false。见end-link-repair-follow-through.json。
+
+2026-09-24 XE-A09不自动保存与界面修复（confirmed本机新包子范围）：真实固定环境cookie1→工作副本9且End不保留→新Task恢复1；来源g1/元数据/环境总数1不变，两实例cleaned且实际目录不存在。旧包截图暴露cleaned仍提供保存表单，7b896163修复为已清理说明，保留仅修复关联并在完成后移除入口。组件RED→8项相关通过，最终前端5475/409、类型/lint/脚本102、构建和未签名ARM完整桌面24截图通过，新界面已目视检查；后端cb040daf及既有3497回归范围不变。XE-A09仅planned→partial；251合计207partial/44planned/0verified，缺口241生产/19实现/8测试/24外部不变。输入环境、身份漂移I1–I3、新三平台/外部验收保留；releaseAccepted=false。见no-auto-save-follow-through.json。
+
+2026-09-24 AU-08已有绑定去向勘误（confirmed实现缺失，W1c proposed）：HTTP/真实SQLite诊断证明重复关联409且仅保留原自动化，但错误未给出原projectId/automationId，前端也无定位入口；不是只有缺测试。既有11项契约/仓库测试通过（2依赖警告/1.62秒）不证明该条件。新增可重复诊断、错误分类及W1c契约/界面/并发与失效目标验收切片，随现有W方案等待确认；未修改生产代码，不重跑全量/打包/流水线。251条状态、241生产/19实现/8测试/24外部计数不变，releaseAccepted=false。见binding-destination-audit.json。
+
+2026-09-24 AU-08项目删除解除关联补证（confirmed本机子范围）：当前cb040daf未签名ARM包中，同一独立文档公开编辑后由真实worker执行，项目归档停止并取消Task，再精确名称删除项目；工作区原命令查询/重放一致，项目级查询404、冻结快照清空，原文档ID/版本/节点/边保留并在新项目关联。完整桌面passed/23截图，新关联画面已目视核对；102脚本、4映射/251引用通过。两次查询地址/可选DTO默认值夹具错误保留，非产品修复。仅补测试与证据，不重跑无改动生产全量/构建；CLI401仍阻断新矩阵。AU-08 Studio占用/绑定去向/文档所有权/持久文件清理及持久身份反例仍保留；251状态和241生产/19实现/8测试/24外部缺口计数不变，releaseAccepted=false。详见project-unlink-follow-through.json。
+
+2026-09-24 持久环境身份反例（confirmed实现缺失，I1–I3 proposed）：当前cb040daf ARM打包真实HTTP/SQLite/worker在保存登录后修改Profile与重置seed，固定和输入关联恢复均signed-in，但UA/locale/timezone变为新Profile，原生seed由21807变42845。identityPreserved/seedPreserved均false，不是验收通过。仓库未保存实际身份包，恢复与维护读取当前Profile；维护仅代码证据。34项原资源/环境测试通过仍不覆盖此条件；4映射/251引用通过。XE-C02/C11/G04/A20补implementation_missing，249有断言/2未定位、206partial/45planned/0verified不变，按需求去重缺口241生产/19实现/8测试/24外部。新增I1–I3规格与计划待确认；保留首轮重复绑定409夹具错误。无生产修改、不重复全量/构建；releaseAccepted=false。详见persistent-identity-audit.json。
+
+2026-09-24 XE-C06/XE-G02归属不明核验修复（confirmed本机源码/新包子范围，三平台pending）：生产cb040daf修复参数/数据批次在Task核验中仍显示stopping，并通过既有停止操作保留停止意图，避免重新领取及状态版本抖动。四个反例先失败，相关50项通过；真实普通/已知/未知归属强停3项通过（92.10秒），Ruff/mypy408及映射4项/251引用通过。串行完整后端3497 passed/84 skipped/2 warnings（900.44秒）；新未签名ARM包完整桌面passed/22截图，已目视核对3张。真实worker1004条/31410ms、万行43624ms/0busy、固定1000条合成输入60016ms均为单次本机观察。归属证明缺失期间保留进程/目录/容量/原命令，恢复后原命令完成。Windows Job和打包核验UI仍缺；旧35902129697三平台job成功但不含当前源码，CLI401/日志403仍阻断新矩阵与产物复核。251条状态不升级，releaseAccepted=false。详见unknown-owner-follow-through.json。
+
+2026-09-24 XE-G02强停补证（confirmed本机子范围）：参数真实worker在普通停止后模拟下行通道丢失，实际30秒宽限期内409，公开门禁到期才强停；原生birth身份/进程退出、执行代次撤销、interrupted未知结果、人工取消、临时目录/容量回收及原命令终态查询重放通过，无后续节点/额外Task。最终普通停止+强停2 passed/34 deselected（74.42秒），Ruff通过；既有CI选择新增场景并collect35/46（非运行）。早期夹具/终态/DTO时间比较错误全部保留，不称产品修复。归属不明核验、打包UI与新增三平台仍待验；无生产改动，251条状态不变，releaseAccepted=false。详见force-stop-follow-through.json。
+
+2026-09-24 DATA-WRITE-12审计勘误（confirmed缺口，G1–G3 proposed）：领域/服务/worker/Studio仅单条updateRecord，仓库每条独立提交；运行契约检查拒绝两条RecordRef数组（VALIDATION_ERROR）。单条反向冲突及原命令重放2项通过，不是组原子验收。将该组子条件由test_missing纠正为implementation_missing，新增G1–G3具体规格/计划等待确认；无业务代码修改。251条仍249有断言/2未定位、206partial/45planned/0verified；按需求去重缺口241生产/17实现/8测试/24外部（可重叠），releaseAccepted=false。见group-write-audit.json。
+
+2026-09-24 同行改绑补证（confirmed局部）：公开A→B→A身份列替换产生新代次/epoch；异namespace时断网和完整本地拉取均拒绝领取。修复完整拉取后两真实worker各冻结正确当前代次/原值，人工继续各写一版本和一pending意图，零远端写入、旧失败批次不重启。最终相关3 passed/7 deselected/2 warnings（32.46秒），Ruff通过；CI原选择collect34/45且含新用例（非运行）。仅关闭DATA-CLAIM-09已列明的test_missing，保留生产/外部缺口；总计249/2、206partial/45planned/0verified，缺口计数241生产/16实现/9测试/24外部（可重叠）。本片无生产修改、不重复全量和打包；新原生运行仍待认证，releaseAccepted=false。详见peer-rebind-follow-through.json。
+
+2026-09-24 同行来源补证（confirmed局部）：新增真实HTTP/SQLite/worker验证坏身份同行解除绑定后、剩余表拉取失败仍拒绝领取；修复完整拉取后显式新批次才执行，旧失败批次不重启。最终1 passed/10.63秒，CI原选择已收集新用例（33/44，非运行结果）；无生产变更，不重复全量/打包。见peer-outage-follow-through.json；新原生验证仍受认证阻断，releaseAccepted=false。
+
+2026-09-24 当前补丁1c676965（confirmed本机全量/ARM打包，原生新矩阵待验）：首次来源读取失败的空缓存被误报noMatch，已将共享来源身份校验前移至候选扫描，必要/可选输入均明确configurationError。42相关、6边界、2真实worker及Ruff/mypy408通过；完整后端串行3493 passed/80 skipped/2 warnings（778.49秒）；后端构建/ARM打包及完整桌面22截图通过。该生产补丁不在35902129697/35895754111中，两轮旧CI继续保留。详见partial-source-follow-through.json；releaseAccepted=false。
+
+2026-09-24 旧候选三平台完成：35895754111@25bb8ab2整体success，日志和三个原生产物已核对。Mac后端3486/78skip、Windows3478/86skip；三平台前端5473/409文件、真实worker30/11deselected。Windows桌面worker604条/分钟，万行582160ms；Intel1725条/分钟，万行125601ms，均0busy；固定合成负载另列，不声明新性能门槛。该结果仅覆盖生产69baeeb2；不覆盖51e8991e和1c676965。详见ci-metadata-click-follow-through.json，releaseAccepted=false。
+
+2026-09-24 旧候选 ARM CI 产物复核（confirmed 局部）：35895754111@25bb8ab2 的 artifact10769571016 已下载并校验 SHA256；打包 API、business-combinations、完整桌面均 passed，22截图中必填提示/紧凑重开/恢复文档3张已目视核对。真实 worker1004条/38623ms（1560条/分钟），万行67095ms、0busy，固定合成1000条/60189ms；均为该次观测。详见 ci-metadata-click-follow-through.json。该证据不覆盖新生产51e8991e或新增两个 worker 场景；新矩阵35902129697仍进行中，台账状态不变，releaseAccepted=false。
+
+2026-09-24 最新CI（confirmed调度，验收pending）：已推送a317e1f8，实际新矩阵35902129697同headSha、生产51e8991e，包含断网与反向写两个新增真实worker案例，三平台in_progress。旧35895754111@25bb8ab2继续，ARM job107299145250已success，Windows/Intel仍运行。新候选稳定后单次调度，取代此前等待旧矩阵全部结束的安排，无取消、无相同源码重复。PR仍草稿、releaseAccepted=false。
+
+2026-09-24 DATA-WRITE-12补证（confirmed子范围）：新增两真实worker固定A/B先写，再反向query/update均LEASE_BUSY进入人工错误分支；冻结原输入v1、当前值/游标v2、双方lease及A/B两条pending意图不变，stop后释放。最终1项12.89秒通过；首次未声明筛选字段422夹具问题保留并改用既有fixedRecord。无生产改动，仍51e8991e；CI选择32/43包含本轮两新增案例。组原子性/配置重试/打包/Windows/Intel仍待验，opposing-writes-follow-through.json。
+
+2026-09-24 来源断网切片（confirmed 定向/打包，本机完整复验通过、原生后续未收口；supersedes 下文“当前”候选）：生产51e8991e、证据669c01c0已推送草稿PR #1。lastPulledAt/latestPull修复来源拉取卡从出站列表推断拉取的错误；受控Google断网可靠缓存真实worker成功、重复身份后再断网零Task通过。全前端5474/409、102脚本、4映射/251引用、类型/lint/OpenAPI/构建和新ARM完整桌面22截图通过。首轮全后端3483通过/79跳过/4项进程时限失败保留，原样6项复查通过，串行全量3487通过/79跳过（836.98秒）；不据复跑推断根因修复。旧矩阵35895754111@25bb8ab2仍在运行，不包含51e8991e生产修复。详见source-outage-follow-through.json。251条249有断言/2未定位，206partial/45planned/0verified；releaseAccepted=false。
+
+2026-09-24 并行补证/CI诊断（confirmed局部）：ARM正式打包API通过2/3次循环变量隔离与精确五条写入、唯一End声明输出关联、并行人工串行交接和停止保留前写。公开事件不提供内部scope、同workflow重复绑定两次脚本错误已修正并保留失败报告。当前69baeeb2三平台35886627514的ARM在打包必填提示失败，截图节点未选中，metadata HTTP断言和后端3486/前端5473通过；旧点击helper对覆盖目标误点已由隔离Electron复现并修复，102脚本/4映射及完整ARM打包桌面通过。最终三平台均失败：Intel同为未选中节点，Windows为紧凑重开窗口隐藏就绪文字。恢复视口及显式展开面板已复现通过，最终完整新版桌面通过；全部旧job结束后已触发三平台35895754111，源码25bb8ab2（生产仍69baeeb2），结果待完成。详见parallel-packaged-follow-through.json和ci-metadata-click-follow-through.json。251条状态未升级，releaseAccepted=false。
+
+2026-09-24 Profile冻结补证与代理勘误（confirmed子范围）：ARM正式打包API/真实worker证明旧批次两个Task保留原根文档、UA/语言/时区及实际启动seed，新批次使用公开编辑后的新值。Canvas实测不变，错误的必变断言已更正并保留负向报告。现有资源类/SQLite诊断证实代理新成员与改动端点进入旧快照，ENV-05/XE-A20/XE-C02增加implementation_missing，P1–P3规格/计划待确认。完整打包API/ARM桌面、101脚本/4映射/251引用通过；生产仍69baeeb2，三平台35886627514继续且不含本次新脚本断言。249有断言/2未定位、206partial/45planned/0verified不变，releaseAccepted=false。详见resource-freeze-follow-through.json。
+
+2026-09-24 子流程打包补证（confirmed子范围）：正式ARM应用/sidecar公开HTTP与真实worker完成准备后改文档、两个Task各两次冻结调用、变量隔离与声明输出、根End双记录关联；子流程等待后公开stop父批次保留首条记录/取消人工项/不执行后续写及End；父节点较宽字段权限不能被受限子节点借用，返回CAPABILITY_SCOPE_DENIED且保留父提交。完整API/桌面均通过，101脚本/4映射通过。生产仍69baeeb2，运行中35886627514不包含新增脚本断言，不重启；其他资产/Profile/代理组合与Windows/Intel同场景打包证据保留。249有断言/2未定位、206partial/45planned/0verified不变，releaseAccepted=false。详见subflow-packaged-follow-through.json。
+
+2026-09-24 必填规则生产修复（confirmed本机）：正式metadata404已由共用DTO路由和随包冻结资源修复，实际ARM空网址提示/项目规则未覆盖提示通过；来源227仅69有规则。17后端定向、45前端、3486全后端/78skipped、101脚本、4映射、Ruff/mypy408/typecheck/lint/OpenAPI/构建与完整ARM桌面通过。原后台页面两帧测量两次失败，诊断hidden后前置显示并确认可见，保留5秒阈值，最终5ms；负向报告保留。见studio-metadata-follow-through.json。249有断言/2未定位、206partial/45planned/0verified不变，生产69baeeb2的三平台35886627514已触发、结果待完成；releaseAccepted=false。
+
+2026-09-23 XE-G07窗口子范围（confirmed）：当前ARM包实际窗口复用/恢复、越权打开拒绝、脏稿取消/保存关闭、显式重新打开同文档且Run不重复通过；主进程11、脚本101、映射4通过。AU-06/XE-G01/XE-G07项目会话关联与停靠明确为实现缺失，W1–W3规格/计划待确认；新增窗口断言后的完整ARM桌面脚本通过，详见 studio-window-follow-through.json。249/251有范围断言、2未定位，206partial/45planned/0verified；73条缺预定文件全部已有子范围映射，不等于完整覆盖。生产仍632caf6d，新断言不在现有CI35881272086，不重复流水线，releaseAccepted=false。
+
+2026-09-23 XE-A19打包Studio收口（confirmed本机子范围）：实际零Project通用网页运行、项目上下文提示、独立启动422不生成Run，以及编辑保存保留grant/参数通过。已修复旧运行历史遮住操作反馈、打开文档后误发新建请求两处缺陷；最终定向50、全前端5473（409文件/208.97秒）、101脚本、类型/lint、4项映射、构建/ARM打包与最终完整桌面通过。五路10000行47223ms/0busy、固定1000条合成输入60022ms/最大滞后35ms为单次观察。源码632caf6d新三平台35881272086进行中；旧35874897768不含此修复，已确认取消，不计完整通过。见 `.ai/knowledge/2026-09-23-pm9-standalone-studio.md` / `standalone-studio-follow-through.json`；必填规则元数据404与外部发行门禁保留，251条205partial/46planned/0verified，releaseAccepted=false。
+
+2026-09-23 AU-08残留更正（confirmed局部）：5346已通过的快照子范围不证明文件全清理。实际打包删除留下cancelled/resolved人工事项和浏览器失败PNG；人工事项清理/未结束阻断已修复，38后端/6前端/101脚本/Ruff/mypy407通过，新包证实人工项消失但PNG仍在。AD1–AD3持久文件删除恢复规格/计划待确认，旧CI35871462256取消；eb50e1ef全后端3483/78skip、ARM新包完整桌面通过，新CI35874897768进行中。详见 `.ai/knowledge/2026-09-23-pm9-automation-delete-residue.md`；releaseAccepted=false。
+
+2026-09-23 AU-08删除补证与修复（confirmed局部，本机完整通过、三平台进行中）：ARM真实已安装包的独立文档保留、人工等待阻断、旧影响清单拒绝和原键恢复通过；随后直接SQLite断言发现并修复快照影响范围过宽及先删批次导致快照残留。34后端/6前端/Ruff/mypy407通过，5346ceca完整后端3479/78skip、新ARM打包全桌面通过；三平台35871462256运行中，按 `pm9/automation-deletion-follow-through.json` 更新。项目所有权deleteOwned仍未实现；AU-08保持partial，releaseAccepted=false。
+
+2026-09-23 当前字段能力勘误（confirmed）：c16532d7 ARM 打包真实 worker 证明创建新字段后写入受 frozen grant 阻断，预先授权未存在 fieldId 也被拒。DATA-SCHEMA-02/09、FLOW-A14确属实现缺失；同定义复用/异型冲突/T2兼容已补打包证据通过，不能代替新字段写入。新增 FR1–FR3 字段结果权限规格/计划为 proposed，见 `.ai/knowledge/2026-09-23-pm9-created-field-results.md`。此前“已批准功能均有实现”不能覆盖该新反例；releaseAccepted=false。
+
+2026-09-23 End 权限边界补证（confirmed 本机范围）：真实 worker 生成合法/伪造项目记录混合目标，原权限门禁在保存前拒绝整组，已提交数据保留、零环境保存和关联、lease/进程释放。关联两场景2 passed、契约/规则33 passed、Ruff通过；详见 `pm9/link-boundary-follow-through.json`。仅测试/CI选择/文档更新，生产源码仍c16532d7；新增断言不计入此前CI，完整验收仍pending，releaseAccepted=false。
+
+2026-09-23 DATA-LINK-02 新候选（confirmed 本机与三平台 CI 范围，物理发行待验）：生产环境关联仓库预检与提交均增加 `recordRef.projectId` 权威项目核对；伪造外部项目标签但保留本地行键的直接 HTTP 反例 RED→GREEN。本机全后端 3479 passed/77 skipped，契约/规则 33 passed，真实浏览器 data-link-race 1 passed（实际 End 保存后伪造身份修复保持未关联、正确修复不重跑），Ruff/mypy407 通过；251 条台账变为 248 有范围断言、3 未定位、205 partial/46 planned/0 verified。当前 c16532d7 的 Windows/ARM CI 与 ARM 隔离安装已通过；Intel 首次全部测试及打包 smoke 通过但 DMG 临时盘弹出 Resource busy，同源码单 job 重跑后完整成功；首轮失败证据保留，Intel 实机仍待验收。上一 dadb24a1 仍为历史源码。详情见 `docs/project-management/implementation/pm9/link-boundary-follow-through.json`；`releaseAccepted=false`。下文旧候选和统计按各自哈希保留历史。
+
+2026-09-23 本机回归收口（confirmed）：生命周期源码94f8e0a8完整后端3472 passed/74 skipped/2 warnings，796.74秒；之后defa1955二进制读取补丁单独16项+真实worker1项、Ruff/mypy407/构建/原15秒sidecar通过，未宣称同一最终本机全量快照。最终三平台35816693045进行中。已完成源生产恢复/删除/服务重启补证及运行目录清理修复；Windows真实PNG409的读取修复待原生确认。旧14df矩阵35811305102两种Mac成功、Windows失败；所有旧状态以此按hash区分。releaseAccepted=false。
+
+2026-09-23 最新候选 defa1955（局部 confirmed，完整验收 pending）：已修复项目删除遗漏 Run 目录；源生产联合链归档→服务重建→恢复不重放→清理残留→服务重建自动续跑1项通过。随后从历史Windows真实PNG GET409定位并修复O_BINARY缺失，二进制契约/证据16项、Mac真实worker1项通过。三平台35816693045进行中；35815127474/35816258910因新缺陷修复取代而取消，不计通过。下文旧候选/计数/状态仅为历史；248/251有范围断言，203partial/48planned/0verified，releaseAccepted=false。
+
+2026-09-23 XE-A17 最终本机核对（confirmed）：源码f6a5023e、测试快照9a5a80aa；完整回归3471 passed/74 skipped/1旧准入顺序断言失败（857.72秒），修正后所在文件16 passed（4.33秒）。不称为一次全绿。新三平台35815127474进行中；旧断言矩阵35814591659已取消。真实联合最终1 passed，Sheets worker五项及相关79项通过；Ruff/mypy407/OpenAPI/构建/原15秒sidecar通过。XE-G06仅补归档blocker子范围，248/251有范围断言、3未定位、203partial/48planned/0verified；其余生命周期和外部验收继续保留，releaseAccepted=false。
+
+2026-09-23 XE-A17（confirmed，当前修复取代前段候选）：归档联合场景通过，本机真实两 worker/浏览器/HTTP/SQLite，Google transport 受控；保存仅一次、取消清理、unknown 原核验、pending 不补发。相关79 passed/3 skipped；真实Sheets5passed、人工到期竞争复测1passed；完整回归与新矩阵尚未闭合。248/251有范围断言，3未定位，203partial/48planned/0verified。详见 docs/project-management/implementation/pm9/archive-settlement-follow-through.json。L1–L3/M1–M3未经批准，Windows既有文件安全输出仍缺失，releaseAccepted=false。
+
+2026-09-23 本轮回归收尾（confirmed）：生产候选14dfae7c；本机后端完整3465 passed/73 skipped/2 warnings（966.88秒），前端5471通过，类型/lint/OpenAPI/Ruff/mypy407/前后端构建通过。产物sidecar首次15秒就绪超时；诊断3545ms且健康200，原15秒复测通过，但首发原因未明，不能声称修复。单次新三平台35811305102仍运行，旧c9矩阵因新增checkpoint修复取消。后续aef0f412仅测试/记录，与候选生产源码一致但其新增断言不在该矩阵。releaseAccepted=false。
+
+2026-09-23 XE-G02 子范围复核（confirmed）：本机真实 success/manual-stop 两场景 2 passed/32 deselected（25.21 秒），分别证明有限两次参数运行/日志输出/同键重放/资源回收，以及实际人工等待后的取消和清理；独立通用核心场景证明准备内容不被后续文档编辑替换。强停、归属不明的退出核验与安装包/三平台整组门禁仍未闭合。当前 246 有范围断言/5 未定位、203 partial/48 planned/0 verified，不按数量判断完成率。
+
+2026-09-23 XE-A19 共享核心补证（confirmed）：复用现有真实浏览器持久运行场景，SQL 核验零 Project/仅一 Run；仅 browser 能力准备项目 createRecord 文档被明确拒绝，原文档不变且随后可编辑保存，不隐式建项目。1 passed/3 deselected（11.65 秒）。仅 core/document/worker 子范围由 planned 改 partial；Studio 窗口提示/编辑体验、HTTP 联合和打包验收未完成，新断言不在已启动的14df矩阵中。最新 245 有范围断言/6 未定位、203 partial/48 planned/0 verified；先前计数为历史。
+
+2026-09-23 XE-C07 最新补证（confirmed，来源：event-reconnect-follow-through.json）（supersedes 此前 243/8 统计）：真实 TCP/worker 人工等待场景发现 checkpoint 未纳入公开事件投影，导致 JSON/SSE 补读 409；已补最小身份/版本契约及生成类型，内部续跑内容不公开。修复后真实断开/继续/缺口补读、8 次唯一节点访问、3 个输出、日志分页、失败截图摘要和资源回收通过；20 项后端契约/证据与25项相关前端通过，独立审查无 P1/P2。前端 EOF 去重是独立受控测试，尚非安装包 UI 断网联合证据。台账 244 有范围断言/7 未定位、202 partial/49 planned/0 verified；完整回归/新候选 CI 见 verification.json 与 event-reconnect-follow-through.json。releaseAccepted=false。
+
+2026-09-23 L0 最新补审（confirmed，优先于下文 c2 摘要）：旧未知值写可被改绑绕过已复现，三处共享发送围栏修复与4项反例通过，相关回归/新候选矩阵见 `pm9/lifecycle-fence-follow-through.json` 与 verification.json；原c2矩阵不覆盖新生产代码。台账243有断言/8未定位、202 partial/49 planned/0 verified。L1–L3连接恢复/保留身份/隔离新契约已写规格和计划，尚未批准；当前仅安全拒绝，不能声称永久失权处置完成。
+
+2026-09-23 最新 PM9 状态（confirmed；来源 `pm9/input-validation-follow-through.json`，较下文历史摘要优先）：实施仍在独立 pm9-runtime worktree/分支，草稿 PR #1。生产修复 c2d91c5d 补齐 D1 声明输入值的选择/提交校验；未使用坏字段不阻断。全后端 3460 passed/68 skipped，89 定向、4 Sheets 真实 worker、Ruff/mypy407/OpenAPI/101 脚本与后端构建通过；新矩阵 35806853292 仍进行中。后续独立本机 worker 补循环部分成功、参数变量隔离、同名结果不隐式写回、可选输入由有到无和无表参数单任务，当前 242 有范围断言/9 未定位、201 partial/50 planned/0 verified。一次 worker 退出超时尚未查明，不以重跑成功宣称根因修复。S4 既有文件、未批准 M1–M3、打包完整 Sheets/Google/OAuth、签名及实机专项继续保留；PM6 历史实网有效。releaseAccepted=false，不合并发布。最新 CI 状态以 verification.json 为准。
+
 - 项目：AutoFlow
 - 目标平台：Windows、macOS
 - 目标：在新架构中迁移 browser-automation 的功能；项目管理已形成完整设计，PM1项目入口在独立实施分支交付；之后按用户验收逐阶段实施。
@@ -163,3 +237,60 @@ proposed：本轮完整规格尚未确认，6组补图未生成；参数定义�
 - 生产源码/打包 HTTP 与 Electron 管理链、万行数据测量通过；后端 3159 passed / 15 skipped、前端 5445 passed、脚本 94 passed；真实 CloakBrowser 四节点/批次/重建测试 8 passed。
 - PM9 仍 in_progress；生产项目执行器尚未接入完整图、项目数据节点、End 和人工检查点。已提交 R1–R4 架构规格等待用户确认，不能将管理侧/四节点证据扩写为完整执行通过。
 - 用户指定 Windows x64/macOS Intel 使用现有 GitHub Actions，缺少的实机证据明确待验收。本机 arm64 DMG 已构建但无签名、公证或手工安装证据；CI 实际状态见 PM9 报告。
+
+## PM9 生产运行时补交付（2026-09-20，confirmed）
+
+来源：用户 R1–R4 确认、`docs/project-management/implementation/pm9/verification.json`、正式 Studio HTTP/真实 worker/CloakBrowser/打包 Electron。
+
+前节“仅四节点、等待架构确认、生产图/数据/End/人工未接入”已 superseded。工作隔离在 `codex/project-management-pm9-runtime`，基线仍为 `codex/architecture-baseline@8e5564e0`。
+
+- 共享图、固定身份数据 RPC、End 关闭后保存关联、人工存活 owner 延续已接通；worker 消失会撤权并取消人工项，不自动重放。包含循环或人工节点的并行图暂在准备阶段拒绝。
+- 本机后端候选 b72938b8 全量 3195 passed / 23 skipped；CI 候选 66a428aa 前端 5455 passed（405 文件）。最新候选另以报告记录。新增平台边界与配置回归另列报告。12 场景真实浏览器包括登录复用、人工继续/终结/超时/停止/重启/进程丢失和旧人工命令重试。
+- 打包 Electron 万行记录显示每页 50 条、1004 条真实日志分页；另以 60 秒内 1000 条固定合成日志输入验证实际 HTTP 分页、同步记录翻页与 JS 堆采样（最新本机 d59607f3，60.031 秒生成/读回 1000 条，最大批次延迟 41 ms）。合成输入与 worker 吞吐分别记录，不构成所有硬件或持续负载承诺。
+- 同提交三平台 Actions、实网 Sheets、签名/公证/物理安装证据仍以 PM9 报告逐项为准。历史阶段的隔离 QA 证据不自动升级。
+
+2026-09-21（confirmed，来源：Windows Actions 35530376377 原生堆栈与真实持锁 HTTP 回归）：五路并发创建记录触发 `BEGIN IMMEDIATE` 的 SQLite 写竞争，旧 HTTP 错误映射为 500。d59607f3 复用共享竞争判定，返回 503 DATABASE_BUSY / Retry-After: 1；测量脚本仅对该明确响应以原命令身份最多尝试 10 次，其他错误直接失败。生产事务和所有权规则不变。本机新打包的五路单条写入一万行通过，busyRetries=0；三平台候选结果以 verification.json 为准。
+
+2026-09-21 最终候选 d59607f3（confirmed；来源：Actions 35531206432 三个原生 job 全部 success）：Windows 后端 3180 passed / 57 skipped；Intel/ARM 各 3214 passed / 23 skipped；前端各 5455 passed / 405 文件。源码及打包真实执行链、原规模五路万条、固定 1000 条/分钟合成输入、安装包构建及上传全部通过。Windows 万条耗时 725733 ms，发生 1 次明确 503 忙重试且保留原键，最终正好 10000 条；真实 worker 1004 条耗时 112121 ms（537 条/分钟），不能把独立合成输入通过写成 worker 达到千条/分钟。Windows/Intel/ARM 合成 1000 条全部读回，分别 60105/60038/60055 ms，最大批次延迟 143/181/202 ms。实网 Sheets、物理安装/原生专项、签名公证和历史完整规格余项仍待验收，releaseAccepted=false。
+
+2026-09-21 PM9 后续（confirmed；来源：follow-through.json 与 Actions 35560163432）：新增候选 52936b6a 修复人工继续/到期 CAS 两种交错、通用操作账本环境 DTO 500、已关闭候选保存失败与占用恢复。251 条覆盖映射/73 个失效预定路径已核对；203 条有实际断言、48 条无直接场景，186 partial/65 planned/0 verified。18 本机真实浏览器场景、最终占用 30 定向与旧候选真实链通过。ARM 新 CI 全通过且该 DMG 在本机隔离复制启动通过；当前其他平台状态以 verification/follow-through 为准，旧 d596 三平台不代表新代码验证。四项新增运行能力已补规格/文件级计划并经复审，仍 awaiting confirmation。历史 PM6 服务账号 Sheets 实网和凭据证据有效；缺当前 PM9 打包完整链与 OAuth 等专项。releaseAccepted=false。
+
+2026-09-21 后续校正（confirmed，取代上段计数/能力分类）：当前 204 条有断言、47 条无直接场景，187 partial/64 planned/0 verified。52936b6a Windows 与 ARM CI 全通过，Intel 首次前端等待失败、原 SHA 第二次运行进行中。ARM 包串行字段/新增行/修改/状态链通过，但 dispatcher 与 worker 单 owner/capacity=1、资源保护锁也不支持多 Run；FLOW-A02/DATA-E2E-06 并发为 implementation_missing。独立补充方案 2026-09-21-pm9-multi-run-capacity.md 已提交单独确认；未修改安全锁或开放并发。最新平台结果仍以 verification.json 为准。
+
+2026-09-21 最新校正（confirmed，来源 input-environment-follow-through.json）：XE-A23 真实包链暴露输入环境启动仍要求默认 Profile，修复为实际领取事务冻结所选环境 Profile、忽略无关默认配置、解析失败不创建 Task/lease。54 定向、ruff/mypy/OpenAPI、100 脚本、PyInstaller 和完整真实人员/邮箱/账号恢复链通过，独立复审无 P1/P2。人员预先关联另一环境且全程关联/数据版本不变；邮箱原筛选不再创建 Task，新账号仅一条。当前 204 有断言/47 无直接场景，188 partial/63 planned/0 verified。新增生产改动需要新三平台矩阵；52936b6a Windows/ARM 成功保留，Intel attempt 2 因新候选取消。S1–S5 架构仍待确认，releaseAccepted=false。
+
+2026-09-22 PM9 最新状态（confirmed；来源 shared-data-follow-through.json、shared-data-final-review.json、coverage-audit.json）：上文 S1–S5/共享 C1–C4/R1–R5 待确认或实施中的状态已由用户批准与后续实现 supersede。全部授权切片已接通；S4 仅安全新文件/Job 所有权子集，既有文件覆盖/追加/读取仍拒绝。一次整批 C/R 审查 3 Important 已 RED→GREEN 修复，0 Critical/Minor；本机完整后端 3440/67、前端 5469/409 通过。后续仅测试/证据改变，当前生产源码 3c02b51f；原生 CI d75297fb 的 Intel 继续，Windows/ARM 修正测试后以 0d7524d9 补跑，结果以 verification.json 为准。235 有范围断言/16 未定位/198 partial/53 planned/0 verified；D1 普通来源业务格式错误保留与诊断已获批准并实现：安全来源 Scalar 在 Sheets/XLSX 保留原值并派生 validationIssues，身份、人工写入和 unsafe wire Scalar 仍严格；当前候选 5d1f4608，三平台 Actions 35638303073 待完成，真实 worker/打包完整链/实网授权/实机安装仍待验收。M1–M3 未批准；Google 当前授权/打包完整链、签名与三平台实机专项仍外部条件，PM6 历史实网证据有效。releaseAccepted=false，不合并或发布。
+
+## 安卓桌面布局与确认焦点（2026-09-24，confirmed，隔离分支）
+
+来源：`codex/android-management-complete` 的 `docs/qa/android-management/2026-09-24-desktop-apps-layout.md`，真实Electron/Lima/ReDroid与22项组件回归。
+
+- 安卓创建页在1280×800/1440×900、100%/200%通过真实布局断言；长设备名标题使用最小高度与换行，避免覆盖详情标签。
+- 应用破坏性确认复用共享Dialog；取消初始焦点与键盘圈定，未知结果触发器禁用时回搜索框。卸载请求提交时选择搜索框作为恢复目标，避免异步列表移除按钮后焦点丢失。
+- 真实清除/卸载与备份恢复读回已完成，自建资源已清理。本条只确认该有界切片；最终全量门禁与整个AM1–AM4验收状态以QA报告为准。
+
+- 2026-09-24 批次取消增量（confirmed 软件与真实 HTTP；完整 UI partial）：取消未准入项、冻结动作重试、确认终态后的新批次入口及筛选零匹配保留已实现；修复容量 await/跨批次旧快照/核实 await 覆盖取消和幂等回执。前端160项、后端47项定向通过；独立最终复审无Critical/Important；真实ReDroid容量等待取消、服务重启原编号重放保持cancelled且自建资源清理missing。最终全量后端4048passed/26skipped/2warnings、前端424文件/5650项及工程门禁通过；Mac锁屏阻塞真实UI，进度隐藏页检查与T14/T16等剩余项未关闭。见[报告](../../docs/qa/android-management/2026-09-24-bulk-actions.md)。
+
+- 2026-09-24 隐藏页与观察增量（confirmed 软件/真实后端，整体partial）：批次状态GET隐藏时暂停、可见恢复，一行修复经RED 1 failed→GREEN 69 passed；1/5台真实API P95为6.177/12.495ms，列表内inspect均0，后台间隔3.23–3.34/4.15–4.21秒，停机约15.8秒；5台自建资源均核实missing。Mac锁屏继续阻塞桌面隐藏页/前台/新批次入口，十台及GApps条件未变。完整前端424文件/5651项（722.44s）及类型/lint/OpenAPI/build全部exit0；结构4/脚本95/迁移6项通过，当前102步骤85passed/14not_run/3blocked不虚增。见[完整证据](../../docs/qa/android-management/2026-09-24-observation.md)。
+
+- 2026-09-24 规格复核修复（confirmed软件定向，真实桌面blocked）：原T13.4逐项结果证据范围过宽，本轮直接渲染冻结result.items的全部状态/错误/重试来源，accepted不再误报未知但继续冻结；镜像未知拉取补现有POST核实、原编号重试及A成功/B响应丢失的身份栅栏。4项初始RED加1项连续请求RED后，Android166项/类型/lint通过，最终增量复审无Critical/Important；完整前端424文件/5656项通过（750.46s），类型/lint/OpenAPI/build均exit0，真实UI仍受Mac锁屏阻塞。见[实际证据](../../docs/qa/android-management/2026-09-24-item-results-image-recovery.md)。
+
+- 2026-09-24 持久拉取恢复（confirmed 软件/真实HTTP，桌面blocked）：重启后按工作区分页发现未知拉取、原编号显式核实、新拉取冻结及422前置拒绝恢复输入已实现；后端34项、Android171项及类型/lint/OpenAPI/build通过，增量审查无C/I。真实强杀重启列表total1→核实→0，pull仅1次，基础镜像保留；未创建用户设备。AM-R12磁盘预检仍待实现，不能归为外部blocked。见[证据](../../docs/qa/android-management/2026-09-24-persistent-pull.md)。
+
+- 2026-09-24 最快验收（confirmed，整体不通过/partial）：当前Android后端477项、前端177项、迁移6项及工程门禁通过；真实备份磁盘预检零写入拒绝、释放后估计=实际18595840字节、传输取消及自有资源清理通过。最终限时审查新增备份跨动作未知编号覆盖已RED→GREEN关闭；创建/拉取磁盘准入和宿主/VM数值展示仍Important。Mac已解锁，最终构建首页/无效拉取恢复输入实机通过，其余完整UI改记not_run；十台/GApps仍blocked。最后候选全仓全量未重跑，旧数字不代替；见[完整验收命令及输出](../../docs/qa/android-management/2026-09-24-final-acceptance.md)。
+
+- 2026-09-24 磁盘观测（confirmed，整体partial）：宿主workspace与VM实际DockerRootDir可用字节分别透传HTTP/OpenAPI并展示，0与unknown分开；真实Mac只读路由及最终构建页面刷新通过。创建/拉取准入仍未实现，不能以两侧数值展示代替。证据：[验证报告](../../docs/qa/android-management/2026-09-24-disk-observation.md)。 最终本候选完整后端4069passed/26skipped/2warnings（880.33s）、前端424文件/5670项（213.55s）、Android后端485/前端180、迁移6及类型/lint/OpenAPI/结构4/脚本95/build通过；增量审查无新增C/I。
+
+- 2026-09-24（confirmed，整体partial）：18b75c49镜像拉取磁盘准入、严格未知确认和请求冻结已实现；真实未确认0pull、确认后强杀/重启/核实1pull通过。真实Electron批量筛选选择保留、目标冻结、取消未开始项、新批次通过，AC15关闭；两台自建资源已清理。创建/复制/恢复准入与最终全仓验证待Task4，不能沿用旧完整结果当本候选通过。见[验收证据](../../docs/qa/android-management/2026-09-24-pull-disk-and-bulk.md)。
+
+2026-09-24后续confirmed：真实Electron重启发现未知pull、核实前拒绝新请求、显式核实succeeded并清空历史、改引用撤销确认已验；自有登记已撤销。c4b6159d修复202/failed重放误报已接受，187前端回归通过，独立复审进行中。
+
+2026-09-24 当前准入状态（confirmed，整体partial；supersedes以上创建/拉取未完成的进度快照）：Task3及Task4已完成API/OpenAPI/provider/四UI入口并独立审查通过，最终真实Mac创建/保留卷恢复/备份恢复/模板批量/复制/拒绝后重试通过，8条自建记录已清理。严格当前请求确认、来源确认不继承、实际宿主Lima磁盘与VM检查、恢复写前重检见[事实记录](../knowledge/2026-09-24-android-disk-admission.md)。新确认UI仍因Mac再次锁屏blocked，最终全分支与完整门禁以[验收报告](../../docs/qa/android-management/2026-09-24-create-disk-admission.md)为准，不套用历史数字。
+
+2026-09-24 最终审查修复（confirmed软件/真实后端，整体partial）：78bf8c92关闭五项Important：旧核实投影覆盖新代次/owner、镜像核实复活墓碑、隐藏时TanStack停心跳、停机与删源备份维护不可达、当前recover误接历史verify。534项Android后端和199项Android前端通过；独立复审C/I均0。[修复后真实Mac](../../docs/qa/android-management/2026-09-24-final-review-fixes/real-mac.json)含永久删源后恢复新ID/卷与原探针读回，9条自建记录全部清理。最终完整前端5689项、后端4118passed/26skipped/2warnings及规定工程门禁通过，见[当前验收汇总](../../docs/qa/android-management/2026-09-24-final-acceptance.md)。实际Electron长隐藏/新入口锁屏blocked，Node本轮26.7.0；额外mypy6条既存诊断与修复前基线一致。
+
+2026-09-24补充真实验收（confirmed）：旧后端a92f0688真实创建的SQLite0019/temporary实例向前升级am01，身份/卷/配置/数据保留；发现原批次缺sourceDeviceId而当前默认null导致重放409，0f6f8fac仅比较时归一化后真实重放202，新temporary仍拒绝。真实备份目录权限拒绝也已通过，未知结果不自动重放，源数据和清理核实通过。见knowledge/2026-09-24-android-legacy-upgrade.md及最终验收报告；同发布入口组合桌面链仍未验，整体partial。
+
+2026-09-24镜像网络故障补验（confirmed）：独立Docker/containerd、相同overlayfs后端，经真实TLS代理在下载层落盘3MiB后断开；生产HTTP失败回执/同编号重放/重启保持，恢复网络新编号拉取成功且固定imageId一致，全部自有测试运行时清理、原资源未变。详见knowledge/2026-09-24-android-network-interruption.md。桌面仍锁屏；没有修改生产代码或改变整体partial结论。
+
+2026-09-24 Android/PM9本地baseline集成（confirmed）：用户明确要求将Android746c9c5b合入已含PM9的c6e02427；新增0020_merge_android_pm9汇合两侧迁移，旧迁移字节保留。ContextVar栈与PM9 fork复制冲突及变量字段基线自动合并漏计均已修复。合并树后端4466passed/103skipped、前端5725passed及工程门禁通过，独立审查无未解决C/I；不推送、不提升Android partial或PM9 releaseAccepted=false。见sessions/2026-09-24-android-baseline-integration.md与同名QA报告。

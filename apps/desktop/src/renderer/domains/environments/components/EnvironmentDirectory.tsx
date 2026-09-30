@@ -1,6 +1,7 @@
 import { DotsThree, HardDrive } from '@phosphor-icons/react'
 import { Button } from '../../../shared/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../../shared/components/ui/dropdown-menu'
+import { EmptyState } from '../../../shared/components/ui/empty-state'
 import { Skeleton } from '../../../shared/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableScroll } from '../../../shared/components/ui/table'
 import type { Environment, EnvironmentPage } from '../api'
@@ -18,9 +19,9 @@ const tones: Record<string, string> = {
 }
 const pill = (state: string) => <span className={`inline-flex items-center rounded-control border px-2 py-0.5 text-xs ${tones[state] ?? 'border-line bg-surface-subtle text-muted'}`}>{states[state] ?? state}</span>
 
-export function EnvironmentDirectory({ page, query = '', loading = false, error, disabled = false, onOpen, onOpenTask, onMaintenance, onRetry }: {
+export function EnvironmentDirectory({ page, hasFilters = false, loading = false, error, disabled = false, onOpen, onOpenTask, onMaintenance, onRetry }: {
   page?: EnvironmentPage
-  query?: string
+  hasFilters?: boolean
   loading?: boolean
   error?: string
   disabled?: boolean
@@ -30,6 +31,7 @@ export function EnvironmentDirectory({ page, query = '', loading = false, error,
   onRetry(): void
 }) {
   const initial = loading && !page
+  const unfilteredEmpty = Boolean(page && page.total === 0 && !hasFilters)
   const menu = (item: Environment) => <DropdownMenu>
     <DropdownMenuTrigger asChild>
       <Button variant="ghost" className="h-8 w-8 p-0" aria-label={`更多 ${item.name} 操作`} disabled={disabled}><DotsThree size={21} aria-hidden /></Button>
@@ -48,6 +50,6 @@ export function EnvironmentDirectory({ page, query = '', loading = false, error,
       <TableCell><time dateTime={item.updatedAt}>{time(item.updatedAt)}</time></TableCell>
       <TableCell>{item.linkedRecordCount ?? 0}</TableCell>
       <TableCell className="text-right">{menu(item)}</TableCell>
-    </TableRow>)}</TableBody></Table></TableScroll> : !error ? <div className="grid min-h-72 place-items-center text-center"><div><HardDrive size={52} className="mx-auto text-muted" /><h3>{page && page.total === 0 && !query.trim() ? '还没有持久环境' : '没有匹配的持久环境'}</h3><p className="text-muted">任务结束时明确保留登录上下文后，环境会出现在这里。</p></div></div> : null}
+    </TableRow>)}</TableBody></Table></TableScroll> : !error ? <EmptyState icon={<HardDrive size={52} />} title={unfilteredEmpty ? '还没有持久环境' : '没有匹配的持久环境'} description={unfilteredEmpty ? '任务结束时明确保留登录上下文后，环境会出现在这里。' : '调整搜索或状态筛选后再试。'} /> : null}
   </section>
 }

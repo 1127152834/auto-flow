@@ -15,7 +15,7 @@ def test_pm1_upgrade_preserves_0005_resources(tmp_path: Path, existing: bool):
     config = Config(str(Path(database_session.__file__).with_name("alembic.ini")))
     config.set_main_option("sqlalchemy.url", f"sqlite:///{database}")
 
-    assert ScriptDirectory.from_config(config).get_heads() == ["0024_studio_credential_namespace"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["0025_merge_studio_credential_environment"]
 
     preserved = {}
     if existing:
@@ -51,7 +51,7 @@ def test_pm1_upgrade_preserves_0005_resources(tmp_path: Path, existing: bool):
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
 
-        ).fetchall() == [("0024_studio_credential_namespace",)]
+        ).fetchall() == [("0025_merge_studio_credential_environment",)]
 
         assert connection.execute("SELECT * FROM projects").fetchall() == []
         assert connection.execute("SELECT * FROM project_operations").fetchall() == []

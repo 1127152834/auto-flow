@@ -3,15 +3,18 @@ from __future__ import annotations
 import asyncio
 import copy
 import json
-from collections.abc import Coroutine, Mapping
+from collections.abc import AsyncIterator, Coroutine, Mapping
+from contextlib import asynccontextmanager
 from contextvars import ContextVar
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from time import perf_counter
 from typing import Any
 from uuid import uuid4
 
 from autoflow.domain.workflows.execution import ExecutionContext
 from autoflow.domain.workflows.graph import ExecutionGraph, WorkflowNode, parse_workflow
+from autoflow.domain.workflows.parallel_graph import structured_fork
+from autoflow.domain.workflows.project_end import normalize_project_end
 from autoflow.domain.workflows.scope import WorkflowScopeIssue, validate_workflow_scope
 
 from .executors.base import ModuleExecutor, ModuleResult
@@ -129,6 +132,16 @@ class WorkflowRuntime:
                 else node.get("type")
             )
             if isinstance(module_type, str):
+                config = data.get("config", data) if isinstance(data, Mapping) else {}
+                if module_type == "project_manual":
+                    return True
+                if module_type == "project_end" and isinstance(config, Mapping):
+                    try:
+                        retain = normalize_project_end(config)["retainEnvironment"]
+                    except (TypeError, ValueError):
+                        return True
+                    if retain:
+                        return True
                 executor = self._registry.get(module_type)
                 if executor is not None:
                     raw_config = (
@@ -172,6 +185,65 @@ class WorkflowRuntime:
                 _node_timings.reset(token)
 
 
+class _BranchBoundary:
+    """One Run-wide manual owner; queued items precede ordinary node work."""
+    def __init__(self) -> None:
+        self.condition = asyncio.Condition()
+        self.active = 0
+        self.owner: object | None = None
+        self.waiting: list[object] = []
+        self.closed = False
+
+    async def _wait(self, context: ExecutionContext) -> None:
+        if context.cancellation:
+            context.cancellation.raise_if_cancelled()
+        if self.closed:
+            raise asyncio.CancelledError
+        try:
+            await asyncio.wait_for(self.condition.wait(), .05)
+        except TimeoutError:
+            pass
+
+    @asynccontextmanager
+    async def node(self, context: ExecutionContext, kind: str) -> AsyncIterator[None]:
+        token = object()
+        manual = kind == 'project_manual'
+        container = kind == 'container'
+        entered = False
+        try:
+            async with self.condition:
+                if manual:
+                    self.waiting.append(token)
+                    while self.owner is not None or self.active or self.waiting[0] is not token:
+                        await self._wait(context)
+                else:
+                    while self.owner is not None or self.waiting:
+                        await self._wait(context)
+                if self.closed:
+                    raise asyncio.CancelledError
+                if context.cancellation:
+                    context.cancellation.raise_if_cancelled()
+                if manual:
+                    self.waiting.remove(token)
+                    self.owner = token
+                elif not container:
+                    self.active += 1
+                entered = True
+            yield
+        finally:
+            async with self.condition:
+                if token in self.waiting:
+                    self.waiting.remove(token)
+                if entered:
+                    if manual:
+                        self.owner = None
+                        if context.stop_workflow:
+                            self.closed = True
+                    elif not container:
+                        self.active -= 1
+                self.condition.notify_all()
+
+
 @dataclass(slots=True)
 class _WorkflowScheduler:
     registry: ExecutorRegistry
@@ -203,7 +275,7 @@ class _WorkflowScheduler:
         )
 
     async def _execute_parallel(self, node_ids: list[str]) -> None:
-        if not node_ids or self.halted or self.context.project_end.accepted:
+        if not node_ids or self.halted or self.context.project_end.accepted or self.context.stop_workflow:
             return
         self._raise_if_cancelled()
         async with self.lock:
@@ -252,8 +324,9 @@ class _WorkflowScheduler:
             raise
 
         async with self.lock:
-            self.executed.add(node_id)
-            self.executing.discard(node_id)
+            if node.type not in _LOOP_NODE_TYPES or not result.success:
+                self.executed.add(node_id)
+                self.executing.discard(node_id)
             self.executed_order.append(node_id)
 
         if not result.success:
@@ -274,14 +347,34 @@ class _WorkflowScheduler:
             await self._handle_loop(node)
             return
 
+        config = node.data.get('config', node.data)
+        if config.get('parallel') is not None:
+            # Isolated children completed; their predecessor state is local.
+            await self._execute_parallel([config['parallel']['joinNodeId']])
+            return
         next_nodes = (
             self.graph.get_next_nodes(node_id, result.branch)
             if result.branch
             else self.graph.get_next_nodes(node_id)
         )
+        if result.target_node_id is not None:
+            if result.target_node_id not in next_nodes:
+                self._remember_failure(node_id, ModuleResult(False, error="MANUAL_TARGET_INVALID"))
+                self.halted = True
+                return
+            next_nodes = [result.target_node_id]
         await self._notify_successors(next_nodes, node_id)
 
     async def _dispatch(self, node: WorkflowNode) -> ModuleResult:
+        boundary = self.context.node_boundary
+        if boundary is None:
+            return await self._dispatch_node(node)
+        config = node.data.get('config', node.data)
+        kind = 'container' if node.type == 'subflow' or config.get('parallel') is not None else node.type
+        async with boundary(self.context, kind):
+            return await self._dispatch_node(node)
+
+    async def _dispatch_node(self, node: WorkflowNode) -> ModuleResult:
         self._raise_if_cancelled()
         if self.dispatch_count >= MAX_NODE_DISPATCHES:
             result = ModuleResult(
@@ -428,12 +521,21 @@ class _WorkflowScheduler:
             and self.context.canvas_subflows is not None
             and isinstance(result.data, Mapping)
         ):
+            subflow_arguments = {}
+            if "inputs" in config:
+                subflow_arguments["inputs"] = copy.deepcopy(self.context.resolve_value(config["inputs"], preserve_types=True))
             nested_subflow = await self.context.canvas_subflows.run_subflow(
                 group_id=str(result.data.get("subflow_group_id") or ""),
                 name=str(result.data.get("subflow_name") or ""),
+                **subflow_arguments,
             )
+            outputs = config.get("outputs", {})
+            missing_outputs = set(outputs) - nested_subflow.variables.keys()
+            if nested_subflow.success and not missing_outputs and not self.context.stop_workflow:
+                for source, target in outputs.items():
+                    self.context.set_variable(target, copy.deepcopy(nested_subflow.variables[source]), sensitive=source in nested_subflow.sensitive_outputs)
             result = ModuleResult(
-                success=nested_subflow.success,
+                success=nested_subflow.success and not missing_outputs,
                 message=(
                     (
                         f"子流程 [{nested_subflow.name}] 为空"
@@ -443,13 +545,17 @@ class _WorkflowScheduler:
                     if nested_subflow.success
                     else ""
                 ),
-                error=nested_subflow.error,
+                error=nested_subflow.error or ("SUBFLOW_OUTPUT_MISSING" if missing_outputs else None),
                 data={
                     "subflow": nested_subflow.name,
                     "executed_nodes": nested_subflow.executed_nodes,
                     "failed_nodes": nested_subflow.failed_nodes,
                 },
             )
+        if result.success and config.get('parallel') is not None:
+            fork_result = await self._execute_fork(node, execution_id)
+            if not fork_result.success:
+                result = fork_result
         if not _is_json_value(result.data):
             result = ModuleResult(success=False, error="节点结果包含无法序列化的数据")
         result.duration = max(
@@ -486,6 +592,52 @@ class _WorkflowScheduler:
         )
         return reported_result if self.context.node_uses_sensitive_values else result
 
+    async def _execute_fork(self, node: WorkflowNode, visit: str) -> ModuleResult:
+        fork = structured_fork(self.graph, node.id)
+        boundary = self.context.node_boundary or _BranchBoundary().node
+        children: dict[str, ExecutionContext] = {}
+        tasks: dict[asyncio.Task[WorkflowRuntimeResult], str] = {}
+        for root, members in fork.branches.items():
+            child = replace(self.context, variables=copy.deepcopy(self.context.variables), sensitive_variables=set(self.context.sensitive_variables), loop_stack=copy.deepcopy(list(self.context.loop_stack)), current_row=copy.deepcopy(self.context.current_row), current_node_id=None, current_execution_id=None, should_break=False, should_continue=False, stop_workflow=False, stop_reason='', node_boundary=boundary, execution_scopes=(*self.context.execution_scopes, {'kind': 'parallel', 'id': node.id, 'callNodeId': node.id, 'callVisitId': visit, 'branchNodeId': root, 'joinNodeId': fork.join_id}))
+            sink_factory = getattr(self.context.events, 'for_context', None)
+            if sink_factory:
+                child.events = sink_factory(child)
+            gateway_factory = getattr(self.context.canvas_subflows, 'for_context', None)
+            if gateway_factory:
+                child.canvas_subflows = gateway_factory(child, child.events)
+            document = {'nodes': [dict(self.graph.nodes[identity].raw) for identity in self.graph.nodes if identity in members], 'edges': [dict(edge.raw) for edge in self.graph.edges if edge.source in members and edge.target in members]}
+            children[root] = child
+            task = asyncio.create_task(WorkflowRuntime(self.registry).execute(document, child))
+            tasks[task] = root
+        pending = set(tasks)
+        try:
+            while pending:
+                done, pending = await asyncio.wait(pending, return_when=asyncio.FIRST_COMPLETED)
+                # A manual finish closes the gate and cancels sibling waiters.
+                stopped = next((child for child in children.values() if child.stop_workflow), None)
+                if stopped is not None:
+                    self.context.stop_workflow, self.context.stop_reason = True, stopped.stop_reason
+                    return ModuleResult(True)
+                for task in done:
+                    result = task.result()
+                    self.executed_order.extend(result.executed_node_ids)
+                    if not result.success:
+                        return result.node_result or ModuleResult(False, error='PARALLEL_BRANCH_FAILED')
+            values = {}
+            for root, mapping in fork.outputs.items():
+                for source, destination in mapping.items():
+                    if source not in children[root].variables:
+                        return ModuleResult(False, error='PARALLEL_OUTPUT_MISSING')
+                    values[destination] = (copy.deepcopy(children[root].variables[source]), source in children[root].sensitive_variables)
+            for name, (value, sensitive) in values.items():
+                self.context.set_variable(name, value, sensitive=sensitive)
+            return ModuleResult(True)
+        finally:
+            for task in tasks:
+                if not task.done():
+                    task.cancel()
+            await asyncio.gather(*tasks, return_exceptions=True)
+
     async def _execute_network_guarded(self, node, executor, config):
         if self.context.project_end.accepted:
             return ModuleResult(True, skipped=True)
@@ -505,17 +657,19 @@ class _WorkflowScheduler:
         body_nodes = self.graph.get_loop_body_nodes(loop_node.id)
         done_nodes = self.graph.get_loop_done_nodes(loop_node.id)
         if not self.context.loop_stack:
+            self.executed.add(loop_node.id)
+            self.executing.discard(loop_node.id)
             await self._notify_successors(done_nodes, loop_node.id)
             return
         loop_state = self.context.loop_stack[-1]
         loop_state.setdefault("node_id", loop_node.id)
-        body_scope = self._collect_loop_body_nodes(loop_node.id, body_nodes, done_nodes)
-        while not self.halted and not self.context.project_end.accepted and self._loop_should_continue(loop_state):
+        body_scope = self.graph.loop_body_scope(loop_node.id)
+        while not self.halted and not self.context.project_end.accepted and not self.context.stop_workflow and self._loop_should_continue(loop_state):
             self._raise_if_cancelled()
             self.context.should_continue = False
             await self._reset_nodes(body_scope)
             await self._execute_parallel(body_nodes)
-            if self.halted or self.context.project_end.accepted:
+            if self.halted or self.context.project_end.accepted or self.context.stop_workflow:
                 break
             if bool(getattr(self.context, "should_break", False)):
                 self.context.should_break = False
@@ -527,7 +681,9 @@ class _WorkflowScheduler:
         if self.context.loop_stack and self.context.loop_stack[-1] is loop_state:
             self.context.loop_stack.pop()
         await self._exit_loop_scope(loop_node, loop_state)
-        if done_nodes and not self.halted and not self.context.project_end.accepted:
+        self.executed.add(loop_node.id)
+        self.executing.discard(loop_node.id)
+        if done_nodes and not self.halted and not self.context.project_end.accepted and not self.context.stop_workflow:
             await self._notify_successors(done_nodes, loop_node.id)
 
     def _loop_should_continue(self, state: Mapping[str, Any]) -> bool:
@@ -625,20 +781,6 @@ class _WorkflowScheduler:
                 },
             )
 
-    def _collect_loop_body_nodes(
-        self, loop_id: str, roots: list[str], done_nodes: list[str]
-    ) -> set[str]:
-        blocked = {loop_id, *done_nodes}
-        collected: set[str] = set()
-        queue = list(roots)
-        while queue:
-            current = queue.pop(0)
-            if current in blocked or current in collected:
-                continue
-            collected.add(current)
-            queue.extend(self._full_successors(current))
-        return collected
-
     async def _reset_nodes(self, node_ids: set[str]) -> None:
         async with self.lock:
             for node_id in node_ids:
@@ -706,13 +848,7 @@ class _WorkflowScheduler:
         return False
 
     def _full_successors(self, node_id: str) -> list[str]:
-        successors = list(self.graph.adjacency.get(node_id, []))
-        for targets in self.graph.condition_branches.get(node_id, {}).values():
-            successors.extend(targets)
-        for targets in self.graph.loop_branches.get(node_id, {}).values():
-            successors.extend(targets)
-        successors.extend(self.graph.error_branches.get(node_id, []))
-        return successors
+        return self.graph.full_successors(node_id)
 
     def _is_back_edge(self, target_id: str, source_id: str) -> bool:
         return target_id == source_id or source_id in self._reachable_from(target_id)
@@ -771,6 +907,7 @@ def _reported_result(result: ModuleResult, context: ExecutionContext) -> ModuleR
         log_level=result.log_level,
         skipped=result.skipped,
         is_timeout=result.is_timeout,
+        target_node_id=result.target_node_id,
     )
 
 
@@ -839,28 +976,34 @@ async def _execute_with_cancellation(
     token = context.cancellation
     if token is None:
         return await operation
-    async def run_operation() -> tuple[ModuleResult, bool]:
-        result = await operation
-        return result, context.node_uses_sensitive_values
+    sensitive = False
 
-    operation_task = asyncio.create_task(run_operation())
+    async def tracked() -> ModuleResult:
+        nonlocal sensitive
+        try:
+            return await operation
+        finally:
+            sensitive = context.node_uses_sensitive_values
+
+    operation_task = asyncio.create_task(tracked())
     cancellation_task = asyncio.create_task(_wait_until_cancelled(context))
     try:
         done, _ = await asyncio.wait(
             {operation_task, cancellation_task}, return_when=asyncio.FIRST_COMPLETED
         )
         if operation_task in done:
-            result, used_sensitive_values = operation_task.result()
-            if used_sensitive_values:
-                context.mark_sensitive_use()
-            return result
+            return operation_task.result()
         operation_task.cancel()
         await asyncio.gather(operation_task, return_exceptions=True)
         token.raise_if_cancelled()
         raise RuntimeError("workflow cancellation token did not raise")
     finally:
+        if not operation_task.done():
+            operation_task.cancel()
         cancellation_task.cancel()
-        await asyncio.gather(cancellation_task, return_exceptions=True)
+        await asyncio.gather(operation_task, cancellation_task, return_exceptions=True)
+        if sensitive:
+            context.mark_sensitive_use()
 
 
 async def _wait_until_cancelled(context: ExecutionContext) -> None:

@@ -16,7 +16,13 @@ from uuid import NAMESPACE_URL, uuid5
 from sqlalchemy import select
 from sqlalchemy.orm import Session, sessionmaker
 
-from autoflow.domain.project_data.identity import RecordKey, RecordKeyType
+from autoflow.domain.project_data.identity import (
+    RecordKey,
+    RecordKeyType,
+    decode_record_key,
+)
+from autoflow.domain.project_data.records import validate_record_scalar
+from autoflow.domain.project_data.rules import validate_value
 from autoflow.domain.projects.models import ProjectError, ProjectOperation
 from autoflow.infrastructure.database.project_data_models import (
     DataFieldRow,
@@ -27,6 +33,8 @@ from autoflow.infrastructure.database.project_data_records import (
     SqlAlchemyProjectDataRecords,
 )
 from autoflow.infrastructure.database.project_sync import SqlAlchemyProjectSync
+from autoflow.infrastructure.database.project_sync_models import SyncOperationRow
+from autoflow.infrastructure.database.project_sync_sends import require_source_idle
 from autoflow.providers.data.google_sheets import (
     SheetsApiError,
     SheetsClient,
@@ -37,8 +45,10 @@ from autoflow.providers.data.google_sheets import (
 
 from .access import GoogleAccess
 from .bindings import _api_error, _column_index
+from .columns import COLUMN_METADATA
 from .connections import _invalid, _uuid
 from .runs import SheetsRun
+from .system_identity import canonical_uuid, owned_identity
 
 MAX_PUSH_RECORDS = 200
 PUSH_RETRY_LIMIT = 3
@@ -71,7 +81,19 @@ class SheetsSyncService:
                     "unknownCount": 0,
                 }
             }
-        return {"summary": self._runs.summary(project_id, table_id), "binding": binding}
+        result = {"summary": self._runs.summary(project_id, table_id), "binding": binding}
+        pulls = self._sync.sync_operations(table_id, None, 1, 1, kind="pull")["items"]
+        if pulls and pulls[0]["bindingEpoch"] == binding["bindingEpoch"]:
+            result["latestPull"] = pulls[0]
+        return result
+
+    def source_observations(
+        self, project: str, table: str, generation: str, encoded: str, key_type: str,
+    ) -> dict[str, Any]:
+        _uuid(project, "projectId")
+        _uuid(table, "tableId")
+        _uuid(generation, "datasetGeneration")
+        return self._sync.source_observations(project, table, generation, decode_record_key(encoded, key_type))
 
     def pause(
         self, project_id: str, table_id: str, key: str, payload: dict[str, Any]
@@ -121,46 +143,47 @@ class SheetsSyncService:
     def pull(
         self, project_id: str, table_id: str, key: str, payload: dict[str, Any]
     ) -> dict[str, Any]:
-        if set(payload) != {"expectedTableRevision"}:
-            raise _invalid("payload", "意外的字段")
-        expected = _revision(payload["expectedTableRevision"], "expectedTableRevision")
-        with self._sessions() as session:
-            table = _require_table(session, project_id, table_id)
-            if table.table_revision != expected:
-                raise ProjectError(
-                    "PRECONDITION_FAILED",
-                    "表结构已变化，请重新加载。",
-                    412,
-                    {"reason": "tableRevision", "tableRevision": table.table_revision},
-                )
-            generation = table.current_generation
-            fields = {field.id: field for field in _fields(session, table)}
-        binding = self._require_binding(project_id, table_id)
-        epoch = int(binding["bindingEpoch"])
-        view, existing = self._runs.accept(
-            project=project_id,
-            table=table_id,
-            kind="syncPull",
-            key=key,
-            request=payload,
-            binding_epoch=epoch,
-            dedupe=f"pull:{key}",
-        )
-        if existing:
-            return {"operation": view}
-        operation_id = view["operationId"]
-        client = self._access.client(project_id, str(binding["connectionId"]))
-        try:
-            self._pull(client, project_id, table_id, generation, fields, binding)
-        except ProjectError as error:
-            self._runs.fail(operation_id, error)
-            raise
-        # The frozen `syncPull` result is which table ran and what the queue looks
-        # like afterwards; per-record outcomes are their own sync operations.
-        self._runs.complete_queue(
-            operation_id, lambda: self._run_result(project_id, table_id)
-        )
-        return {"operation": self._runs.operation_view(operation_id)}
+        with self._access.send_lock:
+            if set(payload) != {"expectedTableRevision"}:
+                raise _invalid("payload", "意外的字段")
+            expected = _revision(payload["expectedTableRevision"], "expectedTableRevision")
+            with self._sessions() as session:
+                table = _require_table(session, project_id, table_id)
+                if table.table_revision != expected:
+                    raise ProjectError(
+                        "PRECONDITION_FAILED",
+                        "表结构已变化，请重新加载。",
+                        412,
+                        {"reason": "tableRevision", "tableRevision": table.table_revision},
+                    )
+                generation = table.current_generation
+                fields = {field.id: field for field in _fields(session, table)}
+            binding = self._require_binding(project_id, table_id)
+            epoch = int(binding["bindingEpoch"])
+            view, existing = self._runs.accept(
+                project=project_id,
+                table=table_id,
+                kind="syncPull",
+                key=key,
+                request=payload,
+                binding_epoch=epoch,
+                dedupe=f"pull:{key}",
+            )
+            if existing:
+                return {"operation": view}
+            operation_id = view["operationId"]
+            try:
+                client = self._access.client(project_id, str(binding["connectionId"]))
+                self._pull(client, project_id, table_id, generation, fields, binding)
+            except ProjectError as error:
+                self._runs.fail(operation_id, error)
+                raise
+            # The frozen `syncPull` result is which table ran and what the queue looks
+            # like afterwards; per-record outcomes are their own sync operations.
+            self._runs.complete_queue(
+                operation_id, lambda: self._run_result(project_id, table_id)
+            )
+            return {"operation": self._runs.operation_view(operation_id)}
 
     def _pull(
         self,
@@ -184,14 +207,24 @@ class SheetsSyncService:
             )
         except SheetsApiError as error:
             raise _api_error(error) from error
-        if not raw:
-            return {"created": 0, "refreshed": 0, "conflicts": 0, "rows": 0}
-        header = [str(value) for value in raw[0]]
+        header = [str(value) for value in raw[0]] if raw else []
         identity = _identity_column(binding["identityStrategy"], header)
+        system = binding["identityStrategy"]["kind"] == "system"
+        _, valid = self._observe_identity(client, project_id, table_id, generation, binding, raw)
+        self._check_source_columns(client, table_id, binding, header)
+        if system and not valid:
+            raise ProjectError("SHEETS_IDENTITY_UNVERIFIED", "系统身份列归属或 UUID 不完整，请修复来源后重试。", 409)
         by_column = {
             str(entry["columnId"]).upper(): entry for entry in binding["mapping"]
         }
-        created = refreshed = conflicts = rows = 0
+        identity_field_id: str | None = None
+        if not system:
+            identity_field = fields.get(
+                str(by_column.get(column_letter(identity), {}).get("fieldId"))
+            )
+            identity_field_id = identity_field.id if identity_field is not None else None
+        prepared: list[tuple[RecordKey, dict[str, Any]]] = []
+        rows = 0
         for index in range(1, len(raw)):
             row = raw[index]
             if not any(str(value) != "" for value in row):
@@ -213,11 +246,28 @@ class SheetsSyncService:
                 # it from the FORMULA view while plain cells keep the value the
                 # user sees.
                 source = raw if field.formula else computed
-                values[field.id] = _coerce(
-                    field.type, _cell_value(source, index, position)
-                )
-            key = _record_key_for(marker)
+                source_value = _cell_value(source, index, position)
+                if source_value is None:
+                    # A blank source cell is missing input, not a new local null
+                    # value.  Leave it absent so required diagnostics remain
+                    # REQUIRED_FIELD_MISSING and local data is not overwritten.
+                    continue
+                values[field.id] = _coerce(field.type, source_value)
+            if not system:
+                identity_field = fields.get(identity_field_id) if identity_field_id else None
+                if identity_field is not None:
+                    _validate_source_value(identity_field, values.get(identity_field.id), strict=True)
+            key = _record_key_for(marker, system=system)
+            for field_id, value in values.items():
+                field = fields[field_id]
+                if field.id != identity_field_id:
+                    _validate_source_value(field, value)
+            prepared.append((key, values))
+        created = refreshed = conflicts = 0
+        for key, values in prepared:
             outcome = self._ingest(project_id, table_id, generation, key, values)
+            if valid:
+                self._sync.observe_source(project_id, table_id, generation, int(binding["bindingEpoch"]), key, values)
             if outcome == "created":
                 created += 1
             elif outcome == "refreshed":
@@ -301,52 +351,53 @@ class SheetsSyncService:
     def push(
         self, project_id: str, table_id: str, key: str, payload: dict[str, Any]
     ) -> dict[str, Any]:
-        if set(payload) != {"mode", "expectedBindingEpoch"}:
-            raise _invalid("payload", "意外的字段")
-        mode = payload["mode"]
-        if mode not in {"due", "allPending"}:
-            raise _invalid("mode", "mode 必须是 due 或 allPending")
-        epoch = _revision(payload["expectedBindingEpoch"], "expectedBindingEpoch")
-        binding = self._require_binding(project_id, table_id)
-        if int(binding["bindingEpoch"]) != epoch:
-            raise ProjectError(
-                "PRECONDITION_FAILED",
-                "绑定已变化，请重新加载。",
-                412,
-                {"reason": "bindingEpoch", "bindingEpoch": binding["bindingEpoch"]},
+        with self._access.send_lock:
+            if set(payload) != {"mode", "expectedBindingEpoch"}:
+                raise _invalid("payload", "意外的字段")
+            mode = payload["mode"]
+            if mode not in {"due", "allPending"}:
+                raise _invalid("mode", "mode 必须是 due 或 allPending")
+            epoch = _revision(payload["expectedBindingEpoch"], "expectedBindingEpoch")
+            binding = self._require_binding(project_id, table_id)
+            if int(binding["bindingEpoch"]) != epoch:
+                raise ProjectError(
+                    "PRECONDITION_FAILED",
+                    "绑定已变化，请重新加载。",
+                    412,
+                    {"reason": "bindingEpoch", "bindingEpoch": binding["bindingEpoch"]},
+                )
+            if binding["syncPaused"]:
+                # DATA-LIFE-05: pausing keeps recording local intents but stops new
+                # network writes, so a push must refuse rather than send.
+                raise ProjectError(
+                    "SYNC_PAUSED",
+                    "同步已暂停，请先恢复同步。",
+                    409,
+                    {"bindingEpoch": binding["bindingEpoch"]},
+                )
+            self._access.require_writable(project_id, str(binding["connectionId"]))
+            view, existing = self._runs.accept(
+                project=project_id,
+                table=table_id,
+                kind="syncPush",
+                key=key,
+                request=payload,
+                binding_epoch=epoch,
+                dedupe=f"push:{key}",
             )
-        if binding["syncPaused"]:
-            # DATA-LIFE-05: pausing keeps recording local intents but stops new
-            # network writes, so a push must refuse rather than send.
-            raise ProjectError(
-                "SYNC_PAUSED",
-                "同步已暂停，请先恢复同步。",
-                409,
-                {"bindingEpoch": binding["bindingEpoch"]},
+            if existing:
+                return {"operation": view}
+            operation_id = view["operationId"]
+            try:
+                client = self._access.client(project_id, str(binding["connectionId"]))
+                self._push(client, project_id, table_id, binding, mode)
+            except ProjectError as error:
+                self._runs.fail(operation_id, error)
+                raise
+            self._runs.complete_queue(
+                operation_id, lambda: self._run_result(project_id, table_id)
             )
-        self._access.require_writable(project_id, str(binding["connectionId"]))
-        view, existing = self._runs.accept(
-            project=project_id,
-            table=table_id,
-            kind="syncPush",
-            key=key,
-            request=payload,
-            binding_epoch=epoch,
-            dedupe=f"push:{key}",
-        )
-        if existing:
-            return {"operation": view}
-        operation_id = view["operationId"]
-        client = self._access.client(project_id, str(binding["connectionId"]))
-        try:
-            self._push(client, project_id, table_id, binding, mode)
-        except ProjectError as error:
-            self._runs.fail(operation_id, error)
-            raise
-        self._runs.complete_queue(
-            operation_id, lambda: self._run_result(project_id, table_id)
-        )
-        return {"operation": self._runs.operation_view(operation_id)}
+            return {"operation": self._runs.operation_view(operation_id)}
 
     def _run_result(self, project_id: str, table_id: str) -> dict[str, Any]:
         """The one frozen result shape for a pull or a push."""
@@ -373,9 +424,7 @@ class SheetsSyncService:
             return {"confirmed": 0, "failed": 0, "unknown": 0, "targets": []}
         spreadsheet_id = str(binding["spreadsheetId"])
         sheet_name = str(binding["sheetName"])
-        header = _header(client, spreadsheet_id, sheet_name)
-        identity_index = _identity_column(binding["identityStrategy"], header)
-        remote = _remote_keys(client, spreadsheet_id, sheet_name, identity_index)
+        remote = self._verified_source(client, project_id, table_id, binding)
         confirmed = failed = unknown = 0
         writes: list[dict[str, Any]] = []
         planned: list[tuple[Any, dict[str, Any], int]] = []
@@ -414,7 +463,14 @@ class SheetsSyncService:
                     failed += 1
                     continue
                 record = session.get(DataRecordRow, (generation, key.type, key.value))
-                cells = _write_cells(record, fields, binding)
+                if not isinstance(intent.request.get("values"), dict):
+                    self._sync.transition(intent.id, status="failed", error={
+                        "code": "SYNC_SNAPSHOT_MISSING",
+                        "message": "旧同步操作缺少原字段快照，禁止猜测写入；请核查后重新发起修改。",
+                    })
+                    failed += 1
+                    continue
+                cells = {} if record is None or record.deleted else _write_cells(intent.request["values"], fields, binding)
                 if not cells:
                     self._sync.transition(
                         intent.id,
@@ -427,6 +483,15 @@ class SheetsSyncService:
                     )
                     failed += 1
                     continue
+                try:
+                    self._sync.transition(
+                        intent.id, status="sending", attempt=True,
+                        expected_status_revision=intent.status_revision,
+                    )
+                except ProjectError as error:
+                    if error.code == "PRECONDITION_FAILED":
+                        continue  # An edit/cancel/other sender won; never send stale facts.
+                    raise
                 for column, value in cells.items():
                     writes.append(
                         {
@@ -449,7 +514,7 @@ class SheetsSyncService:
             status = "unknown" if error.uncertain else "failed"
             for intent, _, _ in planned:
                 self._sync.transition(
-                    intent.id, status=status, attempt=True, error=payload
+                    intent.id, status=status, error=payload
                 )
             return {
                 "confirmed": confirmed,
@@ -459,9 +524,20 @@ class SheetsSyncService:
                 "error": payload,
             }
         for intent, cells, row_index in planned:
-            matched = self._verify(
-                client, spreadsheet_id, sheet_name, row_index, cells
-            )
+            try:
+                matched = self._verify(
+                    client, spreadsheet_id, sheet_name, row_index, cells
+                )
+            except ProjectError as error:
+                # The write already succeeded. A failed read is no evidence that
+                # it did not apply; preserve the original intent for reconciliation.
+                self._sync.transition(intent.id, status="unknown", error={
+                    "code": "SYNC_VERIFY_UNAVAILABLE",
+                    "message": error.message,
+                    "details": error.details,
+                })
+                unknown += 1
+                continue
             evidence = {
                 "checkedAt": datetime.now(UTC).isoformat(),
                 "target": f"{sheet_name}!{row_index}",
@@ -470,7 +546,7 @@ class SheetsSyncService:
             }
             if matched:
                 self._sync.transition(
-                    intent.id, status="confirmed", attempt=True, evidence=evidence
+                    intent.id, status="confirmed", evidence=evidence
                 )
                 self._sync.mark(
                     table_id,
@@ -484,7 +560,6 @@ class SheetsSyncService:
                 self._sync.transition(
                     intent.id,
                     status="failed",
-                    attempt=True,
                     evidence=evidence,
                     error={
                         "code": "SYNC_VERIFY_MISMATCH",
@@ -508,10 +583,13 @@ class SheetsSyncService:
         cells: dict[str, Any],
     ) -> bool:
         for column, value in cells.items():
-            read = client.values(
-                spreadsheet_id, cell(sheet_name, _column_index(column), row), "FORMULA"
-            )
-            actual = read[0][0] if read and read[0] else None
+            try:
+                read = client.values(
+                    spreadsheet_id, cell(sheet_name, _column_index(column), row), "FORMULA"
+                )
+            except SheetsApiError as error:
+                raise _api_error(error) from error
+            actual = read[0][0] if read and read[0] else ""  # ValueRange omits empty trailing cells.
             if not _same(actual, value):
                 return False
         return True
@@ -526,104 +604,110 @@ class SheetsSyncService:
         key: str,
         payload: dict[str, Any],
     ) -> dict[str, Any]:
-        if set(payload) != {"expectedStatusRevision"}:
-            raise _invalid("payload", "意外的字段")
-        expected = _revision(payload["expectedStatusRevision"], "expectedStatusRevision")
-        sync_operation_id = _uuid(sync_operation_id, "syncOperationId")
-        # A retry of this command has to answer with the decision it already
-        # made, so the replay is looked up before the revision it quotes.
-        replay = self._sync.replay(
-            project_id, table_id, "reconcileSync", key, payload
-        )
-        if replay is not None:
-            return {"operation": replay}
-        original = self._sync.sync_operation(table_id, sync_operation_id)
-        if original["statusRevision"] != expected:
-            raise ProjectError(
-                "PRECONDITION_FAILED",
-                "该操作已被其他请求更新，请重新加载。",
-                412,
-                {
-                    "reason": "statusRevision",
-                    "statusRevision": original["statusRevision"],
+        with self._access.send_lock:
+            if set(payload) != {"expectedStatusRevision"}:
+                raise _invalid("payload", "意外的字段")
+            expected = _revision(payload["expectedStatusRevision"], "expectedStatusRevision")
+            sync_operation_id = _uuid(sync_operation_id, "syncOperationId")
+            # A retry of this command has to answer with the decision it already
+            # made, so the replay is looked up before the revision it quotes.
+            replay = self._sync.replay(
+                project_id, table_id, "reconcileSync", key, payload
+            )
+            if replay is not None:
+                return {"operation": replay}
+            original = self._sync.sync_operation(table_id, sync_operation_id)
+            if original["statusRevision"] != expected:
+                raise ProjectError(
+                    "PRECONDITION_FAILED",
+                    "该操作已被其他请求更新，请重新加载。",
+                    412,
+                    {
+                        "reason": "statusRevision",
+                        "statusRevision": original["statusRevision"],
+                    },
+                )
+            if original["status"] not in {"sending", "verifying", "unknown"}:
+                raise ProjectError(
+                    "SYNC_NOT_RECONCILABLE",
+                    "只有结果未知的操作才需要核验。",
+                    409,
+                    {"status": original["status"]},
+                )
+            binding = self._require_binding(project_id, table_id)
+            record = original.get("record")
+            if record is None:
+                raise ProjectError(
+                    "SYNC_NOT_RECONCILABLE", "该操作没有可核验的记录目标。", 409
+                )
+            record_key = RecordKey(record["recordKey"]["type"], record["recordKey"]["value"])
+            with self._sessions() as session:
+                row = session.get(
+                    DataRecordRow,
+                    (record["datasetGeneration"], record_key.type, record_key.value),
+                )
+                if row is None or row.deleted:
+                    raise ProjectError("RECORD_NOT_FOUND", "本地记录已不存在。", 404)
+                fields = {
+                    field.id: field
+                    for field in _fields(session, _require_table(session, project_id, table_id))
+                }
+                intent = session.get(SyncOperationRow, sync_operation_id)
+                if intent is None or not isinstance(intent.request.get("values"), dict):
+                    raise ProjectError("SYNC_SNAPSHOT_MISSING", "原字段快照不可用，不能用当前记录推定历史结果。", 409)
+                cells = _write_cells(intent.request["values"], fields, binding)
+            view, existing = self._runs.accept(
+                project=project_id,
+                table=table_id,
+                kind="reconcileSync",
+                key=key,
+                request=payload,
+                binding_epoch=int(binding["bindingEpoch"]),
+                dedupe=f"reconcile:{key}",
+                record_ref=record,
+            )
+            if existing:
+                return {"operation": view}
+            operation_id = view["operationId"]
+            try:
+                client = self._access.client(project_id, str(binding["connectionId"]))
+                spreadsheet_id = str(binding["spreadsheetId"])
+                sheet_name = str(binding["sheetName"])
+                remote = self._verified_source(client, project_id, table_id, binding)
+                row_index = remote.get(_marker(record_key))
+                outcome = "notMatched"
+                if row_index is not None and cells:
+                    outcome = (
+                        "matched"
+                        if self._verify(client, spreadsheet_id, sheet_name, row_index, cells)
+                        else "notMatched"
+                    )
+            except ProjectError as error:
+                # Only this read command failed; the original write stays reconcilable.
+                self._runs.fail(operation_id, error)
+                raise
+            evidence = {
+                "checkedAt": datetime.now(UTC).isoformat(),
+                "target": f"{sheet_name}!{row_index or 0}",
+                "fields": sorted(cells),
+                "outcome": outcome,
+            }
+            self._sync.transition(
+                sync_operation_id,
+                status="confirmed" if outcome == "matched" else "failed",
+                evidence=evidence,
+                error=None
+                if outcome == "matched"
+                else {
+                    "code": "SYNC_RECONCILE_MISMATCH",
+                    "message": "来源中的内容与本次写入不一致，请重新确认。",
                 },
             )
-        if original["status"] not in {"sending", "verifying", "unknown"}:
-            raise ProjectError(
-                "SYNC_NOT_RECONCILABLE",
-                "只有结果未知的操作才需要核验。",
-                409,
-                {"status": original["status"]},
+            # The frozen `reconcileSync` result is the sync operation it confirmed.
+            self._runs.complete(
+                operation_id, self._sync.sync_operation(table_id, sync_operation_id)
             )
-        binding = self._require_binding(project_id, table_id)
-        record = original.get("record")
-        if record is None:
-            raise ProjectError(
-                "SYNC_NOT_RECONCILABLE", "该操作没有可核验的记录目标。", 409
-            )
-        record_key = RecordKey(record["recordKey"]["type"], record["recordKey"]["value"])
-        with self._sessions() as session:
-            row = session.get(
-                DataRecordRow,
-                (record["datasetGeneration"], record_key.type, record_key.value),
-            )
-            if row is None or row.deleted:
-                raise ProjectError("RECORD_NOT_FOUND", "本地记录已不存在。", 404)
-            fields = {
-                field.id: field
-                for field in _fields(session, _require_table(session, project_id, table_id))
-            }
-            cells = _write_cells(row, fields, binding)
-        view, existing = self._runs.accept(
-            project=project_id,
-            table=table_id,
-            kind="reconcileSync",
-            key=key,
-            request=payload,
-            binding_epoch=int(binding["bindingEpoch"]),
-            dedupe=f"reconcile:{key}",
-            record_ref=record,
-        )
-        if existing:
-            return {"operation": view}
-        operation_id = view["operationId"]
-        client = self._access.client(project_id, str(binding["connectionId"]))
-        spreadsheet_id = str(binding["spreadsheetId"])
-        sheet_name = str(binding["sheetName"])
-        header = _header(client, spreadsheet_id, sheet_name)
-        remote = _remote_keys(
-            client, spreadsheet_id, sheet_name, _identity_column(binding["identityStrategy"], header)
-        )
-        row_index = remote.get(_marker(record_key))
-        outcome = "notMatched"
-        if row_index is not None and cells:
-            outcome = (
-                "matched"
-                if self._verify(client, spreadsheet_id, sheet_name, row_index, cells)
-                else "notMatched"
-            )
-        evidence = {
-            "checkedAt": datetime.now(UTC).isoformat(),
-            "target": f"{sheet_name}!{row_index or 0}",
-            "fields": sorted(cells),
-            "outcome": outcome,
-        }
-        self._sync.transition(
-            sync_operation_id,
-            status="confirmed" if outcome == "matched" else "failed",
-            evidence=evidence,
-            error=None
-            if outcome == "matched"
-            else {
-                "code": "SYNC_RECONCILE_MISMATCH",
-                "message": "来源中的内容与本次写入不一致，请重新确认。",
-            },
-        )
-        # The frozen `reconcileSync` result is the sync operation it confirmed.
-        self._runs.complete(
-            operation_id, self._sync.sync_operation(table_id, sync_operation_id)
-        )
-        return {"operation": self._runs.operation_view(operation_id)}
+            return {"operation": self._runs.operation_view(operation_id)}
 
     def abandon(
         self,
@@ -633,6 +717,7 @@ class SheetsSyncService:
         key: str,
         payload: dict[str, Any],
     ) -> dict[str, Any]:
+        self._require_table(project_id, table_id)
         if set(payload) != {"expectedStatusRevision", "reason"}:
             raise _invalid("payload", "意外的字段")
         expected = _revision(payload["expectedStatusRevision"], "expectedStatusRevision")
@@ -652,7 +737,7 @@ class SheetsSyncService:
                     "statusRevision": current["statusRevision"],
                 },
             )
-        if current["status"] != "pending":
+        if current["status"] != "pending" or current["kind"] != "push" or "record" not in current:
             raise ProjectError(
                 "SYNC_NOT_ABANDONABLE",
                 "已经发送过的操作不能放弃，只能核验或保留为历史。",
@@ -663,9 +748,75 @@ class SheetsSyncService:
             sync_operation_id,
             status="failed",
             error={"code": "SYNC_ABANDONED", "message": reason.strip()},
+            expected_status_revision=expected,
         )
 
     # --------------------------------------------------------------------- helpers
+
+    def _observe_identity(
+        self, client: SheetsClient, project: str, table: str, generation: str,
+        binding: dict[str, Any], raw: list[list[Any]],
+    ) -> tuple[dict[str, int], bool]:
+        """Every complete identity read replaces stale claim evidence, even on failure."""
+        header = [str(value) for value in raw[0]] if raw else []
+        identity = _identity_column(binding["identityStrategy"], header)
+        system = binding["identityStrategy"]["kind"] == "system"
+        valid = identity < len(header) and bool(header[identity])
+        if system:
+            plan = self._sync.system_identity_plan(project, table, int(binding["bindingEpoch"]))
+            try:
+                metadata = client.developer_metadata(str(binding["spreadsheetId"]))
+            except SheetsApiError as error:
+                raise _api_error(error) from error
+            valid = valid and owned_identity(plan, header, metadata)
+        keys: list[RecordKey] = []
+        remote: dict[str, int] = {}
+        for index, row in enumerate(raw[1:], start=2):
+            if not any(value is not None and str(value) != "" for value in row):
+                continue
+            marker = row[identity] if identity < len(row) else None
+            if (marker is None or marker == "" or isinstance(marker, bool)
+                    or (isinstance(marker, str) and marker.startswith("="))
+                    or (system and not canonical_uuid(marker))):
+                valid = False
+                continue
+            key = _record_key_for(marker, system=system)
+            keys.append(key)
+            token = _marker(key)
+            if token in remote:
+                valid = False
+            remote[token] = index
+        namespace = json.dumps({"columnId": column_letter(identity), "header": header[identity] if identity < len(header) else "", "encoding": "typed-record-key-v1"}, sort_keys=True, ensure_ascii=False)
+        valid = self._sync.verify_source_identity(project, table, generation, int(binding["bindingEpoch"]), namespace, keys, valid=valid)
+        return remote, valid
+
+    def _verified_source(self, client: SheetsClient, project: str, table: str, binding: dict[str, Any]) -> dict[str, int]:
+        generation = self._require_table(project, table).current_generation
+        try:
+            raw = client.values(str(binding["spreadsheetId"]), f"{quoted(str(binding['sheetName']))}!{WHOLE_SHEET}", "FORMULA")
+        except SheetsApiError as error:
+            raise _api_error(error) from error
+        remote, valid = self._observe_identity(client, project, table, generation, binding, raw)
+        if not valid:
+            raise ProjectError("SHEETS_IDENTITY_UNVERIFIED", "来源身份或归属已变化，请修复后重新拉取。", 409)
+        self._check_source_columns(client, table, binding, [str(value) for value in raw[0]] if raw else [])
+        return remote
+
+    def _check_source_columns(self, client: SheetsClient, table: str, binding: dict[str, Any], header: list[str]) -> None:
+        with self._sessions() as session:
+            row = self._sync.binding_row(session, table)
+            if row is None or row.binding_epoch != binding["bindingEpoch"]:
+                raise ProjectError("PRECONDITION_FAILED", "来源绑定已变化。", 412)
+            plans = (row.identity_verification or {}).get("sourceColumns", {})
+        if not plans:
+            return
+        try:
+            metadata = client.developer_metadata(binding["spreadsheetId"])
+        except SheetsApiError as error:
+            raise _api_error(error) from error
+        for plan in plans.values():
+            if not owned_identity(plan, header, metadata, metadata_key=COLUMN_METADATA, name=plan["values"][0]):
+                raise ProjectError("SHEETS_COLUMN_EVIDENCE_MISMATCH", "已创建来源列的归属或位置已变化，禁止猜测同步。", 409)
 
     def _require_table(
         self, project_id: str, table_id: str, session: Session | None = None
@@ -682,6 +833,8 @@ class SheetsSyncService:
         binding = self._runs.binding(project_id, table_id)
         if binding is None:
             raise ProjectError("SHEETS_BINDING_NOT_FOUND", "该表未绑定 Sheets。", 404)
+        with self._sessions() as session:
+            require_source_idle(session, str(binding["spreadsheetId"]))
         return binding
 
 
@@ -706,12 +859,10 @@ def _fields(session: Session, table: DataTableRow) -> list[DataFieldRow]:
 
 
 def _write_cells(
-    row: DataRecordRow | None,
+    values: dict[str, Any],
     fields: dict[str, DataFieldRow],
     binding: dict[str, Any],
 ) -> dict[str, Any]:
-    if row is None or row.deleted:
-        return {}
     cells: dict[str, Any] = {}
     for entry in binding["mapping"]:
         if entry["direction"] == "read":
@@ -719,10 +870,8 @@ def _write_cells(
         field = fields.get(str(entry["fieldId"]))
         if field is None or not field.writable or field.formula:
             continue
-        value = row.values_json.get(field.id)
-        if value is None:
-            continue
-        cells[str(entry["columnId"]).upper()] = value
+        if field.id in values:
+            cells[str(entry["columnId"]).upper()] = "" if values[field.id] is None else values[field.id]
     return cells
 
 
@@ -767,8 +916,7 @@ def _coerce(field_type: str, value: Any) -> Any:
 
 def _cell_value(computed: list[list[Any]], index: int, position: int) -> Any:
     row = computed[index] if index < len(computed) else []
-    value = row[position] if position < len(row) else ""
-    return "" if value is None else value
+    return row[position] if position < len(row) else None
 
 
 def _same(left: Any, right: Any) -> bool:
@@ -793,7 +941,7 @@ def _same(left: Any, right: Any) -> bool:
 
 def _identity_column(strategy: dict[str, Any], header: list[str]) -> int:
     column = strategy.get("columnId")
-    if strategy.get("kind") != "column" or not isinstance(column, str):
+    if strategy.get("kind") not in {"column", "system"} or not isinstance(column, str):
         raise ProjectError(
             "SYNC_NOT_IMPLEMENTED",
             "系统身份表的来源同步尚未交付，请选择按列识别身份。",
@@ -803,7 +951,9 @@ def _identity_column(strategy: dict[str, Any], header: list[str]) -> int:
     return _column_index(column)
 
 
-def _record_key_for(marker: Any) -> RecordKey:
+def _record_key_for(marker: Any, *, system: bool = False) -> RecordKey:
+    if system:
+        return RecordKey("uuid", str(marker))
     if isinstance(marker, bool):
         return RecordKey("text", str(marker))
     if isinstance(marker, int) or (isinstance(marker, float) and marker.is_integer()):
@@ -811,39 +961,28 @@ def _record_key_for(marker: Any) -> RecordKey:
     return RecordKey("text", str(marker))
 
 
+def _validate_source_value(field: DataFieldRow, value: Any, *, strict: bool = False) -> None:
+    definition = {
+        "key": field.key,
+        "name": field.name,
+        "type": field.type,
+        "required": field.required,
+        "validation": field.validation,
+    }
+    try:
+        validate_value(definition, value)
+    except ProjectError:
+        if strict:
+            raise
+        validate_record_scalar(value)
+
+
 def _key_type(value: str | None) -> RecordKeyType:
     return value if value in {"text", "integer", "uuid"} else "text"  # type: ignore[return-value]
 
 
 def _marker(key: RecordKey) -> str:
-    return f"{key.type}:{key.value}"
-
-
-def _remote_keys(
-    client: SheetsClient, spreadsheet_id: str, sheet_name: str, index: int
-) -> dict[str, int]:
-    letters = column_letter(index)
-    try:
-        values = client.values(
-            spreadsheet_id, f"{quoted(sheet_name)}!{letters}2:{letters}", "FORMULA"
-        )
-    except SheetsApiError as error:
-        raise _api_error(error) from error
-    keys: dict[str, int] = {}
-    for offset, row in enumerate(values):
-        value = row[0] if row else ""
-        if value is None or value == "":
-            continue
-        keys.setdefault(_marker(_record_key_for(value)), offset + 2)
-    return keys
-
-
-def _header(client: SheetsClient, spreadsheet_id: str, sheet_name: str) -> list[str]:
-    try:
-        values = client.values(spreadsheet_id, f"{quoted(sheet_name)}!1:1", "FORMULA")
-    except SheetsApiError as error:
-        raise _api_error(error) from error
-    return [str(value) for value in (values[0] if values else [])]
+    return f"{'text' if key.type == 'uuid' else key.type}:{key.value}"
 
 
 def _record_operation(

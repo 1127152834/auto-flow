@@ -410,3 +410,10 @@ it('updates the saved project workflow loaded by the host instead of creating it
     expect((await workflowApi.get('host-loaded-workflow')).data?.revision).toBe(2)
   } finally { history.replaceState({}, '', previous) }
 })
+it.each([false,true])('AI document loading preserves explicit node browser contract, animated=%s',async animate=>{
+ render(<Toolbar/>)
+ useWorkflowStore.getState().markAsSaved()
+ const result=await executeClientAction('load_workflow_from_data',{name:'node-owned',browserEnvironmentVersion:1,animate,nodes:[{id:'open',type:'open_page',position:{x:0,y:0},data:{moduleType:'open_page',browserEnvironment:{source:'newFromProfile',profileId:'template'}}}],edges:[]})
+ expect(result).toMatchObject({success:true})
+ expect(JSON.parse(useWorkflowStore.getState().exportWorkflow()).browserEnvironmentVersion).toBe(1)
+})

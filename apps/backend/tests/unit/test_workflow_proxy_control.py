@@ -282,3 +282,22 @@ def test_unconfirmed_legacy_owner_blocks_bindings_and_writes():
         usage.bind("owner", proxy)
     with pytest.raises(ProxyInUseError):
         usage.check(proxy, None)
+
+
+@pytest.mark.asyncio
+async def test_current_proxy_uses_browser_initialized_after_context_creation():
+    gateway = Gateway([result("1.1.1.1")])
+    async def control(payload):
+        value = await gateway(payload)
+        if payload["method"] == "prepare":
+            value["current"] = True
+        return value
+    probes = []
+    async def probe(reset=False):
+        probes.append(reset)
+        return {"exitIp": "1.1.1.1" if reset else "8.8.8.8", "source": "session_relay"}
+    context = ExecutionContext(proxy_control=control)
+    context.browser = SimpleNamespace(probe_proxy=probe)
+    outcome = await ProxyChangeIPExecutor().execute({"maxAttempts": 1}, context)
+    assert outcome.success
+    assert probes == [False, True]

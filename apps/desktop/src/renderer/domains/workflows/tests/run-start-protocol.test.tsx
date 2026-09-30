@@ -31,7 +31,7 @@ describe.each(['memory','http'] as const)('startup admission over %s',mode=>{
    return response
   })
   request=(path,body)=>{const init=body===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)};return server?fetch(`${origin}/api${path}`,init):mock.mockRequest(`${origin}/api${path}`,init)}
-  store.getState().clearWorkflow();store.getState().addNode('open_page',{x:0,y:0});useDebugStore.setState({breakpoints:new Set(),stepMode:false})
+  store.getState().clearWorkflow();store.getState().addNode('open_page',{x:0,y:0},{browserEnvironment:{source:'newFromProfile',profileId:'10000000-0000-4000-8000-000000000001'}});useDebugStore.setState({breakpoints:new Set(),stepMode:false})
  })
  afterEach(async()=>{cleanup();if(mock.mockSnapshot().run)await request(`/workflows/${mock.mockSnapshot().run}/stop`,{});socketService.disconnect();mock.configureMock({disconnect:true});await server?.close();server=undefined;restore();vi.unstubAllGlobals()})
  it.each([false,true])('keeps a single accepted request before stream recovery, lost=%s',async lose=>{

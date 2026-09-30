@@ -1,0 +1,10 @@
+{
+  "status": "failed",
+  "platform": "darwin",
+  "arch": "arm64",
+  "packaged": true,
+  "startedAt": "2026-09-23T13:31:22.788Z",
+  "executableSha256": "99a262d7c15c95276ed7012a6ae21fb220fc4ddaade735a1a66bcba91cc3fcaa",
+  "error": "AssertionError [ERR_ASSERTION]: POST /api/v1/projects/7b4d5d6d-7fd4-4adf-a2a1-6f10be2fcadc/automations/7f774016-9ffc-4a0d-be64-0422b7438da8/batches: 409 {\"error\":{\"code\":\"CAPABILITY_FACTS_INCOMPLETE\",\"message\":\"工作流数据能力声明无效\",\"details\":{\"domainCode\":\"capability_facts_incomplete\",\"retryable\":false},\"requestId\":\"0ed5a76d-b6fd-4047-991f-996014d3c5e5\"}}\n    at api (file:///private/tmp/pm9-created-field-pregrant-probe.mjs:19:12)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async start (file:///private/tmp/pm9-created-field-pregrant-probe.mjs:47:22)\n    at async checkBusinessCombinations (file:///private/tmp/pm9-created-field-pregrant-probe.mjs:193:17)\n    at async main (file:///private/tmp/pm9-created-field-pregrant-probe.mjs:249:27)\n    at async file:///private/tmp/pm9-created-field-pregrant-probe.mjs:270:90",
+  "cleanup": "passed"
+}

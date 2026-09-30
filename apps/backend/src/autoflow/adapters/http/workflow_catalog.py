@@ -36,6 +36,7 @@ class WorkflowCatalogItem(ApiModel):
     name: str
     revision: int
     checksum: str
+    browser_environment_version: int | None = None
     validation: WorkflowCatalogValidation
     created_at: datetime
     updated_at: datetime
@@ -99,6 +100,7 @@ def _item(record: WorkflowRecord) -> WorkflowCatalogItem:
         workflow_id=record.workflow_id,
         name=record.name,
         revision=record.revision,
+        browser_environment_version=record.document.get("content", record.document).get("browserEnvironmentVersion"),
         checksum=hashlib.sha256(canonical_json(record.document).encode()).hexdigest(),
         validation=WorkflowCatalogValidation(
             status="ready" if runnable else "blocked",

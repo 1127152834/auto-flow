@@ -4,8 +4,14 @@ import { buildReport, realModules } from '../apps/desktop/src/renderer/domains/w
 
 test('Studio Chinese documentation audit covers exactly the retained catalog', () => {
   const modules = realModules()
-  assert.equal(modules.length, 218)
-  for (const type of ['project_data', 'project_end', 'proxy_change_ip', 'proxy_change_location', 'proxy_query']) assert.ok(modules.some(module => module.type === type))
+  const extensionTypes = [
+    'project_data', 'project_manual', 'project_end',
+    'proxy_change_ip', 'proxy_change_location', 'proxy_query',
+    'trace_mark', 'capture_diagnostics', 'save_trace_segment',
+  ]
+  assert.equal(modules.length, 222)
+  assert.equal(new Set(modules.map(module => module.type)).size, 222)
+  for (const type of extensionTypes) assert.ok(modules.some(module => module.type === type))
   assert.ok(modules.some(module => module.type === 'text_to_speech'))
   assert.ok(!modules.some(module => module.type === 'read_excel' || module.type === 'notify_feishu' || module.type === 'db_connect' || module.type === 'dp_open_page'))
   const report = buildReport()

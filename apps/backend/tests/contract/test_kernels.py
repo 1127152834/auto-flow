@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from fastapi.testclient import TestClient
 
 
@@ -108,7 +110,7 @@ def test_internal_kernel_resolution_requires_host_token_and_a_ref(client: TestCl
         headers={"x-autoflow-host-token": "host-secret"},
     )
     assert authorized.status_code == 200
-    assert authorized.json()["executablePath"].endswith(
+    assert Path(authorized.json()["executablePath"]).as_posix().endswith(
         "/data/kernels/chromium-146.0.1.1/chrome.exe"
     )
 

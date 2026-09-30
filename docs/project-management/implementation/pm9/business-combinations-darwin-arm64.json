@@ -1,0 +1,48 @@
+{
+  "status": "passed",
+  "platform": "darwin",
+  "arch": "arm64",
+  "packaged": true,
+  "startedAt": "2026-09-21T05:36:09.229Z",
+  "executableSha256": "8e525c8e2c4f85e78381763b7479d432587e62bc03f7e06b7b39a73eaa160d35",
+  "projectId": "5da05a2f-05ef-469c-bb60-00dec3793db5",
+  "checks": [
+    "Second parameter batch remained blocked with its Task queued while first Task waited for manual input",
+    "After first Task resumed and finished, second Task ensured a persistent field, created exactly one second-table record, queried/updated content and explicitly set status",
+    "Both sequential Tasks completed; manual node executed once"
+  ],
+  "taskIds": [
+    "94065f88-13fe-4861-8a2e-7f25e505068e",
+    "613250f8-50ba-46a7-bc3f-4f1f8d022309"
+  ],
+  "concurrency": {
+    "status": "implementation_missing",
+    "observedBatchStatus": "blocked",
+    "observedTaskStatus": "queued",
+    "reason": "Production WorkflowRunDispatcher owns one worker and reports capacity=1. Manual waiting occupies that slot.",
+    "originalConcurrentScenario": "failed: first Task timed out before second Task could complete schema extension"
+  },
+  "remaining": [
+    "Concurrent old-contract Task across compatible schema extension is NOT verified",
+    "Sheets structure/value phases require authorized live resources",
+    "Excel source byte preservation belongs to separate native import/export evidence",
+    "Conflict and partial-success combinations remain separate evidence"
+  ],
+  "cleanup": "passed",
+  "codeCandidate": "52936b6a6c3613a2a9a03563f337abed70dc3301",
+  "scope": "Local ARM packaged public HTTP and real worker/browser. Passed means sequential effects and known capacity boundary assertions passed, not concurrent acceptance.",
+  "initialConcurrentAttempt": {
+    "status": "failed",
+    "platform": "darwin",
+    "arch": "arm64",
+    "packaged": true,
+    "startedAt": "2026-09-21T05:28:31.538Z",
+    "executableSha256": "8e525c8e2c4f85e78381763b7479d432587e62bc03f7e06b7b39a73eaa160d35",
+    "error": "AssertionError [ERR_ASSERTION]: old task must remain alive during schema extension\n+ actual - expected\n\n+ 'timed_out'\n- 'waiting_manual'\n\n    at checkBusinessCombinations (file:///Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow/scripts/smoke-project-business-combinations.mjs:85:10)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async main (file:///Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow/scripts/smoke-project-business-combinations.mjs:115:27)\n    at async file:///Users/zhangtiancheng/.codex/worktrees/pm9-runtime/autoflow/scripts/smoke-project-business-combinations.mjs:128:90"
+  },
+  "fixtureCorrections": [
+    "Initial parameter-mode fixture requested maxLiveInstances=2 and was correctly rejected; changed to one per batch.",
+    "Parameter batches create a queued Task before dispatch; corrected boundary assertion from no Task to one queued Task. These harness errors are not product defects."
+  ],
+  "acceptanceScriptSha256": "a1a63fee4bc71a5026959e8535ce31ba869e40782acd442242c825444b2974b9"
+}

@@ -94,7 +94,9 @@ async def _wait_for_email(
         except asyncio.CancelledError:
             raise
         except Exception as error:  # noqa: BLE001 - source keeps polling after IMAP failures.
-            logging.getLogger(__name__).warning("IMAP polling failed (%s)", type(error).__name__)
+            logging.getLogger(__name__).warning(
+                "IMAP polling failed (%s); retrying", type(error).__name__
+            )
         await asyncio.sleep(max(0, check_interval))
 
 

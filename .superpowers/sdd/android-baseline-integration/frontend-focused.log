@@ -1,0 +1,592 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/workflows/tests/module-scope.test.ts src/renderer/domains/workflows/lib/__tests__/moduleColors.audit.test.ts src/renderer/domains/workflows/tests/catalog-field-contract.test.ts src/renderer/domains/workflows/tests/documentation-loading.test.ts
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-baseline-integration/autoflow/apps/desktop
+
+(node:9898) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:9904) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:9892) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:9902) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts (871 tests | 28 failed) 248ms
+   × 'NODE.ai_chat.field.apiKey' remains mapped by the current panel inventory and document contract 4ms
+   × 'NODE.ai_chat.field.apiUrl' remains mapped by the current panel inventory and document contract 1ms
+   × 'NODE.ai_chat.field.model' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_vision.field.apiKey' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_vision.field.apiUrl' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_vision.field.model' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_vision_act.field.apiKey' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_vision_act.field.apiUrl' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_vision_act.field.model' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_generate_image.field.ai' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_generate_image.field.apiBase' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_generate_image.field.apiKey' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_generate_image.field.model' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_generate_video.field.ai' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_generate_video.field.apiBase' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_generate_video.field.apiKey' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_generate_video.field.apiUrl' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_smart_scraper.field.apiKey' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_smart_scraper.field.apiUrl' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_smart_scraper.field.azureEndp…' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_smart_scraper.field.headless' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_smart_scraper.field.llmModel' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_smart_scraper.field.llmProvid…' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_element_selector.field.apiKey' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_element_selector.field.apiUrl' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_element_selector.field.azureE…' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_element_selector.field.llmMod…' remains mapped by the current panel inventory and document contract 0ms
+   × 'NODE.ai_element_selector.field.llmPro…' remains mapped by the current panel inventory and document contract 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 28 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_chat.field.apiKey' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_chat.field.apiKey should no longer be an editable legacy field: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:68:88
+     66|   )
+     67|   if (retiredFieldsByType[type]?.includes(field)) {
+     68|     expect(mappedByCurrentPanel, `${id} should no longer be an editabl…
+       |                                                                                        ^
+     69|     return
+     70|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/28]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_chat.field.apiUrl' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_chat.field.apiUrl should no longer be an editable legacy field: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:68:88
+     66|   )
+     67|   if (retiredFieldsByType[type]?.includes(field)) {
+     68|     expect(mappedByCurrentPanel, `${id} should no longer be an editabl…
+       |                                                                                        ^
+     69|     return
+     70|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/28]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_chat.field.model' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_chat.field.model should no longer be an editable legacy field: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:68:88
+     66|   )
+     67|   if (retiredFieldsByType[type]?.includes(field)) {
+     68|     expect(mappedByCurrentPanel, `${id} should no longer be an editabl…
+       |                                                                                        ^
+     69|     return
+     70|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/28]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_vision.field.apiKey' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_vision.field.apiKey should no longer be an editable legacy field: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:68:88
+     66|   )
+     67|   if (retiredFieldsByType[type]?.includes(field)) {
+     68|     expect(mappedByCurrentPanel, `${id} should no longer be an editabl…
+       |                                                                                        ^
+     69|     return
+     70|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/28]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_vision.field.apiUrl' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_vision.field.apiUrl should no longer be an editable legacy field: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:68:88
+     66|   )
+     67|   if (retiredFieldsByType[type]?.includes(field)) {
+     68|     expect(mappedByCurrentPanel, `${id} should no longer be an editabl…
+       |                                                                                        ^
+     69|     return
+     70|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/28]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_vision.field.model' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_vision.field.model should no longer be an editable legacy field: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:68:88
+     66|   )
+     67|   if (retiredFieldsByType[type]?.includes(field)) {
+     68|     expect(mappedByCurrentPanel, `${id} should no longer be an editabl…
+       |                                                                                        ^
+     69|     return
+     70|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/28]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_vision_act.field.apiKey' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_vision_act.field.apiKey should no longer be an editable legacy field: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:68:88
+     66|   )
+     67|   if (retiredFieldsByType[type]?.includes(field)) {
+     68|     expect(mappedByCurrentPanel, `${id} should no longer be an editabl…
+       |                                                                                        ^
+     69|     return
+     70|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/28]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_vision_act.field.apiUrl' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_vision_act.field.apiUrl should no longer be an editable legacy field: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:68:88
+     66|   )
+     67|   if (retiredFieldsByType[type]?.includes(field)) {
+     68|     expect(mappedByCurrentPanel, `${id} should no longer be an editabl…
+       |                                                                                        ^
+     69|     return
+     70|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/28]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_vision_act.field.model' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_vision_act.field.model should no longer be an editable legacy field: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:68:88
+     66|   )
+     67|   if (retiredFieldsByType[type]?.includes(field)) {
+     68|     expect(mappedByCurrentPanel, `${id} should no longer be an editabl…
+       |                                                                                        ^
+     69|     return
+     70|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/28]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_generate_image.field.ai' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_generate_image.field.ai should no longer be an editable legacy field: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:68:88
+     66|   )
+     67|   if (retiredFieldsByType[type]?.includes(field)) {
+     68|     expect(mappedByCurrentPanel, `${id} should no longer be an editabl…
+       |                                                                                        ^
+     69|     return
+     70|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/28]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_generate_image.field.apiBase' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_generate_image.field.apiBase should no longer be an editable legacy field: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:68:88
+     66|   )
+     67|   if (retiredFieldsByType[type]?.includes(field)) {
+     68|     expect(mappedByCurrentPanel, `${id} should no longer be an editabl…
+       |                                                                                        ^
+     69|     return
+     70|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/28]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_generate_image.field.apiKey' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_generate_image.field.apiKey should no longer be an editable legacy field: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:68:88
+     66|   )
+     67|   if (retiredFieldsByType[type]?.includes(field)) {
+     68|     expect(mappedByCurrentPanel, `${id} should no longer be an editabl…
+       |                                                                                        ^
+     69|     return
+     70|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/28]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_generate_image.field.model' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_generate_image.field.model should no longer be an editable legacy field: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:68:88
+     66|   )
+     67|   if (retiredFieldsByType[type]?.includes(field)) {
+     68|     expect(mappedByCurrentPanel, `${id} should no longer be an editabl…
+       |                                                                                        ^
+     69|     return
+     70|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/28]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_generate_video.field.ai' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_generate_video.field.ai should no longer be an editable legacy field: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:68:88
+     66|   )
+     67|   if (retiredFieldsByType[type]?.includes(field)) {
+     68|     expect(mappedByCurrentPanel, `${id} should no longer be an editabl…
+       |                                                                                        ^
+     69|     return
+     70|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/28]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_generate_video.field.apiBase' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_generate_video.field.apiBase should no longer be an editable legacy field: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:68:88
+     66|   )
+     67|   if (retiredFieldsByType[type]?.includes(field)) {
+     68|     expect(mappedByCurrentPanel, `${id} should no longer be an editabl…
+       |                                                                                        ^
+     69|     return
+     70|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/28]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_generate_video.field.apiKey' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_generate_video.field.apiKey should no longer be an editable legacy field: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:68:88
+     66|   )
+     67|   if (retiredFieldsByType[type]?.includes(field)) {
+     68|     expect(mappedByCurrentPanel, `${id} should no longer be an editabl…
+       |                                                                                        ^
+     69|     return
+     70|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/28]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_generate_video.field.apiUrl' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_generate_video.field.apiUrl should no longer be an editable legacy field: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:68:88
+     66|   )
+     67|   if (retiredFieldsByType[type]?.includes(field)) {
+     68|     expect(mappedByCurrentPanel, `${id} should no longer be an editabl…
+       |                                                                                        ^
+     69|     return
+     70|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/28]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_smart_scraper.field.apiKey' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_smart_scraper.field.apiKey should no longer be an editable legacy field: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:68:88
+     66|   )
+     67|   if (retiredFieldsByType[type]?.includes(field)) {
+     68|     expect(mappedByCurrentPanel, `${id} should no longer be an editabl…
+       |                                                                                        ^
+     69|     return
+     70|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/28]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_smart_scraper.field.apiUrl' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_smart_scraper.field.apiUrl should no longer be an editable legacy field: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:68:88
+     66|   )
+     67|   if (retiredFieldsByType[type]?.includes(field)) {
+     68|     expect(mappedByCurrentPanel, `${id} should no longer be an editabl…
+       |                                                                                        ^
+     69|     return
+     70|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/28]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_smart_scraper.field.azureEndp…' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_smart_scraper.field.azureEndpoint should no longer be an editable legacy field: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:68:88
+     66|   )
+     67|   if (retiredFieldsByType[type]?.includes(field)) {
+     68|     expect(mappedByCurrentPanel, `${id} should no longer be an editabl…
+       |                                                                                        ^
+     69|     return
+     70|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/28]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_smart_scraper.field.headless' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_smart_scraper.field.headless should no longer be an editable legacy field: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:68:88
+     66|   )
+     67|   if (retiredFieldsByType[type]?.includes(field)) {
+     68|     expect(mappedByCurrentPanel, `${id} should no longer be an editabl…
+       |                                                                                        ^
+     69|     return
+     70|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/28]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_smart_scraper.field.llmModel' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_smart_scraper.field.llmModel should no longer be an editable legacy field: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:68:88
+     66|   )
+     67|   if (retiredFieldsByType[type]?.includes(field)) {
+     68|     expect(mappedByCurrentPanel, `${id} should no longer be an editabl…
+       |                                                                                        ^
+     69|     return
+     70|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/28]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_smart_scraper.field.llmProvid…' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_smart_scraper.field.llmProvider should no longer be an editable legacy field: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:68:88
+     66|   )
+     67|   if (retiredFieldsByType[type]?.includes(field)) {
+     68|     expect(mappedByCurrentPanel, `${id} should no longer be an editabl…
+       |                                                                                        ^
+     69|     return
+     70|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/28]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_element_selector.field.apiKey' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_element_selector.field.apiKey should no longer be an editable legacy field: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:68:88
+     66|   )
+     67|   if (retiredFieldsByType[type]?.includes(field)) {
+     68|     expect(mappedByCurrentPanel, `${id} should no longer be an editabl…
+       |                                                                                        ^
+     69|     return
+     70|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/28]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_element_selector.field.apiUrl' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_element_selector.field.apiUrl should no longer be an editable legacy field: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:68:88
+     66|   )
+     67|   if (retiredFieldsByType[type]?.includes(field)) {
+     68|     expect(mappedByCurrentPanel, `${id} should no longer be an editabl…
+       |                                                                                        ^
+     69|     return
+     70|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/28]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_element_selector.field.azureE…' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_element_selector.field.azureEndpoint should no longer be an editable legacy field: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:68:88
+     66|   )
+     67|   if (retiredFieldsByType[type]?.includes(field)) {
+     68|     expect(mappedByCurrentPanel, `${id} should no longer be an editabl…
+       |                                                                                        ^
+     69|     return
+     70|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/28]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_element_selector.field.llmMod…' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_element_selector.field.llmModel should no longer be an editable legacy field: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:68:88
+     66|   )
+     67|   if (retiredFieldsByType[type]?.includes(field)) {
+     68|     expect(mappedByCurrentPanel, `${id} should no longer be an editabl…
+       |                                                                                        ^
+     69|     return
+     70|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/28]⎯
+
+ FAIL  src/renderer/domains/workflows/tests/catalog-field-contract.test.ts > 'NODE.ai_element_selector.field.llmPro…' remains mapped by the current panel inventory and document contract
+AssertionError: NODE.ai_element_selector.field.llmProvider should no longer be an editable legacy field: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/renderer/domains/workflows/tests/catalog-field-contract.test.ts:68:88
+     66|   )
+     67|   if (retiredFieldsByType[type]?.includes(field)) {
+     68|     expect(mappedByCurrentPanel, `${id} should no longer be an editabl…
+       |                                                                                        ^
+     69|     return
+     70|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/28]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  28 failed | 872 passed (900)
+   Start at  11:51:44
+   Duration  1.92s (transform 2.79s, setup 764ms, import 2.52s, tests 480ms, environment 2.62s)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/.codex/worktrees/android-baseline-integration/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/.codex/worktrees/android-baseline-integration/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/workflows/tests/module-scope.test.ts src/renderer/domains/workflows/lib/__tests__/moduleColors.audit.test.ts src/renderer/domains/workflows/tests/catalog-field-contract.test.ts src/renderer/domains/workflows/tests/documentation-loading.test.ts

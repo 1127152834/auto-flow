@@ -1,0 +1,37 @@
+{
+  "date": "2026-09-24",
+  "status": "passed_scoped_local_checks",
+  "releaseAccepted": false,
+  "baseline": "1bc6b24d",
+  "branch": "codex/automation-studio-entry",
+  "problem": "未选择工作流时，编辑器以!workflowId禁用打开Studio，阻断先创建后关联；主窗口返回后目录不自动刷新。",
+  "changes": [
+    "打开Studio移至工作流选择框右侧；已关联状态只保留关联区域内一个入口。",
+    "无选择时复用既有projectId/workspaceKey/instanceId开窗契约；有选择时打开对应workflowId。",
+    "主窗口focus重读当前作用域的工作流目录，不重置自动化表单；离线不触发读取，卸载移除监听。"
+  ],
+  "checks": {
+    "red": "3 failed/20 passed：重复入口、无选择禁用、返回未刷新；生产修复后全部通过。",
+    "targeted": "23 passed/2 files",
+    "relatedRegression": "155 passed/16 files，包含自动化、ProjectsWorkspace和Studio主进程窗口测试",
+    "typecheck": "passed",
+    "lint": "passed",
+    "build": "passed；已有依赖注释/大chunk提示保留",
+    "realDesktop": {
+      "userData": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-studio-entry-2umq3A",
+      "status": "passed",
+      "projectId": "ee24601c-1cd3-4b74-8e52-dff8c471135a",
+      "workflowId": "5RlV2dCAgbfgS4pPmp-E4",
+      "checks": [
+        "empty selection opens project-scoped Studio",
+        "Studio save persists workflow in real backend",
+        "native main-window focus refreshes catalog",
+        "new workflow selectable without reloading page",
+        "automation draft name preserved"
+      ]
+    },
+    "visual": "查看实际截图，按钮与下拉框同一行，位于其右侧；新工作流已选中且自动化名称仍为保留的草稿。",
+    "artifacts": ".tmp-tests/automation-studio-entry/{check.mjs,result.json,result.png,run.log}"
+  },
+  "scope": "真实Electron/FastAPI/SQLite、Studio保存和原生窗口focus；隔离测试工作区。只验证创建保存与关联选择，不代表工作流运行或全部PM9发布验收。"
+}

@@ -1,0 +1,433 @@
+.................................F...F...........................F...... [  8%]
+F.............s......................................................... [ 16%]
+........................................................................ [ 25%]
+........................................................................ [ 33%]
+...........................................ssssssssssss................. [ 41%]
+.......................................................................F [ 50%]
+................................s.....ss..................F............. [ 58%]
+...................................................s.................... [ 67%]
+...............................................ssssssssssssssss.s....... [ 75%]
+........................................................................ [ 83%]
+....ssss....................ssssss...................................... [ 92%]
+...........F...........................sss.......F.................      [100%]
+=================================== FAILURES ===================================
+__________ test_project_batch_runs_condition_and_loop_in_real_worker ___________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-295/test_project_batch_runs_condit0')
+
+    @pytest.mark.asyncio
+    async def test_project_batch_runs_condition_and_loop_in_real_worker(tmp_path: Path) -> None:
+        factory, _, _, coordinator, runtime, project, automation = setup(tmp_path)
+        worker = ProjectWorkflowWorkerManager(tmp_path / "control-worker", start_timeout=10)
+        resources = _NoBrowserResources()
+        dispatcher = _dispatcher(factory, worker, resources)
+        try:
+            document = workflow_payload(automation.workflow_id)
+            document["content"]["schemaVersion"] = 3
+            document["content"]["nodes"] = [
+                {
+                    "id": node_id, "type": module_type,
+                    "position": {"x": index * 120, "y": 0},
+                    "data": {"moduleType": module_type, "config": config},
+                }
+                for index, (node_id, module_type, config) in enumerate([
+                    ("gate", "condition", {"conditionType": "boolean", "leftValue": True}),
+                    ("repeat", "loop", {"loopType": "count", "loopCount": 3}),
+                    ("body", "set_variable", {"variableName": "last", "variableValue": "{index}"}),
+                    ("done", "set_variable", {"variableName": "finished", "variableValue": "完成"}),
+                    ("skipped", "set_variable", {"variableName": "skipped", "variableValue": "跳过"}),
+                ])
+            ]
+            document["content"]["edges"] = [
+                {"id": "true", "source": "gate", "sourceHandle": "true", "target": "repeat"},
+                {"id": "false", "source": "gate", "sourceHandle": "false", "target": "skipped"},
+                {"id": "body", "source": "repeat", "sourceHandle": "loop", "target": "body"},
+                {"id": "done", "source": "repeat", "sourceHandle": "done", "target": "done"},
+            ]
+            saved = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory)).update(
+                automation.workflow_id,
+                {**document["content"], "id": automation.workflow_id},
+                expected_revision=1,
+                client_request_id=str(uuid4()),
+            )
+            batch, _, _ = coordinator.start(
+                project.project_id, automation.automation_id, str(uuid4()), start_payload(automation)
+            )
+            task = coordinator.list_tasks(project.project_id, batch.batch_id)[0]
+            run = runtime.query_run(run_id=task.run_id)
+            assert saved.revision == 2 and run is not None
+            prepared = runtime.query_prepared_content(prepared_content_id=run.prepared_content_id)
+>           assert prepared is not None and prepared.adapter_version == "webrpa-graph/v1"
+E           AssertionError: assert (PreparedContent(prepared_content_id='20f130ce-76c8-49ab-bd4e-4d8a27b7d45d', prepare_operation_id='331b61f9-189f-4b7d-a...owRevision', 'revision': 2}), created_at=datetime.datetime(2026, 9, 24, 4, 8, 8, 250374, tzinfo=datetime.timezone.utc)) is not None and 'webrpa-graph/v2' == 'webrpa-graph/v1'
+E             
+E             - webrpa-graph/v1
+E             ?               ^
+E             + webrpa-graph/v2
+E             ?               ^)
+
+tests/integration/test_project_data_worker.py:1517: AssertionError
+________ test_bootstrap_recovers_pure_data_run_without_installed_kernel ________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-295/test_bootstrap_recovers_pure_d0')
+
+    @pytest.mark.asyncio
+    async def test_bootstrap_recovers_pure_data_run_without_installed_kernel(tmp_path: Path) -> None:
+        from fastapi import FastAPI
+    
+        from autoflow.application.workflows.core_runtime import WorkflowRuntimeService
+        from autoflow.bootstrap.workflows import configure_project_workflow_runtime
+    
+        factory, queued = _queued_pure_data_run(tmp_path, values=[1, 2, 3])
+        runtime = WorkflowRuntimeService(factory)
+        runtime.dispatch_run(
+            queued.run_id,
+            expected_status_revision=queued.status_revision,
+            execution_generation=queued.execution_generation,
+        )
+        temporary = tmp_path / "temp"
+        owned = temporary / "workflow-runs" / queued.run_id / "generation-1"
+        owned.mkdir(parents=True)
+        unexpected: Any = _UnexpectedBrowserDependency()
+    
+        def no_kernel_lookup():
+            raise AssertionError("纯数据恢复不能要求安装浏览器内核")
+    
+        app = FastAPI()
+>       dispatcher = configure_project_workflow_runtime(
+            app, session_factory=factory, profiles=unexpected,
+            installed=no_kernel_lookup, resolve_proxy=unexpected, read_license=unexpected,
+            usage_guard=unexpected, installations=unexpected, temp_dir=temporary,
+            gate=QuiesceGate(),
+        )
+
+tests/integration/test_project_data_worker.py:1718: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/autoflow/bootstrap/workflows.py:550: in configure_project_workflow_runtime
+    license_guard=installations.license_guard,
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <tests.integration.test_project_data_worker._UnexpectedBrowserDependency object at 0x116698250>
+name = 'license_guard'
+
+    def __getattr__(self, name: str) -> Any:
+>       raise AssertionError(f"纯数据验证不应读取浏览器依赖: {name}")
+E       AssertionError: 纯数据验证不应读取浏览器依赖: license_guard
+
+tests/integration/test_project_data_worker.py:107: AssertionError
+___________ test_failed_save_before_candidate_creation_protects_copy ___________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-295/test_failed_save_before_candid0')
+
+    @pytest.mark.asyncio
+    async def test_failed_save_before_candidate_creation_protects_copy(tmp_path):
+        _factory, project, _task, service, instance, directory, scheduler = setup_copy(tmp_path, state="closed")
+        with pytest.raises(ProjectError):
+            service.save(project, str(uuid4()), {
+                "instanceId": instance.instance_id, "mode": "save_as", "name": "retain",
+                "expectedUseGeneration": 99, "executionGeneration": 1,
+            })
+        await scheduler.tick()
+>       assert (directory / "Cookies").read_bytes() == b"must not lose retained login"
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/integration/test_project_environment_finalization.py:86: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/pathlib.py:1050: in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-295/test_failed_save_before_candid0/copies/instances/64d633a1-7ac0-410b-9994-891cb071e0b8/Cookies')
+mode = 'rb', buffering = -1, encoding = None, errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-295/test_failed_save_before_candid0/copies/instances/64d633a1-7ac0-410b-9994-891cb071e0b8/Cookies'
+
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/pathlib.py:1044: FileNotFoundError
+___________ test_save_in_flight_and_cleanup_share_the_instance_lock ____________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-295/test_save_in_flight_and_cleanu0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1168a9610>
+
+    @pytest.mark.asyncio
+    async def test_save_in_flight_and_cleanup_share_the_instance_lock(tmp_path, monkeypatch):
+        import asyncio
+        from threading import Event
+        _factory, project, _task, service, instance, directory, scheduler = setup_copy(tmp_path, state="closed")
+        started, release = Event(), Event()
+        original = service._command
+        def command(*args):
+            started.set()
+            assert release.wait(5)
+            return original(*args)
+        monkeypatch.setattr(service, "_command", command)
+        save = asyncio.create_task(asyncio.to_thread(service.save, project, str(uuid4()), {
+            "instanceId": instance.instance_id, "mode": "save_as", "name": "safe",
+            "expectedUseGeneration": 1, "executionGeneration": 1,
+        }))
+        assert await asyncio.to_thread(started.wait, 5)
+        cleanup = asyncio.create_task(scheduler.tick())
+        try:
+            await asyncio.sleep(0.05)
+            assert directory.exists()
+            assert not cleanup.done()
+        finally:
+            release.set()
+>       outcome, _operation, _replayed = await save
+                                         ^^^^^^^^^^
+
+tests/integration/test_project_environment_finalization.py:197: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/threads.py:25: in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../../../../.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/concurrent/futures/thread.py:58: in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/application/environments/service.py:528: in save
+    return save_environment(self, project_id, key, payload)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/autoflow/application/environments/retention.py:52: in save_environment
+    accepted, replayed = service.environments.accept_operation(operation, retention_request=payload, parent_end=parent_end)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <autoflow.infrastructure.database.environments.SqlAlchemyEnvironments object at 0x118e37fd0>
+operation = ProjectOperation(operation_id='d28f487a-0672-40bd-a2c0-3b7a997c3f7b', project_id='3d2bb9f3-6c65-46b9-aed9-151663266941...one.utc), updated_at=datetime.datetime(2026, 9, 24, 4, 8, 59, 466920, tzinfo=datetime.timezone.utc), completed_at=None)
+retention_request = {'instanceId': '6a3d5cd4-56d0-4319-9fac-6eb16fec2fa2', 'mode': 'save_as', 'name': 'safe', 'expectedUseGeneration': 1, ...}
+parent_end = None
+
+    def accept_operation(self, operation: ProjectOperation, *, retention_request=None, parent_end: ProjectOperation | None = None):
+        with self._session_factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            existing = session.scalar(
+                select(ProjectOperationRow).where(
+                    ProjectOperationRow.idempotency_key == operation.idempotency_key
+                )
+            )
+            if existing:
+                self._match(existing, operation)
+                session.rollback()
+                return _operation(existing), True
+            if retention_request is not None:
+                from .project_data import SqlAlchemyProjectData
+    
+                if operation.project_id is None or operation.kind != 'saveEnvironment':
+                    raise ProjectError('CAPABILITY_SCOPE_DENIED', '保存缺少项目身份', 403)
+                project = SqlAlchemyProjectData._guard_project_read(session, operation.project_id)
+                instance = session.get(ProjectEnvironmentInstanceRow, retention_request['instanceId'])
+                if instance is None or instance.project_id != operation.project_id:
+                    raise ProjectError('INSTANCE_NOT_FOUND', '环境实例不存在', 404)
+                if parent_end is not None:
+                    parent = session.get(ProjectOperationRow, parent_end.operation_id)
+                    ledger = session.scalar(select(ProjectEndOperationRow).where(ProjectEndOperationRow.operation_id == parent_end.operation_id))
+                    if (parent is None or parent.project_id != operation.project_id or parent.kind != 'saveEnvironment'
+                        or parent.status not in {'accepted', 'running', 'reconciling'}
+                        or parent.resource.get('environmentId') != instance.id
+                        or operation.idempotency_key != f'end-save:{parent.id}'
+                        or ledger is None or ledger.phase != 'saving' or not ledger.retain_environment
+                        or ledger.task_id != instance.active_task_id or ledger.run_id != instance.active_run_id):
+                        raise ProjectError('CAPABILITY_SCOPE_DENIED', '保存缺少已受理的 End 操作', 403)
+                    self._match(parent, parent_end)
+                if not (parent_end is not None and project.lifecycle_state == 'closing'):
+                    SqlAlchemyProjectData._guard_project_write(session, operation.project_id)
+                if parent_end is None:
+                    run = session.get(WorkflowRunRow, instance.active_run_id) if instance.active_run_id else None
+                    if run is not None and (run.execution_generation != retention_request['executionGeneration']
+                        or (run.status not in {'running', 'waiting_manual'} and instance.state != 'retained_unsaved')):
+>                       raise ProjectError('CAPABILITY_SCOPE_DENIED', '运行代次已撤销，不能接受新保存', 403)
+E                       autoflow.domain.projects.models.ProjectError: 运行代次已撤销，不能接受新保存
+
+src/autoflow/infrastructure/database/environments.py:767: ProjectError
+______ test_existing_frozen_chain_v1_survives_studio_document_replacement ______
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-295/test_existing_frozen_chain_v1_0')
+
+    def test_existing_frozen_chain_v1_survives_studio_document_replacement(tmp_path):
+        factory, _, _, _coordinator, runtime, project, automation = setup(tmp_path)
+        try:
+            operation_id = str(uuid4())
+            prepared = runtime.prepare_content(
+                prepare_operation_id=operation_id,
+                workflow_id=automation.workflow_id,
+                source_revision=1,
+                available_capabilities=["browser.cloakbrowser"],
+            )
+>           assert prepared.adapter_version == "webrpa-chain/v1"
+E           AssertionError: assert 'webrpa-graph/v2' == 'webrpa-chain/v1'
+E             
+E             - webrpa-chain/v1
+E             + webrpa-graph/v2
+
+tests/integration/test_project_studio_workflow_bridge.py:171: AssertionError
+___________ test_workflow_shutdown_error_still_closes_other_modules ____________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-295/test_workflow_shutdown_error_s0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x12a59ca90>
+
+    @pytest.mark.asyncio
+    async def test_workflow_shutdown_error_still_closes_other_modules(tmp_path, monkeypatch):
+        from unittest.mock import AsyncMock, Mock
+    
+        from autoflow.bootstrap.app import create_app
+        from autoflow.bootstrap.config import Settings
+    
+        app = create_app(Settings(data_dir=str(tmp_path / 'shutdown-data'), instance_id='shutdown-fixture'))
+        failed = AsyncMock(side_effect=RuntimeError('synthetic workflow cleanup failure'))
+        monkeypatch.setattr(app.state.workflow_dispatcher, 'shutdown', failed)
+        browser = AsyncMock(wraps=app.state.test_browser_worker_manager.shutdown)
+        kernel = AsyncMock(wraps=app.state.kernel_worker_manager.shutdown)
+        exports = Mock(wraps=app.state.excel_exports.shutdown)
+        batches = Mock(wraps=app.state.status_batch_coordinator.shutdown)
+        monkeypatch.setattr(app.state.test_browser_worker_manager, 'shutdown', browser)
+        monkeypatch.setattr(app.state.kernel_worker_manager, 'shutdown', kernel)
+        monkeypatch.setattr(app.state.excel_exports, 'shutdown', exports)
+        monkeypatch.setattr(app.state.status_batch_coordinator, 'shutdown', batches)
+        with pytest.raises(RuntimeError, match='synthetic workflow cleanup failure'):
+>           await app.router.on_shutdown[-1]()
+E           TypeError: object NoneType can't be used in 'await' expression
+
+tests/integration/test_sidecar_shutdown.py:39: TypeError
+_ test_pre_ready_terminal_requires_failure_cleanup_and_valid_exit[finished-failed-True-17-WORKFLOW_WORKER_LOST] _
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-295/test_pre_ready_terminal_requir5')
+kind = 'finished', status = 'failed', cleanup = True, exit_code = 17
+error_code = 'WORKFLOW_WORKER_LOST'
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize('kind, status, cleanup, exit_code, error_code', [
+        ('finished', 'failed', True, 1, None),
+        ('finished', 'cancelled', True, 0, None),
+        ('finished', 'succeeded', True, 0, 'WORKFLOW_WORKER_PROTOCOL_INVALID'),
+        ('finished', 'timed_out', True, 1, 'WORKFLOW_WORKER_PROTOCOL_INVALID'),
+        ('finished', 'failed', False, 1, 'WORKFLOW_CLEANUP_FAILED'),
+        ('finished', 'failed', True, 17, 'WORKFLOW_WORKER_LOST'),
+        ('event', 'failed', True, 1, 'WORKFLOW_WORKER_PROTOCOL_INVALID'),
+        ('capability', 'failed', True, 1, 'WORKFLOW_WORKER_PROTOCOL_INVALID'),
+    ])
+    async def test_pre_ready_terminal_requires_failure_cleanup_and_valid_exit(
+        tmp_path, kind, status, cleanup, exit_code, error_code,
+    ):
+        instance, executable = manager(tmp_path)
+        child = CHILD[:CHILD.index("send('ready')")] + (
+            f"send({kind!r},status={status!r},cleanupConfirmed={cleanup!r})\n"
+            f"raise SystemExit({exit_code})\n"
+        )
+        instance._command = (sys.executable, '-c', child)
+        events = []
+    
+        async def persist(event):
+            events.append(event)
+    
+        if error_code:
+>           with pytest.raises(WorkflowWorkerError) as caught:
+E           Failed: DID NOT RAISE WorkflowWorkerError
+
+tests/integration/test_workflow_worker_process.py:160: Failed
+________ test_real_worker_runs_to_node_inside_canvas_subflow_with_scope ________
+
+tmp_path = PosixPath('/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/pytest-of-zhangtiancheng/pytest-295/test_real_worker_runs_to_node_0')
+
+    @pytest.mark.asyncio
+    async def test_real_worker_runs_to_node_inside_canvas_subflow_with_scope(
+        tmp_path: Path,
+    ) -> None:
+        events: list[dict[str, object]] = []
+        manager = WorkflowWorkerManager(
+            tmp_path,
+            termination_timeout=0.5,
+            on_event=lambda event: events.append(event),
+        )
+        payload = {
+            "runId": "canvas-subflow-debug",
+            "workflowId": "canvas-debug-flow",
+            "profileId": "profile-1",
+            "requiresBrowser": False,
+            "debug": True,
+            "runToNodeId": "inner",
+            "artifactRoot": str(tmp_path / "artifacts"),
+            "workflowDependencies": {},
+            "document": {
+                "nodes": [
+                    {
+                        "id": "definition",
+                        "type": "groupNode",
+                        "position": {"x": 0, "y": 0},
+                        "width": 400,
+                        "height": 300,
+                        "data": {
+                            "moduleType": "group",
+                            "isSubflow": True,
+                            "subflowName": "登录",
+                        },
+                    },
+                    {
+                        "id": "inner",
+                        "type": "moduleNode",
+                        "position": {"x": 50, "y": 50},
+                        "data": {
+                            "moduleType": "set_variable",
+                            "config": {"variableName": "inside", "variableValue": "1"},
+                        },
+                    },
+                    {
+                        "id": "call",
+                        "type": "moduleNode",
+                        "position": {"x": 500, "y": 50},
+                        "data": {
+                            "moduleType": "subflow",
+                            "config": {"subflowName": "登录"},
+                        },
+                    },
+                ],
+                "edges": [],
+                "variables": [],
+            },
+        }
+        await manager.start("canvas-subflow-debug", "profile-1", None, payload)
+        for _ in range(300):
+            if any(event.get("type") == "execution:paused" for event in events):
+                break
+            await asyncio.sleep(0.01)
+        pause = next(event for event in events if event.get("type") == "execution:paused")
+    
+        assert pause["node_id"] == "inner"
+        assert pause["reason"] == "target"
+>       assert pause["executionContext"] == {
+            "scopes": [{"kind": "subflow", "id": "definition", "name": "登录"}],
+            "loops": [],
+        }
+E       AssertionError: assert {'scopes': [{..., 'loops': []} == {'scopes': [{..., 'loops': []}
+E         
+E         Omitting 1 identical items, use -vv to show
+E         Differing items:
+E         {'scopes': [{'kind': 'subflow', 'id': 'definition', 'name': '登录', 'callNodeId': 'call', ...}]} != {'scopes': [{'kind': 'subflow', 'id': 'definition', 'name': '登录'}]}
+E         Use -v to get more diff
+
+tests/integration/test_workflow_worker_protocol.py:564: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.11/site-packages/starlette/testclient.py:53
+  /Users/zhangtiancheng/.codex/worktrees/studio-baseline-integration/autoflow/apps/backend/.venv/lib/python3.11/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/integration/test_project_data_worker.py::test_project_batch_runs_condition_and_loop_in_real_worker
+FAILED tests/integration/test_project_data_worker.py::test_bootstrap_recovers_pure_data_run_without_installed_kernel
+FAILED tests/integration/test_project_environment_finalization.py::test_failed_save_before_candidate_creation_protects_copy
+FAILED tests/integration/test_project_environment_finalization.py::test_save_in_flight_and_cleanup_share_the_instance_lock
+FAILED tests/integration/test_project_studio_workflow_bridge.py::test_existing_frozen_chain_v1_survives_studio_document_replacement
+FAILED tests/integration/test_sidecar_shutdown.py::test_workflow_shutdown_error_still_closes_other_modules
+FAILED tests/integration/test_workflow_worker_process.py::test_pre_ready_terminal_requires_failure_cleanup_and_valid_exit[finished-failed-True-17-WORKFLOW_WORKER_LOST]
+FAILED tests/integration/test_workflow_worker_protocol.py::test_real_worker_runs_to_node_inside_canvas_subflow_with_scope
+8 failed, 804 passed, 47 skipped, 1 warning in 678.55s (0:11:18)

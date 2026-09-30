@@ -1,3 +1,5 @@
+import {useWorkflowStore} from './editor-store'
+import type {BrowserEnvironment} from './types/workflow'
 import {useGlobalConfigStore} from './hooks/stores/globalConfigStore'
 import {requestSessionTransition} from './lib/documentLeave'
 import { checkedRetention } from './lib/retentionContract'
@@ -309,6 +311,31 @@ export const workflowApi = {
   },
   getRunLogs: (runId: string, query: ExecutionLogQuery = {}) =>
     checkedExecutionLogPage(apiRequest<unknown>(`/workflow-runs/${encodeURIComponent(runId)}/logs${executionLogSearch(query)}`), runId),
+  getRunTrace: async (runId: string, cursor = 0, kind = '', options: { limit?: number; executionId?: string; evidenceId?: string; traceId?: string } = {}) => {
+    type Page = components['schemas']['StudioTracePage']
+    const connection = getStudioTransportRevision()
+    const params = new URLSearchParams({ cursor: String(cursor), limit: String(options.limit ?? 100) })
+    if (options.executionId) params.set('executionId', options.executionId)
+    if (options.evidenceId) params.set('evidenceId', options.evidenceId)
+    if (options.traceId) params.set('traceId', options.traceId)
+    if (kind) params.set('kind', kind)
+    const result = await apiRequest<Page>(`/workflow-runs/${encodeURIComponent(runId)}/trace?${params}`)
+    if (connection !== getStudioTransportRevision()) return { success: false, error: '服务连接已变化，请重新读取 Trace' } as ApiResponse<Page>
+    if (result.success && (!result.data || result.data.runId !== runId || !Array.isArray(result.data.events))) {
+      return { success: false, error: 'Trace 不属于当前运行' } as ApiResponse<Page>
+    }
+    return result
+  },
+  getRunArtifact: async (runId: string, artifactId: string): Promise<ApiResponse<Blob>> => {
+    const connection = getStudioTransportRevision()
+    try {
+      const response = await studioFetch(scopeStudioUrl(`${getApiBase()}/workflow-runs/${encodeURIComponent(runId)}/artifacts/${encodeURIComponent(artifactId)}`))
+      if (!response.ok) return { success: false, error: `证据读取失败：HTTP ${response.status}` }
+      const data = await response.blob()
+      if (connection !== getStudioTransportRevision()) return { success: false, error: '工作区连接已变化，请重新读取证据' }
+      return { success: true, data }
+    } catch (error) { return { success: false, error: String(error) } }
+  },
   getRunResults: async (runId:string,cursor=0,limit=100,throughSequence?:number) => {
     const params=new URLSearchParams({cursor:String(cursor),limit:String(limit)})
     if(throughSequence!==undefined)params.set('throughSequence',String(throughSequence))
@@ -490,6 +517,42 @@ export const projectResourceApi = {
 }
 
 export const browserApi = {
+  validateNodeResources: async (nodes: {id:string;data:Record<string,unknown>}[]):Promise<ApiResponse<{nodeId?:string}>> => {
+    if(!nodes.some(node=>node.data.moduleType==='open_page'))return {success:true}
+    const [profiles,defaults]=await Promise.all([browserApi.profiles(),projectResourceApi.defaults()])
+    if(!profiles.success||!defaults.success)return {success:false,error:profiles.error||defaults.error,httpStatus:profiles.httpStatus||defaults.httpStatus}
+    for(const node of nodes){
+      if(node.data.moduleType!=='open_page')continue
+      const value=node.data.browserEnvironment as BrowserEnvironment|undefined
+      const fail=(message:string)=>({success:false,error:message,data:{nodeId:node.id}})
+      if(!value)return fail('请在打开网页节点配置浏览器环境')
+      if(value.source==='newFromProfile'||value.source==='profile'){
+        const id=value.profileId||(value.source==='newFromProfile'?defaults.data?.profileId:undefined)
+        if(!id||!profiles.data?.items.some(p=>p.id===id))return fail('请选择可用浏览器配置')
+        if(value.source==='profile'&&(value.proxy?.mode==='pool'||value.proxy?.mode==='projectDefault'))return fail('请重新选择代理设置')
+        if(value.proxy?.mode==='fixed'&&!value.proxy.proxyId)return fail('请选择指定代理')
+        if(value.proxy?.mode==='pool'&&!value.proxy.proxyPoolId)return fail('请选择代理池')
+      }
+      if(value.source==='fixedEnvironment'&&!value.environmentId)return fail('请选择保存环境')
+      if(value.source==='inputEnvironment')return fail('输入关联环境请从项目自动化运行；Studio 调试请选择固定环境')
+    }
+    return {success:true}
+  },
+  resolveNodeBrowser: async ():Promise<ApiResponse<{profileId:string;browserEnvironment?:BrowserEnvironment}>> => {
+    if(browserSession?.profileId&&!browserSession.unconfirmed)return {success:true,data:{profileId:browserSession.profileId}}
+    const state=useWorkflowStore.getState(),node=state.nodes.find(n=>n.id===state.selectedNodeId)
+    const value=node?.data.browserEnvironment as BrowserEnvironment|undefined
+    if(state.browserEnvironmentVersion!==1||node?.data.moduleType!=='open_page'||!value||value.source==='current'||value.source==='inputEnvironment')return {success:false,error:'请先在打开网页节点选择浏览器配置，再进行录制或拾取'}
+    if(value.source==='fixedEnvironment')return {success:true,data:{profileId:'',browserEnvironment:structuredClone(value)}}
+    const revision=getStudioTransportRevision()
+    const [profiles,defaults]=await Promise.all([browserApi.profiles(),projectResourceApi.defaults()])
+    if(state.id!==useWorkflowStore.getState().id||state.selectedNodeId!==useWorkflowStore.getState().selectedNodeId||JSON.stringify(value)!==JSON.stringify(useWorkflowStore.getState().nodes.find(n=>n.id===state.selectedNodeId)?.data.browserEnvironment)||revision!==getStudioTransportRevision())return {success:false,error:'文档、节点或服务已变更，请重新启动'}
+    if(!profiles.success||!defaults.success)return {success:false,error:profiles.error||defaults.error,httpStatus:profiles.httpStatus||defaults.httpStatus}
+    const profileId=value.profileId||(value.source==='newFromProfile'?defaults.data?.profileId:undefined)
+    if(!profileId)return {success:false,error:'请在打开网页节点选择浏览器配置'}
+    if(!profiles.data?.items.some(profile=>profile.id===profileId))return {success:false,error:'所选模板不存在或已不可用，请在节点重新选择',httpStatus:404}
+    return {success:true,data:{profileId,browserEnvironment:structuredClone(value)}}
+  },
   profiles: async () => {
     const result=await apiRequest<components['schemas']['ProfileList']>('/v1/profiles')
     if(!result.success)return result
@@ -528,7 +591,7 @@ export const browserApi = {
   },
   /** 检测 Playwright 内置 Chromium 是否可用（浏览器扩展兜底是否生效） */
   chromiumStatus: () => apiRequest('/browser/chromium-status'),
-  open: async (url?: string, _legacyBrowserConfig?: unknown, profileId?: string) => {
+  open: async (url?: string, _legacyBrowserConfig?: unknown, _profileId?: string) => {
     const revision=getStudioTransportRevision()
     if(browserSession?.starting)return {success:false,error:'浏览器正在启动，请等待当前请求完成'}
     browserStatusRequest++
@@ -536,14 +599,14 @@ export const browserApi = {
     const provisional=!currentBrowserSession()?operation:null
     if(provisional)browserSession={id:provisional,connection:revision,unconfirmed:true}
     if(browserSession)browserSession.starting=operation
-    const profile=await browserApi.resolveProfile(browserSession?.profileId??profileId)
+    const profile=await browserApi.resolveNodeBrowser()
     if(!profile.success||!profile.data){
       if(browserSession?.starting===operation)browserSession.starting=undefined
       if(browserSession?.id===provisional)browserSession=null
       return {success:false,error:profile.error,httpStatus:profile.httpStatus}
     }
-    if(browserSession)browserSession.profileId=profile.data.id
-    const result=await apiRequest('/browser/open', { method: 'POST', body: JSON.stringify({ url, profileId:profile.data.id }) })
+    if(browserSession)browserSession.profileId=profile.data.profileId
+    const result=await apiRequest('/browser/open', { method: 'POST', body: JSON.stringify({ url, profileId:profile.data.profileId||null, browserEnvironment:profile.data.browserEnvironment }) })
     if(browserSession?.starting===operation)browserSession.starting=undefined
     if(revision!==getStudioTransportRevision())return {success:false,error:'服务连接已变更，浏览器启动结果未应用'}
     if(!result.success&&result.httpStatus&&result.httpStatus<500&&browserSession?.id===provisional)browserSession=null
@@ -582,10 +645,11 @@ export const browserApi = {
 // ==================== 元素选择器 API ====================
 type PickerSessionState=components['schemas']['StudioPickerSessionState']
 let pickerSessionId:string|null=null
+let pickerStartConfiguration:{sessionId:string;profileId:string;browserEnvironment?:BrowserEnvironment}|null=null
 let pickerConnectionRevision=-1
 export function currentPickerSession(){
   const revision=getStudioTransportRevision()
-  if(revision!==pickerConnectionRevision){pickerSessionId=null;pickerConnectionRevision=revision}
+  if(revision!==pickerConnectionRevision){pickerSessionId=null;pickerStartConfiguration=null;pickerConnectionRevision=revision}
   return pickerSessionId
 }
 function checkedPickerSession(result:ApiResponse<any>,expected:string):ApiResponse<PickerSessionState>{
@@ -627,17 +691,18 @@ export const elementPickerApi = {
     pickerSessionId=sessionId
     const provisionalBrowser=!currentBrowserSession()?crypto.randomUUID():null
     if(provisionalBrowser)browserSession={id:provisionalBrowser,connection:revision,unconfirmed:true,starting:provisionalBrowser}
-    const profile=await browserApi.resolveProfile(browserSession?.profileId)
+    const profile=pickerStartConfiguration?.sessionId===sessionId?{success:true,data:pickerStartConfiguration}:await browserApi.resolveNodeBrowser()
     if(!profile.success||!profile.data){
       if(!previous&&pickerSessionId===sessionId)pickerSessionId=null
       if(browserSession?.id===provisionalBrowser)browserSession=null
       return {success:false,error:profile.error,httpStatus:profile.httpStatus}
     }
     if(revision!==getStudioTransportRevision()||sessionId!==currentPickerSession())return {success:false,error:'拾取请求已取消或服务已变更'}
-    if(browserSession)browserSession.profileId=profile.data.id
+    pickerStartConfiguration={sessionId,...profile.data}
+    if(browserSession)browserSession.profileId=profile.data.profileId
     let result=checkedPickerSession(await apiRequest('/element-picker/start', {
       method: 'POST',
-      body: JSON.stringify({sessionId,url:url||null,profileId:profile.data.id}),
+      body: JSON.stringify({sessionId,url:url||null,profileId:profile.data.profileId||null,browserEnvironment:profile.data.browserEnvironment}),
     }),sessionId)
     if(browserSession?.starting===provisionalBrowser)browserSession.starting=undefined
     if(revision!==getStudioTransportRevision()||sessionId!==currentPickerSession())return {success:false,error:'服务连接或拾取会话已变更，启动结果未应用'}
@@ -755,8 +820,12 @@ async function recorderRequest<T>(path:string,sessionId:string,options:RequestIn
   return result
 }
 
+const stopCommandIds = new Map<string, string>()
 async function issueRecorderCommand<T>(sessionId:string,action:'start'|'pause'|'resume'|'stop',afterSeq=0,documentId?:string):Promise<ApiResponse<T>>{
-  const revision=getStudioTransportRevision(),commandId=crypto.randomUUID()
+  const revision=getStudioTransportRevision()
+  const key=action==='stop'?`${revision}:${sessionId}:${afterSeq}`:''
+  const commandId=key?(stopCommandIds.get(key)??crypto.randomUUID()):crypto.randomUUID()
+  if(key)stopCommandIds.set(key,commandId)
   const body=action==='start'?{sessionId,commandId,...(documentId?{documentId}:{})}:{sessionId,commandId,afterSeq}
   const result=await recorderRequest<T>(`/recorder/${action}`,sessionId,{method:'POST',body:JSON.stringify(body)})
   if(revision!==getStudioTransportRevision()||(result.httpStatus&&result.httpStatus<500&&!result.success)||result.success)return result
@@ -818,7 +887,10 @@ export const recorderApi = {
     const revision=getStudioTransportRevision()
     const result=await issueRecorderCommand<components['schemas']['StudioRecorderStarted']>(sessionId,'start',0,documentId)
     if(revision!==getStudioTransportRevision())return result
-    if(result.success&&result.data?.success===true&&result.data.recording===true&&Number.isSafeInteger(result.data.nextSeq)&&result.data.nextSeq>=0)return result
+    if(result.success&&result.data?.success===true&&result.data.recording===true&&Number.isSafeInteger(result.data.nextSeq)&&result.data.nextSeq>=0){
+      stopCommandIds.clear()
+      return result
+    }
     if(!result.httpStatus||result.httpStatus>=500){
       if(!result.success)return {success:false,error:result.error||'录制启动尚未确认',httpStatus:result.httpStatus,outcomeUnknown:result.outcomeUnknown}
     }

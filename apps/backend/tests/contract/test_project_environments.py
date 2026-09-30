@@ -1,6 +1,7 @@
 import asyncio
 import threading
 import time
+from dataclasses import asdict, replace
 from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
@@ -162,10 +163,10 @@ def test_end_handler_closes_browser_before_saving(tmp_path, monkeypatch):
     service._closer = close_browser
     stage = service.store.stage_candidate
 
-    def stage_after_close(operation_id, instance_id):
+    def stage_after_close(operation_id, instance_id, **kwargs):
         assert events == ["browser-closed"]
         events.append("snapshot")
-        return stage(operation_id, instance_id)
+        return stage(operation_id, instance_id, **kwargs)
 
     monkeypatch.setattr(service.store, "stage_candidate", stage_after_close)
     response = client.post(
@@ -200,15 +201,21 @@ def make(tmp_path, **kwargs):
     return TestClient(app), projects, service
 
 
-def _project(projects):
+def _project(projects, name="环境项目"):
     record, _operation, _replayed = projects.create(
-        str(uuid4()), {"name": "环境项目", "description": ""}
+        str(uuid4()), {"name": name, "description": ""}
     )
     return record.project_id
 
 
 def _closed_instance(service, project_id, marker: bytes):
     resolved = service.resolve(project_id, {"source": "newFromProfile", "profileId": PROFILE})
+    profile = _profile_record()
+    resolved = replace(resolved, identity_package={
+        "schemaVersion": 1, "profileId": PROFILE, "kernelId": f"public:{PROFILE_KERNEL}",
+        "frozenConfiguration": {"profileSpec": asdict(profile.spec), "fingerprintSeed": 31415,
+                                "createdAt": profile.created_at.isoformat(), "updatedAt": profile.updated_at.isoformat()},
+    })
     instance = service.reserve(
         project_id,
         resolved,
@@ -311,6 +318,61 @@ def test_list_get_patch_and_restore_saved_generation(tmp_path):
         assert getattr(error, "status", None) == 423
     else:
         raise AssertionError("expected exclusive occupancy")
+
+
+def test_environment_timestamps_keep_their_utc_offset(tmp_path):
+    client, projects, service = make(tmp_path)
+    project_id = _project(projects)
+    instance = _closed_instance(service, project_id, b"login-v1")
+    saved = client.post(
+        f"/api/v1/projects/{project_id}/environment-saves",
+        headers={"Idempotency-Key": str(uuid4())},
+        json={
+            "instanceId": instance.instance_id,
+            "mode": "saveAs",
+            "expectedUseGeneration": 1,
+            "executionGeneration": 1,
+            "name": "登录环境",
+            "notes": "",
+        },
+    )
+    assert saved.status_code == 202
+    environment_id = saved.json()["outcome"]["saved"]["environmentId"]
+    manual = service.open_manual(
+        project_id,
+        {
+            "taskId": str(uuid4()),
+            "runId": str(uuid4()),
+            "reason": "需要输入验证码",
+            "expiresAt": datetime(2026, 9, 18, 13, 43, tzinfo=UTC),
+        },
+    )
+
+    stamps = [saved.json()["operation"]["createdAt"], manual["expiresAt"]]
+    for key in ("createdAt", "updatedAt"):
+        stamps.append(
+            client.get(f"/api/v1/projects/{project_id}/environments").json()["items"][
+                0
+            ][key]
+        )
+        stamps.append(
+            client.get(
+                f"/api/v1/projects/{project_id}/environments/{environment_id}"
+            ).json()["environment"][key]
+        )
+        stamps.append(
+            client.get(
+                f"/api/v1/projects/{project_id}/manual-items/{manual['manualItemId']}"
+            ).json()[key]
+        )
+    for item in client.get(
+        f"/api/v1/projects/{project_id}/environment-instances"
+    ).json()["items"]:
+        stamps += [item["createdAt"], item["updatedAt"]]
+
+    assert len(stamps) >= 6, stamps
+    for value in stamps:
+        assert datetime.fromisoformat(value).tzinfo is not None, value
 
 
 def test_update_publishes_next_generation(tmp_path):
@@ -523,6 +585,122 @@ def test_save_links_record_and_repair_does_not_rerun(tmp_path):
     }
 
 
+def test_cross_project_environment_and_instance_cannot_enter_another_project(tmp_path):
+    client, projects, service = make(tmp_path)
+    project_id, other_project_id = _project(projects), _project(projects, "外部项目")
+    foreign_instance = _closed_instance(service, other_project_id, b"other-login")
+
+    response = client.post(
+        f"/api/v1/projects/{project_id}/environment-saves",
+        headers={"Idempotency-Key": str(uuid4())},
+        json={
+            "instanceId": foreign_instance.instance_id,
+            "mode": "saveAs",
+            "expectedUseGeneration": 1,
+            "executionGeneration": 1,
+            "name": "wrong-project",
+        },
+    )
+
+    assert response.status_code == 404
+    assert client.get(f"/api/v1/projects/{project_id}/environments").json()["total"] == 0
+    assert client.get(f"/api/v1/projects/{other_project_id}/environments").json()["total"] == 0
+    assert service.environments.get_instance(other_project_id, foreign_instance.instance_id).state == "closed"
+
+    owned = client.post(
+        f"/api/v1/projects/{other_project_id}/environment-saves",
+        headers={"Idempotency-Key": str(uuid4())},
+        json={
+            "instanceId": foreign_instance.instance_id,
+            "mode": "saveAs",
+            "expectedUseGeneration": 1,
+            "executionGeneration": 1,
+            "name": "foreign-owned",
+        },
+    )
+    assert owned.status_code == 202
+    foreign_environment_id = owned.json()["outcome"]["saved"]["environmentId"]
+    with pytest.raises(ProjectError) as error:
+        service.resolve(project_id, {"source": "fixedEnvironment", "environmentId": foreign_environment_id})
+    assert error.value.status == 404
+    assert client.get(f"/api/v1/projects/{project_id}/environments").json()["total"] == 0
+    assert client.get(f"/api/v1/projects/{other_project_id}/environments").json()["total"] == 1
+
+
+def test_mixed_project_targets_never_partially_link_and_repair_uses_original_save(tmp_path):
+    from copy import deepcopy
+
+    from autoflow.infrastructure.database.project_data_models import DataRecordRow
+
+    client, projects, service = make(tmp_path)
+    project_id, other_project_id = _project(projects), _project(projects, "外部项目")
+    first = _account_record(service, project_id, "本地一")
+    second = _account_record(service, project_id, "本地二")
+    foreign = _account_record(service, other_project_id, "外部")
+    instance = _closed_instance(service, project_id, b"login-group")
+
+    def target(record):
+        return {
+            "recordRef": record["recordRef"],
+            "expectedLinkRevision": 1,
+            "replaceAllowed": False,
+        }
+    save = client.post(
+        f"/api/v1/projects/{project_id}/environment-saves",
+        headers={"Idempotency-Key": str(uuid4())},
+        json={
+            "instanceId": instance.instance_id,
+            "mode": "saveAs",
+            "expectedUseGeneration": 1,
+            "executionGeneration": 1,
+            "name": "关联整组",
+            "recordTargets": [target(first), target(second), target(foreign)],
+        },
+    )
+    assert save.status_code == 202
+    outcome = save.json()["outcome"]
+    assert outcome["phase"] == "saved_unlinked" and outcome["complete"] is False
+    environment_id = outcome["saved"]["environmentId"]
+    saved_content = service.store.generation_dir(environment_id, 1) / "Default" / "Cookies"
+    assert saved_content.read_bytes() == b"login-group"
+    factory = service.environments._session_factory
+
+    def assert_unlinked(*records):
+        with factory() as session:
+            for record in records:
+                row = session.get(DataRecordRow, (record["datasetGeneration"], "uuid", record["key"]))
+                assert row.current_environment_id is None and row.link_revision == 1
+
+    assert_unlinked(first, second, foreign)
+
+    forged = deepcopy(first)
+    forged["recordRef"]["projectId"] = other_project_id
+    rejected = client.post(
+        f"/api/v1/projects/{project_id}/environment-operations/{save.json()['operation']['operationId']}/repair",
+        headers={"Idempotency-Key": str(uuid4())},
+        json={"recordTargets": [target(forged), target(second)]},
+    )
+    assert rejected.status_code == 202
+    assert rejected.json()["outcome"]["phase"] == "saved_unlinked"
+    assert_unlinked(first, second, foreign)
+
+    repaired = client.post(
+        f"/api/v1/projects/{project_id}/environment-operations/{save.json()['operation']['operationId']}/repair",
+        headers={"Idempotency-Key": str(uuid4())},
+        json={"recordTargets": [target(first), target(second)]},
+    )
+    assert repaired.status_code == 202
+    assert repaired.json()["outcome"]["phase"] == "completed"
+    assert repaired.json()["outcome"]["saved"]["environmentId"] == environment_id
+    assert client.get(f"/api/v1/projects/{project_id}/environments").json()["total"] == 1
+    assert saved_content.read_bytes() == b"login-group"
+    with factory() as session:
+        for record in (first, second):
+            row = session.get(DataRecordRow, (record["datasetGeneration"], "uuid", record["key"]))
+            assert row.current_environment_id == environment_id and row.link_revision == 2
+    assert_unlinked(foreign)
+
+
 def test_binding_rechecks_revision_before_overwriting_concurrent_link(tmp_path):
     from copy import deepcopy
 
@@ -548,6 +726,16 @@ def test_binding_rechecks_revision_before_overwriting_concurrent_link(tmp_path):
                   "replaceAllowed": True} for record in (first, second)]
     results = bind_targets(target, service.environments.load_bind_targets(project_id, requested))
     factory = service.environments._session_factory
+    results[0].record_ref["projectId"] = str(uuid4())
+    with pytest.raises(ProjectError) as foreign:
+        service.environments.bind_records(project_id, target, results)
+    assert foreign.value.code == "ASSOCIATION_TARGET_MISSING"
+    results[0].record_ref["projectId"] = project_id
+    with factory() as session:
+        for record in (first, second):
+            row = session.get(DataRecordRow, (record["datasetGeneration"], "uuid", record["key"]))
+            assert row.current_environment_id is None and row.link_revision == 1
+    results = bind_targets(target, service.environments.load_bind_targets(project_id, requested))
     concurrent_environment = str(uuid4())
     with factory() as session:
         row = session.get(DataRecordRow, (second["datasetGeneration"], "uuid", second["key"]))
@@ -793,6 +981,122 @@ def _end_body(instance, *, name="登录环境"):
     }
 
 
+def test_task_end_lookup_recovers_save_identity_and_repaired_phase(tmp_path):
+    client, projects, service = make(tmp_path)
+    project_id = _project(projects)
+    account = _account_record(service, project_id)
+    instance = _closed_instance(service, project_id, b'persisted-end')
+    path = f'/api/v1/projects/{project_id}/tasks/{instance.active_task_id}/end'
+    empty = client.get(path)
+    assert empty.status_code == 200 and empty.json() is None
+    body = _end_body(instance)
+    body['retainEnvironment']['recordTargets'] = [
+        {'recordRef': account['recordRef'], 'expectedLinkRevision': 2, 'replaceAllowed': False},
+    ]
+    ended = client.post(path, headers={'Idempotency-Key': str(uuid4())}, json=body)
+    assert ended.status_code == 202, ended.text
+    assert ended.json()['outcome']['phase'] == 'saved_unlinked'
+    result = client.get(path)
+    assert result.status_code == 200, result.text
+    result = result.json()
+    assert result['operation'] == ended.json()['operation']
+    assert result['saveOperationId'] != result['operation']['operationId']
+    assert result['outcome']['phase'] == 'saved_unlinked'
+    assert result['recordTargets'] == body['retainEnvironment']['recordTargets']
+    assert result['outcome']['conflicts'][0]['currentLinkRevision'] == 1
+    other = _project(projects, '另一项目')
+    assert client.get(f'/api/v1/projects/{other}/tasks/{instance.active_task_id}/end').json() is None
+    repair_body = {'recordTargets': [{'recordRef': account['recordRef'], 'expectedLinkRevision': 1, 'replaceAllowed': False}]}
+    assert client.post(f"/api/v1/projects/{project_id}/environment-operations/{result['operation']['operationId']}/repair", headers={'Idempotency-Key': str(uuid4())}, json=repair_body).status_code == 409
+    repaired = client.post(f"/api/v1/projects/{project_id}/environment-operations/{result['saveOperationId']}/repair", headers={'Idempotency-Key': str(uuid4())}, json=repair_body)
+    assert repaired.status_code == 202 and repaired.json()['outcome']['phase'] == 'completed'
+    recovered = client.get(path).json()
+    assert recovered['saveOperationId'] == result['saveOperationId']
+    assert recovered['operation'] == result['operation'], 'historical End failure is immutable'
+    assert recovered['associationPhase'] == 'completed'
+    assert recovered['outcome'] == result['outcome'], 'original result is distinct from current association phase'
+    assert recovered['outcome']['saved'] == result['outcome']['saved']
+    assert client.get(f'/api/v1/projects/{project_id}/environments').json()['total'] == 1
+
+
+def test_accepted_end_can_save_after_archive_closes_ingress_and_replay(tmp_path, monkeypatch):
+    from autoflow.application.projects.lifecycle import (
+        ProjectLifecycleCoordinator,
+        ProjectLifecycleService,
+    )
+    from autoflow.application.settings.runtime import QuiesceGate
+    from autoflow.infrastructure.database.project_lifecycle import (
+        SqlAlchemyProjectLifecycle,
+    )
+
+    client, projects, service = make(tmp_path)
+    project_id = _project(projects)
+    instance = _closed_instance(service, project_id, b'accepted-before-closing')
+    repository = SqlAlchemyProjectLifecycle(service.environments._session_factory)
+    lifecycle = ProjectLifecycleService(projects.projects, repository, ProjectLifecycleCoordinator(repository, QuiesceGate()))
+    original = service.quiesce_instance
+    archive_operations = []
+
+    def archive_after_quiescence(*args):
+        value = original(*args)
+        if not archive_operations:
+            preview = lifecycle.impact(project_id, 'archive')
+            assert any(item['code'] == 'ENVIRONMENT_SAVE_ACTIVE' for item in preview['blockers'])
+            accepted = lifecycle.archive(project_id, str(uuid4()), {
+                'impactRevision': preview['impactRevision'],
+                'expectedManagementRevision': projects.get(project_id).management_revision,
+            })
+            archive_operations.append(accepted)
+            repository.advance(project_id)
+            assert projects.get(project_id).lifecycle_state == 'closing'
+        return value
+
+    monkeypatch.setattr(service, 'quiesce_instance', archive_after_quiescence)
+    url = f'/api/v1/projects/{project_id}/tasks/{instance.active_task_id}/end'
+    headers = {'Idempotency-Key': str(uuid4())}
+    body = _end_body(instance)
+    completed = client.post(url, headers=headers, json=body)
+    assert completed.status_code == 202, completed.text
+    assert completed.json()['outcome']['complete'] is True
+    assert client.post(url, headers={'Idempotency-Key': str(uuid4())}, json=body).status_code == 423
+    replay = client.post(url, headers=headers, json=body)
+    assert replay.status_code == 202
+    assert replay.json()['outcome'] == completed.json()['outcome']
+    assert replay.json()['operation']['operationId'] == completed.json()['operation']['operationId']
+    repository.advance(project_id)
+    assert projects.get(project_id).lifecycle_state == 'archived'
+    assert client.post(url, headers=headers, json=body).json()['outcome'] == completed.json()['outcome']
+    assert client.post(url, headers=headers, json=_end_body(instance, name='different')).status_code == 409
+
+
+def test_production_environment_operations_are_readable_in_project_ledger(tmp_path):
+    from autoflow.adapters.http.projects import projects_router
+    from autoflow.application.projects.overview import ProjectOverviewService
+
+    client, projects, service = make(tmp_path)
+    client.app.include_router(projects_router(
+        projects, ProjectOverviewService(service.environments._session_factory)
+    ))
+    project_id = _project(projects)
+    instance = _closed_instance(service, project_id, b"ledger")
+    key = str(uuid4())
+    response = client.post(
+        f"/api/v1/projects/{project_id}/tasks/{instance.active_task_id}/end",
+        headers={"Idempotency-Key": key}, json=_end_body(instance),
+    )
+    assert response.status_code == 202, response.text
+    operation = response.json()['operation']
+    for suffix in ('', f"/{operation['operationId']}", f'/by-idempotency-key/{key}'):
+        result = client.get(f'/api/v1/projects/{project_id}/operations{suffix}')
+        assert result.status_code == 200, result.text
+        if suffix:
+            assert result.json() == operation
+        else:
+            saved = [item for item in result.json()['items'] if item['kind'] == 'saveEnvironment']
+            assert len(saved) == 2  # End and its durable save operation.
+            assert operation in saved
+
+
 def test_end_retry_after_lost_response_resumes_without_second_environment(
     tmp_path, monkeypatch
 ):
@@ -808,11 +1112,11 @@ def test_end_retry_after_lost_response_resumes_without_second_environment(
     stage = service.store.stage_candidate
     attempts = {"count": 0}
 
-    def flaky_stage(operation_id, instance_id):
+    def flaky_stage(operation_id, instance_id, **kwargs):
         attempts["count"] += 1
         if attempts["count"] == 1:
             raise RuntimeError("simulated process loss before publish")
-        return stage(operation_id, instance_id)
+        return stage(operation_id, instance_id, **kwargs)
 
     monkeypatch.setattr(service.store, "stage_candidate", flaky_stage)
     with pytest.raises(RuntimeError):
@@ -1102,3 +1406,204 @@ def test_manual_failed_command_replays_original_error(tmp_path, action, checkpoi
         for field in ("code", "message", "details"):
             assert repeated.json()["error"][field] == first.json()["error"][field]
         assert service.get_manual(project_id, item["manualItemId"])["status"] == "waiting"
+
+
+def test_io_failure_after_publication_keeps_ownership_until_original_key_recovers(tmp_path, monkeypatch):
+    client, projects, service = make(tmp_path)
+    project_id = _project(projects)
+    initial = _closed_instance(service, project_id, b"login-v1")
+    prefix = f"/api/v1/projects/{project_id}"
+    saved = client.post(prefix + f"/tasks/{initial.active_task_id}/end", headers={"Idempotency-Key": str(uuid4())}, json=_end_body(initial)).json()["outcome"]["saved"]
+    environment_id = saved["environmentId"]
+    source = service.resolve(project_id, {"source": "fixedEnvironment", "environmentId": environment_id})
+    instance = service.reserve(project_id, source, task_id=str(uuid4()), run_id=str(uuid4()), holder_kind="task", holder_id=str(uuid4()))
+    service.environments.set_instance_state(instance.instance_id, "closed")
+    previous_key = str(uuid4())
+    previous_body = {"instanceId": instance.instance_id, "mode": "update", "expectedUseGeneration": 1, "executionGeneration": 1, "expectedContentGeneration": 1}
+    previous = client.post(prefix + '/environment-saves', headers={'Idempotency-Key': previous_key}, json=previous_body)
+    assert previous.status_code == 202, previous.text
+    publish = service.store.publish
+
+    def publish_then_lose_ack(*args):
+        publish(*args)
+        raise OSError("injected failure after generation publication")
+
+    monkeypatch.setattr(service.store, "publish", publish_then_lose_ack)
+    key = str(uuid4())
+    body = {**previous_body, "expectedContentGeneration": 2}
+    with pytest.raises(OSError):
+        client.post(prefix + "/environment-saves", headers={"Idempotency-Key": key}, json=body)
+    assert service.environments.get_instance(project_id, instance.instance_id).state == "saving"
+    assert service.store.generation_dir(environment_id, 3).is_dir()
+    # Replaying an earlier successful command cannot release a later unknown save.
+    replay = client.post(prefix + '/environment-saves', headers={'Idempotency-Key': previous_key}, json=previous_body)
+    assert replay.status_code == 202
+    assert replay.json()['outcome'] == previous.json()['outcome']
+    with pytest.raises(ProjectError) as busy:
+        service.reserve(project_id, source, task_id=str(uuid4()), run_id=str(uuid4()), holder_kind="task", holder_id=str(uuid4()))
+    assert busy.value.code == "ENVIRONMENT_BUSY"
+    monkeypatch.setattr(service.store, "publish", publish)
+    recovered = client.post(prefix + "/environment-saves", headers={"Idempotency-Key": key}, json=body)
+    assert recovered.status_code == 202, recovered.text
+    assert recovered.json()["outcome"]["saved"]["contentGeneration"] == 3
+    repeated = client.post(prefix + "/environment-saves", headers={"Idempotency-Key": key}, json=body).json()
+    assert repeated['outcome'] == recovered.json()['outcome']
+    assert repeated['operation']['operationId'] == recovered.json()['operation']['operationId']
+    assert not service.store.generation_dir(environment_id, 4).exists()
+
+
+def test_retained_update_reacquires_source_without_displacing_live_owner(tmp_path):
+    client, projects, service = make(tmp_path)
+    project_id = _project(projects)
+    prefix = f"/api/v1/projects/{project_id}"
+    initial = _closed_instance(service, project_id, b"login-v1")
+    saved = client.post(prefix + f"/tasks/{initial.active_task_id}/end", headers={"Idempotency-Key": str(uuid4())}, json=_end_body(initial)).json()["outcome"]["saved"]
+    environment_id = saved['environmentId']
+    source = service.resolve(project_id, {'source': 'fixedEnvironment', 'environmentId': environment_id})
+    t1 = service.reserve(project_id, source, task_id=str(uuid4()), run_id=str(uuid4()), holder_kind='task', holder_id=str(uuid4()))
+    service.environments.set_instance_state(t1.instance_id, 'retained_unsaved')
+    assert service.environments.count_live_instances(project_id) == 0
+    t2 = service.reserve(project_id, source, task_id=str(uuid4()), run_id=str(uuid4()), holder_kind='task', holder_id=str(uuid4()))
+    body = {'instanceId': t1.instance_id, 'mode': 'update', 'expectedUseGeneration': 1, 'executionGeneration': 1, 'expectedContentGeneration': 1}
+    blocked = client.post(prefix + '/environment-saves', headers={'Idempotency-Key': str(uuid4())}, json=body)
+    assert blocked.status_code == 423, blocked.text
+    assert blocked.json()['error']['code'] == 'ENVIRONMENT_BUSY'
+    current, owner = service.environments.get_with_instance(project_id, environment_id)
+    assert owner.instance_id == t2.instance_id
+    assert current.ref.content_generation == 1
+    assert not service.store.generation_dir(environment_id, 2).exists()
+    service.environments.set_instance_state(t2.instance_id, 'closed')
+    service.close_instance(project_id, t2.instance_id, environment_id)
+    retry = client.post(prefix + '/environment-saves', headers={'Idempotency-Key': str(uuid4())}, json=body)
+    assert retry.status_code == 202, retry.text
+    assert retry.json()['outcome']['saved']['contentGeneration'] == 2
+    _, owner = service.environments.get_with_instance(project_id, environment_id)
+    assert owner is None
+    next_source = service.resolve(project_id, {'source': 'fixedEnvironment', 'environmentId': environment_id})
+    service.reserve(project_id, next_source, task_id=str(uuid4()), run_id=str(uuid4()), holder_kind='task', holder_id=str(uuid4()))
+
+
+def test_manual_deadline_round_trips_utc_in_detail_and_list(tmp_path):
+    client, projects, service = make(tmp_path)
+    project_id = _project(projects)
+    instance = _closed_instance(service, project_id, b'manual-timezone')
+    deadline = datetime(2026, 9, 21, 7, 15, tzinfo=UTC)
+    item = service.open_manual(project_id, {'taskId': str(uuid4()), 'runId': str(uuid4()), 'instanceId': instance.instance_id, 'expiresAt': deadline})
+    base = f"/api/v1/projects/{project_id}/manual-items"
+    detail = client.get(base + '/' + item['manualItemId']).json()
+    listed = client.get(base).json()['items'][0]
+    for result in [detail, listed]:
+        assert datetime.fromisoformat(result['expiresAt']) == deadline
+        assert datetime.fromisoformat(result['createdAt']).tzinfo is not None
+
+
+def test_browser_configuration_patch_preserves_login_and_recovers_original_command(tmp_path):
+    client, projects, service = make(tmp_path)
+    service._validate_browser_configuration = lambda _spec: None
+    project_id = _project(projects)
+    instance = _closed_instance(service, project_id, b'unchanged-login')
+    saved = service.publish_new(project_id, name='editable', notes='', profile_id=PROFILE, instance_id=instance.instance_id)
+    url = f'/api/v1/projects/{project_id}/environments/{saved.ref.environment_id}'
+    key = str(uuid4())
+    body = {'expectedMetadataRevision': 1, 'expectedContentGeneration': 1,
+            'browserConfiguration': {'proxy': {'mode': 'fixed', 'proxyId': 'proxy-2'},
+                                     'kernel': {'edition': 'public', 'version': PROFILE_KERNEL}}}
+    response = client.patch(url, headers={'Idempotency-Key': key}, json=body)
+    assert response.status_code == 200, response.text
+    assert response.json()['browserConfiguration']['proxy'] == {'mode': 'fixed', 'proxyId': 'proxy-2'}
+    assert response.json()['ref']['contentGeneration'] == 2
+    assert response.json()['ref']['metadataRevision'] == 2
+    replay = client.patch(url, headers={'Idempotency-Key': key}, json=body)
+    assert replay.status_code == 200
+    assert replay.json()['ref']['contentGeneration'] == 2
+    for generation in (1, 2):
+        assert (service.store.generation_dir(saved.ref.environment_id, generation) / 'Default' / 'Cookies').read_bytes() == b'unchanged-login'
+    assert service.store.generation_identity(saved.ref.environment_id, 1)['frozenConfiguration']['profileSpec']['proxy_mode'] == 'none'
+    assert client.patch(url, headers={'Idempotency-Key': str(uuid4())}, json=body).status_code == 409
+
+
+def test_browser_configuration_patch_refuses_active_instance(tmp_path):
+    client, projects, service = make(tmp_path)
+    service._validate_browser_configuration = lambda _spec: None
+    project_id = _project(projects)
+    instance = _closed_instance(service, project_id, b'login')
+    saved = service.publish_new(project_id, name='busy', notes='', profile_id=PROFILE, instance_id=instance.instance_id)
+    source = service.resolve(project_id, {'source': 'fixedEnvironment', 'environmentId': saved.ref.environment_id})
+    active = service.reserve(project_id, source, task_id=str(uuid4()), run_id=str(uuid4()), holder_kind='task', holder_id=str(uuid4()))
+    response = client.patch(f'/api/v1/projects/{project_id}/environments/{saved.ref.environment_id}', headers={'Idempotency-Key': str(uuid4())}, json={
+        'expectedMetadataRevision': 1, 'expectedContentGeneration': 1,
+        'browserConfiguration': {'proxy': {'mode': 'none'}, 'kernel': {'edition': 'public', 'version': PROFILE_KERNEL}},
+    })
+    assert response.status_code == 423, response.text
+    assert service.get_instance(project_id, active.instance_id).state == 'active'
+    assert service.get(project_id, saved.ref.environment_id)[0].ref.content_generation == 1
+
+
+def test_configuration_recovers_publication_before_database_commit(tmp_path, monkeypatch):
+    client, projects, service = make(tmp_path)
+    service._validate_browser_configuration = lambda _spec: None
+    project_id = _project(projects)
+    instance = _closed_instance(service, project_id, b'login')
+    saved = service.publish_new(project_id, name='recover', notes='', profile_id=PROFILE, instance_id=instance.instance_id)
+    url = f'/api/v1/projects/{project_id}/environments/{saved.ref.environment_id}'
+    key = str(uuid4())
+    body = {'expectedMetadataRevision': 1, 'expectedContentGeneration': 1,
+            'browserConfiguration': {'proxy': {'mode': 'none'}, 'kernel': {'edition': 'public', 'version': PROFILE_KERNEL}}}
+    original = service.store.publish
+    def interrupted(*args):
+        original(*args)
+        raise OSError('response lost after directory publication')
+    monkeypatch.setattr(service.store, 'publish', interrupted)
+    with pytest.raises(OSError):
+        client.patch(url, headers={'Idempotency-Key': key}, json=body)
+    # A different writer must not consume the unpublished candidate as its own.
+    rename = client.patch(url, headers={'Idempotency-Key': str(uuid4())}, json={'expectedMetadataRevision': 1, 'name': 'changed'})
+    assert rename.status_code == 423
+    monkeypatch.setattr(service.store, 'publish', original)
+    result = client.patch(url, headers={'Idempotency-Key': key}, json=body)
+    assert result.status_code == 200, result.text
+    assert result.json()['ref']['contentGeneration'] == 2
+    assert len(list(service.store.generation_dir(saved.ref.environment_id, 1).parent.iterdir())) == 2
+
+
+@pytest.mark.parametrize('failure', ['proxy', 'kernel', 'migration'])
+def test_invalid_instance_configuration_does_not_leave_pending_lock(tmp_path, failure):
+    from autoflow.domain.profiles.errors import KernelNotInstalled, ProxyUnavailable
+    client, projects, service = make(tmp_path)
+    project_id = _project(projects)
+    instance = _closed_instance(service, project_id, b'login')
+    saved = service.publish_new(project_id, name='valid', notes='', profile_id=PROFILE, instance_id=instance.instance_id)
+    def validate(_spec):
+        if failure == 'proxy':
+            raise ProxyUnavailable
+        if failure == 'kernel':
+            raise KernelNotInstalled
+    service._validate_browser_configuration = validate
+    url = f'/api/v1/projects/{project_id}/environments/{saved.ref.environment_id}'
+    body = {'expectedMetadataRevision': 1, 'expectedContentGeneration': 1,
+            'browserConfiguration': {'proxy': {'mode': 'none'}, 'kernel': {'edition': 'public', 'version': '999.0.0' if failure == 'migration' else PROFILE_KERNEL}}}
+    key = str(uuid4())
+    response = client.patch(url, headers={'Idempotency-Key': key}, json=body)
+    assert response.status_code == 422, response.text
+    assert client.patch(url, headers={'Idempotency-Key': key}, json=body).status_code == 422
+    renamed = client.patch(url, headers={'Idempotency-Key': str(uuid4())}, json={'expectedMetadataRevision': 1, 'name': 'still-editable'})
+    assert renamed.status_code == 200, renamed.text
+    assert renamed.json()['ref']['contentGeneration'] == 1
+
+
+def test_studio_preview_copies_frozen_generation_and_rejects_changed_source(tmp_path):
+    from autoflow.domain.environments.identity import request_from_identity
+    _client, projects, service = make(tmp_path)
+    project_id = _project(projects)
+    instance = _closed_instance(service, project_id, b'original-login')
+    saved = service.publish_new(project_id, name='preview', notes='', profile_id=PROFILE, instance_id=instance.instance_id)
+    frozen = {**request_from_identity(saved.identity_package), 'identityPackage': saved.identity_package, 'environmentRef': saved.ref.to_dict()}
+    target = tmp_path / 'owned-studio' / 'preview' / 'instances' / 'browser'
+    service.prepare_studio_copy(frozen, target)
+    assert (target / 'Default' / 'Cookies').read_bytes() == b'original-login'
+    (target / 'Default' / 'Cookies').write_bytes(b'preview-change')
+    assert (service.store.generation_dir(saved.ref.environment_id, 1) / 'Default' / 'Cookies').read_bytes() == b'original-login'
+    wrong = {**frozen, 'environmentRef': {**frozen['environmentRef'], 'contentGeneration': 2}}
+    with pytest.raises(ProjectError, match='环境已改变'):
+        service.prepare_studio_copy(wrong, target)
+    assert (target / 'Default' / 'Cookies').read_bytes() == b'preview-change'

@@ -1,0 +1,62 @@
+{
+  "date": "2026-09-24",
+  "status": "implementation_gap_confirmed_design_proposed",
+  "releaseAccepted": false,
+  "requirement": "DATA-WRITE-12",
+  "auditedHead": "36528cc8e7ecd929696ffbbb6a91a039214ceda2",
+  "productionSource": "1c676965fb581ea3e33882b3ecb300b3abc99368",
+  "finding": "Finite record-group atomic writes have no workflow-facing command/service/worker/Studio contract. Existing update_record commits one record per transaction. Opposing single-record tests do not cover group atomicity.",
+  "sourceEvidence": [
+    {
+      "file": "apps/backend/src/autoflow/domain/project_data/capabilities.py",
+      "sha256": "490af0fe9d05f521c2a254e5b6fcd18dfb511b00052944b69195dcc47fb62ea7"
+    },
+    {
+      "file": "apps/backend/src/autoflow/application/project_data/capabilities.py",
+      "sha256": "27bc1fb8d125137040fa1f0da407a55f409b344bd89b439806291a5b0841f8a5"
+    },
+    {
+      "file": "apps/backend/src/autoflow/application/project_runs/worker_capabilities.py",
+      "sha256": "5c98899e14f90928c4e23ed52a5eef463646ab0b187cd42d4805a9dc19f5b259"
+    },
+    {
+      "file": "apps/backend/src/autoflow/infrastructure/database/project_capabilities.py",
+      "sha256": "fc07b9b044b25febbf5fb8de8c86460e43ecc89abf5ee7a007c19d6cebe56a01"
+    },
+    {
+      "file": "apps/backend/src/autoflow/domain/workflows/run_validation.py",
+      "sha256": "e6239f01666da2af0943ad8026846dcde6f0d175c3de861994563f9366e511a0"
+    },
+    {
+      "file": "apps/backend/src/autoflow/application/project_runs/coordinator.py",
+      "sha256": "2f6466b378e45c63d1bfe26cc61689b348914b46c4ff1b789061914772598121"
+    },
+    {
+      "file": "apps/desktop/src/renderer/domains/workflows/components/config-panels/ProjectDataConfig.tsx",
+      "sha256": "6f2610f8e6c15cd4ace678a362d27e5297af6c1fecd7ddbc3f82a023bf147e4e"
+    }
+  ],
+  "runtimeContractProbe": {
+    "log": ".tmp-tests/pm9-group-write-audit-2026-09-24/contract.json",
+    "sha256": "01cececabf49e41e76315f5c9ad4ce4759d410703891c4c7b0f5da180ec07895",
+    "result": "Current UpdateProjectRecordCommand rejects two RecordRefs passed as record_ref with VALIDATION_ERROR; DATA_COMMANDS exposes updateRecord only, no group write. Negative capability evidence, not group acceptance.",
+    "method": "Inspect dataclasses.fields(UpdateProjectRecordCommand) and DATA_COMMANDS; instantiate current command with two typed RecordRefs as record_ref and catch ProjectError."
+  },
+  "existingRegression": {
+    "command": "uv run --directory apps/backend pytest -q tests/integration/test_project_capability_fencing.py::test_opposing_dynamic_writes_return_conflicts_without_stealing_leases tests/integration/test_project_capability_rpc.py::test_committed_command_replay_returns_original_record",
+    "result": "2 passed in0.97s",
+    "log": ".tmp-tests/pm9-group-write-audit-2026-09-24/existing-boundaries.log",
+    "sha256": "b834d154d8fc19fda76f00fad8fc11f1864ec2cdb75b2d532f7ca2baa05191a8",
+    "scope": "Existing opposing single-record lease conflicts and original create-command replay only; no new group capability."
+  },
+  "proposedSpec": "docs/superpowers/specs/2026-09-24-pm9-atomic-record-group.md",
+  "proposedPlan": "docs/superpowers/plans/2026-09-24-pm9-atomic-record-group.md",
+  "approval": "pending_user_confirmation",
+  "classification": "Replace DATA-WRITE-12 group test_missing with implementation_missing; retain actual scoped tests and production_evidence_missing. No verified promotion.",
+  "ci": {
+    "runId": 35902129697,
+    "head": "a317e1f87c9b775940a8faa45713c884007ce6ad",
+    "observed": "ARM success; Windows source desktop and Intel real worker steps in_progress at audit. Excludes latest production guard and new peer tests.",
+    "newDispatch": "gh api user returned401; existing request to restore authentication/manual dispatch still pending. No duplicate run."
+  }
+}

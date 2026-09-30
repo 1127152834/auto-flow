@@ -5,12 +5,14 @@ import errno
 import hashlib
 import os
 import stat
+import sys
 from pathlib import Path, PurePosixPath
 from typing import Protocol
 from uuid import uuid4
 
 from autoflow.domain.workflows.execution import BinaryOutputSnapshot, CancellationToken
 from autoflow.domain.workflows.runs import WorkflowArtifact, WorkflowRunError
+from autoflow.infrastructure.filesystem.new_file import publish_new_file
 
 
 class WorkflowArtifactRepository(Protocol):
@@ -187,18 +189,13 @@ class WorkflowArtifactStore:
                 output.flush()
                 os.fsync(output.fileno())
             try:
-                os.link(temporary, target)
+                publish_new_file(temporary, target)
             except FileExistsError as error:
                 raise WorkflowRunError(
                     "ARTIFACT_ALREADY_EXISTS", "产物文件已存在", 409
                 ) from error
             finally:
                 temporary.unlink(missing_ok=True)
-            directory_fd = os.open(target.parent, os.O_RDONLY)
-            try:
-                os.fsync(directory_fd)
-            finally:
-                os.close(directory_fd)
         except BaseException:
             temporary.unlink(missing_ok=True)
             raise
@@ -258,10 +255,12 @@ class WorkflowArtifactStore:
         if cancellation is not None:
             cancellation.raise_if_cancelled()
 
-    def _open_output_parent(self, run_id: str, output_path: str) -> tuple[Path, int]:
+    def _open_output_parent(
+        self, run_id: str, output_path: str, *, create: bool = True
+    ) -> tuple[Path, int]:
         if not isinstance(output_path, str) or not output_path:
             raise WorkflowRunError("ARTIFACT_PATH_INVALID", "输出文件路径无效", 422)
-        if os.name == "nt":
+        if sys.platform == "win32":
             raise WorkflowRunError(
                 "ARTIFACT_PLATFORM_UNSUPPORTED",
                 "Windows 安全文件输出尚未完成实机验收",
@@ -269,22 +268,25 @@ class WorkflowArtifactStore:
             )
         raw = Path(output_path)
         if raw.is_absolute():
-            raw.parent.mkdir(parents=True, exist_ok=True)
+            if create:
+                raw.parent.mkdir(parents=True, exist_ok=True)
             parent = raw.parent.resolve()
             return parent / raw.name, self._open_directory(parent)
 
         relative = self._relative_name(output_path)
         output_root = self._run_root(run_id) / "outputs"
-        output_root.mkdir(parents=True, exist_ok=True)
+        if create:
+            output_root.mkdir(parents=True, exist_ok=True)
         output_root = output_root.resolve()
         directory_fd = self._open_directory(output_root)
         parent = output_root
         try:
             for part in relative.parts[:-1]:
-                try:
-                    os.mkdir(part, dir_fd=directory_fd)
-                except FileExistsError:
-                    pass
+                if create:
+                    try:
+                        os.mkdir(part, dir_fd=directory_fd)
+                    except FileExistsError:
+                        pass
                 try:
                     child_fd = os.open(
                         part,
@@ -292,6 +294,8 @@ class WorkflowArtifactStore:
                         dir_fd=directory_fd,
                     )
                 except OSError as error:
+                    if not create and isinstance(error, FileNotFoundError):
+                        raise
                     raise WorkflowRunError(
                         "ARTIFACT_PATH_INVALID", "输出目录不能是符号链接", 422
                     ) from error
@@ -305,6 +309,8 @@ class WorkflowArtifactStore:
 
     @staticmethod
     def _open_directory(path: Path) -> int:
+        if sys.platform == "win32":
+            raise WorkflowRunError("ARTIFACT_PLATFORM_UNSUPPORTED", "Windows 安全文件输出尚未完成实机验收", 501)
         return os.open(path, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
 
     @staticmethod
@@ -393,6 +399,8 @@ class WorkflowArtifactStore:
     def _acquire_output_lock(self, target: Path) -> int:
         # Output publication only runs on POSIX (see _open_output_parent). Keep the
         # platform-specific lock local so importing the backend remains portable.
+        if sys.platform == "win32":
+            raise WorkflowRunError("ARTIFACT_PLATFORM_UNSUPPORTED", "Windows 安全文件输出尚未完成实机验收", 501)
         import fcntl
 
         lock_root = self._output_lock_root()
@@ -420,6 +428,8 @@ class WorkflowArtifactStore:
 
     @staticmethod
     def _release_output_lock(lock_fd: int) -> None:
+        if sys.platform == "win32":
+            raise WorkflowRunError("ARTIFACT_PLATFORM_UNSUPPORTED", "Windows 安全文件输出尚未完成实机验收", 501)
         import fcntl
 
         try:
@@ -486,6 +496,8 @@ class WorkflowArtifactStore:
         cancellation: CancellationToken | None,
         expected_identity: str | None = None,
     ) -> Path | None:
+        if sys.platform == "win32":
+            raise WorkflowRunError("ARTIFACT_PLATFORM_UNSUPPORTED", "Windows 安全文件输出尚未完成实机验收", 501)
         try:
             source_fd = os.open(
                 target_name,
@@ -559,6 +571,8 @@ class WorkflowArtifactStore:
         *,
         expected_current_identity: str | None,
     ) -> None:
+        if sys.platform == "win32":
+            raise WorkflowRunError("ARTIFACT_PLATFORM_UNSUPPORTED", "Windows 安全文件输出尚未完成实机验收", 501)
         if expected_current_identity is not None:
             try:
                 current_metadata = os.stat(
@@ -678,6 +692,10 @@ class WorkflowArtifactStore:
         cancellation: CancellationToken | None,
         expected_identity: str | None,
     ) -> str:
+        if sys.platform == "win32":
+            if expected_identity not in {None, "missing"}:
+                raise WorkflowRunError("ARTIFACT_PLATFORM_UNSUPPORTED", "Windows 现有文件原子替换尚未接通", 501)
+            return self._write_windows_new_output(run_id=run_id, node_id=node_id, execution_id=execution_id, purpose=purpose, output_path=output_path, content=content, mime_type=mime_type, cancellation=cancellation)
         target, directory_fd = self._open_output_parent(run_id, output_path)
         try:
             lock_fd = self._acquire_output_lock(target)
@@ -714,6 +732,8 @@ class WorkflowArtifactStore:
         target: Path,
         directory_fd: int,
     ) -> str:
+        if sys.platform == "win32":
+            raise WorkflowRunError("ARTIFACT_PLATFORM_UNSUPPORTED", "Windows 安全文件输出尚未完成实机验收", 501)
         temporary_name = f".{target.name}.{uuid4().hex}.tmp"
         snapshot_path: Path | None = None
         backup_path: Path | None = None
@@ -893,9 +913,27 @@ class WorkflowArtifactStore:
             raise WorkflowRunError(
                 "ARTIFACT_SIZE_INVALID", "读取容量限制必须为正数", 422
             )
-        target, directory_fd = self._open_output_parent(run_id, output_path)
+        self._raise_if_cancelled(cancellation)
+        if sys.platform == "win32":
+            from .windows_output import output_target, pinned_parent, readable_output
+
+            target = output_target(self._run_root(run_id) / "outputs", output_path)
+            try:
+                with pinned_parent(target, create=False), readable_output(target) as descriptor:
+                    if descriptor is None:
+                        return BinaryOutputSnapshot(content=None, identity="missing")
+                    return self._read_output_descriptor(
+                        descriptor, target, max_bytes, cancellation
+                    )
+            except FileNotFoundError:
+                return BinaryOutputSnapshot(content=None, identity="missing")
         try:
-            self._raise_if_cancelled(cancellation)
+            target, directory_fd = self._open_output_parent(
+                run_id, output_path, create=False
+            )
+        except FileNotFoundError:
+            return BinaryOutputSnapshot(content=None, identity="missing")
+        try:
             try:
                 descriptor = os.open(
                     target.name,
@@ -911,51 +949,52 @@ class WorkflowArtifactStore:
                     ) from error
                 raise
             try:
-                metadata = os.fstat(descriptor)
-                if not stat.S_ISREG(metadata.st_mode):
-                    raise WorkflowRunError(
-                        "ARTIFACT_PATH_INVALID", "输出路径不是普通文件", 422
-                    )
-                if metadata.st_size > max_bytes:
-                    raise WorkflowRunError(
-                        "ARTIFACT_TOO_LARGE", "已有输出文件超过读取限制", 422
-                    )
-                chunks: list[bytes] = []
-                size = 0
-                while chunk := os.read(descriptor, 1024 * 1024):
-                    self._raise_if_cancelled(cancellation)
-                    size += len(chunk)
-                    if size > max_bytes:
-                        raise WorkflowRunError(
-                            "ARTIFACT_TOO_LARGE", "已有输出文件超过读取限制", 422
-                        )
-                    chunks.append(chunk)
-                final_metadata = os.fstat(descriptor)
-                try:
-                    path_metadata = os.stat(
-                        target.name, dir_fd=directory_fd, follow_symlinks=False
-                    )
-                except FileNotFoundError as error:
-                    raise WorkflowRunError(
-                        "ARTIFACT_READ_CONFLICT", "输出文件在读取期间发生变化", 409
-                    ) from error
-
-                if self._output_identity(metadata) != self._output_identity(
-                    final_metadata
-                ) or self._output_identity(metadata) != self._output_identity(
-                    path_metadata
-                ):
-                    raise WorkflowRunError(
-                        "ARTIFACT_READ_CONFLICT", "输出文件在读取期间发生变化", 409
-                    )
-                return BinaryOutputSnapshot(
-                    content=b"".join(chunks),
-                    identity=self._output_identity(metadata),
+                return self._read_output_descriptor(
+                    descriptor, target, max_bytes, cancellation, directory_fd
                 )
             finally:
                 os.close(descriptor)
         finally:
             os.close(directory_fd)
+
+    def _read_output_descriptor(
+        self,
+        descriptor: int,
+        target: Path,
+        max_bytes: int,
+        cancellation: CancellationToken | None,
+        directory_fd: int | None = None,
+    ) -> BinaryOutputSnapshot:
+        metadata = os.fstat(descriptor)
+        if not stat.S_ISREG(metadata.st_mode):
+            raise WorkflowRunError("ARTIFACT_PATH_INVALID", "输出路径不是普通文件", 422)
+        if metadata.st_size > max_bytes:
+            raise WorkflowRunError("ARTIFACT_TOO_LARGE", "已有输出文件超过读取限制", 422)
+        chunks: list[bytes] = []
+        size = 0
+        while chunk := os.read(descriptor, 1024 * 1024):
+            self._raise_if_cancelled(cancellation)
+            size += len(chunk)
+            if size > max_bytes:
+                raise WorkflowRunError("ARTIFACT_TOO_LARGE", "已有输出文件超过读取限制", 422)
+            chunks.append(chunk)
+        final_metadata = os.fstat(descriptor)
+        try:
+            path_metadata = (
+                os.stat(target, follow_symlinks=False)
+                if directory_fd is None
+                else os.stat(target.name, dir_fd=directory_fd, follow_symlinks=False)
+            )
+        except FileNotFoundError as error:
+            raise WorkflowRunError(
+                "ARTIFACT_READ_CONFLICT", "输出文件在读取期间发生变化", 409
+            ) from error
+        identity = self._output_identity(metadata)
+        if identity != self._output_identity(final_metadata) or identity != self._output_identity(
+            path_metadata
+        ):
+            raise WorkflowRunError("ARTIFACT_READ_CONFLICT", "输出文件在读取期间发生变化", 409)
+        return BinaryOutputSnapshot(content=b"".join(chunks), identity=identity)
 
     def _write_text_and_register(
         self,
@@ -973,6 +1012,12 @@ class WorkflowArtifactStore:
         cancellation: CancellationToken | None,
         max_bytes: int | None,
     ) -> str:
+        if sys.platform == "win32":
+            if append:
+                raise WorkflowRunError("ARTIFACT_PLATFORM_UNSUPPORTED", "Windows 现有文件追加尚未接通", 501)
+            if max_bytes is not None and len(content.encode(encoding)) > max_bytes:
+                raise WorkflowRunError("ARTIFACT_TOO_LARGE", "输出文件超过项目产物大小限制", 422)
+            return self._write_windows_new_output(run_id=run_id, node_id=node_id, execution_id=execution_id, purpose=purpose, output_path=output_path, content=content.encode(encoding), mime_type=mime_type, cancellation=cancellation)
         target, directory_fd = self._open_output_parent(run_id, output_path)
         try:
             lock_fd = self._acquire_output_lock(target)
@@ -998,6 +1043,32 @@ class WorkflowArtifactStore:
         finally:
             self._release_output_lock(lock_fd)
 
+    def _write_windows_new_output(
+        self, *, run_id: str, node_id: str, execution_id: str | None,
+        purpose: str, output_path: str, content: bytes, mime_type: str,
+        cancellation: CancellationToken | None,
+    ) -> str:
+        from .windows_output import output_target, pinned_parent, publish, staged_output
+
+        target = output_target(self._run_root(run_id) / "outputs", output_path)
+        snapshot: Path | None = None
+        with pinned_parent(target), staged_output(target) as descriptor:
+            try:
+                for start in range(0, len(content), 1024 * 1024):
+                    self._raise_if_cancelled(cancellation)
+                    self._write_all(descriptor, content[start:start + 1024 * 1024])
+                os.fsync(descriptor)
+                snapshot, size, digest = self._snapshot_from_descriptor(source_fd=descriptor, run_id=run_id, cancellation=cancellation, suffix=target.suffix or ".bin")
+                self._raise_if_cancelled(cancellation)
+                publish(descriptor, target)
+                self._raise_if_cancelled(cancellation)
+                self._repository.register_artifact(run_id=run_id, artifact_id=str(uuid4()), node_id=node_id, execution_id=execution_id, relative_path=snapshot.relative_to(self._root).as_posix(), size=size, sha256=digest, mime_type=mime_type, purpose=purpose)
+            except BaseException:
+                if snapshot is not None:
+                    self._remove_unowned(snapshot, self._run_root(run_id))
+                raise
+        return str(target)
+
     def _write_text_locked(
         self,
         *,
@@ -1015,6 +1086,8 @@ class WorkflowArtifactStore:
         target: Path,
         directory_fd: int,
     ) -> str:
+        if sys.platform == "win32":
+            raise WorkflowRunError("ARTIFACT_PLATFORM_UNSUPPORTED", "Windows 安全文件输出尚未完成实机验收", 501)
         temporary_name = f".{target.name}.{uuid4().hex}.tmp"
         snapshot_path: Path | None = None
         backup_path: Path | None = None

@@ -1,0 +1,119 @@
+Window: "DevTools", App: Google Chrome.
+0 标准窗口 DevTools - zhangtiancheng, Secondary Actions: Raise, URL: devtools://devtools/bundled/js_app.html?remoteBase=https://chrome-devtools-frontend.appspot.com/serve_file/@792bf6722e73a45aa9e47c163b9901bdc17f3230/
+	1 container DevTools - zhangtiancheng, URL: devtools://devtools/bundled/js_app.html?remoteBase=https://chrome-devtools-frontend.appspot.com/serve_file/@792bf6722e73a45aa9e47c163b9901bdc17f3230/
+		2 container
+			3 container
+				4 HTML 内容 DevTools, URL: devtools://devtools/bundled/js_app.html?remoteBase=https://chrome-devtools-frontend.appspot.com/serve_file/@792bf6722e73a45aa9e47c163b9901bdc17f3230/
+					5 container
+						6 container
+							7 container DevTools is now available in Chinese
+								8 文本 DevTools is now available in Chinese
+								9 按钮 Don’t show again
+								10 按钮 Always match Chrome’s language
+								11 按钮 Switch DevTools to Chinese
+								12 container Close
+									13 按钮 Close
+							14 container
+								15 container
+									16 container Main toolbar
+										17 container
+											18 标签组 Panels
+												19 标签 (selected) Console, Value: 1
+												20 标签 (settable, integer) Sources, Value: 0
+												21 标签 (settable, integer) Network, Value: 0
+												22 标签 (settable, integer) Performance, Value: 0
+												23 标签 (settable, integer) Memory, Value: 0
+										24 工具栏
+											25 container Settings, Help: Settings - F1 - ⇧ ?
+												26 按钮 Settings - F1 - ⇧ ?
+											27 弹出式按钮 Customize and control DevTools
+												28 按钮 Customize and control DevTools
+									29 container Console panel
+										30 container console
+											31 container
+												32 工具栏
+													33 container Hide Console sidebar
+														34 按钮 Hide Console sidebar
+													35 container Clear console, Help: Clear console - Ctrl L - ⌘ K
+														36 按钮 Clear console - Ctrl L - ⌘ K
+													37 container Collapse all
+														38 按钮 Collapse all
+													39 按钮 JavaScript context: /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron[79852]
+													40 container Create live expression
+														41 按钮 Create live expression
+													42 文本输入区 (settable) Filter
+														43 文本 Filter
+													44 弹出式按钮 (disabled) Log level: Default levels
+														45 文本 Custom levels
+													46 container Some problems no longer generate console messages, but are surfaced in the Issues tab. Click to go to the Issues tab
+														47 按钮 Some problems no longer generate console messages, but are surfaced in the Issues tab. Click to go to the Issues tab
+													48 container Console settings
+														49 切换按钮 Console settings, Value: 0
+													50 container 0 messages in console
+												51 container
+													52 外框
+														53 row (selected)    No messages
+															54 文本 No messages
+														55 row    No user messages
+															56 文本 No user messages
+														57 row    No errors
+															58 文本 No errors
+														59 row    No warnings
+															60 文本 No warnings
+														61 row    No info
+															62 文本 No info
+														63 row    No verbose
+															64 文本 No verbose
+													65 container
+														66 container
+															67 container
+																68 text JSON . stringify ( require ( 'electron' ). BrowserWindow . getAllWindows (). map ( w =>({ id : w . id , url : w . webContents . getURL (), bounds : w . getBounds (), zoom : w . webContents . getZoomFactor ()})))
+															69 container '[{"id":1,"url":"file:///Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/out/renderer/index.html#/dashboard","bounds":{"x":180,"y":44,"width":1440,"height":1024},"zoom":1}]' Stack table collapsed
+																70 container
+																	71 text '[{"id":1,"url":" file:///Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/out/renderer/index.html#/dashboard ","bounds":{"x":180,"y":44,"width":1440,"height":1024},"zoom":1}]'
+															72 container
+																73 text var qaWindow  =  require ( 'electron' ). BrowserWindow . fromId ( 1 );  qaWindow . setSize ( 1280 , 800 );  JSON . stringify ({ bounds : qaWindow . getBounds (), zoom : qaWindow . webContents . getZoomFactor ()})
+															74 container '{"bounds":{"x":180,"y":44,"width":1280,"height":800},"zoom":1}' Stack table collapsed
+																75 文本 '{"bounds":{"x":180,"y":44,"width":1280,"height":800},"zoom":1}'
+															76 container
+																77 text qaWindow . webContents . setZoomFactor ( 2 );  JSON . stringify ({ bounds : qaWindow . getBounds (), zoom : qaWindow . webContents . getZoomFactor ()})
+															78 container '{"bounds":{"x":180,"y":44,"width":1280,"height":800},"zoom":2}' Stack table collapsed
+																79 文本 '{"bounds":{"x":180,"y":44,"width":1280,"height":800},"zoom":2}'
+														80 container
+															81 container
+																82 文本输入区 (settable) Console prompt, Value:
+
+								83 container Tool drawer
+									84 container
+										85 工具栏
+											86 弹出式按钮 More Tools
+												87 按钮 More Tools
+										88 标签组
+											89 标签 (selected) Console, Value: 1
+											90 标签 (settable, integer) AI assistance, Value: 0
+										91 工具栏
+											92 container Toggle drawer orientation
+												93 按钮 Toggle drawer orientation
+											94 container Expand drawer
+												95 按钮 Expand drawer
+											96 container Close drawer
+												97 按钮 Close drawer
+										98 container Console panel
+						99 文本 DevTools is undocked
+	100 关闭按钮
+	101 全屏幕按钮 Help: 此按钮也可以执行缩放窗口的操作, Secondary Actions: 缩放窗口
+	102 最小化按钮
+	103 文本 DevTools
+104 menu bar
+	105 Chrome
+	106 文件
+	107 编辑
+	108 显示
+	109 历史记录
+	110 书签
+	111 个人资料
+	112 标签页
+	113 窗口
+	114 帮助
+
+The focused UI element is 82 文本输入区 (settable) Console prompt, Value:

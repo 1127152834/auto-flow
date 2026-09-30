@@ -13,7 +13,7 @@ export type TaskQuery = { q?: string; automationId?: string; batchId?: string; s
 const encode = encodeURIComponent
 const query = (value: Record<string, string | number | undefined>) => new URLSearchParams(Object.entries(value).filter((entry): entry is [string, string | number] => entry[1] !== undefined).map(([key, item]) => [key, String(item)])).toString()
 
-export function createProjectRunsApi(client: StreamingApiClient, projectId: string) {
+export function createProjectRunsApi(client: Pick<StreamingApiClient, 'request'>, projectId: string) {
   const root = `/api/v1/projects/${encode(projectId)}`
   const command = async (path: string, kind: 'startBatch' | 'followUpBatch' | 'stopBatch' | 'forceStopBatch', expectedId: string, body: BatchStartRequest | BatchStopRequest | FollowUpBatchRequest, key: string, resume: boolean, policy: DataCommandPolicy = {}): Promise<RunCommandOutcome> => {
     const originalBody = structuredClone(body); assertFiniteNumbers(originalBody)

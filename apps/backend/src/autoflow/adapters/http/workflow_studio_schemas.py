@@ -969,6 +969,7 @@ class StudioPickerSessionRequest(ApiModel):
 
 
 class StudioPickerSessionStartRequest(StudioPickerSessionRequest):
+    browser_environment: dict[str, Any] | None = None
     url: str | None = None
     profile_id: str | None = Field(default=None, min_length=1)
 
@@ -1172,3 +1173,60 @@ class StudioProjectRunAssetPage(ApiModel):
     items: list[StudioProjectRunAsset]
     total: int
     next_cursor: int | None
+
+
+class StudioTraceEvent(ApiModel):
+    source_id: str | None = Field(default=None, alias='sourceId')
+    source_origin: str | None = Field(default=None, alias='sourceOrigin')
+    source_bytes: int | None = Field(default=None, alias='sourceBytes', ge=0)
+    script_id: str | None = Field(default=None, alias='scriptId')
+    sha256: str | None = None
+    trace_id: str | None = Field(default=None, alias='traceId')
+    id: str
+    kind: Literal['execution', 'network', 'console', 'exception', 'page-closed', 'mark', 'diagnostic', 'source']
+    time_ms: int = Field(alias='timeMs', ge=0)
+    timestamp: str
+    node_id: str | None = Field(default=None, alias='nodeId')
+    description: str | None = None
+    correlation: str | None = None
+    dom_id: str | None = Field(default=None, alias='domId')
+    gaps: list[str] = Field(default_factory=list)
+    node_label: str | None = Field(default=None, alias='nodeLabel')
+    execution_id: str | None = Field(default=None, alias='executionId')
+    execution_context: JsonValue = Field(default=None, alias='executionContext')
+    page_id: str | None = Field(default=None, alias='pageId')
+    phase: str | None = None
+    success: bool | None = None
+    duration_ms: float | None = Field(default=None, alias='durationMs')
+    snapshot_id: str | None = Field(default=None, alias='snapshotId')
+    snapshot_missing: bool = Field(default=False, alias='snapshotMissing')
+    message: str | None = None
+    truncated: bool = False
+    level: str | None = None
+    url: str | None = None
+    method: str | None = None
+    status: int | None = None
+    resource_type: str | None = Field(default=None, alias='resourceType')
+    attribution: str | None = None
+
+
+class StudioTraceSession(ApiModel):
+    trace_id: str = Field(alias='traceId')
+    archive_id: str | None = Field(default=None, alias='archiveId')
+    status: Literal['partial', 'saved']
+    gaps: list[str]
+    event_count: int = Field(alias='eventCount', ge=0)
+
+
+class StudioTracePage(ApiModel):
+    sessions: list[StudioTraceSession] = Field(default_factory=list)
+    run_id: str = Field(alias='runId')
+    run_status: str = Field(alias='runStatus')
+    status: Literal['pending', 'unavailable', 'partial', 'saved']
+    trace_id: str | None = Field(default=None, alias='traceId')
+    archive_id: str | None = Field(default=None, alias='archiveId')
+    gaps: list[str]
+    events: list[StudioTraceEvent]
+    total: int
+    next_cursor: int | None = Field(default=None, alias='nextCursor')
+    local_only: Literal[True] = Field(default=True, alias='localOnly')

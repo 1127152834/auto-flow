@@ -25,7 +25,7 @@ export const preloadConfig = async () => { getBackendBaseUrl() }
 export function getStudioOpenContext(): StudioOpenContext {
   const params = new URLSearchParams(location.search)
   const context: StudioOpenContext = {}
-  for (const key of ['workspaceKey', 'instanceId', 'projectId', 'workflowId'] as const) {
+  for (const key of ['workspaceKey', 'instanceId', 'projectId', 'automationId', 'workflowId'] as const) {
     const value = params.get(key)
     if (value) context[key] = value
   }

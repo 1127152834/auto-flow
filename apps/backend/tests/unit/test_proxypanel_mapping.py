@@ -14,7 +14,7 @@ FIXTURES = Path(__file__).parents[1] / "fixtures" / "proxypanel"
 
 
 def sample():
-    return json.loads((FIXTURES / "list-redacted.json").read_text())
+    return json.loads((FIXTURES / "list-redacted.json").read_text(encoding="utf-8"))
 
 
 def provider(body):
@@ -73,7 +73,7 @@ async def test_schema_drift_does_not_partially_import_or_infer_completeness(chan
 
 @pytest.mark.asyncio
 async def test_credentials_use_fixed_origin_and_validated_id_not_server_url():
-    data = json.loads((FIXTURES / "credentials-redacted.json").read_text())
+    data = json.loads((FIXTURES / "credentials-redacted.json").read_text(encoding="utf-8"))
     calls = []
 
     def response(request):

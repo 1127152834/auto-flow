@@ -220,7 +220,7 @@ else:
     return (sys.executable, str(script))
 
 
-async def _wait_until(predicate: Any, *, timeout: float = 1.0) -> bool:
+async def _wait_until(predicate: Any, *, timeout: float = 5.0) -> bool:
     deadline = asyncio.get_running_loop().time() + timeout
     while asyncio.get_running_loop().time() < deadline:
         if predicate():

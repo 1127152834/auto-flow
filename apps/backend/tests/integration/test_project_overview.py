@@ -90,7 +90,7 @@ def _change(factory, project_id, *, sequence, before, after, created_at):
 
 def test_an_empty_project_reports_real_zeroes_and_no_invented_numbers(tmp_path):
     factory, project_id = _setup(tmp_path)
-    overview = ProjectOverviewService(factory).get(project_id)
+    overview = ProjectOverviewService(factory).get(project_id, timezone="Asia/Shanghai")
     assert overview["counts"] == {
         "automations": 0,
         "tables": 0,

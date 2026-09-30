@@ -1,0 +1,69 @@
+{
+  "stage": "clear",
+  "deviceId": "3d819343-8b92-4e66-9db1-4dfd468b54c5",
+  "sessions": [
+    {
+      "id": "4ff4290b-8332-4487-a94d-22e8592b24d2",
+      "appReceipts": {
+        "deb31029-a018-47bb-ba62-7cf00a5fa77e": {
+          "request": {
+            "generation": 6,
+            "operation": "clearData",
+            "value": "moe.shizuku.privileged.api"
+          },
+          "state": "succeeded",
+          "commandMarker": "/data/local/tmp/autoflow-operation-bb25f4742ae24a36b0f1510287379339"
+        }
+      }
+    },
+    {
+      "id": "a8fff9d7-7436-4788-ab9c-3d73288a5a66",
+      "appReceipts": {
+        "5f6f4702-7d53-4dcf-ac76-1de6a5bbe64a": {
+          "request": {
+            "generation": 2,
+            "operation": "install",
+            "value": "bytes",
+            "payloadDigest": "6e273ab0e991c4e79bc8b1bbb9b9dd739ccac1a8712a541a214078886b7b790f",
+            "payloadBytes": 2571773,
+            "apkMetadata": {
+              "packageName": "moe.shizuku.privileged.api",
+              "versionCode": 1086,
+              "versionName": "13.6.0.r1086.2650830c"
+            }
+          },
+          "state": "succeeded",
+          "commandCompleted": true,
+          "commandMarker": "/data/local/tmp/autoflow-operation-7abc7c9f819b43f68e5e404dd05cf32e"
+        }
+      }
+    },
+    {
+      "id": "c4ea7a5d-8686-4319-a7fb-558ab7a47fb2",
+      "appReceipts": {
+        "8afb369d-f726-4d60-83ea-2fed0de3f2b8": {
+          "request": {
+            "generation": 5,
+            "operation": "launch",
+            "value": "moe.shizuku.privileged.api"
+          },
+          "state": "succeeded",
+          "commandMarker": "/data/local/tmp/autoflow-operation-e23eff77a8894f8d938a1d39aa315fef"
+        },
+        "294a6a3a-d29c-4b3c-9e66-a963f6c7237c": {
+          "request": {
+            "generation": 5,
+            "operation": "stop",
+            "value": "moe.shizuku.privileged.api"
+          },
+          "state": "succeeded",
+          "commandMarker": "/data/local/tmp/autoflow-operation-b6c8ce43c5e44b1d9909e5e01db110ea"
+        }
+      }
+    }
+  ],
+  "probe": "absent",
+  "package": "package:/data/app/~~-zq3vTMxOhARFYJQ1P3HHw==/moe.shizuku.privileged.api-koV2h9Xv37bStGAESEsI3Q==/base.apk",
+  "pid": "",
+  "passed": true
+}

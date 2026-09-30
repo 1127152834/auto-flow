@@ -10,6 +10,7 @@ from types import SimpleNamespace
 import pytest
 
 from autoflow.domain.profiles.models import Profile, ProfileSpec
+from autoflow.infrastructure.process.browser_processes import process_identity_is_alive
 
 
 def profile(values):
@@ -19,6 +20,9 @@ def profile(values):
 
 def test_process_identity_does_not_reclaim_reused_worker_pid_or_diagnostic_command(monkeypatch, tmp_path):
     from autoflow.infrastructure.process import browser_processes as module
+
+    monkeypatch.setattr(module, "sys", SimpleNamespace(platform="darwin", executable=sys.executable))
+    monkeypatch.setattr(module.os, "getpgrp", lambda: 100, raising=False)
 
     run = tmp_path / "run"
     executable = tmp_path / "Chromium"
@@ -38,7 +42,7 @@ def test_process_identity_does_not_reclaim_reused_worker_pid_or_diagnostic_comma
     assert module.capture_processes(700, 11, run, executable) == {900: (900, 4)}
     assert module.capture_processes(700, 11, None, None, {700: (500, 11)}) == {}
     sent = []
-    monkeypatch.setattr(module.os, "killpg", lambda *args: sent.append(args))
+    monkeypatch.setattr(module.os, "killpg", lambda *args: sent.append(args), raising=False)
     module.signal_processes({700: (500, 11)}, 9)
     assert sent == []
 
@@ -79,19 +83,21 @@ async def test_test_browser_shutdown_cannot_cancel_start_cleanup_twice(monkeypat
     with pytest.raises(asyncio.CancelledError):
         await opening
     assert not manager.busy()
-    with pytest.raises(ProcessLookupError):
-        os.kill(pid, 0)
+    assert not process_identity_is_alive(pid, None)
 
 
 def test_unreadable_metadata_never_confirms_a_live_owned_process_exited(monkeypatch):
     from autoflow.infrastructure.process import browser_processes as module
+
+    monkeypatch.setattr(module, "sys", SimpleNamespace(platform="darwin", executable=sys.executable))
+    monkeypatch.setattr(module.os, "getpgrp", lambda: 100, raising=False)
 
     monkeypatch.setattr(module, "process_birth", lambda _: None)
     monkeypatch.setattr(module, "_process_exists", lambda pid: pid == 700)
     owned = {700: (700, 123), 701: (700, 456)}
     assert module.living_processes(owned) == {700: (700, 123)}
     sent = []
-    monkeypatch.setattr(module.os, "killpg", lambda *args: sent.append(args))
+    monkeypatch.setattr(module.os, "killpg", lambda *args: sent.append(args), raising=False)
     module.signal_processes(owned, 9)
     assert sent == []
 
@@ -129,12 +135,11 @@ async def test_test_browser_failed_start_cleanup_can_be_stopped_again(monkeypatc
     with pytest.raises(RuntimeError, match="metadata unavailable"):
         await opening
     assert manager.busy()
-    os.kill(pid, 0)
+    assert process_identity_is_alive(pid, None)
     monkeypatch.setattr(module, "stop_process_tree", cleanup)
     await manager.stop("profile-1")
     assert not manager.busy()
-    with pytest.raises(ProcessLookupError):
-        os.kill(pid, 0)
+    assert not process_identity_is_alive(pid, None)
     await manager.shutdown()
 
 
@@ -258,6 +263,9 @@ def test_recycled_pid_still_requires_native_ownership(
 async def test_unverified_worker_exit_has_bounded_cleanup_failure(monkeypatch):
     from autoflow.infrastructure.process import test_browser_worker as module
 
+    monkeypatch.setattr(module, "sys", SimpleNamespace(platform="darwin"))
+    monkeypatch.setattr(module, "signal", SimpleNamespace(SIGTERM=15, SIGKILL=9))
+
     exited = asyncio.Event()
     process = SimpleNamespace(pid=700, returncode=None, wait=exited.wait)
     monkeypatch.setattr(module, 'capture_processes', lambda *_args, **_kwargs: {})
@@ -268,6 +276,213 @@ async def test_unverified_worker_exit_has_bounded_cleanup_failure(monkeypatch):
                 await module.force_process_tree(process, 0.01)
     finally:
         exited.set()
+
+
+@pytest.mark.parametrize('module_name', ['browser_processes', 'project_browser_processes'])
+def test_framework_python_worker_uses_native_interpreter_identity(monkeypatch, tmp_path, module_name):
+    from importlib import import_module
+
+    module = import_module(f'autoflow.infrastructure.process.{module_name}')
+    native_python = Path('/Library/Frameworks/Python.framework/Resources/Python.app/Contents/MacOS/Python')
+    run = tmp_path / 'run'
+    marker = {'CLOAKBROWSER_CACHE_DIR': str(run)}
+    monkeypatch.setattr(module, '_native_arguments', lambda pid: (
+        native_python if pid in (700, os.getpid()) else Path('/unrelated/python'),
+        ['python', '--workflow-worker'], marker,
+    ))
+    assert module._belongs_to_run(700, run, tmp_path / 'Chromium') is True
+    assert module._belongs_to_run(701, run, tmp_path / 'Chromium') is False
+
+
+def test_windows_unknown_birth_probe_never_sends_a_signal(monkeypatch):
+    from autoflow.infrastructure.process import browser_processes as module
+
+    monkeypatch.setattr(module, 'sys', SimpleNamespace(platform='win32'))
+    monkeypatch.setattr(module, 'process_birth', lambda _: None)
+    monkeypatch.setattr(module, '_windows_process_exists', lambda _: True, raising=False)
+
+    def forbidden(*_args):
+        raise AssertionError('a liveness probe must never send a Windows signal')
+
+    monkeypatch.setattr(module.os, 'kill', forbidden)
+    assert module.process_identity_is_alive(700, None)
+
+
+@pytest.mark.asyncio
+async def test_native_liveness_probe_preserves_a_live_process_and_detects_exit():
+    from autoflow.infrastructure.process.browser_processes import (
+        process_birth,
+        process_identity_is_alive,
+    )
+
+    process = await asyncio.create_subprocess_exec(sys.executable, '-c', 'import time; time.sleep(30)')
+    birth = process_birth(process.pid)
+    try:
+        assert process_identity_is_alive(process.pid, None)
+        assert process_identity_is_alive(process.pid, birth)
+        await asyncio.sleep(.05)
+        assert process.returncode is None
+    finally:
+        if process.returncode is None:
+            process.terminate()
+        await process.wait()
+    assert not process_identity_is_alive(process.pid, birth)
+
+
+@pytest.mark.parametrize('handle,wait,error,expected', [
+    (700, 258, 0, True), (700, 0, 0, False), (700, 0xFFFFFFFF, 0, True),
+    (0, 0, 87, False), (0, 0, 5, True),
+])
+def test_windows_handle_probe_requires_positive_exit_evidence(monkeypatch, handle, wait, error, expected):
+    from autoflow.infrastructure.process import browser_processes as module
+
+    calls = []
+    closed = []
+
+    def open_process(*args):
+        calls.append(args)
+        return handle
+
+    kernel = SimpleNamespace(OpenProcess=open_process, WaitForSingleObject=lambda *_: wait, CloseHandle=lambda h: closed.append(h))
+    monkeypatch.setattr(module.ctypes, 'WinDLL', lambda *_args, **_kwargs: kernel, raising=False)
+    monkeypatch.setattr(module.ctypes, 'get_last_error', lambda: error, raising=False)
+    assert module._windows_process_exists(700) is expected
+    assert calls == [(0x00100000, False, 700)]
+    assert closed == ([handle] if handle else [])
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('module_name', ['test_browser_worker', 'project_test_browser_worker', 'kernel_worker'])
+@pytest.mark.parametrize('still_alive', [False, True])
+async def test_exit_race_never_releases_a_process_without_confirming_exit(monkeypatch, module_name, still_alive):
+    from importlib import import_module
+
+    module = import_module(f'autoflow.infrastructure.process.{module_name}')
+    if module_name != 'kernel_worker':
+        monkeypatch.setattr(module, 'sys', SimpleNamespace(platform='win32'))
+
+    def denied():
+        raise PermissionError('process may have exited before its watcher updated')
+
+    async def wait():
+        if still_alive:
+            await asyncio.Event().wait()
+        process.returncode = 0
+        return 0
+
+    process = SimpleNamespace(pid=700, returncode=None, kill=denied, terminate=denied, wait=wait)
+
+    async def killer_wait():
+        return 0
+
+    async def spawn(*_args, **_kwargs):
+        return SimpleNamespace(wait=killer_wait)
+
+    monkeypatch.setattr(module.asyncio, 'create_subprocess_exec', spawn)
+    if module_name == 'kernel_worker':
+        manager = object.__new__(module.KernelWorkerManager)
+        manager._termination_timeout = .01
+        cleanup = manager._stop_process(process)
+    else:
+        cleanup = module.force_process_tree(process, .01)
+    if still_alive:
+        with pytest.raises(TimeoutError):
+            await cleanup
+        assert process.returncode is None
+    else:
+        await cleanup
+        assert process.returncode == 0
+
+
+@pytest.mark.parametrize('birth,member,owned,allowed', [(123, True, False, True), (123, False, False, False), (123, False, True, True), (456, True, True, False), (None, True, True, False)])
+def test_windows_job_verifies_same_process_handle_and_only_live_owner_assigns(monkeypatch, birth, member, owned, allowed):
+    from autoflow.infrastructure.process import windows_job as module
+    calls = []
+    def membership(process, job, result):
+        calls.append(('member', process, job))
+        result._obj.value = member
+        return True
+    def assign(job, process):
+        calls.append(('assign', process, job))
+        return True
+    kernel = SimpleNamespace(OpenProcess=lambda *_: 9001, IsProcessInJob=membership, AssignProcessToJobObject=assign, CloseHandle=lambda value: calls.append(('close', value)))
+    def read(_kernel, process):
+        calls.append(('birth', process))
+        return birth
+    monkeypatch.setattr(module, '_windows_handle_birth', read)
+    if allowed:
+        assert module._verified_process(kernel, 8001, 700, 123, owned_launcher=owned) == 9001
+        kernel.CloseHandle(9001)
+    else:
+        with pytest.raises(OSError):
+            module._verified_process(kernel, 8001, 700, 123, owned_launcher=owned)
+    assert calls[0] == ('birth', 9001) and calls[-1] == ('close', 9001)
+    assert (('assign', 9001, 8001) in calls) == (birth == 123 and not member and owned)
+
+
+@pytest.mark.parametrize('wait_result', [0, 258, 0xFFFFFFFF])
+def test_windows_job_waits_for_member_handles_after_accounting_zero(monkeypatch, wait_result):
+    from autoflow.infrastructure.process import windows_job as module
+    calls = []
+    def query(_job, kind, result, *_):
+        if kind == 3:
+            result._obj.assigned = result._obj.count = 1
+            result._obj.pids[0] = 700
+        else:
+            result._obj.active = 0
+        return True
+    def membership(_process, _job, result):
+        result._obj.value = True
+        return True
+    kernel = SimpleNamespace(
+        QueryInformationJobObject=query,
+        OpenProcess=lambda *_: calls.append('open') or 9001,
+        IsProcessInJob=membership,
+        TerminateJobObject=lambda *_: calls.append('terminate') or True,
+        WaitForSingleObject=lambda *_: calls.append('wait') or wait_result,
+        CloseHandle=lambda h: calls.append(('close', h)),
+    )
+    monkeypatch.setattr(module, '_api', lambda: kernel)
+    if wait_result == 0:
+        module.terminate_worker_job(8001, .01)
+    else:
+        with pytest.raises(OSError, match='exit|cleanup'):
+            module.terminate_worker_job(8001, .01)
+    assert calls.index('open') < calls.index('terminate') < calls.index('wait')
+    assert calls[-1] == ('close', 9001)
+
+
+@pytest.mark.parametrize('side', ['worker', 'supervisor'])
+@pytest.mark.parametrize('after', ['member', 'foreign', 'unreadable'])
+def test_windows_job_rechecks_exact_membership_when_parent_and_child_join_race(monkeypatch, side, after):
+    from autoflow.infrastructure.process import windows_job as module
+    calls = []
+
+    def membership(process, job, result):
+        assert (process, job) == (9001, 8001)
+        calls.append('member')
+        result._obj.value = len(calls) > 1 and after == 'member'
+        return not (len(calls) > 1 and after == 'unreadable')
+
+    kernel = SimpleNamespace(
+        OpenJobObjectW=lambda *_: 8001, GetCurrentProcess=lambda: 9001,
+        OpenProcess=lambda *_: 9001, IsProcessInJob=membership,
+        # The other participant assigned between the first check and this call.
+        AssignProcessToJobObject=lambda *_: False,
+        CloseHandle=lambda handle: calls.append(('close', handle)),
+    )
+    monkeypatch.setattr(module, '_api', lambda: kernel)
+    monkeypatch.setattr(module, '_windows_handle_birth', lambda *_: 123)
+    monkeypatch.setattr(module, 'sys', SimpleNamespace(platform='win32'))
+    monkeypatch.setenv('AUTOFLOW_WORKER_JOB_NAME', 'Local\\AutoFlow-test')
+    invoke = module.create_worker_job if side == 'worker' else lambda: module._verified_process(kernel, 8001, 700, 123, owned_launcher=True)
+    if after == 'member':
+        assert invoke() == (8001 if side == 'worker' else 9001)
+        assert calls == ['member', 'member']
+    else:
+        with pytest.raises(OSError):
+            invoke()
+        assert calls[-1] == ('close', 8001 if side == 'worker' else 9001)
 
 
 @pytest.mark.asyncio

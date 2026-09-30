@@ -1,0 +1,46 @@
+{
+  "scriptRuff": "exit0",
+  "scriptHelp": "both exit0",
+  "missingMutationOptIn": "both exit2",
+  "realPermission": "exit0 passed",
+  "realLegacyRed": "exit1 ANDROID_REQUEST_CONFLICT",
+  "realLegacyGreen": "exit0 passed",
+  "build": "exit0 renderer30.69sec",
+  "openapi": {
+    "argv": [
+      "npm",
+      "run",
+      "openapi:check"
+    ],
+    "exit": 0,
+    "seconds": 4.49
+  },
+  "changedMarkdownLinksChecked": 260,
+  "missingLinks": [],
+  "planStepStatus": {
+    "total": 102,
+    "passed": 85,
+    "not_run": 14,
+    "blocked": 3
+  },
+  "backendFull": {
+    "argv": [
+      "uv",
+      "run",
+      "pytest",
+      "-q",
+      "--tb=short"
+    ],
+    "cwd": "apps/backend",
+    "exit": 0,
+    "passed": 4124,
+    "skipped": 26,
+    "warnings": 2,
+    "seconds": 780.28
+  },
+  "review": {
+    "Critical": 0,
+    "Important": 0,
+    "Minor": 0
+  }
+}

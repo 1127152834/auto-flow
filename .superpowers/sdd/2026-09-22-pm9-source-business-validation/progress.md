@@ -1,0 +1,9 @@
+# SDD ledger — plan: docs/superpowers/plans/2026-09-22-pm9-source-business-validation.md
+Pre-flight: Tasks 1/2/3 share current validationIssues; Task 1 must filter capability projections so diagnostic field IDs do not leak. Task 2 preserves safe wire values only; same validator reused by Sheets/Excel. No interface conflict.
+Ruling: D1 has one separate final review of 685504ee..D1 HEAD; completed C/R review remains scoped and is not repeated.
+Task 1: complete (commits 685504e..HEAD, tests: uv run --directory apps/backend pytest tests/unit/test_project_data_rules.py tests/integration/test_project_data_records.py tests/integration/test_project_capability_fencing.py -q → 86 passed, 2 warnings in 5.36s; npm run openapi:check passed)
+Task 2: complete (D1 review RED→GREEN: Excel identity-format rejection, Excel/Sheets required-source omission, and Sheets late-invalid identity atomic prevalidation; scoped command now 138 passed, 2 warnings in 58.62s; Ruff full directory and mypy 407 pass)
+Task 3: complete (commits b840015..HEAD, tests: npm exec --workspace @autoflow/desktop -- vitest run src/renderer/domains/project-data/components/RecordFieldsView.test.tsx → 7 passed; npm run typecheck passed; validation issue is shown beside original value and remains distinct from unreadable cell error)
+Task 4: local candidate complete (D1 current working candidate includes source fixes after review; scoped backend 138 passed/2 warnings, frontend 11 passed, typecheck/OpenAPI/Ruff/mypy407 passed. Real-browser D1 filter selected 0 tests; no D1 worker evidence claimed. Native/packaged/external validation remains pending.)
+
+Task 4 supplemental real worker evidence (local Mac, current post-review source): data-response-loss 1 passed/28 deselected in 10.46s; data-schema/data-delete-field/data-old-candidate 4 passed/25 deselected in 56.60s. These are existing PM9 production HTTP/SQLite/CloakBrowser scenarios, not a dedicated D1 bad-value worker claim.

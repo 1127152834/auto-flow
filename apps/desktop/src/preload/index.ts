@@ -60,6 +60,7 @@ const settingsBridge: SettingsBridge = {
   openSettingsDirectory: directory => ipcRenderer.invoke('autoflow:settings:open-directory', directory),
   previewDiagnostics: includeLogs => ipcRenderer.invoke('autoflow:settings:preview-diagnostics', includeLogs),
   saveDiagnostics: id => ipcRenderer.invoke('autoflow:settings:save-diagnostics', id),
+  saveAndroidDiagnostic: id => ipcRenderer.invoke('autoflow:settings:save-android-diagnostic', id),
   quitApplication: () => ipcRenderer.invoke('autoflow:settings:quit'),
 }
 ipcRenderer.on('autoflow:preferences-changed', (_event, preferences: UiPreferences) => {

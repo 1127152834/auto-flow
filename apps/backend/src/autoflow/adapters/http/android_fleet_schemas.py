@@ -21,6 +21,7 @@ class EnvironmentProfile(AndroidRename):
     timezone: str = "Asia/Shanghai"
     shell_root: Literal["unknown", "available", "unavailable"] = "unknown"
     application_root: Literal["unknown", "available", "unavailable"] = "unknown"
+    archived: bool = False
 
     @field_validator("timezone")
     @classmethod
@@ -42,9 +43,11 @@ class BatchCreate(AndroidRename):
     batch_id: UUID
     profile_id: UUID
     profile_revision: int = Field(ge=1, strict=True)
-    quantity: int = Field(default=3, ge=1, le=20, strict=True)
+    source_device_id: UUID | None = None
+    quantity: int = Field(default=1, ge=1, le=20, strict=True)
     instance_type: Literal["persistent", "temporary"] = "persistent"
     start: bool = True
+    allow_unknown_disk_estimate: bool = Field(default=False, strict=True)
     width: int = Field(default=720, ge=320, le=1920, strict=True)
     height: int = Field(default=1280, ge=320, le=2560, strict=True)
     locale: str = Field(default="zh-CN", pattern=r"^[a-z]{2,3}(-[A-Z]{2})?$")
@@ -105,6 +108,7 @@ class SessionCreate(ApiModel):
     request_id: UUID
     device_id: UUID
     access: Literal["manual", "readonly"] = "manual"
+    client_session_id: str | None = Field(default=None, min_length=1, max_length=128)
 
 
 class SessionRead(ApiModel):
@@ -117,6 +121,12 @@ class SessionRead(ApiModel):
     width: int
     height: int
     latest_operation: str | None = None
+    client_session_id: str | None = None
+
+
+class SessionHeartbeat(ApiModel):
+    client_session_id: str = Field(min_length=1, max_length=128)
+    generation: int = Field(ge=0, strict=True)
 
 
 class ControlCommand(ApiModel):
@@ -147,18 +157,40 @@ class SessionAction(ApiModel):
 
 
 class AppLaunch(ApiModel):
+    request_id: str = Field(min_length=1, max_length=128)
     generation: int = Field(ge=0, strict=True)
     package_name: str = Field(
         pattern=r"^[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z][A-Za-z0-9_]*)+$", max_length=240
     )
 
 
+class AppAction(ApiModel):
+    request_id: str = Field(min_length=1, max_length=128)
+    generation: int = Field(ge=0, strict=True)
+    package_name: str = Field(pattern=r"^[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z][A-Za-z0-9_]*)+$", max_length=240)
+    action: Literal["stop", "uninstall", "clearData"]
+
+
+class AppVerify(ApiModel):
+    request_id: str = Field(min_length=1, max_length=128)
+    generation: int = Field(ge=0, strict=True)
+
+
 class BatchAction(ApiModel):
     action: Literal["cancel", "retry"]
 
 
+class AppRecord(ApiModel):
+    package_name: str
+    version_code: int | None = None
+    version_name: str | None = None
+    system: bool
+    protected: bool
+
+
 class AppInfo(ApiModel):
     packages: list[str]
+    applications: list[AppRecord] = Field(default_factory=list)
     current_package: str | None
     shell_root: str
     application_root: str

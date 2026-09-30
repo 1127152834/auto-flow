@@ -55,6 +55,10 @@ export function RecordFieldsView({ fields, record, identityFieldId, openExternal
         </div>
       })}
     </dl>
+    {record.validationIssues?.length ? <div role="status" className="mt-4 rounded-control border border-clay/30 bg-clay/5 p-3 text-sm text-clay">
+      <p className="font-semibold">格式不符合字段要求</p>
+      <ul className="mt-1 list-disc pl-5">{record.validationIssues.map(issue => <li key={`${issue.fieldId}:${issue.rule}`}>{fields.find(field => field.ref.fieldId === issue.fieldId)?.name ?? issue.fieldId}：{issue.message}</li>)}</ul>
+    </div> : null}
     {feedback ? <p role={feedback.error ? 'alert' : 'status'} className={`mt-4 text-base ${feedback.error ? 'text-danger' : 'text-muted'}`}>{feedback.text}</p> : null}
   </section>
 }

@@ -7,7 +7,7 @@ import { RecordFieldsView } from './RecordFieldsView'
 type S = components['schemas']
 afterEach(cleanup)
 const field = (id: string): S['DataFieldView'] => ({ ref: { projectId: 'p', tableId: 't', datasetGeneration: 'g', fieldId: id }, key: id, name: id, type: 'string', required: false, validation: {}, writable: true, formula: false, fieldRevision: 1 })
-const row = (values: S['DataCellView'][]): S['DataRecordView'] => ({ ref: { projectId: 'p', tableId: 't', datasetGeneration: 'g', recordKey: { type: 'text', value: '001' } }, values, recordSlots: [], statusId: null, currentEnvironmentId: null, contentRevision: 1, statusRevision: 1, linkRevision: 1, deleted: false, createdAt: '2026-09-13T00:00:00Z', updatedAt: '2026-09-13T00:00:00Z' })
+const row = (values: S['DataCellView'][]): S['DataRecordView'] => ({ ref: { projectId: 'p', tableId: 't', datasetGeneration: 'g', recordKey: { type: 'text', value: '001' } }, values, validationIssues: [], recordSlots: [], statusId: null, currentEnvironmentId: null, contentRevision: 1, statusRevision: 1, linkRevision: 1, deleted: false, createdAt: '2026-09-13T00:00:00Z', updatedAt: '2026-09-13T00:00:00Z' })
 const cell = (fieldId: string, value: S['DataCellView']['value'], readable = true): S['DataCellView'] => ({ fieldId, value, readable, source: 'local' })
 it('distinguishes missing, null, empty, zero, false and unreadable evidence', () => {
   render(<RecordFieldsView fields={['missing', 'null', 'empty', 'zero', 'false', 'private'].map(field)} record={row([cell('null', null), cell('empty', ''), cell('zero', 0), cell('false', false), cell('private', 'secret', false)])} />)
@@ -50,3 +50,5 @@ it('omits a system UUID identity row and gives a stale field a semantic label',(
  view.rerender(<RecordFieldsView identityFieldId="11111111-2222-4333-8444-555555555556" fields={[]} record={system}/>)
  expect(screen.getAllByText('字段已失效')).toHaveLength(2);expect(document.body.textContent).not.toContain(uuid)
 })
+
+it('shows structured business validation issues beside the original value', () => { const rowWithIssue = { ...row([cell('amount', 'not-a-number')]), validationIssues: [{ fieldId: 'amount', code: 'INVALID_PROJECT_DATA', rule: 'type', message: 'must be a finite JSON-safe number' }] }; render(<RecordFieldsView fields={[field('amount')]} record={rowWithIssue} />); expect(screen.getByRole('status')).toHaveTextContent('格式不符合字段要求'); expect(screen.getByRole('status')).toHaveTextContent('must be a finite JSON-safe number') })

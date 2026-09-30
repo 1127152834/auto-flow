@@ -11,6 +11,7 @@ export type EnvironmentPolicyEditorProps = {
   value: Policy
   onChange(value: Policy): void
   disabled?: boolean
+  nodeBrowserMode?: boolean
   profiles: (ResourceOption & Partial<AutomationResourceSummaryProps['profiles'][number]>)[]
   projectDefaults?: AutomationResourceSummaryProps['projectDefaults']
   proxies: ResourceOption[]
@@ -27,7 +28,7 @@ const options = (resources: ResourceOption[], value?: string | null, unavailable
 ]
 const withoutProxy = (value: Policy): Policy => { const next = { ...value }; delete next.proxyOverride; return next }
 
-export function EnvironmentPolicyEditor({ value, onChange, disabled = false, profiles, proxies, pools, projectDefaults, modelProviders = [], inputs = [], environments = [], errors = {} }: EnvironmentPolicyEditorProps) {
+export function EnvironmentPolicyEditor({ value, onChange, disabled = false, nodeBrowserMode = false, profiles, proxies, pools, projectDefaults, modelProviders = [], inputs = [], environments = [], errors = {} }: EnvironmentPolicyEditorProps) {
   const isNew = value.source === 'newFromProfile'
   const profileSpecified = isNew && Object.hasOwn(value, 'profileId')
   const proxyMode: ProxyMode = value.proxyOverride?.mode ?? 'inherit'
@@ -41,6 +42,7 @@ export function EnvironmentPolicyEditor({ value, onChange, disabled = false, pro
   }
 
   return <section className="grid min-w-0 gap-4" aria-label="资源与环境">
+    {nodeBrowserMode ? <p className="m-0 text-sm text-muted">浏览器实例由工作流的打开网页节点创建或恢复。模板、代理和内核请在 Studio 节点中配置；项目默认值仅用于新建实例。</p> : <>
     <div className="grid gap-2 md:grid-cols-[12rem_minmax(0,1fr)] md:items-start">
       <label className="pt-2 text-sm font-medium">浏览器配置 <span className="text-danger">*</span></label>
       <div className="grid min-w-0 gap-2 sm:grid-cols-[13rem_minmax(0,1fr)]">
@@ -52,6 +54,7 @@ export function EnvironmentPolicyEditor({ value, onChange, disabled = false, pro
       </div>
     </div>
 
+    </>}
     <div className="grid gap-2 md:grid-cols-[12rem_minmax(0,1fr)] md:items-start">
       <span className="pt-2 text-sm font-medium">模型提供方</span>
       <Select aria-label="模型提供方" value={Object.hasOwn(value, 'modelProviderId') ? value.modelProviderId ?? 'none' : 'inherit'} options={[{ value: 'inherit', label: '继承项目默认' }, { value: 'none', label: '不指定模型提供方' }, ...options(modelProviders, value.modelProviderId, '已保存的模型提供方引用暂不可用')]} clearable={false} disabled={disabled} errorMessage={errors.modelProviderId} onValueChange={id => {
@@ -63,6 +66,7 @@ export function EnvironmentPolicyEditor({ value, onChange, disabled = false, pro
       }}/>
     </div>
 
+    {!nodeBrowserMode && <>
     <div className="grid gap-2 md:grid-cols-[12rem_minmax(0,1fr)] md:items-start">
       <span className="pt-2 text-sm font-medium">代理设置</span>
       <div className="grid gap-3"><RadioGroup label="代理设置" value={proxyMode} disabled={disabled} onValueChange={mode => changeProxyMode(mode as ProxyMode)} options={[
@@ -92,5 +96,6 @@ export function EnvironmentPolicyEditor({ value, onChange, disabled = false, pro
       </div>
     </div>
     {projectDefaults ? <AutomationResourceSummary policy={value} projectDefaults={projectDefaults} profiles={profiles.flatMap(profile => profile.browserVersion && profile.browserEdition && profile.proxyMode ? [{ ...profile, browserVersion: profile.browserVersion, browserEdition: profile.browserEdition, proxyMode: profile.proxyMode }] : [])} proxies={proxies} pools={pools} models={modelProviders}/> : null}
+    </>}
   </section>
 }

@@ -88,12 +88,14 @@ def test_name_and_description_use_unicode_code_point_limits_after_trim():
             validate_write(candidate)
 
 
-def test_pm3_run_policy_is_finite_and_single_concurrency():
+def test_run_policy_has_bounded_integer_limits():
     for field, value in (
         ("maxTasks", 101),
         ("maxTasks", True),
-        ("concurrency", 2),
-        ("maxLiveInstances", 2),
+        ("concurrency", 101),
+        ("concurrency", 0),
+        ("concurrency", 1.5),
+        ("maxLiveInstances", 101),
     ):
         candidate = payload()
         candidate["runPolicy"][field] = value
@@ -219,3 +221,10 @@ def test_input_relation_graph_rejects_cycles_but_accepts_forward_dag_references(
     assert error.value.details["fields"] == {
         "inputPlan.inputs": "Input dependencies contain a cycle"
     }
+
+
+@pytest.mark.parametrize("limit", [1, 2, 100])
+def test_parameter_automation_accepts_bounded_concurrency(limit):
+    candidate = payload()
+    candidate["runPolicy"].update(concurrency=limit, maxLiveInstances=limit)
+    assert validate_write(candidate)["runPolicy"] == candidate["runPolicy"]

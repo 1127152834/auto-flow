@@ -32,9 +32,11 @@ import {
 import { cn } from '../lib/utils'
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import type { LogEntry, LogLevel, VariableType } from '../types/index'
+import { ProjectInputPanel } from './ProjectInputPanel'
 import { ImageAssetsPanel } from './ImageAssetsPanel'
 import { LogList } from './LogList'
 import { DataTable } from './DataTable'
+import { TracePanel } from './TracePanel'
 import { RunResultsPanel } from './RunResultsPanel'
 import { PanelResizer } from './PanelResizer'
 import { useLayoutStore, LAYOUT_LIMITS } from '../hooks/stores/layoutStore'
@@ -252,6 +254,9 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
     return () => clearTimeout(timer)
   }, [effectiveRunId, logs.length, loadHistoryLogs])
 
+  // Local command acknowledgements are not persisted run logs. Keep them visible
+  // without mixing them into the selected run's counts, filters or export.
+  const commandFeedback = effectiveRunId ? logs.findLast(log => log.origin === 'studio') : undefined
   const matchingHistory = historyRunId === effectiveRunId
   const visibleLogs = effectiveRunId ? (matchingHistory ? historyLogs ?? [] : []) : filteredLogs
   const visibleTotal = effectiveRunId ? (matchingHistory && historyLogs !== null ? historyTotal : 0) : logs.length
@@ -670,6 +675,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
                 {variables.length}
               </span>
             </button>
+            <button type="button" className={cn('px-3 py-1.5 rounded-[8px] text-[12px] font-semibold', activeTab === 'project' && 'bg-clay-soft text-clay')} onClick={() => setActiveTab('project')}>项目数据</button>
             {/* 图像 - 橙 */}
             <button
               className={cn(
@@ -689,6 +695,9 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
               )}>
                 {useWorkflowStore.getState().imageAssets.length}
               </span>
+            </button>
+            <button onClick={() => { setActiveTab('trace'); setBottomHeight(Math.min(LAYOUT_LIMITS.bottom.max, Math.max(bottomHeight, window.innerHeight * 0.5))) }} aria-pressed={activeTab === 'trace'} className={cn('flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold', activeTab === 'trace' ? 'bg-primary text-primary-foreground' : 'border-transparent text-muted-foreground hover:bg-muted')}>
+              <Search className="h-3.5 w-3.5" />浏览器追踪
             </button>
           </div>
         </div>
@@ -848,6 +857,9 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
         <div className="h-[calc(100%-2.5rem)] animate-fade-in">
           {activeTab === 'logs' && (
             <div className="h-full flex flex-col">
+              {commandFeedback && <div role={commandFeedback.level === 'error' ? 'alert' : 'status'} className="px-3 py-2 border-b text-xs break-words">
+                当前操作：{commandFeedback.message}
+              </div>}
               {/* 日志搜索和筛选栏 */}
               <div
                 className="flex items-center gap-2 px-3 py-2 border-b border-[hsl(var(--border))]"
@@ -1091,6 +1103,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
             </div>
           )}
 
+          {activeTab === 'project' && <ProjectInputPanel />}
           {activeTab === 'variables' && (
             <ScrollArea className="h-full p-2">
               {variables.length === 0 ? (
@@ -1175,6 +1188,17 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
 
 
 
+          {activeTab === 'trace' && <>
+            <div className="flex items-center gap-2 border-b px-3 py-1">
+              <label htmlFor="trace-run">运行记录</label>
+              <Select id="trace-run" value={selectedRunId} onChange={e => setSelectedRunId(e.target.value)} className="h-7 max-w-96">
+                <option value="">当前运行</option>
+                {recentRuns.map(run => <option key={run.runId} value={run.runId}>{run.workflowName} · {new Date(run.startedAt).toLocaleString('zh-CN', { hour12: false })}</option>)}
+              </Select>
+            </div>
+            {nextRunCursor !== null && <button disabled={runsLoading} className="px-3 py-1 text-left text-xs" onClick={() => void loadRecentRuns(nextRunCursor)}>{runsLoading ? '读取运行中…' : '更早运行'}</button>}
+            {effectiveRunId ? <TracePanel key={effectiveRunId} runId={effectiveRunId} /> : <p className="p-4 text-xs text-muted-foreground">运行流程后，在这里查看浏览器追踪证据。</p>}
+          </>}
           {activeTab === 'images' && <ImageAssetsPanel />}
         </div>
       )}

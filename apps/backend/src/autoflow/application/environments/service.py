@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import builtins
 import hashlib
 import json
 import logging
+from copy import deepcopy
 from datetime import UTC, datetime
+from pathlib import Path
 from threading import Lock, RLock
 from typing import Any
 from uuid import uuid4
@@ -38,6 +41,7 @@ from autoflow.domain.environments.rules import (
     validate_open_instance,
 )
 from autoflow.domain.projects.models import ProjectError, ProjectOperation
+from autoflow.domain.workflows.runtime import WorkflowRuntimeError
 from autoflow.infrastructure.database.environments import SqlAlchemyEnvironments
 from autoflow.infrastructure.filesystem.environment_store import EnvironmentStore
 
@@ -53,7 +57,10 @@ class EnvironmentService:
         opener=None,
         closer=None,
         execution_generation_lookup=None,
+        validate_browser_configuration=None,
     ):
+        self._validate_browser_configuration = validate_browser_configuration
+        self.manual_runtime: Any = None
         self.projects = projects
         self.environments = environments
         self.store = store
@@ -158,6 +165,10 @@ class EnvironmentService:
 
     def patch(self, project_id: str, environment_id: str, key: str, payload: dict[str, Any]):
         self._writable(project_id)
+        if "browserConfiguration" in payload:
+            from .configuration import patch_browser_configuration
+            with self._lifecycle_lock(environment_id):
+                return patch_browser_configuration(self, project_id, environment_id, key, payload)
         expected = payload.get("expectedMetadataRevision")
         if type(expected) is not int or expected < 1:
             raise environment_error(
@@ -200,6 +211,24 @@ class EnvironmentService:
         self._project(project_id)
         return self.environments.get_instance(project_id, instance_id)
 
+    def query_task_end(
+        self, project_id: str, task_id: str
+    ) -> tuple[
+        ProjectOperation, str | None, str | None, builtins.list[dict[str, Any]]
+    ] | None:
+        self._project(project_id)
+        operation_id = self.environments.latest_end_operation(project_id, task_id)
+        if operation_id is None:
+            return None
+        recorded = self.environments.end_by_operation(operation_id)
+        if recorded is None:
+            return None
+        operation = self.projects.operation(operation_id=operation_id, project_id=project_id)
+        save_id = recorded['saveOperationId']
+        save = self.environments.save_by_operation(save_id) if save_id else None
+        # A repair changes the association phase, never the original End verdict.
+        return operation, save_id, save['phase'] if save else None, recorded['targets']
+
     def resolve(self, project_id: str, policy: dict[str, Any], inputs: dict[str, dict[str, Any]] | None = None):
         project = self._project(project_id)
         defaults = project.default_resources or {}
@@ -210,6 +239,27 @@ class EnvironmentService:
             inputs=inputs,
             environments=self.environments.map_environments(project_id),
         )
+
+    def prepare_studio_copy(self, frozen: dict[str, Any], target: Path) -> None:
+        """Copy a frozen saved generation into the owned Studio worker's scratch space."""
+        from sqlalchemy import text
+
+        from autoflow.infrastructure.database.environment_models import (
+            ProjectEnvironmentOccupancyRow,
+        )
+        ref = frozen['environmentRef']
+        # ponytail: hold the write fence during copy; a generation read lease can
+        # shorten this transaction if large-profile preview copying becomes common.
+        with self.environments._session_factory() as session:
+            session.execute(text('BEGIN IMMEDIATE'))
+            selected = self.environments.resolve_source_in_session(session, ref['projectId'], {'source': 'fixedEnvironment', 'environmentId': ref['environmentId']})
+            if selected.environment_ref.to_dict() != ref or selected.identity_package != frozen['identityPackage']:
+                raise environment_error('ENVIRONMENT_CHANGED', '环境已改变，请重新运行以冻结新版本', 409)
+            if session.get(ProjectEnvironmentOccupancyRow, ref['environmentId']) is not None:
+                raise environment_error('ENVIRONMENT_BUSY', '环境正在使用', 409)
+            if self.store.generation_identity(ref['environmentId'], ref['contentGeneration']) != selected.identity_package:
+                raise environment_error('ENVIRONMENT_IDENTITY_UNVERIFIED', '环境内容与身份资料不一致', 409)
+            EnvironmentStore(target.parent.parent).prepare_instance(target.name, self.store.generation_dir(ref['environmentId'], ref['contentGeneration']))
 
     def reserve(
         self,
@@ -240,6 +290,7 @@ class EnvironmentService:
             resolved.profile_id,
             now,
             now,
+            deepcopy(resolved.identity_package) if resolved.identity_package.get("schemaVersion") else None,
         )
         occupancy = None
         if resolved.environment_ref is not None:
@@ -258,6 +309,7 @@ class EnvironmentService:
                 resolved.environment_ref.environment_id,
                 resolved.environment_ref.content_generation,
                 saved.instance_id,
+                identity_package=saved.identity_package,
             )
         return self.environments.set_instance_state(saved.instance_id, "active")
 
@@ -274,7 +326,8 @@ class EnvironmentService:
         metadata = validate_metadata(name, notes)
         now = datetime.now(UTC)
         environment_id = str(uuid4())
-        digest = self.store.stage_candidate(environment_id, instance_id)
+        identity = self.environments.get_instance(project_id, instance_id).identity_package
+        digest = self.store.stage_candidate(environment_id, instance_id, identity_package=identity)
         self.store.publish(environment_id, 1, environment_id)
         record = PersistentEnvironment(
             EnvironmentRef(project_id, environment_id, 1, 1),
@@ -285,6 +338,7 @@ class EnvironmentService:
             None,
             now,
             now,
+            identity_package=identity,
         )
         return self.environments.create_ready(
             record, digest, created_from_source="newFromProfile", created_from_task_id=task_id
@@ -292,13 +346,14 @@ class EnvironmentService:
 
     def publish_update(self, project_id: str, environment_id: str, instance_id: str) -> PersistentEnvironment:
         current, _instance = self.environments.get_with_instance(project_id, environment_id)
-        digest = self.store.stage_candidate(f"{environment_id}:{current.ref.content_generation + 1}", instance_id)
+        identity = self.environments.get_instance(project_id, instance_id).identity_package
+        digest = self.store.stage_candidate(f"{environment_id}:{current.ref.content_generation + 1}", instance_id, identity_package=identity)
         self.store.publish(
             environment_id,
             current.ref.content_generation + 1,
             f"{environment_id}:{current.ref.content_generation + 1}",
         )
-        return self.environments.publish_update(project_id, environment_id, digest)
+        return self.environments.publish_update(project_id, environment_id, digest, generation=current.ref.content_generation + 1, identity_package=identity)
 
     def close_instance(self, project_id: str, instance_id: str, environment_id: str | None) -> None:
         with self._lifecycle_lock(instance_id):
@@ -332,7 +387,7 @@ class EnvironmentService:
     def quiesce_instance(self, project_id: str, instance_id: str) -> EnvironmentInstance:
         with self._lifecycle_lock(instance_id):
             instance = self.environments.get_instance(project_id, instance_id)
-            if instance.state in {"closed", "cleaned"}:
+            if instance.state in {"closed", "cleaned", "retained_unsaved"}:
                 return instance
             if self._closer is None:
                 raise environment_error("INSTANCE_OWNERSHIP_UNKNOWN", "无法确认浏览器已关闭，请核验运行现场", 409)
@@ -343,8 +398,8 @@ class EnvironmentService:
     def instance_path(self, instance_id: str):
         return self.store.instance_dir(instance_id)
 
-    def run_work_directory(self, run_request_id: str):
-        instance = self.environments.active_instance_for_run_request(run_request_id)
+    def run_work_directory(self, run_id: str):
+        instance = self.environments.active_instance_for_run(run_id)
         if instance is None:
             return None
         directory = self.store.root / "instances" / instance.instance_id
@@ -416,7 +471,7 @@ class EnvironmentService:
                     "conflicts": [],
                     "launched": launched,
                 }
-        except ProjectError as error:
+        except (ProjectError, WorkflowRuntimeError) as error:
             # An accepted operation that never completes leaves the user with a
             # request that can only ever answer "still running".
             self._opened.discard(instance_id)
@@ -474,6 +529,7 @@ class EnvironmentService:
                     self.store.restore_generation(
                         existing.environment_id, existing.source_content_generation,
                         existing.instance_id,
+                        identity_package=existing.identity_package,
                     )
                 return self.environments.set_instance_state(existing.instance_id, "active")
             return existing
@@ -491,14 +547,22 @@ class EnvironmentService:
         self, session: Session, project_id: str, task_id: str, run_id: str,
         policy: dict[str, Any],
         inputs: dict[str, dict[str, Any]] | None = None,
+        *, resource_request: dict[str, Any] | None = None, instance_id: str | None = None,
     ) -> EnvironmentInstance:
         resolved = self.environments.resolve_source_in_session(session, project_id, policy, inputs)
+        from autoflow.domain.environments.identity import identity_from_request
+
+        identity = resolved.identity_package if resolved.identity_package.get("schemaVersion") else None
+        if resource_request is not None:
+            identity = identity_from_request(resource_request)
+            if resolved.environment_ref and resource_request.get("environmentRef") != resolved.environment_ref.to_dict():
+                raise environment_error("SAVE_GENERATION_CONFLICT", "环境已变化，请重新准备任务", 409)
         now = datetime.now(UTC)
         reference = resolved.environment_ref
         instance = EnvironmentInstance(
-            str(uuid4()), project_id, reference.environment_id if reference else None,
+            instance_id or str(uuid4()), project_id, reference.environment_id if reference else None,
             "reserved", resolved.source, reference.content_generation if reference else None,
-            1, task_id, run_id, None, resolved.profile_id, now, now,
+            1, task_id, run_id, None, resolved.profile_id, now, now, deepcopy(identity),
         )
         occupancy = (
             occupy_environment(reference.environment_id, instance.instance_id, "task", task_id, None)
@@ -534,18 +598,29 @@ class EnvironmentService:
 
     def list_manual(self, project_id: str, **query):
         self._project(project_id)
-        return self.environments.list_manual_items(project_id, **query)
+        items, total = self.environments.list_manual_items(project_id, **query)
+        # ponytail: at most 200 checkpoints per page; batch this lookup if it becomes measurable.
+        if self.manual_runtime is not None:
+            items = [self.manual_runtime.describe(item) for item in items]
+        return items, total
 
     def get_manual(self, project_id: str, manual_item_id: str):
-        return self.environments.get_manual_item(project_id, manual_item_id)
+        item = self.environments.get_manual_item(project_id, manual_item_id)
+        return self.manual_runtime.describe(item) if self.manual_runtime is not None else item
 
     def resume_manual(self, project_id: str, key: str, manual_item_id: str, payload: dict[str, Any]):
+        item = self.get_manual(project_id, manual_item_id)
+        if self.manual_runtime is not None and self.manual_runtime.owns(item):
+            return self.manual_runtime.command(project_id, key, item, payload, 'resume')
         return resume_manual(self, project_id, key, manual_item_id, payload)
 
     def begin_resume(self, project_id: str, manual_item_id: str, expected_status_revision: int):
         return begin_resume(self, project_id, manual_item_id, expected_status_revision)
 
     def finish_manual(self, project_id: str, key: str, manual_item_id: str, payload: dict[str, Any]):
+        item = self.get_manual(project_id, manual_item_id)
+        if self.manual_runtime is not None and self.manual_runtime.owns(item):
+            return self.manual_runtime.command(project_id, key, item, payload, 'finish')
         return finish_manual(self, project_id, key, manual_item_id, payload)
 
     def expire_manual(self, project_id: str, manual_item_id: str, expected_status_revision: int):
@@ -599,12 +674,7 @@ class EnvironmentService:
                 "fixedEnvironment",
                 environment.ref,
                 environment.profile_id,
-                {
-                    "source": "fixedEnvironment",
-                    "environmentId": environment.ref.environment_id,
-                    "contentGeneration": environment.ref.content_generation,
-                    "profileId": environment.profile_id,
-                },
+                environment.identity_package or {},
             )
             instance = self.reserve(
                 project_id,
@@ -614,7 +684,7 @@ class EnvironmentService:
                 holder_kind="maintenance",
                 holder_id=accepted.operation_id,
             )
-        except ProjectError as error:
+        except (ProjectError, WorkflowRuntimeError) as error:
             self.environments.complete_operation(
                 accepted,
                 None,
@@ -714,6 +784,8 @@ def _operation(key, kind, project_id, environment_id, canonical, now):
         ).encode()
     ).hexdigest()
     resource = {"type": "environment", "projectId": project_id, "environmentId": environment_id}
+    if canonical.get("scope") == "environmentConfiguration":
+        resource["browserConfigurationChange"] = True
     if kind == "saveEnvironment":
         request = canonical.get("request") or {}
         resource["instanceId"] = canonical.get("instanceId") or request.get("instanceId")

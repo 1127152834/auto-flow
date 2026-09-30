@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import os
+import sys
 import threading
 from datetime import UTC, datetime
 from pathlib import Path
@@ -21,6 +22,11 @@ from autoflow.infrastructure.database.session import (
 )
 from autoflow.infrastructure.database.workflow_runs import SqlAlchemyWorkflowRuns
 from autoflow.infrastructure.filesystem.workflow_artifacts import WorkflowArtifactStore
+
+requires_posix_output = pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="Native Windows existing-file overwrite/append is unsupported",
+)
 
 
 def _start() -> WorkflowRunStart:
@@ -195,6 +201,7 @@ async def test_disk_failure_does_not_register_artifact(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_text_export_writes_relative_output_and_immutable_artifact_snapshot(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
 ) -> None:
@@ -231,6 +238,7 @@ async def test_text_export_writes_relative_output_and_immutable_artifact_snapsho
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_binary_export_writes_relative_output_and_xlsx_snapshot(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
 ) -> None:
@@ -268,6 +276,24 @@ async def test_binary_export_writes_relative_output_and_xlsx_snapshot(
 
 
 @pytest.mark.asyncio
+async def test_missing_binary_read_does_not_create_parent_directories(
+    artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns], tmp_path: Path,
+) -> None:
+    store, _ = artifacts
+    writer = store.writer(
+        run_id="run-artifacts", node_id="read", execution_id="missing", purpose="result"
+    )
+    for output_path, parent in (
+        ("absent/nested/input.bin", store._root / "runs/run-artifacts/outputs/absent"),
+        (str(tmp_path / "absolute-absent/input.bin"), tmp_path / "absolute-absent"),
+    ):
+        snapshot = await writer.read_binary_output(output_path=output_path, max_bytes=1)
+        assert snapshot.content is None and snapshot.identity == "missing"
+        assert not parent.exists()
+
+
+@pytest.mark.asyncio
+@requires_posix_output
 async def test_binary_export_failure_keeps_existing_target_and_registers_nothing(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
     monkeypatch: pytest.MonkeyPatch,
@@ -306,6 +332,7 @@ async def test_binary_export_failure_keeps_existing_target_and_registers_nothing
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_binary_export_rejects_path_escape_and_symlink(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
     tmp_path: Path,
@@ -339,6 +366,7 @@ async def test_binary_export_rejects_path_escape_and_symlink(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_binary_export_cancellation_keeps_existing_target(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
 ) -> None:
@@ -382,6 +410,7 @@ async def test_binary_export_cancellation_keeps_existing_target(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_text_export_preserves_overwrite_append_and_utf8_sig_semantics(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
 ) -> None:
@@ -433,6 +462,7 @@ async def test_text_export_preserves_overwrite_append_and_utf8_sig_semantics(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_limited_text_append_rejects_oversize_before_replacing_output(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
 ) -> None:
@@ -456,6 +486,7 @@ async def test_limited_text_append_rejects_oversize_before_replacing_output(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_text_export_empty_utf8_sig_content_still_writes_one_bom(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
 ) -> None:
@@ -480,6 +511,7 @@ async def test_text_export_empty_utf8_sig_content_still_writes_one_bom(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_text_export_allows_explicit_absolute_target_and_rejects_relative_escape(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
     tmp_path: Path,
@@ -518,6 +550,7 @@ async def test_text_export_allows_explicit_absolute_target_and_rejects_relative_
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_text_export_failure_keeps_existing_target_and_registers_nothing(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
 ) -> None:
@@ -548,6 +581,7 @@ async def test_text_export_failure_keeps_existing_target_and_registers_nothing(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_text_export_rejects_symlink_escape(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
     tmp_path: Path,
@@ -585,6 +619,7 @@ async def test_text_export_rejects_symlink_escape(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_text_export_parent_swap_cannot_escape_verified_directory(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
     tmp_path: Path,
@@ -640,7 +675,7 @@ async def test_text_export_refuses_unverified_windows_path_operations(
         purpose="result",
     )
     monkeypatch.setattr(
-        "autoflow.infrastructure.filesystem.workflow_artifacts.os.name", "nt"
+        "autoflow.infrastructure.filesystem.workflow_artifacts.sys.platform", "win32"
     )
 
     with pytest.raises(WorkflowRunError) as caught:
@@ -649,7 +684,7 @@ async def test_text_export_refuses_unverified_windows_path_operations(
             content="blocked",
             separator="\n",
             encoding="utf-8",
-            append=False,
+            append=True,
             mime_type="text/plain",
         )
 
@@ -658,6 +693,7 @@ async def test_text_export_refuses_unverified_windows_path_operations(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_text_export_cancellation_during_append_keeps_original_file(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
 ) -> None:
@@ -703,6 +739,7 @@ async def test_text_export_cancellation_during_append_keeps_original_file(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_text_export_cancellation_during_snapshot_publishes_nothing(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
 ) -> None:
@@ -745,6 +782,7 @@ async def test_text_export_cancellation_during_snapshot_publishes_nothing(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_text_export_registration_failure_restores_existing_target(
     tmp_path: Path,
 ) -> None:
@@ -779,6 +817,7 @@ async def test_text_export_registration_failure_restores_existing_target(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_binary_export_registration_failure_restores_existing_target(
     tmp_path: Path,
 ) -> None:
@@ -812,6 +851,7 @@ async def test_binary_export_registration_failure_restores_existing_target(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_binary_export_rejects_concurrent_change_after_read(
     artifacts: tuple[WorkflowArtifactStore, SqlAlchemyWorkflowRuns],
 ) -> None:
@@ -846,6 +886,7 @@ async def test_binary_export_rejects_concurrent_change_after_read(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_binary_export_serializes_competing_autoflow_writers(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -924,6 +965,7 @@ async def test_binary_export_serializes_competing_autoflow_writers(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_registration_failure_does_not_overwrite_newer_external_output(
     tmp_path: Path,
 ) -> None:
@@ -959,6 +1001,7 @@ async def test_registration_failure_does_not_overwrite_newer_external_output(
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("binary", [False, True])
+@requires_posix_output
 async def test_publish_identity_comes_from_staged_file_before_replace(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -1020,6 +1063,7 @@ async def test_publish_identity_comes_from_staged_file_before_replace(
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("binary", [False, True])
+@requires_posix_output
 async def test_output_publish_fsync_failure_restores_existing_target(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -1088,6 +1132,7 @@ async def test_output_publish_fsync_failure_restores_existing_target(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_backup_cleanup_failure_is_persisted_and_retried(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -1145,6 +1190,7 @@ async def test_backup_cleanup_failure_is_persisted_and_retried(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_backup_cleanup_rename_failure_falls_back_to_direct_cleanup(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -1190,6 +1236,7 @@ async def test_backup_cleanup_rename_failure_falls_back_to_direct_cleanup(
 
 
 @pytest.mark.asyncio
+@requires_posix_output
 async def test_backup_cleanup_transition_and_unlink_failure_records_retry_marker(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -1265,3 +1312,196 @@ def test_pending_cleanup_scan_cannot_escape_through_imported_workspace_symlink(
     WorkflowArtifactStore(root, object())  # type: ignore[arg-type]
 
     assert outside.read_bytes() == b"must remain"
+
+
+@pytest.mark.asyncio
+@pytest.mark.skipif(sys.platform != 'win32', reason='requires native Windows file handles')
+@pytest.mark.parametrize('mode', ['success', 'collision', 'cancel', 'registration', 'junction', 'parent-rename'])
+async def test_native_windows_new_output_preserves_handle_boundaries(artifacts, tmp_path, monkeypatch, mode):
+    import subprocess
+
+    store, repository = artifacts
+    target = tmp_path / 'native' / '新文件.txt'
+    target.parent.mkdir()
+    writer = store.writer(run_id='run-artifacts', node_id='export', execution_id='native', purpose='result')
+    original = store._snapshot_from_descriptor
+    outsider = tmp_path / 'outside'
+    outsider.mkdir()
+    if mode == 'junction':
+        target.parent.rmdir()
+        await asyncio.to_thread(subprocess.run, ['cmd', '/c', 'mklink', '/J', str(target.parent), str(outsider)], check=True, capture_output=True)
+    def snapshot(**kwargs):
+        result = original(**kwargs)
+        if mode == 'collision':
+            target.write_text('foreign', encoding='utf-8')
+        elif mode == 'cancel':
+            cancelled[0] = True
+        elif mode == 'parent-rename':
+            with pytest.raises(OSError):
+                target.parent.rename(tmp_path / 'moved')
+        return result
+    cancelled = [False]
+    class Token:
+        def raise_if_cancelled(self):
+            if cancelled[0]: raise asyncio.CancelledError()
+    writer._cancellation = Token()
+    monkeypatch.setattr(store, '_snapshot_from_descriptor', snapshot)
+    if mode == 'registration':
+        def failed(**_kwargs):
+            # File has been published, but the held source handle denies replacement.
+            with pytest.raises(OSError):
+                target.unlink()
+            raise RuntimeError('registration failure')
+        monkeypatch.setattr(repository, 'register_artifact', failed)
+    async def write():
+        return await writer.write_text(output_path=str(target), content='中文\nvalue', separator='\n', encoding='utf-8', append=False, mime_type='text/plain')
+    if mode in {'success', 'parent-rename'}:
+        assert await write() == str(target)
+        assert target.read_bytes() == '中文\nvalue'.encode()
+        rows = repository.list_artifacts('run-artifacts', cursor=0, limit=20)
+        assert len(rows) == 1 and rows[0].sha256 == hashlib.sha256(target.read_bytes()).hexdigest()
+        assert (store._root / rows[0].relative_path).read_bytes() == target.read_bytes()
+        with pytest.raises(WorkflowRunError) as duplicate:
+            await write()
+        assert duplicate.value.code == 'ARTIFACT_WRITE_CONFLICT'
+        assert len(repository.list_artifacts('run-artifacts', cursor=0, limit=20)) == 1
+    else:
+        expected = asyncio.CancelledError if mode == 'cancel' else RuntimeError if mode == 'registration' else WorkflowRunError
+        with pytest.raises(expected):
+            await write()
+        if mode == 'collision': assert target.read_text() == 'foreign'
+        else: assert not target.exists()
+        assert repository.list_artifacts('run-artifacts', cursor=0, limit=20) == ()
+    assert not list(target.parent.glob('.*.tmp'))
+    assert list(outsider.iterdir()) == []
+
+
+@pytest.mark.asyncio
+@pytest.mark.skipif(sys.platform != 'win32', reason='requires native Windows path parsing')
+@pytest.mark.parametrize('name', ['../escape.txt', 'file.txt:secret', 'CON.txt', 'CONIN$', 'CONOUT$', 'name. ', r'\\server\share\result.txt', r'C:relative.txt', r'\device.txt'])
+async def test_native_windows_output_rejects_ambiguous_paths(artifacts, name):
+    store, repository = artifacts
+    writer = store.writer(run_id='run-artifacts', node_id='export', execution_id='native', purpose='result')
+    with pytest.raises(WorkflowRunError) as invalid:
+        await writer.write_binary_output(output_path=name, content=b'value', mime_type='application/octet-stream', expected_identity='missing')
+    assert invalid.value.code == 'ARTIFACT_PATH_INVALID'
+    assert repository.list_artifacts('run-artifacts', cursor=0, limit=20) == ()
+
+
+@pytest.mark.asyncio
+@pytest.mark.skipif(sys.platform != 'win32', reason='requires native Windows file handles')
+async def test_native_windows_reads_existing_output_without_following_reparse_points(artifacts, tmp_path):
+    import subprocess
+
+    from autoflow.infrastructure.filesystem.windows_output import (
+        pinned_parent,
+        readable_output,
+    )
+
+    store, _ = artifacts
+    writer = store.writer(run_id='run-artifacts', node_id='read', execution_id='native', purpose='result')
+    target = store._root / 'runs/run-artifacts/outputs/input.bin'
+    target.parent.mkdir(parents=True)
+    content = b'\x00\xff\x89PNG\r\n\x1a\n'
+    target.write_bytes(content)
+
+    snapshot = await writer.read_binary_output(output_path='input.bin', max_bytes=len(content))
+    assert snapshot.content == content and snapshot.identity != 'missing'
+    assert (await writer.read_binary_output(output_path='absent.bin', max_bytes=1)).identity == 'missing'
+    with pytest.raises(WorkflowRunError) as too_large:
+        await writer.read_binary_output(output_path='input.bin', max_bytes=len(content) - 1)
+    assert too_large.value.code == 'ARTIFACT_TOO_LARGE'
+
+    class Cancelled:
+        def raise_if_cancelled(self):
+            raise asyncio.CancelledError()
+
+    cancelled_writer = store.writer(
+        run_id='run-artifacts', node_id='read', execution_id='cancelled',
+        purpose='result', cancellation=Cancelled(),
+    )
+    with pytest.raises(asyncio.CancelledError):
+        await cancelled_writer.read_binary_output(output_path='input.bin', max_bytes=100)
+
+    with pinned_parent(target), readable_output(target) as descriptor:
+        assert descriptor is not None
+        with pytest.raises(OSError):
+            target.unlink()
+        with pytest.raises(OSError):
+            target.write_bytes(b'changed')
+        with pytest.raises(OSError):
+            target.parent.rename(tmp_path / 'moved')
+    assert target.read_bytes() == content
+
+    outsider = tmp_path / 'outside'
+    outsider.mkdir()
+    (outsider / 'secret.bin').write_bytes(b'secret')
+    junction = target.parent / 'linked'
+    await asyncio.to_thread(
+        subprocess.run,
+        ['cmd', '/c', 'mklink', '/J', str(junction), str(outsider)],
+        check=True,
+        capture_output=True,
+    )
+    with pytest.raises(WorkflowRunError) as invalid:
+        await writer.read_binary_output(output_path='linked/secret.bin', max_bytes=100)
+    assert invalid.value.code == 'ARTIFACT_PATH_INVALID'
+
+
+@pytest.mark.asyncio
+async def test_actual_worker_publishes_new_binary_and_registers_matching_snapshot(tmp_path):
+    import base64
+    import json
+
+    root = tmp_path / 'workspace'
+    target = tmp_path / 'worker-output' / 'result.txt'
+    content = 'worker 中文'.encode()
+    command = {'runId': 'native-output', 'workflowId': 'native-output', 'profileId': 'none', 'requiresBrowser': False, 'artifactRoot': str(root), 'document': {'nodes': [{'id': 'write', 'type': 'moduleNode', 'data': {'moduleType': 'base64', 'config': {'operation': 'base64_to_file', 'inputBase64': base64.b64encode(content).decode(), 'outputPath': str(target.parent), 'fileName': target.name}}}], 'edges': []}}
+    process = await asyncio.create_subprocess_exec(sys.executable, '-m', 'autoflow', '--workflow-worker', stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    try:
+        process.stdin.write((json.dumps(command) + '\n').encode())
+        await process.stdin.drain()
+        events = []
+        async with asyncio.timeout(20):
+            while line := await process.stdout.readline():
+                events.append(json.loads(line))
+            await process.wait()
+        assert process.returncode == 0, (events, (await process.stderr.read()).decode())
+        assert events[-1]['type'] == 'execution:completed'
+        facts = [event for event in events if event['type'] == 'artifact:registered']
+        assert len(facts) == 1
+        assert facts[0]['sha256'] == hashlib.sha256(content).hexdigest()
+        assert target.read_bytes() == (root / facts[0]['relativePath']).read_bytes() == content
+    finally:
+        if process.returncode is None: process.kill()
+        await process.wait()
+
+
+@pytest.mark.asyncio
+@pytest.mark.skipif(sys.platform != 'win32', reason='requires native Windows file handles')
+async def test_actual_windows_worker_reads_existing_binary_output(tmp_path):
+    import base64
+    import json
+
+    target = tmp_path / 'existing.png'
+    content = b'\x89PNG\r\n\x1a\n\x00\xff'
+    target.write_bytes(content)
+    command = {'runId': 'native-read', 'workflowId': 'native-read', 'profileId': 'none', 'requiresBrowser': False, 'artifactRoot': str(tmp_path / 'workspace'), 'document': {'nodes': [{'id': 'read', 'type': 'moduleNode', 'data': {'moduleType': 'base64', 'config': {'operation': 'file_to_base64', 'filePath': str(target)}}}], 'edges': []}}
+    process = await asyncio.create_subprocess_exec(sys.executable, '-m', 'autoflow', '--workflow-worker', stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    try:
+        assert process.stdin is not None and process.stdout is not None
+        process.stdin.write((json.dumps(command) + '\n').encode())
+        await process.stdin.drain()
+        events = []
+        async with asyncio.timeout(20):
+            while line := await process.stdout.readline():
+                events.append(json.loads(line))
+            await process.wait()
+        assert process.returncode == 0, (events, (await process.stderr.read()).decode())
+        assert events[-1]['type'] == 'execution:completed'
+        completed = [event for event in events if event['type'] == 'execution:node_complete']
+        assert len(completed) == 1
+        assert completed[0]['data'] == 'data:image/png;base64,' + base64.b64encode(content).decode()
+    finally:
+        if process.returncode is None: process.kill()
+        await process.wait()

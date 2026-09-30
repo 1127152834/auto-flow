@@ -4,11 +4,12 @@ from typing import Any
 # Project tasks reuse the approved browser bridge and pure-data executors.
 # Families with additional resource ports stay gated until those ports are wired.
 _RUNNABLE_MODULES = (
-    ("project_data", "项目数据"),
-    ("project_end", "项目结束"),
     ("proxy_change_ip", "切换代理 IP"),
     ("proxy_change_location", "切换代理地点"),
     ("proxy_query", "查询代理状态／操作结果"),
+    ("trace_mark", "追踪标记"),
+    ("capture_diagnostics", "采集诊断快照"),
+    ("save_trace_segment", "保存追踪片段"),
     ("condition", "条件判断"),
     ("loop", "循环"),
     ("foreach", "遍历列表"),
@@ -91,6 +92,9 @@ _RUNNABLE_MODULES = (
     ("input_text", "输入文本"),
     ("click_element", "点击元素"),
     ("get_element_info", "读取文本"),
+    ("project_data", "项目数据"),
+    ("project_manual", "人工处理"),
+    ("project_end", "结束并保留环境"),
     ("screenshot", "网页截图"),
     ("use_opened_page", "使用已打开网页"),
     ("close_page", "关闭网页"),

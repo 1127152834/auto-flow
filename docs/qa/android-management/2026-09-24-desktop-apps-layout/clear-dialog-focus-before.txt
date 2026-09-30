@@ -1,0 +1,93 @@
+Window: "AutoFlow", App: Electron.
+0 标准窗口 AutoFlow, Secondary Actions: Raise
+	1 container AutoFlow
+		2 container
+			3 HTML 内容 AutoFlow, URL: file:///Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/out/renderer/index.html#/android
+				4 container
+					5 link Description: AutoFlow, Value: file:///Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/out/renderer/index.html#/dashboard
+					6 container 全局导航
+						7 按钮 总览
+						8 按钮 项目
+						9 按钮 浏览器配置
+						10 按钮 安卓设备
+						11 按钮 代理管理
+						12 按钮 模型管理
+					13 按钮 设置
+						14 图像
+						15 文本 设置
+					16 文本 本地服务正常
+					17 container
+						18 按钮 返回资源看板 / QA 应用确认与窗口布局 这是用于长名称换行与操作可达性验收的独立设备
+							19 图像
+							20 文本 返回资源看板
+							21 文本 /
+							22 文本 QA 应用确认与窗口布局 这是用于长名称换行与操作可达性验收的独立设备
+						23 标题 QA 应用确认与窗口布局 这是用于长名称换行与操作可达性验收的独立设备, Value: 1
+							24 文本 QA 应用确认与窗口布局 这是用于长名称换行与操作可达性验收的独立设备
+						25 图像
+						26 text 已就绪 持久实例
+						27 container
+							28 text Android  版本待核实  ·  720  ×  1280
+						29 按钮 复制配置
+							30 图像
+							31 文本 复制配置
+						32 按钮 更多设备操作
+							33 图像
+						34 container 设备详情
+							35 按钮 控制台
+							36 按钮 应用
+							37 按钮 环境配置
+						38 container
+							39 标题 应用, Value: 3
+								40 文本 应用
+							41 文本 当前应用
+							42 图像
+							43 文本 launcher3
+							44 文本 com.android.launcher3
+							45 按钮 上传 APK
+								46 图像
+								47 文本 上传 APK
+							48 按钮 启动应用
+								49 图像
+								50 文本 启动应用
+						51 container 应用管理
+							52 标题 应用管理, Value: 2
+								53 文本 应用管理
+							54 搜索文本字段 (settable) Description: 搜索应用, Value: moe.shizuku.privileged.api, Placeholder: 搜索包名
+							55 container
+								56 text moe.shizuku.privileged.api 用户应用  ·  版本 1086
+								57 按钮 启动
+								58 按钮 停止
+								59 按钮 清除数据
+								60 按钮 卸载
+							61 container
+								62 标题 确认清除数据, Value: 3
+									63 text 确认 清除数据
+								64 text 将对  moe.shizuku.privileged.api  执行不可逆操作。
+								65 按钮 取消
+								66 按钮 确认清除数据
+									67 文本 确认
+									68 文本 清除数据
+						69 text 已连接 最新操作： 应用已停止
+					70 container 实例备份
+						71 标题 数据备份, Value: 2
+							72 文本 数据备份
+						73 文本 仅允许已停止且无控制会话的实例。
+						74 文本 备份保存在本机，未加密，可能包含账号和应用私密数据。
+						75 文本 恢复会创建新实例并还原应用数据；不保证登录状态、DRM 或私有密钥可用。
+						76 文本 备份创建已禁用：实例必须已停止、状态新鲜、未被控制且没有活动控制会话。
+						77 按钮 (disabled) 创建停机备份
+						78 container
+							79 text 6bd56bb0-1b06-4b8e-8e61-53618812c183  ·  25457142  bytes
+							80 按钮 恢复为新实例
+	81 关闭按钮
+	82 全屏幕按钮 Help: 此按钮也可以执行缩放窗口的操作, Secondary Actions: 缩放窗口
+	83 最小化按钮
+84 menu bar
+	85 Electron
+	86 File
+	87 Edit
+	88 View
+	89 Window
+
+The focused UI element is 60 按钮 卸载

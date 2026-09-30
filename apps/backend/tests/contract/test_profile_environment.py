@@ -23,7 +23,7 @@ def test_catalog_matches_json_and_contains_valid_profile_values(
     assert response.status_code == 200
     catalog = response.json()
     assert catalog == wire_catalog(
-        json.loads(profile_environment.CATALOG_PATH.read_text())
+        json.loads(profile_environment.CATALOG_PATH.read_text(encoding="utf-8"))
     )
     assert len(catalog["locales"]) > 10
     assert len(catalog["timezones"]) > 9
@@ -88,7 +88,7 @@ def test_backend_file_is_the_live_source(client, tmp_path, monkeypatch):
 
 @pytest.mark.parametrize("template", ["UA {unknown}", "UA\r\nInjected: value"])
 def test_invalid_ua_templates_are_rejected(tmp_path, monkeypatch, template):
-    catalog = json.loads(profile_environment.CATALOG_PATH.read_text())
+    catalog = json.loads(profile_environment.CATALOG_PATH.read_text(encoding="utf-8"))
     catalog["user_agent_templates"][0]["value"] = template
     path = tmp_path / "invalid-template.json"
     path.write_text(json.dumps(catalog))

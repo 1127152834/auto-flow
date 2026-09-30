@@ -1,0 +1,902 @@
+
+> test
+> npm --workspace @autoflow/desktop test --maxWorkers=1
+
+npm warn Unknown cli config "--maxWorkers". This will stop working in the next major version of npm.
+
+> @autoflow/desktop@0.1.0 test
+> vitest run
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+
+
+ Test Files  424 passed (424)
+      Tests  5670 passed (5670)
+   Start at  08:17:41
+   Duration  213.55s (transform 10.23s, setup 13.21s, import 253.24s, tests 333.52s, environment 206.96s)
+
+
+> typecheck
+> npm --workspace @autoflow/desktop run typecheck
+
+
+> @autoflow/desktop@0.1.0 typecheck
+> tsc --noEmit
+
+
+> lint
+> npm --workspace @autoflow/desktop run lint
+
+
+> @autoflow/desktop@0.1.0 lint
+> eslint .
+
+
+> openapi:check
+> node scripts/generate-api.mjs --check
+
+
+> test:structure
+> node --test scripts/structure.test.mjs
+
+TAP version 13
+# Subtest: required path exists: apps/desktop/package.json
+ok 1 - required path exists: apps/desktop/package.json
+  ---
+  duration_ms: 0.859208
+  type: 'test'
+  ...
+# Subtest: required path exists: apps/backend/pyproject.toml
+ok 2 - required path exists: apps/backend/pyproject.toml
+  ---
+  duration_ms: 0.080875
+  type: 'test'
+  ...
+# Subtest: root scripts expose the foundation checks
+ok 3 - root scripts expose the foundation checks
+  ---
+  duration_ms: 0.226375
+  type: 'test'
+  ...
+# Subtest: renderer table headers never nest a <td> inside <thead>
+ok 4 - renderer table headers never nest a <td> inside <thead>
+  ---
+  duration_ms: 64.926292
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 124.204125
+
+> test:scripts
+> node --test scripts/*.test.mjs
+
+TAP version 13
+# Subtest: retains the approved scope and resolves an imported alias to its actual component file
+ok 1 - retains the approved scope and resolves an imported alias to its actual component file
+  ---
+  duration_ms: 1.963792
+  type: 'test'
+  ...
+# Subtest: excludes database and DP nodes from the delivery inventory
+ok 2 - excludes database and DP nodes from the delivery inventory
+  ---
+  duration_ms: 0.123292
+  type: 'test'
+  ...
+# Subtest: follows lazy imports into actual code tools and their editor dependency
+ok 3 - follows lazy imports into actual code tools and their editor dependency
+  ---
+  duration_ms: 0.092958
+  type: 'test'
+  ...
+# Subtest: does not silently discard dynamically selected icon components or reconciled node evidence
+ok 4 - does not silently discard dynamically selected icon components or reconciled node evidence
+  ---
+  duration_ms: 0.47975
+  type: 'test'
+  ...
+# Subtest: history output guard resolves symlinks before any nested directory is created
+ok 5 - history output guard resolves symlinks before any nested directory is created
+  ---
+  duration_ms: 16.480042
+  type: 'test'
+  ...
+# Subtest: containment handles Windows separators and sibling prefixes
+ok 6 - containment handles Windows separators and sibling prefixes
+  ---
+  duration_ms: 0.360792
+  type: 'test'
+  ...
+# Subtest: R1 acceptance tools refuse paths outside the marked disposable root
+ok 7 - R1 acceptance tools refuse paths outside the marked disposable root
+  ---
+  duration_ms: 19.195459
+  type: 'test'
+  ...
+# Subtest: R2 wrapper reuses the exported R1 harness
+ok 8 - R2 wrapper reuses the exported R1 harness
+  ---
+  duration_ms: 4.520916
+  type: 'test'
+  ...
+# Subtest: record-pages mode records required evidence levels and leaves visual review pending
+ok 9 - record-pages mode records required evidence levels and leaves visual review pending
+  ---
+  duration_ms: 1.78325
+  type: 'test'
+  ...
+# Subtest: R3 runner exposes automatic and retained manual modes
+ok 10 - R3 runner exposes automatic and retained manual modes
+  ---
+  duration_ms: 0.932416
+  type: 'test'
+  ...
+# Subtest: R3 evidence matrix names every required real interaction
+ok 11 - R3 evidence matrix names every required real interaction
+  ---
+  duration_ms: 0.174875
+  type: 'test'
+  ...
+# Subtest: R3 runner uses the real desktop harness and never auto-approves visual review
+ok 12 - R3 runner uses the real desktop harness and never auto-approves visual review
+  ---
+  duration_ms: 5.95175
+  type: 'test'
+  ...
+# Subtest: R3 visual fixtures use UI states and label the synthetic file selection
+ok 13 - R3 visual fixtures use UI states and label the synthetic file selection
+  ---
+  duration_ms: 1.426791
+  type: 'test'
+  ...
+# Subtest: self-test accepts only a marker-owned workspace below its owner
+ok 14 - self-test accepts only a marker-owned workspace below its owner
+  ---
+  duration_ms: 96.451625
+  type: 'test'
+  ...
+# Subtest: arguments reject missing kernel paths before launching Electron
+ok 15 - arguments reject missing kernel paths before launching Electron
+  ---
+  duration_ms: 72.307334
+  type: 'test'
+  ...
+# Subtest: arguments reject unknown switches before launching Electron
+ok 16 - arguments reject unknown switches before launching Electron
+  ---
+  duration_ms: 64.988333
+  type: 'test'
+  ...
+# Subtest: scenario selection is validated before any workspace or Electron launch
+ok 17 - scenario selection is validated before any workspace or Electron launch
+  ---
+  duration_ms: 124.727
+  type: 'test'
+  ...
+# Subtest: PM4 QA arguments keep V1 automatic and preparation modes explicit
+ok 18 - PM4 QA arguments keep V1 automatic and preparation modes explicit
+  ---
+  duration_ms: 1.686917
+  type: 'test'
+  ...
+# Subtest: PM4 workspace ownership requires both marker and containment
+ok 19 - PM4 workspace ownership requires both marker and containment
+  ---
+  duration_ms: 0.37825
+  type: 'test'
+  ...
+# Subtest: V1 plan names every user-visible step and real fact
+ok 20 - V1 plan names every user-visible step and real fact
+  ---
+  duration_ms: 0.086208
+  type: 'test'
+  ...
+# Subtest: runner uses only UI for business object creation and labels fake executor boundary
+ok 21 - runner uses only UI for business object creation and labels fake executor boundary
+  ---
+  duration_ms: 5.081291
+  type: 'test'
+  ...
+# Subtest: PM6 QA arguments keep automatic and manual modes explicit
+ok 22 - PM6 QA arguments keep automatic and manual modes explicit
+  ---
+  duration_ms: 1.194584
+  type: 'test'
+  ...
+# Subtest: PM6 workspace ownership requires both marker and containment
+ok 23 - PM6 workspace ownership requires both marker and containment
+  ---
+  duration_ms: 0.411542
+  type: 'test'
+  ...
+# Subtest: the QA service-account fixture only carries the frozen Google shape
+ok 24 - the QA service-account fixture only carries the frozen Google shape
+  ---
+  duration_ms: 120.965834
+  type: 'test'
+  ...
+# Subtest: PM6 steps name every user-visible stage of the management chain
+ok 25 - PM6 steps name every user-visible stage of the management chain
+  ---
+  duration_ms: 0.107416
+  type: 'test'
+  ...
+# Subtest: the runner drives business objects through the UI and labels its stand-ins
+ok 26 - the runner drives business objects through the UI and labels its stand-ins
+  ---
+  duration_ms: 8.223
+  type: 'test'
+  ...
+# Subtest: the QA sidecar swaps only the two declared ports and keeps a real bootstrap
+ok 27 - the QA sidecar swaps only the two declared ports and keeps a real bootstrap
+  ---
+  duration_ms: 2.191459
+  type: 'test'
+  ...
+# Subtest: PM7 QA arguments keep manual, preparation and cleanup modes explicit
+ok 28 - PM7 QA arguments keep manual, preparation and cleanup modes explicit
+  ---
+  duration_ms: 1.211083
+  type: 'test'
+  ...
+# Subtest: PM7 workspace ownership requires both marker and containment
+ok 29 - PM7 workspace ownership requires both marker and containment
+  ---
+  duration_ms: 0.228958
+  type: 'test'
+  ...
+# Subtest: every PM7 end-to-end step and fault injection is named
+ok 30 - every PM7 end-to-end step and fault injection is named
+  ---
+  duration_ms: 0.176917
+  type: 'test'
+  ...
+# Subtest: runner drives the product through the renderer and labels the executor boundary
+ok 31 - runner drives the product through the renderer and labels the executor boundary
+  ---
+  duration_ms: 4.581084
+  type: 'test'
+  ...
+# Subtest: fault injection only exists in the QA sidecar and never in production modules
+ok 32 - fault injection only exists in the QA sidecar and never in production modules
+  ---
+  duration_ms: 2.635584
+  type: 'test'
+  ...
+# Subtest: PM8 QA arguments keep manual, preparation and cleanup modes explicit
+ok 33 - PM8 QA arguments keep manual, preparation and cleanup modes explicit
+  ---
+  duration_ms: 1.426708
+  type: 'test'
+  ...
+# Subtest: PM8 workspace ownership requires both marker and containment
+ok 34 - PM8 workspace ownership requires both marker and containment
+  ---
+  duration_ms: 0.222458
+  type: 'test'
+  ...
+# Subtest: every PM8 end-to-end step and fault injection is named
+ok 35 - every PM8 end-to-end step and fault injection is named
+  ---
+  duration_ms: 0.180292
+  type: 'test'
+  ...
+# Subtest: manual injections expose the executor faults the hand-test plan needs
+ok 36 - manual injections expose the executor faults the hand-test plan needs
+  ---
+  duration_ms: 0.107166
+  type: 'test'
+  ...
+# Subtest: runner drives the product through the renderer and labels the executor boundary
+ok 37 - runner drives the product through the renderer and labels the executor boundary
+  ---
+  duration_ms: 6.336875
+  type: 'test'
+  ...
+# Subtest: lifecycle fault injection only exists in the QA sidecar and never in production modules
+ok 38 - lifecycle fault injection only exists in the QA sidecar and never in production modules
+  ---
+  duration_ms: 3.384916
+  type: 'test'
+  ...
+# Subtest: reports a known full system UUID in visible text and perceptible attributes
+ok 39 - reports a known full system UUID in visible text and perceptible attributes
+  ---
+  duration_ms: 1.2965
+  type: 'test'
+  ...
+# Subtest: reports a known eight-character system prefix without scanning arbitrary UUIDs
+ok 40 - reports a known eight-character system prefix without scanning arbitrary UUIDs
+  ---
+  duration_ms: 0.159
+  type: 'test'
+  ...
+# Subtest: keeps a user-owned UUID visible and excludes its shared prefix from prefix checks
+ok 41 - keeps a user-owned UUID visible and excludes its shared prefix from prefix checks
+  ---
+  duration_ms: 2.860292
+  type: 'test'
+  ...
+# Subtest: does not inspect DOM value, href, hash, data attributes, or hidden implementation state
+ok 42 - does not inspect DOM value, href, hash, data attributes, or hidden implementation state
+  ---
+  duration_ms: 0.139917
+  type: 'test'
+  ...
+# Subtest: checkCdpPage sends a self-contained audit to evaluate and rejects missing business UUIDs
+ok 43 - checkCdpPage sends a self-contained audit to evaluate and rejects missing business UUIDs
+  ---
+  duration_ms: 1.177334
+  type: 'test'
+  ...
+# Subtest: checkCdpPage audit expression executes without module bindings in the renderer
+ok 44 - checkCdpPage audit expression executes without module bindings in the renderer
+  ---
+  duration_ms: 0.3875
+  type: 'test'
+  ...
+# Subtest: a business UUID sharing a prefix does not hide a separate technical short ID
+ok 45 - a business UUID sharing a prefix does not hide a separate technical short ID
+  ---
+  duration_ms: 0.098375
+  type: 'test'
+  ...
+# Subtest: cleanup rejects an unmarked or wrongly marked workspace
+ok 46 - cleanup rejects an unmarked or wrongly marked workspace
+  ---
+  duration_ms: 9.970333
+  type: 'test'
+  ...
+# Subtest: cleanup removes only a marked temporary workspace and returns the preserved evidence path
+ok 47 - cleanup removes only a marked temporary workspace and returns the preserved evidence path
+  ---
+  duration_ms: 3.206375
+  type: 'test'
+  ...
+# Subtest: browser management smoke accepts an explicit packaged sidecar
+ok 48 - browser management smoke accepts an explicit packaged sidecar
+  ---
+  duration_ms: 1.980917
+  type: 'test'
+  ...
+# Subtest: browser management smoke creates the platform kernel layout
+ok 49 - browser management smoke creates the platform kernel layout
+  ---
+  duration_ms: 0.273667
+  type: 'test'
+  ...
+# Subtest: profile test browser smoke parses kernel and sidecar paths
+ok 50 - profile test browser smoke parses kernel and sidecar paths
+  ---
+  duration_ms: 2.029375
+  type: 'test'
+  ...
+# Subtest: profile test browser smoke validates a public kernel directory
+ok 51 - profile test browser smoke validates a public kernel directory
+  ---
+  duration_ms: 26.079833
+  type: 'test'
+  ...
+# Subtest: profile test browser smoke finds a session below the manager root
+ok 52 - profile test browser smoke finds a session below the manager root
+  ---
+  duration_ms: 6.699417
+  type: 'test'
+  ...
+# Subtest: Windows kernels do not require POSIX executable bits
+ok 53 - Windows kernels do not require POSIX executable bits
+  ---
+  duration_ms: 5.853041
+  type: 'test'
+  ...
+# Subtest: smoke-project-management.mjs rejects invalid arguments before launching: --output-dir --dev
+ok 54 - smoke-project-management.mjs rejects invalid arguments before launching: --output-dir --dev
+  ---
+  duration_ms: 63.959792
+  type: 'test'
+  ...
+# Subtest: smoke-project-management.mjs rejects invalid arguments before launching: --output-dir
+ok 55 - smoke-project-management.mjs rejects invalid arguments before launching: --output-dir
+  ---
+  duration_ms: 50.578708
+  type: 'test'
+  ...
+# Subtest: smoke-project-management.mjs rejects invalid arguments before launching: --unknown
+ok 56 - smoke-project-management.mjs rejects invalid arguments before launching: --unknown
+  ---
+  duration_ms: 47.128709
+  type: 'test'
+  ...
+# Subtest: smoke-project-management.mjs rejects invalid arguments before launching: --executable
+ok 57 - smoke-project-management.mjs rejects invalid arguments before launching: --executable
+  ---
+  duration_ms: 46.568917
+  type: 'test'
+  ...
+# Subtest: smoke-project-management.mjs rejects invalid arguments before launching: --executable
+ok 58 - smoke-project-management.mjs rejects invalid arguments before launching: --executable
+  ---
+  duration_ms: 52.699709
+  type: 'test'
+  ...
+# Subtest: smoke-project-management.mjs rejects invalid arguments before launching: --output-dir /tmp/a --output-dir /tmp/b
+ok 59 - smoke-project-management.mjs rejects invalid arguments before launching: --output-dir /tmp/a --output-dir /tmp/b
+  ---
+  duration_ms: 46.886083
+  type: 'test'
+  ...
+# Subtest: smoke-project-management-desktop.mjs rejects invalid arguments before launching: --output-dir --dev
+ok 60 - smoke-project-management-desktop.mjs rejects invalid arguments before launching: --output-dir --dev
+  ---
+  duration_ms: 54.467959
+  type: 'test'
+  ...
+# Subtest: smoke-project-management-desktop.mjs rejects invalid arguments before launching: --output-dir
+ok 61 - smoke-project-management-desktop.mjs rejects invalid arguments before launching: --output-dir
+  ---
+  duration_ms: 53.445291
+  type: 'test'
+  ...
+# Subtest: smoke-project-management-desktop.mjs rejects invalid arguments before launching: --unknown
+ok 62 - smoke-project-management-desktop.mjs rejects invalid arguments before launching: --unknown
+  ---
+  duration_ms: 56.436084
+  type: 'test'
+  ...
+# Subtest: smoke-project-management-desktop.mjs rejects invalid arguments before launching: --executable
+ok 63 - smoke-project-management-desktop.mjs rejects invalid arguments before launching: --executable
+  ---
+  duration_ms: 55.70125
+  type: 'test'
+  ...
+# Subtest: smoke-project-management-desktop.mjs rejects invalid arguments before launching: --executable
+ok 64 - smoke-project-management-desktop.mjs rejects invalid arguments before launching: --executable
+  ---
+  duration_ms: 55.96425
+  type: 'test'
+  ...
+# Subtest: smoke-project-management-desktop.mjs rejects invalid arguments before launching: --output-dir /tmp/a --output-dir /tmp/b
+ok 65 - smoke-project-management-desktop.mjs rejects invalid arguments before launching: --output-dir /tmp/a --output-dir /tmp/b
+  ---
+  duration_ms: 53.775041
+  type: 'test'
+  ...
+# Subtest: smoke-project-management.mjs rejects fake sidecar environment before launch
+ok 66 - smoke-project-management.mjs rejects fake sidecar environment before launch
+  ---
+  duration_ms: 47.241833
+  type: 'test'
+  ...
+# Subtest: smoke-project-management-desktop.mjs rejects fake sidecar environment before launch
+ok 67 - smoke-project-management-desktop.mjs rejects fake sidecar environment before launch
+  ---
+  duration_ms: 51.036167
+  type: 'test'
+  ...
+# Subtest: packaged smoke cannot silently select external health mode
+ok 68 - packaged smoke cannot silently select external health mode
+  ---
+  duration_ms: 0.944291
+  type: 'test'
+  ...
+# Subtest: cleanup rejects after the final deadline if the child never exits
+ok 69 - cleanup rejects after the final deadline if the child never exits
+  ---
+  duration_ms: 13.881375
+  type: 'test'
+  ...
+# Subtest: cleanup observes close without requiring exit
+ok 70 - cleanup observes close without requiring exit
+  ---
+  duration_ms: 0.760958
+  type: 'test'
+  ...
+# Subtest: cleanup rejects a child process error
+ok 71 - cleanup rejects a child process error
+  ---
+  duration_ms: 0.397583
+  type: 'test'
+  ...
+# Subtest: required path exists: apps/desktop/package.json
+ok 72 - required path exists: apps/desktop/package.json
+  ---
+  duration_ms: 0.567792
+  type: 'test'
+  ...
+# Subtest: required path exists: apps/backend/pyproject.toml
+ok 73 - required path exists: apps/backend/pyproject.toml
+  ---
+  duration_ms: 0.0775
+  type: 'test'
+  ...
+# Subtest: root scripts expose the foundation checks
+ok 74 - root scripts expose the foundation checks
+  ---
+  duration_ms: 0.319375
+  type: 'test'
+  ...
+# Subtest: renderer table headers never nest a <td> inside <thead>
+ok 75 - renderer table headers never nest a <td> inside <thead>
+  ---
+  duration_ms: 157.153458
+  type: 'test'
+  ...
+# (node:26034) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/src/renderer/domains/workflows/lib/moduleCatalog.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: Studio Chinese documentation audit covers exactly the retained catalog
+ok 76 - Studio Chinese documentation audit covers exactly the retained catalog
+  ---
+  duration_ms: 16.699167
+  type: 'test'
+  ...
+# Subtest: production Studio entry keeps preview mocks behind the Vite development boundary
+ok 77 - production Studio entry keeps preview mocks behind the Vite development boundary
+  ---
+  duration_ms: 0.67
+  type: 'test'
+  ...
+# Subtest: frozen required-field data regenerates exactly without executing source modules
+ok 78 - frozen required-field data regenerates exactly without executing source modules
+  ---
+  duration_ms: 103.692708
+  type: 'test'
+  ...
+# Subtest: coverage accounts for every retained node and excludes removed nodes
+ok 79 - coverage accounts for every retained node and excludes removed nodes
+  ---
+  duration_ms: 13.218792
+  type: 'test'
+  ...
+# Subtest: resource upload keeps multipart body and generated response type in the handoff inventory
+ok 80 - resource upload keeps multipart body and generated response type in the handoff inventory
+  ---
+  duration_ms: 0.744292
+  type: 'test'
+  ...
+# Subtest: transport forwarding is marked dynamic instead of inventing a GET contract
+ok 81 - transport forwarding is marked dynamic instead of inventing a GET contract
+  ---
+  duration_ms: 0.088917
+  type: 'test'
+  ...
+# Subtest: the matrix registers every discovered service and event without treating registration as runtime backend proof
+ok 82 - the matrix registers every discovered service and event without treating registration as runtime backend proof
+  ---
+  duration_ms: 3.509334
+  type: 'test'
+  ...
+# Subtest: every service family is assigned to the frozen frontend contract matrix
+ok 83 - every service family is assigned to the frozen frontend contract matrix
+  ---
+  duration_ms: 0.598875
+  type: 'test'
+  ...
+# Subtest: inventory and matrix regenerate deterministically
+ok 84 - inventory and matrix regenerate deterministically
+  ---
+  duration_ms: 840.690667
+  type: 'test'
+  ...
+# Subtest: direct apiRequest helpers outside Api objects remain visible in the contract inventory
+ok 85 - direct apiRequest helpers outside Api objects remain visible in the contract inventory
+  ---
+  duration_ms: 0.142167
+  type: 'test'
+  ...
+# Subtest: plain Event emissions are recorded alongside CustomEvent emissions
+ok 86 - plain Event emissions are recorded alongside CustomEvent emissions
+  ---
+  duration_ms: 0.163792
+  type: 'test'
+  ...
+# Subtest: MCP requests nested in validation helpers keep explicit endpoints and consumers
+ok 87 - MCP requests nested in validation helpers keep explicit endpoints and consumers
+  ---
+  duration_ms: 0.167666
+  type: 'test'
+  ...
+# Subtest: checks sources without inventing application or visual acceptance
+ok 88 - checks sources without inventing application or visual acceptance
+  ---
+  duration_ms: 12.347084
+  type: 'test'
+  ...
+# Subtest: rejects source hash drift, dimensions and unknown mapped sources
+ok 89 - rejects source hash drift, dimensions and unknown mapped sources
+  ---
+  duration_ms: 7.831459
+  type: 'test'
+  ...
+# Subtest: does not allow a passed page without real evidence or missing required states
+ok 90 - does not allow a passed page without real evidence or missing required states
+  ---
+  duration_ms: 4.788292
+  type: 'test'
+  ...
+# Subtest: rejects duplicate source and page identities and evidence traversal
+ok 91 - rejects duplicate source and page identities and evidence traversal
+  ---
+  duration_ms: 5.099166
+  type: 'test'
+  ...
+# Subtest: requires actual evidence files instead of an existing directory or blank path
+ok 92 - requires actual evidence files instead of an existing directory or blank path
+  ---
+  duration_ms: 4.5705
+  type: 'test'
+  ...
+# Subtest: PM2 static coverage does not certify pending business or real application acceptance
+ok 93 - PM2 static coverage does not certify pending business or real application acceptance
+  ---
+  duration_ms: 2.742791
+  type: 'test'
+  ...
+# Subtest: PM2 rejects lost requirement identifiers and invented evidence paths
+ok 94 - PM2 rejects lost requirement identifiers and invented evidence paths
+  ---
+  duration_ms: 1.135959
+  type: 'test'
+  ...
+# Subtest: a green machine report cannot substitute for real application evidence
+ok 95 - a green machine report cannot substitute for real application evidence
+  ---
+  duration_ms: 0.352041
+  type: 'test'
+  ...
+1..95
+# tests 95
+# suites 0
+# pass 95
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1962.799042
+
+> build
+> npm --workspace @autoflow/desktop run build
+
+
+> @autoflow/desktop@0.1.0 build
+> electron-vite build
+
+vite v7.3.6 building ssr environment for production...
+transforming...
+✓ 18 modules transformed.
+rendering chunks...
+out/main/index.js  91.06 kB
+✓ built in 151ms
+vite v7.3.6 building ssr environment for production...
+transforming...
+✓ 1 modules transformed.
+rendering chunks...
+out/preload/index.js  4.11 kB
+✓ built in 9ms
+vite v7.3.6 building client environment for production...
+transforming...
+../../node_modules/zod/v4/core/util.js (400:0): A comment
+
+"// Wrapped in a `@__PURE__` IIFE: esbuild never tree-shakes a top-level initializer that contains a member access on `Number`, so the bare object literal survived into every bundle."
+
+in "../../node_modules/zod/v4/core/util.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+../../node_modules/zod/v4/core/regexes.js (72:0): A comment
+
+"/** Anchors a pattern source. The interpolation lives here rather than at the call site because
+ * esbuild will not drop a `@__PURE__` call whose own argument interpolates a variable, but it
+ * will drop `anchor(dateSource)`. Keeping it inline pinned `date` into every bundle. */"
+
+in "../../node_modules/zod/v4/core/regexes.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+✓ 11751 modules transformed.
+rendering chunks...
+[plugin vite:reporter]
+(!) /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/src/renderer/domains/workflows/components/documentation/content-getting-started.ts is dynamically imported by /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/src/renderer/domains/workflows/components/documentation/contents.ts but also statically imported by /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/src/renderer/domains/workflows/components/documentation/contents.ts, dynamic import will not move module into another chunk.
+
+[plugin vite:reporter]
+(!) /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/src/renderer/domains/workflows/events.ts is dynamically imported by /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/src/renderer/domains/workflows/editor-store.ts but also statically imported by /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/src/renderer/domains/workflows/api/aiAssistantSkills.ts, /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/src/renderer/domains/workflows/components/InputPromptDialog.tsx, /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/src/renderer/domains/workflows/components/SubflowMonitorDialog.tsx, /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/src/renderer/domains/workflows/components/Toolbar.tsx, /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/src/renderer/domains/workflows/components/WorkflowEditor.tsx, /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/src/renderer/domains/workflows/hooks/useClipboardImageMonitor.ts, /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/src/renderer/domains/workflows/hooks/useStudioIntegration.ts, dynamic import will not move module into another chunk.
+
+../../out/renderer/studio.html                                           0.47 kB
+../../out/renderer/index.html                                            0.49 kB
+../../out/renderer/assets/js-script.worker-KknOzbGm.js                   1.80 kB
+../../out/renderer/assets/ollama-Cko46lRu.svg                            6.87 kB
+../../out/renderer/assets/gemini-BYkEpiWr.svg                           27.79 kB
+../../out/renderer/assets/configuration-phone-B9dTJAAT.png              29.45 kB
+../../out/renderer/assets/qwen-AEXkUelR.png                             74.25 kB
+../../out/renderer/assets/codicon-ngg6Pgfi.ttf                         121.97 kB
+../../out/renderer/assets/json.worker-r5IVm0zS.js                      840.03 kB
+../../out/renderer/assets/html.worker-5fBvJVFp.js                    1,241.56 kB
+../../out/renderer/assets/css.worker-CsqbzYvt.js                     1,865.96 kB
+../../out/renderer/assets/ts.worker-CL8L56yC.js                     13,264.04 kB
+../../out/renderer/assets/AICodeAssistant-B6UfNlAV.css                 206.31 kB
+../../out/renderer/assets/studio-eknl7szr.css                          272.80 kB
+../../out/renderer/assets/main-BQMSJSnA.css                            278.57 kB
+../../out/renderer/assets/channel-BaA7ylP9.js                            0.20 kB
+../../out/renderer/assets/init-ZxktEp_H.js                               0.26 kB
+../../out/renderer/assets/chunk-JWPE2WC7-C8OMZpZt.js                     0.37 kB
+../../out/renderer/assets/chunk-2Q5K7J3B-DTeAlghv.js                     0.38 kB
+../../out/renderer/assets/chunk-5VM5RSS4-v_4yB-3x.js                     0.43 kB
+../../out/renderer/assets/chunk-XXDRQBXY-BTk9xNUh.js                     0.52 kB
+../../out/renderer/assets/content-notify-CJaQeby1.js                     0.67 kB
+../../out/renderer/assets/stateDiagram-v2-MP3YSRHH-CK4jmqGz.js           0.75 kB
+../../out/renderer/assets/classDiagram-ZZMXUADV-BNeAKF4X.js              0.79 kB
+../../out/renderer/assets/classDiagram-v2-VYDZK3BY-BNeAKF4X.js           0.79 kB
+../../out/renderer/assets/swimlanesDiagram-VR7AAH4N-DJcLUWFb.js          0.80 kB
+../../out/renderer/assets/infoDiagram-27XIBGKW-CsUGOaGO.js               1.03 kB
+../../out/renderer/assets/chunk-POPQ4Y6H-CyukPwm1.js                     1.07 kB
+../../out/renderer/assets/azcli-BEAhqcuE.js                              1.30 kB
+../../out/renderer/assets/javascript-CYY7YOl6.js                         1.39 kB
+../../out/renderer/assets/ini-BcQysCTb.js                                1.67 kB
+../../out/renderer/assets/csp-D_3BK2Wp.js                                1.70 kB
+../../out/renderer/assets/content-ai-assistant-Rb5Yu8KT.js               1.71 kB
+../../out/renderer/assets/sizeCapture-INFHLROL-CqgFPE-F.js               1.82 kB
+../../out/renderer/assets/content-platform-QuLUDoC-.js                   1.84 kB
+../../out/renderer/assets/ordinal-CxptdPJm.js                            2.20 kB
+../../out/renderer/assets/content-share-x906QnL3.js                      2.21 kB
+../../out/renderer/assets/scheme-D7PxodDG.js                             2.36 kB
+../../out/renderer/assets/bat-Bqkp9Cfu.js                                2.66 kB
+../../out/renderer/assets/flow9-ZSTChSMd.js                              2.76 kB
+../../out/renderer/assets/sb-Chfc_wZF.js                                 2.81 kB
+../../out/renderer/assets/xml-BZTAA_-B.js                                2.83 kB
+../../out/renderer/assets/railroadDiagram-O6MQD6OU-hq9hGzX5.js           2.87 kB
+../../out/renderer/assets/pla-DEV89yYj.js                                2.87 kB
+../../out/renderer/assets/dockerfile--oxj0cAH.js                         3.02 kB
+../../out/renderer/assets/pascaligo-VA_LQ1oU.js                          3.25 kB
+../../out/renderer/assets/lua-hNsuGJkO.js                                3.43 kB
+../../out/renderer/assets/bicep-DIlfshcM.js                              3.44 kB
+../../out/renderer/assets/objective-c-B1L1C5EC.js                        3.48 kB
+../../out/renderer/assets/abnfDiagram-VCTEODGH-CUvHIVXl.js               3.49 kB
+../../out/renderer/assets/cameligo-CLaaYNMV.js                           3.51 kB
+../../out/renderer/assets/pegDiagram-XKGWAZYB-Dy_9IdEw.js                3.73 kB
+../../out/renderer/assets/graphql-BeiGgjIU.js                            3.77 kB
+../../out/renderer/assets/chunk-F27PBJKO-CSJfARm-.js                     3.79 kB
+../../out/renderer/assets/lexon-C1U0m2n9.js                              3.81 kB
+../../out/renderer/assets/typespec-R77Ln7Jb.js                           3.90 kB
+../../out/renderer/assets/ebnfDiagram-PWID7BFC-OiVTRFxX.js               3.90 kB
+../../out/renderer/assets/sparql-DxuVdnRl.js                             3.94 kB
+../../out/renderer/assets/mips-CJm71dS3.js                               4.14 kB
+../../out/renderer/assets/content-ssh-BXprY0rc.js                        4.15 kB
+../../out/renderer/assets/m3-6ko6q9-_.js                                 4.15 kB
+../../out/renderer/assets/sophia-D7pU0Y1d.js                             4.27 kB
+../../out/renderer/assets/content-utils-Ck90Dc0E.js                      4.47 kB
+../../out/renderer/assets/shell-vZEubQ82.js                              4.48 kB
+../../out/renderer/assets/go-brnMpFrj.js                                 4.49 kB
+../../out/renderer/assets/fsharp-D2uoxuLH.js                             4.51 kB
+../../out/renderer/assets/pascal-DMQyD4Xk.js                             4.71 kB
+../../out/renderer/assets/r-CtqYUQ6l.js                                  4.80 kB
+../../out/renderer/assets/less-B7Qaxw-O.js                               5.00 kB
+../../out/renderer/assets/tcl-Bb4GCwBr.js                                5.05 kB
+../../out/renderer/assets/qsharp-BWK6YLKm.js                             5.14 kB
+../../out/renderer/assets/cypher-D0--_GAN.js                             5.15 kB
+../../out/renderer/assets/java-Dt3iMn2o.js                               5.16 kB
+../../out/renderer/assets/liquid-CFLdWKLE.js                             5.16 kB
+../../out/renderer/assets/kotlin-Ddo1SjA5.js                             5.20 kB
+../../out/renderer/assets/hcl-CrX1Es2W.js                                5.21 kB
+../../out/renderer/assets/redis-O7gSt3oh.js                              5.25 kB
+../../out/renderer/assets/restructuredtext-B-KQCVu_.js                   5.33 kB
+../../out/renderer/assets/powershell-BXiKvz7Z.js                         5.39 kB
+../../out/renderer/assets/content-network-BzHemIZ0.js                    5.43 kB
+../../out/renderer/assets/coffee-CzJ5oEdj.js                             5.51 kB
+../../out/renderer/assets/content-math-flow-BRmsNUiH.js                  5.54 kB
+../../out/renderer/assets/content-ai-vision-D4rMDiP0.js                  5.78 kB
+../../out/renderer/assets/mdx-CJPm2R91.js                                5.84 kB
+../../out/renderer/assets/yaml-Bc_wbcxn.js                               5.90 kB
+../../out/renderer/assets/css-i3rI3_64.js                                6.10 kB
+../../out/renderer/assets/content-browser-rwPus7jQ.js                    6.11 kB
+../../out/renderer/assets/cssMode-HRdaDMbm.js                            6.23 kB
+../../out/renderer/assets/rust-B1c0VCeq.js                               6.27 kB
+../../out/renderer/assets/apex-DVGUZ64i.js                               6.39 kB
+../../out/renderer/assets/content-notifications-BCQi3b3X.js              6.42 kB
+../../out/renderer/assets/dart-vLMHv35g.js                               6.48 kB
+../../out/renderer/assets/python-Da587TVw.js                             6.52 kB
+../../out/renderer/assets/markdown-B0YTnTxW.js                           6.65 kB
+../../out/renderer/assets/swift-CbF6f74o.js                              6.92 kB
+../../out/renderer/assets/arc-C9_TU7zG.js                                6.94 kB
+../../out/renderer/assets/msdax-BBeIktCY.js                              6.95 kB
+../../out/renderer/assets/htmlMode-DCv6beAQ.js                           6.97 kB
+../../out/renderer/assets/csharp-BJeIuvde.js                             6.98 kB
+../../out/renderer/assets/diagram-Z3DM3KII-B8602LTs.js                   7.39 kB
+../../out/renderer/assets/content-debug-g5l7k3iV.js                      7.57 kB
+../../out/renderer/assets/html-DSPbytoN.js                               7.64 kB
+../../out/renderer/assets/typescript-DTqU6hVT.js                         7.92 kB
+../../out/renderer/assets/ecl-CeuUgzaZ.js                                7.94 kB
+../../out/renderer/assets/content-patterns-BF-CJd-n.js                   7.96 kB
+../../out/renderer/assets/cpp-CcN6f0ik.js                                8.22 kB
+../../out/renderer/assets/pug-BxCXwerb.js                                8.26 kB
+../../out/renderer/assets/vb-Bm6ESA0Q.js                                 8.33 kB
+../../out/renderer/assets/scss-B42qMyAu.js                               9.07 kB
+../../out/renderer/assets/defaultLocale-B2RvLBDe.js                      9.37 kB
+../../out/renderer/assets/linear-D6NK9AIi.js                             9.59 kB
+../../out/renderer/assets/content-custom-modules-BTuEGz_B.js             9.64 kB
+../../out/renderer/assets/content-scheduled-tasks-BCgLVjNg.js            9.69 kB
+../../out/renderer/assets/wgsl-_KPae5vw.js                               9.78 kB
+../../out/renderer/assets/content-variables-DEdXy546.js                 10.04 kB
+../../out/renderer/assets/st-C-b0Dh53.js                                10.15 kB
+../../out/renderer/assets/content-test-report-q9Lu9iTq.js               10.15 kB
+../../out/renderer/assets/twig-DvgEGWAV.js                              10.26 kB
+../../out/renderer/assets/handlebars-DKtBtFZD.js                        10.42 kB
+../../out/renderer/assets/julia-Cm3ItYL_.js                             10.54 kB
+../../out/renderer/assets/scala-DbVzH-3O.js                             10.70 kB
+../../out/renderer/assets/content-cases-DZ3V88-K.js                     10.72 kB
+../../out/renderer/assets/content-module-reference-B3VNqIiz.js          11.34 kB
+../../out/renderer/assets/diagram-UQ7AKVKN-DKzLxn2E.js                  11.46 kB
+../../out/renderer/assets/systemverilog-BOC0OOdC.js                     11.63 kB
+../../out/renderer/assets/php-Bkx1qpkQ.js                               12.48 kB
+../../out/renderer/assets/pieDiagram-E7YTZNPT-Ct3xg_Yi.js               12.58 kB
+../../out/renderer/assets/protobuf-CndvAUGu.js                          12.68 kB
+../../out/renderer/assets/perl-DC0Z0tlO.js                              12.82 kB
+../../out/renderer/assets/content-tips-CSH7ItLd.js                      13.17 kB
+../../out/renderer/assets/razor-BeY8p0Gp.js                             13.35 kB
+../../out/renderer/assets/clojure-fcgFaMHx.js                           13.94 kB
+../../out/renderer/assets/content-selector-BiNXV9uU.js                  14.30 kB
+../../out/renderer/assets/ruby-DCd4DmAr.js                              15.31 kB
+../../out/renderer/assets/sql-BAGepFCR.js                               15.56 kB
+../../out/renderer/assets/diagram-S7CK7UJ4-DeXFsfFk.js                  16.06 kB
+../../out/renderer/assets/mysql-BWiizXSn.js                             16.16 kB
+../../out/renderer/assets/redshift-CvYMMYZY.js                          16.33 kB
+../../out/renderer/assets/JsEditorDialog-PFhAwk8Z.js                    16.88 kB
+../../out/renderer/assets/pgsql-DaSGFTLp.js                             18.25 kB
+../../out/renderer/assets/cynefinDiagram-5FMLGOSQ-DGoxGy1h.js           18.38 kB
+../../out/renderer/assets/content-data-D7k8ok9E.js                      18.50 kB
+../../out/renderer/assets/content-basic-DKv0NSay.js                     18.50 kB
+../../out/renderer/assets/elixir-eLfY1jWH.js                            18.74 kB
+../../out/renderer/assets/PythonEditorDialog-BbUxycKU.js                18.78 kB
+../../out/renderer/assets/stateDiagram-D77RDMKH-DIwlwKr_.js             19.08 kB
+../../out/renderer/assets/postiats-CVVurEnu.js                          19.30 kB
+../../out/renderer/assets/content-triggers-DNHhaZcP.js                  19.78 kB
+../../out/renderer/assets/diagram-VSXAHHWV-CJd0Lj9S.js                  21.62 kB
+../../out/renderer/assets/powerquery-BQ_t1ZiQ.js                        21.65 kB
+../../out/renderer/assets/abap-D5KwWAsZ.js                              22.97 kB
+../../out/renderer/assets/dagre-GXQ25YYZ-BHa8_Okg.js                    23.33 kB
+../../out/renderer/assets/solidity-yHOxYChb.js                          26.03 kB
+../../out/renderer/assets/InjectJsEditorDialog-74fKEL-D.js              27.84 kB
+../../out/renderer/assets/jsonMode-DEUXMmBM.js                          29.20 kB
+../../out/renderer/assets/chunk-SVP7TREG-CnzXOGpK.js                    30.85 kB
+../../out/renderer/assets/content-advanced--STs17BP.js                  32.38 kB
+../../out/renderer/assets/diagram-VX7I27RA-CuONauZj.js                  32.40 kB
+../../out/renderer/assets/ishikawaDiagram-5VMMS53U-CHUSoRAh.js          35.12 kB
+../../out/renderer/assets/kanban-definition-UXKFOSKX-DPwdypMj.js        38.15 kB
+../../out/renderer/assets/tsMode-DztE9BBp.js                            40.40 kB
+../../out/renderer/assets/freemarker2-3sjLProI.js                       42.18 kB
+../../out/renderer/assets/mindmap-definition-YA3MSWOX-Fx9ZhLy0.js       43.33 kB
+../../out/renderer/assets/wardleyDiagram-VM6X3IG4-QiQ35y-U.js           44.55 kB
+../../out/renderer/assets/journeyDiagram-3NMN7TZE-BeMuJ3jr.js           45.34 kB
+../../out/renderer/assets/sankeyDiagram-P5KCCOFB-BaGXzx27.js            46.19 kB
+../../out/renderer/assets/requirementDiagram-BXWQKSXE-BRTWdq5l.js       52.59 kB
+../../out/renderer/assets/index-DLg2zI5T.js                             55.45 kB
+../../out/renderer/assets/erDiagram-RLTQ6QDP-Efw4W3id.js                56.25 kB
+../../out/renderer/assets/gitGraphDiagram-WWUBYQGX-uS7N4QC0.js          57.52 kB
+../../out/renderer/assets/timeline-definition-24CTP7MA-mjHSV3IL.js      60.54 kB
+../../out/renderer/assets/quadrantDiagram-AXDQQJYC-cDa5Uqcb.js          61.68 kB
+../../out/renderer/assets/lspLanguageFeatures-D7soxXVC.js               61.70 kB
+../../out/renderer/assets/chunk-IMKFNOWR-C6qRw9jW.js                    72.88 kB
+../../out/renderer/assets/blockDiagram-I7D4REHJ-BYfME8cX.js             76.05 kB
+../../out/renderer/assets/layout-DOcZZdQx.js                            78.73 kB
+../../out/renderer/assets/xychartDiagram-S5SC5T6Z-BMIoSY0e.js           83.29 kB
+../../out/renderer/assets/chunk-TICWLB2K-aRmHsrpp.js                    84.50 kB
+../../out/renderer/assets/vennDiagram-4TSXK5OY-Ddl4aaIX.js              88.89 kB
+../../out/renderer/assets/flowDiagram-HODETNUW--J7PIX2n.js             105.36 kB
+../../out/renderer/assets/c4Diagram-7LVT6UL2-TkzKcDoi.js               111.17 kB
+../../out/renderer/assets/ganttDiagram-EL5Y4UJY-kTNVP9CY.js            133.60 kB
+../../out/renderer/assets/sequenceDiagram-WJ2MYXX4-n6ZFC9uR.js         201.71 kB
+../../out/renderer/assets/cose-bilkent-JH36ORCC-COG4RYiz.js            214.58 kB
+../../out/renderer/assets/swimlanes-42K2YHIH-BU1MQ7mP.js               298.70 kB
+../../out/renderer/assets/html2canvas.esm-CMq0_Xqz.js                  349.46 kB
+../../out/renderer/assets/architectureDiagram-5GKGNRK7-CMcKa9ho.js     423.28 kB
+../../out/renderer/assets/katex-oVG3DVWa.js                            484.52 kB
+../../out/renderer/assets/cytoscape.esm-Ct9zsnh1.js                    961.04 kB
+../../out/renderer/assets/useDesktopSession-BUCoRAfr.js              1,056.69 kB
+../../out/renderer/assets/mermaid.core-Cwt9b5Os.js                   1,092.69 kB
+../../out/renderer/assets/cynefin-OW5HDTMX-DE2EJn1r.js               1,304.47 kB
+../../out/renderer/assets/main-CvC1YUoV.js                           2,572.80 kB
+../../out/renderer/assets/studio-COk3K9sD.js                         7,305.68 kB
+../../out/renderer/assets/AICodeAssistant-CGjKMSEF.js                7,344.20 kB
+✓ built in 35.67s

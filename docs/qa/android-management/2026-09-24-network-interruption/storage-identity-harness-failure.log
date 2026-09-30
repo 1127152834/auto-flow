@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/docs/qa/android-management/scripts/image-network-interruption-smoke.py", line 234, in <module>
+    asyncio.run(exercise(args.output))
+  File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.local/share/uv/python/cpython-3.11-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/docs/qa/android-management/scripts/image-network-interruption-smoke.py", line 196, in exercise
+    assert len(page['items']) == 1 and page['items'][0]['imageId'] == metadata['Id'], page
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'items': [{'id': '4ae1c15c-9a93-4bc8-b3d4-0ac9a8c194f3', 'imageId': 'sha256:e4450fd64bbb56954297906128cb9da9a66ff8063c5b9cac5c3e1f95ab229333', 'name': 'redroid/redroid@sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b', 'reference': 'redroid/redroid@sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b', 'revision': 1, 'state': 'registered', 'verification': {'state': 'unknown', 'evidence': None}, 'validation': 'not_tested', 'createdAt': '2026-09-24T02:45:42.047271Z', 'sourceDigest': 'sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b', 'architecture': 'arm64', 'os': 'linux', 'androidVersion': None, 'googleComponents': 'unknown', 'references': [{'kind': 'source', 'id': 'sha256:e4450fd64bbb56954297906128cb9da9a66ff8063c5b9cac5c3e1f95ab229333', 'name': 'redroid/redroid@sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b'}]}], 'nextCursor': None, 'total': 1}

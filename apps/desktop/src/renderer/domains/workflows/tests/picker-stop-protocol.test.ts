@@ -15,3 +15,7 @@ it.each(['memory','http'] as const)('does not release picking state before a con
   expect(mock.mockSnapshot().picking).toBe(false)
  }finally{await elementPickerApi.stop();mock.configureMock({disconnect:true});await server?.close();restore()}
 })
+
+import {beforeEach as beforeBrowserNode} from 'vitest'
+import {selectBrowserNode} from './select-browser-node'
+beforeBrowserNode(()=>selectBrowserNode())

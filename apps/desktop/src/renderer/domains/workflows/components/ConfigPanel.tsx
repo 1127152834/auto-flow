@@ -1,4 +1,6 @@
 import { ProjectEndConfig } from './config-panels/ProjectEndConfig'
+import { DiagnosticConfig } from './config-panels/DiagnosticConfig'
+import { ProjectLifecycleConfig } from './config-panels/ProjectLifecycleConfig'
 import { ProjectDataConfig } from './config-panels/ProjectDataConfig'
 import { ProxyControlConfig } from './config-panels/ProxyControlConfig'
 import { excludedModuleTypes } from '../lib/moduleCatalog'
@@ -835,6 +837,14 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
             关闭当前打开的网页，无需额外配置
           </p>
         )
+      case 'project_manual':
+        return <ProjectLifecycleConfig key={selectedNodeId} data={nodeData} onChange={handleChange} />
+      case 'trace_mark':
+      case 'capture_diagnostics':
+      case 'save_trace_segment':
+        return <DiagnosticConfig data={nodeData} onChange={handleChange} />
+      case 'project_data':
+        return <ProjectDataConfig key={selectedNodeId} data={nodeData} onChange={handleChange} />
       case 'set_variable':
         return <SetVariableConfig data={nodeData} onChange={handleChange} />
       case 'increment_decrement':
@@ -926,8 +936,6 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
         return <FirecrawlCrawlConfig data={nodeData} onChange={handleChange} />
       case 'project_end':
         return <ProjectEndConfig data={nodeData} onChange={handleChange} />
-      case 'project_data':
-        return <ProjectDataConfig data={nodeData} onChange={handleChange} />
       case 'proxy_change_ip':
       case 'proxy_change_location':
       case 'proxy_query':

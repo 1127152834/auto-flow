@@ -6,6 +6,7 @@ import json
 import os
 import sys
 from collections.abc import Mapping
+from contextlib import AsyncExitStack
 from contextvars import ContextVar
 from pathlib import Path
 from threading import Event, Lock, Thread
@@ -20,6 +21,11 @@ from autoflow.application.workflows.runtime import (
     WorkflowRuntime,
     execution_context_snapshot,
 )
+from autoflow.domain.workflows.browser_environment import (
+    node_browser_environments,
+    same_shared_browser,
+)
+from autoflow.domain.workflows.canvas_subflows import CanvasSubflowGraph, _node_data
 from autoflow.domain.workflows.execution import (
     CustomModuleResult,
     DesktopActionResult,
@@ -30,6 +36,7 @@ from autoflow.domain.workflows.execution import (
     SpeechResult,
 )
 from autoflow.domain.workflows.runs import WorkflowArtifact
+from autoflow.domain.workflows.runtime import WorkflowRuntimeError
 from autoflow.infrastructure.filesystem.workflow_artifacts import WorkflowArtifactStore
 from autoflow.infrastructure.filesystem.workflow_table_workbook import (
     OpenpyxlTableWorkbookRenderer,
@@ -73,7 +80,41 @@ async def _run(
     if not isinstance(requires_browser, bool):
         raise TypeError("requiresBrowser must be a boolean")
     _required_string(command, "runId")
-    _required_string(command, "profileId")
+    node_mode = node_browser_environments(command.get('document', {})) is not None
+    if not node_mode:
+        _required_string(command, 'profileId')
+    if node_mode:
+        async with AsyncExitStack() as sessions:
+            initialized = None
+            initialized_visit = None
+            initialized_configuration = None
+            async def initialize(context: Any, declaration: Any) -> Any:
+                nonlocal initialized, initialized_visit, initialized_configuration
+                if declaration['source'] == 'current':
+                    if initialized is None:
+                        raise WorkflowRuntimeError('BROWSER_INSTANCE_REQUIRED', '当前没有浏览器实例，请先执行初始化节点')
+                    return initialized
+                if initialized is not None:
+                    if same_shared_browser(declaration, initialized_configuration):
+                        return initialized
+                    if declaration['source'] == 'profile':
+                        raise WorkflowRuntimeError('BROWSER_CONFIGURATION_MISMATCH', '本次运行已打开浏览器，请保持浏览器配置、代理和内核一致')
+                    if initialized_visit != context.current_execution_id:
+                        raise WorkflowRuntimeError('BROWSER_INSTANCE_ALREADY_INITIALIZED', '已有浏览器实例，请使用当前实例')
+                    return initialized
+                payload = await command_bus.initialize_browser(context)
+                executable = Path(payload['executablePath'])
+                cache = Path(payload['cacheDirectory'])
+                if not executable.is_absolute() or not executable.is_file() or not cache.is_absolute():
+                    raise ValueError('workflow worker paths are invalid')
+                os.environ['CLOAKBROWSER_BINARY_PATH'] = str(executable)
+                os.environ['CLOAKBROWSER_CACHE_DIR'] = str(cache)
+                initialized = await sessions.enter_async_context(launch_workflow_session(payload['browser']))
+                initialized_visit = context.current_execution_id
+                initialized_configuration = declaration.copy()
+                return initialized
+            return await _run_in_session(command, stopped, stdout, None, command_bus, initialize)
+
     if not requires_browser:
         return await _run_in_session(command, stopped, stdout, None, command_bus)
     executable = Path(_required_environment("CLOAKBROWSER_BINARY_PATH"))
@@ -94,9 +135,10 @@ async def _run_in_session(
     stdout: TextIO,
     browser: Any,
     command_bus: _WorkerCommandBus,
+    browser_initializer: Any = None,
 ) -> int:
     run_id = _required_string(command, "runId")
-    profile_id = _required_string(command, "profileId")
+    profile_id = command.get("profileId")
     ready: dict[str, Any] = {
         "type": "ready",
         "runId": run_id,
@@ -120,6 +162,7 @@ async def _run_in_session(
             proxy_probe=getattr(browser, "probe_proxy", None),
             variables=_initial_variables(document),
             browser=browser,
+            browser_initializer=browser_initializer,
             cancellation=_ThreadCancellation(stopped),
             table_workbooks=OpenpyxlTableWorkbookRenderer(),
             models=WorkflowModelGateway(_model_bindings(command)),
@@ -137,6 +180,25 @@ async def _run_in_session(
             artifact_root=artifact_root,
         )
         context.events = sink
+        async def attach_trace(session: Any) -> Any:
+            if hasattr(session, "start_trace"):
+                async def save_trace(name: str, content: bytes, mime: str) -> str:
+                    writer = sink._artifact_store.writer(run_id=run_id, node_id="__trace__", execution_id=None, purpose="diagnostic")
+                    target = await writer.write_bytes(name=name, content=content, mime_type=mime)
+                    relative = Path(target).resolve().relative_to(artifact_root.resolve()).as_posix()
+                    return artifacts.by_path(relative).artifact_id
+                await session.start_trace(save_trace, enabled=document.get("traceMode", "standard") != "off",
+                                          enhanced=document.get("traceMode") == "enhanced")
+            return session
+        if browser is not None:
+            await attach_trace(browser)
+        if browser_initializer is not None:
+            async def initialize_with_trace(execution: Any, declaration: Any) -> Any:
+                session = await attach_trace(await browser_initializer(execution, declaration))
+                if getattr(session, "trace", None) is not None:
+                    session.trace.gaps.add("首次启动浏览器节点的开始时间见执行日志；Trace 从浏览器就绪时开始")
+                return session
+            context.browser_initializer = initialize_with_trace
         if context.variable_tracking_enabled:
             for name, value in context.variables.items():
                 await sink.publish(
@@ -371,6 +433,9 @@ class _WorkerEventSink:
 
     async def publish(self, event: Mapping[str, Any]) -> None:
         event = dict(event)
+        trace = getattr(self._context.browser, "trace", None)
+        if trace is not None:
+            await trace.execution(event, self._context.browser)
         await self._externalize_large_diagnostics(event)
         node_id = event.get("nodeId")
         execution_id = event.get("executionId")
@@ -610,8 +675,9 @@ class _WorkerNestedWorkflows:
                 {"kind": "workflow", "id": canonical, "name": name},
             ),
             browser=self._parent.browser,
+            browser_initializer=self._parent.browser_initializer,
+
             proxy_control=self._parent.proxy_control,
-            project_data=self._parent.project_data,
             project_end=self._parent.project_end,
             proxy_probe=self._parent.proxy_probe,
             proxy_activity=self._parent.proxy_activity,
@@ -622,6 +688,7 @@ class _WorkerNestedWorkflows:
             process_cleanup=self._parent.process_cleanup,
             log_records=self._parent.log_records,
             cancellation=self._parent.cancellation,
+            node_boundary=self._parent.node_boundary,
             debug=self._parent.debug,
             clock=self._parent.clock,
         )
@@ -794,8 +861,9 @@ class _WorkerCustomModules:
                 {"kind": "customModule", "id": module_id, "name": name},
             ),
             browser=self._parent.browser,
+            browser_initializer=self._parent.browser_initializer,
+
             proxy_control=self._parent.proxy_control,
-            project_data=self._parent.project_data,
             project_end=self._parent.project_end,
             proxy_probe=self._parent.proxy_probe,
             proxy_activity=self._parent.proxy_activity,
@@ -806,6 +874,7 @@ class _WorkerCustomModules:
             process_cleanup=self._parent.process_cleanup,
             log_records=self._parent.log_records,
             cancellation=self._parent.cancellation,
+            node_boundary=self._parent.node_boundary,
             debug=self._parent.debug,
             clock=self._parent.clock,
         )
@@ -861,19 +930,19 @@ class _WorkerCustomModules:
             self._stack.reset(token)
 
 
-class _WorkerCanvasSubflows:
+class _WorkerCanvasSubflows(CanvasSubflowGraph):
     def __init__(
         self,
         document: dict[str, Any],
         *,
         registry: Any,
         parent: ExecutionContext,
-        sink: _WorkerEventSink,
-        command_bus: _WorkerCommandBus | None,
-        nested_workflows: _WorkerNestedWorkflows | None,
+        sink: Any,
+        command_bus: _WorkerCommandBus | None = None,
+        nested_workflows: _WorkerNestedWorkflows | None = None,
         stack: ContextVar[tuple[str, ...]] | None = None,
     ) -> None:
-        self._document = copy.deepcopy(document)
+        super().__init__(document)
         self._registry = registry
         self._parent = parent
         self._sink = sink
@@ -882,7 +951,7 @@ class _WorkerCanvasSubflows:
         self._stack = stack or ContextVar("canvas_subflow_stack", default=())
 
     def for_context(
-        self, parent: ExecutionContext, sink: _WorkerEventSink
+        self, parent: ExecutionContext, sink: Any
     ) -> _WorkerCanvasSubflows:
         return _WorkerCanvasSubflows(
             self._document,
@@ -897,16 +966,8 @@ class _WorkerCanvasSubflows:
             stack=self._stack,
         )
 
-    def top_level_document(self) -> dict[str, Any]:
-        excluded: set[str] = set()
-        for node in self._nodes():
-            if self._is_definition(node):
-                excluded.add(str(node.get("id") or ""))
-                excluded.update(self._members(node))
-        return self._subset(excluded, invert=True)
-
     async def run_subflow(
-        self, *, group_id: str, name: str
+        self, *, group_id: str, name: str, inputs: Mapping[str, Any] | None = None
     ) -> NestedWorkflowResult:
         definition = self._find_definition(group_id, name)
         if definition is None:
@@ -938,21 +999,23 @@ class _WorkerCanvasSubflows:
                 f"子流程嵌套层数过深(>32): {' -> '.join(stack)}",
             )
         members = self._members(definition)
+        sensitive_inputs = (set(inputs) if inputs is not None and (self._parent.sensitive_variables or self._parent.node_uses_sensitive_values) else set(self._parent.sensitive_variables))
         if not members:
             return NestedWorkflowResult(
-                identity, display_name, True, self._parent.variables, 0, 0
+                identity, display_name, True, copy.deepcopy(dict(inputs)) if inputs is not None else self._parent.variables, 0, 0, sensitive_outputs=frozenset(sensitive_inputs)
             )
         token = self._stack.set((*stack, identity))
         child = ExecutionContext(
-            variables=self._parent.variables,
-            sensitive_variables=self._parent.sensitive_variables,
+            variables=copy.deepcopy(dict(inputs)) if inputs is not None else self._parent.variables,
+            sensitive_variables=sensitive_inputs,
             execution_scopes=(
                 *self._parent.execution_scopes,
-                {"kind": "subflow", "id": identity, "name": display_name},
+                {"kind": "subflow", "id": identity, "name": display_name, "callNodeId": self._parent.current_node_id, "callVisitId": self._parent.current_execution_id},
             ),
             browser=self._parent.browser,
+            browser_initializer=self._parent.browser_initializer,
+
             proxy_control=self._parent.proxy_control,
-            project_data=self._parent.project_data,
             project_end=self._parent.project_end,
             proxy_probe=self._parent.proxy_probe,
             proxy_activity=self._parent.proxy_activity,
@@ -963,6 +1026,7 @@ class _WorkerCanvasSubflows:
             process_cleanup=self._parent.process_cleanup,
             log_records=self._parent.log_records,
             cancellation=self._parent.cancellation,
+            node_boundary=self._parent.node_boundary,
             debug=self._parent.debug,
             clock=self._parent.clock,
         )
@@ -996,131 +1060,10 @@ class _WorkerCanvasSubflows:
                 len(result.executed_node_ids),
                 0 if result.success else 1,
                 result.node_result.error if result.node_result else None,
+                sensitive_outputs=frozenset(child.sensitive_variables),
             )
         finally:
             self._stack.reset(token)
-
-    def _nodes(self) -> list[dict[str, Any]]:
-        nodes = self._document.get("nodes", [])
-        return [dict(node) for node in nodes if isinstance(node, Mapping)] if isinstance(nodes, list) else []
-
-    def _edges(self) -> list[dict[str, Any]]:
-        edges = self._document.get("edges", [])
-        return [dict(edge) for edge in edges if isinstance(edge, Mapping)] if isinstance(edges, list) else []
-
-    def _is_definition(self, node: Mapping[str, Any]) -> bool:
-        node_type = _node_type(node)
-        data = _node_data(node)
-        return node_type == "subflow_header" or (
-            node_type == "group" and data.get("isSubflow") is True
-        )
-
-    def _find_definition(
-        self, group_id: str, name: str
-    ) -> dict[str, Any] | None:
-        definitions = [node for node in self._nodes() if self._is_definition(node)]
-        if name:
-            match = next(
-                (
-                    node
-                    for node in definitions
-                    if _node_data(node).get("subflowName") == name
-                ),
-                None,
-            )
-            if match is not None:
-                return match
-        return next(
-            (node for node in definitions if node.get("id") == group_id), None
-        )
-
-    def _members(self, definition: Mapping[str, Any]) -> set[str]:
-        if _node_type(definition) == "subflow_header":
-            return self._header_members(str(definition.get("id") or ""))
-        position = definition.get("position")
-        position = position if isinstance(position, Mapping) else {}
-        data = _node_data(definition)
-        style = definition.get("style")
-        style = style if isinstance(style, Mapping) else {}
-        left = _dimension(position.get("x"), 0)
-        top = _dimension(position.get("y"), 0)
-        width = _dimension(
-            data.get("width", definition.get("width", style.get("width"))), 300
-        )
-        height = _dimension(
-            data.get("height", definition.get("height", style.get("height"))), 200
-        )
-        members: set[str] = set()
-        for node in self._nodes():
-            node_id = str(node.get("id") or "")
-            if node_id == definition.get("id") or _node_type(node) in {"group", "note"}:
-                continue
-            node_position = node.get("position")
-            node_position = node_position if isinstance(node_position, Mapping) else {}
-            x = _dimension(node_position.get("x"), 0)
-            y = _dimension(node_position.get("y"), 0)
-            if left <= x <= left + width and top <= y <= top + height:
-                members.add(node_id)
-        return members
-
-    def _header_members(self, header_id: str) -> set[str]:
-        nodes = {str(node.get("id") or ""): node for node in self._nodes()}
-        members: set[str] = set()
-        queue = [header_id]
-        visited: set[str] = set()
-        while queue:
-            current = queue.pop(0)
-            if current in visited:
-                continue
-            visited.add(current)
-            for edge in self._edges():
-                if edge.get("source") != current:
-                    continue
-                target = str(edge.get("target") or "")
-                target_node = nodes.get(target)
-                if target_node is None or target in visited:
-                    continue
-                if _node_type(target_node) not in {"group", "note", "subflow_header"}:
-                    members.add(target)
-                    queue.append(target)
-        return members
-
-    def _subset(self, node_ids: set[str], *, invert: bool = False) -> dict[str, Any]:
-        selected = {
-            str(node.get("id") or "")
-            for node in self._nodes()
-            if (str(node.get("id") or "") not in node_ids) == invert
-        }
-        result = copy.deepcopy(self._document)
-        result["nodes"] = [
-            node for node in self._nodes() if str(node.get("id") or "") in selected
-        ]
-        result["edges"] = [
-            edge
-            for edge in self._edges()
-            if edge.get("source") in selected and edge.get("target") in selected
-        ]
-        return result
-
-
-def _node_data(node: Mapping[str, Any]) -> Mapping[str, Any]:
-    data = node.get("data")
-    return data if isinstance(data, Mapping) else {}
-
-
-def _node_type(node: Mapping[str, Any]) -> str:
-    data = _node_data(node)
-    value = data.get("moduleType") or node.get("type") or ""
-    return str(value)
-
-
-def _dimension(value: Any, default: float) -> float:
-    if isinstance(value, str):
-        value = value.removesuffix("px")
-    try:
-        return float(value)
-    except (TypeError, ValueError):
-        return default
 
 
 def _read_command(stdin: TextIO) -> dict[str, Any]:
@@ -1490,8 +1433,9 @@ class _WorkerCommandBus:
                 else None
             ),
         )
+        self._pending_browsers: dict[str, asyncio.Future[dict[str, Any]]] = {}
+
         self._proxy_pending: dict[str, asyncio.Future[dict[str, Any]]] = {}
-        self._capability_pending: dict[str, asyncio.Future[dict[str, Any]]] = {}
         self._pending: dict[str, asyncio.Future[str | None]] = {}
         self._pending_scripts: dict[str, asyncio.Future[JsScriptResult]] = {}
         self._pending_speech: dict[str, asyncio.Future[SpeechResult]] = {}
@@ -1513,19 +1457,6 @@ class _WorkerCommandBus:
             return await future
         finally:
             self._proxy_pending.pop(request_id, None)
-
-    async def project_data_call(self, payload: dict[str, Any]) -> dict[str, Any]:
-        if self._stopped.is_set():
-            raise asyncio.CancelledError
-        request_id = str(uuid4())
-        future: asyncio.Future[dict[str, Any]] = self._loop.create_future()
-        self._capability_pending[request_id] = future
-        self._write_command({"type": "capability:request", "runId": self._run_id,
-                             "requestId": request_id, "payload": payload})
-        try:
-            return await future
-        finally:
-            self._capability_pending.pop(request_id, None)
 
     def _write_command(self, message: dict[str, Any]) -> None:
         _write(self._stdout, {**message, **self._protocol_metadata})
@@ -1550,6 +1481,25 @@ class _WorkerCommandBus:
         self.credentials.close()
         if not self._loop.is_closed():
             self._loop.call_soon_threadsafe(self._cancel_pending)
+
+    async def initialize_browser(self, context: ExecutionContext) -> dict[str, Any]:
+        request_id = str(uuid4())
+        future: asyncio.Future[dict[str, Any]] = self._loop.create_future()
+        self._pending_browsers[request_id] = future
+        self._write_command({'type': 'browser:initialize', 'requestId': request_id,
+            'runId': self._run_id, 'workflowId': self._workflow_id,
+            'nodeId': context.current_node_id, 'executionId': context.current_execution_id})
+        try:
+            while not future.done():
+                if self._stopped.is_set():
+                    raise asyncio.CancelledError
+                await asyncio.wait({future}, timeout=0.05)
+            reply = future.result()
+            if reply.get('error'):
+                raise WorkflowRuntimeError(reply['error']['code'], reply['error']['message'])
+            return reply
+        finally:
+            self._pending_browsers.pop(request_id, None)
 
     async def request_input(
         self,
@@ -1771,13 +1721,10 @@ class _WorkerCommandBus:
 
     def _apply(self, command: dict[str, Any]) -> None:
         command_type = command.get("type")
-        if command_type == "capability:result":
-            capability_future = self._capability_pending.get(str(command.get("requestId", "")))
-            if capability_future is not None and not capability_future.done():
-                if isinstance(command.get("value"), dict):
-                    capability_future.set_result(command["value"])
-                else:
-                    capability_future.set_exception(RuntimeError("项目数据响应格式无效"))
+        if command_type == 'browser:initialized':
+            browser_future = self._pending_browsers.get(str(command.get('requestId')))
+            if command.get('runId') == self._run_id and browser_future is not None and not browser_future.done():
+                browser_future.set_result(command)
             return
         if command_type == "proxy:result":
             proxy_future = self._proxy_pending.get(str(command.get("requestId", "")))
@@ -2008,9 +1955,10 @@ class _WorkerCommandBus:
         )
 
     def _cancel_pending(self) -> None:
-        for capability_future in self._capability_pending.values():
-            if not capability_future.done():
-                capability_future.cancel()
+        for browser_future in self._pending_browsers.values():
+            if not browser_future.done():
+                browser_future.cancel()
+
         for proxy_future in self._proxy_pending.values():
             if not proxy_future.done():
                 proxy_future.cancel()

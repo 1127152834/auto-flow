@@ -14,7 +14,8 @@ from autoflow.domain.project_data.identity import (
     record_key,
     system_record_key,
 )
-from autoflow.domain.project_data.rules import validate_value
+from autoflow.domain.project_data.records import validate_record_scalar
+from autoflow.domain.project_data.rules import validate_value, validation_issues
 from autoflow.domain.projects.models import ProjectError, ProjectOperation
 from autoflow.infrastructure.database.project_claims import active_record_lease
 from autoflow.infrastructure.database.project_data import (
@@ -108,7 +109,7 @@ class SqlAlchemyProjectDataRecords:
                 session.flush()
                 session.add(_change(done, None, snapshot))
                 if origin == "local":
-                    enqueue_intent(session, table, key, row.content_revision)
+                    enqueue_intent(session, table, key, row.content_revision, canonical)
                 session.commit()
                 return snapshot, done, False
             except IntegrityError as error:
@@ -288,7 +289,8 @@ class SqlAlchemyProjectDataRecords:
                 )
             canonical = self._validate(fields, values, False, origin)
             before = self._snapshot(row, fields)
-            merged = {**row.values_json, **canonical}
+            old_values = row.values_json
+            merged = {**old_values, **canonical}
             changed = merged != row.values_json
             if changed:
                 row.values_json = merged
@@ -299,7 +301,10 @@ class SqlAlchemyProjectDataRecords:
             session.add(_operation_row(done))
             session.flush()
             if changed and origin == "local":
-                enqueue_intent(session, table, key, row.content_revision)
+                enqueue_intent(session, table, key, row.content_revision, {
+                    field_id: value for field_id, value in canonical.items()
+                    if field_id not in old_values or old_values[field_id] != value
+                })
             if changed:
                 session.add(_change(done, before, snapshot))
             session.commit()
@@ -465,17 +470,19 @@ class SqlAlchemyProjectDataRecords:
             field = by_id[field_id]
             if origin != "source" and (not field.writable or field.formula):
                 raise ProjectError("FIELD_NOT_WRITABLE", "Field is not writable", 422)
-            result[field_id] = validate_value(
-                {
-                    "key": field.key,
-                    "name": field.name,
-                    "type": field.type,
-                    "required": field.required,
-                    "validation": field.validation,
-                },
-                value,
-            )
-        if creating:
+            definition = {
+                "key": field.key, "name": field.name, "type": field.type,
+                "required": field.required, "validation": field.validation,
+            }
+            try:
+                result[field_id] = validate_value(definition, value)
+            except ProjectError:
+                if origin != "source":
+                    raise
+                # Sources may preserve a safe business scalar for diagnosis;
+                # identity and unsafe wire values are checked before materialization.
+                result[field_id] = validate_record_scalar(value)
+        if creating and origin != "source":
             for field in fields:
                 if field.required and field.id not in result:
                     raise ProjectError(
@@ -494,8 +501,13 @@ class SqlAlchemyProjectDataRecords:
             "datasetGeneration": row.dataset_generation,
             "recordKey": {"type": row.key_type, "value": row.key_value},
         }
+        issue_fields = [{
+            "fieldId": field.id, "key": field.key, "name": field.name,
+            "type": field.type, "required": field.required, "validation": field.validation,
+        } for field in fields]
         return {
             "ref": ref,
+            "validationIssues": validation_issues(issue_fields, row.values_json),
             "values": [
                 {
                     "fieldId": field.id,

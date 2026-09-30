@@ -111,6 +111,8 @@ def project_document(value: object) -> dict[str, Any]:
         issue("INVALID_SOURCE_ID", "来源工作流标识不能为空", ["content", "id"])
     if not isinstance(content.get("name"), str):
         issue("INVALID_NAME", "工作流名称必须是字符串", ["content", "name"])
+    if "traceMode" in content and content["traceMode"] not in ("off", "standard", "enhanced"):
+        issue("TRACE_MODE_INVALID", "追踪模式必须是 off、standard 或 enhanced", ["content", "traceMode"])
     nodes = content.get("nodes")
     edges = content.get("edges")
     variables = content.get("variables")
@@ -237,7 +239,7 @@ def project_document(value: object) -> dict[str, Any]:
         "content": {
             "id": content["id"],
             "name": content["name"],
-            **{key: deepcopy(content[key]) for key in ("schemaVersion", "projectId") if key in content},
+            **{key: deepcopy(content[key]) for key in ("schemaVersion", "projectId", "browserEnvironmentVersion", "traceMode") if key in content},
             "nodes": projected_nodes,
             "edges": projected_edges,
             "variables": projected_variables,

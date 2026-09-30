@@ -1,0 +1,68 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/android/tests/ManagementTools.test.tsx -t active batch|in-flight batch
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+
+ ❯ src/renderer/domains/android/tests/ManagementTools.test.tsx (29 tests | 3 failed | 26 skipped) 144ms
+   × reads active batch progress through to its terminal state without replaying submission 115ms
+   × stops active batch reads at unknown outcomes and leaves reconciliation explicit 15ms
+   × aborts an in-flight batch read when the panel leaves and ignores its late response 13ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/android/tests/ManagementTools.test.tsx > reads active batch progress through to its terminal state without replaying submission
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+ ❯ src/renderer/domains/android/tests/ManagementTools.test.tsx:34:22
+     32|   await act(async () => { fireEvent.click(screen.getByRole('button', {…
+     33|   await act(async () => { await vi.advanceTimersByTimeAsync(3000) })
+     34|   expect(bulkStatus).toHaveBeenCalledTimes(1)
+       |                      ^
+     35|   expect(screen.getByLabelText('批次结果')).toHaveTextContent('running')
+     36|   expect(screen.getByText(/批次状态暂不可读/)).toBeVisible()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/renderer/domains/android/tests/ManagementTools.test.tsx > stops active batch reads at unknown outcomes and leaves reconciliation explicit
+Error: expect(element).toHaveTextContent()
+
+Expected element to have text content:
+  结果未知
+Received:
+  批次 running · 1 项
+ ❯ src/renderer/domains/android/tests/ManagementTools.test.tsx:55:41
+     53|   await act(async () => { fireEvent.click(screen.getByRole('button', {…
+     54|   await act(async () => { await vi.advanceTimersByTimeAsync(3000) })
+     55|   expect(screen.getByLabelText('批次结果')).toHaveTextContent('结果未知')
+       |                                         ^
+     56|   expect(screen.getByRole('button', { name: '核实批次' })).toBeEnabled()
+     57|   await act(async () => { await vi.advanceTimersByTimeAsync(9000) })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/renderer/domains/android/tests/ManagementTools.test.tsx > aborts an in-flight batch read when the panel leaves and ignores its late response
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+ ❯ src/renderer/domains/android/tests/ManagementTools.test.tsx:72:22
+     70|   await act(async () => { fireEvent.click(screen.getByRole('button', {…
+     71|   await act(async () => { await vi.advanceTimersByTimeAsync(3000) })
+     72|   expect(bulkStatus).toHaveBeenCalledTimes(1)
+       |                      ^
+     73|   const signal = bulkStatus.mock.calls[0][1]!
+     74|   expect(signal.aborted).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 26 skipped (29)
+   Start at  06:07:25
+   Duration  1.06s (transform 203ms, setup 186ms, import 164ms, tests 144ms, environment 451ms)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/android/tests/ManagementTools.test.tsx -t 'active batch|in-flight batch'

@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import sys
 
@@ -31,5 +32,6 @@ def test_schema_export_cli_outputs_only_json():
     result = subprocess.run(
         [sys.executable, '-m', 'autoflow.bootstrap.schema_export'],
         capture_output=True, text=True, check=True,
+        env={**os.environ, "PYTHONIOENCODING": "ascii"},
     )
     assert json.loads(result.stdout) == export_schema()

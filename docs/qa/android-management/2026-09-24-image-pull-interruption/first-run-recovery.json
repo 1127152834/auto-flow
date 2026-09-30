@@ -1,0 +1,21 @@
+{
+  "status": "passed",
+  "verified": {
+    "operationId": "fb0a1794-e7f7-4ea5-a720-ef2898f8b17e",
+    "requestId": "dbeb6cac-d9a4-4d61-945f-9851d1b9119b",
+    "targetId": "bab724f0-5436-5b6b-b0ea-310404a22e91",
+    "action": "pull",
+    "state": "succeeded",
+    "stageCode": "verified",
+    "stageLabel": "\u5df2\u5b8c\u6210",
+    "attempt": 1,
+    "retryOf": null,
+    "createdAt": "2026-09-23T23:08:19.784896",
+    "startedAt": "2026-09-23T23:08:19.787204",
+    "finishedAt": "2026-09-23T23:09:14.533861",
+    "resultCode": "IMAGE_PULL_VERIFIED",
+    "message": "\u670d\u52a1\u5df2\u91cd\u542f\uff0c\u8bf7\u6838\u5b9e\u5916\u90e8\u64cd\u4f5c\u7ed3\u679c",
+    "allowedActions": []
+  },
+  "cleanup": "owned registration removed; existing content retained; no device created"
+}

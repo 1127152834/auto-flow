@@ -67,11 +67,11 @@ def _source_result(payload: dict[str, Any]) -> dict[str, Any]:
     env = dict(os.environ)
     env["PYTHONPATH"] = str(FROZEN_BACKEND)
     completed = subprocess.run(
-        [sys.executable, str(FROZEN_HARNESS)],
+        [sys.executable, "-X", "utf8", str(FROZEN_HARNESS)],
         input=json.dumps(payload, ensure_ascii=False),
         check=True,
         capture_output=True,
-        text=True,
+        text=True, encoding="utf-8",
         env=env,
     )
     return json.loads(completed.stdout.splitlines()[-1])
@@ -621,9 +621,17 @@ def test_table_executor_does_not_import_the_frozen_file_service_or_excel_stack()
 
 @pytest.mark.parametrize(
     "save_path",
-    ["../escape.csv", "C:\\outside\\escape.csv"],
+    [
+        "../escape.csv",
+        "C:relative.csv",
+        r"\\server\share\escape.csv",
+        pytest.param(
+            "C:\\outside\\escape.csv",
+            marks=pytest.mark.skipif(sys.platform == "win32", reason="valid Windows absolute path"),
+        ),
+    ],
 )
-def test_export_rejects_paths_outside_the_managed_artifact_root(save_path: str) -> None:
+def test_export_rejects_ambiguous_paths(save_path: str) -> None:
     artifacts = _RecordingArtifacts()
     context = ExecutionContext(
         data_rows=[{"a": 1}], artifacts=artifacts, clock=_fixed_clock()
@@ -654,7 +662,7 @@ def test_csv_export_allows_explicit_absolute_path(tmp_path: Path) -> None:
     )
 
     assert result.success is True
-    assert artifacts.text_calls[0]["output_path"] == str(target)
+    assert Path(artifacts.text_calls[0]["output_path"]) == target
 
 
 def test_export_rejects_unknown_format_without_touching_artifacts() -> None:
@@ -1053,7 +1061,7 @@ def test_table_exports_formula_like_text_as_literal_data(tmp_path: Path) -> None
         )
     )
     assert csv_result.success is True
-    assert Path(csv_result.data["path"]).read_text() == (
+    assert Path(csv_result.data["path"]).read_text(encoding="utf-8") == (
         "'=header,equals,plus,minus,at\n"
         "safe,'=1+1,'+SUM(A1:A2),'-2+3,'@SUM(A1:A2)\n"
     )

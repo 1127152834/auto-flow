@@ -1,0 +1,102 @@
+Window: "AutoFlow", App: Electron.
+0 标准窗口 AutoFlow, Secondary Actions: Raise
+	1 container AutoFlow
+		2 container
+			3 HTML 内容 AutoFlow, URL: file:///Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/out/renderer/index.html#/android
+				4 container
+					5 link Description: AutoFlow, Value: file:///Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/out/renderer/index.html#/dashboard
+					6 container 全局导航
+						7 按钮 总览
+						8 按钮 项目
+						9 按钮 浏览器配置
+						10 按钮 安卓设备
+						11 按钮 代理管理
+						12 按钮 模型管理
+					13 按钮 设置
+						14 图像
+						15 文本 设置
+					16 文本 本地服务正常
+					17 container
+						18 按钮 返回资源看板 / 创建实例
+							19 图像
+							20 文本 返回资源看板
+							21 文本 /
+							22 文本 创建实例
+						23 标题 创建安卓实例, Value: 1
+							24 文本 创建安卓实例
+						25 文本 从环境配置创建，实例之间独立保存数据。
+						26 container
+							27 标题 1 基本信息, Value: 2
+								28 text 1 基本信息
+							29 文本 实例名称
+							30 文本栏 (settable) 实例名称, Value: 测试设备
+							31 text 将创建： 测试设备 01 数量
+							32 按钮 (disabled) 减少数量
+								33 图像
+							34 步进器 (settable, float) Description: 数量, Value: 1
+							35 按钮 增加数量
+								36 图像
+						37 container
+							38 标题 2 环境配置, Value: 2
+								39 文本 环境配置
+							40 文本 选择环境配置
+							41 弹出式按钮 选择环境配置, Value: Android 13 标准 · ARM64
+								42 (selected) Android 13 标准 · ARM64
+							43 按钮 管理配置
+							44 text 软件渲染 ·  720 × 1280  · shell root 待验证
+							45 图像
+							46 text 应用级 root 需单独验证。 分辨率
+							47 弹出式按钮 分辨率, Value: 720 × 1280
+								48 (selected) 720 × 1280
+							49 按钮 更多设置 · 语言与时区
+								50 图像
+								51 文本 更多设置 · 语言与时区
+						52 container
+							53 标题 3 数据与启动, Value: 2
+								54 text 3 数据与启动
+							55 text 实例类型 持久实例 保留应用和数据，适合重复调试 创建后启动
+							56 切换 Description: 创建后启动, Value: on
+							57 文本 启动完成且 Android 就绪后才可操作。
+						58 标题 创建预览, Value: 2
+							59 文本 创建预览
+						60 图像 Android 设备示意
+						61 定义列表
+							62 container 数量
+								63 文本 数量
+							64 container
+								65 text 1  台
+							66 container 系统
+								67 文本 系统
+							68 文本 Android 13 标准 · ARM64
+							69 container 分辨率
+								70 文本 分辨率
+							71 文本 720 × 1280
+							72 container 数据
+								73 文本 数据
+							74 文本 独立持久保存
+						75 container
+							76 标题 运行环境, Value: 3
+								77 文本 运行环境
+							78 图像
+							79 text Mac 本机 已连接
+							80 图像
+							81 文本 当前配置兼容
+							82 图像
+							83 文本 同时启动数量由本机资源限制。
+						84 按钮 取消
+						85 文本 创建进度可在资源看板逐台查看。
+						86 文本 将创建
+						87 文本 1
+						88 文本  台持久实例
+						89 按钮 创建并启动
+	90 关闭按钮
+	91 全屏幕按钮 Help: 此按钮也可以执行缩放窗口的操作, Secondary Actions: 缩放窗口
+	92 最小化按钮
+93 menu bar
+	94 Electron
+	95 File
+	96 Edit
+	97 View
+	98 Window
+
+The focused UI element is 30 文本栏 (settable) 实例名称, Value: 测试设备

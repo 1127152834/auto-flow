@@ -1,20 +1,23 @@
 from __future__ import annotations
 
-from collections.abc import Awaitable, Callable, Mapping, Sequence
-from contextlib import AbstractContextManager, ExitStack
-from copy import deepcopy
+from collections.abc import Awaitable, Callable, Iterator, Mapping, Sequence
+from contextlib import AbstractContextManager, ExitStack, contextmanager, nullcontext
 from dataclasses import asdict, dataclass, field
-from datetime import datetime
 from pathlib import Path
+from threading import RLock
 from typing import Any, cast
 
 from autoflow.application.profiles.service import ProfileService
+from autoflow.domain.environments.identity import (
+    profile_from_request,
+    request_from_identity,
+)
 from autoflow.domain.kernels.errors import LicenseInvalid
 from autoflow.domain.kernels.models import InstalledKernel, KernelEdition, KernelRef
 from autoflow.domain.profiles.errors import KernelNotInstalled
 from autoflow.domain.profiles.models import Profile, ProfileBrowserProxy, ProfileSpec
 from autoflow.domain.profiles.ports import ProfileUsageGuard
-from autoflow.domain.workflows.runtime import WorkflowRuntimeError, thaw_json
+from autoflow.domain.workflows.runtime import WorkflowRuntimeError
 from autoflow.infrastructure.process.project_test_browser_worker import (
     browser_worker_payload,
 )
@@ -25,9 +28,23 @@ class BrowserLease:
     executable: Path
     browser: dict[str, Any] = field(repr=False)
     _guards: ExitStack = field(repr=False)
+    _release_error: BaseException | None = field(default=None, repr=False)
 
     def release(self) -> None:
-        self._guards.close()
+        if self._release_error is not None:
+            raise self._release_error
+        try:
+            self._guards.close()
+        except BaseException as error:
+            self._release_error = error
+            raise
+
+
+@dataclass
+class _SharedGuard:
+    context: AbstractContextManager[None]
+    users: int = 0
+    failed: bool = False
 
 
 class WorkflowBrowserResources:
@@ -40,6 +57,8 @@ class WorkflowBrowserResources:
         read_license: Callable[[], str | None], usage_guard: ProfileUsageGuard,
         kernel_guard: Callable[[KernelRef], AbstractContextManager[None]],
         environment_directory: Callable[[str], Path | None] | None = None,
+        group_guard: Callable[[], AbstractContextManager[None]] = nullcontext,
+        license_guard: Callable[[], AbstractContextManager[None]] = nullcontext,
         release_proxy: Callable[[str], None] | None = None,
     ) -> None:
         self._profiles = profiles
@@ -50,10 +69,51 @@ class WorkflowBrowserResources:
         self._kernel_guard = kernel_guard
         self._environment_directory = environment_directory
         self._release_proxy = release_proxy
+        self._group_guard = group_guard
+        self._license_guard = license_guard
+        self._sharing_lock = RLock()
+        self._shared: dict[tuple[str, str], _SharedGuard] = {}
+
+    @contextmanager
+    def _share(self, key: tuple[str, str], create: Callable[[], AbstractContextManager[None]]) -> Iterator[None]:
+        # Dispatcher and maintenance share synchronous guard accounting;
+        # reference sharing is internal, the original OS exclusion stays held.
+        with self._sharing_lock:
+            guard = self._shared.get(key)
+            if guard is None:
+                guard = _SharedGuard(create())
+                guard.context.__enter__()
+                self._shared[key] = guard
+            if guard.failed:
+                raise WorkflowRuntimeError('WORKFLOW_CLEANUP_FAILED', '资源锁清理尚未确认')
+            guard.users += 1
+        try:
+            yield
+        finally:
+            with self._sharing_lock:
+                guard.users -= 1
+                # An unknown native lock pins the workspace even if its owner is
+                # the final user; other confirmed Run leases can still finish.
+                pinned = key == ('workspace', '') and any(value.failed for identity, value in self._shared.items() if identity != key)
+                if not guard.users and not pinned:
+                    guard.failed = True
+                    guard.context.__exit__(None, None, None)
+                    self._shared.pop(key)
+
+
+    @contextmanager
+    def guard(self, profile_id: str, kernel: KernelRef) -> Iterator[None]:
+        with ExitStack() as guards:
+            guards.enter_context(self._share(('workspace', ''), self._group_guard))
+            guards.enter_context(self._share(('profile', profile_id), lambda: self._usage_guard.guard(profile_id)))
+            guards.enter_context(self._share(('kernel', f'{kernel.edition}:{kernel.version}'), lambda: self._kernel_guard(kernel)))
+            if kernel.edition == 'licensed':
+                guards.enter_context(self._share(('license', ''), self._license_guard))
+            yield
 
     def freeze(
         self, profile_id: str, *, proxy: dict[str, Any] | None = None,
-        model_provider_id: str | None = None,
+        model_provider_id: str | None = None, kernel: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         profile = self._profiles.get(profile_id)
         policy = dict({"mode": "profile"} if proxy is None else proxy)
@@ -73,6 +133,10 @@ class WorkflowBrowserResources:
             spec_values.update(proxy_mode="pool", proxy_id=None, proxy_pool_id=policy['proxyPoolId'])
         elif mode != "profile":
             raise WorkflowRuntimeError("WORKFLOW_RESOURCE_INVALID", "代理策略无效", 422)
+        if kernel is not None:
+            if set(kernel) != {"edition", "version"}:
+                raise WorkflowRuntimeError("WORKFLOW_RESOURCE_INVALID", "内核字段无效", 422)
+            spec_values.update(browser_edition=kernel["edition"], browser_version=kernel["version"], release_channel="stable")
         spec = ProfileSpec.from_values(spec_values)
         self._kernel(spec)
         return {
@@ -86,44 +150,34 @@ class WorkflowBrowserResources:
             },
         }
 
-    async def acquire(self, request: Mapping[str, Any], run_request_id: str) -> BrowserLease:
+    async def acquire(self, request: Mapping[str, Any], run_id: str, *, work_directory: Path | None = None) -> BrowserLease:
         if request.get("browser") not in {"newFromProfile", "persistent"}:
             raise WorkflowRuntimeError("WORKFLOW_RESOURCE_UNSUPPORTED", "当前运行需要浏览器配置", 422)
-        snapshot = deepcopy(thaw_json(request.get("frozenConfiguration")))
-        if not isinstance(snapshot, dict) or not isinstance(request.get("profileId"), str):
-            raise WorkflowRuntimeError("WORKFLOW_RESOURCE_INVALID", "浏览器资源快照无效", 422)
-        profile_id = str(request['profileId'])
-        try:
-            if not isinstance(snapshot['profileSpec'], dict) or type(snapshot['fingerprintSeed']) is not int:
-                raise ValueError('Invalid frozen profile shape')
-            profile = Profile(
-                profile_id, ProfileSpec.from_values(snapshot['profileSpec']),
-                snapshot['fingerprintSeed'], datetime.fromisoformat(snapshot['createdAt']),
-                datetime.fromisoformat(snapshot['updatedAt']),
-            )
-        except (KeyError, TypeError, ValueError):
-            raise WorkflowRuntimeError("WORKFLOW_RESOURCE_INVALID", "浏览器资源快照无效", 422) from None
-        if request.get('kernelId') != f"{profile.spec.browser_edition}:{profile.spec.browser_version}":
-            raise WorkflowRuntimeError("WORKFLOW_RESOURCE_INVALID", "浏览器内核快照不一致", 422)
+        if request.get("browser") == "persistent":
+            identity_request = request_from_identity(request.get("identityPackage"))
+            if identity_request["profileId"] != request.get("profileId"):
+                raise WorkflowRuntimeError("WORKFLOW_RESOURCE_INVALID", "环境身份来源不一致", 422)
+            profile = profile_from_request(identity_request)
+        else:
+            profile = profile_from_request(request)
+        profile_id = profile.id
         guards = ExitStack()
         try:
-            guards.enter_context(self._usage_guard.guard(profile_id))
+            kernel = KernelRef(cast(KernelEdition, profile.spec.browser_edition), profile.spec.browser_version)
+            guards.enter_context(self.guard(profile_id, kernel))
             self._profiles.get(profile_id)  # The frozen source must still exist.
-            guards.enter_context(self._kernel_guard(KernelRef(
-                cast(KernelEdition, profile.spec.browser_edition), profile.spec.browser_version,
-            )))
             executable = self._kernel(profile.spec).executable_path
-            proxy = await self._resolve_proxy(profile, run_request_id)
+            proxy = await self._resolve_proxy(profile, run_id)
             if self._release_proxy is not None:
-                guards.callback(self._release_proxy, run_request_id)
+                guards.callback(self._release_proxy, run_id)
             license_key = self._read_license() if profile.spec.browser_edition == 'licensed' else None
             if profile.spec.browser_edition == 'licensed' and not license_key:
                 raise LicenseInvalid
-            browser = browser_worker_payload(run_request_id, profile, proxy, license_key)
+            browser = browser_worker_payload(run_id, profile, proxy, license_key)
             browser['headless'] = profile.spec.headless
-            user_data_dir = request.get("userDataDir")
-            if self._environment_directory is not None:
-                directory = self._environment_directory(run_request_id)
+            user_data_dir = str(work_directory) if work_directory is not None else request.get("userDataDir")
+            if work_directory is None and self._environment_directory is not None:
+                directory = self._environment_directory(run_id)
                 if directory is not None:
                     user_data_dir = str(directory)
             if request.get("browser") == "persistent" or user_data_dir is not None:

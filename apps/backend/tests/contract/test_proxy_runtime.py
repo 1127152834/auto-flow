@@ -64,10 +64,13 @@ def test_runtime_mounts_proxies_but_never_publishes_host_contract(runtime):
     assert not any(path.startswith("/internal") for path in document["paths"])
     schemas = document["components"]["schemas"]
     assert schemas["ConnectionCreate"]["properties"]["api_key"]["writeOnly"]
+    # Studio accepts a WebDAV password on its configuration write request;
+    # proxy credentials must still never become renderer response fields.
     assert {
         name for name, schema in schemas.items()
         if "password" in schema.get("properties", {})
     } == {"WebDavConfig"}
+    assert schemas["WebDavConfig"]["properties"]["password"]["writeOnly"] is True
     assert document["paths"]["/api/local-workflows/webdav-config"]["post"]["requestBody"]["content"]["application/json"]["schema"]["$ref"] == "#/components/schemas/WebDavConfig"
     response = client.get("/api/local-workflows/webdav-config", headers={"x-autoflow-token": "renderer-token"})
     assert response.status_code == 200

@@ -10,7 +10,7 @@ import csv
 import io
 import json
 from datetime import date, datetime, time
-from pathlib import PurePosixPath, PureWindowsPath
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any
 
 from autoflow.domain.workflows.execution import ExecutionContext
@@ -488,7 +488,14 @@ def _artifact_output_path(save_path: Any, file_name: str, extension: str) -> str
         path = PurePosixPath(file_name.replace("\\", "/"))
 
     windows_path = PureWindowsPath(save_path_text or file_name)
-    if bool(windows_path.drive) or any(part in {"", ".", ".."} for part in path.parts):
+    if windows_path.drive and (
+        len(windows_path.drive) != 2
+        or windows_path.drive[1] != ":"
+        or not windows_path.drive[0].isalpha()
+        or not Path(save_path_text).is_absolute()
+    ):
+        raise ValueError("导出路径无效")
+    if any(part in {"", ".", ".."} for part in path.parts):
         raise ValueError("导出路径无效")
     return path.as_posix()
 

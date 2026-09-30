@@ -33,10 +33,9 @@ async def test_project_end_stops_entire_run(kind):
     async def emit(event, identity, _visit, _payload):
         if event == "nodeAttempt" and _payload.get("status") == "started":
             visits.append(identity)
-    async def accept(_request):
-        return {"endOperationId": "accepted"}
-    graph = ProjectGraphExecutor(None, {}, emit, lambda: False)
-    graph.context.project_data = accept
+    async def accept(_node_id, _visit, _operation, _arguments):
+        return {"result": {"endOperationId": "accepted"}}
+    graph = ProjectGraphExecutor(None, {}, emit, lambda: False, capability=accept)
     result = await graph.run(end_plan(kind))
     assert result["status"] == "succeeded", result
     assert visits.count("end") == 1, visits

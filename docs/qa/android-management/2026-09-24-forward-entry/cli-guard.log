@@ -1,0 +1,2 @@
+usage: forward-entry-rehearsal.py [-h] [--allow-rehearsal] --output OUTPUT
+forward-entry-rehearsal.py: error: --allow-rehearsal is required to create a disposable checkout

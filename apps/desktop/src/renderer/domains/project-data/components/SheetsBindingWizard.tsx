@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableScr
 import { safeProjectError } from '../../projects/presentation-error'
 import type { SheetsApi, SheetsBinding, SheetsImpact, SheetsInspection } from '../sheets-api'
 import { SheetsConnectionPanel } from './SheetsConnectionPanel'
+import { SheetsIdentityInitialization } from './SheetsIdentityInitialization'
 
 type Field = components['schemas']['DataFieldView']
 type MappingEntry = components['schemas']['SheetsMappingEntry']
@@ -55,6 +56,7 @@ export function SheetsBindingWizard({ open, api, scopeKey, contextKey, table, fi
   const [connection, setConnection] = useState<string | null>(connectionId ?? null)
   const [link, setLink] = useState(''), [sheetValue, setSheetValue] = useState('')
   const [mapping, setMapping] = useState<MappingEntry[] | null>(null)
+  const [identityKind, setIdentityKind] = useState<'column' | 'system'>('column')
   const [identityColumn, setIdentityColumn] = useState<string | null>(null)
   const [inspection, setInspection] = useState<SheetsInspection | null>(null)
   const [impacts, setImpacts] = useState<SheetsImpact[]>([])
@@ -62,7 +64,7 @@ export function SheetsBindingWizard({ open, api, scopeKey, contextKey, table, fi
 
   useLayoutEffect(() => {
     if (!open) return
-    setConnection(connectionId ?? null); setLink(''); setSheetValue(''); setMapping(null); setIdentityColumn(null); setInspection(null); setImpacts([]); setError(null)
+    setConnection(connectionId ?? null); setLink(''); setSheetValue(''); setMapping(null); setIdentityKind('column'); setIdentityColumn(null); setInspection(null); setImpacts([]); setError(null)
   }, [open, contextKey, scopeKey, table.tableId, table.datasetGeneration, connectionId])
 
   const parsed = parseSpreadsheetLink(link)
@@ -79,8 +81,8 @@ export function SheetsBindingWizard({ open, api, scopeKey, contextKey, table, fi
     setBusy(true); setError(null)
     try {
       const entries = draft()
-      const identity = identityColumn ?? entries.find(entry => fields.find(field => field.ref.fieldId === entry.fieldId)?.type === 'string')?.columnId ?? entries[0].columnId
-      const outcome = await api.inspect(table.tableId, { ...target, identityStrategy: { kind: 'column', columnId: identity }, mapping: entries }, crypto.randomUUID(), () => true)
+      const identity = identityColumn ?? entries.find(entry => fields.find(field => field.ref.fieldId === entry.fieldId)?.type === 'string')?.columnId ?? entries[0]?.columnId ?? 'A'
+      const outcome = await api.inspect(table.tableId, { ...target, identityStrategy: { kind: identityKind, columnId: identity }, mapping: entries }, crypto.randomUUID(), () => true)
       if (outcome.operation.status === 'failed') { setError(safeProjectError(outcome.operation.error ?? new Error('来源检查失败'))); return }
       setMapping(entries); setIdentityColumn(identity)
       setInspection(outcome.inspection ?? (outcome.operation.result && 'inspection' in outcome.operation.result ? outcome.operation.result.inspection as SheetsInspection : null))
@@ -94,7 +96,7 @@ export function SheetsBindingWizard({ open, api, scopeKey, contextKey, table, fi
     if (!identityColumn) { setError('请指定用于识别记录身份的来源列。'); return }
     const change = {
       ...target,
-      identityStrategy: { kind: 'column' as const, columnId: identityColumn },
+      identityStrategy: { kind: identityKind, columnId: identityColumn },
       mapping: entries,
     }
     setBusy(true); setError(null)
@@ -126,9 +128,9 @@ export function SheetsBindingWizard({ open, api, scopeKey, contextKey, table, fi
     } catch (cause) { setError(safeProjectError(cause)) } finally { setBusy(false) }
   }
 
-  const blocking = inspection ? inspection.issues.filter(issue => issue.code !== 'SHEETS_COLUMN_MISSING') : []
+  const blocking = inspection ? inspection.issues.filter(issue => issue.code !== 'SHEETS_COLUMN_MISSING' && !(identityKind === 'system' && issue.code.startsWith('SHEETS_IDENTITY_'))) : []
 
-  return <Modal open={open} onOpenChange={next => { if (!next) onClose() }} title={`绑定 Google Sheets · ${table.name}`} description="本地表与一张工作表建立映射；来源文件不会被修改。" size="large" closeDisabled={busy}>
+  return <Modal open={open} onOpenChange={next => { if (!next) onClose() }} title={`绑定 Google Sheets · ${table.name}`} description="本地表与一张工作表建立映射；普通绑定不修改来源；系统身份初始化会新增身份列并写入 UUID。" size="large" closeDisabled={busy}>
     <div className="grid gap-5">
       <SheetsConnectionPanel api={api} scopeKey={scopeKey} readonly={readonly} disabled={disabled} selectedId={connection} onSelect={setConnection} />
       <section className="grid gap-3" aria-label="选择工作表">
@@ -140,20 +142,29 @@ export function SheetsBindingWizard({ open, api, scopeKey, contextKey, table, fi
           {sheetIdValid ? <p className="m-0 text-sm text-muted">将检查 Spreadsheet <code className="break-all">{parsed.spreadsheetId || '—'}</code> 的工作表 {sheetId}</p> : null}
         </div>
       </section>
+      <SheetsIdentityInitialization key={`${scopeKey}:${contextKey}:${table.tableId}:${table.datasetGeneration}`} api={api} scopeKey={scopeKey} tableId={table.tableId} disabled={blocked || busy}
+        request={ready && inspection && !inspection.columns.some(column => column.name === '_autoflow_id') ? { ...target, expectedTableRevision: table.tableRevision, expectedBindingEpoch: inspection.bindingEpoch || null,
+          identityStrategy: { kind: 'system', columnId: columnLetter(Math.max(inspection.columns.length, ...draft().map(entry => columnIndex(entry.columnId) + 1))) }, mapping: draft() } : null}
+        onBound={onBound} onBusyChange={setBusy} />
       {error ? <p role="alert" className="m-0 text-sm text-danger">{error}</p> : null}
       {inspection ? <>
         <section className="grid gap-3" aria-label="来源检查结果">
           <h4 className="text-lg font-semibold">来源检查</h4>
-          <p className="m-0 text-sm">表头 {inspection.columns.length} 列；身份列 {inspection.identitySummary.unique ? '唯一' : '存在问题'}（缺失 {inspection.identitySummary.missing}，重复 {inspection.identitySummary.duplicates}）。</p>
+          <p className="m-0 text-sm">表头 {inspection.columns.length} 列；身份列 {identityKind === 'system' ? '将在绑定时核验系统归属及 UUID' : inspection.identitySummary.unique ? '唯一' : '存在问题'}（缺失 {inspection.identitySummary.missing}，重复 {inspection.identitySummary.duplicates}）。</p>
           {inspection.issues.length > 0 ? <ul className="m-0 grid gap-1 pl-5 text-sm text-warning">{inspection.issues.map((issue, index) => <li key={`${issue.code}-${index}`}>{issue.message}</li>)}</ul> : <p className="m-0 text-sm text-success">没有发现问题。</p>}
           {inspection.overlaps.length > 0 ? <ul className="m-0 grid gap-1 pl-5 text-sm text-clay">{inspection.overlaps.map(overlap => <li key={overlap.tableId}>来源列 {overlap.columnIds.join('、')} 同时被另一张表（{overlap.tableId}）使用。</li>)}</ul> : null}
         </section>
         <section className="grid gap-3" aria-label="字段映射">
           <h4 className="text-lg font-semibold">字段与身份映射</h4>
-          <label className="grid max-w-72 gap-1 text-sm"><span>身份列（必须映射到文本字段）</span>
-            <select aria-label="身份列" className="h-9 rounded-control border border-line bg-surface px-2" value={identityColumn ?? ''} disabled={blocked} onChange={event => setIdentityColumn(event.target.value)}>
+          <label className="grid max-w-72 gap-1 text-sm"><span>身份策略</span>
+            <select aria-label="身份策略" value={identityKind} disabled={blocked || busy} onChange={event => setIdentityKind(event.target.value as 'column' | 'system')}>
+              <option value="column">按映射文本字段识别</option><option value="system">复用已验证系统 UUID 列</option>
+            </select>
+          </label>
+          <label className="grid max-w-72 gap-1 text-sm"><span>{identityKind === 'column' ? '身份列（必须映射到文本字段）' : '已有系统身份列（不映射为业务字段）'}</span>
+            <select aria-label="身份列" className="h-9 rounded-control border border-line bg-surface px-2" value={identityColumn ?? ''} disabled={blocked || busy} onChange={event => setIdentityColumn(event.target.value)}>
               <option value="">请选择</option>
-              {draft().map(entry => <option key={entry.columnId} value={entry.columnId}>{entry.columnId} · {options.find(option => option.columnId === entry.columnId)?.name ?? '无表头'}</option>)}
+              {(identityKind === 'system' ? options : draft()).map(entry => <option key={entry.columnId} value={entry.columnId}>{entry.columnId} · {options.find(option => option.columnId === entry.columnId)?.name ?? '无表头'}</option>)}
             </select>
           </label>
           <TableScroll label="字段映射" className="rounded-control border border-line">
@@ -165,14 +176,14 @@ export function SheetsBindingWizard({ open, api, scopeKey, contextKey, table, fi
                   return <TableRow key={entry.fieldId}>
                     <TableCell className="font-medium">{field?.name ?? '字段已失效'}{field?.required ? <span className="ml-1 text-clay">必填</span> : null}</TableCell>
                     <TableCell>
-                      <select aria-label={`${field?.name ?? entry.fieldId} 的来源列`} className="h-8 rounded-control border border-line bg-surface px-2" value={entry.columnId} disabled={blocked}
+                      <select aria-label={`${field?.name ?? entry.fieldId} 的来源列`} className="h-8 rounded-control border border-line bg-surface px-2" value={entry.columnId} disabled={blocked || busy}
                         onChange={event => setMapping(draft().map(item => item.fieldId === entry.fieldId ? { ...item, columnId: event.target.value } : item))}>
                         {[...new Set([...options.map(option => option.columnId), entry.columnId])].sort((left, right) => columnIndex(left) - columnIndex(right)).map(value =>
                           <option key={value} value={value}>{value}{options.find(option => option.columnId === value) ? ` · ${options.find(option => option.columnId === value)!.name}` : ''}</option>)}
                       </select>
                     </TableCell>
                     <TableCell>
-                      <select aria-label={`${field?.name ?? entry.fieldId} 的方向`} className="h-8 rounded-control border border-line bg-surface px-2" value={entry.direction} disabled={blocked}
+                      <select aria-label={`${field?.name ?? entry.fieldId} 的方向`} className="h-8 rounded-control border border-line bg-surface px-2" value={entry.direction} disabled={blocked || busy}
                         onChange={event => setMapping(draft().map(item => item.fieldId === entry.fieldId ? { ...item, direction: event.target.value as MappingEntry['direction'] } : item))}>
                         <option value="both">双向</option><option value="read">只读来源</option><option value="write">只写来源</option>
                       </select>

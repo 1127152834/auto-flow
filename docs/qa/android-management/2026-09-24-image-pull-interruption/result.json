@@ -1,0 +1,48 @@
+{
+  "status": "passed",
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-image-pull-interruption-r_f6hcl7",
+  "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "requestId": "b42c750a-974a-44b8-b036-f4341fba17bf",
+  "reference": "redroid/redroid@sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "cleanup": "Only owned workspace registration removed; existing image content retained; no devices created.",
+  "killedOwnedProcessGroups": 1,
+  "lostResponse": "RemoteProtocolError",
+  "afterRestart": {
+    "operationId": "bfba890d-f2ff-49fc-96c8-835d2cd5d156",
+    "requestId": "b42c750a-974a-44b8-b036-f4341fba17bf",
+    "targetId": "a75b1365-78d7-5d70-9ef6-be16f72f8815",
+    "action": "pull",
+    "state": "needs_verification",
+    "stageCode": "verify",
+    "stageLabel": "待核实",
+    "attempt": 1,
+    "retryOf": null,
+    "createdAt": "2026-09-23T23:09:39.735897",
+    "startedAt": "2026-09-23T23:09:39.738761",
+    "finishedAt": "2026-09-23T23:09:43.749318",
+    "resultCode": "SERVICE_RESTART_RESULT_UNKNOWN",
+    "message": "服务已重启，请核实外部操作结果",
+    "allowedActions": [
+      "verify"
+    ]
+  },
+  "verified": {
+    "operationId": "bfba890d-f2ff-49fc-96c8-835d2cd5d156",
+    "requestId": "b42c750a-974a-44b8-b036-f4341fba17bf",
+    "targetId": "a75b1365-78d7-5d70-9ef6-be16f72f8815",
+    "action": "pull",
+    "state": "succeeded",
+    "stageCode": "verified",
+    "stageLabel": "已完成",
+    "attempt": 1,
+    "retryOf": null,
+    "createdAt": "2026-09-23T23:09:39.735897",
+    "startedAt": "2026-09-23T23:09:39.738761",
+    "finishedAt": "2026-09-23T23:09:43.980466",
+    "resultCode": "IMAGE_PULL_VERIFIED",
+    "message": "服务已重启，请核实外部操作结果",
+    "allowedActions": []
+  },
+  "actualCatalogPullCalls": 1,
+  "originalTagUnchanged": true
+}

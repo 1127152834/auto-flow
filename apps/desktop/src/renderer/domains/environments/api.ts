@@ -1,5 +1,7 @@
-import type { StreamingApiClient } from '../../shared/api/client'
+import { ApiClientError, type StreamingApiClient } from '../../shared/api/client'
 import type { components } from '../../shared/api/generated'
+import { DataCommandNotAccepted, DataCommandUncertain } from '../project-data/data-command'
+import { isDefinitiveProjectFailure } from '../projects/api'
 import { createOperationCommand } from '../project-data/operation-command'
 
 type Schema = components['schemas']
@@ -23,8 +25,28 @@ export function createEnvironmentApi(client: StreamingApiClient, projectId: stri
   const base = `/api/v1/projects/${encode(projectId)}`
   // Environment deletes are stored in the same project operation table, so the
   // shared by-idempotency-key lookup recovers an uncertain outcome.
-  const operations = createOperationCommand(client, projectId)
+  const operations = createOperationCommand<Schema['EnvironmentOperationSnapshot']>(client, projectId)
+  async function patchConfiguration(environmentId: string, body: EnvironmentPatch, key: string, resume = false): Promise<Environment> {
+    const submit = () => client.request<Environment>(`${base}/environments/${encode(environmentId)}`, { method: 'PATCH', headers: { 'Idempotency-Key': key }, body })
+    if (!resume) try { return await submit() } catch (error) { if (isDefinitiveProjectFailure(error)) throw error }
+    try {
+      const operation = await operations.lookup(key, 'updateEnvironment', () => true)
+      if (operation.resource.environmentId !== environmentId) throw new DataCommandUncertain(new Error('操作环境不一致'))
+      if (operation.status === 'failed') throw new ApiClientError(String(operation.error?.message ?? '保存失败'), Number(operation.error?.status ?? 409), String(operation.error?.code ?? 'CONFIGURATION_FAILED'))
+      if (operation.status === 'succeeded') {
+        const result = operation.result as Environment | null
+        if (result?.ref.environmentId !== environmentId || result.ref.projectId !== projectId) throw new DataCommandUncertain(new Error('保存结果不一致'))
+        return result
+      }
+    } catch (error) {
+      if (isDefinitiveProjectFailure(error)) throw error
+      if (!(error instanceof DataCommandNotAccepted)) throw new DataCommandUncertain(error)
+    }
+    // The same immutable command finishes a publication interrupted before DB commit.
+    try { return await submit() } catch (error) { if (isDefinitiveProjectFailure(error)) throw error; throw new DataCommandUncertain(error) }
+  }
   return {
+    patchConfiguration,
     list: (query: EnvironmentQuery, signal?: AbortSignal) => {
       const state = query.state ? `&state=${encode(query.state)}` : ''
       return client.request<EnvironmentPage>(`${base}/environments?q=${encode(query.query)}&page=${query.page}&pageSize=${query.pageSize}&sort=${encode(query.sort)}${state}`, { signal })
@@ -67,6 +89,7 @@ export function createEnvironmentApi(client: StreamingApiClient, projectId: stri
       headers: { 'Idempotency-Key': key },
       body,
     }),
+    taskEnd: (taskId: string, signal?: AbortSignal) => client.request<Schema['TaskEndResultView'] | null>(`${base}/tasks/${encode(taskId)}/end`, { signal }),
     openInstance: (instanceId: string, expectedUseGeneration: number, key: string) => client.request<EnvironmentOperation>(`${base}/environment-instances/${encode(instanceId)}/open`, {
       method: 'POST',
       headers: { 'Idempotency-Key': key },
@@ -82,11 +105,11 @@ export function createEnvironmentApi(client: StreamingApiClient, projectId: stri
       return client.request<{ items: ManualItem[]; page: number; pageSize: number; total: number }>(`${base}/manual-items?${params.toString()}`, { signal })
     },
     getManual: (manualItemId: string, signal?: AbortSignal) => client.request<ManualItem>(`${base}/manual-items/${encode(manualItemId)}`, { signal }),
-    resumeManual: (manualItemId: string, body: { checkpointRevision: number; expectedStatusRevision: number; targetNodeId?: string; inputs?: Record<string, unknown> }, key: string) => client.request<EnvironmentOperation>(`${base}/manual-items/${encode(manualItemId)}/resume`, {
-      method: 'POST',
-      headers: { 'Idempotency-Key': key },
-      body,
-    }),
+    lookupManualResume: (key: string) => operations.lookup(key, 'resumeManual', () => true),
+    resumeManual: async (manualItemId: string, body: { checkpointRevision: number; expectedStatusRevision: number; targetNodeId?: string; inputs?: Record<string, unknown> }, key: string) => {
+      const operation = await operations.submit(`${base}/manual-items/${encode(manualItemId)}/resume`, body, key, 'resumeManual', () => true)
+      return { operation, outcome: operation.result }
+    },
     finishManual: (manualItemId: string, body: Schema['ManualFinishRequest'], key: string) => client.request<EnvironmentOperation>(`${base}/manual-items/${encode(manualItemId)}/finish`, {
       method: 'POST',
       headers: { 'Idempotency-Key': key },

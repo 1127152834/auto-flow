@@ -1,0 +1,72 @@
+import asyncio
+import json
+from pathlib import Path
+from uuid import uuid4
+
+from autoflow.application.android.management import AndroidManagement
+from autoflow.bootstrap.android_prepare import prepare
+from autoflow.infrastructure.database.android import SqlAlchemyDeviceRepository
+from autoflow.infrastructure.database.session import create_session_factory
+from autoflow.infrastructure.filesystem.android_paths import android_runtime_root
+from autoflow.infrastructure.filesystem.paths import AppPaths
+from autoflow.providers.android.mac_runtime import MacAndroidRuntime, docker
+from autoflow.providers.android.management import verify
+
+
+async def operate(runtime, repo, device, action):
+    manager = AndroidManagement(repo, runtime)
+    manager.operate(device['deviceId'], {'requestId': str(uuid4()), 'action': action, 'deleteData': action == 'delete'})
+    await manager.task
+    result = repo.get(device['deviceId'])
+    assert result['operation']['state'] == 'succeeded', result
+    return result
+
+
+async def main():
+    data_dir = Path('/tmp/autoflow-native-window-20260923')
+    assert not data_dir.exists(), 'Refusing reused workspace'
+    assert not (await docker('ps', '-q')).strip(), 'Other running containers left untouched'
+    device = await prepare(data_dir, Path('/Users/zhangtiancheng/.autoflow/android-runtime/scrcpy-macos-aarch64-v3.3.4.tar.gz'), False)
+    paths = AppPaths.from_data_dir(data_dir)
+    sessions = create_session_factory(paths.database)
+    repo = SqlAlchemyDeviceRepository(sessions)
+    runtime = MacAndroidRuntime(android_runtime_root(), paths.workspace)
+    report = {'deviceId': device['deviceId'], 'workspaceId': runtime.workspace_id, 'windows': []}
+    try:
+        runtime.lock()
+        try:
+            await runtime.connect(device, lambda: repo.save(device))
+            for readonly in (False, True):
+                await runtime.open_window('AutoFlow acceptance native ' + ('readonly' if readonly else 'manual'), readonly=readonly)
+                assert runtime.window_open(), 'scrcpy exited before inspection'
+                assert runtime.window_readonly is readonly
+                report['windows'].append({'readonly': readonly, 'pid': runtime.viewer.pid, 'alive': runtime.viewer.poll() is None})
+                await asyncio.sleep(2)
+                assert runtime.window_open(), 'scrcpy did not remain open'
+                await runtime.close_window()
+                assert not runtime.window_open(), 'scrcpy process remained after close'
+            assert (await runtime.inspect(device))['androidStatus'] == 'ready'
+            report['deviceContinuedAfterWindowClose'] = True
+        finally:
+            await runtime.disconnect()
+            runtime.unlock()
+        device = await operate(runtime, repo, device, 'delete')
+        containers, volumes = await verify(device, runtime.workspace_id)
+        assert device['deleted'] and not containers and not volumes
+        report.update(status='passed', cleanup={'containers': 0, 'volumes': 0, 'deleted': True})
+    except BaseException as error:
+        report.update(status='failed', error=repr(error))
+        raise
+    finally:
+        try:
+            current = repo.get(device['deviceId'])
+            if not current.get('deleted'):
+                current = await operate(runtime, repo, current, 'delete')
+                containers, volumes = await verify(current, runtime.workspace_id)
+                report['cleanup'] = {'containers': len(containers), 'volumes': len(volumes), 'deleted': current['deleted']}
+        finally:
+            sessions.dispose()
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+
+
+asyncio.run(main())

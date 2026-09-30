@@ -134,6 +134,8 @@ describe('多类型分支被正确展开', () => {
       { moduleType: 'foreach', field: 'itemVariable', defaultValue: 'item' },
       { moduleType: 'foreach', field: 'indexVariable', defaultValue: 'index' },
       { moduleType: 'set_variable', field: 'variableName', defaultValue: 'my_var' },
+      { moduleType: 'project_data', field: 'variableName', defaultValue: 'task_inputs' },
+      { moduleType: 'ocr_captcha', field: 'variableName', defaultValue: 'captcha_text' },
       { moduleType: 'js_script', field: 'resultVariable', defaultValue: 'js_result' },
       { moduleType: 'ai_smart_scraper', field: 'variableName', defaultValue: 'scraper_result' },
       { moduleType: 'universal_doc_convert', field: 'resultVariable', defaultValue: 'convert_output' },
@@ -200,8 +202,8 @@ describe('注释与字符串的处理', () => {
   })
 })
 
-// Independent source changes: 30dc9686 moved captcha output; 7876acc6 added PM9 data.
+// Independent source changes: 30dc9686 moved captcha output; the project-data default follows the canonical operation protocol.
 it('keeps the two reviewed output changes attached to the correct nodes', () => {
   expect(VAR_FIELDS.filter(row => row.moduleType === 'ocr_captcha').map(({ field, defaultValue }) => ({ field, defaultValue }))).toEqual([{ field: 'variableName', defaultValue: 'captcha_text' }])
-  expect(VAR_FIELDS.filter(row => row.moduleType === 'project_data').map(({ field, defaultValue }) => ({ field, defaultValue }))).toEqual([{ field: 'resultVariable', defaultValue: 'project_result' }])
+  expect(VAR_FIELDS.filter(row => row.moduleType === 'project_data').map(({ field, defaultValue }) => ({ field, defaultValue }))).toEqual([{ field: 'variableName', defaultValue: 'task_inputs' }])
 })

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 from collections.abc import Awaitable, Callable, Mapping, Sequence
+from contextlib import AbstractAsyncContextManager
 from contextvars import ContextVar, Token
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -228,6 +229,7 @@ class NestedWorkflowResult:
     failed_nodes: int
     error: str | None = None
     waited: bool = True
+    sensitive_outputs: frozenset[str] = frozenset()
 
 
 class NestedWorkflowGateway(Protocol):
@@ -242,7 +244,7 @@ class NestedWorkflowGateway(Protocol):
 
 class CanvasSubflowGateway(Protocol):
     async def run_subflow(
-        self, *, group_id: str, name: str
+        self, *, group_id: str, name: str, inputs: Mapping[str, Any] | None = None
     ) -> NestedWorkflowResult: ...
 
 
@@ -289,7 +291,7 @@ class WorkflowClock:
 
 @dataclass(slots=True)
 class ProjectEndState:
-    """Shared across nested contexts of one run, set only after host acceptance."""
+    """Shared across nested contexts after the host durably accepts End."""
 
     accepted: bool = False
 
@@ -297,15 +299,16 @@ class ProjectEndState:
 @dataclass(slots=True)
 class ExecutionContext:
     variables: dict[str, Any] = field(default_factory=dict)
+    project_input_context: dict[str, Any] = field(default_factory=dict)
     sensitive_variables: set[str] = field(default_factory=set)
     browser: BrowserSessionPort | None = None
+    browser_initializer: Callable[[ExecutionContext, dict[str, Any]], Awaitable[BrowserSessionPort]] | None = None
     artifacts: ArtifactWriter | None = None
     table_workbooks: TableWorkbookRenderer | None = None
     credentials: CredentialReader | None = None
     models: ModelGateway | None = None
     external_integrations: ExternalIntegrationGateway | None = None
     proxy_control: Callable[[dict[str, Any]], Awaitable[dict[str, Any]]] | None = None
-    project_data: Callable[[dict[str, Any]], Awaitable[dict[str, Any]]] | None = None
     proxy_probe: Callable[[bool], Awaitable[dict[str, Any]]] | None = None
     proxy_visit: ContextVar[tuple[str | None, str | None]] = field(
         default_factory=lambda: ContextVar("proxy_visit", default=(None, None)), repr=False
@@ -332,6 +335,7 @@ class ExecutionContext:
     loop_stack: list[dict[str, Any]] = field(default_factory=list)
     execution_scopes: tuple[dict[str, Any], ...] = ()
     progress: Callable[[str, str], Awaitable[None]] | None = None
+    node_boundary: Callable[[ExecutionContext, str], AbstractAsyncContextManager[None]] | None = None
     current_node_id: str | None = None
     current_execution_id: str | None = None
     should_break: bool = False
@@ -382,10 +386,10 @@ class ExecutionContext:
         self._node_uses_sensitive_values = True
         self._node_sensitive_context.set(True)
 
-    def resolve_value(self, value: Any) -> Any:
+    def resolve_value(self, value: Any, *, preserve_types: bool = False) -> Any:
         if references_sensitive_value(value, self.sensitive_variables):
             self.mark_sensitive_use()
-        return resolve_value(value, self.variables, self.credentials)
+        return copy.deepcopy(resolve_value(value, {**self.variables, **self.project_input_context}, self.credentials, preserve_types=preserve_types))
 
     def resolve_value_with_sensitivity(self, value: Any) -> tuple[Any, bool]:
         sensitive = references_sensitive_value(value, self.sensitive_variables)

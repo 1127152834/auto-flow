@@ -80,7 +80,7 @@ def test_recording_command_migration_preserves_existing_sessions(tmp_path) -> No
     with sqlite3.connect(database) as connection:
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchone() == ("0024_studio_credential_namespace",)
+        ).fetchone() == ("0025_merge_studio_credential_environment",)
         assert connection.execute(
             "SELECT id, status FROM workflow_recording_sessions"
         ).fetchone() == ("kept", "stopped")

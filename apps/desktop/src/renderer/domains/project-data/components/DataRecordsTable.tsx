@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react'
-import { DotsThree, Info, Trash } from '@phosphor-icons/react'
+import { DotsThree, Info, Rows, Trash } from '@phosphor-icons/react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../../shared/components/ui/dropdown-menu'
 import type { components } from '../../../shared/api/generated'
 import { Badge } from '../../../shared/components/ui/badge'
 import { Button } from '../../../shared/components/ui/button'
 import { Checkbox } from '../../../shared/components/ui/checkbox'
+import { EmptyState } from '../../../shared/components/ui/empty-state'
 import { Pagination } from '../../../shared/components/ui/pagination'
 import { Skeleton } from '../../../shared/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableScroll } from '../../../shared/components/ui/table'
@@ -102,10 +103,7 @@ export function DataRecordsTable({ draftRows, queryLocked = false, toolbar = tru
           <Skeleton className="h-24" />
         </div>
       ) : page && page.items.length === 0 && !draftRows ? (
-        <div className="rounded-card border border-dashed border-line bg-surface p-10 text-center">
-          <p className="font-medium">{hasFilters ? '没有匹配的记录' : '还没有记录'}</p>
-          <p className="text-sm text-muted">{hasFilters ? '调整筛选条件后重试。' : '新增记录，或从来源设置导入数据。'}</p>
-        </div>
+        <EmptyState icon={<Rows size={52} />} title={hasFilters ? '没有匹配的记录' : '还没有记录'} description={hasFilters ? '调整筛选条件后重试。' : '新增记录，或从来源设置导入数据。'} />
       ) : page ? (
         <TableScroll label="记录表格，超出宽度时可水平滚动">
           <Table

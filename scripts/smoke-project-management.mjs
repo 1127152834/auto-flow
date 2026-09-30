@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
-import { mkdir, mkdtemp, realpath, rm, writeFile } from 'node:fs/promises'
+import { cp, mkdir, mkdtemp, realpath, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { join, resolve } from 'node:path'
+import { basename, dirname, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
 import { assertOutsideHistory } from './project-smoke-output.mjs'
+import { checkProjectRuntime } from './project-runtime-smoke.mjs'
 import { stop, waitForReady } from './smoke-sidecar.mjs'
 
 const root = resolve(import.meta.dirname, '..')
@@ -15,17 +16,47 @@ export function projectSmokeOptions(args) {
   const injected = Object.keys(process.env).find(key => process.env[key] && (key.startsWith('AUTOFLOW_QA_') || key === 'AUTOFLOW_PM4_QA' || key === 'ELECTRON_RENDERER_URL'))
   assert.ok(!injected, `production smoke forbids injected environment: ${injected}`)
   const { values, tokens } = parseArgs({ args, options: {
-    executable: { type: 'string' }, 'output-dir': { type: 'string' },
+    executable: { type: 'string' }, 'runtime-kernel': { type: 'string' }, 'output-dir': { type: 'string' },
   }, tokens: true })
   assert.equal(new Set(tokens.map(token => token.name)).size, tokens.length, 'duplicate option')
   for (const [name, value] of Object.entries(values)) assert.ok(value.trim(), `--${name} requires a value`)
   return values
 }
 
+export async function checkConcurrentRecordWrites(api, prefix, count = 1000) {
+  const concurrent = await api(`${prefix}/tables`, { method: 'POST', body: { name: count === 10_000 ? 'PM9 一万行容量' : 'PM9 并发写入回归', sourceKind: 'local' } })
+  const concurrentPath = `${prefix}/tables/${concurrent.tableId}`
+  const concurrentField = (await api(`${concurrentPath}/fields`, { method: 'POST', body: { definition: { key: 'code', name: '编号', type: 'string', required: false, validation: {} }, sourceColumnPolicy: 'localOnly', expectedTableRevision: concurrent.tableRevision } })).field
+  let claimed = 0, busyRetries = 0, failure
+  await Promise.allSettled(Array.from({ length: 5 }, async () => {
+    while (claimed < count && !failure) {
+      const index = ++claimed, key = randomUUID()
+      for (let attempt = 0; ; attempt++) {
+        try {
+          await api(`${concurrentPath}/records`, { method: 'POST', key, body: { datasetGeneration: concurrent.datasetGeneration, values: [{ fieldId: concurrentField.ref.fieldId, value: String(index).padStart(6, '0') }] } })
+          break
+        } catch (error) {
+          if (error.cause?.status === 503 && error.cause?.code === 'DATABASE_BUSY' && attempt < 9) {
+            busyRetries++
+            await new Promise(resolveWait => setTimeout(resolveWait, 1000))
+            continue
+          }
+          failure ??= error
+          throw error
+        }
+      }
+    }
+  }))
+  if (failure) throw failure
+  assert.equal((await api(concurrentPath)).recordCount, count)
+  return { status: 'passed', producers: 5, records: count, busyRetries, table: concurrent }
+}
+
 // The caller supplies a service belonging to a disposable workspace it created.
 // The same assertions run against source Python and the bundled sidecar.
 export async function checkProjectManagement(baseUrl, token, existingProject) {
   const checks = []
+  let concurrentWrites
   async function api(path, { method = 'GET', body, key = randomUUID(), status } = {}) {
     const response = await fetch(`${baseUrl}/api/v1${path}`, {
       method, headers: { 'x-autoflow-token': token, 'content-type': 'application/json', 'Idempotency-Key': key },
@@ -33,12 +64,16 @@ export async function checkProjectManagement(baseUrl, token, existingProject) {
     })
     const result = await response.json()
     if (status) assert.equal(response.status, status, `${method} ${path}: ${JSON.stringify(result)}`)
-    else assert.ok(response.ok, `${method} ${path}: ${response.status} ${JSON.stringify(result)}`)
+    else if (!response.ok) throw new Error(`${method} ${path}: ${response.status} ${JSON.stringify(result)}`, { cause: { status: response.status, code: result.error?.code } })
     return result
   }
   const project = existingProject ?? await api('/projects', { method: 'POST', body: { name: 'PM9 中文 空格项目', description: '发行验收' } })
   const prefix = `/projects/${project.projectId}`
   const neighbour = await api('/projects', { method: 'POST', body: { name: 'PM9 隔离项目' } })
+  if (!existingProject) {
+    concurrentWrites = await checkConcurrentRecordWrites(api, prefix)
+    checks.push('1000 single-record commands from five HTTP producers complete with stable-key retries for declared busy responses')
+  }
   const table = await api(`${prefix}/tables`, { method: 'POST', body: { name: '中文 数据表', sourceKind: 'local' } })
   const tablePath = `${prefix}/tables/${table.tableId}`
   const field = (await api(`${tablePath}/fields`, { method: 'POST', body: {
@@ -109,7 +144,19 @@ export async function checkProjectManagement(baseUrl, token, existingProject) {
   }
   assert.equal((await api(tablePath)).recordCount, 1)
   checks.push('wrong deletion name rejected; safe deletion preserves neighbouring project records')
-  return { checks, projectId: project.projectId, tableId: table.tableId, tablePath, boundary: 'production HTTP management chain; no workflow execution, browser, Sheets live or native file picker claimed' }
+  return { checks, concurrentWrites, projectId: project.projectId, tableId: table.tableId, tablePath, boundary: 'production HTTP management chain; no workflow execution, browser, Sheets live or native file picker claimed' }
+}
+
+export async function installRuntimeKernel(kernel, directory) {
+  const executable = await realpath(kernel)
+  let source = dirname(executable)
+  while (!basename(source).startsWith('chromium-')) {
+    const parent = dirname(source)
+    assert.notEqual(parent, source, 'runtime kernel must belong to a chromium-VERSION installation')
+    source = parent
+  }
+  await cp(source, join(directory, 'data/kernels', basename(source)), { recursive: true })
+  return basename(source).slice('chromium-'.length)
 }
 
 export async function main(args = process.argv.slice(2)) {
@@ -131,8 +178,16 @@ export async function main(args = process.argv.slice(2)) {
     return `http://127.0.0.1:${ready.port}`
   }
   try {
+    let browserVersion
+    if (options['runtime-kernel']) {
+      browserVersion = await installRuntimeKernel(options['runtime-kernel'], directory)
+    }
     const baseUrl = await launch()
     report = { ...report, ...await checkProjectManagement(baseUrl, token) }
+    if (browserVersion) {
+      report.runtime = await checkProjectRuntime(baseUrl, token, browserVersion)
+      report.boundary = 'production management and real browser runtime chains; live Sheets and physical installer acceptance remain pending'
+    }
     await stop(child)
     const restartedUrl = await launch()
     const response = await fetch(`${restartedUrl}/api/v1${report.tablePath}`, { headers: { 'x-autoflow-token': token }, signal: AbortSignal.timeout(20_000) })

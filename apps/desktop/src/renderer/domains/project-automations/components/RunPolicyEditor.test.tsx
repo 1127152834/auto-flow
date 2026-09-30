@@ -20,25 +20,20 @@ it('edits max tasks and converts displayed minutes back to seconds without losin
   expect(onChange.mock.calls.at(-1)?.[0].manualDeadlineSeconds).toBe(7200)
 })
 
-it('shows fixed serial limits and maps the stop-after-failure wording to continueAfterFailure', () => {
+it('edits parameter concurrency and exposes batch continuation without inverting the saved choice', () => {
   const onChange = vi.fn()
   render(<RunPolicyEditor value={policy} onChange={onChange} />)
-  expect(screen.getByLabelText('并发任务数')).toHaveValue(1)
-  expect(screen.getByLabelText('并发任务数')).toBeDisabled()
-  expect(screen.getByText('当前版本按顺序执行')).toBeVisible()
-  fireEvent.click(screen.getByRole('switch', { name: '某个任务失败后停止创建后续任务' }))
+  fireEvent.change(screen.getByLabelText('请求并发数'), { target: { value: '2' } })
+  expect(onChange).toHaveBeenLastCalledWith({ ...policy, concurrency: 2 })
+  expect(screen.getByRole('switch', { name: '任务失败后继续下一个任务' })).not.toBeChecked()
+  fireEvent.click(screen.getByRole('switch', { name: '任务失败后继续下一个任务' }))
   expect(onChange).toHaveBeenCalledWith({ ...policy, continueAfterFailure: true })
 })
 
-it('shows the fixed cleanup policy and keeps environment retention unavailable', () => {
-  const onChange = vi.fn()
-  render(<RunPolicyEditor value={policy} onChange={onChange} />)
-  expect(screen.getByRole('radio', { name: '关闭并清理临时环境' })).toBeChecked()
-  expect(screen.getByRole('radio', { name: '保留环境（暂未开放）' })).toBeDisabled()
-  expect(screen.getByText('当前按最大任务数执行；无限运行暂未开放')).toBeVisible()
-  expect(screen.getByText('每个任务使用独立临时环境')).toBeVisible()
-  fireEvent.click(screen.getByRole('radio', { name: '保留环境（暂未开放）' }))
-  expect(onChange).not.toHaveBeenCalled()
+it('leaves environment persistence to the workflow instead of exposing a batch setting', () => {
+  render(<RunPolicyEditor value={policy} onChange={vi.fn()} />)
+  expect(screen.queryAllByText('任务结束时环境处理')).toHaveLength(0)
+  expect(screen.queryAllByRole('radio')).toHaveLength(0)
 })
 
 it('retains invalid drafts and reports finite positive and range errors without emitting', () => {
@@ -49,7 +44,7 @@ it('retains invalid drafts and reports finite positive and range errors without 
   expect(timeout).toHaveValue('abc')
   expect(screen.getByRole('alert')).toHaveTextContent('请输入有限的正数')
   fireEvent.change(screen.getByLabelText('最大任务数'), { target: { value: '101' } })
-  expect(screen.getByText(/1–100/)).toHaveAttribute('role', 'alert')
+  expect(screen.getByText('最大任务数必须是 1–100 的整数')).toHaveAttribute('role', 'alert')
   expect(onChange).not.toHaveBeenCalled()
 })
 
@@ -121,11 +116,11 @@ it('rejects a minutes value whose conversion to seconds overflows', () => {
   expect(onDraftStateChange).toHaveBeenLastCalledWith({ dirty: true, valid: false })
 })
 
-it('edits both data concurrency limits and keeps a bad sibling draft invalid', () => {
+it.each([false, true])('edits both concurrency limits and keeps a bad sibling draft invalid (data: %s)', dataBatch => {
   function Fixture() {
     const [value, setValue] = useState({ ...policy, concurrency: 4, maxLiveInstances: 2 })
     const [draft, setDraft] = useState({ dirty: false, valid: true })
-    return <><RunPolicyEditor dataBatch value={value} onChange={setValue} onDraftStateChange={setDraft}/><button disabled={!draft.valid}>保存</button></>
+    return <><RunPolicyEditor dataBatch={dataBatch} value={value} onChange={setValue} onDraftStateChange={setDraft}/><button disabled={!draft.valid}>保存</button></>
   }
   render(<Fixture/>)
   expect(screen.getByLabelText('请求并发数')).toHaveValue('4')

@@ -1,0 +1,41 @@
+{
+  "date": "2026-09-24",
+  "status": "local_real_worker_passed_native_pending",
+  "releaseAccepted": false,
+  "requirement": "DATA-CLAIM-09",
+  "productionSource": "1c676965fb581ea3e33882b3ecb300b3abc99368",
+  "parentCommit": "7e472ec2d8be00a86a3ff1124d5e46f0437440d5",
+  "change": "Test-only public binding replacement and current namespace/generation recovery; production code unchanged.",
+  "test": {
+    "file": "apps/backend/tests/integration/test_project_sheets_real_cloakbrowser.py",
+    "symbol": "test_real_shared_sheet_rebinding_requires_current_peer_namespace_and_generation",
+    "sha256": "4d6a7b4f20fe28b398c99204d52c5737f1faeb9ebf8f719904abc1d773e49475"
+  },
+  "checks": {
+    "newScenario": "1 passed /9 deselected /2 warnings /15.09s",
+    "finalRelated": "3 passed /7 deselected /2 warnings /32.46s; rebinding or peer_removal or source_outage",
+    "ruff": "passed after explicit binding of loop variables in polling lambdas",
+    "ciSelection": "Existing main matrix expression collected34/45,11deselected,0.92s and contains new test; collection is not execution.",
+    "coverage": "4 mapping validator tests passed;251 references valid;249 with assertions,206partial/45planned/0verified. Unique requirements by gap:241 production,16 implementation,9 test,24 external (overlap)."
+  },
+  "assertions": [
+    "Public peer rebind A→B rotates datasetGeneration and bindingEpoch1→2, clears current records until complete pull; pulled key is original from columnB.",
+    "First project failed pull after peer replacement and later successful complete pull both give configurationError with zero Task/lease/browser; original local records preserved and no implicit remote calls during batch selection.",
+    "Public peer rebind B→A rotates to third distinct generation and epoch3; complete peer and local pulls produce valid matching namespace and current peer epochs.",
+    "Two actual browser workers sequentially freeze each current RecordRef, contentRevision and field/value map; first epoch1/local original generation, repaired peer epoch3/new generation.",
+    "Manual resume commits one revision and one pending intent per project, preserving separate local values; no remote writes or automatic pulls, no old batch restart, all active leases released and worker idle."
+  ],
+  "initialFailure": "First run failed test DTO comparison: execution input includes fieldName whereas record view includes writable. Compare exact fieldId/value maps; no product defect or RED→GREEN claim. Original log retained.",
+  "evidenceSha256": {
+    ".tmp-tests/pm9-peer-rebind-2026-09-24/ci-selection.log": "1769bf09f1f583ef6bc95098b73f07600189abcb8d89b14df956c2a76c4910f2",
+    ".tmp-tests/pm9-peer-rebind-2026-09-24/initial.log": "879cf90fb922a6356cd68f65abed62199924337fe8872fd3b2612d5227a7fda0",
+    ".tmp-tests/pm9-peer-rebind-2026-09-24/real-worker.log": "629904f6fe223bea049ba638b5946401f63d73319c1d6fed08203942c443b139",
+    ".tmp-tests/pm9-peer-rebind-2026-09-24/related.log": "8c528c731e4746796e0e2c344145109a03f32e75db753b5893be84328c12858a"
+  },
+  "coverageRuling": "The previously named DATA-CLAIM-09 missing-test cases (peer removal, complete replacement, namespace mismatch and current-generation real-worker recovery) now have direct assertions. Remove only its test_missing gap; keep partially_verified, production_evidence_missing and external_acceptance_pending. This does not prove all possible permutations.",
+  "remaining": [
+    "Current packaged live Sheets/OAuth outage+source-time UI and authorization errors need authorized resources. Historical PM6 real network evidence remains valid.",
+    "Windows/Intel execution of the newest source guard and these new assertions is pending restored GitHub authentication/manual dispatch. Existing35902129697@a317e1f8 excludes them.",
+    "Existing full backend3493 and ARM desktop22screens predate this test-only change; not rerun or reattributed."
+  ]
+}

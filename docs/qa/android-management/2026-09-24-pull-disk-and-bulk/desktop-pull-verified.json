@@ -1,0 +1,105 @@
+{
+  "status": "passed_desktop_verification",
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-image-pull-interruption-4vowoybi",
+  "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "requestId": "bdddecf6-bdad-48f9-bf73-0158c78d245e",
+  "reference": "redroid/redroid@sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "cleanup": "Owned registration removed; existing base image content/tag unchanged; no devices created.",
+  "unconfirmedPreflight": {
+    "state": "failed",
+    "resultCode": "ANDROID_DISK_ESTIMATE_UNKNOWN",
+    "actualDockerPullCalls": 0,
+    "replayPreserved": true,
+    "changedConfirmationRejected": true
+  },
+  "killedOwnedProcessGroups": 1,
+  "lostResponse": "RemoteProtocolError",
+  "afterRestart": {
+    "operationId": "8b4576a4-7b9b-499e-86ab-32eeea022076",
+    "requestId": "bdddecf6-bdad-48f9-bf73-0158c78d245e",
+    "targetId": "53e2e9ee-d573-56e3-8b15-7a87ce1e4283",
+    "action": "pull",
+    "state": "needs_verification",
+    "stageCode": "verify",
+    "stageLabel": "待核实",
+    "attempt": 1,
+    "retryOf": null,
+    "createdAt": "2026-09-24T00:56:29.278167",
+    "startedAt": "2026-09-24T00:56:29.279668",
+    "finishedAt": "2026-09-24T00:56:34.241305",
+    "resultCode": "SERVICE_RESTART_RESULT_UNKNOWN",
+    "message": "服务已重启，请核实外部操作结果",
+    "allowedActions": [
+      "verify"
+    ]
+  },
+  "discoveredAfterRestart": {
+    "items": [
+      {
+        "operationId": "8b4576a4-7b9b-499e-86ab-32eeea022076",
+        "requestId": "bdddecf6-bdad-48f9-bf73-0158c78d245e",
+        "targetId": "53e2e9ee-d573-56e3-8b15-7a87ce1e4283",
+        "action": "pull",
+        "state": "needs_verification",
+        "stageCode": "verify",
+        "stageLabel": "待核实",
+        "attempt": 1,
+        "retryOf": null,
+        "createdAt": "2026-09-24T00:56:29.278167",
+        "startedAt": "2026-09-24T00:56:29.279668",
+        "finishedAt": "2026-09-24T00:56:34.241305",
+        "resultCode": "SERVICE_RESTART_RESULT_UNKNOWN",
+        "message": "服务已重启，请核实外部操作结果",
+        "allowedActions": [
+          "verify"
+        ]
+      }
+    ],
+    "nextCursor": null,
+    "total": 1
+  },
+  "actualDockerPullCalls": 1,
+  "desktopVerified": {
+    "id": "8b4576a4-7b9b-499e-86ab-32eeea022076",
+    "workspace_identity": "/private/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-image-pull-interruption-4vowoybi/workspace",
+    "request_id": "bdddecf6-bdad-48f9-bf73-0158c78d245e",
+    "target_id": "53e2e9ee-d573-56e3-8b15-7a87ce1e4283",
+    "action": "pull",
+    "request_digest": "7007995d08f540d5deda19b5cee4d398ccf8f1a184fecaacea64efb1b7e47509",
+    "payload": "{\"reference\": \"redroid/redroid@sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b\", \"allowUnknownDiskEstimate\": true}",
+    "state": "succeeded",
+    "stage_code": "verified",
+    "stage_label": "已完成",
+    "attempt": 1,
+    "retry_of": null,
+    "result_code": "IMAGE_PULL_VERIFIED",
+    "message": "服务已重启，请核实外部操作结果",
+    "created_at": "2026-09-24 00:56:29.278167",
+    "started_at": "2026-09-24 00:56:29.279668",
+    "finished_at": "2026-09-24 00:57:41.789286"
+  },
+  "desktopObservations": [
+    "restart discovers original request in needs_verification",
+    "filled new request with confirmation remains disabled while unknown exists",
+    "explicit verify displays succeeded and unknown count0",
+    "changing reference resets confirmation to false"
+  ],
+  "actualDockerPullCallsBeforeDesktop": 1,
+  "afterAdditionalServerRestart": {
+    "operationId": "8b4576a4-7b9b-499e-86ab-32eeea022076",
+    "requestId": "bdddecf6-bdad-48f9-bf73-0158c78d245e",
+    "targetId": "53e2e9ee-d573-56e3-8b15-7a87ce1e4283",
+    "action": "pull",
+    "state": "succeeded",
+    "stageCode": "verified",
+    "stageLabel": "已完成",
+    "attempt": 1,
+    "retryOf": null,
+    "createdAt": "2026-09-24T00:56:29.278167",
+    "startedAt": "2026-09-24T00:56:29.279668",
+    "finishedAt": "2026-09-24T00:57:41.789286",
+    "resultCode": "IMAGE_PULL_VERIFIED",
+    "message": "服务已重启，请核实外部操作结果",
+    "allowedActions": []
+  }
+}

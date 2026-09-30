@@ -1,0 +1,10 @@
+{
+  "deviceId": "bf8fe420-30c6-4996-8255-98c59a44742e",
+  "sessionId": "b18978cf-b2e1-4dc1-8e99-7e911f44fbf4",
+  "generation": 11,
+  "pid": 90388,
+  "birthVerified": true,
+  "signal": "SIGTERM",
+  "time": "2026-09-23T19:55:59.189127+00:00",
+  "command": "ssh -F /Users/zhangtiancheng/.lima/autoflow-redroid/ssh.config -o ControlMaster=no -o ControlPath=none -o ExitOnForwardFailure=yes -o ServerAliveInterval=5 -o ServerAliveCountMax=2 -N -L 127.0.0.1:54798:127.0.0.1:32789 lima-autoflow-redroid"
+}

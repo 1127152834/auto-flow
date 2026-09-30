@@ -5,10 +5,14 @@ import re
 import shlex
 import time
 from collections.abc import Callable
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
+from autoflow.domain.android.capacity_rules import can_admit
+from autoflow.domain.android.management_rules import require_restored, restore_pending
 from autoflow.domain.android.ports import AndroidError
+from autoflow.providers.android import capacity_reservations as reservations
 from autoflow.providers.android.mac_runtime import LABEL, VM, docker, run
 
 if TYPE_CHECKING:
@@ -17,14 +21,37 @@ if TYPE_CHECKING:
 IMAGE = "redroid/redroid:13.0.0_64only-latest"
 
 
-async def images() -> list[dict[str, Any]]:
+async def images(reference: str | None = None) -> list[dict[str, Any]]:
+    """Return cached compatible images, optionally for one immutable local ID."""
+    target = reference or IMAGE
     try:
-        item = json.loads(await docker("image", "inspect", IMAGE, timeout=5))[0]
+        item = json.loads(await docker("image", "inspect", target, timeout=5))[0]
     except (AndroidError, OSError, TimeoutError, ValueError):
         return []
-    if item.get("Architecture") != "arm64" or item.get("Os") != "linux":
+    image_id = str(item.get("Id") or "")
+    if (
+        not re.fullmatch(r"sha256:[0-9a-f]{64}", image_id)
+        or item.get("Architecture") not in {"arm64", "aarch64"}
+        or item.get("Os") != "linux"
+    ):
         return []
-    return [{"id": item["Id"], "name": "Android 13 标准 · ARM64", "reference": IMAGE}]
+    if reference and image_id != reference:
+        return []
+    return [{
+        "id": image_id,
+        "name": "Android 13 标准 · ARM64" if not reference else "Android ARM64 镜像",
+        "reference": target,
+    }]
+
+
+async def _admit_image(runtime: "MacAndroidRuntime", image_id: str) -> None:
+    catalog = getattr(runtime, "image_catalog", None)
+    if catalog is not None:
+        records = [item for item in catalog.list() if item.get("imageId") == image_id]
+        if not records or records[0].get("state") in {"deleted", "unregistered"}:
+            raise AndroidError("ANDROID_IMAGE_UNAVAILABLE", "镜像未在当前工作区登记，或已取消登记", 422)
+    if not any(item.get("id") == image_id for item in await images(image_id)):
+        raise AndroidError("ANDROID_IMAGE_UNAVAILABLE", "请选择已缓存且通过 Linux ARM64 检查的镜像", 422)
 
 
 async def objects(kind: str, name: str) -> list[dict[str, Any]]:
@@ -54,10 +81,19 @@ async def verify(device: dict[str, Any], workspace_id: str) -> tuple[list[dict[s
     return containers, volumes
 
 
-async def mutation(device: dict[str, Any], save: Callable[[], None], *args: str, timeout: float = 40) -> bytes:
+async def mutation(device: dict[str, Any], save: Callable[[], None], *args: str, timeout: float = 40, reservation_root: Path | None = None, memory: int | None = None) -> bytes:
     marker = "/tmp/autoflow-lifecycle-" + uuid4().hex
     device["pendingLifecycle"] = marker
     save()
+    if reservation_root is not None:
+        try:
+            reservations.reserve(reservation_root, device, marker, memory)
+        except BaseException:
+            # No command was dispatched. Remove only this attempt's reservation.
+            reservations.release(reservation_root, device, marker)
+            device.pop('pendingLifecycle', None)
+            save()
+            raise
     command = shlex.join(["docker", *args]) + "; rc=$?; echo $rc > " + marker + "; exit $rc"
     result = await run(["limactl", "shell", "--workdir=/tmp", VM, "sudo", "sh", "-c", command], timeout)
     device.pop("pendingLifecycle", None)
@@ -80,25 +116,102 @@ async def confirm_pending(device: dict[str, Any]) -> None:
     device.pop("pendingLifecycle", None)
 
 
-async def capacity(device: dict[str, Any]) -> None:
-    info = json.loads(await docker("info", "--format", "{{json .}}"))
-    ids = (await docker("ps", "-q")).decode().split()
+async def capacity(device: dict[str, Any], root: Path | None = None, *, minimum_memory: int = 0) -> None:
+    pending = reservations.load(root) if root is not None else {}
+    try:
+        info = json.loads(await docker("info", "--format", "{{json .}}"))
+        total_cpu = info.get("NCPU")
+        total_memory = info.get("MemTotal")
+    except (AndroidError, OSError, TimeoutError, ValueError, TypeError, AttributeError) as error:
+        raise AndroidError("ANDROID_CAPACITY_UNKNOWN", "运行环境容量尚未核实，不能启动实例", 409) from error
+    if (
+        isinstance(total_cpu, bool)
+        or not isinstance(total_cpu, int)
+        or total_cpu <= 0
+        or isinstance(total_memory, bool)
+        or not isinstance(total_memory, int)
+        or total_memory <= 0
+    ):
+        raise AndroidError("ANDROID_CAPACITY_UNKNOWN", "运行环境容量尚未核实，不能启动实例", 409)
     allocated = 0
-    if ids:
-        for obj in json.loads(await docker("inspect", *ids)):
-            if obj["Id"] != device["containerId"]:
-                allocated += obj["HostConfig"].get("Memory", 0)
+    running = {}
+    try:
+        ids = (await docker("ps", "-q", "--no-trunc")).decode().split()
+        if ids:
+            records = json.loads(await docker("inspect", *ids))
+            if not isinstance(records, list) or len(records) != len(ids) or {obj["Id"] for obj in records} != set(ids):
+                raise ValueError("incomplete running container inventory")
+            for obj in records:
+                running[obj['Id']] = obj
+                memory = obj.get("HostConfig", {}).get("Memory")
+                # Docker's zero limit means unlimited, not zero consumption.
+                if type(memory) is not int or memory <= 0:
+                    raise ValueError("unknown memory allocation")
+                if obj["Id"] != device["containerId"]:
+                    allocated += memory
+                else:
+                    minimum_memory = max(minimum_memory, memory)
+        for item in pending.values():
+            memory = item['memoryBytes']
+            if memory is None:
+                raise ValueError('unknown pending memory allocation')
+            obj = running.get(item['containerId'])
+            if obj is not None:
+                labels = obj.get('Config', {}).get('Labels', {})
+                if labels.get(LABEL) != item['workspaceId'] or labels.get('io.autoflow.android.device') != item['deviceId']:
+                    raise ValueError('pending container ownership changed')
+                actual = obj.get('HostConfig', {}).get('Memory')
+                if type(actual) is not int or actual <= 0:
+                    raise ValueError('unknown pending container allocation')
+                memory = max(0, memory - actual)
+            allocated += memory
+    except (AndroidError, OSError, TimeoutError, ValueError, TypeError, KeyError, AttributeError) as error:
+        raise AndroidError("ANDROID_CAPACITY_UNKNOWN", "运行环境容量尚未核实，不能启动实例", 409) from error
     # CPU is a quota, shared by scheduling; do not promise dedicated CPU cores.
-    if device.get("cpu", 1) > info["NCPU"] or allocated + device.get("memoryMb", 1536) * 1024 * 1024 > info["MemTotal"] - 512 * 1024 * 1024:
+    requested_cpu = device.get("cpu", 1)
+    requested_memory = device.get("memoryMb", 1536)
+    if (
+        isinstance(requested_cpu, bool)
+        or not isinstance(requested_cpu, int)
+        or requested_cpu <= 0
+        or isinstance(requested_memory, bool)
+        or not isinstance(requested_memory, int)
+        or requested_memory <= 0
+    ):
+        raise AndroidError("ANDROID_CAPACITY_UNKNOWN", "实例容量配置尚未核实，不能启动实例", 409)
+    if requested_cpu > total_cpu or not can_admit(total_memory, allocated, 0, max(requested_memory * 1024 * 1024, minimum_memory)):
         raise AndroidError("ANDROID_CAPACITY", "运行环境内存预算不足或 CPU 配额过大，请停止空闲设备或降低新实例配置", 422)
 
 
 async def manage(runtime: "MacAndroidRuntime", device: dict[str, Any], request: dict[str, Any], stage: Callable[[str], None], save: Callable[[], None]) -> None:
+    await _manage(runtime, device, request, stage, save)
+    pending = reservations.pending(runtime.root, device)
+    if pending:
+        reservations.release(runtime.root, device, pending['marker'])
+
+
+async def _manage(runtime: "MacAndroidRuntime", device: dict[str, Any], request: dict[str, Any], stage: Callable[[str], None], save: Callable[[], None]) -> None:
     action = request["action"]
+    if restore_pending(device) and (action not in {"create", "recover", "delete"} or (action == "delete" and not request.get("deleteData")) or (action == "create" and device.get("creationConfig", {}).get("start", True))):
+        require_restored(device)
     await confirm_pending(device)
     containers, volumes = await verify(device, runtime.workspace_id)
+    pending = reservations.pending(runtime.root, device)
+    if pending:
+        await confirm_pending({'pendingLifecycle': pending['marker']})
+        reservations.release(runtime.root, device, pending['marker'])
+    if containers and device['containerId'] != containers[0].get('Id'):
+        identifier = containers[0].get('Id')
+        if not isinstance(identifier, str) or not re.fullmatch(r'[0-9a-f]{64}', identifier):
+            raise AndroidError('ANDROID_CAPACITY_UNKNOWN', '实例容器身份尚未核实', 409)
+        device['containerId'] = identifier
+        save()
+    memory = containers[0].get('HostConfig', {}).get('Memory') if containers else None
+    if type(memory) is not int or memory <= 0:
+        memory = None
     if action == "recover":
         stage("核实遗留操作")
+        await _admit_image(runtime, device["imageId"])
         await runtime.recover(device)
         device["androidStatus"] = (await runtime.inspect(device))["androidStatus"] if containers else "retained" if volumes else "missing"
         device["dataRetained"] = not containers and bool(volumes)
@@ -106,7 +219,7 @@ async def manage(runtime: "MacAndroidRuntime", device: dict[str, Any], request: 
     if action == "delete":
         stage("移除实例运行环境")
         if containers:
-            await mutation(device, save, "rm", "-f", device["containerId"])
+            await mutation(device, save, "rm", "-f", device["containerId"], reservation_root=runtime.root, memory=memory)
         if await objects("container", device["containerId"]):
             raise AndroidError("ANDROID_DELETE_FAILED", "实例运行环境尚未移除")
         # Recheck volume ownership immediately before deletion, including retries.
@@ -121,17 +234,24 @@ async def manage(runtime: "MacAndroidRuntime", device: dict[str, Any], request: 
     if action == "stop":
         stage("停止 Android，保留数据")
         if containers:
-            await mutation(device, save, "stop", "--time", "10", device["containerId"])
+            await mutation(device, save, "stop", "--time", "10", device["containerId"], reservation_root=runtime.root, memory=memory)
         device["androidStatus"] = (await runtime.inspect(device))["androidStatus"] if containers else "retained" if volumes else "missing"
         if containers and device["androidStatus"] != "stopped":
             raise AndroidError("ANDROID_STOP_FAILED", "Android 尚未停止")
         return
     if action == "create" or not containers:
         stage("检查镜像与配置")
-        if not any(item["id"] == device["imageId"] for item in await images()):
-            raise AndroidError("ANDROID_IMAGE_UNAVAILABLE", "请选择已缓存的 Android 13 ARM64 标准镜像", 422)
+        await _admit_image(runtime, device["imageId"])
+        if action == "create" and request.get("retryEmptyCreate") and (containers or volumes):
+            raise AndroidError("ANDROID_DATA_MISSING", "创建重试前发现实例或数据卷已存在，不能空白重建", 409)
         if action != "create" and not volumes:
             raise AndroidError("ANDROID_DATA_MISSING", "原数据卷不存在，不能以空白数据冒充恢复；请新建实例", 409)
+        await runtime.require_vm_disk_space(
+            allow_unknown_disk_estimate=(
+                device.get("creationConfig", {}).get("allowUnknownDiskEstimate") is True
+                if action == "create" else request.get("allowUnknownDiskEstimate") is True
+            )
+        )
         if not volumes:
             stage("创建独立数据")
             await mutation(device, save, "volume", "create", "--label", LABEL + "=" + runtime.workspace_id, "--label", "io.autoflow.android.device=" + device["deviceId"], device["volumeId"])
@@ -144,11 +264,16 @@ async def manage(runtime: "MacAndroidRuntime", device: dict[str, Any], request: 
     if action == "create" and not device["creationConfig"]["start"]:
         device["androidStatus"] = "stopped"
         return
-    await capacity(device)
+    containers, _ = await verify(device, runtime.workspace_id)
+    memory = containers[0].get('HostConfig', {}).get('Memory') if containers else None
+    if type(memory) is not int or memory <= 0:
+        raise AndroidError('ANDROID_CAPACITY_UNKNOWN', '实例实际内存限额尚未核实，不能启动', 409)
+    await capacity(device, runtime.root, minimum_memory=memory)
     await runtime.inspect(device)
     stage("启动 Android" if action != "restart" else "重启 Android")
     device["androidStatus"] = "starting"
-    await mutation(device, save, "restart" if action == "restart" else "start", device["containerId"])
+    memory = max(memory or 0, device.get('memoryMb', 1536) * 1024**2)
+    await mutation(device, save, "restart" if action == "restart" else "start", device["containerId"], reservation_root=runtime.root, memory=memory)
     deadline = time.monotonic() + 180
     while time.monotonic() < deadline:
         observation = await runtime.inspect(device)

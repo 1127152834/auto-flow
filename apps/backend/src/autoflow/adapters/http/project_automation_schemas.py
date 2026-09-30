@@ -142,17 +142,20 @@ class CapabilityRequirement(ApiModel):
     reason: str | None = None
 
 
-class AutomationWrite(ApiModel):
+class AutomationCreate(ApiModel):
     name: str
     description: str
-    workflow_id: str
     input_plan: InputPlan
     parameter_schema: list[ParameterDefinition]
     environment_policy: EnvironmentPolicy
     run_policy: RunPolicy
 
-    def payload(self):
+    def payload(self) -> dict[str, Any]:
         return self.model_dump(by_alias=True, exclude_unset=True)
+
+
+class AutomationWrite(AutomationCreate):
+    workflow_id: str
 
 
 class AutomationUpdate(AutomationWrite):
@@ -197,5 +200,5 @@ class AutomationDeleteRequest(ApiModel):
     expected_management_revision: StrictInt = Field(ge=1)
     workflow_disposition: Literal["unlink", "deleteOwned"]
 
-    def payload(self):
+    def payload(self) -> dict[str, Any]:
         return self.model_dump(by_alias=True)

@@ -114,7 +114,7 @@ async def test_stop_cancels_project_prompt_without_starting_next_node(tmp_path, 
     try:
         await asyncio.wait_for(requested.wait(), 15)
         if competing_reply:
-            worker = manager._worker
+            worker = manager._workers.get(run_id)
             assert worker is not None
             request = next(e["payload"] for e in events if e["kind"] == "interaction")
             await worker.write_lock.acquire()

@@ -1,0 +1,64 @@
+{
+  "checkedAt": "2026-09-24T12:30:39.735534+00:00",
+  "candidate": "ada81955970a57e7c1d6bf6c92ae04cd73928e50",
+  "runUrl": "https://github.com/1127152834/auto-flow/actions/runs/35998571394",
+  "jobs": [
+    {
+      "id": 107629328263,
+      "name": "checks (windows-2022)",
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/1127152834/auto-flow/actions/runs/35998571394/job/107629328263",
+      "steps": [
+        {
+          "name": "Verify node-owned browser initialization and cleanup",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm run test:scripts",
+          "status": "completed",
+          "conclusion": "failure"
+        }
+      ]
+    },
+    {
+      "id": 107629328508,
+      "name": "checks (macos-15-intel)",
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/1127152834/auto-flow/actions/runs/35998571394/job/107629328508",
+      "steps": [
+        {
+          "name": "Run uv sync --directory apps/backend --locked --group build",
+          "status": "completed",
+          "conclusion": "failure"
+        },
+        {
+          "name": "Verify node-owned browser initialization and cleanup",
+          "status": "completed",
+          "conclusion": "skipped"
+        }
+      ]
+    },
+    {
+      "id": 107629328535,
+      "name": "checks (macos-15)",
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/1127152834/auto-flow/actions/runs/35998571394/job/107629328535",
+      "steps": [
+        {
+          "name": "Verify node-owned browser initialization and cleanup",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run uv run --directory apps/backend mypy src",
+          "status": "completed",
+          "conclusion": "failure"
+        }
+      ]
+    }
+  ]
+}

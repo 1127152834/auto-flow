@@ -1,0 +1,20 @@
+{
+  "deviceId": "473df9d4-3277-4c89-92ab-30a08b3510c2",
+  "name": "QA Final Control Review",
+  "workspaceId": "7bed261c99941c029723bf5520664d7b0cd6c5cb668334a3ca02cbad073adfe6",
+  "createdReady": true,
+  "nativeGeneration": 3,
+  "nativePid": 56471,
+  "nativeClosedOnReturn": true,
+  "embeddedInputObserved": true,
+  "embeddedNavigationReleased": true,
+  "releasedState": {
+    "ownerRunId": null,
+    "control": "idle",
+    "generation": 4,
+    "processes": {}
+  },
+  "cleanup": {
+    "androidStatus": "missing"
+  }
+}

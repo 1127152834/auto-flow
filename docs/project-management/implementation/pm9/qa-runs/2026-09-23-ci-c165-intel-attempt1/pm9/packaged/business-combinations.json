@@ -1,0 +1,61 @@
+{
+  "status": "passed",
+  "platform": "darwin",
+  "arch": "x64",
+  "packaged": true,
+  "startedAt": "2026-09-23T11:14:12.127Z",
+  "executableSha256": "2c7f6323525225da11a50aa756d940937bd89ec280e6563b70cc733e81876acb",
+  "projectId": "283e4bf0-c593-4594-befa-233baa019338",
+  "sharedPersonChain": {
+    "status": "passed",
+    "checks": [
+      "P1 verified state/content/environment link and revisions unchanged across both Tasks",
+      "E1 explicitly registered and excluded from original pending selection; retry batch creates no Task/account",
+      "Exactly one new A1 and E1 link the same saved login environment",
+      "Next Task starts from A1 input environment, restores cookie, and selects P1 through personNo field equality"
+    ],
+    "taskIds": [
+      "beebf860-57b8-4b19-893f-5a113a2f1776",
+      "ffff533a-2acc-4f96-9bb7-204b1c135310"
+    ],
+    "environmentId": "f05949fd-aaa1-599f-9fd5-7e2fbf8b3925",
+    "scope": "ARM packaged public HTTP and actual worker/browser; no full native UI flow or live Sheets claim"
+  },
+  "concurrentRecordClaims": {
+    "status": "passed",
+    "taskIds": [
+      "fefe8665-a5a7-4002-af08-e8612882d1e6",
+      "ccb0154b-a94d-4be4-a65b-e0ef1f8718ee"
+    ],
+    "checks": [
+      "One data batch reaches two simultaneous manual checkpoints with distinct leased records",
+      "Same source Profile produces isolated cookie stores",
+      "Completing the first Task keeps the second live; both finish once and no third Task is claimed"
+    ]
+  },
+  "checks": [
+    "Cancelling a second live Run preserves T2 checkpoint/browser and executes no cancelled write",
+    "T1 started and completed while old-contract T2 remained waiting_manual in its original Run",
+    "T1 ensured a persistent field, created exactly one second-table record, queried/updated content and explicitly set status before T2 resumed",
+    "T2 then queried and wrote using its prepared old field contract; manual node executed once"
+  ],
+  "taskIds": [
+    "48d0f116-cac2-4a3f-9f1a-14437888f482",
+    "74c38193-dad1-4018-a2d9-f0257777618b"
+  ],
+  "concurrency": {
+    "status": "passed",
+    "overlapStartedAt": "2026-09-23T11:14:36.279Z",
+    "t1CompletedAt": "2026-09-23T11:14:41.473Z",
+    "waitingRunId": "395f4ee2-8d8b-4f4b-bc98-eba1800cd764",
+    "completedRunId": "b0bc74d7-0038-4724-bd3a-d22615a99f86",
+    "waitingStateBefore": "waiting_manual",
+    "waitingStateAfter": "waiting_manual"
+  },
+  "remaining": [
+    "Sheets structure/value phases require authorized live resources",
+    "Excel source byte preservation belongs to separate native import/export evidence",
+    "Conflict and partial-success combinations remain separate evidence"
+  ],
+  "cleanup": "passed"
+}

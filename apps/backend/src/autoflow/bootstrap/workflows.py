@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -532,54 +532,62 @@ def configure_project_workflow_runtime(
     )
 
     @contextmanager
-    def guard(kernel: KernelRef):
-        workspace_lock = ExclusiveFileLock(
-            installations.root / ".studio-browser-session.lock"
-        )
-        if not workspace_lock.acquire():
+    def group_guard() -> Iterator[None]:
+        lock = ExclusiveFileLock(installations.root / ".studio-browser-session.lock")
+        if not lock.acquire():
             raise KernelBusy()
-        lock = kernel_target_lock(installations.root, kernel.edition, kernel.version)
         try:
-            if not lock.acquire():
-                raise KernelBusy()
-            if kernel.edition == "licensed":
-                with installations.license_guard():
-                    yield
-            else:
-                yield
+            yield
         finally:
             lock.release()
-            workspace_lock.release()
+
+    @contextmanager
+    def guard(kernel: KernelRef):
+        lock = kernel_target_lock(installations.root, kernel.edition, kernel.version)
+        if not lock.acquire():
+            raise KernelBusy()
+        try:
+            yield
+        finally:
+            lock.release()
 
     resources = WorkflowBrowserResources(
         profiles, installed, resolve_proxy, read_license, usage_guard, guard,
-        environment_directory=environment_directory,
+        environment_directory=environment_directory, group_guard=group_guard,
         release_proxy=proxy_service.release if proxy_service else None,
+        license_guard=lambda: installations.license_guard(),
     )
-    from autoflow.application.project_data.capabilities import (
-        ProjectDataCapabilityService,
-    )
-    from autoflow.application.project_runs.end import ProjectRunEnd
-    from autoflow.infrastructure.database.project_capabilities import (
-        SqlAlchemyProjectDataCapabilities,
+    from autoflow.application.project_runs.worker_capabilities import (
+        ProjectWorkerCapabilities,
     )
 
-    project_end = ProjectRunEnd(session_factory, environments) if environments is not None else None
+    capabilities = ProjectWorkerCapabilities(session_factory, environments)
     worker = ProjectWorkflowWorkerManager(
-        temp_dir, resolve_credential=resolve_credential, proxy_service=proxy_service,
-        project_data=ProjectDataCapabilityService(SqlAlchemyProjectDataCapabilities(session_factory), project_end=project_end),
+        temp_dir, on_capability=capabilities.handle, capacity=2,
+        resolve_credential=resolve_credential, proxy_service=proxy_service,
     )
 
     async def recover(run: Any) -> None:
-        if run.resource_request.get("browser") == "none":
+        if capabilities.manual is not None:
+            capabilities.manual.cancel_run(run.run_id)
+        request = dict(run.resource_request)
+        if request.get("browser") == "node":
+            scope = run.input_snapshot_ref
+            instance = environments.environments.find_instance_by_task(scope['projectId'], scope['taskId']) if environments else None
+            if instance is None:
+                request = {'browser': 'none'}
+            else:
+                from autoflow.domain.environments.identity import request_from_identity
+                request = request_from_identity(instance.identity_package)
+        if request.get("browser") == "none":
             await recover_worker_directories(temp_dir, run.run_id, None)
             return
         for kernel in installed():
-            if f"{kernel.edition}:{kernel.version}" == run.resource_request.get(
+            if f"{kernel.edition}:{kernel.version}" == request.get(
                 "kernelId"
             ):
-                with usage_guard.guard(str(run.resource_request["profileId"])), guard(
-                    KernelRef(kernel.edition, kernel.version)
+                with resources.guard(
+                    str(request["profileId"]), KernelRef(kernel.edition, kernel.version)
                 ):
                     await recover_worker_directories(
                         temp_dir, run.run_id, kernel.executable_path
@@ -588,11 +596,15 @@ def configure_project_workflow_runtime(
         raise KernelNotFound()
 
     dispatcher = WorkflowRunDispatcher(
-        session_factory, worker, resources, gate, recover,
-        project_end=project_end,
+        session_factory, worker, resources, gate, recover, capacity=2,
+        project_end=capabilities.project_end,
+        on_fenced=capabilities.manual.cancel_run if capabilities.manual else lambda _run_id: None,
         resolve_model=models.execution_binding if models is not None else None,
         resolve_default_model=models.default_model_id if models is not None else None,
     )
+    capabilities.browser_dispatcher = dispatcher
+    if capabilities.manual is not None:
+        capabilities.manual.dispatcher = dispatcher
     runtime = WorkflowRuntimeService(
         session_factory, SqlAlchemyWorkflowRepository(session_factory),
         modules=CustomModuleService(SqlAlchemyWorkflowModules(session_factory)),

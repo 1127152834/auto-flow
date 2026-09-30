@@ -1,0 +1,72 @@
+The following is a diff from the previous accessibility tree for Window: "AutoFlow" with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.
+Removed element IDs: 4-12
++				22 container
++					23 link Description: AutoFlow, Value: file:///Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/apps/desktop/out/renderer/index.html#/dashboard
++					24 container 全局导航
++						25 按钮 总览
++						26 按钮 项目
++						27 按钮 浏览器配置
++						28 按钮 安卓设备
++						29 按钮 代理管理
++						30 按钮 模型管理
++					31 按钮 设置
++						32 图像
++						33 文本 设置
++					34 文本 本地服务正常
++					35 container
++						36 按钮 返回资源看板 / QA 应用确认与窗口布局 这是用于长名称换行与操作可达性验收的独立设备
++							37 图像
++							38 文本 返回资源看板
++							39 文本 /
++							40 文本 QA 应用确认与窗口布局 这是用于长名称换行与操作可达性验收的独立设备
++						41 标题 QA 应用确认与窗口布局 这是用于长名称换行与操作可达性验收的独立设备, Value: 1
++							42 文本 QA 应用确认与窗口布局 这是用于长名称换行与操作可达性验收的独立设备
++						43 图像
++						44 text 已就绪 持久实例
++						45 container
++							46 text Android  版本待核实  ·  720  ×  1280
++						47 按钮 复制配置
++							48 图像
++							49 文本 复制配置
++						50 按钮 更多设备操作
++							51 图像
++						52 container 设备详情
++							53 按钮 控制台
++							54 按钮 应用
++							55 按钮 环境配置
++						56 container
++							57 标题 应用, Value: 3
++								58 文本 应用
++							59 文本 当前应用
++							60 图像
++							61 文本 launcher3
++							62 文本 com.android.launcher3
++							63 按钮 上传 APK
++								64 图像
++								65 文本 上传 APK
++							66 按钮 启动应用
++								67 图像
++								68 文本 启动应用
++						69 container 应用管理
++							70 标题 应用管理, Value: 2
++								71 文本 应用管理
++							72 搜索文本字段 (settable) Description: 搜索应用, Value: moe.shizuku.privileged.api, Placeholder: 搜索包名
++							73 container
++								74 text moe.shizuku.privileged.api 用户应用  ·  版本 1086
++								75 按钮 启动
++								76 按钮 停止
++								77 按钮 清除数据
++								78 按钮 卸载
++						79 text 已连接 最新操作： 应用数据已清除
++					80 container 实例备份
++						81 标题 数据备份, Value: 2
++							82 文本 数据备份
++						83 文本 仅允许已停止且无控制会话的实例。
++						84 文本 备份保存在本机，未加密，可能包含账号和应用私密数据。
++						85 文本 恢复会创建新实例并还原应用数据；不保证登录状态、DRM 或私有密钥可用。
++						86 文本 备份创建已禁用：实例必须已停止、状态新鲜、未被控制且没有活动控制会话。
++						87 按钮 (disabled) 创建停机备份
++						88 container
++							89 text 6bd56bb0-1b06-4b8e-8e61-53618812c183  ·  25457142  bytes
++							90 按钮 恢复为新实例
+The focused UI element is 78 按钮 卸载

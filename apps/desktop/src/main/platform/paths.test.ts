@@ -7,7 +7,7 @@ describe('platform paths', () => {
   it('uses path joining for user data children', () => {
     expect(resolvePlatformPaths('/Users/test/Library/Application Support/AutoFlow')).toEqual({
       userData: '/Users/test/Library/Application Support/AutoFlow',
-      logs: '/Users/test/Library/Application Support/AutoFlow/logs',
+      logs: join('/Users/test/Library/Application Support/AutoFlow', 'logs'),
     })
   })
 

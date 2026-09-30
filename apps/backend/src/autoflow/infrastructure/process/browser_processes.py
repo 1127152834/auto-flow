@@ -7,6 +7,7 @@ import subprocess
 import sys
 from functools import lru_cache
 from pathlib import Path
+from typing import Any
 
 # PID -> (process group, kernel process-start identifier).
 OwnedProcesses = dict[int, tuple[int, int]]
@@ -50,52 +51,45 @@ def process_birth(pid: int) -> int | None:
         return None
 
 
-def _windows_process_birth(pid: int) -> int | None:
-    """Return the kernel creation FILETIME for a Windows process."""
-
+def _windows_process_api() -> Any:
     from ctypes import wintypes
 
-    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)  # type: ignore[attr-defined]
-    kernel32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
-    kernel32.OpenProcess.restype = wintypes.HANDLE
-    kernel32.GetProcessTimes.argtypes = [
-        wintypes.HANDLE,
-        ctypes.POINTER(wintypes.FILETIME),
-        ctypes.POINTER(wintypes.FILETIME),
-        ctypes.POINTER(wintypes.FILETIME),
-        ctypes.POINTER(wintypes.FILETIME),
-    ]
-    kernel32.GetProcessTimes.restype = wintypes.BOOL
-    kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
-    kernel32.CloseHandle.restype = wintypes.BOOL
+    kernel = ctypes.WinDLL("kernel32", use_last_error=True)  # type: ignore[attr-defined]
+    kernel.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+    kernel.OpenProcess.restype = wintypes.HANDLE
+    kernel.GetProcessTimes.argtypes = [wintypes.HANDLE, *[ctypes.POINTER(wintypes.FILETIME)] * 4]
+    kernel.GetProcessTimes.restype = wintypes.BOOL
+    kernel.CloseHandle.argtypes = [wintypes.HANDLE]
+    kernel.CloseHandle.restype = wintypes.BOOL
+    return kernel
 
-    handle = kernel32.OpenProcess(0x1000, False, pid)  # PROCESS_QUERY_LIMITED_INFORMATION
+
+def _windows_handle_birth(kernel: Any, handle: int) -> int | None:
+    from ctypes import wintypes
+
+    times = [wintypes.FILETIME() for _ in range(4)]
+    if not kernel.GetProcessTimes(handle, *(ctypes.byref(time) for time in times)):
+        return None
+    return (int(times[0].dwHighDateTime) << 32) | int(times[0].dwLowDateTime)
+
+
+def _windows_process_birth(pid: int) -> int | None:
+    kernel = _windows_process_api()
+    handle = kernel.OpenProcess(0x1000, False, pid)
     if not handle:
         return None
-    creation = wintypes.FILETIME()
-    exit_time = wintypes.FILETIME()
-    kernel_time = wintypes.FILETIME()
-    user_time = wintypes.FILETIME()
     try:
-        if not kernel32.GetProcessTimes(
-            handle,
-            ctypes.byref(creation),
-            ctypes.byref(exit_time),
-            ctypes.byref(kernel_time),
-            ctypes.byref(user_time),
-        ):
-            return None
-        return (int(creation.dwHighDateTime) << 32) | int(creation.dwLowDateTime)
+        return _windows_handle_birth(kernel, handle)
     finally:
-        kernel32.CloseHandle(handle)
+        kernel.CloseHandle(handle)
 
 
 def process_identity_is_alive(pid: int, birth: int | None) -> bool:
     """Check that *pid* still denotes the process observed at launch."""
 
-    current = process_birth(pid)
+    current = process_birth(pid) if birth is not None else None
     if birth is not None and current is not None:
-        return current == birth
+        return current == birth and (sys.platform != "win32" or _process_exists(pid))
     return _process_exists(pid)
 
 
@@ -143,6 +137,10 @@ def _belongs_to_run(pid: int, directory: Path, executable: Path) -> bool:
         return False
     # The worker and Playwright driver also retain the unique inherited run marker.
     if actual.resolve() == Path(sys.executable).resolve():
+        return True
+    # Framework Python launches Python.app; sys.executable names its launcher.
+    current = _native_arguments(os.getpid())
+    if current is not None and actual.resolve() == current[0].resolve():
         return True
     if actual.parts[-3:] == ("playwright", "driver", "node") and any(
         arg.endswith("/playwright/driver/package/cli.js") for arg in arguments
@@ -204,7 +202,27 @@ def capture_processes(
     return result
 
 
+def _windows_process_exists(pid: int) -> bool:
+    from ctypes import wintypes
+
+    kernel = ctypes.WinDLL("kernel32", use_last_error=True)  # type: ignore[attr-defined]
+    kernel.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+    kernel.OpenProcess.restype = wintypes.HANDLE
+    kernel.WaitForSingleObject.argtypes = [wintypes.HANDLE, wintypes.DWORD]
+    kernel.WaitForSingleObject.restype = wintypes.DWORD
+    kernel.CloseHandle.argtypes = [wintypes.HANDLE]
+    handle = kernel.OpenProcess(0x00100000, False, pid)  # SYNCHRONIZE; never signal.
+    if not handle:
+        return bool(ctypes.get_last_error() != 87)  # type: ignore[attr-defined]  # Invalid PID; denied/unknown stays live.
+    try:
+        return bool(kernel.WaitForSingleObject(handle, 0) != 0)  # Only WAIT_OBJECT_0 proves exit.
+    finally:
+        kernel.CloseHandle(handle)
+
+
 def _process_exists(pid: int) -> bool:
+    if sys.platform == "win32":
+        return _windows_process_exists(pid)
     try:
         os.kill(pid, 0)
     except ProcessLookupError:
@@ -224,6 +242,8 @@ def living_processes(owned: OwnedProcesses) -> OwnedProcesses:
 
 
 def signal_processes(owned: OwnedProcesses, number: int) -> None:
+    if sys.platform == "win32":
+        raise RuntimeError("POSIX process groups are unavailable on Windows")
     # A still-live original member proves that its group has not been recycled.
     live = living_processes(owned)
     groups = {group for group, _ in live.values()}

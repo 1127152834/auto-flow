@@ -1,7 +1,7 @@
 import type { components } from '../../../shared/api/generated'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableScroll } from '../../../shared/components/ui/table'
 
-type EnvironmentPolicy = components['schemas']['AutomationWrite']['environmentPolicy']
+type EnvironmentPolicy = components['schemas']['AutomationUpdate']['environmentPolicy']
 export type ProxySelection = { mode: 'sourceDefault' | 'none' } | { mode: 'fixed'; proxyId: string } | { mode: 'pool'; proxyPoolId: string }
 type Named = { id: string; name: string }
 type Profile = Named & { browserVersion: string; browserEdition: string; proxyMode: 'none' | 'proxy' | 'pool'; proxyId?: string | null; proxyPoolId?: string | null }

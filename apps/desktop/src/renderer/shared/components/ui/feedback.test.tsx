@@ -12,6 +12,7 @@ it('distinguishes unknown progress from a measured percentage',()=>{
  expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow','62')
 })
 it('shows errors alongside cached content and provides an empty-state action',()=>{
- render(<><Alert tone="error" title="刷新失败">已有数据仍可用</Alert><p>缓存记录</p><EmptyState title="没有匹配项" action={<button>清除搜索</button>} /></>)
+ render(<><Alert tone="error" title="刷新失败">已有数据仍可用</Alert><p>缓存记录</p><EmptyState icon={<span>空态图标</span>} title="没有匹配项" action={<button>清除搜索</button>} /></>)
  expect(screen.getByRole('alert')).toHaveTextContent('刷新失败'); expect(screen.getByText('缓存记录')).toBeVisible(); expect(screen.getByRole('button')).toHaveTextContent('清除搜索')
+ expect(screen.getByText('空态图标')).toBeVisible(); expect(screen.getByRole('heading',{name:'没有匹配项',level:2})).toBeVisible()
 })

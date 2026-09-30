@@ -1,0 +1,28 @@
+{
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-am2-custom-image-bgfedn_g",
+  "status": "passed",
+  "tags": [
+    "autoflow-qa-f6943fd6761142f388abd2c2ad825ca6:candidate",
+    "autoflow-qa-f6943fd6761142f388abd2c2ad825ca6:next"
+  ],
+  "baseImage": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "candidateImage": "sha256:7be20039abba18ffa8467d94092c13238bb78150d7f4e96a31b5fa0290d2aa72",
+  "nextImage": "sha256:2fc0639293e24e8c42acf4ebe60d0c475101ad1fc7f51b3bdbc8f4cbb4162aca",
+  "deleteBlockedBy": [
+    "template",
+    "device",
+    "backup"
+  ],
+  "candidateDeviceId": "f80b4897-cc3d-42d1-ab2d-ca6d9073ac57",
+  "baseDeviceId": "0bdcbf90-b13b-47b3-9abc-03ea5153bde8",
+  "candidateAndBaseReady": true,
+  "tagDriftPreservesFrozenImage": true,
+  "profileRevisionConflict": true,
+  "customBackupRestored": true,
+  "backupId": "8a10b578-13a4-4f33-a9de-50ec4dbd67b2",
+  "restoredDeviceId": "59693424-6d40-50a7-93ac-3e189d74186c",
+  "candidateContentDeleted": true,
+  "baseUnchanged": true,
+  "googleValidation": "not_tested",
+  "ownedDevicesBackupsImagesDeleted": true
+}

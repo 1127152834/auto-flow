@@ -1,0 +1,36 @@
+{
+  "deviceId": "c65eaef0-e59b-483e-bfd4-55c2d156aa75",
+  "workspaceId": "fd17ff2c2a6a25b6a942f981e3cb18f5a58f531f76646f60d22aad8ec7e2e846",
+  "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "transportFault": "real ADB command completed, local response deliberately discarded",
+  "results": [
+    {
+      "operation": "android_launch_app",
+      "verificationExitCode": 0,
+      "currentPackage": "com.android.settings"
+    },
+    {
+      "operation": "android_stop_app",
+      "verificationExitCode": 0,
+      "currentPackage": "com.android.launcher3"
+    }
+  ],
+  "commandDiagnostics": [
+    {
+      "operation": "android_launch_app",
+      "returncode": 0,
+      "stdout": "Starting: Intent { cmp=com.android.settings/.Settings }\nStatus: ok\nLaunchState: WARM\nActivity: com.android.settings/.homepage.SettingsHomepageActivity\nTotalTime: 3789\nWaitTime: 3791\nComplete\n",
+      "stderr": ""
+    },
+    {
+      "operation": "android_stop_app",
+      "returncode": 0,
+      "stdout": "\n",
+      "stderr": ""
+    }
+  ],
+  "cleanup": {
+    "containers": 0,
+    "volumes": 0
+  }
+}

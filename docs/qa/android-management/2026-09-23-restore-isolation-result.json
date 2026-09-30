@@ -1,0 +1,62 @@
+{
+  "sourceDeviceId": "0ef36cb9-635e-45de-8aad-f34553af4d24",
+  "workspaceId": "9d16ec4df86f32f255c0d3fb3ee7e89374a985e8843a5413f10997b70bbdc4b6",
+  "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "cleanup": [
+    {
+      "deviceId": "842e6206-385c-54c6-b530-6eab5a4810b5",
+      "containers": 0,
+      "volumes": 0,
+      "deleted": true
+    },
+    {
+      "deviceId": "0ef36cb9-635e-45de-8aad-f34553af4d24",
+      "containers": 0,
+      "volumes": 0,
+      "deleted": true
+    },
+    {
+      "deviceId": "ee9569d6-2b83-5c8f-9ea7-8b4c342151da",
+      "containers": 0,
+      "volumes": 0,
+      "deleted": true
+    }
+  ],
+  "backupId": "214514fe-1d4e-4024-901a-9a221fdeeb31",
+  "backupBytes": 16769264,
+  "metadata": {
+    "data/local/tmp/restore-proof": {
+      "uid": 10001,
+      "gid": 2000,
+      "mode": "0o640",
+      "content": "restore-isolation-proof"
+    }
+  },
+  "partialRestore": {
+    "deviceId": "842e6206-385c-54c6-b530-6eab5a4810b5",
+    "state": "needs_verification",
+    "realPartialWrite": true,
+    "afterRecover": "pending",
+    "rejected": [
+      "start",
+      "restart",
+      "restore",
+      "control",
+      "backup"
+    ],
+    "replayStatus": 409
+  },
+  "targetDeviceId": "ee9569d6-2b83-5c8f-9ea7-8b4c342151da",
+  "normalResponse": {
+    "operationId": "5fa15471-e1ce-44ad-a57a-3fe78260f75e",
+    "requestId": "normal-copy",
+    "targetId": "ee9569d6-2b83-5c8f-9ea7-8b4c342151da",
+    "deviceId": "ee9569d6-2b83-5c8f-9ea7-8b4c342151da",
+    "backupId": "214514fe-1d4e-4024-901a-9a221fdeeb31",
+    "state": "restored"
+  },
+  "replayStatus": 202,
+  "bootReadback": "restore-isolation-proof",
+  "sourceUnchanged": true,
+  "status": "passed"
+}

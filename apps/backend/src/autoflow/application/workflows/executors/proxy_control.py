@@ -83,6 +83,7 @@ class ProxyControlExecutor(ModuleExecutor):
         captured = config.get("failureMode", "raise") == "capture"
         prepared = False
         gateway = context.proxy_control
+        probe = context.proxy_probe or getattr(context.browser, "probe_proxy", None)
         # Capture node identity before the first await; parallel branches have their own visits.
         node_id, visit_id = context.proxy_visit.get()
         identity = {
@@ -157,11 +158,11 @@ class ProxyControlExecutor(ModuleExecutor):
                         prepared = not bool(initial.get("error"))
                         if prepared:
                             if initial.get("current"):
-                                if context.proxy_probe is None:
+                                if probe is None:
                                     raise RuntimeError("当前代理缺少会话出口探测能力")
                                 output["before"] = {
                                     **(output.get("before") or {}),
-                                    **await context.proxy_probe(False),
+                                    **await probe(False),
                                 }
                             if not (output.get("before") or {}).get("exitIp") or (
                                 output.get("before") or {}
@@ -177,7 +178,7 @@ class ProxyControlExecutor(ModuleExecutor):
                                 )
                             else:
                                 await self._attempts(
-                                    context, call, output, initial, settings
+                                    context, call, output, initial, settings, probe
                                 )
                 finally:
                     if self.action != "query":
@@ -212,7 +213,7 @@ class ProxyControlExecutor(ModuleExecutor):
             log_level="warning" if not success and captured else None,
         )
 
-    async def _attempts(self, context, call, output, initial, settings):
+    async def _attempts(self, context, call, output, initial, settings, probe):
         pending = None
         for attempt in range(1, settings["maxAttempts"] + 1):
             round_started = asyncio.get_running_loop().time()
@@ -229,7 +230,7 @@ class ProxyControlExecutor(ModuleExecutor):
                     )
                     try:
                         async with asyncio.timeout(remaining):
-                            observed = await context.proxy_probe(True)
+                            observed = await probe(True)
                     except TimeoutError:
                         observed = {"exitIp": None, "error": "PROXY_PROBE_TIMEOUT"}
                     output["after"] = {**(output.get("after") or {}), **observed}

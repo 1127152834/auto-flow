@@ -1,0 +1,14 @@
+{
+  "checkedAt": "2026-09-24T00:19:36.044678Z",
+  "runtimeId": "autoflow-redroid",
+  "available": true,
+  "hostWorkspaceFreeBytes": 195919953920,
+  "vmDockerFreeBytes": 33445064704,
+  "diskCheck": {
+    "status": "pass",
+    "code": null,
+    "message": "宿主工作区和 VM Docker 数据盘均有可用空间；具体操作仍需容量预检",
+    "action": null
+  },
+  "transport": "in-process HTTP; real Mac/Lima probes, no device mutations"
+}

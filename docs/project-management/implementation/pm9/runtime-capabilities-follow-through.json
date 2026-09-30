@@ -1,0 +1,98 @@
+{
+  "date": "2026-09-21",
+  "status": "candidate_regression_in_progress",
+  "releaseAccepted": false,
+  "codeCandidate": "f580b1c6d1d26f0dbb27d9dc874d4489f3fdfc34",
+  "scope": [
+    "S1 frozen scoped canvas subflows",
+    "S2 declared manual contract and shared UI entry",
+    "S3 structured branch isolation and serial manual ownership",
+    "S5 independent two-Run capacity and shared OS guards",
+    "S4 subset: Windows new-file publication and native Job ownership/recovery"
+  ],
+  "checks": {
+    "backendFull": "3329 passed, 60 skipped, 2 warnings in 611.65s (10:11), local full regression on production source f580b1c6.",
+    "realProjectWorker": "26 passed in 274.67s after all four review fixes; actual HTTP/SQLite/CloakBrowser",
+    "windowsNative": {
+      "runId": 35583149567,
+      "headSha": "0cee27cac7339ac6e8f5e361b24108af64cd2474",
+      "url": "https://github.com/1127152834/auto-flow/actions/runs/35583149567",
+      "result": "92 passed, 27 skipped in 18.23s",
+      "scope": "Verified Job member handles report exit before recovery returns; live/root-exit/wrong-birth/foreign-job/denied and pre-ready cancellation/timeout; Windows new-file safety and actual worker output."
+    },
+    "localNativeBoundaryRules": "91 passed, 19 native-only skipped before reserved-name follow-up",
+    "frontendFull": "5459 passed (406 files)",
+    "typecheck": "passed",
+    "lint": "passed",
+    "openapi": "passed",
+    "scripts": "101 passed including literal named UI-test references (post-candidate evidence tooling only)",
+    "ruff": "passed: full ruff check . --no-cache after parametrizing B023 fixture; prior ccef90e9 full CI failed this test-only lint check",
+    "mypy": "402 source files passed",
+    "mapping": "251 references valid; 222 with scoped assertions, 29 with no located assertion; 188 partial / 63 planned / 0 verified",
+    "build": "Latest f580b1c6 PyInstaller backend, desktop renderer and ARM DMG build passed; no publication.",
+    "finalReview": {
+      "findings": "4 Important, 0 Critical; all accepted and fixed; one fix pass, no second review",
+      "manualAndTaint": "102 passed; prior RED 4 nested config + 2 synthetic-secret boundary cases",
+      "childAuthority": "29 passed; prior RED 4 child authority cases",
+      "startupBoundary": "59 passed, 8 native skipped; ownership ordering first failed then passed",
+      "nativeReviewRun": {
+        "runId": 35580013772,
+        "headSha": "0102c047f59ff1a8eb485cd4a9aaa45b20fad755",
+        "conclusion": "failure",
+        "result": "87 passed, 27 skipped, 1 failed portable mock fixture",
+        "confirmedScopes": "Native pre-ready cancellation/timeout, descendants, recovery, new file publication passed",
+        "failure": "Portable ordering test stubbed Job handles but child opened the real Job; fixture corrected, final matrix will verify."
+      }
+    },
+    "sheetsConsistency": "61 passed, 2 warnings in 26.24s; same two send/abandon orderings split into pytest parameters to satisfy B023. Actual HTTP/SQLite, controlled transport, no Google live claim.",
+    "sheetsStatusAndTombstone": "8 new cases passed; related sync/recovery/rules regression 45 passed, 2 warnings in 33.90s on production source 82c067c9. HTTP/SQLite with controlled Google transport; no live-network claim.",
+    "excelDuplicateIdentity": "18 passed, 2 warnings in 15.24s: import/lease suite including independent identical rows and source-byte preservation. No production source change.",
+    "sheetsReorderedState": "6 passed, 19 deselected in 7.74s: existing explicit-status scenarios extended with remote row insertion; source 82c067c9 unchanged.",
+    "armFullCandidate": "3313 backend passed, 60 skipped; 5459 frontend passed; 15 selected real worker cases passed; all source/packaged/installer steps passed at d21197ad, production source equivalent to 82c067c9. See ci-capabilities-82c067c9-darwin-arm64.json.",
+    "schemaPreflightAndCreateFailure": "8 passed in 26.58s; separate OpenAPI preparation request bound, unchanged shutdown/SSE/worker-cleanup deadlines, and created-record null preservation after denied initialization. Full no-cache ruff passed.",
+    "intelFailedAttempt": {
+      "runId": 35585675170,
+      "headSha": "d21197ad995090611b178b24e6f671513eca3f60",
+      "result": "1 failed, 3312 passed, 60 skipped in 1875.04s",
+      "failure": "test_open_sse_does_not_block_shutdown_or_worker_cleanup[False-host]: GET /openapi.json ReadTimeout (5 seconds), before SSE/open shutdown timing",
+      "followup": "test-only dedicated 30-second schema preparation bound; 3/8-second process-exit assertions unchanged; platform-only full follow-up to be dispatched"
+    },
+    "verificationReadFailures": "50 related sync/recovery/rules passed in 40.66s plus one block-continuation case passed in 2.20s. Partial verification loss first failed with raw SheetsApiError, then passed. Failed reconcile reads and credential acquisition settle command envelopes; original unknown writes stay unchanged.",
+    "currentNativeInstaller": "Passed scoped current-source ARM checks in install-read-fix-darwin-arm64.json; full physical release acceptance incomplete."
+  },
+  "reports": [
+    "subflow-follow-through.json",
+    "manual-follow-through.json",
+    "parallel-follow-through.json",
+    "multi-run-follow-through.json",
+    "multi-run-business-darwin-arm64.json",
+    "install-capabilities-darwin-arm64.json",
+    "install-final-candidate-darwin-arm64.json"
+  ],
+  "remaining": [
+    "S4 existing Windows output overwrite/append/read remains refused. Native held-target replacement experiments did not meet the approved identity and atomicity guarantees; a safe adapter design remains required.",
+    "Confirmed shared Sheets Task-claim gap: identical physical rows in two projects receive different local lease keys; shared identity and ambiguous-binding admission are missing. See shared-sheets-claims-gap.json and proposed shared-sheets-claims spec; not merely missing tests.",
+    "Source-confirmed Sheets remote row append, delete synchronization and new-row formula-template copy are not implemented. Existing-row push, local tombstone and formula refresh do not prove those capabilities. Proposed separate row-mutations slices are not included in the pending C/R approval question.",
+    "Additional confirmed node capability gaps: table/field structure query, deleteField, Sheets system UUID initialization and controlled remote-column creation. Existing management/local-field capabilities do not implement these ports; see remaining-assertion-plan.md. Ordinary remote difference recording/viewing is also missing; preserving local values is separately tested.",
+    "29 of 251 requirement mappings still have no located direct assertion; 188 partial and 63 planned, zero verified. Assertions and real chains cover only their stated subconditions.",
+    "Current production candidate f580b1c6d1d26f0dbb27d9dc874d4489f3fdfc34 full local and three-platform regression pending. ARM full success at d21197ad covers previous source 82c067c9; Windows/Intel follow-ups cancelled after source changed.",
+    "PM6 service-account Sheets/system credential evidence exists. Current PM9 packaged complete project-run-Sheets chain and desktop OAuth require current authorization and remain unverified.",
+    "Windows/Intel physical installer and native dialogs remain pending. Current f580b1c6 ARM isolated DMG copy, packaged sidecar health/parent-exit and actual native open/select/save-cancel passed in install-read-fix-darwin-arm64.json; full native import/export, credentials, signing, Gatekeeper and uninstall remain incomplete.",
+    "Signing/notarization requires the corresponding authorized identities. No merge or release is authorized."
+  ],
+  "sourceHashes": {
+    "apps/backend/src/autoflow/application/workflows/runtime.py": "0c677f068fd86ad9c63f34a7bcf82c9a45ac160bae5382accc7c3647cdb60f52",
+    "apps/backend/src/autoflow/application/workflows/dispatcher.py": "b50d84f259c58280063b34ad8d862d41b1f98917ce5007e773a982e314faec78",
+    "apps/backend/src/autoflow/application/workflows/browser_resources.py": "e6ecb9fdcb8e4a73c4b0b0e9aa486ca5f5518e9330187da6f60d5a2c96964de2",
+    "apps/backend/src/autoflow/infrastructure/process/windows_job.py": "fb45979d56d160bb574cd4ce3697234e9d85edea0eab1d1c123bec69c026ffba",
+    "apps/backend/src/autoflow/infrastructure/filesystem/windows_output.py": "4986a68d5c1dd39a432b294e0e6816fc2c76f86657086e1232427cba4e149720",
+    "apps/backend/src/autoflow/infrastructure/filesystem/workflow_artifacts.py": "8f99aebe92c4190be0ebc98e7cffd70a5ab3ade43f422e37df60076cf630865a",
+    "apps/backend/src/autoflow/infrastructure/process/project_workflow_worker.py": "b26e98a1db3198766679506e06f0bc9eff9c8f448745a7278f5c95dad98028d5",
+    "apps/backend/src/autoflow/application/project_runs/worker_capabilities.py": "bddefc270f6feba9388d7e15ea20758e71ff38181b9738fe48423313a8e54be4",
+    "apps/backend/src/autoflow/domain/workflows/run_validation.py": "2e8018e4e65dbeafe5a39157a3cafaad04c4bef7b9714423139f0832c8ecd080",
+    "apps/backend/src/autoflow/providers/browser/workflow_worker.py": "a0c8b1117c843f8d835df4337303c41680d22345babb0e424016be4704679dd1",
+    "apps/backend/src/autoflow/application/project_sync/outbound.py": "777f23fb1438368393e0bc4cf8df5091811652bea4c2e87eee227dc11b565b59",
+    "apps/backend/src/autoflow/infrastructure/database/project_sync.py": "b6502a9bfa89374b0beb48d57a6361e98b4e789d918569418c160dc1fbf3e9e1",
+    "apps/backend/src/autoflow/infrastructure/database/project_data_records.py": "e3e6ab14465d5f24987cc3bd4fd256b2929e5032fa4f499e6b520b3563659efb"
+  }
+}

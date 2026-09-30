@@ -22,7 +22,7 @@ async def recover_worker_directories(
         raise RuntimeError("Invalid workflow cleanup identity")
     root = temp_dir.resolve() / "workflow-runs"
     run = root / run_id
-    if root.is_symlink() or run.is_symlink():
+    if _redirected(root) or _redirected(run):
         raise RuntimeError("Workflow cleanup ownership path is invalid")
     if not run.exists():
         return
@@ -31,13 +31,14 @@ async def recover_worker_directories(
         suffix = directory.name.removeprefix("generation-")
         if (not directory.name.startswith("generation-") or not suffix.isdecimal()
             or str(int(suffix)) != suffix or int(suffix) < 1
-            or directory.is_symlink() or not directory.is_dir()):
+            or _redirected(directory) or not directory.is_dir()):
             raise RuntimeError("Workflow cleanup generation path is invalid")
-    if directories and sys.platform == "win32":
-        # Never infer process death from an absent old parent. Until native restart
-        # ownership is available, retain reconciling instead of reporting success.
-        raise RuntimeError("Windows workflow restart cleanup needs native ownership verification")
     for directory in directories:
+        if sys.platform == 'win32':
+            from .windows_job import cleanup_worker_job
+            await asyncio.to_thread(cleanup_worker_job, directory, run_id, int(directory.name.removeprefix('generation-')), timeout)
+            await asyncio.to_thread(shutil.rmtree, directory)
+            continue
         owned = await asyncio.to_thread(capture_processes, 0, None, directory, executable, strict_ownership=True)
         await asyncio.to_thread(signal_processes, owned, signal.SIGTERM)
         deadline = asyncio.get_running_loop().time() + timeout
@@ -57,3 +58,11 @@ async def recover_worker_directories(
             await asyncio.to_thread(shutil.rmtree, directory)
         except FileNotFoundError:
             pass
+
+
+def _redirected(path: Path) -> bool:
+    try:
+        metadata = path.lstat()
+    except FileNotFoundError:
+        return False
+    return path.is_symlink() or bool(getattr(metadata, "st_file_attributes", 0) & 0x400)

@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom/vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { ApiClientError, type ApiRequestInit, type StreamingApiClient } from '../../../shared/api/client'
@@ -32,14 +32,14 @@ it('submits one normalized payload containing values edited across all four tabs
   const { props } = mount(request)
   const user = userEvent.setup()
   await user.type(await screen.findByLabelText('自动化名称'), ' 自动运行 ')
-  await chooseOption(user, screen.getByRole('combobox', { name: '关联工作流' }), 'wf')
   await user.click(screen.getByRole('tab', { name: '输入与参数' })); await user.click(screen.getByRole('button', { name: '新增参数' })); await user.type(screen.getByLabelText(/^参数名称/), '次数'); await chooseOption(user, screen.getByRole('combobox', { name: '参数类型 次数' }), 'number'); await user.type(screen.getByLabelText('默认值 次数'), '12')
   await user.click(screen.getByRole('tab', { name: '资源与环境' })); await user.click(screen.getByRole('radio', { name: '不使用代理' }))
   await user.click(screen.getByRole('tab', { name: '运行设置' })); await user.clear(screen.getByLabelText('最大任务数')); await user.type(screen.getByLabelText('最大任务数'), '7'); await user.clear(screen.getByLabelText('单任务超时（分钟）')); await user.type(screen.getByLabelText('单任务超时（分钟）'), '2.5')
   await user.click(screen.getByRole('button', { name: '保存配置' }))
   await waitFor(() => expect(props.onCreated).toHaveBeenCalledWith('a'))
   expect(writes).toHaveLength(1)
-  expect(writes[0].body).toMatchObject({ name: '自动运行', workflowId: 'wf', parameterSchema: [{ name: '次数', type: 'number', defaultValue: 12 }], environmentPolicy: { source: 'newFromProfile', proxyOverride: { mode: 'none' } }, runPolicy: { maxTasks: 7, automaticExecutionTimeoutSeconds: 150 } })
+  expect(writes[0].body).not.toHaveProperty('workflowId')
+  expect(writes[0].body).toMatchObject({ name: '自动运行', parameterSchema: [{ name: '次数', type: 'number', defaultValue: 12 }], environmentPolicy: { source: 'newFromProfile', proxyOverride: { mode: 'none' } }, runPolicy: { maxTasks: 7, automaticExecutionTimeoutSeconds: 150 } })
 })
 
 it('opens Studio with the saved workflow identity', async () => {
@@ -51,34 +51,34 @@ it('opens Studio with the saved workflow identity', async () => {
   }) as StreamingApiClient['request']
   mount(request, { automationId: 'a', onOpenStudio })
   const user = userEvent.setup()
-  await user.click((await screen.findAllByRole('button', { name: '打开 Studio' }))[0]!)
+  await user.click((await screen.findAllByRole('button', { name: '编辑工作流' }))[0]!)
   expect(onOpenStudio).toHaveBeenCalledWith('wf')
 })
 
-it('opens the workflow selected in a new automation without requiring a prior save', async () => {
+it('requires saving a new automation before opening its owned workflow', async () => {
   const onOpenStudio = vi.fn()
   const request = vi.fn(async (path: string) => resources(path) ?? { items: [] }) as StreamingApiClient['request']
   mount(request, { onOpenStudio })
   const user = userEvent.setup()
-  expect(await screen.findByRole('button', { name: '打开 Studio' })).toBeDisabled()
-  await chooseOption(user, screen.getByRole('combobox', { name: '关联工作流' }), 'wf')
-  await user.click(screen.getByRole('button', { name: '打开 Studio' }))
-  expect(onOpenStudio).toHaveBeenCalledWith('wf')
+  await user.type(await screen.findByLabelText('自动化名称'), '尚未保存的自动化')
+  expect(screen.queryByRole('combobox', { name: '关联工作流' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: '编辑工作流' })).not.toBeInTheDocument()
+  expect(onOpenStudio).not.toHaveBeenCalled()
 })
 
-it('does not reuse another project workflow catalog while its own request is pending', async () => {
+it('refreshes saved Studio workflows on return without resetting the automation draft', async () => {
+  let saved = false
   const request = vi.fn(async (path: string) => {
-    if (path.includes('/workflows?projectId=other')) return new Promise(() => {})
+    if (path.startsWith('/api/v1/workflows')) return saved ? resources(path) : { items: [] }
     return resources(path) ?? { items: [] }
   }) as StreamingApiClient['request']
-  const view = mount(request)
+  mount(request, { onOpenStudio: vi.fn() })
   const user = userEvent.setup()
-  await chooseOption(user, await screen.findByRole('combobox', { name: '关联工作流' }), 'wf')
-  view.update({ projectId: 'other' })
-  await user.click(screen.getByRole('combobox', { name: '关联工作流' }))
-  expect(screen.queryByRole('option', { name: '工作流' })).not.toBeInTheDocument()
-  expect(view.cache.getQueryData(['w', 'i', 'workflow-catalog', 'p'])).toBeDefined()
-  expect(view.cache.getQueryData(['w', 'i', 'workflow-catalog', 'other'])).toBeUndefined()
+  await user.type(await screen.findByLabelText('自动化名称'), '保留我的草稿')
+  await waitFor(() => expect(request).toHaveBeenCalledWith('/api/v1/workflows?projectId=p', expect.anything()))
+  saved = true
+  fireEvent(window, new Event('focus'))
+  expect(screen.getByLabelText('自动化名称')).toHaveValue('保留我的草稿')
 })
 
 it('keeps the edit draft through background refresh and a 409 until latest data is explicitly accepted', async () => {
@@ -121,4 +121,19 @@ it('keeps the draft and ignores a late save response after reconnecting to anoth
   await Promise.resolve(); await Promise.resolve()
   expect(screen.getByLabelText('自动化名称')).toHaveValue('重连草稿')
   expect(view.props.onCreated).not.toHaveBeenCalled()
+})
+
+it('shows the saved concurrency limit in the actual launch dialog', async () => {
+  const saved = { ...automation, runPolicy: { ...automation.runPolicy, concurrency: 4, maxLiveInstances: 2 } }
+  const request = vi.fn(async (path: string) => {
+    const found = resources(path); if (found) return found
+    if (path.endsWith('/automations/a')) return saved
+    if (path.includes('/validation')) return { status: 'ready', valid: true, runnable: true, issues: [] }
+    return { items: [], total: 0 }
+  }) as StreamingApiClient['request']
+  mount(request, { automationId: 'a', onBatchCreated: vi.fn() })
+  await userEvent.click(await screen.findByRole('button', { name: '启动运行' }))
+  const dialog = await screen.findByRole('dialog')
+  expect(within(dialog).getByText('配置并发上限 2')).toBeVisible()
+  expect(within(dialog).queryByText('按顺序执行')).not.toBeInTheDocument()
 })

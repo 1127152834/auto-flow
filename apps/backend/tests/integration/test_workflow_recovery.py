@@ -1,6 +1,7 @@
 import asyncio
 import os
 import sys
+from types import SimpleNamespace
 from uuid import uuid4
 
 import pytest
@@ -15,6 +16,7 @@ async def test_absent_run_has_no_cleanup_work(tmp_path):
 
 @pytest.mark.asyncio
 async def test_recovery_only_removes_verified_run_generation(tmp_path, monkeypatch):
+    monkeypatch.setattr('autoflow.infrastructure.process.workflow_recovery.sys', SimpleNamespace(platform='darwin'))
     import autoflow.infrastructure.process.workflow_recovery as module
 
     run_id = str(uuid4())
@@ -30,6 +32,8 @@ async def test_recovery_only_removes_verified_run_generation(tmp_path, monkeypat
         return {}
 
     monkeypatch.setattr(module, 'capture_processes', capture)
+    monkeypatch.setattr(module, 'signal_processes', lambda *_args: None)
+    monkeypatch.setattr(module, 'signal', SimpleNamespace(SIGTERM=15, SIGKILL=9))
     await recover_worker_directories(tmp_path, run_id, tmp_path / 'CloakBrowser')
     assert scans and all(folder == directory for folder in scans)
     assert not directory.exists()
@@ -38,6 +42,7 @@ async def test_recovery_only_removes_verified_run_generation(tmp_path, monkeypat
 
 @pytest.mark.asyncio
 async def test_uncertain_process_cleanup_preserves_directory(tmp_path, monkeypatch):
+    monkeypatch.setattr('autoflow.infrastructure.process.workflow_recovery.sys', SimpleNamespace(platform='darwin'))
     import autoflow.infrastructure.process.workflow_recovery as module
 
     run_id = str(uuid4())
@@ -55,6 +60,7 @@ async def test_uncertain_process_cleanup_preserves_directory(tmp_path, monkeypat
 
 @pytest.mark.asyncio
 async def test_unreadable_live_native_candidate_is_not_proof_of_cleanup(tmp_path, monkeypatch):
+    monkeypatch.setattr('autoflow.infrastructure.process.workflow_recovery.sys', SimpleNamespace(platform='darwin'))
     import autoflow.infrastructure.process.project_browser_processes as processes
 
     run_id = str(uuid4())
@@ -214,3 +220,139 @@ async def test_bootstrap_recovery_waits_for_profile_guard_release(tmp_path):
     finally:
         await dispatcher.shutdown()
         factory.dispose()
+
+
+@pytest.mark.asyncio
+async def test_windows_restart_keeps_directory_without_native_ownership(tmp_path, monkeypatch):
+    monkeypatch.setattr('autoflow.infrastructure.process.workflow_recovery.sys', SimpleNamespace(platform='win32'))
+    run_id = str(uuid4())
+    directory = tmp_path / 'workflow-runs' / run_id / 'generation-1'
+    directory.mkdir(parents=True)
+    with pytest.raises(RuntimeError, match='Windows workflow restart cleanup needs native ownership'):
+        await recover_worker_directories(tmp_path, run_id, tmp_path / 'CloakBrowser')
+    assert directory.exists()
+
+
+@pytest.mark.asyncio
+@pytest.mark.skipif(sys.platform != 'win32', reason='requires native Windows Job ownership')
+@pytest.mark.parametrize('mode', ['live', 'root-exit', 'wrong-birth', 'foreign-job', 'denied'])
+async def test_native_windows_recovery_owns_job_and_descendants(tmp_path, monkeypatch, mode):
+    import ctypes
+    import json
+    from ctypes import wintypes
+
+    from autoflow.infrastructure.process import windows_job
+    from autoflow.infrastructure.process.browser_processes import (
+        process_birth,
+        process_identity_is_alive,
+    )
+
+    run_id = str(uuid4())
+    directory = tmp_path / 'workflow-runs' / run_id / 'generation-1'
+    directory.mkdir(parents=True)
+    name = f'Local\\AutoFlow-{run_id}-1-{uuid4().hex}'
+    code = """
+import subprocess, sys, time
+from autoflow.bootstrap.test_browser_worker import browser_worker_main
+def run(stopped):
+    child = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(60)'])
+    print(child.pid, flush=True)
+    time.sleep(60)
+    return 0
+browser_worker_main(run)
+"""
+    supervisor_handles = []
+    async def spawn(job_name):
+        supervisor_handles.append(windows_job.create_run_job(job_name))
+        return await asyncio.create_subprocess_exec(sys.executable, '-c', code, env={**os.environ, 'AUTOFLOW_WORKER_JOB_NAME': job_name}, stdout=asyncio.subprocess.PIPE)
+
+    root = await spawn(name)
+    foreign = None
+    handle = None
+    child_handle = None
+    kernel = windows_job._api()
+    kernel.WaitForSingleObject.argtypes = [wintypes.HANDLE, wintypes.DWORD]
+    kernel.WaitForSingleObject.restype = wintypes.DWORD
+    try:
+        child_pid = int(await asyncio.wait_for(root.stdout.readline(), 10))
+        child_birth, root_birth = process_birth(child_pid), process_birth(root.pid)
+        assert child_birth is not None and root_birth is not None
+        child_handle = kernel.OpenProcess(0x00100000 | 0x1000, False, child_pid)
+        assert child_handle and windows_job._windows_handle_birth(kernel, child_handle) == child_birth
+        member = wintypes.BOOL()
+        assert kernel.IsProcessInJob(child_handle, supervisor_handles[0], ctypes.byref(member)) and member.value
+        handle = windows_job.record_worker_job(directory, run_id, 1, name, root.pid, root_birth)
+        windows_job.close_worker_job(supervisor_handles.pop(0))
+        windows_job.close_worker_job(handle)
+        handle = None  # Simulate the original supervisor losing its retained handle.
+        proof_path = directory / 'worker-job.json'
+        original = proof_path.read_text()
+        if mode in {'wrong-birth', 'foreign-job'}:
+            proof = json.loads(original)
+            if mode == 'wrong-birth':
+                proof['birth'] += 1
+            else:
+                proof['name'] = f'Local\\AutoFlow-{run_id}-1-{uuid4().hex}'
+                foreign = await spawn(proof['name'])
+                assert int(await asyncio.wait_for(foreign.stdout.readline(), 10)) > 0
+            proof_path.write_text(json.dumps(proof))
+            with pytest.raises(OSError, match='does not own'):
+                await recover_worker_directories(tmp_path, run_id, tmp_path / 'kernel')
+            assert root.returncode is None and process_identity_is_alive(child_pid, child_birth)
+            assert directory.exists()
+            if foreign:
+                assert foreign.returncode is None
+            proof_path.write_text(original)
+        elif mode == 'denied':
+            api = windows_job._api
+            class Denied:
+                def __getattr__(self, name):
+                    return getattr(api(), name)
+                def TerminateJobObject(self, *_args):
+                    return False
+            with monkeypatch.context() as scoped:
+                scoped.setattr(windows_job, '_api', Denied)
+                with pytest.raises(OSError, match='termination denied'):
+                    await recover_worker_directories(tmp_path, run_id, tmp_path / 'kernel')
+            assert directory.exists() and process_identity_is_alive(child_pid, child_birth)
+        elif mode == 'root-exit':
+            root.kill()
+            await root.wait()
+            assert await asyncio.to_thread(kernel.WaitForSingleObject, child_handle, 5000) == 0
+        await recover_worker_directories(tmp_path, run_id, tmp_path / 'kernel', timeout=3)
+        await asyncio.wait_for(root.wait(), 5)
+        assert not directory.exists()
+        # Keep the native handle from before termination: reopening a PID may
+        # conservatively report an inaccessible rundown object as still alive.
+        # No extra grace period after recovery may hide premature release.
+        assert kernel.WaitForSingleObject(child_handle, 0) == 0
+        if foreign:
+            assert foreign.returncode is None
+    finally:
+        if child_handle:
+            kernel.CloseHandle(child_handle)
+        for supervisor_handle in supervisor_handles:
+            windows_job.close_worker_job(supervisor_handle)
+        if handle:
+            windows_job.close_worker_job(handle)
+        for process in [root, foreign]:
+            if process is not None:
+                if process.returncode is None:
+                    process.kill()
+                await process.wait()
+
+
+@pytest.mark.asyncio
+@pytest.mark.skipif(sys.platform != 'win32', reason='requires native Windows junctions')
+async def test_native_windows_recovery_rejects_junction_before_reading_ownership(tmp_path):
+    import subprocess
+    run_id = str(uuid4())
+    run = tmp_path / 'workflow-runs' / run_id
+    run.parent.mkdir()
+    outside = tmp_path / 'outside'
+    outside.mkdir()
+    (outside / 'keep').write_text('foreign')
+    await asyncio.to_thread(subprocess.run, ['cmd', '/c', 'mklink', '/J', str(run), str(outside)], capture_output=True, check=True)
+    with pytest.raises(RuntimeError, match='ownership path'):
+        await recover_worker_directories(tmp_path, run_id, tmp_path / 'kernel')
+    assert (outside / 'keep').read_text() == 'foreign'

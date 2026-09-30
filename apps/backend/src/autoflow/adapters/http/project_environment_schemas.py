@@ -1,9 +1,20 @@
 from datetime import datetime
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
 from pydantic import Field
 
+from .project_resource_schemas import FixedProxy, NoProxy, PoolProxy
 from .schemas import ApiModel
+
+
+class EnvironmentKernel(ApiModel):
+    edition: Literal["public", "licensed"]
+    version: str
+
+
+class EnvironmentBrowserConfiguration(ApiModel):
+    proxy: Annotated[NoProxy | FixedProxy | PoolProxy, Field(discriminator="mode")]
+    kernel: EnvironmentKernel
 
 
 class EnvironmentRefView(ApiModel):
@@ -25,6 +36,7 @@ class EnvironmentView(ApiModel):
     created_from_source: str | None = None
     created_from_task_id: str | None = None
     linked_record_count: int = 0
+    browser_configuration: EnvironmentBrowserConfiguration | None = None
 
 
 class EnvironmentInstanceView(ApiModel):
@@ -64,6 +76,14 @@ class EnvironmentImpactView(ApiModel):
     blockers: list[dict[str, Any]]
 
 
+class ManualInputFieldView(ApiModel):
+    name: str
+    type: Literal['string', 'number', 'integer', 'boolean', 'array', 'object']
+    required: bool = False
+    enum: list[Any] | None = None
+    title: str | None = None
+
+
 class ManualItemView(ApiModel):
     manual_item_id: str
     project_id: str
@@ -75,6 +95,8 @@ class ManualItemView(ApiModel):
     status_revision: int
     expires_at: datetime | None
     allowed_targets: list[Any]
+    input_schema: list[ManualInputFieldView] = Field(default_factory=list)
+    can_resume: bool = False
     resume_started: bool
     reason: str | None
     created_at: datetime | None = None
@@ -123,6 +145,8 @@ class EnvironmentPatch(ApiModel):
     expected_metadata_revision: int
     name: str | None = None
     notes: str | None = None
+    browser_configuration: EnvironmentBrowserConfiguration | None = None
+    expected_content_generation: int | None = None
 
     def payload(self) -> dict:
         data: dict[str, Any] = {"expectedMetadataRevision": self.expected_metadata_revision}
@@ -130,6 +154,10 @@ class EnvironmentPatch(ApiModel):
             data["name"] = self.name
         if self.notes is not None:
             data["notes"] = self.notes
+        if self.browser_configuration is not None:
+            data["browserConfiguration"] = self.browser_configuration.model_dump(by_alias=True)
+        if self.expected_content_generation is not None:
+            data["expectedContentGeneration"] = self.expected_content_generation
         return data
 
 
@@ -246,7 +274,11 @@ class EnvironmentOperationSnapshot(ApiModel):
     operation_id: str
     project_id: str | None
     idempotency_key: str
-    kind: str
+    kind: Literal[
+        "deleteEnvironment", "updateEnvironment", "openInstance",
+        "startMaintenance", "discardEnvironment", "resumeManual",
+        "finishManual", "saveEnvironment", "repairEndAssociation",
+    ]
     status: str
     status_revision: int
     resource: dict[str, Any]
@@ -260,3 +292,9 @@ class EnvironmentOperationSnapshot(ApiModel):
 class EnvironmentOperationView(ApiModel):
     operation: EnvironmentOperationSnapshot
     outcome: dict[str, Any] | None
+
+
+class TaskEndResultView(EnvironmentOperationView):
+    save_operation_id: str | None
+    association_phase: str | None
+    record_targets: list[RecordTargetWrite]

@@ -58,16 +58,15 @@ it('keeps edits made while the document request is pending dirty', async () => {
   await waitFor(() => expect(useWorkflowStore.getState().variables[0].value).toBe('newer'))
   expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(true)
 })
-
-it('updates an opened document after the store identity changes before React renders', async () => {
+it('updates an opened document using its revision instead of trying to create its existing ID', async () => {
   const saved = { id: 'opened-current', name: '真实打开的流程', revision: 7, updatedAt: '2026-09-28T00:00:00Z', nodes: [], edges: [], variables: [] }
-  const writes: { method: string; body: Record<string, unknown> }[] = []
+  const writes: { path: string; method: string; body: Record<string, unknown> }[] = []
   act(() => useWorkflowStore.getState().markAsSaved())
   setStudioTransport(async (input, init) => {
     const path = new URL(String(input)).pathname
     if (path.startsWith('/api/workflows') && ['POST', 'PUT'].includes(init?.method ?? '')) {
       const body = JSON.parse(String(init?.body))
-      writes.push({ method: init!.method!, body })
+      writes.push({ path, method: init!.method!, body })
       return init?.method === 'PUT'
         ? Response.json({ ...saved, ...body, revision: 8 })
         : Response.json({ error: { code: 'WORKFLOW_ID_CONFLICT', message: '工作流 ID 已存在', details: {}, requestId: 'save-conflict' } }, { status: 409 })
@@ -83,7 +82,7 @@ it('updates an opened document after the store identity changes before React ren
   act(() => useWorkflowStore.getState().setWorkflowName('编辑后名称'))
   fireEvent.click(screen.getByRole('button', { name: '保存' }))
   await waitFor(() => expect(writes).toHaveLength(1))
-  expect(writes[0]).toMatchObject({ method: 'PUT', body: { id: saved.id, expectedRevision: 7, name: '编辑后名称' } })
+  expect(writes[0]).toMatchObject({ path: `/api/workflows/${saved.id}`, method: 'PUT', body: { id: saved.id, expectedRevision: 7, name: '编辑后名称' } })
   await waitFor(() => expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(false))
 })
 

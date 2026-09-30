@@ -44,7 +44,9 @@ class SheetsConnectionRow(Base):
 class SheetsBindingRow(Base):
     __tablename__ = "project_sheets_bindings"
     __table_args__ = (
-        sa.CheckConstraint("binding_epoch >= 1", name="ck_project_sheets_binding_epoch"),
+        sa.CheckConstraint(
+            "binding_epoch >= 1", name="ck_project_sheets_binding_epoch"
+        ),
         sa.CheckConstraint("sheet_id >= 0", name="ck_project_sheets_binding_sheet_id"),
         sa.Index("ix_project_sheets_bindings_source", "spreadsheet_id", "sheet_id"),
         sa.Index("ix_project_sheets_bindings_project", "project_id", "updated_at"),

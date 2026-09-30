@@ -1,0 +1,12 @@
+The following is a diff from the previous accessibility tree for Window: "AutoFlow" with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.
+Removed element IDs: 4-72
++				82 container 确认清除数据
++					83 标题 确认清除数据, Value: 2
++						84 text 确认 清除数据
++					85 container
++						86 text 将对  moe.shizuku.privileged.api  执行不可逆操作。
++					87 按钮 取消
++					88 按钮 确认清除数据
++						89 文本 确认
++						90 文本 清除数据
+The focused UI element is 87 按钮 取消

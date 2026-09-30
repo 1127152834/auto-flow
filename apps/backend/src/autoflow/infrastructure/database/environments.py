@@ -3,6 +3,7 @@ from __future__ import annotations
 import builtins
 import hashlib
 import json
+from collections.abc import Callable
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from typing import Any, cast
@@ -216,6 +217,7 @@ class SqlAlchemyEnvironments:
                     notes=record.notes,
                     state=record.state,
                     profile_id=record.profile_id,
+                    identity_package=record.identity_package,
                     content_generation=record.ref.content_generation,
                     metadata_revision=record.ref.metadata_revision,
                     current_digest=digest,
@@ -238,6 +240,46 @@ class SqlAlchemyEnvironments:
                 ) from error
             return record
 
+    def update_configuration(
+        self,
+        project_id: str,
+        environment_id: str,
+        expected_revision: int,
+        expected_generation: int,
+        identity: dict[str, Any],
+        operation: ProjectOperation,
+        publish: Callable[[], str],
+    ) -> tuple[PersistentEnvironment, ProjectOperation, bool]:
+        """Publish a prepared copy only while revision and occupancy still agree."""
+        with self._session_factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            project = self._project(session, project_id)
+            if project.lifecycle_state != "active":
+                raise environment_error("PROJECT_READ_ONLY", "当前项目不可修改环境配置", 409)
+            row = self._environment(session, project_id, environment_id, writable=True, allow_operation_id=operation.operation_id)
+            recorded = session.get(ProjectOperationRow, operation.operation_id)
+            if recorded is None:
+                raise environment_error("OPERATION_NOT_FOUND", "配置保存操作不存在", 404)
+            self._match(recorded, operation)
+            if recorded.status == "succeeded":
+                return _environment(row), _operation(recorded), True
+            if session.get(ProjectEnvironmentOccupancyRow, environment_id) is not None:
+                raise environment_error("ENVIRONMENT_BUSY", "请关闭当前浏览器后修改配置", 423)
+            if row.metadata_revision != expected_revision or row.content_generation != expected_generation:
+                raise environment_error("SAVE_GENERATION_CONFLICT", "环境已更新，请重新读取后修改", 409)
+            digest = publish()  # Only the final directory rename; cloning happens before this transaction.
+            row.identity_package = identity
+            row.current_digest = digest
+            row.content_generation += 1
+            row.metadata_revision += 1
+            row.updated_at = datetime.now(UTC)
+            recorded.status = "succeeded"
+            recorded.status_revision += 1
+            recorded.result = _jsonable(_environment(row).to_dict())
+            recorded.updated_at = recorded.completed_at = row.updated_at
+            session.commit()
+            return _environment(row), _operation(recorded), False
+
     def publish_update(
         self,
         project_id: str,
@@ -246,6 +288,7 @@ class SqlAlchemyEnvironments:
         *,
         generation: int | None = None,
         authority: dict[str, Any] | None = None,
+        identity_package: dict[str, Any] | None = None,
     ) -> PersistentEnvironment:
         with self._session_factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
@@ -266,6 +309,7 @@ class SqlAlchemyEnvironments:
                 )
             row.content_generation = generation or row.content_generation + 1
             row.current_digest = digest
+            row.identity_package = identity_package
             row.updated_at = datetime.now(UTC)
             session.commit()
             return _environment(row)
@@ -294,6 +338,9 @@ class SqlAlchemyEnvironments:
                 occupancy.holder_kind, occupancy.holder_id,
                 _occupancy(current) if current else None,
             )
+            source = self._environment(session, record.project_id, occupancy.environment_id, writable=True)
+            if source.content_generation != record.source_content_generation or (source.identity_package or None) != record.identity_package:
+                raise environment_error("SAVE_GENERATION_CONFLICT", "环境内容或身份已变化，请重新准备任务", 409)
             if current is None:
                 session.add(
                     ProjectEnvironmentOccupancyRow(
@@ -324,6 +371,28 @@ class SqlAlchemyEnvironments:
             environments={row.id: _environment(row) for row in environments},
         )
 
+    def acquire_save_source(self, project_id: str, instance_id: str, expected_generation: int) -> PersistentEnvironment:
+        """Closed retained copies must reacquire the source before publishing."""
+        with self._session_factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            instance = session.get(ProjectEnvironmentInstanceRow, instance_id)
+            if instance is None or instance.project_id != project_id or not instance.environment_id:
+                raise environment_error('INSTANCE_OWNERSHIP_UNKNOWN', '环境实例归属不一致', 409)
+            source = self._environment(session, project_id, instance.environment_id, writable=True)
+            if source.content_generation != expected_generation:
+                raise environment_error('SAVE_GENERATION_CONFLICT', 'Saved environment content has changed', 409,
+                                        {'expectedRevision': expected_generation, 'currentRevision': source.content_generation})
+            current = session.get(ProjectEnvironmentOccupancyRow, instance.environment_id)
+            holder_kind = current.holder_kind if current and current.instance_id == instance_id else 'task' if instance.active_task_id else 'maintenance'
+            holder_id = current.holder_id if current and current.instance_id == instance_id else instance.active_task_id or instance.maintenance_operation_id
+            if holder_id is None:
+                raise environment_error('INSTANCE_OWNERSHIP_UNKNOWN', '环境实例归属不一致', 409)
+            occupy_environment(instance.environment_id, instance_id, holder_kind, holder_id, _occupancy(current) if current else None)
+            if current is None:
+                session.add(ProjectEnvironmentOccupancyRow(environment_id=instance.environment_id, instance_id=instance_id,
+                                                          holder_kind=holder_kind, holder_id=holder_id, created_at=datetime.now(UTC)))
+            session.commit()
+            return _environment(source)
     def disposable_task_instances(self, instance_id: str | None = None) -> builtins.list[EnvironmentInstance]:
         """Only terminal task copies without outstanding retention/manual ownership."""
         with self._session_factory() as session:
@@ -377,16 +446,21 @@ class SqlAlchemyEnvironments:
                     "NOT_FOUND", "Environment instance was not found", 404
                 )
             row.state = state
+            if state == 'retained_unsaved' and row.environment_id:
+                occupancy = session.get(ProjectEnvironmentOccupancyRow, row.environment_id)
+                if occupancy is not None and occupancy.instance_id == instance_id:
+                    session.delete(occupancy)
             row.updated_at = datetime.now(UTC)
             session.commit()
             return _instance(row)
 
     def release_occupancy(self, environment_id: str, instance_id: str) -> None:
         with self._session_factory() as session:
-            row = session.get(ProjectEnvironmentOccupancyRow, environment_id)
-            if row is not None and row.instance_id == instance_id:
-                session.delete(row)
-                session.commit()
+            session.execute(delete(ProjectEnvironmentOccupancyRow).where(
+                ProjectEnvironmentOccupancyRow.environment_id == environment_id,
+                ProjectEnvironmentOccupancyRow.instance_id == instance_id,
+            ))
+            session.commit()
 
     def list_instances(self, project_id: str, **query):
         with self._session_factory() as session:
@@ -448,6 +522,7 @@ class SqlAlchemyEnvironments:
                 )
                 if (
                     row is None
+                    or record_ref.get("projectId") != project_id
                     or row.project_id != project_id
                     or row.table_id != record_ref["tableId"]
                     or row.deleted
@@ -510,10 +585,10 @@ class SqlAlchemyEnvironments:
         items, _total = self.list_instances(project_id, task_id=task_id, page=1, page_size=1)
         return items[0] if items else None
 
-    def active_instance_for_run_request(self, run_request_id: str) -> EnvironmentInstance | None:
+    def active_instance_for_run(self, run_id: str) -> EnvironmentInstance | None:
         with self._session_factory() as session:
             run = session.scalar(select(WorkflowRunRow).where(
-                WorkflowRunRow.run_request_id == run_request_id,
+                WorkflowRunRow.id == run_id,
             ))
             if run is None:
                 raise environment_error("END_ACCESS_REVOKED", "运行身份不存在", 409)
@@ -571,6 +646,7 @@ class SqlAlchemyEnvironments:
                 )
                 if (
                     row is None
+                    or record_ref.get("projectId") != project_id
                     or row.project_id != project_id
                     or row.table_id != record_ref["tableId"]
                     or row.deleted
@@ -702,6 +778,15 @@ class SqlAlchemyEnvironments:
                 row.updated_at = now
             session.commit()
 
+    def latest_end_operation(self, project_id: str, task_id: str) -> str | None:
+        with self._session_factory() as session:
+            return session.scalar(
+                select(ProjectEndOperationRow.operation_id).where(
+                    ProjectEndOperationRow.project_id == project_id,
+                    ProjectEndOperationRow.task_id == task_id,
+                ).order_by(ProjectEndOperationRow.created_at.desc(), ProjectEndOperationRow.id.desc()).limit(1)
+            )
+
     def end_by_operation(self, operation_id: str) -> dict[str, Any] | None:
         with self._session_factory() as session:
             row = session.scalar(
@@ -725,7 +810,13 @@ class SqlAlchemyEnvironments:
                 "operationId": row.operation_id,
             }
 
-    def accept_operation(self, operation: ProjectOperation):
+    def accept_operation(
+        self,
+        operation: ProjectOperation,
+        *,
+        retention_request: dict[str, Any] | None = None,
+        parent_end: ProjectOperation | None = None,
+    ) -> tuple[ProjectOperation, bool]:
         with self._session_factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
             existing = session.scalar(
@@ -737,6 +828,41 @@ class SqlAlchemyEnvironments:
                 self._match(existing, operation)
                 session.rollback()
                 return _operation(existing), True
+            if operation.resource.get("browserConfigurationChange"):
+                if operation.project_id is None:
+                    raise ProjectError("CAPABILITY_SCOPE_DENIED", "配置保存缺少项目身份", 403)
+                self._environment(session, operation.project_id, operation.resource["environmentId"], writable=True)
+            if retention_request is not None:
+                from .project_data import SqlAlchemyProjectData
+
+                if operation.project_id is None or operation.kind != 'saveEnvironment':
+                    raise ProjectError('CAPABILITY_SCOPE_DENIED', '保存缺少项目身份', 403)
+                project = SqlAlchemyProjectData._guard_project_read(session, operation.project_id)
+                instance = session.get(ProjectEnvironmentInstanceRow, retention_request['instanceId'])
+                if instance is None or instance.project_id != operation.project_id:
+                    raise ProjectError('INSTANCE_NOT_FOUND', '环境实例不存在', 404)
+                if parent_end is not None:
+                    parent = session.get(ProjectOperationRow, parent_end.operation_id)
+                    ledger = session.scalar(select(ProjectEndOperationRow).where(ProjectEndOperationRow.operation_id == parent_end.operation_id))
+                    if (parent is None or parent.project_id != operation.project_id or parent.kind != 'saveEnvironment'
+                        or parent.status not in {'accepted', 'running', 'reconciling'}
+                        or parent.resource.get('environmentId') != instance.id
+                        or operation.idempotency_key != f'end-save:{parent.id}'
+                        or ledger is None or ledger.phase != 'saving' or not ledger.retain_environment
+                        or ledger.task_id != instance.active_task_id or ledger.run_id != instance.active_run_id):
+                        raise ProjectError('CAPABILITY_SCOPE_DENIED', '保存缺少已受理的 End 操作', 403)
+                    self._match(parent, parent_end)
+                if not (parent_end is not None and project.lifecycle_state == 'closing'):
+                    SqlAlchemyProjectData._guard_project_write(session, operation.project_id)
+                if parent_end is None:
+                    run = session.get(WorkflowRunRow, instance.active_run_id) if instance.active_run_id else None
+                    if run is not None and (run.execution_generation != retention_request['executionGeneration']
+                        or (run.status not in {'running', 'waiting_manual'} and instance.state != 'retained_unsaved')):
+                        raise ProjectError('CAPABILITY_SCOPE_DENIED', '运行代次已撤销，不能接受新保存', 403)
+                    if 'taskId' in retention_request and (retention_request['taskId'] != instance.active_task_id or retention_request['runId'] != instance.active_run_id):
+                        raise ProjectError('CAPABILITY_SCOPE_DENIED', 'End 与当前环境任务不一致', 403)
+                    if instance.instance_use_generation != retention_request['expectedUseGeneration']:
+                        raise ProjectError('CAPABILITY_SCOPE_DENIED', '环境使用代次已变化', 403)
             session.add(_operation_row(operation))
             session.commit()
             return operation, False
@@ -1121,6 +1247,7 @@ class SqlAlchemyEnvironments:
         environment_id: str,
         *,
         writable: bool = False,
+        allow_operation_id: str | None = None,
     ) -> ProjectEnvironmentRow:
         self._project(session, project_id)
         row = session.get(ProjectEnvironmentRow, environment_id)
@@ -1138,10 +1265,21 @@ class SqlAlchemyEnvironments:
                 409,
                 {"domainCode": "environment_unavailable"},
             )
+        if writable:
+            pending = session.scalar(select(ProjectOperationRow.id).where(
+                ProjectOperationRow.project_id == project_id,
+                ProjectOperationRow.status.in_(("accepted", "running", "reconciling")),
+                ProjectOperationRow.resource["environmentId"].as_string() == environment_id,
+                ProjectOperationRow.resource["browserConfigurationChange"].as_boolean().is_(True),
+                ProjectOperationRow.id != (allow_operation_id or ""),
+            ).limit(1))
+            if pending:
+                raise environment_error("ENVIRONMENT_BUSY", "环境配置保存尚未完成，请先核对原操作", 423, {"operationId": pending})
         return row
 
     def _match(self, existing: ProjectOperationRow, operation: ProjectOperation) -> None:
-        if existing.request_digest != operation.request_digest:
+        if (existing.project_id != operation.project_id or existing.kind != operation.kind
+            or existing.request_digest != operation.request_digest):
             raise ProjectError(
                 "OPERATION_PAYLOAD_MISMATCH",
                 "Idempotent command payload does not match",
@@ -1160,10 +1298,11 @@ def _environment(row: ProjectEnvironmentRow) -> PersistentEnvironment:
         row.state,  # type: ignore[arg-type]
         row.profile_id,
         row.unavailable_reason,
-        row.created_at,
-        row.updated_at,
+        _aware(row.created_at),
+        _aware(row.updated_at),
         row.created_from_source,
         row.created_from_task_id,
+        row.identity_package,
     )
 
 
@@ -1180,8 +1319,9 @@ def _instance(row: ProjectEnvironmentInstanceRow) -> EnvironmentInstance:
         row.active_run_id,
         row.maintenance_operation_id,
         row.profile_id,
-        row.created_at,
-        row.updated_at,
+        _aware(row.created_at),
+        _aware(row.updated_at),
+        row.identity_package or None,
     )
 
 
@@ -1198,7 +1338,7 @@ def _instance_row(record: EnvironmentInstance) -> ProjectEnvironmentInstanceRow:
         active_run_id=record.active_run_id,
         maintenance_operation_id=record.maintenance_operation_id,
         profile_id=record.profile_id,
-        identity_package={"source": record.source, "profileId": record.profile_id},
+        identity_package=record.identity_package or {},
         created_at=record.created_at,
         updated_at=record.updated_at,
     )
@@ -1214,12 +1354,12 @@ def _manual(row: ProjectManualItemRow) -> dict[str, Any]:
         "checkpointRevision": row.checkpoint_revision,
         "status": row.status,
         "statusRevision": row.status_revision,
-        "expiresAt": row.expires_at,
+        "expiresAt": _aware(row.expires_at) if row.expires_at is not None else None,
         "allowedTargets": row.allowed_targets,
         "resumeStarted": row.resume_started,
         "reason": row.reason,
-        "createdAt": row.created_at,
-        "updatedAt": row.updated_at,
+        "createdAt": _aware(row.created_at),
+        "updatedAt": _aware(row.updated_at),
     }
 
 
@@ -1264,9 +1404,9 @@ def _operation(row: ProjectOperationRow) -> ProjectOperation:
         row.resource,
         row.result,
         row.error,
-        row.created_at,
-        row.updated_at,
-        row.completed_at,
+        _aware(row.created_at),
+        _aware(row.updated_at),
+        _aware(row.completed_at) if row.completed_at else None,
     )
 
 

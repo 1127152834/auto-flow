@@ -3,8 +3,13 @@ from __future__ import annotations
 
 import json
 import sys
+from unittest.mock import patch
 
-from app.services.gesture_recognition_service import GestureRecognitionService
+from mediapipe.tasks.python import vision
+
+# The frozen module creates a global landmarker at import; parity below only uses pure geometry.
+with patch.object(vision.HandLandmarker, "create_from_options", return_value=None):
+    from app.services.gesture_recognition_service import GestureRecognitionService
 
 payload = json.loads(sys.stdin.read())
 service = GestureRecognitionService.__new__(GestureRecognitionService)

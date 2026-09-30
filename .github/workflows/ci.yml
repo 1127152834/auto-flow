@@ -4,13 +4,76 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+    inputs:
+      pm9NativeProbe:
+        description: Run only the bounded PM9 Windows native feasibility checks
+        type: boolean
+        default: false
+      pm9WorkerProbe:
+        description: Run only bounded Windows real worker diagnostics
+        type: boolean
+        default: false
+      pm9Platform:
+        description: Full validation platform (all by default; select one for a platform-specific follow-up)
+        type: choice
+        default: all
+        options: [all, windows-2022, macos-15-intel, macos-15]
+
+concurrency:
+  group: ci-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
 
 jobs:
+  pm9-native-probe:
+    if: github.event_name == 'workflow_dispatch' && inputs.pm9NativeProbe
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --directory apps/backend --locked
+      - run: uv run --directory apps/backend pytest -vv --tb=short tests/unit/test_browser_processes.py tests/integration/test_workflow_worker_process.py tests/integration/test_workflow_recovery.py tests/integration/test_workflow_artifacts.py tests/unit/workflows/test_browser_session_contract.py tests/differential/workflows/test_b4_table_executor_parity.py::test_csv_export_uses_the_real_atomic_artifact_writer tests/differential/workflows/test_b4_table_executor_parity.py::test_table_exports_formula_like_text_as_literal_data tests/differential/workflows/test_b4_table_executor_parity.py::test_csv_export_allows_explicit_absolute_path tests/differential/workflows/test_b4_table_executor_parity.py::test_export_rejects_ambiguous_paths
+      - run: python scripts/pm9-windows-native-probe.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pm9-windows-native-probe
+          path: pm9-native-probe.json
+  pm9-worker-probe:
+    if: github.event_name == 'workflow_dispatch' && inputs.pm9WorkerProbe
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --directory apps/backend --locked
+      - name: Install pinned real browser
+        shell: bash
+        run: |
+          uv run --directory apps/backend python - <<'PYTHON'
+          import os
+          from cloakbrowser import ensure_binary
+          executable = ensure_binary(browser_version='146.0.7680.177.5')
+          with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as output:
+              output.write(f'PM9_BROWSER_EXECUTABLE={executable}\n')
+          PYTHON
+      - run: uv run --directory apps/backend pytest -q tests/integration/test_workflow_worker_process.py::test_project_worker_launch_preserves_venv_without_redirector_job
+      - name: Diagnose real worker protocol without payload logging
+        run: uv run --directory apps/backend pytest -vv --tb=short --maxfail=2 tests/integration/test_project_batch_real_cloakbrowser.py tests/integration/test_project_sheets_real_cloakbrowser.py tests/integration/test_project_excel_real_cloakbrowser.py tests/integration/test_project_unlimited_real_cloakbrowser.py tests/integration/test_project_write_conflict_real_cloakbrowser.py -k "success or data-response-loss or data-schema or data-delete-field or manual-declared or manual-evidence-reconnect or manual-force-stop or shared_sheet or real_archive or bad_source or parameter-single or parameter-isolation or optional_input or browser_startup_failure or excel_multi_input or unlimited_final_record or real_write_versions or data-loop-partial or real_loop_keeps_two_sheet_intents or source_outage or real_opposing_writes"
+        env:
+          AUTOFLOW_TEST_CLOAKBROWSER: ${{ env.PM9_BROWSER_EXECUTABLE }}
+          AUTOFLOW_TEST_WORKER_DIAGNOSTICS: '1'
   checks:
+    # Same-repository draft branches are checked on push; ready/fork PRs keep their merge checks.
+    if: (github.event_name != 'pull_request' || !github.event.pull_request.draft || github.event.pull_request.head.repo.full_name != github.repository) && (github.event_name != 'workflow_dispatch' || (!inputs.pm9NativeProbe && !inputs.pm9WorkerProbe))
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2022, macos-15-intel, macos-15]
+        os: ${{ fromJSON(inputs.pm9Platform && inputs.pm9Platform != 'all' && format('["{0}"]', inputs.pm9Platform) || '["windows-2022", "macos-15-intel", "macos-15"]') }}
     runs-on: ${{ matrix.os }}
     steps:
       - run: git config --global core.autocrlf false
@@ -30,15 +93,49 @@ jobs:
         with:
           python-version: '3.11'
       - uses: astral-sh/setup-uv@v5
-      - run: uv sync --directory apps/backend --locked
+      - run: uv sync --directory apps/backend --locked --group build
       - run: npm ci
+      - name: Install pinned real browser for PM9 runtime acceptance
+        shell: bash
+        run: |
+          uv run --directory apps/backend python - <<'PYTHON'
+          import os, sys
+          from cloakbrowser import ensure_binary
+          executable = ensure_binary(browser_version='146.0.7680.177.5' if sys.platform == 'win32' else '145.0.7632.109.2')
+          with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as output:
+              output.write(f'PM9_BROWSER_EXECUTABLE={executable}\n')
+              output.write(f"PM9_BROWSER_VERSION={'146.0.7680.177.5' if sys.platform == 'win32' else '145.0.7632.109.2'}\n")
+          PYTHON
+      - name: Verify node-owned browser initialization and cleanup
+        run: uv run --directory apps/backend pytest -q tests/integration/test_node_browser_initialization.py
+        env:
+          AUTOFLOW_TEST_CLOAKBROWSER: ${{ env.PM9_BROWSER_EXECUTABLE }}
+          AUTOFLOW_TEST_CLOAK_VERSION: ${{ env.PM9_BROWSER_VERSION }}
       - run: npm run typecheck
       - run: npm run test:scripts
       - run: npm run lint
+      - run: npm run openapi:check
+      - run: uv run --directory apps/backend ruff check .
+      - run: uv run --directory apps/backend mypy src
+      - name: Check native Windows platform boundaries
+        timeout-minutes: 10
+        if: runner.os == 'Windows'
+        run: uv run --directory apps/backend pytest -vv --tb=short --maxfail=10 tests/unit/test_browser_processes.py tests/integration/test_workflow_worker_protocol.py tests/integration/test_b1_stop_and_browser_crash_regressions.py tests/integration/test_workflow_recovery.py tests/unit/test_new_file.py tests/unit/test_project_excel_publication.py tests/integration/test_workflow_artifacts.py tests/integration/test_project_excel_exports.py tests/integration/test_project_crash_recovery.py tests/integration/test_workflow_worker_process.py tests/integration/test_kernel_worker.py tests/differential/workflows/test_b1_executor_parity.py tests/unit/test_android_runtime.py tests/unit/test_environment_browser.py tests/unit/workflows/test_browser_session_contract.py tests/contract/test_project_data_records.py
+      - name: Check native desktop path and settings contracts
+        if: runner.os == 'Windows'
+        run: npm --workspace @autoflow/desktop test -- src/main/platform/paths.test.ts src/main/sidecar/supervisor.test.ts src/main/settings/settings.integration.test.ts src/renderer/domains/project-automations/pages/AutomationDetailPage.test.tsx
+      - name: Check project HTTP writes before full regression
+        run: node scripts/smoke-project-management.mjs --output-dir artifacts/pm9/http-preflight
+      - run: uv run --directory apps/backend pytest -q --maxfail=20
+      - run: npm test
       - run: npm run build
         env:
           NODE_OPTIONS: --max-old-space-size=6144
-      - run: node scripts/smoke-project-management.mjs --output-dir artifacts/pm9/source
+      - name: Verify real worker recovery, shared Sheets claims and manual expiry race
+        run: uv run --directory apps/backend pytest -q tests/integration/test_project_batch_real_cloakbrowser.py tests/integration/test_project_sheets_real_cloakbrowser.py tests/integration/test_project_excel_real_cloakbrowser.py tests/integration/test_project_unlimited_real_cloakbrowser.py tests/integration/test_project_write_conflict_real_cloakbrowser.py -k "parallel or manual-declared or manual-evidence-reconnect or manual-force-stop or data-schema or data-delete-field or data-subflow or data-response-loss or data-link- or data-old-candidate or manual-race or manual-expire or shared_sheet or real_archive or bad_source or parameter-single or parameter-isolation or optional_input or browser_startup_failure or excel_multi_input or unlimited_final_record or real_write_versions or data-loop-partial or real_loop_keeps_two_sheet_intents or source_outage or real_opposing_writes"
+        env:
+          AUTOFLOW_TEST_CLOAKBROWSER: ${{ env.PM9_BROWSER_EXECUTABLE }}
+      - run: node scripts/smoke-project-management.mjs --runtime-kernel "${{ env.PM9_BROWSER_EXECUTABLE }}" --output-dir artifacts/pm9/source
       - run: node scripts/smoke-project-management-desktop.mjs --output-dir artifacts/pm9/source
       - run: npm run backend:build
       - run: npm run package:dir
@@ -68,10 +165,12 @@ jobs:
           console.log(`smoking ${executable}`)
           const result = spawnSync(process.execPath, ['scripts/smoke-sidecar.mjs', '--executable', executable], { stdio: 'inherit' })
           if (result.status !== 0) process.exit(result.status ?? 1)
-          const project = spawnSync(process.execPath, ['scripts/smoke-project-management.mjs', '--executable', executable, '--output-dir', 'artifacts/pm9/packaged'], { stdio: 'inherit' })
+          const project = spawnSync(process.execPath, ['scripts/smoke-project-management.mjs', '--executable', executable, '--runtime-kernel', process.env.PM9_BROWSER_EXECUTABLE, '--output-dir', 'artifacts/pm9/packaged'], { stdio: 'inherit' })
           if (project.status !== 0) process.exit(project.status ?? 1)
+          const combinations = spawnSync(process.execPath, ['scripts/smoke-project-business-combinations.mjs', '--executable', executable, '--runtime-kernel', process.env.PM9_BROWSER_EXECUTABLE, '--output-dir', 'artifacts/pm9/packaged'], { stdio: 'inherit' })
+          if (combinations.status !== 0) process.exit(combinations.status ?? 1)
           const projectDesktopExecutable = resolve(dirname(executable), process.platform === 'win32' ? '../../AutoFlow.exe' : '../../MacOS/AutoFlow')
-          const projectDesktop = spawnSync(process.execPath, ['scripts/smoke-project-management-desktop.mjs', '--executable', projectDesktopExecutable, '--output-dir', 'artifacts/pm9/packaged'], { stdio: 'inherit' })
+          const projectDesktop = spawnSync(process.execPath, ['scripts/smoke-project-management-desktop.mjs', '--executable', projectDesktopExecutable, '--runtime-kernel', process.env.PM9_BROWSER_EXECUTABLE, '--output-dir', 'artifacts/pm9/packaged'], { stdio: 'inherit' })
           if (projectDesktop.status !== 0) process.exit(projectDesktop.status ?? 1)
           const browser = spawnSync(process.execPath, ['scripts/smoke-browser-management.mjs', '--executable', executable], { stdio: 'inherit' })
           if (browser.status !== 0) process.exit(browser.status ?? 1)

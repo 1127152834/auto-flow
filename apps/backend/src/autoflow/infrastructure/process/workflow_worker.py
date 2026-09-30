@@ -141,9 +141,10 @@ class WorkflowWorkerManager:
     async def start(
         self,
         run_id: str,
-        profile_id: str,
+        profile_id: str | None,
         executable: Path | None,
         payload: dict[str, Any],
+        *, prepare_directory: Callable[[Path], None] | None = None,
     ) -> WorkflowWorkerSession:
         if not _SAFE_ID.fullmatch(run_id):
             raise ValueError("runId 无效")
@@ -161,6 +162,8 @@ class WorkflowWorkerManager:
         registered: asyncio.Event | None = None
         try:
             directory.mkdir(parents=True, exist_ok=False)
+            if prepare_directory is not None:
+                prepare_directory(directory)
             env = workflow_environment({**os.environ, **self._worker_env})
             env.pop("CLOAKBROWSER_LICENSE_KEY", None)
             if executable is None:
@@ -277,6 +280,12 @@ class WorkflowWorkerManager:
                 self._starting.pop(run_id, None)
             raise
 
+    def browser_directory(self, run_id: str) -> Path:
+        worker = self._running.get(run_id)
+        if worker is None or run_id in self._stopping:
+            raise RuntimeError('workflow worker 不可用')
+        return worker.directory
+
     async def send_command(self, run_id: str, command: dict[str, Any]) -> None:
         async with self._lock:
             worker = self._running.get(run_id)
@@ -287,8 +296,13 @@ class WorkflowWorkerManager:
             raise RuntimeError("workflow worker 命令通道已关闭")
         encoded = (json.dumps(command, ensure_ascii=False) + "\n").encode()
         async with worker.write_lock:
-            if command.get("type") == "credential:result" and run_id in self._stopping:
+            if command.get("type") in {"credential:result", "browser:initialized"} and run_id in self._stopping:
                 return
+            if command.get('type') == 'browser:initialized' and 'error' not in command:
+                executable = Path(command['executablePath'])
+                if worker.executable is not None and worker.executable != executable:
+                    raise RuntimeError('浏览器内核归属不能替换')
+                worker.executable = executable
             stdin.write(encoded)
             await stdin.drain()
 
@@ -306,6 +320,14 @@ class WorkflowWorkerManager:
                     worker.directory,
                     worker.executable,
                     worker.birth,
+                    # Only browser workers can have trace data to flush. A
+                    # browserless worker may be stuck in non-cancellable native
+                    # work, so retain the ordinary termination bound for it.
+                    graceful_timeout=(
+                        max(10, self._termination_timeout)
+                        if worker.executable is not None
+                        else self._termination_timeout
+                    ),
                 )
                 await worker.monitor
             finally:
@@ -386,7 +408,7 @@ class WorkflowWorkerManager:
                             continue
                         active_requests.observe(event)
                     if isinstance(event, dict) and self._on_event is not None:
-                        if event.get("type") == "credential:read" and event.get("runId") != run_id:
+                        if event.get("type") in {"credential:read", "browser:initialize"} and event.get("runId") != run_id:
                             raise RuntimeError("工作进程凭据请求归属不匹配")
                         callback_result = self._on_event(event)
                         if isawaitable(callback_result):
@@ -398,8 +420,9 @@ class WorkflowWorkerManager:
             if child_guard is not None:
                 child_guard.cancel()
                 await asyncio.gather(child_guard, return_exceptions=True)
+            owner = self._running.get(run_id)
             await stop_process_tree(
-                process, self._termination_timeout, directory, executable, birth
+                process, self._termination_timeout, directory, owner.executable if owner else executable, birth
             )
             if process.returncode is None:
                 await process.wait()

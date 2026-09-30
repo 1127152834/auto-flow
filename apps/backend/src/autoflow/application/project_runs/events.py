@@ -79,6 +79,7 @@ def _public(event: RunEvent) -> dict[str, Any]:
         "log": {"level", "message", "isUserLog"},
         "output": {"name", "value"},
         "artifact": {"artifactId", "kind", "purpose", "availability"},
+        "checkpoint": {"manualItemId", "checkpointRevision"},
     }
     if kind not in allowed:
         raise ProjectRunError(

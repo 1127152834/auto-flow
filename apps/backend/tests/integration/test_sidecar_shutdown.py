@@ -42,7 +42,16 @@ async def test_workflow_shutdown_error_still_closes_other_modules(tmp_path, monk
 
     from autoflow.bootstrap.app import create_app
     from autoflow.bootstrap.config import Settings
+    from autoflow.providers.laya.runtime import LayaRuntime
 
+    closed_laya = []
+    original_close = LayaRuntime.close
+
+    def close_laya(runtime):
+        closed_laya.append(runtime)
+        return original_close(runtime)
+
+    monkeypatch.setattr(LayaRuntime, "close", close_laya)
     app = create_app(Settings(data_dir=str(tmp_path / 'shutdown-data'), instance_id='shutdown-fixture'))
     failed = AsyncMock(side_effect=RuntimeError('synthetic workflow cleanup failure'))
     monkeypatch.setattr(app.state.workflow_dispatcher, 'shutdown', failed)
@@ -61,6 +70,7 @@ async def test_workflow_shutdown_error_still_closes_other_modules(tmp_path, monk
     kernel.assert_awaited_once()
     exports.assert_called_once()
     batches.assert_called_once()
+    assert len(closed_laya) == 1
 
 
 @pytest.mark.parametrize("shutdown", ["host", "signal"])
@@ -107,7 +117,11 @@ def ensure_binary(**kwargs):
                     "x-autoflow-host-token": "shutdown-host-token", "origin": "null",
                 }):
                     assert client.post("/internal/lifecycle/shutdown", headers=bad_headers).status_code == 401
-                assert "/internal/lifecycle/shutdown" not in client.get("/openapi.json").json()["paths"]
+                # Schema generation happens before the timed shutdown/SSE phase.
+                # Give preparation its own bound without changing shutdown deadlines.
+                schema = client.get("/openapi.json", timeout=30)
+                assert schema.status_code == 200, schema.text
+                assert "/internal/lifecycle/shutdown" not in schema.json()["paths"]
                 operation = None
                 if active_worker:
                     response = client.post("/api/v1/kernels/download", headers=headers, json={
@@ -116,9 +130,12 @@ def ensure_binary(**kwargs):
                     assert response.status_code == 202
                     operation = response.json()
                     staging = data / "data" / "kernels" / ".staging" / operation["id"]
-                    deadline = time.monotonic() + 5
+                    # Wait for the fixture to start before measuring shutdown; cold
+                    # interpreter startup under CI load is not shutdown latency.
+                    deadline = time.monotonic() + 20
                     while not (staging / "worker.pid").exists() and time.monotonic() < deadline:
                         time.sleep(0.02)
+                    assert (staging / "worker.pid").is_file(), (tmp_path / "stderr.log").read_text(errors="replace")
                     worker_pid = int((staging / "worker.pid").read_text())
                 with client.stream("GET", "/api/v1/kernels/events", headers=headers) as stream:
                     assert stream.status_code == 200

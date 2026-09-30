@@ -181,6 +181,95 @@ def _advance_execution_generation(factory, task, generation: int) -> None:
         run.status_revision += 1
 
 
+def test_opposing_dynamic_writes_return_conflicts_without_stealing_leases(tmp_path):
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Barrier
+
+    from autoflow.infrastructure.database.project_run_models import (
+        ProjectTaskInputSnapshotRow,
+        ProjectTaskRecordCursorRow,
+    )
+    from tests.integration.test_project_capability_field_impacts import _activate_task
+    from tests.integration.test_project_run_data_start import _table
+
+    factory, project, automation, _ = _setup(tmp_path)
+    try:
+        table, field = _table(factory, project, "动态写入", "first")
+        field_id = field["ref"]["fieldId"]
+        DataRecordService(SqlAlchemyProjectDataRecords(factory)).create(
+            project, table["tableId"], uid(), {
+                "datasetGeneration": table["datasetGeneration"],
+                "values": [{"fieldId": field_id, "value": "second"}],
+            },
+        )
+        grants = [{
+            "tableId": table["tableId"], "datasetGeneration": table["datasetGeneration"],
+            "operations": ["queryRecords", "updateRecord"],
+            "fieldIds": [field_id], "readPurposes": ["workflow"],
+        }]
+        tasks = [_activate_task(factory, project, automation, grants) for _ in range(2)]
+        with factory.begin() as session:
+            for task in tasks:
+                run = session.get(WorkflowRunRow, task.run_id)
+                run.status, run.execution_generation = "running", 1
+                run.status_revision += 1
+        service = _service(factory)
+        scopes = [service.scope(project, task.id, task.run_id) for task in tasks]
+        query = QueryProjectRecordsRequest(
+            1, project, table["tableId"], table["datasetGeneration"],
+            [field_id], "workflow", None, [], None, 10,
+        )
+        records = service.query_records(scopes[0], query)["items"]
+        assert len(records) == 2
+        assert service.query_records(scopes[1], query)["items"] == records
+        refs = [_record_ref(project, record) for record in records]
+        for index, scope in enumerate(scopes):
+            service.update_record(scope, UpdateProjectRecordCommand(
+                uid(), 1, refs[index], {field_id: f"owned-{index}"},
+                records[index]["contentRevision"],
+            ))
+
+        def facts():
+            with factory() as session:
+                return (
+                    [(r.key_value, r.values_json, r.content_revision, r.status_revision, r.link_revision)
+                     for r in session.scalars(select(DataRecordRow).order_by(DataRecordRow.key_value))],
+                    [(r.id, r.task_id, r.record_ref, r.state, r.lease_generation)
+                     for r in session.scalars(select(ProjectRecordLeaseRow).order_by(ProjectRecordLeaseRow.id))],
+                    [(r.id, r.content_revision, r.status_revision, r.link_revision)
+                     for r in session.scalars(select(ProjectTaskRecordCursorRow).order_by(ProjectTaskRecordCursorRow.id))],
+                    [(r.task_id, r.inputs) for r in session.scalars(select(ProjectTaskInputSnapshotRow).order_by(ProjectTaskInputSnapshotRow.id))],
+                )
+
+        before = facts()
+        assert {(lease[1], lease[3]) for lease in before[1]} == {(task.id, "held") for task in tasks}
+        assert len(before[1]) == 2
+        barrier = Barrier(2, timeout=5)
+        operation_ids = [uid(), uid()]
+
+        def cross_write(index):
+            other = 1 - index
+            barrier.wait()
+            with pytest.raises(ProjectError) as denied:
+                service.update_record(scopes[index], UpdateProjectRecordCommand(
+                    operation_ids[index], 1, refs[other], {field_id: "must-not-write"},
+                    records[other]["contentRevision"],
+                ))
+            return denied.value.code, denied.value.status, denied.value.details
+
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            futures = [pool.submit(cross_write, index) for index in range(2)]
+            assert [future.result(timeout=5) for future in futures] == [
+                ("LEASE_BUSY", 409, {"retryable": True}),
+                ("LEASE_BUSY", 409, {"retryable": True}),
+            ]
+        assert facts() == before
+        with factory() as session:
+            assert all(session.get(ProjectOperationRow, op) is None for op in operation_ids)
+    finally:
+        factory.dispose()
+
+
 def test_old_execution_generation_read_evidence_cannot_authorize_dynamic_write(
     capability_context,
 ):
@@ -518,3 +607,82 @@ def test_typed_identity_updates_only_text_one_when_integer_one_exists(
             rows["integer"].values_json[field["ref"]["fieldId"]] == "integer-original"
         )
         assert rows["integer"].content_revision == 1
+
+
+@pytest.mark.parametrize('retain', [False, True])
+@pytest.mark.parametrize('accepted_first', [False, True])
+def test_end_admission_fences_revoked_run_but_settles_accepted_command(capability_context, tmp_path, retain, accepted_first):
+    from autoflow.application.environments.service import EnvironmentService
+    from autoflow.application.project_runs.end import ProjectRunEnd
+    from autoflow.application.projects.service import ProjectService
+    from autoflow.domain.project_runs.worker_commands import project_command_id
+    from autoflow.infrastructure.database.environment_models import (
+        ProjectEndOperationRow,
+    )
+    from autoflow.infrastructure.database.environments import SqlAlchemyEnvironments
+    from autoflow.infrastructure.database.projects import SqlAlchemyProjects
+    from autoflow.infrastructure.database.workflow_runtime import (
+        SqlAlchemyWorkflowRuntimeRepository,
+    )
+    from autoflow.infrastructure.database.workflow_runtime_models import (
+        WorkflowPreparedContentRow,
+    )
+    from autoflow.infrastructure.filesystem.environment_store import EnvironmentStore
+    from tests.contract.test_project_environments import PROFILE
+
+    factory, project, task, _table, _field, _record = capability_context
+    service = EnvironmentService(ProjectService(SqlAlchemyProjects(factory)), SqlAlchemyEnvironments(factory), EnvironmentStore(tmp_path / 'end-store'), closer=lambda _service, _instance: None)
+    service.reserve(project, service.resolve(project, {'source': 'newFromProfile', 'profileId': PROFILE}), task_id=task.task_id, run_id=task.run_id, holder_kind='task', holder_id=task.task_id)
+    data = {'moduleType': 'project_end', 'retainEnvironment': retain, 'saveMode': 'save_as', 'name': 'accepted'}
+    visit = uid()
+    with factory.begin() as session:
+        run = session.get(WorkflowRunRow, task.run_id)
+        prepared = session.get(WorkflowPreparedContentRow, run.prepared_content_id)
+        prepared.execution_plan = {
+            'document': {'nodes': [{'id': 'end', 'data': data}], 'edges': []},
+            'nodes': [{'nodeId': 'end', 'moduleType': 'project_end', 'data': data}],
+            'orderedNodeIds': ['end'],
+        }
+        SqlAlchemyWorkflowRuntimeRepository(session).append_event({
+            'eventId': uid(), 'runId': task.run_id, 'executionGeneration': 1,
+            'kind': 'nodeAttempt', 'nodeId': 'end', 'nodeVisitId': visit, 'attempt': 1,
+            'occurredAt': datetime.now(UTC).isoformat(), 'payload': {'status': 'started'},
+        })
+    request = {
+        'nodeId': 'end', 'nodeVisitId': visit, 'attempt': 1,
+        'commandId': project_command_id(task.run_id, 1, visit),
+        'operation': 'end', 'arguments': {'recordTargets': []}, 'browserClosed': True,
+    }
+    project_end = ProjectRunEnd(factory, service)
+
+    def revoke():
+        with factory.begin() as session:
+            run = session.get(WorkflowRunRow, task.run_id)
+            run.execution_generation = 2
+            run.status = 'reconciling'
+
+    if accepted_first:
+        project_end.accept(task.run_id, 1, request)
+        revoke()
+        if retain:
+            with pytest.raises(ProjectError) as error:
+                project_end.finalize(task.run_id)
+            assert error.value.code == 'END_ACCESS_REVOKED'
+            with factory() as session:
+                operations = list(session.scalars(select(ProjectOperationRow).where(ProjectOperationRow.kind == 'saveEnvironment')))
+                assert len(operations) == 2
+                assert all(operation.status == 'failed' for operation in operations)
+                assert {operation.error['code'] for operation in operations} == {'END_ACCESS_REVOKED'}
+                assert session.scalar(select(ProjectEndOperationRow)).phase == 'failed'
+        else:
+            result = project_end.finalize(task.run_id)
+            assert result[1]['complete'] is True
+            assert project_end.operation(task.run_id)[0].status == 'succeeded'
+    else:
+        revoke()
+        with pytest.raises(ProjectError) as error:
+            project_end.accept(task.run_id, 1, request)
+        assert error.value.code == 'LEASE_REVOKED'
+        with factory() as session:
+            assert session.scalar(select(func.count()).select_from(ProjectOperationRow).where(ProjectOperationRow.kind == 'saveEnvironment')) == 0
+            assert session.scalar(select(func.count()).select_from(ProjectEndOperationRow)) == 0

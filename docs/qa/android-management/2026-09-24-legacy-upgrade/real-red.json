@@ -1,0 +1,93 @@
+{
+  "status": "failed",
+  "workspace": "/var/folders/8g/sq3srr71063c083rpkd32k380000gn/T/autoflow-legacy-upgrade-yiu77_r1",
+  "oldCommit": "a92f0688f206d4339ff4468c1871f3ccdd6816dc",
+  "oldMigrationHead": "0019_recording_commands",
+  "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+  "deviceBefore": {
+    "deviceId": "c76a4e0d-eef6-45f0-8309-88a5dd2a2995",
+    "containerId": "452f54d2f4aa4373ed8b20f35854d4db3bb7335c4fb81e8b6cb4fd2bdf3c611c",
+    "volumeId": "autoflow-android-c76a4e0d-eef6-45f0-8309-88a5dd2a2995-data",
+    "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+    "instanceType": "temporary",
+    "creationConfig": {
+      "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+      "dpi": 320,
+      "cpu": 1,
+      "memoryMb": 1024,
+      "deviceId": "c76a4e0d-eef6-45f0-8309-88a5dd2a2995",
+      "name": "Legacy temporary QA 01",
+      "width": 720,
+      "height": 1280,
+      "start": false,
+      "profileId": "33a420c9-61ed-423d-b6a6-50be139cb613",
+      "profileName": "Legacy upgrade QA",
+      "instanceType": "temporary",
+      "locale": "zh-CN",
+      "timezone": "Asia/Shanghai"
+    }
+  },
+  "oldBatch": {
+    "id": "3277632f-0724-4123-bfe9-5c9591cd96d5",
+    "createdAt": "2026-09-24T02:20:35.571363+00:00",
+    "state": "succeeded",
+    "request": {
+      "name": "Legacy temporary QA",
+      "batchId": "3277632f-0724-4123-bfe9-5c9591cd96d5",
+      "profileId": "33a420c9-61ed-423d-b6a6-50be139cb613",
+      "profileRevision": 1,
+      "quantity": 1,
+      "instanceType": "temporary",
+      "start": true,
+      "width": 720,
+      "height": 1280,
+      "locale": "zh-CN",
+      "timezone": "Asia/Shanghai"
+    },
+    "items": [
+      {
+        "deviceId": "c76a4e0d-eef6-45f0-8309-88a5dd2a2995",
+        "name": "Legacy temporary QA 01",
+        "state": "succeeded",
+        "error": null
+      }
+    ]
+  },
+  "newMigrationHead": "am01_management_operations",
+  "deviceAfter": {
+    "deviceId": "c76a4e0d-eef6-45f0-8309-88a5dd2a2995",
+    "containerId": "452f54d2f4aa4373ed8b20f35854d4db3bb7335c4fb81e8b6cb4fd2bdf3c611c",
+    "volumeId": "autoflow-android-c76a4e0d-eef6-45f0-8309-88a5dd2a2995-data",
+    "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+    "instanceType": "temporary",
+    "creationConfig": {
+      "imageId": "sha256:5a42a569ee1d7c71796c0385e906cbaa4c3e0a162a56d9f26b29bdb1befac13b",
+      "dpi": 320,
+      "cpu": 1,
+      "memoryMb": 1024,
+      "deviceId": "c76a4e0d-eef6-45f0-8309-88a5dd2a2995",
+      "name": "Legacy temporary QA 01",
+      "width": 720,
+      "height": 1280,
+      "start": false,
+      "profileId": "33a420c9-61ed-423d-b6a6-50be139cb613",
+      "profileName": "Legacy upgrade QA",
+      "instanceType": "temporary",
+      "locale": "zh-CN",
+      "timezone": "Asia/Shanghai"
+    }
+  },
+  "sourceProbePreserved": true,
+  "replayStatus": 409,
+  "replayBody": {
+    "error": {
+      "code": "ANDROID_REQUEST_CONFLICT",
+      "message": "请求编号已用于不同内容",
+      "details": {},
+      "requestId": "04514072-0c2e-44ad-ac05-e4fb4ac2d52c"
+    }
+  },
+  "errorType": "AssertionError",
+  "error": "(409, '{\"error\":{\"code\":\"ANDROID_REQUEST_CONFLICT\",\"message\":\"请求编号已用于不同内容\",\"details\":{},\"requestId\":\"04514072-0c2e-44ad-ac05-e4fb4ac2d52c\"}}')",
+  "cleanupContainersAndVolumes": 0
+}

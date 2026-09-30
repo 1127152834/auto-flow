@@ -1,0 +1,56 @@
+{
+  "date": "2026-09-23",
+  "status": "windows_native_and_three_platform_full_candidate_passed_release_pending",
+  "releaseAccepted": false,
+  "scope": "S4 existing ordinary-file read for Base64 input and Excel pre-read; existing-file overwrite and append remain refused with 501.",
+  "codeCandidate": "2fe33528d211022855bb7f91840a0ba992954e25",
+  "implementation": "Validate Windows path, pin each parent directory without delete sharing, open the existing target with FILE_FLAG_OPEN_REPARSE_POINT and read-only sharing, reject reparse/non-file/final-path mismatch, read in binary mode, and compare handle/path identity after reading. Shared size, cancellation and conflict checks remain in WorkflowArtifactStore.",
+  "checks": {
+    "local": "After the read-only parent fix, artifact + worker contract + table parity tests: 127 passed, 17 Windows-only skipped. Ruff passed; mypy passed for 407 source files. The no-directory-creation assertion failed before the fix and passed after it.",
+    "windowsNative": {
+      "runId": "35829751668",
+      "url": "https://github.com/1127152834/auto-flow/actions/runs/35829751668",
+      "headSha": "2fe33528d211022855bb7f91840a0ba992954e25",
+      "result": "102 passed, 28 skipped in 21.68s",
+      "specific": [
+        "test_native_windows_reads_existing_output_without_following_reparse_points passed: binary content, missing file, size limit, held-target delete/write denial, held-parent rename denial, junction rejection.",
+        "test_actual_windows_worker_reads_existing_binary_output passed: production worker Base64 node read the existing PNG bytes."
+      ]
+    }
+  },
+  "followUpNativeFailure": {
+    "runId": "35830710429",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35830710429",
+    "headSha": "0bac3886ce3338e68590d14b8a73c1b2ae599902",
+    "result": "Windows platform-boundary step: 250 passed, 28 skipped, 1 failed. New existing-file read, missing-parent and real-worker tests passed; one older table-family test still asserted Windows must fail with 501, while the worker now correctly succeeded. The other matrix jobs were cancelled and this run is not counted as a passing candidate.",
+    "correction": "The obsolete platform-failure assertion and two obsolete Windows skips for relative new-file table exports were removed. The absolute-drive-path contract was then implemented and verified by later scoped and full runs; this failed run remains historical evidence."
+  },
+  "scopedProbeAdjustment": "35831675395 @bde396de passed the corrected worker contract and existing-file read cases, but its broad differential file selection failed 32 frozen-source cases because the bounded job does not check out reference/WebRPA; the remaining absolute-drive-path fake case is still deliberately rejected by TableExportExecutor. This is not a Windows read regression. The next probe selects only the two applicable relative new-file table tests.",
+  "finalScopedNative": {
+    "runId": "35832075007",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35832075007",
+    "headSha": "113668fd5998057c04878f05fa4675216295b645",
+    "result": "127 passed, 28 skipped in 24.73s",
+    "scope": "Native Windows existing binary read, missing-parent no-side-effect, cancellation, Base64 worker, table-family Excel worker, and relative new-file CSV/XLSX tests passed. The absolute-drive-path table test remains skipped."
+  },
+  "absoluteOutputFollowUp": {
+    "runId": "35832925704",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35832925704",
+    "headSha": "680fd0ca4cc7cd50f23d6bf3f550761ad2b7c931",
+    "result": "131 passed, 29 skipped in 24.49s",
+    "scope": "Windows absolute-drive table export passed through the application path, safe new-file adapter and real worker; relative CSV/XLSX, existing binary read, Base64 worker, and ambiguous-path rejection also passed. One Windows skip is the POSIX-only rejection of a valid Windows absolute path. This scoped run is not a three-platform packaged result."
+  },
+  "fullCandidate": {
+    "runId": "35833223498",
+    "url": "https://github.com/1127152834/auto-flow/actions/runs/35833223498",
+    "headSha": "dadb24a146bc6cb7635ee4725447724f14ee543e",
+    "status": "windows_x64_darwin_x64_darwin_arm64_checks_success",
+    "windowsNativeBoundary": "251 passed / 28 skipped; includes existing read, no-side-effect missing read, absolute XLSX real worker and path rejection",
+    "fullReport": "ci-s4-final-follow-through.json"
+  },
+  "limits": [
+    "The early 35829751668 scoped job predates the read-only parent and absolute export fixes; final source and three-platform packaged chain passed separately at 35833223498.",
+    "Existing-file overwrite and append still return 501; prior held-target rename experiment could not prove conditional atomic replacement.",
+    "Physical Windows installation, native dialogs, current packaged Sheets/OAuth and signing remain separate acceptance conditions."
+  ]
+}

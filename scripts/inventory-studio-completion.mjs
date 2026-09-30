@@ -25,10 +25,14 @@ walk(sidebar,node=>{
   if(name==='excludedModuleTypes')extra=new Set(strings(node.initializer))
 })
 if(!categories || !excluded || !extra)throw Error('Catalog structure changed; inventory cannot silently skip it')
-const retained=categories.filter(c=>!excluded.has(c.name)).flatMap(c=>c.types.filter(t=>!extra.has(t)).map(type=>({type,category:c.name})))
-const nativeTypes = new Set(['proxy_change_ip', 'proxy_change_location', 'proxy_query', 'project_data', 'project_end'])
+const nativeCategories = [
+  {name:'浏览器诊断',types:['trace_mark','capture_diagnostics','save_trace_segment']},
+  {name:'项目能力',types:['project_data','project_manual','project_end']},
+]
+const retained=[...nativeCategories,...categories.filter(c=>!excluded.has(c.name))].flatMap(c=>c.types.filter(t=>!extra.has(t)).map(type=>({type,category:c.name})))
+const nativeTypes = new Set(['proxy_change_ip', 'proxy_change_location', 'proxy_query', ...nativeCategories.flatMap(category=>category.types)])
 const frozen = retained.filter(node => !nativeTypes.has(node.type))
-if(frozen.length!==213 || new Set(frozen.map(n=>n.type)).size!==213 || retained.length!==213+nativeTypes.size)throw Error('Approved frozen/native node scope changed')
+if(frozen.length!==213 || new Set(frozen.map(n=>n.type)).size!==213 || retained.length!==222 || new Set(retained.map(n=>n.type)).size!==222 || nativeTypes.size!==9)throw Error('Approved frozen/native node scope changed')
 const files=fs.readdirSync(path.join(root,domain,'components/config-panels')).filter(f=>f.endsWith('.tsx')).map(f=>`${domain}/components/config-panels/${f}`)
 files.push(`${domain}/components/ConfigPanel.tsx`,`${domain}/editor-store.ts`)
 const evidence=new Map(retained.map(n=>[n.type,[]]))

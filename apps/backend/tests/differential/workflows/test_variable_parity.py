@@ -33,9 +33,9 @@ json.dump(result, sys.stdout, ensure_ascii=False)
     env = dict(os.environ)
     env["PYTHONPATH"] = str(FROZEN_BACKEND)
     process = subprocess.run(
-        [sys.executable, "-c", script],
+        [sys.executable, "-X", "utf8", "-c", script],
         input=json.dumps({"variables": variables, "value": value}, ensure_ascii=False),
-        text=True,
+        text=True, encoding="utf-8",
         capture_output=True,
         env=env,
         check=True,
@@ -105,6 +105,13 @@ def test_execution_context_get_variable_accepts_both_reference_forms() -> None:
     assert context.get_variable("{name}") == "WebRPA"
     assert context.get_variable("${name}") == "WebRPA"
     assert context.get_variable("missing", "默认") == "默认"
+
+
+def test_typed_resolution_keeps_nested_indexed_value() -> None:
+    context = ExecutionContext(variables={"rows": [{"ref": {"recordKey": "A"}}], "index": 0})
+
+    assert context.resolve_value("{rows[{index}][ref]}", preserve_types=True) == {"recordKey": "A"}
+    assert context.resolve_value("{rows[{index}][ref]} suffix", preserve_types=True) == '{"recordKey": "A"} suffix'
 
 
 def test_variable_manager_scope_and_safe_numeric_expression_match_source() -> None:

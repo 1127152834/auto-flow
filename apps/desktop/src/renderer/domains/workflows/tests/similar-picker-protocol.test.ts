@@ -33,3 +33,7 @@ it.each([
   :{success:true,sessionId:'picker',...result}))
  try{expect(await elementPickerApi.getSimilar()).toMatchObject({success:false,error:typeof result.active==='boolean'?'相似元素响应格式错误，未应用定位结果':'元素拾取会话响应身份或结构错误'})}finally{restore()}
 })
+
+import {beforeEach as beforeBrowserNode} from 'vitest'
+import {selectBrowserNode} from './select-browser-node'
+beforeBrowserNode(()=>selectBrowserNode())

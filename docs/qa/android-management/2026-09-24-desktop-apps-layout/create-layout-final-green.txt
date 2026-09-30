@@ -1,0 +1,134 @@
+Window: "DevTools", App: Google Chrome.
+0 标准窗口 DevTools - zhangtiancheng, Secondary Actions: Raise, URL: devtools://devtools/bundled/js_app.html?remoteBase=https://chrome-devtools-frontend.appspot.com/serve_file/@792bf6722e73a45aa9e47c163b9901bdc17f3230/
+	1 container DevTools - zhangtiancheng, URL: devtools://devtools/bundled/js_app.html?remoteBase=https://chrome-devtools-frontend.appspot.com/serve_file/@792bf6722e73a45aa9e47c163b9901bdc17f3230/
+		2 container
+			3 container
+				4 HTML 内容 DevTools, URL: devtools://devtools/bundled/js_app.html?remoteBase=https://chrome-devtools-frontend.appspot.com/serve_file/@792bf6722e73a45aa9e47c163b9901bdc17f3230/
+					5 container
+						6 container
+							7 container DevTools is now available in Chinese
+								8 文本 DevTools is now available in Chinese
+								9 按钮 Don’t show again
+								10 按钮 Always match Chrome’s language
+								11 按钮 Switch DevTools to Chinese
+								12 container Close
+									13 按钮 Close
+							14 container
+								15 container
+									16 container Main toolbar
+										17 container
+											18 标签组 Panels
+												19 标签 (selected) Console, Value: 1
+												20 标签 (settable, integer) Sources, Value: 0
+												21 标签 (settable, integer) Network, Value: 0
+												22 标签 (settable, integer) Performance, Value: 0
+												23 标签 (settable, integer) Memory, Value: 0
+										24 工具栏
+											25 container Settings, Help: Settings - F1 - ⇧ ?
+												26 按钮 Settings - F1 - ⇧ ?
+											27 弹出式按钮 Customize and control DevTools
+												28 按钮 Customize and control DevTools
+									29 container Console panel
+										30 container console
+											31 container
+												32 工具栏
+													33 container Hide Console sidebar
+														34 按钮 Hide Console sidebar
+													35 container Clear console, Help: Clear console - Ctrl L - ⌘ K
+														36 按钮 Clear console - Ctrl L - ⌘ K
+													37 container Collapse all
+														38 按钮 Collapse all
+													39 按钮 JavaScript context: /Users/zhangtiancheng/.codex/worktrees/android-management-complete/autoflow/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron[79852]
+													40 container Create live expression
+														41 按钮 Create live expression
+													42 文本输入区 (settable) Filter
+														43 文本 Filter
+													44 弹出式按钮 (disabled) Log level: Default levels
+														45 文本 Custom levels
+													46 container Some problems no longer generate console messages, but are surfaced in the Issues tab. Click to go to the Issues tab
+														47 按钮 Some problems no longer generate console messages, but are surfaced in the Issues tab. Click to go to the Issues tab
+													48 container Console settings
+														49 切换按钮 Console settings, Value: 0
+													50 container 0 messages in console
+												51 container
+													52 外框
+														53 row (selected)    4 messages
+															54 文本 4 messages
+														55 row    4 user messages
+															56 文本 4 user messages
+														57 row    No errors
+															58 文本 No errors
+														59 row    No warnings
+															60 文本 No warnings
+														61 row    4 info
+															62 文本 4 info
+														63 row    No verbose
+															64 文本 No verbose
+													65 container
+														66 container
+															67 container
+																68 text for  ( var  [ w , h , z ]  of  [[ 1280 , 800 , 1 ],[ 1280 , 800 , 2 ],[ 1440 , 900 , 1 ],[ 1440 , 900 , 2 ]]) {  qaWindow . setSize ( w , h );  qaWindow . webContents . setZoomFactor ( z );  await qaWindow . webContents . executeJavaScript ( 'new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))' );  console . log ( JSON . stringify ({ bounds : qaWindow . getBounds (), zoom : qaWindow . webContents . getZoomFactor (), result : await qaWindow . webContents . executeJavaScript ( qaLayoutSource )})); }
+															69 container {"bounds":{"x":180,"y":44,"width":1280,"height":800},"zoom":1,"result":{"passed":true,"width":1268,"pageWidth":1268,"controls":16,"overflow":[]}}
+																70 container  {"bounds":{"x":180,"y":44,"width":1280,"height":800},"zoom":1,"result":{"passed":true,"width":1268,"pageWidth":1268,"controls":16,"overflow":[]}} Stack table collapsed
+																	71 container
+																		72 链接 VM558:1, Help: debugger:///VM558:1
+																			73 文本 VM558:1
+																		74 text {"bounds":{"x":180,"y":44,"width":1280,"height":800},"zoom":1,"result":{"passed":true,"width":1268,"pageWidth":1268,"controls":16,"overflow":[]}}
+															75 container {"bounds":{"x":180,"y":44,"width":1280,"height":800},"zoom":2,"result":{"passed":true,"width":628,"pageWidth":628,"controls":16,"overflow":[]}}
+																76 container  {"bounds":{"x":180,"y":44,"width":1280,"height":800},"zoom":2,"result":{"passed":true,"width":628,"pageWidth":628,"controls":16,"overflow":[]}} Stack table collapsed
+																	77 container
+																		78 链接 VM558:1, Help: debugger:///VM558:1
+																			79 文本 VM558:1
+																		80 text {"bounds":{"x":180,"y":44,"width":1280,"height":800},"zoom":2,"result":{"passed":true,"width":628,"pageWidth":628,"controls":16,"overflow":[]}}
+															81 container {"bounds":{"x":180,"y":44,"width":1440,"height":900},"zoom":1,"result":{"passed":true,"width":1428,"pageWidth":1428,"controls":16,"overflow":[]}}
+																82 container  {"bounds":{"x":180,"y":44,"width":1440,"height":900},"zoom":1,"result":{"passed":true,"width":1428,"pageWidth":1428,"controls":16,"overflow":[]}} Stack table collapsed
+																	83 container
+																		84 链接 VM558:1, Help: debugger:///VM558:1
+																			85 文本 VM558:1
+																		86 text {"bounds":{"x":180,"y":44,"width":1440,"height":900},"zoom":1,"result":{"passed":true,"width":1428,"pageWidth":1428,"controls":16,"overflow":[]}}
+															87 container {"bounds":{"x":180,"y":44,"width":1440,"height":900},"zoom":2,"result":{"passed":true,"width":708,"pageWidth":708,"controls":16,"overflow":[]}}
+																88 container  {"bounds":{"x":180,"y":44,"width":1440,"height":900},"zoom":2,"result":{"passed":true,"width":708,"pageWidth":708,"controls":16,"overflow":[]}} Stack table collapsed
+																	89 container
+																		90 链接 VM558:1, Help: debugger:///VM558:1
+																			91 文本 VM558:1
+																		92 text {"bounds":{"x":180,"y":44,"width":1440,"height":900},"zoom":2,"result":{"passed":true,"width":708,"pageWidth":708,"controls":16,"overflow":[]}}
+															93 container undefined Stack table collapsed
+																94 文本 undefined
+														95 container
+															96 container
+																97 文本输入区 (settable) Console prompt, Value:
+
+								98 container Tool drawer
+									99 container
+										100 工具栏
+											101 弹出式按钮 More Tools
+												102 按钮 More Tools
+										103 标签组
+											104 标签 (selected) Console, Value: 1
+											105 标签 (settable, integer) AI assistance, Value: 0
+										106 工具栏
+											107 container Toggle drawer orientation
+												108 按钮 Toggle drawer orientation
+											109 container Expand drawer
+												110 按钮 Expand drawer
+											111 container Close drawer
+												112 按钮 Close drawer
+										113 container Console panel
+						114 文本 Console cleared
+	115 关闭按钮
+	116 全屏幕按钮 Help: 此按钮也可以执行缩放窗口的操作, Secondary Actions: 缩放窗口
+	117 最小化按钮
+	118 文本 DevTools
+119 menu bar
+	120 Chrome
+	121 文件
+	122 编辑
+	123 显示
+	124 历史记录
+	125 书签
+	126 个人资料
+	127 标签页
+	128 窗口
+	129 帮助
+
+The focused UI element is 97 文本输入区 (settable) Console prompt, Value:

@@ -49,6 +49,7 @@ import { RecordQueryToolbar, composeRecordQuery, type QuickSearch } from "../com
 import { readTableView, tableViewKey, type TableViewState } from "../record-return-state";
 import { RecordDetailPage } from "./RecordDetailPage";
 import { RecordEditPage } from "./RecordEditPage";
+import { RecordSourceObservations } from "../components/RecordSourceObservations";
 import { RecordFieldsView } from "../components/RecordFieldsView";
 import { RecordEditorForm } from "../components/RecordEditorForm";
 import { RecordUnsavedDialog } from "../components/RecordUnsavedDialog";
@@ -639,7 +640,7 @@ function DataTableDetail({
   const recordContent = recordLocation?.mode === "detail" ? <RecordDetailPage
     title={routeRecord ? recordDisplayTitle(routeRecord) : "记录详情"}
     loading={detailQuery.isFetching || catalogQuery.isPending} error={routeError} readonly={!writable} disabled={disabled || editing.busy || editing.recoveryPending}
-    fieldsView={routeRecord && catalogQuery.data ? <RecordFieldsView key={JSON.stringify([workspaceKey, instanceId, routeRecord.ref])} fields={fields} record={routeRecord} identityFieldId={table?.identity.mode === "field" ? table.identity.fieldId : undefined} /> : undefined}
+    fieldsView={routeRecord && catalogQuery.data ? <><RecordFieldsView key={JSON.stringify([workspaceKey, instanceId, routeRecord.ref])} fields={fields} record={routeRecord} identityFieldId={table?.identity.mode === "field" ? table.identity.fieldId : undefined} />{table?.sourceKind === "sheets" ? <RecordSourceObservations api={sheetsApi} scopeKey={workflowContext} record={routeRecord} fields={fields} /> : null}</> : undefined}
     statusForm={routeRecord && editing.editor?.kind === "recordStatus" && matchesRoute(editing.editor.record.ref) ? <RecordStatusDialog key={editing.editor.session} presentation="inline" open sessionKey={editing.editor.session} submissionEpoch={instanceId}
       record={editing.editor.record} recordLabel={recordDisplayTitle(editing.editor.record)} statuses={editing.editor.statuses.items} readonly={!writable} saving={editing.busy && editing.recoveryPending} recoveryPending={editing.recoveryPending} error={editing.error} errorActions={errorActions}
       onSubmit={editing.submitRecordStatus} onRecover={editing.recover} onOpenChange={() => undefined} onRequestClose={closeEditor}

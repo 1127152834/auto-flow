@@ -254,6 +254,53 @@ export class SettingsController {
     })
   }
 
+  async saveAndroidDiagnostic(id: unknown): Promise<{ saved: boolean; path?: string }> {
+    this.assertIdle()
+    if (typeof id !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(id)) throw new SettingsError('INVALID_REQUEST', '诊断标识无效')
+    return this.exclusive('exporting', async () => {
+      const host = this.getHostStatus()
+      if (host.state !== 'ready') throw new SettingsError('SERVICE_UNAVAILABLE', '本地服务尚未就绪，请重试')
+      let base: URL
+      try { base = new URL(host.baseUrl) } catch { throw new SettingsError('SERVICE_UNAVAILABLE', '本地服务地址无效，请重试') }
+      if (base.protocol !== 'http:' || base.hostname !== '127.0.0.1' || !base.port || base.username || base.password || base.search || base.hash || base.pathname !== '/') {
+        throw new SettingsError('SERVICE_UNAVAILABLE', '本地服务地址无效，请重试')
+      }
+      let response: Response
+      try {
+        response = await (this.options.request ?? fetch)(`${base.origin}/internal/android/management/diagnostics/${encodeURIComponent(id)}`, {
+          headers: { accept: 'application/json', 'x-autoflow-host-token': host.hostToken },
+          cache: 'no-store', redirect: 'error', signal: AbortSignal.timeout(10_000),
+        })
+      } catch { throw new SettingsError('DIAGNOSTIC_DOWNLOAD_FAILED', '诊断文件暂时不可用，请重新生成') }
+      let value: unknown
+      try { value = await response.json() } catch { value = null }
+      if (!response.ok) {
+        const body = value as { error?: { code?: unknown; message?: unknown } } | null
+        const code = typeof body?.error?.code === 'string' ? body.error.code : response.status === 410 ? 'ANDROID_DIAGNOSTIC_EXPIRED' : 'DIAGNOSTIC_DOWNLOAD_FAILED'
+        const message = typeof body?.error?.message === 'string' ? body.error.message : '诊断文件暂时不可用，请重新生成'
+        throw new SettingsError(code, message)
+      }
+      if (!value || typeof value !== 'object' || !('payload' in value) || !value.payload || typeof value.payload !== 'object' || Array.isArray(value.payload)) throw new SettingsError('DIAGNOSTIC_DOWNLOAD_FAILED', '诊断内容格式无效，请重新生成')
+      const envelope = value as { payload: object; createdAt?: unknown; expiresAt?: unknown }
+      const expiresAt = typeof envelope.expiresAt === 'string' ? Date.parse(envelope.expiresAt) : NaN
+      if (!Number.isFinite(expiresAt) || expiresAt <= Date.now()) throw new SettingsError('ANDROID_DIAGNOSTIC_EXPIRED', '诊断下载授权已失效，请重新生成')
+      const path = await this.options.selectSavePath('autoflow-android-diagnostic.json')
+      if (!path) return { saved: false }
+      const current = this.getHostStatus()
+      if (current.state !== 'ready' || current.baseUrl !== host.baseUrl || current.hostToken !== host.hostToken || current.dataDir !== host.dataDir) throw new SettingsError('SERVICE_CHANGED', '工作区或本地服务已切换，请重新生成诊断')
+      const document = {
+        schemaVersion: 1,
+        createdAt: typeof envelope.createdAt === 'string' ? envelope.createdAt : new Date().toISOString(),
+        application: 'AutoFlow',
+        appVersion: this.options.runtime.appVersion,
+        payload: envelope.payload,
+      }
+      try { writeAtomic(path, JSON.stringify(document, null, 2)) } catch { throw new SettingsError('DIAGNOSTIC_SAVE_FAILED', '导出失败：无法写入所选位置，请重新选择') }
+      this.record('exported')
+      return { saved: true, path }
+    })
+  }
+
   private paths(): Record<SettingsDirectory, string> {
     const root = this.settings.currentPath
     return { workspace: root, database: join(root, 'data', 'autoflow.sqlite3'), profiles: join(root, 'workspace', 'profiles'), kernels: join(root, 'data', 'kernels'), logs: join(root, 'logs') }

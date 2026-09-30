@@ -2,7 +2,7 @@ import type { components } from '../../shared/api/generated'
 
 type Schema = components['schemas']
 export type ParameterDefinition = Schema['ParameterDefinition']
-export type EnvironmentPolicy = Schema['AutomationWrite']['environmentPolicy']
+export type EnvironmentPolicy = Omit<Schema['AutomationUpdate'], 'expectedManagementRevision'>['environmentPolicy']
 export type JsonScalar = string | number | boolean | null
 export type ParameterDraftValue = JsonScalar | { raw: string }
 export type BatchStartDraft = { parameters: Record<string, ParameterDraftValue>; maxTasks: string; unlimited?: boolean; concurrency?: string; environmentOverride?: EnvironmentPolicy }
@@ -22,7 +22,6 @@ export function validateBatchStartDraft(draft: BatchStartDraft, definitions: Par
   if (draft.unlimited && !options.allowUnlimited) errors.maxTasks = '不限次数需要至少一个必要数据输入'
   const concurrency = Number(draft.concurrency ?? '1')
   if (!(draft.concurrency ?? '1').trim() || !Number.isSafeInteger(concurrency) || concurrency < 1 || concurrency > 100) errors.concurrency = '请求并发数必须是 1–100 的整数'
-  else if (!options.dataBatch && concurrency !== 1) errors.concurrency = '参数型自动化的并发数固定为 1'
   for (const item of definitions) {
     const present = Object.hasOwn(draft.parameters, item.parameterId)
     const draftValue = draft.parameters[item.parameterId]

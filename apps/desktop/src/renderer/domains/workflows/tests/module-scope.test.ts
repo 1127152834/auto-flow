@@ -1,12 +1,28 @@
 import { expect, it } from 'vitest'
 import { getAllAvailableModules, moduleCategories } from '../components/ModuleSidebar'
+import { diagnosticModuleTypes } from '../lib/moduleCatalog'
 
-it('keeps 213 frozen nodes plus the four approved native nodes and only approved notification channels', () => {
-  const modules = getAllAvailableModules().filter(module => !module.isCustom)
-  const types = modules.map(module => module.type)
-  expect(types).toHaveLength(218)
-  expect(types.filter(type => ['project_data', 'project_end', 'proxy_change_ip', 'proxy_change_location', 'proxy_query'].includes(type)).sort()).toEqual(['project_data', 'project_end', 'proxy_change_ip', 'proxy_change_location', 'proxy_query'])
-  expect(new Set(types).size).toBe(218)
+const projectModuleTypes = ['project_data', 'project_manual', 'project_end'] as const
+const proxyModuleTypes = ['proxy_change_ip', 'proxy_change_location', 'proxy_query'] as const
+const extensionModuleTypes = new Set<string>([
+  ...projectModuleTypes,
+  ...proxyModuleTypes,
+  ...diagnosticModuleTypes,
+])
+
+it('keeps 213 frozen nodes plus the nine approved AutoFlow extensions', () => {
+  const types = getAllAvailableModules()
+    .filter(module => !module.isCustom)
+    .map(module => module.type)
+  const frozenTypes = types.filter(type => !extensionModuleTypes.has(type))
+
+  expect(types).toHaveLength(222)
+  expect(new Set(types).size).toBe(222)
+  expect(frozenTypes).toHaveLength(213)
+  expect(new Set(frozenTypes).size).toBe(213)
+  expect(types.filter(type => projectModuleTypes.includes(type as typeof projectModuleTypes[number]))).toEqual(projectModuleTypes)
+  expect(types.filter(type => proxyModuleTypes.includes(type as typeof proxyModuleTypes[number]))).toEqual(proxyModuleTypes)
+  expect(types.filter(type => diagnosticModuleTypes.includes(type))).toEqual(diagnosticModuleTypes)
   expect(types.filter(type => /^(excel_|pdf_|word_|wps_|qq_|wechat_|feishu_)/.test(type))).toEqual([])
   expect(types.filter(type => /^(dp_|db_|oracle_|postgresql_|mongodb_|sqlserver_|sqlite_|redis_)/.test(type))).toEqual([])
   expect(types).not.toContain('read_excel')
