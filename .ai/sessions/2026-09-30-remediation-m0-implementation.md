@@ -15,3 +15,5 @@ Task 3 已实现：每条日志通过真实SqlAlchemyWorkflowRuntimeRepository.a
 Task 4 已实现：50ms心跳、100ms告警、真实5分钟样本窗口/有界缓存与只读快照；接入sidecar启动/最终关闭，不新增HTTP契约。RED缺模块、RED缺app.state后实现；单元+生命周期+既有settings_dashboard共16 passed/1依赖弃用警告（anyio BlockingPortal），Ruff全src通过，mypy547源文件通过（1条既有annotation-unchecked提示）。首次异常关闭注入在前置shutdown直接抛错，跳过其他服务清理而挂起，7项后人工终止；改为既有gather内服务完成真实清理后抛错，验证监测器仍关闭，未声称修复原先全应用异常关闭链。
 
 Task 5 已实现：仅loopback随机端口的黄金站点、五字段、首次延迟/永久404/提交丢响应、线程安全命中与提交计数。普通CI运行3项HTTP测试通过（RED缺模块→GREEN3），Ruff通过。按规格保留表单查询参数并支持lose=1，同时兼容lose-名字；关闭站点用Event提前结束故障等待，预期客户端断线不输出服务端堆栈。真实浏览器完整链仍待Task6，不把站点测试记成G2/G3通过。
+
+Task 6 进行中（尚未完成）：指标与完整身份覆盖反例5项通过，涵盖同一行30次失败不可算30成功行、空错误不可算原因、成功需输出核验且去重、typed key/代次身份区别、缺行/重复/未终态与零耗时拒绝。golden/conftest.py显式注册现有real_cloak_page。harness目前仅指标部分，真实HTTP/SQLite/worker编排与G2/G3尚未接入，故不标该Task或AC0-05通过。
