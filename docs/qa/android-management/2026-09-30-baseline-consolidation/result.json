@@ -1,0 +1,18 @@
+{
+  "status": "confirmed",
+  "codeMerge": "06fb4978ebcbeb2f92f45953c44d7fe0f6314bf4",
+  "remainingBranch": "codex/architecture-baseline",
+  "deletedLocalBranches": 1,
+  "deletedRemoteBranches": 18,
+  "frontendFilesPassed": 454,
+  "frontendTestsPassed": 5972,
+  "frontendDurationSeconds": 925.38,
+  "typecheckExitCode": 0,
+  "lintExitCode": 0,
+  "openapiExitCode": 0,
+  "buildExitCode": 0,
+  "mainBuildExitCode": 0,
+  "preexistingUntrackedFilesMissing": 0,
+  "bundleVerified": true,
+  "worktreesPreserved": true
+}

@@ -1,0 +1,3 @@
+refs/heads/codex/architecture-baseline 06fb4978ebcbeb2f92f45953c44d7fe0f6314bf4
+refs/remotes/origin/HEAD 06fb4978ebcbeb2f92f45953c44d7fe0f6314bf4
+refs/remotes/origin/codex/architecture-baseline 06fb4978ebcbeb2f92f45953c44d7fe0f6314bf4

@@ -298,3 +298,5 @@ proposed：本轮完整规格尚未确认，6组补图未生成；参数定义�
 2026-09-24 Android/PM9本地baseline集成（confirmed）：用户明确要求将Android746c9c5b合入已含PM9的c6e02427；新增0020_merge_android_pm9汇合两侧迁移，旧迁移字节保留。ContextVar栈与PM9 fork复制冲突及变量字段基线自动合并漏计均已修复。合并树后端4466passed/103skipped、前端5725passed及工程门禁通过，独立审查无未解决C/I；不推送、不提升Android partial或PM9 releaseAccepted=false。见sessions/2026-09-24-android-baseline-integration.md与同名QA报告。
 
 2026-09-30 安卓原型恢复（confirmed UI，整体AM验收仍partial）：R1/R2/R3仍为视觉基线；管理首页恢复三列资源看板，诊断/镜像/模板/备份/清理由环境配置进入。导航与同实例重连保留未知操作原requestId；历史temporary正确标注但不可新建。真实Electron最终构建入口已验，Lima停止/ADB无设备导致在线控制blocked。命令与截图见[sessions/2026-09-30-android-prototype-fidelity.md](../sessions/2026-09-30-android-prototype-fidelity.md)。
+
+2026-09-30 baseline分支收敛（confirmed）：Android原型1f015f9f已通过06fb4978合入codex/architecture-baseline并推送，保留53b87b59的Laya移除。合并树454文件/5972项、type/lint/OpenAPI/build通过；按用户明确指令删除其余1个本地和18个远端分支，两端仅保留baseline。完整分支bundle已验证、旧工作区和未提交文件保留。见[sessions/2026-09-30-android-baseline-consolidation.md](../sessions/2026-09-30-android-baseline-consolidation.md)。

@@ -8,6 +8,6 @@
 - 导航隐藏已访问工具而保留挂载，避免丢失未知操作requestId；同实例client重建也保留回执，仅instanceId改变时重置。独立审查发现重连缺口后RED→GREEN修复。
 - 浏览器夹具图片明确标注“视觉验收样例 · 非真实设备”。另以真实Electron最终构建+生产sidecar在隔离用户目录完成看板/环境/创建入口检查。真实Lima停止、ADB无设备，在线实例验收blocked。
 - 最终完整前端455文件/5977项（532.48s）、类型、lint、OpenAPI、构建通过；独立最终复审无未解决Critical/Important。
-- 主工作区已有改动保持，未推送。计划与冲突登记在[阶段计划](../plans/2026-09-30-android-prototype-fidelity.md)。
+- 独立验收阶段未推送（historical）；随后用户授权[baseline合并与分支收敛](2026-09-30-android-baseline-consolidation.md)，已合入06fb4978并推送，来源分支已删除，已有未提交内容保留。计划与冲突登记在[阶段计划](../plans/2026-09-30-android-prototype-fidelity.md)。
 
 [验收命令、实际结果、截图、阻塞和剩余风险](../../docs/qa/android-management/2026-09-30-prototype-fidelity/README.md)。
