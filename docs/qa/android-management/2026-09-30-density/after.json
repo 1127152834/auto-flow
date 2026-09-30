@@ -1,0 +1,39 @@
+{
+  "metrics": {
+    "#ad-name": {
+      "bottom": 313.59375,
+      "font": "14px",
+      "height": 38,
+      "top": 275.59375
+    },
+    ".ad-create-footer": {
+      "bottom": 992,
+      "font": "14px",
+      "height": 72,
+      "top": 920
+    },
+    ".ad-create-form": {
+      "bottom": 833.09375,
+      "font": "14px",
+      "height": 620.5,
+      "top": 212.59375
+    },
+    ".ad-create-form h2": {
+      "bottom": 261.59375,
+      "font": "18px",
+      "height": 28,
+      "top": 233.59375
+    },
+    ".ad-page h1": {
+      "bottom": 173.09375,
+      "font": "26px",
+      "height": 35.09375,
+      "top": 138
+    }
+  },
+  "pageHeight": 992,
+  "viewport": [
+    1440,
+    992
+  ]
+}
