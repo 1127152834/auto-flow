@@ -1,0 +1,379 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/android/tests/AndroidPage.test.tsx -t reconnecting the same backend
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-prototype-fidelity/autoflow/apps/desktop
+
+(node:15214) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/android/tests/AndroidPage.test.tsx (46 tests | 1 failed | 45 skipped) 3680ms
+   × preserves an unknown check receipt when reconnecting the same backend with a new client 3677ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/android/tests/AndroidPage.test.tsx > preserves an unknown check receipt when reconnecting the same backend with a new client
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "请先核实"
+
+Here are the accessible roles:
+
+  alert:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"ad-error"[39m
+    [33mrole[39m=[32m"alert"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  main:
+
+  Name "":
+  [36m<main[39m
+    [33mclass[39m=[32m"ad-page ad-tools-page"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "返回资源看板":
+  [36m<button[39m
+    [33mclass[39m=[32m"ad-button  "[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "运行环境":
+  [36m<button[39m
+    [33maria-current[39m=[32m"page"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "镜像管理":
+  [36m<button[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "实例模板":
+  [36m<button[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "备份恢复":
+  [36m<button[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "数据维护":
+  [36m<button[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "重新检查":
+  [36m<button[39m
+    [33mclass[39m=[32m"ad-button  "[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  banner:
+
+  Name "":
+  [36m<header[39m
+    [33mclass[39m=[32m"ad-page-heading"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<header />[39m
+
+  --------------------------------------------------
+  heading:
+
+  Name "环境配置":
+  [36m<h1 />[39m
+
+  Name "运行环境诊断":
+  [36m<h2[39m
+    [33mclass[39m=[32m"font-semibold"[39m
+  [36m/>[39m
+
+  Name "宿主工作区可用空间":
+  [36m<h3[39m
+    [33mclass[39m=[32m"text-sm font-medium"[39m
+  [36m/>[39m
+
+  Name "Linux VM Docker 可用空间":
+  [36m<h3[39m
+    [33mclass[39m=[32m"text-sm font-medium"[39m
+  [36m/>[39m
+
+  Name "能力":
+  [36m<h3[39m
+    [33mclass[39m=[32m"font-medium"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-1 text-sm text-muted"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2 text-xs text-muted"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-1 text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-1 text-sm"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-2"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  navigation:
+
+  Name "安卓管理工具":
+  [36m<nav[39m
+    [33maria-label[39m=[32m"安卓管理工具"[39m
+    [33mclass[39m=[32m"ad-tools-tabs"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  region:
+
+  Name "运行环境":
+  [36m<section[39m
+    [33maria-label[39m=[32m"运行环境"[39m
+    [33mclass[39m=[32m"ad-tool-panel"[39m
+  [36m/>[39m
+
+  Name "安卓运行环境诊断":
+  [36m<section[39m
+    [33maria-busy[39m=[32m"false"[39m
+    [33maria-label[39m=[32m"安卓运行环境诊断"[39m
+    [33mclass[39m=[32m"space-y-5 rounded-card border border-line bg-surface p-5"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  time:
+
+  Name "":
+  [36m<time[39m
+    [33mdatetime[39m=[32m"2026-09-22T00:00:00Z"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  group:
+
+  Name "宿主工作区可用空间":
+  [36m<div[39m
+    [33maria-label[39m=[32m"宿主工作区可用空间"[39m
+    [33mclass[39m=[32m"rounded-control border border-line p-3"[39m
+    [33mrole[39m=[32m"group"[39m
+  [36m/>[39m
+
+  Name "Linux VM Docker 可用空间":
+  [36m<div[39m
+    [33maria-label[39m=[32m"Linux VM Docker 可用空间"[39m
+    [33mclass[39m=[32m"rounded-control border border-line p-3"[39m
+    [33mrole[39m=[32m"group"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"ad-page"[39m
+      [33mstyle[39m=[32m"display: block; min-height: 0px; padding-bottom: 0px;"[39m
+    [36m>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"ad-error"[39m
+        [33mrole[39m=[32m"alert"[39m
+      [36m>[39m
+        [0m本机服务已切换，旧控制会话需重新核实[0m
+      [36m</p>[39m
+    [36m</div>[39m
+    [36m<main[39m
+      [33mclass[39m=[32m"ad-page ad-management-page"[39m
+      [33mhidden[39m=[32m""[39m
+    [36m>[39m
+      [36m<section[39m
+        [33maria-label[39m=[32m"安卓管理实例"[39m
+        [33mclass[39m=[32m"am-management-board"[39m
+      [36m>[39m
+        [36m<header[39m
+          [33mclass[39m=[32m"ad-page-heading"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<h1>[39m
+              [0m安卓模拟器[0m
+            [36m</h1>[39m
+            [36m<p>[39m
+              [0m管理设备，查看运行状态与保留的数据。[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"ad-button  "[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33mfill[39m=[32m"currentColor"[39m
+                [33mheight[39m=[32m"20"[39m
+                [33mviewBox[39m=[32m"0 0 256 256"[39m
+                [33mwidth[39m=[32m"20"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm109.94-52.79a8,8,0,0,0-3.89-5.4l-29.83-17-.12-33.62a8,8,0,0,0-2.83-6.08,111.91,111.91,0,0,0-36.72-20.67,8,8,0,0,0-6.46.59L128,41.85,97.88,25a8,8,0,0,0-6.47-.6A112.1,112.1,0,0,0,54.73,45.15a8,8,0,0,0-2.83,6.07l-.15,33.65-29.83,17a8,8,0,0,0-3.89,5.4,106.47,106.47,0,0,0,0,41.56,8,8,0,0,0,3.89,5.4l29.83,17,.12,33.62a8,8,0,0,0,2.83,6.08,111.91,111.91,0,0,0,36.72,20.67,8,8,0,0,0,6.46-.59L128,214.15,158.12,231a7.91,7.91,0,0,0,3.9,1,8.09,8.09,0,0,0,2.57-.42,112.1,112.1,0,0,0,36.68-20.73,8,8,0,0,0,2.83-6.07l.15-33.65,29.83-17a8,8,0,0,0,3.89-5.4A106.47,106.47,0,0,0,237.94,107.21Zm-15,34.91-28.57,16.25a8,8,0,0,0-3,3c-.58,1-1.19,2.06-1.81,3.06a7.94,7.94,0,0,0-1.22,4.21l-.15,32.25a95.89,95.89,0,0,1-25.37,14.3L134,199.13a8,8,0,0,0-3.91-1h-.19c-1.21,0-2.43,0-3.64,0a8.08,8.08,0,0,0-4.1,1l-28.84,16.1A96,96,0,0,1,67.88,201l-.11-32.2a8,8,0,0,0-1.22-4.22c-.62-1-1.23-2-1.8-3.06a8.09,8.09,0,0,0-3-3.06l-28.6-16.29a90.49,90.49,0,0,1,0-28.26L61.67,97.63a8,8,0,0,0,3-3c.58-1,1.19-2.06,1.81-3.06a7.94,7.94,0,0,0,1.22-4.21l.15-32.25a95.89,95.89,0,0,1,25.37-14.3L122,56.87a8,8,0,0,0,4.1,1c1.21,0,2.43,0,3.64,0a8.08,8.08,0,0,0,4.1-1l28.84-16.1A96,96,0,0,1,188.12,55l.11,32.2a8,8,0,0,0,1.22,4.22c.62,1,1.23,2,1.8,3.06a8.09,8.09,0,0,0,3,3.06l28.6,16.29A90.49,90.49,0,0,1,222.9,142.12Z"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [0m环境配置[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"ad-button ad-primary "[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33mfill[39m=[32m"currentColor"[39m
+                [33mheight[39m=[32m"20"[39m
+                [33mviewBox[39m=[32m"0 0 256 256"[39m
+                [33mwidth[39m=[32m"20"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [0m创建实例[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</header>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"am-board-surface"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"am-board-toolbar"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"ad-segments"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33maria-pressed[39m=[32m"false"[39m
+                [33mclass[39m=[32m"ad-button  "[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m实例列表[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33maria-pressed[39m=[32m"true"[39m
+                [33mclass[39m=[32m"ad-button ad-primary "[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m资源看板[0m
+              [36m</button>[39m
+            [36m</div>[39m
+            [36m<span>[39m
+              [0m1[0m
+              [0m 台设备 · [0m
+              [0m1[0m
+              [0m 台可用[0m
+            [36m</span>[39m
+            [36m<select[39m
+              [33maria-label[39m=[32m"筛选模板"[39m
+            [36m>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m""[39m
+              [36m>[39m
+                [0m全部环境[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"00000000-0000-4000-8000-000000000010"[39m
+              [36m>[39m
+                [0mAndroid 13 标准 · ARM64[0m
+              [36m</option>[39m
+            [36m</select>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"am-board-filters"[39m
+          [36m>[39m
+            [36m<input[39m
+              [33maria-label[39m=[32m"搜索实例"[39m
+              [33mplaceholder[39m=[32m"搜索实例"[39m
+              [33mvalue[39m=[32m""[39m
+            [36m/>[39m
+            [36m<select[39m
+              [33maria-label[39m=[32m"筛选状态"[39m
+            [36m>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m""[39m
+              [36m>[39m
+                [0m全部状态[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"stopped"[39m
+              [36m>[39m
+                [0m已停止[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"starting"[39m
+              [36m>[39m
+                [0m启动中[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"ready"[39m
+              [36m>[39m
+                [0m已就绪[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"retained"[39m
+              [36m>[39m
+                [0m数据已保留[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"missing"[39m
+              [36m>[39m
+                [0m资源缺失[0m
+              [36m</...
+ ❯ Object.getElementError ../../../../../../Documents/projects/autoflow/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../../../../../Documents/projects/autoflow/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../../../../../Documents/projects/autoflow/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../../../../../Documents/projects/autoflow/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/renderer/domains/android/tests/AndroidPage.test.tsx:776:19
+    774|     view.rerender(<QueryClientProvider client={queryClient}><AndroidPa…
+    775|     await userEvent.click(await screen.findByRole('button', { name: '环…
+    776|     expect(screen.getByRole('button', { name: '请先核实' })).toBeDisabled()
+       |                   ^
+    777|     await userEvent.click(screen.getByRole('button', { name: '核实原检查请求'…
+    778|     await waitFor(() => expect(request).toHaveBeenCalledWith('/api/v1/…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 45 skipped (46)
+   Start at  13:27:21
+   Duration  30.97s (transform 4.04s, setup 1.46s, import 20.49s, tests 3.68s, environment 3.83s)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/.codex/worktrees/android-prototype-fidelity/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/.codex/worktrees/android-prototype-fidelity/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/android/tests/AndroidPage.test.tsx -t 'reconnecting the same backend'

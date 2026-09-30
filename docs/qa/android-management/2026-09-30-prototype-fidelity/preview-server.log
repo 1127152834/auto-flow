@@ -1,0 +1,49 @@
+1:08:33 PM [vite] (client) Re-optimizing dependencies because vite config has changed
+
+  VITE v7.3.6  ready in 345 ms
+
+  ➜  Local:   http://127.0.0.1:5198/
+1:09:13 PM [vite] (client) page reload android-visual.html
+1:09:27 PM [vite] (client) hmr update /domains/android/pages/AndroidPage.tsx, /styles/index.css
+1:09:27 PM [vite] (client) hmr update /styles/index.css
+1:09:27 PM [vite] (client) hmr update /domains/android/components/RuntimeDiagnostics.tsx, /styles/index.css
+1:09:27 PM [vite] Internal server error: Failed to resolve import "../management-tools.css" from "src/renderer/domains/android/pages/AndroidPage.tsx". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /Users/zhangtiancheng/.codex/worktrees/android-prototype-fidelity/autoflow/apps/desktop/src/renderer/domains/android/pages/AndroidPage.tsx:19:7
+  19 |  import { BackupPanel } from "../components/BackupPanel";
+  20 |  import "../android.css";
+  21 |  import "../management-tools.css";
+     |          ^
+  22 |  const toolLabels = { environment: "运行环境", images: "镜像管理", templates: "实例模板", backups: "备份恢复", maintenance: "数据维护" };
+  23 |  const specValue = (spec, key, fallback) => spec[key] ?? spec[key.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase...
+      at TransformPluginContext._formatLog (file:///Users/zhangtiancheng/Documents/projects/autoflow/node_modules/vite/dist/node/chunks/config.js:29079:43)
+      at TransformPluginContext.error (file:///Users/zhangtiancheng/Documents/projects/autoflow/node_modules/vite/dist/node/chunks/config.js:29076:14)
+      at normalizeUrl (file:///Users/zhangtiancheng/Documents/projects/autoflow/node_modules/vite/dist/node/chunks/config.js:27199:18)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async file:///Users/zhangtiancheng/Documents/projects/autoflow/node_modules/vite/dist/node/chunks/config.js:27257:32
+      at async Promise.all (index 19)
+      at async TransformPluginContext.transform (file:///Users/zhangtiancheng/Documents/projects/autoflow/node_modules/vite/dist/node/chunks/config.js:27225:4)
+      at async EnvironmentPluginContainer.transform (file:///Users/zhangtiancheng/Documents/projects/autoflow/node_modules/vite/dist/node/chunks/config.js:28877:14)
+      at async loadAndTransform (file:///Users/zhangtiancheng/Documents/projects/autoflow/node_modules/vite/dist/node/chunks/config.js:22746:26)
+      at async viteTransformMiddleware (file:///Users/zhangtiancheng/Documents/projects/autoflow/node_modules/vite/dist/node/chunks/config.js:24622:20)
+1:09:59 PM [vite] (client) page reload domains/android/management-tools.css
+1:16:07 PM [vite] (client) hmr update /domains/android/components/ManagementOverview.tsx, /styles/index.css
+1:16:09 PM [vite] (client) hmr update /styles/index.css
+1:16:09 PM [vite] (client) hmr update /domains/android/management-tools.css, /styles/index.css
+1:16:34 PM [vite] (client) hmr update /styles/index.css
+1:16:52 PM [vite] (client) hmr update /styles/index.css
+1:17:31 PM [vite] (client) hmr update /styles/index.css
+1:18:37 PM [vite] (client) hmr update /styles/index.css
+1:18:51 PM [vite] (client) hmr update /domains/android/pages/AndroidPage.tsx, /styles/index.css
+1:18:51 PM [vite] (client) hmr update /styles/index.css
+1:18:51 PM [vite] (client) hmr update /domains/android/management-tools.css, /styles/index.css
+1:20:48 PM [vite] (client) hmr update /domains/android/pages/AndroidPage.tsx, /styles/index.css
+1:21:28 PM [vite] (client) hmr update /domains/android/components/ManagementOverview.tsx, /styles/index.css
+1:22:06 PM [vite] (client) hmr update /domains/android/pages/AndroidPage.tsx, /styles/index.css
+1:25:17 PM [vite] (client) page reload domains/android/tests/ManagementVisualPreview.tsx
+1:25:51 PM [vite] (client) hmr update /domains/android/management-board.css, /styles/index.css
+1:27:13 PM [vite] (client) hmr update /styles/index.css
+1:28:28 PM [vite] (client) hmr update /domains/android/pages/AndroidPage.tsx, /styles/index.css
+1:30:08 PM [vite] (client) hmr update /domains/android/management-board.css, /styles/index.css
+1:31:53 PM [vite] (client) hmr update /styles/index.css
+1:32:51 PM [vite] (client) hmr update /domains/android/components/ManagementOverview.tsx, /styles/index.css

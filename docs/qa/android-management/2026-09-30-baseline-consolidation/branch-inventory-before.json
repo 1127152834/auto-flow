@@ -1,0 +1,112 @@
+[
+  {
+    "ref": "refs/heads/codex/android-prototype-fidelity",
+    "sha": "1f015f9fbd8aab3673581d645a2aa9e728cf2e8e",
+    "commitsNotInPreMergeBaseline": 1
+  },
+  {
+    "ref": "refs/heads/codex/architecture-baseline",
+    "sha": "53b87b59973a313c9e1a8792d3edcab577b4bcd6",
+    "commitsNotInPreMergeBaseline": 0
+  },
+  {
+    "ref": "refs/remotes/origin/HEAD",
+    "sha": "2cc06c63618b3a4c9d431974f4896795830db0f8",
+    "commitsNotInPreMergeBaseline": 0
+  },
+  {
+    "ref": "refs/remotes/origin/codex/android-management-am1-20260919",
+    "sha": "3285b0e6dac113c194ed4d1d84c9ea735bc35401",
+    "commitsNotInPreMergeBaseline": 0
+  },
+  {
+    "ref": "refs/remotes/origin/codex/android-management-spec-20260919",
+    "sha": "0f7d6e5cf7eee8dd490a1209407f7f22e73c459b",
+    "commitsNotInPreMergeBaseline": 0
+  },
+  {
+    "ref": "refs/remotes/origin/codex/android-workflow-handoff",
+    "sha": "f573a44d7732fca34bb5d0fbb4b5da4d07ca687d",
+    "commitsNotInPreMergeBaseline": 0
+  },
+  {
+    "ref": "refs/remotes/origin/codex/architecture-baseline",
+    "sha": "2cc06c63618b3a4c9d431974f4896795830db0f8",
+    "commitsNotInPreMergeBaseline": 0
+  },
+  {
+    "ref": "refs/remotes/origin/codex/automation-project-inputs",
+    "sha": "c0f4291cfec596706fee1c7353703c0d086945a5",
+    "commitsNotInPreMergeBaseline": 0
+  },
+  {
+    "ref": "refs/remotes/origin/codex/global-table-system",
+    "sha": "2a29ac0da30efa2999a25538c169e99c5e80aa80",
+    "commitsNotInPreMergeBaseline": 0
+  },
+  {
+    "ref": "refs/remotes/origin/codex/m6-unfinished-checkpoint-20260913",
+    "sha": "59ae8d4462b3384b321ba8c7ca8e913cbbb5774b",
+    "commitsNotInPreMergeBaseline": 1
+  },
+  {
+    "ref": "refs/remotes/origin/codex/node-browser-environments",
+    "sha": "ad2bf2395996f8e2014a2bf34dc1bdd99a4cbb6c",
+    "commitsNotInPreMergeBaseline": 0
+  },
+  {
+    "ref": "refs/remotes/origin/codex/project-management-pm3",
+    "sha": "2bac1b14e45effef42fb27820eadff1043d1ceed",
+    "commitsNotInPreMergeBaseline": 0
+  },
+  {
+    "ref": "refs/remotes/origin/codex/project-management-pm4",
+    "sha": "fbda6f1736b53ebf8144513c893e1bf6bc5a459b",
+    "commitsNotInPreMergeBaseline": 0
+  },
+  {
+    "ref": "refs/remotes/origin/codex/project-management-pm5",
+    "sha": "fbda6f1736b53ebf8144513c893e1bf6bc5a459b",
+    "commitsNotInPreMergeBaseline": 0
+  },
+  {
+    "ref": "refs/remotes/origin/codex/project-management-pm6",
+    "sha": "1f4c25332345bddd46cbee585b95952a7b92bb74",
+    "commitsNotInPreMergeBaseline": 0
+  },
+  {
+    "ref": "refs/remotes/origin/codex/project-management-pm9",
+    "sha": "d29243977496273ea3860cd5cb0aa6bff3fad89c",
+    "commitsNotInPreMergeBaseline": 0
+  },
+  {
+    "ref": "refs/remotes/origin/codex/project-management-pm9-runtime",
+    "sha": "90d77acdd64d20b133aff6ace9eb445fa20e06c6",
+    "commitsNotInPreMergeBaseline": 0
+  },
+  {
+    "ref": "refs/remotes/origin/codex/proxy-management",
+    "sha": "0ad2fd2ae93831f1f49638f67f878e27a10d11a6",
+    "commitsNotInPreMergeBaseline": 0
+  },
+  {
+    "ref": "refs/remotes/origin/codex/simplify-browser-selection",
+    "sha": "8d93438eb8e2527e3a93e04c6f5885aeb840c733",
+    "commitsNotInPreMergeBaseline": 0
+  },
+  {
+    "ref": "refs/remotes/origin/codex/studio-backend-wip-20260918",
+    "sha": "4976c4dbfe5cd74ec884ba96e8fdc40841f77289",
+    "commitsNotInPreMergeBaseline": 0
+  },
+  {
+    "ref": "refs/remotes/origin/codex/studio-before-removal-20260913",
+    "sha": "4eda20742ae39339b49d37c47e01d64ec12c2663",
+    "commitsNotInPreMergeBaseline": 1
+  },
+  {
+    "ref": "refs/remotes/origin/codex/ui-controls-plan",
+    "sha": "1fb58e188c3b1063c86e19d4c6d80bba0ecbe92e",
+    "commitsNotInPreMergeBaseline": 0
+  }
+]

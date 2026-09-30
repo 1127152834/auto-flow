@@ -10,11 +10,17 @@ vi.mock('../components/DevicePreview', () => ({ DevicePreview: ({ device }: { de
 
 afterEach(cleanup)
 
+async function historyButton(name = '测试设备') {
+  await userEvent.click(await screen.findByLabelText(`${name}更多操作`))
+  return screen.getByRole('button', { name: `查看${name}操作历史` })
+}
+
+
 it('renders snapshot devices and available actions without workflow data', async () => {
   const api = { devices: vi.fn(async () => ({ total: 1, nextCursor: null, items: [{ deviceId: 'd', revision: 2, name: '测试设备', runtimeState: 'ready', owner: { kind: 'none', id: null }, observedAt: null, stale: false, specSnapshot: {}, latestOperation: null, allowedActions: ['open', 'stop'], blockedReasons: {} }] })), operations: vi.fn(), environment: vi.fn(), capabilities: vi.fn(), images: vi.fn(), bulk: vi.fn(), bulkAction: vi.fn(), cleanupPreview: vi.fn(), cleanup: vi.fn(), diagnostics: vi.fn() } as unknown as AndroidManagementApi
   render(<QueryClientProvider client={new QueryClient()}><ManagementOverview api={api} onCreate={vi.fn()} onOpen={vi.fn()} onManage={vi.fn()} /></QueryClientProvider>)
   expect(await screen.findByText('测试设备')).toBeVisible()
-  expect(screen.getByText('可操作：open、stop')).toBeVisible()
+  expect(screen.queryByText('可操作：open、stop')).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: '创建实例' })).toBeVisible()
   expect(screen.getByRole('button', { name: '打开测试设备' })).toBeVisible()
 })
@@ -26,7 +32,7 @@ it('shows device management operation history and verifies an unknown result by 
     operations: vi.fn(async () => ({ items: [{ operationId: 'operation-1', requestId: 'request-1', targetId: 'd', action: 'stop', state: 'needs_verification', stageCode: 'verify', stageLabel: '等待核实', attempt: 1, retryOf: null, createdAt: '2026-09-23T00:00:00Z', startedAt: null, finishedAt: null, resultCode: null, message: '结果未知', allowedActions: ['verify'] }], total: 1, nextCursor: null })),
   } as unknown as AndroidManagementApi
   render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><ManagementOverview api={api} onManage={onManage} /></QueryClientProvider>)
-  await userEvent.click(await screen.findByRole('button', { name: '查看测试设备操作历史' }))
+  await userEvent.click(await historyButton())
   expect(await screen.findByText('等待核实')).toBeVisible()
   expect(api.operations).toHaveBeenCalledWith('?deviceId=d&limit=50')
   await userEvent.click(screen.getByRole('button', { name: '核实操作 operation-1' }))
@@ -41,7 +47,7 @@ it('pages device operation history with the backend cursor', async () => {
       : { items: [{ operationId: 'operation-1', requestId: 'request-1', targetId: 'd', action: 'stop', state: 'succeeded', stageCode: 'done', stageLabel: '已完成', attempt: 1, createdAt: '2026-09-23T00:00:00Z', allowedActions: [] }], total: 2, nextCursor: 'operation-1' }),
   } as unknown as AndroidManagementApi
   render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><ManagementOverview api={api} /></QueryClientProvider>)
-  await userEvent.click(await screen.findByRole('button', { name: '查看测试设备操作历史' }))
+  await userEvent.click(await historyButton())
   expect(await screen.findByText('stop', { selector: 'td' })).toBeVisible()
   await userEvent.click(await screen.findByRole('button', { name: '下一页操作历史' }))
   expect(api.operations).toHaveBeenCalledWith('?deviceId=d&limit=50&cursor=operation-1')
@@ -60,7 +66,7 @@ it('keeps cached operation history read-only after a failed refresh', async () =
   } as unknown as AndroidManagementApi
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(<QueryClientProvider client={client}><ManagementOverview api={api} onManage={onManage} /></QueryClientProvider>)
-  await userEvent.click(await screen.findByRole('button', { name: '查看测试设备操作历史' }))
+  await userEvent.click(await historyButton())
   expect(await screen.findByRole('button', { name: '核实操作 operation-1' })).toBeEnabled()
   disconnected = true
   await client.invalidateQueries({ queryKey: ['android-management', 'default', 'operations', 'd'] })
@@ -80,7 +86,7 @@ it('does not act on a cached receipt while its refresh is still in flight', asyn
   } as unknown as AndroidManagementApi
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(<QueryClientProvider client={client}><ManagementOverview api={api} onManage={vi.fn()} /></QueryClientProvider>)
-  await userEvent.click(await screen.findByRole('button', { name: '查看测试设备操作历史' }))
+  await userEvent.click(await historyButton())
   const verify = await screen.findByRole('button', { name: '核实操作 operation-1' })
   expect(verify).toBeEnabled()
   refreshing = true
@@ -98,15 +104,13 @@ it('moves keyboard focus into operation history and returns it to the device on 
     operations: vi.fn(async () => ({ items: [], total: 0, nextCursor: null })),
   } as unknown as AndroidManagementApi
   render(<QueryClientProvider client={new QueryClient()}><ManagementOverview api={api} /></QueryClientProvider>)
-  const trigger = await screen.findByRole('button', { name: '查看测试设备操作历史' })
+  const trigger = await historyButton()
   await userEvent.click(trigger)
   const history = await screen.findByRole('region', { name: '测试设备操作历史' })
-  expect(trigger).toHaveAttribute('aria-expanded', 'true')
-  expect(trigger).toHaveAttribute('aria-controls', history.id)
+  expect(screen.getByLabelText('测试设备更多操作')).toHaveAttribute('aria-expanded', 'false')
   expect(within(history).getByRole('heading', { name: '测试设备 · 操作历史' })).toHaveFocus()
   await userEvent.click(within(history).getByRole('button', { name: '关闭历史' }))
-  expect(trigger).toHaveFocus()
-  expect(trigger).toHaveAttribute('aria-expanded', 'false')
+  expect(screen.getByLabelText('测试设备更多操作')).toHaveFocus()
 })
 
 it('does not expose another device operation if the history response violates its device filter', async () => {
@@ -116,7 +120,7 @@ it('does not expose another device operation if the history response violates it
     operations: vi.fn(async () => ({ items: [{ operationId: 'foreign-operation', requestId: 'foreign-request', targetId: 'other', action: 'delete', state: 'needs_verification', stageCode: 'verify', stageLabel: '等待核实', attempt: 1, createdAt: '2026-09-23T00:00:00Z', allowedActions: ['verify'] }], total: 1, nextCursor: null })),
   } as unknown as AndroidManagementApi
   render(<QueryClientProvider client={new QueryClient()}><ManagementOverview api={api} onManage={onManage} /></QueryClientProvider>)
-  await userEvent.click(await screen.findByRole('button', { name: '查看测试设备操作历史' }))
+  await userEvent.click(await historyButton())
   expect(await screen.findByRole('alert')).toHaveTextContent('操作历史与设备不匹配')
   expect(screen.queryByRole('button', { name: '核实操作 foreign-operation' })).not.toBeInTheDocument()
   expect(onManage).not.toHaveBeenCalled()
@@ -178,6 +182,7 @@ it('shows the owned manual session in the list with return and explicit end acti
   render(<QueryClientProvider client={new QueryClient()}><ManagementOverview api={api} onOpen={onOpen} onEndControl={onEndControl} /></QueryClientProvider>)
   await userEvent.click(await screen.findByRole('button', { name: '查看原生窗口设备控制会话' }))
   expect(onOpen).toHaveBeenCalledWith('d')
+  await userEvent.click(screen.getByLabelText('原生窗口设备更多操作'))
   await userEvent.click(screen.getByRole('button', { name: '结束原生窗口设备控制会话' }))
   expect(onEndControl).toHaveBeenCalledWith('d', 'session-1')
 })
@@ -235,7 +240,7 @@ it('keeps the last snapshot and marks it stale when refresh disconnects', async 
   await client.invalidateQueries({ queryKey: ['android-management', 'default', 'devices'] })
   expect(await screen.findByRole('alert')).toHaveTextContent('连接已断开')
   expect(screen.getByText('缓存设备')).toBeVisible()
-  expect(screen.getByText('修订 1 · 快照陈旧 · 已就绪')).toBeVisible()
+  expect(screen.getByText('快照陈旧 · 已就绪')).toBeVisible()
   expect(screen.getByRole('button', { name: '启动设备' })).toBeDisabled()
 })
 
@@ -267,6 +272,7 @@ it('does not execute operational actions for unknown or stale devices', async ()
   const api = { devices: vi.fn(async () => ({ total: 1, nextCursor: null, items: [{ deviceId: 'd', revision: 1, name: '待核实', runtimeState: 'unknown', owner: { kind: 'none', id: null }, observedAt: null, stale: true, specSnapshot: {}, latestOperation: null, allowedActions: ['start', 'verify'], blockedReasons: {} }] })) } as unknown as AndroidManagementApi
   render(<QueryClientProvider client={new QueryClient()}><ManagementOverview api={api} onManage={onManage} /></QueryClientProvider>)
   expect(await screen.findByRole('button', { name: '启动设备' })).toBeDisabled()
+  await userEvent.click(screen.getByLabelText('待核实更多操作'))
   expect(screen.getByRole('button', { name: '核实状态' })).toBeEnabled()
   await userEvent.click(screen.getByRole('button', { name: '核实状态' }))
   expect(onManage).toHaveBeenCalledWith('d', 'recover', undefined, undefined)
@@ -321,4 +327,38 @@ it('does not freeze an empty batch when selected targets leave the filter before
   expect(api.bulk).not.toHaveBeenCalled()
   await userEvent.clear(screen.getByLabelText('搜索实例'))
   expect(screen.getByRole('button', { name: '提交批量操作' })).toBeEnabled()
+})
+
+it('groups authoritative devices by availability and keeps filters when switching to the list', async () => {
+  const items = [
+    { deviceId: 'a', name: '可用设备', runtimeState: 'ready', owner: { kind: 'none', id: null } },
+    { deviceId: 'b', name: '控制设备', runtimeState: 'ready', owner: { kind: 'manualSession', id: 'session' } },
+    { deviceId: 'c', name: '陈旧设备', runtimeState: 'ready', owner: { kind: 'none', id: null }, stale: true },
+  ].map(device => ({ revision: 1, observedAt: null, stale: false, specSnapshot: {}, latestOperation: null, allowedActions: ['open'], blockedReasons: {}, ...device }))
+  const api = { devices: async () => ({ items, total: 3, nextCursor: null }) } as unknown as AndroidManagementApi
+  render(<QueryClientProvider client={new QueryClient()}><ManagementOverview api={api} onOpen={vi.fn()} /></QueryClientProvider>)
+  expect(within(await screen.findByRole('region', { name: '可用设备分组' })).getByText('可用设备', { selector: 'strong' })).toBeVisible()
+  expect(within(screen.getByRole('region', { name: '使用中设备分组' })).getByText('控制设备')).toBeVisible()
+  expect(within(screen.getByRole('region', { name: '启动与停止设备分组' })).getByText('陈旧设备')).toBeVisible()
+  await userEvent.type(screen.getByLabelText('搜索实例'), '可用')
+  await userEvent.click(screen.getByRole('button', { name: '实例列表' }))
+  expect(screen.getByRole('button', { name: '实例列表' })).toHaveAttribute('aria-pressed', 'true')
+  expect(within(screen.getByRole('region', { name: '实例列表' })).getByText('可用设备', { selector: 'strong' })).toBeVisible()
+  expect(screen.queryByText('控制设备')).not.toBeInTheDocument()
+})
+
+it('puts secondary operations behind an accessible device disclosure', async () => {
+  const api = { devices: async () => ({ items: [{ deviceId: 'a', name: '菜单设备', runtimeState: 'ready', owner: { kind: 'none', id: null }, revision: 1, observedAt: null, stale: false, specSnapshot: {}, latestOperation: null, allowedActions: ['stop'], blockedReasons: {} }], total: 1, nextCursor: null }) } as unknown as AndroidManagementApi
+  render(<QueryClientProvider client={new QueryClient()}><ManagementOverview api={api} onManage={vi.fn()} /></QueryClientProvider>)
+  expect(await screen.findByText('菜单设备')).toBeVisible()
+  expect(screen.queryByRole('button', { name: '停止设备' })).not.toBeInTheDocument()
+  await userEvent.click(screen.getByLabelText('菜单设备更多操作'))
+  expect(screen.getByRole('button', { name: '停止设备' })).toBeVisible()
+})
+
+it.each(['instanceType', 'instance_type'])('identifies a legacy temporary instance from %s without promising persistence', async (key) => {
+  const api = { devices: async () => ({ items: [{ deviceId: 'legacy', name: '旧临时设备', runtimeState: 'stopped', owner: { kind: 'none', id: null }, revision: 1, observedAt: null, stale: false, specSnapshot: { [key]: 'temporary' }, latestOperation: null, allowedActions: [], blockedReasons: {} }], total: 1, nextCursor: null }) } as unknown as AndroidManagementApi
+  render(<QueryClientProvider client={new QueryClient()}><ManagementOverview api={api} /></QueryClientProvider>)
+  expect(await screen.findByText('历史临时实例')).toBeVisible()
+  expect(screen.queryByText('持久实例')).not.toBeInTheDocument()
 })

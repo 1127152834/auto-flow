@@ -296,3 +296,5 @@ proposed：本轮完整规格尚未确认，6组补图未生成；参数定义�
 2026-09-24镜像网络故障补验（confirmed）：独立Docker/containerd、相同overlayfs后端，经真实TLS代理在下载层落盘3MiB后断开；生产HTTP失败回执/同编号重放/重启保持，恢复网络新编号拉取成功且固定imageId一致，全部自有测试运行时清理、原资源未变。详见knowledge/2026-09-24-android-network-interruption.md。桌面仍锁屏；没有修改生产代码或改变整体partial结论。
 
 2026-09-24 Android/PM9本地baseline集成（confirmed）：用户明确要求将Android746c9c5b合入已含PM9的c6e02427；新增0020_merge_android_pm9汇合两侧迁移，旧迁移字节保留。ContextVar栈与PM9 fork复制冲突及变量字段基线自动合并漏计均已修复。合并树后端4466passed/103skipped、前端5725passed及工程门禁通过，独立审查无未解决C/I；不推送、不提升Android partial或PM9 releaseAccepted=false。见sessions/2026-09-24-android-baseline-integration.md与同名QA报告。
+
+2026-09-30 安卓原型恢复（confirmed UI，整体AM验收仍partial）：R1/R2/R3仍为视觉基线；管理首页恢复三列资源看板，诊断/镜像/模板/备份/清理由环境配置进入。导航与同实例重连保留未知操作原requestId；历史temporary正确标注但不可新建。真实Electron最终构建入口已验，Lima停止/ADB无设备导致在线控制blocked。命令与截图见[sessions/2026-09-30-android-prototype-fidelity.md](../sessions/2026-09-30-android-prototype-fidelity.md)。

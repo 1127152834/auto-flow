@@ -1,0 +1,798 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/android/tests/ManagementOverview.test.tsx -t identifies a legacy temporary --maxWorkers=1
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-prototype-fidelity/autoflow/apps/desktop
+
+(node:28875) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/renderer/domains/android/tests/ManagementOverview.test.tsx (25 tests | 2 failed | 23 skipped) 2112ms
+   × identifies a legacy temporary instance from instanceType without promising persistence 1092ms
+   × identifies a legacy temporary instance from instance_type without promising persistence 1017ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/renderer/domains/android/tests/ManagementOverview.test.tsx > identifies a legacy temporary instance from instanceType without promising persistence
+ FAIL  src/renderer/domains/android/tests/ManagementOverview.test.tsx > identifies a legacy temporary instance from instance_type without promising persistence
+TestingLibraryElementError: Unable to find an element with the text: 历史临时实例. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33maria-label[39m=[32m"安卓管理实例"[39m
+      [33mclass[39m=[32m"am-management-board"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"ad-page-heading"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<h1>[39m
+            [0m安卓模拟器[0m
+          [36m</h1>[39m
+          [36m<p>[39m
+            [0m管理设备，查看运行状态与保留的数据。[0m
+          [36m</p>[39m
+        [36m</div>[39m
+        [36m<div />[39m
+      [36m</header>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"am-board-surface"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"am-board-toolbar"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"ad-segments"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33maria-pressed[39m=[32m"false"[39m
+              [33mclass[39m=[32m"ad-button  "[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0m实例列表[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33maria-pressed[39m=[32m"true"[39m
+              [33mclass[39m=[32m"ad-button ad-primary "[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0m资源看板[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<span>[39m
+            [0m1[0m
+            [0m 台设备 · [0m
+            [0m0[0m
+            [0m 台可用[0m
+          [36m</span>[39m
+          [36m<select[39m
+            [33maria-label[39m=[32m"筛选模板"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m""[39m
+            [36m>[39m
+              [0m全部环境[0m
+            [36m</option>[39m
+          [36m</select>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"am-board-filters"[39m
+        [36m>[39m
+          [36m<input[39m
+            [33maria-label[39m=[32m"搜索实例"[39m
+            [33mplaceholder[39m=[32m"搜索实例"[39m
+            [33mvalue[39m=[32m""[39m
+          [36m/>[39m
+          [36m<select[39m
+            [33maria-label[39m=[32m"筛选状态"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m""[39m
+            [36m>[39m
+              [0m全部状态[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"stopped"[39m
+            [36m>[39m
+              [0m已停止[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"starting"[39m
+            [36m>[39m
+              [0m启动中[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"ready"[39m
+            [36m>[39m
+              [0m已就绪[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"retained"[39m
+            [36m>[39m
+              [0m数据已保留[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"missing"[39m
+            [36m>[39m
+              [0m资源缺失[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"unknown"[39m
+            [36m>[39m
+              [0m待核实[0m
+            [36m</option>[39m
+          [36m</select>[39m
+          [36m<select[39m
+            [33maria-label[39m=[32m"筛选数据"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m""[39m
+            [36m>[39m
+              [0m全部数据[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"retained"[39m
+            [36m>[39m
+              [0m数据已保留[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"not-retained"[39m
+            [36m>[39m
+              [0m未保留数据[0m
+            [36m</option>[39m
+          [36m</select>[39m
+          [36m<div[39m
+            [33maria-label[39m=[32m"实例统计"[39m
+            [33mclass[39m=[32m"am-board-stats"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m总数 [0m
+              [0m1[0m
+            [36m</span>[39m
+            [36m<span>[39m
+              [0m运行中 [0m
+              [0m0[0m
+            [36m</span>[39m
+            [36m<span>[39m
+              [0m已停止 [0m
+              [0m1[0m
+            [36m</span>[39m
+            [36m<span>[39m
+              [0m需处理 [0m
+              [0m0[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"am-board-columns"[39m
+        [36m>[39m
+          [36m<section[39m
+            [33maria-label[39m=[32m"可用设备分组"[39m
+            [33mclass[39m=[32m"am-board-column"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [36m<span[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"ad-dot ad-green"[39m
+              [36m/>[39m
+              [0m可用设备[0m
+              [36m<span>[39m
+                [0m0[0m
+              [36m</span>[39m
+            [36m</h2>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"am-column-cards"[39m
+            [36m>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"am-column-empty"[39m
+              [36m>[39m
+                [0m暂无[0m
+                [0m可用[0m
+                [0m设备[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</section>[39m
+          [36m<section[39m
+            [33maria-label[39m=[32m"使用中设备分组"[39m
+            [33mclass[39m=[32m"am-board-column"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [36m<span[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"ad-dot ad-brown"[39m
+              [36m/>[39m
+              [0m使用中[0m
+              [36m<span>[39m
+                [0m0[0m
+              [36m</span>[39m
+            [36m</h2>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"am-column-cards"[39m
+            [36m>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"am-column-empty"[39m
+              [36m>[39m
+                [0m暂无[0m
+                [0m使用中[0m
+                [0m设备[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</section>[39m
+          [36m<section[39m
+            [33maria-label[39m=[32m"启动与停止设备分组"[39m
+            [33mclass[39m=[32m"am-board-column"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [36m<span[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"ad-dot ad-gray"[39m
+              [36m/>[39m
+              [0m启动与停止[0m
+              [36m<span>[39m
+                [0m1[0m
+              [36m</span>[39m
+            [36m</h2>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"am-column-cards"[39m
+            [36m>[39m
+              [36m<article[39m
+                [33mclass[39m=[32m"am-device-card"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"am-device-preview"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"am-preview-placeholder"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33mfill[39m=[32m"currentColor"[39m
+                      [33mheight[39m=[32m"32"[39m
+                      [33mviewBox[39m=[32m"0 0 256 256"[39m
+                      [33mwidth[39m=[32m"32"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M176,18H80A22,22,0,0,0,58,40V216a22,22,0,0,0,22,22h96a22,22,0,0,0,22-22V40A22,22,0,0,0,176,18ZM70,62H186V194H70ZM80,30h96a10,10,0,0,1,10,10V50H70V40A10,10,0,0,1,80,30Zm96,196H80a10,10,0,0,1-10-10V206H186v10A10,10,0,0,1,176,226Z"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                    [36m<span>[39m
+                      [0m暂无在线画面[0m
+                    [36m</span>[39m
+                  [36m</div>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"am-device-body"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"am-device-title"[39m
+                  [36m>[39m
+                    [36m<strong>[39m
+                      [0m旧临时设备[0m
+                    [36m</strong>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"ad-badge ad-gray shrink-0 whitespace-nowrap"[39m
+                    [36m>[39m
+                      [0m已停止[0m
+                    [36m</span>[39m
+                  [36m</div>[39m
+                  [36m<p[39m
+                    [33mclass[39m=[32m"am-device-spec"[39m
+                  [36m>[39m
+                    [0mAndroid 版本待核实[0m
+                    [0m · [0m
+                    [0m分辨率待核实[0m
+                  [36m</p>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"ad-badge ad-brown"[39m
+                  [36m>[39m
+                    [0m持久实例[0m
+                  [36m</span>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"am-device-actions"[39m
+                  [36m/>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"am-device-more"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33maria-expanded[39m=[32m"false"[39m
+                    [33maria-label[39m=[32m"旧临时设备更多操作"[39m
+                    [33mtype[39m=[32m"button"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33mfill[39m=[32m"currentColor"[39m
+                      [33mheight[39m=[32m"23"[39m
+                      [33mviewBox[39m=[32m"0 0 256 256"[39m
+                      [33mwidth[39m=[32m"23"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M140,128a12,12,0,1,1-12-12A12,12,0,0,1,140,128Zm56-12a12,12,0,1,0,12,12A12,12,0,0,0,196,116ZM60,116a12,12,0,1,0,12,12A12,12,0,0,0,60,116Z"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                  [36m</button>[39m
+                [36m</div>[39m
+              [36m</article>[39m
+            [36m</div>[39m
+          [36m</section>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<fieldset[39m
+        [33mclass[39m=[32m"am-board-bulk"[39m
+      [36m>[39m
+        [36m<section[39m
+          [33maria-busy[39m=[32m"false"[39m
+          [33maria-label[39m=[32m"批量操作"[39m
+          [33mclass[39m=[32m"rounded-card border border-line bg-surface p-5"[39m
+        [36m>[39m
+          [36m<header>[39m
+            [36m<h2[39m
+              [33mclass[39m=[32m"font-semibold"[39m
+            [36m>[39m
+              [0m批量操作[0m
+            [36m</h2>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"mt-1 text-sm text-muted"[39m
+            [36m>[39m
+              [0m目标在提交时冻结，单批最多 20 台。[0m
+            [36m</p>[39m
+          [36m</header>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-3 grid gap-2"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"flex items-center gap-2 text-sm"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33maria-label[39m=[32m"旧临时设备"[39m
+                [33mdisabled[39m=[32m""[39m
+                [33mid[39m=[32m"bulk-legacy"[39m
+                [33mtype[39m=[32m"checkbox"[39m
+              [36m/>[39m
+              [0m旧临时设备[0m
+              [0m · 修订 [0m
+              [0m1[0m
+              [0m · 待核实或不可操作[0m
+            [36m</label>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-3 flex flex-wrap items-center gap-2"[39m
+          [36m>[39m
+            [36m<select[39m
+              [33maria-label[39m=[32m"批量动作"[39m
+            [36m>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"start"[39m
+              [36m>[39m
+                [0m启动[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"stop"[39m
+              [36m>[39m
+                [0m停止[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"restart"[39m
+              [36m>[39m
+                [0m重启[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"delete"[39m
+              [36m>[39m
+                [0m删除[0m
+              [36m</option>[39m
+            [36m</select>[39m
+            [36m<button[39m
+              [33mdisabled[39m=[32m""[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0m提交批量操作[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+      [36m</fieldset>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33maria-label[39m=[32m"安卓管理实例"[39m
+      [33mclass[39m=[32m"am-management-board"[39m
+    [36m>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"ad-page-heading"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<h1>[39m
+            [0m安卓模拟器[0m
+          [36m</h1>[39m
+          [36m<p>[39m
+            [0m管理设备，查看运行状态与保留的数据。[0m
+          [36m</p>[39m
+        [36m</div>[39m
+        [36m<div />[39m
+      [36m</header>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"am-board-surface"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"am-board-toolbar"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"ad-segments"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33maria-pressed[39m=[32m"false"[39m
+              [33mclass[39m=[32m"ad-button  "[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0m实例列表[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33maria-pressed[39m=[32m"true"[39m
+              [33mclass[39m=[32m"ad-button ad-primary "[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0m资源看板[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<span>[39m
+            [0m1[0m
+            [0m 台设备 · [0m
+            [0m0[0m
+            [0m 台可用[0m
+          [36m</span>[39m
+          [36m<select[39m
+            [33maria-label[39m=[32m"筛选模板"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m""[39m
+            [36m>[39m
+              [0m全部环境[0m
+            [36m</option>[39m
+          [36m</select>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"am-board-filters"[39m
+        [36m>[39m
+          [36m<input[39m
+            [33maria-label[39m=[32m"搜索实例"[39m
+            [33mplaceholder[39m=[32m"搜索实例"[39m
+            [33mvalue[39m=[32m""[39m
+          [36m/>[39m
+          [36m<select[39m
+            [33maria-label[39m=[32m"筛选状态"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m""[39m
+            [36m>[39m
+              [0m全部状态[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"stopped"[39m
+            [36m>[39m
+              [0m已停止[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"starting"[39m
+            [36m>[39m
+              [0m启动中[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"ready"[39m
+            [36m>[39m
+              [0m已就绪[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"retained"[39m
+            [36m>[39m
+              [0m数据已保留[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"missing"[39m
+            [36m>[39m
+              [0m资源缺失[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"unknown"[39m
+            [36m>[39m
+              [0m待核实[0m
+            [36m</option>[39m
+          [36m</select>[39m
+          [36m<select[39m
+            [33maria-label[39m=[32m"筛选数据"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m""[39m
+            [36m>[39m
+              [0m全部数据[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"retained"[39m
+            [36m>[39m
+              [0m数据已保留[0m
+            [36m</option>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"not-retained"[39m
+            [36m>[39m
+              [0m未保留数据[0m
+            [36m</option>[39m
+          [36m</select>[39m
+          [36m<div[39m
+            [33maria-label[39m=[32m"实例统计"[39m
+            [33mclass[39m=[32m"am-board-stats"[39m
+          [36m>[39m
+            [36m<span>[39m
+              [0m总数 [0m
+              [0m1[0m
+            [36m</span>[39m
+            [36m<span>[39m
+              [0m运行中 [0m
+              [0m0[0m
+            [36m</span>[39m
+            [36m<span>[39m
+              [0m已停止 [0m
+              [0m1[0m
+            [36m</span>[39m
+            [36m<span>[39m
+              [0m需处理 [0m
+              [0m0[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"am-board-columns"[39m
+        [36m>[39m
+          [36m<section[39m
+            [33maria-label[39m=[32m"可用设备分组"[39m
+            [33mclass[39m=[32m"am-board-column"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [36m<span[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"ad-dot ad-green"[39m
+              [36m/>[39m
+              [0m可用设备[0m
+              [36m<span>[39m
+                [0m0[0m
+              [36m</span>[39m
+            [36m</h2>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"am-column-cards"[39m
+            [36m>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"am-column-empty"[39m
+              [36m>[39m
+                [0m暂无[0m
+                [0m可用[0m
+                [0m设备[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</section>[39m
+          [36m<section[39m
+            [33maria-label[39m=[32m"使用中设备分组"[39m
+            [33mclass[39m=[32m"am-board-column"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [36m<span[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"ad-dot ad-brown"[39m
+              [36m/>[39m
+              [0m使用中[0m
+              [36m<span>[39m
+                [0m0[0m
+              [36m</span>[39m
+            [36m</h2>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"am-column-cards"[39m
+            [36m>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"am-column-empty"[39m
+              [36m>[39m
+                [0m暂无[0m
+                [0m使用中[0m
+                [0m设备[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</section>[39m
+          [36m<section[39m
+            [33maria-label[39m=[32m"启动与停止设备分组"[39m
+            [33mclass[39m=[32m"am-board-column"[39m
+          [36m>[39m
+            [36m<h2>[39m
+              [36m<span[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"ad-dot ad-gray"[39m
+              [36m/>[39m
+              [0m启动与停止[0m
+              [36m<span>[39m
+                [0m1[0m
+              [36m</span>[39m
+            [36m</h2>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"am-column-cards"[39m
+            [36m>[39m
+              [36m<article[39m
+                [33mclass[39m=[32m"am-device-card"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"am-device-preview"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"am-preview-placeholder"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33mfill[39m=[32m"currentColor"[39m
+                      [33mheight[39m=[32m"32"[39m
+                      [33mviewBox[39m=[32m"0 0 256 256"[39m
+                      [33mwidth[39m=[32m"32"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M176,18H80A22,22,0,0,0,58,40V216a22,22,0,0,0,22,22h96a22,22,0,0,0,22-22V40A22,22,0,0,0,176,18ZM70,62H186V194H70ZM80,30h96a10,10,0,0,1,10,10V50H70V40A10,10,0,0,1,80,30Zm96,196H80a10,10,0,0,1-10-10V206H186v10A10,10,0,0,1,176,226Z"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                    [36m<span>[39m
+                      [0m暂无在线画面[0m
+                    [36m</span>[39m
+                  [36m</div>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"am-device-body"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"am-device-title"[39m
+                  [36m>[39m
+                    [36m<strong>[39m
+                      [0m旧临时设备[0m
+                    [36m</strong>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"ad-badge ad-gray shrink-0 whitespace-nowrap"[39m
+                    [36m>[39m
+                      [0m已停止[0m
+                    [36m</span>[39m
+                  [36m</div>[39m
+                  [36m<p[39m
+                    [33mclass[39m=[32m"am-device-spec"[39m
+                  [36m>[39m
+                    [0mAndroid 版本待核实[0m
+                    [0m · [0m
+                    [0m分辨率待核实[0m
+                  [36m</p>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"ad-badge ad-brown"[39m
+                  [36m>[39m
+                    [0m持久实例[0m
+                  [36m</span>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"am-device-actions"[39m
+                  [36m/>[39m
+                [36m</div>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"am-device-more"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33maria-expanded[39m=[32m"false"[39m
+                    [33maria-label[39m=[32m"旧临时设备更多操作"[39m
+                    [33mtype[39m=[32m"button"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33mfill[39m=[32m"currentColor"[39m
+                      [33mheight[39m=[32m"23"[39m
+                      [33mviewBox[39m=[32m"0 0 256 256"[39m
+                      [33mwidth[39m=[32m"23"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M140,128a12,12,0,1,1-12-12A12,12,0,0,1,140,128Zm56-12a12,12,0,1,0,12,12A12,12,0,0,0,196,116ZM60,116a12,12,0,1,0,12,12A12,12,0,0,0,60,116Z"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                  [36m</button>[39m
+                [36m</div>[39m
+              [36m</article>[39m
+            [36m</div>[39m
+          [36m</section>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<fieldset[39m
+        [33mclass[39m=[32m"am-board-bulk"[39m
+      [36m>[39m
+        [36m<section[39m
+          [33maria-busy[39m=[32m"false"[39m
+          [33maria-label[39m=[32m"批量操作"[39m
+          [33mclass[39m=[32m"rounded-card border border-line bg-surface p-5"[39m
+        [36m>[39m
+          [36m<header>[39m
+            [36m<h2[39m
+              [33mclass[39m=[32m"font-semibold"[39m
+            [36m>[39m
+              [0m批量操作[0m
+            [36m</h2>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"mt-1 text-sm text-muted"[39m
+            [36m>[39m
+              [0m目标在提交时冻结，单批最多 20 台。[0m
+            [36m</p>[39m
+          [36m</header>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-3 grid gap-2"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"flex items-center gap-2 text-sm"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33maria-label[39m=[32m"旧临时设备"[39m
+                [33mdisabled[39m=[32m""[39m
+                [33mid[39m=[32m"bulk-legacy"[39m
+                [33mtype[39m=[32m"checkbox"[39m
+              [36m/>[39m
+              [0m旧临时设备[0m
+              [0m · 修订 [0m
+              [0m1[0m
+              [0m · 待核实或不可操作[0m
+            [36m</label>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mt-3 flex flex-wrap items-center gap-2"[39m
+          [36m>[39m
+            [36m<select[39m
+              [33maria-label[39m=[32m"批量动作"[39m
+            [36m>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"start"[39m
+              [36m>[39m
+                [0m启动[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"stop"[39m
+              [36m>[39m
+                [0m停止[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"restart"[39m
+              [36m>[39m
+                [0m重启[0m
+              [36m</option>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"delete"[39m
+              [36m>[39m
+                [0m删除[0m
+              [36m</option>[39m
+            [36m</select>[39m
+            [36m<button[39m
+              [33mdisabled[39m=[32m""[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0m提交批量操作[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+      [36m</fieldset>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../../../../../../Documents/projects/autoflow/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../../../../../Documents/projects/autoflow/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/renderer/domains/android/tests/ManagementOverview.test.tsx:362:23
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 23 skipped (25)
+   Start at  13:31:55
+   Duration  11.31s (transform 916ms, setup 719ms, import 6.39s, tests 2.11s, environment 1.76s)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/zhangtiancheng/.codex/worktrees/android-prototype-fidelity/autoflow/apps/desktop
+npm error workspace @autoflow/desktop@0.1.0
+npm error location /Users/zhangtiancheng/.codex/worktrees/android-prototype-fidelity/autoflow/apps/desktop
+npm error command failed
+npm error command sh -c vitest run src/renderer/domains/android/tests/ManagementOverview.test.tsx -t 'identifies a legacy temporary' --maxWorkers=1

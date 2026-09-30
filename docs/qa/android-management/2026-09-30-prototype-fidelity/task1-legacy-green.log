@@ -1,0 +1,14 @@
+
+> @autoflow/desktop@0.1.0 test
+> vitest run src/renderer/domains/android/tests/ManagementOverview.test.tsx -t identifies a legacy temporary --maxWorkers=1
+
+
+ RUN  v4.1.11 /Users/zhangtiancheng/.codex/worktrees/android-prototype-fidelity/autoflow/apps/desktop
+
+(node:32593) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ Test Files  1 passed (1)
+      Tests  2 passed | 23 skipped (25)
+   Start at  13:32:52
+   Duration  7.72s (transform 782ms, setup 576ms, import 4.64s, tests 201ms, environment 1.93s)

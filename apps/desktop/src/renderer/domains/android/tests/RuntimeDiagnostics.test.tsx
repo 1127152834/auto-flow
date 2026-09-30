@@ -34,7 +34,9 @@ it('shows explicit unknown checks and disabled capability reasons', async () => 
 
   expect(await screen.findByText('当前平台不支持安卓运行时')).toBeVisible()
   expect(screen.getByText('运行环境不可访问')).toBeVisible()
-  expect(screen.getByText('安卓管理不通过工作流执行入口')).toBeVisible()
+  expect(screen.queryByText('安卓管理不通过工作流执行入口')).not.toBeInTheDocument()
+  expect(screen.getByText('实例管理：不可用')).toBeVisible()
+  expect(screen.getByText('镜像管理：未知')).toBeVisible()
 })
 
 it('starts an explicit check and retains the prior snapshot when it fails', async () => {
@@ -48,7 +50,7 @@ it('starts an explicit check and retains the prior snapshot when it fails', asyn
   }
   render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><RuntimeDiagnostics api={api} /></QueryClientProvider>)
   expect(await screen.findByText(/安装 platform-tools/)).toBeVisible()
-  expect(screen.getByText('2026-09-22T00:00:00Z')).toHaveAttribute('dateTime', '2026-09-22T00:00:00Z')
+  expect(screen.getByText(/2026年9月22日/)).toHaveAttribute('dateTime', '2026-09-22T00:00:00Z')
   await userEvent.click(screen.getByRole('button', { name: '重新检查' }))
   expect(api.checkEnvironment).toHaveBeenCalledWith({ requestId: expect.any(String) })
   expect(await screen.findByRole('alert')).toHaveTextContent('环境检查连接中断')
