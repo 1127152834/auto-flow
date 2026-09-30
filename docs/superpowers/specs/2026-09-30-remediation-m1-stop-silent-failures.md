@@ -17,7 +17,7 @@ M1 只修"用户以为生效、实际没生效"和"出了错却看不到原因"�
 6. worker 的标准错误输出被保存，崩溃时有据可查。
 7. 录制到回车等按键的流程可以直接运行。
 
-## 2. 背景（均已在 ea2cc5b 上核实）
+## 2. 背景（代码位置以 ea2cc5b 为历史定位，性能以 M0 当前基线为准）
 
 | 问题 | 位置 | 现象 |
 | --- | --- | --- |
@@ -26,8 +26,8 @@ M1 只修"用户以为生效、实际没生效"和"出了错却看不到原因"�
 | 已处理失败仍算失败 | `application/workflows/runtime.py` `_execute_claimed` | 先 `_remember_failure` 再走错误分支；`run()` 以 `failed_result is None` 判定成功 |
 | 并发写死为 2 | `bootstrap/workflows.py` 566、599；`dispatcher.py` 与 `project_workflow_worker.py` 只接受 {1, 2} | 自动化允许 1–100，超出部分静默截断 |
 | 人工等待占名额 | `dispatcher.py` `pause_manual` 不移除 owner；`scheduler.py` `_capacity_counts` 把 waiting_manual 计入 | 两个任务同时等人工，全机停住 |
-| 领取在主循环同步执行 | `scheduler.py` `_advance_data` 调用 `_claim_data_task` | 1 万行单次 2.0–2.6 秒，期间所有接口卡住 |
-| SQLite 未开 WAL | `infrastructure/database/session.py` 只设 `foreign_keys` | 事件提交 p50 约 4.1 毫秒；开启 WAL + NORMAL 后实测约 1.4 毫秒 |
+| 领取在主循环同步执行 | `scheduler.py` `_advance_data` 调用 `_claim_data_task` | 同步领取占用事件循环；当前万行领取耗时见 M0 基线，接口延迟须通过 AC1-09 实测 |
+| SQLite 未开 WAL | `infrastructure/database/session.py` 只设 `foreign_keys` | 当前本机 M0 五样本的事件提交 p50 中位数为 1.177 毫秒；WAL + NORMAL 的改善幅度尚待 M1 同口径验证 |
 | 两个引擎打开同一数据库 | `bootstrap/proxies.py` 65 行另建 `create_session_factory` | 锁竞争 |
 | worker 标准错误被丢弃 | `project_workflow_worker.py` 约 171 行 `stderr=DEVNULL` | 崩溃无诊断 |
 | 录制器生成不可运行节点 | `recordingGeneration.ts` 177 行生成 `keyboard_action`，该类别被排除 | 录到回车的流程无法运行 |
@@ -140,7 +140,7 @@ PUT  /api/v1/settings/execution   { maxRunningBrowsers: int(1–64) | null, expe
 | AC1-06 | 并发/首次插入/取消注入下数据库修订与dispatcher/worker应用修订一致；`GET /api/v1/settings/execution` 返回的生效值等于派发器 `capacity`；PUT 7 后派发器变为 7/14；过期修订号返回 409；0、65、字符串返回 422 | 契约测试 |
 | AC1-07 | capacity=1、live=2 时：A 运行 → B 被拒；A 等待人工 → 唤醒真实调度循环自动派发B；C 被拒（存活已满）；A 继续后两者都能完成。提高容量也须唤醒待派发任务，不依赖30秒轮询；降低容量不停止已有运行 | 集成测试（包含真实调度循环） |
 | AC1-08 | 内存水位模拟为高时派发被拒且 5 秒（测试中缩短）内唤醒监听者；水位恢复后可派发 | 集成测试 |
-| AC1-09 | 领取期间主循环基本不被阻塞：1 万行领取期间 `LoopLagMonitor` 的 p50 < 10 毫秒、max < 250 毫秒（原型实测：在主循环内领取 max 1,935 毫秒；放进线程后 max 129 毫秒，剩余延迟来自 GIL，M3 的 SQL 下推彻底解决） | 基准 `bench_claim_loop_lag`（新增） |
+| AC1-09 | 领取期间主循环基本不被阻塞：1 万行领取期间 `LoopLagMonitor` 的 p50 < 10 毫秒、max < 250 毫秒；这些数值是待验证目标，须记录有效采样数并使用相同工作负载对照，不预判剩余延迟的原因或 M3 的改善幅度 | 基准 `bench_claim_loop_lag`（新增） |
 | AC1-10 | 事件提交基准 `event_commit_ms_p50` 相对 M0 基线下降 ≥ 50% | 基准 |
 | AC1-11 | 连接上 `PRAGMA journal_mode` 返回 `wal`，`busy_timeout` 返回 5000；代理管理使用 `app.state.session_factory` | 单元测试 |
 | AC1-12 | 经真实dispatcher与查询API验证未知终态及诊断信息不丢；70,000字节单行、无换行、超文件上限和磁盘失败仍持续排空且worker可退出。worker 进程写 stderr 后异常退出：产物目录有 worker-stderr.log；`WORKFLOW_WORKER_LOST` 的消息含日志路径；超过上限时文件以"已截断"结尾 | 单元测试（StderrSink）+ 集成测试（假 worker 命令） |

@@ -2003,7 +2003,7 @@ git commit -m "feat(settings): 设置页可调整同时运行的浏览器数，�
 
 **Interfaces:**
 - Consumes: `LoopLagMonitor`（M0）、`bench_claims._seed`、`bench_claims.plans`（M0 Task 1）。
-- Produces: `bench_claim_loop_lag.run(rows: int) -> dict`（键：`rows`、`claim_ms`、`loop_lag_p50_ms`、`loop_lag_max_ms`）。
+- Produces: `bench_claim_loop_lag.run(rows: int) -> dict`（键：`rows`、`claim_ms`、`loop_lag_p50_ms`、`loop_lag_max_ms`、`loop_lag_samples`）。
 
 - [ ] **Step 1: 写失败的测试**
 
@@ -2062,10 +2062,12 @@ Expected: FAIL，`seen` 中的线程等于事件循环线程。
 
 - [ ] **Step 4: 主循环延迟基准**
 
+以下为真实 SQLite 领取的线程微基准，必须与 Step 1 的真实调度器路径测试共同验收，不能单独证明生产领取已移出主循环。采样从领取前开始，结束时只等待首个尚未完成的心跳被记录；不得用额外空闲时间稀释 p50，零样本必须失败。保留相同数据与监测参数的同步领取对照，报告两种执行模式，分别串行采集五份干净源码样本。
+
 `tests/benchmarks/bench_claim_loop_lag.py`：
 
 ```python
-"""Loop lag while a large claim runs through the scheduler's thread path (remediation M1, AC1-09).
+"""Loop lag microbenchmark for a threaded SQLite claim (remediation M1, AC1-09).
 
 Run: uv run --directory apps/backend python -m tests.benchmarks.bench_claim_loop_lag --rows 10000
 """
@@ -2097,12 +2099,13 @@ async def _run(rows: int) -> dict[str, tuple[float, Unit]]:
         monitor = LoopLagMonitor()
         await monitor.start()
         try:
-            await asyncio.sleep(0.3)
-            monitor.reset()
             started = time.perf_counter()
             status = await asyncio.to_thread(claim)
             elapsed_ms = (time.perf_counter() - started) * 1000
-            await asyncio.sleep(0.1)
+            # Record the first heartbeat after completion, including a delayed one.
+            previous_samples = monitor.snapshot().samples
+            while monitor.snapshot().samples == previous_samples:
+                await asyncio.sleep(0.001)
             snapshot = monitor.snapshot()
         finally:
             await monitor.stop()
@@ -2114,6 +2117,7 @@ async def _run(rows: int) -> dict[str, tuple[float, Unit]]:
         "claim_ms": (elapsed_ms, "ms"),
         "loop_lag_p50_ms": (snapshot.p50_ms, "ms"),
         "loop_lag_max_ms": (snapshot.max_ms, "ms"),
+        "loop_lag_samples": (snapshot.samples, "count"),
     }
 
 
@@ -2125,7 +2129,15 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--rows", type=int, default=10000)
     arguments = parser.parse_args()
-    write_report(f"claim-loop-lag-{arguments.rows}", run(arguments.rows), manifest=build_manifest("claim-loop-lag-v1", {"rows": arguments.rows}))
+    manifest = build_manifest(
+        "claim-loop-lag-v1", {"rows": arguments.rows},
+        execution_profile="offline-threaded-claim-v1",
+    )
+    metrics = run(arguments.rows)
+    write_report(f"claim-loop-lag-{arguments.rows}", metrics, manifest=manifest)
+    assert metrics["loop_lag_samples"][0] > 0
+    assert metrics["loop_lag_p50_ms"][0] < 10
+    assert metrics["loop_lag_max_ms"][0] < 250
 
 
 if __name__ == "__main__":
@@ -2137,6 +2149,7 @@ if __name__ == "__main__":
 ```python
 def test_claim_loop_lag_benchmark_keeps_the_loop_responsive():
     metrics = bench_claim_loop_lag.run(2000)
+    assert metrics["loop_lag_samples"][0] > 0
     assert metrics["loop_lag_p50_ms"][0] < 10
     assert metrics["loop_lag_max_ms"][0] < 250  # AC1-09
 ```
@@ -2146,7 +2159,7 @@ def test_claim_loop_lag_benchmark_keeps_the_loop_responsive():
 Run: `uv run --directory apps/backend pytest -q tests/integration/test_project_claim_off_loop.py tests/integration/test_project_data_scheduler.py tests/integration/test_project_parameter_concurrency.py`
 Expected: 全部通过。
 Run: `uv run --directory apps/backend pytest -q -m benchmark tests/benchmarks && uv run --directory apps/backend python -m tests.benchmarks.bench_claim_loop_lag --rows 10000`
-Expected: 通过；1 万行时 `loop_lag_max_ms` < 250（原型：领取 2.4 秒期间最大延迟 129 毫秒；同样的领取放在主循环内是 1,935 毫秒）。
+验收目标：1 万行时 `loop_lag_p50_ms` < 10、`loop_lag_max_ms` < 250 且有效采样数 > 0；CLI 保存报告后检查上述条件，失败必须非零退出。2,000 行测试只作为快速回归，不能替代万行验收。报告沿用 M0 的测量前后源码一致性检查；同步对照仅记录数值，不要求满足线程模式目标。旧原型数字不作为本轮证据，未达标时记录实际结果及后续诊断，不预判 GIL 或 SQL 是唯一原因。
 
 - [ ] **Step 6: 提交**
 
