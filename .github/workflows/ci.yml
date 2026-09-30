@@ -113,6 +113,8 @@ jobs:
           AUTOFLOW_TEST_CLOAK_VERSION: ${{ env.PM9_BROWSER_VERSION }}
       - run: npm run typecheck
       - run: npm run test:scripts
+      - name: Ratchet checks (debt may only shrink)
+        run: node scripts/ratchets.mjs
       - run: npm run lint
       - run: npm run openapi:check
       - run: uv run --directory apps/backend ruff check .
@@ -127,6 +129,21 @@ jobs:
       - name: Check project HTTP writes before full regression
         run: node scripts/smoke-project-management.mjs --output-dir artifacts/pm9/http-preflight
       - run: uv run --directory apps/backend pytest -q --maxfail=20
+      - name: Offline benchmarks (record only, spec M0 R0-08)
+        shell: bash
+        env:
+          PYTHONPATH: src
+        run: |
+          uv run --directory apps/backend pytest -q -m benchmark tests/benchmarks
+          uv run --directory apps/backend python -m tests.benchmarks.bench_claims --rows 10000
+          uv run --directory apps/backend python -m tests.benchmarks.bench_runtime_overhead --iterations 1000
+          uv run --directory apps/backend python -m tests.benchmarks.bench_event_commit --events 1000
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: benchmarks-${{ matrix.os }}
+          path: apps/backend/tests/benchmarks/results/
+          if-no-files-found: ignore
       - run: npm test
       - run: npm run build
         env:

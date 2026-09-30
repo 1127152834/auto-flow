@@ -1048,6 +1048,8 @@ git commit -m "chore(ratchet): 未读取配置键、写死颜色、第二套图�
 
 ### Task 8: CI 接入（R0-08）
 
+本地配置与YAML解析验证已完成；远端Actions未执行，不记AC0-07通过。夜间默认101行依据Task6实测收敛，避免受控逐行批次万行运行超过CI时限；大规模原生吞吐留M2B。离线模块设置PYTHONPATH=src，保证从当前checkout导入。
+
 **Files:**
 - Modify: `.github/workflows/ci.yml`（`checks` job）
 - Create: `.github/workflows/golden.yml`
@@ -1055,7 +1057,7 @@ git commit -m "chore(ratchet): 未读取配置键、写死颜色、第二套图�
 **Interfaces:**
 - Consumes: Task 1–3 的基准模块、Task 6 的 `-m golden` 场景、Task 7 的脚本。
 
-- [ ] **Step 1: 在 ci.yml 的 `checks` job 中加入守门检查**
+- [x] **Step 1: 在 ci.yml 的 `checks` job 中加入守门检查**
 
 紧跟 `- run: npm run test:scripts` 之后：
 
@@ -1064,7 +1066,7 @@ git commit -m "chore(ratchet): 未读取配置键、写死颜色、第二套图�
         run: node scripts/ratchets.mjs
 ```
 
-- [ ] **Step 2: 加入离线基准（只记录）**
+- [x] **Step 2: 加入离线基准（只记录）**
 
 紧跟 `- run: uv run --directory apps/backend pytest -q --maxfail=20` 之后：
 
@@ -1084,7 +1086,7 @@ git commit -m "chore(ratchet): 未读取配置键、写死颜色、第二套图�
           if-no-files-found: ignore
 ```
 
-- [ ] **Step 3: 新建 golden.yml**
+- [x] **Step 3: 新建 golden.yml**
 
 ```yaml
 name: Golden scenarios
@@ -1093,9 +1095,9 @@ on:
   workflow_dispatch:
     inputs:
       rows:
-        description: 每个场景的行数（留空时 G2=10000、G3=1000）
+        description: 每个场景的行数（默认101，覆盖分页边界）
         required: false
-        default: ''
+        default: '101'
   schedule:
     - cron: '17 18 * * *'
 
@@ -1106,7 +1108,7 @@ concurrency:
 jobs:
   golden:
     runs-on: macos-15
-    timeout-minutes: 360
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -1129,8 +1131,8 @@ jobs:
         env:
           AUTOFLOW_TEST_CLOAKBROWSER: ${{ env.GOLDEN_BROWSER_EXECUTABLE }}
           AUTOFLOW_GOLDEN_ROWS: ${{ inputs.rows }}
-          AUTOFLOW_GOLDEN_G2_ROWS: ${{ inputs.rows || '10000' }}
-          AUTOFLOW_GOLDEN_G3_ROWS: ${{ inputs.rows || '1000' }}
+          AUTOFLOW_GOLDEN_G2_ROWS: ${{ inputs.rows || '101' }}
+          AUTOFLOW_GOLDEN_G3_ROWS: ${{ inputs.rows || '101' }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -1144,7 +1146,7 @@ jobs:
 Run: `node -e "for (const f of ['.github/workflows/ci.yml','.github/workflows/golden.yml']) { const t=require('fs').readFileSync(f,'utf8'); if (/\t/.test(t)) throw new Error(f+' has tabs'); } console.log('ok')"`
 Expected: `ok`。推送分支后在 Actions 页面确认 `checks` 出现两个新步骤、`Golden scenarios` 可手动触发（填 rows=30 试跑一次）。
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```bash
 git add .github/workflows/ci.yml .github/workflows/golden.yml

@@ -1,0 +1,50 @@
+name: Golden scenarios
+
+on:
+  workflow_dispatch:
+    inputs:
+      rows:
+        description: 每个场景的行数（默认 101，覆盖分页边界）
+        required: false
+        default: '101'
+  schedule:
+    - cron: '17 18 * * *'
+
+concurrency:
+  group: golden-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  golden:
+    runs-on: macos-15
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --directory apps/backend --locked
+      - name: Install pinned real browser
+        shell: bash
+        run: |
+          uv run --directory apps/backend python - <<'PYTHON'
+          import os
+          from cloakbrowser import ensure_binary
+          executable = ensure_binary(browser_version='145.0.7632.109.2')
+          with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as output:
+              output.write(f'GOLDEN_BROWSER_EXECUTABLE={executable}\n')
+          PYTHON
+      - name: Run golden scenarios
+        run: uv run --directory apps/backend pytest -q -m golden tests/golden -s
+        env:
+          AUTOFLOW_TEST_CLOAKBROWSER: ${{ env.GOLDEN_BROWSER_EXECUTABLE }}
+          AUTOFLOW_GOLDEN_ROWS: ${{ inputs.rows }}
+          AUTOFLOW_GOLDEN_G2_ROWS: ${{ inputs.rows || '101' }}
+          AUTOFLOW_GOLDEN_G3_ROWS: ${{ inputs.rows || '101' }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: golden-${{ github.run_id }}
+          path: apps/backend/tests/benchmarks/results/
+          if-no-files-found: ignore
