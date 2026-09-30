@@ -1,6 +1,10 @@
 import io
+import sys
 import tarfile
+from types import SimpleNamespace
+from unittest.mock import AsyncMock
 
+import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
@@ -41,7 +45,11 @@ def test_management_backup_requires_runtime_volume_adapter(tmp_path) -> None:
     assert response.status_code == 503
 
 
-def test_management_backup_route_returns_public_backup_contract(tmp_path) -> None:
+@pytest.mark.parametrize("storage_platform", [sys.platform, "win32"])
+def test_management_backup_route_respects_storage_platform(tmp_path, monkeypatch, storage_platform) -> None:
+    from autoflow.providers.android import backup_storage
+
+    monkeypatch.setattr(backup_storage, "sys", SimpleNamespace(platform=storage_platform))
     device = {
         "deviceId": "device-1",
         "imageId": "sha256:" + "a" * 64,
@@ -51,6 +59,7 @@ def test_management_backup_route_returns_public_backup_contract(tmp_path) -> Non
         "creationConfig": {"width": 720, "height": 1280, "dpi": 320, "cpu": 2, "memoryMb": 1024},
     }
     runtime = _BackupRuntime(_archive())
+    runtime.backup_volume = AsyncMock(wraps=runtime.backup_volume)
     devices = _BackupDevices(device, runtime)
     resources = _BackupResources()
     backups = AndroidBackupService(resources, tmp_path)
@@ -64,6 +73,13 @@ def test_management_backup_route_returns_public_backup_contract(tmp_path) -> Non
             json={"requestId": "backup-route", "deviceId": "device-1", "expectedRevision": 2},
         )
 
+    if storage_platform == "win32":
+        assert response.status_code == 409, response.text
+        assert response.json()["error"]["code"] == "ANDROID_PLATFORM_UNSUPPORTED"
+        runtime.backup_volume.assert_not_awaited()
+        assert resources.items == []
+        assert not backups.storage.staging.exists()
+        return
     assert response.status_code == 201, response.text
     assert set(response.json()) == {"id", "deviceId", "imageId", "formatVersion", "sha256", "bytes", "createdAt", "state"}
     assert response.json()["state"] == "available"

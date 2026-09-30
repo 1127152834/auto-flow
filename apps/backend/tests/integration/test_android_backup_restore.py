@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import io
+import sys
 import tarfile
 from concurrent.futures import CancelledError
 from pathlib import Path
@@ -30,6 +31,7 @@ from autoflow.providers.android.mac_runtime import MacAndroidRuntime
 IMAGE = "sha256:" + "b" * 64
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.asyncio
 async def test_restore_streams_validated_archive_without_loading_bytes(tmp_path: Path) -> None:
     class StreamRuntime(_Runtime):
@@ -65,6 +67,7 @@ async def test_restore_streams_validated_archive_without_loading_bytes(tmp_path:
     sessions.dispose()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.asyncio
 async def test_restore_does_not_inherit_source_disk_confirmation_and_preserves_known_rejection(tmp_path: Path) -> None:
     sessions = _sessions(tmp_path)
@@ -100,6 +103,7 @@ async def test_restore_does_not_inherit_source_disk_confirmation_and_preserves_k
     sessions.dispose()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.asyncio
 async def test_cancelled_restore_disk_recheck_keeps_created_target_unknown(tmp_path: Path) -> None:
     sessions = _sessions(tmp_path)
@@ -129,6 +133,7 @@ async def test_cancelled_restore_disk_recheck_keeps_created_target_unknown(tmp_p
     sessions.dispose()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.asyncio
 async def test_restore_accepts_cached_custom_image_missing_from_default_environment_list(tmp_path: Path) -> None:
     sessions = _sessions(tmp_path)
@@ -172,6 +177,7 @@ async def test_restore_accepts_cached_custom_image_missing_from_default_environm
     sessions.dispose()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.asyncio
 @pytest.mark.parametrize("fault", [None, "commit_ack", "commit_before", "copy", "cancel"])
 async def test_restore_request_id_creates_one_isolated_target(tmp_path: Path, monkeypatch, fault) -> None:
@@ -286,6 +292,7 @@ async def test_restore_request_id_creates_one_isolated_target(tmp_path: Path, mo
     sessions.dispose()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.asyncio
 @pytest.mark.parametrize("change", ["missing", "generation", "volume", "deleted", "control", "completed", "no_operations"])
 async def test_direct_restore_checks_persisted_target_and_operation_before_writing(tmp_path: Path, change: str) -> None:
@@ -325,6 +332,7 @@ async def test_direct_restore_checks_persisted_target_and_operation_before_writi
     sessions.dispose()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.asyncio
 async def test_restore_rejects_corrupt_digest_and_does_not_write_runtime(
     tmp_path: Path,
@@ -351,6 +359,7 @@ async def test_restore_rejects_corrupt_digest_and_does_not_write_runtime(
     sessions.dispose()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("probe_error", "expected_state", "expected_code", "http_status"),

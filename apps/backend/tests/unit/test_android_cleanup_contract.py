@@ -1,5 +1,6 @@
 import hashlib
 import json
+import sys
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from types import SimpleNamespace
@@ -133,6 +134,7 @@ def test_cleanup_rejects_revision_reference_size_or_path_changes_before_delete()
         service.execute("w", digest)
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 def test_cleanup_lists_owned_orphan_backup_staging_and_uses_controlled_discard(tmp_path):
     staging = tmp_path / "android-backups" / "staging" / "stale-1"
     staging.mkdir(parents=True)

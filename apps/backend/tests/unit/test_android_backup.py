@@ -1,5 +1,6 @@
 import hashlib
 import io
+import sys
 import tarfile
 from pathlib import Path
 from unittest.mock import AsyncMock, Mock
@@ -16,6 +17,7 @@ def test_backup_requires_stopped_unowned_device_and_uses_workspace_path(tmp_path
         service.create({"deviceId": "d", "name": "x"}, {"androidStatus": "ready", "control": "idle"})
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.asyncio
 async def test_runtime_backup_publishes_data_archive_and_manifest(tmp_path: Path):
     payload = io.BytesIO()
@@ -33,6 +35,7 @@ async def test_runtime_backup_publishes_data_archive_and_manifest(tmp_path: Path
     assert resources.items[("backup", record["id"])]
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.asyncio
 async def test_backup_record_is_published_before_runtime_lock_is_released(tmp_path: Path):
     payload = io.BytesIO()
@@ -61,6 +64,7 @@ async def test_backup_record_is_published_before_runtime_lock_is_released(tmp_pa
     await AndroidBackupService(Resources(), tmp_path).create_with_runtime(device, {"androidStatus": "stopped"}, runtime)
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.asyncio
 async def test_backup_streams_runtime_archive_to_staging_file(tmp_path: Path):
     payload = io.BytesIO()
@@ -84,6 +88,7 @@ async def test_backup_streams_runtime_archive_to_staging_file(tmp_path: Path):
     assert (Path(record["path"]) / "data.tar").read_bytes() == payload.getvalue()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.asyncio
 async def test_restore_rejects_corrupt_archive_before_runtime_write(tmp_path: Path):
     payload = io.BytesIO()
@@ -117,6 +122,7 @@ async def test_restore_rejects_different_image_before_runtime_write(tmp_path: Pa
     runtime.restore_volume.assert_not_awaited()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.asyncio
 async def test_restore_rejects_symlinked_backup_members_before_runtime_write(tmp_path: Path):
     payload = io.BytesIO()
@@ -148,6 +154,7 @@ async def test_restore_rejects_symlinked_backup_members_before_runtime_write(tmp
     runtime.restore_volume.assert_not_awaited()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.asyncio
 async def test_runtime_backup_rejects_malformed_archive_with_domain_error(tmp_path: Path):
     service = AndroidBackupService(_Resources(), tmp_path)
@@ -162,6 +169,7 @@ async def test_runtime_backup_rejects_malformed_archive_with_domain_error(tmp_pa
     assert not list((tmp_path / "android-backups" / "staging").glob("*"))
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.asyncio
 async def test_delete_removes_only_published_backup_files(tmp_path: Path):
     payload = io.BytesIO()
@@ -220,6 +228,7 @@ class _Runtime:
     async def backup_volume(self, _device): return self.payload
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "device",
@@ -253,6 +262,7 @@ async def test_restore_requires_stopped_unowned_target_before_runtime_write(tmp_
     runtime.restore_volume.assert_not_awaited()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.asyncio
 async def test_restore_rejects_unsupported_archive_attributes_before_runtime_write(tmp_path: Path):
     valid_payload = io.BytesIO()
@@ -296,6 +306,7 @@ async def test_restore_rejects_unsupported_archive_attributes_before_runtime_wri
     runtime.restore_volume.assert_not_awaited()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.asyncio
 async def test_restore_writes_the_exact_bytes_that_passed_digest_validation(tmp_path, monkeypatch):
     payload = io.BytesIO()
@@ -354,6 +365,7 @@ async def test_restore_cannot_overwrite_its_source_device(tmp_path):
     runtime.restore_volume.assert_not_awaited()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.asyncio
 @pytest.mark.parametrize("field,value", [
     ("formatVersion", 2),
@@ -392,6 +404,7 @@ async def test_restore_rejects_rehashed_manifest_that_disagrees_with_catalog(tmp
     runtime.restore_volume.assert_not_awaited()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.asyncio
 async def test_restore_rejects_backup_owned_by_another_workspace(tmp_path: Path):
     payload = io.BytesIO()
@@ -414,6 +427,7 @@ async def test_restore_rejects_backup_owned_by_another_workspace(tmp_path: Path)
     runtime.restore_volume.assert_not_awaited()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.asyncio
 @pytest.mark.parametrize("target", [
     {"deviceId": "new", "imageId": "image", "androidStatus": "stopped", "control": "idle"},
@@ -458,7 +472,8 @@ async def test_backup_disk_admission_blocks_before_archive_and_staging(tmp_path,
     device = {"deviceId": "device", "imageId": "image", "control": "idle", "creationConfig": {"name": "test"}}
     probe = Mock(side_effect=OSError("unavailable") if probe_error else None, return_value=SimpleNamespace(free=free))
     monkeypatch.setattr(backup_storage.shutil, "disk_usage", probe)
-    monkeypatch.setattr(backup_storage.os, "statvfs", lambda _path: SimpleNamespace(f_frsize=4096))
+    monkeypatch.setattr(backup_storage, "sys", SimpleNamespace(platform="darwin"))
+    monkeypatch.setattr(backup_storage.os, "statvfs", lambda _path: SimpleNamespace(f_frsize=4096), raising=False)
     with pytest.raises(AndroidError) as error:
         await service.create_with_runtime(device, {"androidStatus": "stopped"}, runtime)
     assert error.value.code == code

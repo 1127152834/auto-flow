@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path, PurePosixPath
 
 import pytest
@@ -24,6 +25,7 @@ def test_internal_relative_path_is_allowed() -> None:
     validate_archive_path(PurePosixPath("data/shared_prefs/settings.xml"))
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 def test_storage_rejects_symlinked_staging_and_publishes_private_files(
     tmp_path: Path,
 ) -> None:
@@ -57,6 +59,7 @@ def test_storage_rejects_symlinked_root_before_writing_outside(tmp_path):
     assert list(outside.iterdir()) == []
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 def test_all_backup_directories_are_private_even_with_permissive_umask(tmp_path):
     import os
 
@@ -70,6 +73,7 @@ def test_all_backup_directories_are_private_even_with_permissive_umask(tmp_path)
         assert directory.stat().st_mode & 0o777 == 0o700
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 def test_publication_syncs_files_before_rename_and_parent_directories_after(tmp_path, monkeypatch):
     import os
     import stat
@@ -98,6 +102,7 @@ def test_publication_syncs_files_before_rename_and_parent_directories_after(tmp_
     assert events[position + 1:].count("directory") >= 2
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 def test_post_rename_sync_failure_does_not_leave_a_published_backup(tmp_path, monkeypatch):
     import os
 
@@ -129,7 +134,8 @@ def test_first_backup_space_budget_includes_all_missing_directories(tmp_path, mo
     storage = backup_storage.BackupStorage(tmp_path / "backups")
     free = 16384  # Two archive blocks, one manifest block and only one directory block.
     monkeypatch.setattr(backup_storage.shutil, "disk_usage", lambda _path: SimpleNamespace(free=free))
-    monkeypatch.setattr(backup_storage.os, "statvfs", lambda _path: SimpleNamespace(f_frsize=4096))
+    monkeypatch.setattr(backup_storage, "sys", SimpleNamespace(platform="darwin"))
+    monkeypatch.setattr(backup_storage.os, "statvfs", lambda _path: SimpleNamespace(f_frsize=4096), raising=False)
     with pytest.raises(AndroidError) as rejected:
         storage.require_space(8192, 100)
     assert rejected.value.code == "ANDROID_DISK_SPACE_INSUFFICIENT"

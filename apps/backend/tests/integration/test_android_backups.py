@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import io
+import sys
 import tarfile
 from pathlib import Path
 
@@ -21,6 +22,7 @@ from autoflow.infrastructure.database.session import (
 IMAGE = "sha256:" + "a" * 64
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.asyncio
 async def test_backup_is_persisted_and_same_request_does_not_rearchive(
     tmp_path: Path,
@@ -45,6 +47,7 @@ async def test_backup_is_persisted_and_same_request_does_not_rearchive(
     sessions.dispose()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.asyncio
 async def test_unknown_backup_result_is_durable_and_never_replayed(
     tmp_path: Path,
@@ -69,6 +72,7 @@ async def test_unknown_backup_result_is_durable_and_never_replayed(
     sessions.dispose()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.asyncio
 async def test_cancelled_backup_marks_result_unknown_and_releases_runtime(
     tmp_path: Path,
@@ -150,6 +154,7 @@ class _Runtime:
         return self.payload
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.asyncio
 @pytest.mark.parametrize("failure", ["write", "read", "file_sync", "rename", "directory_sync", "record"])
 async def test_failed_publication_is_not_available_after_repository_reconstruction(tmp_path, monkeypatch, failure):
@@ -214,6 +219,7 @@ async def test_failed_publication_is_not_available_after_repository_reconstructi
     sessions.dispose()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.asyncio
 async def test_committed_backup_survives_lost_database_acknowledgement(tmp_path, monkeypatch):
     sessions = _sessions(tmp_path)
@@ -262,6 +268,7 @@ def test_backup_record_and_success_roll_back_together(tmp_path):
     sessions.dispose()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.asyncio
 async def test_cancel_before_catalogue_commit_cleans_unpublished_backup(tmp_path):
     from sqlalchemy import event
@@ -286,6 +293,7 @@ async def test_cancel_before_catalogue_commit_cleans_unpublished_backup(tmp_path
     sessions.dispose()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.asyncio
 async def test_unverifiable_commit_preserves_archive_and_blocks_replay(tmp_path, monkeypatch):
     sessions = _sessions(tmp_path)
@@ -331,6 +339,8 @@ async def test_preflight_rejection_is_durable_and_failed_request_does_not_reesti
     operations = SqlAlchemyAndroidOperationRepository(sessions)
     service = AndroidBackupService(resources, tmp_path, operations)
     runtime = _Runtime(_tar(b"preserved"))
+    monkeypatch.setattr(backup_storage, "sys", SimpleNamespace(platform="darwin"))
+    monkeypatch.setattr(backup_storage.os, "statvfs", lambda _path: SimpleNamespace(f_frsize=4096), raising=False)
     monkeypatch.setattr(backup_storage.shutil, "disk_usage", lambda _path: SimpleNamespace(free=0))
     with pytest.raises(AndroidError) as rejected:
         await service.create_with_runtime(_device(), None, runtime, "no-disk", 1)
@@ -348,6 +358,7 @@ async def test_preflight_rejection_is_durable_and_failed_request_does_not_reesti
     sessions.dispose()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.asyncio
 async def test_cancelled_backup_estimation_records_no_write_and_releases_for_new_request(tmp_path):
     sessions = _sessions(tmp_path)
@@ -417,3 +428,35 @@ def test_backup_inventory_on_unsupported_platform_keeps_empty_workspaces_readabl
     empty = storage.staging / "empty"
     empty.mkdir(parents=True)
     assert storage.snapshot(empty)["size"] == 0
+
+
+@pytest.mark.asyncio
+async def test_unsupported_backup_is_durable_and_never_archives(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+
+    from autoflow.providers.android import backup_storage
+
+    monkeypatch.setattr(backup_storage, "sys", SimpleNamespace(platform="win32"))
+    sessions = _sessions(tmp_path)
+    try:
+        resources = AndroidResourceRepository(sessions)
+        operations = SqlAlchemyAndroidOperationRepository(sessions)
+        service = AndroidBackupService(resources, tmp_path, operations)
+        runtime = _Runtime(_tar(b"preserved"))
+        with pytest.raises(AndroidError) as rejected:
+            await service.create_with_runtime(_device(), None, runtime, "unsupported", 1)
+        assert rejected.value.code == "ANDROID_PLATFORM_UNSUPPORTED"
+        fresh_operations = SqlAlchemyAndroidOperationRepository(sessions)
+        record = fresh_operations.by_request(str(tmp_path.resolve()), "unsupported")
+        assert record.state == "failed"
+        assert record.result_code == "ANDROID_PLATFORM_UNSUPPORTED"
+        fresh = AndroidBackupService(AndroidResourceRepository(sessions), tmp_path, fresh_operations)
+        with pytest.raises(AndroidError) as replay:
+            await fresh.create_with_runtime(_device(), None, runtime, "unsupported", 1)
+        assert replay.value.code == "ANDROID_BACKUP_REQUEST_REPLAYED"
+        assert runtime.estimate_calls == 1 and runtime.backup_calls == 0
+        assert runtime.locked == 0
+        assert resources.list("backup") == []
+        assert not service.storage.staging.exists()
+    finally:
+        sessions.dispose()

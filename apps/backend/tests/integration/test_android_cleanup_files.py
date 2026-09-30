@@ -1,5 +1,6 @@
 import hashlib
 import json
+import sys
 
 import pytest
 
@@ -30,6 +31,7 @@ def digest(items):
     return hashlib.sha256(json.dumps(items, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.parametrize("area", ["staging", "final"])
 def test_inventory_exposes_unregistered_module_files_and_only_deletes_frozen_selection(tmp_path, area):
     sessions, _resources, backups, cleanup = setup(tmp_path)
@@ -50,6 +52,7 @@ def test_inventory_exposes_unregistered_module_files_and_only_deletes_frozen_sel
     sessions.dispose()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 def test_same_size_staging_replacement_invalidates_frozen_preview_after_restart(tmp_path):
     sessions, resources, backups, cleanup = setup(tmp_path)
     directory = backups.storage.stage("partial")
@@ -66,6 +69,7 @@ def test_same_size_staging_replacement_invalidates_frozen_preview_after_restart(
     sessions.dispose()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 def test_registered_backup_is_not_reported_as_orphan_and_file_changes_are_fenced(tmp_path):
     sessions, resources, backups, cleanup = setup(tmp_path)
     directory = backups.storage.stage("registered")
@@ -84,6 +88,7 @@ def test_registered_backup_is_not_reported_as_orphan_and_file_changes_are_fenced
     sessions.dispose()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 def test_cleanup_cannot_delete_archive_while_backup_or_restore_holds_storage_lock(tmp_path):
     sessions, resources, backups, cleanup = setup(tmp_path)
     directory = backups.storage.stage("active")
@@ -109,6 +114,7 @@ def test_foreign_workspace_cannot_discover_or_delete_module_files(tmp_path):
     sessions.dispose()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.parametrize("replacement", ["file-link", "root-link"])
 def test_cleanup_rejects_paths_replaced_by_external_links(tmp_path, replacement):
     sessions, _resources, backups, cleanup = setup(tmp_path)
@@ -133,6 +139,7 @@ def test_cleanup_rejects_paths_replaced_by_external_links(tmp_path, replacement)
     sessions.dispose()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 @pytest.mark.asyncio
 @pytest.mark.parametrize("action", ["backup", "restore"])
 async def test_runtime_backup_and_restore_hold_the_cleanup_lease(tmp_path, action):
@@ -199,6 +206,7 @@ async def test_runtime_backup_and_restore_hold_the_cleanup_lease(tmp_path, actio
         sessions.dispose()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 def test_orphan_preview_freezes_source_references_from_its_manifest(tmp_path):
     sessions, _resources, backups, cleanup = setup(tmp_path)
     directory = backups.storage.stage("with-manifest")
@@ -211,6 +219,7 @@ def test_orphan_preview_freezes_source_references_from_its_manifest(tmp_path):
     sessions.dispose()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Android backup storage requires POSIX file operations")
 def test_unreadable_frozen_files_return_conflict_without_deletion(tmp_path, monkeypatch):
     sessions, _resources, backups, cleanup = setup(tmp_path)
     directory = backups.storage.stage("unreadable")
