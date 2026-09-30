@@ -31,3 +31,5 @@ Task6完成真实覆盖验证：101行G2为99成功/2预期失败，G3为100成�
 全后端验证首轮发现共享venv子进程可能导入原checkout，SIGINT中止PID89991并保留backend-full.log（中断清理出现stash KeyError，非通过）；已以绝对worktree/src PYTHONPATH重跑，日志backend-full-worktree.log。评审者一次uv启动意外建立忽略的worktree .venv后中止，未改生产源码，后续继续使用原目录既有解释器。阶段全量结果尚未返回，不标M0完成。
 
 远端验收前置核对（confirmed，2026-09-30）：gh auth status报告CLI token失效；GitHub连接器get_repo仍可读取1127152834/auto-flow，默认分支codex/architecture-baseline。SSH git push --dry-run验证可创建codex/remediation-m0，但没有实际推送/创建远端分支。默认分支读取.github/workflows/golden.yml返回404；官方文档确认workflow_dispatch要求文件先存在默认分支。修正Task8步骤为先分支CI、授权合并后再手动30行验收；不把本地YAML解析或功能分支push算成手动验收。全量回归session94741仍在运行（最新61%，无失败终态），继续等待，不重启。
+
+M0全量本地验证完成：绝对PYTHONPATH指向工作树的session94741正常退出0，5278 passed/137 skipped/20 deselected/2 warnings，1466.31s；2警告为既有anyio弃用及重复AndroidManifest测试输入。该全量开始收集后新增的报告反例由46项定向检查单独覆盖，未冒充全量收集过新反例。随后干净f60b3cac串行15份离线报告（各5份）及起止源码/各组比较维度全部核对通过；中位数万行领取key726.047ms/field998.982ms、G4 0.228ms/节点和5.001事件/节点、持久事件提交p50 1.177ms/p99 1.587ms。详见knowledge基线表。全部本地进程已结束；M0仅远端AC0-07尚未验收，持续目标仍为完整M0–M6，不标阶段或目标完成。

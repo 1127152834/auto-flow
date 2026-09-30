@@ -1239,7 +1239,7 @@ git commit -m "docs: 整改期硬性规则、目录职责与 M0 基线记录"
 
 ### Task 10: 里程碑验收
 
-- [ ] **Step 1: 全量检查**
+- [x] **Step 1: 全量检查**
 
 Run:
 ```bash
@@ -1276,3 +1276,5 @@ Task 1 的 report 函数扩展 value 为 float | None；摘要格式化时 None 
 Task 8 的 YAML 校验不能只查制表符：复用仓库现有 YAML 解析能力，并实际手动触发30行运行，核验用例没有意外 skip且全部产物存在。Task 10 中真实浏览器不具备时登记 blocked，不以 skip 关闭 AC0-05；Task 11 不属于退出条件。所有预期测试数量以实际收集为准，不抄写旧“2 skipped”数字。
 
 2026-09-30独立代码评审修订：build_manifest必须在测量开始前调用，捕获sourceBefore={commit,dirty}；write_report保留起点commit并写sourceAfter，只有两端一致且干净才可比较。GoldenRun携带执行前manifest，save不得重采集起点；CLI先build_manifest再run。新增状态变化与黄金保存反例通过，旧缺起点元数据结果仅作观察。
+
+M0本地退出证据（2026-09-30）：全量5278 passed/137 skipped/20 deselected，新增报告反例另由46项定向覆盖；后端Ruff、mypy547、脚本119/守门通过；真实30/101行正确性及独立评审P2闭合。干净f60b3cac各5份离线基线已记录。AC0-01～06/08具备本地证据；AC0-07实际Actions与黄金构件仍pending，因此整体退出不勾选。

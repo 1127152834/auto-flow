@@ -486,10 +486,10 @@ Studio共享配置位于 `renderer/domains/workflows/components/config-panels/Pr
 
 PM9 启动修复时的迁移头为 `0023_merge_studio_android`；baseline 保留更新的 `0024_environment_identity`。从已存在的集成提交 `1bc6b24d` 原样恢复 `pm09_shared_sheet_identity`、`pm10_shared_sheet_cursors`、`am01_management_operations` 及 `0020_merge_android_pm9`、`0022_merge_studio_pm10`、`0023_merge_studio_android`，使当前分支识别已由集成版本升级的工作区；不伪造数据库版本、不重写已有迁移。来源及验证见 `.ai/sessions/2026-09-26-sidecar-migration-history-repair.md`。
 
-## 整改计划文档（2026-09-30，r2，实施未开始）
+## 整改计划文档（2026-09-30，r2，M0验收中）
 
 - `docs/superpowers/specs/2026-09-30-autoflow-remediation-proposal.md`：整改方案（业务与前端全量整改项）。
 - `docs/superpowers/specs/2026-09-30-remediation-roadmap.md`：M0–M6 里程碑总纲、M2/M5 分切片依赖、基准口径与兼容门禁。
 - `docs/superpowers/specs/2026-09-30-remediation-m*-*.md` 与 `docs/superpowers/plans/2026-09-30-remediation-m*-*.md`：各里程碑规格与实施计划；M0、M1 步骤级，其余任务级。
 - `docs/qa/2026-09-30-remediation-reviews/`：系统设计评审与前端交互评审（整改依据）。
-- 状态索引见 `.ai/plans/2026-09-30-remediation-program.md`；整改方向与文档修订已确认，业务实施未开始；M2–M6 步骤级细化审查后依据本轮持续授权实施。旧“计划已完整原型验证”结论已 superseded。
+- 状态索引见 `.ai/plans/2026-09-30-remediation-program.md`；整改方向与文档修订已确认，M0本地实现与全量回归已完成、远端CI待验收；M2–M6 步骤级细化审查后依据本轮持续授权实施。旧“计划已完整原型验证”结论已 superseded。
