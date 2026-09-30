@@ -1,6 +1,6 @@
 # M0 基准与守门 设计规格
 
-- 日期：2026-09-30；状态：proposed，待用户审批
+- 日期：2026-09-30；修订：r2；状态：proposed（按用户已确认的评审方向修订，未实施；开工门槛见总纲）
 - 总纲：[整改里程碑总纲](2026-09-30-remediation-roadmap.md)；对应整改方案"验收基准"一节与 N3、N4、N5
 - 实施计划：[M0 实施计划](../plans/2026-09-30-remediation-m0-baseline-guardrails.md)
 
@@ -38,7 +38,7 @@ M0 不改变任何用户可见行为，只做两件事：**让系统可测量**�
 **非目标**
 
 - 不修复任何问题（修复从 M1 开始）。
-- 不改写 git 历史中的截图证据（见总纲第 6 节待确认项）。
+- 历史 QA 图片迁出与历史改写属于独立维护任务，不是 M0 的交付项或退出门槛（见总纲第 6 节）。
 - G1 多账号身份场景推迟到 M4（依赖身份模型）；M0 只建立 G2、G3、G4。
 - 不引入节点配置 schema（M2 A1 正式实现时引入）；M0 的配置键守门是文本扫描下限。
 
@@ -49,9 +49,9 @@ M0 不改变任何用户可见行为，只做两件事：**让系统可测量**�
 | R0-01 | 领取基准：给定行数 N（默认 2,000，可配 10,000、100,000），测量 `SqlAlchemyProjectInputGroups.select_required` 单次耗时，覆盖"按记录键排序"和"按字段排序"。 |
 | R0-02 | 执行开销基准（G4）：用 `ProjectGraphExecutor` 在无浏览器条件下执行"循环 1,000 次 × 5 个 set_variable 节点"，输出 `framework_ms_per_node` 和 `events_per_node`。 |
 | R0-03 | 事件提交基准：在真实 SQLite 上调用 `SqlAlchemyWorkflowRuntimeRepository.append_event` 并提交 1,000 次，输出 `event_commit_ms_p50`、`event_commit_ms_p99`。 |
-| R0-04 | 所有基准输出同一 JSON 结构：`{"schemaVersion":1,"commit":"<sha>","platform":"<os-arch>","metrics":{"<name>":{"value":<number>,"unit":"ms|count|per_node"}}}`，写入 `apps/backend/tests/benchmarks/results/`（不入库），并打印一行摘要。 |
+| R0-04 | 所有基准输出同一 JSON 结构：`{"schemaVersion":1,"commit":"<sha>","platform":"<os-arch>","metrics":{"<name>":{"value":<number|null>,"unit":"ms|count|per_node|ratio|rows_per_min|tasks_per_min"}}}`，写入 `apps/backend/tests/benchmarks/results/`（不入库），并打印一行摘要。同目录每次运行写 manifest（scenarioVersion、executionProfile、数据集/故障种子、硬件、内核、并发、重复次数、报告文件列表、commit）；缺任何比较维度的旧结果只作为观察，不计算提升比例。 |
 | R0-05 | `LoopLagMonitor`：每 50 毫秒调度一次心跳，记录实际延迟；超过 100 毫秒写一条 warning 日志（含"event loop lag"与毫秒数）；提供最近 5 分钟 p50/p99/max 的只读快照。sidecar 创建它挂到 `app.state.loop_lag`，启动时开始、关闭时停止。 |
-| R0-06 | 浏览器黄金场景 G2（采集）与 G3（录入）：通过真实 HTTP API + 真实 CloakBrowser 运行，`AUTOFLOW_TEST_CLOAKBROWSER` 未设置时跳过。本地站点支持故障注入（首次加载超时、固定 404、提交后不返回）。输出与 R0-04 同结构的指标：`rows`、`tasks_succeeded`、`tasks_failed`、`throughput_rows_per_min`、`failure_reason_ratio`（失败任务中错误消息不是通用文案"工作流节点执行失败 / 超时"的比例）、`loop_lag_p99_ms`。行数由 `AUTOFLOW_GOLDEN_ROWS` 控制（默认 30；夜间任务 G2=10,000、G3=1,000）。M0 版 G2 只做"打开 → 提取 5 个字段到变量"，写结果表在 M2 写回简化后加入；M0 版 G3 用"点击提交按钮"，按键节点在 M1 加入后改为回车。 |
+| R0-06 | G2/G3 使用真实 HTTP、SQLite、worker 和 CloakBrowser；浏览器 fixture 在 golden/conftest.py 显式注册，未设置 AUTOFLOW_TEST_CLOAKBROWSER 时 skip。M0 的 executionProfile=controlled-one-row-batches-v1：枚举完整输入身份，通过公开调试预检取得 debugSelection，每行启动一次 maxTasks=1/concurrency=1 的批次，最多两个批次并行；等待所有终态，不按 createdTaskCount 停止。G2 打开并提取五字段，G3 点击提交。记录 tasks_attempted、distinct_rows_processed、rows_succeeded、tasks_failed、throughput_rows_per_min、attempts_per_min、failure_reason_ratio、loop_lag_p99_ms。成功吞吐只计具有正确输出/站点回执的唯一成功行；空错误不算有原因，无失败时覆盖率记 null。默认 30 行，夜间 G2=10000/G3=1000 可配置。M2 的原生多行台账场景另建 native-batch-v1，不与此口径混算。 |
 | R0-07 | 守门检查 `scripts/ratchets.mjs`，四项计数与 `scripts/ratchets-baseline.json` 比较：任一项大于基线即失败并指出具体项，小于基线时提示收紧基线：①前端配置面板写入、但后端源码中不存在的配置键（保存键名列表）；②`domains/workflows` 下写死的 Tailwind 调色类数量；③从第二套图标库（`@phosphor-icons/react`）导入的文件数，lucide 为保留库；④`docs/` 下 PNG 数量。 |
 | R0-08 | CI：每次 push 运行离线基准（只记录、不设阈值，结果 JSON 作为构件上传）和守门检查；新增 `golden.yml`：手动触发 + 每晚一次，在 macOS 上安装固定版本 CloakBrowser 后运行黄金场景并上传指标。 |
 | R0-09 | `AGENTS.md` 增加"整改期硬性规则"一节（整改方案 N4 的 6 条），并在"完成定义"中要求批量执行相关改动附基准对比。 |
@@ -119,7 +119,7 @@ scripts/ratchets.mjs, scripts/ratchets.test.mjs, scripts/ratchets-baseline.json
 | AC0-02 | `bench_runtime_overhead` 输出 `framework_ms_per_node` 与 `events_per_node`；`events_per_node` 在当前代码上 ≥ 4（记录现状）。 |
 | AC0-03 | `bench_event_commit` 输出 `event_commit_ms_p50` 与 `event_commit_ms_p99`，且 p99 ≥ p50 > 0。 |
 | AC0-04 | 单元测试：同步阻塞事件循环 300 毫秒后，`snapshot().max_ms` ≥ 250，且有含"event loop lag"的 warning 日志；sidecar 应用对象上存在 `app.state.loop_lag` 且已注册启动钩子。 |
-| AC0-05 | 设置 `AUTOFLOW_TEST_CLOAKBROWSER` 时，G2、G3 可运行并产出指标；未设置时被跳过而不是失败。G3 断言 `lose-` 行在站点各只收到 1 次提交；"结果不明的行应进入待核实"作为单独用例以 `xfail(strict=False)` 标注，M2 实现 A4 后转正。 |
+| AC0-05 | 无浏览器按预期 skip；配置浏览器时输入完整身份集合恰好覆盖、无重复，每条正常行提取/提交结果正确，每个故障样本确实访问，lose 行恰好提交一次。未知结果状态缺口独立 xfail(strict=True)，不得包住上述断言。30 次同一行失败且原因空：distinct_rows=1、rows_succeeded=0、成功吞吐=0、failure_reason_ratio=0；无失败覆盖率=null。 |
 | AC0-06 | `node scripts/ratchets.mjs` 在基线上通过；测试中分别新增一个未读取配置键、一个写死调色类、一个 phosphor 导入、一张 PNG，各自导致失败并指出具体项；减少时不失败、提示收紧。 |
 | AC0-07 | CI 在 push 时运行离线基准与守门检查，并把基准 JSON 作为构件上传；`golden.yml` 可手动触发。 |
 | AC0-08 | `AGENTS.md` 含"整改期硬性规则"一节。 |
@@ -127,5 +127,12 @@ scripts/ratchets.mjs, scripts/ratchets.test.mjs, scripts/ratchets-baseline.json
 ## 7. 风险
 
 - CI 机器上离线基准绝对值不稳定：M0 只记录不设阈值；阈值从 M1 起按"相对基线不回退 20% 以上"设置。
-- 配置键扫描有误报（键名恰好出现在无关字符串）或漏报：它是守门下限，不代替 M2 的节点配置 schema。
+- 配置键扫描有误报（键名恰好出现在无关字符串）或漏报：它是守门下限，不代替 M2 的节点配置 schema；schema 中存在键也不证明运行时读取，仍须行为测试。
 - 黄金场景依赖本机 CloakBrowser：只在夜间与手动触发时运行，不阻塞普通 push。
+
+## 8. r2 基准口径
+
+- controlled-one-row-batches-v1 只借现有 debugSelection 固定输入，不改生产领取器，不绕过真实派发器。另保留“重复领取同一行”的已知缺陷诊断，它不作为行吞吐成绩。
+- 原始数值 JSON 沿用 schemaVersion=1，Unit 扩展 ratio/rows_per_min/tasks_per_min，value 可为 null（仅无失败分母）。manifest 作为每次运行的必备伴随文件，与报告一起上传。
+- 正常样本、首次超时、永久 404、响应丢失都按完整身份列明预期；强制核对站点计数与真实 Task 结果。G3 的缺失状态只在独立用例标 xfail，基准有效性断言始终严格。
+- M1 保留点击版 G3 并新增按键版；M2 增加写回版/native 版。场景升级后保留原场景或在同一候选/硬件上重跑比较基线，不能将更换场景的指标拼成趋势。

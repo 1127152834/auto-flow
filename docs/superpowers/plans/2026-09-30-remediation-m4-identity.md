@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 >
-> **本计划为任务级。** M3 通过退出评审后细化为步骤级并经用户确认再执行。Task 1 是调研任务，其结论决定 Task 2 的种子范围方案。
+> **本计划为任务级。** M3 通过退出评审后细化为步骤级并完成审查后执行。Task 1 是调研任务，其结论决定 Task 2 的种子范围方案。
 
-**Goal:** 每个账号一个身份（唯一种子 + 粘性代理 + 登录环境 + 地区），整体分配、恢复、校验；黄金场景 G1 达标。
+**Goal:** 每个账号独立身份（新种子唯一/旧重复保留 + 粘性代理 + 冻结登录身份包），整体分配、恢复、校验；黄金场景 G1 达标。
 
 **Architecture:** 新领域 `domain/identities`（纯规则）、应用 `application/identities`、持久化 `rm4_identities`；领取时带出身份并按身份恢复；代理粘性分配复用代理池能力；浏览器配置降级为模板。
 
@@ -15,8 +15,8 @@
 ## Global Constraints
 
 - 迁移默认保留原种子；共用种子的环境只进入报告，由用户决定是否重新生成；迁移前自动备份。
-- 种子全局唯一由数据库唯一约束保证，不靠应用层检查。
-- 代理失效替换策略默认 sameRegion；从不静默换到其他地区。
+- seed_registry.seed_value唯一；新分配只插入新登记，旧身份可以迁移引用同一legacyShared登记；公开创建不可申请共享豁免，不在identities.seed值上设置拒绝旧重复的UNIQUE。
+- 代理失效默认sameRegion，成员粘性不等于出口不变；检测实际出口变化并按策略核实，禁止静默跨地区。
 - 同一身份同一时刻只有一个活动浏览器。
 - 迁移文件前缀 `rm4_`。
 
@@ -38,7 +38,7 @@
 ### Task 2: 身份表与种子登记
 
 - Files: `rm4_identities.py`、`domain/identities/models.py`、`domain/identities/seeds.py`、`infrastructure/database/identities.py`。
-- Tests: 1,000 个身份无重复种子；并发分配无冲突；临时身份不入登记表。
+- Interfaces：seed_registry(seed_value UNIQUE)、identities.seed_id FK、迁移专属legacyShared关联；新分配不重用旧登记，不能合并不同账号身份。Tests：1000新身份/并发无重复；两个旧重复身份迁移成功并保留；公开API不能创建legacyShared；临时身份不宣称全局唯一。
 
 ### Task 3: 身份服务与接口
 
@@ -48,12 +48,12 @@
 ### Task 4: 领取与运行按身份恢复
 
 - Files: 领取路径（带出 identity_id）、`application/workflows/browser_resources.py`（按身份解析种子 / 代理 / 环境 / 地区）、End 保存登录状态写回身份的环境。
-- Tests: 同一账号多次运行种子、出口 IP、时区一致；身份独占。
+- Tests: 同一账号实际冻结身份包不受Profile后改影响，稳定代理夹具多次一致；出口变化另测策略；身份独占。
 
 ### Task 5: 粘性代理与失效替换
 
 - Files: 代理解析新增"按身份解析"、成员失效策略、代理正在换 IP 时有限等待。
-- Tests: 首次分配后固定；成员删除按三种策略；等待超时归 infrastructure。
+- Tests: 首次分配成员固定；成员删除和相同成员出口变化按三种策略；只有执行未开始的等待超时为可重排infrastructure，执行中按M2副作用门禁。
 
 ### Task 6: 启动前校验与代理健康预检
 
@@ -68,14 +68,20 @@
 ### Task 8: 迁移
 
 - Files: `application/identities/migration.py`（环境 → 身份、记录"当前环境" → 身份、共用种子报告）、`rm4_record_identity.py`。
-- Tests: 夹具工作区迁移；共用种子不被改变；重新生成种子后旧代次可回退一次。
+- Tests: 夹具工作区与两个重复种子环境都迁移成功，不合并账号；原身份包完整保留，报告legacyShared；重新生成后旧代次回退引用被M3清理守卫保留。
 
 ### Task 9: 身份模板与界面（与 M5 5C 协作）
 
 - 浏览器配置页改为"身份模板"（不再显示种子）；项目内身份列表页（指纹摘要、出口 IP 与地区、环境大小、最后使用、关联记录、健康）。
 - Tests: 组件与页面测试。
 
+### Task 9a: perIdentity 会话（从M3移入）
+
+- Files: `domain/project_automations/rules.py`、`application/workflows/browser_resources.py`、worker租借/归还及运行设置界面。
+- Interfaces: 以identity_id为唯一租借身份，依赖Task2–5真实接口，不临时造另一种身份键；空闲/人工期间仍独占，任务级上下文隔离。
+- Tests: AC4-07；撤权/未知结果不得归还，原命令核实后才解锁；临时身份种子与pool不兼容时明确perTask。
+
 ### Task 10: 黄金场景 G1 与验收
 
 - 新增 G1 站点（登录、资料页、2% 密码错误）与本地 SOCKS 代理夹具（可注入 5 分钟断开）；`tests/golden/test_g1_accounts.py`。
-- AC4-01 至 AC4-06 逐条勾选；更新 `.ai`（把"种子属于浏览器配置"的决定标记 superseded）；独立退出评审。
+- AC4-01 至 AC4-07 逐条勾选；更新 `.ai`（把"种子属于浏览器配置"的决定标记 superseded）；独立退出评审。

@@ -14,17 +14,17 @@
 
 - 本里程碑不修改任何生产行为；`apps/backend/src` 中只新增 `infrastructure/observability/` 并在 `bootstrap/app.py` 中接入监测器。
 - 基准结果写入 `apps/backend/tests/benchmarks/results/`，该目录进 `.gitignore`，不入库；QA 截图不再新增到 `docs/`。
-- JSON 结构固定为 `{"schemaVersion":1,"commit":"<sha>","platform":"<os-arch>","metrics":{"<name>":{"value":<number>,"unit":"ms|count|per_node"}}}`。
+- JSON 结构固定为 `{"schemaVersion":1,"commit":"<sha>","platform":"<os-arch>","metrics":{"<name>":{"value":<number|null>,"unit":"ms|count|per_node|ratio|rows_per_min|tasks_per_min"}}}`。
 - 黄金场景在未设置 `AUTOFLOW_TEST_CLOAKBROWSER` 时必须 skip，不能 fail。
 - pytest 标记 `benchmark`、`golden` 默认被排除（`addopts = -m "not benchmark and not golden"`）。
-- 分支：`remediation/m0-baseline-guardrails`；每个任务一次提交，提交信息末尾附会话要求的 Co-Authored-By / Claude-Session 两行。
+- 分支：`remediation/m0-baseline-guardrails`；每个任务一次清晰提交；不写不存在的协作者或其他工具会话标记。
 - 所有命令从仓库根目录执行。后端命令形如 `uv run --directory apps/backend pytest ...`。
 
 ## Review Focus
 
 1. **从别的目录或没有 git 的环境运行基准**：`git rev-parse` 失败时 `commit` 必须为 `"unknown"` 而不是抛异常（Task 1 覆盖）。
 2. **Windows 路径分隔符**：守门脚本判断"测试文件"时要按平台分隔符拆路径，CI 在 windows-2022 上运行（Task 7 的 `isTest` 使用 `path.sep`）。
-3. **黄金场景行数超过 100**：自动化 `maxTasks` 上限是 100；超过时 harness 用不限次数启动并在任务数达到行数后调用停止接口，不能无限运行（Task 6 覆盖）。
+3. **重复领取与超过 100 行**：每行使用公开 debugSelection 固定输入的单任务批次；完整身份集合无漏行/重复，等待终态，绝不按任务创建数停批（Task 6）。
 4. **监测器被重复启动或在未启动时停止**：`start()` 幂等、`stop()` 可重复调用（Task 4 覆盖）。
 5. **基准结果目录不存在**：`write_report` 自动创建目录（Task 1 覆盖）。
 
@@ -41,7 +41,7 @@
 - Test: `apps/backend/tests/benchmarks/test_offline_benchmarks.py`
 
 **Interfaces:**
-- Produces: `report.build_report(metrics: dict[str, tuple[float, Unit]]) -> dict`、`report.write_report(name: str, metrics, directory: Path = RESULTS_DIR) -> Path`、`report.Unit = Literal["ms","count","per_node"]`、`report.RESULTS_DIR`；`bench_claims.run(rows: int) -> dict[str, tuple[float, Unit]]`（键：`rows`、`claim_ms_key_order`、`claim_ms_field_order`）；`bench_claims._seed(directory: Path, rows: int)`（Task 11 的主循环延迟基准会复用）。
+- Produces: `report.build_report(metrics: dict[str, tuple[float | None, Unit]]) -> dict`、`report.write_report(name: str, metrics, directory: Path = RESULTS_DIR, *, manifest: dict) -> Path`、`report.Unit = Literal["ms","count","per_node","ratio","rows_per_min","tasks_per_min"]`、`report.RESULTS_DIR`；`bench_claims.run(rows: int) -> dict[str, tuple[float | None, Unit]]`（键：`rows`、`claim_ms_key_order`、`claim_ms_field_order`）；`bench_claims._seed(directory: Path, rows: int)`（M1 Task 10 的主循环延迟基准会复用）。
 
 - [ ] **Step 1: 注册 pytest 标记并忽略结果目录**
 
@@ -77,7 +77,7 @@ import pytest
 
 from . import bench_claims
 from . import report as report_module
-from .report import build_report, write_report
+from .report import build_manifest, build_report, write_report
 
 pytestmark = pytest.mark.benchmark
 
@@ -87,7 +87,7 @@ def test_claim_benchmark_reports_both_orderings(tmp_path):
     assert metrics["rows"] == (200, "count")
     assert metrics["claim_ms_key_order"][1] == "ms"
     assert metrics["claim_ms_field_order"][0] > 0
-    path = write_report("claims-200", metrics, tmp_path / "nested" / "results")
+    path = write_report("claims-200", metrics, tmp_path / "nested" / "results", manifest=build_manifest("claims-v1", {"rows": 200}))
     report = json.loads(path.read_text(encoding="utf-8"))
     assert set(report) == {"schemaVersion", "commit", "platform", "metrics"}
     assert report["schemaVersion"] == 1
@@ -109,58 +109,14 @@ Expected: FAIL，`ImportError`（`bench_claims` / `report` 不存在）。
 
 - [ ] **Step 4: 实现 report.py**
 
-```python
-"""Shared benchmark result format (remediation M0, R0-04)."""
+实现 `build_report(metrics)` 和 `write_report(name, metrics, directory=RESULTS_DIR, *, manifest)`；保留schemaVersion=1的数值报告结构，manifest为必填参数，同目录写独立JSON。`build_report` 对数值保留三位小数、None写null，终端摘要显示n/a，不能float(None)。git不可用时commit=unknown，不伪造版本。
 
-from __future__ import annotations
+同时提供 `build_manifest(scenario_version, dataset, *, execution_profile="offline-v1", browser_kernel="not-applicable", concurrency=1, repetitions=1, fault_seed="none")`：采集实际OS/arch、逻辑CPU、内存（复用现有系统信息查询，不可得时unknown）、Python/SQLite版本；记录全部入参。`write_report`补本报告文件名及与数值报告相同的commit，使用微秒时间戳/唯一后缀避免并发覆盖。硬件或版本unknown的报告可保存，但标记不可作提升比例比较；“not-applicable”只用于离线确实未用的浏览器内核等维度。
 
-import json
-import platform
-import subprocess
-from datetime import UTC, datetime
-from pathlib import Path
-from typing import Literal
+增加测试：缺manifest/缺字段拒绝；数值文件与manifest相互对应；无失败覆盖率为null；新增单位合法；连续/并发写不覆盖；离线三个入口和黄金入口都生成manifest。单次报告repetitions=1，不能填计划运行的次数冒充实际重复数；比较器另校验至少5份相同维度样本。
 
-Unit = Literal["ms", "count", "per_node"]
-RESULTS_DIR = Path(__file__).with_name("results")
+Task1–3及M1新增基准入口都从report导入build_manifest并传参；下面的入口调用同步更新。黄金场景额外传入真实browser_kernel、受控execution_profile、并发和故障种子。CI须上传manifest与数值报告；缺manifest的历史结果不参与倍数计算。
 
-
-def _commit() -> str:
-    try:
-        return subprocess.run(
-            ["git", "rev-parse", "--short", "HEAD"],
-            check=True, capture_output=True, text=True, timeout=5,
-        ).stdout.strip()
-    except (OSError, subprocess.SubprocessError):
-        return "unknown"
-
-
-def build_report(metrics: dict[str, tuple[float, Unit]]) -> dict[str, object]:
-    return {
-        "schemaVersion": 1,
-        "commit": _commit(),
-        "platform": f"{platform.system().lower()}-{platform.machine().lower()}",
-        "metrics": {
-            name: {"value": round(float(value), 3), "unit": unit}
-            for name, (value, unit) in sorted(metrics.items())
-        },
-    }
-
-
-def write_report(
-    name: str, metrics: dict[str, tuple[float, Unit]], directory: Path = RESULTS_DIR
-) -> Path:
-    report = build_report(metrics)
-    directory.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
-    path = directory / f"{name}-{stamp}.json"
-    path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    items = report["metrics"]
-    assert isinstance(items, dict)
-    summary = " ".join(f"{key}={item['value']}{item['unit']}" for key, item in items.items())
-    print(f"[{name}] {summary} -> {path}")
-    return path
-```
 
 - [ ] **Step 5: 实现 bench_claims.py**
 
@@ -188,7 +144,7 @@ from autoflow.infrastructure.database.projects import SqlAlchemyProjects
 from autoflow.infrastructure.database.session import create_session_factory, migrate_database
 from tests.integration.test_project_input_groups import _add_record, _empty_table, _input, uid
 
-from .report import Unit, write_report
+from .report import Unit, build_manifest, write_report
 
 
 def _seed(directory: Path, rows: int):
@@ -222,10 +178,10 @@ def plans(project_id: str, table: dict, field: dict) -> dict[str, dict]:
     return {"claim_ms_key_order": key_order, "claim_ms_field_order": field_order}
 
 
-def run(rows: int) -> dict[str, tuple[float, Unit]]:
+def run(rows: int) -> dict[str, tuple[float | None, Unit]]:
     with tempfile.TemporaryDirectory() as raw:
         factory, project_id, table, field = _seed(Path(raw), rows)
-        metrics: dict[str, tuple[float, Unit]] = {"rows": (rows, "count")}
+        metrics: dict[str, tuple[float | None, Unit]] = {"rows": (rows, "count")}
         for name, plan in plans(project_id, table, field).items():
             started = time.perf_counter()
             with factory() as session:
@@ -241,7 +197,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--rows", type=int, default=2000)
     arguments = parser.parse_args()
-    write_report(f"claims-{arguments.rows}", run(arguments.rows))
+    write_report(f"claims-{arguments.rows}", run(arguments.rows), manifest=build_manifest("claims-v1", {"rows": arguments.rows}))
 
 
 if __name__ == "__main__":
@@ -277,7 +233,7 @@ git commit -m "test(bench): 领取耗时基准与统一结果格式"
 
 **Interfaces:**
 - Consumes: `report.Unit`、`report.write_report`（Task 1）。
-- Produces: `bench_runtime_overhead.run(iterations: int) -> dict[str, tuple[float, Unit]]`（键：`nodes_executed`、`framework_ms_per_node`、`events_per_node`）；`bench_runtime_overhead.g4_document(iterations: int) -> dict`。
+- Produces: `bench_runtime_overhead.run(iterations: int) -> dict[str, tuple[float | None, Unit]]`（键：`nodes_executed`、`framework_ms_per_node`、`events_per_node`）；`bench_runtime_overhead.g4_document(iterations: int) -> dict`。
 
 - [ ] **Step 1: 写失败的测试**（追加到 `test_offline_benchmarks.py`，并在文件顶部 import 中加入 `bench_runtime_overhead`）
 
@@ -312,7 +268,7 @@ from typing import Any
 
 from autoflow.providers.browser.project_graph import ProjectGraphExecutor
 
-from .report import Unit, write_report
+from .report import Unit, build_manifest, write_report
 
 WIDTH = 5
 
@@ -332,7 +288,7 @@ def g4_document(iterations: int) -> dict[str, Any]:
     return {"nodes": nodes, "edges": edges}
 
 
-async def _run(iterations: int) -> dict[str, tuple[float, Unit]]:
+async def _run(iterations: int) -> dict[str, tuple[float | None, Unit]]:
     kinds: Counter[str] = Counter()
 
     async def emit(kind: str, _node_id: str, _visit: str, _payload: dict[str, Any]) -> None:
@@ -352,7 +308,7 @@ async def _run(iterations: int) -> dict[str, tuple[float, Unit]]:
     }
 
 
-def run(iterations: int) -> dict[str, tuple[float, Unit]]:
+def run(iterations: int) -> dict[str, tuple[float | None, Unit]]:
     return asyncio.run(_run(iterations))
 
 
@@ -360,7 +316,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--iterations", type=int, default=1000)
     arguments = parser.parse_args()
-    write_report("runtime-overhead", run(arguments.iterations))
+    write_report("runtime-overhead", run(arguments.iterations), manifest=build_manifest("runtime-overhead-v1", {"iterations": arguments.iterations}))
 
 
 if __name__ == "__main__":
@@ -391,7 +347,7 @@ git commit -m "test(bench): G4 长循环执行开销与每节点事件数基准"
 
 **Interfaces:**
 - Consumes: `tests.fixtures.workflow_runs.create_queued_run(factory) -> (CoreRun, content)`；`SqlAlchemyWorkflowRuntimeRepository(session).append_event(dict)`。
-- Produces: `bench_event_commit.run(events: int) -> dict[str, tuple[float, Unit]]`（键：`events`、`event_commit_ms_p50`、`event_commit_ms_p99`）。M1 用它验证 WAL 效果。
+- Produces: `bench_event_commit.run(events: int) -> dict[str, tuple[float | None, Unit]]`（键：`events`、`event_commit_ms_p50`、`event_commit_ms_p99`）。M1 用它验证 WAL 效果。
 
 - [ ] **Step 1: 写失败的测试**（import 中加入 `bench_event_commit`）
 
@@ -428,14 +384,14 @@ from autoflow.infrastructure.database.session import create_session_factory, mig
 from autoflow.infrastructure.database.workflow_runtime import SqlAlchemyWorkflowRuntimeRepository
 from tests.fixtures.workflow_runs import create_queued_run
 
-from .report import Unit, write_report
+from .report import Unit, build_manifest, write_report
 
 
 def _percentile(ordered: list[float], fraction: float) -> float:
     return ordered[min(len(ordered) - 1, round(fraction * (len(ordered) - 1)))]
 
 
-def run(events: int) -> dict[str, tuple[float, Unit]]:
+def run(events: int) -> dict[str, tuple[float | None, Unit]]:
     with tempfile.TemporaryDirectory() as raw:
         path = Path(raw) / "events.sqlite3"
         migrate_database(path)
@@ -466,7 +422,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--events", type=int, default=1000)
     arguments = parser.parse_args()
-    write_report("event-commit", run(arguments.events))
+    write_report("event-commit", run(arguments.events), manifest=build_manifest("event-commit-v1", {"events": arguments.events}))
 
 
 if __name__ == "__main__":
@@ -898,329 +854,24 @@ git commit -m "test(golden): 带故障注入的本地黄金场景站点"
 
 ---
 
-### Task 6: 黄金场景 harness 与 G2、G3（R0-06）
+### Task 6: 黄金场景 harness 与 G2、G3（R0-06，r2 替换旧示例）
 
 **Files:**
-- Create: `apps/backend/tests/golden/harness.py`
-- Create: `apps/backend/tests/golden/test_g2_scrape.py`
-- Create: `apps/backend/tests/golden/test_g3_form_entry.py`
+- Create: `apps/backend/tests/golden/conftest.py`、`harness.py`、`test_golden_metrics.py`、`test_g2_scrape.py`、`test_g3_form_entry.py`
+- Reuse: `tests/integration/test_workflow_real_cloakbrowser.py::real_cloak_page`、`tests/integration/test_project_debug_inputs.py` 的公开调试选择契约、`tests/fixtures/profiles.py`；不把生产领取器替换为 fake。
 
 **Interfaces:**
-- Consumes: `GoldenSite`（Task 5）；`write_report`（Task 1）；`app.state.loop_lag`（Task 4）；夹具 `real_cloak_page`（`tests/integration/test_workflow_real_cloakbrowser.py`，未设置 `AUTOFLOW_TEST_CLOAKBROWSER` 时 skip）、`valid_profile_values`（`tests/fixtures/profiles.py`，已在根 conftest 注册）；`_table`、`_input`（`tests/integration/test_project_run_data_start.py`）；`_add_record`（`tests/integration/test_project_input_groups.py`）。
-- Produces: `golden_rows(scenario: str, default: int = 30) -> int`（依次读 `AUTOFLOW_GOLDEN_<SCENARIO>_ROWS`、`AUTOFLOW_GOLDEN_ROWS`）；`flow_node(identity, kind, index, **config) -> dict`；`chain(nodes) -> list[dict]`；`input_reference(input_spec) -> str`；`async run_golden(tmp_path, executable, profile_values, *, values, build, concurrency=2, timeout_seconds=3600) -> GoldenRun`；`GoldenRun.metrics() -> dict[str, tuple[float, Unit]]`、`GoldenRun.details: list[dict]`（每个任务的 `GET /tasks/{id}` 响应）。M1 的 Task 14 会把 G3 改成按回车提交。
+- Consumes: GoldenSite、report.write_report、app.state.loop_lag、现有项目数据/调试预检/批次启动与任务查询接口。
+- Produces: `golden_rows(scenario: str, default: int = 30) -> int`（必须 >0）；`flow_node(identity, kind, index, **config)`、`chain(nodes)`、`input_reference(input_spec)`（保留 M1 Task 14 的调用）；`async run_golden(tmp_path, executable, profile_values, *, values, build, concurrency=2, timeout_seconds=3600) -> GoldenRun`；`GoldenRun.details`、`.metrics()`、`.expected_refs`、`.verified_success_refs`。refs 使用现有完整 RecordRef 的规范序列化，不能只取显示值。
+- 指标：tasks_attempted=len(details)；distinct_rows_processed=唯一完整 refs 数；rows_succeeded=经输出/站点验证且任务成功的唯一 refs 数；throughput_rows_per_min=rows_succeeded×60/elapsed；attempts_per_min=tasks_attempted×60/elapsed；有原因失败要求非空非通用 message（M2 后还需稳定 category）；失败分母 0 时 failure_reason_ratio=null。
 
-- [ ] **Step 1: 实现 harness.py**
-
-harness 本身只在真实浏览器场景中执行；它的正确性由 Step 3–6 的场景测试证明，Step 2 先做导入检查。
-
-```python
-"""Golden scenarios through the real HTTP API, SQLite, worker and CloakBrowser (remediation M0, R0-06)."""
-
-from __future__ import annotations
-
-import asyncio
-import os
-import shutil
-import time
-from collections.abc import Callable
-from dataclasses import dataclass
-from pathlib import Path
-from typing import Any
-from uuid import uuid4
-
-import httpx
-
-from autoflow.bootstrap.app import create_app
-from autoflow.bootstrap.config import Settings
-from autoflow.domain.profiles.models import ProfileSpec
-from tests.benchmarks.report import Unit
-from tests.fixtures.workflows import workflow_payload
-from tests.integration.test_project_input_groups import _add_record
-from tests.integration.test_project_run_data_start import _input, _table
-
-TOKEN = "golden-token"
-GENERIC_FAILURES = {"工作流节点执行失败", "工作流节点执行超时"}
-TERMINAL_BATCH = {"completed", "failed", "interrupted", "stopped"}
-MAX_BOUNDED_TASKS = 100  # automation runPolicy.maxTasks upper bound (domain/project_automations/rules.py)
-BuildFlow = Callable[[str], tuple[list[dict[str, Any]], list[dict[str, Any]]]]
-
-
-def golden_rows(scenario: str, default: int = 30) -> int:
-    value = os.environ.get(f"AUTOFLOW_GOLDEN_{scenario}_ROWS") or os.environ.get("AUTOFLOW_GOLDEN_ROWS")
-    return int(value) if value else default
-
-
-def flow_node(identity: str, kind: str, index: int, **config: Any) -> dict[str, Any]:
-    return {
-        "id": identity, "type": kind, "position": {"x": 0, "y": index * 100},
-        "data": {"moduleType": kind, "label": identity, **config},
-    }
-
-
-def chain(nodes: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    return [
-        {"id": f"e{index}", "source": nodes[index]["id"], "target": nodes[index + 1]["id"]}
-        for index in range(len(nodes) - 1)
-    ]
-
-
-def input_reference(input_spec: dict[str, Any]) -> str:
-    field_id = input_spec["fieldBindings"][0]["inputFieldId"]
-    return "{PROJECT_INPUTS['" + input_spec["inputId"] + "']['values']['" + field_id + "']}"
-
-
-@dataclass
-class GoldenRun:
-    rows: int
-    details: list[dict[str, Any]]
-    elapsed_seconds: float
-    loop_lag_p99_ms: float
-
-    def failed(self) -> list[dict[str, Any]]:
-        return [detail for detail in self.details if detail["task"]["status"] != "succeeded"]
-
-    def metrics(self) -> dict[str, tuple[float, Unit]]:
-        failed = self.failed()
-        reasoned = [
-            detail for detail in failed
-            if ((detail["run"].get("error") or {}).get("message") or "") not in GENERIC_FAILURES
-        ]
-        distinct = {
-            str(detail["inputSnapshot"]["inputs"][0]["recordRef"]) for detail in self.details
-            if detail["inputSnapshot"].get("inputs")
-        }
-        return {
-            "rows": (self.rows, "count"),
-            "tasks_succeeded": (len(self.details) - len(failed), "count"),
-            "tasks_failed": (len(failed), "count"),
-            "distinct_rows_processed": (len(distinct), "count"),
-            "throughput_rows_per_min": (len(self.details) * 60 / max(self.elapsed_seconds, 1e-6), "count"),
-            "failure_reason_ratio": (len(reasoned) / len(failed) if failed else 1.0, "count"),
-            "loop_lag_p99_ms": (self.loop_lag_p99_ms, "ms"),
-        }
-
-
-async def run_golden(
-    tmp_path: Path,
-    executable: Path,
-    profile_values: dict[str, Any],
-    *,
-    values: list[str],
-    build: BuildFlow,
-    concurrency: int = 2,
-    timeout_seconds: float = 3600,
-) -> GoldenRun:
-    source = next(parent for parent in executable.parents if parent.name.startswith("chromium-"))
-    await asyncio.to_thread(
-        shutil.copytree, source, tmp_path / "data" / "kernels" / source.name, symlinks=True
-    )
-    app = create_app(Settings(data_dir=str(tmp_path), instance_id="golden", instance_token=TOKEN))
-    factory = app.state.session_factory
-    try:
-        profile = app.state.profile_service.create(ProfileSpec.from_values({
-            **profile_values, "headless": True,
-            "browser_version": source.name.removeprefix("chromium-"),
-        }))
-        await app.state.loop_lag.start()
-        await app.state.project_workflow_dispatcher.startup()
-        await app.state.project_run_scheduler.startup()
-        async with httpx.AsyncClient(
-            transport=httpx.ASGITransport(app=app), base_url="http://golden",
-            headers={"x-autoflow-token": TOKEN}, timeout=60,
-        ) as client:
-            created = await client.post(
-                "/api/v1/projects", headers={"Idempotency-Key": str(uuid4())},
-                json={"name": "黄金场景", "description": ""},
-            )
-            assert created.status_code == 201, created.text
-            project_id = created.json()["projectId"]
-            prefix = f"/api/v1/projects/{project_id}"
-            table, field = await asyncio.to_thread(_table, factory, project_id, "黄金数据", values[0])
-            for value in values[1:]:
-                await asyncio.to_thread(_add_record, factory, project_id, table, field, value)
-            input_spec = _input(project_id, table, field, "数据")
-            nodes, edges = build(input_reference(input_spec))
-            document = workflow_payload(str(uuid4()))
-            document["content"].update(nodes=nodes, edges=edges)
-            saved = await client.post(
-                "/api/workflows",
-                json={**document["content"], "id": document["id"], "clientRequestId": str(uuid4())},
-            )
-            assert saved.status_code == 201, saved.text
-            bounded = len(values) <= MAX_BOUNDED_TASKS
-            automation = await client.post(
-                prefix + "/automations", headers={"Idempotency-Key": str(uuid4())},
-                json={
-                    "name": "黄金场景", "description": "", "workflowId": saved.json()["id"],
-                    "inputPlan": {"inputs": [input_spec]}, "parameterSchema": [],
-                    "environmentPolicy": {
-                        "source": "newFromProfile", "profileId": profile.id,
-                        "proxyOverride": {"mode": "none"}, "modelProviderId": None,
-                    },
-                    "runPolicy": {
-                        "maxTasks": min(len(values), MAX_BOUNDED_TASKS), "concurrency": concurrency,
-                        "maxLiveInstances": concurrency, "continueAfterFailure": True,
-                        "automaticExecutionTimeoutSeconds": 120, "manualDeadlineSeconds": 120,
-                    },
-                },
-            )
-            assert automation.status_code == 201, automation.text
-            body = automation.json()
-            started_at = time.perf_counter()
-            started = await client.post(
-                prefix + f"/automations/{body['automationId']}/batches",
-                headers={"Idempotency-Key": str(uuid4())},
-                json={
-                    "expectedAutomationRevision": body["managementRevision"], "parameters": {},
-                    "maxTasks": len(values) if bounded else None, "concurrency": concurrency,
-                },
-            )
-            assert started.status_code == 202, started.text
-            batch_id = started.json()["operation"]["result"]["batch"]["batchId"]
-            stop_requested = False
-            async with asyncio.timeout(timeout_seconds):
-                while True:
-                    batch = (await client.get(prefix + f"/batches/{batch_id}")).json()["batch"]
-                    if batch["status"] in TERMINAL_BATCH:
-                        break
-                    if not bounded and not stop_requested and batch["createdTaskCount"] >= len(values):
-                        # Unbounded batches stop once every row has had a task (Review Focus 3).
-                        stopped = await client.post(
-                            prefix + f"/batches/{batch_id}/stop",
-                            headers={"Idempotency-Key": str(uuid4())},
-                            json={"expectedStatusRevision": batch["statusRevision"], "reason": "黄金场景已达到行数"},
-                        )
-                        stop_requested = stopped.status_code == 202
-                    await asyncio.sleep(0.2)
-            elapsed = time.perf_counter() - started_at
-            details: list[dict[str, Any]] = []
-            page = 1
-            while True:
-                listed = (await client.get(
-                    prefix + "/tasks", params={"batchId": batch_id, "page": page, "pageSize": 200}
-                )).json()
-                for item in listed["items"]:
-                    details.append((await client.get(prefix + f"/tasks/{item['taskId']}")).json())
-                if page * 200 >= listed["total"]:
-                    break
-                page += 1
-        return GoldenRun(len(values), details, elapsed, app.state.loop_lag.snapshot().p99_ms)
-    finally:
-        await app.router.on_shutdown[-1]()
-```
-
-- [ ] **Step 2: 导入检查**
-
-Run: `uv run --directory apps/backend python -c "import tests.golden.harness"`
-Expected: 无输出、退出码 0。若 `batch` 响应中字段名与 `createdTaskCount` / `statusRevision` 不一致，按 `adapters/http/project_run_schemas.py` 的 `BatchView` 字段修正后再继续。
-
-- [ ] **Step 3: 写 G2 场景**
-
-`tests/golden/test_g2_scrape.py`：
-
-```python
-"""Golden scenario G2: open a link, extract five fields (remediation M0, R0-06)."""
-
-import pytest
-
-from tests.benchmarks.report import write_report
-
-from .harness import chain, flow_node, golden_rows, run_golden
-from .site import FIELDS, GoldenSite
-
-pytestmark = [pytest.mark.golden, pytest.mark.asyncio]
-
-
-def g2_values(rows: int) -> list[str]:
-    # 5% first-load timeouts, 1% permanently gone (at least one of each from 30 rows).
-    return [
-        f"gone-{index}" if index % 100 == 29 else f"timeout-{index}" if index % 20 == 7 else f"item-{index}"
-        for index in range(rows)
-    ]
-
-
-async def test_g2_scrape(tmp_path, valid_profile_values, real_cloak_page):
-    executable, _url, _requests = real_cloak_page
-    values = g2_values(golden_rows("G2"))
-    with GoldenSite() as site:
-
-        def build(ref: str):
-            nodes = [flow_node("open", "open_page", 0, url=f"{site.base_url}/item/{ref}", timeout=5)] + [
-                flow_node(f"extract-{field}", "get_element_info", index + 1,
-                          selector=f"#{field}", attribute="text", variableName=field, timeout=5)
-                for index, field in enumerate(FIELDS)
-            ]
-            return nodes, chain(nodes)
-
-        run = await run_golden(tmp_path, executable, valid_profile_values, values=values, build=build)
-    write_report("golden-g2", run.metrics())
-    gone = sum(value.startswith("gone-") for value in values)
-    assert len(run.details) == len(values)
-    assert len(run.failed()) >= gone  # records today's behaviour; M2 turns this into quarantine checks
-```
-
-- [ ] **Step 4: 写 G3 场景**
-
-`tests/golden/test_g3_form_entry.py`：
-
-```python
-"""Golden scenario G3: fill a form, submit, confirm (remediation M0, R0-06)."""
-
-import pytest
-
-from tests.benchmarks.report import write_report
-
-from .harness import chain, flow_node, golden_rows, run_golden
-from .site import GoldenSite
-
-pytestmark = [pytest.mark.golden, pytest.mark.asyncio]
-
-
-def g3_values(rows: int) -> list[str]:
-    return [f"lose-{index}" if index % 10 == 3 else f"row-{index}" for index in range(rows)]
-
-
-async def test_g3_form_entry(tmp_path, valid_profile_values, real_cloak_page):
-    executable, _url, _requests = real_cloak_page
-    values = g3_values(golden_rows("G3"))
-    with GoldenSite() as site:
-
-        def build(ref: str):
-            nodes = [
-                flow_node("open", "open_page", 0, url=f"{site.base_url}/form?name={ref}", timeout=10),
-                flow_node("fill", "input_text", 1, selector="#name", text=ref, timeout=10),
-                flow_node("submit", "click_element", 2, selector="#submit", timeout=10),
-                flow_node("confirm", "get_element_info", 3, selector="#result", attribute="text",
-                          variableName="result", timeout=10),
-            ]
-            return nodes, chain(nodes)
-
-        run = await run_golden(tmp_path, executable, valid_profile_values, values=values, build=build)
-        submissions = {value: site.submissions(value) for value in values}
-    write_report("golden-g3", run.metrics())
-    assert all(count == 1 for value, count in submissions.items() if value.startswith("lose-")), submissions
-    lost = sum(value.startswith("lose-") for value in values)
-    needs_review = sum(detail["task"]["status"] == "needs_review" for detail in run.details)
-    if needs_review != lost:
-        pytest.xfail("M2 A4: 结果不明的行应进入待核实，目前记为失败")
-```
-
-- [ ] **Step 5: 在未安装 CloakBrowser 的环境确认跳过**
-
-Run: `uv run --directory apps/backend pytest -q -m golden tests/golden`
-Expected: `2 skipped, 2 deselected`（G2、G3 因缺少浏览器跳过；站点测试不带 golden 标记，被 `-m golden` 取消选择），0 失败。另运行 `uv run --directory apps/backend pytest -q tests/golden`，Expected: `2 passed, 2 deselected`。
-
-- [ ] **Step 6: 在装有 CloakBrowser 的机器上运行一次**
-
-Run: `AUTOFLOW_TEST_CLOAKBROWSER=<chrome 可执行文件路径> uv run --directory apps/backend pytest -q -m golden tests/golden -s`
-Expected: G2 通过并打印 `[golden-g2] ...`；G3 以 xfail 结束并打印 `[golden-g3] ...`；两个 JSON 出现在 `tests/benchmarks/results/`。把两份指标抄入 Task 10 的基线记录。
-
-- [ ] **Step 7: 提交**
-
-```bash
-git add apps/backend/tests/golden/harness.py apps/backend/tests/golden/test_g2_scrape.py apps/backend/tests/golden/test_g3_form_entry.py
-git commit -m "test(golden): G2 采集与 G3 录入黄金场景（真实 API + 浏览器，可选）"
-```
+- [ ] **Step 1: 先写无需浏览器的反例测试。** `test_golden_metrics.py` 用30条同身份、status=failed、error=None 的 detail，断言 distinct_rows_processed=1、rows_succeeded=0、throughput_rows_per_min=0、attempts_per_min=30、failure_reason_ratio=0；无失败样本断言覆盖率为 None；一条成功行重复两次只能计一条。`assert_complete_coverage(expected_refs, details)` 遇缺行或重复抛 AssertionError。这些测试不标 golden。
+- [ ] **Step 2: 验证 RED。** `uv run --directory apps/backend pytest -q tests/golden/test_golden_metrics.py`；应因新模块缺失失败，不把夹具缺失当作 skip。
+- [ ] **Step 3: 实现指标与显式 fixture 注册。** golden/conftest.py 导入并暴露 real_cloak_page（复用现有 fixture，若有耦合则提到 tests/fixtures 后由两个范围共同导入）；不依赖兄弟测试模块自动发现。report 允许 None 且输出合法 JSON null。同目录 manifest 保存总纲第4节维度，硬件或版本未知要显式记录并禁止用于收益比较。
+- [ ] **Step 4: 实现受控输入 harness。** 创建真实项目、表、流程和自动化；枚举每个完整输入身份，通过现有调试预检获取该行 debugSelection；每行调用公开启动批次接口，maxTasks=1、concurrency=1、独立幂等键。用 Semaphore 限制并行批次为 concurrency，重试查询只能重用原命令身份。每个批次等待终态并查询唯一 Task；聚合结果后断言 refs 集合恰好等于输入全集且无重复。取消/超时记录为无效基准并停止自建批次、等待清理，不算已处理成功。禁止为此改动生产代码、筛选器或台账。
+- [ ] **Step 5: G2/G3 行为验收。** G2：普通行五个字段逐值校验；timeout/gone 样本确认站点收到指定请求和预期失败。G3：所有正常行返回正确 result，站点对正常/lose 每行均恰好收到一次提交。运行时丢失响应的当前终态如实记录；另一个小规模独立测试用 xfail(strict=True) 声明尚缺 needs_review，不能将基准覆盖/副作用断言放进 xfail。
+- [ ] **Step 6: 核验两种环境。** 未配置浏览器：`uv run --directory apps/backend pytest -q -m golden tests/golden` 应仅跳过浏览器用例，不得有 fixture not found；`uv run --directory apps/backend pytest -q tests/golden` 应通过全部指标与站点测试。配置浏览器：`AUTOFLOW_TEST_CLOAKBROWSER=<真实路径> AUTOFLOW_GOLDEN_ROWS=30 uv run --directory apps/backend pytest -q -m golden tests/golden -s`，正确性用例必须通过；独立已知缺口为 xfail，其余失败不可豁免。再用101行验证没有100行上限/提前停止。上传数值报告、manifest、逐行预期与实际摘要，不入库。
+- [ ] **Step 7: 记录 controlled-one-row-batches-v1 基线并提交。** 当前单任务批次的调度开销计入端到端数据；不声称代表原生万行批次吞吐。`git add apps/backend/tests/golden apps/backend/tests/benchmarks/report.py` 后提交 `test(golden): verify unique row coverage and truthful metrics`。
 
 ---
 
@@ -1569,41 +1220,15 @@ git commit -m "docs: 整改期硬性规则、目录职责与 M0 基线记录"
 
 ---
 
-### Task 11: 清除 git 历史中的 QA 截图（用户已批准，破坏性）
+### 独立维护 Task 11: QA 资产迁出与历史清理（不阻塞 M0）
 
-**前置：** Task 1–9 已合并到主线，Task 7 的守门检查已在 CI 阻止新增 PNG。
+本任务仅定义后续操作，不在 M0 验收中自动执行。旧的 docs PNG 全通配符清理和 force mirror 指令已 superseded。
 
-- [ ] **Step 1: 备份**
-
-Run: `git clone --mirror https://github.com/1127152834/auto-flow.git ../auto-flow-backup-$(date +%Y%m%d).git`
-Expected: 备份仓库完整（`git -C ../auto-flow-backup-*.git count-objects -vH` 有输出）。
-
-- [ ] **Step 2: 在全新镜像克隆上改写**
-
-```bash
-git clone --mirror https://github.com/1127152834/auto-flow.git ../auto-flow-rewrite.git
-cd ../auto-flow-rewrite.git
-pip install git-filter-repo
-git filter-repo --path-glob 'docs/**/*.png' --path-glob 'docs/*.png' --invert-paths
-git count-objects -vH
-```
-Expected: `size-pack` 明显下降；`git log --all -- 'docs/**/*.png'` 无输出。
-
-- [ ] **Step 3: 验证改写后的仓库**
-
-在改写后的镜像上 `git clone` 出工作副本，运行 `npm ci && npm test` 与 `uv run --directory apps/backend pytest -q`，结果与改写前一致（引用了截图路径的 Markdown 链接会失效，这是预期；`docs` 下的报告保留文字与链接说明）。
-
-- [ ] **Step 4: 推送前再次确认**
-
-停下来向用户报告：备份位置、改写前后仓库大小、验证结果、需要重新克隆的分支列表。**得到用户当时的明确同意后**再执行：
-```bash
-git push --force --mirror origin
-```
-然后通知所有协作者删除旧克隆并重新克隆；打开中的 PR 需要基于新历史重建。
-
-- [ ] **Step 5: 记录**
-
-在 `.ai/decisions/2026-09-30-remediation-program.md` 记录执行日期、改写前后大小、备份位置。
+- [ ] **Step 1: 资产清单。** 从 Git 跟踪路径区分 QA 截图、有效原型、产品/文档资产；输出精确路径、哈希、引用位置与迁出目标。原型默认保留；需要迁出时先更新引用并验证可访问，不能接受“链接失效属预期”。
+- [ ] **Step 2: 可恢复归档。** 用独立镜像备份全仓库，git fsck --full 验证对象和全部 refs；在临时副本验证恢复。把选中资产放到有保留策略的外部归档（尚未确定目标时停在清单，不删除）；下载复核哈希和访问权限。单纯 count-objects 有输出不算备份可用。
+- [ ] **Step 3: 演练历史改写。** 仅在新镜像上按审核后的精确路径清单过滤；记录改写前后 refs/大小和commit映射，不操作当前工作副本。验证保留资产、文档链接及依赖图片的脚本；普通测试和构建结果与基线对照。
+- [ ] **Step 4: 提交具体推送方案待确认。** 向用户呈现归档/备份位置、哈希验证、精确 refs 和推送策略、受影响的克隆/PR、回退步骤。得到当时明确同意后，只推送核对过的 refs并核验远端；不用无差别 force mirror。给协作者发消息须单独明确授权，未授权时提供通知草稿。
+- [ ] **Step 5: 更新 ADR、引用与迁出清单。** 保留恢复证据；未完成历史维护不阻塞 M0→M1。
 
 ---
 
@@ -1630,7 +1255,7 @@ Expected: 全部通过；默认 pytest 不包含 benchmark / golden。
 | AC0-02 | Task 2 Step 4 输出（events_per_node ≥ 4） |
 | AC0-03 | Task 3 Step 4 输出 |
 | AC0-04 | `tests/unit/test_loop_lag.py`、`tests/contract/test_loop_lag_wiring.py` |
-| AC0-05 | Task 6 Step 5（skip）与 Step 6（真实运行） |
+| AC0-05 | Task 6 Step 1/5/6（指标反例、行为与真实运行；skip不算通过） |
 | AC0-06 | `scripts/ratchets.test.mjs` |
 | AC0-07 | 推送后的 Actions 记录与构件 |
 | AC0-08 | AGENTS.md diff |
@@ -1638,3 +1263,9 @@ Expected: 全部通过；默认 pytest 不包含 benchmark / golden。
 - [ ] **Step 3: 退出评审**
 
 派一个未参与实现的评审者（新会话或子代理），输入：本计划、M0 规格、`git diff main...remediation/m0-baseline-guardrails`，要求逐条核对 AC 与 Review Focus，给出通过 / 不通过。不通过项修复后再评审。
+
+## r2 补充：报告与验证边界
+
+Task 1 的 report 函数扩展 value 为 float | None；摘要格式化时 None 显示 n/a，JSON 为 null。新增 `write_manifest(context, reports, directory)`：必填 scenarioVersion、executionProfile、datasetSeed、faultSeed、hardware、browserVersion、concurrency、repetitions、commit；拒绝缺项，未知值显式标 unavailable 并禁止收益比较。离线 CLI 和 golden harness 每轮调用，CI 上传整个结果目录；测试覆盖 null、缺元数据、多个报告同属一轮和禁止不可比结果算倍数。
+
+Task 8 的 YAML 校验不能只查制表符：复用仓库现有 YAML 解析能力，并实际手动触发30行运行，核验用例没有意外 skip且全部产物存在。Task 10 中真实浏览器不具备时登记 blocked，不以 skip 关闭 AC0-05；Task 11 不属于退出条件。所有预期测试数量以实际收集为准，不抄写旧“2 skipped”数字。

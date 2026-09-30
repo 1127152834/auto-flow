@@ -1,153 +1,121 @@
 # M2 业务模型与可靠性 设计规格
 
-- 日期：2026-09-30；状态：proposed，待用户审批
-- 总纲：[整改里程碑总纲](2026-09-30-remediation-roadmap.md)；对应整改方案 B1、A1（正式实现）、A4、A5、B3、B4（后端）、B5、B6、C6，以及 G1 的其余网页原语
-- 前置：M1 已合并
-- 实施计划：[M2 实施计划](../plans/2026-09-30-remediation-m2-business-model-reliability.md)（任务级，M1 退出评审后细化为步骤级）
+- 日期：2026-09-30；修订：r2；状态：proposed（用户已授权按评审修订，未实施；步骤级细化后确认）
+- 总纲：[整改里程碑总纲](2026-09-30-remediation-roadmap.md)
+- 计划：[M2 实施计划](../plans/2026-09-30-remediation-m2-business-model-reliability.md)
+- 来源：原方案 B1/A1/A4/A5/B3–B6/C6、当前 RecordRef/多输入领取/失联恢复代码与本轮评审。
 
-## 1. 结论
+## 1. 结论与切片
 
-M2 让"每一行数据的处理结果可预期"：系统用处理台账记住每个自动化对每一行做过什么，失败按类别处置，批次按阈值熔断而不是一刀切；流程声明自己需要的输入（流程签名），自动化只负责把签名绑定到表字段；写回不再要求流程自己传版本号；项目批次可以定时启动。
+| 切片 | 交付 | 前置/退出 |
+| --- | --- | --- |
+| M2A 可靠性 | 主处理单位、完整身份台账、失败分类、未知结果门禁、有限重试、熔断、业务结果 | M1后；AC2-01至06、10至15 |
+| M2B 数据契约 | 签名与迁移、写回、最小输出契约、后端项目写入预览 | M2A后；AC2-07/08/16至19；供M3和M5B消费 |
+| M2C 独立扩展 | 定时/Webhook、Cookie/Storage和请求拦截 | M2A后独立细化；AC2-09/20；不阻塞M2B/M3 |
 
-## 2. 背景
+不重写执行核心，不优化领取性能（M3），不引入身份资源（M4）。台账和业务状态分离，但保留现有租约、执行代次与原命令幂等。外部网站副作用不能靠本地台账实现“恰好一次”；本阶段保证未知结果不被自动重做。
 
-- 领取不排除失败过的行、排序固定：永远失败的行排在最前时会耗尽次数或死循环（设计文档 execution-and-environment.md §4.1、验收样例 XE-A21/A22 明确规定"没有批内已消费集合"）。
-- 失败只有成功 / 失败两类，批次策略只有"任一失败即停 / 永远继续"。
-- 流程内引用项目数据是 `{PROJECT_INPUTS['<输入UUID>']['values']['<字段UUID>']}`，换自动化绑定即失效。
-- 写回需要流程传 `expectedContentRevision`；运行时节点可以增删改表字段。
-- 定时任务只能启动独立流程（`application/workflows/schedules.py` 使用 workflow_id）。
-- M1 隐藏的出错策略、重试、超时动作仍未实现。
+## 2. 处理单位与兼容
 
-## 3. 目标与非目标
+每个数据自动化指定一个 `processingInputId`，指向现有稳定输入ID（签名迁移后作为bindingId保留）。该输入必须required，是进度与台账的主处理行；其他independent/fixedRecord/related输入是参考输入，仍按原规则选择、冻结和租约保护，但不因本Task成功就被台账消费。一次主行处理仍可读取多条关联数据；不在本阶段增加笛卡尔积处理单位。
 
-**目标**
+台账作用域包含 automation_id、processing_input_id 及完整记录身份：project_id、table_id、dataset_generation、record_key.type、规范record_key.value；Sheets额外冻结identity_namespace。内容/状态修订不属于台账主键，同代次同身份修改不自动清除成功状态。换代次、改绑namespace是新作用域，旧账保留可查询、不自动继承。跨表同物理Sheets行仍受原物理租约保护。
 
-1. 新表 `automation_record_ledger`，任务终态与台账在同一事务更新；三种领取模式；默认"未成功处理"。
-2. 节点级出错策略正式实现（整改方案 A1 表格），并恢复 M1 隐藏的界面（新的统一控件）。
-3. 失败五分类（基础设施、页面技术、业务、结果不明、已取消）及处置规则；End 节点支持"业务结果"。
-4. 批次熔断：比例阈值、连续基础设施失败、同一错误码连续出现。
-5. 坏行只隔离该行。
-6. 流程签名（后端模型、校验、运行时解析、迁移脚本），自动化绑定签名。
-7. 表结构操作移出运行时；写回当前记录时系统自动使用领取时冻结的版本并按字段判断冲突。
-8. 定时与 Webhook 启动项目批次，含重叠策略与错过补跑。
-9. 新增 Cookie / 本地存储读写节点、请求拦截节点。
+单输入旧自动化可自动设置主输入；多输入不能唯一推断时列迁移报告并阻止新批次，用户明确选择后继续，禁止按输入数组第一项猜测。升级前活动/中断运行先按原命令恢复或停止，不重解释被冻结的输入；未核实的旧运行形成启动门禁，不能因“不回填历史台账”遗忘。cycle保留成功行循环用途，但不保留绕过安全门禁的行为。
 
-**非目标**
+## 3. 需求
 
-- 领取 SQL 下推与性能（M3）。M2 的台账过滤先在现有领取路径中实现，性能指标不在本里程碑承诺。
-- 签名、台账、写回的界面体验重构（M5 的 H2–H7）。M2 只提供最小可用界面：自动化绑定页的字段映射表、批次页的台账分组计数、End 节点的业务结果下拉。
-- 身份（M4）。
-
-## 4. 需求
-
-### 4.1 处理台账（B1）
+### 3.1 台账与领取
 
 | 编号 | 需求 |
 | --- | --- |
-| R2-01 | 表 `automation_record_ledger`：主键 (automation_id, table_id, record_key)；列 state（pending / succeeded / failed_retryable / quarantined / needs_review / skipped）、attempts、last_outcome、last_error_code、last_error_message、last_task_id、first_attempt_at、last_attempt_at、next_eligible_at；索引 (automation_id, state, next_eligible_at)。 |
-| R2-02 | 任务进入终态时，在投影 Task 终态的同一事务中按失败类别更新台账（见 4.3 表）；基础设施失败与已取消不增加 attempts。 |
-| R2-03 | 自动化运行设置增加 `claimMode`：`unprocessed`（默认，新建自动化）、`cycle`（现有语义，存量自动化迁移后的取值）、`retryFailed`。`unprocessed` 只领取 state ∈ {pending, failed_retryable}、attempts < 预算、now ≥ next_eligible_at 的行；`cycle` 只看筛选条件但仍尊重 next_eligible_at；`retryFailed` 只领取 failed_retryable 与（用户确认后的）quarantined。 |
-| R2-04 | 自动化运行设置增加 `retryBudget`（默认 3）与 `retryBackoffSeconds`（默认 [60, 300, 1800]）；超过预算进入 quarantined。 |
-| R2-05 | "最多任务数"拆成 `maxRows`（本批最多处理几行，可为空表示直到没有可领取的行）；取消 1–100 上限。 |
-| R2-06 | 接口：`GET /projects/{p}/automations/{a}/ledger?state=&page=`；`POST .../ledger/reset`（按 record_key 列表或 state 批量重置为 pending）、`POST .../ledger/skip`。批次详情返回按 state 的行数。 |
-| R2-07 | 迁移：存量自动化 `claimMode = cycle`（保持行为）；不回填历史台账。 |
+| R2-01 | 新表automation_record_ledger以第2节完整作用域唯一约束；state为pending/succeeded/failed_retryable/quarantined/needs_review/skipped；保存累计attempts、processing_cycle、cycle_attempts、last_outcome/error/task/time、next_eligible_at与revision。批次另保存已纳入的主处理单位集合及Task关联，历史批次统计不从自动化“最新状态”倒推。 |
+| R2-02 | Task终态与台账在同一事务投影；按task_id及原终态版本去重，重放不重复增加attempts。reset/skip/resolve与运行投影使用修订和活动租约守卫，不能让旧Task覆盖新人工决定。 |
+| R2-03 | claimMode=unprocessed/cycle/retryFailed。三者先统一阻止needs_review、quarantined、skipped及未核实旧运行，再检查next_eligible_at。unprocessed只取pending/failed_retryable；cycle另允许succeeded重用；retryFailed只取failed_retryable，quarantined必须先明确reset。同一批次同主处理单位的尝试串行，参考输入不做台账资格过滤。 |
+| R2-04 | retryBudget保持字段名但明确为当前处理轮次的总尝试预算（cycle_attempts，含首次），整数≥1，默认3；page失败等已开始的可计费尝试计入，确定未开始的infrastructure与安全取消不计。retryBackoffSeconds默认[60,300,1800]，按失败次数选取并封顶末项；第三次失败在预算3时直接隔离。cycle成功后最小60秒再用，防热循环。 |
+| R2-05 | maxRows是本批纳入的不同主处理单位上限，可为空；重试不增加该计数，达到上限后仍完成已纳入行的退避/重试。没有当前候选但有未来next_eligible_at时等待最近到期，不提前completed；等待计划持久化、重启恢复且可停止。unprocessed无未完成单位才结束；cycle不限行数可持续运行，有限maxRows完成已纳入单位后结束本批，后续新批可再用成功行。 |
+| R2-06 | GET ledger支持完整scope/state分页；reset/skip接收明确完整单位列表、expectedRevision和幂等键，按state批量操作先预览并冻结目标，不执行无限动态集合。reset/skip均拒绝needs_review，并检查未解决未知事实，禁止skip→reset绕过；新增resolve(reviewDecision=confirmedSucceeded/confirmedNotPerformed/abandon, reason)人工核实命令，只有confirmedNotPerformed允许pending重新领取，保留原未知事实和操作者决定。活动Task拒绝reset/resolve。 |
+| R2-07 | 存量claimMode迁移为cycle，不回填可确认终态的历史账；主输入歧义及旧未知运行按第2节门禁处理。模式不再决定能否绕过未知结果；迁移报告明确这项安全行为变化。 |
 
-### 4.2 节点出错策略（A1 正式实现）
-
-| 编号 | 需求 |
-| --- | --- |
-| R2-08 | 统一字段 `errorPolicy: { onError: stop\|continue\|retry\|goto, maxRetries, backoff: { kind: fixed\|exponential, initialSeconds, maxSeconds, jitter }, retryOn: [timeout, elementNotFound, network, any], gotoNodeId, onExhausted: stop\|errorBranch\|continue }`；默认 onError=stop。旧键（retryCount、retryDelay、retryBackoff、retryExhaustedAction、timeoutAction、旧 errorPolicy.mode）在读取文档时迁移为新结构，迁移函数前后端各一份并有对照测试。 |
-| R2-09 | 每次重试产生新的 attempt 事件，原 attempt 保留；`goto` 回到指定上游节点重跑，受全局调度上限保护。 |
-| R2-10 | 每种执行器声明 `side_effect: none\|possible`（点击、提交、按键、HTTP 非 GET、写回类为 possible）。possible 节点只有在失败确定发生在动作之前（元素未找到、导航前超时）才自动重试；动作已发出后超时，归为"结果不明"，不重做。 |
-| R2-11 | 每种执行器声明配置 schema（pydantic）；运行前预检对未知配置键报警告；M0 的配置键守门改为"前端面板键 ⊆ 执行器 schema"精确检查，`unreadConfigKeys` 归零。 |
-| R2-12 | 恢复界面：配置面板"高级"段中的"出错时"统一控件（替代 M1 隐藏的旧控件），默认值不再自相矛盾；`featureFlags.nodeRetryPolicy` 删除。 |
-
-### 4.3 失败分类与批次熔断（A4、A5）
+### 3.2 错误策略与副作用边界
 
 | 编号 | 需求 |
 | --- | --- |
-| R2-13 | 运行错误增加 `category`：infrastructure / page / business / unknown / cancelled。执行器把常见异常映射到稳定编码（ELEMENT_NOT_FOUND、NAVIGATION_TIMEOUT、PROXY_CONNECT_FAILED、BROWSER_LAUNCH_FAILED、WORKER_LOST 等）与类别；无法判断时为 page。 |
-| R2-14 | End 节点增加 `businessResult: success\|businessFailure` 与 `reason`；到达"业务失败"的 End 时任务结果为业务失败（不是技术失败）。 |
+| R2-08 | errorPolicy统一为{onError:stop/continue/retry/goto,maxRetries,backoff:{kind,initialSeconds,maxSeconds,jitter},retryOn,gotoNodeId,onExhausted}。旧retryCount/retryDelay/retryBackoff/retryExhaustedAction/timeoutAction/errorPolicy.mode转换为候选配置，前后端对照测试；原来无效的旧重试值必须用户明确启用后才执行，不能因打开/读取文档激活。 |
+| R2-09 | 节点每次尝试有独立attempt事件；goto受调度上限约束并检查整个回流区间的副作用。已成功外部提交后后续读取失败，也不能自动重跑整个Task或回流经过提交节点。 |
+| R2-10 | 执行器声明side_effect=none/possible；执行可能外部副作用前同步持久化“已进入不可证明安全重放区域”的状态并ACK，完成后也不允许凭后续节点为只读就自动重跑整Task。只有能证明动作未发出或使用原外部幂等身份核实安全时可重试；证据缺失默认needs_review。已有本地幂等命令只允许原命令核验/重放，不能换新Task规避。 |
+| R2-11 | 执行器配置schema统一导出；预检未知键警告；前端键按对应节点与schema比较。键在schema中存在不证明生效，每项可配置行为仍须实际执行测试；unreadConfigKeys归零不得靠把任意键加入schema。 |
+| R2-12 | 恢复“高级→出错时”统一控件；旧文档展示迁移候选及启用提示；所有入口接入后删除M1隐藏开关与inert提示，但保留旧文档行为版本。 |
+| R2-13 | category=infrastructure/page/business/unknown/cancelled。只有确定执行未开始的启动/代理预检故障为可重排infrastructure；执行中WORKER_LOST、动作阶段无法核实、已有副作用后的整Task重跑风险为unknown。纯读取且可证明无外部动作时未分类异常可为page，否则默认unknown。原始code/异常类型保留用于诊断。 |
+| R2-14 | End businessResult=success/businessFailure与reason；业务失败台账skipped，不触发技术失败熔断。多个End/分支结果以既有运行终态仲裁为准，未处理技术失败不被成功End掩盖。 |
+| R2-15 | 新自动化failurePolicy：最近20个已结束Task中page超过50%、连续5个确定未开始的infrastructure、连续10个相同技术错误码时暂停；业务失败与unknown不计同码/技术失败阈值，unknown单列待办。存量continueAfterFailure保留legacyAnyFailure/legacyContinue兼容策略，明确切换后才用新阈值；不声称N=1/P=0等价所有旧失败语义。 |
+| R2-16 | paused批次可修复后继续或结束；恢复不重置预算/台账/未知门禁，不自动再做needs_review行。 |
+| R2-17 | 坏行仅在能唯一识别主行且其他行身份可信时quarantined并继续。Sheets重复键、namespace不明或来源一致性未证实仍属输入/表级门禁，不能凭“跳过坏行”解除现有来源身份保护；参考输入坏行按依赖传播，不能标错主行身份。 |
 
-| 类别 | 自动重试 | 台账 | 对批次 |
-| --- | --- | --- | --- |
-| infrastructure | 是（换资源重新排队） | attempts 不变，next_eligible_at 退避 | 计入"连续基础设施失败" |
-| page | 按节点策略 | attempts+1，failed_retryable 或 quarantined | 计入失败率 |
-| business | 否 | state=succeeded 之外的终态：记 last_outcome=business，state=skipped（不再领取） | 不影响 |
-| unknown | 否 | state=needs_review | 不影响，进入人工待办 |
-| cancelled | 否 | 不变 | — |
+| 类别 | 自动处理 | 台账 |
+| --- | --- | --- |
+| infrastructure（确定未开始） | 退避重排；资源替换遵守绑定策略 | attempts不增，保留资格 |
+| page（已证明整Task安全再做） | 节点/行预算内重试 | attempts增加；failed_retryable或quarantined |
+| business | 不重试，批次继续 | skipped，记录业务原因 |
+| unknown | 所有claimMode禁止自动领取 | needs_review，明确人工核实才解除 |
+| cancelled（无副作用不确定性） | 不自动继续 | 原账保持；若动作结果无法确定则改unknown |
 
-| 编号 | 需求 |
-| --- | --- |
-| R2-15 | 批次 `failurePolicy`：最近 N（默认 20）个任务中 page 类失败超过 P（默认 50%）暂停，原因"疑似页面变化"；连续 K（默认 5）次 infrastructure 失败暂停并指出资源；同一错误码连续 M（默认 10）次暂停并置顶该错误。取代 `continueAfterFailure`（迁移：false → N=1、P=0% 的等价阈值；true → 默认阈值）。 |
-| R2-16 | 暂停状态 `paused`（新批次状态），可"修复后继续"或"结束批次"；进度保留在台账。 |
-
-### 4.4 坏行隔离（B3）
-
-| 编号 | 需求 |
-| --- | --- |
-| R2-17 | 候选行解析租约身份出错（如 Sheets 行未通过校验）时，该行在台账中标记 quarantined 并记录原因，领取继续；只有表级问题（表不存在、结构失效、数据源不可用）返回 configurationError。 |
-
-### 4.5 流程签名（B4 后端）
+### 3.3 M2B 数据契约
 
 | 编号 | 需求 |
 | --- | --- |
-| R2-18 | 流程文档顶层 `signature: { inputs: [{ key, name, fields: [{ key, name, type, required, sensitive, sample? }] }], outputs: [...] }`。key 为稳定英文标识，name 为显示名。 |
-| R2-19 | 表达式 `{input.<组key>.<字段key>}` 与 `{input.<组key>.$record}`（记录引用，供写回使用）；运行时由签名 + 自动化绑定解析。旧格式 `PROJECT_INPUTS[...]` 在一个版本周期内继续解析。 |
-| R2-20 | 自动化 `inputPlan` 改为 `bindings: [{ signatureInput, tableId, fieldMap: { 字段key: fieldId }, filter, orderBy, relations }]`；绑定不完整时不能启动，错误指出缺哪个签名字段。 |
-| R2-21 | 敏感判定来自签名字段或表字段定义；不再按别名匹配"password/密码"。 |
-| R2-22 | 迁移脚本：扫描现有流程，按对应自动化的输入别名与字段别名生成签名、改写引用；无法自动对应的写入迁移报告（`GET /api/v1/migrations/signature-report`），不静默丢弃。 |
+| R2-18 | signature={inputs:[{key,name,fields:[{key,name,type,required,sensitive,sample?}]}],outputs:[...]}。key为稳定标识（新建建议英文，旧中文key保留支持），name可改；输入的bindingId保留原inputId，processingInputId不因改名变化。 |
+| R2-19 | 解析{input.<组key>.<字段key>}及$record；旧PROJECT_INPUTS格式保持兼容，直到M6迁移门禁通过，不能按经过一个版本自动删除。 |
+| R2-20 | bindings保留bindingId、signatureInput、完整表身份/代次、字段映射、筛选排序、原输入mode/required/relations；新绑定不完整拒绝启动，错误指向缺失字段。迁移不丢fixedRecord/related或可选输入语义。 |
+| R2-21 | 敏感标记由签名或表字段定义驱动，输出/错误/预览继承；不用名字正则替代。 |
+| R2-22 | 扫描并改写可确认引用，生成可重入迁移报告；歧义不改写、不静默丢弃，保留旧执行能力。覆盖文档、仍需运行的冻结内容、跳版本升级及后续旧文件导入。 |
+| R2-23 | 运行时移除表结构add/modify/delete/previewFieldDeletion；旧节点预检指向数据页维护；正常读取/写入/删除记录能力保留。 |
+| R2-24 | 当前输入写回可省expectedContentRevision；使用冻结值与本Task写游标作字段级冲突判断，本Task二次写不误判自己冲突；显式旧版本行为不变。冲突双方值按敏感规则遮蔽。 |
+| R2-29 | 最小节点输出契约前置：执行器导出稳定nodeId/outputKey、显示名、类型、敏感性和是否必有；新引用内部按稳定标识，改节点名不失效。保留旧变量别名/执行行为至M6，编辑器只把所有有效到达路径均定义的输出列为必有；条件输出单独标注，不能用可达上游代替必然定义。 |
+| R2-30 | 项目试跑请求新增executionMode=previewWrites/realWrites；预览入口默认previewWrites，后端将模式冻结入原运行命令，worker不可自行提升。previewWrites对项目记录/状态写入使用运行私有覆盖层，后续读和查询看见本次预览变更，新增记录使用仅该预览可解析的引用；不改变真实记录/版本、生产台账、Sheets出站意图、持久身份或环境。仅运行诊断可落库；End保存登录状态在预览中明确拒绝/预检提示，不假装成功。网页/HTTP外部操作仍真实执行，文案明确不是外部副作用沙箱；真实写入须显式选择。覆盖层与临时引用无法传入真实写回，重启后只查询原预览事实，不自动重跑外部动作。 |
 
-### 4.6 写回与表结构（B5、B6）
-
-| 编号 | 需求 |
-| --- | --- |
-| R2-23 | 运行时移除 addField / modifyField / deleteField / previewFieldDeletion；已有文档中这些节点在预检中报错并提示"表结构请在数据页修改"。 |
-| R2-24 | 写回当前输入记录时，`expectedContentRevision` 可省略，系统使用领取时冻结的版本；冲突按字段判断：只有本任务修改的字段在运行期间被他人改过才算冲突，错误列出字段与双方的值。显式传入版本的旧文档行为不变。 |
-
-### 4.7 定时与触发（C6）
+### 3.4 M2C 触发与网页原语
 
 | 编号 | 需求 |
 | --- | --- |
-| R2-25 | 项目自动化可配置定时（cron + 时区）与 Webhook（带密钥）；两者调用同一"启动批次"用例，幂等键 = 调度 ID + 触发时间。 |
-| R2-26 | 重叠策略：skip / queue / parallel（默认 skip）；错过的触发：latestOnly（默认）/ ignore。 |
-| R2-27 | 接口与最小界面：自动化详情"调度"页签（列表、新增、启停、最近 10 次触发结果）。 |
+| R2-25 | cron+时区/Webhook密钥调用同一启动用例；定时幂等键=调度ID+计划触发时刻，Webhook使用来源事件ID/客户端幂等键，不使用每次接收时刻制造不同任务。复用loopback鉴权边界，不为Webhook暴露公网sidecar；外部接入方式另行设计。 |
+| R2-26 | overlap=skip/queue/parallel（默认skip），错过触发latestOnly/ignore（默认latestOnly）；停止/重启不重复补跑同触发。 |
+| R2-27 | 自动化“调度”页签、最近10次触发结果与启停；契约先于界面。 |
+| R2-28 | Cookie/localStorage/sessionStorage读写、请求拦截按M1节点登记方式接入；副作用、敏感性和配置schema一并声明。 |
 
-### 4.8 网页原语（G1 其余）
-
-| 编号 | 需求 |
-| --- | --- |
-| R2-28 | 新增节点：读写 Cookie、读写 localStorage / sessionStorage、请求拦截（屏蔽资源类型、按 URL 模式改写或模拟响应）。登记方式同 M1 的 press_key。 |
-
-## 5. 设计要点
-
-- 台账更新点：`application/project_runs` 中投影 Task 终态的用例；与 Task 同一个 SQLAlchemy 事务。领取过滤：M2 在 `infrastructure/database/project_claims.py` 的候选筛选中加入台账条件（按 record_key 集合过滤），M3 再下推为 SQL。
-- 类别由执行器结果携带（`ModuleResult.error_code`、`error_category`，新增可选字段），运行时透传到运行错误；worker 失联、浏览器启动失败由派发器 / worker 管理器直接给出 infrastructure。
-- 熔断在调度器推进批次时评估（`scheduler.py` 的批次推进路径），评估输入为最近任务的类别序列，纯函数实现便于测试。
-- 签名解析放在 `domain/workflows/signature.py`（纯函数：解析、校验、表达式重写）；运行时变量注入在项目 worker 的输入上下文构建处完成。
-- 定时复用 `application/workflows/schedules.py` 的调度循环，增加 `target: { kind: workflow\|automation }`。
-- 功能开关：`ledgerClaimMode`（新建自动化默认开）、`errorSemanticsV2` 已在 M1 以文档字段实现。
-
-## 6. 验收标准
+## 4. 验收标准
 
 | 编号 | 验收 |
 | --- | --- |
-| AC2-01 | G2（10,000 行，1% 永远 404）：永远失败的行各尝试 3 次后 quarantined，其余 99% succeeded；批次不停。 |
-| AC2-02 | G3 中"提交后响应丢失"的行进入 needs_review，站点对该行只收到 1 次提交（M0 的 xfail 转正）。 |
-| AC2-03 | 流程"登录失败 → End(业务失败)"：任务结果为业务失败，台账 state=skipped，批次继续。 |
-| AC2-04 | 注入"首次加载超时"，配置 retry 的节点自动恢复，日志有两个 attempt；点击提交后超时的节点不被重做。 |
-| AC2-05 | 连续 5 次代理连接失败后批次暂停，原因指出代理；这些失败不消耗行的重试预算。 |
-| AC2-06 | 一行 Sheets 数据未通过校验时，该行 quarantined，其余行照常领取。 |
-| AC2-07 | 用签名引用 `{input.账号.email}` 的流程可被两个绑定到不同表的自动化复用；绑定缺字段时启动被拒并指出字段。 |
-| AC2-08 | 迁移脚本对现有测试夹具中的全部流程生成签名；无法对应的项出现在报告中。 |
-| AC2-09 | 定时每分钟触发、批次运行超过 1 分钟时，skip 策略下不产生重叠批次；应用重启后按 latestOnly 补跑一次。 |
-| AC2-10 | `node scripts/ratchets.mjs` 中 `unreadConfigKeys` 为 0，并改为 schema 精确检查。 |
+| AC2-01 | native-batch-v1 G2一万行：1%永久404各总尝试3次后隔离，其余正确输出；退避等待不提前完成、无漏行/饿死。 |
+| AC2-02 | G3提交后丢响应/worker死亡，在unprocessed、迁移cycle和retryFailed下均恰好一次提交，needs_review不再自动领取；M0独立xfail转正。 |
+| AC2-03 | 登录失败→End业务失败：台账skipped，批次继续。 |
+| AC2-04 | 首次只读超时按策略恢复，attempt可追踪；已提交后读取失败、goto跨提交和停止期间失联均不自动重做整Task。 |
+| AC2-05 | 连续5次启动前代理故障暂停且预算不消耗；执行中同类错误无安全证据时unknown，不能只按code决定。 |
+| AC2-06 | 身份可确定的单坏行隔离；重复Sheets身份/namespace不明/来源未验证仍拒绝输入，不误消费参考行。 |
+| AC2-07 | 同签名流程绑定不同表可运行；缺字段拒绝；改显示名不破坏引用。 |
+| AC2-08 | 可迁移项转换，歧义报告且仍可按旧格式使用；跳版本/旧文件导入保留明确路径。 |
+| AC2-09 | 定时skip无重叠，重启latestOnly一次；Webhook同事件重放一次，错误密钥不启动。 |
+| AC2-10 | 每个可执行节点schema与面板对应，无新增无效键；行为测试证明选项实际生效。 |
+| AC2-11 | 两订单共享fixedRecord账号、related参考以及同一行多别名：各主行一次，参考行不被消费。 |
+| AC2-12 | 同表同key重新导入、更换Sheets namespace进入新台账作用域；text“1”与integer 1不混同，同代次内容修订不自动清账。 |
+| AC2-13 | 投影重放/回滚/崩溃不重复计数；active Task阻止reset；needs_review只经resolve解除，旧未知运行不能因迁移遗忘。 |
+| AC2-14 | maxRows计唯一主单位，重试不额外占行数，未来退避到期继续，重启保留计数；cycle成功重用仍受最小间隔和终态规则限制。 |
+| AC2-15 | 旧未生效重试值不会自动激活；原continueAfterFailure两种语义保留，显式切换才用新熔断。 |
+| AC2-16 | 字段级冲突、本Task连续写、敏感值遮蔽通过真实SQLite/worker验证。 |
+| AC2-17 | 分支汇合、零次循环和错误分支的条件输出不冒充必有；节点改名不改变稳定引用。 |
+| AC2-18 | 真实HTTP/worker/SQLite预览：写后读看见预览值；真实记录/版本/台账/同步出站/环境均不变；临时引用不能真实写入；realWrites显式选择才变更。 |
+| AC2-19 | M0受控场景保留，新增native-batch-v1固定数据/故障/硬件/并发/内核，至少5次记录用于M3对照。 |
+| AC2-20 | Cookie/Storage和拦截真实浏览器用例通过、配置和敏感字段契约完整。 |
 
-## 7. 风险
+## 5. 实施约束
 
-| 风险 | 应对 |
-| --- | --- |
-| 台账与现有"业务状态"语义混淆 | 文案与文档明确：业务状态归用户，台账归系统；M5 的数据表页分列显示 |
-| 签名迁移改写引用出错 | 迁移前自动备份工作区；报告列出所有改写；旧格式继续解析一个版本 |
-| 熔断误暂停 | 阈值可在自动化中调整；暂停原因与样本任务可见 |
-| 类别映射不全 | 未知异常默认 page，并在日志中带原始异常类型，按黄金场景结果补映射 |
+台账更新复用Task终态事务，完整身份复用现有RecordRef和typed RecordKey规范化；不创建另一套租约。M2A先建立主输入和安全门禁，再挂分类/投影与领取，禁止分类尚缺时把unknown临时当page上线。schema/output声明共用既有执行器注册表，不建立重复节点目录。M2B输出元数据供M5使用，M6才清理旧变量分支。
+
+批次统计按本批纳入的处理单位/历史Task投影，不以全自动化最新台账冒充历史批次进度。所有变更先增量迁移、可恢复备份与失败报告；M2A/B/C分别细化、验收、记录状态。
+
+### r2 补充：循环预算
+
+累计attempts保留历史；retryBudget比较当前processing_cycle的cycle_attempts，含该轮首次执行。只有已确认succeeded的单位开始新的cycle轮次才递增processing_cycle并清零cycle_attempts；失败后换批次继续保持原轮次与预算。人工reset是明确、可审计的新处理轮次，须先通过全部未知结果门禁；不能在自动重开批次时隐式reset。终态按Task/轮次去重，启动前确定未执行的基础设施失败不消耗预算。
+
+AC2-14增加：连续成功三轮后第四轮首次安全失败仍可在该轮剩余预算内重试；失败后跨批次不重置预算。AC2-13增加：needs_review不能通过skip→reset清除，只有resolve(abandon)可跳过未知项且保留原事实。

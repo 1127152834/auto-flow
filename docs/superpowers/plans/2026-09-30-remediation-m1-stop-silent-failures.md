@@ -10,7 +10,7 @@
 
 **Spec:** [docs/superpowers/specs/2026-09-30-remediation-m1-stop-silent-failures.md](../specs/2026-09-30-remediation-m1-stop-silent-failures.md)
 
-> 本计划中的代码在 2026-09-30 以基线 ea2cc5b 为底逐项原型实现并运行过测试：后端相关测试（含 `test_workflow_dispatch.py`、`test_project_data_scheduler.py`、`test_migration_heads.py`、契约测试）与前端 `domains/workflows`、`project-automations`、`settings` 全部 vitest（4,169 个）及 `tsc --noEmit` 通过；因环境缺少 `reference/WebRPA`、OpenCV、摄像头而失败的测试与本计划无关，在基线上同样失败。补丁以统一 diff 给出，可直接 `git apply`；若主线已变导致上下文不匹配，按 diff 的语义手工修改。
+> r2 状态：proposed，尚未实施。旧稿“全部原型已测试、可直接 git apply”的声明已 superseded，不作为本轮证据。保留的 diff 仅辅助理解；实施者须按当前调用链和新增反例逐项验证。
 
 ## Global Constraints
 
@@ -21,7 +21,7 @@
 - 数据库迁移文件名前缀 `rm1_`，`down_revision = "0025_merge_studio_credential_environment"`，只增不改。
 - 新增依赖只有 `psutil>=7,<8`（锁文件中已有 7.2.2）。
 - 错误信息不得包含凭据值：节点使用凭据派生值时沿用 `_reported_result` 的脱敏结果。
-- 分支 `remediation/m1-stop-silent-failures`；每个任务一次提交，提交信息末尾附会话要求的 Co-Authored-By / Claude-Session 两行。
+- 分支 `remediation/m1-stop-silent-failures`；每个任务一次清晰提交，不添加不存在的协作者或其他工具会话标记。
 - 命令从仓库根目录执行：后端 `uv run --directory apps/backend pytest ...`，前端 `npm --workspace @autoflow/desktop test -- <路径>`。
 
 ## Review Focus
@@ -356,303 +356,17 @@ git commit -m "fix(runs): 批量运行失败日志与项目能力拒绝带上真
 
 ---
 
-### Task 3: 已处理的失败不算失败——后端（R1-05）
+### Task 3: 已处理的失败不算失败——后端（R1-05，r2）
 
-**Files:**
-- Modify: `apps/backend/src/autoflow/application/workflows/runtime.py`
-- Modify: `apps/backend/src/autoflow/providers/browser/project_graph.py`
-- Modify: `apps/backend/src/autoflow/domain/workflows/validation.py`
-- Test: `apps/backend/tests/unit/workflows/test_handled_failure_semantics.py`
-- Test: `apps/backend/tests/unit/test_project_graph_failure_reason.py`（追加）
+**Files:** Modify `apps/backend/src/autoflow/application/workflows/runtime.py`、`providers/browser/project_graph.py`、`domain/workflows/validation.py`（均以 apps/backend/src/autoflow 为基准）；Test `apps/backend/tests/unit/workflows/test_handled_failure_semantics.py`、`apps/backend/tests/unit/test_project_graph_failure_reason.py`。
 
-**Interfaces:**
-- Produces: `runtime.ERROR_SEMANTICS_WEBRPA = "webrpa"`、`runtime.ERROR_SEMANTICS_V2 = "autoflow-v2"`、`runtime.document_error_semantics(document: Mapping) -> str`；`WorkflowRuntime.execute(document, context, *, start_node_id=None, detached=False, error_semantics: str | None = None)`；`WorkflowRuntimeResult.handled_failure_node_ids: tuple[str, ...]`。Task 4 的前端写入 `executionSemantics: "autoflow-v2"`。
+**Interfaces:** `ERROR_SEMANTICS_WEBRPA="webrpa"`、`ERROR_SEMANTICS_V2="autoflow-v2"`；`document_error_semantics(document: Mapping) -> str`；`WorkflowRuntime.execute(document, context, *, start_node_id=None, detached=False, error_semantics: str | None=None)`；`WorkflowRuntimeResult.handled_failure_node_ids: tuple[str,...]`。Task 4 持久化顶层 executionSemantics。
 
-- [ ] **Step 1: 写失败的测试**
-
-`apps/backend/tests/unit/workflows/test_handled_failure_semantics.py`：
-
-```python
-"""Remediation M1 R1-05: failures caught by an error edge do not fail a v2 run."""
-
-import pytest
-
-from autoflow.application.workflows.runtime import (
-    ERROR_SEMANTICS_V2,
-    ERROR_SEMANTICS_WEBRPA,
-    document_error_semantics,
-)
-from tests.differential.workflows.test_b3_control_flow_runtime_contract import (
-    ControlContext,
-    document,
-    edge,
-    node,
-    runtime_with_probes,
-)
-
-
-def _handled_document(semantics: str | None) -> dict:
-    value = document(
-        [node("fails", "set_variable", action="fail"), node("handler", "set_variable")],
-        [edge("fails", "handler", "error")],
-    )
-    if semantics is not None:
-        value["executionSemantics"] = semantics
-    return value
-
-
-def test_documents_without_marker_keep_webrpa_semantics() -> None:
-    assert document_error_semantics({}) == ERROR_SEMANTICS_WEBRPA
-    assert document_error_semantics({"executionSemantics": "other"}) == ERROR_SEMANTICS_WEBRPA
-    assert document_error_semantics({"executionSemantics": "autoflow-v2"}) == ERROR_SEMANTICS_V2
-
-
-@pytest.mark.asyncio
-async def test_v2_failure_caught_by_error_edge_does_not_fail_the_run() -> None:
-    runtime, state = runtime_with_probes()
-    result = await runtime.execute(_handled_document(ERROR_SEMANTICS_V2), ControlContext())
-    assert state.trace == ["fails", "handler"]
-    assert result.success is True
-    assert result.failed_node_id is None
-    assert result.handled_failure_node_ids == ("fails",)
-
-
-@pytest.mark.asyncio
-async def test_legacy_document_still_fails_after_error_branch() -> None:
-    runtime, state = runtime_with_probes()
-    result = await runtime.execute(_handled_document(None), ControlContext())
-    assert state.trace == ["fails", "handler"]
-    assert result.success is False
-    assert result.failed_node_id == "fails"
-
-
-@pytest.mark.asyncio
-async def test_explicit_semantics_argument_overrides_the_document_marker() -> None:
-    runtime, _state = runtime_with_probes()
-    result = await runtime.execute(
-        _handled_document(None), ControlContext(), error_semantics=ERROR_SEMANTICS_V2
-    )
-    assert result.success is True
-
-
-@pytest.mark.asyncio
-async def test_v2_failure_inside_the_error_handler_still_fails_the_run() -> None:
-    runtime, state = runtime_with_probes()
-    value = document(
-        [node("fails", "set_variable", action="fail"), node("handler", "set_variable", action="fail")],
-        [edge("fails", "handler", "error")],
-    )
-    value["executionSemantics"] = ERROR_SEMANTICS_V2
-    result = await runtime.execute(value, ControlContext())
-    assert state.trace == ["fails", "handler"]
-    assert result.success is False
-    assert result.failed_node_id == "handler"
-    assert result.handled_failure_node_ids == ("fails",)
-
-
-@pytest.mark.asyncio
-async def test_v2_unhandled_failure_still_halts() -> None:
-    runtime, state = runtime_with_probes()
-    value = document(
-        [node("fails", "set_variable", action="fail"), node("next", "set_variable")],
-        [edge("fails", "next")],
-    )
-    value["executionSemantics"] = ERROR_SEMANTICS_V2
-    result = await runtime.execute(value, ControlContext())
-    assert state.trace == ["fails"]
-    assert result.success is False
-```
-
-向 `tests/unit/test_project_graph_failure_reason.py` 追加：
-
-```python
-def _bad_json_then_handler(semantics=None):
-    document = {
-        'nodes': [
-            node('parse', 'json_parse', jsonString='{not json', variableName='parsed'),
-            node('handler', 'set_variable', variableName='handled', variableValue='yes'),
-        ],
-        'edges': [{'id': 'e', 'source': 'parse', 'target': 'handler', 'sourceHandle': 'error'}],
-    }
-    if semantics:
-        document['executionSemantics'] = semantics
-    return document
-
-
-@pytest.mark.asyncio
-async def test_v2_handled_failure_lets_the_batch_task_succeed():
-    async def emit(*_event):
-        return None
-
-    executor = ProjectGraphExecutor(None, {}, emit, lambda: False)
-    result = await executor.run({'document': _bad_json_then_handler('autoflow-v2')})
-    assert result == {'status': 'succeeded', 'error': None}
-    assert executor.context.variables['handled'] == 'yes'
-
-
-@pytest.mark.asyncio
-async def test_legacy_handled_failure_keeps_failing_the_batch_task():
-    async def emit(*_event):
-        return None
-
-    executor = ProjectGraphExecutor(None, {}, emit, lambda: False)
-    result = await executor.run({'document': _bad_json_then_handler()})
-    assert result['status'] == 'failed'
-    assert executor.context.variables['handled'] == 'yes'
-```
-
-- [ ] **Step 2: 运行，确认失败**
-
-Run: `uv run --directory apps/backend pytest -q tests/unit/workflows/test_handled_failure_semantics.py tests/unit/test_project_graph_failure_reason.py`
-Expected: FAIL，`ImportError: cannot import name 'ERROR_SEMANTICS_V2'`。
-
-- [ ] **Step 3: 运行时实现**
-
-`apps/backend/src/autoflow/application/workflows/runtime.py`：
-
-```diff
-diff --git a/apps/backend/src/autoflow/application/workflows/runtime.py b/apps/backend/src/autoflow/application/workflows/runtime.py
---- a/apps/backend/src/autoflow/application/workflows/runtime.py
-+++ b/apps/backend/src/autoflow/application/workflows/runtime.py
-@@ -90,6 +90,18 @@ class WorkflowRuntimeResult:
-     issues: tuple[WorkflowScopeIssue, ...] = ()
-     failed_node_id: str | None = None
-     node_result: ModuleResult | None = None
-+    handled_failure_node_ids: tuple[str, ...] = ()
-+
-+
-+ERROR_SEMANTICS_WEBRPA = "webrpa"
-+ERROR_SEMANTICS_V2 = "autoflow-v2"
-+
-+
-+def document_error_semantics(document: Mapping[str, Any]) -> str:
-+    """Documents without the explicit v2 marker keep the WebRPA semantics."""
-+    if document.get("executionSemantics") == ERROR_SEMANTICS_V2:
-+        return ERROR_SEMANTICS_V2
-+    return ERROR_SEMANTICS_WEBRPA
- 
- 
- class WorkflowRuntime:
-@@ -159,6 +171,7 @@ class WorkflowRuntime:
-         *,
-         start_node_id: str | None = None,
-         detached: bool = False,
-+        error_semantics: str | None = None,
-     ) -> WorkflowRuntimeResult:
-         issues = self.preflight(document)
-         if issues:
-@@ -177,7 +190,12 @@ class WorkflowRuntime:
-         # background pauses cannot change the caller's action duration.
-         token = _node_timings.set(()) if detached else None
-         try:
--            return await _WorkflowScheduler(self._registry, graph, context).run(
-+            return await _WorkflowScheduler(
-+                self._registry,
-+                graph,
-+                context,
-+                error_semantics=error_semantics or document_error_semantics(document),
-+            ).run(
-                 [start_node_id] if start_node_id is not None else None
-             )
-         finally:
-@@ -259,6 +277,8 @@ class _WorkflowScheduler:
-     halted: bool = False
-     failed_node_id: str | None = None
-     failed_result: ModuleResult | None = None
-+    error_semantics: str = ERROR_SEMANTICS_WEBRPA
-+    handled_failure_node_ids: list[str] = field(default_factory=list)
-     loop_local_restores: dict[int, dict[str, tuple[bool, Any, bool]]] = field(
-         default_factory=dict
-     )
-@@ -272,6 +292,7 @@ class _WorkflowScheduler:
-             executed_node_ids=tuple(self.executed_order),
-             failed_node_id=self.failed_node_id,
-             node_result=self.failed_result,
-+            handled_failure_node_ids=tuple(self.handled_failure_node_ids),
-         )
- 
-     async def _execute_parallel(self, node_ids: list[str]) -> None:
-@@ -330,12 +351,17 @@ class _WorkflowScheduler:
-             self.executed_order.append(node_id)
- 
-         if not result.success:
--            self._remember_failure(node_id, result)
-             error_nodes = self.graph.get_error_nodes(node_id)
--            if error_nodes:
--                await self._execute_parallel(error_nodes)
--            else:
-+            if not error_nodes:
-+                self._remember_failure(node_id, result)
-                 self.halted = True
-+                return
-+            if self.error_semantics == ERROR_SEMANTICS_V2:
-+                # Spec M1 R1-05: a failure caught by an error edge is handled.
-+                self.handled_failure_node_ids.append(node_id)
-+            else:
-+                self._remember_failure(node_id, result)
-+            await self._execute_parallel(error_nodes)
-             return
-         if self.halted or self.context.project_end.accepted or self.context.stop_workflow:
-             return
-```
-
-- [ ] **Step 4: 项目 worker 在文档被改写前读取语义**
-
-`providers/browser/project_graph.py`：import 块改为
-
-```python
-from autoflow.application.workflows.runtime import (
-    ERROR_SEMANTICS_WEBRPA,
-    WorkflowRuntime,
-    document_error_semantics,
-    execution_context_snapshot,
-)
-```
-
-在 `run()` 中 `self.graph_adapter = isinstance(document, dict)` 之后加一行：
-
-```python
-        semantics = document_error_semantics(document) if isinstance(document, dict) else ERROR_SEMANTICS_WEBRPA
-```
-
-并把 `result = await WorkflowRuntime(registry).execute(document, self.context)` 改为：
-
-```python
-        result = await WorkflowRuntime(registry).execute(document, self.context, error_semantics=semantics)
-```
-
-（`canvas_subflows.top_level_document()` 会重建文档，所以语义必须在它之前读取。）
-
-- [ ] **Step 5: 保存与运行快照保留该字段**
-
-`apps/backend/src/autoflow/domain/workflows/validation.py`：
-
-```diff
-diff --git a/apps/backend/src/autoflow/domain/workflows/validation.py b/apps/backend/src/autoflow/domain/workflows/validation.py
---- a/apps/backend/src/autoflow/domain/workflows/validation.py
-+++ b/apps/backend/src/autoflow/domain/workflows/validation.py
-@@ -239,7 +239,7 @@ def project_document(value: object) -> dict[str, Any]:
-         "content": {
-             "id": content["id"],
-             "name": content["name"],
--            **{key: deepcopy(content[key]) for key in ("schemaVersion", "projectId", "browserEnvironmentVersion", "traceMode") if key in content},
-+            **{key: deepcopy(content[key]) for key in ("schemaVersion", "projectId", "browserEnvironmentVersion", "traceMode", "executionSemantics") if key in content},
-             "nodes": projected_nodes,
-             "edges": projected_edges,
-             "variables": projected_variables,
-```
-
-- [ ] **Step 6: 运行**
-
-Run: `uv run --directory apps/backend pytest -q tests/unit/workflows tests/unit/test_project_graph_failure_reason.py tests/unit/test_project_graph_executor.py tests/differential/workflows/test_b3_control_flow_runtime_contract.py tests/contract/test_workflow_runs_api.py tests/contract/test_local_workflows.py`
-Expected: 全部通过（B3 对照测试不改：它的文档没有标记，验证的是旧语义）。
-
-- [ ] **Step 7: 提交**
-
-```bash
-git add apps/backend/src/autoflow/application/workflows/runtime.py apps/backend/src/autoflow/providers/browser/project_graph.py apps/backend/src/autoflow/domain/workflows/validation.py apps/backend/tests/unit/workflows/test_handled_failure_semantics.py apps/backend/tests/unit/test_project_graph_failure_reason.py
-git commit -m "feat(runtime): v2 出错语义——错误分支接住的失败不决定运行结果"
-```
+- [ ] **Step 1: 写反例。** 平面图、结构化fork/join及嵌套fork中：v2的失败节点被错误分支处理后成功，handled_failure_node_ids含原节点且去重；错误处理器再失败或任一分支未处理失败则整体失败；无标记文档仍失败。画布子流程继承外层语义；独立保存的子流程显式按自己的文档版本执行并把结果返回父流程。后端保存/读取往返保持顶层字段，未知值仍按旧语义。
+- [ ] **Step 2: RED。** `uv run --directory apps/backend pytest -q tests/unit/workflows/test_handled_failure_semantics.py tests/unit/test_project_graph_failure_reason.py`，新断言失败，原旧语义对照不改。
+- [ ] **Step 3: 最小实现。** 顶层构建scheduler时解析语义；普通失败分支按规格记录handled/unhandled。检查 execute 的所有调用者，`_execute_fork` 裁剪出的 nodes/edges 文档必须显式传递父scheduler语义，并把各子结果的handled IDs归并。ProjectGraphExecutor在文档重写前冻结语义。持久子文档作为独立版本边界处理，不能靠递归缺参碰巧选默认值。
+- [ ] **Step 4: GREEN及集成。** 重跑Step2，补项目worker端v2并行处理失败后join成功、旧语义失败的集成断言；连同原B3用例运行。Run终态、Task投影与日志一致才关闭AC1-04。
+- [ ] **Step 5: 提交。** 只暂存以上实现与对应测试，提交 `fix(runtime): preserve error semantics across nested execution`。
 
 ---
 
@@ -1898,537 +1612,26 @@ git commit -m "feat(dispatch): 执行名额与存活浏览器分开计数，人�
 
 ---
 
-### Task 8: 并发上限按机器配置并可在线调整（R1-07）
+### Task 8: 并发上限与在线设置的有序应用（R1-07，r2）
 
 **Files:**
-- Modify: `apps/backend/pyproject.toml`、`apps/backend/uv.lock`
-- Create: `apps/backend/src/autoflow/domain/settings/execution_capacity.py`
-- Create: `apps/backend/src/autoflow/infrastructure/database/app_settings.py`
-- Create: `apps/backend/src/autoflow/infrastructure/database/migrations/versions/rm1_app_settings.py`
-- Create: `apps/backend/src/autoflow/application/settings/execution.py`
-- Create: `apps/backend/src/autoflow/adapters/http/execution_settings.py`
-- Modify: `apps/backend/src/autoflow/bootstrap/workflows.py`、`apps/backend/src/autoflow/bootstrap/schema_export.py`
-- Modify: `apps/backend/tests/integration/test_migration_heads.py`
-- Modify: `apps/desktop/src/renderer/shared/api/generated.ts`（生成）
-- Test: `apps/backend/tests/unit/test_execution_capacity.py`、`apps/backend/tests/contract/test_execution_settings.py`
+- Create: `apps/backend/src/autoflow/domain/settings/execution_capacity.py`、`infrastructure/database/app_settings.py`、`infrastructure/database/migrations/versions/rm1_app_settings.py`、`application/settings/execution.py`、`adapters/http/execution_settings.py`（除首项外同属 apps/backend/src/autoflow）。
+- Modify: `apps/backend/pyproject.toml`、`apps/backend/uv.lock`、`apps/backend/src/autoflow/bootstrap/workflows.py`、`bootstrap/schema_export.py`；生成 `apps/desktop/src/renderer/shared/api/generated.ts`。
+- Test: `apps/backend/tests/unit/test_execution_capacity.py`、`tests/contract/test_execution_settings.py`、`tests/integration/test_execution_settings_order.py`、`tests/integration/test_migration_heads.py`（后三项同属 apps/backend）。
 
 **Interfaces:**
-- Consumes: `WorkflowRunDispatcher.set_capacity`、`ProjectWorkflowWorkerManager.set_capacity`（Task 7）。
-- Produces: `HardwareProfile(logical_cpus, total_memory_bytes)`、`recommended_capacity(hw) -> int`、`resolve_capacity(configured, hw) -> ExecutionCapacity(configured, recommended, effective, live)`；`SqlAlchemyAppSettings.get(key) -> (value, revision)`、`.put(key, value, expected_revision) -> int`、`AppSettingConflict(current_revision)`；`ExecutionSettingsService.read() -> ExecutionSettingsView`、`.update(configured, expected_revision)`、`.bind(dispatcher, worker)`；`app.state.execution_settings`；接口 `GET/PUT /api/v1/settings/execution`（schema `ExecutionSettingsRead`、`ExecutionSettingsUpdate`）。Task 9 的前端使用该接口。
-
-- [ ] **Step 1: 依赖**
-
-`apps/backend/pyproject.toml` 的 `dependencies` 中（`"mss>=10,<11",` 之后）加入 `"psutil>=7,<8",`，然后：
-Run: `uv lock --directory apps/backend`
-Expected: 锁文件只在 `autoflow-backend` 的依赖列表中加入 psutil，版本仍为 7.2.2。
-
-- [ ] **Step 2: 写失败的测试**
-
-`apps/backend/tests/unit/test_execution_capacity.py`：
-
-```python
-import pytest
-
-from autoflow.domain.settings.execution_capacity import (
-    GIB,
-    HardwareProfile,
-    recommended_capacity,
-    resolve_capacity,
-)
-
-
-@pytest.mark.parametrize(
-    ("cpus", "memory_gib", "expected"),
-    [(8, 16, 6), (4, 8, 3), (2, 4, 1), (1, 1, 1), (16, 8, 5), (128, 512, 64)],
-)
-def test_recommended_capacity_uses_the_smaller_of_cpu_and_memory(cpus, memory_gib, expected):
-    assert recommended_capacity(HardwareProfile(cpus, memory_gib * GIB)) == expected
-
-
-def test_configured_value_overrides_recommendation_and_live_is_double():
-    capacity = resolve_capacity(10, HardwareProfile(8, 16 * GIB))
-    assert (capacity.configured, capacity.recommended, capacity.effective, capacity.live) == (10, 6, 10, 20)
-    assert resolve_capacity(None, HardwareProfile(8, 16 * GIB)).effective == 6
-
-
-@pytest.mark.parametrize("configured", [0, 65, -1])
-def test_out_of_range_configuration_is_rejected(configured):
-    with pytest.raises(ValueError):
-        resolve_capacity(configured, HardwareProfile(8, 16 * GIB))
-```
-
-`apps/backend/tests/contract/test_execution_settings.py`：
-
-```python
-"""Remediation M1 R1-07: machine-sized capacity is readable, adjustable and applied live."""
-
-
-def test_default_capacity_follows_hardware_and_replaces_the_fixed_two(client):
-    body = client.get("/api/v1/settings/execution").json()
-    assert body["maxRunningBrowsers"] is None
-    assert body["effectiveMaxRunningBrowsers"] == body["recommendedMaxRunningBrowsers"] >= 1
-    assert body["maxLiveBrowsers"] == 2 * body["effectiveMaxRunningBrowsers"]
-    assert body["revision"] == 0
-    dispatcher = client.app.state.project_workflow_dispatcher
-    assert dispatcher.capacity == body["effectiveMaxRunningBrowsers"]
-    assert dispatcher.live_capacity == body["maxLiveBrowsers"]
-
-
-def test_saving_a_limit_applies_to_the_running_dispatcher_and_rejects_stale_revisions(client):
-    dispatcher = client.app.state.project_workflow_dispatcher
-    saved = client.put("/api/v1/settings/execution", json={"maxRunningBrowsers": 7, "expectedRevision": 0})
-    assert saved.status_code == 200, saved.text
-    assert saved.json()["effectiveMaxRunningBrowsers"] == 7
-    assert saved.json()["revision"] == 1
-    assert (dispatcher.capacity, dispatcher.live_capacity) == (7, 14)
-    stale = client.put("/api/v1/settings/execution", json={"maxRunningBrowsers": 3, "expectedRevision": 0})
-    assert stale.status_code == 409
-    assert stale.json()["error"]["code"] == "SETTINGS_REVISION_CONFLICT"
-    reset = client.put("/api/v1/settings/execution", json={"maxRunningBrowsers": None, "expectedRevision": 1})
-    assert reset.json()["maxRunningBrowsers"] is None
-    assert dispatcher.capacity == reset.json()["recommendedMaxRunningBrowsers"]
-
-
-def test_out_of_range_limits_are_rejected_without_changing_capacity(client):
-    dispatcher = client.app.state.project_workflow_dispatcher
-    before = dispatcher.capacity
-    for value in (0, 65, "4"):
-        response = client.put("/api/v1/settings/execution", json={"maxRunningBrowsers": value, "expectedRevision": 0})
-        assert response.status_code == 422, value
-    assert dispatcher.capacity == before
-```
-
-`tests/integration/test_migration_heads.py`：
-
-`apps/backend/tests/integration/test_migration_heads.py`：
-
-```diff
-diff --git a/apps/backend/tests/integration/test_migration_heads.py b/apps/backend/tests/integration/test_migration_heads.py
---- a/apps/backend/tests/integration/test_migration_heads.py
-+++ b/apps/backend/tests/integration/test_migration_heads.py
-@@ -18,7 +18,8 @@ def _config(database: Path) -> Config:
- def test_studio_backend_history_has_one_merged_head(tmp_path: Path) -> None:
-     scripts = ScriptDirectory.from_config(_config(tmp_path / "heads.sqlite3"))
- 
--    assert scripts.get_heads() == ["0025_merge_studio_credential_environment"]
-+    assert scripts.get_heads() == ["rm1_app_settings"]
-+    assert scripts.get_revision("rm1_app_settings").down_revision == "0025_merge_studio_credential_environment"
-     assert scripts.get_revision("0025_merge_studio_credential_environment").down_revision == (
-         "0024_studio_credential_namespace", "0024_environment_identity",
-     )
-@@ -116,7 +117,7 @@ def test_android_pm9_merge_upgrades_each_published_head_without_losing_data(tmp_
- 
-     with sqlite3.connect(database) as connection:
-         assert connection.execute("SELECT version_num FROM alembic_version").fetchall() == [
--            ("0025_merge_studio_credential_environment",)
-+            ("rm1_app_settings",)
-         ]
-         assert connection.execute("SELECT * FROM workflow_documents").fetchall() == before
-         if previous_head == "am01_management_operations":
-@@ -151,7 +152,7 @@ def test_integrated_workspace_history_is_recognized_and_preserved(
-     with sqlite3.connect(database) as connection:
-         assert connection.execute(
-             "SELECT version_num FROM alembic_version"
--        ).fetchall() == [("0025_merge_studio_credential_environment",)]
-+        ).fetchall() == [("rm1_app_settings",)]
-         assert connection.execute(
-             "SELECT value FROM preserved_workspace_data"
-         ).fetchall() == [("keep-me",)]
-```
-
-- [ ] **Step 3: 运行，确认失败**
-
-Run: `uv run --directory apps/backend pytest -q tests/unit/test_execution_capacity.py tests/contract/test_execution_settings.py tests/integration/test_migration_heads.py`
-Expected: FAIL（模块不存在、接口 404、迁移头仍为 0025）。
-
-- [ ] **Step 4: 推荐值规则**
-
-`apps/backend/src/autoflow/domain/settings/execution_capacity.py`：
-
-```python
-"""Machine-sized run capacity (remediation M1, R1-07)."""
-
-from __future__ import annotations
-
-from dataclasses import dataclass
-
-MAX_RUN_CAPACITY = 64
-GIB = 1024**3
-BROWSER_MEMORY_BYTES = int(1.5 * GIB)
-MEMORY_PRESSURE_PERCENT = 85.0
-
-
-@dataclass(frozen=True)
-class HardwareProfile:
-    logical_cpus: int
-    total_memory_bytes: int
-
-
-def recommended_capacity(hardware: HardwareProfile) -> int:
-    """Three browsers per four logical CPUs, 1.5 GiB each, clamped to 1..64."""
-    by_cpu = (max(1, hardware.logical_cpus) * 3) // 4
-    by_memory = hardware.total_memory_bytes // BROWSER_MEMORY_BYTES
-    return max(1, min(MAX_RUN_CAPACITY, by_cpu, by_memory))
-
-
-@dataclass(frozen=True)
-class ExecutionCapacity:
-    configured: int | None
-    recommended: int
-    effective: int
-    live: int
-
-
-def resolve_capacity(configured: int | None, hardware: HardwareProfile) -> ExecutionCapacity:
-    recommended = recommended_capacity(hardware)
-    effective = configured if configured is not None else recommended
-    if not 1 <= effective <= MAX_RUN_CAPACITY:
-        raise ValueError(f"run capacity must be between 1 and {MAX_RUN_CAPACITY}")
-    return ExecutionCapacity(configured, recommended, effective, 2 * effective)
-```
-
-- [ ] **Step 5: 设置表与迁移**
-
-`apps/backend/src/autoflow/infrastructure/database/migrations/versions/rm1_app_settings.py`：
-
-```python
-"""Remediation M1: small key/value store for machine-level execution settings."""
-
-import sqlalchemy as sa
-from alembic import op
-
-revision = "rm1_app_settings"
-down_revision = "0025_merge_studio_credential_environment"
-branch_labels = None
-depends_on = None
-
-
-def upgrade() -> None:
-    op.create_table(
-        "app_settings",
-        sa.Column("key", sa.String(120), primary_key=True),
-        sa.Column("value", sa.JSON(), nullable=False),
-        sa.Column("revision", sa.Integer(), nullable=False),
-        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
-    )
-
-
-def downgrade() -> None:
-    op.drop_table("app_settings")
-```
-
-`apps/backend/src/autoflow/infrastructure/database/app_settings.py`：
-
-```python
-"""Versioned key/value settings owned by this workspace (remediation M1)."""
-
-from __future__ import annotations
-
-from collections.abc import Callable
-from datetime import UTC, datetime
-from typing import Any
-
-from sqlalchemy import JSON, DateTime, Integer, String, update
-from sqlalchemy.orm import Mapped, Session, mapped_column, sessionmaker
-
-from .models import Base
-
-
-class AppSettingRow(Base):
-    __tablename__ = "app_settings"
-    key: Mapped[str] = mapped_column(String(120), primary_key=True)
-    value: Mapped[Any] = mapped_column(JSON, nullable=False)
-    revision: Mapped[int] = mapped_column(Integer, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-
-
-class AppSettingConflict(Exception):
-    def __init__(self, current_revision: int) -> None:
-        super().__init__("app setting revision conflict")
-        self.current_revision = current_revision
-
-
-class SqlAlchemyAppSettings:
-    def __init__(
-        self,
-        factory: sessionmaker[Session],
-        now: Callable[[], datetime] = lambda: datetime.now(UTC),
-    ) -> None:
-        self._factory = factory
-        self._now = now
-
-    def get(self, key: str) -> tuple[Any, int]:
-        """Return (value, revision); a missing key is (None, 0)."""
-        with self._factory() as session:
-            row = session.get(AppSettingRow, key)
-            return (None, 0) if row is None else (row.value, row.revision)
-
-    def put(self, key: str, value: Any, expected_revision: int) -> int:
-        with self._factory.begin() as session:
-            row = session.get(AppSettingRow, key)
-            current = 0 if row is None else row.revision
-            if current != expected_revision:
-                raise AppSettingConflict(current)
-            if row is None:
-                session.add(AppSettingRow(key=key, value=value, revision=1, updated_at=self._now()))
-                return 1
-            changed = session.execute(
-                update(AppSettingRow)
-                .where(AppSettingRow.key == key, AppSettingRow.revision == expected_revision)
-                .values(value=value, revision=expected_revision + 1, updated_at=self._now())
-            ).rowcount
-            if changed != 1:
-                raise AppSettingConflict(current)
-            return expected_revision + 1
-```
-
-- [ ] **Step 6: 应用服务与接口**
-
-`apps/backend/src/autoflow/application/settings/execution.py`：
-
-```python
-"""Execution capacity settings applied to the live dispatcher (remediation M1, R1-07/R1-08)."""
-
-from __future__ import annotations
-
-import os
-from collections.abc import Callable
-from dataclasses import dataclass
-from typing import Any, Protocol
-
-import psutil
-
-from autoflow.domain.settings.execution_capacity import (
-    MEMORY_PRESSURE_PERCENT,
-    ExecutionCapacity,
-    HardwareProfile,
-    resolve_capacity,
-)
-from autoflow.infrastructure.database.app_settings import SqlAlchemyAppSettings
-
-SETTING_KEY = "execution.maxRunningBrowsers"
-
-
-class CapacityTarget(Protocol):
-    def set_capacity(self, capacity: int, live_capacity: int | None = None) -> None: ...
-
-
-class LiveTarget(Protocol):
-    def set_capacity(self, capacity: int) -> None: ...
-
-
-def detect_hardware() -> HardwareProfile:
-    return HardwareProfile(os.cpu_count() or 1, int(psutil.virtual_memory().total))
-
-
-def memory_pressure() -> bool:
-    return float(psutil.virtual_memory().percent) >= MEMORY_PRESSURE_PERCENT
-
-
-@dataclass(frozen=True)
-class ExecutionSettingsView:
-    capacity: ExecutionCapacity
-    revision: int
-    hardware: HardwareProfile
-    memory_pressure: bool
-
-
-class ExecutionSettingsService:
-    def __init__(
-        self,
-        store: SqlAlchemyAppSettings,
-        *,
-        hardware: Callable[[], HardwareProfile] = detect_hardware,
-        pressure: Callable[[], bool] = memory_pressure,
-    ) -> None:
-        self._store = store
-        self._hardware = hardware
-        self._pressure = pressure
-        self._targets: list[Any] = []
-
-    def bind(self, dispatcher: CapacityTarget, worker: LiveTarget) -> None:
-        """Later updates resize these owners; running work keeps its slot."""
-        self._targets = [dispatcher, worker]
-
-    def read(self) -> ExecutionSettingsView:
-        value, revision = self._store.get(SETTING_KEY)
-        configured = value if isinstance(value, int) and not isinstance(value, bool) else None
-        hardware = self._hardware()
-        return ExecutionSettingsView(resolve_capacity(configured, hardware), revision, hardware, self._pressure())
-
-    def update(self, configured: int | None, expected_revision: int) -> ExecutionSettingsView:
-        capacity = resolve_capacity(configured, self._hardware())  # validates before writing
-        self._store.put(SETTING_KEY, configured, expected_revision)
-        self._apply(capacity)
-        return self.read()
-
-    def _apply(self, capacity: ExecutionCapacity) -> None:
-        if not self._targets:
-            return
-        dispatcher, worker = self._targets
-        worker.set_capacity(capacity.live)
-        dispatcher.set_capacity(capacity.effective, capacity.live)
-```
-
-`apps/backend/src/autoflow/adapters/http/execution_settings.py`：
-
-```python
-"""GET/PUT /api/v1/settings/execution (remediation M1, R1-07)."""
-
-from __future__ import annotations
-
-from fastapi import APIRouter
-from pydantic import BaseModel, Field, StrictInt
-
-from autoflow.application.settings.execution import ExecutionSettingsService, ExecutionSettingsView
-from autoflow.infrastructure.database.app_settings import AppSettingConflict
-
-from .errors import error_response
-
-
-class ExecutionHardwareRead(BaseModel):
-    logicalCpus: int
-    totalMemoryGb: float
-
-
-class ExecutionSettingsRead(BaseModel):
-    maxRunningBrowsers: int | None
-    recommendedMaxRunningBrowsers: int
-    effectiveMaxRunningBrowsers: int
-    maxLiveBrowsers: int
-    memoryPressure: bool
-    hardware: ExecutionHardwareRead
-    revision: int
-
-
-class ExecutionSettingsUpdate(BaseModel):
-    maxRunningBrowsers: StrictInt | None = Field(default=None, ge=1, le=64)
-    expectedRevision: StrictInt = Field(ge=0)
-
-
-def _read(view: ExecutionSettingsView) -> ExecutionSettingsRead:
-    return ExecutionSettingsRead(
-        maxRunningBrowsers=view.capacity.configured,
-        recommendedMaxRunningBrowsers=view.capacity.recommended,
-        effectiveMaxRunningBrowsers=view.capacity.effective,
-        maxLiveBrowsers=view.capacity.live,
-        memoryPressure=view.memory_pressure,
-        hardware=ExecutionHardwareRead(
-            logicalCpus=view.hardware.logical_cpus,
-            totalMemoryGb=round(view.hardware.total_memory_bytes / 1024**3, 1),
-        ),
-        revision=view.revision,
-    )
-
-
-def execution_settings_router(service: ExecutionSettingsService) -> APIRouter:
-    router = APIRouter()
-
-    @router.get("/api/v1/settings/execution", response_model=ExecutionSettingsRead)
-    def read() -> ExecutionSettingsRead:
-        return _read(service.read())
-
-    @router.put("/api/v1/settings/execution", response_model=ExecutionSettingsRead)
-    def update(body: ExecutionSettingsUpdate):
-        try:
-            return _read(service.update(body.maxRunningBrowsers, body.expectedRevision))
-        except AppSettingConflict as conflict:
-            return error_response(
-                409, "SETTINGS_REVISION_CONFLICT", "设置已被修改，请刷新后重试",
-                {"currentRevision": conflict.current_revision},
-            )
-
-    return router
-```
-
-- [ ] **Step 7: 启动时按设置定容量，并注册路由（含 OpenAPI 导出）**
-
-`apps/backend/src/autoflow/bootstrap/workflows.py`：
-
-```diff
-diff --git a/apps/backend/src/autoflow/bootstrap/workflows.py b/apps/backend/src/autoflow/bootstrap/workflows.py
---- a/apps/backend/src/autoflow/bootstrap/workflows.py
-+++ b/apps/backend/src/autoflow/bootstrap/workflows.py
-@@ -562,8 +562,17 @@ def configure_project_workflow_runtime(
-     )
- 
-     capabilities = ProjectWorkerCapabilities(session_factory, environments)
-+    from autoflow.adapters.http.execution_settings import execution_settings_router
-+    from autoflow.application.settings.execution import (
-+        ExecutionSettingsService,
-+        memory_pressure,
-+    )
-+    from autoflow.infrastructure.database.app_settings import SqlAlchemyAppSettings
-+
-+    execution_settings = ExecutionSettingsService(SqlAlchemyAppSettings(session_factory))
-+    capacity = execution_settings.read().capacity
-     worker = ProjectWorkflowWorkerManager(
--        temp_dir, on_capability=capabilities.handle, capacity=2,
-+        temp_dir, on_capability=capabilities.handle, capacity=capacity.live,
-         resolve_credential=resolve_credential, proxy_service=proxy_service,
-     )
- 
-@@ -596,13 +605,18 @@ def configure_project_workflow_runtime(
-         raise KernelNotFound()
- 
-     dispatcher = WorkflowRunDispatcher(
--        session_factory, worker, resources, gate, recover, capacity=2,
-+        session_factory, worker, resources, gate, recover,
-+        capacity=capacity.effective, live_capacity=capacity.live,
-+        memory_pressure=memory_pressure,
-         project_end=capabilities.project_end,
-         on_fenced=capabilities.manual.cancel_run if capabilities.manual else lambda _run_id: None,
-         resolve_model=models.execution_binding if models is not None else None,
-         resolve_default_model=models.default_model_id if models is not None else None,
-     )
-     capabilities.browser_dispatcher = dispatcher
-+    execution_settings.bind(dispatcher, worker)
-+    app.state.execution_settings = execution_settings
-+    app.include_router(execution_settings_router(execution_settings))
-     if capabilities.manual is not None:
-         capabilities.manual.dispatcher = dispatcher
-     runtime = WorkflowRuntimeService(
-```
-
-`apps/backend/src/autoflow/bootstrap/schema_export.py`：
-
-```diff
-diff --git a/apps/backend/src/autoflow/bootstrap/schema_export.py b/apps/backend/src/autoflow/bootstrap/schema_export.py
---- a/apps/backend/src/autoflow/bootstrap/schema_export.py
-+++ b/apps/backend/src/autoflow/bootstrap/schema_export.py
-@@ -8,6 +8,7 @@ from fastapi import FastAPI
- from autoflow.adapters.http.android import android_router
- from autoflow.adapters.http.android_fleet import android_fleet_router
- from autoflow.adapters.http.android_management import android_management_router
-+from autoflow.adapters.http.execution_settings import execution_settings_router
- from autoflow.adapters.http.image_assets import image_assets_router
- from autoflow.adapters.http.local_workflows import local_workflows_router
- from autoflow.adapters.http.openapi import configure_openapi
-@@ -78,6 +79,7 @@ def export_schema(*, api_version: str = 'v1') -> dict[str, Any]:
-     app.include_router(studio_credentials_router(unavailable))
-     app.include_router(studio_retention_router(unavailable))
-     app.include_router(workflow_schedules_router(unavailable))
-+    app.include_router(execution_settings_router(unavailable))
-     return app.openapi()
- 
- 
-```
-
-- [ ] **Step 8: 运行并生成前端类型**
-
-Run: `uv run --directory apps/backend pytest -q tests/unit/test_execution_capacity.py tests/contract/test_execution_settings.py tests/integration/test_migration_heads.py tests/contract/test_schema_export.py tests/integration/test_workflow_dispatch.py`
-Expected: 全部通过。
-Run: `npm run openapi:generate && npm run openapi:check`
-Expected: `generated.ts` 新增 `ExecutionSettingsRead`、`ExecutionSettingsUpdate`、`ExecutionHardwareRead` 与路径 `/api/v1/settings/execution`；check 通过。
-Run: `uv run --directory apps/backend mypy src && uv run --directory apps/backend ruff check .`
-Expected: 无错误。
-
-- [ ] **Step 9: 提交**
-
-```bash
-git add apps/backend/pyproject.toml apps/backend/uv.lock apps/backend/src/autoflow/domain/settings/execution_capacity.py apps/backend/src/autoflow/infrastructure/database/app_settings.py apps/backend/src/autoflow/infrastructure/database/migrations/versions/rm1_app_settings.py apps/backend/src/autoflow/application/settings/execution.py apps/backend/src/autoflow/adapters/http/execution_settings.py apps/backend/src/autoflow/bootstrap/workflows.py apps/backend/src/autoflow/bootstrap/schema_export.py apps/backend/tests/unit/test_execution_capacity.py apps/backend/tests/contract/test_execution_settings.py apps/backend/tests/integration/test_migration_heads.py apps/desktop/src/renderer/shared/api/generated.ts
-git commit -m "feat(settings): 同时运行的浏览器数按本机 CPU 与内存推荐，可在线调整"
-```
+- `HardwareProfile(logical_cpus, total_memory_bytes)`；`recommended_capacity(hw) -> int`；`resolve_capacity(configured, hw) -> ExecutionCapacity(configured, recommended, effective, live)`。
+- 仓储 `get(key)->(value,revision)`、`put(key,value,expected_revision)->int`；`AppSettingConflict(current_revision)`。仓储在工作线程内部拥有Session；唯一插入竞争也映射该冲突。
+- `ExecutionSettingsService.bind(dispatcher, worker)`、`async initialize()`、`async read()->ExecutionSettingsView`、`async update(configured:int|None, expected_revision:int)->ExecutionSettingsView`；app.state.execution_settings。单服务实例、单asyncio.Lock，在所属循环内使用，不跨HTTP工作线程修改派发器。
+- GET/PUT `/api/v1/settings/execution` 均为async路由；DTO沿规格5.5，Task9不改调用形状。revision表示已持久并应用的修订；冲突409，严格整数校验422。
+
+- [ ] **Step 1: 定义失败测试。** 推荐值例：(8,16GiB)→6、(4,8)→3、(2,4)→1、(16,8)→5，上限64；覆盖null恢复推荐、非法0/65/字符串/bool。用屏障暂停A在持久化后，B读取/更新不得越过A应用阶段；放行后最终GET、数据库、dispatcher与worker必须都对应最新revision。两个首次expectedRevision=0写入只能一个成功、另一409；持久化异常不应用内存配置。
+- [ ] **Step 2: RED。** `uv run --directory apps/backend pytest -q tests/unit/test_execution_capacity.py tests/contract/test_execution_settings.py tests/integration/test_execution_settings_order.py`；记录新用例失败。
+- [ ] **Step 3: 规则与迁移。** 添加已锁定psutil为直接依赖并核对lock差异；公式 clamp(min(floor(cpu*3/4),floor(total_memory/1.5GiB)),1,64)，live=2*effective。新建app_settings表，迁移接当前唯一head（当前基线为0025_merge_studio_credential_environment，实施前验证）。不把启发式当作负载验收结论。
+- [ ] **Step 4: 串行提交与应用。** initialize从持久值设置两目标；update持锁完成校验、to_thread仓储CAS与循环内应用；read使用同锁返回已应用视图。set_capacity仅验证/赋值/唤醒，不含可失败IO。请求取消或客户端断开不释放尚未完成的提交/应用序列：保留服务拥有的操作task直到落定，shutdown等待；成功落库但应用异常时禁止新派发并从权威值核验，不返回虚假成功。测试覆盖取消发生在提交前/后及重启恢复。
+- [ ] **Step 5: 接线和契约。** bootstrap在调度器启动前await initialize，注册真实及schema-export路由；`npm run openapi:generate`。前端字段不手写第二份DTO。PUT响应生效值与运行对象一致；降低容量不停止已运行任务。
+- [ ] **Step 6: GREEN。** 重跑Step2，加 `uv run --directory apps/backend pytest -q tests/integration/test_migration_heads.py tests/integration/test_workflow_dispatch.py` 和 `npm run openapi:check`；在轻/重真实网页负载记录容量、峰值内存及延迟，调整推荐需记录证据。
+- [ ] **Step 7: 提交。** `feat(settings): apply execution capacity in revision order`，精确暂存本任务文件和生成类型。
 
 ---
 
@@ -2544,7 +1747,7 @@ export function createExecutionSettingsApi(client: ApiClient): ExecutionSettings
 `apps/desktop/src/renderer/domains/settings/components/ExecutionCapacityCard.tsx`：
 
 ```tsx
-import { Cpu } from '@phosphor-icons/react'
+import { Cpu } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Button } from '../../../shared/components/ui/button'
 import { Input } from '../../../shared/components/ui/input'
@@ -2869,7 +2072,7 @@ from autoflow.infrastructure.database.project_claims import SqlAlchemyProjectInp
 from autoflow.infrastructure.observability import LoopLagMonitor
 
 from .bench_claims import _seed, plans
-from .report import Unit, write_report
+from .report import Unit, build_manifest, write_report
 
 
 async def _run(rows: int) -> dict[str, tuple[float, Unit]]:
@@ -2912,7 +2115,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--rows", type=int, default=10000)
     arguments = parser.parse_args()
-    write_report(f"claim-loop-lag-{arguments.rows}", run(arguments.rows))
+    write_report(f"claim-loop-lag-{arguments.rows}", run(arguments.rows), manifest=build_manifest("claim-loop-lag-v1", {"rows": arguments.rows}))
 
 
 if __name__ == "__main__":
@@ -2944,224 +2147,18 @@ git commit -m "perf(scheduler): 数据领取在线程中执行，不再阻塞服
 
 ---
 
-### Task 11: worker 标准错误保存为诊断日志（R1-14）
+### Task 11: worker stderr 持续排空与端到端诊断（R1-14，r2）
 
-**Files:**
-- Create: `apps/backend/src/autoflow/infrastructure/process/stderr_sink.py`
-- Modify: `apps/backend/src/autoflow/infrastructure/process/project_workflow_worker.py`
-- Test: `apps/backend/tests/unit/test_stderr_sink.py`、`apps/backend/tests/integration/test_worker_stderr_diagnostics.py`
+**Files:** Create `apps/backend/src/autoflow/infrastructure/process/stderr_sink.py`；Modify `infrastructure/process/project_workflow_worker.py`、`application/workflows/dispatcher.py`（同一autoflow根）；Test `apps/backend/tests/unit/test_stderr_sink.py`、`apps/backend/tests/integration/test_worker_stderr_diagnostics.py`。
 
-**Interfaces:**
-- Produces: `StderrSink(path, *, limit_bytes=5*1024*1024, tail_lines=200)`、`async drain(stream)`、`tail(lines=50) -> list[str]`、`TRUNCATED_MARKER`；`WorkflowWorkerError(code, message, details=None)` 增加 `details`；`project_workflow_worker.STDERR_LOG_NAME = "worker-stderr.log"`；`WORKFLOW_WORKER_LOST` 的 `details = {"diagnosticLog": "runs/<runId>/generation-<n>/worker-stderr.log", "stderrTail": [...最后 50 行]}`。
+**Interfaces:** `StderrSink(path, *, limit_bytes=5*1024*1024, tail_lines=200, tail_bytes=256*1024, line_bytes=8192)`；`async drain(stream)`、`tail(lines=50)->list[str]`、TRUNCATED_MARKER；`WorkflowWorkerError(code,message,details=None)`。运行查询的error.details含 diagnosticLog、经过安全处理的stderrTail、causeCode；主错误仍为WORKFLOW_RESULT_UNKNOWN，不改变执行结果核验规则。
 
-- [ ] **Step 1: 写失败的测试**
-
-`tests/unit/test_stderr_sink.py`：
-
-```python
-import asyncio
-import sys
-
-import pytest
-
-from autoflow.infrastructure.process.stderr_sink import TRUNCATED_MARKER, StderrSink
-
-
-async def _drain(sink: StderrSink, script: str) -> int:
-    process = await asyncio.create_subprocess_exec(sys.executable, "-c", script, stderr=asyncio.subprocess.PIPE)
-    assert process.stderr is not None
-    await sink.drain(process.stderr)
-    return await process.wait()
-
-
-@pytest.mark.asyncio
-async def test_worker_stderr_is_kept_on_disk_with_a_tail(tmp_path):
-    sink = StderrSink(tmp_path / "run" / "worker-stderr.log")
-    code = await _drain(sink, "import sys\nfor i in range(300): print(f'line {i}', file=sys.stderr)\nsys.exit(3)")
-    assert code == 3
-    lines = (tmp_path / "run" / "worker-stderr.log").read_text(encoding="utf-8").splitlines()
-    assert lines[0] == "line 0" and lines[-1] == "line 299"
-    assert sink.tail(50) == [f"line {i}" for i in range(250, 300)]
-
-
-@pytest.mark.asyncio
-async def test_oversized_stderr_is_truncated_but_tail_keeps_the_end(tmp_path):
-    path = tmp_path / "worker-stderr.log"
-    sink = StderrSink(path, limit_bytes=100, tail_lines=5)
-    await _drain(sink, "import sys\nfor i in range(50): print('x' * 20 + str(i), file=sys.stderr)")
-    content = path.read_text(encoding="utf-8")
-    assert content.endswith(TRUNCATED_MARKER)
-    assert len(content.encode("utf-8")) <= 100 + len(TRUNCATED_MARKER.encode("utf-8"))
-    assert sink.tail(1) == ["x" * 20 + "49"]
-```
-
-`apps/backend/tests/integration/test_worker_stderr_diagnostics.py`：
-
-```python
-"""Remediation M1 R1-14: a crashing worker leaves a diagnostic log."""
-
-import asyncio
-import sys
-from uuid import uuid4
-
-import pytest
-
-from autoflow.infrastructure.process.project_workflow_worker import (
-    ProjectWorkflowWorkerManager,
-    WorkflowWorkerError,
-)
-
-CRASH = (
-    "import sys\n"
-    "sys.stdin.readline()\n"
-    "print('worker exploded: KeyError token', file=sys.stderr, flush=True)\n"
-    "sys.exit(7)\n"
-)
-
-
-@pytest.mark.asyncio
-async def test_lost_worker_points_to_its_stderr_log(tmp_path):
-    manager = ProjectWorkflowWorkerManager(tmp_path / "tmp" / "worker", command=(sys.executable, "-c", CRASH))
-    run_id = str(uuid4())
-
-    async def ignore(_event):
-        return None
-
-    try:
-        with pytest.raises(WorkflowWorkerError) as lost:
-            await asyncio.wait_for(manager.run(
-                run_id=run_id, execution_generation=1, execution_plan={}, parameters={},
-                variables={}, browser={}, executable=None, on_event=ignore,
-            ), 15)
-    finally:
-        await manager.shutdown()
-    error = lost.value
-    assert error.code == "WORKFLOW_WORKER_LOST"
-    log = f"runs/{run_id}/generation-1/worker-stderr.log"
-    assert f"诊断日志：{log}" in error.message
-    assert error.details["stderrTail"] == ["worker exploded: KeyError token"]
-    written = tmp_path / "tmp" / "workspace" / log
-    assert written.read_text(encoding="utf-8") == "worker exploded: KeyError token\n"
-```
-
-- [ ] **Step 2: 运行，确认失败**
-
-Run: `uv run --directory apps/backend pytest -q tests/unit/test_stderr_sink.py tests/integration/test_worker_stderr_diagnostics.py`
-Expected: FAIL，`ModuleNotFoundError: ...stderr_sink`。
-
-- [ ] **Step 3: 实现 StderrSink**
-
-`apps/backend/src/autoflow/infrastructure/process/stderr_sink.py`：
-
-```python
-"""Bounded capture of a worker's standard error (remediation M1, R1-14)."""
-
-from __future__ import annotations
-
-import asyncio
-from collections import deque
-from pathlib import Path
-
-TRUNCATED_MARKER = "\n[已截断：诊断日志超过上限]\n"
-
-
-class StderrSink:
-    def __init__(self, path: Path, *, limit_bytes: int = 5 * 1024 * 1024, tail_lines: int = 200) -> None:
-        self.path = path
-        self._limit = limit_bytes
-        self._written = 0
-        self._truncated = False
-        self._tail: deque[str] = deque(maxlen=tail_lines)
-
-    def tail(self, lines: int = 50) -> list[str]:
-        return list(self._tail)[-lines:]
-
-    async def drain(self, stream: asyncio.StreamReader) -> None:
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        with self.path.open("ab") as output:
-            while True:
-                line = await stream.readline()
-                if not line:
-                    return
-                self._tail.append(line.decode("utf-8", "replace").rstrip("\r\n"))
-                if self._truncated:
-                    continue
-                if self._written + len(line) > self._limit:
-                    output.write(TRUNCATED_MARKER.encode("utf-8"))
-                    output.flush()
-                    self._truncated = True
-                    continue
-                output.write(line)
-                output.flush()
-                self._written += len(line)
-```
-
-- [ ] **Step 4: 接入 worker 管理器**
-
-`infrastructure/process/project_workflow_worker.py`：
-1. `import asyncio` 之后加 `import contextlib`；`from .proxy_worker_requests import ProxyWorkerRequests` 之后加：
-
-```python
-from .stderr_sink import StderrSink
-
-STDERR_LOG_NAME = "worker-stderr.log"
-```
-
-2. `WorkflowWorkerError.__init__` 改为：
-
-```python
-    def __init__(self, code: str, message: str, details: dict[str, Any] | None = None) -> None:
-        super().__init__(message)
-        self.code = code
-        self.message = message
-        self.details = details or {}
-```
-
-3. `_Worker` 末尾加两个字段：
-
-```python
-    stderr: StderrSink | None = None
-    stderr_task: asyncio.Task[None] | None = None
-```
-
-4. 启动子进程时 `stderr=asyncio.subprocess.DEVNULL` 改为 `stderr=asyncio.subprocess.PIPE`。
-5. `_capture_birth` 改为下面的实现，并在其后新增 `_lost`（两条启动路径都会调用 `_capture_birth`，因此都会挂上诊断日志）：
-
-```python
-    def _capture_birth(self, worker: _Worker) -> None:
-        assert worker.process is not None
-        worker.birth = process_birth(worker.process.pid)
-        if worker.process.stderr is not None and worker.stderr_task is None:
-            worker.stderr = StderrSink(worker.artifact_directory / STDERR_LOG_NAME)
-            worker.stderr_task = asyncio.create_task(worker.stderr.drain(worker.process.stderr))
-
-    async def _lost(self, worker: _Worker, message: str) -> WorkflowWorkerError:
-        """Spec M1 R1-14: a lost worker points at its diagnostic log and carries its last lines."""
-        if worker.stderr_task is not None:
-            with contextlib.suppress(Exception):
-                await asyncio.wait_for(asyncio.shield(worker.stderr_task), 1)
-        if worker.stderr is None:
-            return WorkflowWorkerError("WORKFLOW_WORKER_LOST", message)
-        log = f"{worker.relative_artifact_directory}/{STDERR_LOG_NAME}"
-        return WorkflowWorkerError(
-            "WORKFLOW_WORKER_LOST", f"{message}（诊断日志：{log}）",
-            {"diagnosticLog": log, "stderrTail": worker.stderr.tail(50)},
-        )
-```
-
-6. 三处 `raise WorkflowWorkerError("WORKFLOW_WORKER_LOST", "<消息>")` 改为 `raise await self._lost(worker, "<消息>")`（消息文字不变：一处"执行进程异常退出，需核验运行结果"，两处"执行进程失联，运行结果待核验"）。
-
-- [ ] **Step 5: 运行**
-
-Run: `uv run --directory apps/backend pytest -q tests/unit/test_stderr_sink.py tests/integration/test_worker_stderr_diagnostics.py tests/integration/test_project_browserless_end.py tests/integration/test_workflow_worker_process.py tests/integration/test_workflow_dispatch.py`
-Expected: 全部通过。
-
-- [ ] **Step 6: 提交**
-
-```bash
-git add apps/backend/src/autoflow/infrastructure/process/stderr_sink.py apps/backend/src/autoflow/infrastructure/process/project_workflow_worker.py apps/backend/tests/unit/test_stderr_sink.py apps/backend/tests/integration/test_worker_stderr_diagnostics.py
-git commit -m "fix(worker): 保存 worker 标准错误为诊断日志，失联时附日志位置与最后几行"
-```
+- [ ] **Step 1: 写反例。** 假worker依次输出普通行、70,000字节单行、长时间无换行、超过5MB后继续输出，并正常/异常退出。断言管道始终被消费、进程不被卡住、文件含截断标记且含标记总大小≤5MB，尾缓存同时满足行数/单行/总字节限制；磁盘写失败仍排空，返回诊断不可用信息。有效UTF-8片段边界及非法字节使用增量解码/替换，不把半字符抛出为任务错误。
+- [ ] **Step 2: RED。** `uv run --directory apps/backend pytest -q tests/unit/test_stderr_sink.py tests/integration/test_worker_stderr_diagnostics.py`。
+- [ ] **Step 3: 有界捕获。** 用 `stream.read(8192)` 持续读取，不能用有限行缓冲的readline；有界拆行维护tail，长行截断仍消费余下字节。文件预留标记空间，达到上限后继续drain。写文件通过有界队列的工作线程完成，队列满时只丢诊断内容并标记，不反压执行进程；shutdown排空/关闭线程。两条启动路径都挂捕获，生命周期结束收回捕获task。
+- [ ] **Step 4: 安全诊断链。** 管理器_lost附相对路径与tail；派发器捕获后保留原interrupted/unknown终态，将诊断详情合并到持久运行错误，Task查询透传。原始stderr文件仅作为受现有授权保护的诊断产物；不能证明已脱敏的tail不直接公开，记录省略原因，凭据测试验证不泄露。复用原有凭据脱敏与产物路径校验，不开放任意文件读取。
+- [ ] **Step 5: 真实链路GREEN。** 通过真实dispatcher启动假崩溃worker，再用运行/Task公开查询断言诊断路径可见、未知结果不重跑、日志经过安全处理；重启查询仍存在。重跑Step2及 `uv run --directory apps/backend pytest -q tests/integration/test_workflow_worker_process.py tests/integration/test_workflow_dispatch.py`。只调用manager抛异常的测试不能关闭AC1-12。
+- [ ] **Step 6: 提交。** `fix(worker): drain bounded diagnostics and persist safe references`。
 
 ---
 
@@ -3947,7 +2944,7 @@ git commit -m "feat(studio): 按键节点进入模块库，录制到的回车等
 
 ---
 
-### Task 14: 黄金场景改用回车、文档与里程碑验收
+### Task 14: 黄金场景新增回车版本、文档与里程碑验收
 
 **Files:**
 - Modify: `apps/backend/tests/golden/test_g3_form_entry.py`
@@ -3955,24 +2952,12 @@ git commit -m "feat(studio): 按键节点进入模块库，录制到的回车等
 - Modify: `docs/PROJECT_STRUCTURE.md`
 - Modify: `docs/superpowers/plans/2026-09-26-parameter-batch-concurrency.md`（在"全局约束"中"不提高 core 的两个槽上限"一条后注明：`superseded by remediation M1（2026-09-30）`）
 
-- [ ] **Step 1: G3 改为按回车提交**
+- [ ] **Step 1: G3 保留点击版并新增按键版**
 
-`test_g3_form_entry.py` 的 `build` 中，把
+参数化 submit 节点：点击版保持M0原场景版本，按键版使用press_key、key=Enter、targetType=element、selector=#name，独立scenarioVersion。两版均沿M0受控harness覆盖全部行且每行只提交一次；未知结果缺口保留在独立strict xfail用例。
 
-```python
-                flow_node("submit", "click_element", 2, selector="#submit", timeout=10),
-```
-
-替换为
-
-```python
-                flow_node("submit", "press_key", 2, key="Enter", targetType="element", selector="#name", timeout=10),
-```
-
-并在文档 `nodes` 构造后加上 v2 语义不影响本场景（无错误分支），无需其他改动。
-
-Run（装有 CloakBrowser 时）: `AUTOFLOW_TEST_CLOAKBROWSER=<路径> uv run --directory apps/backend pytest -q -m golden tests/golden -s`
-Expected: G2 通过，`failure_reason_ratio` = 1.0（M0 为 0）；G3 通过至 xfail（结果不明的行仍待 M2），`lose-` 行各只提交 1 次。
+Run: `AUTOFLOW_TEST_CLOAKBROWSER=<路径> AUTOFLOW_GOLDEN_ROWS=30 uv run --directory apps/backend pytest -q -m golden tests/golden -s`。
+Expected: G2与G3两版正确性均通过；故障样本全覆盖且日志原因非空非通用。M0同口径值实测比较，不硬填旧覆盖率为0。manifest同时记录每个版本，不覆盖旧报告。
 
 - [ ] **Step 2: 全量检查**
 
@@ -4022,3 +3007,10 @@ git commit -m "docs: M1 验收记录，黄金场景 G3 改为回车提交"
 ```
 
 派一个未参与实现的评审者，输入本计划、M1 规格与 `git diff main...remediation/m1-stop-silent-failures`，逐条核对 AC 与 Review Focus，给出通过 / 不通过。
+
+## r2 新增的跨层步骤（归属既有任务）
+
+- Task 2 增加 `application/workflows/event_translation.py` 的最小纯函数：仅提取两路径已有错误信息的规范化/截断与脱敏逻辑，Studio worker和ProjectGraphExecutor共同调用；不改变各自传输协议。新增对照测试相同失败/凭据输入产生一致安全原因，再经两入口查询验证。
+- Task 10 增加工作线程领取期间stop/cancel/shutdown的竞争测试：Session不跨线程，已开始事务落定后按原命令核验；保持停止门闩，不能取消await后另起重复领取。
+- Task 9 使用lucide图标且不新增第二套图标导入；ratchets验证实际新键/节点，不通过提高基线吞掉新增债务。
+- Task 14 退出证据必须包括Task3的fork/递归对照、Task8有序更新及取消、Task11的管道压力/磁盘故障/真实查询；这些补充与原AC同等必需。

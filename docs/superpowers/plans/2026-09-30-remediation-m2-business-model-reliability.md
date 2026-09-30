@@ -2,210 +2,110 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 >
-> **本计划为任务级。** M1 通过退出评审后，先用 `superpowers:writing-plans` 把本文件细化为步骤级（每个任务写出测试代码、实现代码、命令与预期输出），经用户确认后再执行。细化时以 M1 结束时的代码为准，并吸收 M1 基准数据。
+> 日期：2026-09-30；r2；proposed任务级计划，未实施。M1退出后各切片细化为步骤级，完成审查后继续执行；不预写未来生产实现。
 
-**Goal:** 让每一行数据的处理结果可预期：处理台账、失败分类与批次熔断、正式的节点出错策略、流程签名、写回自动版本、定时触发。
-
-**Architecture:** 新增 `automation_record_ledger` 表，在 Task 终态投影的同一事务中更新；失败类别随执行器结果透传到运行错误；熔断是调度器推进批次时调用的纯函数；流程签名是流程文档的新顶层字段，解析与引用改写放在 `domain/workflows/signature.py`；定时复用 `application/workflows/schedules.py`。
-
-**Tech Stack:** Python 3.11、SQLAlchemy 2 + Alembic（`rm2_*`）、pydantic（执行器配置 schema）、FastAPI；React + vitest（最小界面）。
-
-**Spec:** [docs/superpowers/specs/2026-09-30-remediation-m2-business-model-reliability.md](../specs/2026-09-30-remediation-m2-business-model-reliability.md)
+**Goal:** 先闭合主处理单位与未知结果保护，再交付签名/写回/预览契约，独立交付触发扩展。
+**Architecture:** 复用RecordRef、Task终态事务和执行器注册表；参考输入不消费，未知结果门禁在所有领取模式之前；前端消费生成契约。
+**Tech Stack:** Python/SQLAlchemy/Alembic/FastAPI、React、已有worker与SQLite。
+**Spec:** [M2规格](../specs/2026-09-30-remediation-m2-business-model-reliability.md)。R2/AC2编号以此为准。
 
 ## Global Constraints
 
-- 存量自动化迁移后 `claimMode = cycle`，行为不变；新建自动化默认 `unprocessed`、`retryBudget = 3`、退避 `[60, 300, 1800]` 秒。
-- 台账更新必须与 Task 终态投影在同一事务；基础设施失败与已取消不增加 attempts。
-- 旧出错键（retryCount、retryDelay、retryBackoff、retryExhaustedAction、timeoutAction、旧 errorPolicy.mode）在读取时迁移为新结构，前后端迁移函数有对照测试；原文档保存前不改写。
-- 旧引用格式 `PROJECT_INPUTS[...]` 在 M2 与 M3 期间继续解析；M6 删除。
-- 所有迁移前自动备份工作区；迁移文件前缀 `rm2_`。
-- 不改领取性能（M3）；M2 的台账过滤在现有候选路径中实现。
+- M2A/B是M3前置；M2C独立交付，不阻塞可靠性/数据闭环。
+- 主输入processingInputId显式冻结；完整作用域含typed key、代次和Sheets namespace，不按裸record_key去重。
+- needs_review在全部模式下阻断；worker失联不能无条件infrastructure；外部动作前的持久状态是M3不得批量丢失的状态事件。
+- 旧重试配置只转换为候选，显式启用才生效；旧失败后继续策略保留兼容模式。
+- 新迁移rm2_接实际唯一head；生产实现前备份与迁移重放；旧解析保留到M6数据门禁通过。
 
 ## Review Focus
 
-1. **同一行被两个自动化处理**：台账主键含 automation_id，两个自动化互不影响各自的尝试次数（Task 1 测试）。
-2. **任务在终态投影前进程崩溃**：恢复流程把运行判为 interrupted 时，台账按 unknown / infrastructure 规则更新，不丢记录（Task 2 测试）。
-3. **重试预算为 0 或用户把 quarantined 行重置**：重置后 attempts 归零、state=pending，可立即领取（Task 1 测试）。
-4. **possible 副作用节点在点击后超时**：不自动重做，归为结果不明（Task 4 测试，黄金场景 G3）。
-5. **定时触发时应用未运行**：重启后按 latestOnly 只补一次，不按错过次数补跑（Task 10 测试）。
+1. 主行订单共享固定账号，账号不能被一次成功消费（Task1/4，AC2-11）。
+2. 提交后失联、成功提交后读取失败、cycle重领、取消后恢复均不重复外部操作（Task2/3/4，AC2-02/04）。
+3. 同表重导入/类型不同的同值key/Sheets改绑不得继承错误台账（Task1，AC2-12）。
+4. 终态投影重放、人工resolve竞争、退避期间重启（Task3/4，AC2-13/14）。
+5. 预览新记录随后查询、临时引用被真实模式消费、旧文档跨版本导入（Task7/9，AC2-08/18）。
 
----
+## M2A：可靠性
 
-### Task 1: 处理台账表与仓储
+### Task 1: 主处理输入、完整身份与台账仓储
 
-**Files:**
-- Create: `apps/backend/src/autoflow/infrastructure/database/migrations/versions/rm2_record_ledger.py`
-- Create: `apps/backend/src/autoflow/domain/project_runs/ledger.py`（状态、转移规则、退避计算，纯函数）
-- Create: `apps/backend/src/autoflow/infrastructure/database/record_ledger.py`（`SqlAlchemyRecordLedger`）
-- Test: `apps/backend/tests/unit/test_record_ledger_rules.py`、`apps/backend/tests/integration/test_record_ledger_repository.py`
+**Files:** `domain/project_runs/ledger.py`、`domain/project_automations/rules.py`、`infrastructure/database/record_ledger.py`、`migrations/versions/rm2_record_ledger.py`（均位于apps/backend/src/autoflow，迁移在infrastructure/database下）；测试 `apps/backend/tests/unit/test_record_ledger_rules.py`、`tests/integration/test_record_ledger_repository.py`。
+**Interfaces:** LedgerScope(automation_id,processing_input_id,完整RecordRef,identity_namespace)；LedgerEntry含累计attempts/processing_cycle/cycle_attempts及revision；get/upsert/reset/skip/resolve仅接受完整scope；批次unit membership保留历史统计；模式的eligible查询不返回裸字符串集合。
+**验证：**AC2-11/12/13；单输入迁移自动选主输入，多输入歧义列报告并禁止新批；旧未知运行门禁迁移。参考输入继续原租约检查，不建立第二套锁。
 
-**Interfaces:**
-- Produces: `LedgerState = Literal["pending","succeeded","failed_retryable","quarantined","needs_review","skipped"]`；`next_ledger_entry(entry | None, outcome: TaskOutcome, *, budget: int, backoff: Sequence[int], now: datetime) -> LedgerEntry`；`SqlAlchemyRecordLedger(session).get(automation_id, table_id, record_key)`、`.upsert(entry)`、`.reset(automation_id, keys | state)`、`.skip(...)`、`.eligible_keys(automation_id, table_id, mode, now) -> set[str]`、`.counts(automation_id, batch_id) -> dict[LedgerState, int]`。
+### Task 2: 失败分类、整Task重放边界与节点策略
 
-**测试要点：** 每种类别的转移（见规格 4.3 表）；预算耗尽进入 quarantined；退避时间按次数取值且超出列表长度时用最后一个；reset 清零；两个自动化互不影响。
+**Files:** `domain/workflows/error_policy.py`、`application/workflows/runtime.py`、`application/workflows/executors/base.py`及网页执行器、`providers/browser/project_graph.py`、`infrastructure/process/project_workflow_worker.py`、`application/workflows/dispatcher.py`；前端workflows的errorPolicy及配置面板。
+**Interfaces:** ModuleResult可选error_code/error_category；ErrorPolicy候选迁移与显式启用；持久副作用边界随执行代次、runId、attempt记录，状态ACK后才发出动作；整Task/goto安全判定读取该事实，不仅看最后失败节点。
+**验证：**AC2-02/04/05/15；启动前失败与动作中EOF使用相同code也得到不同分类；未知无法用retryOn:any、cycle或新Task绕过；前后端迁移样例一致。
 
----
+### Task 3: 终态同事务投影、业务结果和人工核实
 
-### Task 2: 终态投影同事务更新台账
+**Files:** `application/project_runs/events.py`及实际终态投影用例（实施前追踪全调用链）、`domain/workflows/project_end.py`、End执行器、台账HTTP adapter及最小待核实页面。
+**Interfaces:** next_ledger_entry(entry,outcome,budget,backoff,now)；Task终态/账本同事务且原终态去重；resolve的三种决定与理由/修订/幂等键按R2-06；公开错误保留M1诊断。
+**验证：**AC2-03/13；重复事件只计一次、事务回滚、崩溃重启、active Task和人工决定竞争；unknown不可用reset或skip→reset清除。先完成Task2分类，不以page临时替代。
 
-**Files:**
-- Modify: `apps/backend/src/autoflow/application/project_runs/`（Task 终态投影所在用例；细化时用 `git grep -n "def .*terminal" application/project_runs` 定位）
-- Modify: `apps/backend/src/autoflow/application/workflows/dispatcher.py`（恢复路径的 interrupted 结果带 category）
-- Test: `apps/backend/tests/integration/test_record_ledger_projection.py`
+### Task 4: 三种领取模式、maxRows与退避唤醒
 
-**Interfaces:**
-- Consumes: Task 1 的 `next_ledger_entry`、`SqlAlchemyRecordLedger`；Task 3 的错误 `category`（Task 3 未完成时默认 page）。
-- Produces: 每个数据任务终态后台账有且仅有一条对应更新。
+**Files:** `infrastructure/database/project_claims.py`、`application/project_runs/scheduler.py`、自动化/批次rules、`rm2_automation_claim_mode.py`；RunPolicyEditor和批次详情最小计数/待办。
+**Interfaces:** 主处理单位的批次membership；统一安全门禁→退避→模式过滤；返回noMatch与未来eligible的最早时刻分开；重启恢复等待，stop不再领取。参数型无数据任务保持原计数，不写行台账。
+**验证：**AC2-01/02/11/14；参考输入重复使用、预算3只尝试3次、maxRows不被重试耗尽、cycle延迟、旧unknown门禁与不同批次统计互不覆盖；连续成功多轮后失败按本轮预算，失败跨批次预算不重置，显式人工reset保留审计。
 
-**测试要点：** 投影事务回滚时台账也回滚；参数型批次（无数据输入）不写台账；崩溃恢复为 interrupted 的任务按 unknown 规则进入 needs_review。
+### Task 5: 熔断、坏行隔离与暂停恢复
 
----
+**Files:** `domain/project_runs/circuit_breaker.py`、scheduler、project_claims、`rm2_batch_failure_policy.py`、批次接口和页面。
+**Interfaces:** legacyAnyFailure/legacyContinue与thresholds显式模式；暂停原因含样本；仅身份可信的坏主行可隔离；模糊Sheets身份保留来源门禁。
+**验证：**AC2-05/06/15；旧行为不静默迁为新阈值，业务与unknown不计技术熔断，暂停/继续不清空账本。
 
-### Task 3: 失败分类贯通
+### Task 6: 配置schema与M2A退出
 
-**Files:**
-- Modify: `apps/backend/src/autoflow/application/workflows/executors/base.py`（`ModuleResult` 增加可选 `error_code`、`error_category`）
-- Modify: 网页类执行器（`web_basic.py`、`web_actions` 相关文件）映射 ELEMENT_NOT_FOUND、NAVIGATION_TIMEOUT 等
-- Modify: `apps/backend/src/autoflow/providers/browser/project_graph.py`（运行错误带 category；未知为 page）
-- Modify: `apps/backend/src/autoflow/infrastructure/process/project_workflow_worker.py`、`dispatcher.py`（WORKER_LOST、BROWSER_LAUNCH_FAILED、PROXY_CONNECT_FAILED → infrastructure）
-- Test: `apps/backend/tests/unit/workflows/test_error_categories.py`、`apps/backend/tests/integration/test_error_category_projection.py`
+**Files:** 执行器注册表的配置schema导出、`bootstrap/executor_schema_export.py`、`scripts/ratchets.mjs`及对应测试。
+**Interfaces:** 每个节点的schema与面板键对应；有效选项有行为测试，未知键警告；恢复统一出错控件，删除M1隐藏开关前覆盖全部入口。
+**验证：**AC2-01至06、10至15逐项真实测试，G3独立xfail转正；文档/台账状态同步后独立退出。M2A未退出不做性能重构。
 
-**Interfaces:**
-- Produces: 运行错误 `{code, category, message, hint?, nodeId?, attempt?}`；`ErrorCategory = Literal["infrastructure","page","business","unknown","cancelled"]`。
+## M2B：数据契约
 
-**测试要点：** 每个稳定编码映射到类别；日志保留原始异常类型；凭据脱敏不受影响。
+### Task 7: 流程签名、绑定与可重入迁移
 
----
+**Files:** `domain/workflows/signature.py`、`domain/workflows/validation.py`/`document.py`、`domain/project_automations/rules.py`、`application/workflows/signature_migration.py`、项目worker输入上下文；GET `/api/v1/migrations/signature-report`；最小绑定界面。
+**Interfaces:** R2-18至22；bindingId沿用inputId，不丢mode/required/relations/代次；保留旧解析和未决报告。
+**验证：**AC2-07/08；两自动化复用流程、改名、敏感值、跳版本、旧文件导入与歧义不中断旧执行。迁移失败不是删除兼容代码的许可。
 
-### Task 4: 节点出错策略正式实现
+### Task 8: 自动版本写回与设计期结构
 
-**Files:**
-- Create: `apps/backend/src/autoflow/domain/workflows/error_policy.py`（新结构、旧键迁移、退避计算）
-- Modify: `apps/backend/src/autoflow/application/workflows/runtime.py`（`_execute_claimed` / `_dispatch`：retry、goto、onExhausted；每次重试新 attempt 事件）
-- Modify: 各执行器声明 `side_effect`
-- Create: `apps/desktop/src/renderer/domains/workflows/lib/errorPolicy.ts`（同一迁移函数）
-- Modify: `ConfigPanel.tsx`、`BlockFlowView.tsx`、`WorkflowEditor.tsx`（新的统一"出错时"控件；删除 `featureFlags.nodeRetryPolicy` 与 M1 的 `inertSettings`，后端删除 `domain/workflows/inert_settings.py`）
-- Test: `apps/backend/tests/unit/workflows/test_error_policy.py`、`apps/backend/tests/unit/workflows/test_runtime_retry.py`、`apps/desktop/src/renderer/domains/workflows/tests/error-policy.test.tsx`、前后端迁移对照测试（后端读取前端导出的样例 JSON）
+**Files:** `domain/project_data/capabilities.py`、现有application/infrastructure写回路径、前端数据节点最小界面。
+**Interfaces:** 自动expectedContentRevision基于冻结值与Task写游标；字段冲突保留原命令恢复，敏感冲突值打码；结构操作预检指向数据页。
+**验证：**AC2-16；两次本Task写、他人同字段/不同字段更新、显式旧版本、丢响应重放；不放宽租约与来源身份校验。
 
-**Interfaces:**
-- Produces: `ErrorPolicy`（规格 R2-08）；`migrate_legacy_error_settings(data) -> ErrorPolicy | None`（前端同名 `migrateLegacyErrorSettings`）；执行器类属性 `side_effect: Literal["none","possible"]`。
+### Task 9: 后端预览写入模式（M5试跑前置）
 
-**测试要点：** 首次加载超时注入后 retry 节点恢复且有两个 attempt；possible 节点动作后超时不重做而是 unknown；goto 受全局调度上限保护；旧文档打开后显示为等价的新设置。
+**Files:** `domain/project_runs/rules.py`、批次/运行HTTP schema、coordinator快照、worker私有协议、`application/project_data/capabilities.py`、End保存边界；对应真实HTTP/SQLite/worker集成测试。
+**Interfaces:** executionMode=previewWrites/realWrites冻结在原请求；默认预览仅针对试跑入口，普通批次保持realWrites。运行私有覆盖层提供写后读与新记录预览引用，真实能力接口拒绝临时引用。生产台账不消费预览任务，诊断记录与预览数据隔离。End保存预检明确拒绝，浏览器外部动作仍真实。
+**验证：**AC2-18；读取/查询均看到覆盖层，真实记录/版本/台账/同步意图/环境不变；改worker请求不能提权；显式realWrites才写入；重启仅核验原预览事实，不自动重跑。API生成后供M5B使用。
 
----
+### Task 10: 最小输出契约与必有/条件输出
 
-### Task 5: 执行器配置 schema 与精确守门
+**Files:** 既有执行器注册表、`domain/workflows/references.py`、`providers/browser/project_graph.py`、目录HTTP/export与前端生成类型。
+**Interfaces:** 稳定nodeId/outputKey、name/type/sensitive/availability；旧变量别名兼容，新引用不靠可改显示名寻址。使用当前结构化图分析判定所有有效路径均定义的输出；条件输出必须显式判空/默认值，不能用简单可达性。
+**验证：**AC2-17；分支汇合、零次循环、错误边、节点重命名。此时不引入表达式函数库或大规模旧节点转换（M6）。
 
-**Files:**
-- Create: `apps/backend/src/autoflow/application/workflows/executors/config_schemas.py`（pydantic 模型注册表）
-- Modify: `WorkflowRuntime.preflight`（未知配置键 → 警告 issue）
-- Modify: `scripts/ratchets.mjs`（配置键检查改为读取 `python -m autoflow.bootstrap.executor_schema_export` 的输出做精确比较）
-- Test: `apps/backend/tests/unit/workflows/test_config_schemas.py`、`scripts/ratchets.test.mjs`
+### Task 11: M2B退出与native吞吐基线
 
-**测试要点：** 每个可执行节点都有 schema；前端面板写入的每个键都在对应 schema 中；`unreadConfigKeys` 为 0。
+AC2-07/08/16至19逐项验收；保留M0受控场景，新增native-batch-v1（真实台账领取+写回），固定数据/故障/硬件/内核/并发至少5次采样。记录commit与分布，作为M3优化前对照；不把M0不同口径当分母。独立退出后M3和M5B可接入。
 
----
+## M2C：独立扩展
 
-### Task 6: End 节点业务结果
+### Task 12: 定时/Webhook
 
-**Files:**
-- Modify: `apps/backend/src/autoflow/domain/workflows/project_end.py`、End 执行器、`project_graph.py`（业务失败 → 任务结果 business）
-- Modify: `apps/desktop/.../config-panels/ProjectEndConfig.tsx`（业务结果下拉 + 原因）
-- Test: `apps/backend/tests/unit/test_project_end_business_result.py`、前端面板测试
+**Files:** `application/workflows/schedules.py`、HTTP调度adapter、`rm2_automation_schedules.py`、自动化调度页签。
+**Interfaces:** R2-25至27；定时使用计划时间身份，Webhook要求来源事件ID/幂等键，复用loopback鉴权，不扩公网服务。
+**验证：**AC2-09；时区/重启/重叠三策略、密钥错误、同事件重放只启动一次。步骤细化时单独确认。
 
-**测试要点：** "登录失败 → End(业务失败)"任务结果为 business，台账 skipped，批次继续。
+### Task 13: 网页原语及M2C退出
 
----
+**Files:** 执行器web_storage/web_intercept或既有web_basic、scope/catalog、前端登记点（沿M1登记清单）。
+**验证：**AC2-20真实浏览器Cookie/Storage/拦截，配置schema/副作用/敏感输出一并测试；单独退出不追改已关闭的M2A/B证据。
 
-### Task 7: 领取模式与台账过滤、maxRows
+## 验证命令与证据
 
-**Files:**
-- Modify: `apps/backend/src/autoflow/domain/project_automations/rules.py`（`claimMode`、`retryBudget`、`retryBackoffSeconds`、`maxRows`；取消 1–100 上限）
-- Modify: `apps/backend/src/autoflow/domain/project_runs/rules.py`
-- Modify: `apps/backend/src/autoflow/infrastructure/database/project_claims.py`（候选按 `eligible_keys` 过滤）
-- Create: `rm2_automation_claim_mode.py`（存量 → cycle）
-- Modify: 自动化运行设置界面（`RunPolicyEditor.tsx`：领取模式单选、重试预算）
-- Test: `apps/backend/tests/integration/test_claim_modes.py`、`RunPolicyEditor.test.tsx`
-
-**测试要点：** unprocessed 下永远失败的行在第 3 次后不再领取、其余行继续；cycle 与现状一致（复用 `test_reuse_count_uses_physical_input_identity_not_revision_tuple`）；retryFailed 只领失败行；maxRows 为空时直到无可领取行结束。
-
----
-
-### Task 8: 批次熔断与暂停状态
-
-**Files:**
-- Create: `apps/backend/src/autoflow/domain/project_runs/circuit_breaker.py`（纯函数：输入最近任务类别与错误码序列，输出是否暂停及原因）
-- Modify: `apps/backend/src/autoflow/application/project_runs/scheduler.py`（推进时评估；新状态 `paused`；继续 / 结束命令）
-- Create: `rm2_batch_failure_policy.py`（`continueAfterFailure` → 阈值）
-- Modify: 批次详情接口与页面（暂停原因、继续 / 结束按钮、按台账 state 的计数）
-- Test: `apps/backend/tests/unit/test_circuit_breaker.py`、`apps/backend/tests/integration/test_batch_pause_resume.py`
-
-**测试要点：** 三条阈值各自触发；业务失败与 unknown 不计入；暂停后进度保留、继续后从台账接着领。
-
----
-
-### Task 9: 坏行隔离
-
-**Files:**
-- Modify: `apps/backend/src/autoflow/infrastructure/database/project_claims.py`（约 555 行的行级错误改为隔离该行）
-- Test: `apps/backend/tests/integration/test_bad_row_quarantine.py`（含 Sheets 行校验失败场景，复用 `tests/fixtures/sheets.py`）
-
----
-
-### Task 10: 定时与 Webhook 启动项目批次
-
-**Files:**
-- Modify: `apps/backend/src/autoflow/application/workflows/schedules.py`（`target.kind = automation`、重叠策略、错过补跑）
-- Create: `rm2_automation_schedules.py`
-- Modify: `apps/backend/src/autoflow/adapters/http/workflow_schedules.py`（或新增自动化调度路由）、OpenAPI
-- Modify: 自动化详情"调度"页签
-- Test: `apps/backend/tests/integration/test_automation_schedules.py`（可注入时钟）、前端页签测试
-
-**测试要点：** 幂等键 = 调度 ID + 触发时间；skip 下无重叠批次；重启后 latestOnly 只补一次；Webhook 密钥错误返回 401 且不启动。
-
----
-
-### Task 11: 流程签名（后端）
-
-**Files:**
-- Create: `apps/backend/src/autoflow/domain/workflows/signature.py`（模型、校验、`{input.组.字段}` 解析、旧格式兼容）
-- Modify: `domain/workflows/validation.py`、`document.py`（接受 `signature`）
-- Modify: 项目 worker 输入上下文构建（由签名 + 绑定生成变量）
-- Modify: `domain/project_automations/rules.py`（`bindings` 替代 `inputPlan.inputs` 的字段映射部分，旧结构读时转换）
-- Test: `apps/backend/tests/unit/workflows/test_signature.py`、`apps/backend/tests/integration/test_signature_binding_run.py`
-
-**测试要点：** 同一流程被两个绑定到不同表的自动化复用；绑定缺字段时启动被拒并指出字段；敏感标记来自签名或表字段。
-
----
-
-### Task 12: 签名迁移脚本与报告
-
-**Files:**
-- Create: `apps/backend/src/autoflow/application/workflows/signature_migration.py`
-- Create: `GET /api/v1/migrations/signature-report`
-- Test: `apps/backend/tests/integration/test_signature_migration.py`（对 `tests/fixtures/workflows.py` 与项目夹具中的全部流程运行）
-
----
-
-### Task 13: 写回自动版本与移除运行时表结构操作
-
-**Files:**
-- Modify: `apps/backend/src/autoflow/domain/project_data/capabilities.py`（移除 addField / modifyField / deleteField / previewFieldDeletion；预检报错）
-- Modify: 写回路径（省略 `expectedContentRevision` 时用领取时冻结版本；按字段判断冲突）
-- Test: `apps/backend/tests/integration/test_writeback_auto_revision.py`、`test_runtime_schema_ops_rejected.py`
-
----
-
-### Task 14: 其余网页原语
-
-**Files:**
-- Modify: `web_basic.py`（或新建 `web_storage.py`、`web_intercept.py`）、`scope.py`、`catalog.py`、前端登记点（同 M1 Task 12–13 的清单）
-- Test: 单元测试 + 真实浏览器测试（Cookie 读写、localStorage、屏蔽图片请求）
-
----
-
-### Task 15: 黄金场景与里程碑验收
-
-- 把 G2 扩展为写结果表（使用 Task 13 的写回）；G3 的 xfail 转正（结果不明 → needs_review）。
-- 运行全部检查与黄金场景，逐条勾选 AC2-01 至 AC2-10；更新 `.ai`、`docs/PROJECT_STRUCTURE.md`；把 `execution-and-environment.md` §4.1、XE-A21/A22、`.ai/decisions/2026-09-12-project-data-workflow-semantics.md` 标记 superseded（指向本里程碑）。
-- 独立评审者做退出评审。
+步骤级细化后每个Task先RED后GREEN；使用 `uv run --directory apps/backend pytest -q <本任务测试>`、Ruff/mypy、`npm run openapi:check`及对应前端测试。切片退出运行受影响全量、类型/lint/build与真实黄金场景，记录平台边界。所有AC逐条挂实际报告；本文件为计划，不能写入通过数字。

@@ -4,6 +4,8 @@
 
 2026-09-28 更新（confirmed；源码、真实 worker 与浏览器验证）：Studio 正式入口已接入本机 sidecar、SQLite 和生产执行器。早期 [memory/studio-status.md](memory/studio-status.md) 的 Mock 阶段结论作为历史记录保留，不能代表当前实现。当前缺陷与修复证据见 [审计](../docs/qa/2026-09-28-system-audit/README.md) 和 [修复台账](../docs/qa/2026-09-28-remediation/README.md)；PM9 End、持久人工恢复及跨平台验收仍未完成。
 
+2026-09-30 整改文档 r2（confirmed 修订，实施未开始）：见 [M0–M6 索引](plans/2026-09-30-remediation-program.md)。该索引和总纲统一阶段依赖与验收口径，旧评审及会话记录保留历史语境。
+
 ## 目录
 
 - `memory/`：稳定的项目事实、用户偏好、当前目标。
