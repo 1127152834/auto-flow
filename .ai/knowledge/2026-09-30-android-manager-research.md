@@ -5,6 +5,7 @@
 - 来源/验证：当前 `codex/architecture-baseline@d099c042` 源码、正在运行的 Electron 开发入口、CUA 新截图及公开官方文档/仓库。五张截图已重新打开核对。
 - 用户本轮要求：先研究讨论 UI、布局、最新/指定系统版本、Google 服务、系统定制与直接操作，先成为可独立使用的模拟器管理工具，再接自动化；没有授权本轮直接重构业务实现。
 - 研究与来源：[完整报告](../../docs/research/android-manager-2026-09-30/README.md)。
+- 纯虚拟化续篇（2026-09-30，America/Los_Angeles；公开资料 confirmed，路线 proposed）：[可行性与验证方案](../../docs/research/android-manager-2026-09-30/pure-virtualization.md)。联网已恢复；发现 QEMU/LineageOS GSI、Cuttlefish CHD 与 FMD Rehoster 路线。社区 HyperOS 3 启动展示不是完整系统验收；本轮未找到合格的纯虚拟 One UI 候选。提议先做 Google 能力基线及单个 OEM 实验，不先开发多引擎架构。
 - 同日用户澄清（confirmed）：必须是真实厂商设置、权限与系统应用，尽可能接近真机；希望应用不识别为模拟器，并具备定位、电话号码、相机及录音能力。“仅外观即可”和“真实 OEM 是否必需仍待确认”的旧假设 superseded。详细技术边界与官方来源见报告追加节。
 - 最新范围（2026-09-30，America/Los_Angeles；confirmed；用户明确“不使用实体手机”）：只研究电脑/服务器纯虚拟化；本地或托管物理手机路线排除。此前“优先真机”“是否接受真机待确认”均 superseded，不再重复询问。厂商系统虚拟化、宿主相机/麦克风桥接及通信能力需分别验证；不存在本轮已验证的 One UI/HyperOS 镜像或通用不可识别保证。
 - 现状：安卓独立 CSS/PrototypeControls 与共享设计系统分离；创建页当前只有 Android 13 配置；镜像目录为零；运行环境页面报告 Lima 已停止；在线操控本轮 blocked。
