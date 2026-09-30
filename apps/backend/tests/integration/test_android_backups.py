@@ -376,3 +376,44 @@ async def test_cancelled_backup_estimation_records_no_write_and_releases_for_new
     backup = await service.create_with_runtime(_device(), None, runtime, "new-estimate", 1)
     assert backup["state"] == "available" and runtime.backup_calls == 1
     sessions.dispose()
+
+
+@pytest.mark.parametrize("operation", ["require_space", "snapshot", "inventory", "_sync"])
+def test_backup_storage_rejects_unsupported_posix_operations(
+    tmp_path, monkeypatch, operation
+):
+    from types import SimpleNamespace
+
+    from autoflow.providers.android import backup_storage
+
+    monkeypatch.setattr(backup_storage, "sys", SimpleNamespace(platform="win32"), raising=False)
+    storage = backup_storage.BackupStorage(tmp_path / "backups")
+    directory = storage.staging / "candidate"
+    directory.mkdir(parents=True)
+    archive = directory / "data.tar"
+    archive.write_bytes(b"unchanged")
+    arguments = {
+        "require_space": (1, 1),
+        "snapshot": (directory,),
+        "inventory": (set(),),
+        "_sync": (archive,),
+    }
+    with pytest.raises(AndroidError) as failure:
+        getattr(storage, operation)(*arguments[operation])
+    assert failure.value.code == "ANDROID_PLATFORM_UNSUPPORTED"
+    assert archive.read_bytes() == b"unchanged"
+
+
+def test_backup_inventory_on_unsupported_platform_keeps_empty_workspaces_readable(
+    tmp_path, monkeypatch
+):
+    from types import SimpleNamespace
+
+    from autoflow.providers.android import backup_storage
+
+    monkeypatch.setattr(backup_storage, "sys", SimpleNamespace(platform="win32"))
+    storage = backup_storage.BackupStorage(tmp_path / "backups")
+    assert storage.inventory(set()) == []
+    empty = storage.staging / "empty"
+    empty.mkdir(parents=True)
+    assert storage.snapshot(empty)["size"] == 0

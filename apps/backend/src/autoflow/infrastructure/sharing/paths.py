@@ -25,6 +25,8 @@ from uuid import uuid4
 class _WindowsHandle(Protocol):
     def Close(self) -> None: ...
 
+    def Detach(self) -> int: ...
+
 
 _UPLOAD_PREFIX = ".autoflow-upload-"
 
@@ -58,7 +60,7 @@ class ShareDirectory:
         self._closed = False
         self._active = 0
         try:
-            if os.name == "nt":
+            if sys.platform == "win32":
                 # Pin ancestors too: replacing an ancestor must not redirect a later
                 # CreateFile pathname while a directory handle remains open.
                 self._win = importlib.import_module("win32file")
@@ -134,7 +136,7 @@ class ShareDirectory:
     def directory(self, value: str, *, create: bool = False) -> Iterator[int | Path]:
         components = parts(value)
         with self._operation(), ExitStack() as stack:
-            if os.name == "nt":
+            if sys.platform == "win32":
                 path = self.root
                 for component in components:
                     path /= component
@@ -179,6 +181,8 @@ class ShareDirectory:
                 handle = self._windows_open(parent / components[-1])
                 fd = msvcrt.open_osfhandle(handle.Detach(), os.O_RDONLY | os.O_BINARY)
             else:
+                if sys.platform == "win32":
+                    raise RuntimeError("POSIX directory descriptors require POSIX")
                 try:
                     fd = os.open(
                         components[-1],
@@ -209,6 +213,8 @@ class ShareDirectory:
                     stage = parent / name
                     stack.callback(self._windows_open(stage, directory=True, private=True).Close)
                 else:
+                    if sys.platform == "win32":
+                        raise RuntimeError("POSIX directory descriptors require POSIX")
                     stage = os.open(name, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=parent)
                     stack.callback(os.close, stage)
                 try:

@@ -40,7 +40,7 @@ LABEL = "io.autoflow.android.workspace"
 async def _stop_command(process: asyncio.subprocess.Process) -> None:
     # Failed or interrupted limactl commands may leave an SSH child writing archives.
     try:
-        if os.name == "posix":
+        if sys.platform != "win32":
             os.killpg(process.pid, signal.SIGKILL)
         elif process.returncode is None:
             process.kill()

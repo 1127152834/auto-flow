@@ -4,6 +4,7 @@ import os
 import re
 import shutil
 import stat
+import sys
 import tarfile
 from collections import deque
 from collections.abc import Iterator
@@ -108,6 +109,8 @@ class BackupStorage:
             target = target.parent
         try:
             free = shutil.disk_usage(target).free
+            if sys.platform == "win32":
+                raise AndroidError("ANDROID_PLATFORM_UNSUPPORTED", "当前平台不支持安卓备份文件操作", 409)
             block = os.statvfs(target).f_frsize
             if type(free) is not int or free < 0 or type(block) is not int or block <= 0:
                 raise ValueError("invalid filesystem capacity")
@@ -143,6 +146,8 @@ class BackupStorage:
             info = child.lstat()
             if not stat.S_ISREG(info.st_mode):
                 raise AndroidError("ANDROID_CLEANUP_CHANGED", "清理目录包含不支持的链接或特殊条目", 409)
+            if sys.platform == "win32":
+                raise AndroidError("ANDROID_PLATFORM_UNSUPPORTED", "当前平台不支持安卓备份文件操作", 409)
             descriptor = os.open(child, os.O_RDONLY | os.O_NOFOLLOW)
             with os.fdopen(descriptor, "rb") as stream:
                 for chunk in iter(lambda: stream.read(1024 * 1024), b""):
@@ -160,7 +165,7 @@ class BackupStorage:
     def inventory(self, registered_ids: set[str]) -> list[dict[str, Any]]:
         if self.root.is_symlink():
             raise AndroidError("ANDROID_CLEANUP_CHANGED", "备份根目录不是受控目录", 409)
-        items = []
+        items: list[dict[str, Any]] = []
         for parent, prefix in ((self.staging, "staging"), (self.final, "orphan")):
             if parent.is_symlink():
                 raise AndroidError("ANDROID_CLEANUP_CHANGED", "备份目录不是受控目录", 409)
@@ -172,6 +177,8 @@ class BackupStorage:
                 if prefix == "orphan" and candidate.name in registered_ids:
                     continue
                 snapshot = self.snapshot(candidate)
+                if sys.platform == "win32":
+                    raise AndroidError("ANDROID_PLATFORM_UNSUPPORTED", "当前平台不支持安卓备份文件操作", 409)
                 try:
                     descriptor = os.open(candidate / "manifest.json", os.O_RDONLY | os.O_NOFOLLOW)
                     with os.fdopen(descriptor, "rb") as stream:
@@ -240,6 +247,8 @@ class BackupStorage:
 
     @staticmethod
     def _sync(path: Path) -> None:
+        if sys.platform == "win32":
+            raise AndroidError("ANDROID_PLATFORM_UNSUPPORTED", "当前平台不支持安卓备份文件操作", 409)
         descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
         try:
             os.fsync(descriptor)
