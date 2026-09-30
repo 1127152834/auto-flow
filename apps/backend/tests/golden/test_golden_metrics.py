@@ -69,6 +69,7 @@ def test_blank_and_generic_errors_do_not_count_as_explained_failures():
         {},
         {"message": " "},
         {"message": "工作流节点执行失败"},
+        {"message": "工作流未完整成功，请查看已提交的节点记录"},
         {"message": "selector #name was not found"},
     ]
     run = GoldenRun(
@@ -76,7 +77,7 @@ def test_blank_and_generic_errors_do_not_count_as_explained_failures():
         elapsed_seconds=60,
         expected_refs=[REF],
     )
-    assert run.metrics()["failure_reason_ratio"] == (0.2, "ratio")
+    assert run.metrics()["failure_reason_ratio"] == (1 / 6, "ratio")
 
 
 def test_incomplete_attempts_or_invalid_timing_are_not_reportable():

@@ -23,3 +23,5 @@ Task 7 已实现（Task6长运行期间独立推进）：四项文本守门、�
 Task 8 本地配置完成，远端验证未执行：checks增加守门、离线基准与报告上传；独立golden workflow支持手动/每晚触发、固定真实内核、数值/manifest/逐行证据上传。YAML实际解析及原触发规则+守门9项通过。依据30行黄金203秒实测，将夜间默认改为各101行（推算万行受控批次存在超时风险，未宣称测过万行）；不改M2B原生吞吐目标。未推送或触发远端CI，AC0-07仍待验证。
 
 Task9文档已加入整改硬性规则、目录职责及实际观察表；表明确sourceDirty/并行测量不可作收益基线、CI未执行，未填写计划预期。结构4项通过。Task6定向汇总41 passed/3 deselected/1既有anyio警告；Ruff全后端通过、mypy547通过（既有annotation-unchecked提示）。101行G2已完成99成功/2预期失败，G3和全后端回归仍运行。
+
+Task6真实harness已接通并完成30行验证（202.69s，2 passed/1 strict xfailed/8 deselected）：公开自动化创建后保存其自有工作流，open_page显式profile；真实TCP/SQLite/worker/内核、分页选行、单任务批次并发2、等待任务终态与清理、逐行输出/站点回执核验、manifest及rows证据。初始fixture沿用旧workflowId创建契约触发422，修正为当前API；2秒open超时发生于浏览器初始化，修正15秒仍小于20秒故障延迟。3行冒烟2通过/1预期失败；未配内核3跳过只证明选择正常。101行完整验收仍待G3完成，Task6不标全部完成。
