@@ -1,0 +1,11 @@
+# 安卓独立管理工具研究
+
+- 日期：2026-09-30。
+- 状态：confirmed（本轮源码/界面观察）；proposed（产品结构与引擎路线）。
+- 来源/验证：当前 `codex/architecture-baseline@d099c042` 源码、正在运行的 Electron 开发入口、CUA 新截图及公开官方文档/仓库。五张截图已重新打开核对。
+- 用户本轮要求：先研究讨论 UI、布局、最新/指定系统版本、Google 服务、系统定制与直接操作，先成为可独立使用的模拟器管理工具，再接自动化；没有授权本轮直接重构业务实现。
+- 研究与来源：[完整报告](../../docs/research/android-manager-2026-09-30/README.md)。
+- 现状：安卓独立 CSS/PrototypeControls 与共享设计系统分离；创建页当前只有 Android 13 配置；镜像目录为零；运行环境页面报告 Lima 已停止；在线操控本轮 blocked。
+- 代码：现有生命周期、批量、备份、镜像和 scrcpy 控制应复用；当前 provider 限定 Mac ARM64。音频和自动剪贴板同步关闭，但已有 Unicode 文本注入。不能以代码存在宣称本轮真实设备验收通过。
+- 提议：借鉴 Genymotion 信息架构、MuMu/BlueStacks 多开体验；评估官方 Android Emulator 的 Google Play 主路径，保留 ReDroid。真实 One UI/HyperOS 优先评估真机；内核/厂商 ROM 定制另作研究。
+- 边界：新方案未批准，不覆盖旧视觉批准记录、不提升安卓整体 partial 状态；未修改业务代码、安装或启动运行时、操作账号、创建/删除设备。架构实现前继续遵守设计/规格/实施计划确认门槛。
