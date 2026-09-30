@@ -15,7 +15,6 @@ from autoflow.adapters.http.android_management import (
 )
 from autoflow.adapters.http.errors import error_response, install_error_handlers
 from autoflow.adapters.http.image_assets import image_assets_router
-from autoflow.adapters.http.laya_lab import laya_lab_router
 from autoflow.adapters.http.local_workflows import local_workflows_router
 from autoflow.adapters.http.openapi import configure_openapi
 from autoflow.adapters.http.studio_credentials import studio_credentials_router
@@ -33,7 +32,6 @@ from autoflow.application.android.images import AndroidImageService
 from autoflow.application.android.observations import DeviceObservationService
 from autoflow.application.environments.service import EnvironmentService
 from autoflow.application.kernels.service import KernelService
-from autoflow.application.lab.service import LayaService
 from autoflow.application.models.service import ModelService
 from autoflow.application.profiles.service import ProfileService
 from autoflow.application.profiles.test_browser import ProfileTestBrowserService
@@ -214,7 +212,6 @@ from autoflow.providers.kernel.cloakbrowser import (
     CloakBrowserCatalogProvider,
     CloakBrowserLicenseProvider,
 )
-from autoflow.providers.laya.runtime import LayaRuntime
 from autoflow.providers.model.http import HttpModelProvider
 
 
@@ -652,10 +649,7 @@ def create_app(
                 if isawaitable(closing):
                     await closing
             finally:
-                try:
-                    laya_runtime.close()
-                finally:
-                    session_factory.dispose()
+                session_factory.dispose()
 
     app.router.add_event_handler("shutdown", shutdown)
     register_management_routes(
@@ -674,8 +668,6 @@ def create_app(
         api_version=settings.api_version,
         instance_id=settings.instance_id,
     )
-    laya_runtime = LayaRuntime(paths.cache)
-    app.include_router(laya_lab_router(LayaService(laya_runtime)))
     register_workflow_routes(app, workflow_services, project_interactions=project_workflow_dispatcher.interactions)
     app.include_router(local_workflows_router(local_workflows, webdav_workflows))
     app.include_router(image_assets_router(image_assets))

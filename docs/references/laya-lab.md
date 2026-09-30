@@ -1,7 +1,7 @@
 # Laya 决策实验：来源、部署与接口
 
 - 日期：2026-09-23
-- 状态：confirmed（来源和首版设计）；真实权重、平台打包验证结果以实施任务的测试记录为准。
+- 状态：superseded（2026-09-30 用户舍弃该能力，AutoFlow 已移除 Laya；见 [退役记录](../../.ai/sessions/2026-09-30-remove-laya.md)）。下文保留历史调研、设计和验证结果，不代表当前接口。
 - 验证方式：阅读上游 README、PyPI 元数据、Hugging Face 模型卡与推理源码；核对 AutoFlow 当前 Python、PyInstaller、OpenAPI 和桌面导航实现。
 
 ## 外部资料（均于 2026-09-23 核查）

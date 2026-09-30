@@ -10,6 +10,14 @@ def test_schema_export_matches_the_formal_application(client):
     assert export_schema() == client.get('/openapi.json').json()
 
 
+def test_retired_lab_is_absent_from_runtime_and_schema(client):
+    assert client.get('/api/v1/lab/laya/status').status_code == 404
+    assert client.post('/api/v1/lab/laya/predict', json={}).status_code == 404
+    schema = export_schema()
+    assert not any(path.startswith('/api/v1/lab/') for path in schema['paths'])
+    assert not any(name.startswith('Laya') for name in schema['components']['schemas'])
+
+
 def test_schema_export_does_not_construct_runtime(monkeypatch, tmp_path):
     def forbidden(*args, **kwargs):
         raise AssertionError('schema export invoked runtime setup')

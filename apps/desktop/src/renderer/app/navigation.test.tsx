@@ -13,14 +13,15 @@ it('parses project context and rejects malformed or unsupported project addresse
   expect(parseAppLocation(`#/projects/${id}/bogus`).error).toBeTruthy()
   expect(parseAppLocation('#/projects/not-an-id/overview').error).toBeTruthy()
   expect(parseAppLocation('#/profiles').section).toBe('profiles')
-  expect(parseAppLocation('#/lab').section).toBe('lab')
+  expect(parseAppLocation('#/lab').section).toBe('dashboard')
 })
 
-it('exposes the lab as a global navigation tab', () => {
+it('keeps model management available without the retired lab tab', () => {
   const onNavigate = vi.fn()
   render(<ApplicationHeader route="dashboard" onNavigate={onNavigate} status="connected" />)
-  screen.getByRole('button', { name: '实验室' }).click()
-  expect(onNavigate).toHaveBeenCalledWith('lab')
+  expect(screen.queryByRole('button', { name: '实验室' })).toBeNull()
+  screen.getByRole('button', { name: '模型管理' }).click()
+  expect(onNavigate).toHaveBeenCalledWith('models')
 })
 
 it('keeps the route and URL when a global navigation is declined', async () => {

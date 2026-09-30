@@ -1,1 +1,0 @@
-"""Local Laya checkpoint provider."""

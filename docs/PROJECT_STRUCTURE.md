@@ -1,6 +1,6 @@
 # AutoFlow 项目目录结构
 
-- 日期：2026-09-13；实验室目录更新：2026-09-23
+- 日期：2026-09-13；Laya 实验室退役：2026-09-30
 - 状态：目录骨架与已实现领域的职责索引；2026-09-13 按用户要求移除旧 Studio 实现，当前已按用户授权迁入 WebRPA 前端与 Mock 边界。
 - 依据：用户要求预设目录；`docs/architecture/README.md` 已批准架构与当前运行工程。
 
@@ -22,10 +22,10 @@ apps/
 │   ├── src/autoflow/
 │   │   ├── bootstrap/
 │   │   ├── domain/{profiles,proxies,kernels,models,settings,workflows}/
-│   │   ├── application/{profiles,proxies,kernels,models,lab,settings,dashboard,workflows}/
+│   │   ├── application/{profiles,proxies,kernels,models,settings,dashboard,workflows}/
 │   │   ├── adapters/{http,events}/
 │   │   ├── infrastructure/{database,filesystem,credentials,process,events}/
-│   │   └── providers/{android,browser,proxy,kernel,model,laya,platform}/
+│   │   └── providers/{android,browser,proxy,kernel,model,platform}/
 │   └── tests/{unit,integration,contract,fixtures}/
 └── desktop/
     ├── src/
@@ -34,7 +34,7 @@ apps/
     │   ├── shared/                     # main/preload/renderer 的桌面 IPC 契约
     │   └── renderer/
     │       ├── app/
-    │       ├── domains/{profiles,proxies,kernels,models,lab,settings,dashboard,workflows}/
+    │       ├── domains/{profiles,proxies,kernels,models,settings,dashboard,workflows}/
     │       │   └── 每个领域：components/、hooks/、pages/、tests/
     │       ├── shared/{api,components,hooks,lib}/
     │       └── styles/
@@ -68,7 +68,6 @@ reference/
 | `apps/backend/src/autoflow/application/dashboard/` | 总览聚合查询；没有独立 dashboard 实体时不建立领域模型。 |
 | `apps/backend/src/autoflow/application/kernels/` | 内核的用例；通过端口使用外部能力。 |
 | `apps/backend/src/autoflow/application/models/` | 模型供应商和模型目录的用例；通过端口使用外部能力。 |
-| `apps/backend/src/autoflow/application/lab/` | 实验室输入校验与独立推理用例，不影响生产自动化。 |
 | `apps/backend/src/autoflow/application/profiles/` | 浏览器配置的用例；通过端口使用外部能力。 |
 | `apps/backend/src/autoflow/application/proxies/` | 代理和代理池的用例；通过端口使用外部能力。 |
 | `apps/backend/src/autoflow/application/settings/` | 设置的用例；通过端口使用外部能力。 |
@@ -92,7 +91,6 @@ reference/
 | `apps/backend/src/autoflow/providers/android/` | Mac/Lima/ReDroid适配、归属校验和受控命令；capacity_reservations.py在共享运行时根目录持久化跨工作区预算，工作区数据库继续保存设备与Operation。backup_storage.py负责受控归档、工作区文件锁及清理文件指纹；目录查询沿现有application/android/cleanup.py与management HTTP契约进入DataMaintenance。2026-09-23，confirmed，验证见docs/qa/android-management/2026-09-23-capacity-verification.md和2026-09-23-cleanup-verification.md。 |
 | `apps/backend/src/autoflow/providers/browser/` | 浏览器控制实现。 |
 | `apps/backend/src/autoflow/providers/kernel/` | 内核来源、下载和安装实现。 |
-| `apps/backend/src/autoflow/providers/laya/` | Laya 权重缓存、常驻加载与本地推理。 |
 | `apps/backend/src/autoflow/providers/model/` | 外部模型供应商连接与能力实现。 |
 | `apps/backend/src/autoflow/providers/platform/` | Python 所需的平台能力；凭据和文件操作仍归各自 infrastructure 目录。 |
 | `apps/backend/src/autoflow/providers/proxy/` | 代理连接与探测实现。 |
@@ -120,7 +118,6 @@ reference/
 | `apps/desktop/src/renderer/domains/kernels/pages/` | 内核页面组合；组件完成后再组装页面。 |
 | `apps/desktop/src/renderer/domains/kernels/tests/` | 内核跨组件场景测试；局部单元测试也可与源码相邻。 |
 | `apps/desktop/src/renderer/domains/models/` | 已实现模型供应商和模型目录；api.ts 使用生成 DTO，cache.ts 处理冲突刷新，provider-catalog.ts 固定预设。 |
-| `apps/desktop/src/renderer/domains/lab/` | Laya 实验室页面、问题编辑、结果、模拟动作和工作区本地记录。 |
 | `apps/desktop/src/renderer/domains/models/components/` | 模型供应商和模型目录领域组件；使用共享 UI，不承载跨领域基础设施。 |
 | `apps/desktop/src/renderer/domains/models/hooks/` | 模型供应商和模型目录的查询、变更和交互状态组合。 |
 | `apps/desktop/src/renderer/domains/models/pages/` | 模型供应商和模型目录页面组合；组件完成后再组装页面。 |
