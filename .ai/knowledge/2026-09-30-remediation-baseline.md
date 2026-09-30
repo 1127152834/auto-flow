@@ -62,3 +62,5 @@
 同步领取本身五次耗时727.755/734.469/694.694/692.379/747.845ms，线程模式749.871/705.234/713.933/734.943/740.738ms。线程模式最大延迟满足250ms目标，但五次p50均未满足10ms目标；空闲对照较低，不足以把剩余延迟归因于某一个具体机制。不能用该微基准声称生产调度已移出主循环，也不能更改AC1-09阈值来关闭缺口。M1实施须复测真实调用链并定位剩余延迟；这不是M1验收通过记录。
 
 原始报告、manifest和本地复现脚本位于忽略目录 `.superpowers/sdd/2026-09-30-remediation-m0-baseline-guardrails/m1-claim-preview/`（`run.py`、`idle.py`）；只提交数值与验证边界。首次汇总误把manifest当数值报告而KeyError，随后按文件后缀区分重做并验证全部15份；测量进程本身正常退出。
+
+调用热点补证（2026-09-30，confirmed诊断，源码55274af2）：对相同万行记录键升序领取做一次cProfile，结果ready；构造10,000个Candidate，_freeze调用330,032次（含递归），_claim_collation.compare调用46,836次，json.loads调用123,676次。源码确认显式recordKey排序也进入Python投影/排序回调，且每个候选在Candidate.__post_init__冻结三个映射。说明线程内仍有大量Python对象构造和比较工作；这不能单独证明p50延迟的因果占比。剖析有额外开销，其耗时不得替代前述无剖析五样本。M1定位时优先评估减少无用候选构造和保留typed排序语义的现有查询路径，不能通过降低MAX_CANDIDATE_EVALUATIONS漏行、取消冻结约束或放宽延迟门槛获得通过；完整SQL/台账优化仍按M3依赖推进。原始claim-key-order.prof、profile.txt及profile_claim.py在同一忽略目录。首次脚本误命名profile.py遮蔽stdlib导致循环导入，改名后正常执行；失败运行不计为性能证据。
