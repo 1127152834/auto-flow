@@ -2161,6 +2161,8 @@ Expected: 全部通过。
 Run: `uv run --directory apps/backend pytest -q -m benchmark tests/benchmarks && uv run --directory apps/backend python -m tests.benchmarks.bench_claim_loop_lag --rows 10000`
 验收目标：1 万行时 `loop_lag_p50_ms` < 10、`loop_lag_max_ms` < 250 且有效采样数 > 0；CLI 保存报告后检查上述条件，失败必须非零退出。2,000 行测试只作为快速回归，不能替代万行验收。报告沿用 M0 的测量前后源码一致性检查；同步对照仅记录数值，不要求满足线程模式目标。旧原型数字不作为本轮证据，未达标时记录实际结果及后续诊断，不预判 GIL 或 SQL 是唯一原因。
 
+2026-09-30预检：干净 `1219e824` 上执行本节微基准，线程模式五次 p50 为16.072–17.096ms、max为46.704–56.258ms；750ms空闲对照p50为2.059–2.119ms。仅移入线程尚不能证明满足AC1-09，实施时须复测真实调度路径并定位剩余延迟，保持原目标。完整样本、模式与来源见 [.ai基准记录](../../../.ai/knowledge/2026-09-30-remediation-baseline.md)。此记录不构成M1开工或验收。
+
 - [ ] **Step 6: 提交**
 
 ```bash
