@@ -1,0 +1,25 @@
+{
+  "evidenceId": "BE-project-http-formal-electron",
+  "result": "passed",
+  "checkedAt": "2026-09-23T17:25:54.469Z",
+  "gitHead": "06253e399ff5742c1728c5975a896e92059cfd9d",
+  "platform": "darwin-arm64",
+  "entry": "development-build",
+  "projectId": "1ad7cca0-c065-49ae-8faf-b85c8822b0ea",
+  "workflowId": "tkuKYpy1OcPmF6sHxboqv",
+  "batchId": "be1a56bd-a15b-4def-8083-4f458c19e571",
+  "taskId": "08c86f66-abdc-40e0-83e9-19dd196663b4",
+  "sawCloakBrowser": false,
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "正式项目 Studio 通过真实 UI 配置并保存 API 轮询、HTTP 请求、Webhook 请求与通知流程",
+    "项目真实 worker 轮询本地 API 两次后执行 HTTP、Webhook 请求和通知，输出与服务接收请求一致",
+    "正式项目任务真实调用本地网络服务、持久化两项响应变量及四节点状态，未启动 CloakBrowser"
+  ],
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "interaction": "formal Electron mouse/keyboard; API only fixture setup and evidence reads"
+  }
+}

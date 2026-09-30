@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-09-23T14:15:47.191Z",
+  "gitHead": "39074bb7dc84363130ec45cad60718331026dcb2",
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "正式项目 Studio 通过真实 UI 配置并保存 URL 编码、MD5 和 SHA 顺序流程"
+  ],
+  "observedEvents": [],
+  "ui": [],
+  "error": "Error: workflow selection failed: {\"open\":\"closed\",\"options\":[]}\n    at selectAutomationWorkflow (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:1280:11)\n    at async file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:124:5"
+}

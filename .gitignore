@@ -24,3 +24,5 @@ reference/vphone-cli/
 logs/
 .workbuddy-ai/
 .cursor/
+.codex/config.toml
+AGENTS.md.backup.*

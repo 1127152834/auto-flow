@@ -1,0 +1,22 @@
+{
+  "checkedAt": "2026-09-23T11:59:25.745Z",
+  "gitHead": "4bb23637dddde22b22681b1f54bc4fe9e2f72ea0",
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "通过模块条真实点击完成初始化、三轮循环、真假分支和汇合后的尾节点"
+  ],
+  "observedEvents": [],
+  "ui": [
+    {
+      "html": "<button class=\"flex items-center gap-1.5 px-3 py-1.5 rounded-control text-[12px] font-medium transition-all bg-[hsl(var(--brand-500))] text-white shadow-sm\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-layout-list w-3.5 h-3.5\" aria-hidden=\"true\"><rect width=\"7\" height=\"7\" x=\"3\" y=\"3\" rx=\"1\"></rect><rect width=\"7\" height=\"7\" x=\"3\" y=\"14\" rx=\"",
+      "visible": true,
+      "rect": {
+        "x": 689,
+        "y": 718,
+        "width": 80,
+        "height": 30
+      }
+    }
+  ],
+  "error": "Error: timed out waiting for unobscured 添加模块: null\n    at waitFor (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/electron-cdp.mjs:99:9)\n    at async click (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:1171:13)\n    at async addBlock (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:1212:3)\n    at async file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:247:26"
+}

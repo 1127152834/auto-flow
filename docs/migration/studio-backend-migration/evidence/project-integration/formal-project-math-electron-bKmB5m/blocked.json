@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-09-23T13:39:57.952Z",
+  "gitHead": "e6c9bbd96af893662e0a4a6a13ffcdb8d03853e1",
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "正式项目 Studio 通过真实 UI 配置并保存列表求和、四舍五入和绝对值顺序流程"
+  ],
+  "observedEvents": [],
+  "ui": [],
+  "error": "AssertionError [ERR_ASSERTION]: {\"batch\":{\"batchId\":\"1e92da3d-8281-4f00-860e-9534b38ab796\",\"projectId\":\"6e3847d3-2bb8-4454-8634-bb3b89468ae6\",\"automationId\":\"63e1643b-9710-4e7d-af6e-2bb3f746e076\",\"automationName\":\"项目纯数据节点自动化\",\"startOperationId\":\"0f7cdfd1-4434-4363-a1b2-d7346cab0f1e\",\"status\":\"failed\",\"statusRevision\":4,\"managementRevision\":1,\"requestedCount\":1,\"createdTaskCount\":1,\"activeTaskCount\":0,\"claimGateState\":\"closed\",\"selectionOutcome\":null,\"createdAt\":\"2026-09-23T13:39:55.106287Z\",\"completedAt\":\"2026-09-23T13:39:57.640576Z\"},\"statusCounts\":{\"cancelled\":0,\"interrupted\":0,\"succeeded\":0,\"failed\":1,\"timed_out\":0},\"taskCount\":1,\"reusedInputGroupCount\":0,\"unchangedInputStreak\":0,\"stopOperation\":null,\"forceStopAllowed\":false,\"forceStopAvailableAt\":null,\"configurationSnapshot\":{\"automation\":{\"automationId\":\"63e1643b-9710-4e7d-af6e-2bb3f746e076\",\"projectId\":\"6e3847d3-2bb8-4454-8634-bb3b89468ae6\",\"workflowId\":\"o4V_sNS-noweoN_SQVGNN\",\"name\":\"项目纯数据节点自动化\",\"description\":\"\",\"managementRevision\":1,\"inputPlan\":{\"inputs\":[]},\"parameterSchema\":[],\"environmentPolicy\":{\"source\":\"newFromProfile\"},\"runPolicy\":{\"maxTasks\":1,\"concurrency\":1,\"maxLiveInstances\":1,\"continueAfterFailure\":false,\"automaticExecutionTimeoutSeconds\":900,\"manualDeadlineSeconds\":900},\"capabilityRequirements\":[],\"createdAt\":\"2026-09-23T13:39:54.856624+00:00\",\"updatedAt\":\"2026-09-23T13:39:54.856624+00:00\"},\"parameters\":{},\"maxTasks\":1,\"concurrency\":1,\"resourceRequest\":{\"browser\":\"none\",\"automaticExecutionTimeoutSeconds\":900},\"workflowRevision\":1,\"dataCapabilityBinding\":null}}\n\n0 !== 1\n\n    at file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:118:12\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)"
+}

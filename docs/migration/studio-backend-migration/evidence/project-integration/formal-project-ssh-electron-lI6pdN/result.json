@@ -1,0 +1,25 @@
+{
+  "evidenceId": "BE-project-ssh-formal-electron",
+  "result": "passed",
+  "checkedAt": "2026-09-23T19:07:38.542Z",
+  "gitHead": "f027ded4cf5639c8cac122803c292ec0089447cf",
+  "platform": "darwin-arm64",
+  "entry": "packaged-directory",
+  "projectId": "2a6a5985-d10d-4ca1-a211-795aa6ce9d19",
+  "workflowId": "zob5wmNv-YLDshJT7IApo",
+  "batchId": "75413aa1-b650-4b87-a5ad-daa3a22e201b",
+  "taskId": "ad6508ab-ad05-4418-9654-2ffee1326564",
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "正式 Studio 真实输入五个 SSH 节点并保存项目文档；密码字段仅持久化主应用凭据引用",
+    "项目任务真实 SSH 命令和 SFTP 文件往返完成；下载产物、变量与日志可查，连接及进程已清理"
+  ],
+  "sha256": "d1011860d7e8b4146df93525942356950e6c9c8f0e84c44c3492061aa278393f",
+  "boundaries": {
+    "workspace": "ephemeral",
+    "userDatabaseTouched": false,
+    "browserStarted": false,
+    "server": "real loopback SSH/SFTP",
+    "interaction": "formal Electron mouse/keyboard; APIs only fixture setup and evidence reads"
+  }
+}

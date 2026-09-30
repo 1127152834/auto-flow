@@ -1,0 +1,12 @@
+{
+  "checkedAt": "2026-09-23T12:03:58.805Z",
+  "gitHead": "4bb23637dddde22b22681b1f54bc4fe9e2f72ea0",
+  "checks": [
+    "真实 sidecar 使用临时工作区和主应用 Profile；运行前无 CloakBrowser 进程",
+    "通过模块条真实点击完成初始化、三轮循环、真假分支和汇合后的尾节点",
+    "正式项目 Studio 真实界面创建自定义模块、声明输出、拖入项目流程并持久化"
+  ],
+  "observedEvents": [],
+  "ui": [],
+  "error": "Error: timed out waiting for unobscured 保存配置: null\n    at waitFor (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/electron-cdp.mjs:99:9)\n    at async click (file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:1174:13)\n    at async file:///Users/zhangtiancheng/Documents/projects/autoflow/scripts/smoke-studio-backend-b3-control-flow.mjs:261:5"
+}
