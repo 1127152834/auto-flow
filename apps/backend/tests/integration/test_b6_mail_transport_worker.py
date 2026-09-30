@@ -1,6 +1,7 @@
 """Real loopback TLS mail transport through production worker and executors.
 
-The only transport redirect is smtp.qq.com:465 -> fixture random loopback port.
+The transport redirect is smtp.qq.com:465 -> fixture random loopback port;
+the local EHLO identity is fixed so it does not need runner hostname DNS.
 The production SMTP/IMAP clients, MIME codecs, executors and worker run unchanged.
 This verifies local protocol behavior, not delivery by an external mail provider.
 """
@@ -236,6 +237,7 @@ def local_connection(address, *args, **kwargs):
         raise OSError("External network forbidden in mail fixture")
     return original(address, *args, **kwargs)
 socket.create_connection = local_connection
+socket.getfqdn = lambda *args: "mail-fixture.test"
 sys.argv = ["autoflow", "--workflow-worker"]
 runpy.run_module("autoflow", run_name="__main__")
 """

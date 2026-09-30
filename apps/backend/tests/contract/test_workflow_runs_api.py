@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import time
 from pathlib import Path
@@ -735,11 +736,22 @@ def test_stop_identity_log_paging_and_static_run_route(
 def test_workflow_write_is_blocked_while_service_is_quiesced(
     client: TestClient,
 ) -> None:
-    client.app.state.settings_runtime.gate.pause(list)
-    response = client.post(
-        "/api/workflows", json={**_workflow(), "id": "quiesced-workflow"}
-    )
-    client.app.state.settings_runtime.gate.resume()
+    gate = client.app.state.settings_runtime.gate
+
+    async def pause_when_idle() -> None:
+        # Startup schedulers may still own a mutation; a rejected pause is not quiescence.
+        async with asyncio.timeout(3):
+            while blockers := gate.pause(list):
+                assert blockers == ["api_mutation_in_progress"]
+                await asyncio.sleep(0.01)
+
+    client.portal.call(pause_when_idle)
+    try:
+        response = client.post(
+            "/api/workflows", json={**_workflow(), "id": "quiesced-workflow"}
+        )
+    finally:
+        gate.resume()
 
     assert response.status_code == 409
     assert response.json()["error"]["code"] == "SERVICE_QUIESCED"

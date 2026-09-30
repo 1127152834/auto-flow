@@ -49,8 +49,11 @@ async def _wait(manager: WorkflowWorkerManager) -> None:
 
 @pytest.mark.asyncio
 async def test_file_share_outlives_start_worker_and_stop_node_cleans_it(
-    tmp_path: Path,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    # HTTPServer resolves its local server name during bind; keep this loopback
+    # protocol/lifetime test independent of the runner's hostname DNS.
+    monkeypatch.setattr(socket, "getfqdn", lambda *_args: "share-fixture.test")
     file = tmp_path / "shared.txt"
     file.write_text("persistent", encoding="utf-8")
     port = _port()

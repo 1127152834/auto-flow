@@ -201,7 +201,7 @@ async def test_native_store_wait_cannot_block_stop_or_send_late_secret(tmp_path)
 
     def blocked(_name):
         entered.set()
-        release.wait(10)
+        release.wait()
         return {"password": "late-secret-must-not-be-sent"}
 
     coordinator, manager, runs, _credentials, _events, _database = harness(
@@ -222,14 +222,18 @@ async def test_native_store_wait_cannot_block_stop_or_send_late_secret(tmp_path)
         async with asyncio.timeout(10):
             while not entered.is_set():
                 await asyncio.sleep(0.01)
-        async with asyncio.timeout(2):
+        read_done = coordinator._credential_reads["blocked"]
+        # Real process-tree scans can exceed two seconds on hosted runners.
+        # Prove stop is independent of the blocked read, not scan throughput.
+        async with asyncio.timeout(10):
             await coordinator.stop("flow", "blocked")
         assert not release.is_set()
+        assert not read_done.is_set()
         assert runs.get("blocked").status == "stopped"
         assert runs.get("blocked").cleanup_state == "completed"
         assert manager.active_processes() == []
         release.set()
-        await asyncio.sleep(0.05)
+        assert await asyncio.to_thread(read_done.wait, 3)
         assert commands == []
     finally:
         release.set()
