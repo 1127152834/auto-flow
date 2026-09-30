@@ -64,3 +64,12 @@
 原始报告、manifest和本地复现脚本位于忽略目录 `.superpowers/sdd/2026-09-30-remediation-m0-baseline-guardrails/m1-claim-preview/`（`run.py`、`idle.py`）；只提交数值与验证边界。首次汇总误把manifest当数值报告而KeyError，随后按文件后缀区分重做并验证全部15份；测量进程本身正常退出。
 
 调用热点补证（2026-09-30，confirmed诊断，源码55274af2）：对相同万行记录键升序领取做一次cProfile，结果ready；构造10,000个Candidate，_freeze调用330,032次（含递归），_claim_collation.compare调用46,836次，json.loads调用123,676次。源码确认显式recordKey排序也进入Python投影/排序回调，且每个候选在Candidate.__post_init__冻结三个映射。说明线程内仍有大量Python对象构造和比较工作；这不能单独证明p50延迟的因果占比。剖析有额外开销，其耗时不得替代前述无剖析五样本。M1定位时优先评估减少无用候选构造和保留typed排序语义的现有查询路径，不能通过降低MAX_CANDIDATE_EVALUATIONS漏行、取消冻结约束或放宽延迟门槛获得通过；完整SQL/台账优化仍按M3依赖推进。原始claim-key-order.prof、profile.txt及profile_claim.py在同一忽略目录。首次脚本误命名profile.py遮蔽stdlib导致循环导入，改名后正常执行；失败运行不计为性能证据。
+
+
+## 首份远端离线基准产物（2026-09-30，confirmed执行，非可比基线）
+
+[运行36787864210](https://github.com/1127152834/auto-flow/actions/runs/36787864210) 的ARM任务110133876955（源码e27b1814）已完成守门、完整后端回归、离线基准和上传步骤，均success；整个任务仍运行，不称三平台验收通过。下载并核验 `benchmarks-macos-15` 构件11132310685，ZIP的SHA256为 `be73de7addc965493f44077658ed4cec16329dd50ba3d98b7f89efbf61615d23`，与GitHub返回摘要一致，包含3份指标JSON及3份对应manifest。
+
+环境为macOS15.7.9/arm64/3逻辑核/7GiB，Python3.11.9、SQLite3.45.1。单次指标：万行记录键/字段领取698.001/923.117ms；5000节点框架0.381ms/节点、5.001事件/节点；1000事件提交p50/p99为1.560/3.030ms。三份manifest的起止commit一致，但dirty=true、comparable=false；不可与本机基线计算提升。
+
+确定的一处脏目录来源：CI的HTTP预检在基准前写入 `artifacts/pm9/http-preflight/project-api.json`，该生成目录原先未忽略。在隔离Git仓库复现该报告使status变脏，加入仅 `artifacts/pm9/` 的忽略规则后恢复干净，新增source.py仍能被检测；没有放宽报告端的源码检查。旧产物保持原始不可比标记，不反写为干净，也未证明远端不存在其他脏路径。原始ZIP保存在忽略的 `.superpowers/sdd/2026-09-30-remediation-m0-baseline-guardrails/ci-artifacts/11132310685-e27b1814-macos-15.zip`。

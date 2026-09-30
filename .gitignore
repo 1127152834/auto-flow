@@ -29,3 +29,6 @@ AGENTS.md.backup.*
 
 # Remediation benchmark measurements (local / CI artifacts)
 apps/backend/tests/benchmarks/results/
+
+# Generated PM9 smoke reports, uploaded as CI artifacts.
+artifacts/pm9/
