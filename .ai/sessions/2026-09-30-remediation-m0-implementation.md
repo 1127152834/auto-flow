@@ -141,3 +141,5 @@ ARM远端打包子范围通过（2026-09-30，confirmed步骤级证据；2026-10
 仅修订test_node_browser_initialization.py：两个open_page节点改用现有执行器默认30秒，外层45→90秒以容纳两个节点、读取及启动/退出；失败诊断增加nodeId，cookie、单实例、冻结身份、End宿主发布、清理确认及空闲断言全部保留，生产超时逻辑不改。保留16秒注入时两种profile配置2 passed/3 deselected（39.98s）；正常真实浏览器5项加既有50ms凭据节点超时反例共6 passed（15.60s），Ruff/diff通过。独立静态复审无重要问题。两轮ARM/Windows仍运行，修订先本地提交，保留现有完整验收；取得可用分支的终态后再正常推送复验，不把本机通过当作Intel原生通过，AC0-07继续pending。
 
 最新测试修订远端复验安排（2026-09-30，confirmed修订就绪/远端pending）：dc26be2a已完成定向真实内核验证和独立审查。此前暂缓推送以保留两轮回归；现将最新候选正常快进推送codex/remediation-m0，按既有分支并发策略替换含已知Intel失败的728cf027运行，以验证具体测试修订。另一个ci-validation分支的c585a7aa ARM最终回归与Windows完整回归继续保留。替换依据是已验证的新修订，不是观察超时；被取消的步骤不计通过，不修改CI门禁、默认分支或部署。
+
+三平台原生浏览器初始化复验（2026-09-30，confirmed步骤级子范围；2026-10-01 03:14Z）：最新run36808514086@98e95dba的Intel110198234330、ARM110198234563、Windows110198234644在Verify node-owned browser initialization and cleanup步骤均completed/success。dc26be2a预算修订的Intel原生复验缺口关闭；不声称此前远端具体耗时成因已经查明。终态完整日志未出，不推断各平台测试计数。当前Intel类型检查、ARM全量后端、Windows HTTP预检进行中；较早c585a7aa ARM最终后端及Windows完整后端继续运行。全矩阵与默认分支黄金流程仍pending，本条文档证据不触发重新推送。
