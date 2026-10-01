@@ -51,13 +51,15 @@ def start_real(bound, profile, url, label, status_id=None, *, input_key="title",
                             "operations": ["updateRecord"], "fieldIds": [bound.field_id("title")], "readPurposes": ["workflow"]},
              "arguments": {"recordRef": "{frozen[0]['recordRef']}",
                            "changes": {bound.field_id("title"): label}, "expectedContentRevision": "{frozen[0]['contentRevision']}"}}),
-        node("end", "project_end", {"retainEnvironment": {"enabled": True, "mode": "saveAs", "name": label, "recordTargets": [{"recordRef": "{frozen[0]['recordRef']}", "expectedLinkRevision": "{frozen[0]['linkRevision']}", "replaceAllowed": False}] if link_input else []} if retain_environment else {"enabled": False}}),
+        node("end", "project_end", {"retainEnvironment": retain_environment, "saveMode": "save_as", "name": label if retain_environment else "保留环境", "inputIds": [], "replaceAllowed": False}),
     ]
     document = workflow_payload(uid())
     document["content"]["nodes"] = nodes
     document["content"]["edges"] = [{"id": uid(), "source": a["id"], "target": b["id"]} for a, b in pairwise(nodes)]
     prefix = f"/api/v1/projects/{bound.project}"
     input_plan = plan_for(bound)
+    if link_input:
+        nodes[-1]["data"]["inputIds"] = [input_plan["inputs"][0]["inputId"]]
     input_plan["inputs"][0]["fieldBindings"][0]["fieldRef"]["fieldId"] = bound.field_id(input_key)
     input_plan["inputs"][0]["filter"] = {"type": "status", "operator": "eq", "statusId": status_id} if status_id else {"type": "status", "operator": "isNull"}
     if record_title is not None:
@@ -292,11 +294,11 @@ def test_real_archive_waits_for_run_save_and_unknown_sheet_outcome(
         saves = []
         original_stage = app.state.environment_service.store.stage_candidate
 
-        def stage_after_archive(save_id, instance_id):
+        def stage_after_archive(save_id, instance_id, *, identity_package=None):
             saves.append((save_id, instance_id))
             entered.set()
             assert release.wait(60), 'test must release accepted save after archive starts'
-            return original_stage(save_id, instance_id)
+            return original_stage(save_id, instance_id, identity_package=identity_package)
 
         monkeypatch.setattr(app.state.environment_service.store, 'stage_candidate', stage_after_archive)
         try:

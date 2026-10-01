@@ -1278,3 +1278,12 @@ Task 8 的 YAML 校验不能只查制表符：复用仓库现有 YAML 解析能�
 2026-09-30独立代码评审修订：build_manifest必须在测量开始前调用，捕获sourceBefore={commit,dirty}；write_report保留起点commit并写sourceAfter，只有两端一致且干净才可比较。GoldenRun携带执行前manifest，save不得重采集起点；CLI先build_manifest再run。新增状态变化与黄金保存反例通过，旧缺起点元数据结果仅作观察。
 
 M0本地退出证据（2026-09-30）：全量5278 passed/137 skipped/20 deselected，新增报告反例另由46项定向覆盖；后端Ruff、mypy547、脚本119/守门通过；真实30/101行正确性及独立评审P2闭合。干净f60b3cac各5份离线基线已记录。AC0-01～06/08具备本地证据；AC0-07实际Actions与黄金构件仍pending，因此整体退出不勾选。
+
+### 原生 CI 兼容修复：End 动态名称（2026-09-30，proposed）
+
+来源：真实两 Task 数据场景和临时 SQLite 证据；旧 End 配置格式修正后，第二个 Task 因名称未解析触发 IDENTITY_CONFLICT。此项是 M0 门禁暴露的有界兼容缺陷，不提前实施 M1。
+
+- worker 仅在冻结 name 含有效变量表达式时解析并提交可选 name；变量识别与现有 resolver 共用访问路径语法。recordTargets 继续传裸 RecordRef 列表。
+- host 仅允许 arguments={recordTargets} 或 {recordTargets,name}，静态名称禁止覆盖；动态名称必须为字符串，并复用环境元数据的去空白和 1–36 Unicode 字符校验。校验在持久化 End 意图之前完成。
+- 已接受请求继续按完整 workerRequest 比较重放；名称进入 durable payload。旧请求无 name 时沿用冻结名称。保存模式、替换授权、输入、代次、版本和记录权限仍由 host 决定。
+- 先执行 worker 名称解析与真实 SQLite 准入/重放反例，再修复共享边界；复跑 End 恢复/栅栏/变量回归、原生两 Task 保存/伪造跨项目拒绝/Sheets 保留场景，独立复审后提交。不能降低任务数量或放宽名称唯一性以替代修复。

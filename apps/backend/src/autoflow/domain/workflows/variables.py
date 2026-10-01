@@ -17,10 +17,18 @@ _CREDENTIAL_REFERENCE = re.compile(
     r"\{\{\s*(?:cred|凭据)\s*[:：]\s*([^{}]+?)\s*\}\}"
 )
 _VARIABLE_NAME = r"(?:[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}|[a-zA-Z_\u4e00-\u9fa5][a-zA-Z0-9_\u4e00-\u9fa5]*)"
+_VARIABLE_ACCESS_PATH = re.compile(rf"^({_VARIABLE_NAME})((?:\[[^\]]+\])*)$")
 _VARIABLE_REFERENCE = re.compile(
     r"(?:\$\{?|(?<!\$)\{)"
     rf"({_VARIABLE_NAME})"
 )
+
+
+def references_variable(value: str) -> bool:
+    return any(
+        _VARIABLE_ACCESS_PATH.fullmatch(match.group(1).strip())
+        for match in re.finditer(r"\$?\{([^{}]+)\}", value)
+    )
 
 
 def references_sensitive_value(value: Any, sensitive_names: set[str]) -> bool:
@@ -111,10 +119,7 @@ def resolve_value(
 
     def resolve_access_path(expression: str) -> Any:
         expression = resolve_nested(expression.strip(), max_depth=3)
-        match = re.match(
-            rf"^({_VARIABLE_NAME})((?:\[[^\]]+\])*)$",
-            expression,
-        )
+        match = _VARIABLE_ACCESS_PATH.match(expression)
         if not match:
             return missing
         base_name, access_path = match.group(1), match.group(2)

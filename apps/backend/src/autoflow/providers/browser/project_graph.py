@@ -23,7 +23,7 @@ from autoflow.domain.workflows.execution import (
     ExternalIntegrationGateway,
 )
 from autoflow.domain.workflows.project_end import normalize_project_end
-from autoflow.domain.workflows.variables import CredentialReader
+from autoflow.domain.workflows.variables import CredentialReader, references_variable
 from autoflow.infrastructure.filesystem.workflow_table_workbook import (
     OpenpyxlTableWorkbookRenderer,
 )
@@ -77,9 +77,10 @@ class _ProjectEndNode(ModuleExecutor):
                 raise ValueError('End 记录目标必须是最多100项的列表')
         except (TypeError, ValueError) as error:
             return ModuleResult(False, error=str(error))
-        reply = await self.request(
-            node_id, visit, 'end', {'recordTargets': targets}
-        )
+        arguments = {'recordTargets': targets}
+        if references_variable(frozen.get('name', '保留环境')):
+            arguments['name'] = context.resolve_value(frozen['name'], preserve_types=True)
+        reply = await self.request(node_id, visit, 'end', arguments)
         if 'error' in reply:
             return ModuleResult(False, error=reply['error']['code'], data={'projectErrorCode': reply['error']['code']})
         value = reply['result']

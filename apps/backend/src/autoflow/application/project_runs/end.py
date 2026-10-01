@@ -9,9 +9,11 @@ from uuid import uuid4, uuid5
 
 from sqlalchemy import select, text
 
+from autoflow.domain.environments.rules import validate_metadata
 from autoflow.domain.project_runs.worker_commands import project_command_id
 from autoflow.domain.projects.models import ProjectError
 from autoflow.domain.workflows.project_end import normalize_project_end
+from autoflow.domain.workflows.variables import references_variable
 from autoflow.infrastructure.database.environment_models import ProjectEndOperationRow
 from autoflow.infrastructure.database.environments import _operation, _operation_row
 from autoflow.infrastructure.database.models import ProjectOperationRow
@@ -97,7 +99,7 @@ class ProjectRunEnd:
         args = request.get("arguments")
         if (
             not isinstance(args, dict)
-            or set(args) != {"recordTargets"}
+            or set(args) not in ({"recordTargets"}, {"recordTargets", "name"})
             or not isinstance(args["recordTargets"], list)
             or len(args["recordTargets"]) > 100
         ):
@@ -166,6 +168,13 @@ class ProjectRunEnd:
                 return {"endOperationId": operation.id, "phase": existing.phase}
             if run.status != "running":
                 raise ProjectError("LEASE_REVOKED", "End 执行授权已失效", 409)
+            frozen_name = config.get("name", "保留环境")
+            name = request["arguments"].get("name", frozen_name)
+            if type(name) is not str or (
+                not references_variable(frozen_name) and name != frozen_name
+            ):
+                raise ProjectError("CAPABILITY_SCOPE_DENIED", "End 名称必须匹配冻结配置", 403)
+            name = validate_metadata(name=name)["name"]
             declared_targets = config.get("recordTargets", [])
             if isinstance(declared_targets, list):
                 if request["arguments"]["recordTargets"] != declared_targets:
@@ -318,7 +327,7 @@ class ProjectRunEnd:
                 and instance.environment_id
                 and config.get("saveMode", "auto") == "auto"
                 else "save_as",
-                "name": config.get("name", "保留环境"),
+                "name": name,
                 "expectedContentGeneration": instance.source_content_generation
                 if instance
                 else None,

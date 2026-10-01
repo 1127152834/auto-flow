@@ -228,7 +228,7 @@ class ProjectWorkerCapabilities:
         if request['operation'] == 'manualComplete' and self.manual is not None:
             return json_value(await _finish_retention(self.manual.complete, project_id, task_id, run_id, generation, request))
         if request['operation'] == 'end':
-            if set(arguments) != {'recordTargets'} or self.project_end is None:
+            if self.project_end is None:
                 raise _denied()
             return self.project_end.accept(
                 run_id,

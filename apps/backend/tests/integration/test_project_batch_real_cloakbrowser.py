@@ -541,7 +541,8 @@ async def test_real_project_batch_http(
                     {'id': 'check-data', 'source': 'query', 'target': 'check'},
                     {'id': 'save', 'source': 'check', 'target': 'write', 'sourceHandle': 'true'},
                 ])
-                nodes.append({'id': 'end', 'type': 'project_end', 'position': {'x': 100, 'y': 900}, 'data': {'moduleType': 'project_end', 'retainEnvironment': {'enabled': True, 'mode': 'saveAs',  'name': "{saved['ref']['recordKey']['value']}", 'recordTargets': [{'recordRef': "{saved['ref']}", 'expectedLinkRevision': "{saved['linkRevision']}", 'replaceAllowed': False}]}}})
+                end_target_values = ['vars.saved["ref"]']
+                nodes.append({'id': 'end', 'type': 'project_end', 'position': {'x': 100, 'y': 900}, 'data': {'moduleType': 'project_end', 'retainEnvironment': True, 'saveMode': 'save_as', 'name': "{saved['ref']['recordKey']['value']}", 'recordTargets': '{endTargets}', 'inputIds': [], 'replaceAllowed': False}})
                 document['content']['edges'].append({'id': 'end-task', 'source': 'write', 'target': 'end'})
                 if scenario in {'data-link-race', 'data-link-forged-end'}:
                     from copy import deepcopy
@@ -551,15 +552,12 @@ async def test_real_project_batch_http(
                     nodes.append(second)
                     document['content']['edges'][-1]['target'] = 'second-write'
                     document['content']['edges'].append({'id': 'second-end', 'source': 'second-write', 'target': 'end'})
-                    next(node for node in nodes if node['id'] == 'end')['data']['retainEnvironment']['recordTargets'].append({'recordRef': "{second_saved['ref']}", 'expectedLinkRevision': "{second_saved['linkRevision']}", 'replaceAllowed': False})
+                    end_target_values.append('vars.second_saved["ref"]')
                     if scenario == 'data-link-forged-end':
                         foreign = await client.post('/api/v1/projects', headers={'Idempotency-Key': str(uuid4())}, json={'name': '无权关联的外部项目'})
                         assert foreign.status_code == 201, foreign.text
                         foreign_project_id = foreign.json()['projectId']
-                        next(node for node in nodes if node['id'] == 'end')['data']['retainEnvironment']['recordTargets'][1]['recordRef'] = {
-                            'projectId': foreign_project_id, 'tableId': table['tableId'], 'datasetGeneration': table['datasetGeneration'],
-                            'recordKey': "{second_saved['ref']['recordKey']}",
-                        }
+                        end_target_values[1] = 'dict(vars.second_saved["ref"], projectId=' + repr(foreign_project_id) + ')'
             if scenario.startswith('data-delete-field'):
                 for identity, operation in [('preview-deletion', 'previewFieldDeletion'), ('delete-field', 'deleteField')]:
                     nodes.append({'id': identity, 'type': 'project_data', 'position': {'x': 100, 'y': 880}, 'data': {
@@ -615,7 +613,7 @@ async def test_real_project_batch_http(
                     if edge['target'] == 'write': edge['target'] = 'first-call'
                     if edge['source'] == 'write': edge['source'] = 'second-call'
                 document['content']['edges'].extend([{'id': 'child-body', 'source': 'child', 'target': 'write'}, {'id': 'next-call', 'source': 'first-call', 'target': 'second-call'}])
-                next(n for n in nodes if n['id'] == 'end')['data']['retainEnvironment']['recordTargets'].append({'recordRef': "{secondSaved['ref']}", 'expectedLinkRevision': "{secondSaved['linkRevision']}", 'replaceAllowed': False})
+                end_target_values.append('vars.secondSaved["ref"]')
             if scenario in {'data-parallel', 'data-parallel-failure'}:
                 from copy import deepcopy
                 write = next(n for n in nodes if n['id'] == 'write')
@@ -632,7 +630,7 @@ async def test_real_project_batch_http(
                     if edge['target'] == 'write': edge['target'] = 'fork'
                 document['content']['edges'][:] = [e for e in document['content']['edges'] if e['source'] != 'write']
                 document['content']['edges'].extend([{'id': identity, 'source': 'fork', 'target': identity} for identity in ['left-loop', 'right-loop']] + [{'id': identity + '-body', 'source': identity, 'target': body, 'sourceHandle': 'loop'} for identity, body in [('left-loop', 'write'), ('right-loop', 'other-write')]] + [{'id': identity + '-done', 'source': identity, 'target': 'end', 'sourceHandle': 'done'} for identity in ['left-loop', 'right-loop']])
-                next(n for n in nodes if n['id'] == 'end')['data']['retainEnvironment']['recordTargets'].append({'recordRef': "{secondSaved['ref']}", 'expectedLinkRevision': "{secondSaved['linkRevision']}", 'replaceAllowed': False})
+                end_target_values.append('vars.secondSaved["ref"]')
             if scenario.startswith('manual-'):
                 nodes.append({'id': 'manual', 'type': 'project_manual', 'position': {'x': 100, 'y': 900}, 'data': {'moduleType': 'project_manual', 'reason': '确认登录', 'timeoutSeconds': .3 if scenario == 'manual-expire' else 3 if scenario == 'manual-expire-race' else 120 if scenario.startswith('manual-force-stop') else 30}})
                 document['content']['edges'].append({'id': 'manual-task', 'source': 'read-input', 'target': 'manual'})
@@ -658,6 +656,21 @@ async def test_real_project_batch_http(
                 next(n for n in nodes if n['id'] == 'after-manual')['data']['variableValue'] = 'code-{code}'
                 nodes.append({'id': 'other-manual', 'type': 'set_variable', 'position': {'x': 600, 'y': 950}, 'data': {'moduleType': 'set_variable', 'variableName': 'wrong', 'variableValue': 'must not execute'}})
                 document['content']['edges'].append({'id': 'alternate', 'source': 'manual', 'target': 'other-manual'})
+            if scenario.startswith('data'):
+                # The host derives link revisions from its Task cursors, not worker-supplied wrappers.
+                nodes.append({'id': 'end-targets', 'type': 'python_script', 'position': {'x': 100, 'y': 890}, 'data': {
+                    'moduleType': 'python_script', 'scriptMode': 'content', 'useBuiltinPython': True,
+                    'scriptContent': 'return [' + ', '.join(end_target_values) + ']',
+                    'resultVariable': 'endTargets',
+                }})
+                for edge in document['content']['edges']:
+                    if edge['target'] == 'end':
+                        edge['target'] = 'end-targets'
+                for node in nodes:
+                    parallel = node['data'].get('parallel')
+                    if parallel and parallel.get('joinNodeId') == 'end':
+                        parallel['joinNodeId'] = 'end-targets'
+                document['content']['edges'].append({'id': 'targets-end', 'source': 'end-targets', 'target': 'end'})
             response = await client.post(
                 prefix + "/automations",
                 headers={"Idempotency-Key": str(uuid4())},
@@ -1227,10 +1240,10 @@ async def test_real_project_batch_http(
                 created_refs = [output['value']['ref'] for output in outputs if output['nodeId'] in {'write', 'second-write'}]
                 assert len(created_refs) == 2 and all(ref['projectId'] == project_id for ref in created_refs)
                 assert len(end_requests) == 1
-                targets = end_requests[0]['arguments']['retainEnvironment']['recordTargets']
+                targets = end_requests[0]['arguments']['recordTargets']
                 assert targets == [
-                    {'recordRef': created_refs[0], 'expectedLinkRevision': 1, 'replaceAllowed': False},
-                    {'recordRef': {**created_refs[1], 'projectId': foreign_project_id}, 'expectedLinkRevision': 1, 'replaceAllowed': False},
+                    created_refs[0],
+                    {**created_refs[1], 'projectId': foreign_project_id},
                 ]
                 assert end_requests[0]['browserClosed'] is True
                 attempts = (await client.get(task_path + '/node-attempts')).json()['items']
@@ -1317,6 +1330,9 @@ async def test_real_project_batch_http(
                 assert records['total'] == 2
                 assert [row['values'][0]['value'] for row in records['items']] == ['before-真实参数-001'] * 2
                 assert all(row['currentEnvironmentId'] for row in records['items'])
+                for row in records['items']:
+                    saved_environment = (await client.get(prefix + f"/environments/{row['currentEnvironmentId']}")).json()['environment']
+                    assert saved_environment['name'] == row['ref']['recordKey']['value']
                 restored_document = workflow_payload(str(uuid4()))
                 restored_document['content']['nodes'] = [
                     {'id': 'open', 'type': 'open_page', 'position': {'x': 0, 'y': 0}, 'data': {'moduleType': 'open_page', 'url': url.replace('/fixture', '/account')}},

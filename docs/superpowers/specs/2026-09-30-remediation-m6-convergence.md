@@ -43,6 +43,8 @@ M6 包含剩余架构迁移与最终清理，不是纯删除任务：Studio 调�
 
 ## 5. 风险
 
+2026-09-30 M0 原生回归确认的兼容反例：历史 End 文档的嵌套 `retainEnvironment.recordTargets` 使用 `{recordRef, expectedLinkRevision, replaceAllowed}` 包装项及项内变量；当前 `normalize_project_end` 只搬运列表，运行会被正式 End 的冻结配置/记录作用域检查拒绝。来源：历史 `f670145f^2` worker/UI 与当前真实 SQLite 节点失败记录，详见[实施记录](../../../.ai/sessions/2026-09-30-remediation-m0-implementation.md)。M6 兼容门禁必须覆盖旧文档、旧导入及冻结内容的等价处理或明确可恢复的迁移；版本仍由宿主 Task 游标派生，不能恢复信任 worker 传入的版本或替换授权。新建测试夹具改用正式契约不代表此缺口修复。
+
 | 风险 | 应对 |
 | --- | --- |
 | 合并执行栈期间 Studio 调试功能回退 | 先共用事件转换再切入口；旧栈保留到新栈通过全部调试用例 |

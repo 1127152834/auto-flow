@@ -170,6 +170,67 @@ async def test_end_accept_replay_and_finalize_use_one_durable_operation(capabili
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize('frozen,arguments,error', [
+    ('{name}', {'name': '  task one  '}, None),
+    ('prefix-{name}', {'name': 'prefix-task'}, None),
+    ('literal', {'name': 'literal'}, None),
+    ('literal', {}, None),
+    ('{name}', {}, None),
+    ('literal', {'name': 'override'}, 'CAPABILITY_SCOPE_DENIED'),
+    ('{bad syntax}', {'name': 'override'}, 'CAPABILITY_SCOPE_DENIED'),
+    ('{name}', {'name': None}, 'CAPABILITY_SCOPE_DENIED'),
+    ('{name}', {'name': []}, 'CAPABILITY_SCOPE_DENIED'),
+    ('{name}', {'name': {}}, 'CAPABILITY_SCOPE_DENIED'),
+    ('{name}', {'name': ''}, 'VALIDATION_ERROR'),
+    ('{name}', {'name': '  '}, 'VALIDATION_ERROR'),
+    ('{name}', {'name': '界' * 37}, 'VALIDATION_ERROR'),
+    ('{name}', {'name': 'valid', 'saveMode': 'auto'}, 'CAPABILITY_SCOPE_DENIED'),
+])
+async def test_end_name_admission_is_frozen_validated_and_durable(capability_context, tmp_path, frozen, arguments, error):
+    from sqlalchemy import select
+
+    from autoflow.infrastructure.database.environment_models import (
+        ProjectEndOperationRow,
+    )
+
+    factory, _project, task, *_rest = capability_context
+    _prepare(factory, task, False)
+    visit = uuid4().hex
+    with factory.begin() as session:
+        run = session.get(WorkflowRunRow, task.run_id)
+        session.get(WorkflowPreparedContentRow, run.prepared_content_id).execution_plan = _plan(False, name=frozen)
+        SqlAlchemyWorkflowRuntimeRepository(session).append_event({
+            'eventId': uuid4().hex, 'runId': task.run_id, 'executionGeneration': 1,
+            'kind': 'nodeAttempt', 'nodeId': 'end', 'nodeVisitId': visit, 'attempt': 1,
+            'occurredAt': datetime.now(UTC).isoformat(), 'payload': {'status': 'started'},
+        })
+    capabilities = ProjectWorkerCapabilities(factory, _environments(factory, tmp_path))
+    request = {
+        'commandId': project_command_id(task.run_id, 1, visit),
+        'nodeId': 'end', 'nodeVisitId': visit, 'attempt': 1,
+        'operation': 'end', 'browserClosed': True,
+        'arguments': {'recordTargets': [], **arguments},
+    }
+    if error:
+        with pytest.raises(ProjectError) as denied:
+            await capabilities.handle(task.run_id, 1, request)
+        assert denied.value.code == error
+        with factory() as session:
+            assert session.scalar(select(ProjectEndOperationRow)) is None
+            assert session.get(WorkflowRunRow, task.run_id).status == 'running'
+    else:
+        accepted = await capabilities.handle(task.run_id, 1, request)
+        assert await capabilities.handle(task.run_id, 1, request) == accepted
+        with factory() as session:
+            operation = session.scalar(select(ProjectEndOperationRow))
+            assert operation.intended_result['retainEnvironment']['name'] == arguments.get('name', frozen).strip()
+        changed = {**request, 'arguments': {**request['arguments'], 'name': 'different'}}
+        with pytest.raises(ProjectError) as denied:
+            await capabilities.handle(task.run_id, 1, changed)
+        assert denied.value.code == 'END_ALREADY_ACCEPTED'
+
+
+@pytest.mark.asyncio
 async def test_end_host_derives_targets_and_rejects_read_only_input(capability_context, tmp_path):
     from sqlalchemy import select
     from sqlalchemy.orm.attributes import flag_modified

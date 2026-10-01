@@ -90,6 +90,24 @@ async def test_end_requires_confirmed_retention_before_graph_success():
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize('template', ["{saved['name']}", "${saved['name']}", "任务-{saved['name']}"])
+async def test_end_resolves_name_for_each_task_without_changing_other_arguments(template):
+    for name in ('first', 'second'):
+        calls = []
+
+        async def emit(*_event): pass
+
+        async def request(_node, _visit, _operation, arguments, calls=calls, name=name):
+            calls.append(arguments)
+            return {'result': {'endOperationId': name, 'phase': 'accepted'}}
+
+        executor = ProjectGraphExecutor(None, {'saved': {'name': name}}, emit, lambda: False, capability=request)
+        result = await executor.run({'document': {'nodes': [node('end', 'project_end', name=template)], 'edges': []}})
+        assert result['status'] == 'succeeded'
+        assert calls == [{'recordTargets': [], 'name': ('任务-' if template.startswith('任务-') else '') + name}]
+
+
+@pytest.mark.asyncio
 async def test_manual_resume_continues_once_and_finish_skips_successors():
     for action in ('resume', 'finish'):
         calls = []
