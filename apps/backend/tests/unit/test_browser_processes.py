@@ -406,6 +406,7 @@ async def test_project_posix_signal_denial_requires_confirmed_tree_exit(monkeypa
     births = {700: 11, 701: 12}
     sent, waiters = [], []
     monkeypatch.setattr(cleanup, 'sys', SimpleNamespace(platform='darwin'))
+    monkeypatch.setattr(cleanup, 'signal', SimpleNamespace(SIGTERM=15, SIGKILL=9))
     monkeypatch.setattr(identities, 'sys', SimpleNamespace(platform='darwin'))
     monkeypatch.setattr(workers, 'sys', SimpleNamespace(platform='darwin', executable=sys.executable))
     monkeypatch.setattr(cleanup, 'capture_processes', lambda *_args, **_kwargs: owned)
@@ -416,7 +417,7 @@ async def test_project_posix_signal_denial_requires_confirmed_tree_exit(monkeypa
         sent.append((group, number))
         raise PermissionError('signal denied while process may be exiting')
 
-    monkeypatch.setattr(identities.os, 'killpg', denied, raising=False)
+    monkeypatch.setattr(identities, 'os', SimpleNamespace(getpgrp=lambda: 999, killpg=denied))
 
     async def wait():
         waiters.append(asyncio.current_task())

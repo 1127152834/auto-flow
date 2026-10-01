@@ -93,3 +93,11 @@ End 原生增量（2026-09-30，confirmed 部分通过）：真实 data-schema�
 POSIX 信号拒绝退出竞态（2026-09-30，confirmed本地/远端pending）：1219e824 Intel job110139691123完整回归1 failed/5288 passed/137 skipped/24 deselected/2 warnings（3603.30s），唯一失败为强停人工交互时os.killpg(SIGKILL)抛EPERM。具体内核原因未知；共享force_process_tree仅将PermissionError送入既有有界退出核验，保留异常cause；父进程未回收、同birth子进程仍活或身份未知但存在时仍失败并保留manager容量与目录，不信号未验证PID。新增graceful/强停×退出/父活/子活/未知子/PID重用共10反例先RED10失败，最终进程与交互三文件107 passed/3 skipped（44.14s），Ruff、mypy547与diff通过。独立只读复审无重要问题；未将故障注入当Intel原生复验。
 
 完整原生选集复验（2026-09-30，confirmed本机）：与CI相同五文件选择式44 passed/31 deselected/1既有AnyIO警告（562.29s），包含End数据/人工/Sheets/Excel/无限任务/写入冲突。进程于e251fbe8启动，之后新增EPERM修复由107项定向单列覆盖，不能称完整选集运行于最终HEAD。三平台旧远端任务均已终态；推送已提交候选供新矩阵复验。桌面完整冒烟另在修订旧断言/夹具，尚未通过、不纳入此提交。
+
+桌面冒烟修订进行中（2026-09-30，confirmed部分场景/整体pending）：本地构建35.20s通过；原工作树desktop依赖和Python虚拟环境以本地symlink复用，不改锁文件。实际Electron独立Studio浏览器、保存/关闭/重开、6个项目页、旧独立文档解绑保留与编辑后所属文档删除均已执行通过。脚本旧预期69模块改为实际218及project_data正式字段/缺项目准入提示；创建后工作流使用正式所属文档。无保留Task页面实际走DurableEndResult，旧TaskEndPanel提示仍存在于legacy组件但不适用本场景；改为End完成+清理确认，保留磁盘副本不存在/不报保存成功/无再次保存按钮的断言。
+
+完整桌面运行仍失败，不能计全绿：00:46Z轮在Profile冻结编辑时expectedRevision=1/currentRevision=2冲突，根因复制独立文档后继续使用旧文档修订号；两处冻结编辑改先GET实际所属文档。00:50Z轮进一步运行至subflow准入，firstSaved变量表达式长于End静态36字符上限被拒绝；仅夹具改为同resolver已支持的无引号下标，最终值仍UUID，未放宽生产长度限制。正式End禁止替换会在发布前拒绝，旧“先保存再关联失败”预期无效；新增独立人工保存场景覆盖saved_unlinked与修复，同时保留正式End拒绝、零新增环境、零部分关联反例。旧固定expectedContentGeneration不再控制flat End，新Task自动读取当前来源；改为真实人工保存失败保留旧副本、正常Task发布新代次、再对旧副本HTTP保存冲突。当前两脚本仍未提交，真实整链验证与独立审查进行中。
+
+远端候选14df725c已推送，run36797958370：https://github.com/1127152834/auto-flow/actions/runs/36797958370 。三平台检查均已启动；ARM进入完整后端回归，Intel仍安装依赖，Windows前端类型检查；未提前记录通过。GitHub fetch_commit_workflow_runs连接器只返回PR触发的运行，因此空列表不代表push未触发；此次通过公开Actions API按head_sha查到运行，再用连接器核对job。
+
+Windows POSIX模拟夹具补全（2026-09-30，confirmed本地/原生pending）：14df725c Windows job110165627813在原生平台边界步10 failed/27 passed/1 skipped/1 warning（3.04s）；全部新EPERM模拟用例缺少Windows没有的SIGKILL/getpgrp。独立子进程删除两个属性复现10 failed/43 deselected（6.20s）；测试仅替换cleanup.signal与identities.os的模块局部引用，显式模拟15/9信号、当前组999与已有denied函数，不污染全局os/signal，不改生产代码或跳过测试。缺API故障注入10 passed/43 deselected（8.24s），正常完整进程单元53 passed（9.24s），Ruff/diff通过，独立只读审查无重要问题。保留运行中的两个macOS job，不重启远端矩阵。
