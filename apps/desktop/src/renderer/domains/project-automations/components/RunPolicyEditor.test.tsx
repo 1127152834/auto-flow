@@ -133,3 +133,8 @@ it.each([false, true])('edits both concurrency limits and keeps a bad sibling dr
   fireEvent.change(screen.getByLabelText('请求并发数'), { target: { value: '2' } })
   expect(screen.getByRole('button', { name: '保存' })).toBeEnabled()
 })
+
+it('shows the machine-wide limit next to concurrency and warns when the request exceeds it (remediation M1 R1-11)', () => {
+  render(<RunPolicyEditor value={{ ...policy, concurrency: 20 }} onChange={vi.fn()} machineLimit={6} />)
+  expect(screen.getByText('范围 1–100；本机当前最多同时运行 6 个浏览器，实际同时运行不超过 6 个')).toBeInTheDocument()
+})

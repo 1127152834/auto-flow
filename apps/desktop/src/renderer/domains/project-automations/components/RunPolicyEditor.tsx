@@ -12,9 +12,11 @@ export type RunPolicyEditorProps = {
   errors?: FieldErrors
   resetKey?: string | number
   onDraftStateChange?(state: DraftState): void
+  /** Remediation M1 R1-11: machine-wide running-browser limit, when known. */
+  machineLimit?: number | null
 }
 
-export function RunPolicyEditor({ value, onChange, dataBatch = false, disabled = false, errors = {}, resetKey, onDraftStateChange }: RunPolicyEditorProps) {
+export function RunPolicyEditor({ value, onChange, dataBatch = false, disabled = false, errors = {}, resetKey, onDraftStateChange, machineLimit }: RunPolicyEditorProps) {
   const [maxTasksDraft, setMaxTasksDraft] = useState(String(value.maxTasks ?? ''))
   const [timeoutDraft, setTimeoutDraft] = useState(String(value.automaticExecutionTimeoutSeconds / 60))
   const pendingMaxTasks = useRef<number | undefined>(undefined), pendingTimeout = useRef<number | undefined>(undefined)
@@ -69,7 +71,7 @@ export function RunPolicyEditor({ value, onChange, dataBatch = false, disabled =
         setLimits(previous => ({ ...previous, [key]: draft }))
         if (draft.trim() && Number.isInteger(parsed) && parsed >= 1 && parsed <= 100) onChange({ ...value, [key]: parsed })
       }}/>
-      {limitErrors[key] ? <span role="alert" id={`run-policy-${key}-error`} className="text-xs text-danger">{limitErrors[key]}</span> : <span className="text-xs text-muted">范围 1–100</span>}
+      {limitErrors[key] ? <span role="alert" id={`run-policy-${key}-error`} className="text-xs text-danger">{limitErrors[key]}</span> : <span className="text-xs text-muted">范围 1–100{key === 'concurrency' && machineLimit ? `；本机当前最多同时运行 ${machineLimit} 个浏览器${Number(limits.concurrency) > machineLimit ? `，实际同时运行不超过 ${machineLimit} 个` : ''}` : ''}</span>}
     </label>)}
     <label className="grid gap-2 text-sm md:grid-cols-[11rem_minmax(0,1fr)] md:items-center"><span className="font-medium">失败处理</span><span className="flex items-center gap-3">
       <Switch aria-label="任务失败后继续下一个任务" checked={value.continueAfterFailure} disabled={disabled} onCheckedChange={continueAfterFailure => onChange({ ...value, continueAfterFailure })}/>

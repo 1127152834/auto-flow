@@ -11,6 +11,7 @@ import type { ProjectRoute } from '../domains/projects/types'
 import { Button } from '../shared/components/ui/button'
 import { DashboardPage } from '../domains/dashboard/pages/DashboardPage'
 import { SettingsPage } from '../domains/settings/pages/SettingsPage'
+import { createExecutionSettingsApi } from '../domains/settings/executionApi'
 import { ProxyManagementPage } from '../domains/proxies/pages/ProxyManagementPage'
 import { BrowserManagementPage } from '../domains/profiles/pages/BrowserManagementPage'
 import { AndroidPage } from '../domains/android/pages/AndroidPage'
@@ -27,6 +28,7 @@ export function App() {
   const navigate = useCallback((target: AppRoute) => { void navigateHash(`#/${target}`) }, [navigateHash])
   const navigateProject = useCallback((target: ProjectRoute, options?: { replace?: boolean }) => { if (options?.replace) replace(projectHash(target), { preserveGuard: true }); else void navigateHash(projectHash(target)) }, [navigateHash, replace])
   const modelApi = useMemo(() => session ? createModelApi(session.client) : null, [session])
+  const executionApi = useMemo(() => session ? createExecutionSettingsApi(session.client) : undefined, [session])
 
   useEffect(() => {
     void window.autoflow.getSettings?.().then(result => {
@@ -47,7 +49,7 @@ export function App() {
     <ApplicationHeader route={route} onNavigate={navigate} status={status} />
     {session ? <ProjectInteractionHost key={JSON.stringify([session.workspaceKey, session.instanceId])} client={session.client} connected={status === 'connected' && !workspaceChanging} /> : null}
     {route === 'settings' ? settingsAvailable
-      ? <SettingsPage bridge={window.autoflow as SettingsBridge} restartService={() => window.autoflow.restartSidecar()} onServiceChanged={() => void reconnect(false)} />
+      ? <SettingsPage bridge={window.autoflow as SettingsBridge} restartService={() => window.autoflow.restartSidecar()} onServiceChanged={() => void reconnect(false)} executionApi={executionApi} />
       : <State title="桌面设置不可用" description="请使用 AutoFlow 桌面应用打开设置。" />
     : <>
       {status === 'loading' ? <div role="status" className="border-b border-line bg-surface-subtle px-8 py-3 text-sm">正在连接服务…</div> : status === 'offline' ? <div role="alert" className="flex items-center justify-between gap-4 border-b border-red-200 bg-red-50 px-8 py-3 text-sm text-red-900"><span>{message}</span><button type="button" onClick={() => void reconnect()}>重新连接</button></div> : null}
