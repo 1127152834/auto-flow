@@ -2,7 +2,7 @@
 
 日期：2026-09-26；状态：approved。用户已批准实施并补充同一记录不得同时分配给两个任务。
 规格：docs/superpowers/specs/2026-09-26-parameter-batch-concurrency.md。
-全局约束：复用现有 scheduler/core/租约，不提高 core 的两个槽上限；不改主工作区；不合并；无数据输入不造数据；记录释放后由筛选条件决定是否再次领取。
+全局约束：复用现有 scheduler/core/租约，不提高 core 的两个槽上限（superseded by remediation M1，2026-09-30：执行名额与存活浏览器分开计数，上限由本机容量设置决定）；不改主工作区；不合并；无数据输入不造数据；记录释放后由筛选条件决定是否再次领取。
 
 ### Task 1: 调度与领取
 

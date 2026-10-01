@@ -493,3 +493,12 @@ PM9 启动修复时的迁移头为 `0023_merge_studio_android`；baseline 保留
 - `docs/superpowers/specs/2026-09-30-remediation-m*-*.md` 与 `docs/superpowers/plans/2026-09-30-remediation-m*-*.md`：各里程碑规格与实施计划；M0、M1 步骤级，其余任务级。
 - `docs/qa/2026-09-30-remediation-reviews/`：系统设计评审与前端交互评审（整改依据）。
 - 状态索引见 `.ai/plans/2026-09-30-remediation-program.md`；整改方向与文档修订已确认，M0本地实现与全量回归已完成、远端CI待验收；M2–M6 步骤级细化审查后依据本轮持续授权实施。旧“计划已完整原型验证”结论已 superseded。
+
+## M1 停止静默失败（2026-10-01，实施分支，验收待 Mac/CI 同环境证据）
+
+- `domain/settings/execution_capacity.py`：执行容量推荐规则（按 CPU/内存推荐，1–64）；`application/settings/execution.py`：容量设置服务，按修订号有序应用，应用失败暂停派发并在下次读取时重新核验；`adapters/http/execution_settings.py`：`/api/v1/settings/execution`（409 `SETTINGS_REVISION_CONFLICT`）。
+- `infrastructure/database/app_settings.py`：工作区键值设置（迁移 `rm1_app_settings`）；`infrastructure/process/hardware.py`：本机硬件与内存压力读取（≥85% 暂停新派发）。
+- `application/workflows/dispatcher.py`：执行名额与存活浏览器分开计数（`capacity` / `live_capacity`），人工等待释放名额但保留浏览器；`application/project_runs/scheduler.py`：领取在线程中执行，不占主循环。
+- `infrastructure/process/stderr_sink.py`：worker stderr 持续排空、限大小、脱敏尾部；`project_workflow_worker.py` 把诊断引用写入未知结果的错误详情（Studio 的 `workflow_worker.py` 仍丢弃 stderr，未改）。
+- `domain/workflows/inert_settings.py`：未生效设置规则（M2 删除）；`renderer/domains/workflows/lib/inertSettings.ts` 与之对应并由测试互相核对。
+- 节点 `press_key`：`application/workflows/executors/web_basic.py`（`PressKeyExecutor`）、`domain/workflows/scope.py`（`WEB_EXTENSION_NODE_TYPES`），Studio 面板在 `config-panels/BasicModuleConfigs.tsx`，录制器 `lib/recordingGeneration.ts` 生成该节点。
