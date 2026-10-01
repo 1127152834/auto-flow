@@ -104,7 +104,10 @@ export class SidecarSupervisor {
         this.pendingStart = undefined
         reject(new Error('sidecar readiness timeout'))
         void this.stop()
-      }, this.options.timeoutMs ?? (this.options.production ? 90_000 : 15_000))
+      // Development starts through `uv run`, which imports the full dependency set on a cold
+      // disk cache. On the Intel CI runner the process printed nothing for 15s, so that budget
+      // reported a healthy-but-slow start as a failure (annotation evidence, run 36845185368).
+      }, this.options.timeoutMs ?? (this.options.production ? 90_000 : 60_000))
       this.pendingStart = { generation, timer, reject }
       child.stdout?.on('data', (chunk: Buffer | string) => {
         buffer += chunk.toString()

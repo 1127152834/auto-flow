@@ -11,6 +11,7 @@ let desktop
 try {
   desktop = await launchElectron(root, { launchArgs: [`--user-data-dir=${dataDir}`] })
   const { packaged } = desktop
+  const readyStarted = Date.now()
   const readiness = await waitFor(desktop.cdp, `(async () => {
     if (!window.autoflow) return null
     const status = await window.autoflow.getSidecarStatus()
@@ -18,8 +19,11 @@ try {
     const response = await fetch(status.baseUrl + '/health', { headers: { 'x-autoflow-token': status.token }, signal: AbortSignal.timeout(3000) })
     const health = response.ok ? await response.json() : null
     return response.ok && health?.status === 'ok' && health?.instanceId === status.instanceId ? { status } : null
-  })()`, 'authenticated sidecar health', 60_000)
+  })()`, 'authenticated sidecar health', 120_000)
   const status = readiness.status
+  const readyMs = Date.now() - readyStarted
+  console.log(`sidecar healthy ${readyMs} ms after the window was reachable`)
+  if (process.env.GITHUB_ACTIONS) console.log(`::notice title=desktop smoke sidecar startup::${readyMs} ms (${process.platform}/${process.arch})`)
   desktop.cdp.close()
   console.log(`desktop connected (${packaged ? 'packaged' : 'development'}, ${process.platform}/${process.arch})`)
   // Kill the desktop host to exercise backend parent-exit monitoring, not only normal quit.
