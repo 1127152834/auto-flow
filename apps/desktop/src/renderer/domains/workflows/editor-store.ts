@@ -1,6 +1,7 @@
 // Source: WebRPA@5ccb900e, store/workflowStore.ts; see SOURCE.md for license and adaptation boundaries.
 import { create } from 'zustand'
-import type { BrowserEnvironment, TraceMode } from './types/workflow'
+import type { BrowserEnvironment, ExecutionSemantics, TraceMode } from './types/workflow'
+import { EXECUTION_SEMANTICS_V2 } from './types/workflow'
 import { nanoid } from 'nanoid'
 import type { Node, Edge, Connection, NodeChange, EdgeChange } from '@xyflow/react'
 import { applyNodeChanges, applyEdgeChanges, addEdge } from '@xyflow/react'
@@ -244,6 +245,8 @@ export type DataRow = Record<string, unknown>
 interface WorkflowState {
   traceMode?: TraceMode
   setTraceMode: (mode: TraceMode) => void
+  executionSemantics?: ExecutionSemantics
+  upgradeExecutionSemantics: () => void
   browserEnvironmentVersion: number | undefined
   migrateBrowserEnvironment(nodeId:string, configuration:BrowserEnvironment): void
   // 工作流基本信息
@@ -396,7 +399,7 @@ interface WorkflowState {
   setWorkflowName: (name: string) => void
   setWorkflowNameWithHistory: (name: string) => void  // 设置名称并保存历史
   clearWorkflow: () => void
-  loadWorkflow: (workflow: { traceMode?: TraceMode; browserEnvironmentVersion?: number; nodes: Node<NodeData>[]; edges: Edge[]; name: string; variables?: Variable[] }) => void
+  loadWorkflow: (workflow: { traceMode?: TraceMode; executionSemantics?: string; browserEnvironmentVersion?: number; nodes: Node<NodeData>[]; edges: Edge[]; name: string; variables?: Variable[] }) => void
   // 回滚：把画布完整恢复到某个快照（含节点、连线、名称、全局变量）
   restoreSnapshot: (snapshot: { traceMode?: TraceMode; browserEnvironmentVersion?: number; nodes: Node<NodeData>[]; edges: Edge[]; name?: string; variables?: Variable[] }, options?: { resetHistory?: boolean }) => void
   
@@ -1444,6 +1447,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   id: nanoid(),
   name: '未命名工作流',
   traceMode: undefined,
+  executionSemantics: EXECUTION_SEMANTICS_V2,
   browserEnvironmentVersion: 1,
   nodes: [],
   edges: [],
@@ -3235,6 +3239,11 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     set({ traceMode: mode, hasUnsavedChanges: true })
   },
 
+  upgradeExecutionSemantics: () => {
+    if (get().executionSemantics === EXECUTION_SEMANTICS_V2) return
+    set({ executionSemantics: EXECUTION_SEMANTICS_V2, hasUnsavedChanges: true })
+  },
+
   setWorkflowName: (name) => {
     if (get().name !== name) set({ name, hasUnsavedChanges: true })
   },
@@ -3262,6 +3271,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       id: nanoid(),
       name: '未命名工作流',
       traceMode: undefined,
+      executionSemantics: EXECUTION_SEMANTICS_V2,
       browserEnvironmentVersion: 1,
       nodes: [],
       edges: [],
@@ -3298,6 +3308,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       name: workflow.name,
       browserEnvironmentVersion: workflow.browserEnvironmentVersion,
       traceMode: workflow.traceMode,
+      executionSemantics: workflow.executionSemantics === EXECUTION_SEMANTICS_V2 ? EXECUTION_SEMANTICS_V2 : undefined,
       variables: structuredClone(workflow.variables ?? []),
       selectedNodeId: null,
       clipboard: [],
@@ -3372,6 +3383,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       name: state.name,
       browserEnvironmentVersion: state.browserEnvironmentVersion,
       traceMode: state.traceMode,
+      ...(state.executionSemantics ? { executionSemantics: state.executionSemantics } : {}),
       nodes: convertedNodes,
       edges: state.edges,
       variables: state.variables,
@@ -3446,6 +3458,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         name: workflow.name || '导入的工作流',
         browserEnvironmentVersion: workflow.browserEnvironmentVersion,
         traceMode: workflow.traceMode,
+        executionSemantics: workflow.executionSemantics === EXECUTION_SEMANTICS_V2 ? EXECUTION_SEMANTICS_V2 : undefined,
         nodes: safeNodes,
         edges: safeEdges,
         variables: importedVariables,  // 恢复变量

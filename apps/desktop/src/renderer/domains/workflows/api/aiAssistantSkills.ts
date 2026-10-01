@@ -14,6 +14,7 @@ import { excludedModuleTypes } from '../lib/moduleCatalog'
  * 让小助手具有完全的前端操作能力。
  */
 import { useWorkflowStore, moduleTypeLabels } from '../editor-store'
+import { EXECUTION_SEMANTICS_V2 } from '../types/workflow'
 import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
 import { useDialogRegistry, getDialogInfoForAI } from '../hooks/stores/dialogRegistry'
 import { localWorkflowApi, workflowApi, imageAssetApi, scheduledTaskApi } from '../api'
@@ -423,6 +424,7 @@ export async function executeClientAction(
         if (!animate) {
           // 兼容老调用方式：一次性装入
           store.loadWorkflow({
+            executionSemantics: EXECUTION_SEMANTICS_V2, // a workflow built by the assistant is new
             browserEnvironmentVersion,
             nodes: xyNodes as any,
             edges: edges as any,
@@ -435,7 +437,7 @@ export async function executeClientAction(
 
         // === 可视化逐步搭建：让用户亲眼看着 AI 把节点一个个画出来 ===
         // 1) 先清空画布、设置工作流名
-        store.loadWorkflow({ browserEnvironmentVersion, nodes: [], edges: [], name, variables: Array.isArray(payload.variables) ? payload.variables : [] })
+        store.loadWorkflow({ executionSemantics: EXECUTION_SEMANTICS_V2, browserEnvironmentVersion, nodes: [], edges: [], name, variables: Array.isArray(payload.variables) ? payload.variables : [] })
         useWorkflowStore.setState({ hasUnsavedChanges: true })
 
         // 2) 节点排序：先便签（zIndex=-1），再按 position 从左上到右下

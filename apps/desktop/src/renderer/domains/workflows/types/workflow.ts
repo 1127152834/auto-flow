@@ -711,6 +711,9 @@ export type BrowserEnvironment =
   | {source:'inputEnvironment';inputId:string}
 
 export type TraceMode = 'off' | 'standard' | 'enhanced'
+// Remediation M1 R1-05: absent means the imported WebRPA semantics (a handled failure still fails the run).
+export type ExecutionSemantics = 'autoflow-v2'
+export const EXECUTION_SEMANTICS_V2: ExecutionSemantics = 'autoflow-v2'
 
 export interface Workflow {
   traceMode?: TraceMode

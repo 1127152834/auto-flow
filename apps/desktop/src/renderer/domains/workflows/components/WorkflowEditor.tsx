@@ -40,6 +40,7 @@ import { LogPanel } from './LogPanel'
 import { Toolbar } from './Toolbar'
 import { RemoteCursor } from './RemoteCursor'
 import { SubflowMonitorDialog } from './SubflowMonitorDialog'
+import { ExecutionSemanticsBanner } from './ExecutionSemanticsBanner'
 import { socketService } from '../events'
 import { remoteService } from '../api/remote'
 import { onAssistantUiEvent } from '../api/aiAssistantSkills'
@@ -564,6 +565,7 @@ export function WorkflowEditor() {
           nodes: data.nodes as Node<NodeData>[],
           edges: data.edges,
           name: data.workflowName || '远程协助工作流',
+          executionSemantics: useWorkflowStore.getState().executionSemantics,
         })
         // 不再打印同步日志，太频繁了
       } finally {
@@ -612,6 +614,7 @@ export function WorkflowEditor() {
                 nodes: message.nodes as Node<NodeData>[],
                 edges: message.edges as Edge[],
                 name: (message.workflowName as string) || stateRef.current.workflowName,
+                executionSemantics: useWorkflowStore.getState().executionSemantics,
               })
             } finally {
               setTimeout(() => remoteService.setApplyingRemote(false), 200)
@@ -1641,6 +1644,9 @@ export function WorkflowEditor() {
             </button>
           </div>
           )}
+
+          {/* 整改 M1 R1-06：旧出错规则提示 */}
+          <ExecutionSemanticsBanner />
 
           {/* 模块条视图：覆盖在画布之上（流程图保持挂载以维持实例与状态） */}
           {editorViewMode === 'block' && (

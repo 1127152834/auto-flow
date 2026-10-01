@@ -25,8 +25,8 @@ export async function enterCustomModuleEditing(id: string): Promise<boolean> {
     const state = useWorkflowStore.getState()
     const alreadyEditing = !!sessionStorage.getItem('editingCustomModuleId')
     if (!alreadyEditing) {
-      const { id: documentId, name, traceMode, browserEnvironmentVersion, nodes, edges, variables, history, historyIndex, hasUnsavedChanges, selectedNodeId } = state
-      sessionStorage.setItem(backupKey, JSON.stringify({ id: documentId, name, traceMode, browserEnvironmentVersion, nodes, edges, variables, history, historyIndex, hasUnsavedChanges, selectedNodeId }))
+      const { id: documentId, name, traceMode, executionSemantics, browserEnvironmentVersion, nodes, edges, variables, history, historyIndex, hasUnsavedChanges, selectedNodeId } = state
+      sessionStorage.setItem(backupKey, JSON.stringify({ id: documentId, name, traceMode, executionSemantics, browserEnvironmentVersion, nodes, edges, variables, history, historyIndex, hasUnsavedChanges, selectedNodeId }))
     }
     const previousId = sessionStorage.getItem('editingCustomModuleId')
     const previousName = sessionStorage.getItem('editingCustomModuleName')
@@ -87,13 +87,13 @@ export function restoreMainWorkflow(): boolean {
     if (!Array.isArray(backup.nodes) || !Array.isArray(backup.edges) || !Array.isArray(backup.variables) || typeof backup.name !== 'string') throw new Error('主工作流备份损坏；已保留模块草稿')
     if (backup.id && (!Array.isArray(backup.history) || !Number.isInteger(backup.historyIndex) || !backup.history[backup.historyIndex])) throw new Error('主工作流历史备份损坏；已保留模块草稿')
     if (backup.id) {
-      const { id, nodes, edges, variables, name, traceMode, browserEnvironmentVersion, history, historyIndex, hasUnsavedChanges, selectedNodeId } = backup
+      const { id, nodes, edges, variables, name, traceMode, executionSemantics, browserEnvironmentVersion, history, historyIndex, hasUnsavedChanges, selectedNodeId } = backup
       const restoredHistory = history.map((snapshot: Record<string, unknown>) => ({
         ...snapshot,
         traceMode: snapshot.traceMode,
         browserEnvironmentVersion: snapshot.browserEnvironmentVersion,
       }))
-      useWorkflowStore.setState({ id, nodes, edges, variables, name, traceMode, browserEnvironmentVersion, history: restoredHistory, historyIndex, hasUnsavedChanges, selectedNodeId })
+      useWorkflowStore.setState({ id, nodes, edges, variables, name, traceMode, executionSemantics, browserEnvironmentVersion, history: restoredHistory, historyIndex, hasUnsavedChanges, selectedNodeId })
     } else {
       // Legacy backups did not retain document identity or history.
       useWorkflowStore.getState().restoreSnapshot(backup, { resetHistory: true })

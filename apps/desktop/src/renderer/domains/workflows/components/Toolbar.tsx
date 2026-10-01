@@ -359,6 +359,7 @@ export function Toolbar() {
         id: sourceDocumentId,
         schemaVersion: 3,
         browserEnvironmentVersion: 1,
+        ...(source.executionSemantics ? { executionSemantics: source.executionSemantics } : {}),
         name,
         nodes: nodes.map(n => ({
           id: n.id,
