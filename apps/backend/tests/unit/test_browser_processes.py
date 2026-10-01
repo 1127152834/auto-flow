@@ -394,6 +394,70 @@ async def test_exit_race_never_releases_a_process_without_confirming_exit(monkey
         assert process.returncode == 0
 
 
+@pytest.mark.asyncio
+@pytest.mark.parametrize('graceful', [False, True])
+@pytest.mark.parametrize('outcome', ['exited', 'parent_alive', 'child_alive', 'unknown_child', 'reused_child'])
+async def test_project_posix_signal_denial_requires_confirmed_tree_exit(monkeypatch, tmp_path, graceful, outcome):
+    from autoflow.infrastructure.process import project_browser_processes as identities
+    from autoflow.infrastructure.process import project_test_browser_worker as cleanup
+    from autoflow.infrastructure.process import project_workflow_worker as workers
+
+    owned = {700: (700, 11), 701: (701, 12)}
+    births = {700: 11, 701: 12}
+    sent, waiters = [], []
+    monkeypatch.setattr(cleanup, 'sys', SimpleNamespace(platform='darwin'))
+    monkeypatch.setattr(identities, 'sys', SimpleNamespace(platform='darwin'))
+    monkeypatch.setattr(workers, 'sys', SimpleNamespace(platform='darwin', executable=sys.executable))
+    monkeypatch.setattr(cleanup, 'capture_processes', lambda *_args, **_kwargs: owned)
+    monkeypatch.setattr(identities, 'process_birth', lambda pid: births.get(pid))
+    monkeypatch.setattr(identities, '_process_exists', lambda pid: pid in births)
+
+    def denied(group, number):
+        sent.append((group, number))
+        raise PermissionError('signal denied while process may be exiting')
+
+    monkeypatch.setattr(identities.os, 'killpg', denied, raising=False)
+
+    async def wait():
+        waiters.append(asyncio.current_task())
+        if outcome == 'parent_alive':
+            await asyncio.Event().wait()
+        births.pop(700, None)
+        if outcome == 'unknown_child':
+            births[701] = None
+        elif outcome == 'reused_child':
+            births[701] = 99
+        elif outcome == 'exited':
+            births.pop(701, None)
+        process.returncode = 0
+        return 0
+
+    process = SimpleNamespace(pid=700, returncode=None, wait=wait)
+    manager = workers.ProjectWorkflowWorkerManager(tmp_path, termination_timeout=.01)
+    directory = tmp_path / 'owned-copy'
+    directory.mkdir()
+    (directory / 'proof').write_text('keep until tree exit')
+    worker = SimpleNamespace(process=process, directory=directory, executable=None, birth=11,
+                             stop_requested=not graceful, capability=None, created_directory=True,
+                             proxy_requests=None, run_id='run')
+    manager._workers['run'] = worker
+    try:
+        if outcome in {'exited', 'reused_child'}:
+            await manager._cleanup_owned(worker)
+            assert not manager.busy() and not directory.exists()
+            assert all(group == 700 for group, _number in sent)
+        else:
+            with pytest.raises(RuntimeError, match='not yet confirmed|did not finish'):
+                await manager._cleanup_owned(worker)
+            assert manager.busy() and (directory / 'proof').read_text() == 'keep until tree exit'
+        assert sent
+    finally:
+        for waiter in waiters:
+            if not waiter.done():
+                waiter.cancel()
+        await asyncio.gather(*waiters, return_exceptions=True)
+
+
 @pytest.mark.parametrize('birth,member,owned,allowed', [(123, True, False, True), (123, False, False, False), (123, False, True, True), (456, True, True, False), (None, True, True, False)])
 def test_windows_job_verifies_same_process_handle_and_only_live_owner_assigns(monkeypatch, birth, member, owned, allowed):
     from autoflow.infrastructure.process import windows_job as module

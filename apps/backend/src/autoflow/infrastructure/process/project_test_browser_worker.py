@@ -441,24 +441,32 @@ async def force_process_tree(
             await process.wait()
         return
     owned = await asyncio.to_thread(capture_processes, process.pid, birth, directory, executable, owned, strict_ownership=strict_ownership)
+    signal_error = None
     if graceful:
-        await asyncio.to_thread(signal_processes, owned, signal.SIGTERM)
+        try:
+            await asyncio.to_thread(signal_processes, owned, signal.SIGTERM)
+        except PermissionError as error:
+            signal_error = error
         if process.returncode is None:
             try:
                 await asyncio.wait_for(asyncio.shield(process.wait()), termination_timeout)
             except TimeoutError:
                 pass
     owned = await asyncio.to_thread(capture_processes, process.pid, birth, directory, executable, owned, strict_ownership=strict_ownership)
-    await asyncio.to_thread(signal_processes, owned, signal.SIGKILL)
+    try:
+        await asyncio.to_thread(signal_processes, owned, signal.SIGKILL)
+    except PermissionError as error:
+        # Signal denial may race exit. Only the checks below can release ownership.
+        signal_error = error
     if process.returncode is None:
         # A missing native identity must retain cleanup ownership, never hang shutdown.
         # Do not signal an unverified PID; a retry can capture its startup identity.
         try:
             await asyncio.wait_for(asyncio.shield(process.wait()), termination_timeout)
         except TimeoutError:
-            raise RuntimeError("Worker identity or process exit is not yet confirmed") from None
+            raise RuntimeError("Worker identity or process exit is not yet confirmed") from signal_error
     deadline = asyncio.get_running_loop().time() + max(termination_timeout, 2)
     while await asyncio.to_thread(living_processes, owned):
         if asyncio.get_running_loop().time() >= deadline:
-            raise RuntimeError("Browser process tree cleanup did not finish")
+            raise RuntimeError("Browser process tree cleanup did not finish") from signal_error
         await asyncio.sleep(0.01)
