@@ -143,3 +143,9 @@ ARM远端打包子范围通过（2026-09-30，confirmed步骤级证据；2026-10
 最新测试修订远端复验安排（2026-09-30，confirmed修订就绪/远端pending）：dc26be2a已完成定向真实内核验证和独立审查。此前暂缓推送以保留两轮回归；现将最新候选正常快进推送codex/remediation-m0，按既有分支并发策略替换含已知Intel失败的728cf027运行，以验证具体测试修订。另一个ci-validation分支的c585a7aa ARM最终回归与Windows完整回归继续保留。替换依据是已验证的新修订，不是观察超时；被取消的步骤不计通过，不修改CI门禁、默认分支或部署。
 
 三平台原生浏览器初始化复验（2026-09-30，confirmed步骤级子范围；2026-10-01 03:14Z）：最新run36808514086@98e95dba的Intel110198234330、ARM110198234563、Windows110198234644在Verify node-owned browser initialization and cleanup步骤均completed/success。dc26be2a预算修订的Intel原生复验缺口关闭；不声称此前远端具体耗时成因已经查明。终态完整日志未出，不推断各平台测试计数。当前Intel类型检查、ARM全量后端、Windows HTTP预检进行中；较早c585a7aa ARM最终后端及Windows完整后端继续运行。全矩阵与默认分支黄金流程仍pending，本条文档证据不触发重新推送。
+
+ARM首个完整远端任务通过（2026-09-30，confirmed该候选单平台；2026-10-01 03:17Z结束）：[run36800414483 / job110173439919](https://github.com/1127152834/auto-flow/actions/runs/36800414483/job/110173439919)在c585a7aa4af8c3c5bae01f53b0533989e2423a07最终completed/success。完整日志确认两轮后端各5336 passed/137 skipped/24 deselected/2 warnings（1925.69s、1688.78s），两轮前端各5972 passed/454文件，离线基准21 passed（3.62s），真实worker选集44 passed/31 deselected/1 warning（566.31s）；检查、构建、源码冒烟、打包整链、安装器构建、strict类型债务检查和最终构件上传均成功。
+
+打包日志中的业务组合报告status=passed，确认人员状态/内容/关联和版本不变、邮箱消耗、唯一新账号与共用登录环境、下一Task恢复cookie及并发领取/字段冲突隔离。打包桌面报告status=passed，含未保存副本清理、人工关联修复且原End历史仍failed、旧副本拒绝后gen2/cookie9恢复、10000行五写入者/0 busyRetries及26张截图清单；本次未下载截图，不声称视觉复验。源码桌面步骤只运行管理链，完整运行时与规模场景由打包桌面步骤覆盖。日志仍有浏览器管理SSE关闭时Uvicorn graceful shutdown超时/CancelledError，烟测退出成功不等于日志无警告。AutoFlow-0.1.0-arm64.dmg已构建；代码签名因缺证书跳过，未执行安装或发布。
+
+PM9构件11139561095（pm9-macos-15）上传883628173字节；日志与API元数据一致给出ZIP SHA256 bd4b8fd89576d36cc3b773009db20c4a8719069cb60b185a504b3e0f5e63ab45。下载连接器因超过536870912字节上限拒绝，因此未下载或本地复算此ZIP哈希，报告结论来自完整job日志；不能将元数据一致称作本地校验。此前已下载并校验的独立benchmark小构件证据不受影响。最新98e95dba三平台及较早c585a7aa Windows仍在完整后端回归；本次ARM成功不替代包含后续修复的最新候选验收，M0 AC0-07和默认分支黄金流程继续pending。
