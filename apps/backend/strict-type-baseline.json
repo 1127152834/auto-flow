@@ -469,7 +469,6 @@
     "[\"src/autoflow/application/workflows/executors/proxy_control.py\", \"ProxyControlExecutor.execute\", \"no-untyped-call\", \"Call to untyped function \\\"_attempts\\\" in typed context\"]": 1,
     "[\"src/autoflow/application/workflows/executors/proxy_control.py\", \"ProxyControlExecutor.requires_browser_for\", \"no-any-return\", \"Returning Any from function declared to return \\\"bool\\\"\"]": 1,
     "[\"src/autoflow/application/workflows/executors/safe_expr.py\", \"_eval\", \"no-untyped-call\", \"Call to untyped function (unknown) in typed context\"]": 1,
-    "[\"src/autoflow/application/workflows/executors/sound_trigger.py\", \"_audio_meter\", \"unused-ignore\", \"Unused \\\"type: ignore[import-untyped]\\\" comment\"]": 2,
     "[\"src/autoflow/application/workflows/executors/text_to_speech.py\", \"TextToSpeechExecutor.execute\", \"type-arg\", \"Missing type arguments for generic type \\\"dict\\\"\"]": 1,
     "[\"src/autoflow/application/workflows/executors/utility_tools.py\", \"HEXToCMYKExecutor.execute\", \"type-arg\", \"Missing type arguments for generic type \\\"dict\\\"\"]": 1,
     "[\"src/autoflow/application/workflows/executors/utility_tools.py\", \"MD5EncryptExecutor.execute\", \"type-arg\", \"Missing type arguments for generic type \\\"dict\\\"\"]": 1,
