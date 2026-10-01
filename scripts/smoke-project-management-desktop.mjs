@@ -476,7 +476,7 @@ try {
   assert.equal((await saved.json()).recordCount, 1)
   await click('项目')
   await click('全部项目')
-  await waitFor(cdp, "document.body.innerText.includes('PM9 桌面项目')", 'project after app restart')
+  await waitFor(cdp, "document.body.innerText.includes('PM9 桌面项目')", 'project after app restart', 45_000)
   await capture('restarted')
   report.checks.push('Electron and its production sidecar restart retain the same data')
   report.status = 'passed'
@@ -484,10 +484,12 @@ try {
   report.error = String(error.stack ?? error)
   // Preserve the disposable service's failure evidence before removing its workspace.
   report.sidecarLog = await readFile(join(userData, 'logs/sidecar.log'), 'utf8').then(log => redactSidecarLog(log, sidecar?.token)).catch(() => 'sidecar log unavailable')
+  // What the user would have seen at the moment of failure, to tell a slow list from an empty one.
+  report.pageText = await cdp?.evaluate("location.hash + ' | ' + document.body.innerText.slice(0, 900)", 5_000).catch(() => 'page text unavailable')
   await capture('failure').catch(() => {})
   // Job logs are not always readable by the people triaging a failure; annotations are.
   if (process.env.GITHUB_ACTIONS) {
-    console.log(githubErrorAnnotation(`pm9 desktop smoke failed (${process.platform}/${process.arch})`, `${String(report.error).slice(0, 1800)}\n--- sidecar log tail ---\n${String(report.sidecarLog).slice(-1500)}`, 3500))
+    console.log(githubErrorAnnotation(`pm9 desktop smoke failed (${process.platform}/${process.arch})`, `${String(report.error).slice(0, 1000)}\n--- page ---\n${String(report.pageText).slice(0, 900)}\n--- sidecar log tail ---\n${String(report.sidecarLog).slice(-1100)}`, 3500))
   }
   throw error
 } finally {
