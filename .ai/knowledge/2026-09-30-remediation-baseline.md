@@ -73,3 +73,9 @@
 环境为macOS15.7.9/arm64/3逻辑核/7GiB，Python3.11.9、SQLite3.45.1。单次指标：万行记录键/字段领取698.001/923.117ms；5000节点框架0.381ms/节点、5.001事件/节点；1000事件提交p50/p99为1.560/3.030ms。三份manifest的起止commit一致，但dirty=true、comparable=false；不可与本机基线计算提升。
 
 确定的一处脏目录来源：CI的HTTP预检在基准前写入 `artifacts/pm9/http-preflight/project-api.json`，该生成目录原先未忽略。在隔离Git仓库复现该报告使status变脏，加入仅 `artifacts/pm9/` 的忽略规则后恢复干净，新增source.py仍能被检测；没有放宽报告端的源码检查。旧产物保持原始不可比标记，不反写为干净，也未证明远端不存在其他脏路径。原始ZIP保存在忽略的 `.superpowers/sdd/2026-09-30-remediation-m0-baseline-guardrails/ci-artifacts/11132310685-e27b1814-macos-15.zip`。
+
+## M1 Task 1：事件提交延迟（2026-10-01，confirmed执行，容器环境，非Mac基线）
+
+在Claude云端Linux容器（非用户Mac、非CI），同一环境同一脚本（`bench_event_commit.run(1000)`，5次取p50）对比同一提交的工作区改动前后：未开WAL（原状）p50为3.863ms（3.863/3.960/4.051/3.728/3.382），开启WAL+synchronous=NORMAL+busy_timeout后为1.797ms（1.797/1.649/1.844/1.978/1.580），中位数下降53.5%。该数字只证明本环境内的相对变化；M0 Mac基线（1.177ms）与此环境硬件不同，不能互相换算，也不得据此声称在用户Mac上已达AC1-02。验收仍须在M0基线同环境复测并如实记录。
+
+反例同时核验：真实第二连接持有旧读快照后，`wal_checkpoint(TRUNCATE)` 返回busy，`checkpoint_wal` 抛错而不放行文件复制；快照释放后复制主文件可见新行。按文件复制主库的唯一测试点（`test_project_data_scheduler.py` 的跨工作区用例）已先checkpoint；全仓库复制调用排查中其余均为浏览器Profile/内核目录或产物，不是应用主库。

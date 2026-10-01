@@ -1144,11 +1144,15 @@ async def test_identical_ids_in_two_workspaces_do_not_share_stop_or_claim_gate(
     """Fails if a scheduler writes by logical ID outside its own workspace factory."""
     from shutil import copy2
 
-    from autoflow.infrastructure.database.session import create_session_factory
+    from autoflow.infrastructure.database.session import (
+        checkpoint_wal,
+        create_session_factory,
+    )
 
     factory, project, _, _, _, _, scheduler = data_services
     batch = start(data_services)
     other_path = tmp_path / "other-workspace.sqlite3"
+    checkpoint_wal(factory)  # WAL (M1 R1-13): a file copy only sees checkpointed pages
     copy2(factory.kw["bind"].url.database, other_path)
     other = create_session_factory(other_path)
     try:

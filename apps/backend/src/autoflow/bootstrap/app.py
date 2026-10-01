@@ -1,3 +1,4 @@
+import logging
 import secrets
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
@@ -173,6 +174,7 @@ from autoflow.infrastructure.database.project_sync_impacts import (
 from autoflow.infrastructure.database.projects import SqlAlchemyProjects
 from autoflow.infrastructure.database.proxy_options import SqlAlchemyProxyOptions
 from autoflow.infrastructure.database.session import (
+    checkpoint_wal,
     create_session_factory,
     migrate_database,
 )
@@ -344,7 +346,9 @@ def create_app(
     app.state.status_batch_service = status_batch_service
     app.state.status_batch_coordinator = status_batch_coordinator
     app.router.add_event_handler("startup", status_batch_coordinator.resume)
-    proxy_runtime = configure_proxy_management(app, paths.database, resource_references)
+    proxy_runtime = configure_proxy_management(
+        app, paths.database, resource_references, session_factory=session_factory
+    )
     # ponytail: unknown legacy owners block all proxies until their existing cleanup removes evidence.
     # Per-proxy recovery can replace this conservative guard once legacy runs persist binding identity.
     legacy_proxy_directories = tuple(
@@ -656,6 +660,12 @@ def create_app(
                 try:
                     await loop_lag.stop()
                 finally:
+                    try:
+                        checkpoint_wal(session_factory)
+                    except Exception:
+                        logging.getLogger(__name__).warning(
+                            "SQLite WAL checkpoint did not complete at shutdown", exc_info=True
+                        )
                     session_factory.dispose()
 
     app.router.add_event_handler("shutdown", shutdown)

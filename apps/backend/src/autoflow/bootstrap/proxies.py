@@ -2,7 +2,7 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from fastapi import FastAPI
 
@@ -61,8 +61,13 @@ def configure_proxy_management(
     app: FastAPI,
     database: Path,
     references: ProjectResourceReferences | None = None,
+    *,
+    session_factory: Any | None = None,
 ) -> ProxyManagementRuntime:
-    session_factory = create_session_factory(database)
+    # Remediation M1 R1-13: share the application's engine; only a factory created here is disposed here.
+    owns_factory = session_factory is None
+    if session_factory is None:
+        session_factory = create_session_factory(database)
     credentials = LazySystemCredentialStore()
     provider = ProxyPanelReadProvider()
     loader = ProxyCredentialLoader(
@@ -140,5 +145,6 @@ def configure_proxy_management(
         try:
             await remote.close()
         finally:
-            session_factory.dispose()
+            if owns_factory:
+                session_factory.dispose()
     return ProxyManagementRuntime(resolve_profile, close, workflow)

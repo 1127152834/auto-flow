@@ -3,7 +3,7 @@ from pathlib import Path
 
 from alembic import command
 from alembic.config import Config
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine, event, text
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker
 
@@ -20,14 +20,33 @@ def migrate_database(path: Path) -> None:
     command.upgrade(config, "head")
 
 
+SQLITE_PRAGMAS = (
+    "PRAGMA journal_mode=WAL",
+    "PRAGMA synchronous=NORMAL",
+    "PRAGMA busy_timeout=5000",
+    "PRAGMA foreign_keys=ON",
+)
+
+
+def checkpoint_wal(factory) -> None:
+    """Checkpoint a quiescent database; callers must keep writes stopped during a copy."""
+    with factory() as session:
+        busy, _, _ = session.execute(text("PRAGMA wal_checkpoint(TRUNCATE)")).one()
+        if busy:
+            raise RuntimeError("SQLite WAL checkpoint is busy")
+
+
 def create_session_factory(path: Path):
     engine = create_engine(_url(path), future=True)
 
     @event.listens_for(engine, "connect")
-    def enable_foreign_keys(connection, _record):
+    def configure_connection(connection, _record):
+        # Remediation M1 R1-13: WAL lets readers proceed during writes; NORMAL is durable
+        # across application crashes in WAL mode; busy_timeout absorbs short lock waits.
         cursor = connection.cursor()
         try:
-            cursor.execute("PRAGMA foreign_keys=ON")
+            for pragma in SQLITE_PRAGMAS:
+                cursor.execute(pragma)
         finally:
             cursor.close()
 
