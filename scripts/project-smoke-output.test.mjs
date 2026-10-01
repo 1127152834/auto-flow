@@ -3,7 +3,7 @@ import { access, mkdir, mkdtemp, rm, symlink } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { test } from 'node:test'
-import { assertOutsideHistory, isWithinPath, redactSidecarLog } from './project-smoke-output.mjs'
+import { assertOutsideHistory, githubErrorAnnotation, isWithinPath, redactSidecarLog } from './project-smoke-output.mjs'
 
 test('history output guard resolves symlinks before any nested directory is created', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'autoflow-output-guard-'))
@@ -39,4 +39,12 @@ test('failure logs retain the error while excluding startup metadata and service
   assert.ok(result.includes('OperationalError: database is locked'))
   assert.ok(!result.includes('AUTOFLOW_READY'))
   assert.ok(!result.includes(token))
+})
+
+test('workflow annotation keeps a multi-line diagnostic as one escaped command and keeps the tail', () => {
+  const line = githubErrorAnnotation('smoke: failed, why', 'first\r\nsecond 100%\n' + 'x'.repeat(40_000) + 'END', 10)
+  assert.equal(line.includes('\n'), false)
+  assert.equal(line.startsWith('::error title=smoke%3A failed%2C why::'), true)
+  assert.equal(line.endsWith('xxxxxxxEND'), true)
+  assert.equal(githubErrorAnnotation('t', 'a\r\nb 100%'), '::error title=t::a%0D%0Ab 100%25')
 })

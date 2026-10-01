@@ -1,0 +1,62 @@
+name: Desktop smoke diagnosis
+
+# Diagnostic only: reruns the source desktop smoke that failed on the Intel
+# runner (sidecar health stayed null) without the 50-minute regression before
+# it, and prints the redacted failure diagnostics as annotations.
+on:
+  push:
+    branches: ['diag/desktop-**']
+  workflow_dispatch:
+    inputs:
+      os:
+        description: Runner image
+        type: choice
+        default: macos-15-intel
+        options: [macos-15-intel, macos-15, windows-2022]
+      repeat:
+        description: Times to run the smoke in a row
+        default: '3'
+
+concurrency:
+  group: desktop-smoke-diagnosis-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ${{ inputs.os || 'macos-15-intel' }}
+    timeout-minutes: 90
+    steps:
+      - run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --directory apps/backend --locked --group build
+      - run: npm ci
+      - run: npm run build
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
+      # Same build state as the CI job that failed: the smoke ran after these.
+      - run: npm run backend:build
+      - run: npm run package:dir
+      - name: Build installer artifact
+        shell: bash
+        run: |
+          cd apps/desktop
+          npx electron-builder --config electron-builder.yml
+      - name: Source desktop smoke (repeated, keeps going to show every failure)
+        shell: bash
+        run: |
+          failures=0
+          for attempt in $(seq 1 "${{ inputs.repeat || '3' }}"); do
+            echo "::group::attempt $attempt"
+            npm run smoke:desktop || failures=$((failures + 1))
+            echo "::endgroup::"
+          done
+          echo "failed attempts: $failures"
+          [ "$failures" -eq 0 ]

@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os'
 import { resolve, join } from 'node:path'
 import { launchElectron, waitFor } from './electron-cdp.mjs'
 import { stop } from './smoke-sidecar.mjs'
-import { redactSidecarLog } from './project-smoke-output.mjs'
+import { githubErrorAnnotation, redactSidecarLog } from './project-smoke-output.mjs'
 
 const root = resolve(import.meta.dirname, '..')
 const dataDir = await mkdtemp(join(tmpdir(), 'autoflow-desktop-smoke-'))
@@ -36,11 +36,14 @@ try {
   const status = await desktop?.cdp.evaluate('window.autoflow?.getSidecarStatus()').catch(() => null)
   const sidecarLog = await readFile(join(dataDir, 'logs', 'sidecar.log'), 'utf8')
     .then(log => redactSidecarLog(log, status?.token)).catch(() => 'sidecar log unavailable')
-  console.error('desktop smoke diagnostics:', JSON.stringify({
+  const diagnostics = JSON.stringify({
     mode: desktop ? (desktop.packaged ? 'packaged' : 'development') : 'unknown', platform: process.platform, arch: process.arch,
     sidecarState: status?.state ?? 'unavailable', sidecarMessage: status?.message,
     desktopExitCode: desktop?.child.exitCode, desktopSignal: desktop?.child.signalCode, sidecarLog,
-  }))
+  })
+  console.error('desktop smoke diagnostics:', diagnostics)
+  // The runner log is not always readable by whoever triages CI; the same redacted text as an annotation is.
+  if (process.env.GITHUB_ACTIONS) console.log(githubErrorAnnotation(`desktop smoke failed: ${error?.message ?? error}`, diagnostics))
   throw error
 } finally {
   desktop?.cdp.close()

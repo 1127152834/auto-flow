@@ -1,12 +1,12 @@
 name: Backend per-file diagnosis
 
-# Diagnostic only. Pushing a branch named diag/* runs the backend suite one file
+# Diagnostic only. Pushing a branch named diag/backend-* or diag/windows-* runs the backend suite one file
 # per process with a hard budget per file, so a hang or a slow platform shows up
 # as a named file in annotations instead of an unfinished job. It never runs on
 # the default branch push and does not replace the normal CI regression.
 on:
   push:
-    branches: ['diag/**']
+    branches: ['diag/backend-**', 'diag/windows-**']
   workflow_dispatch:
     inputs:
       os:

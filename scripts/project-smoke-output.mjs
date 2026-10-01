@@ -34,3 +34,12 @@ export async function assertOutsideHistory(history, destination) {
 export function redactSidecarLog(log, token) {
   return log.split('\n').filter(line => !line.trimStart().startsWith('AUTOFLOW_READY ')).join('\n').replaceAll(token || '[no-service-token]', '[redacted]').slice(-20_000)
 }
+
+// GitHub reads workflow commands from stdout; the properties and message need
+// their own escaping so a multi-line diagnostic stays one annotation. Callers
+// pass text that is already redacted (see redactSidecarLog).
+export function githubErrorAnnotation(title, message, limit = 30_000) {
+  const escapeData = value => String(value).replaceAll('%', '%25').replaceAll('\r', '%0D').replaceAll('\n', '%0A')
+  const escapeProperty = value => escapeData(value).replaceAll(':', '%3A').replaceAll(',', '%2C')
+  return `::error title=${escapeProperty(title)}::${escapeData(String(message).slice(-limit))}`
+}
