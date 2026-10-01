@@ -481,7 +481,7 @@ async def test_limited_text_append_rejects_oversize_before_replacing_output(
             append=True, mime_type="text/plain",
         )
     assert error.value.code == "ARTIFACT_TOO_LARGE"
-    assert target.read_text() == "abc"
+    assert target.read_text(encoding="utf-8") == "abc"
     assert len(repository.list_artifacts("run-artifacts", cursor=0, limit=20)) == 1
 
 
@@ -1369,7 +1369,7 @@ async def test_native_windows_new_output_preserves_handle_boundaries(artifacts, 
         expected = asyncio.CancelledError if mode == 'cancel' else RuntimeError if mode == 'registration' else WorkflowRunError
         with pytest.raises(expected):
             await write()
-        if mode == 'collision': assert target.read_text() == 'foreign'
+        if mode == 'collision': assert target.read_text(encoding="utf-8") == 'foreign'
         else: assert not target.exists()
         assert repository.list_artifacts('run-artifacts', cursor=0, limit=20) == ()
     assert not list(target.parent.glob('.*.tmp'))

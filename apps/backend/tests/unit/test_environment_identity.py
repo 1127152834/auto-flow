@@ -67,7 +67,7 @@ def test_candidate_identity_comes_from_host_and_published_tampering_is_rejected(
     store.publish('environment', 1, 'save')
     assert store.generation_identity('environment', 1)['frozenConfiguration']['fingerprintSeed'] == 42
     path = store.generation_dir('environment', 1) / '.autoflow-identity.json'
-    changed = json.loads(path.read_text())
+    changed = json.loads(path.read_text(encoding="utf-8"))
     changed['frozenConfiguration']['fingerprintSeed'] = 43
     path.write_text(json.dumps(changed, sort_keys=True, separators=(',', ':')))
     with pytest.raises(WorkflowRuntimeError) as caught:

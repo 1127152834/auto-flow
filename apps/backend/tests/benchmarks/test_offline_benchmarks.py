@@ -43,8 +43,8 @@ def test_reports_pair_metrics_with_manifest_and_preserve_null(tmp_path):
         tmp_path / "nested",
         manifest=manifest,
     )
-    raw = json.loads(path.read_text())
-    metadata = json.loads(path.with_suffix(".manifest.json").read_text())
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    metadata = json.loads(path.with_suffix(".manifest.json").read_text(encoding="utf-8"))
     assert set(raw) == {"schemaVersion", "commit", "platform", "metrics"}
     assert raw["metrics"]["failure_reason_ratio"] == {"value": None, "unit": "ratio"}
     assert metadata["reports"] == [path.name]
@@ -73,9 +73,9 @@ def test_report_survives_missing_git_and_marks_unknown_incomparable(
         tmp_path,
         manifest=report.build_manifest("claims-v1", {"rows": 1}),
     )
-    assert json.loads(path.read_text())["commit"] == "unknown"
+    assert json.loads(path.read_text(encoding="utf-8"))["commit"] == "unknown"
     assert (
-        json.loads(path.with_suffix(".manifest.json").read_text())["comparable"]
+        json.loads(path.with_suffix(".manifest.json").read_text(encoding="utf-8"))["comparable"]
         is False
     )
 
@@ -111,7 +111,7 @@ def test_concurrent_reports_do_not_overwrite_each_other(tmp_path):
         paths = list(pool.map(write, range(12)))
     assert len(set(paths)) == 12
     assert {
-        json.loads(p.read_text())["metrics"]["rows"]["value"] for p in paths
+        json.loads(p.read_text(encoding="utf-8"))["metrics"]["rows"]["value"] for p in paths
     } == set(range(12))
     assert all(p.with_suffix(".manifest.json").is_file() for p in paths)
 
@@ -124,7 +124,7 @@ def test_uncommitted_source_is_identified_and_not_comparable(monkeypatch, tmp_pa
         tmp_path,
         manifest=report.build_manifest("claims-v1", {"rows": 1}),
     )
-    metadata = json.loads(path.with_suffix(".manifest.json").read_text())
+    metadata = json.loads(path.with_suffix(".manifest.json").read_text(encoding="utf-8"))
     assert metadata["sourceDirty"] is True
     assert metadata["comparable"] is False
 
@@ -197,8 +197,8 @@ def test_report_preserves_measured_source_not_only_save_time_state(
     path = report.write_report(
         "changed", {"rows": (1, "count")}, tmp_path, manifest=manifest
     )
-    raw = json.loads(path.read_text())
-    metadata = json.loads(path.with_suffix(".manifest.json").read_text())
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    metadata = json.loads(path.with_suffix(".manifest.json").read_text(encoding="utf-8"))
     assert raw["commit"] == "A"
     assert metadata["sourceBefore"] == {"commit": "A", "dirty": initial_dirty}
     assert metadata["sourceAfter"] == {"commit": final_commit, "dirty": final_dirty}

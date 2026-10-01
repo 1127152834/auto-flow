@@ -495,7 +495,7 @@ async def test_project_posix_signal_denial_requires_confirmed_tree_exit(monkeypa
         else:
             with pytest.raises(RuntimeError, match='not yet confirmed|did not finish'):
                 await manager._cleanup_owned(worker)
-            assert manager.busy() and (directory / 'proof').read_text() == 'keep until tree exit'
+            assert manager.busy() and (directory / 'proof').read_text(encoding="utf-8") == 'keep until tree exit'
         assert sent
     finally:
         for waiter in waiters:

@@ -51,7 +51,7 @@ def test_restart_restores_staged_data_when_database_delete_never_committed(
 
     with TestClient(_app(tmp_path), headers=headers) as recovered:
         assert recovered.get(f"/api/v1/profiles/{profile['id']}").status_code == 200
-        assert (source / "Cookies").read_text() == "data"
+        assert (source / "Cookies").read_text(encoding="utf-8") == "data"
         assert not (store.trash / token).exists()
 
 

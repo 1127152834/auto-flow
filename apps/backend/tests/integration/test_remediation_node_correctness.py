@@ -58,9 +58,9 @@ async def test_invalid_sha_does_not_write_success_result(algorithm):
 async def test_python_file_arguments_preserve_real_spaced_file_and_literal_shell_text(tmp_path):
     source = tmp_path / "中文 目录" / "actual input.json"
     source.parent.mkdir()
-    source.write_text(Path(__file__).parents[4].joinpath("package.json").read_text())
+    source.write_text(Path(__file__).parents[4].joinpath("package.json").read_text(encoding="utf-8"))
     script = tmp_path / "reader script.py"
-    script.write_text('import json,sys\nfrom pathlib import Path\nprint(json.dumps([json.loads(Path(sys.argv[1]).read_text())["name"], *sys.argv[2:]], ensure_ascii=False))\n')
+    script.write_text('import json,sys\nfrom pathlib import Path\nprint(json.dumps([json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))["name"], *sys.argv[2:]], ensure_ascii=False))\n')
     argv = [str(source), "two words", "", "$(do-not-execute)", "a'b", 'a"b']
     if sys.platform == "win32":
         import subprocess
@@ -72,7 +72,7 @@ async def test_python_file_arguments_preserve_real_spaced_file_and_literal_shell
         {"scriptMode": "file", "scriptPath": str(script), "scriptArgs": arguments, "stdoutVariable": "out"}, context
     )
     assert result.success, result.error
-    assert json.loads(context.variables["out"]) == [json.loads(source.read_text())["name"], *argv[1:]]
+    assert json.loads(context.variables["out"]) == [json.loads(source.read_text(encoding="utf-8"))["name"], *argv[1:]]
 
 
 @pytest.mark.asyncio

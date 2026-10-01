@@ -26,8 +26,15 @@ async def test_run_command_returns_output_and_sets_variable() -> None:
 @pytest.mark.asyncio
 async def test_run_command_failure_timeout_and_empty() -> None:
     executor = RunCommandExecutor()
+    # The command runs through the platform shell, so each shell gets its own spelling
+    # of "write boom to stderr and exit 7".
+    failing = (
+        "echo boom 1>&2& exit /b 7"
+        if sys.platform == "win32"
+        else "printf boom >&2; exit 7"
+    )
     failed = await executor.execute(
-        {"command": "printf boom >&2; exit 7", "shell": "cmd"},
+        {"command": failing, "shell": "cmd"},
         ExecutionContext(),
     )
     timed_out = await executor.execute(
@@ -36,7 +43,8 @@ async def test_run_command_failure_timeout_and_empty() -> None:
     )
 
     assert failed.success is False
-    assert failed.error == "命令执行失败 (返回码: 7): boom"
+    # echo ends its line; printf does not.
+    assert (failed.error or "").rstrip() == "命令执行失败 (返回码: 7): boom"
     assert timed_out.error == "命令执行超时 (0秒)"
     assert (await executor.execute({}, ExecutionContext())).error == "命令不能为空"
 

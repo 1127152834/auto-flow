@@ -461,7 +461,7 @@ async def test_manager_kills_descendant_after_worker_exits_on_term(
     deadline = time.monotonic() + 2
     while not pid_file.exists() and time.monotonic() < deadline:
         await asyncio.sleep(0.01)
-    child_pid = int(pid_file.read_text())
+    child_pid = int(pid_file.read_text(encoding="utf-8"))
 
     await manager.shutdown()
 
@@ -510,7 +510,7 @@ async def test_manager_kills_descendant_after_clean_worker_eof_exit(
     deadline = time.monotonic() + 2
     while not pid_file.exists() and time.monotonic() < deadline:
         await asyncio.sleep(0.01)
-    child_pid = int(pid_file.read_text())
+    child_pid = int(pid_file.read_text(encoding="utf-8"))
 
     await manager.shutdown()
 

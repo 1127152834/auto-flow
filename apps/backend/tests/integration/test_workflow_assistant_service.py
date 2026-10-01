@@ -840,7 +840,7 @@ async def test_large_model_text_uses_references_in_session_event_and_checkpoint(
     content_path, _ = service.artifact_file(
         "artifact", message["contentRef"].removeprefix("assistant-artifact://")
     )
-    assert content_path.read_text() == "长" * 70_000
+    assert content_path.read_text(encoding="utf-8") == "长" * 70_000
     projected = events.replay(after_sequence=0)[-1].data
     assert projected["artifactRef"] == message["contentRef"]
     assert "长" * 200 not in repr(projected)

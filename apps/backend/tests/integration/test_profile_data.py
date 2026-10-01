@@ -29,7 +29,7 @@ def test_profile_data_can_be_staged_restored_and_purged(tmp_path: Path) -> None:
     assert token is not None
     assert not source.exists()
     store.restore(PROFILE_ID, token)
-    assert (source / "Cookies").read_text() == "data"
+    assert (source / "Cookies").read_text(encoding="utf-8") == "data"
 
     token = store.stage(PROFILE_ID)
     assert token is not None
@@ -104,7 +104,7 @@ def test_retry_pending_restores_data_still_referenced_by_database(tmp_path: Path
 
     store.retry_pending(lambda profile_id: profile_id == PROFILE_ID)
 
-    assert (source / "Cookies").read_text() == "data"
+    assert (source / "Cookies").read_text(encoding="utf-8") == "data"
     assert not (root / ".trash" / token).exists()
 
 

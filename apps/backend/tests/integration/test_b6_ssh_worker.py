@@ -85,8 +85,8 @@ class _SSHServerInterface(paramiko.ServerInterface):
     ) -> bool:
         # Only these local test commands run; no host shell or user credentials.
         scripts = {
-            b"printf ok": "import sys; sys.stdout.write('ok\\n')",
-            b"unsupported": "import sys; sys.stderr.write('unsupported\\n'); sys.exit(7)",
+            b"printf ok": "import sys; sys.stdout.buffer.write(b'ok\\n')",
+            b"unsupported": "import sys; sys.stderr.buffer.write(b'unsupported\\n'); sys.exit(7)",
             b"wait": "import time; time.sleep(60)",
         }
         if command not in scripts:

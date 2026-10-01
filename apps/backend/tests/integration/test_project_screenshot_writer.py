@@ -1,4 +1,5 @@
 import asyncio
+import sys
 from pathlib import Path
 
 import pytest
@@ -115,17 +116,29 @@ async def test_project_text_export_waits_for_ack_and_preserves_snapshots(tmp_pat
     assert not pending.done()
     assert events[0][3]["mediaType"] == "application/octet-stream"
     snapshot = tmp_path / events[0][3]["relativePath"]
-    assert snapshot.read_text() == "甲\n乙"
+    assert snapshot.read_text(encoding="utf-8") == "甲\n乙"
     confirmed.set()
     target = Path(await pending)
-    assert target.read_text() == "甲\n乙"
+    assert target.read_text(encoding="utf-8") == "甲\n乙"
 
     second = ProjectArtifactWriter(tmp_path, "run", 2, "export", "next", "file", emit)
+    if sys.platform == "win32":
+        # Known gap: appending to an existing output is not wired on Windows (501).
+        from autoflow.domain.workflows.runs import WorkflowRunError
+
+        with pytest.raises(WorkflowRunError) as unsupported:
+            await second.write_text(
+                output_path="exports/items.txt", content="丙", separator="\n",
+                encoding="utf-8", append=True, mime_type="text/plain",
+            )
+        assert unsupported.value.code == "ARTIFACT_PLATFORM_UNSUPPORTED"
+        assert target.read_text(encoding="utf-8") == "甲\n乙"
+        return
     assert Path(await second.write_text(
         output_path="exports/items.txt", content="丙", separator="\n",
         encoding="utf-8", append=True, mime_type="text/plain",
-    )).read_text() == "甲\n乙\n丙"
-    assert snapshot.read_text() == "甲\n乙"
+    )).read_text(encoding="utf-8") == "甲\n乙\n丙"
+    assert snapshot.read_text(encoding="utf-8") == "甲\n乙"
 
 
 @pytest.mark.asyncio
@@ -160,6 +173,17 @@ async def test_project_workbook_output_waits_for_ack_and_preserves_prior_snapsho
     observed = await writer.read_binary_output(output_path="tables/orders.xlsx", max_bytes=1024)
     assert observed.content == b"first workbook" and observed.identity != "missing"
     second = ProjectArtifactWriter(tmp_path, "run", 2, "table", "second", "file", emit)
+    if sys.platform == "win32":
+        # Known gap: atomically replacing an existing output is not wired on Windows (501).
+        with pytest.raises(WorkflowRunError) as unsupported:
+            await second.write_binary_output(
+                output_path="tables/orders.xlsx", content=b"second workbook",
+                mime_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                expected_identity=observed.identity,
+            )
+        assert unsupported.value.code == "ARTIFACT_PLATFORM_UNSUPPORTED"
+        assert first_path.read_bytes() == b"first workbook"
+        return
     second_path = Path(await second.write_binary_output(
         output_path="tables/orders.xlsx", content=b"second workbook",
         mime_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -199,10 +223,12 @@ async def test_project_allure_html_waits_for_ack_and_rejects_escape(tmp_path):
     confirmed.set()
     assert Path(await pending).read_bytes() == b"<html>ready</html>"
 
-    with pytest.raises(WorkflowRunError, match="产物路径无效"):
+    # The message differs by platform (Windows names its own file-name rules); the code is the contract.
+    with pytest.raises(WorkflowRunError) as escaped:
         await writer.write_binary_output(
             output_path="../escape.html", content=b"<html>bad</html>", mime_type="text/html",
         )
+    assert escaped.value.code == "ARTIFACT_PATH_INVALID"
     assert not (tmp_path / "escape.html").exists()
 
 
@@ -222,10 +248,11 @@ async def test_project_ssh_download_keeps_empty_file_and_rejects_escape(tmp_path
     assert target.read_bytes() == b""
     assert (tmp_path / events[0][3]["relativePath"]).read_bytes() == b""
     assert events[0][3]["byteSize"] == 0
-    with pytest.raises(WorkflowRunError, match="产物路径无效"):
+    with pytest.raises(WorkflowRunError) as escaped:
         await writer.write_binary_output(
             output_path="../escape.bin", content=b"bad", mime_type="application/octet-stream",
         )
+    assert escaped.value.code == "ARTIFACT_PATH_INVALID"
 
 
 @pytest.mark.asyncio

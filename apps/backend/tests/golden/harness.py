@@ -169,7 +169,7 @@ class GoldenRun:
             encoding="utf-8",
         )
         manifest_path = path.with_suffix(".manifest.json")
-        metadata = json.loads(manifest_path.read_text())
+        metadata = json.loads(manifest_path.read_text(encoding="utf-8"))
         metadata["evidence"] = [evidence.name]
         manifest_path.write_text(
             json.dumps(metadata, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
