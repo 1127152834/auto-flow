@@ -28,11 +28,13 @@ def _cancel_check(context: ExecutionContext):  # type: ignore[no-untyped-def]
 
 def _numbered_path(raw: str, index: int, count: int, suffix: str) -> str:
     path = Path(raw)
+    # Artifact paths are slash-separated on every platform; str(Path) would turn
+    # them into backslashes on Windows.
     if count == 1:
-        return str(path)
+        return path.as_posix()
     actual_suffix = path.suffix or suffix
     stem = path.stem if path.suffix else path.name
-    return str(path.with_name(f"{stem}_{index + 1}{actual_suffix}"))
+    return path.with_name(f"{stem}_{index + 1}{actual_suffix}").as_posix()
 
 
 async def _write_media(

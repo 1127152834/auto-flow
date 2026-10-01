@@ -83,7 +83,7 @@ async def test_browser_result_updates_claimed_record_and_status(
             prefix = f"/api/v1/projects/{project}"
             # Real repository metadata enters the page through the claimed input.
             package = json.loads(
-                (Path(__file__).resolve().parents[4] / "package.json").read_text()
+                (Path(__file__).resolve().parents[4] / "package.json").read_text(encoding="utf-8")
             )
             original = package["name"]
             table, field = _table(factory, project, "仓库包", original)

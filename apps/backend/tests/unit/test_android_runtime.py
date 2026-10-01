@@ -101,7 +101,7 @@ async def test_command_cancellation_or_timeout_stops_descendant_writes(tmp_path,
             await asyncio.gather(task, return_exceptions=True)
         if child_pid.exists():
             try:
-                os.kill(int(child_pid.read_text()), signal.SIGKILL)
+                os.kill(int(child_pid.read_text(encoding="utf-8")), signal.SIGKILL)
             except ProcessLookupError:
                 pass
 
@@ -124,7 +124,7 @@ async def test_successful_command_preserves_started_daemon(tmp_path, runner):
     finally:
         if child_pid.exists():
             try:
-                os.kill(int(child_pid.read_text()), signal.SIGKILL)
+                os.kill(int(child_pid.read_text(encoding="utf-8")), signal.SIGKILL)
             except ProcessLookupError:
                 pass
 

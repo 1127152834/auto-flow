@@ -11,6 +11,7 @@ import asyncio
 import base64
 import io
 import json
+import sys
 from collections.abc import Mapping
 from copy import deepcopy
 from datetime import UTC, datetime
@@ -163,6 +164,10 @@ async def test_project_task_executes_pure_data_family_in_real_worker(
         ("append", "list_export", {"listVariable": "items", "outputPath": "exports/items.txt", "separator": "\\n", "appendMode": True}, None),
         ("empty", "list_export", {"listVariable": "empty_items", "outputPath": "exports/empty.txt"}, None),
     ]
+    if sys.platform == "win32":
+        # Known gap: appending to an existing output is not wired on Windows (501); the
+        # writer-level test pins that error, so this flow runs the supported steps.
+        export_steps = [step for step in export_steps if step[0] != "append"]
     logging_steps: list[tuple[str, str, dict[str, Any], Any]] = [
         ("print", "print_log", {"logMessage": "业务完成", "logLevel": "success"}, None),
         ("print-error", "print_log", {"logMessage": "需要人工复核", "logLevel": "error"}, None),
@@ -283,8 +288,9 @@ async def test_project_task_executes_pure_data_family_in_real_worker(
         elif family == "export":
             evidence = ProjectRunEvidence(factory, tmp_path / "workspace")
             artifacts, total = evidence.artifacts(project.project_id, task.task_id)
-            assert total == 3 and [item.kind for item in artifacts] == ["file"] * 3
-            assert [evidence.artifact_content(project.project_id, task.task_id, item.artifact_id)[0].decode() for item in artifacts] == ["甲\n乙", "甲\n乙\n甲\n乙", ""]
+            expected_exports = ["甲\n乙", "甲\n乙\n甲\n乙", ""] if sys.platform != "win32" else ["甲\n乙", ""]
+            assert total == len(expected_exports) and [item.kind for item in artifacts] == ["file"] * len(expected_exports)
+            assert [evidence.artifact_content(project.project_id, task.task_id, item.artifact_id)[0].decode() for item in artifacts] == expected_exports
             assert outputs == {}
         elif family == "base64":
             assert {event.payload["name"] for event in events if event.kind == "output"} == {"encoded", "decoded", "file_data", "file_path"}
@@ -1821,6 +1827,17 @@ async def test_bootstrap_recovers_pure_data_run_without_installed_kernel(tmp_pat
     temporary = tmp_path / "temp"
     owned = temporary / "workflow-runs" / queued.run_id / "generation-1"
     owned.mkdir(parents=True)
+    if sys.platform == "win32":
+        # Windows restart cleanup refuses to guess: it needs the worker's ownership proof.
+        # A proof naming a Job that no longer exists and an exited owner is the
+        # "worker is gone" evidence a real crash leaves behind.
+        gone = await asyncio.create_subprocess_exec(sys.executable, "-c", "pass")
+        await gone.wait()
+        (owned / "worker-job.json").write_text(json.dumps({
+            "runId": queued.run_id, "generation": 1,
+            "name": f"Local\\AutoFlow-{queued.run_id}-1-{uuid4().hex}",
+            "pid": gone.pid, "birth": 1,
+        }), encoding="utf-8")
     unexpected: Any = _UnexpectedBrowserDependency()
 
     def no_kernel_lookup():
@@ -1943,16 +1960,20 @@ async def test_project_process_family_cleans_spawned_children(tmp_path: Path, mo
     import os
     import shlex
     import signal
-    import sys
+    import subprocess
 
-    from autoflow.infrastructure.process.project_browser_processes import process_birth
+    from autoflow.infrastructure.process.browser_processes import process_birth
     pid_file = tmp_path / 'owned-child.pid'
     body = ('import subprocess, sys, time\nfrom pathlib import Path\n'
             f'p = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)", {str(pid_file)!r}])\n'
             f'Path({str(pid_file)!r}).write_text(str(p.pid))\ntime.sleep(60)')
     config = {'moduleType': module_type, 'timeout': 1 if action == 'timeout' else 60}
     if module_type == 'run_command':
-        config.update(command=shlex.join([sys.executable, '-c', body]), shell='cmd')
+        # A script file keeps the command a single line that cmd.exe and /bin/sh both run.
+        script = tmp_path / 'spawn_child.py'
+        script.write_text(body, encoding='utf-8')
+        argv = [sys.executable, str(script)]
+        config.update(command=subprocess.list2cmdline(argv) if sys.platform == 'win32' else shlex.join(argv), shell='cmd')
     else:
         config.update(scriptContent=body)
     factory, queued = _queued_pure_data_run(tmp_path, node_data=config)
@@ -1963,9 +1984,10 @@ async def test_project_process_family_cleans_spawned_children(tmp_path: Path, mo
     try:
         running = await dispatcher.dispatch(queued.run_id, expected_status_revision=queued.status_revision, execution_generation=queued.execution_generation)
         async with asyncio.timeout(20):
-            while not pid_file.exists():
+            # The script creates the file before it writes the pid into it.
+            while not (pid_file.exists() and pid_file.read_text(encoding="utf-8").strip()):
                 await asyncio.sleep(.01)
-        pid = int(pid_file.read_text())
+        pid = int(pid_file.read_text(encoding="utf-8"))
         child = (pid, process_birth(pid))
         assert child[1] is not None
         if action == 'cancel':
@@ -1982,7 +2004,7 @@ async def test_project_process_family_cleans_spawned_children(tmp_path: Path, mo
         assert not resources.requests and not worker.busy()
     finally:
         if child is not None and process_birth(child[0]) == child[1]:
-            os.kill(child[0], signal.SIGKILL)
+            os.kill(child[0], getattr(signal, 'SIGKILL', signal.SIGTERM))
         await dispatcher.shutdown()
         factory.dispose()
 

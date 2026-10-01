@@ -238,7 +238,7 @@ async def test_uncertain_reservation_journal_fails_closed(environment, corruptio
         path.rename(saved)
         path.symlink_to(saved)
     else:
-        document = json.loads(path.read_text())
+        document = json.loads(path.read_text(encoding="utf-8"))
         item = next(iter(document['items'].values()))
         if corruption == 'unknown_memory':
             item['memoryBytes'] = None
@@ -322,4 +322,4 @@ def test_save_never_opens_the_directory_on_windows(tmp_path, monkeypatch):
     monkeypatch.setattr(capacity_reservations, 'WINDOWS', True)
     monkeypatch.setattr(capacity_reservations.os, 'open', open_like_windows)
     capacity_reservations.save(tmp_path / 'runtime', {})
-    assert json.loads((tmp_path / 'runtime' / capacity_reservations.FILENAME).read_text()) == {'version': 1, 'items': {}}
+    assert json.loads((tmp_path / 'runtime' / capacity_reservations.FILENAME).read_text(encoding="utf-8")) == {'version': 1, 'items': {}}

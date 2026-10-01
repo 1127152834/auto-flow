@@ -31,7 +31,7 @@ async def test_real_cloakbrowser_records_chinese_form_and_future_page(
     license_cache = Path.home() / ".cloakbrowser" / ".license_cache"
     license_key = os.environ.get("AUTOFLOW_B1_CLOAK_LICENSE")
     if license_key is None and "-pro" in str(executable) and license_file.is_file():
-        license_key = license_file.read_text().strip()
+        license_key = license_file.read_text(encoding="utf-8").strip()
     if "-pro" in str(executable) and license_cache.is_file():
         shutil.copy2(license_cache, cache_dir / ".license_cache")
     command = {

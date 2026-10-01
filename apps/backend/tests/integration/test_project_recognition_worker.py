@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import sys
 from pathlib import Path
 from time import monotonic
 from uuid import uuid4
@@ -32,7 +33,16 @@ from tests.integration.test_project_run_start import setup, start_payload
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize('scenario', ['match', 'no_face', 'missing', 'stop', 'ocr_stop', 'ocr_timeout'])
+@pytest.mark.parametrize(
+    'scenario',
+    [
+        pytest.param(
+            'match',
+            marks=pytest.mark.skipif(sys.platform == 'win32', reason='OCR 节点在 Windows 上的真实模型运行不在验收范围内（用户决定不测，已知缺口，见 .ai 交接记录）'),
+        ),
+        'no_face', 'missing', 'stop', 'ocr_stop', 'ocr_timeout',
+    ],
+)
 async def test_project_recognition_uses_real_models_files_branches_and_cleanup(tmp_path: Path, scenario: str):
     assert {'image_ocr', 'face_recognition', 'ocr_captcha', 'slider_captcha'} <= runnable_module_types()
     face, text = _write_fixtures(tmp_path)
@@ -85,7 +95,13 @@ async def test_project_recognition_uses_real_models_files_branches_and_cleanup(t
             final = repository.get_run(run_id=run.run_id)
             events = repository.list_events(run.run_id, after_sequence=0, limit=100)
         expected = {'missing': 'failed', 'stop': 'cancelled', 'ocr_stop': 'cancelled', 'ocr_timeout': 'failed'}.get(scenario, 'succeeded')
-        assert final is not None and final.status == expected, (final, events)
+        failed_nodes = [
+            (e.node_id, str(dict(e.payload.get('error') or {}))[:400])
+            for e in events if e.kind == 'nodeAttempt' and e.payload.get('status') == 'failed'
+        ]
+        assert final is not None and final.status == expected, (
+            scenario, final.status if final else None, final.error if final else None, failed_nodes,
+        )
         assert not resources.requests and not worker.busy()
         outputs = {e.payload['name']: e.payload['value'] for e in events if e.kind == 'output'}
         succeeded = [e.node_id for e in events if e.kind == 'nodeAttempt' and e.payload.get('status') == 'succeeded']

@@ -128,7 +128,7 @@ def ensure_binary(**kwargs):
                     while not (staging / "worker.pid").exists() and time.monotonic() < deadline:
                         time.sleep(0.02)
                     assert (staging / "worker.pid").is_file(), (tmp_path / "stderr.log").read_text(errors="replace")
-                    worker_pid = int((staging / "worker.pid").read_text())
+                    worker_pid = int((staging / "worker.pid").read_text(encoding="utf-8"))
                 with client.stream("GET", "/api/v1/kernels/events", headers=headers) as stream:
                     assert stream.status_code == 200
                     lines = stream.iter_lines()

@@ -130,7 +130,7 @@ def test_golden_save_keeps_pre_execution_source(monkeypatch, tmp_path):
         scenario_version="g2-v1",
         values=["row"],
     )
-    metadata = json.loads(path.with_suffix(".manifest.json").read_text())
+    metadata = json.loads(path.with_suffix(".manifest.json").read_text(encoding="utf-8"))
     assert metadata["commit"] == "before"
     assert metadata["comparable"] is False
     assert metadata["evidence"] == [path.with_suffix(".rows.json").name]

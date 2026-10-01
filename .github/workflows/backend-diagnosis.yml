@@ -25,8 +25,8 @@ concurrency:
 
 jobs:
   per-file:
-    # diag/windows-focus-* runs only the focused job below.
-    if: ${{ !startsWith(github.ref_name, 'diag/windows-focus') }}
+    # diag/windows-focus-* and diag/windows-annot-* run only their own jobs below.
+    if: ${{ !startsWith(github.ref_name, 'diag/windows-focus') && !startsWith(github.ref_name, 'diag/windows-annot') }}
     runs-on: ${{ inputs.os || 'windows-2022' }}
     timeout-minutes: 340
     steps:
@@ -78,3 +78,26 @@ jobs:
       - name: Android capacity file, one process per test
         if: always()
         run: uv run --directory apps/backend python scripts/ci_pytest_by_file.py --root tests/integration/test_android_capacity_reservations.py --per-test --timeout 120
+
+  annotated:
+    # The normal regression command without --maxfail, so every failed test shows up as an annotation.
+    if: ${{ startsWith(github.ref_name, 'diag/windows-annot') }}
+    runs-on: windows-2022
+    timeout-minutes: 150
+    steps:
+      - run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - name: Checkout frozen source used by parity tests
+        uses: actions/checkout@v4
+        with:
+          repository: pmh1314520/WebRPA
+          ref: 5ccb900e8dcf1530aae66f676d87593c416c7ebb
+          path: reference/WebRPA
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --directory apps/backend --locked --group build
+      - name: Full backend regression, all failures listed
+        run: uv run --directory apps/backend pytest -q

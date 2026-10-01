@@ -121,7 +121,7 @@ async def test_large_project_output_reaches_durable_callback_before_ack(tmp_path
     assert len(received) == 1
     assert len(received[0]['payload']['value']) == 1024
     assert all(len(item) == 2048 for item in received[0]['payload']['value'])
-    assert (tmp_path / 'proof').read_text() == 'after-ack'
+    assert (tmp_path / 'proof').read_text(encoding="utf-8") == 'after-ack'
     assert not instance.busy()
 
 
@@ -195,7 +195,7 @@ async def test_confirmed_failure_waits_for_owned_cleanup_of_native_thread(tmp_pa
     assert outcome.cleanup_confirmed
     assert not instance.busy()
     assert not list((tmp_path / 'temp' / 'workflow-runs').glob('*/generation-*'))
-    pid = int((tmp_path / 'proof').read_text())
+    pid = int((tmp_path / 'proof').read_text(encoding="utf-8"))
     if sys.platform != 'win32':
         with pytest.raises(ProcessLookupError):
             os.kill(pid, 0)
@@ -234,7 +234,7 @@ async def test_worker_waits_for_durable_callback_before_ack_and_completion(tmp_p
         result = await asyncio.wait_for(task, 5)
         assert result.status == 'succeeded'
         assert result.cleanup_confirmed
-        assert (tmp_path / 'proof').read_text() == 'after-ack'
+        assert (tmp_path / 'proof').read_text(encoding="utf-8") == 'after-ack'
         assert not instance.busy()
     finally:
         waiting.cancel()
@@ -736,7 +736,7 @@ browser_worker_main(run)
             while not (tmp_path / 'proof').exists():
                 if task.done(): task.result()
                 await asyncio.sleep(.01)
-        child_pid = json.loads((tmp_path / 'proof').read_text())
+        child_pid = json.loads((tmp_path / 'proof').read_text(encoding="utf-8"))
         birth = process_birth(child_pid)
         assert birth is not None
         worker = instance._workers[run_id]

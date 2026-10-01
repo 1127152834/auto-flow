@@ -9,6 +9,7 @@ line of its reason. It never changes outcomes and is inert elsewhere.
 from __future__ import annotations
 
 import os
+from typing import Any
 
 import pytest
 
@@ -54,10 +55,11 @@ class _Collector:
         reason = getattr(crash, "message", None) or str(report.longrepr)[-300:]
         self.failures.append((f"{report.nodeid} [{report.when}]", reason))
 
-    def pytest_sessionfinish(self) -> None:
+    def pytest_terminal_summary(self, terminalreporter: Any) -> None:
+        # Written through the terminal reporter: print() in a session hook is swallowed by capture.
         for annotation in render(self.failures):
-            # pytest's progress line has no trailing newline; commands only parse at line start.
-            print("\n" + annotation, flush=True)
+            terminalreporter.ensure_newline()
+            terminalreporter.write_line(annotation)
 
 
 def pytest_configure(config: pytest.Config) -> None:

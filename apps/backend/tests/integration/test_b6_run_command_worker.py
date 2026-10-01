@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import shlex
+import subprocess
 import sys
 from pathlib import Path
 
@@ -89,7 +90,12 @@ async def test_stopping_worker_kills_command_process_tree(tmp_path: Path) -> Non
         f"pathlib.Path({str(leaked)!r}).write_text('leaked')\n",
         encoding="utf-8",
     )
-    command = f"{shlex.quote(sys.executable)} {shlex.quote(str(script))}"
+    # The command runs through the platform shell: cmd.exe does not understand POSIX quoting.
+    command = (
+        subprocess.list2cmdline([sys.executable, str(script)])
+        if sys.platform == "win32"
+        else f"{shlex.quote(sys.executable)} {shlex.quote(str(script))}"
+    )
     manager = WorkflowWorkerManager(
         tmp_path / "workers",
         termination_timeout=0.2,

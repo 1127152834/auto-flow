@@ -100,7 +100,7 @@ async def test_recovery_signal_denial_waits_for_confirmed_exit(tmp_path, monkeyp
         with pytest.raises(RuntimeError, match='cleanup did not finish') as failure:
             await recover_worker_directories(tmp_path, run_id, None, timeout=.01)
         assert isinstance(failure.value.__cause__, PermissionError)
-        assert (directory / 'proof').read_text() == 'keep until native exit'
+        assert (directory / 'proof').read_text(encoding="utf-8") == 'keep until native exit'
     else:
         await recover_worker_directories(tmp_path, run_id, None, timeout=.01)
         assert not directory.exists()
@@ -123,7 +123,7 @@ async def test_recovery_rejects_symlink_ownership(tmp_path, symlink_level):
         (run / 'generation-1').symlink_to(outside, target_is_directory=True)
     with pytest.raises(RuntimeError):
         await recover_worker_directories(tmp_path, run_id, tmp_path / 'CloakBrowser')
-    assert (outside / 'keep').read_text() == 'do not remove'
+    assert (outside / 'keep').read_text(encoding="utf-8") == 'do not remove'
 
 
 @pytest.mark.asyncio
@@ -179,7 +179,7 @@ async def test_real_pure_data_orphan_cleanup_preserves_other_run_and_unmarked_pr
         await asyncio.wait_for(target.wait(), 2)
         assert target.returncode is not None
         assert not directory.exists()
-        assert keep.read_text() == 'other run remains'
+        assert keep.read_text(encoding="utf-8") == 'other run remains'
         for process in (other, unmarked):
             assert process.returncode is None
             os.kill(process.pid, 0)
@@ -318,7 +318,7 @@ browser_worker_main(run)
         windows_job.close_worker_job(handle)
         handle = None  # Simulate the original supervisor losing its retained handle.
         proof_path = directory / 'worker-job.json'
-        original = proof_path.read_text()
+        original = proof_path.read_text(encoding="utf-8")
         if mode in {'wrong-birth', 'foreign-job'}:
             proof = json.loads(original)
             if mode == 'wrong-birth':
@@ -387,4 +387,4 @@ async def test_native_windows_recovery_rejects_junction_before_reading_ownership
     await asyncio.to_thread(subprocess.run, ['cmd', '/c', 'mklink', '/J', str(run), str(outside)], capture_output=True, check=True)
     with pytest.raises(RuntimeError, match='ownership path'):
         await recover_worker_directories(tmp_path, run_id, tmp_path / 'kernel')
-    assert (outside / 'keep').read_text() == 'foreign'
+    assert (outside / 'keep').read_text(encoding="utf-8") == 'foreign'

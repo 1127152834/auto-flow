@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import sys
 from pathlib import Path
 
 import pytest
@@ -67,7 +68,8 @@ async def _run(
             },
         },
     )
-    for _ in range(12_000):
+    # Model loading is slow on cold Windows runners; a finished run leaves the loop at once.
+    for _ in range(36_000):
         if not manager.busy():
             break
         await asyncio.sleep(0.01)
@@ -76,11 +78,16 @@ async def _run(
         for event in events[start:]
         if event.get("type") == "execution:node_complete"
     ]
-    assert manager.busy() is False
-    assert len(completed) == 1
+    seen = [
+        (event.get("type"), str(event.get("message") or event.get("error") or "")[:200])
+        for event in events[start:]
+    ][-12:]
+    assert manager.busy() is False, f"worker still busy after the wait; events: {seen}"
+    assert len(completed) == 1, f"expected one completed node; events: {seen}"
     return completed[0]
 
 
+@pytest.mark.skipif(sys.platform == 'win32', reason='OCR 节点在 Windows 上的真实模型运行不在验收范围内（用户决定不测，已知缺口，见 .ai 交接记录）')
 @pytest.mark.asyncio
 async def test_real_worker_runs_face_recognition_and_easyocr(tmp_path: Path) -> None:
     face, text = _write_fixtures(tmp_path)

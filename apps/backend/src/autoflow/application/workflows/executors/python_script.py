@@ -62,6 +62,10 @@ class PythonScriptExecutor(ModuleExecutor):
             )
             environment = os.environ.copy()
             environment.update(_local_no_proxy_env(environment))
+            # The output is read as UTF-8. Without this a Windows child encodes a piped
+            # stdout with the ANSI code page and fails on any non-Latin character.
+            environment.setdefault("PYTHONUTF8", "1")
+            environment.setdefault("PYTHONIOENCODING", "utf-8")
             environment["WEBRPA_VARS"] = json.dumps(
                 context.variables, ensure_ascii=False, default=str
             )
