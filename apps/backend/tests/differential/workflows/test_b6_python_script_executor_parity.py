@@ -28,7 +28,15 @@ def _source(payload: dict[str, Any]) -> dict[str, Any]:
         encoding="utf-8",
         capture_output=True,
         check=True,
-        env={**os.environ, "PYTHONPATH": str(FROZEN_BACKEND)},
+        # The product forces UTF-8 for its script child (a Windows child otherwise writes
+        # stderr with backslash escapes in the ANSI code page); the frozen source is
+        # compared under the same child encoding so only behaviour differences remain.
+        env={
+            **os.environ,
+            "PYTHONPATH": str(FROZEN_BACKEND),
+            "PYTHONUTF8": "1",
+            "PYTHONIOENCODING": "utf-8",
+        },
     )
     return json.loads(completed.stdout.splitlines()[-1])
 

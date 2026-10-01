@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import sys
 import os
 from pathlib import Path
 from time import monotonic
@@ -32,7 +33,16 @@ from tests.integration.test_project_run_start import setup, start_payload
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize('scenario', ['match', 'no_face', 'missing', 'stop', 'ocr_stop', 'ocr_timeout'])
+@pytest.mark.parametrize(
+    'scenario',
+    [
+        pytest.param(
+            'match',
+            marks=pytest.mark.skipif(sys.platform == 'win32', reason='OCR 节点在 Windows 上的真实模型运行不在验收范围内（用户决定不测，已知缺口，见 .ai 交接记录）'),
+        ),
+        'no_face', 'missing', 'stop', 'ocr_stop', 'ocr_timeout',
+    ],
+)
 async def test_project_recognition_uses_real_models_files_branches_and_cleanup(tmp_path: Path, scenario: str):
     assert {'image_ocr', 'face_recognition', 'ocr_captcha', 'slider_captcha'} <= runnable_module_types()
     face, text = _write_fixtures(tmp_path)
