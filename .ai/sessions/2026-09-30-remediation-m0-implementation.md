@@ -91,3 +91,5 @@ End 原生增量（2026-09-30，confirmed 部分通过）：真实 data-schema�
 新增4项边界测试先4 failed（1.95s）；第一次GREEN检查误用会创建目录的instance_path判断删除（1 failed/116 passed），改为保存既有Path后验证。最终能力/End/环境合约117 passed（36.59s），Ruff/mypy547通过；真实manual-parallel-finish/manual-finish/manual-expire/manual-expire-race共4 passed（46.37s）。独立评审已核对设计通道，不削弱公共End或保存竞争栅栏；当前完整原生选集正在复跑。
 
 POSIX 信号拒绝退出竞态（2026-09-30，confirmed本地/远端pending）：1219e824 Intel job110139691123完整回归1 failed/5288 passed/137 skipped/24 deselected/2 warnings（3603.30s），唯一失败为强停人工交互时os.killpg(SIGKILL)抛EPERM。具体内核原因未知；共享force_process_tree仅将PermissionError送入既有有界退出核验，保留异常cause；父进程未回收、同birth子进程仍活或身份未知但存在时仍失败并保留manager容量与目录，不信号未验证PID。新增graceful/强停×退出/父活/子活/未知子/PID重用共10反例先RED10失败，最终进程与交互三文件107 passed/3 skipped（44.14s），Ruff、mypy547与diff通过。独立只读复审无重要问题；未将故障注入当Intel原生复验。
+
+完整原生选集复验（2026-09-30，confirmed本机）：与CI相同五文件选择式44 passed/31 deselected/1既有AnyIO警告（562.29s），包含End数据/人工/Sheets/Excel/无限任务/写入冲突。进程于e251fbe8启动，之后新增EPERM修复由107项定向单列覆盖，不能称完整选集运行于最终HEAD。三平台旧远端任务均已终态；推送已提交候选供新矩阵复验。桌面完整冒烟另在修订旧断言/夹具，尚未通过、不纳入此提交。

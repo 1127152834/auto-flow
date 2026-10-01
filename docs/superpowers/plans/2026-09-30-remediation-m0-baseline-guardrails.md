@@ -1279,7 +1279,7 @@ Task 8 的 YAML 校验不能只查制表符：复用仓库现有 YAML 解析能�
 
 M0本地退出证据（2026-09-30）：全量5278 passed/137 skipped/20 deselected，新增报告反例另由46项定向覆盖；后端Ruff、mypy547、脚本119/守门通过；真实30/101行正确性及独立评审P2闭合。干净f60b3cac各5份离线基线已记录。AC0-01～06/08具备本地证据；AC0-07实际Actions与黄金构件仍pending，因此整体退出不勾选。
 
-### 原生 CI 兼容修复：End 动态名称（2026-09-30，proposed）
+### 原生 CI 兼容修复：End 动态名称（2026-09-30，confirmed 本地；远端 pending）
 
 来源：真实两 Task 数据场景和临时 SQLite 证据；旧 End 配置格式修正后，第二个 Task 因名称未解析触发 IDENTITY_CONFLICT。此项是 M0 门禁暴露的有界兼容缺陷，不提前实施 M1。
 
