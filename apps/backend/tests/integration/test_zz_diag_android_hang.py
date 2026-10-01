@@ -112,12 +112,13 @@ import asyncio, sys, traceback, faulthandler
 
 
 def _dump(tag, tasks):
-    print("DIAG", tag, flush=True)
+    lines = [tag]
     for task in tasks:
-        stack = task.get_stack(limit=12)
-        print("DIAG task", task.get_name(), "done=", task.done(), flush=True)
-        for frame in stack:
-            print("DIAG   ", frame.f_code.co_filename.split("autoflow")[-1], frame.f_lineno, frame.f_code.co_name, flush=True)
+        lines.append("task %s done=%s" % (task.get_name(), task.done()))
+        for frame in task.get_stack(limit=12):
+            lines.append("  %s:%s %s" % (frame.f_code.co_filename.split("autoflow")[-1], frame.f_lineno, frame.f_code.co_name))
+    text = "\n".join(lines).replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+    print("::error title=android hang trace::" + text, flush=True)
 
 
 @pytest.mark.asyncio
@@ -131,22 +132,22 @@ async def test_diag(environment, monkeypatch):
     monkeypatch.setattr(management, 'run', interrupted_run)
     service = AndroidManagement(repository, runtime)
     service.operate(first['deviceId'], {'requestId': str(uuid4()), 'action': 'start', 'deleteData': False})
-    print("DIAG operate returned", flush=True)
+    print("::notice title=DIAG::operate returned", flush=True)
     try:
         await asyncio.wait_for(entered.wait(), 20)
     except TimeoutError:
         _dump("never entered run", asyncio.all_tasks())
         raise
-    print("DIAG entered", flush=True)
+    print("::notice title=DIAG::entered", flush=True)
     with pytest.raises(AndroidError) as error:
         AndroidManagement(other_repository, other).operate(second['deviceId'], {'requestId': str(uuid4()), 'action': 'start', 'deleteData': False})
-    print("DIAG busy code", error.value.code, flush=True)
+    print("::notice title=DIAG::busy code", error.value.code, flush=True)
     try:
         await asyncio.wait_for(service.shutdown(), 20)
     except TimeoutError:
         _dump("shutdown hung", asyncio.all_tasks())
         raise
-    print("DIAG shutdown ok", repository.get(first['deviceId'])['control'], flush=True)
+    print("::notice title=DIAG::shutdown ok", repository.get(first['deviceId'])['control'], flush=True)
     with pytest.raises(AndroidError) as error:
         await asyncio.wait_for(mac.MacAndroidRuntime(other.root, other.workspace).capacity(second), 20)
-    print("DIAG capacity code", error.value.code, flush=True)
+    print("::notice title=DIAG::capacity code", error.value.code, flush=True)
