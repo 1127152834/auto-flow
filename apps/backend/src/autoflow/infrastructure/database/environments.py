@@ -21,6 +21,7 @@ from autoflow.domain.environments.models import (
 )
 from autoflow.domain.environments.rules import (
     LIVE_INSTANCE_STATES,
+    MANUAL_TERMINAL,
     check_live_capacity,
     environment_error,
     occupy_environment,
@@ -406,10 +407,21 @@ class SqlAlchemyEnvironments:
                 WorkflowRunRow.status.in_(TERMINAL_STATUSES),
                 ProjectEnvironmentInstanceRow.maintenance_operation_id.is_(None),
                 ProjectEnvironmentInstanceRow.state.in_(
-                    ("reserved", "starting", "active", "closing", "closed", "cleaning", "cleanup_failed")
+                    ("reserved", "starting", "active", "waiting_manual", "closing", "closed", "cleaning", "cleanup_failed")
+                ),
+                or_(
+                    ProjectEnvironmentInstanceRow.state != "waiting_manual",
+                    select(ProjectManualItemRow.id).where(
+                        ProjectManualItemRow.instance_id == ProjectEnvironmentInstanceRow.id,
+                        ProjectManualItemRow.project_id == ProjectEnvironmentInstanceRow.project_id,
+                        ProjectManualItemRow.task_id == ProjectEnvironmentInstanceRow.active_task_id,
+                        ProjectManualItemRow.run_id == ProjectEnvironmentInstanceRow.active_run_id,
+                        ProjectManualItemRow.status.in_(MANUAL_TERMINAL),
+                    ).exists(),
                 ),
                 ~select(ProjectManualItemRow.id).where(
                     ProjectManualItemRow.instance_id == ProjectEnvironmentInstanceRow.id,
+                    ProjectManualItemRow.status.not_in(MANUAL_TERMINAL),
                 ).exists(),
             )
             if instance_id is not None:

@@ -75,6 +75,67 @@ async def test_unconfirmed_or_retained_copy_is_not_automatically_removed(tmp_pat
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize('run_status,manual_status,removed', [
+    ('cancelled', 'cancelled', True), ('succeeded', 'resolved', True),
+    ('timed_out', 'expired', True), ('interrupted', 'lost', True),
+    ('cancelled', 'waiting', False), ('cancelled', 'resume_requested', False),
+    ('running', 'cancelled', False), ('reconciling', 'cancelled', False),
+])
+async def test_manual_history_only_protects_unconfirmed_task_copies(tmp_path, run_status, manual_status, removed):
+    factory, project, task, service, instance, directory, scheduler = setup_copy(tmp_path, status='running')
+    manual = service.open_manual(project, {'instanceId': instance.instance_id, 'taskId': task.task_id, 'runId': task.run_id})
+    service.environments.transition_manual(project, manual['manualItemId'], manual_status, expected_status_revision=1)
+    with factory.begin() as session:
+        session.get(WorkflowRunRow, task.run_id).status = run_status
+    await scheduler.tick()
+    assert directory.exists() is not removed
+    assert service.environments.get_instance(project, instance.instance_id).state == ('cleaned' if removed else 'waiting_manual')
+    await scheduler.tick()
+    assert directory.exists() is not removed
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('protection', ['accepted_save', 'failed_save', 'native_still_open'])
+async def test_cancelled_manual_copy_keeps_retention_and_native_close_guards(tmp_path, protection):
+    factory, project, task, service, instance, directory, scheduler = setup_copy(tmp_path, status='running')
+    manual = service.open_manual(project, {'instanceId': instance.instance_id, 'taskId': task.task_id, 'runId': task.run_id})
+    service.cancel_manual(project, manual['manualItemId'], 1)
+    if protection == 'native_still_open':
+        def still_open(_service, _instance):
+            raise ProjectError('INSTANCE_NOT_QUIESCENT', 'still open', 409)
+        service._closer = still_open
+    else:
+        operation = service._command(str(uuid4()), 'saveEnvironment', project, instance.instance_id,
+                                     {'scope': 'endTask', 'request': {'instanceId': instance.instance_id, 'retainEnvironment': {'enabled': True}}}, datetime.now(UTC))
+        service.environments.accept_operation(operation)
+        if protection == 'failed_save':
+            service.environments.complete_operation(operation, None, {'code': 'SAVE_FAILED', 'message': 'retention not confirmed'}, datetime.now(UTC))
+    with factory.begin() as session:
+        session.get(WorkflowRunRow, task.run_id).status = 'cancelled'
+    await scheduler.tick()
+    assert (directory / 'Cookies').read_bytes() == b'must not lose retained login'
+    assert service.environments.get_instance(project, instance.instance_id).state == ('cleanup_failed' if protection == 'native_still_open' else 'waiting_manual')
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('mismatched', ['task_id', 'run_id', 'project_id'])
+async def test_waiting_copy_requires_matching_terminal_manual_evidence(tmp_path, mismatched):
+    from autoflow.infrastructure.database.environment_models import ProjectManualItemRow
+
+    factory, project, task, service, instance, directory, scheduler = setup_copy(tmp_path, status='running')
+    manual = service.open_manual(project, {'instanceId': instance.instance_id, 'taskId': task.task_id, 'runId': task.run_id})
+    service.cancel_manual(project, manual['manualItemId'], 1)
+    other_id = (ProjectService(SqlAlchemyProjects(factory)).create(str(uuid4()), {'name': 'Other owner'})[0].project_id
+                if mismatched == 'project_id' else str(uuid4()))
+    with factory.begin() as session:
+        session.get(WorkflowRunRow, task.run_id).status = 'cancelled'
+        setattr(session.get(ProjectManualItemRow, manual['manualItemId']), mismatched, other_id)
+    await scheduler.tick()
+    assert (directory / 'Cookies').read_bytes() == b'must not lose retained login'
+    assert service.environments.get_instance(project, instance.instance_id).state == 'waiting_manual'
+
+
+@pytest.mark.asyncio
 async def test_failed_save_before_candidate_creation_protects_copy(tmp_path):
     factory, project, task, service, instance, directory, scheduler = setup_copy(tmp_path, status="running", state="closed")
     # Admit an authorized save before the run ends; invalid metadata fails before
