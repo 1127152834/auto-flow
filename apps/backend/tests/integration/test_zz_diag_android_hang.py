@@ -137,6 +137,13 @@ async def test_diag(environment, monkeypatch):
         await asyncio.wait_for(entered.wait(), 20)
     except TimeoutError:
         _dump("never entered run", asyncio.all_tasks())
+        record = repository.get(first['deviceId'])
+        text = "control=%s lastError=%s operation=%s task=%r" % (record.get('control'), record.get('lastError'), record.get('operation'), service.task)
+        print("::error title=android device state::" + text.replace("%", "%25").replace("\n", "%0A"), flush=True)
+        try:
+            service.task and service.task.result()
+        except BaseException as error:
+            print("::error title=android task error::" + "".join(traceback.format_exception(error))[-3500:].replace("%", "%25").replace("\r", "").replace("\n", "%0A"), flush=True)
         raise
     print("::notice title=DIAG::entered", flush=True)
     with pytest.raises(AndroidError) as error:
