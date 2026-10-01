@@ -66,7 +66,7 @@ async def test_real_worker_exports_preceding_log_records_as_registered_artifact(
             await asyncio.sleep(0.01)
 
         output = workspace / "runs" / "log-run" / "outputs" / "logs" / "run.json"
-        exported = json.loads(output.read_text())
+        exported = json.loads(output.read_text(encoding="utf-8"))
         completed = [
             event for event in events if event.get("type") == "execution:node_complete"
         ]

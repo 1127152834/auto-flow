@@ -67,7 +67,8 @@ async def _run(
             },
         },
     )
-    for _ in range(12_000):
+    # Model loading is slow on cold Windows runners; a finished run leaves the loop at once.
+    for _ in range(36_000):
         if not manager.busy():
             break
         await asyncio.sleep(0.01)
@@ -76,8 +77,12 @@ async def _run(
         for event in events[start:]
         if event.get("type") == "execution:node_complete"
     ]
-    assert manager.busy() is False
-    assert len(completed) == 1
+    seen = [
+        (event.get("type"), str(event.get("message") or event.get("error") or "")[:200])
+        for event in events[start:]
+    ][-12:]
+    assert manager.busy() is False, f"worker still busy after the wait; events: {seen}"
+    assert len(completed) == 1, f"expected one completed node; events: {seen}"
     return completed[0]
 
 

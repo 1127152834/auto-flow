@@ -29,7 +29,9 @@ def pending():
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("action", ["start", "restart", "restore"])
-async def test_reconstructed_management_cannot_start_an_unpublished_restore(tmp_path, action):
+async def test_reconstructed_management_cannot_start_an_unpublished_restore(tmp_path, action, monkeypatch):
+    # The control lock is Mac-only; this test is about the restore state, not the host OS.
+    monkeypatch.setattr("autoflow.providers.android.mac_runtime.platform.system", lambda: "Darwin")
     sessions, repo = repository(tmp_path)
     repo.save(pending())
     runtime = MacAndroidRuntime(tmp_path, tmp_path)

@@ -90,3 +90,14 @@ def test_reservation_rejects_a_saved_generation_changed_since_resolution(tmp_pat
         service.reserve(project_id, selected, task_id=str(uuid4()), run_id=str(uuid4()), holder_kind='task', holder_id=str(uuid4()))
     assert caught.value.code == 'SAVE_GENERATION_CONFLICT'
     assert service.get(project_id, saved.ref.environment_id)[1] is None
+
+
+def test_staged_save_directory_names_are_valid_on_every_platform(monkeypatch):
+    from autoflow.infrastructure.filesystem import environment_store
+
+    monkeypatch.setattr(environment_store.sys, 'platform', 'win32')
+    windows = environment_store.candidate_directory_name('env-1:2')
+    assert windows == 'env-1~2'
+    monkeypatch.setattr(environment_store.sys, 'platform', 'darwin')
+    # Candidates staged by earlier builds keep being found on macOS.
+    assert environment_store.candidate_directory_name('env-1:2') == 'env-1:2'

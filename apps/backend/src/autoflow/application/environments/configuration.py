@@ -56,7 +56,7 @@ def patch_browser_configuration(
             try:
                 digest = service.store.publish(environment_id, generation + 1, accepted.operation_id)
             except FileExistsError:
-                digest = (service.store.generation_dir(environment_id, generation + 1) / ".digest").read_text().strip()
+                digest = (service.store.generation_dir(environment_id, generation + 1) / ".digest").read_text(encoding="utf-8").strip()
             if service.store.generation_identity(environment_id, generation + 1) != identity:
                 raise environment_error("ENVIRONMENT_IDENTITY_UNVERIFIED", "发布身份与原操作不一致", 409)
             return cast(str, digest)

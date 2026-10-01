@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import shutil
 from datetime import UTC, datetime
+from pathlib import Path
 from uuid import uuid4
 
 import pytest
@@ -590,18 +591,26 @@ def test_delete_cleans_only_owned_studio_history_and_managed_files(tmp_path, leg
         assert session.get(ProjectRow, other.project_id).lifecycle_state == "active"
 
 
-def test_delete_studio_cleanup_failure_keeps_indexes_until_retry(tmp_path):
+def test_delete_studio_cleanup_failure_keeps_indexes_until_retry(tmp_path, monkeypatch):
+    from autoflow.infrastructure.database import project_lifecycle
+
     workspace_root = tmp_path / "workspace"
     context = Context(tmp_path, workspace_root=workspace_root)
     work_dir = _studio_history(context, workspace_root, "failed-cleanup-studio", context.project_id)
     context.archive_to_settled()
     operation = context.delete()
-    container = workspace_root / "runs"
-    container.chmod(0o500)
-    try:
-        context.repository.advance(context.project_id)
-    finally:
-        container.chmod(0o755)
+    real_rmtree = project_lifecycle.shutil.rmtree
+
+    def refuse(path, *args, **kwargs):
+        # A permission mode cannot refuse deletion on Windows or for root, so the
+        # refusal is injected where the cleanup calls the filesystem.
+        if Path(path) == work_dir:
+            raise PermissionError(13, "access denied", str(path))
+        return real_rmtree(path, *args, **kwargs)
+
+    monkeypatch.setattr(project_lifecycle.shutil, "rmtree", refuse)
+    context.repository.advance(context.project_id)
+    monkeypatch.setattr(project_lifecycle.shutil, "rmtree", real_rmtree)
 
     assert context.state() == "deleting"
     saved = context.operation(operation.operation_id)

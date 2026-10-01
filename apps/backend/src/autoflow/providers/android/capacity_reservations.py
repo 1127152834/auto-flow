@@ -24,7 +24,7 @@ def load(root: Path) -> dict[str, dict[str, Any]]:
         if path.is_symlink():
             raise ValueError('reservation journal is a link')
         try:
-            document = json.loads(path.read_text())
+            document = json.loads(path.read_text(encoding='utf-8'))
         except FileNotFoundError:
             return {}
         if document['version'] != 1 or not isinstance(document['items'], dict):
@@ -49,7 +49,7 @@ def save(root: Path, items: dict[str, dict[str, Any]]) -> None:
     root.mkdir(parents=True, exist_ok=True)
     path = None
     try:
-        with tempfile.NamedTemporaryFile(mode='w', dir=root, prefix='.android-capacity-', delete=False) as output:
+        with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', dir=root, prefix='.android-capacity-', delete=False) as output:
             path = Path(output.name)
             json.dump({'version': 1, 'items': items}, output)
             output.flush()

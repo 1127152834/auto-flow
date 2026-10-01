@@ -100,5 +100,5 @@ async def test_export_log_writes_confirmed_run_records_through_artifact_boundary
     assert result.success is True
     assert result.data["log_count"] == 1
     assert result.data["format"] == "json"
-    assert json.loads((tmp_path / "logs/run.json").read_text()) == context.log_records
+    assert json.loads((tmp_path / "logs/run.json").read_text(encoding="utf-8")) == context.log_records
     assert context.variables["export_result"] == result.data

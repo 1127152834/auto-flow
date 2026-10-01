@@ -14,6 +14,15 @@ from autoflow.domain.workflows.runtime import WorkflowRuntimeError
 from autoflow.infrastructure.process.browser_processes import process_identity_is_alive
 
 
+def candidate_directory_name(save_operation_id: str) -> str:
+    """Directory name for a staged save. ``environment:generation`` ids hold a colon, which
+    Windows cannot use in a path; other platforms keep the historical name so staged
+    candidates written by earlier builds are still found."""
+    if sys.platform == "win32":
+        return save_operation_id.replace(":", "~")
+    return save_operation_id
+
+
 class EnvironmentStore:
     """Generation-addressed browser work copies. File contents are never logged."""
 
@@ -56,7 +65,7 @@ class EnvironmentStore:
         return self._stage_candidate(save_operation_id, self.generation_dir(environment_id, generation), identity_package)
 
     def _stage_candidate(self, save_operation_id: str, source: Path, identity_package: dict[str, Any] | None) -> str:
-        candidate = self.root / "candidates" / save_operation_id
+        candidate = self.root / "candidates" / candidate_directory_name(save_operation_id)
         if candidate.exists():
             shutil.rmtree(candidate)
         shutil.copytree(source, candidate, ignore=_ignore_runtime_locks)
@@ -91,7 +100,7 @@ class EnvironmentStore:
     def publish(
         self, environment_id: str, generation: int, save_operation_id: str
     ) -> str:
-        candidate = self.root / "candidates" / save_operation_id
+        candidate = self.root / "candidates" / candidate_directory_name(save_operation_id)
         if not candidate.is_dir():
             raise FileNotFoundError(save_operation_id)
         target = self.generation_dir(environment_id, generation)
@@ -114,7 +123,7 @@ class EnvironmentStore:
         return digest
 
     def discard_candidate(self, save_operation_id: str) -> None:
-        candidate = self.root / "candidates" / save_operation_id
+        candidate = self.root / "candidates" / candidate_directory_name(save_operation_id)
         if candidate.exists():
             shutil.rmtree(candidate)
 

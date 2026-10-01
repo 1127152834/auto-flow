@@ -40,7 +40,7 @@ def test_log_classification_is_exact_approved_subset_of_frozen_source():
 
     root = Path(__file__).resolve().parents[5]
     source = root / 'reference/WebRPA/backend/app/services/workflow_executor.py'
-    tree = ast.parse(source.read_text())
+    tree = ast.parse(source.read_text(encoding="utf-8"))
     source_sets = {}
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign) and isinstance(node.value, ast.Set):

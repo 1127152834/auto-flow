@@ -25,6 +25,7 @@ from autoflow.domain.projects.models import (
     ProjectRecord,
     project_to_dict,
 )
+from autoflow.infrastructure.filesystem.environment_store import candidate_directory_name
 
 from .environment_models import (
     ProjectEnvironmentInstanceRow,
@@ -663,7 +664,7 @@ def _local_targets(session: Session, project_id: str, root: Path | None) -> list
     return [
         *[root / "instances" / value for value in instances],
         *[root / "environments" / value for value in environments],
-        *[root / "candidates" / value for value in saves],
+        *[root / "candidates" / candidate_directory_name(value) for value in saves],
     ]
 
 
