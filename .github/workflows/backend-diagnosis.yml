@@ -1,0 +1,47 @@
+name: Backend per-file diagnosis
+
+# Diagnostic only. Pushing a branch named diag/* runs the backend suite one file
+# per process with a hard budget per file, so a hang or a slow platform shows up
+# as a named file in annotations instead of an unfinished job. It never runs on
+# the default branch push and does not replace the normal CI regression.
+on:
+  push:
+    branches: ['diag/**']
+  workflow_dispatch:
+    inputs:
+      os:
+        description: Runner image
+        type: choice
+        default: windows-2022
+        options: [windows-2022, macos-15-intel, macos-15]
+      timeout:
+        description: Seconds allowed per test file
+        default: '900'
+
+concurrency:
+  group: backend-diagnosis-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  per-file:
+    runs-on: ${{ inputs.os || 'windows-2022' }}
+    timeout-minutes: 340
+    steps:
+      - run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - name: Checkout frozen source used by parity tests
+        uses: actions/checkout@v4
+        with:
+          repository: pmh1314520/WebRPA
+          ref: 5ccb900e8dcf1530aae66f676d87593c416c7ebb
+          path: reference/WebRPA
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --directory apps/backend --locked --group build
+      - name: Run every backend test file in its own process
+        run: >-
+          uv run --directory apps/backend python scripts/ci_pytest_by_file.py
+          --root tests --timeout "${{ inputs.timeout || '900' }}"
