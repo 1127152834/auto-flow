@@ -148,6 +148,7 @@ class WorkflowRunDispatcher:
         self._now = now
         self._capacity, self._live_capacity = validate_capacity(capacity, live_capacity)
         self._memory_pressure = memory_pressure
+        self._pause_reason: str | None = None
         self._owners: dict[str, _RunOwner] = {}
         self._recovering = False
         self._closed = False
@@ -172,6 +173,12 @@ class WorkflowRunDispatcher:
     def live_capacity(self) -> int:
         """Maximum live browsers, including runs waiting for a person (spec M1 R1-09)."""
         return self._live_capacity
+
+    def pause_dispatch(self, reason: str | None) -> None:
+        """Refuse new dispatch with this reason until cleared with None; running owners are untouched."""
+        self._pause_reason = reason
+        if reason is None:
+            self._wake_idle_listeners()
 
     def executing_count(self) -> int:
         return sum(1 for owner in self._owners.values() if not owner.waiting_manual)
@@ -243,6 +250,8 @@ class WorkflowRunDispatcher:
                 or (not self._owners and self._worker.busy())
             ):
                 raise WorkflowRuntimeError("WORKFLOW_CAPACITY_FULL", "当前运行容量已满")
+            if self._pause_reason is not None:
+                raise WorkflowRuntimeError("WORKFLOW_CAPACITY_FULL", self._pause_reason)
             if self._memory_pressure():
                 # Spec M1 R1-10: pause new dispatch; re-offer capacity once pressure may have eased.
                 asyncio.get_running_loop().call_later(MEMORY_RECHECK_SECONDS, self._wake_idle_listeners)

@@ -1027,3 +1027,25 @@ async def test_memory_pressure_pauses_new_dispatch_and_rewakes_the_scheduler(run
         await dispatcher.wait_idle()
         assert dispatcher.query_run(run.run_id).status == 'succeeded'
     finally: await dispatcher.shutdown()
+
+
+@pytest.mark.asyncio
+async def test_pause_dispatch_refuses_new_runs_with_its_reason_until_cleared(runtime):
+    run, _ = create_queued_run(runtime)
+    workers, resources = ConcurrentWorkers(), ConcurrentResources()
+    dispatcher = make_dispatcher(runtime, workers, resources, capacity=2)
+    woken = asyncio.Event()
+    dispatcher.subscribe_idle(woken.set)
+    try:
+        dispatcher.pause_dispatch('并发设置应用失败')
+        with pytest.raises(WorkflowRuntimeError, match='并发设置应用失败') as rejected:
+            await dispatcher.dispatch(run.run_id, expected_status_revision=1, execution_generation=0)
+        assert rejected.value.code == 'WORKFLOW_CAPACITY_FULL' and workers.calls == []
+        dispatcher.pause_dispatch(None)
+        async with asyncio.timeout(1):
+            await woken.wait()
+        await dispatcher.dispatch(run.run_id, expected_status_revision=1, execution_generation=0)
+        while not workers.calls: await asyncio.sleep(.001)
+        await workers.stop(run.run_id)
+        await dispatcher.wait_idle()
+    finally: await dispatcher.shutdown()

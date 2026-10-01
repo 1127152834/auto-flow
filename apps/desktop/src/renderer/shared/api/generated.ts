@@ -4170,6 +4170,24 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/settings/execution": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Execution Settings */
+        get: operations["get_execution_settings_api_v1_settings_execution_get"];
+        /** Put Execution Settings */
+        put: operations["put_execution_settings_api_v1_settings_execution_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/android/environment": {
         parameters: {
             query?: never;
@@ -8883,6 +8901,29 @@ export type components = {
             /** Impactrevision */
             impactRevision: number;
         };
+        /** ExecutionSettingsRead */
+        ExecutionSettingsRead: {
+            /** Maxrunningbrowsers */
+            maxRunningBrowsers: number | null;
+            /** Recommendedmaxrunningbrowsers */
+            recommendedMaxRunningBrowsers: number;
+            /** Effectivemaxrunningbrowsers */
+            effectiveMaxRunningBrowsers: number;
+            /** Maxlivebrowsers */
+            maxLiveBrowsers: number;
+            /** Memorypressure */
+            memoryPressure: boolean;
+            hardware: components["schemas"]["HardwareRead"];
+            /** Revision */
+            revision: number;
+        };
+        /** ExecutionSettingsWrite */
+        ExecutionSettingsWrite: {
+            /** Maxrunningbrowsers */
+            maxRunningBrowsers: number | null;
+            /** Expectedrevision */
+            expectedRevision: number;
+        };
         /** ExistingTarget */
         ExistingTarget: {
             /**
@@ -9128,6 +9169,13 @@ export type components = {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** HardwareRead */
+        HardwareRead: {
+            /** Logicalcpus */
+            logicalCpus: number;
+            /** Totalmemorygb */
+            totalMemoryGb: number;
         };
         /** HealthResponse */
         HealthResponse: {
@@ -29956,6 +30004,122 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_execution_settings_api_v1_settings_execution_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExecutionSettingsRead"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    put_execution_settings_api_v1_settings_execution_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExecutionSettingsWrite"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExecutionSettingsRead"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
         };

@@ -14,6 +14,7 @@ from autoflow.adapters.http.android_management import (
     android_management_internal_router,
     android_management_router,
 )
+from autoflow.adapters.http.execution_settings import execution_settings_router
 from autoflow.adapters.http.errors import error_response, install_error_handlers
 from autoflow.adapters.http.image_assets import image_assets_router
 from autoflow.adapters.http.local_workflows import local_workflows_router
@@ -76,6 +77,8 @@ from autoflow.application.projects.lifecycle import (
 from autoflow.application.projects.overview import ProjectOverviewService
 from autoflow.application.projects.service import ProjectService
 from autoflow.application.projects.statistics import ProjectStatisticsService
+from autoflow.application.settings.execution import ExecutionSettingsService
+from autoflow.infrastructure.database.app_settings import SqlAlchemyAppSettings
 from autoflow.application.settings.runtime import QuiesceGate, SettingsRuntimeService
 from autoflow.application.workflows.bundles import WorkflowBundleService
 from autoflow.application.workflows.credentials import StudioCredentialService
@@ -204,6 +207,7 @@ from autoflow.infrastructure.filesystem.profile_environment import (
 )
 from autoflow.infrastructure.observability import LoopLagMonitor
 from autoflow.infrastructure.process.kernel_worker import KernelWorkerManager
+from autoflow.infrastructure.process.hardware import memory_pressure, system_hardware
 from autoflow.infrastructure.process.test_browser_worker import TestBrowserWorkerManager
 from autoflow.providers.android.image_catalog import ImageCatalog
 from autoflow.providers.android.stream import AndroidStream
@@ -556,6 +560,13 @@ def create_app(
     project_pending_work = SqlAlchemyProjectPendingWork(session_factory)
     app.state.project_run_coordinator = project_run_coordinator
     app.state.project_run_scheduler = project_run_scheduler
+    execution_settings = ExecutionSettingsService(
+        SqlAlchemyAppSettings(session_factory), system_hardware, memory_pressure
+    )
+    execution_settings.bind(project_workflow_dispatcher, app.state.project_workflow_worker_manager)
+    app.state.execution_settings = execution_settings
+    # The persisted limit must be applied before the scheduler can claim anything (spec M1 R1-07).
+    app.router.add_event_handler("startup", execution_settings.initialize)
     app.router.add_event_handler("startup", project_run_scheduler.startup)
 
     settings_runtime = SettingsRuntimeService(
@@ -633,6 +644,7 @@ def create_app(
                     await project_workflow_dispatcher.shutdown()
 
             results = await asyncio.gather(
+                execution_settings.shutdown(),
                 studio_retention.shutdown(),
                 workflow_services.shutdown(),
                 android.management.shutdown(),
@@ -685,6 +697,7 @@ def create_app(
         api_version=settings.api_version,
         instance_id=settings.instance_id,
     )
+    app.include_router(execution_settings_router(execution_settings))
     register_workflow_routes(app, workflow_services, project_interactions=project_workflow_dispatcher.interactions)
     app.include_router(local_workflows_router(local_workflows, webdav_workflows))
     app.include_router(image_assets_router(image_assets))

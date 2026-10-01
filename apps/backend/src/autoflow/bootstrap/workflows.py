@@ -57,6 +57,7 @@ from autoflow.infrastructure.gesture import (
     gesture_model_path,
 )
 from autoflow.infrastructure.process.inspection_worker import inspection_worker_command
+from autoflow.infrastructure.process.hardware import memory_pressure
 from autoflow.infrastructure.process.workflow_worker import (
     WorkflowResourceCoordinator,
     WorkflowWorkerManager,
@@ -597,6 +598,7 @@ def configure_project_workflow_runtime(
 
     dispatcher = WorkflowRunDispatcher(
         session_factory, worker, resources, gate, recover, capacity=2,
+        memory_pressure=memory_pressure,
         project_end=capabilities.project_end,
         on_fenced=capabilities.manual.cancel_run if capabilities.manual else lambda _run_id: None,
         resolve_model=models.execution_binding if models is not None else None,

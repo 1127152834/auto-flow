@@ -18,7 +18,8 @@ def _config(database: Path) -> Config:
 def test_studio_backend_history_has_one_merged_head(tmp_path: Path) -> None:
     scripts = ScriptDirectory.from_config(_config(tmp_path / "heads.sqlite3"))
 
-    assert scripts.get_heads() == ["0025_merge_studio_credential_environment"]
+    assert scripts.get_heads() == ["rm1_app_settings"]
+    assert scripts.get_revision("rm1_app_settings").down_revision == "0025_merge_studio_credential_environment"
     assert scripts.get_revision("0025_merge_studio_credential_environment").down_revision == (
         "0024_studio_credential_namespace", "0024_environment_identity",
     )
@@ -116,9 +117,12 @@ def test_android_pm9_merge_upgrades_each_published_head_without_losing_data(tmp_
 
     with sqlite3.connect(database) as connection:
         assert connection.execute("SELECT version_num FROM alembic_version").fetchall() == [
-            ("0025_merge_studio_credential_environment",)
+            ("rm1_app_settings",)
         ]
         assert connection.execute("SELECT * FROM workflow_documents").fetchall() == before
+        assert {row[1] for row in connection.execute("PRAGMA table_info(app_settings)")} == {
+            "key", "value", "revision", "updated_at"
+        }
         if previous_head == "am01_management_operations":
             assert connection.execute(
                 "SELECT id, request_digest, payload, state FROM android_operations"
@@ -151,7 +155,7 @@ def test_integrated_workspace_history_is_recognized_and_preserved(
     with sqlite3.connect(database) as connection:
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchall() == [("0025_merge_studio_credential_environment",)]
+        ).fetchall() == [("rm1_app_settings",)]
         assert connection.execute(
             "SELECT value FROM preserved_workspace_data"
         ).fetchall() == [("keep-me",)]
