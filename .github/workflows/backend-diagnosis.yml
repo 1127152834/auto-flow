@@ -75,6 +75,9 @@ jobs:
       - name: B6 parity files, one process each
         if: always()
         run: uv run --directory apps/backend python scripts/ci_pytest_by_file.py --root tests/differential/workflows --timeout 300
+      - name: Android hang trace (diagnostic copy of the hanging test)
+        if: always()
+        run: uv run --directory apps/backend python -m pytest -x -q -s -p no:cacheprovider -o faulthandler_timeout=90 tests/integration/test_zz_diag_android_hang.py
       - name: Android capacity file, one process per test
         if: always()
         run: uv run --directory apps/backend python scripts/ci_pytest_by_file.py --root tests/integration/test_android_capacity_reservations.py --per-test --timeout 120
