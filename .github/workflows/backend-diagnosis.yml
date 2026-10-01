@@ -26,7 +26,7 @@ concurrency:
 jobs:
   per-file:
     # diag/windows-focus-* and diag/windows-annot-* run only their own jobs below.
-    if: ${{ !startsWith(github.ref_name, 'diag/windows-focus') && !startsWith(github.ref_name, 'diag/windows-annot') }}
+    if: ${{ !startsWith(github.ref_name, 'diag/windows-focus') && !startsWith(github.ref_name, 'diag/windows-annot') && !startsWith(github.ref_name, 'diag/windows-ocr') }}
     runs-on: ${{ inputs.os || 'windows-2022' }}
     timeout-minutes: 340
     steps:
@@ -101,3 +101,19 @@ jobs:
       - run: uv sync --directory apps/backend --locked --group build
       - name: Full backend regression, all failures listed
         run: uv run --directory apps/backend pytest -q
+
+  ocr:
+    # Times the EasyOCR phases on the Windows runner (diag/windows-ocr-*).
+    if: ${{ startsWith(github.ref_name, 'diag/windows-ocr') }}
+    runs-on: windows-2022
+    timeout-minutes: 30
+    steps:
+      - run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --directory apps/backend --locked --group build
+      - name: Time EasyOCR phases
+        run: uv run --directory apps/backend python scripts/ci_probe_ocr.py
