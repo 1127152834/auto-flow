@@ -26,10 +26,10 @@ export function realModules() {
   const extensionTypes = [
     'project_data', 'project_manual', 'project_end',
     'proxy_change_ip', 'proxy_change_location', 'proxy_query',
-    'trace_mark', 'capture_diagnostics', 'save_trace_segment',
+    'trace_mark', 'capture_diagnostics', 'save_trace_segment', 'press_key',
   ]
-  if (types.length !== 222 || new Set(types).size !== 222 || !extensionTypes.every(type => types.includes(type))) {
-    throw new Error('已批准的 213 冻结节点加 9 个 AutoFlow 扩展节点范围发生变化')
+  if (types.length !== 223 || new Set(types).size !== 223 || !extensionTypes.every(type => types.includes(type))) {
+    throw new Error('已批准的 213 冻结节点加 10 个 AutoFlow 扩展节点范围发生变化')
   }
   return types.map(type => {
     const label = labels.get(type)

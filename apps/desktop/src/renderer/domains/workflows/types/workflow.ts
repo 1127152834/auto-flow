@@ -19,6 +19,7 @@ export type ModuleType =
   | 'use_opened_page'
   | 'click_element'
   | 'hover_element'
+  | 'press_key'
   | 'input_text'
   | 'get_element_info'
   | 'wait'

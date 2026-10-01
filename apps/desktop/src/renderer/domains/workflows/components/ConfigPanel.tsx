@@ -31,7 +31,7 @@ import {
 import { RunWorkflowFileConfig } from './config-panels/RunWorkflowFileConfig'
 import { SimilarSelectorDialog } from './config-panels/SimilarSelectorDialog'
 import { UrlInputDialog } from './config-panels/UrlInputDialog'
-import { OpenPageConfig, UseOpenedPageConfig, ClickElementConfig, HoverElementConfig, InputTextConfig, GetElementInfoConfig, WaitConfig, WaitElementConfig, WaitPageLoadConfig, PageLoadCompleteConfig, SetVariableConfig, IncrementDecrementConfig, PrintLogConfig, PlaySoundConfig, SystemNotificationConfig, InputPromptConfig, TextToSpeechConfig, JsScriptConfig, PythonScriptConfig, ExtractTableDataConfig, SwitchTabConfig, GroupConfig, SubflowHeaderConfig, RefreshPageConfig, GoBackConfig, GoForwardConfig, HandleDialogConfig, InjectJavaScriptConfig, SwitchIframeConfig, SwitchToMainConfig } from './config-panels/BasicModuleConfigs'
+import { OpenPageConfig, UseOpenedPageConfig, ClickElementConfig, HoverElementConfig, PressKeyConfig, InputTextConfig, GetElementInfoConfig, WaitConfig, WaitElementConfig, WaitPageLoadConfig, PageLoadCompleteConfig, SetVariableConfig, IncrementDecrementConfig, PrintLogConfig, PlaySoundConfig, SystemNotificationConfig, InputPromptConfig, TextToSpeechConfig, JsScriptConfig, PythonScriptConfig, ExtractTableDataConfig, SwitchTabConfig, GroupConfig, SubflowHeaderConfig, RefreshPageConfig, GoBackConfig, GoForwardConfig, HandleDialogConfig, InjectJavaScriptConfig, SwitchIframeConfig, SwitchToMainConfig } from './config-panels/BasicModuleConfigs'
 import { SelectDropdownConfig, SetCheckboxConfig, DragElementConfig, ScrollPageConfig, UploadFileConfig, DownloadFileConfig, SaveImageConfig, GetChildElementsConfig, GetSiblingElementsConfig, ScreenshotConfig, OCRCaptchaConfig, SliderCaptchaConfig, SendEmailConfig, SetClipboardConfig, GetClipboardConfig, ShutdownSystemConfig, LockScreenConfig, RunCommandConfig, NetworkCaptureConfig, ElementExistsConfig, ElementVisibleConfig, NetworkMonitorStartConfig, NetworkMonitorWaitConfig, NetworkMonitorStopConfig } from './config-panels/AdvancedModuleConfigs'
 import {
   AIChatConfig,
@@ -810,6 +810,8 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
         return <ClickElementConfig {...props} />
       case 'hover_element':
         return <HoverElementConfig {...props} />
+      case 'press_key':
+        return <PressKeyConfig {...props} />
       case 'input_text':
         return <InputTextConfig {...props} />
       case 'get_element_info':

@@ -432,6 +432,7 @@ export const moduleTypeLabels: Record<ModuleType, string> = {
   use_opened_page: '操作已打开的网页',
   click_element: '点击元素',
   hover_element: '悬停元素',
+  press_key: '按键',
   input_text: '输入文本',
   get_element_info: '提取数据',
   wait: '固定等待',
@@ -1082,6 +1083,7 @@ export const moduleDefaultTimeouts: Partial<Record<ModuleType, number>> = {
   open_page: 60,        // 60秒，网页加载可能慢
   click_element: 60,    // 60秒
   hover_element: 60,    // 60秒
+  press_key: 30,
   input_text: 60,       // 60秒
   get_element_info: 60, // 60秒
   proxy_change_ip: 0,

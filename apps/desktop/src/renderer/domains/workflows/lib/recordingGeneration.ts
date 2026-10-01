@@ -173,8 +173,9 @@ export function buildRecordedNodes(evs: RecEvent[], autoWait: boolean) {
         // 回车/Tab 可能触发表单提交跳转，视为"可致跳转的交互"
         if (ev.key === 'Enter' || ev.key === 'Tab' || /Enter$/.test(ev.key)) lastActionTs = ev.ts || 0
         // 若按键发生在具体输入元素上，用 element 目标模式（先聚焦该元素再按键），忠实还原作用目标
-        const keyCfg = ev.selector ? { keySequence: ev.key, targetType: 'element', selector: ev.selector } : { keySequence: ev.key }
-        mkNode('keyboard_action', keyCfg, ev.key)
+        // 整改 M1 R1-16：生成后端可执行的网页按键节点（原 keyboard_action 属于已排除的桌面键盘类别）
+        const keyCfg = ev.selector ? { key: ev.key, targetType: 'element', selector: ev.selector } : { key: ev.key, targetType: 'focused' }
+        mkNode('press_key', keyCfg, ev.key)
       }
     }
 

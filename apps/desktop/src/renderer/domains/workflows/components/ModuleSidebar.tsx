@@ -222,6 +222,7 @@ const moduleIcons: Record<ModuleType, React.ElementType> = {
   // 元素交互
   click_element: MousePointerClick,
   hover_element: MousePointer,
+  press_key: Keyboard,
   input_text: Type,
   select_dropdown: ChevronDown,
   set_checkbox: CheckSquare,
@@ -876,6 +877,7 @@ const moduleKeywords: Record<ModuleType, string[]> = {
   dp_close: ['drissionpage', 'dp', '关闭', '浏览器', 'close'],
   click_element: ['点击', '单击', '双击', '右键', 'click', '按钮'],
   hover_element: ['悬停', '鼠标', '移动', 'hover', 'mouse', '移入', '经过', '停留'],
+  press_key: ['按键', '回车', '键盘', 'enter', 'tab', 'key', 'press', '快捷键'],
   input_text: ['输入', '文本', '填写', 'input', 'text', '表单'],
   get_element_info: ['提取', '数据', '获取', '元素', '信息', 'get', 'element', '采集'],
   wait: ['等待', '延迟', '暂停', 'wait', 'delay', '时间', '固定'],

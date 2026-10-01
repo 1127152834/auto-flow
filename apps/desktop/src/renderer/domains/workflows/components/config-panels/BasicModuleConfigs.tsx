@@ -188,6 +188,40 @@ export function HoverElementConfig({
   )
 }
 
+// 按键配置（整改 M1 R1-15）
+export function PressKeyConfig({
+  data,
+  onChange,
+  renderSelectorInput
+}: {
+  data: NodeData
+  onChange: (key: string, value: unknown) => void
+  renderSelectorInput: RenderSelectorInput
+}) {
+  const target = (data.targetType as string) || 'focused'
+  return (
+    <>
+      <div className="space-y-2">
+        <Label htmlFor="key">按键</Label>
+        <VariableInput
+          value={(data.key as string) || ''}
+          onChange={(v) => onChange('key', v)}
+          placeholder="例如: Enter、Tab、Control+A"
+        />
+        <p className="text-xs text-muted-foreground">组合键用 + 连接，如 Control+A、Shift+Tab</p>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="targetType">按在</Label>
+        <Select id="targetType" value={target} onChange={(e) => onChange('targetType', e.target.value)}>
+          <option value="focused">当前焦点</option>
+          <option value="element">指定元素</option>
+        </Select>
+      </div>
+      {target === 'element' && renderSelectorInput('selector', '元素选择器', '例如: #search-input')}
+    </>
+  )
+}
+
 // 输入文本配置
 export function InputTextConfig({ 
   data, 

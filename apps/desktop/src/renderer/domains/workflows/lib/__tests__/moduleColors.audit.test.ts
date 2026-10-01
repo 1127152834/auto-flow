@@ -232,7 +232,7 @@ describe('模块配色三处同源审计 - module-integrity-audit Property 7', (
 
     // 防空跑：分类清单为空或解析异常时，上面的循环不会报错却什么也没测。
     // 213 个批准迁入节点、3 个代理节点、3 个项目节点和 3 个诊断节点。
-    expect(checked, '被核验的模块数异常偏少，审计可能空跑').toBe(222)
+    expect(checked, '被核验的模块数异常偏少，审计可能空跑').toBe(223)
     expect(
       mismatches,
       `存在三处取色不同源的模块：\n${JSON.stringify(mismatches, null, 2)}`,

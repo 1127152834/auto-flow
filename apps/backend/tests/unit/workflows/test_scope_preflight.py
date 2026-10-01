@@ -11,6 +11,7 @@ from autoflow.domain.workflows.scope import (
     DIAGNOSTIC_NODE_TYPES,
     EXCLUDED_LEGACY_NODE_TYPES,
     PROJECT_NODE_TYPES,
+    WEB_EXTENSION_NODE_TYPES,
     validate_workflow_scope,
 )
 
@@ -102,6 +103,10 @@ def test_runtime_scope_matches_the_node_authority() -> None:
     assert len(APPROVED_NODE_TYPES) == 216
     assert {"proxy_query", "proxy_change_ip", "proxy_change_location"} <= APPROVED_NODE_TYPES
     assert len(APPROVED_NODE_TYPES | PROJECT_NODE_TYPES | DIAGNOSTIC_NODE_TYPES) == 222
+    assert WEB_EXTENSION_NODE_TYPES == frozenset({"press_key"})
+    assert WEB_EXTENSION_NODE_TYPES.isdisjoint(
+        APPROVED_NODE_TYPES | PROJECT_NODE_TYPES | DIAGNOSTIC_NODE_TYPES
+    )
     assert EXCLUDED_LEGACY_NODE_TYPES == EXPECTED_EXCLUDED
     assert len(EXCLUDED_LEGACY_NODE_TYPES) == 71
     assert APPROVED_NODE_TYPES.isdisjoint(EXCLUDED_LEGACY_NODE_TYPES)

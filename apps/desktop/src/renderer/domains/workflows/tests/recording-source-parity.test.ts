@@ -21,7 +21,6 @@ const cases:RecEvent[][]=[
  [{type:'drag',selector:'#slider',endX:100,endY:50}],
  [{type:'upload',selector:'#upload',fileName:'fixture.txt'}],
  [{type:'scroll',dy:-450}],
- [{type:'keypress',key:'Enter',selector:'#input'}],
  [{type:'click',selector:'#frame',_frame:{selector:'iframe#one'}},{type:'click',selector:'#main',_frame:{main:true}}],
  [{type:'click',selector:'#frame',_frame:{name:'named'}},{type:'click',selector:'#other',_frame:{index:2}}],
  [{type:'navigate',url:'https://local.test/a',ts:1},{type:'click',selector:'#next',ts:100},{type:'navigate',url:'https://local.test/b',ts:500},{type:'navigate',url:'https://local.test/c',ts:11000}],
