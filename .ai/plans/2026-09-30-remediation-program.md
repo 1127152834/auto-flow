@@ -13,3 +13,7 @@
 | M6 收敛与清理 | [规格](../../docs/superpowers/specs/2026-09-30-remediation-m6-convergence.md) | [计划](../../docs/superpowers/plans/2026-09-30-remediation-m6-convergence.md) | 任务级；兼容与迁移门禁通过后 |
 
 来源与验证：[总纲](../../docs/superpowers/specs/2026-09-30-remediation-roadmap.md)、[修订记录](../sessions/2026-09-30-remediation-plan-revision.md)。M2C 独立交付不阻塞 M3；M5D 视觉完善不阻塞 M5B 业务闭环。历史 QA 清理独立于 M0。原 13 周估算已 superseded，M0/M1 退出后重估。
+
+后续计划（独立于整改、依赖其成果，状态 proposed）：执行环境扩展 E1–E6 与 iOS 决定——规格 docs/superpowers/specs/2026-09-30-execution-environments-design.md，计划 docs/superpowers/plans/2026-09-30-execution-environments-milestones.md，决定 .ai/decisions/2026-09-30-execution-environments.md。E1 在 M1 后、E2 在 M4 后、E3–E5 在 M6 后细化。
+
+接手入口：[M0–M6 交接文档](../sessions/2026-09-30-remediation-handoff.md)。当前验收状态、远端运行编号、已知缺口及接手命令以交接快照和实时 Git/CI 为准。
