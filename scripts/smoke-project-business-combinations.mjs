@@ -87,8 +87,13 @@ export async function checkBusinessCombinations(baseUrl, token, browserVersion) 
       const fieldRef = table => ({ projectId: project.projectId, tableId: table.tableId, datasetGeneration: table.datasetGeneration, fieldId: table.fieldId })
       const input = (table, alias, statusId) => ({ inputId: randomUUID(), alias, tableId: table.tableId, datasetGeneration: table.datasetGeneration, mode: 'independent', required: true, fieldBindings: [{ inputFieldId: randomUUID(), inputFieldAlias: alias, fieldRef: fieldRef(table) }], filter: statusId ? { type: 'status', operator: 'eq', statusId } : { type: 'all', items: [] }, orderBy: [{ systemField: 'recordKey', direction: 'asc' }] })
       const readInputs = () => node('inputs', 'project_data', { operation: 'inputs', variableName: 'frozen', arguments: {} })
-      const personSetup = await workflow('人员已有独立环境', [readInputs(), node('open', 'open_page', { url: site + '/login' }), node('end', 'project_end', { retainEnvironment: { enabled: true, mode: 'saveAs', name: '人员原环境', recordTargets: [{ recordRef: "{frozen[0]['recordRef']}", expectedLinkRevision: "{frozen[0]['linkRevision']}", replaceAllowed: false }] } })])
-      await completed(await start(personSetup, { inputs: [input(person, '人员', verified.statusId)] }))
+      const setupInputs = { inputs: [input(person, '人员', verified.statusId)] }
+      const personSetup = await workflow('人员已有独立环境', [readInputs(),
+        data('confirm-person', person, 'updateRecord', { recordRef: "{frozen[0]['recordRef']}", changes: { [person.fieldId]: 'P001' }, expectedContentRevision: "{frozen[0]['contentRevision']}" }),
+        node('open', 'open_page', { url: site + '/login' }),
+        node('end', 'project_end', { retainEnvironment: true, saveMode: 'save_as', name: '人员原环境', inputIds: [setupInputs.inputs[0].inputId], recordTargets: [], replaceAllowed: false }),
+      ])
+      await completed(await start(personSetup, setupInputs))
       const beforePerson = (await records(person)).items[0]
       assert.ok(beforePerson.currentEnvironmentId, 'person must begin with an existing environment association')
       const firstInputs = { inputs: [input(person, '人员', verified.statusId), input(email, '邮箱', pending.statusId)] }
@@ -96,7 +101,8 @@ export async function checkBusinessCombinations(baseUrl, token, browserVersion) 
         readInputs(), node('login', 'open_page', { url: site + '/login' }),
         data('register', email, 'setRecordStatus', { recordRef: "{frozen[1]['recordRef']}", statusId: registered.statusId, expectedStatusRevision: "{frozen[1]['statusRevision']}", expectedContentRevisionWhenDerived: "{frozen[1]['contentRevision']}" }),
         data('account', account, 'createRecord', { tableId: account.tableId, datasetGeneration: account.datasetGeneration, values: { [account.fieldId]: "{frozen[0]['values'][0]['value']}" } }),
-        node('end', 'project_end', { retainEnvironment: { enabled: true, mode: 'saveAs', name: '邮箱账号共享登录', recordTargets: [{ recordRef: "{frozen[1]['recordRef']}", expectedLinkRevision: "{frozen[1]['linkRevision']}", replaceAllowed: false }, { recordRef: "{account['ref']}", expectedLinkRevision: "{account['linkRevision']}", replaceAllowed: false }] } }),
+        node('end-targets', 'python_script', { scriptMode: 'content', useBuiltinPython: true, scriptContent: 'return [vars.account["ref"]]', resultVariable: 'endTargets' }),
+        node('end', 'project_end', { retainEnvironment: true, saveMode: 'save_as', name: '邮箱账号共享登录', inputIds: [firstInputs.inputs[1].inputId], recordTargets: '{endTargets}', replaceAllowed: false }),
       ])
       const registeredTask = await completed(await start(registration, firstInputs))
       const accounts = await records(account), emails = await records(email)
