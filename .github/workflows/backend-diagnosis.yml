@@ -101,3 +101,38 @@ jobs:
       - run: uv sync --directory apps/backend --locked --group build
       - name: Full backend regression, all failures listed
         run: uv run --directory apps/backend pytest -q
+
+  strict:
+    # Reports what the strict type debt gate says on Windows (diag/windows-strict-*).
+    if: ${{ startsWith(github.ref_name, 'diag/windows-strict') }}
+    runs-on: windows-2022
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --directory apps/backend --locked --group build
+      - name: Run the gate and publish its output as annotations
+        shell: bash
+        run: |
+          uv run --directory apps/backend python scripts/check_strict_types.py > strict-out.txt 2>&1 || true
+          python - <<'PY'
+          text = open('strict-out.txt', encoding='utf-8', errors='replace').read()
+          lines = [l for l in text.splitlines() if l.strip()]
+          head = [l for l in lines if not l.startswith('NEW')][:6]
+          new = [l for l in lines if l.startswith('NEW')]
+          print('::notice title=strict-summary::' + ' | '.join(head)[:3000].replace('%','%25'))
+          chunk, size, n = [], 0, 0
+          for l in new:
+              if size + len(l) > 2800 and chunk:
+                  n += 1
+                  print(f'::notice title=strict-new-{n}::' + '%0A'.join(chunk).replace('%0A','\n').replace('%','%25').replace('\n','%0A'))
+                  chunk, size = [], 0
+                  if n >= 8: break
+              chunk.append(l[:600]); size += len(l)
+          else:
+              if chunk:
+                  print('::notice title=strict-new-last::' + '%0A'.join(chunk).replace('%','%25').replace('%250A','%0A'))
+          PY
