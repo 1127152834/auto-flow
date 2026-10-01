@@ -459,6 +459,60 @@ async def test_project_posix_signal_denial_requires_confirmed_tree_exit(monkeypa
         await asyncio.gather(*waiters, return_exceptions=True)
 
 
+@pytest.mark.asyncio
+@pytest.mark.parametrize('outcome', ['exited', 'parent_alive', 'child_alive', 'unknown_child', 'reused_child'])
+async def test_legacy_posix_signal_denial_requires_confirmed_tree_exit(monkeypatch, outcome):
+    from autoflow.infrastructure.process import browser_processes as identities
+    from autoflow.infrastructure.process import test_browser_worker as cleanup
+
+    owned = {700: (700, 11), 701: (701, 12)}
+    births = {700: 11, 701: 12}
+    sent, waiters = [], []
+    monkeypatch.setattr(cleanup, 'sys', SimpleNamespace(platform='darwin'))
+    monkeypatch.setattr(cleanup, 'signal', SimpleNamespace(SIGTERM=15, SIGKILL=9))
+    monkeypatch.setattr(identities, 'sys', SimpleNamespace(platform='darwin'))
+    monkeypatch.setattr(cleanup, 'capture_processes', lambda *_args: owned)
+    monkeypatch.setattr(identities, 'process_birth', lambda pid: births.get(pid))
+    monkeypatch.setattr(identities, '_process_exists', lambda pid: pid in births)
+
+    def denied(group, number):
+        sent.append((group, number))
+        raise PermissionError('signal denied during legacy worker exit')
+
+    monkeypatch.setattr(identities, 'os', SimpleNamespace(getpgrp=lambda: 999, killpg=denied))
+
+    async def wait():
+        waiters.append(asyncio.current_task())
+        if outcome == 'parent_alive':
+            await asyncio.Event().wait()
+        births.pop(700, None)
+        if outcome == 'unknown_child':
+            births[701] = None
+        elif outcome == 'reused_child':
+            births[701] = 99
+        elif outcome == 'exited':
+            births.pop(701, None)
+        process.returncode = 0
+        return 0
+
+    process = SimpleNamespace(pid=700, returncode=None, wait=wait)
+    try:
+        if outcome in {'exited', 'reused_child'}:
+            await cleanup.force_process_tree(process, .01)
+            assert process.returncode == 0
+            assert all(group == 700 for group, _number in sent)
+        else:
+            with pytest.raises(RuntimeError, match='not yet confirmed|did not finish') as failure:
+                await cleanup.force_process_tree(process, .01)
+            assert isinstance(failure.value.__cause__, PermissionError)
+        assert sent
+    finally:
+        for waiter in waiters:
+            if not waiter.done():
+                waiter.cancel()
+        await asyncio.gather(*waiters, return_exceptions=True)
+
+
 @pytest.mark.parametrize('birth,member,owned,allowed', [(123, True, False, True), (123, False, False, False), (123, False, True, True), (456, True, True, False), (None, True, True, False)])
 def test_windows_job_verifies_same_process_handle_and_only_live_owner_assigns(monkeypatch, birth, member, owned, allowed):
     from autoflow.infrastructure.process import windows_job as module

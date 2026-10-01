@@ -40,18 +40,25 @@ async def recover_worker_directories(
             await asyncio.to_thread(shutil.rmtree, directory)
             continue
         owned = await asyncio.to_thread(capture_processes, 0, None, directory, executable, strict_ownership=True)
-        await asyncio.to_thread(signal_processes, owned, signal.SIGTERM)
+        signal_error = None
+        try:
+            await asyncio.to_thread(signal_processes, owned, signal.SIGTERM)
+        except PermissionError as error:
+            signal_error = error
         deadline = asyncio.get_running_loop().time() + timeout
         while await asyncio.to_thread(living_processes, owned):
             if asyncio.get_running_loop().time() >= deadline:
                 break
             await asyncio.sleep(.02)
         owned = await asyncio.to_thread(capture_processes, 0, None, directory, executable, owned, strict_ownership=True)
-        await asyncio.to_thread(signal_processes, owned, signal.SIGKILL)
+        try:
+            await asyncio.to_thread(signal_processes, owned, signal.SIGKILL)
+        except PermissionError as error:
+            signal_error = error
         deadline = asyncio.get_running_loop().time() + timeout
         while await asyncio.to_thread(living_processes, owned):
             if asyncio.get_running_loop().time() >= deadline:
-                raise RuntimeError("Workflow orphan cleanup did not finish")
+                raise RuntimeError("Workflow orphan cleanup did not finish") from signal_error
             await asyncio.sleep(.02)
         # No directory or process evidence is removed before native cleanup succeeds.
         try:

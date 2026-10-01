@@ -76,6 +76,38 @@ async def test_unreadable_live_native_candidate_is_not_proof_of_cleanup(tmp_path
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize('still_alive', [False, True])
+async def test_recovery_signal_denial_waits_for_confirmed_exit(tmp_path, monkeypatch, still_alive):
+    import autoflow.infrastructure.process.workflow_recovery as module
+
+    run_id = str(uuid4())
+    directory = tmp_path / 'workflow-runs' / run_id / 'generation-1'
+    directory.mkdir(parents=True)
+    (directory / 'proof').write_text('keep until native exit')
+    owned = {700: (700, 11)}
+    sent = []
+    monkeypatch.setattr(module, 'sys', SimpleNamespace(platform='darwin'))
+    monkeypatch.setattr(module, 'signal', SimpleNamespace(SIGTERM=15, SIGKILL=9))
+    monkeypatch.setattr(module, 'capture_processes', lambda *_args, **_kwargs: owned)
+    monkeypatch.setattr(module, 'living_processes', lambda _owned: owned if still_alive else {})
+
+    def denied(_owned, number):
+        sent.append(number)
+        raise PermissionError('orphan may be exiting')
+
+    monkeypatch.setattr(module, 'signal_processes', denied)
+    if still_alive:
+        with pytest.raises(RuntimeError, match='cleanup did not finish') as failure:
+            await recover_worker_directories(tmp_path, run_id, None, timeout=.01)
+        assert isinstance(failure.value.__cause__, PermissionError)
+        assert (directory / 'proof').read_text() == 'keep until native exit'
+    else:
+        await recover_worker_directories(tmp_path, run_id, None, timeout=.01)
+        assert not directory.exists()
+    assert sent == [15, 9]
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize('symlink_level', ['run', 'generation'])
 async def test_recovery_rejects_symlink_ownership(tmp_path, symlink_level):
     run_id = str(uuid4())
