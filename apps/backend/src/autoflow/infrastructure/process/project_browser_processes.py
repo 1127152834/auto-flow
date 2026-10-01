@@ -5,6 +5,7 @@ import ctypes
 import os
 import subprocess
 import sys
+import time
 from functools import lru_cache
 from pathlib import Path
 
@@ -134,6 +135,7 @@ def capture_processes(
     if directory is not None:
         directory = directory.resolve()
         executable = executable.resolve() if executable is not None else None
+        ownership_deadline = None
         for row in rows:
             item = int(row[0])
             if item in owned:
@@ -146,9 +148,19 @@ def capture_processes(
                 or "--project-workflow-worker" in command
                 or "/playwright/driver/" in command):
                 belongs = _belongs_to_run(item, directory, executable)
-                if belongs is None and strict_ownership and _process_exists(item):
-                    raise RuntimeError("Candidate browser process ownership is unavailable")
+                while belongs is None and strict_ownership and _process_exists(item):
+                    # Concurrent workers can exit between ps and native metadata reads.
+                    # Share one bounded observation window; persistent uncertainty fails closed.
+                    if ownership_deadline is None:
+                        ownership_deadline = time.monotonic() + 2
+                    elif time.monotonic() >= ownership_deadline:
+                        raise RuntimeError(f"Candidate browser process ownership is unavailable (pid={item})")
+                    time.sleep(0.01)
+                    belongs = _belongs_to_run(item, directory, executable)
                 if belongs:
+                    # Never expand an old ppid snapshot from a newly reused PID.
+                    if identities[item] is None or process_birth(item) != identities[item]:
+                        raise RuntimeError(f"Candidate browser process identity changed or is unavailable (pid={item})")
                     owned.add(item)
     old: set[int] = set()
     while old != owned:

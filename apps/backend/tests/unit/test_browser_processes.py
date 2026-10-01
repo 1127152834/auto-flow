@@ -209,11 +209,56 @@ def test_pure_data_recovery_requires_native_worker_identity_and_exact_run_marker
 def test_pure_data_recovery_does_not_assume_unreadable_live_candidate_is_gone(monkeypatch, tmp_path):
     from autoflow.infrastructure.process import project_browser_processes as module
 
+    waits = []
+    monkeypatch.setattr(module, 'time', SimpleNamespace(
+        monotonic=lambda: sum(waits), sleep=waits.append,
+    ))
     monkeypatch.setattr(module.subprocess, 'check_output', lambda *_args, **_kwargs: '700 1 700 python --project-workflow-worker\n')
     monkeypatch.setattr(module, 'process_birth', lambda _pid: 710)
     monkeypatch.setattr(module, '_native_arguments', lambda _pid: None)
     monkeypatch.setattr(module, '_process_exists', lambda _pid: True)
     with pytest.raises(RuntimeError, match='ownership is unavailable'):
+        module.capture_processes(0, None, tmp_path, None, strict_ownership=True)
+    assert 2 <= sum(waits) < 2.02
+
+
+@pytest.mark.parametrize('outcome', ['exited', 'other_run', 'owned', 'recycled'])
+def test_strict_capture_rechecks_transient_candidate_metadata(monkeypatch, tmp_path, outcome):
+    from autoflow.infrastructure.process import project_browser_processes as module
+
+    run = tmp_path.resolve()
+    monkeypatch.setattr(module.subprocess, 'check_output', lambda *_args, **_kwargs:
+                        '700 1 700 python --project-workflow-worker\n')
+    births = iter([710, 711 if outcome == 'recycled' else 710, 710])
+    monkeypatch.setattr(module, 'process_birth', lambda _pid: next(births))
+    alive = iter([True, False]) if outcome == 'exited' else None
+    monkeypatch.setattr(module, '_process_exists', lambda _pid: next(alive) if alive else True)
+    native = iter([None, None if outcome == 'exited' else (
+        Path(sys.executable), ['--project-workflow-worker'],
+        {'CLOAKBROWSER_CACHE_DIR': str(run / 'other' if outcome == 'other_run' else run)},
+    )])
+    monkeypatch.setattr(module, '_native_arguments', lambda _pid: next(native))
+
+    if outcome == 'recycled':
+        with pytest.raises(RuntimeError, match='identity changed'):
+            module.capture_processes(0, None, run, None, strict_ownership=True)
+        return
+    assert module.capture_processes(0, None, run, None, strict_ownership=True) == (
+        {700: (700, 710)} if outcome == 'owned' else {}
+    )
+
+
+def test_retried_recycled_parent_cannot_claim_its_old_foreign_children(monkeypatch, tmp_path):
+    from autoflow.infrastructure.process import project_browser_processes as module
+
+    monkeypatch.setattr(module.subprocess, 'check_output', lambda *_args, **_kwargs:
+                        '700 1 700 python --project-workflow-worker\n701 700 701 child\n')
+    births = {700: iter([710, 711]), 701: iter([720, 720])}
+    monkeypatch.setattr(module, 'process_birth', lambda pid: next(births[pid]))
+    monkeypatch.setattr(module, '_process_exists', lambda _pid: True)
+    ownership = iter([None, True])
+    monkeypatch.setattr(module, '_belongs_to_run', lambda *_args: next(ownership))
+    with pytest.raises(RuntimeError, match='identity changed'):
         module.capture_processes(0, None, tmp_path, None, strict_ownership=True)
 
 
