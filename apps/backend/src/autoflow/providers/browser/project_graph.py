@@ -23,6 +23,7 @@ from autoflow.domain.workflows.execution import (
     ExecutionContext,
     ExternalIntegrationGateway,
 )
+from autoflow.domain.workflows.inert_settings import describe_inert_keys, inert_keys
 from autoflow.domain.workflows.project_end import normalize_project_end
 from autoflow.domain.workflows.variables import CredentialReader, references_variable
 from autoflow.infrastructure.filesystem.workflow_table_workbook import (
@@ -228,6 +229,7 @@ class ProjectGraphExecutor:
         self.error: dict[str, str] | None = None
         self.end_completed = False
         self.manual_outcome: str | None = None
+        self.inert_reported: set[str] = set()
 
     async def run(self, plan: Mapping[str, Any]) -> dict[str, object]:
         document = plan.get('document')
@@ -334,6 +336,11 @@ class ProjectGraphExecutor:
             await emit('nodeAttempt', {'status': 'started', 'executionContext': execution_context})
             self.cancellation.raise_if_cancelled()
             await emit('log', {'level': 'info', 'message': '开始执行节点'})
+            inert = inert_keys(node_data, str(module_type or '')) if node_id not in self.inert_reported else []
+            if inert:
+                # Spec M1 R1-02: say once per node that saved retry / timeout settings are ignored.
+                self.inert_reported.add(node_id)
+                await emit('log', {'level': 'warning', 'message': describe_inert_keys(str(node_data.get('label') or module_type or node_id), inert)})
             self.cancellation.raise_if_cancelled()
             return
         if event['type'] != 'execution:node_complete':

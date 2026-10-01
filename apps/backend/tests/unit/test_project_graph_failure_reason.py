@@ -67,3 +67,23 @@ async def test_legacy_handled_failure_keeps_failing_the_batch_task():
     result, _ = await run_document(caught_failure_document())
     assert result['status'] == 'failed'
     assert result['error']['code'] == 'WORKFLOW_NODE_FAILED'
+
+
+@pytest.mark.asyncio
+async def test_inert_retry_settings_are_reported_once_per_node():
+    events = []
+
+    async def emit(*event):
+        events.append(event)
+
+    executor = ProjectGraphExecutor(None, {}, emit, lambda: False)
+    document = {
+        'nodes': [
+            node('loop', 'loop', count=2, indexVariable='i'),
+            node('set', 'set_variable', variableName='x', variableValue='{i}', label='赋值', retryCount=3, timeoutAction='skip'),
+        ],
+        'edges': [{'id': 'e', 'source': 'loop', 'target': 'set', 'sourceHandle': 'loop'}],
+    }
+    assert (await executor.run({'document': document}))['status'] == 'succeeded'
+    warnings = [event[3]['message'] for event in events if event[0] == 'log' and event[3].get('level') == 'warning']
+    assert warnings == ['「赋值」的以下设置尚未生效，运行时会被忽略：重试次数、运行超时后']
