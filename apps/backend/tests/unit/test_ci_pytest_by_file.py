@@ -47,11 +47,31 @@ def test_report_lists_problem_files_and_the_slowest(tmp_path):
     text, annotations = runner.build_report(results, slowest=2)
     assert "3 files, 1 passed, 1 failed, 1 timed out" in text
     assert "`b.py` timeout after 900s: b.py::test_hangs" in text
-    assert annotations[0].startswith(
-        "::error title=backend files failed or timed out::"
-    )
+    assert annotations[0].startswith("::error title=timeout b.py::")
     assert "b.py::test_hangs" in annotations[0]
-    assert annotations[1] == "::notice title=slowest backend files::b.py:900s; c.py:5s"
+    assert annotations[1].startswith("::error title=failed c.py::")
+    assert annotations[2] == "::notice title=slowest backend files::b.py:900s; c.py:5s"
+
+
+def test_annotation_text_is_escaped_to_one_line():
+    result = runner.FileResult("a.py", "failed", 1.0, 1, "line one\nline 100%")
+    _, annotations = runner.build_report([result])
+    assert "\n" not in annotations[0]
+    assert annotations[0].endswith("line one%0Aline 100%25")
+
+
+def test_only_ten_problem_files_get_their_own_annotation():
+    results = [runner.FileResult(f"f{i}.py", "failed", 1.0, 1) for i in range(12)]
+    _, annotations = runner.build_report(results)
+    errors = [item for item in annotations if item.startswith("::error")]
+    assert len(errors) == 11
+    assert "f10.py; f11.py" in errors[-1]
+
+
+def test_a_single_file_can_be_the_root(tmp_path):
+    target = tmp_path / "test_one.py"
+    target.write_text("")
+    assert runner.discover(target) == [target]
 
 
 def test_a_clean_run_has_no_error_annotation():

@@ -25,7 +25,7 @@ from pathlib import Path
 # pytest exit code 5 means "no tests collected" (e.g. everything deselected by
 # the default marker expression); that is not a failure of the file.
 OK_CODES = {0, 5}
-ANNOTATION_LIMIT = 30_000
+PER_FILE_LIMIT = 3_000  # GitHub shows about 4 KB of an annotation message
 
 
 @dataclass(frozen=True)
@@ -37,10 +37,29 @@ class FileResult:
     detail: str = ""
 
 
+def _escape(value: str) -> str:
+    return value.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+
+
 def discover(root: Path) -> list[Path]:
+    if root.is_file():
+        return [root]
     return sorted(
         path for path in root.rglob("test_*.py") if "__pycache__" not in path.parts
     )
+
+
+def collect_ids(path: Path, command: list[str]) -> list[str]:
+    """Test ids in a file, so a hang can be pinned to one test instead of a file."""
+    probe = subprocess.run(
+        [*command, "--collect-only", "-q", str(path)],
+        capture_output=True,
+        text=True,
+        timeout=300,
+        check=False,
+    )
+    ids = [line.strip() for line in probe.stdout.splitlines() if "::" in line]
+    return ids or [str(path)]
 
 
 def kill_tree(process: subprocess.Popen[bytes]) -> None:
@@ -68,13 +87,13 @@ def _detail(output: str, status: str) -> str:
     lines = [line.strip() for line in output.splitlines() if line.strip()]
     if status == "timeout":
         # With -v the last line names the test that never reported a result.
-        return " | ".join(lines[-2:])[:400]
+        return (lines[-1] if lines else "")[:400]
     failed = [line for line in lines if line.startswith(("FAILED ", "ERROR "))]
     return " | ".join(failed[:5] or lines[-2:])[:600]
 
 
 def run_file(
-    path: Path, timeout: float, command: list[str], clock=time.monotonic
+    path: Path | str, timeout: float, command: list[str], clock=time.monotonic
 ) -> FileResult:
     started = clock()
     kwargs: dict = {}
@@ -131,22 +150,23 @@ def build_report(
     for r in sorted(results, key=lambda item: item.seconds, reverse=True)[:slowest]:
         lines.append(f"- `{r.path}` {r.seconds:.0f}s ({r.status})")
     annotations = []
-    if problems:
-        text = "; ".join(
-            f"{r.path}:{r.status}{'' if r.code is None else f'({r.code})'}:{r.seconds:.0f}s"
-            + (f" [{r.detail}]" if r.detail else "")
-            for r in problems
-        )
+    for r in problems[:10]:
+        text = f"{r.status}{'' if r.code is None else f' (exit {r.code})'} after {r.seconds:.0f}s"
+        text += f": {r.detail}" if r.detail else ""
         annotations.append(
-            f"::error title=backend files failed or timed out::{text[:ANNOTATION_LIMIT]}"
+            f"::error title={r.status} {r.path}::" + _escape(text[:PER_FILE_LIMIT])
+        )
+    if len(problems) > 10:
+        listed = "; ".join(r.path for r in problems[10:])
+        annotations.append(
+            f"::error title={len(problems) - 10} more problem files::"
+            + _escape(listed[:PER_FILE_LIMIT])
         )
     slow = "; ".join(
         f"{r.path}:{r.seconds:.0f}s"
         for r in sorted(results, key=lambda item: item.seconds, reverse=True)[:slowest]
     )
-    annotations.append(
-        f"::notice title=slowest backend files::{slow[:ANNOTATION_LIMIT]}"
-    )
+    annotations.append(f"::notice title=slowest backend files::{slow[:PER_FILE_LIMIT]}")
     return "\n".join(lines), annotations
 
 
@@ -155,6 +175,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--timeout", type=float, default=900)
     parser.add_argument("--root", type=Path, default=Path("tests"))
     parser.add_argument("--pytest-arg", action="append", default=[])
+    parser.add_argument(
+        "--per-test",
+        action="store_true",
+        help="run every collected test id in its own process (slower, pins a hang to one test)",
+    )
     args = parser.parse_args(argv)
     command = [
         sys.executable,
@@ -166,7 +191,9 @@ def main(argv: list[str] | None = None) -> int:
         "no:cacheprovider",
         *args.pytest_arg,
     ]
-    files = discover(args.root)
+    files: list = discover(args.root)
+    if args.per_test:
+        files = [item for path in files for item in collect_ids(path, command)]
     results: list[FileResult] = []
     for path in files:
         result = run_file(path, args.timeout, command)

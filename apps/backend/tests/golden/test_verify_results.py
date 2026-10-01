@@ -47,6 +47,8 @@ def _write(
         browser_kernel="chromium-145.0.7632.109.2",
         concurrency=2,
     )
+    # os.sysconf does not exist on Windows; memory is not what these tests check.
+    manifest["hardware"]["totalMemoryBytes"] = 8 * 1024**3
     run = GoldenRun(
         details=[_detail(i, ok=i >= failed) for i in range(rows)],
         expected_refs=[_ref(i) for i in range(rows)],
@@ -74,9 +76,9 @@ def results(tmp_path, monkeypatch):
 
 
 def _edit(path: Path, change) -> None:
-    data = json.loads(path.read_text())
+    data = json.loads(path.read_text(encoding="utf-8"))
     change(data)
-    path.write_text(json.dumps(data))
+    path.write_text(json.dumps(data), encoding="utf-8")
 
 
 def _find(results: Path, prefix: str, suffix: str = ".json") -> Path:
@@ -146,6 +148,6 @@ def test_cli_exit_code_and_summary_file(results, tmp_path, monkeypatch, capsys):
     summary = tmp_path / "summary.md"
     monkeypatch.setenv("GITHUB_STEP_SUMMARY", str(summary))
     assert verify_results.main([str(results), "--rows", "30", "--commit", SHA]) == 0
-    assert "all checks passed" in summary.read_text()
+    assert "all checks passed" in summary.read_text(encoding="utf-8")
     assert verify_results.main([str(results), "--rows", "31", "--commit", SHA]) == 1
     assert "::error title=golden evidence::" in capsys.readouterr().out

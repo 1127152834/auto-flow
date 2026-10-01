@@ -7,6 +7,7 @@ name: Backend per-file diagnosis
 on:
   push:
     branches: ['diag/backend-**', 'diag/windows-**']
+
   workflow_dispatch:
     inputs:
       os:
@@ -24,6 +25,8 @@ concurrency:
 
 jobs:
   per-file:
+    # diag/windows-focus-* runs only the focused job below.
+    if: ${{ !startsWith(github.ref_name, 'diag/windows-focus') }}
     runs-on: ${{ inputs.os || 'windows-2022' }}
     timeout-minutes: 340
     steps:
@@ -45,3 +48,33 @@ jobs:
         run: >-
           uv run --directory apps/backend python scripts/ci_pytest_by_file.py
           --root tests --timeout "${{ inputs.timeout || '900' }}"
+
+  focus:
+    # Pins the Windows hang to one test and records the real B6 parity failures.
+    if: ${{ startsWith(github.ref_name, 'diag/windows-focus') }}
+    runs-on: windows-2022
+    timeout-minutes: 120
+    steps:
+      - run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - name: Checkout frozen source used by parity tests
+        uses: actions/checkout@v4
+        with:
+          repository: pmh1314520/WebRPA
+          ref: 5ccb900e8dcf1530aae66f676d87593c416c7ebb
+          path: reference/WebRPA
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --directory apps/backend --locked --group build
+      - name: Golden evidence verifier tests
+        if: always()
+        run: uv run --directory apps/backend python scripts/ci_pytest_by_file.py --root tests/golden/test_verify_results.py --timeout 300
+      - name: B6 parity files, one process each
+        if: always()
+        run: uv run --directory apps/backend python scripts/ci_pytest_by_file.py --root tests/differential/workflows --timeout 300
+      - name: Android capacity file, one process per test
+        if: always()
+        run: uv run --directory apps/backend python scripts/ci_pytest_by_file.py --root tests/integration/test_android_capacity_reservations.py --per-test --timeout 120
