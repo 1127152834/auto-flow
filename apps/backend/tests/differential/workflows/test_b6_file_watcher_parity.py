@@ -105,7 +105,11 @@ async def test_file_watcher_created_event_matches_frozen_source(tmp_path: Path) 
 
 
 def _normalized(result: dict[str, Any], directory: Path) -> dict[str, Any]:
-    encoded = json.dumps(result, ensure_ascii=False).replace(str(directory), "<watch>")
+    # The path is embedded in JSON text, where Windows backslashes are doubled.
+    escaped_directory = json.dumps(str(directory), ensure_ascii=False)[1:-1]
+    encoded = json.dumps(result, ensure_ascii=False).replace(
+        escaped_directory, "<watch>"
+    )
     normalized = json.loads(encoded)
     if isinstance(normalized.get("data"), dict):
         normalized["data"]["timestamp"] = "<timestamp>"

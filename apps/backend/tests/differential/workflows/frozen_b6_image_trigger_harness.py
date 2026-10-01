@@ -9,6 +9,12 @@ from types import SimpleNamespace
 
 from PIL import Image, ImageGrab
 
+# The frozen trigger captures through pywin32 when it can be imported, and
+# through ImageGrab otherwise. Pin the ImageGrab path so the oracle behaves the
+# same on every runner; a real desktop capture is not reproducible in CI anyway.
+for _module in ("win32gui", "win32ui", "win32con"):
+    sys.modules[_module] = None
+
 ctypes.windll = SimpleNamespace(
     shcore=SimpleNamespace(SetProcessDpiAwareness=lambda *_args: None),
     user32=SimpleNamespace(
