@@ -141,6 +141,17 @@ async def test_diag(environment, monkeypatch):
         entered.set()
         await asyncio.Event().wait()
     monkeypatch.setattr(management, 'run', interrupted_run)
+    captured = []
+    original_manage = runtime.manage
+
+    async def spy(*args, **kwargs):
+        try:
+            return await original_manage(*args, **kwargs)
+        except BaseException as error:
+            captured.append("".join(traceback.format_exception(error)))
+            raise
+
+    monkeypatch.setattr(runtime, 'manage', spy)
     service = AndroidManagement(repository, runtime)
     service.operate(first['deviceId'], {'requestId': str(uuid4()), 'action': 'start', 'deleteData': False})
     print("::notice title=DIAG::operate returned", flush=True)
@@ -148,14 +159,14 @@ async def test_diag(environment, monkeypatch):
         await asyncio.wait_for(entered.wait(), 20)
     except TimeoutError:
         _dump("never entered run", asyncio.all_tasks())
-        record = repository.get(first['deviceId'])
-        text = "control=%s lastError=%s operation=%s task=%r" % (record.get('control'), record.get('lastError'), record.get('operation'), service.task)
-        print("::error title=android device state::" + text.replace("%", "%25").replace("\n", "%0A"), flush=True)
-        print("::error title=android manage error::" + (captured[-1] if captured else "manage not reached")[-3500:].replace("%", "%25").replace("\r", "").replace("\n", "%0A"), flush=True)
+        def emit(title, text):
+            print("::error title=%s::%s" % (title, str(text)[-3500:].replace("%", "%25").replace("\r", "").replace("\n", "%0A")), flush=True)
+        emit("android manage error", captured[-1] if captured else "manage not reached")
         try:
-            service.task and service.task.result()
+            record = repository.get(first['deviceId'])
+            emit("android device state", "control=%s lastError=%s operation=%s task=%r" % (record.get('control'), record.get('lastError'), record.get('operation'), service.task))
         except BaseException as error:
-            print("::error title=android task error::" + "".join(traceback.format_exception(error))[-3500:].replace("%", "%25").replace("\r", "").replace("\n", "%0A"), flush=True)
+            emit("android device state failed", "".join(traceback.format_exception(error)))
         raise
     print("::notice title=DIAG::entered", flush=True)
     with pytest.raises(AndroidError) as error:
