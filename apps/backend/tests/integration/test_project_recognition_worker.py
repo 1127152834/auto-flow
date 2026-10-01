@@ -2,8 +2,8 @@
 from __future__ import annotations
 
 import asyncio
-import sys
 import os
+import sys
 from pathlib import Path
 from time import monotonic
 from uuid import uuid4

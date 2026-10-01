@@ -1831,10 +1831,8 @@ async def test_bootstrap_recovers_pure_data_run_without_installed_kernel(tmp_pat
         # Windows restart cleanup refuses to guess: it needs the worker's ownership proof.
         # A proof naming a Job that no longer exists and an exited owner is the
         # "worker is gone" evidence a real crash leaves behind.
-        import subprocess
-
-        gone = subprocess.Popen([sys.executable, "-c", "pass"])
-        gone.wait()
+        gone = await asyncio.create_subprocess_exec(sys.executable, "-c", "pass")
+        await gone.wait()
         (owned / "worker-job.json").write_text(json.dumps({
             "runId": queued.run_id, "generation": 1,
             "name": f"Local\\AutoFlow-{queued.run_id}-1-{uuid4().hex}",

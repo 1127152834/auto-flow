@@ -25,7 +25,9 @@ from autoflow.domain.projects.models import (
     ProjectRecord,
     project_to_dict,
 )
-from autoflow.infrastructure.filesystem.environment_store import candidate_directory_name
+from autoflow.infrastructure.filesystem.environment_store import (
+    candidate_directory_name,
+)
 
 from .environment_models import (
     ProjectEnvironmentInstanceRow,
