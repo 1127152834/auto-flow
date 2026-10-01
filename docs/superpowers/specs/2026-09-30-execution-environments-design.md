@@ -4,7 +4,7 @@
 - 来源：用户与 Claude 关于 CloakBrowser 管理、安卓 / iOS 模拟器的讨论（2026-09-30）
 - 关系：独立于整改计划（[整改总纲](2026-09-30-remediation-roadmap.md)），但依赖其成果；安卓部分遵守整改期冻结决定，整改 M6 完成后才开始
 - 实施计划：[执行环境扩展里程碑计划](../plans/2026-09-30-execution-environments-milestones.md)
-- 参考研究：`docs/research/android-manager-2026-09-30/`（安卓管理工具研究、纯虚拟化可行性）
+- 参考研究：`docs/research/android-manager-2026-09-30/`（安卓管理工具研究、纯虚拟化可行性）；开源参考项目（群控、自动化驱动、录制、设备内 Chrome、每设备代理）见同目录 `open-source-references.md`
 
 ## 1. 结论
 
