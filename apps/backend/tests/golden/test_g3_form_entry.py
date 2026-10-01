@@ -8,8 +8,24 @@ from .site import GoldenSite
 pytestmark = [pytest.mark.golden, pytest.mark.asyncio]
 
 
-async def _submit(tmp_path, executable, profile_values, values, site):
+async def _submit(tmp_path, executable, profile_values, values, site, mode="click"):
+    """``click`` presses the submit button (M0 scenario); ``enter`` presses Enter in the field."""
+
     def build(input_spec):
+        if mode == "enter":
+            submit = flow_node(
+                "submit",
+                "press_key",
+                1,
+                key="Enter",
+                targetType="element",
+                selector="#name",
+                timeout=2,
+            )
+        else:
+            submit = flow_node(
+                "submit", "click_element", 1, selector="#submit", timeout=2
+            )
         nodes = [
             flow_node(
                 "open",
@@ -18,7 +34,7 @@ async def _submit(tmp_path, executable, profile_values, values, site):
                 url=f"{site.base_url}/form?name={input_reference(input_spec)}",
                 timeout=15,
             ),
-            flow_node("submit", "click_element", 1, selector="#submit", timeout=2),
+            submit,
             flow_node(
                 "read",
                 "get_element_info",
@@ -36,15 +52,24 @@ async def _submit(tmp_path, executable, profile_values, values, site):
     )
 
 
+@pytest.mark.parametrize(
+    ("mode", "report", "version"),
+    [
+        ("click", "g3-click", "g3-click-v1"),
+        ("enter", "g3-enter", "g3-enter-v1"),
+    ],
+)
 async def test_g3_submits_each_row_exactly_once(
-    tmp_path, valid_profile_values, real_cloak_page
+    tmp_path, valid_profile_values, real_cloak_page, mode, report, version
 ):
     executable, _, _ = real_cloak_page
     count = golden_rows("G3")
     assert count >= 2
     values = ["lose-00000"] + [f"row-{i:05}" for i in range(1, count)]
     with GoldenSite() as site:
-        run = await _submit(tmp_path, executable, valid_profile_values, values, site)
+        run = await _submit(
+            tmp_path, executable, valid_profile_values, values, site, mode
+        )
         for detail in run.details:
             identity = detail["inputSnapshot"]["inputs"][0]["values"][0]["value"]
             detail["siteReceipt"] = {"submissions": site.submissions(identity)}
@@ -61,9 +86,9 @@ async def test_g3_submits_each_row_exactly_once(
                 )
         assert run.metrics()["rows_succeeded"][0] == count - 1
         run.save(
-            "g3-click",
+            report,
             browser_kernel=executable,
-            scenario_version="g3-click-v1",
+            scenario_version=version,
             values=values,
         )
 

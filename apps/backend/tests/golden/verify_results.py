@@ -17,8 +17,12 @@ from pathlib import Path
 from typing import Any
 
 # scenario report prefix -> number of rows that are expected to fail by design
-EXPECTED_FAILURES = {"g2-scrape": 2, "g3-click": 1}
-EXPECTED_SCENARIO_VERSION = {"g2-scrape": "g2-scrape-v1", "g3-click": "g3-click-v1"}
+EXPECTED_FAILURES = {"g2-scrape": 2, "g3-click": 1, "g3-enter": 1}
+EXPECTED_SCENARIO_VERSION = {
+    "g2-scrape": "g2-scrape-v1",
+    "g3-click": "g3-click-v1",
+    "g3-enter": "g3-enter-v1",
+}
 
 
 def _load(path: Path, errors: list[str]) -> dict[str, Any] | None:

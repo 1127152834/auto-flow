@@ -72,6 +72,7 @@ def _write(
 def results(tmp_path, monkeypatch):
     _write(monkeypatch, tmp_path, "g2-scrape", "g2-scrape-v1", 30, 2)
     _write(monkeypatch, tmp_path, "g3-click", "g3-click-v1", 30, 1)
+    _write(monkeypatch, tmp_path, "g3-enter", "g3-enter-v1", 30, 1)
     return tmp_path
 
 
@@ -92,7 +93,7 @@ def _find(results: Path, prefix: str, suffix: str = ".json") -> Path:
 def test_complete_evidence_passes(results):
     errors, summaries = verify_results.verify(results, 30, SHA)
     assert errors == []
-    assert [s["scenario"] for s in summaries] == ["g2-scrape", "g3-click"]
+    assert [s["scenario"] for s in summaries] == ["g2-scrape", "g3-click", "g3-enter"]
 
 
 def test_wrong_commit_is_rejected(results):
@@ -105,6 +106,13 @@ def test_missing_scenario_report_is_rejected(results):
         path.unlink()
     errors, _ = verify_results.verify(results, 30, SHA)
     assert any("g3-click: expected exactly one report" in e for e in errors)
+
+
+def test_the_enter_version_is_verified_with_its_own_scenario_version(results):
+    manifest = _find(results, "g3-enter", ".manifest.json")
+    _edit(manifest, lambda d: d.update(scenarioVersion="g3-click-v1"))
+    errors, _ = verify_results.verify(results, 30, SHA)
+    assert any("g3-enter: unexpected scenarioVersion" in e for e in errors)
 
 
 def test_row_count_must_match_the_requested_rows(results):
