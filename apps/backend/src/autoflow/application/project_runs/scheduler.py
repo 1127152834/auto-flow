@@ -415,7 +415,10 @@ class ProjectBatchScheduler:
                     )
                     claim_outcome = "limitReached"
                     break
-                claim_outcome = self._claim_data_task(project_id, batch_id)
+                # Spec M1 R1-12: a claim may scan thousands of rows; keep it off the event loop.
+                claim_outcome = await asyncio.to_thread(
+                    self._claim_data_task, project_id, batch_id
+                )
                 if claim_outcome != "ready":
                     break
                 with self._factory() as session:

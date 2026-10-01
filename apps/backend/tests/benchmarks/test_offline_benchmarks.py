@@ -8,7 +8,7 @@ from sqlalchemy import func, select
 
 from autoflow.infrastructure.database.project_data_models import DataRecordRow
 
-from . import bench_claims, report
+from . import bench_claim_loop_lag, bench_claims, report
 
 pytestmark = pytest.mark.benchmark
 
@@ -203,3 +203,10 @@ def test_report_preserves_measured_source_not_only_save_time_state(
     assert metadata["sourceBefore"] == {"commit": "A", "dirty": initial_dirty}
     assert metadata["sourceAfter"] == {"commit": final_commit, "dirty": final_dirty}
     assert metadata["comparable"] is comparable
+
+
+def test_claim_loop_lag_benchmark_keeps_the_loop_responsive():
+    metrics = bench_claim_loop_lag.run(2000)
+    assert metrics["loop_lag_samples"][0] > 0
+    assert metrics["loop_lag_p50_ms"][0] < 10
+    assert metrics["loop_lag_max_ms"][0] < 250  # AC1-09
