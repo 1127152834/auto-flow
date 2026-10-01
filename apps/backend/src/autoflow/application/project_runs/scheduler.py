@@ -4,6 +4,7 @@ import asyncio
 import hashlib
 import json
 import logging
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID, uuid4
@@ -313,7 +314,7 @@ class ProjectBatchScheduler:
                     self.wake()
                     return
                 available = _claim_capacity_available(
-                    session, row, batch_id, max(1, int(getattr(self._core, "capacity", 1)))
+                    session, row, batch_id, *_core_limits(self._core)
                 )
             if not available:
                 self._set_status(project_id, batch_id, "running" if any(
@@ -391,17 +392,16 @@ class ProjectBatchScheduler:
                 )
             )
             with self._factory() as session:
-                global_active, automation_active, _ = _capacity_counts(
-                    session, batch_id, batch.automation_id
-                )
-            core_capacity = max(1, int(getattr(self._core, "capacity", 1)))
+                counts = _capacity_counts(session, batch_id, batch.automation_id)
+            core_capacity, core_live_capacity = _core_limits(self._core)
             slots = max(
                 0,
                 min(
                     requested_concurrency - len(active),
                     configured_concurrency - len(active),
-                    configured_capacity - automation_active,
-                    core_capacity - global_active,
+                    configured_capacity - counts.automation,
+                    core_capacity - counts.executing,
+                    core_live_capacity - counts.live,
                 ),
             )
             if slots == 0 and not active:
@@ -561,6 +561,7 @@ class ProjectBatchScheduler:
         core_capacity: int = 1,
         environments: Any | None = None,
         resource_resolver: ProjectRunResourceResolver | None = None,
+        core_live_capacity: int | None = None,
     ) -> str:
         """Prepare outside the write lock, then atomically commit one data Task."""
         prepared = ProjectBatchScheduler._prepare_data_claim(
@@ -596,6 +597,7 @@ class ProjectBatchScheduler:
             core_capacity=core_capacity,
             environments=environments,
             resource_resolver=resource_resolver,
+            core_live_capacity=core_live_capacity,
         )
         return result
 
@@ -604,7 +606,8 @@ class ProjectBatchScheduler:
             self._factory,
             project_id,
             batch_id,
-            core_capacity=max(1, int(getattr(self._core, "capacity", 1))),
+            core_capacity=_core_limits(self._core)[0],
+            core_live_capacity=_core_limits(self._core)[1],
             environments=self._environments,
             resource_resolver=self._resource_resolver,
         )
@@ -739,6 +742,7 @@ class ProjectBatchScheduler:
         core_capacity: int = 1,
         environments: Any | None = None,
         resource_resolver: ProjectRunResourceResolver | None = None,
+        core_live_capacity: int | None = None,
     ) -> str:
         with factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
@@ -806,6 +810,7 @@ class ProjectBatchScheduler:
                 row,
                 batch_id,
                 core_capacity,
+                core_live_capacity,
             ):
                 row.selection_outcome = {
                     "status": "capacityFull",
@@ -1231,13 +1236,28 @@ class ProjectBatchScheduler:
             raise
 
 
+@dataclass(frozen=True)
+class CapacityCounts:
+    executing: int
+    live: int
+    automation: int
+    batch: int
+
+
+def _core_limits(core: Any) -> tuple[int, int]:
+    capacity = max(1, int(getattr(core, "capacity", 1)))
+    return capacity, max(capacity, int(getattr(core, "live_capacity", 2 * capacity)))
+
+
 def _capacity_counts(
     session: Session, batch_id: str, automation_id: str,
-) -> tuple[int, int, int]:
+) -> CapacityCounts:
     # Parameter batches pre-create their entire queue, without reserving slots.
     # Data tasks already hold input leases when queued and must keep their slots.
+    # Runs waiting for a person keep a live browser but no execution slot (M1 R1-09).
     counts = session.execute(
         select(
+            func.count().filter(WorkflowRunRow.status != "waiting_manual"),
             func.count(),
             func.count().filter(ProjectBatchRow.automation_id == automation_id),
             func.count().filter(ProjectTaskRow.batch_id == batch_id),
@@ -1255,7 +1275,7 @@ def _capacity_counts(
             ),
         )
     ).one()
-    return int(counts[0]), int(counts[1]), int(counts[2])
+    return CapacityCounts(int(counts[0]), int(counts[1]), int(counts[2]), int(counts[3]))
 
 
 def _claim_capacity_available(
@@ -1263,19 +1283,21 @@ def _claim_capacity_available(
     row: ProjectBatchRow,
     batch_id: str,
     core_capacity: int,
+    core_live_capacity: int | None = None,
 ) -> bool:
     request_concurrency = int(row.frozen_request.get("concurrency") or 1)
     run_policy = row.frozen_request["automation"]["runPolicy"]
     configured_concurrency = int(run_policy.get("concurrency", 1))
     configured_capacity = int(run_policy.get("maxLiveInstances", 1))
-    global_active, automation_active, batch_active = _capacity_counts(
-        session, batch_id, row.automation_id
-    )
+    counts = _capacity_counts(session, batch_id, row.automation_id)
+    core_capacity = max(1, core_capacity)
+    live_capacity = core_live_capacity if core_live_capacity is not None else 2 * core_capacity
     return (
-        batch_active < request_concurrency
-        and batch_active < configured_concurrency
-        and automation_active < configured_capacity
-        and global_active < max(1, core_capacity)
+        counts.batch < request_concurrency
+        and counts.batch < configured_concurrency
+        and counts.automation < configured_capacity
+        and counts.executing < core_capacity
+        and counts.live < live_capacity
     )
 
 

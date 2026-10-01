@@ -862,7 +862,7 @@ async def test_two_run_owners_keep_manual_budget_cancellation_and_leases_indepen
     second, _ = create_queued_run(runtime, resource_request={'automaticExecutionTimeoutSeconds': 1})
     third, _ = create_queued_run(runtime)
     workers, resources = ConcurrentWorkers(), ConcurrentResources()
-    dispatcher = make_dispatcher(runtime, workers, resources, capacity=2)
+    dispatcher = make_dispatcher(runtime, workers, resources, capacity=2, live_capacity=2)
     try:
         await dispatcher.dispatch(first.run_id, expected_status_revision=1, execution_generation=0)
         await dispatcher.dispatch(second.run_id, expected_status_revision=1, execution_generation=0)
@@ -961,3 +961,69 @@ async def test_unknown_cleanup_keeps_its_slot_without_stopping_another_owner(run
     finally:
         workers.cleanup_fail.clear()
         await dispatcher.shutdown()
+
+
+@pytest.mark.asyncio
+async def test_waiting_manual_frees_its_execution_slot_but_keeps_its_live_browser(runtime):
+    first, _ = create_queued_run(runtime)
+    second, _ = create_queued_run(runtime)
+    third, _ = create_queued_run(runtime)
+    workers, resources = ConcurrentWorkers(), ConcurrentResources()
+    dispatcher = make_dispatcher(runtime, workers, resources, capacity=1, live_capacity=2)
+    try:
+        await dispatcher.dispatch(first.run_id, expected_status_revision=1, execution_generation=0)
+        while len(workers.calls) != 1: await asyncio.sleep(.001)
+        with pytest.raises(WorkflowRuntimeError, match='容量'):
+            await dispatcher.dispatch(second.run_id, expected_status_revision=1, execution_generation=0)
+        dispatcher.pause_manual(first.run_id, 1)
+        assert dispatcher.executing_count() == 0
+        await dispatcher.dispatch(second.run_id, expected_status_revision=1, execution_generation=0)
+        while len(workers.calls) != 2: await asyncio.sleep(.001)
+        assert workers.busy(first.run_id) and not resources.leases[first.run_id].released
+        with pytest.raises(WorkflowRuntimeError, match='容量'):
+            await dispatcher.dispatch(third.run_id, expected_status_revision=1, execution_generation=0)
+        dispatcher.resume_manual(first.run_id, 1)
+        assert dispatcher.executing_count() == 2  # resume may exceed the limit; no new dispatch until it drops
+        for run in (first, second): await workers.stop(run.run_id)
+        await dispatcher.wait_idle()
+        assert dispatcher.query_run(first.run_id).status == 'succeeded'
+        assert dispatcher.query_run(second.run_id).status == 'succeeded'
+    finally: await dispatcher.shutdown()
+
+
+def test_capacity_accepts_machine_sized_limits_and_rejects_invalid_values(runtime):
+    workers, resources = ConcurrentWorkers(), ConcurrentResources()
+    dispatcher = make_dispatcher(runtime, workers, resources, capacity=6)
+    assert (dispatcher.capacity, dispatcher.live_capacity) == (6, 12)
+    dispatcher.set_capacity(3, 4)
+    assert (dispatcher.capacity, dispatcher.live_capacity) == (3, 4)
+    for capacity, live in ((0, None), (65, None), (4, 3), (True, None)):
+        with pytest.raises(ValueError):
+            make_dispatcher(runtime, workers, resources, capacity=capacity, live_capacity=live)
+
+
+@pytest.mark.asyncio
+async def test_memory_pressure_pauses_new_dispatch_and_rewakes_the_scheduler(runtime, monkeypatch):
+    from autoflow.application.workflows import dispatcher as dispatcher_module
+
+    monkeypatch.setattr(dispatcher_module, 'MEMORY_RECHECK_SECONDS', 0.01)
+    run, _ = create_queued_run(runtime)
+    pressure = {'high': True}
+    workers, resources = ConcurrentWorkers(), ConcurrentResources()
+    dispatcher = make_dispatcher(runtime, workers, resources, capacity=2, memory_pressure=lambda: pressure['high'])
+    woken = asyncio.Event()
+    dispatcher.subscribe_idle(woken.set)
+    try:
+        with pytest.raises(WorkflowRuntimeError, match='内存') as rejected:
+            await dispatcher.dispatch(run.run_id, expected_status_revision=1, execution_generation=0)
+        assert rejected.value.code == 'WORKFLOW_CAPACITY_FULL'
+        assert workers.calls == []
+        async with asyncio.timeout(1):
+            await woken.wait()
+        pressure['high'] = False
+        await dispatcher.dispatch(run.run_id, expected_status_revision=1, execution_generation=0)
+        while not workers.calls: await asyncio.sleep(.001)
+        await workers.stop(run.run_id)
+        await dispatcher.wait_idle()
+        assert dispatcher.query_run(run.run_id).status == 'succeeded'
+    finally: await dispatcher.shutdown()

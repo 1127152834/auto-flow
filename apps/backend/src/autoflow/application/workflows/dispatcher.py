@@ -96,7 +96,21 @@ class _RunOwner:
     automatic_remaining: float | None = None
     cleanup_unknown: bool = False
     browser_command_id: str | None = None
+    waiting_manual: bool = False
     control: asyncio.Lock = field(default_factory=asyncio.Lock)
+
+
+MAX_RUN_CAPACITY = 64
+MEMORY_RECHECK_SECONDS = 5.0
+
+
+def validate_capacity(capacity: int, live_capacity: int | None) -> tuple[int, int]:
+    live = 2 * capacity if live_capacity is None and type(capacity) is int else live_capacity
+    if type(capacity) is not int or not 1 <= capacity <= MAX_RUN_CAPACITY:
+        raise ValueError(f'Run capacity must be an integer from 1 to {MAX_RUN_CAPACITY}')
+    if type(live) is not int or not capacity <= live <= 2 * MAX_RUN_CAPACITY:
+        raise ValueError('Live browser capacity must be at least the run capacity')
+    return capacity, live
 
 
 class WorkflowRunDispatcher:
@@ -113,6 +127,8 @@ class WorkflowRunDispatcher:
         project_end: Any | None = None,
         on_fenced: Callable[[str], None] = lambda _run_id: None,
         capacity: int = 1,
+        live_capacity: int | None = None,
+        memory_pressure: Callable[[], bool] = lambda: False,
         resolve_model: Callable[[str], ModelExecutionBinding] | None = None,
         resolve_default_model: Callable[[str], str] | None = None,
         force_stop_grace: timedelta = timedelta(seconds=30),
@@ -130,9 +146,8 @@ class WorkflowRunDispatcher:
         self._resolve_default_model = resolve_default_model
         self._force_stop_grace = force_stop_grace
         self._now = now
-        if type(capacity) is not int or capacity not in {1, 2}:
-            raise ValueError('Supported Run capacity is 1 or 2')
-        self._capacity = capacity
+        self._capacity, self._live_capacity = validate_capacity(capacity, live_capacity)
+        self._memory_pressure = memory_pressure
         self._owners: dict[str, _RunOwner] = {}
         self._recovering = False
         self._closed = False
@@ -150,8 +165,21 @@ class WorkflowRunDispatcher:
 
     @property
     def capacity(self) -> int:
-        """Maximum simultaneous runs supported by this concrete core owner."""
+        """Maximum runs executing automatically at the same time (spec M1 R1-08)."""
         return self._capacity
+
+    @property
+    def live_capacity(self) -> int:
+        """Maximum live browsers, including runs waiting for a person (spec M1 R1-09)."""
+        return self._live_capacity
+
+    def executing_count(self) -> int:
+        return sum(1 for owner in self._owners.values() if not owner.waiting_manual)
+
+    def set_capacity(self, capacity: int, live_capacity: int | None = None) -> None:
+        """Apply a new limit; lowering it never stops runs that already own a slot."""
+        self._capacity, self._live_capacity = validate_capacity(capacity, live_capacity)
+        self._wake_idle_listeners()
 
     def subscribe_idle(self, listener: Callable[[], None]) -> Callable[[], None]:
         self._idle_listeners.add(listener)
@@ -209,11 +237,18 @@ class WorkflowRunDispatcher:
             ]
             if (
                 self._recovering
-                or len(self._owners) >= self.capacity
+                or self.executing_count() >= self.capacity
+                or len(self._owners) >= self.live_capacity
                 or any(run.status != "queued" and run.run_id not in self._owners for run in other_runs)
                 or (not self._owners and self._worker.busy())
             ):
                 raise WorkflowRuntimeError("WORKFLOW_CAPACITY_FULL", "当前运行容量已满")
+            if self._memory_pressure():
+                # Spec M1 R1-10: pause new dispatch; re-offer capacity once pressure may have eased.
+                asyncio.get_running_loop().call_later(MEMORY_RECHECK_SECONDS, self._wake_idle_listeners)
+                raise WorkflowRuntimeError(
+                    "WORKFLOW_CAPACITY_FULL", "本机内存占用超过 85%，暂停派发新任务"
+                )
             with self._gate.mutation() as admitted:
                 if not admitted:
                     raise WorkflowRuntimeError(
@@ -233,6 +268,8 @@ class WorkflowRunDispatcher:
         if owner is None or owner.generation != generation or run.status != 'running' or run.execution_generation != generation:
             raise WorkflowRuntimeError('EXECUTION_GENERATION_REVOKED', '执行代次已失效')
         self._transition(run, 'waiting_manual')
+        owner.waiting_manual = True
+        self._wake_idle_listeners()
         if owner.automatic_timeout is not None:
             deadline = owner.automatic_timeout.when()
             owner.automatic_remaining = max(0, deadline - asyncio.get_running_loop().time()) if deadline is not None else None
@@ -246,6 +283,7 @@ class WorkflowRunDispatcher:
         # Same live owner continues; resume_queued -> running is reserved for
         # dispatching a new owner and deliberately increments the generation.
         self._transition(run, 'running')
+        owner.waiting_manual = False
         if owner.automatic_timeout is not None and owner.automatic_remaining is not None:
             owner.automatic_timeout.reschedule(asyncio.get_running_loop().time() + owner.automatic_remaining)
 
@@ -654,8 +692,11 @@ class WorkflowRunDispatcher:
                         and not self._worker.busy(dispatched.run_id)
                     ):
                         self._clear_owner(owner)
-            for listener in tuple(self._idle_listeners):
-                listener()
+            self._wake_idle_listeners()
+
+    def _wake_idle_listeners(self) -> None:
+        for listener in tuple(self._idle_listeners):
+            listener()
 
     async def _finish_end(self, run_id: str, *, recovering: bool = False) -> bool:
         async with self._control:

@@ -97,14 +97,20 @@ class ProjectWorkflowWorkerManager:
         self._start_timeout = start_timeout
         self._termination_timeout = termination_timeout
         self._on_capability = on_capability
-        if type(capacity) is not int or capacity not in {1, 2}:
-            raise ValueError("Supported worker capacity is 1 or 2")
+        if type(capacity) is not int or not 1 <= capacity <= 128:
+            raise ValueError("Worker capacity must be an integer from 1 to 128")
         self._capacity = capacity
         self._workers: dict[str, _Worker] = {}
         self._resolve_credential = resolve_credential
         self._proxy_service = proxy_service
         self._closed = False
         self._lock = asyncio.Lock()
+
+    def set_capacity(self, capacity: int) -> None:
+        """Live-browser limit; lowering it never stops running workers."""
+        if type(capacity) is not int or not 1 <= capacity <= 128:
+            raise ValueError("Worker capacity must be an integer from 1 to 128")
+        self._capacity = capacity
 
     def busy(self, run_id: str | None = None) -> bool:
         return bool(self._workers) if run_id is None else run_id in self._workers
