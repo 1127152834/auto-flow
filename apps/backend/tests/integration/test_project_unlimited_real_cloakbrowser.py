@@ -18,6 +18,7 @@ from autoflow.bootstrap.config import Settings
 from autoflow.domain.profiles.models import ProfileSpec
 from autoflow.domain.project_data.identity import RecordKey, encode_record_key
 from autoflow.infrastructure.database.project_run_models import ProjectRecordLeaseRow
+from tests.fixtures.workflows import save_owned_workflow_async
 from tests.integration.test_project_run_data_start import _input, _table
 from tests.integration.test_workflow_real_cloakbrowser import (
     real_cloak_page as cloak_fixture,
@@ -93,12 +94,13 @@ async def test_unlimited_final_record_reclaim_stops_after_five_successes(
                 node('after', 'set_variable', variableName='afterResume', variableValue='completed'),
                 node('end', 'project_end', retainEnvironment={'enabled': False}),
             ]
-            workflow = await api('POST', '/api/workflows', {'id': str(uuid4()), 'clientRequestId': str(uuid4()), 'name': '不限最终态复用', 'variables': [], 'nodes': nodes, 'edges': [{'id': str(uuid4()), 'source': a['id'], 'target': b['id']} for a, b in pairwise(nodes)]}, 201)
+            workflow = {'name': '不限最终态复用', 'variables': [], 'nodes': nodes, 'edges': [{'id': str(uuid4()), 'source': a['id'], 'target': b['id']} for a, b in pairwise(nodes)]}
             automation = await api('POST', prefix + '/automations', {
-                'name': '不限最终态复用', 'description': '', 'workflowId': workflow['id'], 'parameterSchema': [], 'inputPlan': {'inputs': [input_spec]},
+                'name': '不限最终态复用', 'description': '', 'parameterSchema': [], 'inputPlan': {'inputs': [input_spec]},
                 'environmentPolicy': {'source': 'newFromProfile', 'profileId': profile.id, 'proxyOverride': {'mode': 'none'}, 'modelProviderId': None},
                 'runPolicy': {'maxTasks': 1, 'concurrency': 1, 'maxLiveInstances': 1, 'continueAfterFailure': False, 'automaticExecutionTimeoutSeconds': 60, 'manualDeadlineSeconds': 120},
             }, 201)
+            await save_owned_workflow_async(client, automation, workflow)
             start_key = str(uuid4())
             start_body = {'expectedAutomationRevision': automation['managementRevision'], 'parameters': {}, 'maxTasks': None, 'concurrency': 1}
             start_path = prefix + f"/automations/{automation['automationId']}/batches"

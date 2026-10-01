@@ -21,15 +21,13 @@ import pytest
 import uvicorn
 from openpyxl import load_workbook
 
-from autoflow.application.workflows.service import WorkflowService
 from autoflow.bootstrap.app import create_app
 from autoflow.bootstrap.config import Settings
 from autoflow.domain.profiles.models import ProfileSpec
 from autoflow.infrastructure.database.workflow_runtime import (
     SqlAlchemyWorkflowRuntimeRepository,
 )
-from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
-from tests.fixtures.workflows import workflow_payload
+from tests.fixtures.workflows import save_owned_workflow_async, workflow_payload
 from tests.integration.test_workflow_real_cloakbrowser import (
     real_cloak_page as cloak_fixture,
 )
@@ -114,16 +112,15 @@ async def test_browser_startup_failure_counts_task_and_releases_record(
             assert before[0]['statusRevision'] == 2
             document = workflow_payload(str(uuid4()))
             document['content'].update(nodes=[{'id': 'open', 'type': 'open_page', 'position': {'x': 0, 'y': 0}, 'data': {'moduleType': 'open_page', 'url': url}}], edges=[])
-            saved = await client.post('/api/workflows', json={**document['content'], 'id': document['id'], 'clientRequestId': str(uuid4())})
-            assert saved.status_code == 201, saved.text
             response = await client.post(prefix + '/automations', headers={'Idempotency-Key': str(uuid4())}, json={
-                'name': '失败占用名额', 'description': '', 'workflowId': saved.json()['id'],
+                'name': '失败占用名额', 'description': '',
                 'inputPlan': {'inputs': [input_spec]}, 'parameterSchema': [],
                 'environmentPolicy': {'source': 'newFromProfile', 'profileId': profile.id, 'proxyOverride': {'mode': 'none'}, 'modelProviderId': None},
                 'runPolicy': {'maxTasks': 2, 'concurrency': 1, 'maxLiveInstances': 1, 'continueAfterFailure': continue_after_failure, 'automaticExecutionTimeoutSeconds': 60, 'manualDeadlineSeconds': 120},
             })
             assert response.status_code == 201, response.text
             automation = response.json()
+            await save_owned_workflow_async(client, automation, document['content'])
             start_path = prefix + f"/automations/{automation['automationId']}/batches"
             key = str(uuid4())
             body = {'expectedAutomationRevision': automation['managementRevision'], 'parameters': {}, 'maxTasks': 2, 'concurrency': 1}
@@ -213,16 +210,15 @@ async def test_optional_input_does_not_leak_between_real_tasks(
                 {'id': 'inputs-open', 'source': 'inputs', 'target': 'open'},
                 {'id': 'open-read', 'source': 'open', 'target': 'read'},
             ]
-            saved = await client.post('/api/workflows', json={**document['content'], 'id': document['id'], 'clientRequestId': str(uuid4())})
-            assert saved.status_code == 201, saved.text
             configured = await client.post(prefix + '/automations', headers={'Idempotency-Key': str(uuid4())}, json={
-                'name': '同一可选输入连续运行', 'description': '', 'workflowId': saved.json()['id'],
+                'name': '同一可选输入连续运行', 'description': '',
                 'inputPlan': {'inputs': [definition]}, 'parameterSchema': [],
                 'environmentPolicy': {'source': 'newFromProfile', 'profileId': profile.id, 'proxyOverride': {'mode': 'none'}, 'modelProviderId': None},
                 'runPolicy': {'maxTasks': 1, 'concurrency': 1, 'maxLiveInstances': 1, 'continueAfterFailure': False, 'automaticExecutionTimeoutSeconds': 60, 'manualDeadlineSeconds': 120},
             })
             assert configured.status_code == 201, configured.text
             automation = configured.json()
+            await save_owned_workflow_async(client, automation, document['content'])
             observed_tasks = []
             for present in (True, False):
                 accepted = await client.post(prefix + f"/automations/{automation['automationId']}/batches", headers={'Idempotency-Key': str(uuid4())}, json={
@@ -662,16 +658,12 @@ async def test_real_project_batch_http(
                 next(n for n in nodes if n['id'] == 'after-manual')['data']['variableValue'] = 'code-{code}'
                 nodes.append({'id': 'other-manual', 'type': 'set_variable', 'position': {'x': 600, 'y': 950}, 'data': {'moduleType': 'set_variable', 'variableName': 'wrong', 'variableValue': 'must not execute'}})
                 document['content']['edges'].append({'id': 'alternate', 'source': 'manual', 'target': 'other-manual'})
-            saved_workflow = await client.post('/api/workflows', json={**document['content'], 'id': document['id'], 'clientRequestId': str(uuid4())})
-            assert saved_workflow.status_code == 201, saved_workflow.text
-            workflow_id = saved_workflow.json()['id']
             response = await client.post(
                 prefix + "/automations",
                 headers={"Idempotency-Key": str(uuid4())},
                 json={
                     "name": "真实浏览器批次",
                     "description": "",
-                    "workflowId": workflow_id,
                     "inputPlan": {"inputs": []},
                     "parameterSchema": [
                         {
@@ -701,6 +693,8 @@ async def test_real_project_batch_http(
             )
             assert response.status_code == 201, response.text
             automation = response.json()
+            saved_workflow = await save_owned_workflow_async(client, automation, document['content'])
+            workflow_id = automation['workflowId']
             validation = await client.get(prefix + f"/automations/{automation['automationId']}/validation")
             assert validation.status_code == 200, validation.text
             assert validation.json()["runnable"] is True, validation.json()
@@ -1330,14 +1324,12 @@ async def test_real_project_batch_http(
                     {'id': 'end', 'type': 'project_end', 'position': {'x': 0, 'y': 200}, 'data': {'moduleType': 'project_end', 'retainEnvironment': {'enabled': False}}},
                 ]
                 restored_document['content']['edges'] = [{'id': 'read', 'source': 'open', 'target': 'read'}, {'id': 'end', 'source': 'read', 'target': 'end'}]
-                saved_restore = await client.post('/api/workflows', json={**restored_document['content'], 'id': restored_document['id'], 'clientRequestId': str(uuid4())})
-                assert saved_restore.status_code == 201, saved_restore.text
-                restored_workflow_id = saved_restore.json()['id']
                 restore_config = {name: automation[name] for name in ['description', 'inputPlan', 'runPolicy']}
-                restore_config.update(name='复用已登录环境', workflowId=restored_workflow_id, parameterSchema=[], environmentPolicy={'source': 'fixedEnvironment', 'environmentId': records['items'][0]['currentEnvironmentId'], 'proxyOverride': {'mode': 'none'}, 'modelProviderId': None})
+                restore_config.update(name='复用已登录环境', parameterSchema=[], environmentPolicy={'source': 'fixedEnvironment', 'environmentId': records['items'][0]['currentEnvironmentId'], 'proxyOverride': {'mode': 'none'}, 'modelProviderId': None})
                 restored = await client.post(prefix + '/automations', headers={'Idempotency-Key': str(uuid4())}, json=restore_config)
                 assert restored.status_code == 201, restored.text
                 restored = restored.json()
+                await save_owned_workflow_async(client, restored, restored_document['content'])
                 started = await client.post(prefix + f"/automations/{restored['automationId']}/batches", headers={'Idempotency-Key': str(uuid4())}, json={'expectedAutomationRevision': restored['managementRevision'], 'parameters': {}, 'maxTasks': 1, 'concurrency': 1})
                 assert started.status_code == 202, started.text
                 restore_batch = started.json()['operation']['result']['batch']['batchId']
@@ -1369,12 +1361,11 @@ async def test_real_project_batch_http(
 
                     update_content = restored_document['content']
                     update_content['nodes'][-1]['data']['retainEnvironment'] = {'enabled': True, 'mode': 'update', 'expectedContentGeneration': 1}
-                    update_workflow = await client.post('/api/workflows', json={**update_content, 'id': str(uuid4()), 'clientRequestId': str(uuid4())})
-                    assert update_workflow.status_code == 201, update_workflow.text
-                    update_config = {**restore_config, 'name': '旧候选发布竞争', 'workflowId': update_workflow.json()['id']}
+                    update_config = {**restore_config, 'name': '旧候选发布竞争'}
                     update_automation = await client.post(prefix + '/automations', headers={'Idempotency-Key': str(uuid4())}, json=update_config)
                     assert update_automation.status_code == 201, update_automation.text
                     update_automation = update_automation.json()
+                    await save_owned_workflow_async(client, update_automation, update_content)
 
                     async def run_update(expected):
                         accepted = await client.post(prefix + f"/automations/{update_automation['automationId']}/batches", headers={'Idempotency-Key': str(uuid4())}, json={'expectedAutomationRevision': update_automation['managementRevision'], 'parameters': {}, 'maxTasks': 1, 'concurrency': 1})
@@ -1757,10 +1748,6 @@ async def test_real_studio_project_batch_http(
                     "sourceHandle": "false", "target": f"advanced-{index + 1}",
                 })
             document["content"]["variables"] = []
-        service = WorkflowService(
-            SqlAlchemyWorkflowRepository(app.state.session_factory)
-        )
-        workflow = service.create(document, str(uuid4()))
         await app.state.project_workflow_dispatcher.startup()
         await app.state.project_run_scheduler.startup()
         async with httpx.AsyncClient(
@@ -1793,7 +1780,6 @@ async def test_real_studio_project_batch_http(
                 json={
                     "name": "真实浏览器批次",
                     "description": "",
-                    "workflowId": workflow.workflow_id,
                     "inputPlan": {"inputs": []},
                     "parameterSchema": [
                         {
@@ -1823,6 +1809,7 @@ async def test_real_studio_project_batch_http(
             )
             assert response.status_code == 201, response.text
             automation = response.json()
+            await save_owned_workflow_async(client, automation, document['content'])
             validation = await client.get(prefix + f"/automations/{automation['automationId']}/validation")
             assert validation.status_code == 200, validation.text
             assert validation.json()["runnable"] is True, validation.json()

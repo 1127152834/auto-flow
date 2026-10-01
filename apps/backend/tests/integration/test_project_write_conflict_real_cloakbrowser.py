@@ -21,6 +21,7 @@ from autoflow.infrastructure.database.project_run_models import (
     ProjectRecordLeaseRow,
     ProjectTaskRecordCursorRow,
 )
+from tests.fixtures.workflows import save_owned_workflow_async
 from tests.integration.test_project_run_data_start import _input, _table
 from tests.integration.test_workflow_real_cloakbrowser import (
     real_cloak_page as cloak_fixture,
@@ -103,12 +104,13 @@ async def test_real_write_versions_and_partial_failure(
                 node('end', 'project_end', retainEnvironment={'enabled': False}),
             ])
             edges = [{'id': str(uuid4()), 'source': left['id'], 'target': right['id'], **({'sourceHandle': 'error'} if human_edit and left['id'] in {'write', 'status'} else {})} for left, right in pairwise(nodes)]
-            workflow = await api('POST', '/api/workflows', {'id': str(uuid4()), 'clientRequestId': str(uuid4()), 'name': '版本与部分失败', 'variables': [], 'nodes': nodes, 'edges': edges}, 201)
+            workflow = {'name': '版本与部分失败', 'variables': [], 'nodes': nodes, 'edges': edges}
             automation = await api('POST', prefix + '/automations', {
-                'name': '版本与部分失败', 'description': '', 'workflowId': workflow['id'], 'parameterSchema': [], 'inputPlan': {'inputs': [_input(project_id, table, field, 'W01')]},
+                'name': '版本与部分失败', 'description': '', 'parameterSchema': [], 'inputPlan': {'inputs': [_input(project_id, table, field, 'W01')]},
                 'environmentPolicy': {'source': 'newFromProfile', 'profileId': profile.id, 'proxyOverride': {'mode': 'none'}, 'modelProviderId': None},
                 'runPolicy': {'maxTasks': 1, 'concurrency': 1, 'maxLiveInstances': 1, 'continueAfterFailure': False, 'automaticExecutionTimeoutSeconds': 60, 'manualDeadlineSeconds': 120},
             }, 201)
+            await save_owned_workflow_async(client, automation, workflow)
             accepted = await api('POST', prefix + f"/automations/{automation['automationId']}/batches", {'expectedAutomationRevision': automation['managementRevision'], 'parameters': {}, 'maxTasks': 1, 'concurrency': 1}, 202)
             batch_id = accepted['operation']['result']['batch']['batchId']
             batch_path = prefix + '/batches/' + batch_id

@@ -21,6 +21,7 @@ from autoflow.bootstrap.config import Settings
 from autoflow.domain.profiles.models import ProfileSpec
 from autoflow.domain.project_data.identity import RecordKey, encode_record_key
 from autoflow.infrastructure.database.project_run_models import ProjectRecordLeaseRow
+from tests.fixtures.workflows import save_owned_workflow_async
 from tests.integration.test_project_run_data_start import _input
 from tests.integration.test_workflow_real_cloakbrowser import (
     real_cloak_page as cloak_fixture,
@@ -175,13 +176,14 @@ async def test_excel_multi_input_status_progression_and_same_batch_reclaim(
                         'expectedContentRevisionWhenDerived': "{frozen[0]['contentRevision']}", 'allowedFrom': [statuses['W'][0]],
                     }, tableGrant={'tableId': tables['W']['tableId'], 'datasetGeneration': tables['W']['datasetGeneration'], 'operations': ['setRecordStatus'], 'fieldIds': [fields['W']['account']['ref']['fieldId']], 'readPurposes': []}))
                 nodes.append(node('end', 'project_end', retainEnvironment={'enabled': False}))
-                workflow = await post('/api/workflows', {'id': str(uuid4()), 'clientRequestId': str(uuid4()), 'name': '推进状态' if change_status else '最终态复用', 'variables': [], 'nodes': nodes, 'edges': [{'id': str(uuid4()), 'source': left['id'], 'target': right['id']} for left, right in pairwise(nodes)]})
+                workflow = {'name': '推进状态' if change_status else '最终态复用', 'variables': [], 'nodes': nodes, 'edges': [{'id': str(uuid4()), 'source': left['id'], 'target': right['id']} for left, right in pairwise(nodes)]}
                 automation = await post(prefix + '/automations', {
-                    'name': '推进状态' if change_status else '最终态复用', 'description': '', 'workflowId': workflow['id'],
+                    'name': '推进状态' if change_status else '最终态复用', 'description': '',
                     'parameterSchema': [], 'inputPlan': {'inputs': [selected, account_input]},
                     'environmentPolicy': {'source': 'newFromProfile', 'profileId': profile.id, 'proxyOverride': {'mode': 'none'}, 'modelProviderId': None},
                     'runPolicy': {'maxTasks': 3, 'concurrency': 1, 'maxLiveInstances': 1, 'continueAfterFailure': False, 'automaticExecutionTimeoutSeconds': 60, 'manualDeadlineSeconds': 120},
                 })
+                await save_owned_workflow_async(client, automation, workflow)
                 batch_id = (await post(prefix + f"/automations/{automation['automationId']}/batches", {'expectedAutomationRevision': automation['managementRevision'], 'parameters': {}, 'maxTasks': 3, 'concurrency': 1}, 202))['operation']['result']['batch']['batchId']
                 batches.append(batch_id)
                 async with asyncio.timeout(120):

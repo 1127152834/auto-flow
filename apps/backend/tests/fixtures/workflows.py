@@ -1,8 +1,34 @@
 from copy import deepcopy
 from typing import Any
+from uuid import uuid4
 
 WORKFLOW_ID = "d45f286f-129d-4e3b-a09b-995c3b491609"
 SOURCE_REVISION = "5ccb900e8dcf1530aae66f676d87593c416c7ebb"
+
+
+def save_owned_workflow(client, automation, content):
+    """Save scenario content through the automation's public, owned document."""
+    path = f"/api/workflows/{automation['workflowId']}"
+    current = client.get(path)
+    assert current.status_code == 200, current.text
+    saved = client.put(path, json={
+        **content, "id": automation["workflowId"], "projectId": automation["projectId"],
+        "expectedRevision": current.json()["revision"], "clientRequestId": str(uuid4()),
+    })
+    assert saved.status_code == 200, saved.text
+    return saved
+
+
+async def save_owned_workflow_async(client, automation, content):
+    path = f"/api/workflows/{automation['workflowId']}"
+    current = await client.get(path)
+    assert current.status_code == 200, current.text
+    saved = await client.put(path, json={
+        **content, "id": automation["workflowId"], "projectId": automation["projectId"],
+        "expectedRevision": current.json()["revision"], "clientRequestId": str(uuid4()),
+    })
+    assert saved.status_code == 200, saved.text
+    return saved
 
 
 def workflow_payload(workflow_id: str = WORKFLOW_ID) -> dict:

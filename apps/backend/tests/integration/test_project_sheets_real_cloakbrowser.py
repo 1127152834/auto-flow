@@ -17,7 +17,7 @@ from autoflow.infrastructure.database.project_run_models import (
 )
 from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
 from tests.fixtures.sheets import FakeSheetsTransport, new_key, open_sheets_table
-from tests.fixtures.workflows import workflow_payload
+from tests.fixtures.workflows import save_owned_workflow, workflow_payload
 from tests.integration.test_project_run_data_start import uid
 from tests.integration.test_project_sheets_claims import plan_for, shared_tables
 from tests.integration.test_project_sheets_sync import pull
@@ -56,8 +56,6 @@ def start_real(bound, profile, url, label, status_id=None, *, input_key="title",
     document = workflow_payload(uid())
     document["content"]["nodes"] = nodes
     document["content"]["edges"] = [{"id": uid(), "source": a["id"], "target": b["id"]} for a, b in pairwise(nodes)]
-    saved = bound.client.post("/api/workflows", json={**document["content"], "id": document["id"], "clientRequestId": uid()})
-    assert saved.status_code == 201, saved.text
     prefix = f"/api/v1/projects/{bound.project}"
     input_plan = plan_for(bound)
     input_plan["inputs"][0]["fieldBindings"][0]["fieldRef"]["fieldId"] = bound.field_id(input_key)
@@ -65,12 +63,13 @@ def start_real(bound, profile, url, label, status_id=None, *, input_key="title",
     if record_title is not None:
         input_plan["inputs"][0]["filter"] = {"type": "compare", "fieldId": bound.field_id("title"), "operator": "eq", "value": record_title}
     response = bound.client.post(prefix + "/automations", headers=new_key(), json={
-        "name": label, "description": "", "workflowId": saved.json()["id"], "inputPlan": input_plan, "parameterSchema": [],
+        "name": label, "description": "", "inputPlan": input_plan, "parameterSchema": [],
         "environmentPolicy": {"source": "newFromProfile", "profileId": profile.id, "proxyOverride": {"mode": "none"}, "modelProviderId": None},
         "runPolicy": {"maxTasks": 1, "concurrency": 1, "maxLiveInstances": 1, "continueAfterFailure": False, "automaticExecutionTimeoutSeconds": 60, "manualDeadlineSeconds": 180},
     })
     assert response.status_code == 201, response.text
     automation = response.json()
+    save_owned_workflow(bound.client, automation, document['content'])
     validation = bound.client.get(prefix + f"/automations/{automation['automationId']}/validation")
     assert validation.status_code == 200 and validation.json()["runnable"], validation.text
     accepted = bound.client.post(prefix + f"/automations/{automation['automationId']}/batches", headers=new_key(), json={
@@ -612,16 +611,15 @@ def test_real_loop_keeps_two_sheet_intents_when_third_write_fails(
             {'id': uid(), 'source': 'loop', 'target': 'write', 'sourceHandle': 'loop'},
             {'id': uid(), 'source': 'loop', 'target': 'end', 'sourceHandle': 'done'},
         ]
-        saved = client.post('/api/workflows', json={**document['content'], 'id': document['id'], 'clientRequestId': uid()})
-        assert saved.status_code == 201, saved.text
         automation = client.post(prefix + '/automations', headers=new_key(), json={
-            'name': 'Sheets 两次成功第三次失败', 'description': '', 'workflowId': saved.json()['id'],
+            'name': 'Sheets 两次成功第三次失败', 'description': '',
             'inputPlan': {'inputs': [_input(bound.project, trigger, trigger_field, 'trigger')]}, 'parameterSchema': [],
             'environmentPolicy': {'source': 'newFromProfile', 'profileId': profile.id, 'proxyOverride': {'mode': 'none'}, 'modelProviderId': None},
             'runPolicy': {'maxTasks': 1, 'concurrency': 1, 'maxLiveInstances': 1, 'continueAfterFailure': False, 'automaticExecutionTimeoutSeconds': 60, 'manualDeadlineSeconds': 180},
         })
         assert automation.status_code == 201, automation.text
         config = automation.json()
+        save_owned_workflow(client, config, document['content'])
         validation = client.get(prefix + f"/automations/{config['automationId']}/validation")
         assert validation.status_code == 200 and validation.json()['runnable'], validation.text
         accepted = client.post(prefix + f"/automations/{config['automationId']}/batches", headers=new_key(), json={
@@ -999,20 +997,19 @@ def test_real_opposing_writes_enter_manual_branch_without_stealing_leases(
                 {"id": uid(), "source": a, "target": b}
                 for a, b in (("inputs", "open"), ("open", "own"), ("own", "barrier"), ("barrier", "query"), ("query", "cross"))
             ] + [{"id": uid(), "source": "cross", "target": "conflict", "sourceHandle": "error"}]
-            saved = client.post("/api/workflows", json={**document["content"], "id": document["id"], "clientRequestId": uid()})
-            assert saved.status_code == 201, saved.text
             plan = plan_for(bound)
             plan["inputs"][0].update(mode="fixedRecord", fixedRecord=next(
                 row["ref"] for row in before if row["ref"]["recordKey"]["value"] == own
             ))
             configured = client.post(prefix + "/automations", headers=new_key(), json={
-                "name": "cross-" + own, "description": "", "workflowId": saved.json()["id"], "inputPlan": plan, "parameterSchema": [],
+                "name": "cross-" + own, "description": "", "inputPlan": plan, "parameterSchema": [],
                 "environmentPolicy": {"source": "newFromProfile", "profileId": profile.id, "proxyOverride": {"mode": "none"}, "modelProviderId": None},
                 "runPolicy": {"maxTasks": 1, "concurrency": 1, "maxLiveInstances": 1, "continueAfterFailure": False,
                               "automaticExecutionTimeoutSeconds": 60, "manualDeadlineSeconds": 180},
             })
             assert configured.status_code == 201, configured.text
             automation = configured.json()
+            save_owned_workflow(client, automation, document['content'])
             validation = client.get(prefix + f"/automations/{automation['automationId']}/validation")
             assert validation.status_code == 200 and validation.json()["runnable"], validation.text
             accepted = client.post(prefix + f"/automations/{automation['automationId']}/batches", headers=new_key(), json={
