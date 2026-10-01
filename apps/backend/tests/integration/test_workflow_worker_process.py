@@ -618,6 +618,7 @@ async def test_windows_cleanup_confirms_exit_after_kill_access_denied(tmp_path, 
     worker = SimpleNamespace(
         run_id='test-run', process=Process(), created_directory=False, ready=False,
         job=None, capability=None, proxy_requests=None,
+        stderr=None, stderr_task=None, secrets=[],
     )
     instance._workers[worker.run_id] = worker
     monkeypatch.setattr(module.sys, 'platform', 'win32')

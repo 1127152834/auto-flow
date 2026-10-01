@@ -84,6 +84,17 @@ UNKNOWN_RESULT_ERROR = {
     "code": "WORKFLOW_RESULT_UNKNOWN",
     "message": "执行结果不明确，已撤销旧执行写入权限",
 }
+# Worker-side evidence that is already redacted and path-free (spec M1 R1-14).
+DIAGNOSTIC_KEYS = (
+    "causeCode", "diagnosticLog", "diagnosticLogUnavailable",
+    "stderrTail", "stderrTailRedacted", "stderrTailOmitted",
+)
+
+
+def unknown_result_error(diagnostics: Mapping[str, Any] | None) -> dict[str, Any]:
+    """The unchanged unknown-result error, plus safe diagnostics when the worker supplied them."""
+    details = {key: diagnostics[key] for key in DIAGNOSTIC_KEYS if diagnostics and key in diagnostics}
+    return {**UNKNOWN_RESULT_ERROR, "details": details} if details else dict(UNKNOWN_RESULT_ERROR)
 
 
 @dataclass
@@ -97,6 +108,7 @@ class _RunOwner:
     cleanup_unknown: bool = False
     browser_command_id: str | None = None
     waiting_manual: bool = False
+    diagnostics: dict[str, Any] | None = None
     control: asyncio.Lock = field(default_factory=asyncio.Lock)
 
 
@@ -655,6 +667,9 @@ class WorkflowRunDispatcher:
             raise
         except Exception as error:
             logging.getLogger(__name__).warning("Project worker requires reconciliation: %s (%s)", type(error).__name__, getattr(error, "code", "unclassified"))
+            details = getattr(error, "details", None)
+            if isinstance(details, dict):
+                owner.diagnostics = details
             current = self._get_run(dispatched.run_id)
             if current.execution_generation != dispatched.execution_generation:
                 unhandled = True
@@ -684,7 +699,7 @@ class WorkflowRunDispatcher:
                 fenced.run_id,
                 fenced.execution_generation,
                 "interrupted",
-                error=UNKNOWN_RESULT_ERROR,
+                error=unknown_result_error(owner.diagnostics),
             )
         finally:
             owner.automatic_timeout = None

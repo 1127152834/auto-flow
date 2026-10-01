@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -15,25 +16,33 @@ from typing import Any, Literal, cast
 from uuid import UUID, uuid4
 
 from autoflow.domain.projects.models import ProjectError
+from autoflow.infrastructure.credentials.redaction import redact_sensitive_text
 from autoflow.infrastructure.process.browser_processes import process_birth
 from autoflow.infrastructure.process.project_test_browser_worker import (
     force_process_tree,
     wait_for_cleanup,
 )
+from autoflow.infrastructure.process.stderr_sink import StderrSink
 from autoflow.infrastructure.process.workflow_subprocess import workflow_environment
 
 from .proxy_worker_requests import ProxyWorkerRequests
 
 MAX_MESSAGE_BYTES = 1024 * 1024
 MAX_EVENT_BYTES = 16 * 1024 * 1024
+STDERR_LOG_NAME = "worker-stderr.log"
+STDERR_TAIL_LINES = 50
+STDERR_TAIL_LINE_CHARS = 500
+# Absolute path -> its last component; URLs and relative paths are left alone.
+_ABSOLUTE_PATH = re.compile(r"(?<![\w:./\\])(?:[A-Za-z]:)?[\\/](?:[^\s\\/:\"'<>|]+[\\/])+([^\s\\/:\"'<>|]*)")
 WorkerStatus = Literal["succeeded", "failed", "cancelled", "timed_out"]
 
 
 class WorkflowWorkerError(Exception):
-    def __init__(self, code: str, message: str) -> None:
+    def __init__(self, code: str, message: str, details: dict[str, Any] | None = None) -> None:
         super().__init__(message)
         self.code = code
         self.message = message
+        self.details = details or {}
 
 
 @dataclass(frozen=True)
@@ -64,6 +73,9 @@ class _Worker:
     write_lock: asyncio.Lock = field(default_factory=asyncio.Lock)
     credential_read: Event | None = None
     proxy_requests: ProxyWorkerRequests | None = None
+    stderr: StderrSink | None = None
+    stderr_task: asyncio.Task[None] | None = None
+    secrets: list[str] = field(default_factory=list)
 
 
 def project_workflow_worker_command() -> tuple[str, ...]:
@@ -174,16 +186,18 @@ class ProjectWorkflowWorkerManager:
             )
             spawn = asyncio.create_task(asyncio.create_subprocess_exec(
                 *self._command, stdin=asyncio.subprocess.PIPE,
-                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL,
+                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
                 env=env, limit=MAX_EVENT_BYTES, **group,
             ))
             try:
                 worker.process = await asyncio.shield(spawn)
             except asyncio.CancelledError:
                 worker.process = await wait_for_cleanup(spawn)
+                self._start_stderr(worker)
                 self._capture_birth(worker)
                 await wait_for_cleanup(asyncio.create_task(self._attach_job(worker, job_name)))
                 raise
+            self._start_stderr(worker)
             self._capture_birth(worker)
             await self._attach_job(worker, job_name)
             await self._send(worker, {
@@ -223,12 +237,64 @@ class ProjectWorkflowWorkerManager:
                     return outcome
             if (worker.process.returncode not in {0, 1}
                 or (outcome.status == "succeeded" and worker.process.returncode != 0)):
-                raise WorkflowWorkerError("WORKFLOW_WORKER_LOST", "执行进程异常退出，需核验运行结果")
+                raise await self._lost(worker, "执行进程异常退出，需核验运行结果")
             await self._cleanup(worker)
             return outcome
         finally:
             # Cancellation and callback failure still have to finish owned cleanup.
             await self._cleanup(worker)
+
+    def _start_stderr(self, worker: _Worker) -> None:
+        """Keep draining stderr for the whole life of the process; a full pipe would stall it."""
+        process = worker.process
+        if process is None or process.stderr is None or worker.stderr_task is not None:
+            return
+        worker.stderr = StderrSink(worker.artifact_directory / STDERR_LOG_NAME)
+        worker.stderr_task = asyncio.create_task(worker.stderr.drain(process.stderr))
+
+    async def _finish_stderr(self, worker: _Worker, wait: float) -> None:
+        task, sink = worker.stderr_task, worker.stderr
+        if task is not None and not task.done():
+            try:
+                await asyncio.wait_for(asyncio.shield(task), wait)
+            except Exception:  # noqa: BLE001 -- diagnostics must never change the outcome
+                pass
+        if task is not None and not task.done():
+            task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
+        if sink is not None:
+            try:
+                await asyncio.wait_for(sink.close(), 2)
+            except Exception:  # noqa: BLE001
+                pass
+
+    async def _lost(self, worker: _Worker, message: str, code: str = "WORKFLOW_WORKER_LOST") -> WorkflowWorkerError:
+        return WorkflowWorkerError(code, message, await self._diagnostics(worker, code))
+
+    async def _diagnostics(self, worker: _Worker, cause: str) -> dict[str, Any]:
+        """Safe, bounded evidence for an unknown result: where the log is and a redacted tail."""
+        details: dict[str, Any] = {"causeCode": cause}
+        sink = worker.stderr
+        if sink is None:
+            return details
+        await self._finish_stderr(worker, 1.0)
+        if sink.write_failed:
+            details["diagnosticLogUnavailable"] = "write_failed"
+        elif sink.written_bytes:
+            details["diagnosticLog"] = f"{worker.relative_artifact_directory}/{STDERR_LOG_NAME}"
+        else:
+            details["diagnosticLogUnavailable"] = "no_output"
+        try:
+            lines = [
+                _ABSOLUTE_PATH.sub(r"\1", redact_sensitive_text(line, worker.secrets))[:STDERR_TAIL_LINE_CHARS]
+                for line in sink.tail(STDERR_TAIL_LINES)
+            ]
+            if lines:
+                details["stderrTail"] = lines
+                details["stderrTailRedacted"] = True
+        except Exception:  # noqa: BLE001 -- unsure it is safe, so it is not exposed
+            details["stderrTailOmitted"] = "redaction_failed"
+        return details
 
     async def _attach_job(self, worker: _Worker, name: str) -> None:
         if sys.platform != "win32":
@@ -359,7 +425,7 @@ class ProjectWorkflowWorkerManager:
         try:
             done, _ = await asyncio.wait({capability, exited}, return_when=asyncio.FIRST_COMPLETED)
             if exited in done:
-                raise WorkflowWorkerError("WORKFLOW_WORKER_LOST", "执行进程失联，运行结果待核验")
+                raise await self._lost(worker, "执行进程失联，运行结果待核验")
             return await capability
         finally:
             for task in (capability, exited):
@@ -372,7 +438,7 @@ class ProjectWorkflowWorkerManager:
         try:
             raw = await worker.process.stdout.readline()
             if not raw:
-                raise WorkflowWorkerError("WORKFLOW_WORKER_LOST", "执行进程失联，运行结果待核验")
+                raise await self._lost(worker, "执行进程失联，运行结果待核验")
             if len(raw) > MAX_EVENT_BYTES or not raw.endswith(b"\n"):
                 raise _protocol_error()
             value = json.loads(raw)
@@ -399,6 +465,7 @@ class ProjectWorkflowWorkerManager:
                 value = resolver(name).get(field_name)
                 if isinstance(value, str) and not discard.is_set():
                     result.append(value)
+                    worker.secrets.append(value)  # so stderr diagnostics can be redacted
             except Exception:  # noqa: BLE001 -- source leaves unavailable credential references intact.
                 result.clear()
             finally:
@@ -434,7 +501,7 @@ class ProjectWorkflowWorkerManager:
     async def _write(self, worker: _Worker, message: dict[str, Any]) -> None:
         assert worker.process is not None and worker.process.stdin is not None
         if worker.process.returncode is not None:
-            raise WorkflowWorkerError("WORKFLOW_WORKER_LOST", "执行进程已退出")
+            raise await self._lost(worker, "执行进程已退出")
         data = (json.dumps(message, ensure_ascii=False, allow_nan=False) + "\n").encode()
         if len(data) > MAX_MESSAGE_BYTES:
             raise _protocol_error()
@@ -562,6 +629,7 @@ class ProjectWorkflowWorkerManager:
         if worker.proxy_requests is not None:
             await worker.proxy_requests.close()
             worker.proxy_requests = None
+        await self._finish_stderr(worker, 2.0)
         async with self._lock:
             if self._workers.get(worker.run_id) is worker:
                 self._workers.pop(worker.run_id)
