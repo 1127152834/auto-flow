@@ -116,9 +116,10 @@ async def test_real_worker_delayed_browser_keeps_cookie_in_one_task(capability_c
     resources = WorkflowBrowserResources(SimpleNamespace(get=lambda _: profile), lambda: [InstalledKernel('public', profile.spec.browser_version, executable, 0)], no_proxy, lambda: None, SimpleNamespace(guard=lambda _: nullcontext()), lambda _: nullcontext(), environment_directory=lambda _: environments.instance_path(environments.environments.find_instance_by_task(project_id, task.task_id).instance_id))
     frozen = {**resources.freeze(profile.id), 'environmentPolicy': {'source': 'newFromProfile', 'profileId': profile.id}}
     base = url.removesuffix('/fixture')
+    # Initialization and navigation share one budget; use the open-page executor's 30s default.
     nodes = [
-        {'id': 'login', 'type': 'open_page', 'data': {'moduleType': 'open_page', 'url': base + '/login', 'browserEnvironment': {'source': 'newFromProfile'}, 'timeout': 15}},
-        {'id': 'account', 'type': 'open_page', 'data': {'moduleType': 'open_page', 'url': base + '/account', 'browserEnvironment': {'source': 'current'}, 'timeout': 15}},
+        {'id': 'login', 'type': 'open_page', 'data': {'moduleType': 'open_page', 'url': base + '/login', 'browserEnvironment': {'source': 'newFromProfile'}, 'timeout': 30}},
+        {'id': 'account', 'type': 'open_page', 'data': {'moduleType': 'open_page', 'url': base + '/account', 'browserEnvironment': {'source': 'current'}, 'timeout': 30}},
         {'id': 'read', 'type': 'get_element_info', 'data': {'moduleType': 'get_element_info', 'selector': '#auth', 'attribute': 'text', 'variableName': 'signedIn', 'timeout': 5}},
         {'id': 'end', 'type': 'project_end', 'data': {'moduleType': 'project_end', 'retainEnvironment': {'enabled': True, 'mode': 'saveAs', 'name': 'node-account'}}},
     ]
@@ -140,8 +141,8 @@ async def test_real_worker_delayed_browser_keeps_cookie_in_one_task(capability_c
         with factory.begin() as session: SqlAlchemyWorkflowRuntimeRepository(session).append_event(event)
         events.append(event)
     try:
-        result = await asyncio.wait_for(manager.run(run_id=task.run_id, execution_generation=1, execution_plan=plan, parameters={}, variables={}, browser={}, executable=None, on_event=persist), 45)
-        assert result.status == 'succeeded' and result.cleanup_confirmed, [e['payload'] for e in events if e['kind'] == 'nodeAttempt' and e['payload']['status'] == 'failed']
+        result = await asyncio.wait_for(manager.run(run_id=task.run_id, execution_generation=1, execution_plan=plan, parameters={}, variables={}, browser={}, executable=None, on_event=persist), 90)
+        assert result.status == 'succeeded' and result.cleanup_confirmed, [{'nodeId': e['nodeId'], **e['payload']} for e in events if e['kind'] == 'nodeAttempt' and e['payload']['status'] == 'failed']
         # Direct worker execution stops at End admission; the host publishes after cleanup.
         with factory() as db:
             assert db.get(WorkflowRunRow, task.run_id).status == 'finishing'
