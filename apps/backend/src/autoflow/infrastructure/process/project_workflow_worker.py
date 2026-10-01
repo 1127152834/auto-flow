@@ -303,7 +303,7 @@ class ProjectWorkflowWorkerManager:
                             raise _protocol_error()
                         worker.executable = executable
                 except ProjectError as rejected:
-                    reply["error"] = {"code": rejected.code, "message": "项目能力请求未完成"}
+                    reply["error"] = {"code": rejected.code, "message": f"项目能力请求未完成：{rejected.message}"}
                 # Unknown failures may follow a commit. Fence the run rather than
                 # telling the worker it is safe to execute an error branch.
                 await self._send(worker, reply)

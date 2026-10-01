@@ -502,6 +502,29 @@ send('finished',status='succeeded',error=None,cleanupConfirmed=True)
 
 
 @pytest.mark.asyncio
+async def test_rejected_capability_reply_carries_the_project_reason(tmp_path):
+    """Remediation M1 R1-04: the worker sees why the project refused, not a fixed sentence."""
+    from autoflow.domain.projects.models import ProjectError
+
+    child = CHILD.replace("send('finished',status='succeeded',error=None,cleanupConfirmed=True)", """
+send('capability',commandId='command',nodeId='open',nodeVisitId='visit-1',attempt=1,operation='inputs',arguments={})
+reply=json.loads(sys.stdin.readline())
+assert reply['type']=='capability_result' and reply['commandId']=='command'
+assert reply['error']=={'code':'PROJECT_TABLE_MISSING','message':'项目能力请求未完成：数据表已被删除'}, reply
+send('finished',status='succeeded',error=None,cleanupConfirmed=True)
+""")
+
+    async def capability(*_args):
+        raise ProjectError('PROJECT_TABLE_MISSING', '数据表已被删除', 409)
+
+    executable = tmp_path / 'kernel'
+    executable.write_text('identity')
+    instance = ProjectWorkflowWorkerManager(tmp_path / 'temp', command=(sys.executable, '-c', child), worker_env={'PROOF': str(tmp_path / 'proof')}, on_capability=capability)
+    outcome = await start(instance, executable, lambda _event: asyncio.sleep(0))
+    assert outcome.status == 'succeeded'
+
+
+@pytest.mark.asyncio
 async def test_worker_exit_interrupts_pending_manual_capability(tmp_path):
     from uuid import uuid4
     instance, executable = manager(tmp_path)

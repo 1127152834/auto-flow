@@ -422,7 +422,12 @@ class ProjectGraphExecutor:
             await emit('log', {'level': level, 'message': visible_message if event.get('isUserLog') else '节点执行完成', 'isUserLog': event.get('isUserLog') is True})
         else:
             timeout = event.get('isTimeout') is True or event.get('error') == 'WORKFLOW_NODE_TIMEOUT'
-            self.error = {'code': 'WORKFLOW_NODE_TIMEOUT' if timeout else 'WORKFLOW_NODE_FAILED', 'message': '工作流节点执行超时' if timeout else '工作流节点执行失败'}
+            reason = str(event.get('error') or event.get('message') or '').strip()
+            if reason == 'WORKFLOW_NODE_TIMEOUT':
+                reason = ''
+            headline = '工作流节点执行超时' if timeout else '工作流节点执行失败'
+            detail = reason[:1000] + '…' if len(reason) > 1000 else reason
+            self.error = {'code': 'WORKFLOW_NODE_TIMEOUT' if timeout else 'WORKFLOW_NODE_FAILED', 'message': f'{headline}：{detail}' if detail else headline}
             details = event.get('data')
             if isinstance(details, dict) and isinstance(details.get('projectErrorCode'), str):
                 self.error = {**self.error, 'code': details['projectErrorCode']}
