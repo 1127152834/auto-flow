@@ -168,3 +168,12 @@ PM9构件11139561095（pm9-macos-15）上传883628173字节；日志与API元数
 修复后额外worker回归：test_workflow_worker.py与test_workflow_worker_process.py共78 passed/3 skipped（26.99s）。六项平台跳过与三项平台跳过均未计通过。下一轮采用新的codex/remediation-m0-ownership-validation普通分支保存本修复的完整矩阵，避免取消98e95dba正在运行的Intel/Windows及c585a7aa Windows；不改工作流门禁或默认分支。
 
 最新归属复查修复的三平台原生检查（2026-09-30，confirmed步骤级子范围；2026-10-01）：run36817654197@d8d3210e3eadf556d9f9603e985f1f622f1960f5的ARM110226128259、Intel110226128439、Windows110226128459，其Verify node-owned browser initialization and cleanup步骤均completed/success。Windows平台边界、桌面路径/设置契约和HTTP前置写入也success；ARM/Windows完整后端回归运行，Intel类型检查运行。该结果仅证明原生选集，不能据此声称先前并发代理清理竞态已在远端复现或完整回归通过。另保留run36808514086@98e95dba的Intel110198234330已完成backend:build、package:dir及打包sidecar整链冒烟（30–32全部success），安装器构建33运行；两轮旧Windows完整后端仍运行。没有重新推送证据提交或取消现有任务，M0 AC0-07继续pending。
+
+
+98e95dba Intel终态与桌面启动诊断（2026-09-30，confirmed失败/诊断增强，远端根因unknown；2026-10-01 05:24Z）：run36808514086的Intel job110198234330最终failure。完整日志确认后端5343 passed/137 skipped/24 deselected/2 warnings（3268.24s），离线基准21 passed（7.43s），前端5972 passed/454文件，原生worker44 passed/31 deselected/1 warning（1007.22s）；源码HTTP、目录打包整链及AutoFlow-0.1.0.dmg构建通过。失败发生于安装器之后的源码npm run smoke:desktop：authenticated sidecar health等待60秒后为null；尚未执行该次desktop connected或父进程退出断言。之后最终前后端回归未执行，不计通过。PM9构件11142593833上传1080812513字节，日志ZIP SHA256为75b81cba04b7dceec50062c4ec88902f3c6aafd0723a062e8708c6f987dd3765，未下载或本地复算；DMG签名跳过，不作安装/发布声明。
+
+定位确认源码SidecarSupervisor通过uv run启动、内部限时15秒，打包直接执行且内部90秒；外层60秒不能延长内部启动门限。原烟测将bridge不存在、非ready、健康HTTP失败或实例不匹配均折叠为null，并在finally删掉已有sidecar.log，故当前日志不足以判断此次远端是内部超时、依赖/导入失败或其他启动问题。本机原版正常源码桌面冒烟通过；用现有AUTOFLOW_QA_SIDECAR_MODULE注入不存在模块时，真实Electron原脚本同样只报null并退出1，证明诊断缺口，不代表复现远端原因。
+
+仅修订scripts/smoke-desktop.mjs失败分支：删除临时目录前读取状态白名单及现有20,000字符脱敏日志，记录模式/平台和桌面退出信息，然后重新抛出原异常；不输出完整status/token、不改变启动预算、健康断言或清理流程。复用project-smoke-output.redactSidecarLog，未引入新日志框架。独立复审无阻断问题；按非阻断意见将launch未返回时mode标为unknown，避免误报development。修订后真实Electron负例断言state=failed、message含exited with code 1、日志含具体No module named、无READY元数据/顶层token、原健康超时仍保留，全部通过。node --check、diff检查、119项脚本测试通过（2454.91ms，保留Node模块类型警告）；不声称远端根因已经修复。最新d8d3210e矩阵与较早c585a7aa Windows继续保留；诊断候选将普通快进推送已含两个已知失败平台的remediation-m0分支以取得新日志，不把被并发策略取消的旧Windows计为通过。AC0-07仍pending。
+
+诊断修订后的正常真实源码桌面冒烟也通过：desktop connected (development, darwin/arm64)，强停桌面后sidecar实际退出。使用已安装Python环境、UV_NO_SYNC=1及worktree绝对PYTHONPATH；未重构建无变化的前端/后端包。

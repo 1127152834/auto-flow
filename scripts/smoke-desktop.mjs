@@ -1,8 +1,9 @@
-import { mkdtemp, rm } from 'node:fs/promises'
+import { mkdtemp, readFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { resolve, join } from 'node:path'
 import { launchElectron, waitFor } from './electron-cdp.mjs'
 import { stop } from './smoke-sidecar.mjs'
+import { redactSidecarLog } from './project-smoke-output.mjs'
 
 const root = resolve(import.meta.dirname, '..')
 const dataDir = await mkdtemp(join(tmpdir(), 'autoflow-desktop-smoke-'))
@@ -31,6 +32,16 @@ try {
   }
   if (!backendExited) throw new Error('sidecar survived desktop termination')
   console.log('sidecar exited after desktop termination')
+} catch (error) {
+  const status = await desktop?.cdp.evaluate('window.autoflow?.getSidecarStatus()').catch(() => null)
+  const sidecarLog = await readFile(join(dataDir, 'logs', 'sidecar.log'), 'utf8')
+    .then(log => redactSidecarLog(log, status?.token)).catch(() => 'sidecar log unavailable')
+  console.error('desktop smoke diagnostics:', JSON.stringify({
+    mode: desktop ? (desktop.packaged ? 'packaged' : 'development') : 'unknown', platform: process.platform, arch: process.arch,
+    sidecarState: status?.state ?? 'unavailable', sidecarMessage: status?.message,
+    desktopExitCode: desktop?.child.exitCode, desktopSignal: desktop?.child.signalCode, sidecarLog,
+  }))
+  throw error
 } finally {
   desktop?.cdp.close()
   await stop(desktop?.child)
