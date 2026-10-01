@@ -372,7 +372,7 @@ async def test_real_project_batch_http(
         repository = app.state.environment_service.environments
         original_bind = repository.bind_records
 
-        def advance_link_after_preflight(project_id, environment_id, results):
+        def advance_link_after_preflight(project_id, environment_id, results, *, authority=None):
             nonlocal link_race_injected
             if not link_race_injected:
                 from autoflow.infrastructure.database.project_data_models import (
@@ -383,7 +383,7 @@ async def test_real_project_batch_http(
                     row = session.get(DataRecordRow, (ref['datasetGeneration'], ref['recordKey']['type'], ref['recordKey']['value']))
                     row.link_revision += 1
                 link_race_injected = True
-            return original_bind(project_id, environment_id, results)
+            return original_bind(project_id, environment_id, results, authority=authority)
 
         monkeypatch.setattr(repository, 'bind_records', advance_link_after_preflight)
     if scenario == 'data-response-loss':

@@ -337,13 +337,14 @@ class ProjectWorkerCapabilities:
         targets = retain.get('recordTargets', [])
         if not isinstance(targets, list) or any(not isinstance(target, dict) or target.get('recordRef') not in owned_refs for target in targets):
             raise _denied()
-        # The owned worker has awaited BrowserContext.close. The existing
-        # End ledger still verifies filesystem quiescence before publication.
+        # ManualRuntime verified the durable checkpoint and host intent/expiry.
+        # Keep this authorization out of worker/HTTP payloads; the End ledger
+        # still checks generation and native quiescence before publication.
         result, _operation, _replayed = self.environments.end(project_id, request['commandId'], {
             'taskId': task_id, 'runId': run_id, 'instanceId': instance.instance_id,
             'expectedUseGeneration': instance.instance_use_generation,
             'executionGeneration': generation, 'retainEnvironment': retain,
-        })
+        }, trusted_manual=True)
         return json_value(result)
 
 

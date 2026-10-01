@@ -278,6 +278,49 @@ async def test_end_host_derives_targets_and_rejects_read_only_input(capability_c
     assert denied.value.code == "CAPABILITY_SCOPE_DENIED"
 
 
+@pytest.mark.parametrize('retain,revoked', [(False, False), (True, False), (False, True), (True, True)])
+def test_authorized_manual_end_keeps_public_and_generation_fences(capability_context, tmp_path, retain, revoked):
+    factory, project, task, *_rest = capability_context
+    environments = _environments(factory, tmp_path)
+    environments._closer = lambda _service, _instance: None
+
+    def lookup(run_id):
+        with factory() as session:
+            return SqlAlchemyWorkflowRuntimeRepository(session).get_run(run_id=run_id)
+
+    environments._execution_generation_lookup = lookup
+    instance = environments.reserve(project, environments.resolve(project, {'source': 'newFromProfile', 'profileId': str(uuid4())}),
+                                    task_id=task.task_id, run_id=task.run_id, holder_kind='task', holder_id=task.task_id)
+    directory = environments.instance_path(instance.instance_id)
+    (directory / 'Cookies').write_bytes(b'login')
+    retention = {'enabled': retain, 'name': 'manual saved session', 'mode': 'save_as'}
+    payload = {'taskId': task.task_id, 'runId': task.run_id, 'instanceId': instance.instance_id,
+               'expectedUseGeneration': instance.instance_use_generation, 'executionGeneration': 1,
+               'retainEnvironment': retention}
+    # Public payloads cannot select the internal keyword-only authorization.
+    with pytest.raises(ProjectError) as denied:
+        environments.end(project, str(uuid4()), {**payload, 'trusted_manual': True})
+    assert denied.value.code == 'END_ACCESS_REVOKED'
+    if revoked:
+        with factory.begin() as session:
+            session.get(WorkflowRunRow, task.run_id).execution_generation = 2
+    capabilities = ProjectWorkerCapabilities(factory, environments)
+    request = {'browserClosed': True, 'commandId': str(uuid4())}
+    if revoked:
+        with pytest.raises(ProjectError) as denied:
+            capabilities.end(project, task.task_id, task.run_id, 1, request, retention)
+        assert denied.value.code == 'CAPABILITY_SCOPE_DENIED'
+        assert (directory / 'Cookies').read_bytes() == b'login'
+    else:
+        result = capabilities.end(project, task.task_id, task.run_id, 1, request, retention)
+        assert result['complete'] is True and result['phase'] == 'completed'
+        if retain:
+            saved = environments.store.generation_dir(result['saved']['environmentId'], 1)
+            assert (saved / 'Cookies').read_bytes() == b'login'
+        else:
+            assert not directory.exists()
+
+
 @pytest.mark.parametrize("nested_config", [False, True])
 @pytest.mark.parametrize("kind,config,expected", [
     ("project_end", {"retainEnvironment": {"enabled": False}}, False),
