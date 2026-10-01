@@ -273,6 +273,14 @@ it.each(['保存后继续', '放弃修改'])('imports a bundle after %s and keep
   expect(useWorkflowStore.getState().hasUnsavedChanges).toBe(true)
   expect(saved).toHaveLength(choice === '保存后继续' ? 1 : 0)
 })
+it('keeps the document-level execution semantics of an imported bundle', async () => {
+  render(<Toolbar />)
+  const bundle = { ...importBundle, workflow: { ...importBundle.workflow, executionSemantics: 'autoflow-v2' } }
+  selectBundle(Promise.resolve(JSON.stringify(bundle)))
+  fireEvent.click(await screen.findByRole('button', { name: '放弃修改' }))
+  await waitFor(() => expect(useWorkflowStore.getState().name).toBe('bundle target'))
+  expect(useWorkflowStore.getState().executionSemantics).toBe('autoflow-v2')
+})
 it.each(['save', 'import'])('keeps the document when bundle %s fails', async failure => {
   const request = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     if (failure === 'save' ? isDocumentCreate(input, init) : String(input).endsWith('/workflow-bundle/import')) return Response.json({ success: false, error: 'bundle fixture failure' }, { status: 507 })

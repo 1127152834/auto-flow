@@ -78,7 +78,7 @@ async def test_timeout_zero_means_no_limit():
         _context(page),
     )
     assert result.success, result.error
-    assert page.calls[-1] == ("press", "#name", "Enter", None)
+    assert page.calls[-1] == ("press", "#name", "Enter", 0)
 
 
 @pytest.mark.asyncio

@@ -264,7 +264,8 @@ class WorkflowRunDispatcher:
                 raise WorkflowRuntimeError("WORKFLOW_CAPACITY_FULL", "当前运行容量已满")
             if self._pause_reason is not None:
                 raise WorkflowRuntimeError("WORKFLOW_CAPACITY_FULL", self._pause_reason)
-            if self._memory_pressure():
+            # With no run executing nothing can release memory, so pausing would stall the queue forever.
+            if self._owners and self._memory_pressure():
                 # Spec M1 R1-10: pause new dispatch; re-offer capacity once pressure may have eased.
                 asyncio.get_running_loop().call_later(MEMORY_RECHECK_SECONDS, self._wake_idle_listeners)
                 raise WorkflowRuntimeError(

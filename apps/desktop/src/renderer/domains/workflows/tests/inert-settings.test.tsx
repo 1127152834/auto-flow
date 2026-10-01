@@ -9,7 +9,7 @@ vi.hoisted(() => {
 import { ConfigPanel } from '../components/ConfigPanel'
 import { useWorkflowStore as store } from '../editor-store'
 import { featureFlags } from '../lib/featureFlags'
-import { describeInertSettings, findInertSettings } from '../lib/inertSettings'
+import { describeInertSettings, findInertSettings, inertKeys } from '../lib/inertSettings'
 
 Element.prototype.scrollIntoView = vi.fn()
 beforeEach(() => { featureFlags.nodeRetryPolicy = false; store.getState().clearWorkflow() })
@@ -38,4 +38,8 @@ it('reports only settings that would have changed behaviour', () => {
     { nodeId: 'c', label: 'loop', keys: ['errorPolicy', 'onTimeout'] },
   ])
   expect(describeInertSettings(found)).toBe('以下设置尚未生效，运行时会被忽略：「点击提交」重试次数、重试间隔、运行超时后；「loop」出错时、循环超时后')
+})
+
+it('treats null like an unset value, matching the backend rule', () => {
+  expect(inertKeys({ retryCount: 1, retryDelay: null, errorPolicy: { mode: null } }, 'click_element')).toEqual(['retryCount'])
 })

@@ -1007,20 +1007,39 @@ async def test_memory_pressure_pauses_new_dispatch_and_rewakes_the_scheduler(run
     from autoflow.application.workflows import dispatcher as dispatcher_module
 
     monkeypatch.setattr(dispatcher_module, 'MEMORY_RECHECK_SECONDS', 0.01)
-    run, _ = create_queued_run(runtime)
-    pressure = {'high': True}
+    first, _ = create_queued_run(runtime)
+    second, _ = create_queued_run(runtime)
+    pressure = {'high': False}
     workers, resources = ConcurrentWorkers(), ConcurrentResources()
     dispatcher = make_dispatcher(runtime, workers, resources, capacity=2, memory_pressure=lambda: pressure['high'])
     woken = asyncio.Event()
     dispatcher.subscribe_idle(woken.set)
     try:
+        await dispatcher.dispatch(first.run_id, expected_status_revision=1, execution_generation=0)
+        while len(workers.calls) < 1: await asyncio.sleep(.001)
+        pressure['high'] = True
         with pytest.raises(WorkflowRuntimeError, match='内存') as rejected:
-            await dispatcher.dispatch(run.run_id, expected_status_revision=1, execution_generation=0)
+            await dispatcher.dispatch(second.run_id, expected_status_revision=1, execution_generation=0)
         assert rejected.value.code == 'WORKFLOW_CAPACITY_FULL'
-        assert workers.calls == []
+        assert len(workers.calls) == 1
         async with asyncio.timeout(1):
             await woken.wait()
         pressure['high'] = False
+        await dispatcher.dispatch(second.run_id, expected_status_revision=1, execution_generation=0)
+        while len(workers.calls) < 2: await asyncio.sleep(.001)
+        await workers.stop(first.run_id)
+        await workers.stop(second.run_id)
+        await dispatcher.wait_idle()
+        assert dispatcher.query_run(second.run_id).status == 'succeeded'
+    finally: await dispatcher.shutdown()
+
+
+@pytest.mark.asyncio
+async def test_memory_pressure_never_blocks_the_only_runnable_task(runtime):
+    run, _ = create_queued_run(runtime)
+    workers, resources = ConcurrentWorkers(), ConcurrentResources()
+    dispatcher = make_dispatcher(runtime, workers, resources, capacity=2, memory_pressure=lambda: True)
+    try:
         await dispatcher.dispatch(run.run_id, expected_status_revision=1, execution_generation=0)
         while not workers.calls: await asyncio.sleep(.001)
         await workers.stop(run.run_id)

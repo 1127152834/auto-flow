@@ -105,9 +105,16 @@ class ExecutionSettingsService:
     async def _update(self, configured: int | None, expected_revision: int) -> ExecutionSettingsView:
         async with self._lock:
             await self._ensure_ready_locked()
-            revision = await asyncio.to_thread(
-                self._store.put, KEY, {"maxRunningBrowsers": configured}, expected_revision
-            )
+            try:
+                revision = await asyncio.to_thread(
+                    self._store.put, KEY, {"maxRunningBrowsers": configured}, expected_revision
+                )
+            except AppSettingConflict:
+                raise
+            except BaseException:
+                # The commit may have succeeded before the error surfaced; re-read before trusting memory.
+                self._unverified = True
+                raise
             self._revision, self._configured = revision, configured
             self._apply_locked()
             return self._view_locked()

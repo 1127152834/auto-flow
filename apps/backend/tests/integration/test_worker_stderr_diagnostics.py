@@ -13,7 +13,9 @@ from autoflow.infrastructure.process.project_workflow_worker import (
     WorkflowWorkerError,
 )
 from tests.fixtures.workflow_runs import SyntheticResources, create_queued_run
-from tests.integration.test_workflow_dispatch import runtime  # noqa: F401 - fixture reuse
+from tests.integration.test_workflow_dispatch import (
+    runtime,  # noqa: F401 - fixture reuse
+)
 
 SECRET_LINE = "RuntimeError: request failed Authorization: Bearer topsecrettoken123 https://u:hunter2pw@host/x?token=querysecret"
 CRASH = r'''
@@ -69,6 +71,7 @@ async def test_manager_drains_a_flooding_worker_and_reports_a_safe_tail_and_log(
     assert_safe(details)
     log = tmp_path / "workspace" / details["diagnosticLog"]
     assert details["diagnosticLog"] == f"runs/{run_id}/generation-1/worker-stderr.log"
+    assert f"诊断日志：{details['diagnosticLog']}" in str(caught.value)
     size = log.stat().st_size
     assert 0 < size <= 5 * 1024 * 1024  # bounded, although ~3 MB were written
     assert b"Traceback" in log.read_bytes()
@@ -103,3 +106,14 @@ async def test_real_dispatcher_keeps_the_unknown_result_and_publishes_the_diagno
     finally:
         await dispatcher.shutdown()
         await manager.shutdown()
+
+
+def test_a_secret_cut_by_the_line_limit_does_not_leave_its_prefix_in_the_tail():
+    from autoflow.infrastructure.process.project_workflow_worker import (
+        _without_partial_secret,
+    )
+
+    secret = "sk-live-abcdef0123456789"
+    assert _without_partial_secret("failed with key sk-live-abcdef01 …", [secret]) == "failed with key  …"
+    assert _without_partial_secret("complete line", [secret]) == "complete line"
+    assert _without_partial_secret("not cut mid secret …", [secret]) == "not cut mid secret …"

@@ -12,7 +12,10 @@ from autoflow.application.project_runs.scheduler import (
 )
 from autoflow.application.settings.runtime import QuiesceGate
 from autoflow.application.workflows.dispatcher import WorkflowRunDispatcher
-from autoflow.infrastructure.database.session import create_session_factory, migrate_database
+from autoflow.infrastructure.database.session import (
+    create_session_factory,
+    migrate_database,
+)
 from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
 from tests.fixtures.workflow_runs import create_queued_run
 from tests.integration.test_project_parameter_concurrency import (

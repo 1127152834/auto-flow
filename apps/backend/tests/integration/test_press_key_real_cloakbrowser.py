@@ -12,7 +12,7 @@ from autoflow.providers.browser.workflow_session import CloakBrowserWorkflowSess
 
 FORM = (
     "data:text/html,<form onsubmit=\"document.title='sent';return false\">"
-    "<input id=q autofocus><input id=next></form>"
+    "<input id=q autofocus><input id=next><button type=submit>go</button></form>"
 )
 
 

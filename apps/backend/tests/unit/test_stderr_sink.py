@@ -5,7 +5,11 @@ from pathlib import Path
 
 import pytest
 
-from autoflow.infrastructure.process.stderr_sink import READ_BYTES, TRUNCATED_MARKER, StderrSink
+from autoflow.infrastructure.process.stderr_sink import (
+    READ_BYTES,
+    TRUNCATED_MARKER,
+    StderrSink,
+)
 
 
 async def feed(sink: StderrSink, *chunks: bytes) -> None:

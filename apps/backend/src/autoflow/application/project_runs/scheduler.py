@@ -204,6 +204,29 @@ class ProjectBatchScheduler:
                         return
                     await self._advance(project_id, batch_id)
 
+    async def _claim_off_loop(self, project_id: str, batch_id: str) -> str:
+        """Run one claim in a worker thread and keep the tick (and its lock) until it settles.
+
+        A thread cannot be interrupted: if the tick is cancelled mid-claim the transaction still
+        commits, so the lock must stay held until then or the next tick would start a second claim.
+        """
+        claim = asyncio.ensure_future(
+            asyncio.to_thread(self._claim_data_task, project_id, batch_id)
+        )
+        cancelled = False
+        while not claim.done():
+            try:
+                await asyncio.shield(claim)
+            except asyncio.CancelledError:
+                cancelled = True
+            except Exception:  # noqa: BLE001 -- surfaced below through claim.result()
+                break
+        if cancelled:
+            # A claim that already committed is picked up by the next tick; its outcome is not lost.
+            await asyncio.gather(claim, return_exceptions=True)
+            raise asyncio.CancelledError
+        return claim.result()
+
     async def _advance(self, project_id: str, batch_id: str) -> None:
         await self._cleanup_terminal_instances(project_id, batch_id)
         self._release_terminal_leases(project_id, batch_id)
@@ -416,9 +439,7 @@ class ProjectBatchScheduler:
                     claim_outcome = "limitReached"
                     break
                 # Spec M1 R1-12: a claim may scan thousands of rows; keep it off the event loop.
-                claim_outcome = await asyncio.to_thread(
-                    self._claim_data_task, project_id, batch_id
-                )
+                claim_outcome = await self._claim_off_loop(project_id, batch_id)
                 if claim_outcome != "ready":
                     break
                 with self._factory() as session:

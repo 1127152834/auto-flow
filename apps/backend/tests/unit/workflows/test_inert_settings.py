@@ -3,7 +3,11 @@
 import re
 from pathlib import Path
 
-from autoflow.domain.workflows.inert_settings import INERT_SETTING_KEYS, describe_inert_keys, inert_keys
+from autoflow.domain.workflows.inert_settings import (
+    INERT_SETTING_KEYS,
+    describe_inert_keys,
+    inert_keys,
+)
 
 FRONTEND = Path(__file__).parents[5] / "apps/desktop/src/renderer/domains/workflows/lib/inertSettings.ts"
 
@@ -16,6 +20,10 @@ def test_rules_report_only_settings_that_would_have_changed_behaviour():
     assert inert_keys({"config": {"onTimeout": "skip", "errorPolicy": {"mode": "continue"}}}, "loop") == ["errorPolicy", "onTimeout"]
     assert inert_keys({"onTimeout": "skip"}, "open_page") == []
     assert inert_keys({"retryCount": "{n}"}, "click_element") == []
+
+
+def test_null_values_count_as_unset_like_the_studio_does():
+    assert inert_keys({"retryCount": 1, "retryDelay": None, "errorPolicy": {"mode": None}}, "click_element") == ["retryCount"]
 
 
 def test_description_names_the_node_and_settings():

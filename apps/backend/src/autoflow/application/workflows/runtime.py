@@ -23,6 +23,7 @@ from autoflow.domain.workflows.parallel_graph import structured_fork
 from autoflow.domain.workflows.project_end import normalize_project_end
 from autoflow.domain.workflows.scope import WorkflowScopeIssue, validate_workflow_scope
 
+from .event_translation import SENSITIVE_FAILURE_REASON, SENSITIVE_SUCCESS_MESSAGE
 from .executors.base import ModuleExecutor, ModuleResult
 from .executors.registry import ExecutorRegistry
 
@@ -931,9 +932,9 @@ def _reported_result(result: ModuleResult, context: ExecutionContext) -> ModuleR
         return result
     return ModuleResult(
         success=result.success,
-        message="节点执行成功（结果包含凭据派生值）" if result.success else "",
+        message=SENSITIVE_SUCCESS_MESSAGE if result.success else "",
         data=None,
-        error="节点执行失败（错误包含凭据派生值）" if not result.success else None,
+        error=SENSITIVE_FAILURE_REASON if not result.success else None,
         branch=result.branch,
         duration=result.duration,
         log_level=result.log_level,

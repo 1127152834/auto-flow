@@ -14,8 +14,8 @@ from autoflow.adapters.http.android_management import (
     android_management_internal_router,
     android_management_router,
 )
-from autoflow.adapters.http.execution_settings import execution_settings_router
 from autoflow.adapters.http.errors import error_response, install_error_handlers
+from autoflow.adapters.http.execution_settings import execution_settings_router
 from autoflow.adapters.http.image_assets import image_assets_router
 from autoflow.adapters.http.local_workflows import local_workflows_router
 from autoflow.adapters.http.openapi import configure_openapi
@@ -78,7 +78,6 @@ from autoflow.application.projects.overview import ProjectOverviewService
 from autoflow.application.projects.service import ProjectService
 from autoflow.application.projects.statistics import ProjectStatisticsService
 from autoflow.application.settings.execution import ExecutionSettingsService
-from autoflow.infrastructure.database.app_settings import SqlAlchemyAppSettings
 from autoflow.application.settings.runtime import QuiesceGate, SettingsRuntimeService
 from autoflow.application.workflows.bundles import WorkflowBundleService
 from autoflow.application.workflows.credentials import StudioCredentialService
@@ -122,6 +121,7 @@ from autoflow.infrastructure.database.android_operations import (
     SqlAlchemyAndroidOperationRepository,
 )
 from autoflow.infrastructure.database.android_resources import AndroidResourceRepository
+from autoflow.infrastructure.database.app_settings import SqlAlchemyAppSettings
 from autoflow.infrastructure.database.environments import SqlAlchemyEnvironments
 from autoflow.infrastructure.database.kernel_operations import (
     SqlAlchemyKernelOperationRepository,
@@ -206,8 +206,8 @@ from autoflow.infrastructure.filesystem.profile_environment import (
     read_profile_environment_options,
 )
 from autoflow.infrastructure.observability import LoopLagMonitor
-from autoflow.infrastructure.process.kernel_worker import KernelWorkerManager
 from autoflow.infrastructure.process.hardware import memory_pressure, system_hardware
+from autoflow.infrastructure.process.kernel_worker import KernelWorkerManager
 from autoflow.infrastructure.process.test_browser_worker import TestBrowserWorkerManager
 from autoflow.providers.android.image_catalog import ImageCatalog
 from autoflow.providers.android.stream import AndroidStream

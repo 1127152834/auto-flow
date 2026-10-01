@@ -21,9 +21,10 @@ def migrate_database(path: Path) -> None:
 
 
 SQLITE_PRAGMAS = (
+    # busy_timeout first so switching an older database to WAL waits for a concurrent connection.
+    "PRAGMA busy_timeout=5000",
     "PRAGMA journal_mode=WAL",
     "PRAGMA synchronous=NORMAL",
-    "PRAGMA busy_timeout=5000",
     "PRAGMA foreign_keys=ON",
 )
 

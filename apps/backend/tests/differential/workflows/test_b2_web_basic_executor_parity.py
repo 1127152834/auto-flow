@@ -26,8 +26,8 @@ from autoflow.application.workflows.executors.web_basic import (
     WaitElementExecutor,
 )
 from autoflow.domain.workflows.browser import BrowserSessionPort
-from autoflow.domain.workflows.scope import WEB_EXTENSION_NODE_TYPES
 from autoflow.domain.workflows.execution import ExecutionContext
+from autoflow.domain.workflows.scope import WEB_EXTENSION_NODE_TYPES
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[5]
 FROZEN_REPOSITORY = REPOSITORY_ROOT / "reference" / "WebRPA"

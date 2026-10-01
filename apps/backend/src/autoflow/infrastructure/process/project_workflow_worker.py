@@ -7,7 +7,7 @@ import re
 import shutil
 import subprocess
 import sys
-from collections.abc import Awaitable, Callable, Mapping
+from collections.abc import Awaitable, Callable, Iterable, Mapping
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path, PurePosixPath
@@ -34,6 +34,19 @@ STDERR_TAIL_LINES = 50
 STDERR_TAIL_LINE_CHARS = 500
 # Absolute path -> its last component; URLs and relative paths are left alone.
 _ABSOLUTE_PATH = re.compile(r"(?<![\w:./\\])(?:[A-Za-z]:)?[\\/](?:[^\s\\/:\"'<>|]+[\\/])+([^\s\\/:\"'<>|]*)")
+
+
+def _without_partial_secret(line: str, secrets: Iterable[str]) -> str:
+    """A line cut at the sink's size limit may end inside a secret, which redaction cannot match."""
+    if not line.endswith(" …"):
+        return line
+    body = line[:-2]
+    for secret in secrets:
+        for length in range(min(len(secret) - 1, len(body)), 3, -1):
+            if body.endswith(secret[:length]):
+                return body[: len(body) - length] + " …"
+    return line
+
 WorkerStatus = Literal["succeeded", "failed", "cancelled", "timed_out"]
 
 
@@ -257,7 +270,7 @@ class ProjectWorkflowWorkerManager:
         if task is not None and not task.done():
             try:
                 await asyncio.wait_for(asyncio.shield(task), wait)
-            except Exception:  # noqa: BLE001 -- diagnostics must never change the outcome
+            except Exception:  # noqa: BLE001, S110 -- diagnostics must never change the outcome
                 pass
         if task is not None and not task.done():
             task.cancel()
@@ -265,11 +278,14 @@ class ProjectWorkflowWorkerManager:
         if sink is not None:
             try:
                 await asyncio.wait_for(sink.close(), 2)
-            except Exception:  # noqa: BLE001
+            except Exception:  # noqa: BLE001, S110
                 pass
 
     async def _lost(self, worker: _Worker, message: str, code: str = "WORKFLOW_WORKER_LOST") -> WorkflowWorkerError:
-        return WorkflowWorkerError(code, message, await self._diagnostics(worker, code))
+        details = await self._diagnostics(worker, code)
+        located = details.get("diagnosticLog")
+        # The path is in the message itself so it survives any consumer that drops structured details.
+        return WorkflowWorkerError(code, f"{message}；诊断日志：{located}" if located else message, details)
 
     async def _diagnostics(self, worker: _Worker, cause: str) -> dict[str, Any]:
         """Safe, bounded evidence for an unknown result: where the log is and a redacted tail."""
@@ -284,9 +300,13 @@ class ProjectWorkflowWorkerManager:
             details["diagnosticLog"] = f"{worker.relative_artifact_directory}/{STDERR_LOG_NAME}"
         else:
             details["diagnosticLogUnavailable"] = "no_output"
+        if sink.dropped or sink.truncated:
+            details["diagnosticLogIncomplete"] = True
         try:
             lines = [
-                _ABSOLUTE_PATH.sub(r"\1", redact_sensitive_text(line, worker.secrets))[:STDERR_TAIL_LINE_CHARS]
+                _ABSOLUTE_PATH.sub(
+                    r"\1", redact_sensitive_text(_without_partial_secret(line, worker.secrets), worker.secrets)
+                )[:STDERR_TAIL_LINE_CHARS]
                 for line in sink.tail(STDERR_TAIL_LINES)
             ]
             if lines:

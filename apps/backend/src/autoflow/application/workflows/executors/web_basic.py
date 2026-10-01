@@ -347,7 +347,8 @@ class PressKeyExecutor(ModuleExecutor):
         target = str(config.get("targetType") or "focused")
         selector = str(context.resolve_value(config.get("selector", "")) or "").strip()
         timeout_seconds = to_int(config.get("timeout", 30), 30, context)
-        timeout = None if timeout_seconds == 0 else timeout_seconds * 1000
+        # 0 means no limit; Playwright reads timeout=0 that way, whereas None falls back to 30 s.
+        timeout = timeout_seconds * 1000
         if not key:
             return ModuleResult(success=False, error="按键不能为空")
         if target not in {"focused", "element"}:

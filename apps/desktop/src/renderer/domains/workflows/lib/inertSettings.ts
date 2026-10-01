@@ -11,11 +11,11 @@ export function inertKeys(data: Record_, moduleType: string): InertSettingKey[] 
   const config = isRecord(data.config) ? { ...data, ...data.config } : data
   const keys: InertSettingKey[] = []
   const policy = config.errorPolicy
-  if (isRecord(policy) && policy.mode !== undefined && policy.mode !== 'stop') keys.push('errorPolicy')
+  if (isRecord(policy) && policy.mode != null && policy.mode !== 'stop') keys.push('errorPolicy')
   const retryCount = Number(config.retryCount)
   if (Number.isFinite(retryCount) && retryCount > 0) {
     keys.push('retryCount')
-    for (const key of ['retryDelay', 'retryBackoff', 'retryExhaustedAction'] as const) if (config[key] !== undefined && config[key] !== '') keys.push(key)
+    for (const key of ['retryDelay', 'retryBackoff', 'retryExhaustedAction'] as const) if (config[key] != null && config[key] !== '') keys.push(key)
   }
   if (config.timeoutAction === 'retry' || config.timeoutAction === 'skip') keys.push('timeoutAction')
   if (LOOP_TYPES.has(moduleType) && (config.onTimeout === 'retry' || config.onTimeout === 'skip')) keys.push('onTimeout')

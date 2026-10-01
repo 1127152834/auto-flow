@@ -56,8 +56,8 @@ from autoflow.infrastructure.gesture import (
     GestureRecognitionService,
     gesture_model_path,
 )
-from autoflow.infrastructure.process.inspection_worker import inspection_worker_command
 from autoflow.infrastructure.process.hardware import memory_pressure
+from autoflow.infrastructure.process.inspection_worker import inspection_worker_command
 from autoflow.infrastructure.process.workflow_worker import (
     WorkflowResourceCoordinator,
     WorkflowWorkerManager,

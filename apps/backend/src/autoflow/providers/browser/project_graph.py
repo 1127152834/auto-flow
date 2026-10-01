@@ -8,6 +8,7 @@ from itertools import pairwise
 from time import monotonic
 from typing import Any
 
+from autoflow.application.workflows.event_translation import node_failure_message
 from autoflow.application.workflows.executors.base import ModuleExecutor, ModuleResult
 from autoflow.application.workflows.executors.production import (
     build_production_executor_registry,
@@ -432,12 +433,8 @@ class ProjectGraphExecutor:
             await emit('log', {'level': level, 'message': visible_message if event.get('isUserLog') else '节点执行完成', 'isUserLog': event.get('isUserLog') is True})
         else:
             timeout = event.get('isTimeout') is True or event.get('error') == 'WORKFLOW_NODE_TIMEOUT'
-            reason = str(event.get('error') or event.get('message') or '').strip()
-            if reason == 'WORKFLOW_NODE_TIMEOUT':
-                reason = ''
-            headline = '工作流节点执行超时' if timeout else '工作流节点执行失败'
-            detail = reason[:1000] + '…' if len(reason) > 1000 else reason
-            self.error = {'code': 'WORKFLOW_NODE_TIMEOUT' if timeout else 'WORKFLOW_NODE_FAILED', 'message': f'{headline}：{detail}' if detail else headline}
+            message = node_failure_message(event.get('error') or event.get('message'), timeout=timeout)
+            self.error = {'code': 'WORKFLOW_NODE_TIMEOUT' if timeout else 'WORKFLOW_NODE_FAILED', 'message': message}
             details = event.get('data')
             if isinstance(details, dict) and isinstance(details.get('projectErrorCode'), str):
                 self.error = {**self.error, 'code': details['projectErrorCode']}

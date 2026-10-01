@@ -39,7 +39,7 @@ class ExecutionSettingsRead(_Model):
     revision: int
 
     @classmethod
-    def from_view(cls, view: ExecutionSettingsView) -> "ExecutionSettingsRead":
+    def from_view(cls, view: ExecutionSettingsView) -> ExecutionSettingsRead:
         capacity = view.capacity
         return cls(
             max_running_browsers=capacity.configured,

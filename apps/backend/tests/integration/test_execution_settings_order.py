@@ -11,7 +11,10 @@ from autoflow.infrastructure.database.app_settings import (
     AppSettingConflict,
     SqlAlchemyAppSettings,
 )
-from autoflow.infrastructure.database.session import create_session_factory, migrate_database
+from autoflow.infrastructure.database.session import (
+    create_session_factory,
+    migrate_database,
+)
 
 HARDWARE = HardwareProfile(8, 16 * GIB)  # recommends 6
 
@@ -44,6 +47,7 @@ class GatedStore:
         self.inner, self.gate_next = inner, False
         self.durable, self.release = threading.Event(), threading.Event()
         self.fail_next = False
+        self.fail_after_commit = False
 
     def get(self, key):
         return self.inner.get(key)
@@ -53,6 +57,9 @@ class GatedStore:
             self.fail_next = False
             raise RuntimeError("disk full")
         revision = self.inner.put(key, value, expected_revision)
+        if self.fail_after_commit:
+            self.fail_after_commit = False
+            raise RuntimeError("connection lost after commit")
         if self.gate_next:
             self.gate_next = False
             self.durable.set()
@@ -162,6 +169,19 @@ async def test_a_failed_persist_applies_nothing(parts):
         await service.update(2, 0)
     view = await service.read()
     assert view.revision == 0 and view.capacity.configured is None
+    assert_consistent(repository, dispatcher, worker, view)
+
+
+@pytest.mark.asyncio
+async def test_an_error_after_the_commit_is_reconciled_from_the_database_on_the_next_call(parts):
+    service, store, repository, dispatcher, worker = parts
+    await service.initialize()
+    store.fail_after_commit = True
+    with pytest.raises(RuntimeError, match="connection lost"):
+        await service.update(2, 0)
+    # The second write used the stale revision 0 and would 409 forever without a re-read.
+    view = await service.update(3, 1)
+    assert view.revision == 2 and view.capacity.configured == 3
     assert_consistent(repository, dispatcher, worker, view)
 
 

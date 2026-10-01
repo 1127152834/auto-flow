@@ -1152,6 +1152,10 @@ export function Toolbar() {
           nodes: wf.nodes as any,
           edges: wf.edges as any,
           variables: wf.variables as any,
+          // 整包里的文档级字段必须原样保留，否则新语义流程会静默退回旧语义。
+          traceMode: (wf as any).traceMode,
+          browserEnvironmentVersion: (wf as any).browserEnvironmentVersion,
+          executionSemantics: (wf as any).executionSemantics,
         })
         if (!imported) {
           addLog({ level: 'error', message: '整包中的工作流格式无效，已保留当前画布' })
