@@ -161,10 +161,11 @@ async function checkAutomationDeletion(browserVersion) {
     const linkedAgain = await seedLegacyAutomation(project.projectId, { ...body, name: '重新关联保留的独立文档' })
     assert.equal(linkedAgain.workflowId, workflow.id)
     await capture('automation-unlinked')
-    // Project deletion must unlink the same edited independent document too.
+    // Editing a linked legacy document persists ownership; project deletion purges it.
     const edited = structuredClone(documentAfter)
     edited.nodes.find(node => node.id === 'manual').data.reason = '项目删除前使用同一份新文档'
     const editedDocument = await api(`/api/workflows/${workflow.id}`, { ...edited, expectedRevision: edited.revision, clientRequestId: randomUUID() }, 'PUT')
+    assert.equal(editedDocument.projectId, project.projectId)
     const secondStart = await api(`${prefix}/automations/${linkedAgain.automationId}/batches`, { expectedAutomationRevision: linkedAgain.managementRevision, parameters: {}, maxTasks: 1, concurrency: 1 })
     const secondBatchId = secondStart.operation.result.batch.batchId
     const secondManual = await poll(async () => (await api(prefix + '/manual-items')).items.find(item => item.status === 'waiting'), 'edited independent workflow running before project deletion')
@@ -194,16 +195,21 @@ async function checkAutomationDeletion(browserVersion) {
     assert.equal(projectReplay.operation.operationId, removedOperation.operationId)
     // DELETE includes optional DTO defaults; the workspace lookup excludes unset fields.
     assert.deepEqual({ workflowId: null, workflowDisposition: null, ...projectReplay.operation.result }, { workflowId: null, workflowDisposition: null, ...removedOperation.result })
-    const survived = await api(`/api/workflows/${workflow.id}`)
-    for (const key of ['id', 'revision', 'nodes', 'edges']) assert.deepEqual(survived[key], editedDocument[key], `project deletion must preserve edited workflow ${key}`)
-    const nextProject = await api('/api/v1/projects', { name: '删除项目后重新关联' })
-    const nextAutomation = await seedLegacyAutomation(nextProject.projectId, { ...body, name: '原独立文档' })
-    assert.equal(nextAutomation.workflowId, workflow.id)
+    await api(`/api/workflows/${workflow.id}`, undefined, 'GET', 404)
+    const nextProject = await api('/api/v1/projects', { name: '删除项目后新建自动化' })
+    const { workflowId: _legacyWorkflowId, ...nextBody } = body
+    const nextAutomation = await api(`/api/v1/projects/${nextProject.projectId}/automations`, { ...nextBody, name: '新项目自有文档' })
+    assert.notEqual(nextAutomation.workflowId, workflow.id)
+    const owned = await api(`/api/workflows/${nextAutomation.workflowId}`)
+    assert.equal(owned.projectId, nextProject.projectId)
+    const saved = await api(`/api/workflows/${owned.id}`, { ...owned, nodes: edited.nodes, edges: edited.edges, expectedRevision: owned.revision, clientRequestId: randomUUID() }, 'PUT')
+    assert.equal(saved.id, nextAutomation.workflowId)
+    assert.deepEqual(saved.nodes, edited.nodes)
     await cdp.evaluate(`location.hash=${JSON.stringify('#/projects/' + nextProject.projectId + '/automations/' + nextAutomation.automationId)}`)
-    await waitFor(cdp, "document.body.innerText.includes('原独立文档') && !document.querySelector('main [role=progressbar]')", 'same independent document linked in the new project')
-    await capture('project-delete-unlinked')
-    const projectDeletion = { status: 'passed', deletedProjectId: project.projectId, retainedWorkflowId: workflow.id, retainedRevision: survived.revision, stoppedTaskId: secondManual.taskId, operationId: removedOperation.operationId, nextProjectId: nextProject.projectId, nextAutomationId: nextAutomation.automationId, scope: 'public HTTP archive/delete with actual waiting worker; new project association shown in Manager; no Studio editing lock or project-owned document deletion claim' }
-    return { status: 'passed', projectDeletion, projectId: project.projectId, workflowId: workflow.id, removedAutomationId: automation.automationId, operationId: operation.operationId, checks: ['public creation refuses client-assigned workflow identities; seeded legacy associations remain compatible', 'real waiting worker blocks deletion without losing its task or document', 'stop invalidates old UI impact and clears name confirmation', 'fresh exact-name UI deletion removes automation/batch/task, terminal manual item and frozen snapshot while keeping the original document', 'replaying the accepted original delete key returns the same operation', 'retained legacy independent documents survive deletion and historical fixture restoration'], limits: ['project-owned document deletion remains refused because ownership is not persisted', 'Studio editing ownership and Windows/Intel physical UI acceptance are not proved'] }
+    await waitFor(cdp, "document.body.innerText.includes('新项目自有文档') && !document.querySelector('main [role=progressbar]')", 'new owned automation shown in the new project')
+    await capture('project-delete-owned')
+    const projectDeletion = { status: 'passed', deletedProjectId: project.projectId, deletedWorkflowId: workflow.id, stoppedTaskId: secondManual.taskId, operationId: removedOperation.operationId, nextProjectId: nextProject.projectId, nextAutomationId: nextAutomation.automationId, nextWorkflowId: saved.id, scope: 'public HTTP archive/delete with actual waiting worker and owned document removal; new owned automation shown in Manager' }
+    return { status: 'passed', projectDeletion, projectId: project.projectId, workflowId: workflow.id, removedAutomationId: automation.automationId, operationId: operation.operationId, checks: ['public creation refuses client-assigned workflow identities; seeded legacy associations remain compatible', 'real waiting worker blocks deletion without losing its task or document', 'stop invalidates old UI impact and clears name confirmation', 'fresh exact-name UI deletion removes automation/batch/task, terminal manual item and frozen snapshot while keeping the legacy independent document', 'replaying the accepted original delete key returns the same operation', 'project deletion removes the edited owned document; a new project receives a distinct owned workflow'], limits: ['standalone deleteOwned automation disposition remains unsupported', 'Studio editing ownership and Windows/Intel physical UI acceptance are not proved'] }
   } finally { cdp.socket.removeEventListener('message', observe) }
 }
 
@@ -274,9 +280,10 @@ async function checkStudioWindowLifecycle(document, run) {
 
 async function checkStandaloneStudio(browserVersion) {
   const metadata = await api('/api/system/module-required-fields')
-  assert.equal(metadata.coveredModules.length, 69)
+  assert.equal(metadata.coveredModules.length, 218)
   assert.deepEqual(metadata.requiredFields.open_page, ['url'])
-  assert.equal(metadata.coveredModules.includes('project_data'), false)
+  assert.equal(metadata.coveredModules.includes('project_data'), true)
+  assert.deepEqual(metadata.requiredFields.project_data, ['operation', 'arguments', 'variableName'])
   const incomplete = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: '正式必填规则空网址', variables: [], nodes: [
     { id: 'missing-url', type: 'open_page', position: { x: 100, y: 100 }, data: { moduleType: 'open_page', label: '空网址', url: '' } },
   ], edges: [] })
@@ -326,13 +333,14 @@ async function checkStandaloneStudio(browserVersion) {
     await waitFor(studio, "Boolean(document.querySelector('.react-flow__node[data-id=\"write-project\"]'))", 'project write document loaded')
     await click('', '.react-flow__node[data-id="write-project"]', studio)
     await waitFor(studio, "document.body.innerText.includes('从项目自动化批次运行。使用任务的输入快照和数据权限')", 'explicit project capability guidance')
-    await waitFor(studio, "document.body.innerText.includes('此节点尚未提供必填字段规则，请核对配置。')", 'uncovered project metadata remains explicit')
+    await waitFor(studio, "document.body.innerText.includes('有 1 个必填项未填写：') && document.body.innerText.includes('绑定项目')", 'covered project metadata identifies missing project binding')
+    assert.equal(await studio.evaluate("document.body.innerText.includes('此节点尚未提供必填字段规则，请核对配置。')"), false)
     assert.equal(await studio.evaluate("document.body.innerText.includes('必填字段规则未加载')"), false)
     await capture('studio-project-context', studio)
     await click('运行 (F5)', '[aria-label="运行 (F5)"]', studio)
     await click('无头运行', '[role=menuitem]', studio)
     const refusal = await waitFor(studio, "[...document.querySelectorAll('[role=alert]')].find(e=>e.innerText.includes('执行失败:'))?.innerText", 'standalone project node admission refused')
-    assert.ok(refusal.includes('HTTP 422') && refusal.includes('工作流包含尚未迁入或无法运行的节点'))
+    assert.ok(refusal.includes('HTTP 422') && refusal.includes('项目数据节点需要从项目自动化任务运行'), refusal)
     assert.equal((await api(`/api/workflow-runs?documentId=${document.id}&cursor=0&limit=20`)).items.length, 0)
     const afterRefusal = await api(`/api/workflows/${document.id}`)
     assert.equal(afterRefusal.revision, document.revision)
@@ -351,7 +359,7 @@ async function checkStandaloneStudio(browserVersion) {
     assert.equal((await api('/api/workflow-runs?cursor=0&limit=20')).items.length, 1)
     await capture('studio-project-document-saved', studio)
     const windows = await checkStudioWindowLifecycle(edited, run)
-    return { status: 'passed', metadata: { schemaRevision: metadata.schemaRevision, coveredCount: metadata.coveredModules.length, emptyUrlGuidance: 'passed', projectNodeUncovered: true }, windows, standaloneWorkflowId: standalone.id, projectWorkflowId: document.id, runId: run.runId, refusal, checks: ['zero Project before and after independent real browser run', 'actual Studio displays project context guidance; existing standalone admission returns HTTP 422 unsupported node, creates no run and leaves the document unchanged', 'actual Studio edit/save retains project node identity, operation, arguments and frozen grant without implicit Project'], limits: [`one ${process.platform}/${process.arch} application window; full Studio module/physical platform gates remain separate`] }
+    return { status: 'passed', metadata: { schemaRevision: metadata.schemaRevision, coveredCount: metadata.coveredModules.length, emptyUrlGuidance: 'passed', projectBindingGuidance: 'passed' }, windows, standaloneWorkflowId: standalone.id, projectWorkflowId: document.id, runId: run.runId, refusal, checks: ['zero Project before and after independent real browser run', 'actual Studio displays required project binding guidance; standalone admission returns HTTP 422 missing project capability, creates no run and leaves the document unchanged', 'actual Studio edit/save retains project node identity, operation, arguments and frozen grant without implicit Project'], limits: [`one ${process.platform}/${process.arch} application window; full Studio module/physical platform gates remain separate`] }
   } catch (error) {
     await capture('studio-failure', studio).catch(() => {})
     throw error
@@ -401,25 +409,26 @@ try {
       await access(join(userData, 'workspace/environments/environments', evidence.environmentId, 'generations', String(evidence.savedGeneration)))
       for (const instance of evidence.instances) await assert.rejects(access(join(userData, 'workspace/environments/instances', instance.instanceId)), { code: 'ENOENT' })
       await cdp.evaluate(`location.hash=${JSON.stringify('#/projects/' + projectId + '/runs/tasks/' + evidence.instances[0].taskId + '/io')}`)
-      await waitFor(cdp, "document.body.innerText.includes('本次浏览器工作副本已清理，不能再次保存本次会话。') && !document.querySelector('main [role=progressbar]')", 'completed no-retention Task evidence')
+      await waitFor(cdp, "document.querySelector('[aria-label=\"项目结束结果\"]')?.innerText.includes('End 已完成') && document.body.innerText.includes('已确认浏览器退出，临时环境已释放。') && !document.querySelector('main [role=progressbar]')", 'completed no-retention Task evidence')
       assert.equal(await cdp.evaluate("Boolean([...document.querySelectorAll('[role=status], [role=alert]')].some(element => /已保留登录环境|环境已保存/.test(element.innerText)))"), false, 'completed no-retention Task must not announce a successful save')
       assert.equal(await cdp.evaluate("Boolean([...document.querySelectorAll('button')].find(element => element.innerText.trim() === '结束并保留'))"), false)
       await capture('session-not-saved')
       evidence.desktop = { workCopiesAbsent: true, saveSuccessAnnouncement: false }
     }, repairEnd: async (projectId, taskId, original) => {
       await cdp.evaluate(`location.hash=${JSON.stringify('#/projects/' + projectId + '/runs/tasks/' + taskId + '/io')}`)
-      await waitFor(cdp, "Boolean([...document.querySelectorAll('button')].find(button => button.innerText.trim() === '修复关联' && !button.disabled))", 'persisted worker End repair available on fresh task page')
+      await waitFor(cdp, "Boolean([...document.querySelectorAll('button')].find(button => button.innerText.trim() === '读取当前关联并修复' && !button.disabled))", 'persisted worker End repair available on fresh task page')
       assert.equal(await cdp.evaluate("Boolean([...document.querySelectorAll('button')].find(button => button.innerText.trim() === '结束并保留'))"), false)
       await capture('end-saved-unlinked')
-      await click('允许本次修复替换所选记录的现有关联', 'label')
-      await click('修复关联')
-      await waitFor(cdp, "!Boolean([...document.querySelectorAll('button')].find(button => button.innerText.trim() === '修复关联'))", 'association repair completed without another save')
+      await click('读取当前关联并修复')
+      await click('确认按以上当前版本关联全部目标，并允许替换已有环境', 'label')
+      await click('确认修复关联')
+      await waitFor(cdp, "document.body.innerText.includes('关联已修复，历史运行失败事实保持不变。')", 'association repair completed without another save')
       const current = await api(`/api/v1/projects/${projectId}/tasks/${taskId}/end`)
       assert.equal(current.associationPhase, 'completed')
       assert.equal(current.saveOperationId, original.saveOperationId)
       await cdp.evaluate('location.reload()')
-      await waitFor(cdp, "document.body.innerText.includes('已修复记录关联，原任务的失败结果保持不变。') && !document.querySelector('main [role=progressbar]')", 'reloaded task retains completed association phase')
-      assert.equal(await cdp.evaluate("Boolean([...document.querySelectorAll('button')].find(button => ['修复关联', '结束并保留'].includes(button.innerText.trim())))"), false)
+      await waitFor(cdp, "document.body.innerText.includes('关联已修复，历史运行失败事实保持不变。') && !document.querySelector('main [role=progressbar]')", 'reloaded task retains completed association phase')
+      assert.equal(await cdp.evaluate("Boolean([...document.querySelectorAll('button')].find(button => ['读取当前关联并修复', '确认修复关联', '结束并保留'].includes(button.innerText.trim())))"), false)
       await capture('end-repair-reloaded')
     }, resumeManual: async (projectId, item) => {
       await cdp.evaluate(`location.hash=${JSON.stringify('#/projects/' + projectId + '/runs/manual/' + item.manualItemId)}`)

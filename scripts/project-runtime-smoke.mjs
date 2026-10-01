@@ -29,19 +29,21 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks 
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
   const site = `http://127.0.0.1:${server.address().port}`
   const ownedWorkflows = new Map()
-  async function api(path, body, method = body === undefined ? 'GET' : 'POST') {
+  async function api(path, body, method = body === undefined ? 'GET' : 'POST', { status, key = randomUUID() } = {}) {
     const alias = path.match(/^\/api\/workflows\/([^/?]+)$/)?.[1]
     if (alias && ownedWorkflows.has(alias)) {
       path = '/api/workflows/' + ownedWorkflows.get(alias)
       if (body) body = { ...body, id: ownedWorkflows.get(alias) }
     }
-    const response = await fetch(baseUrl + path, { method, headers: { 'x-autoflow-token': token, 'content-type': 'application/json', 'Idempotency-Key': randomUUID() }, ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(60_000) })
+    const response = await fetch(baseUrl + path, { method, headers: { 'x-autoflow-token': token, 'content-type': 'application/json', 'Idempotency-Key': key }, ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(60_000) })
     const result = await response.json()
-    assert.ok(response.ok, `${method} ${path}: ${response.status} ${JSON.stringify(result)}`)
+    assert.ok(status === undefined ? response.ok : response.status === status, `${method} ${path}: ${response.status} ${JSON.stringify(result)}`)
     return result
   }
   const node = (id, moduleType, config) => ({ id, type: moduleType, position: { x: 100, y: 100 }, data: { moduleType, ...config } })
   const edge = (source, target, sourceHandle) => ({ id: randomUUID(), source, target, ...(sourceHandle ? { sourceHandle } : {}) })
+  const endTargets = (...names) => node('end-targets', 'python_script', { scriptMode: 'content', useBuiltinPython: true,
+    scriptContent: `return [${names.map(name => `vars.${name}["ref"]`).join(', ')}]`, resultVariable: 'endTargets' })
   try {
     const project = await api('/api/v1/projects', { name: 'PM9 生产运行链' })
     const prefix = `/api/v1/projects/${project.projectId}`
@@ -64,8 +66,9 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks 
       node('manual', 'project_manual', { reason: '核验登录后继续', timeoutSeconds: 60, inputSchema: [{ name: 'confirmation', title: '确认码', type: 'string', required: true }], resumeTargets: [{ nodeId: 'accepted', title: '确认后保存', requiredVariables: ['confirmation'] }, { nodeId: 'alternate', title: '其他分支' }] }),
       node('accepted', 'set_variable', { variableName: 'humanConfirmation', variableValue: 'human-{confirmation}' }),
       node('alternate', 'set_variable', { variableName: 'unselected', variableValue: 'must-not-run' }),
-      node('end', 'project_end', { retainEnvironment: { enabled: true, mode: 'saveAs', name: "{saved['ref']['recordKey']['value']}", recordTargets: [{ recordRef: "{saved['ref']}", expectedLinkRevision: "{saved['linkRevision']}", replaceAllowed: false }] } }),
-    ], edges: [edge('query', 'condition'), edge('condition', 'login', 'true'), edge('login', 'read'), edge('read', 'write'), edge('write', 'manual'), edge('manual', 'accepted'), edge('manual', 'alternate'), edge('accepted', 'end'), edge('alternate', 'end')] })
+      endTargets('saved'),
+      node('end', 'project_end', { retainEnvironment: true, saveMode: 'save_as', name: "{saved['ref']['recordKey']['value']}", recordTargets: '{endTargets}', inputIds: [], replaceAllowed: false }),
+    ], edges: [edge('query', 'condition'), edge('condition', 'login', 'true'), edge('login', 'read'), edge('read', 'write'), edge('write', 'manual'), edge('manual', 'accepted'), edge('manual', 'alternate'), edge('accepted', 'end-targets'), edge('alternate', 'end-targets'), edge('end-targets', 'end')] })
     const runPolicy = { maxTasks: 1, concurrency: 1, maxLiveInstances: 1, continueAfterFailure: false, automaticExecutionTimeoutSeconds: 600, manualDeadlineSeconds: 60 }
     async function run(workflowId, environmentPolicy, parameterSchema = [], parameters = {}, expectedStatus = 'succeeded', inputPlan = { inputs: [] }, followUp = null, options = {}) {
       const maxTasks = options.maxTasks ?? 1
@@ -92,7 +95,10 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks 
             handled.add(item.manualItemId)
             continue
           }
-          await options.beforeResume?.(item)
+          if (await options.beforeResume?.(item) === false) {
+            handled.add(item.manualItemId)
+            continue
+          }
           const body = { checkpointRevision: item.checkpointRevision, expectedStatusRevision: item.statusRevision, ...(item.inputSchema?.length ? { inputs: { confirmation: 'verified' }, targetNodeId: 'accepted' } : {}) }
           if (item.inputSchema?.length && hooks.resumeManual) await hooks.resumeManual(project.projectId, item, body)
           else await api(`${prefix}/manual-items/${item.manualItemId}/resume`, body)
@@ -176,7 +182,7 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks 
       await api(`/api/v1/profiles/${frozenProfile.id}`, { ...profileSpec, userAgent: 'AutoFlow-PM9-edited', locale: 'fr-FR', timezone: 'Europe/Paris' }, 'PUT')
       newSeed = (await api(`/api/v1/profiles/${frozenProfile.id}/regenerate-fingerprint`, {})).fingerprintSeed
       assert.notEqual(newSeed, frozenProfile.fingerprintSeed)
-      const changed = structuredClone(profileDocument)
+      const changed = await api(`/api/workflows/${profileDocument.id}`)
       changed.nodes.find(node => node.id === 'observe').data.variableName = 'newObservation'
       await api(`/api/workflows/${changed.id}`, { ...changed, expectedRevision: changed.revision, clientRequestId: randomUUID() }, 'PUT')
     } })
@@ -204,11 +210,12 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks 
     const parallelTable = await table('并行循环结果')
     const parallelWrite = (id, value) => node(id, 'project_data', { operation: 'createRecord', bindingProjectId: project.projectId, variableName: 'saved', tableGrant: grant(parallelTable, 'createRecord'), arguments: { tableId: parallelTable.table.tableId, datasetGeneration: parallelTable.table.datasetGeneration, values: { [parallelTable.fieldId]: value } } })
     const parallelDocument = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: 'PM9 并行循环隔离', variables: [], nodes: [
-      node('fork', 'set_variable', { variableName: 'started', variableValue: 'yes', parallel: { joinNodeId: 'end', outputs: { left: { saved: 'leftSaved' }, right: { saved: 'rightSaved' } } } }),
+      node('fork', 'set_variable', { variableName: 'started', variableValue: 'yes', parallel: { joinNodeId: 'end-targets', outputs: { left: { saved: 'leftSaved' }, right: { saved: 'rightSaved' } } } }),
       node('left', 'loop', { count: 2, indexVariable: 'index' }), parallelWrite('left-write', 'A-{index}'),
       node('right', 'loop', { count: 3, indexVariable: 'index' }), parallelWrite('right-write', 'B-{index}'),
-      node('end', 'project_end', { retainEnvironment: { enabled: true, mode: 'saveAs', name: '并行声明输出', recordTargets: ['leftSaved', 'rightSaved'].map(name => ({ recordRef: `{${name}['ref']}`, expectedLinkRevision: `{${name}['linkRevision']}`, replaceAllowed: false })) } }),
-    ], edges: [edge('fork', 'left'), edge('fork', 'right'), edge('left', 'left-write', 'loop'), edge('right', 'right-write', 'loop'), edge('left', 'end', 'done'), edge('right', 'end', 'done')] })
+      endTargets('leftSaved', 'rightSaved'),
+      node('end', 'project_end', { retainEnvironment: true, saveMode: 'save_as', name: '并行声明输出', recordTargets: '{endTargets}', inputIds: [], replaceAllowed: false }),
+    ], edges: [edge('fork', 'left'), edge('fork', 'right'), edge('left', 'left-write', 'loop'), edge('right', 'right-write', 'loop'), edge('left', 'end-targets', 'done'), edge('right', 'end-targets', 'done'), edge('end-targets', 'end')] })
     const parallelRun = await run(parallelDocument.id, environment)
     const parallelRows = (await api(`${prefix}/tables/${parallelTable.table.tableId}/records?datasetGeneration=${parallelTable.table.datasetGeneration}`)).items
     assert.deepEqual(parallelRows.map(row => row.values[0].value).sort(), ['A-0', 'A-1', 'B-0', 'B-1', 'B-2'])
@@ -260,14 +267,15 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks 
       node('first-call', 'subflow', { subflowGroupId: 'child', inputs: { value: 'frozen-first' }, outputs: { saved: 'firstSaved' } }),
       node('second-call', 'subflow', { subflowGroupId: 'child', inputs: { value: 'frozen-second' }, outputs: { saved: 'secondSaved' } }),
       node('inspect-parent', 'set_variable', { variableName: 'parentAfterCalls', variableValue: '{privateValue}' }),
-      node('end', 'project_end', { retainEnvironment: { enabled: true, mode: 'saveAs', name: "{firstSaved['ref']['recordKey']['value']}", recordTargets: ['firstSaved', 'secondSaved'].map(name => ({ recordRef: `{${name}['ref']}`, expectedLinkRevision: `{${name}['linkRevision']}`, replaceAllowed: false })) } }),
+      endTargets('firstSaved', 'secondSaved'),
+      node('end', 'project_end', { retainEnvironment: true, saveMode: 'save_as', name: "{firstSaved[ref][recordKey][value]}", recordTargets: '{endTargets}', inputIds: [], replaceAllowed: false }),
       node('child', 'subflow_header', { subflowName: '冻结子图' }),
       node('child-private', 'set_variable', { variableName: 'privateValue', variableValue: 'child-only' }), childWrite('child-write'),
-    ], edges: [edge('open', 'private'), edge('private', 'freeze-barrier'), edge('freeze-barrier', 'first-call'), edge('first-call', 'second-call'), edge('second-call', 'inspect-parent'), edge('inspect-parent', 'end'), edge('child', 'child-private'), edge('child-private', 'child-write')] })
+    ], edges: [edge('open', 'private'), edge('private', 'freeze-barrier'), edge('freeze-barrier', 'first-call'), edge('first-call', 'second-call'), edge('second-call', 'inspect-parent'), edge('inspect-parent', 'end-targets'), edge('end-targets', 'end'), edge('child', 'child-private'), edge('child-private', 'child-write')] })
     let editedChild = false
     const subflow = await run(childDocument.id, environment, [], {}, 'succeeded', { inputs: [] }, null, { maxTasks: 2, expectedVisits: { 'child-private': 2, 'child-write': 2 }, beforeResume: async () => {
       if (editedChild) return
-      const changed = structuredClone(childDocument)
+      const changed = await api(`/api/workflows/${childDocument.id}`)
       changed.nodes.find(node => node.id === 'child-write').data.arguments.values[childTable.fieldId] = 'must-not-replace-frozen-content'
       const saved = await api(`/api/workflows/${changed.id}`, { ...changed, expectedRevision: changed.revision, clientRequestId: randomUUID() }, 'PUT')
       assert.equal(saved.revision, changed.revision + 1)
@@ -381,20 +389,45 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks 
     assert.equal(kept.statusRevision, statusRevisionBeforeFailure + 1)
     assert.equal(partial.attempts.find(attempt => attempt.nodeId === 'status').status, 'succeeded')
     assert.equal(partial.attempts.find(attempt => attempt.nodeId === 'missing').status, 'failed')
-    const mixedWorkflow = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: 'PM9 初始与新建混合关联', variables: [], nodes: [readInputs(), node('login', 'open_page', { url: site + '/login' }), node('create', 'project_data', { operation: 'createRecord', bindingProjectId: project.projectId, variableName: 'created', tableGrant: grant(target, 'createRecord'), arguments: { tableId: target.table.tableId, datasetGeneration: target.table.datasetGeneration, values: { [target.fieldId]: 'mixed-link' } } }), node('end', 'project_end', { retainEnvironment: { enabled: true, mode: 'saveAs', name: "{created['ref']['recordKey']['value']}", recordTargets: [{ recordRef: "{frozen[0]['recordRef']}", expectedLinkRevision: "{frozen[0]['linkRevision']}", replaceAllowed: false }, { recordRef: "{created['ref']}", expectedLinkRevision: "{created['linkRevision']}", replaceAllowed: false }] } })], edges: [edge('inputs', 'login'), edge('login', 'create'), edge('create', 'end')] })
+    const mixedWorkflow = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: 'PM9 初始与新建混合关联', variables: [], nodes: [readInputs(), change('authorize-link', "{frozen[0]['contentRevision']}", 'task-second'), node('login', 'open_page', { url: site + '/login' }), node('create', 'project_data', { operation: 'createRecord', bindingProjectId: project.projectId, variableName: 'created', tableGrant: grant(target, 'createRecord'), arguments: { tableId: target.table.tableId, datasetGeneration: target.table.datasetGeneration, values: { [target.fieldId]: 'mixed-link' } } }), endTargets('created'), node('end', 'project_end', { retainEnvironment: true, saveMode: 'save_as', name: "{created[ref][recordKey][value]}", recordTargets: '{endTargets}', inputIds: [twoInputs.inputs[0].inputId], replaceAllowed: false })], edges: [edge('inputs', 'authorize-link'), edge('authorize-link', 'login'), edge('login', 'create'), edge('create', 'end-targets'), edge('end-targets', 'end')] })
     const mixed = await run(mixedWorkflow.id, environment, [], {}, 'succeeded', twoInputs)
     const linkedSource = await sourceRecord()
     const mixedRows = (await api(`${prefix}/tables/${target.table.tableId}/records?datasetGeneration=${target.table.datasetGeneration}`)).items
     assert.equal(mixedRows.find(row => row.values[0].value === 'mixed-link').currentEnvironmentId, linkedSource.currentEnvironmentId)
     assert.ok(linkedSource.currentEnvironmentId)
     const beforeEnvironments = (await api(prefix + '/environments')).total
-    const unlinked = await run(mixedWorkflow.id, environment, [], {}, 'failed', twoInputs, null, { automation: mixed.automation })
-    assert.equal(unlinked.attempts.find(attempt => attempt.nodeId === 'end')?.status, 'failed', JSON.stringify(unlinked.attempts))
+    const refused = await run(mixedWorkflow.id, environment, [], {}, 'failed', twoInputs, null, { automation: mixed.automation })
+    assert.equal(refused.attempts.find(attempt => attempt.nodeId === 'end')?.error.code, 'ASSOCIATION_REPLACE_FORBIDDEN')
+    assert.equal((await api(prefix + '/environments')).total, beforeEnvironments, 'worker End preflight must refuse unauthorized replacement before saving')
+    assert.equal((await sourceRecord()).currentEnvironmentId, linkedSource.currentEnvironmentId)
     assert.equal((await sourceRecord()).currentEnvironmentId, linkedSource.currentEnvironmentId, 'an End cannot replace another environment without explicit authorization')
+    const afterRefusal = (await api(`${prefix}/tables/${target.table.tableId}/records?datasetGeneration=${target.table.datasetGeneration}`)).items.filter(row => row.values[0].value === 'mixed-link')
+    assert.equal(afterRefusal.length, 2)
+    assert.equal(afterRefusal.filter(row => row.currentEnvironmentId === null).length, 1)
+    const manualSaveWorkflow = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: 'PM9 人工保存后关联修复', variables: [], nodes: [
+      ...mixedWorkflow.nodes.filter(item => ['inputs', 'login', 'create'].includes(item.id)),
+      node('manual', 'project_manual', { reason: '验证保存与关联的独立结果', timeoutSeconds: 60 }),
+      node('end', 'project_end', { retainEnvironment: false }),
+    ], edges: [edge('inputs', 'login'), edge('login', 'create'), edge('create', 'manual'), edge('manual', 'end')] })
+    let createdForRepair
+    const unlinked = await run(manualSaveWorkflow.id, environment, [], {}, 'failed', twoInputs, null, { beforeResume: async item => {
+      const outputs = (await api(`${prefix}/tasks/${item.taskId}/outputs`)).items
+      createdForRepair = outputs.find(output => output.name === 'created').value
+      await api(`${prefix}/manual-items/${item.manualItemId}/finish`, {
+        expectedCheckpointRevision: item.checkpointRevision, expectedStatusRevision: item.statusRevision, outcome: 'succeeded', reason: '验证保存成功但禁止覆盖已有记录关联',
+        retainEnvironment: { enabled: true, mode: 'saveAs', name: createdForRepair.ref.recordKey.value, recordTargets: [
+          { recordRef: createdForRepair.ref, expectedLinkRevision: createdForRepair.linkRevision, replaceAllowed: false },
+          { recordRef: linkedSource.ref, expectedLinkRevision: linkedSource.linkRevision, replaceAllowed: false },
+        ] },
+      })
+      return false
+    } })
+    assert.equal(unlinked.attempts.some(attempt => attempt.nodeId === 'end'), false, 'manual finish must not continue to the End node')
+    assert.equal((await sourceRecord()).currentEnvironmentId, linkedSource.currentEnvironmentId)
     assert.equal((await api(prefix + '/environments')).total, beforeEnvironments + 1, 'the saved environment must survive failed association')
     const afterUnlinked = (await api(`${prefix}/tables/${target.table.tableId}/records?datasetGeneration=${target.table.datasetGeneration}`)).items.filter(row => row.values[0].value === 'mixed-link')
-    assert.equal(afterUnlinked.length, 2)
-    assert.equal(afterUnlinked.filter(row => row.currentEnvironmentId === null).length, 1, 'failed association must not partially link the newly created target')
+    assert.equal(afterUnlinked.length, 3)
+    assert.equal(afterUnlinked.filter(row => row.currentEnvironmentId === null).length, 2, 'failed association must not partially link the newly created target')
     const operations = (await api(prefix + '/operations?pageSize=200')).items
     const save = operations.find(operation => operation.idempotencyKey?.startsWith('end-save:') && operation.result?.phase === 'saved_unlinked')
     assert.ok(save, 'the original save result must be queryable')
@@ -408,12 +441,14 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks 
     assert.equal(recoveredEnd.associationPhase, 'saved_unlinked')
     const frozenBeforeRepair = (await api(`${prefix}/tasks/${unlinked.task.taskId}`)).inputSnapshot
     if (hooks.repairEnd) await hooks.repairEnd(project.projectId, unlinked.task.taskId, recoveredEnd)
-    else await api(`${prefix}/environment-operations/${save.operationId}/repair`, { recordTargets: [{ recordRef: linkedSource.ref, expectedLinkRevision: linkedSource.linkRevision, replaceAllowed: true }] })
+    else await api(`${prefix}/environment-operations/${save.operationId}/repair`, { recordTargets: [{ recordRef: linkedSource.ref, expectedLinkRevision: linkedSource.linkRevision, replaceAllowed: true }, { recordRef: createdForRepair.ref, expectedLinkRevision: createdForRepair.linkRevision, replaceAllowed: true }] })
     const repairedEnd = await api(`${prefix}/tasks/${unlinked.task.taskId}/end`)
     assert.equal(repairedEnd.associationPhase, 'completed')
     assert.deepEqual(repairedEnd.operation, recoveredEnd.operation, 'repair preserves the original failed End receipt')
     assert.deepEqual((await api(`${prefix}/tasks/${unlinked.task.taskId}`)).inputSnapshot, frozenBeforeRepair)
     assert.equal((await sourceRecord()).currentEnvironmentId, savedId)
+    const repairedTargets = (await api(`${prefix}/tables/${target.table.tableId}/records?datasetGeneration=${target.table.datasetGeneration}`)).items
+    assert.equal(repairedTargets.find(row => row.ref.recordKey.value === createdForRepair.ref.recordKey.value)?.currentEnvironmentId, savedId, 'repair must link the newly created target too')
     assert.equal((await api(prefix + '/environments')).total, beforeEnvironments + 1)
     assert.deepEqual((await api(`${prefix}/environments/${savedId}`)).environment, environmentBeforeRepair.environment, 'repair must not publish another environment generation')
     assert.deepEqual(await api(`${prefix}/tasks/${unlinked.task.taskId}/node-attempts`), beforeRepair, 'repair must not execute nodes again')
@@ -426,9 +461,35 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks 
       node('before', 'get_element_info', { selector: '#session', attribute: 'text', variableName: 'before' }),
       node('change', 'open_page', { url: site + '/unsaved-session' }), node('reload', 'open_page', { url: site + '/account' }),
       node('after', 'get_element_info', { selector: '#session', attribute: 'text', variableName: 'after' }),
-      node('end', 'project_end', { retainEnvironment: { enabled: true, mode: 'update', expectedContentGeneration: 1, recordTargets: [{ recordRef: "{frozen[0]['recordRef']}", expectedLinkRevision: "{frozen[0]['linkRevision']}", replaceAllowed: false }] } }),
+      node('end', 'project_end', { retainEnvironment: true, saveMode: 'auto', inputIds: [], recordTargets: [], replaceAllowed: false }),
     ], edges: [edge('inputs', 'open'), edge('open', 'login'), edge('login', 'before'), edge('before', 'change'), edge('change', 'reload'), edge('reload', 'after'), edge('after', 'end')] })
     const inputEnvironment = { source: 'inputEnvironment', inputId: inputPlan.inputs[0].inputId, proxyOverride: { mode: 'none' }, modelProviderId: null }
+    // Preserve a closed generation-1 copy through a real failed manual save.
+    // A newly started flat End correctly uses its current source generation.
+    const staleWorkflow = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: 'PM9 旧副本保存竞争', variables: [], nodes: [
+      node('open', 'open_page', { url: site + '/account' }),
+      node('session', 'get_element_info', { selector: '#session', attribute: 'text', variableName: 'session' }),
+      node('manual', 'project_manual', { reason: '保留旧副本以核验发布竞争', timeoutSeconds: 60 }),
+      node('end', 'project_end', { retainEnvironment: false }),
+    ], edges: [edge('open', 'session'), edge('session', 'manual'), edge('manual', 'end')] })
+    let failedFinish, oldManual
+    const staleSave = await run(staleWorkflow.id, inputEnvironment, [], {}, 'failed', inputPlan, null, { beforeResume: async item => {
+      oldManual = item
+      failedFinish = await api(`${prefix}/manual-items/${item.manualItemId}/finish`, {
+        expectedCheckpointRevision: item.checkpointRevision, expectedStatusRevision: item.statusRevision,
+        outcome: 'failed', reason: '验证保存冲突后保留旧副本',
+        retainEnvironment: { enabled: true, mode: 'update', expectedContentGeneration: 2, recordTargets: [] },
+      })
+      return false
+    } })
+    assert.equal(staleSave.outputs.find(output => output.name === 'session')?.value, '1')
+    const finishOperation = await api(`${prefix}/operations/by-idempotency-key/${failedFinish.operation.idempotencyKey}`)
+    assert.equal(finishOperation.status, 'failed')
+    assert.equal(finishOperation.error.code, 'SAVE_GENERATION_CONFLICT')
+    assert.equal((await api(`${prefix}/manual-items/${oldManual.manualItemId}`)).status, 'cancelled')
+    const oldInstance = (await api(`${prefix}/environment-instances?taskId=${staleSave.task.taskId}`)).items[0]
+    assert.equal(oldInstance.state, 'retained_unsaved')
+    assert.equal(oldInstance.sourceContentGeneration, 1)
     const updated = await run(updateWorkflow.id, inputEnvironment, [], {}, 'succeeded', inputPlan)
     assert.equal(updated.outputs.find(output => output.name === 'login')?.value, 'signed-in')
     assert.equal(updated.outputs.find(output => output.name === 'before')?.value, '1')
@@ -439,6 +500,18 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks 
     assert.equal(published.environment.ref.environmentId, savedId)
     const updateInstance = (await api(`${prefix}/environment-instances?taskId=${updated.task.taskId}`)).items[0]
     assert.equal(updateInstance.sourceContentGeneration, 1)
+    const staleKey = randomUUID()
+    const staleFailure = await api(prefix + '/environment-saves', {
+      instanceId: oldInstance.instanceId, mode: 'update', expectedUseGeneration: oldInstance.instanceUseGeneration,
+      executionGeneration: (await api(`${prefix}/tasks/${staleSave.task.taskId}`)).run.executionGeneration,
+      expectedContentGeneration: oldInstance.sourceContentGeneration, recordTargets: [],
+    }, 'POST', { status: 409, key: staleKey })
+    assert.equal(staleFailure.error.code, 'SAVE_GENERATION_CONFLICT')
+    const staleOperation = await api(`${prefix}/operations/by-idempotency-key/${staleKey}`)
+    assert.equal(staleOperation.status, 'failed')
+    assert.equal(staleOperation.result.instance.state, 'retained_unsaved')
+    assert.deepEqual((await api(`${prefix}/environments/${savedId}`)).environment, published.environment, 'a stale expected generation cannot overwrite newer content')
+    assert.deepEqual(await sourceRecord(), repairedRecord)
     const thirdWorkflow = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: 'PM9 记录关联读取新代次', variables: [], nodes: readLogin.nodes, edges: readLogin.edges })
     const third = await run(thirdWorkflow.id, inputEnvironment, [], {}, 'succeeded', inputPlan)
     assert.equal(third.outputs.find(output => output.name === 'login')?.value, 'signed-in')
@@ -447,11 +520,7 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks 
     assert.equal(thirdInstance.sourceContentGeneration, 2)
     assert.deepEqual(await sourceRecord(), repairedRecord)
     assert.equal((await api(prefix + '/environments')).total, beforeEnvironments + 1)
-    const staleSave = await run(updateWorkflow.id, inputEnvironment, [], {}, 'failed', inputPlan, null, { automation: updated.automation })
-    assert.equal(staleSave.attempts.find(attempt => attempt.nodeId === 'end').error.code, 'SAVE_GENERATION_CONFLICT')
-    assert.deepEqual((await api(`${prefix}/environments/${savedId}`)).environment, published.environment, 'a stale expected generation cannot overwrite newer content')
-    assert.deepEqual(await sourceRecord(), repairedRecord)
-    const endAssociation = { status: 'passed', failedTaskId: unlinked.task.taskId, endOperationId: recoveredEnd.operation.operationId, saveOperationId: save.operationId, savedEnvironmentId: savedId, originalEndStatus: repairedEnd.operation.status, associationPhase: repairedEnd.associationPhase, repairThroughDesktop: Boolean(hooks.repairEnd), updatedTaskId: updated.task.taskId, restoredTaskId: third.task.taskId, staleTaskId: staleSave.task.taskId, beforeGeneration: updateInstance.sourceContentGeneration, publishedGeneration: published.environment.ref.contentGeneration, restoredGeneration: thirdInstance.sourceContentGeneration, restoredLogin: 'signed-in', beforeSession: '1', restoredSession: '9', record: repairedRecord, scope: 'real End association failure, original save-only repair, record-derived login update and next-generation restore; Profile unchanged, no persistent identity acceptance claim' }
+    const endAssociation = { status: 'passed', failedTaskId: unlinked.task.taskId, endOperationId: recoveredEnd.operation.operationId, saveOperationId: save.operationId, savedEnvironmentId: savedId, originalEndStatus: repairedEnd.operation.status, associationPhase: repairedEnd.associationPhase, repairThroughDesktop: Boolean(hooks.repairEnd), updatedTaskId: updated.task.taskId, restoredTaskId: third.task.taskId, staleTaskId: staleSave.task.taskId, beforeGeneration: updateInstance.sourceContentGeneration, publishedGeneration: published.environment.ref.contentGeneration, restoredGeneration: thirdInstance.sourceContentGeneration, restoredLogin: 'signed-in', beforeSession: '1', restoredSession: '9', record: repairedRecord, scope: 'worker End preflight refusal; real manual End association failure and save-only repair; record-derived update, stale-copy refusal and subsequent login restore; Profile unchanged, no persistent identity acceptance claim' }
     const loadWorkflow = await api('/api/workflows', { id: randomUUID(), clientRequestId: randomUUID(), name: 'PM9 日志负载', variables: [], nodes: [node('loop', 'loop', { count: 500 }), node('tick', 'set_variable', { variableName: 'tick', variableValue: 'bounded' }), node('end', 'project_end', { retainEnvironment: { enabled: false } })], edges: [edge('loop', 'tick', 'loop'), edge('loop', 'end', 'done')] })
     const startedAt = performance.now()
     const loaded = await run(loadWorkflow.id, { source: 'newFromProfile', profileId: profile.id, proxyOverride: { mode: 'none' }, modelProviderId: null })
@@ -471,7 +540,7 @@ export async function checkProjectRuntime(baseUrl, token, browserVersion, hooks 
     assert.ok(drilldown.items.some(item => item.taskId === loaded.task.taskId), 'statistics must link to real terminal tasks')
     // The scheduler cleans terminal instances unless a failed save preserved
     // the work copy. Explicitly discard only that retained copy.
-    for (const terminal of [failed, conflicted, partial, staleSave, cancelledSubflow, deniedSubflow]) {
+    for (const terminal of [failed, conflicted, partial, refused, staleSave, cancelledSubflow, deniedSubflow]) {
       let instance
       for (let attempt = 0; attempt < 100; attempt++) {
         instance = (await api(`${prefix}/environment-instances?taskId=${terminal.task.taskId}`)).items[0]
