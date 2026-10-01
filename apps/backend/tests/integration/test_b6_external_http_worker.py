@@ -231,7 +231,9 @@ async def test_stopping_worker_interrupts_in_flight_http_request(tmp_path: Path)
         before = time.monotonic()
         await manager.stop("http-stop-run")
 
-        assert time.monotonic() - before < 1
+        # The in-flight request would otherwise hold for its 30 s timeout; the bound only has to prove
+        # it was interrupted, not that a loaded CI runner is fast.
+        assert time.monotonic() - before < 5
         assert manager.busy() is False
         assert not any(
             event.get("type") == "execution:node_complete" for event in events

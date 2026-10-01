@@ -292,7 +292,8 @@ describe('diagnostic preview and local save', () => {
 
     await expect(h.controller.saveAndroidDiagnostic('diag-1')).resolves.toEqual({ saved: true, path: output })
     expect(JSON.parse(readFileSync(output, 'utf8'))).toMatchObject({ application: 'AutoFlow', payload: { environment: { status: 'unknown' } } })
-    expect(statSync(output).mode & 0o777).toBe(0o600)
+    // Windows has no POSIX permission bits; the file is still written, so only POSIX is asserted.
+    if (process.platform !== 'win32') expect(statSync(output).mode & 0o777).toBe(0o600)
   })
 
   it('rejects a missing or expired Android diagnostic before opening a save dialog', async () => {
