@@ -211,7 +211,7 @@ async def test_cancelled_start_keeps_budget_and_lifecycle_lock_serializes_worksp
     monkeypatch.setattr(management, 'run', interrupted_run)
     service = AndroidManagement(repository, runtime)
     service.operate(first['deviceId'], {'requestId': str(uuid4()), 'action': 'start', 'deleteData': False})
-    await entered.wait()
+    await asyncio.wait_for(entered.wait(), 20)  # a failure before the command must fail the test, not hang it
     with pytest.raises(AndroidError) as error:
         AndroidManagement(other_repository, other).operate(second['deviceId'], {'requestId': str(uuid4()), 'action': 'start', 'deleteData': False})
     assert error.value.code == 'ANDROID_RUNTIME_BUSY'
@@ -306,3 +306,20 @@ async def test_recovered_container_name_is_canonicalized_before_reservation(envi
     assert interrupted['containerId'] == identifier
     environment.containers[identifier]['State']['Status'] = 'running'
     await other.capacity(second)
+
+
+def test_save_never_opens_the_directory_on_windows(tmp_path, monkeypatch):
+    """Windows cannot open a directory with os.open (PermissionError); the journal must still persist."""
+    from autoflow.providers.android import capacity_reservations
+
+    real_open = capacity_reservations.os.open
+
+    def open_like_windows(path, *args, **kwargs):
+        if capacity_reservations.Path(path).is_dir():
+            raise PermissionError(13, 'Permission denied', str(path))
+        return real_open(path, *args, **kwargs)
+
+    monkeypatch.setattr(capacity_reservations, 'WINDOWS', True)
+    monkeypatch.setattr(capacity_reservations.os, 'open', open_like_windows)
+    capacity_reservations.save(tmp_path / 'runtime', {})
+    assert json.loads((tmp_path / 'runtime' / capacity_reservations.FILENAME).read_text()) == {'version': 1, 'items': {}}

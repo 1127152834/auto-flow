@@ -60,6 +60,8 @@ packages = ["src/autoflow"]
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 addopts = '-m "not benchmark and not golden"'
+# A test stuck longer than this dumps every thread's stack into the log, so a hang is named instead of silent.
+faulthandler_timeout = 300
 markers = [
   "benchmark: offline remediation benchmarks",
   "golden: real-browser golden scenarios",

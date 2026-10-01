@@ -129,7 +129,10 @@ jobs:
         run: npm --workspace @autoflow/desktop test -- src/main/platform/paths.test.ts src/main/sidecar/supervisor.test.ts src/main/settings/settings.integration.test.ts src/renderer/domains/project-automations/pages/AutomationDetailPage.test.tsx
       - name: Check project HTTP writes before full regression
         run: node scripts/smoke-project-management.mjs --output-dir artifacts/pm9/http-preflight
-      - run: uv run --directory apps/backend pytest -q --maxfail=20
+      - name: Full backend regression
+        # A hung test must fail the step in 90 minutes instead of holding the runner for the 6-hour job cap.
+        timeout-minutes: 90
+        run: uv run --directory apps/backend pytest -q --maxfail=20
       - name: Offline benchmarks (record only, spec M0 R0-08)
         shell: bash
         env:

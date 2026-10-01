@@ -2,6 +2,7 @@
 import json
 import os
 import re
+import sys
 import tempfile
 from pathlib import Path
 from typing import Any, cast
@@ -10,6 +11,7 @@ from uuid import UUID
 from autoflow.domain.android.ports import AndroidError
 
 FILENAME = 'autoflow-redroid-capacity.json'
+WINDOWS = sys.platform == 'win32'
 
 
 def key(device: dict[str, Any]) -> str:
@@ -53,11 +55,12 @@ def save(root: Path, items: dict[str, dict[str, Any]]) -> None:
             output.flush()
             os.fsync(output.fileno())
         os.replace(path, root / FILENAME)
-        directory = os.open(root, os.O_RDONLY)
-        try:
-            os.fsync(directory)
-        finally:
-            os.close(directory)
+        if not WINDOWS:  # Windows cannot open a directory with os.open; the file itself was fsynced above.
+            directory = os.open(root, os.O_RDONLY)
+            try:
+                os.fsync(directory)
+            finally:
+                os.close(directory)
     finally:
         if path is not None:
             path.unlink(missing_ok=True)

@@ -70,14 +70,11 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - run: uv sync --directory apps/backend --locked --group build
       - name: Golden evidence verifier tests
-        if: false
+        if: always()
         run: uv run --directory apps/backend python scripts/ci_pytest_by_file.py --root tests/golden/test_verify_results.py --timeout 300
       - name: B6 parity files, one process each
-        if: false
-        run: uv run --directory apps/backend python scripts/ci_pytest_by_file.py --root tests/differential/workflows --timeout 300
-      - name: Android hang trace (diagnostic copy of the hanging test)
         if: always()
-        run: uv run --directory apps/backend python -m pytest -x -q -s -p no:cacheprovider -o faulthandler_timeout=90 tests/integration/test_zz_diag_android_hang.py
+        run: uv run --directory apps/backend python scripts/ci_pytest_by_file.py --root tests/differential/workflows --timeout 300
       - name: Android capacity file, one process per test
         if: always()
         run: uv run --directory apps/backend python scripts/ci_pytest_by_file.py --root tests/integration/test_android_capacity_reservations.py --per-test --timeout 120
