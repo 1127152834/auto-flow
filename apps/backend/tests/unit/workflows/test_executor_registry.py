@@ -216,6 +216,7 @@ def test_production_registry_contains_every_migrated_executor() -> None:
         "switch_iframe",
         "switch_to_main",
         "hover_element",
+        "press_key",
         "handle_dialog",
         "inject_javascript",
         "wait_element",

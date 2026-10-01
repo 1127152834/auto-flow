@@ -105,6 +105,7 @@ _RUNNABLE_MODULES = (
     ("switch_to_main", "切回主页面"),
     ("switch_tab", "切换标签页"),
     ("hover_element", "悬停元素"),
+    ("press_key", "按键"),
     ("handle_dialog", "处理弹窗"),
     ("inject_javascript", "注入 JavaScript"),
     ("wait_element", "等待元素"),

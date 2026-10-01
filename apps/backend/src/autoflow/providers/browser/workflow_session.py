@@ -70,6 +70,10 @@ class CloakBrowserWorkflowLocator(BrowserLocatorPort):
     async def double_click(self, **options: Any) -> None:
         await self._raw.dblclick(**options)
 
+    async def press(self, key: str, *, timeout_ms: float | None = None) -> None:
+        options: dict[str, Any] = {} if timeout_ms is None else {"timeout": timeout_ms}
+        await self._raw.press(key, **options)
+
     async def clear(self) -> None:
         await self._raw.clear()
 

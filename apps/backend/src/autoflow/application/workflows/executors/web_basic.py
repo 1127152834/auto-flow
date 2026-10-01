@@ -29,6 +29,8 @@ class _Locator(Protocol):
 
     async def hover(self, **options: Any) -> None: ...
 
+    async def press(self, key: str, *, timeout_ms: float | None = None) -> None: ...
+
 
 class _ElementHandle(Protocol):
     async def content_frame(self) -> _Page | None: ...
@@ -326,6 +328,48 @@ class HoverElementExecutor(ModuleExecutor):
             return ModuleResult(success=True, message=f"已悬停到元素: {selector}")
         except Exception as error:  # noqa: BLE001 -- preserve frozen node errors.
             return ModuleResult(success=False, error=f"悬停元素失败: {error}")
+
+
+@register_executor
+class PressKeyExecutor(ModuleExecutor):
+    """Web key press on an element or the focused page (remediation M1, R1-15)."""
+
+    requires_browser = True
+
+    @property
+    def module_type(self) -> str:
+        return "press_key"
+
+    async def execute(
+        self, config: dict[str, Any], context: ExecutionContext
+    ) -> ModuleResult:
+        key = str(context.resolve_value(config.get("key", "")) or "").strip()
+        target = str(config.get("targetType") or "focused")
+        selector = str(context.resolve_value(config.get("selector", "")) or "").strip()
+        timeout_seconds = to_int(config.get("timeout", 30), 30, context)
+        timeout = None if timeout_seconds == 0 else timeout_seconds * 1000
+        if not key:
+            return ModuleResult(success=False, error="按键不能为空")
+        if target not in {"focused", "element"}:
+            return ModuleResult(success=False, error=f"不支持的按键目标: {target}")
+        if target == "element" and not selector:
+            return ModuleResult(success=False, error="元素模式需要选择器")
+        page = _active_page(context)
+        if page is None:
+            return ModuleResult(success=False, error="没有打开的页面")
+        try:
+            if target == "element":
+                locator = await _wait_for_element(
+                    page, selector, state="visible", timeout=timeout
+                )
+                await locator.press(key, timeout_ms=timeout)
+                return ModuleResult(
+                    success=True, message=f"已在元素 {selector} 上按下 {key}"
+                )
+            await cast(Any, page).keyboard_press(key)
+            return ModuleResult(success=True, message=f"已按下 {key}")
+        except Exception as error:  # noqa: BLE001 -- the reason becomes the node error (R1-03).
+            return ModuleResult(success=False, error=f"按键失败（{key}）: {error}")
 
 
 @register_executor
@@ -920,6 +964,7 @@ WEB_BASIC_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     SwitchIframeExecutor,
     SwitchToMainExecutor,
     HoverElementExecutor,
+    PressKeyExecutor,
     HandleDialogExecutor,
     InjectJavaScriptExecutor,
     WaitElementExecutor,
