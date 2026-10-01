@@ -23,6 +23,7 @@ import {
 } from './blockFlowModel'
 import { collectNodeVarNames } from '../lib/moduleDefaultVars'
 import { moduleMatchesQuery } from '../lib/pinyin'
+import { featureFlags } from '../lib/featureFlags'
 
 // 模块条复制粘贴的会话级剪贴板（跨组件重渲染保留；存的是已换新 id 的快照，
 // 每次粘贴时再 clone 一次，保证可重复粘贴且 id 不冲突）
@@ -223,7 +224,7 @@ export function BlockFlowView() {
   }
   // 行内徽标摘要（仅在设置了非默认策略时显示）
   const policyText = (p?: ErrorPolicy): string => {
-    if (!p || !p.mode || p.mode === 'stop') return ''
+    if (!featureFlags.nodeRetryPolicy || !p || !p.mode || p.mode === 'stop') return ''
     if (p.mode === 'continue') return '出错跳过'
     if (p.mode === 'retry-self') return `出错重试 ${p.maxRetries ?? 1} 次`
     if (p.mode === 'retry-from') return `出错回流「${p.targetId ? nodeLabel(p.targetId) : '上层'}」×${p.maxRetries ?? 1}`
@@ -595,7 +596,7 @@ export function BlockFlowView() {
           {isCollapsed && childCount ? <span className="text-[10.5px] text-[hsl(var(--slate-400))] flex-shrink-0">· 已折叠 {childCount} 步</span> : null}
         </div>
         <div className="flex basis-full @[32rem]/blocks:basis-auto justify-end items-center gap-0.5 opacity-0 group-hover/row:opacity-100 focus-within:opacity-100 transition-opacity flex-shrink-0">
-          <button
+          {featureFlags.nodeRetryPolicy && <button
             onClick={(e) => {
               e.stopPropagation()
               const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
@@ -603,7 +604,7 @@ export function BlockFlowView() {
             }}
             className={'p-1 rounded-[6px] transition-colors hover:bg-[hsl(var(--warning-500)/0.12)] ' + (policyText(data.errorPolicy as ErrorPolicy) ? 'text-[hsl(var(--warning-600))]' : 'text-[hsl(var(--slate-400))] hover:text-[hsl(var(--warning-600))]')}
             title="出错处理（原地重试 / 回流上层重试 / 跳过继续）"
-          ><RotateCcw className="w-3.5 h-3.5" /></button>
+          ><RotateCcw className="w-3.5 h-3.5" /></button>}
           <button onClick={(e) => { e.stopPropagation(); handleMove(block.id, -1) }} className="p-1 rounded-[6px] text-[hsl(var(--slate-400))] hover:text-[hsl(var(--brand-600))] hover:bg-[hsl(var(--brand-50))] transition-colors" title="上移"><ChevronUp className="w-3.5 h-3.5" /></button>
           <button onClick={(e) => { e.stopPropagation(); handleMove(block.id, 1) }} className="p-1 rounded-[6px] text-[hsl(var(--slate-400))] hover:text-[hsl(var(--brand-600))] hover:bg-[hsl(var(--brand-50))] transition-colors" title="下移"><ChevronDown className="w-3.5 h-3.5" /></button>
           <button onClick={(e) => { e.stopPropagation(); toggleNodesDisabled([node.id]) }} className={'p-1 rounded-[6px] transition-colors hover:bg-[hsl(var(--slate-100))] ' + (disabled ? 'text-[hsl(var(--brand-600))]' : 'text-[hsl(var(--slate-400))] hover:text-[hsl(var(--slate-700))]')} title={disabled ? '启用 (Ctrl+D)' : '禁用 (Ctrl+D)'}><Ban className="w-3.5 h-3.5" /></button>

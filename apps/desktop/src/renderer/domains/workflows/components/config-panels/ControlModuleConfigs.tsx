@@ -3,6 +3,7 @@ import { Label } from '../controls/label'
 import { VariableInput } from '../controls/variable-input'
 import { SelectNative as Select } from '../controls/select-native'
 import { getNodeConfigData, useWorkflowStore, type NodeData } from '../../editor-store'
+import { featureFlags } from '../../lib/featureFlags'
 
 interface ConfigProps {
   data: NodeData
@@ -283,7 +284,7 @@ export function LoopConfig({ data, onChange }: ConfigProps) {
         </p>
       </div>
       
-      <div className="space-y-2">
+      {featureFlags.nodeRetryPolicy && <div className="space-y-2">
         <Label htmlFor="onTimeout">运行超时后</Label>
         <Select
           id="onTimeout"
@@ -294,7 +295,7 @@ export function LoopConfig({ data, onChange }: ConfigProps) {
           <option value="skip">跳过</option>
           <option value="stop">停止</option>
         </Select>
-      </div>
+      </div>}
     </div>
   )
 }

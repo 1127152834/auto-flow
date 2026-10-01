@@ -2,6 +2,7 @@ import { captureProjectReferenceTypes } from '../project-inputs'
 import { runProjectOnce, stopProjectOnce } from '../run-project-once'
 import {registerDocumentLeaveResource,requestDocumentLeave,getDocumentLeaveResources} from '../lib/documentLeave'
 import {stopStudioRun} from '../lib/stopStudioRun'
+import { describeInertSettings, findInertSettings } from '../lib/inertSettings'
 import { requestSettingsClose } from '../lib/settingsLeave'
 import { saveCustomModuleEditing, restoreMainWorkflow, recoverCustomModuleEditing } from '../lib/customModuleEditing'
 import { useDraftProtection } from '../hooks/useDraftProtection'
@@ -352,6 +353,9 @@ export function Toolbar() {
       ? `从指定节点开始执行工作流：${startNodeLabel}`
       : runToNodeId ? `从流程入口运行至节点：${runToNodeLabel}`
       : `正在准备执行工作流${headless ? '（无头模式）' : ''}...` })
+    // 整改 M1 R1-02：保存过但后端尚未执行的设置，运行前明确提示（不阻止运行）
+    const inertSettings = findInertSettings(nodes)
+    if (inertSettings.length) addLog({ level: 'warning', message: describeInertSettings(inertSettings) })
 
     try {
       const currentWorkflowId = workflowId || sourceDocumentId

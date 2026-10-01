@@ -8,10 +8,12 @@ vi.hoisted(() => {
 import { ConfigPanel } from '../components/ConfigPanel'
 import { useWorkflowStore as store, type ErrorPolicy } from '../editor-store'
 import { mockRequest } from '../api/mock-server'
+import { featureFlags } from '../lib/featureFlags'
 Element.prototype.scrollIntoView = vi.fn()
 let id: string
-beforeEach(() => { store.getState().clearWorkflow(); store.getState().addNode('close_page', { x: 0, y: 0 }); id = store.getState().nodes[0].id })
-afterEach(cleanup)
+// These controls stay in the code but are hidden until M2 implements them (remediation M1 R1-01).
+beforeEach(() => { featureFlags.nodeRetryPolicy = true; store.getState().clearWorkflow(); store.getState().addNode('close_page', { x: 0, y: 0 }); id = store.getState().nodes[0].id })
+afterEach(() => { cleanup(); featureFlags.nodeRetryPolicy = false })
 const data = () => store.getState().nodes.find(n => n.id === id)!.data
 function labelled(text: string, role: 'combobox' | 'textbox') {
   return within(screen.getAllByText(text, { exact: true }).find(e => e.tagName === 'LABEL')!.parentElement!).getByRole(role)

@@ -21,6 +21,7 @@ import { DebugBar } from './DebugBar'
 import { useLayoutStore } from '../hooks/stores/layoutStore'
 import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
 import { reviewSelectorHeals } from '../lib/selectorHealing'
+import { featureFlags } from '../lib/featureFlags'
 import { importDroppedWorkflows } from '../lib/droppedWorkflows'
 import { useConfirm } from './controls/confirm-dialog'
 import { usePasswordPrompt } from './controls/password-prompt'
@@ -1695,7 +1696,7 @@ export function WorkflowEditor() {
               // 由各模块 errorPolicy 派生的「错误回流」可视化连线（红色虚线，只读不可选删）
               ...nodes.flatMap((n) => {
                 const p = getNodeConfigData(n.data as NodeData).errorPolicy
-                if (p && p.mode === 'retry-from' && p.targetId && nodes.some((t) => t.id === p.targetId)) {
+                if (featureFlags.nodeRetryPolicy && p && p.mode === 'retry-from' && p.targetId && nodes.some((t) => t.id === p.targetId)) {
                   return [{
                     id: `__reflow-${n.id}`,
                     source: n.id,

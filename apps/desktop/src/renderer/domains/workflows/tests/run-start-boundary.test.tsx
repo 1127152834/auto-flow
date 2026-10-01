@@ -200,3 +200,15 @@ it('freezes node configuration and document without a global profile before the 
  await act(async()=>response.resolve({success:true}))
  profiles.useGlobalConfigStore.getState().setBrowserProfileId('')
 })
+
+it('warns about saved retry settings that do not run yet and still starts with v2 error semantics (remediation M1)', async () => {
+  const nodeId = store.getState().nodes[0].id
+  store.getState().updateNodeData(nodeId, { label: '打开首页', retryCount: 2 })
+  render(<Toolbar />)
+  fireEvent.keyDown(window, { key: 'F5' })
+  await waitFor(() => expect(workflowApi.execute).toHaveBeenCalledTimes(1))
+  expect(store.getState().logs.some(log => log.level === 'warning' && log.message === '以下设置尚未生效，运行时会被忽略：「打开首页」重试次数')).toBe(true)
+  expect(workflowApi.execute).toHaveBeenCalledWith(store.getState().id, expect.objectContaining({
+    document: expect.objectContaining({ executionSemantics: 'autoflow-v2' }),
+  }))
+})

@@ -4,6 +4,7 @@ import { ProjectLifecycleConfig } from './config-panels/ProjectLifecycleConfig'
 import { ProjectDataConfig } from './config-panels/ProjectDataConfig'
 import { ProxyControlConfig } from './config-panels/ProxyControlConfig'
 import { excludedModuleTypes } from '../lib/moduleCatalog'
+import { featureFlags } from '../lib/featureFlags'
 // Source: WebRPA@5ccb900e, components/workflow/ConfigPanel.tsx; see SOURCE.md for license and adaptation boundaries.
 import { useWorkflowStore, moduleTypeLabels, getModuleDefaultTimeout, getNodeConfigData, type NodeData, type ErrorPolicy } from '../editor-store'
 import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
@@ -1603,8 +1604,8 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
                 {/* 模块特定配置 */}
                 {renderModuleConfig()}
 
-                {/* 错误处理（错误回流 / 重试 / 跳过）——与模块条视图共用同一份 errorPolicy */}
-                {(() => {
+                {/* 错误处理（错误回流 / 重试 / 跳过）——与模块条视图共用同一份 errorPolicy；M2 实现前隐藏（M1 R1-01） */}
+                {featureFlags.nodeRetryPolicy && (() => {
                   const pol: ErrorPolicy = (nodeData.errorPolicy as ErrorPolicy) || { mode: 'stop', maxRetries: 1, interval: 0, onExhausted: 'stop' }
                   const setPol = (patch: Partial<ErrorPolicy>) => {
                     const next: ErrorPolicy = { maxRetries: 1, interval: 0, onExhausted: 'stop', ...pol, ...patch }
@@ -1687,7 +1688,7 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
                       0 表示不限制超时，当前模块建议: {(getModuleDefaultTimeout(nodeData.moduleType as import('../types/index').ModuleType) / 1000).toFixed(0)}秒
                     </p>
                   </div>
-                  <div className="space-y-2">
+                  {featureFlags.nodeRetryPolicy && <div className="space-y-2">
                     <Label htmlFor="timeoutAction">运行超时后</Label>
                     <Select
                       id="timeoutAction"
@@ -1705,8 +1706,8 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
                         ? '超时后立即停止整个工作流执行'
                         : '超时后按重试次数进行重试'}
                     </p>
-                  </div>
-                  <div className="space-y-2">
+                  </div>}
+                  {featureFlags.nodeRetryPolicy && <div className="space-y-2">
                     <Label htmlFor="retryCount">重试次数</Label>
                     <NumberInput
                       id="retryCount"
@@ -1716,8 +1717,8 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
                       min={0}
                       max={10}
                     />
-                  </div>
-                  {((nodeData.retryCount as number) ?? 0) > 0 && (
+                  </div>}
+                  {featureFlags.nodeRetryPolicy && ((nodeData.retryCount as number) ?? 0) > 0 && (
                     <div className="space-y-2">
                       <Label htmlFor="retryExhaustedAction">重试耗尽后</Label>
                       <Select
@@ -1735,7 +1736,7 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
                       </p>
                     </div>
                   )}
-                  {((nodeData.retryCount as number) ?? 0) > 0 && (
+                  {featureFlags.nodeRetryPolicy && ((nodeData.retryCount as number) ?? 0) > 0 && (
                     <div className="space-y-2">
                       <Label htmlFor="retryDelay">重试间隔（秒）</Label>
                       <NumberInput
@@ -1750,7 +1751,7 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
                       </p>
                     </div>
                   )}
-                  {((nodeData.retryCount as number) ?? 0) > 0 && ((nodeData.retryDelay as number) ?? 0) > 0 && (
+                  {featureFlags.nodeRetryPolicy && ((nodeData.retryCount as number) ?? 0) > 0 && ((nodeData.retryDelay as number) ?? 0) > 0 && (
                     <div className="space-y-2">
                       <Label htmlFor="retryBackoff">退避策略</Label>
                       <Select
