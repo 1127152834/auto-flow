@@ -485,7 +485,7 @@ async def test_project_posix_signal_denial_requires_confirmed_tree_exit(monkeypa
     (directory / 'proof').write_text('keep until tree exit')
     worker = SimpleNamespace(process=process, directory=directory, executable=None, birth=11,
                              stop_requested=not graceful, capability=None, created_directory=True,
-                             proxy_requests=None, run_id='run')
+                             proxy_requests=None, run_id='run', stderr=None, stderr_task=None)
     manager._workers['run'] = worker
     try:
         if outcome in {'exited', 'reused_child'}:

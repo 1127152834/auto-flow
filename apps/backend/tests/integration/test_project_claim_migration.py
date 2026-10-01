@@ -7,7 +7,7 @@ from alembic.script import ScriptDirectory
 
 from autoflow.infrastructure.database import session as database_session
 
-EXPECTED_HEAD = "0025_merge_studio_credential_environment"
+EXPECTED_HEAD = "rm1_app_settings"
 
 
 def config_for(database: Path) -> Config:

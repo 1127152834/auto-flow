@@ -26,6 +26,7 @@ from autoflow.application.workflows.executors.web_basic import (
     WaitElementExecutor,
 )
 from autoflow.domain.workflows.browser import BrowserSessionPort
+from autoflow.domain.workflows.scope import WEB_EXTENSION_NODE_TYPES
 from autoflow.domain.workflows.execution import ExecutionContext
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[5]
@@ -149,9 +150,11 @@ def test_differential_checkout_is_the_declared_frozen_commit() -> None:
 
 
 def test_web_basic_executor_list_contains_exactly_the_approved_family() -> None:
-    assert {executor().module_type for executor in WEB_BASIC_EXECUTORS} == set(
-        EXECUTORS
-    )
+    # Extensions added by the remediation (no frozen counterpart) are checked by
+    # their own tests; the frozen family must stay exactly the approved one.
+    registered = {executor().module_type for executor in WEB_BASIC_EXECUTORS}
+    assert registered - WEB_EXTENSION_NODE_TYPES == set(EXECUTORS)
+    assert registered & WEB_EXTENSION_NODE_TYPES == WEB_EXTENSION_NODE_TYPES
 
 
 @pytest.mark.asyncio
