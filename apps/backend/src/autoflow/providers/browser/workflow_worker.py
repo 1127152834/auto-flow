@@ -26,6 +26,7 @@ from autoflow.domain.workflows.browser_environment import (
     same_shared_browser,
 )
 from autoflow.domain.workflows.canvas_subflows import CanvasSubflowGraph, _node_data
+from autoflow.domain.workflows.error_semantics import document_error_semantics
 from autoflow.domain.workflows.execution import (
     CustomModuleResult,
     DesktopActionResult,
@@ -252,6 +253,7 @@ async def _run_in_session(
             result = await WorkflowRuntime(registry).execute(
                 canvas_subflows.top_level_document(),
                 context,
+                error_semantics=document_error_semantics(document),
                 start_node_id=(
                     str(command["startNodeId"])
                     if isinstance(command.get("startNodeId"), str)
@@ -723,8 +725,12 @@ class _WorkerNestedWorkflows:
             }
         )
         try:
+            # A saved workflow keeps its own version's rule, never the caller's.
             result = await WorkflowRuntime(self._registry).execute(
-                canvas_subflows.top_level_document(), child, detached=detached
+                canvas_subflows.top_level_document(),
+                child,
+                detached=detached,
+                error_semantics=document_error_semantics(snapshot),
             )
             nested = NestedWorkflowResult(
                 reference=reference,
@@ -902,8 +908,11 @@ class _WorkerCustomModules:
         )
         child.canvas_subflows = canvas_subflows
         try:
+            # A saved custom module keeps its own definition's rule, never the caller's.
             result = await WorkflowRuntime(self._registry).execute(
-                canvas_subflows.top_level_document(), child
+                canvas_subflows.top_level_document(),
+                child,
+                error_semantics=document_error_semantics(document),
             )
             output_values: dict[str, Any] = {}
             outputs = definition.get("outputs", [])
@@ -1049,8 +1058,11 @@ class _WorkerCanvasSubflows(CanvasSubflowGraph):
             )
         child.canvas_subflows = self.for_context(child, child_sink)
         try:
+            # A canvas subflow is part of its caller's document and follows its rule.
             result = await WorkflowRuntime(self._registry).execute(
-                self._subset(members), child
+                self._subset(members),
+                child,
+                error_semantics=self._parent.error_semantics,
             )
             return NestedWorkflowResult(
                 identity,

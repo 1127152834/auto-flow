@@ -343,6 +343,8 @@ class ExecutionContext:
     project_end: ProjectEndState = field(default_factory=ProjectEndState)
     stop_workflow: bool = False
     stop_reason: str = ""
+    # Set by WorkflowRuntime.execute; inherited by forks and canvas subflows through dataclasses.replace.
+    error_semantics: str = "webrpa"
     variable_tracking_enabled: bool = False
     _node_uses_sensitive_values: bool = field(default=False, repr=False)
     _node_sensitive_context: ContextVar[bool] = field(

@@ -25,3 +25,45 @@ async def test_batch_failure_log_carries_the_executor_reason():
     assert len(result['error']['message']) > len('工作流节点执行失败：')
     error_logs = [event[3]['message'] for event in events if event[0] == 'log' and event[3].get('level') == 'error']
     assert error_logs == [result['error']['message']]
+
+
+def edge(source, target, handle=None):
+    value = {'id': f'{source}-{target}', 'source': source, 'target': target}
+    if handle:
+        value['sourceHandle'] = handle
+    return value
+
+
+def caught_failure_document(**top_level):
+    return {
+        'nodes': [
+            node('parse', 'json_parse', jsonString='{not json', variableName='parsed'),
+            node('recover', 'set_variable', variableName='recovered', variableValue='yes'),
+        ],
+        'edges': [edge('parse', 'recover', 'error')],
+        **top_level,
+    }
+
+
+async def run_document(document):
+    events = []
+
+    async def emit(*event):
+        events.append(event)
+
+    executor = ProjectGraphExecutor(None, {}, emit, lambda: False)
+    return await executor.run({'document': document}), events
+
+
+@pytest.mark.asyncio
+async def test_v2_failure_handled_by_the_error_branch_does_not_fail_the_batch_task():
+    result, _ = await run_document(caught_failure_document(executionSemantics='autoflow-v2'))
+    assert result['status'] == 'succeeded'
+    assert result['error'] is None
+
+
+@pytest.mark.asyncio
+async def test_legacy_handled_failure_keeps_failing_the_batch_task():
+    result, _ = await run_document(caught_failure_document())
+    assert result['status'] == 'failed'
+    assert result['error']['code'] == 'WORKFLOW_NODE_FAILED'

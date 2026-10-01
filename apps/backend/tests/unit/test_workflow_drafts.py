@@ -230,3 +230,18 @@ def test_legacy_m1_document_is_not_accepted_as_current_source_format():
             }
         )
     assert caught.value.code == "WORKFLOW_INVALID"
+
+
+def test_execution_semantics_marker_survives_draft_import_and_run_projection():
+    """Remediation M1 R1-05: the marker is part of the saved document, not stripped on the way to a run."""
+    from autoflow.domain.workflows.document import WorkflowDraft
+    from autoflow.domain.workflows.run_validation import prepare_run
+    from tests.fixtures.workflows import workflow_payload
+
+    payload = workflow_payload()
+    payload['content']['executionSemantics'] = 'autoflow-v2'
+    assert project_document(payload)['content']['executionSemantics'] == 'autoflow-v2'
+    assert prepare_run(payload).document['content']['executionSemantics'] == 'autoflow-v2'
+    assert WorkflowDraft.from_payload(payload['content']).to_payload()['executionSemantics'] == 'autoflow-v2'
+    del payload['content']['executionSemantics']
+    assert 'executionSemantics' not in project_document(payload)['content']

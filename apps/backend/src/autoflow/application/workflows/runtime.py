@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import copy
 import json
-from collections.abc import AsyncIterator, Coroutine, Mapping
+from collections.abc import AsyncIterator, Coroutine, Iterable, Mapping
 from contextlib import asynccontextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass, field, replace
@@ -11,6 +11,12 @@ from time import perf_counter
 from typing import Any
 from uuid import uuid4
 
+from autoflow.domain.workflows.error_semantics import (
+    ERROR_SEMANTICS_V2,
+    ERROR_SEMANTICS_WEBRPA,
+    document_error_semantics,
+    has_marker,
+)
 from autoflow.domain.workflows.execution import ExecutionContext
 from autoflow.domain.workflows.graph import ExecutionGraph, WorkflowNode, parse_workflow
 from autoflow.domain.workflows.parallel_graph import structured_fork
@@ -90,6 +96,8 @@ class WorkflowRuntimeResult:
     issues: tuple[WorkflowScopeIssue, ...] = ()
     failed_node_id: str | None = None
     node_result: ModuleResult | None = None
+    # v2 only: nodes that failed but were caught by an error branch (first-seen order, unique).
+    handled_failure_node_ids: tuple[str, ...] = ()
 
 
 class WorkflowRuntime:
@@ -159,6 +167,7 @@ class WorkflowRuntime:
         *,
         start_node_id: str | None = None,
         detached: bool = False,
+        error_semantics: str | None = None,
     ) -> WorkflowRuntimeResult:
         issues = self.preflight(document)
         if issues:
@@ -176,11 +185,22 @@ class WorkflowRuntime:
         # Non-waiting workflow calls keep cancellation/debug ownership, but their
         # background pauses cannot change the caller's action duration.
         token = _node_timings.set(()) if detached else None
+        # An explicit rule wins; then the document's own marker; otherwise the rule inherited
+        # through the context (forks and canvas subflows are rebuilt without top-level fields).
+        if error_semantics is not None:
+            semantics = error_semantics
+        elif has_marker(document):
+            semantics = document_error_semantics(document)
+        else:
+            semantics = context.error_semantics
+        inherited = context.error_semantics
+        context.error_semantics = semantics
         try:
-            return await _WorkflowScheduler(self._registry, graph, context).run(
-                [start_node_id] if start_node_id is not None else None
-            )
+            return await _WorkflowScheduler(
+                self._registry, graph, context, semantics=semantics
+            ).run([start_node_id] if start_node_id is not None else None)
         finally:
+            context.error_semantics = inherited
             if token is not None:
                 _node_timings.reset(token)
 
@@ -249,6 +269,8 @@ class _WorkflowScheduler:
     registry: ExecutorRegistry
     graph: ExecutionGraph
     context: ExecutionContext
+    semantics: str = ERROR_SEMANTICS_WEBRPA
+    handled_failures: list[str] = field(default_factory=list)
     executed_order: list[str] = field(default_factory=list)
     executed: set[str] = field(default_factory=set)
     executing: set[str] = field(default_factory=set)
@@ -272,7 +294,13 @@ class _WorkflowScheduler:
             executed_node_ids=tuple(self.executed_order),
             failed_node_id=self.failed_node_id,
             node_result=self.failed_result,
+            handled_failure_node_ids=tuple(self.handled_failures),
         )
+
+    def _remember_handled(self, node_ids: Iterable[str]) -> None:
+        for node_id in node_ids:
+            if node_id not in self.handled_failures:
+                self.handled_failures.append(node_id)
 
     async def _execute_parallel(self, node_ids: list[str]) -> None:
         if not node_ids or self.halted or self.context.project_end.accepted or self.context.stop_workflow:
@@ -330,8 +358,12 @@ class _WorkflowScheduler:
             self.executed_order.append(node_id)
 
         if not result.success:
-            self._remember_failure(node_id, result)
             error_nodes = self.graph.get_error_nodes(node_id)
+            if error_nodes and self.semantics == ERROR_SEMANTICS_V2 and not self.halted:
+                # The error branch owns this failure; the run only fails if that branch does.
+                self._remember_handled([node_id])
+            else:
+                self._remember_failure(node_id, result)
             if error_nodes:
                 await self._execute_parallel(error_nodes)
             else:
@@ -387,11 +419,10 @@ class _WorkflowScheduler:
         self.dispatch_count += 1
         executor = self.registry.get(node.type)
         if executor is None:
-            result = ModuleResult(
+            # The caller decides whether an error branch handles this failure.
+            return ModuleResult(
                 success=False, error=f"节点类型 {node.type} 的真实执行器尚未迁入"
             )
-            self._remember_failure(node.id, result)
-            return result
 
         parents = _node_timings.get()
         if self.context.debug is not None:
@@ -607,7 +638,7 @@ class _WorkflowScheduler:
                 child.canvas_subflows = gateway_factory(child, child.events)
             document = {'nodes': [dict(self.graph.nodes[identity].raw) for identity in self.graph.nodes if identity in members], 'edges': [dict(edge.raw) for edge in self.graph.edges if edge.source in members and edge.target in members]}
             children[root] = child
-            task = asyncio.create_task(WorkflowRuntime(self.registry).execute(document, child))
+            task = asyncio.create_task(WorkflowRuntime(self.registry).execute(document, child, error_semantics=self.semantics))
             tasks[task] = root
         pending = set(tasks)
         try:
@@ -621,6 +652,7 @@ class _WorkflowScheduler:
                 for task in done:
                     result = task.result()
                     self.executed_order.extend(result.executed_node_ids)
+                    self._remember_handled(result.handled_failure_node_ids)
                     if not result.success:
                         return result.node_result or ModuleResult(False, error='PARALLEL_BRANCH_FAILED')
             values = {}

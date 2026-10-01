@@ -17,6 +17,7 @@ from autoflow.application.workflows.runtime import (
     WorkflowRuntime,
     execution_context_snapshot,
 )
+from autoflow.domain.workflows.error_semantics import document_error_semantics
 from autoflow.domain.workflows.execution import (
     ArtifactWriter,
     ExecutionContext,
@@ -270,6 +271,8 @@ class ProjectGraphExecutor:
                 command_bus=self.command_bus, nested_workflows=nested,
             )
             nested.custom_modules = self.context.custom_modules
+        # Read the rule before canvas subflows rewrite the document, then pass it explicitly.
+        semantics = document_error_semantics(document)
         if self.graph_adapter:
             canvas_subflows = _WorkerCanvasSubflows(
                 document, registry=registry, parent=self.context, sink=self,
@@ -277,7 +280,7 @@ class ProjectGraphExecutor:
             )
             self.context.canvas_subflows = canvas_subflows
             document = canvas_subflows.top_level_document()
-        result = await WorkflowRuntime(registry).execute(document, self.context)
+        result = await WorkflowRuntime(registry).execute(document, self.context, error_semantics=semantics)
         await nested.drain()
         if result.success:
             # A child may fail while run_workflow_file explicitly continues.
