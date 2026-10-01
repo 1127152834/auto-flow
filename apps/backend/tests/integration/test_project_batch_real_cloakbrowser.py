@@ -1108,7 +1108,13 @@ async def test_real_project_batch_http(
                         assert current_task['run']['error']['code'] == 'WORKFLOW_RESULT_UNKNOWN'
                         assert current_task['run']['executionGeneration'] > force_worker.generation
                         assert force_worker.process.returncode is not None
-                        assert process_birth(force_worker.process.pid) != force_worker.birth
+                        # An exited Windows process keeps its creation time while a handle to it is open,
+                        # so "gone" is the product's own identity check, not a birth comparison.
+                        from autoflow.infrastructure.process.browser_processes import (
+                            process_identity_is_alive,
+                        )
+
+                        assert not process_identity_is_alive(force_worker.process.pid, force_worker.birth)
                         assert not force_worker.directory.exists()
                         force_final = await client.get(prefix + f'/operations/by-idempotency-key/{force_key}')
                         assert force_final.status_code == 200, force_final.text
