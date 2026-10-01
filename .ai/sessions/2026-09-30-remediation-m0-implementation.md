@@ -166,3 +166,5 @@ PM9构件11139561095（pm9-macos-15）上传883628173字节；日志与API元数
 最终归属/恢复/代理三文件回归82 passed/6 skipped（29.01s），永久不可读测试增加虚拟时钟两秒截止断言后六项定向6 passed（0.18s）；Ruff和mypy547通过。独立复审P1闭合、无剩余重要问题，独立六项6 passed（0.11s）、diff检查通过。远端精确竞态尚未复现，模拟测试不替代新候选原生验收。M0 AC0-07仍pending，M1尚未实施。
 
 修复后额外worker回归：test_workflow_worker.py与test_workflow_worker_process.py共78 passed/3 skipped（26.99s）。六项平台跳过与三项平台跳过均未计通过。下一轮采用新的codex/remediation-m0-ownership-validation普通分支保存本修复的完整矩阵，避免取消98e95dba正在运行的Intel/Windows及c585a7aa Windows；不改工作流门禁或默认分支。
+
+最新归属复查修复的三平台原生检查（2026-09-30，confirmed步骤级子范围；2026-10-01）：run36817654197@d8d3210e3eadf556d9f9603e985f1f622f1960f5的ARM110226128259、Intel110226128439、Windows110226128459，其Verify node-owned browser initialization and cleanup步骤均completed/success。Windows平台边界、桌面路径/设置契约和HTTP前置写入也success；ARM/Windows完整后端回归运行，Intel类型检查运行。该结果仅证明原生选集，不能据此声称先前并发代理清理竞态已在远端复现或完整回归通过。另保留run36808514086@98e95dba的Intel110198234330已完成backend:build、package:dir及打包sidecar整链冒烟（30–32全部success），安装器构建33运行；两轮旧Windows完整后端仍运行。没有重新推送证据提交或取消现有任务，M0 AC0-07继续pending。
