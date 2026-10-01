@@ -109,7 +109,6 @@ def verify_scenario(
         "distinct_rows_processed": rows,
         "rows_succeeded": rows - expected_failed,
         "tasks_failed": expected_failed,
-        "failure_reason_ratio": 1.0,
     }
     for name, expected in checks.items():
         if metrics.get(name) != expected:
@@ -120,6 +119,12 @@ def verify_scenario(
         errors.append(
             f"{prefix}: {len(verified)} verified successes, expected {rows - expected_failed}"
         )
+    # The ratio is the baseline coverage of specific failure reasons. Today's
+    # product reports generic reasons (0.0, see the M0 baseline record), which
+    # M1 must raise, so the check is that the measurement exists and is valid.
+    ratio = metrics.get("failure_reason_ratio")
+    if not isinstance(ratio, (int, float)) or not 0 <= ratio <= 1:
+        errors.append(f"{prefix}: failure_reason_ratio {ratio!r} is not within [0, 1]")
     for name in ("throughput_rows_per_min", "attempts_per_min", "loop_lag_p99_ms"):
         value = metrics.get(name)
         if not isinstance(value, (int, float)) or value < 0:

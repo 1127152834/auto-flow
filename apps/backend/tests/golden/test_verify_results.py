@@ -144,6 +144,28 @@ def test_a_fake_kernel_name_is_rejected(results):
     assert any("is not a real kernel" in e for e in errors)
 
 
+def test_measured_zero_failure_reason_coverage_is_a_valid_baseline(results):
+    report_path = _find(results, "g3-click")
+
+    def generic(data):
+        data["metrics"]["failure_reason_ratio"]["value"] = 0.0
+
+    _edit(report_path, generic)
+    errors, _ = verify_results.verify(results, 30, SHA)
+    assert errors == []
+
+
+def test_a_missing_failure_reason_measurement_is_rejected(results):
+    report_path = _find(results, "g2-scrape")
+
+    def missing(data):
+        data["metrics"]["failure_reason_ratio"]["value"] = None
+
+    _edit(report_path, missing)
+    errors, _ = verify_results.verify(results, 30, SHA)
+    assert any("failure_reason_ratio" in e for e in errors)
+
+
 def test_cli_exit_code_and_summary_file(results, tmp_path, monkeypatch, capsys):
     summary = tmp_path / "summary.md"
     monkeypatch.setenv("GITHUB_STEP_SUMMARY", str(summary))

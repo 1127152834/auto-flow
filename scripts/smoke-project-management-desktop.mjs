@@ -9,7 +9,7 @@ import { connectCdp, launchElectron, waitFor, waitForProjectPage, clickElement }
 import { checkProjectManagement, installRuntimeKernel, projectSmokeOptions } from './smoke-project-management.mjs'
 import { checkProjectRuntime } from './project-runtime-smoke.mjs'
 import { checkProjectVolume } from './project-volume-smoke.mjs'
-import { assertOutsideHistory, redactSidecarLog } from './project-smoke-output.mjs'
+import { assertOutsideHistory, githubErrorAnnotation, redactSidecarLog } from './project-smoke-output.mjs'
 import { stop } from './smoke-sidecar.mjs'
 
 const root = resolve(import.meta.dirname, '..')
@@ -485,6 +485,10 @@ try {
   // Preserve the disposable service's failure evidence before removing its workspace.
   report.sidecarLog = await readFile(join(userData, 'logs/sidecar.log'), 'utf8').then(log => redactSidecarLog(log, sidecar?.token)).catch(() => 'sidecar log unavailable')
   await capture('failure').catch(() => {})
+  // Job logs are not always readable by the people triaging a failure; annotations are.
+  if (process.env.GITHUB_ACTIONS) {
+    console.log(githubErrorAnnotation(`pm9 desktop smoke failed (${process.platform}/${process.arch})`, `${String(report.error).slice(0, 1800)}\n--- sidecar log tail ---\n${String(report.sidecarLog).slice(-1500)}`, 3500))
+  }
   throw error
 } finally {
   studio?.close()
