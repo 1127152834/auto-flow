@@ -76,7 +76,7 @@
 
 ## M1 Task 1：事件提交延迟（2026-10-01，confirmed执行，容器环境，非Mac基线）
 
-在Claude云端Linux容器（非用户Mac、非CI），同一环境同一脚本（`bench_event_commit.run(1000)`，5次取p50）对比同一提交的工作区改动前后：未开WAL（原状）p50为3.863ms（3.863/3.960/4.051/3.728/3.382），开启WAL+synchronous=NORMAL+busy_timeout后为1.797ms（1.797/1.649/1.844/1.978/1.580），中位数下降53.5%。该数字只证明本环境内的相对变化；M0 Mac基线（1.177ms）与此环境硬件不同，不能互相换算，也不得据此声称在用户Mac上已达AC1-02。验收仍须在M0基线同环境复测并如实记录。
+在Claude云端Linux容器（非用户Mac、非CI），同一环境同一脚本（`bench_event_commit.run(1000)`，5次取p50）对比同一提交的工作区改动前后：未开WAL（原状）p50为3.863ms（3.863/3.960/4.051/3.728/3.382），开启WAL+synchronous=NORMAL+busy_timeout后为1.797ms（1.797/1.649/1.844/1.978/1.580），中位数下降53.5%。该数字只证明本环境内的相对变化；M0 Mac基线（1.177ms）与此环境硬件不同，不能互相换算，也不得据此声称在用户Mac上已达AC1-10。验收仍须在M0基线同环境复测并如实记录。
 
 反例同时核验：真实第二连接持有旧读快照后，`wal_checkpoint(TRUNCATE)` 返回busy，`checkpoint_wal` 抛错而不放行文件复制；快照释放后复制主文件可见新行。按文件复制主库的唯一测试点（`test_project_data_scheduler.py` 的跨工作区用例）已先checkpoint；全仓库复制调用排查中其余均为浏览器Profile/内核目录或产物，不是应用主库。
 
@@ -85,3 +85,12 @@
 在Claude云端Linux容器（非用户Mac、非CI）上，`bench_claim_loop_lag --rows 10000`（心跳间隔5ms，采样自领取前开始，同一次运行内先做同步对照再做线程模式）五次串行：线程模式 p50 为5.365/5.373/5.373/5.310/5.357ms，max 为85.2/103.2/98.0/106.3/86.9ms，有效采样102–115个，领取耗时1042–1169ms；同步对照（同数据、同监测参数、领取在主循环线程上）p50=max=1152.5ms，仅1个样本，说明同步领取会让主循环停顿约一次领取时长。线程模式满足p50<10ms、max<250ms的AC1-09目标，但该结论只属于本容器；M0预检的Mac数字（p50 16–17ms）未在Mac上复测，不能互相换算，AC1-09在用户Mac上仍须同环境复测后才能关闭。
 
 真实调度路径证据：`test_project_claim_off_loop` 用真实 `ProjectBatchScheduler.tick()` 记录 `_claim_data_task` 的线程号，断言全部不等于事件循环线程；撤销 `asyncio.to_thread` 后该测试失败（已核验），恢复后通过。该微基准不单独证明生产路径，二者须同时成立。
+
+
+## M1 独立评审与整改核对（2026-10-01，confirmed）
+
+ratchets：`unreadConfigKeys` 由 127 降到 119，少 8 个而非计划写的 7 个，因为 `press_key` 也读取 `targetType`；基线按实际下降更新，没有为吞掉新增债务而上调。
+
+独立评审（未参与实现的评审者，逐条对照 AC1-01..16 与 Review Focus）判定“有条件不通过”，并指出：真实浏览器按键页面没有提交按钮、整包导入丢 `executionSemantics`、无运行任务时内存水位仍拒绝派发、worker 丢失消息缺诊断日志路径、领取线程期间取消 tick 会放出第二个领取（用测试复现，同时并发 2 个）、并发设置在“提交后抛错”时内存修订号与数据库不一致、`busy_timeout` 排在 `journal_mode` 之后、前后端对 `null` 的未生效设置判定不一致、`press_key` 的 `timeout=0` 实际落到默认 30 秒，以及缺少 r2 要求的共享 `event_translation`、领取竞争测试和代理共用会话工厂测试。这些均已在提交 e9be594 修复并有测试（领取竞争测试在修复前确认失败）。
+
+仍未满足、不可由容器替代的证据：AC1-09（Mac 上 `bench_claim_loop_lag`，含有效采样数）、AC1-10（M0 同环境 `event_commit_ms_p50`）、AC1-13（CloakBrowser 真实运行）、AC1-15（G2/G3 两版黄金场景 manifest 与报告，含 G2 `failure_reason_ratio` 实测值）。这些在 CI/Mac 取得之前，M1 不标记 done；G2 `failure_reason_ratio` 列待黄金工作流产物填写，不预先写数。
