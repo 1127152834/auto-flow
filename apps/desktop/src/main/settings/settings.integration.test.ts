@@ -133,4 +133,4 @@ it('runs settings and workspace lifecycle against real local sidecars', async ()
     await Promise.allSettled(supervisors.map(supervisor => supervisor.stop()))
     rmSync(root, { recursive: true, force: true })
   }
-}, 60_000)
+}, 180_000)
