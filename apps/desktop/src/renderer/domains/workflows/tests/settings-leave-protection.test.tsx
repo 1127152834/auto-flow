@@ -18,8 +18,8 @@ async function edit() {
   render(<GlobalConfigDialog isOpen onClose={close} />)
   fireEvent.click(screen.getByRole('button', { name: '凭据库' }))
   fireEvent.click(await screen.findByRole('button', { name: '新增凭据' }))
-  fireEvent.change(screen.getByPlaceholderText('如：我的邮箱'), { target: { value: 'leave-fixture' } })
-  fireEvent.change(screen.getByPlaceholderText('值'), { target: { value: 'dummy-only' } })
+  fireEvent.change(await screen.findByPlaceholderText('如：我的邮箱'), { target: { value: 'leave-fixture' } })
+  fireEvent.change(await screen.findByPlaceholderText('值'), { target: { value: 'dummy-only' } })
 }
 const leaveThrough = (target: string) => fireEvent.click(target === '背景' ? screen.getByTestId('global-config-backdrop') : screen.getByRole('button', { name: target }))
 for (const target of ['系统', '完成保存', '关闭全局配置', '背景']) {

@@ -58,7 +58,9 @@ def test_terminal_operations_cannot_be_replayed(repository):
 
 
 def test_cursor_matches_timestamp_order(repository):
-    expected = [repository.accept("ws", f"r{i}", "d", "stop", str(i), {}).operation_id for i in range(12)][::-1]
+    records = [repository.accept("ws", f"r{i}", "d", "stop", str(i), {}) for i in range(12)]
+    # Windows 时钟精度较粗，连续创建的记录可能同一时间戳；稳定顺序是（创建时间, id）倒序。
+    expected = [item.operation_id for item in sorted(records, key=lambda item: (item.created_at, item.operation_id), reverse=True)]
     seen = []
     cursor = None
     while page := repository.page(cursor=cursor, limit=2):

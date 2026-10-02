@@ -7,6 +7,7 @@ License: LICENSE.WebRPA.
 from __future__ import annotations
 
 import asyncio
+import importlib
 import time
 from typing import Any
 
@@ -63,15 +64,14 @@ class SoundTriggerExecutor(ModuleExecutor):
 
 
 def _audio_meter() -> Any:
-    from comtypes import CLSCTX_ALL  # type: ignore[import-not-found,import-untyped]
-    from pycaw.pycaw import (  # type: ignore[import-not-found,import-untyped]
-        AudioUtilities,
-        IAudioMeterInformation,
+    # Windows-only packages: importing by name keeps type analysis the same on every platform.
+    clsctx_all = importlib.import_module("comtypes").CLSCTX_ALL
+    pycaw = importlib.import_module("pycaw.pycaw")
+    devices = pycaw.AudioUtilities.GetSpeakers()
+    interface = devices.Activate(
+        pycaw.IAudioMeterInformation._iid_, clsctx_all, None
     )
-
-    devices = AudioUtilities.GetSpeakers()
-    interface = devices.Activate(IAudioMeterInformation._iid_, CLSCTX_ALL, None)
-    return interface.QueryInterface(IAudioMeterInformation)
+    return interface.QueryInterface(pycaw.IAudioMeterInformation)
 
 
 def _log(context: ExecutionContext, message: str) -> None:
