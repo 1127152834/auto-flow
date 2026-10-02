@@ -754,7 +754,6 @@
     "[\"src/autoflow/infrastructure/database/proxy_operations.py\", \"SqlAlchemyProxyOperations.update\", \"type-arg\", \"Missing type arguments for generic type \\\"dict\\\"\"]": 3,
     "[\"src/autoflow/infrastructure/database/proxy_operations.py\", \"_value\", \"no-untyped-def\", \"Function is missing a type annotation for one or more parameters\"]": 1,
     "[\"src/autoflow/infrastructure/database/session.py\", \"create_session_factory\", \"no-untyped-def\", \"Function is missing a return type annotation\"]": 1,
-    "[\"src/autoflow/infrastructure/database/session.py\", \"create_session_factory.enable_foreign_keys\", \"no-untyped-def\", \"Function is missing a type annotation\"]": 1,
     "[\"src/autoflow/infrastructure/database/settings_runtime.py\", \"SqlAlchemySettingsRuntimeRepository.__init__\", \"no-untyped-def\", \"Function is missing a type annotation for one or more parameters\"]": 1,
     "[\"src/autoflow/infrastructure/database/settings_runtime.py\", \"_count\", \"no-untyped-def\", \"Function is missing a type annotation for one or more parameters\"]": 1,
     "[\"src/autoflow/infrastructure/database/workflow_core_models.py\", \"WorkflowDocumentOperationRow\", \"type-arg\", \"Missing type arguments for generic type \\\"dict\\\"\"]": 1,

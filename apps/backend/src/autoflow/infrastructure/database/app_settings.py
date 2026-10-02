@@ -47,11 +47,12 @@ class SqlAlchemyAppSettings:
             except IntegrityError:
                 raise AppSettingConflict(self.get(key)[1]) from None
         with self._factory.begin() as session:
-            updated = session.execute(
+            result = session.execute(
                 update(AppSettingRow)
                 .where(AppSettingRow.key == key, AppSettingRow.revision == expected_revision)
                 .values(value=value, revision=expected_revision + 1, updated_at=now)
-            ).rowcount
+            )
+            updated = int(getattr(result, "rowcount", 0))
         if updated != 1:
             raise AppSettingConflict(self.get(key)[1])
         return expected_revision + 1

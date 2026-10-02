@@ -11,9 +11,9 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from collections.abc import Callable
+from collections.abc import Callable, Coroutine
 from dataclasses import dataclass
-from typing import Any, Protocol
+from typing import Any, Protocol, TypeVar
 
 from autoflow.domain.settings.execution_capacity import (
     ExecutionCapacity,
@@ -26,6 +26,7 @@ from autoflow.infrastructure.database.app_settings import AppSettingConflict
 KEY = "execution.maxRunningBrowsers"
 APPLY_FAILED_MESSAGE = "并发设置应用失败，已暂停派发新任务，正在按已保存的值核验"
 log = logging.getLogger(__name__)
+_T = TypeVar("_T")
 
 
 class SettingsStore(Protocol):
@@ -90,7 +91,7 @@ class ExecutionSettingsService:
         while self._operations:
             await asyncio.gather(*tuple(self._operations), return_exceptions=True)
 
-    async def _owned(self, coroutine: Any) -> Any:
+    async def _owned(self, coroutine: Coroutine[Any, Any, _T]) -> _T:
         task = asyncio.ensure_future(coroutine)
         self._operations.add(task)
         task.add_done_callback(self._operations.discard)

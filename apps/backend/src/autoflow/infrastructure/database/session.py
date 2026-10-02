@@ -5,7 +5,7 @@ from alembic import command
 from alembic.config import Config
 from sqlalchemy import create_engine, event, text
 from sqlalchemy.exc import OperationalError
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
 
 
 def _url(path: Path) -> str:
@@ -29,7 +29,7 @@ SQLITE_PRAGMAS = (
 )
 
 
-def checkpoint_wal(factory) -> None:
+def checkpoint_wal(factory: sessionmaker[Session]) -> None:
     """Checkpoint a quiescent database; callers must keep writes stopped during a copy."""
     with factory() as session:
         busy, _, _ = session.execute(text("PRAGMA wal_checkpoint(TRUNCATE)")).one()
@@ -41,7 +41,7 @@ def create_session_factory(path: Path):
     engine = create_engine(_url(path), future=True)
 
     @event.listens_for(engine, "connect")
-    def configure_connection(connection, _record):
+    def configure_connection(connection: sqlite3.Connection, _record: object) -> None:
         # Remediation M1 R1-13: WAL lets readers proceed during writes; NORMAL is durable
         # across application crashes in WAL mode; busy_timeout absorbs short lock waits.
         cursor = connection.cursor()
