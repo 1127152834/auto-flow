@@ -227,12 +227,13 @@ def test_table_mutations_write_changes_and_failed_conflict_is_atomic(context):
         changes = session.scalars(
             select(DataChangeRow).order_by(DataChangeRow.created_at, DataChangeRow.id)
         ).all()
-    assert [change.operation_id for change in changes] == [
-        create_operation.operation_id,
-        update_operation.operation_id,
-    ]
-    assert changes[0].before is None and changes[0].after == created
-    assert changes[1].before == created and changes[1].after == updated
+    # 按操作取变更，不依赖同一时间戳下的排序（Windows 时钟精度粗）。
+    by_operation = {change.operation_id: change for change in changes}
+    assert sorted(by_operation) == sorted([create_operation.operation_id, update_operation.operation_id])
+    assert len(changes) == 2
+    created_change, updated_change = by_operation[create_operation.operation_id], by_operation[update_operation.operation_id]
+    assert created_change.before is None and created_change.after == created
+    assert updated_change.before == created and updated_change.after == updated
 
 
 def test_table_directory_source_filter_and_real_record_count(context):

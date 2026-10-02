@@ -188,6 +188,7 @@ async def test_late_provider_test_cannot_overwrite_newer_metadata(tmp_path):
     )
     pending = asyncio.create_task(delayed_service.test_provider(provider.id))
     await delayed.started.wait()
+    await asyncio.sleep(0.03)  # 跨过一个时钟刻度（updated_at 作版本，Windows 时钟精度粗）
     service.update_metadata(provider.id, "Renamed", "newer", False)
     delayed.release.set()
     with pytest.raises(ModelError) as captured:
@@ -269,6 +270,7 @@ async def test_late_failed_provider_test_cannot_overwrite_newer_metadata(tmp_pat
     )
     pending = asyncio.create_task(testing.test_provider(provider.id))
     await delayed.started.wait()
+    await asyncio.sleep(0.03)  # 供应商以 updated_at 作版本；Windows 时钟精度粗，需跨过一个时钟刻度
     normal.update_metadata(provider.id, "New metadata", "newer", False)
     delayed.release.set()
 

@@ -1,6 +1,7 @@
 import asyncio
 import hashlib
 import json
+import time
 from types import SimpleNamespace
 from uuid import NAMESPACE_URL, uuid5
 
@@ -837,6 +838,7 @@ def test_unknown_pull_history_survives_restart_with_scoped_filtered_pagination(t
         if state != "running":
             operations.transition(record.operation_id, "running", state, {})
         records.append(record)
+        time.sleep(0.03)  # 创建时间互不相同：Windows 时钟精度粗，同一时间戳时分页顺序只靠 id
     sessions.dispose()
     sessions = create_session_factory(database)
     operations = SqlAlchemyAndroidOperationRepository(sessions)
