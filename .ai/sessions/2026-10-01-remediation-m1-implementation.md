@@ -32,5 +32,5 @@
 - M1 已快进并入默认分支 codex/architecture-baseline（合并提交 a6ecc5c，类型修复 60ff484）；分支 remediation/m1-stop-silent-failures 与基线一致。**M1 仍不标 done。**
 - 合并后 CI：a6ecc5c 的 ARM、Windows 在 mypy 步骤失败（psutil 无类型桩、`Result.rowcount`、严格类型债务新增 4 项/已解决 1 项），已在 60ff484 修复（本地 mypy src、严格债务门 890=890、ruff 通过）；修复后的 CI 结果见交接文档。
 - golden rows=30（run 37004030835 @ a6ecc5c，macos-15 真实 CloakBrowser）：G2 28/30 成功；G3 点击版 29/30、回车版 29/30；各自 loop_lag_p99 45.2/29.4/43.3 ms。AC1-15 的"G3 两版跑通"有 30 行 CI 证据。
-- **G2 failure_reason_ratio 实测 0.0**（g2-scrape/g3-click/g3-enter 均 0.0）：与 M0 基线（通用原因）相同，M1 在该指标上**没有可见提升**。根因未查明（待查：golden 读取的是 run.error / task.error，而 M1 的失败原因主要写入批量运行日志，可能未进入这两个字段）。这是 M1 退出前要追的项，不是通过。
+- **G2 failure_reason_ratio 实测 0.0**（g2-scrape/g3-click/g3-enter 均 0.0）：与 M0 基线（通用原因）相同，M1 在该指标上**没有可见提升**。根因未实证；代码阅读的判断：M1 的节点失败文案（event_translation.node_failure_message）已带具体原因，但 golden 的 metrics 读取 run.error / task.error，这两处在批量运行里仍是通用句（"工作流未完整成功…"等），即指标读取位置与 M1 修改位置不一致。待在 golden 里读节点记录/运行日志确认，再决定改指标读取还是把原因同步到 run.error。这是 M1 退出前要追的项，不是通过。
 - 仍缺 Mac 同环境数据：AC1-09（bench_claim_loop_lag 1 万行）、AC1-10（event_commit_ms_p50 对比 M0）、AC1-13（Mac 真实 CloakBrowser press_key；CI 上 golden G3 回车版已在真实浏览器通过，可作为部分证据）。

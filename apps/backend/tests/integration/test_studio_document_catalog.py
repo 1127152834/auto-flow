@@ -245,11 +245,12 @@ def test_project_filter_is_applied_before_pagination(tmp_path: Path) -> None:
     _project(factory, "a")
     _project(factory, "b")
     documents = WorkflowDocumentService(SqlAlchemyWorkflowDocuments(factory))
-    expected = []
+    created = []
     for index in range(5):
-        saved = documents.create(_payload(project_id="a"), client_request_id=f"a-{index}")
-        expected.insert(0, saved.id)
+        created.append(documents.create(_payload(project_id="a"), client_request_id=f"a-{index}"))
         documents.create(_payload(project_id="b"), client_request_id=f"b-{index}")
+    # 稳定顺序是（更新时间倒序, id 升序）；Windows 时钟精度粗，连续创建可能同一时间戳。
+    expected = [item.id for item in sorted(created, key=lambda item: (-item.updated_at.timestamp(), item.id))]
     first = documents.list_summaries(project_id="a", limit=2)
     second = documents.list_summaries(project_id="a", limit=2, cursor=first.next_cursor)
     third = documents.list_summaries(project_id="a", limit=2, cursor=second.next_cursor)

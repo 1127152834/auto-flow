@@ -248,9 +248,11 @@ def test_fake_capability_changes_email_status_and_creates_account_once(tmp_path)
     assert created["ref"]["tableId"] == account["tableId"]
     detail = ProjectRunQueries(factory).task_detail(project_id, task.task_id)
     writes = detail["dataWrites"]
-    assert [item["kind"] for item in writes] == ["statusChange", "recordCreated"]
-    assert writes[0]["tableDisplay"] == "邮箱"
-    assert writes[1]["tableDisplay"] == "账号"
+    # 两次写入按（创建时间, id）排序；Windows 时钟精度粗，同一时间戳时顺序不保证，所以按种类断言。
+    assert sorted(item["kind"] for item in writes) == ["recordCreated", "statusChange"]
+    by_kind = {item["kind"]: item for item in writes}
+    assert by_kind["statusChange"]["tableDisplay"] == "邮箱"
+    assert by_kind["recordCreated"]["tableDisplay"] == "账号"
     assert TaskDetail.model_validate(detail).input_snapshot.inputs[0]["values"]
     with factory() as session:
         cursor = session.scalar(

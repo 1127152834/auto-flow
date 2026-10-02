@@ -74,7 +74,10 @@ async def test_manager_drains_a_flooding_worker_and_reports_a_safe_tail_and_log(
     assert f"诊断日志：{details['diagnosticLog']}" in str(caught.value)
     size = log.stat().st_size
     assert 0 < size <= 5 * 1024 * 1024  # bounded, although ~3 MB were written
-    assert b"Traceback" in log.read_bytes()
+    # 磁盘慢（如 Windows 跑机）时写入线程跟不上，产品会丢块并标记 diagnosticLogIncomplete；
+    # 完整时文件必须含回溯，不完整时内存尾部（assert_safe 已校验含 worker.py/other.py）仍带证据。
+    if not details.get("diagnosticLogIncomplete"):
+        assert b"Traceback" in log.read_bytes()
     assert not manager.busy()
 
 

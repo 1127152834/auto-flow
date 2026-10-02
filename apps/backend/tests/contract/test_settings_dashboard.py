@@ -1,4 +1,5 @@
 import asyncio
+import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from threading import Event
@@ -43,6 +44,18 @@ def _app(tmp_path):
         credential_store=FakeCredentialStore(),
         model_gateway=FakeModelGateway(),
     )
+
+
+
+def _quiesce_after_startup(client):
+    """First quiesce after startup; the scheduler's first tick may briefly hold the API mutation gate (slow runners)."""
+    deadline = time.monotonic() + 10
+    while True:
+        response = client.post("/internal/settings/quiesce", headers={"x-autoflow-host-token": "host"})
+        blockers = response.json().get("error", {}).get("details", {}).get("blockers", [])
+        if "api_mutation_in_progress" not in blockers or time.monotonic() > deadline:
+            return response
+        time.sleep(0.05)
 
 
 def test_runtime_and_dashboard_report_real_local_values(tmp_path):
@@ -188,9 +201,7 @@ def test_quiesce_reports_persisted_and_inflight_blockers(tmp_path):
     profile_path.mkdir()
     (profile_path / "SingletonLock").touch()
     with TestClient(app) as client:
-        response = client.post(
-            "/internal/settings/quiesce", headers={"x-autoflow-host-token": "host"}
-        )
+        response = _quiesce_after_startup(client)
         assert response.status_code == 409
         assert response.json()["error"]["details"]["blockers"] == [
             "kernel_operation_active",
@@ -245,9 +256,7 @@ def test_quiesce_reports_project_side_pending_work(tmp_path):
             created_at=now, updated_at=now,
         ))
     with TestClient(app) as client:
-        response = client.post(
-            "/internal/settings/quiesce", headers={"x-autoflow-host-token": "host"}
-        )
+        response = _quiesce_after_startup(client)
         assert response.status_code == 409
         assert response.json()["error"]["details"]["blockers"] == [
             "project_manual_item_pending",
