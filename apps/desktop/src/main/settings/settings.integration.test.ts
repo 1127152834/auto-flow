@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync,
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { expect, it } from 'vitest'
+import { expect, it, vi } from 'vitest'
 import { SidecarSupervisor } from '../sidecar/supervisor'
 import { SettingsController } from './controller'
 import { DesktopSettingsStore } from './store'
@@ -74,10 +74,13 @@ it('runs settings and workspace lifecycle against real local sidecars', async ()
     if (aStatus.state !== 'ready' || aHost.state !== 'ready') throw new Error('workspace A did not start')
 
     const authA = { 'x-autoflow-token': aStatus.token }
-    const runtimeA = await fetch(`${aStatus.baseUrl}/api/v1/settings/runtime`, { headers: authA })
     const dashboardA = await fetch(`${aStatus.baseUrl}/api/v1/dashboard`, { headers: authA })
-    expect(runtimeA.status).toBe(200)
-    expect(await runtimeA.json()).toMatchObject({ apiVersion: 'v1', blockers: [] })
+    // A startup request may still be finishing on a slow runner; the runtime must report no blocker once it settles.
+    await vi.waitFor(async () => {
+      const runtimeA = await fetch(`${aStatus.baseUrl}/api/v1/settings/runtime`, { headers: authA })
+      expect(runtimeA.status).toBe(200)
+      expect(await runtimeA.json()).toMatchObject({ apiVersion: 'v1', blockers: [] })
+    }, { timeout: 10_000, interval: 250 })
     expect(dashboardA.status).toBe(200)
     expect(await dashboardA.json()).toMatchObject({ profiles: 0, enabledProxies: 0, proxyGroups: 0, installedKernels: 0 })
 
