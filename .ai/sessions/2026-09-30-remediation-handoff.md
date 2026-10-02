@@ -172,3 +172,10 @@ npm run build
 - 用户决定：Intel 不再支持/验证；OCR 节点不投入测试；M1 完成后停止，M2–M6 在 Claude Code 中继续。
 - 立即要做：(1) 看 60ff484（或之后）的 CI，确认 ARM+Windows 同一提交全绿；(2) 追 G2 failure_reason_ratio=0.0（见 M1 记录）；(3) Mac 上跑 AC1-09/AC1-10 基准；(4) 以上完成后把程序索引中 M1/M0 标 done。
 - CI 注意：`ci.yml` 并发策略会取消同分支上一轮，连续推送会丢失仍在跑的 Windows 第二遍后端回归（约 1 小时 20 分）；Windows 日志无法下载，用 check-run 注解取证。
+
+## 收尾快照（2026-10-02，用户要求停止验证、交给 Claude Code）
+- 默认分支 codex/architecture-baseline 最新提交 258146c，CI run 37045099185 **未跑完时停止**：当时 macos-15 在前端测试（步骤 41）、windows-2022 在打包 sidecar（步骤 32），均无失败；Windows 第二遍完整后端回归尚未执行。**不能据此宣称同一提交 ARM+Windows 全绿。**
+- 本轮 Windows 暴露并已修复的问题（均为测试对 Windows 的假设，产品逻辑未改，除类型修复外）：同时间戳排序断言（安卓操作分页、文档目录、项目数据变更、运行/批次创建、项目 dataWrites）、quiesce 在启动期瞬时 api_mutation_in_progress、worker 诊断日志慢盘丢块（产品会标 diagnosticLogIncomplete）、内联 worker 子进程 ANSI 读 JSON、loop-lag 基准的 Windows 定时器底噪（+16ms）、真实浏览器共享表格用例的执行名额（M1 起取自硬件推荐，现固定硬件画像）、mypy（psutil 无桩、Result.rowcount）与严格类型债务门。
+- 已知产品弱点（未改）：模型供应商乐观并发用 updated_at 作版本，粗时钟平台上同一时间片内的更新可能漏检；批次/任务按 created_at 排序，同时间戳时顺序只靠 id。
+- golden rows=30（run 37004030835 @ a6ecc5c）成功；G2 failure_reason_ratio 仍 0.0（见 M1 记录）。
+- 远端旧分支删除被本机权限拦截，命令见交接文档。Intel 不再支持。

@@ -34,3 +34,10 @@
 - golden rows=30（run 37004030835 @ a6ecc5c，macos-15 真实 CloakBrowser）：G2 28/30 成功；G3 点击版 29/30、回车版 29/30；各自 loop_lag_p99 45.2/29.4/43.3 ms。AC1-15 的"G3 两版跑通"有 30 行 CI 证据。
 - **G2 failure_reason_ratio 实测 0.0**（g2-scrape/g3-click/g3-enter 均 0.0）：与 M0 基线（通用原因）相同，M1 在该指标上**没有可见提升**。根因未实证；代码阅读的判断：M1 的节点失败文案（event_translation.node_failure_message）已带具体原因，但 golden 的 metrics 读取 run.error / task.error，这两处在批量运行里仍是通用句（"工作流未完整成功…"等），即指标读取位置与 M1 修改位置不一致。待在 golden 里读节点记录/运行日志确认，再决定改指标读取还是把原因同步到 run.error。这是 M1 退出前要追的项，不是通过。
 - 仍缺 Mac 同环境数据：AC1-09（bench_claim_loop_lag 1 万行）、AC1-10（event_commit_ms_p50 对比 M0）、AC1-13（Mac 真实 CloakBrowser press_key；CI 上 golden G3 回车版已在真实浏览器通过，可作为部分证据）。
+
+## 收尾快照（2026-10-02，用户要求停止验证、交给 Claude Code）
+- 默认分支 codex/architecture-baseline 最新提交 258146c，CI run 37045099185 **未跑完时停止**：当时 macos-15 在前端测试（步骤 41）、windows-2022 在打包 sidecar（步骤 32），均无失败；Windows 第二遍完整后端回归尚未执行。**不能据此宣称同一提交 ARM+Windows 全绿。**
+- 本轮 Windows 暴露并已修复的问题（均为测试对 Windows 的假设，产品逻辑未改，除类型修复外）：同时间戳排序断言（安卓操作分页、文档目录、项目数据变更、运行/批次创建、项目 dataWrites）、quiesce 在启动期瞬时 api_mutation_in_progress、worker 诊断日志慢盘丢块（产品会标 diagnosticLogIncomplete）、内联 worker 子进程 ANSI 读 JSON、loop-lag 基准的 Windows 定时器底噪（+16ms）、真实浏览器共享表格用例的执行名额（M1 起取自硬件推荐，现固定硬件画像）、mypy（psutil 无桩、Result.rowcount）与严格类型债务门。
+- 已知产品弱点（未改）：模型供应商乐观并发用 updated_at 作版本，粗时钟平台上同一时间片内的更新可能漏检；批次/任务按 created_at 排序，同时间戳时顺序只靠 id。
+- golden rows=30（run 37004030835 @ a6ecc5c）成功；G2 failure_reason_ratio 仍 0.0（见 M1 记录）。
+- 远端旧分支删除被本机权限拦截，命令见交接文档。Intel 不再支持。
