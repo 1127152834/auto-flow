@@ -166,3 +166,9 @@ npm run build
 ## 9. 可直接发送给下一位 agent 的任务
 
 > 从 baseline 最新代码开始，先阅读 `.ai/sessions/2026-09-30-remediation-handoff.md` 和 M0–M6 阶段索引。刷新 Git 与交接表中的 CI 状态，先处理 M0 仍未关闭的跨平台回归，手动运行默认分支 golden rows=30 并核对产物，按规格完成 M0 退出验收。随后依照已授权的 M1–M6 依赖和步骤计划持续实施；M2–M6 在前置完成后细化、审查再执行，不需要逐阶段确认。每个切片按真实证据验证并提交、同步 `.ai`；不得把跳过、旧候选或单项通过当整阶段完成。保留用户数据和已知兼容缺口，不部署、不历史改写、不发送外部消息。
+
+## 最新状态（2026-10-02，换到 Claude Code 继续）
+- 默认分支 codex/architecture-baseline 已含 M0 修复与 M1 全部代码；其他分支内容均已合并（仅 diag/windows-ocr-1、diag/windows-strict-1 各有 1 个一次性诊断探针提交，无需合并）。远端旧分支删除被本机权限拦截，需用户执行：`git push origin --delete claude/remediation-specs codex/remediation-m0 codex/remediation-m0-ci-validation codex/remediation-m0-ownership-validation diag/desktop-intel diag/windows-annot-1 diag/windows-annot-2 diag/windows-annot-3 diag/windows-annot-4 diag/windows-focus-android diag/windows-full2 diag/windows-ocr-1 diag/windows-regression diag/windows-strict-1`。
+- 用户决定：Intel 不再支持/验证；OCR 节点不投入测试；M1 完成后停止，M2–M6 在 Claude Code 中继续。
+- 立即要做：(1) 看 60ff484（或之后）的 CI，确认 ARM+Windows 同一提交全绿；(2) 追 G2 failure_reason_ratio=0.0（见 M1 记录）；(3) Mac 上跑 AC1-09/AC1-10 基准；(4) 以上完成后把程序索引中 M1/M0 标 done。
+- CI 注意：`ci.yml` 并发策略会取消同分支上一轮，连续推送会丢失仍在跑的 Windows 第二遍后端回归（约 1 小时 20 分）；Windows 日志无法下载，用 check-run 注解取证。

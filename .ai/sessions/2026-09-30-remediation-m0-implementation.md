@@ -189,3 +189,10 @@ PM9构件11139561095（pm9-macos-15）上传883628173字节；日志与API元数
 同候选ARM job110226128259后端构建、目录打包、打包sidecar整链、安装器构建、基础桌面和浏览器管理冒烟步骤30–36，以及OpenAPI/Ruff/mypy/strict类型债务37–40均经Jobs API核对success，当前最终前端41运行；最后后端42和构件上传43尚未完成。不推断安装、签名、截图内容或整体通过。最新775a1cff ARM已通过前端25和构建26，真实worker27运行；两候选Intel/Windows剩余任务与c585a7aa Windows仍待终态。M0 AC0-07和默认分支黄金流程继续pending，本条仅本地证据提交。
 
 交接终态补证（2026-09-30，confirmed 单候选单平台）：d8d3210e的ARM job110226128259已completed/success，完整日志确认两轮后端各5348 passed/137 skipped/24 deselected/2 warnings（1863.17s、1573.09s），两轮前端各5972 passed/454文件，真实worker44 passed/31 deselected/1 warning（541.65s），基准21 passed（2.84s）。PM9 artifact11145965448为890808358字节，上传日志摘要2182acea8531beffe775bfe34c57fca6eafaa8f4cb87dd655979cb3716f88c5f；未下载或本地复算大ZIP。用户要求提交并交接给另一agent，随后明确授权推送baseline；本轮合并远端d45e8bc3/fb06fe60新增文档，保留整改r2索引及独立E计划，未新增业务改动。后续以[交接文档](2026-09-30-remediation-handoff.md)与实时Git/CI为入口；baseline推送不等于M0验收通过，AC0-07仍pending。
+
+M0 退出验收收尾（2026-10-02，confirmed 步骤级；整体仍有缺口，**不标 M0 全部关闭**）：
+- 跨平台回归：Windows 由约 27 项失败降到 0（逐文件诊断、注解运行定位后修复：测试预期/编码/权限位/进程身份/严格类型门）。按用户决定 Intel（macos-15-intel）不再作为兼容目标，其失败（均为慢机时序类前端/超时测试）不计入通过判定、不再为它改代码。通过标准 = ARM（macos-15）+ Windows（windows-2022）。
+- ARM 在 b65f078 上全步骤绿。Windows 在 9356cd6 上除第二遍完整后端回归外全部步骤通过；该遍唯一失败是 test_cursor_matches_timestamp_order（Windows 时钟精度粗，同时间戳按 id 倒序，测试预期写错），已在 b65f078 修正。随后 M1 合并提交触发的并发取消使 b65f078 的 Windows 第二遍后端回归没有跑完；a6ecc5c 在 mypy 步骤失败（M1 引入类型错误），60ff484 修复。**同一提交在 ARM+Windows 同时全绿尚未取得**，以最新 CI 为准。
+- 默认分支手动 golden rows=30（run 37004030835，提交 a6ecc5c，macos-15）成功：g2-scrape 28/30 成功（2 预期失败）、g3-click 29/30、g3-enter 29/30（各 1 个预期丢响应失败），三份报告通过 verify_results，AC0-07 的 golden 部分有 30 行证据（101 行本地验收见前文）。
+- 已知缺口（保留）：Windows 追加/替换/身份校验写入返回 501 ARTIFACT_PLATFORM_UNSUPPORTED；OCR 真实模型用例在 Windows 跳过（用户决定不验收，worker 内 60 秒超时根因未查明）；POSIX 权限位断言仅在非 Windows 执行；Intel 不再验证。
+- Task 11 历史清理仍未授权、未执行。

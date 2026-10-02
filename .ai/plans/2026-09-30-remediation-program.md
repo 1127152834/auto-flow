@@ -1,11 +1,11 @@
 # 整改计划索引
 
-日期：2026-09-30；修订：r2。状态：confirmed（方向和本轮文档修订），M0 退出验收进行中，M1 代码完成待同环境证据，M2–M6 未开始（用户决定后续在 Claude Code 中继续）。正式正文在 docs/superpowers；旧“已原型验证、M0 可直接执行”标记 superseded。M2–M6 在前置接口和测量完成后细化、审查，不预先展开整套实现。
+日期：2026-09-30；修订：r2。状态：confirmed（方向和本轮文档修订），M0 退出验收接近完成（缺同提交 ARM+Windows 全绿确认；Intel 已不再支持），M1 代码已并入默认分支、待同环境证据与 G2 失败原因占比追查，M2–M6 未开始（用户决定后续在 Claude Code 中继续）。正式正文在 docs/superpowers；旧“已原型验证、M0 可直接执行”标记 superseded。M2–M6 在前置接口和测量完成后细化、审查，不预先展开整套实现。
 
 | 里程碑 | 规格 | 计划 | 粒度与依赖 |
 | --- | --- | --- | --- |
 | M0 基准与守门 | [规格](../../docs/superpowers/specs/2026-09-30-remediation-m0-baseline-guardrails.md) | [计划](../../docs/superpowers/plans/2026-09-30-remediation-m0-baseline-guardrails.md) | 步骤级；Task1–9本地实现与独立评审完成；101行黄金通过，全量本地回归通过，远端CI仍待验收 |
-| M1 止血 | [规格](../../docs/superpowers/specs/2026-09-30-remediation-m1-stop-silent-failures.md) | [计划](../../docs/superpowers/plans/2026-09-30-remediation-m1-stop-silent-failures.md) | 步骤级；代码与独立评审缺陷已处理（2026-10-01），待 Mac/CI 同环境证据（AC1-09/10/13/15）后才能标 done |
+| M1 止血 | [规格](../../docs/superpowers/specs/2026-09-30-remediation-m1-stop-silent-failures.md) | [计划](../../docs/superpowers/plans/2026-09-30-remediation-m1-stop-silent-failures.md) | 步骤级；代码已并入默认分支（2026-10-02），golden 30 行已跑（G2 failure_reason_ratio 仍 0.0，未提升）；待 Mac 基准（AC1-09/10/13）与该指标追查后才能标 done |
 | M2A/B/C 可靠性、数据契约、扩展 | [规格](../../docs/superpowers/specs/2026-09-30-remediation-m2-business-model-reliability.md) | [计划](../../docs/superpowers/plans/2026-09-30-remediation-m2-business-model-reliability.md) | 任务级；分切片细化审查 |
 | M3 吞吐与性能 | [规格](../../docs/superpowers/specs/2026-09-30-remediation-m3-throughput.md) | [计划](../../docs/superpowers/plans/2026-09-30-remediation-m3-throughput.md) | 任务级；M2A/B 与原生基准后 |
 | M4 身份模型 | [规格](../../docs/superpowers/specs/2026-09-30-remediation-m4-identity.md) | [计划](../../docs/superpowers/plans/2026-09-30-remediation-m4-identity.md) | 任务级；M3 资源接口稳定后 |
