@@ -834,6 +834,7 @@ async def test_max_live_instances_and_core_capacity_apply_across_batches(
         "concurrency": 3,
     }
     first = coordinator.start(project, automation.automation_id, uid(), payload)[0]
+    await asyncio.sleep(0.05)  # 两批创建时间必须不同：Windows 时钟精度粗，同一时间戳时调度顺序只靠 id
     second = coordinator.start(project, automation.automation_id, uid(), payload)[0]
     core = CapacityCore(factory, capacity=3)
     scheduler = ProjectBatchScheduler(factory, core, QuiesceGate())

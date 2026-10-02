@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from datetime import UTC, datetime
 
 import pytest
@@ -41,6 +42,7 @@ def scoped_runs(tmp_path):
     for run_id, project_id in (("a-first", "a"), ("b-middle", "b"), ("a-last", "a")):
         service.start(WorkflowRunStart(run_id, run_id, run_id, run_id, {"nodes": []}, {}, "profile", {}, "run", project_id=project_id))
         service.finish(run_id, status="completed", cleanup_completed=True)
+        time.sleep(0.05)  # 让开始时间互不相同：Windows 时钟精度粗，同一时间戳时排序只靠 id
     app = FastAPI()
     install_error_handlers(app)
     app.include_router(workflow_runs_router(service, tmp_path))
