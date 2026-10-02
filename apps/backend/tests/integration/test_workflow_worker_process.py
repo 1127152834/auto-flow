@@ -519,7 +519,7 @@ send('finished',status='succeeded',error=None,cleanupConfirmed=True)
 
     executable = tmp_path / 'kernel'
     executable.write_text('identity')
-    instance = ProjectWorkflowWorkerManager(tmp_path / 'temp', command=(sys.executable, '-c', child), worker_env={'PROOF': str(tmp_path / 'proof')}, on_capability=capability)
+    instance = ProjectWorkflowWorkerManager(tmp_path / 'temp', command=(sys.executable, '-c', child), worker_env={'PROOF': str(tmp_path / 'proof'), 'PYTHONUTF8': '1', 'PYTHONIOENCODING': 'utf-8'}, on_capability=capability)  # 真实 worker 入口把 JSONL 固定为 UTF-8；这里的内联子进程用环境变量达到同样效果（Windows 默认 ANSI 代码页）
     outcome = await start(instance, executable, lambda _event: asyncio.sleep(0))
     assert outcome.status == 'succeeded'
 
