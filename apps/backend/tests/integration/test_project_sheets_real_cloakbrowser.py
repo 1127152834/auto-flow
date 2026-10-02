@@ -11,6 +11,7 @@ import pytest
 from sqlalchemy import select
 
 from autoflow.domain.profiles.models import ProfileSpec
+from autoflow.domain.settings.execution_capacity import HardwareProfile
 from autoflow.infrastructure.database.project_run_models import (
     ProjectRecordLeaseRow,
     ProjectTaskRow,
@@ -24,6 +25,12 @@ from tests.integration.test_project_sheets_sync import pull
 from tests.integration.test_workflow_real_cloakbrowser import (
     real_cloak_page as cloak_fixture,
 )
+
+
+@pytest.fixture(autouse=True)
+def two_execution_slots(monkeypatch):
+    """这些用例按 2 个执行名额编排；名额现在取自硬件推荐值，固定硬件画像让结果不随跑机核数变化。"""
+    monkeypatch.setattr("autoflow.bootstrap.app.system_hardware", lambda: HardwareProfile(3, 64 * 1024**3))
 
 real_cloak_page = cloak_fixture
 
