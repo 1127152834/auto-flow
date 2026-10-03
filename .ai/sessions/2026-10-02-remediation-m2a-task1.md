@@ -23,3 +23,10 @@
 
 ## 下一步
 M2A Task 2（失败分类与整 Task 重放边界）→ Task 3（终态同事务投影、resolve 接口）→ Task 4（三种领取模式）。
+
+## 2026-10-03 续：Task 2a 与 Task 3（本机提交，未推送）
+- Task 2a（569aeab1，计划 docs/superpowers/plans/2026-10-02-remediation-m2a-task2a-side-effects.md）：节点副作用声明（默认"可能"，白名单只读），随已确认的 started 事件持久化；失败分类 infrastructure/page/unknown/cancelled，任务详情 failureCategory。真实浏览器写冲突用例分类为 unknown。
+- Task 2b（统一 errorPolicy、旧配置候选迁移、节点级重试与前端控件）顺延到 Task 4 之后。
+- Task 3（98b1139a，计划 docs/superpowers/plans/2026-10-03-remediation-m2a-task3-projection.md）：终态在释放主处理输入租约的事务内投影到处理记录（恰好一次）；业务失败来自 End；processing-units HTTP 与人工 reset/skip/resolve；自动化详情页"处理记录"面板（组件测试覆盖，未在真实 Electron 中截图核对）。
+- 验证：项目范围回归 3772 过；失败为已知本机环境项，另 `test_real_project_batch_http[manual-stop]` 一次失败、重跑通过（时序偶发，未定位）。
+- 仍未接入领取：处理记录目前只记录与人工处理，领取行为不变（Task 4）。
