@@ -14,6 +14,7 @@ from autoflow.infrastructure.database import (  # noqa: F401
     project_sync_models,
     proxy_models,
     record_ledger_models,
+    schedule_models,
     workflow_core_models,
     workflow_models,
     workflow_runtime_models,

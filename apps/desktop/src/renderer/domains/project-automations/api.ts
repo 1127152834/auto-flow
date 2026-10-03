@@ -2,6 +2,7 @@ import type { StreamingApiClient } from '../../shared/api/client'
 import { createDataCommand, DataCommandUncertain, type DataCommandPolicy } from '../project-data/data-command'
 import { createOperationCommand } from '../project-data/operation-command'
 import type { ProcessingUnit } from './components/ProcessingUnitsPanel'
+import type { Schedule, SchedulesApi, ScheduleTrigger } from './components/SchedulesPanel'
 import type { Automation, AutomationDeleteBody, AutomationDirectoryQuery, AutomationImpact, AutomationPage, AutomationUpdate, AutomationValidation, AutomationWrite } from './types'
 
 export { DataCommandUncertain as AutomationCommandUncertain } from '../project-data/data-command'
@@ -45,6 +46,17 @@ export function createAutomationApi(client: StreamingApiClient, projectId: strin
       return {
         list: (state: string | null, after: string | null) => client.request<{ items: ProcessingUnit[]; nextAfter: string | null }>(`${units}?limit=50${state ? `&state=${encode(state)}` : ''}${after ? `&after=${encode(after)}` : ''}`),
         command: (unitId: string, action: 'reset' | 'skip' | 'resolve', body: object, key: string) => client.request<{ unit: ProcessingUnit }>(`${units}/${encode(unitId)}/${action}`, { method: 'POST', headers: { 'Idempotency-Key': key }, body }),
+      }
+    },
+    /** Remediation M2 R2-25..27: timed and external-call triggers. */
+    schedules: (automationId: string): SchedulesApi => {
+      const schedules = `${base}/${encode(automationId)}/schedules`
+      return {
+        list: () => client.request<Schedule[]>(schedules),
+        create: body => client.request<Schedule>(schedules, { method: 'POST', body }),
+        update: (scheduleId, body) => client.request<Schedule>(`${schedules}/${encode(scheduleId)}`, { method: 'PUT', body }),
+        remove: scheduleId => client.request<unknown>(`${schedules}/${encode(scheduleId)}`, { method: 'DELETE' }),
+        triggers: scheduleId => client.request<ScheduleTrigger[]>(`${schedules}/${encode(scheduleId)}/triggers`),
       }
     },
     remove: (automationId: string, body: AutomationDeleteBody, key: string, current: () => boolean = () => true) => operations.submit(`${base}/${encode(automationId)}`, body, key, 'deleteAutomation', current, 'DELETE'),

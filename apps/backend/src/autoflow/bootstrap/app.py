@@ -1,4 +1,5 @@
 import logging
+import re
 import secrets
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
@@ -40,6 +41,7 @@ from autoflow.application.profiles.test_browser import ProfileTestBrowserService
 from autoflow.application.project_automations.resource_query import (
     ProjectAutomationResourceQuery,
 )
+from autoflow.application.project_automations.schedules import AutomationScheduleService
 from autoflow.application.project_automations.service import ProjectAutomationService
 from autoflow.application.project_data.catalog import DataCatalogService
 from autoflow.application.project_data.deletions import DataDeletionService
@@ -221,6 +223,8 @@ from autoflow.providers.kernel.cloakbrowser import (
     CloakBrowserLicenseProvider,
 )
 from autoflow.providers.model.http import HttpModelProvider
+
+_AUTOMATION_WEBHOOK = re.compile(r"/api/v1/projects/[^/]+/automations/[^/]+/schedules/[^/]+/webhook")
 
 
 def create_app(
@@ -561,6 +565,11 @@ def create_app(
     project_pending_work = SqlAlchemyProjectPendingWork(session_factory)
     app.state.project_run_coordinator = project_run_coordinator
     app.state.project_run_scheduler = project_run_scheduler
+    automation_schedules = AutomationScheduleService(
+        session_factory, project_run_coordinator, scheduler=project_run_scheduler
+    )
+    app.state.automation_schedules = automation_schedules
+    app.router.add_event_handler("startup", automation_schedules.startup)
     execution_settings = ExecutionSettingsService(
         SqlAlchemyAppSettings(session_factory), system_hardware, memory_pressure
     )
@@ -636,6 +645,7 @@ def create_app(
             status_batch_coordinator.shutdown()
             await asyncio.to_thread(status_batch_executor.shutdown, wait=True)
             await workflow_schedules.shutdown()
+            await automation_schedules.shutdown()
 
             async def close_project_workflows() -> None:
                 try:
@@ -736,6 +746,7 @@ def create_app(
     app.router.add_event_handler("startup", project_lifecycle_coordinator.startup)
     register_project_routes(app, ProjectHttpServices(
         processing_units=ProcessingUnitService(session_factory),
+        schedules=automation_schedules,
         run_interactions=project_workflow_dispatcher.interactions,
         run_coordinator=project_run_coordinator,
         run_queries=ProjectRunQueries(session_factory),
@@ -772,7 +783,10 @@ def create_app(
 
     @app.middleware("http")
     async def authenticate_api(request: Request, call_next):
-        external_webhook = request.url.path.startswith("/api/triggers/webhook/")
+        # Webhook callers authenticate with the schedule's own secret; the server stays loopback-only.
+        external_webhook = request.url.path.startswith("/api/triggers/webhook/") or (
+            request.method == "POST" and _AUTOMATION_WEBHOOK.fullmatch(request.url.path) is not None
+        )
         if request.url.path.startswith("/internal/"):
             supplied = request.headers.get("x-autoflow-host-token", "")
             if (
