@@ -47,3 +47,11 @@
 - 该用例根因（代码阅读 + 时钟测量，未在本机复现）：本地编辑意图 `pending()` 按 `created_at, id` 排序，id 为 uuid4；Windows 跑机默认约 15.6ms 时钟粒度下两条编辑同一 `created_at`，顺序退回随机 id，丢失的第二次核验读取可能落在 A-1。本机时钟 1ms，15 次重复均通过（修复前后一致）。修复只改测试：以实际 unknown 记录继续核对。产品排序弱点同交接文档已知项，未改。
 - G2 failure_reason_ratio=0.0 根因（代码证据）：子进程 `providers/browser/project_workflow_worker.py` 的 `finished` 消息已带节点具体原因（`project_graph` 用 `node_failure_message` 生成，也写进节点日志），但父进程 `infrastructure/process/project_workflow_worker.py` 一律替换成"工作流未完整成功，请查看已提交的节点记录"，golden 读取的 run.error 因此总是通用句。修复：父进程保留子进程上报的 code/message（code 须为大写标识、message 非空且 ≤1100 字符，并按本 worker 的凭据再脱敏），否则仍回退通用句。新增 6 例参数化测试；真实浏览器写冲突用例的期望由 `WORKFLOW_FAILED` 改为最后失败节点的 `WORKFLOW_NODE_TIMEOUT`（本机无 CloakBrowser，需 CI 验证）。
 - 待验证：推送后同一提交的 macos-15 + windows-2022 CI；手动 dispatch golden rows=30 看 G2/G3 failure_reason_ratio 是否 >0。AC1-09/10/13 的 Mac 基准仍缺，M1 仍不标 done。
+
+## 本机 Windows 端到端（2026-10-02，未推送）
+- 环境：Windows 11、Python 3.11、CloakBrowser 146.0.7680.177.5（`ensure_binary`，与 CI Windows 相同）；后端环境排除 dlib/face-recognition（本机无编译器），人脸与 OCR 相关用例不作结论。
+- 第二处原因缺口：整节点超时 `_TimedNode` 只返回裸码，消息只剩"工作流节点执行超时"（golden 计为通用句）。改为"工作流节点执行超时：节点在 N 秒内未完成"，code 不变。
+- golden rows=30（本机）：修复前 g2/g3-click/g3-enter failure_reason_ratio 均 0.0（错误已是 WORKFLOW_NODE_TIMEOUT 但无原因）；修复后均 **1.0**；成功行 28/29/29，loop_lag_p99 86.4/86.0/79.3ms。本机数据不替代 Mac/CI。
+- 真实浏览器集成（批量/Sheets/Excel/不限/写冲突/节点浏览器/press_key，basetemp 置于短路径）：80 例中 77 过；table_extract、firecrawl 失败为本机路径超 260 字符（短路径重跑通过）；press_key 为测试竞态（autofocus 晚于 goto），已修测试。注意：长 basetemp 会让大量真实浏览器用例因 MAX_PATH 失败。
+- 冒烟：smoke-project-management（真实内核）、smoke-project-management-desktop、smoke:desktop、smoke-browser-management(-desktop) 全部通过（需先 `npm run build`）。
+- 后端单元：1924 过；14 例失败与改动无关（无符号链接权限、冻结参考源缺失等本机限制，未改动代码上同样失败）。

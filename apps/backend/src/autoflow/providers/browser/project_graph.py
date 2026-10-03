@@ -154,7 +154,8 @@ class _TimedNode(ModuleExecutor):
             async with asyncio.timeout(timeout or None):
                 return await self.executor.execute(config, context)
         except (TimeoutError, _CredentialDeadlineExceeded):
-            return ModuleResult(False, error='WORKFLOW_NODE_TIMEOUT', is_timeout=True)
+            # R1-03: the reason names the whole-node limit; the code stays WORKFLOW_NODE_TIMEOUT.
+            return ModuleResult(False, error=f'节点在 {timeout:g} 秒内未完成', is_timeout=True)
         finally:
             if isinstance(reader, _WorkerCredentialReader) and deadline_token is not None:
                 reader.deadline.reset(deadline_token)

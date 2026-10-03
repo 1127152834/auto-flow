@@ -87,3 +87,15 @@ async def test_inert_retry_settings_are_reported_once_per_node():
     assert (await executor.run({'document': document}))['status'] == 'succeeded'
     warnings = [event[3]['message'] for event in events if event[0] == 'log' and event[3].get('level') == 'warning']
     assert warnings == ['「赋值」的以下设置尚未生效，运行时会被忽略：重试次数、运行超时后']
+
+
+@pytest.mark.asyncio
+async def test_whole_node_timeout_names_the_limit_instead_of_a_bare_headline():
+    """R1-03: a timeout reads "工作流节点执行超时：<原因>", not only the headline."""
+    document = {'nodes': [node('pause', 'wait', waitType='time', duration=5000, timeout=0.05)], 'edges': []}
+    result, events = await run_document(document)
+    assert result['status'] == 'failed'
+    assert result['error']['code'] == 'WORKFLOW_NODE_TIMEOUT'
+    assert result['error']['message'] == '工作流节点执行超时：节点在 0.05 秒内未完成'
+    error_logs = [event[3]['message'] for event in events if event[0] == 'log' and event[3].get('level') == 'error']
+    assert error_logs == [result['error']['message']]
