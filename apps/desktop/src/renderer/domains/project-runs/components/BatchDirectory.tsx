@@ -17,7 +17,7 @@ type Batch = components['schemas']['BatchView'] & { automationName?: string | nu
 export type BatchFilters = { q: string | null; automationId: string | null; status: string | null; period: string | null }
 export type BatchDirectoryProps = { page?: BatchPage; filters: BatchFilters; automationOptions?: { id: string; name: string }[]; loading?: boolean; refreshing?: boolean; error?: string; onFiltersChange(value: BatchFilters): void; onPageChange(page: number): void; onOpen(batch: Batch): void; onRetry(): void }
 
-const statusOptions = [{ value: '', label: '全部状态' }, { value: 'accepted', label: '已接受' }, { value: 'running', label: '运行中' }, { value: 'blocked', label: '等待资源' }, { value: 'draining', label: '正在收尾' }, { value: 'stopping', label: '正在停止' }, { value: 'reconciling', label: '正在核对' }, { value: 'completed', label: '已完成' }, { value: 'stopped', label: '已停止' }, { value: 'failed', label: '失败' }, { value: 'interrupted', label: '已中断' }]
+const statusOptions = [{ value: '', label: '全部状态' }, { value: 'accepted', label: '已接受' }, { value: 'running', label: '运行中' }, { value: 'blocked', label: '等待资源' }, { value: 'paused', label: '已暂停' }, { value: 'draining', label: '正在收尾' }, { value: 'stopping', label: '正在停止' }, { value: 'reconciling', label: '正在核对' }, { value: 'completed', label: '已完成' }, { value: 'stopped', label: '已停止' }, { value: 'failed', label: '失败' }, { value: 'interrupted', label: '已中断' }]
 const time = (value: string) => new Intl.DateTimeFormat('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(value))
 
 export function BatchDirectory({ page, filters, automationOptions = [], loading = false, refreshing = false, error, onFiltersChange, onPageChange, onOpen, onRetry }: BatchDirectoryProps) {

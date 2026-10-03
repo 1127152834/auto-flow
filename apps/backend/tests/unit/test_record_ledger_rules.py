@@ -182,3 +182,32 @@ def test_succeeded_unit_starts_a_new_cycle_on_its_next_attempt():
 def test_a_needs_review_entry_is_never_overwritten_by_a_late_projection():
     review = project(fresh(), "unknown")
     assert project(review, "succeeded") == review
+
+
+# Remediation M2 R2-03: claim eligibility.
+from autoflow.domain.project_runs.ledger import claim_eligibility
+
+LATER = NOW + timedelta(seconds=30)
+
+
+@pytest.mark.parametrize(
+    ("state", "mode", "expected"),
+    [
+        (None, "unprocessed", "eligible"), (None, "cycle", "eligible"), (None, "retryFailed", "blocked"),
+        ("pending", "unprocessed", "eligible"), ("pending", "retryFailed", "blocked"),
+        ("failed_retryable", "unprocessed", "eligible"), ("failed_retryable", "retryFailed", "eligible"),
+        ("succeeded", "unprocessed", "blocked"), ("succeeded", "cycle", "eligible"), ("succeeded", "retryFailed", "blocked"),
+        ("needs_review", "cycle", "blocked"), ("quarantined", "cycle", "blocked"), ("skipped", "cycle", "blocked"),
+        ("needs_review", "unprocessed", "blocked"), ("quarantined", "retryFailed", "blocked"),
+    ],
+)
+def test_claim_eligibility_by_mode(state, mode, expected):
+    current = None if state is None else entry(state)
+    assert claim_eligibility(current, mode, NOW) == expected
+
+
+def test_future_eligibility_waits_in_every_mode_that_would_allow_it():
+    assert claim_eligibility(entry("failed_retryable", next_eligible_at=LATER), "unprocessed", NOW) == "waiting"
+    assert claim_eligibility(entry("succeeded", next_eligible_at=LATER), "cycle", NOW) == "waiting"
+    assert claim_eligibility(entry("succeeded", next_eligible_at=LATER), "unprocessed", NOW) == "blocked"
+    assert claim_eligibility(entry("failed_retryable", next_eligible_at=NOW), "retryFailed", NOW) == "eligible"

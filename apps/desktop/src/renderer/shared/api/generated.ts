@@ -1364,6 +1364,26 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{projectId}/batches/{batchId}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resume Batch
+         * @description Remediation M2 R2-16: continue a batch the failure thresholds paused.
+         */
+        post: operations["resume_batch_api_v1_projects__projectId__batches__batchId__resume_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{projectId}/batches/{batchId}/force-stop": {
         parameters: {
             query?: never;
@@ -6980,6 +7000,11 @@ export type components = {
             /** Batchid */
             batchId: string;
         };
+        /** BatchResumeRequest */
+        BatchResumeRequest: {
+            /** Expectedstatusrevision */
+            expectedStatusRevision: number;
+        };
         /** BatchStartRequest */
         BatchStartRequest: {
             /** Debugselection */
@@ -7000,6 +7025,8 @@ export type components = {
             concurrency?: number | null;
             /** Environmentoverride */
             environmentOverride?: (components["schemas"]["NewFromProfile"] | components["schemas"]["FixedEnvironment"] | components["schemas"]["InputEnvironment"]) | null;
+            /** Executionmode */
+            executionMode?: ("previewWrites" | "realWrites") | null;
         };
         /** BatchStopRequest */
         BatchStopRequest: {
@@ -10930,7 +10957,7 @@ export type components = {
              * Kind
              * @enum {string}
              */
-            kind: "createProject" | "updateProject" | "createAutomation" | "updateAutomation" | "startBatch" | "stopBatch" | "forceStopBatch" | "followUpBatch" | "workflowInteraction" | "createTable" | "updateTable" | "mutateField" | "saveTableSchema" | "mutateStatus" | "createRecord" | "createRecords" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation" | "connectSheets" | "disconnectSheets" | "inspectSheets" | "changeSheetsBinding" | "initializeSheetsIdentity" | "createSheetsColumn" | "removeSheetsBinding" | "syncPull" | "syncPush" | "reconcileSync" | "archiveProject" | "restoreProject" | "deleteProject" | "deleteAutomation" | "deleteEnvironment" | "repairEndAssociation" | "changeProcessingUnit";
+            kind: "createProject" | "updateProject" | "createAutomation" | "updateAutomation" | "startBatch" | "stopBatch" | "forceStopBatch" | "resumeBatch" | "followUpBatch" | "workflowInteraction" | "createTable" | "updateTable" | "mutateField" | "saveTableSchema" | "mutateStatus" | "createRecord" | "createRecords" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation" | "connectSheets" | "disconnectSheets" | "inspectSheets" | "changeSheetsBinding" | "initializeSheetsIdentity" | "createSheetsColumn" | "removeSheetsBinding" | "syncPull" | "syncPush" | "reconcileSync" | "archiveProject" | "restoreProject" | "deleteProject" | "deleteAutomation" | "deleteEnvironment" | "repairEndAssociation" | "changeProcessingUnit";
             /**
              * Status
              * @enum {string}
@@ -11689,6 +11716,14 @@ export type components = {
             automaticExecutionTimeoutSeconds: number;
             /** Manualdeadlineseconds */
             manualDeadlineSeconds: number;
+            /** Claimmode */
+            claimMode?: ("unprocessed" | "cycle" | "retryFailed") | null;
+            /** Retrybudget */
+            retryBudget?: number | null;
+            /** Retrybackoffseconds */
+            retryBackoffSeconds?: number[] | null;
+            /** Failurepolicy */
+            failurePolicy?: "thresholds" | null;
         };
         /** RunSnapshotView */
         RunSnapshotView: {
@@ -19106,7 +19141,7 @@ export interface operations {
             query?: {
                 page?: number;
                 pageSize?: number;
-                kind?: ("createProject" | "updateProject" | "createAutomation" | "updateAutomation" | "startBatch" | "stopBatch" | "forceStopBatch" | "followUpBatch" | "workflowInteraction" | "createTable" | "updateTable" | "mutateField" | "saveTableSchema" | "mutateStatus" | "createRecord" | "createRecords" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation" | "archiveProject" | "restoreProject" | "deleteProject" | "deleteAutomation" | "changeProcessingUnit") | null;
+                kind?: ("createProject" | "updateProject" | "createAutomation" | "updateAutomation" | "startBatch" | "stopBatch" | "forceStopBatch" | "resumeBatch" | "followUpBatch" | "workflowInteraction" | "createTable" | "updateTable" | "mutateField" | "saveTableSchema" | "mutateStatus" | "createRecord" | "createRecords" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation" | "archiveProject" | "restoreProject" | "deleteProject" | "deleteAutomation" | "changeProcessingUnit") | null;
                 status?: ("accepted" | "running" | "reconciling" | "succeeded" | "failed") | null;
                 resourceType?: ("project" | "table" | "field" | "status" | "record" | "automation" | "batch") | null;
             };
@@ -20112,6 +20147,80 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["BatchStopRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectRunOperationAccepted"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    resume_batch_api_v1_projects__projectId__batches__batchId__resume_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                batchId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BatchResumeRequest"];
             };
         };
         responses: {

@@ -24,6 +24,7 @@ import {
 import { collectNodeVarNames } from '../lib/moduleDefaultVars'
 import { moduleMatchesQuery } from '../lib/pinyin'
 import { featureFlags } from '../lib/featureFlags'
+import { activePolicy, describePolicy } from '../lib/errorPolicy'
 
 // 模块条复制粘贴的会话级剪贴板（跨组件重渲染保留；存的是已换新 id 的快照，
 // 每次粘贴时再 clone 一次，保证可重复粘贴且 id 不冲突）
@@ -224,6 +225,9 @@ export function BlockFlowView() {
   }
   // 行内徽标摘要（仅在设置了非默认策略时显示）
   const policyText = (p?: ErrorPolicy): string => {
+    // M2 R2-12: an enabled version-2 policy is always shown; old shapes stay hidden until enabled.
+    const active = activePolicy({ errorPolicy: p })
+    if (active) return describePolicy(active, nodeLabel)
     if (!featureFlags.nodeRetryPolicy || !p || !p.mode || p.mode === 'stop') return ''
     if (p.mode === 'continue') return '出错跳过'
     if (p.mode === 'retry-self') return `出错重试 ${p.maxRetries ?? 1} 次`

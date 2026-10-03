@@ -585,8 +585,24 @@ def _run_policy(value: Any) -> dict[str, Any]:
         "automaticExecutionTimeoutSeconds",
         "manualDeadlineSeconds",
     }
-    if not isinstance(value, dict) or set(value) != required:
+    optional = {"claimMode", "retryBudget", "retryBackoffSeconds", "failurePolicy"}
+    if not isinstance(value, dict) or not required <= set(value) or set(value) - required - optional:
         raise validation_error("runPolicy", "A complete run policy is required")
+    # Remediation M2 R2-03/R2-04: how rows are claimed and retried; absent means the legacy cycle mode.
+    if "claimMode" in value and value["claimMode"] not in {"unprocessed", "cycle", "retryFailed"}:
+        raise validation_error("runPolicy.claimMode", "Must be unprocessed, cycle or retryFailed")
+    # R2-15: thresholds pause the batch; absent keeps the legacy continueAfterFailure behaviour.
+    if "failurePolicy" in value and value["failurePolicy"] != "thresholds":
+        raise validation_error("runPolicy.failurePolicy", "Must be thresholds")
+    if "retryBudget" in value and (type(value["retryBudget"]) is not int or not 1 <= value["retryBudget"] <= 20):
+        raise validation_error("runPolicy.retryBudget", "Must be an integer between 1 and 20")
+    if "retryBackoffSeconds" in value:
+        backoff = value["retryBackoffSeconds"]
+        if (
+            not isinstance(backoff, list) or not 1 <= len(backoff) <= 10
+            or any(type(item) is not int or not 1 <= item <= 86_400 for item in backoff)
+        ):
+            raise validation_error("runPolicy.retryBackoffSeconds", "Must list 1-10 waits of 1-86400 seconds")
     for key in ("maxTasks", "concurrency", "maxLiveInstances"):
         if type(value[key]) is not int or value[key] < 1:
             raise validation_error(f"runPolicy.{key}", "Must be a positive integer")

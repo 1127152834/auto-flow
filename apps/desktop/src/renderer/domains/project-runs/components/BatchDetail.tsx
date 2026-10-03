@@ -6,7 +6,7 @@ import { BatchStatus, type BatchStatusValue } from './BatchStatus'
 
 type Detail = components['schemas']['BatchDetail']
 type JsonRecord = Record<string, unknown>
-export type BatchDetailProps = { detail: Detail; automationName?: string; onBack(): void; onStop?: () => void; onForceStop?: () => void; stopping?: boolean; showConfiguration?: boolean }
+export type BatchDetailProps = { detail: Detail; automationName?: string; onBack(): void; onStop?: () => void; onForceStop?: () => void; onResume?: () => void; stopping?: boolean; showConfiguration?: boolean }
 
 const terminal = new Set(['completed', 'failed', 'stopped', 'interrupted'])
 const endReasons: Record<string, string> = { completed: '本批次任务已结束', stopped: '批次已按停止请求结束', failed: '批次运行失败', interrupted: '批次运行被中断' }
@@ -77,7 +77,7 @@ export function BatchConfigurationSnapshot({ value }: { value: JsonRecord }) {
   </details>
 }
 
-export function BatchDetail({ detail, automationName, onBack, onStop, onForceStop, stopping = false, showConfiguration = true }: BatchDetailProps) {
+export function BatchDetail({ detail, automationName, onBack, onStop, onForceStop, onResume, stopping = false, showConfiguration = true }: BatchDetailProps) {
   const { batch, statusCounts } = detail, ended = terminal.has(batch.status)
   const selectionStatus = typeof batch.selectionOutcome?.status === 'string' ? batch.selectionOutcome.status : undefined
   const selectionCategory = typeof batch.selectionOutcome?.category === 'string' ? batch.selectionOutcome.category : undefined
@@ -107,6 +107,7 @@ export function BatchDetail({ detail, automationName, onBack, onStop, onForceSto
       <header className="flex flex-wrap items-start gap-4 p-5">
         <span className="grid size-14 shrink-0 place-items-center rounded-control border border-clay/10 bg-clay/5 text-clay"><Stack size={28}/></span>
         <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-3"><h2 className="m-0 text-2xl">{batchName}</h2><BatchStatus status={batch.status as BatchStatusValue}/></div><p className="mb-0 mt-1 text-sm text-muted">批次开始于 {time(batch.createdAt)}</p></div>
+        {batch.status === 'paused' && onResume ? <Button disabled={stopping} onClick={onResume}>继续批次</Button> : null}
         {!ended && onStop ? <Button disabled={stopping} onClick={onStop}>停止批次</Button> : null}
         {!ended && onForceStop ? <Button variant="danger" disabled={stopping} onClick={onForceStop}>强制停止</Button> : null}
       </header>
@@ -118,6 +119,7 @@ export function BatchDetail({ detail, automationName, onBack, onStop, onForceSto
       </dl>
       <div className="m-5 flex flex-wrap items-center gap-x-5 gap-y-2 rounded-control border border-line px-4 py-3"><Stack className="text-muted" size={24}/><strong>本批次 {detail.taskCount} 个任务</strong><span className="text-success">成功 {statusCounts.succeeded ?? 0}</span><span className={failures ? 'text-danger' : ''}>失败或异常 {failures}</span><span>进行中 {batch.activeTaskCount}</span>{failures ? <span role="alert" className="ml-auto inline-flex items-center gap-2 rounded-control border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning"><WarningCircle size={20} weight="fill"/> {failures} 个任务失败或异常，可进入任务查看日志；批次结束不代表全部成功。</span> : null}</div>
       {(detail.reusedInputGroupCount ?? 0) > 0 || (detail.unchangedInputStreak ?? 0) > 0 ? <p className="mx-5 rounded-control border border-line bg-surface-subtle px-3 py-2 text-sm">已重复使用相同输入组 {detail.reusedInputGroupCount ?? 0} 次；当前输入条件连续 {detail.unchangedInputStreak ?? 0} 次未变化。计数仅用于解释运行事实，不限制继续领取。</p> : null}
+      {batch.status === 'paused' ? <p role="status" className="mx-5 rounded-control border border-warning/30 bg-surface px-3 py-2 text-sm">{typeof record(batch.selectionOutcome?.pauseReason).message === 'string' ? String(record(batch.selectionOutcome?.pauseReason).message) : '失败次数达到阈值，已暂停批次'}。已领取的数据和重试次数保持不变；修复后可以继续，或直接停止批次。</p> : null}
       {batch.status === 'blocked' ? <p role="status" className="mx-5 text-sm text-muted">{selectionStatus === 'scanBudgetExceeded' ? scanBudgetMessage : selectionStatus === 'temporarilyBusy' ? '符合条件的数据正在被其他任务使用，释放后将继续领取。' : '正在等待可用资源或数据；尚未确认数据耗尽。'}</p> : null}
       {batch.status === 'draining' ? <p role="status" className="mx-5 text-sm text-muted">{selectionStatus === 'configurationError' ? `数据输入配置已失效${selectionIssue ? `（${selectionIssue}）` : ''}；已停止领取，等待已领取任务结束。` : selectionStatus === 'ambiguous' ? `数据关联存在歧义${selectionIssue ? `（${selectionIssue}）` : ''}；已停止领取，等待已领取任务结束。` : '已停止领取新任务，等待已领取任务结束。'}</p> : null}
       {showConfiguration ? <BatchConfigurationSnapshot value={configuration}/> : null}

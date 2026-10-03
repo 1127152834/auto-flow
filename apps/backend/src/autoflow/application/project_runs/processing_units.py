@@ -23,11 +23,11 @@ from autoflow.infrastructure.database.models import ProjectOperationRow
 from autoflow.infrastructure.database.project_automation_models import (
     ProjectAutomationRow,
 )
+from autoflow.infrastructure.database.project_data import _operation, _operation_row
 from autoflow.infrastructure.database.project_run_models import (
     ProjectBatchRow,
     ProjectRecordLeaseRow,
 )
-from autoflow.infrastructure.database.projects import _operation, _operation_row
 from autoflow.infrastructure.database.record_ledger import SqlAlchemyRecordLedger
 
 KIND = "changeProcessingUnit"

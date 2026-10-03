@@ -149,6 +149,16 @@ def resolve_entry(
     )
 
 
+def quarantine_entry(entry: LedgerEntry, error: dict[str, Any], now: datetime) -> LedgerEntry:
+    """A primary row whose own values cannot be used (R2-17); no attempt is spent."""
+    if entry.state in {"needs_review", "quarantined"}:
+        return entry
+    return replace(
+        entry, state="quarantined", last_outcome="page", last_error=error, last_at=now,
+        next_eligible_at=None, revision=entry.revision + 1,
+    )
+
+
 def _check(entry: LedgerEntry, expected_revision: int) -> None:
     if entry.revision != expected_revision:
         raise LedgerError("LEDGER_REVISION_CONFLICT", "这条数据已被更新，请刷新后再试")
@@ -233,3 +243,32 @@ def next_ledger_entry(
         revision=entry.revision + 1,
         review=review,
     )
+
+
+ClaimMode = Literal["unprocessed", "cycle", "retryFailed", "legacyCycle"]
+Eligibility = Literal["eligible", "waiting", "blocked"]
+CLAIM_MODES: frozenset[str] = frozenset({"unprocessed", "cycle", "retryFailed"})
+# Remediation M2 R2-07: automations saved before claim modes keep reusing rows like a cycle,
+# behind every safety gate, but without the new waits or per-row limits they never had.
+LEGACY_CLAIM_MODE: ClaimMode = "legacyCycle"
+_ALLOWED: dict[str, frozenset[str]] = {
+    "unprocessed": frozenset({"pending", "failed_retryable"}),
+    "cycle": frozenset({"pending", "failed_retryable", "succeeded"}),
+    "retryFailed": frozenset({"failed_retryable"}),
+    "legacyCycle": frozenset({"pending", "failed_retryable", "succeeded"}),
+}
+
+
+def claim_eligibility(entry: LedgerEntry | None, mode: str, now: datetime) -> Eligibility:
+    """Whether a primary unit may be claimed (R2-03).
+
+    Unknown outcomes, quarantined and skipped units are blocked in every mode;
+    a unit allowed by the mode but not yet due waits for its backoff.
+    """
+    if entry is None:
+        return "blocked" if mode == "retryFailed" else "eligible"
+    if entry.state not in _ALLOWED.get(mode, frozenset()):
+        return "blocked"
+    if mode != "legacyCycle" and entry.next_eligible_at is not None and entry.next_eligible_at > now:
+        return "waiting"
+    return "eligible"

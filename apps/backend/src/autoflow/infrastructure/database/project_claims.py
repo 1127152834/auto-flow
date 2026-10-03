@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 import sqlite3
 from collections.abc import Callable, Mapping
+from dataclasses import dataclass
+from datetime import datetime
 from typing import Any, cast
 from uuid import uuid4
 
@@ -40,6 +42,7 @@ from autoflow.domain.project_runs.input_selection import (
     SourceLeaseKey,
     select_required_inputs,
 )
+from autoflow.domain.project_runs.ledger import LedgerEntry, claim_eligibility
 from autoflow.domain.projects.models import ProjectError
 from autoflow.infrastructure.database.project_data_models import (
     DataFieldRow,
@@ -57,6 +60,10 @@ from autoflow.infrastructure.database.project_sync_models import (
     SyncRecordMarkRow,
 )
 from autoflow.infrastructure.database.project_sync_sends import require_source_idle
+from autoflow.infrastructure.database.record_ledger import ledger_entry
+from autoflow.infrastructure.database.record_ledger_models import (
+    AutomationRecordLedgerRow,
+)
 
 
 class SqlAlchemyProjectInputGroups:
@@ -72,6 +79,7 @@ class SqlAlchemyProjectInputGroups:
         *,
         candidate_offsets: dict[str, int] | None = None,
         candidate_restriction: dict[str, list[RecordRef]] | None = None,
+        ledger_policy: LedgerClaimPolicy | None = None,
     ) -> InputSelection:
         raw_inputs = input_plan.get("inputs") if isinstance(input_plan, dict) else None
         if not isinstance(raw_inputs, list):
@@ -95,6 +103,9 @@ class SqlAlchemyProjectInputGroups:
                     definitions,
                     offset=(candidate_offsets or {}).get(item["inputId"], 0),
                     restriction=restriction.get(item["inputId"]),
+                    ledger=ledger_policy
+                    if ledger_policy is not None and ledger_policy.processing_input_id == item["inputId"]
+                    else None,
                 )
             )
         selection = self._validate_selected_values(select_required_inputs(sources))
@@ -130,6 +141,7 @@ class SqlAlchemyProjectInputGroups:
                 return InputSelection(
                     "configurationError", issue_input_ids=(selected.input_id,),
                     issue_details=((selected.input_id, detail),),
+                    issue_inputs=(selected,),
                     effective_required_input_ids=selection.effective_required_input_ids,
                 )
         return selection
@@ -400,6 +412,7 @@ class SqlAlchemyProjectInputGroups:
         exact_record_ref: RecordRef | None = None,
         omit_candidates: bool = False,
         restriction: list[RecordRef] | None = None,
+        ledger: LedgerClaimPolicy | None = None,
     ) -> InputCandidates:
         input_id = item["inputId"]
         table_id, generation = item.get("tableId"), item.get("datasetGeneration")
@@ -539,6 +552,7 @@ class SqlAlchemyProjectInputGroups:
                 )
             )
         )
+        entries = ledger_entries(self.session, ledger, table_id, generation) if ledger else {}
         candidates: list[Candidate] = []
         for row in rows:
             ref = RecordRef(
@@ -556,6 +570,12 @@ class SqlAlchemyProjectInputGroups:
                 return InputCandidates(
                     input_id, (), str(error), required=required, mode=mode, **definition
                 )
+            if ledger is not None:
+                # Remediation M2 R2-03: only the primary input is filtered by its processing record.
+                namespace = lease.identity_namespace if isinstance(lease, SheetsLeaseKey) else ""
+                current = entries.get((ref.record_key.type, ref.record_key.value, namespace))
+                if claim_eligibility(current, ledger.mode, ledger.now) != "eligible":
+                    continue
             value = {
                 "alias": item.get("alias", input_id),
                 "tableDisplay": table.name,
@@ -1202,3 +1222,31 @@ def _record_key_compare(lt: str, lv: str, rt: str, rv: str) -> int:
     if lt == "integer":
         return (int(lv) > int(rv)) - (int(lv) < int(rv))
     return (lv > rv) - (lv < rv)
+
+
+@dataclass(frozen=True)
+class LedgerClaimPolicy:
+    """Which processing records gate the primary input of one batch (remediation M2 R2-03)."""
+
+    automation_id: str
+    processing_input_id: str
+    mode: str
+    now: datetime
+
+
+def ledger_entries(
+    session: Session, policy: LedgerClaimPolicy, table_id: str, generation: str
+) -> dict[tuple[str, str, str], LedgerEntry]:
+    rows = session.scalars(
+        select(AutomationRecordLedgerRow).where(
+            AutomationRecordLedgerRow.automation_id == policy.automation_id,
+            AutomationRecordLedgerRow.processing_input_id == policy.processing_input_id,
+            AutomationRecordLedgerRow.table_id == table_id,
+            AutomationRecordLedgerRow.dataset_generation == generation,
+        )
+    )
+    entries = {}
+    for row in rows:
+        entry = ledger_entry(row)
+        entries[(row.key_type, row.key_value, row.identity_namespace)] = entry
+    return entries

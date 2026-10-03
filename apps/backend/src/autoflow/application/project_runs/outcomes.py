@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Iterable
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import select
@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 
 from autoflow.domain.project_automations.rules import processing_input
 from autoflow.domain.project_data.identity import RecordKey
+from autoflow.domain.project_runs.circuit_breaker import FinishedTask
 from autoflow.domain.project_runs.failure_category import AttemptFact, classify
 from autoflow.domain.project_runs.input_selection import RecordRef
 from autoflow.domain.project_runs.ledger import (
@@ -27,6 +28,7 @@ from autoflow.domain.project_runs.ledger import (
 )
 from autoflow.domain.workflows.runtime import TERMINAL_STATUSES
 from autoflow.infrastructure.database.environment_models import ProjectEndOperationRow
+from autoflow.infrastructure.database.models import ProjectOperationRow
 from autoflow.infrastructure.database.project_run_models import (
     ProjectBatchRow,
     ProjectRecordLeaseRow,
@@ -92,6 +94,8 @@ def project_released_leases(
         )
         if task is None or batch is None or run is None or snapshot is None:
             continue
+        if (batch.frozen_request or {}).get("executionMode") == "previewWrites":
+            continue  # R2-30: preview outcomes never reach processing records
         automation = (batch.frozen_request or {}).get("automation") or {}
         chosen = processing_input(automation.get("inputPlan") or {})
         selected = next(
@@ -133,3 +137,37 @@ def _namespace(lease_key: str) -> str | None:
         return None
     namespace = value.get("identityNamespace") if value.get("source") == "sheets" else None
     return namespace if isinstance(namespace, str) else None
+
+
+def last_resume(session: Session, project_id: str, batch_id: str) -> datetime | None:
+    """When a person last resumed the batch; the breaker only judges what happened after it."""
+    rows = session.scalars(
+        select(ProjectOperationRow).where(
+            ProjectOperationRow.project_id == project_id,
+            ProjectOperationRow.kind == "resumeBatch",
+            ProjectOperationRow.status == "succeeded",
+        )
+    )
+    times = [row.created_at for row in rows if (row.resource or {}).get("batchId") == batch_id]
+    return max((_aware(value) for value in times), default=None)
+
+
+def batch_history(session: Session, batch_id: str, since: datetime | None) -> list[FinishedTask]:
+    rows = session.execute(
+        select(ProjectTaskRow, WorkflowRunRow)
+        .join(WorkflowRunRow, WorkflowRunRow.id == ProjectTaskRow.run_id)
+        .where(ProjectTaskRow.batch_id == batch_id, WorkflowRunRow.status.in_(TERMINAL_STATUSES))
+        .order_by(WorkflowRunRow.completed_at, WorkflowRunRow.id)
+    ).all()
+    history = []
+    for task, run in rows:
+        if since is not None and run.completed_at is not None and _aware(run.completed_at) <= since:
+            continue
+        outcome = task_outcome(session, task, run)
+        code = (outcome.error or {}).get("code") if outcome.error else None
+        history.append(FinishedTask(task.id, outcome.kind, code if isinstance(code, str) else None))
+    return history
+
+
+def _aware(value: datetime) -> datetime:
+    return value.replace(tzinfo=UTC) if value.tzinfo is None else value

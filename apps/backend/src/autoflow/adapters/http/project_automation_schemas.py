@@ -135,6 +135,11 @@ class RunPolicy(ApiModel):
     continue_after_failure: StrictBool
     automatic_execution_timeout_seconds: StrictInt | StrictFloat = Field(gt=0)
     manual_deadline_seconds: StrictInt | StrictFloat = Field(gt=0)
+    # Remediation M2 R2-03/R2-04; omitted on automations saved before claim modes (treated as cycle).
+    claim_mode: Literal["unprocessed", "cycle", "retryFailed"] | None = None
+    retry_budget: StrictInt | None = Field(default=None, ge=1, le=20)
+    retry_backoff_seconds: list[StrictInt] | None = Field(default=None, min_length=1, max_length=10)
+    failure_policy: Literal["thresholds"] | None = None
 
 
 class CapabilityRequirement(ApiModel):

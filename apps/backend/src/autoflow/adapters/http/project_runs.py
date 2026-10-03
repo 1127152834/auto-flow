@@ -16,6 +16,7 @@ from .errors import browser_error_responses
 from .project_run_schemas import (
     BatchDetail,
     BatchPage,
+    BatchResumeRequest,
     BatchStartRequest,
     BatchStopRequest,
     DebugInputRequest,
@@ -122,6 +123,21 @@ def project_runs_router(
             str(batchId),
             str(idempotency_key),
             body.model_dump(by_alias=True),
+        )
+        return {"operation": _operation(operation)}
+
+    @router.post(
+        "/batches/{batchId}/resume",
+        status_code=202,
+        response_model=ProjectRunOperationAccepted,
+        responses=browser_error_responses(401, 404, 409, 422),
+    )
+    async def resume_batch(
+        projectId: UUID, batchId: UUID, body: BatchResumeRequest, idempotency_key: Key
+    ) -> dict[str, Any]:
+        """Remediation M2 R2-16: continue a batch the failure thresholds paused."""
+        operation = await scheduler.resume(
+            str(projectId), str(batchId), str(idempotency_key), body.model_dump(by_alias=True)
         )
         return {"operation": _operation(operation)}
 

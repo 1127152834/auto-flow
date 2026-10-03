@@ -128,6 +128,8 @@ class InputSelection:
     effective_required_input_ids: tuple[str, ...] = ()
     continuation_status: SelectionStatus | None = None
     continuation_input_ids: tuple[str, ...] = ()
+    # Remediation M2 R2-17: the selected row whose own values made the group unusable.
+    issue_inputs: tuple[SelectedInput, ...] = ()
 
 
 def select_required_inputs(

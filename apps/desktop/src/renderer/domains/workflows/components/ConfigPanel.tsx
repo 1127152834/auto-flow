@@ -6,7 +6,7 @@ import { ProxyControlConfig } from './config-panels/ProxyControlConfig'
 import { excludedModuleTypes } from '../lib/moduleCatalog'
 import { featureFlags } from '../lib/featureFlags'
 // Source: WebRPA@5ccb900e, components/workflow/ConfigPanel.tsx; see SOURCE.md for license and adaptation boundaries.
-import { useWorkflowStore, moduleTypeLabels, getModuleDefaultTimeout, getNodeConfigData, type NodeData, type ErrorPolicy } from '../editor-store'
+import { useWorkflowStore, moduleTypeLabels, getModuleDefaultTimeout, getNodeConfigData, type NodeData } from '../editor-store'
 import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
 import { ScrollArea } from './controls/scroll-area'
 import { useRequiredFields, getMissingRequiredLabels } from '../lib/requiredFields'
@@ -29,6 +29,8 @@ import {
   DpRunJsConfig, DpWaitElementConfig, DpScrollConfig, DpCloseConfig,
 } from './config-panels/DrissionPageConfigs'
 import { RunWorkflowFileConfig } from './config-panels/RunWorkflowFileConfig'
+import { NodeErrorPolicyEditor } from './NodeErrorPolicyEditor'
+import { WebCookieConfig, WebInterceptConfig, WebStorageConfig } from './config-panels/WebStateConfigs'
 import { SimilarSelectorDialog } from './config-panels/SimilarSelectorDialog'
 import { UrlInputDialog } from './config-panels/UrlInputDialog'
 import { OpenPageConfig, UseOpenedPageConfig, ClickElementConfig, HoverElementConfig, PressKeyConfig, InputTextConfig, GetElementInfoConfig, WaitConfig, WaitElementConfig, WaitPageLoadConfig, PageLoadCompleteConfig, SetVariableConfig, IncrementDecrementConfig, PrintLogConfig, PlaySoundConfig, SystemNotificationConfig, InputPromptConfig, TextToSpeechConfig, JsScriptConfig, PythonScriptConfig, ExtractTableDataConfig, SwitchTabConfig, GroupConfig, SubflowHeaderConfig, RefreshPageConfig, GoBackConfig, GoForwardConfig, HandleDialogConfig, InjectJavaScriptConfig, SwitchIframeConfig, SwitchToMainConfig } from './config-panels/BasicModuleConfigs'
@@ -812,6 +814,12 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
         return <HoverElementConfig {...props} />
       case 'press_key':
         return <PressKeyConfig {...props} />
+      case 'web_cookie':
+        return <WebCookieConfig {...props} />
+      case 'web_storage':
+        return <WebStorageConfig {...props} />
+      case 'web_intercept':
+        return <WebInterceptConfig {...props} />
       case 'input_text':
         return <InputTextConfig {...props} />
       case 'get_element_info':
@@ -1606,71 +1614,14 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
                 {/* 模块特定配置 */}
                 {renderModuleConfig()}
 
-                {/* 错误处理（错误回流 / 重试 / 跳过）——与模块条视图共用同一份 errorPolicy；M2 实现前隐藏（M1 R1-01） */}
-                {featureFlags.nodeRetryPolicy && (() => {
-                  const pol: ErrorPolicy = (nodeData.errorPolicy as ErrorPolicy) || { mode: 'stop', maxRetries: 1, interval: 0, onExhausted: 'stop' }
-                  const setPol = (patch: Partial<ErrorPolicy>) => {
-                    const next: ErrorPolicy = { maxRetries: 1, interval: 0, onExhausted: 'stop', ...pol, ...patch }
-                    handleChange('errorPolicy', next.mode === 'stop' ? undefined : next)
-                  }
-                  const cands = nodes
+                {/* 出错处理（M2 R2-08/R2-12）：统一 version 2 策略；旧设置只作为候选，启用后才生效 */}
+                <NodeErrorPolicyEditor
+                  data={nodeData as Record<string, unknown>}
+                  targets={nodes
                     .filter((n) => n.type === 'moduleNode' && n.id !== selectedNodeId)
-                    .map((n) => ({ id: n.id, label: (n.data?.label as string) || moduleTypeLabels[n.data?.moduleType as keyof typeof moduleTypeLabels] || n.id }))
-                  return (
-                    <div className="pt-4 border-t space-y-3">
-                      <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">错误处理</h3>
-                      <div className="space-y-2">
-                        <Label>出错时</Label>
-                        <Select value={pol.mode} onChange={(e) => setPol({ mode: e.target.value as ErrorPolicy['mode'] })}>
-                          <option value="stop">失败即停（默认）</option>
-                          <option value="continue">跳过并继续</option>
-                          <option value="retry-self">原地重试当前模块</option>
-                          <option value="retry-from">回流到上层模块重试</option>
-                        </Select>
-                      </div>
-                      {(pol.mode === 'retry-self' || pol.mode === 'retry-from') && (
-                        <>
-                          {pol.mode === 'retry-from' && (
-                            <div className="space-y-2">
-                              <Label>回流目标模块</Label>
-                              <Select value={pol.targetId || ''} placeholder="选择目标模块…" onChange={(e) => setPol({ targetId: e.target.value })}>
-                                {cands.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
-                              </Select>
-                            </div>
-                          )}
-                          <div className="grid grid-cols-2 gap-2">
-                            <div className="space-y-2">
-                              <Label>重试次数</Label>
-                              <NumberInput value={pol.maxRetries ?? 1} onChange={(v) => setPol({ maxRetries: v })} min={1} />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>间隔(秒)</Label>
-                              <NumberInput value={pol.interval ?? 0} onChange={(v) => setPol({ interval: v })} min={0} />
-                            </div>
-                          </div>
-                          {pol.mode === 'retry-from' && (
-                            <div className="space-y-2">
-                              <Label>重试用尽后</Label>
-                              <Select value={pol.onExhausted || 'stop'} onChange={(e) => setPol({ onExhausted: e.target.value as 'stop' | 'continue' })}>
-                                <option value="stop">停止流程</option>
-                                <option value="continue">继续往下</option>
-                              </Select>
-                            </div>
-                          )}
-                        </>
-                      )}
-                      <p className="text-xs text-muted-foreground">
-                        {pol.mode === 'retry-from'
-                          ? '出错时回到所选模块，从那里重新往下执行；画布上会显示一条红色回流连线。'
-                          : pol.mode === 'retry-self'
-                            ? '出错时原地重跑当前模块，达到次数仍失败则停止。'
-                            : pol.mode === 'continue'
-                              ? '出错时记一条警告并继续执行后续模块。'
-                              : '默认：该模块出错时立即停止流程。'}
-                      </p>
-                    </div>
-                  )
-                })()}
+                    .map((n) => ({ id: n.id, label: (n.data?.label as string) || moduleTypeLabels[n.data?.moduleType as keyof typeof moduleTypeLabels] || n.id }))}
+                  onChange={handleBatchChange}
+                />
 
                 {/* 高级配置 */}
                 <div className="pt-4 border-t space-y-4">

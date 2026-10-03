@@ -15,13 +15,16 @@ Element.prototype.scrollIntoView = vi.fn()
 beforeEach(() => { featureFlags.nodeRetryPolicy = false; store.getState().clearWorkflow() })
 afterEach(cleanup)
 
-it('hides retry, error policy and timeout actions by default but keeps the timeout itself', () => {
+it('hides the old retry and timeout actions, offers the old error policy only as a candidate, and keeps the timeout', () => {
   store.getState().addNode('close_page', { x: 0, y: 0 })
   const id = store.getState().nodes[0].id
   store.getState().updateNodeData(id, { retryCount: 3, timeoutAction: 'skip', errorPolicy: { mode: 'retry-self', maxRetries: 2, interval: 0, onExhausted: 'stop' } })
   render(<ConfigPanel selectedNodeId={id} />)
   expect(screen.getByText('超时时间 (秒)')).toBeInTheDocument()
-  for (const label of ['出错时', '运行超时后', '重试次数', '重试耗尽后', '重试间隔（秒）', '退避策略']) expect(screen.queryByText(label)).toBeNull()
+  for (const label of ['运行超时后', '重试次数', '重试耗尽后', '重试间隔（秒）', '退避策略']) expect(screen.queryByText(label)).toBeNull()
+  // Remediation M2 R2-12: the unified control is visible, and the old settings are a not-yet-active candidate.
+  expect(screen.getByText('出错时')).toBeInTheDocument()
+  expect(screen.getByRole('status', { name: '未生效的出错设置' })).toHaveTextContent('尚未生效')
   const saved = JSON.parse(store.getState().exportWorkflow()).nodes[0].data
   expect(saved).toMatchObject({ retryCount: 3, timeoutAction: 'skip', errorPolicy: { mode: 'retry-self' } })
 })

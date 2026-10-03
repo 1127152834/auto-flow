@@ -46,6 +46,7 @@ import { socketService } from '../events'
 import { remoteService } from '../api/remote'
 import { onAssistantUiEvent } from '../api/aiAssistantSkills'
 import type { ModuleType } from '../types/index'
+import { activePolicy } from '../lib/errorPolicy'
 
 // 模块计数组件
 function ModuleCount() {
@@ -1696,17 +1697,21 @@ export function WorkflowEditor() {
               // 由各模块 errorPolicy 派生的「错误回流」可视化连线（红色虚线，只读不可选删）
               ...nodes.flatMap((n) => {
                 const p = getNodeConfigData(n.data as NodeData).errorPolicy
-                if (featureFlags.nodeRetryPolicy && p && p.mode === 'retry-from' && p.targetId && nodes.some((t) => t.id === p.targetId)) {
+                // M2 R2-12: an enabled version-2 "goto" draws the same read-only red edge.
+                const active = activePolicy({ errorPolicy: p })
+                const reflowTarget = active?.onError === 'goto' ? active.gotoNodeId : featureFlags.nodeRetryPolicy && p && p.mode === 'retry-from' ? p.targetId : null
+                const reflowTimes = active?.onError === 'goto' ? active.maxRetries : p?.maxRetries
+                if (reflowTarget && nodes.some((t) => t.id === reflowTarget)) {
                   return [{
                     id: `__reflow-${n.id}`,
                     source: n.id,
-                    target: p.targetId,
+                    target: reflowTarget,
                     type: 'smoothstep',
                     animated: nodes.length <= 200,
                     selectable: false,
                     deletable: false,
                     focusable: false,
-                    label: `出错回流 ×${p.maxRetries ?? 1}`,
+                    label: `出错回流 ×${reflowTimes ?? 1}`,
                     labelStyle: { fill: '#dc2626', fontSize: 10, fontWeight: 700 },
                     labelBgStyle: { fill: '#fef2f2', fillOpacity: 0.95 },
                     labelBgPadding: [4, 2] as [number, number],

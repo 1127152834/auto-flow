@@ -16,6 +16,11 @@ export type RunPolicy = {
   continueAfterFailure: boolean
   automaticExecutionTimeoutSeconds: number
   manualDeadlineSeconds: number
+  /** Remediation M2 R2-03/R2-04; missing on automations saved before claim modes (treated as cycle). */
+  claimMode?: 'unprocessed' | 'cycle' | 'retryFailed' | null
+  retryBudget?: number | null
+  retryBackoffSeconds?: number[] | null
+  failurePolicy?: 'thresholds' | null
 }
 
 export type FieldErrors = Record<string, string | undefined>

@@ -270,3 +270,24 @@ def test_processing_input_resolution():
     assert processing_input(plan_with(one, two | {"required": False})) == IN_A
     assert processing_input(plan_with(one, two)) is AMBIGUOUS
     assert processing_input(plan_with(one, two, processingInputId=IN_B)) == IN_B
+
+
+@pytest.mark.parametrize(
+    ("extra", "valid"),
+    [
+        ({}, True),
+        ({"claimMode": "unprocessed"}, True), ({"claimMode": "cycle"}, True), ({"claimMode": "retryFailed"}, True),
+        ({"claimMode": "all"}, False),
+        ({"retryBudget": 1}, True), ({"retryBudget": 0}, False), ({"retryBudget": True}, False),
+        ({"retryBackoffSeconds": [60, 300]}, True), ({"retryBackoffSeconds": []}, False),
+        ({"retryBackoffSeconds": [0]}, False), ({"retryBackoffSeconds": [1.5]}, False),
+    ],
+)
+def test_run_policy_accepts_explicit_claim_settings(extra, valid):
+    candidate = payload()
+    candidate["runPolicy"] = {**candidate["runPolicy"], **extra}
+    if valid:
+        assert validate_write(candidate)["runPolicy"] == candidate["runPolicy"]
+    else:
+        with pytest.raises(ProjectError):
+            validate_write(candidate)

@@ -5,7 +5,7 @@ export type AutomationFormErrors = Record<string, string>
 const length = (value: string) => [...value].length
 
 export function emptyAutomationForm(workflowId = ''): AutomationFormValues {
-  return { name: '', description: '', workflowId, inputPlan: { inputs: [] }, parameterSchema: [], environmentPolicy: { source: 'newFromProfile' }, runPolicy: { maxTasks: 1, concurrency: 1, maxLiveInstances: 1, continueAfterFailure: true, automaticExecutionTimeoutSeconds: 900, manualDeadlineSeconds: 900 } }
+  return { name: '', description: '', workflowId, inputPlan: { inputs: [] }, parameterSchema: [], environmentPolicy: { source: 'newFromProfile' }, runPolicy: { maxTasks: 1, concurrency: 1, maxLiveInstances: 1, continueAfterFailure: true, automaticExecutionTimeoutSeconds: 900, manualDeadlineSeconds: 900, claimMode: 'unprocessed', failurePolicy: 'thresholds' } }
 }
 
 /** Explicit projection: never submit fetched capability facts or a stale revision as form fields. */

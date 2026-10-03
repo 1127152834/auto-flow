@@ -1,0 +1,15 @@
+[
+  {"name": "nothing configured", "config": {}, "candidate": null},
+  {"name": "old stop mode", "config": {"errorPolicy": {"mode": "stop"}}, "candidate": null},
+  {"name": "old continue mode", "config": {"errorPolicy": {"mode": "continue"}},
+   "candidate": {"version": 2, "onError": "continue", "maxRetries": 0, "backoff": {"kind": "fixed", "initialSeconds": 0, "maxSeconds": 0, "jitter": false}, "retryOn": "any", "gotoNodeId": null, "onExhausted": "stop"}},
+  {"name": "old retry-self", "config": {"errorPolicy": {"mode": "retry-self", "maxRetries": 2, "interval": 5}},
+   "candidate": {"version": 2, "onError": "retry", "maxRetries": 2, "backoff": {"kind": "fixed", "initialSeconds": 5, "maxSeconds": 5, "jitter": false}, "retryOn": "any", "gotoNodeId": null, "onExhausted": "stop"}},
+  {"name": "old retry-from", "config": {"errorPolicy": {"mode": "retry-from", "maxRetries": 1, "interval": 0, "targetId": "login", "onExhausted": "continue"}},
+   "candidate": {"version": 2, "onError": "goto", "maxRetries": 1, "backoff": {"kind": "fixed", "initialSeconds": 0, "maxSeconds": 0, "jitter": false}, "retryOn": "any", "gotoNodeId": "login", "onExhausted": "continue"}},
+  {"name": "retry count with exponential delay", "config": {"retryCount": 3, "retryDelay": 2, "retryBackoff": "exponential", "retryExhaustedAction": "skip"},
+   "candidate": {"version": 2, "onError": "retry", "maxRetries": 3, "backoff": {"kind": "exponential", "initialSeconds": 2, "maxSeconds": 60, "jitter": false}, "retryOn": "any", "gotoNodeId": null, "onExhausted": "continue"}},
+  {"name": "timeout skip only", "config": {"timeoutAction": "skip"},
+   "candidate": {"version": 2, "onError": "continue", "maxRetries": 0, "backoff": {"kind": "fixed", "initialSeconds": 0, "maxSeconds": 0, "jitter": false}, "retryOn": "timeout", "gotoNodeId": null, "onExhausted": "stop"}},
+  {"name": "already new format is not a candidate", "config": {"errorPolicy": {"version": 2, "onError": "retry", "maxRetries": 1, "backoff": {"kind": "fixed", "initialSeconds": 1, "maxSeconds": 1, "jitter": false}, "retryOn": "any", "gotoNodeId": null, "onExhausted": "stop"}}, "candidate": null}
+]

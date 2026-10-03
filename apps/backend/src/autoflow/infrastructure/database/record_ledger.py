@@ -23,6 +23,7 @@ from autoflow.domain.project_runs.ledger import (
     TaskOutcome,
     new_entry,
     next_ledger_entry,
+    quarantine_entry,
     reset_entry,
     resolve_entry,
     skip_entry,
@@ -46,13 +47,13 @@ class SqlAlchemyRecordLedger:
 
     def get(self, scope: LedgerScope) -> LedgerEntry | None:
         row = self._row(scope)
-        return None if row is None else _entry(row)
+        return None if row is None else ledger_entry(row)
 
     def by_id(self, automation_id: str, unit_id: str) -> StoredLedgerEntry | None:
         row = self.session.get(AutomationRecordLedgerRow, unit_id)
         if row is None or row.automation_id != automation_id:
             return None
-        return StoredLedgerEntry(row.id, _entry(row))
+        return StoredLedgerEntry(row.id, ledger_entry(row))
 
     def ensure(self, scope: LedgerScope, now: datetime) -> LedgerEntry:
         row = self._row(scope)
@@ -64,7 +65,7 @@ class SqlAlchemyRecordLedger:
             )
             self.session.add(row)
             self.session.flush()
-        return _entry(row)
+        return ledger_entry(row)
 
     def list(
         self,
@@ -84,7 +85,7 @@ class SqlAlchemyRecordLedger:
         rows = self.session.scalars(
             query.order_by(AutomationRecordLedgerRow.id).limit(max(1, min(limit, MAX_PAGE)))
         )
-        return [StoredLedgerEntry(row.id, _entry(row)) for row in rows]
+        return [StoredLedgerEntry(row.id, ledger_entry(row)) for row in rows]
 
     def reset(self, scope: LedgerScope, *, expected_revision: int, reason: str, now: datetime) -> LedgerEntry:
         current = self._required(scope)
@@ -113,6 +114,11 @@ class SqlAlchemyRecordLedger:
         """Apply one Task terminal to its unit (remediation M2 Task 3)."""
         current = self.ensure(scope, now)
         after = next_ledger_entry(current, outcome, budget=budget, backoff=backoff, now=now)
+        return current if after == current else self._save(current, after, now)
+
+    def quarantine(self, scope: LedgerScope, error: dict[str, Any], now: datetime) -> LedgerEntry:
+        current = self.ensure(scope, now)
+        after = quarantine_entry(current, error, now)
         return current if after == current else self._save(current, after, now)
 
     def add_batch_unit(self, batch_id: str, scope: LedgerScope, task_id: str, now: datetime) -> None:
@@ -204,7 +210,7 @@ def _state_columns(entry: LedgerEntry) -> dict[str, Any]:
     }
 
 
-def _entry(row: AutomationRecordLedgerRow) -> LedgerEntry:
+def ledger_entry(row: AutomationRecordLedgerRow) -> LedgerEntry:
     return LedgerEntry(
         scope=LedgerScope(
             row.automation_id, row.processing_input_id, row.project_id, row.table_id,

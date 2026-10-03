@@ -255,6 +255,7 @@ class ProjectOperationView(ApiModel):
         "startBatch",
         "stopBatch",
         "forceStopBatch",
+        "resumeBatch",
         "followUpBatch",
         "workflowInteraction",
         "createTable",

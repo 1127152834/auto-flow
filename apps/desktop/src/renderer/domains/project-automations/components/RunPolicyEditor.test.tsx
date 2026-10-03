@@ -3,9 +3,11 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, it, vi } from 'vitest'
 import { useState } from 'react'
+import { choiceTestEnvironment, chooseOption } from '../../../shared/testing/choice-user'
 import { RunPolicyEditor } from './RunPolicyEditor'
 import type { RunPolicy } from './policy-types'
 
+choiceTestEnvironment()
 afterEach(cleanup)
 const policy: RunPolicy = { maxTasks: 10, concurrency: 1, maxLiveInstances: 1, continueAfterFailure: false, automaticExecutionTimeoutSeconds: 900, manualDeadlineSeconds: 7200 }
 
@@ -137,4 +139,38 @@ it.each([false, true])('edits both concurrency limits and keeps a bad sibling dr
 it('shows the machine-wide limit next to concurrency and warns when the request exceeds it (remediation M1 R1-11)', () => {
   render(<RunPolicyEditor value={{ ...policy, concurrency: 20 }} onChange={vi.fn()} machineLimit={6} />)
   expect(screen.getByText('范围 1–100；本机当前最多同时运行 6 个浏览器，实际同时运行不超过 6 个')).toBeInTheDocument()
+})
+
+// Remediation M2 R2-03/R2-04: how data rows are claimed and retried.
+it('shows claim settings only for data batches, reading a missing mode as the saved legacy behaviour', async () => {
+  const onChange = vi.fn()
+  const view = render(<RunPolicyEditor value={policy} onChange={onChange} />)
+  expect(screen.queryByRole('combobox', { name: '领取方式' })).toBeNull()
+  view.unmount()
+  render(<RunPolicyEditor value={policy} onChange={onChange} dataBatch />)
+  expect(screen.getByRole('combobox', { name: '领取方式' })).toHaveTextContent('每次重新处理全部数据')
+  expect(screen.getByLabelText('每行最多尝试次数')).toHaveValue('3')
+})
+
+it('edits the claim mode and the retry budget', async () => {
+  const onChange = vi.fn()
+  render(<RunPolicyEditor value={{ ...policy, claimMode: 'unprocessed' }} onChange={onChange} dataBatch />)
+  await chooseOption(userEvent.setup(), screen.getByRole('combobox', { name: '领取方式' }), 'retryFailed')
+  expect(onChange).toHaveBeenLastCalledWith({ ...policy, claimMode: 'retryFailed' })
+  fireEvent.change(screen.getByLabelText('每行最多尝试次数'), { target: { value: '5' } })
+  expect(onChange).toHaveBeenLastCalledWith({ ...policy, claimMode: 'unprocessed', retryBudget: 5 })
+  fireEvent.change(screen.getByLabelText('每行最多尝试次数'), { target: { value: '0' } })
+  expect(screen.getByText('必须是 1–20 的整数')).toBeVisible()
+})
+
+it('switches a data automation to pausing on failure thresholds and back to the legacy rule', () => {
+  const onChange = vi.fn()
+  const view = render(<RunPolicyEditor value={policy} onChange={onChange} dataBatch />)
+  fireEvent.click(screen.getByRole('switch', { name: '失败过多时自动暂停批次' }))
+  expect(onChange).toHaveBeenLastCalledWith({ ...policy, failurePolicy: 'thresholds' })
+  view.unmount()
+  render(<RunPolicyEditor value={{ ...policy, failurePolicy: 'thresholds' }} onChange={onChange} dataBatch />)
+  expect(screen.queryByRole('switch', { name: '任务失败后继续下一个任务' })).toBeNull()
+  fireEvent.click(screen.getByRole('switch', { name: '失败过多时自动暂停批次' }))
+  expect(onChange).toHaveBeenLastCalledWith({ ...policy, failurePolicy: null })
 })

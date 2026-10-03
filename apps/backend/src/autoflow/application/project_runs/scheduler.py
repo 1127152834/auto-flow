@@ -12,12 +12,27 @@ from uuid import UUID, uuid4
 from sqlalchemy import func, or_, select, text
 from sqlalchemy.orm import Session, sessionmaker
 
+from autoflow.application.project_runs.claim_ledger import (
+    admit_primary,
+    batch_ledger_policy,
+    batch_retry_refs,
+    batch_unit_count,
+    batch_waiting_until,
+    is_legacy,
+    primary_eligible,
+    quarantine_bad_primary,
+)
 from autoflow.application.project_runs.coordinator import ProjectRunCoordinator
-from autoflow.application.project_runs.outcomes import project_released_leases
+from autoflow.application.project_runs.outcomes import (
+    batch_history,
+    last_resume,
+    project_released_leases,
+)
 from autoflow.application.project_runs.resources import ProjectRunResourceResolver
 from autoflow.application.settings.runtime import QuiesceGate
 from autoflow.application.workflows.dispatcher import WorkflowRunDispatcher
 from autoflow.application.workflows.runtime import WorkflowRuntimeService
+from autoflow.domain.project_runs.circuit_breaker import evaluate as evaluate_breaker
 from autoflow.domain.project_runs.input_selection import MAX_CANDIDATE_EVALUATIONS
 from autoflow.domain.project_runs.models import ProjectRunError, batch_to_dict
 from autoflow.domain.projects.models import ProjectError, ProjectOperation
@@ -33,6 +48,10 @@ from autoflow.infrastructure.database.models import ProjectOperationRow, Project
 from autoflow.infrastructure.database.project_claims import (
     SqlAlchemyProjectInputGroups,
     _parse_record_ref,
+)
+from autoflow.infrastructure.database.project_data import _operation as typed_operation
+from autoflow.infrastructure.database.project_data import (
+    _operation_row as typed_operation_row,
 )
 from autoflow.infrastructure.database.project_data_models import DataTableRow
 from autoflow.infrastructure.database.project_run_models import (
@@ -378,10 +397,13 @@ class ProjectBatchScheduler:
         failed = any(
             task.status in {"failed", "timed_out", "interrupted"} for task in tasks
         )
-        continue_after_failure = bool(
-            batch.frozen_request["automation"]["runPolicy"]["continueAfterFailure"]
-        )
+        continue_after_failure = not _stops_on_failure(batch.frozen_request)
         stopping = batch.status == "stopping" or stop_requested or not project_active
+        if batch.status == "paused" and not stopping:
+            # R2-16: a paused batch claims nothing until a person resumes or stops it.
+            return
+        if not stopping and _uses_thresholds(batch.frozen_request) and self._trip_breaker(project_id, batch_id):
+            return
         if stopping or (failed and not continue_after_failure):
             self._close_claim_gate(project_id, batch_id)
             self._set_status(
@@ -433,7 +455,7 @@ class ProjectBatchScheduler:
                 return
             claim_outcome = "idle"
             for _ in range(slots):
-                if target is not None and len(tasks) >= int(target):
+                if target is not None and self._limit_spent(batch_id, tasks, int(target)):
                     self._close_claim_gate(
                         project_id, batch_id, selection_status="limitReached"
                     )
@@ -611,6 +633,9 @@ class ProjectBatchScheduler:
                 project_id,
                 prepared["inputPlan"],
                 candidate_offsets=prepared["candidateOffsets"],
+                ledger_policy=batch_ledger_policy(
+                    prepared["automationId"], {"automation": prepared["frozenAutomation"]}, datetime.now(UTC)
+                ),
                 **({"candidate_restriction": pinned} if pinned else {}),
             )
         result = ProjectBatchScheduler._commit_data_claim(
@@ -690,9 +715,7 @@ class ProjectBatchScheduler:
                 return "closed"
             tasks = repository.list_tasks(project_id, batch_id)
             if (
-                not row.frozen_request["automation"]["runPolicy"].get(
-                    "continueAfterFailure", False
-                )
+                _stops_on_failure(row.frozen_request)
                 and any(
                     task.status in {"failed", "timed_out", "interrupted"}
                     for task in tasks
@@ -702,11 +725,15 @@ class ProjectBatchScheduler:
                 ProjectBatchScheduler._commit(session)
                 return "closed"
             target = row.frozen_request.get("maxTasks")
-            if target is not None and len(tasks) >= int(target):
-                row.claim_gate_state = "closed"
-                row.selection_outcome = {"status": "limitReached"}
-                ProjectBatchScheduler._commit(session)
-                return "limitReached"
+            retry_only: dict[str, list[dict[str, Any]]] | None = None
+            if target is not None and _claimed_count(session, row, tasks) >= int(target):
+                # R2-05: the row limit is spent, but units this batch took in may still retry.
+                retry_only = batch_retry_restriction(session, row)
+                if retry_only is None:
+                    row.claim_gate_state = "closed"
+                    row.selection_outcome = {"status": "limitReached"}
+                    ProjectBatchScheduler._commit(session)
+                    return "limitReached"
             automation = row.frozen_request["automation"]
             input_plan = automation["inputPlan"]
             previous_outcome = row.selection_outcome or {}
@@ -723,6 +750,8 @@ class ProjectBatchScheduler:
             restriction = _follow_up_candidate_restriction(follow_up)
             if 'debugSelection' in row.frozen_request:
                 restriction = {'candidateRestriction': {key: [value['recordRef']] if value is not None else [] for key, value in row.frozen_request['debugSelection'].items()}}
+            if retry_only is not None:
+                restriction = {"candidateRestriction": {**(restriction.get("candidateRestriction") or {}), **retry_only}}
             attempt = previous_outcome.get("claimAttempt")
             if not isinstance(attempt, dict) or attempt.get("state") != "prepared":
                 attempt = {
@@ -749,6 +778,8 @@ class ProjectBatchScheduler:
                 "parameters": row.frozen_request["parameters"],
                 "resourceRequest": row.frozen_request["resourceRequest"],
                 "preparedContentId": row.prepared_content_id,
+                "automationId": row.automation_id,
+                "frozenAutomation": automation,
                 "selectionGuards": row.selection_outcome["selectionGuards"],
                 "dataCapabilityBinding": row.frozen_request.get(
                     "dataCapabilityBinding"
@@ -792,12 +823,11 @@ class ProjectBatchScheduler:
                 or row.status in BATCH_TERMINAL
                 or (
                     target is not None
-                    and len(tasks) >= int(target)
+                    and _claimed_count(session, row, tasks) >= int(target)
+                    and batch_retry_restriction(session, row) is None
                 )
                 or (
-                    not row.frozen_request["automation"]["runPolicy"].get(
-                        "continueAfterFailure", False
-                    )
+                    _stops_on_failure(row.frozen_request)
                     and any(
                         task.status in {"failed", "timed_out", "interrupted"}
                         for task in tasks
@@ -846,12 +876,27 @@ class ProjectBatchScheduler:
                 }
                 ProjectBatchScheduler._commit(session)
                 return "capacityFull"
+            ledger_policy = batch_ledger_policy(row.automation_id, row.frozen_request, datetime.now(UTC))
             if selection.status == "ready":
                 selection = SqlAlchemyProjectInputGroups(session).revalidate_selected(
                     project_id,
                     prepared["inputPlan"],
                     selection,
                 )
+            if (
+                selection.status == "ready"
+                and ledger_policy is not None
+                and not primary_eligible(session, ledger_policy, selection)
+            ):
+                # Remediation M2 R2-03: a manual skip/resolve won the race; select again.
+                row.selection_outcome = {
+                    "status": "staleSelection",
+                    "candidateOffsets": {},
+                    "sawBusy": False,
+                    "claimAttempt": current_attempt,
+                }
+                ProjectBatchScheduler._commit(session)
+                return "staleSelection"
             if selection.status == "scanBudgetExceeded":
                 offsets = prepared["candidateOffsets"]
                 next_offsets = _next_candidate_offsets(
@@ -894,6 +939,30 @@ class ProjectBatchScheduler:
             }
             if selection.status != "ready":
                 active = any(task.status not in TERMINAL_STATUSES for task in tasks)
+                waiting = (
+                    batch_waiting_until(session, batch_id, datetime.now(UTC))
+                    if selection.status == "noMatch" and ledger_policy is not None and not is_legacy(ledger_policy)
+                    else None
+                )
+                if (
+                    selection.status == "configurationError"
+                    and ledger_policy is not None
+                    # Legacy automations keep stopping on a bad row (PM9 D1); isolation is opt-in with a claim mode.
+                    and not is_legacy(ledger_policy)
+                    and quarantine_bad_primary(session, ledger_policy, selection, datetime.now(UTC))
+                ):
+                    # R2-17: the bad row is isolated; select the next one.
+                    row.selection_outcome = {
+                        "status": "staleSelection", "candidateOffsets": {}, "sawBusy": False,
+                        "claimAttempt": current_attempt,
+                    }
+                    ProjectBatchScheduler._commit(session)
+                    return "staleSelection"
+                if waiting is not None:
+                    # R2-05: a retry of a unit this batch took in is still ahead; wait, do not complete.
+                    row.selection_outcome = {"status": "waiting", "waitUntil": _aware(waiting).isoformat()}
+                    ProjectBatchScheduler._commit(session)
+                    return "waiting"
                 if selection.status in {"configurationError", "ambiguous"} or (
                     selection.status == "noMatch" and not active
                 ):
@@ -977,6 +1046,8 @@ class ProjectBatchScheduler:
                 )
             )
             session.flush()
+            if ledger_policy is not None:
+                admit_primary(session, ledger_policy, selection, batch_id, task_id, now)
             inputs = SqlAlchemyProjectInputGroups(session).hold(
                 selection,
                 input_plan=prepared["inputPlan"],
@@ -1030,6 +1101,101 @@ class ProjectBatchScheduler:
             if selection_status is not None:
                 row.selection_outcome = {"status": selection_status}
             self._commit(session)
+
+    def _trip_breaker(self, project_id: str, batch_id: str) -> bool:
+        """R2-15: pause the batch when its technical failures cross a threshold."""
+        with self._factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            row = SqlAlchemyProjectRuns(session).batch_row(project_id, batch_id)
+            if row.status in BATCH_TERMINAL or row.status in {"paused", "stopping"}:
+                session.rollback()
+                return row.status == "paused"
+            reason = evaluate_breaker(batch_history(session, batch_id, last_resume(session, project_id, batch_id)))
+            if reason is None:
+                session.rollback()
+                return False
+            row.status, row.status_revision = "paused", row.status_revision + 1
+            row.claim_gate_state = "closed"
+            row.selection_outcome = {
+                "status": "paused",
+                "pauseReason": {
+                    "kind": reason.kind,
+                    "message": reason.message,
+                    "code": reason.code,
+                    "sampleTaskIds": list(reason.sample_task_ids),
+                    "pausedAt": datetime.now(UTC).isoformat(),
+                },
+            }
+            self._commit(session)
+            return True
+
+    async def resume(
+        self, project_id: str, batch_id: str, key: str, payload: dict[str, Any]
+    ) -> ProjectOperation:
+        async with self._lock:
+            operation = self._accept_resume(project_id, batch_id, key, payload)
+        self.wake()
+        return operation
+
+    def _accept_resume(
+        self, project_id: str, batch_id: str, key: str, payload: dict[str, Any]
+    ) -> ProjectOperation:
+        """R2-16: resuming keeps budgets, processing records and unknown-result gates as they are."""
+        try:
+            if str(UUID(key)) != key or set(payload) != {"expectedStatusRevision"}:
+                raise ValueError
+            if type(payload["expectedStatusRevision"]) is not int or payload["expectedStatusRevision"] < 1:
+                raise ValueError
+            digest = hashlib.sha256(json.dumps(
+                {"projectId": project_id, "batchId": batch_id, "kind": "resumeBatch", "request": payload},
+                sort_keys=True, ensure_ascii=False, allow_nan=False,
+            ).encode()).hexdigest()
+        except (ValueError, TypeError, KeyError) as error:
+            raise ProjectRunError("VALIDATION_ERROR", "继续请求无效", 422) from error
+        with self._factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            ProjectRunCoordinator._project(session, project_id)
+            repository = SqlAlchemyProjectRuns(session)
+            row = repository.batch_row(project_id, batch_id)
+            existing = session.scalar(
+                select(ProjectOperationRow).where(ProjectOperationRow.idempotency_key == key)
+            )
+            if existing is not None:
+                if existing.project_id != project_id or existing.kind != "resumeBatch" or existing.request_digest != digest:
+                    raise ProjectRunError("OPERATION_PAYLOAD_MISMATCH", "同一操作身份已用于其他请求", 409)
+                return typed_operation(existing)
+            if row.status_revision != payload["expectedStatusRevision"]:
+                raise ProjectRunError(
+                    "REVISION_CONFLICT", "批次状态已更新，请刷新后重试", 409,
+                    {"currentStatusRevision": row.status_revision},
+                )
+            if row.status != "paused":
+                raise ProjectRunError("BATCH_NOT_PAUSED", "只有已暂停的批次可以继续", 409)
+            now = datetime.now(UTC)
+            row.status, row.status_revision = "running", row.status_revision + 1
+            row.claim_gate_state = "open"
+            row.selection_outcome = {"status": "resumed", "resumedAt": now.isoformat()}
+            session.flush()
+            batch_view = {
+                key: value.isoformat() if isinstance(value, datetime) else value
+                for key, value in batch_to_dict(repository.batch(project_id, batch_id)).items()
+            }
+            operation = ProjectOperation(
+                str(uuid4()), project_id, key, "resumeBatch", digest, "succeeded", 1,
+                {"type": "batch", "projectId": project_id, "batchId": batch_id},
+                {"batch": batch_view}, None, now, now, now,
+            )
+            session.add(typed_operation_row(operation))
+            self._commit(session)
+            return operation
+
+    def _limit_spent(self, batch_id: str, tasks: list[Any], target: int) -> bool:
+        """R2-05: units already taken in may still retry after the row limit is reached."""
+        with self._factory() as session:
+            row = session.get(ProjectBatchRow, batch_id)
+            if row is None:
+                return True
+            return _claimed_count(session, row, tasks) >= target and batch_retry_restriction(session, row) is None
 
     async def _cleanup_terminal_instances(self, project_id: str, batch_id: str) -> None:
         if self._environments is None:
@@ -1369,3 +1535,37 @@ def _selection_guards(
             }
         )
     return guards
+
+
+def batch_retry_restriction(session: Session, row: Any) -> dict[str, list[dict[str, Any]]] | None:
+    """Units this batch took in that wait for a retry, as a primary-input restriction."""
+    policy = batch_ledger_policy(row.automation_id, row.frozen_request, datetime.now(UTC))
+    if policy is None or is_legacy(policy):
+        return None
+    refs = batch_retry_refs(session, row.id)
+    return {policy.processing_input_id: refs} if refs else None
+
+
+def _claimed_count(session: Session, row: Any, tasks: list[Any]) -> int:
+    """R2-05: data batches limit distinct primary units; other batches limit Tasks."""
+    policy = batch_ledger_policy(row.automation_id, row.frozen_request, datetime.now(UTC))
+    if policy is None or is_legacy(policy):
+        return len(tasks)
+    return batch_unit_count(session, row.id)
+
+
+def _aware(value: datetime) -> datetime:
+    return value.replace(tzinfo=UTC) if value.tzinfo is None else value
+
+
+def _uses_thresholds(frozen_request: dict[str, Any]) -> bool:
+    policy = (frozen_request.get("automation") or {}).get("runPolicy") or {}
+    return policy.get("failurePolicy") == "thresholds"
+
+
+def _stops_on_failure(frozen_request: dict[str, Any]) -> bool:
+    """Legacy automations keep continueAfterFailure; threshold mode pauses instead (R2-15)."""
+    if _uses_thresholds(frozen_request):
+        return False
+    policy = (frozen_request.get("automation") or {}).get("runPolicy") or {}
+    return not policy.get("continueAfterFailure", False)

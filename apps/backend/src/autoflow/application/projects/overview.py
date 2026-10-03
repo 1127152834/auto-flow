@@ -35,6 +35,7 @@ ACTIVE_BATCH_STATUSES = (
     "accepted",
     "running",
     "blocked",
+    "paused",
     "draining",
     "stopping",
     "reconciling",

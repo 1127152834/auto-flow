@@ -1,3 +1,4 @@
+import '@testing-library/jest-dom/vitest'
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 vi.hoisted(() => {
@@ -31,18 +32,6 @@ function history(field: string, previous: unknown, next: unknown) {
   act(() => { store.getState().clearWorkflow(); expect(store.getState().importWorkflow(document)).toBe(true) })
   expect(data()[field]).toEqual(next)
 }
-it.each([
-  ['stop', '失败即停（默认）'], ['continue', '跳过并继续'], ['retry-self', '原地重试当前模块'], ['retry-from', '回流到上层模块重试'],
-])('ADV.mode.%s updates real panel, visibility, history and serialization', (mode, option) => {
-  const previous: ErrorPolicy = { mode: mode === 'continue' ? 'retry-self' : 'continue', maxRetries: 3, interval: 2, onExhausted: 'stop' }
-  store.getState().updateNodeData(id, { errorPolicy: previous }); store.getState().markAsSaved()
-  render(<ConfigPanel selectedNodeId={id} />); choose('出错时', option)
-  expect(screen.queryByText('间隔(秒)') !== null).toBe(mode.startsWith('retry-'))
-  expect(screen.queryByText('回流目标模块') !== null).toBe(mode === 'retry-from')
-  expect(screen.queryByText('重试用尽后') !== null).toBe(mode === 'retry-from')
-  expect(store.getState().hasUnsavedChanges).toBe(true)
-  history('errorPolicy', previous, mode === 'stop' ? undefined : { ...previous, mode })
-})
 it.each([['retry', '重试'], ['skip', '跳过该模块，继续执行'], ['stop', '停止工作流执行']])('ADV.timeoutAction.%s', (value, option) => {
   const previous = value === 'retry' ? 'skip' : 'retry'; store.getState().updateNodeData(id, { timeoutAction: previous })
   render(<ConfigPanel selectedNodeId={id} />); choose('运行超时后', option); history('timeoutAction', previous, value)
@@ -67,14 +56,14 @@ it.each([['timeout', '超时时间 (秒)', '1abc'], ['timeout', '超时时间 (�
   edit(label, value); const expected = value === '-1' ? -1 : value === '11' ? 11 : value
   expect(labelled(label, 'textbox').getAttribute('aria-invalid')).toBe('true'); history(field, 3, expected)
 })
-it('ADV.target offers another module but not itself and preserves retry-from configuration', () => {
-  store.getState().addNode('open_page', { x: 0, y: 100 }); const target = store.getState().nodes[1].id
-  store.getState().updateNodeData(id, { errorPolicy: { mode: 'retry-from', maxRetries: 1, interval: 0, onExhausted: 'stop' } })
+it('ADV.policy-v2 shows an old error policy as a candidate and enabling it is undoable and saved', () => {
+  // Remediation M2 R2-08/R2-12: the old shape is never executed until the person enables it.
+  const previous: ErrorPolicy = { mode: 'retry-self', maxRetries: 2, interval: 1, onExhausted: 'stop' }
+  store.getState().updateNodeData(id, { errorPolicy: previous }); store.getState().markAsSaved()
   render(<ConfigPanel selectedNodeId={id} />)
-  fireEvent.keyDown(labelled('回流目标模块', 'combobox'), { key: 'ArrowDown' })
-  expect(screen.queryByRole('option', { name: '关闭网页' })).toBeNull(); fireEvent.click(screen.getByRole('option', { name: '打开网页' }))
-  choose('重试用尽后', '继续往下'); edit('间隔(秒)', '2.5')
-  expect(data().errorPolicy).toMatchObject({ targetId: target, onExhausted: 'continue', interval: 2.5 })
+  expect(screen.getByRole('status', { name: '未生效的出错设置' })).toHaveTextContent('以前保存的设置“出错时重试 2 次”尚未生效')
+  fireEvent.click(screen.getByRole('button', { name: '启用这项设置' }))
+  history('errorPolicy', previous, { version: 2, onError: 'retry', maxRetries: 2, backoff: { kind: 'fixed', initialSeconds: 1, maxSeconds: 1, jitter: false }, retryOn: 'any', gotoNodeId: null, onExhausted: 'stop' })
 })
 it('ADV.context does not send detached old field blur into a newly selected node', () => {
   store.getState().addNode('close_page', { x: 0, y: 100 }); const second = store.getState().nodes[1].id
@@ -90,26 +79,6 @@ it('ADV.save persists shared fields through real mock save/load and re-render', 
   const loaded = await (await mockRequest('http://autoflow-studio.mock/api/local-workflows/load/advanced-fields.json')).json()
   cleanup(); act(() => { store.getState().clearWorkflow(); expect(store.getState().importWorkflow(loaded.content)).toBe(true) }); render(<ConfigPanel selectedNodeId={id} />)
   expect(data()).toEqual(expected); expect((labelled('节点备注', 'textbox') as HTMLInputElement).value).toBe('高级配置验收')
-})
-it.each([['maxRetries', '重试次数', '4', 4], ['interval', '间隔(秒)', '0.5', 0.5]] as const)('ADV.policy-number.%s updates structured policy and survives undo/reopen', (field, label, value, expected) => {
-  const previous: ErrorPolicy = { mode: 'retry-self', maxRetries: 1, interval: 0, onExhausted: 'stop' }
-  store.getState().updateNodeData(id, { errorPolicy: previous }); render(<ConfigPanel selectedNodeId={id} />)
-  edit(label, value); history('errorPolicy', previous, { ...previous, [field]: expected })
-})
-it('ADV.policy-exhausted stop and continue both preserve retry target', () => {
-  const previous: ErrorPolicy = { mode: 'retry-from', targetId: 'upstream', maxRetries: 2, interval: 1, onExhausted: 'continue' }
-  store.getState().updateNodeData(id, { errorPolicy: previous }); render(<ConfigPanel selectedNodeId={id} />)
-  choose('重试用尽后', '停止流程'); history('errorPolicy', previous, { ...previous, onExhausted: 'stop' })
-})
-it.each([['maxRetries', '重试次数'], ['interval', '间隔(秒)']] as const)('ADV.policy-invalid.%s does not introduce a non-finite value into the document', (field, label) => {
-  store.getState().updateNodeData(id, { errorPolicy: { mode: 'retry-self', maxRetries: 1, interval: 0, onExhausted: 'stop' } }); render(<ConfigPanel selectedNodeId={id} />)
-  edit(label, '1abc'); expect(data().errorPolicy?.[field]).toBe('1abc')
-  expect(labelled(label, 'textbox').getAttribute('aria-invalid')).toBe('true')
-})
-
-it.each([['maxRetries', '重试次数'], ['interval', '间隔(秒)']] as const)('ADV.policy-reference.%s retains deferred variable source', (field, label) => {
-  store.getState().updateNodeData(id, { errorPolicy: { mode: 'retry-self', maxRetries: 1, interval: 0, onExhausted: 'stop' } }); render(<ConfigPanel selectedNodeId={id} />)
-  edit(label, '{retry_value}'); expect(data().errorPolicy?.[field]).toBe('{retry_value}')
 })
 it.each([['maxRetries', '出错处理重试次数'], ['interval', '出错处理间隔（秒）']] as const)('ADV.block.%s uses same draft-preserving numeric control', async (field, label) => {
   const { BlockFlowView } = await import('../components/BlockFlowView')

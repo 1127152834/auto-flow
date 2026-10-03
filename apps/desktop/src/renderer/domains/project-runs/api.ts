@@ -15,7 +15,7 @@ const query = (value: Record<string, string | number | undefined>) => new URLSea
 
 export function createProjectRunsApi(client: Pick<StreamingApiClient, 'request'>, projectId: string) {
   const root = `/api/v1/projects/${encode(projectId)}`
-  const command = async (path: string, kind: 'startBatch' | 'followUpBatch' | 'stopBatch' | 'forceStopBatch', expectedId: string, body: BatchStartRequest | BatchStopRequest | FollowUpBatchRequest, key: string, resume: boolean, policy: DataCommandPolicy = {}): Promise<RunCommandOutcome> => {
+  const command = async (path: string, kind: 'startBatch' | 'followUpBatch' | 'stopBatch' | 'forceStopBatch' | 'resumeBatch', expectedId: string, body: BatchStartRequest | BatchStopRequest | FollowUpBatchRequest | { expectedStatusRevision: number }, key: string, resume: boolean, policy: DataCommandPolicy = {}): Promise<RunCommandOutcome> => {
     const originalBody = structuredClone(body); assertFiniteNumbers(originalBody)
     const project = (operation: RunOperation): RunCommandOutcome => {
       if (operation.projectId !== projectId || operation.idempotencyKey !== key || operation.kind !== kind) throw new Error('操作结果与当前批次不一致')
@@ -53,6 +53,8 @@ export function createProjectRunsApi(client: Pick<StreamingApiClient, 'request'>
     followUp: (taskId: string, body: FollowUpBatchRequest, key: string, policy?: DataCommandPolicy) => command(`${root}/tasks/${encode(taskId)}/follow-up-batches`, 'followUpBatch', taskId, body, key, false, policy),
     stop: (batchId: string, body: BatchStopRequest, key: string, policy?: DataCommandPolicy) => command(`${root}/batches/${encode(batchId)}/stop`, 'stopBatch', batchId, body, key, false, policy),
     resumeStop: (batchId: string, body: BatchStopRequest, key: string, policy?: DataCommandPolicy) => command(`${root}/batches/${encode(batchId)}/stop`, 'stopBatch', batchId, body, key, true, policy),
+    /** Remediation M2 R2-16: continue a batch the failure thresholds paused. */
+    resume: (batchId: string, expectedStatusRevision: number, key: string) => command(`${root}/batches/${encode(batchId)}/resume`, 'resumeBatch', batchId, { expectedStatusRevision }, key, false),
     forceStop: (batchId: string, body: BatchStopRequest, key: string, policy?: DataCommandPolicy) => command(`${root}/batches/${encode(batchId)}/force-stop`, 'forceStopBatch', batchId, body, key, false, policy),
     resumeForceStop: (batchId: string, body: BatchStopRequest, key: string, policy?: DataCommandPolicy) => command(`${root}/batches/${encode(batchId)}/force-stop`, 'forceStopBatch', batchId, body, key, true, policy),
   }

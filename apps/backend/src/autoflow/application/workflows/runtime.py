@@ -11,6 +11,7 @@ from time import perf_counter
 from typing import Any
 from uuid import uuid4
 
+from autoflow.domain.workflows.error_policy import active_policy, retry_delay
 from autoflow.domain.workflows.error_semantics import (
     ERROR_SEMANTICS_V2,
     ERROR_SEMANTICS_WEBRPA,
@@ -22,6 +23,7 @@ from autoflow.domain.workflows.graph import ExecutionGraph, WorkflowNode, parse_
 from autoflow.domain.workflows.parallel_graph import structured_fork
 from autoflow.domain.workflows.project_end import normalize_project_end
 from autoflow.domain.workflows.scope import WorkflowScopeIssue, validate_workflow_scope
+from autoflow.domain.workflows.side_effects import node_side_effect
 
 from .event_translation import SENSITIVE_FAILURE_REASON, SENSITIVE_SUCCESS_MESSAGE
 from .executors.base import ModuleExecutor, ModuleResult
@@ -280,6 +282,7 @@ class _WorkflowScheduler:
     event_binding_lock: asyncio.Lock = field(default_factory=asyncio.Lock)
     dispatch_count: int = 0
     halted: bool = False
+    goto_attempts: dict[str, int] = field(default_factory=dict)
     failed_node_id: str | None = None
     failed_result: ModuleResult | None = None
     loop_local_restores: dict[int, dict[str, tuple[bool, Any, bool]]] = field(
@@ -347,10 +350,20 @@ class _WorkflowScheduler:
             return
         try:
             result = await self._dispatch(node)
+            goto_target: str | None = None
+            if not result.success and not self.halted:
+                result, goto_target = await self._apply_error_policy(node, result)
         except BaseException:
             async with self.lock:
                 self.executing.discard(node_id)
             raise
+
+        if goto_target is not None:
+            async with self.lock:
+                self.executing.discard(node_id)
+            await self._reset_nodes(self._nodes_between(goto_target, node_id))
+            await self._execute_parallel([goto_target])
+            return
 
         async with self.lock:
             if node.type not in _LOOP_NODE_TYPES or not result.success:
@@ -397,6 +410,70 @@ class _WorkflowScheduler:
                 return
             next_nodes = [result.target_node_id]
         await self._notify_successors(next_nodes, node_id)
+
+    async def _apply_error_policy(
+        self, node: WorkflowNode, failed: ModuleResult
+    ) -> tuple[ModuleResult, str | None]:
+        """Remediation M2 R2-08/R2-09/R2-10: only an explicit version-2 policy changes the outcome.
+
+        A node that may act outside the run is never retried automatically, and a
+        jump back is refused when it would re-run such a node.
+        """
+        policy = active_policy(node.data)
+        if policy is None or (policy.retry_on == "timeout" and not failed.is_timeout):
+            return failed, None
+        config = node.data.get("config", node.data)
+        result = failed
+        if policy.on_error == "retry":
+            if node_side_effect(node.type, config) == "possible":
+                await self._policy_log(node, "这个节点可能已经对外产生影响，不自动重试")
+            else:
+                for attempt in range(1, policy.max_retries + 1):
+                    delay = retry_delay(policy, attempt)
+                    if delay > 0:
+                        await asyncio.sleep(delay)
+                    self._raise_if_cancelled()
+                    result = await self._dispatch(node)
+                    if result.success or self.halted:
+                        return result, None
+        elif policy.on_error == "goto":
+            target = policy.goto_node_id
+            used = self.goto_attempts.get(node.id, 0)
+            if target is None or self.graph.get_node(target) is None:
+                await self._policy_log(node, "出错后跳转的目标节点不存在，按失败处理")
+            elif used >= max(1, policy.max_retries):
+                pass
+            elif self._region_may_act(target, node.id):
+                await self._policy_log(node, "跳回会重新执行可能已对外产生影响的节点，已拒绝跳转")
+            else:
+                self.goto_attempts[node.id] = used + 1
+                self._remember_handled([node.id])
+                return failed, target
+        if policy.on_error == "continue" or policy.on_exhausted == "continue":
+            self._remember_handled([node.id])
+            await self._policy_log(node, "节点失败，已按出错策略继续执行后续节点")
+            return ModuleResult(True, message="节点失败，已按出错策略继续", data=result.data), None
+        return result, None
+
+    def _region_may_act(self, target: str, source: str) -> bool:
+        """True if a jump from ``source`` back to ``target`` would re-run an external action."""
+        if not self._is_back_edge(target, source):
+            return False
+        for node_id in self._nodes_between(target, source):
+            region_node = self.graph.get_node(node_id)
+            if region_node is None or node_id not in self.executed and node_id != source:
+                continue
+            config = region_node.data.get("config", region_node.data)
+            if node_side_effect(region_node.type, config) == "possible":
+                return True
+        return False
+
+    async def _policy_log(self, node: WorkflowNode, message: str) -> None:
+        await _publish(
+            self.context,
+            {"type": "execution:log", "nodeId": node.id, "executionId": self.context.current_execution_id or node.id,
+             "level": "warning", "message": message},
+        )
 
     async def _dispatch(self, node: WorkflowNode) -> ModuleResult:
         boundary = self.context.node_boundary
