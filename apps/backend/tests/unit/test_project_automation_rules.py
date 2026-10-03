@@ -228,3 +228,45 @@ def test_parameter_automation_accepts_bounded_concurrency(limit):
     candidate = payload()
     candidate["runPolicy"].update(concurrency=limit, maxLiveInstances=limit)
     assert validate_write(candidate)["runPolicy"] == candidate["runPolicy"]
+
+
+# Remediation M2 R2-01/§2: the primary processing input.
+IN_A = "00000000-0000-0000-0000-0000000000a1"
+IN_B = "00000000-0000-0000-0000-0000000000b1"
+TABLE = "00000000-0000-0000-0000-0000000000c1"
+GEN = "00000000-0000-0000-0000-0000000000d1"
+
+
+def plan_with(*inputs, **extra):
+    return {"inputs": list(inputs), **extra}
+
+
+def test_processing_input_must_reference_a_required_input():
+    candidate = payload()
+    optional = data_input(IN_B, TABLE, GEN) | {"required": False}
+    candidate["inputPlan"] = plan_with(data_input(IN_A, TABLE, GEN), optional, processingInputId=IN_A)
+    assert validate_write(candidate)["inputPlan"]["processingInputId"] == IN_A
+    for bad in (IN_B, "00000000-0000-0000-0000-0000000000ff", "", None):
+        candidate = payload()
+        candidate["inputPlan"] = plan_with(data_input(IN_A, TABLE, GEN), optional, processingInputId=bad)
+        with pytest.raises(ProjectError):
+            validate_write(candidate)
+
+
+def test_parameter_only_automation_cannot_name_a_processing_input():
+    candidate = payload()
+    candidate["inputPlan"] = plan_with(processingInputId=IN_A)
+    with pytest.raises(ProjectError):
+        validate_write(candidate)
+
+
+def test_processing_input_resolution():
+    from autoflow.domain.project_automations.rules import AMBIGUOUS, processing_input
+
+    one = data_input(IN_A, TABLE, GEN)
+    two = data_input(IN_B, TABLE, GEN)
+    assert processing_input(plan_with()) is None
+    assert processing_input(plan_with(one)) == IN_A
+    assert processing_input(plan_with(one, two | {"required": False})) == IN_A
+    assert processing_input(plan_with(one, two)) is AMBIGUOUS
+    assert processing_input(plan_with(one, two, processingInputId=IN_B)) == IN_B

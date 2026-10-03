@@ -53,7 +53,8 @@ def validate_write(
 def _input_plan(value: Any, project_id: str | None) -> dict[str, Any]:
     if (
         not isinstance(value, dict)
-        or set(value) != {"inputs"}
+        or "inputs" not in value
+        or set(value) - {"inputs", "processingInputId"}
         or not isinstance(value["inputs"], list)
     ):
         raise validation_error("inputPlan", "Must contain inputs")
@@ -123,7 +124,38 @@ def _input_plan(value: Any, project_id: str | None) -> dict[str, Any]:
         if "relation" in item:
             _relation(item["relation"], input_id, inputs, project_id)
     _validate_input_dependencies(inputs)
+    if "processingInputId" in value:
+        chosen = value["processingInputId"]
+        if not isinstance(chosen, str) or chosen not in inputs or inputs[chosen]["required"] is not True:
+            raise validation_error(
+                "inputPlan.processingInputId", "Must reference a required input in inputPlan"
+            )
     return value
+
+
+class _Ambiguous:
+    """Several required inputs and no explicit choice (remediation M2 §2)."""
+
+    def __repr__(self) -> str:
+        return "AMBIGUOUS"
+
+
+AMBIGUOUS = _Ambiguous()
+
+
+def processing_input(input_plan: dict[str, Any]) -> str | None | _Ambiguous:
+    """The primary processing input: explicit choice, else the only required input.
+
+    Never guesses from input order; several required inputs without a choice are
+    ambiguous and must be resolved by the user before a new batch starts.
+    """
+    chosen = input_plan.get("processingInputId")
+    if isinstance(chosen, str):
+        return chosen
+    required = [item["inputId"] for item in input_plan.get("inputs", []) if item.get("required") is True]
+    if not required:
+        return None
+    return required[0] if len(required) == 1 else AMBIGUOUS
 
 
 def _validate_input_dependencies(inputs: dict[str, dict[str, Any]]) -> None:

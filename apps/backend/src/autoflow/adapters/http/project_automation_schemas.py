@@ -65,6 +65,8 @@ class InputDefinition(ApiModel):
 
 class InputPlan(ApiModel):
     inputs: list[InputDefinition]
+    # Remediation M2 §2: which required input is processed row by row; omitted when unambiguous.
+    processing_input_id: StrictStr | None = None
 
 
 class ParameterDefinition(ApiModel):

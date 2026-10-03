@@ -9378,6 +9378,8 @@ export type components = {
         InputPlan: {
             /** Inputs */
             inputs: components["schemas"]["InputDefinition"][];
+            /** Processinginputid */
+            processingInputId?: string | null;
         };
         /** InputPreviewItem */
         InputPreviewItem: {
