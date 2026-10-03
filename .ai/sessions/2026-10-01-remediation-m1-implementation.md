@@ -41,3 +41,9 @@
 - 已知产品弱点（未改）：模型供应商乐观并发用 updated_at 作版本，粗时钟平台上同一时间片内的更新可能漏检；批次/任务按 created_at 排序，同时间戳时顺序只靠 id。
 - golden rows=30（run 37004030835 @ a6ecc5c）成功；G2 failure_reason_ratio 仍 0.0（见 M1 记录）。
 - 远端旧分支删除被本机权限拦截，命令见交接文档。Intel 不再支持。
+
+## Claude Code 接手（2026-10-02，Windows 本机）
+- CI run 37045099185 @258146c 终态（公开 REST 核对）：macos-15 success；windows-2022 failure，仅 1 例 `test_project_sheets_sync.py::test_partial_verification_read_loss_preserves_original_commands`（`'A-1' == 'B-2'`，check-run 注解取证）；macos-15-intel failure 不再作为验收参考。
+- 该用例根因（代码阅读 + 时钟测量，未在本机复现）：本地编辑意图 `pending()` 按 `created_at, id` 排序，id 为 uuid4；Windows 跑机默认约 15.6ms 时钟粒度下两条编辑同一 `created_at`，顺序退回随机 id，丢失的第二次核验读取可能落在 A-1。本机时钟 1ms，15 次重复均通过（修复前后一致）。修复只改测试：以实际 unknown 记录继续核对。产品排序弱点同交接文档已知项，未改。
+- G2 failure_reason_ratio=0.0 根因（代码证据）：子进程 `providers/browser/project_workflow_worker.py` 的 `finished` 消息已带节点具体原因（`project_graph` 用 `node_failure_message` 生成，也写进节点日志），但父进程 `infrastructure/process/project_workflow_worker.py` 一律替换成"工作流未完整成功，请查看已提交的节点记录"，golden 读取的 run.error 因此总是通用句。修复：父进程保留子进程上报的 code/message（code 须为大写标识、message 非空且 ≤1100 字符，并按本 worker 的凭据再脱敏），否则仍回退通用句。新增 6 例参数化测试；真实浏览器写冲突用例的期望由 `WORKFLOW_FAILED` 改为最后失败节点的 `WORKFLOW_NODE_TIMEOUT`（本机无 CloakBrowser，需 CI 验证）。
+- 待验证：推送后同一提交的 macos-15 + windows-2022 CI；手动 dispatch golden rows=30 看 G2/G3 failure_reason_ratio 是否 >0。AC1-09/10/13 的 Mac 基准仍缺，M1 仍不标 done。

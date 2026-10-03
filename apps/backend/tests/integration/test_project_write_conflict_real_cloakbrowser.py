@@ -175,7 +175,8 @@ async def test_real_write_versions_and_partial_failure(
             assert (await api('GET', records_path))['items'] == committed
             task = await api('GET', task_path)
             assert task['inputSnapshot'] == original_input
-            assert task['task']['status'] == 'failed' and task['run']['error']['code'] == 'WORKFLOW_FAILED'
+            assert task['task']['status'] == 'failed' and task['run']['error']['code'] == 'WORKFLOW_NODE_TIMEOUT'
+            assert task['run']['error']['message'].startswith('工作流节点执行超时')  # M1 R1-03: the node's reason, not a fixed sentence
             expected_writes = ['recordCreated'] if human_edit else ['recordCreated', 'recordUpdated', 'statusChange']
             assert [write['kind'] for write in task['dataWrites']] == expected_writes
             assert all(write['outcome'] == 'succeeded' for write in task['dataWrites'])

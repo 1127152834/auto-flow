@@ -426,11 +426,7 @@ class ProjectWorkflowWorkerManager:
                 status = message.get("status")
                 if status not in {"succeeded", "failed", "cancelled", "timed_out"}:
                     raise _protocol_error()
-                # Worker diagnostics cannot expose launch credentials or paths.
-                error = None if status == "succeeded" else {
-                    "code": f"WORKFLOW_{str(status).upper()}",
-                    "message": "工作流未完整成功，请查看已提交的节点记录",
-                }
+                error = None if status == "succeeded" else _terminal_error(status, message.get("error"), worker.secrets)
                 return WorkerOutcome(cast(WorkerStatus, status), error, True)
             elif message.get("type") == "error":
                 raise WorkflowWorkerError("WORKFLOW_CLEANUP_FAILED", "执行进程未确认完成，需核验清理结果")
@@ -660,6 +656,24 @@ class ProjectWorkflowWorkerManager:
         for result in results:
             if isinstance(result, BaseException):
                 raise result
+
+
+# Long enough for a node headline plus the bounded executor reason (event_translation.MAX_REASON_CHARS).
+MAX_TERMINAL_REASON_CHARS = 1100
+
+
+def _terminal_error(status: object, reported: object, secrets: Iterable[str | bytes]) -> dict[str, str]:
+    """The worker's own failure reason (remediation M1 R1-03), or a fixed sentence when it is unusable.
+
+    The reason was already shown in the node log; it is re-redacted here because
+    the run error is served on more surfaces than the log.
+    """
+    if isinstance(reported, dict):
+        code, text = reported.get("code"), reported.get("message")
+        if (isinstance(code, str) and re.fullmatch(r"[A-Z][A-Z0-9_]{0,63}", code)
+                and isinstance(text, str) and text.strip() and len(text) <= MAX_TERMINAL_REASON_CHARS):
+            return {"code": code, "message": redact_sensitive_text(text.strip(), secrets)}
+    return {"code": f"WORKFLOW_{str(status).upper()}", "message": "工作流未完整成功，请查看已提交的节点记录"}
 
 
 def _protocol_error() -> WorkflowWorkerError:

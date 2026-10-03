@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import sys
 from io import StringIO
 from pathlib import Path
@@ -199,6 +200,47 @@ async def test_confirmed_failure_waits_for_owned_cleanup_of_native_thread(tmp_pa
     if sys.platform != 'win32':
         with pytest.raises(ProcessLookupError):
             os.kill(pid, 0)
+
+
+GENERIC_FAILURE = "工作流未完整成功，请查看已提交的节点记录"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("reported", "expected"),
+    [
+        # Remediation M1 R1-03: the node's own reason reaches the run error.
+        (
+            {"code": "WORKFLOW_NODE_FAILED", "message": "工作流节点执行失败：找不到元素 #submit"},
+            {"code": "WORKFLOW_NODE_FAILED", "message": "工作流节点执行失败：找不到元素 #submit"},
+        ),
+        (
+            {"code": "PROJECT_TABLE_MISSING", "message": "工作流节点执行失败：数据表已被删除"},
+            {"code": "PROJECT_TABLE_MISSING", "message": "工作流节点执行失败：数据表已被删除"},
+        ),
+        # Anything malformed or unbounded keeps the fixed sentence.
+        (None, {"code": "WORKFLOW_FAILED", "message": GENERIC_FAILURE}),
+        ({"code": "WORKFLOW_NODE_FAILED", "message": "  "}, {"code": "WORKFLOW_FAILED", "message": GENERIC_FAILURE}),
+        ({"code": 7, "message": "x"}, {"code": "WORKFLOW_FAILED", "message": GENERIC_FAILURE}),
+        ({"code": "WORKFLOW_NODE_FAILED", "message": "x" * 5000}, {"code": "WORKFLOW_FAILED", "message": GENERIC_FAILURE}),
+    ],
+)
+async def test_failed_run_keeps_the_reason_reported_by_the_worker(tmp_path, reported, expected):
+    instance, executable = manager(tmp_path)
+    child = CHILD[:CHILD.index("send('ready')")] + (
+        "send('ready')\n"
+        f"send('finished',status='failed',error=json.loads({json.dumps(json.dumps(reported))}),cleanupConfirmed=True)\n"
+        "raise SystemExit(1)\n"
+    )
+    instance._command = (sys.executable, '-c', child)
+    instance._worker_env = {**instance._worker_env, 'PYTHONUTF8': '1', 'PYTHONIOENCODING': 'utf-8'}
+
+    async def persist(_event):
+        raise AssertionError("terminal-only worker cannot produce node events")
+
+    outcome = await asyncio.wait_for(start(instance, executable, persist), 10)
+    assert outcome.status == 'failed'
+    assert outcome.error == expected
 
 
 @pytest.mark.asyncio
