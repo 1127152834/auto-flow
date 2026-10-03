@@ -19,6 +19,7 @@ from autoflow.domain.projects.models import ProjectError
 from autoflow.domain.workflows.canvas_subflows import CanvasSubflowGraph
 from autoflow.domain.workflows.graph import parse_workflow
 from autoflow.domain.workflows.parallel_graph import direct_members, structured_fork
+from autoflow.domain.workflows.run_validation import STRUCTURE_OPERATIONS
 from autoflow.domain.workflows.runtime import WorkflowRuntimeError
 from autoflow.infrastructure.database.environment_models import (
     ProjectEnvironmentInstanceRow,
@@ -47,12 +48,6 @@ DATA_COMMANDS = {
     'updateRecord': ('update_record', commands.UpdateProjectRecordCommand),
     'deleteRecord': ('delete_record', commands.DeleteProjectRecordCommand),
     'setRecordStatus': ('set_record_status', commands.SetRecordStatusCommand),
-    'addField': ('add_field', commands.AddProjectFieldCommand),
-    'ensureField': ('ensure_field', commands.EnsureProjectFieldCommand),
-    'deleteField': ('delete_field', commands.DeleteProjectFieldCommand),
-    'previewFieldDeletion': ('preview_field_deletion', commands.PreviewProjectFieldDeletionRequest),
-    'modifyField': ('modify_field', commands.ModifyProjectFieldCommand),
-    'previewFieldChange': ('preview_field_change', commands.PreviewProjectFieldChangeRequest),
 }
 
 
@@ -164,6 +159,9 @@ class ProjectWorkerCapabilities:
         self.data = ProjectDataCapabilityService(SqlAlchemyProjectDataCapabilities(sessions))
 
     async def handle(self, run_id: str, generation: int, request: dict[str, Any]) -> Any:
+        if request.get('operation') in STRUCTURE_OPERATIONS:
+            # Remediation M2 R2-23: also covers runs frozen before the change.
+            raise ProjectError('PROJECT_STRUCTURE_OPERATION_REMOVED', '运行中不再修改表结构，请在项目「数据」页维护字段', 422)
         if type(generation) is not int or generation < 1:
             raise _denied()
         if request.get('attempt') != 1 or type(request.get('attempt')) is not int:

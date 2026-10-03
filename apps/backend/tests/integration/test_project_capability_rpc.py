@@ -304,3 +304,13 @@ async def test_parallel_capability_requires_live_frozen_branch_owner(rpc, scope_
     else:
         with pytest.raises(ProjectError):
             await service.handle(task.run_id, 1, request)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('operation', ['addField', 'deleteField', 'previewFieldDeletion'])
+async def test_worker_cannot_change_table_structure_even_with_a_forged_request(rpc, operation):
+    """Remediation M2 R2-23: structure changes are refused at the sidecar, not only in preflight."""
+    _, task, request, service = rpc
+    with pytest.raises(ProjectError) as refused:
+        await service.handle(task.run_id, 1, {**request, 'operation': operation})
+    assert refused.value.code == 'PROJECT_STRUCTURE_OPERATION_REMOVED'

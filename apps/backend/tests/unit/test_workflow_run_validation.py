@@ -560,3 +560,28 @@ def test_project_graph_rejects_cycle_without_an_entry():
     with pytest.raises(WorkflowError) as caught:
         prepare_run(payload)
     assert caught.value.details["issues"][0]["code"] == "INVALID_EXECUTION_GRAPH"
+
+
+@pytest.mark.parametrize('operation', ['addField', 'ensureField', 'modifyField', 'previewFieldChange', 'deleteField', 'previewFieldDeletion'])
+def test_runs_no_longer_change_table_structure(operation):
+    """Remediation M2 R2-23: old structure nodes stay saved, but preflight points to the data page."""
+    payload = workflow_payload()
+    template = payload['content']['nodes'][0]
+    grant = {'tableId': 't', 'datasetGeneration': 'g', 'operations': ['deleteField'], 'fieldIds': ['f'], 'readPurposes': []}
+    payload['content']['nodes'] = [{**deepcopy(template), 'id': 'schema', 'type': 'project_data', 'data': {
+        'moduleType': 'project_data', 'operation': operation, 'arguments': {}, 'variableName': 'x', 'bindingProjectId': 'p', 'tableGrant': grant}}]
+    payload['content']['edges'] = []
+    with pytest.raises(WorkflowError) as raised:
+        prepare_run(payload)
+    issues = [issue for issue in raised.value.issues if issue.code == 'PROJECT_STRUCTURE_OPERATION_REMOVED']
+    assert [(issue.node_id, issue.message) for issue in issues] == [('schema', '运行中不再修改表结构，请在项目「数据」页维护字段后删除此节点或改为读取/写入记录')]
+
+
+def test_reading_the_table_structure_stays_available():
+    payload = workflow_payload()
+    template = payload['content']['nodes'][0]
+    grant = {'tableId': 't', 'datasetGeneration': 'g', 'operations': ['queryTableSchema'], 'fieldIds': ['f'], 'readPurposes': []}
+    payload['content']['nodes'] = [{**deepcopy(template), 'id': 'schema', 'type': 'project_data', 'data': {
+        'moduleType': 'project_data', 'operation': 'queryTableSchema', 'arguments': {'tableId': 't', 'datasetGeneration': 'g', 'fieldIds': ['f']}, 'variableName': 'x', 'bindingProjectId': 'p', 'tableGrant': grant}}]
+    payload['content']['edges'] = []
+    assert prepare_run(payload).node_ids == ['schema']

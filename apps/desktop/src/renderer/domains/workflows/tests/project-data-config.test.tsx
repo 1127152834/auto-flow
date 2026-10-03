@@ -1,3 +1,4 @@
+import '@testing-library/jest-dom/vitest'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, expect, it, vi } from 'vitest'
 import { ProjectDataConfig } from '../components/config-panels/ProjectDataConfig'
@@ -17,18 +18,6 @@ it('keeps task authority out of user arguments and supports a result variable', 
   await waitFor(() => expect(change).toHaveBeenCalledWith('arguments', { values: { field: '{browser_result}' } }))
 })
 
-it('binds field preview to the existing modifyField permission', async () => {
-  Element.prototype.scrollIntoView = vi.fn()
-  const { apiRequest } = await import('../api')
-  vi.mocked(apiRequest).mockImplementation(async (path) => ({ success: true, data: { items: path.includes('/tables?') ? [{ tableId: 'table', datasetGeneration: 'generation', name: '来源', tableRevision: 1 }] : [], total: 1 } }) as never)
-  const change = vi.fn()
-  render(<ProjectDataConfig data={{ moduleType: 'project_data', operation: 'previewFieldChange', bindingProjectId: 'project', arguments: {}, variableName: 'preview' } as unknown as NodeData} onChange={change} />)
-  await waitFor(() => expect(apiRequest).toHaveBeenCalledWith(expect.stringContaining('/tables?'), expect.anything()))
-  fireEvent.keyDown(screen.getByLabelText('授权数据表'), { key: 'ArrowDown' })
-  fireEvent.keyDown(await screen.findByRole('option', { name: '来源' }), { key: 'Enter' })
-  expect(change).toHaveBeenCalledWith('tableGrant', expect.objectContaining({ operations: ['modifyField'] }))
-})
-
 it('selects explicit schema fields and keeps the query free of write authority', async () => {
   const { apiRequest } = await import('../api')
   vi.mocked(apiRequest).mockImplementation(async path => ({ success: true, data: { items: path.endsWith('/fields') ? [{ ref: { projectId: 'project', tableId: 'table', datasetGeneration: 'generation', fieldId: 'field' }, name: '当前字段' }] : [], total: 0 } }) as never)
@@ -40,29 +29,12 @@ it('selects explicit schema fields and keeps the query free of write authority',
   expect((screen.getByLabelText('结果变量') as HTMLInputElement).value).toBe('schema')
 })
 
-async function checkFieldDeletionPreview(blocked: boolean) {
-  const { apiRequest } = await import('../api')
-  vi.mocked(apiRequest).mockClear()
-  const field = { ref: { projectId: 'project', tableId: 'table', datasetGeneration: 'generation', fieldId: 'old-field' }, key: 'old', name: '旧字段', type: 'string', required: false, validation: {}, fieldRevision: 1 }
-  vi.mocked(apiRequest).mockImplementation(async path => ({ success: true, data: path.endsWith('/schema/preview') ? { impactRevision: 7, calculatedAt: '', expiresAt: '', affectedRecords: 1, backfillBytes: 2, blockers: blocked ? [{ code: 'SOURCE_FIELD_MAPPING', fieldId: 'old-field', clientId: null, message: '字段仍有来源列映射', affectedRecords: null }] : [], warnings: [], referenceAvailability: { automations: 'available', sync: 'available' } } : { items: path.endsWith('/fields') ? [field] : path.includes('/tables?') ? [{ tableId: 'table', datasetGeneration: 'generation', name: '来源', tableRevision: 2 }] : [], total: 1 } }) as never)
-  const change = vi.fn()
-  render(<ProjectDataConfig data={{ moduleType: 'project_data', operation: 'deleteField', bindingProjectId: 'project', tableGrant: { tableId: 'table', datasetGeneration: 'generation', operations: ['deleteField'], fieldIds: [], readPurposes: [] }, arguments: { tableId: 'table', datasetGeneration: 'generation', fieldId: 'old-field', impactRevision: "{field_deletion_preview['impactRevision']}" } } as unknown as NodeData} onChange={change} />)
-  await waitFor(() => expect((screen.getByRole('button', { name: '预览删除影响' }) as HTMLButtonElement).disabled).toBe(false))
-  fireEvent.click(screen.getByRole('button', { name: '预览删除影响' }))
-  const confirm = await screen.findByRole('button', { name: '确认删除目标' }) as HTMLButtonElement
-  expect(confirm.disabled).toBe(blocked)
-  if (blocked) {
-    expect((await screen.findByRole('alert')).textContent).toContain('字段仍有来源列映射')
-    expect(change).not.toHaveBeenCalled()
-  } else {
-    fireEvent.click(confirm)
-    expect(change).toHaveBeenCalledWith('tableGrant', { tableId: 'table', datasetGeneration: 'generation', operations: ['deleteField'], fieldIds: ['old-field'], readPurposes: [] })
-  }
-  const calls = vi.mocked(apiRequest).mock.calls.filter(([path]) => path.endsWith('/schema/preview'))
-  expect(calls).toHaveLength(1)
-  expect(JSON.parse(String(calls[0][1]?.body))).toEqual({ datasetGeneration: 'generation', expectedTableRevision: 2, removedFieldIds: ['old-field'], fields: [] })
-  expect(vi.mocked(apiRequest).mock.calls.some(([path, options]) => options?.method === 'DELETE' || path.endsWith('/schema'))).toBe(false)
-}
-
-it('previews a field removal and grants that target only after confirmation', () => checkFieldDeletionPreview(false))
-it('blocks field deletion confirmation while source mapping remains', () => checkFieldDeletionPreview(true))
+it.each(['addField', 'deleteField', 'previewFieldDeletion'])('keeps an old %s node visible but explains that runs no longer change table structure', operation => {
+  // Remediation M2 R2-23.
+  render(<ProjectDataConfig data={{ moduleType: 'project_data', operation, bindingProjectId: 'project', arguments: {}, variableName: 'x' } as unknown as NodeData} onChange={vi.fn()} />)
+  expect(screen.getByRole('alert')).toHaveTextContent('运行中不再修改表结构，请在项目「数据」页维护字段')
+  const select = screen.getByLabelText('操作')
+  fireEvent.keyDown(select, { key: 'ArrowDown' })
+  expect(screen.queryByRole('option', { name: '添加字段' })).toBeNull()
+  expect(screen.getByRole('option', { name: /（已停用）/ })).toHaveAttribute('aria-disabled', 'true')
+})

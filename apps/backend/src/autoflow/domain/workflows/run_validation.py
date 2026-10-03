@@ -188,6 +188,13 @@ def _ordered_chain(
     return ordered
 
 
+# Remediation M2 R2-23: operations that change a table's structure; old nodes keep their saved
+# configuration but no run executes them.
+STRUCTURE_OPERATIONS = frozenset({
+    'addField', 'ensureField', 'modifyField', 'previewFieldChange', 'deleteField', 'previewFieldDeletion',
+})
+
+
 def _config_issues(node: dict[str, Any], index: int, *, studio: bool = False) -> list[WorkflowIssue]:
     module_type = node["data"]["moduleType"]
     data = node["data"].get("config", node["data"])
@@ -247,7 +254,12 @@ def _config_issues(node: dict[str, Any], index: int, *, studio: bool = False) ->
         )
     elif module_type == 'project_data':
         operation = data.get('operation')
-        field('operation', isinstance(operation, str) and operation in {'inputs', 'readRecord', 'queryRecords', 'queryTableSchema', 'createRecord', 'updateRecord', 'deleteRecord', 'setRecordStatus', 'addField', 'ensureField', 'modifyField', 'previewFieldChange', 'deleteField', 'previewFieldDeletion'}, '不受支持')
+        if operation in STRUCTURE_OPERATIONS:
+            # Remediation M2 R2-23: table structure is maintained on the data page, never by a run.
+            issues.append(WorkflowIssue(node_id, [*base, 'operation'], 'PROJECT_STRUCTURE_OPERATION_REMOVED',
+                                        '运行中不再修改表结构，请在项目「数据」页维护字段后删除此节点或改为读取/写入记录'))
+            return issues
+        field('operation', isinstance(operation, str) and operation in {'inputs', 'readRecord', 'queryRecords', 'queryTableSchema', 'createRecord', 'updateRecord', 'deleteRecord', 'setRecordStatus'}, '不受支持')
         field('arguments', isinstance(data.get('arguments'), dict) and data.get('argumentsValid', True) is True, '必须是有效对象')
         field('variableName', _nonempty_string(data.get('variableName')), '必须是非空字符串')
         if operation != 'inputs':
