@@ -228,6 +228,8 @@ class TaskDetail(ApiModel):
     input_snapshot: TaskInputSnapshotView
     current_inputs: list[TaskCurrentInputView] = Field(default_factory=list)
     run: RunSnapshotView
+    # Remediation M2 R2-13: infrastructure/page/unknown/cancelled; null while running or after success.
+    failure_category: Literal["infrastructure", "page", "unknown", "cancelled"] | None = None
     data_writes: list[TaskDataWriteView] = Field(default_factory=list)
     cleanup: CleanupSummaryView
     end: TaskEndView | None = None

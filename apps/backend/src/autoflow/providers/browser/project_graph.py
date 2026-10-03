@@ -26,6 +26,7 @@ from autoflow.domain.workflows.execution import (
 )
 from autoflow.domain.workflows.inert_settings import describe_inert_keys, inert_keys
 from autoflow.domain.workflows.project_end import normalize_project_end
+from autoflow.domain.workflows.side_effects import node_side_effect
 from autoflow.domain.workflows.variables import CredentialReader, references_variable
 from autoflow.infrastructure.filesystem.workflow_table_workbook import (
     OpenpyxlTableWorkbookRenderer,
@@ -335,7 +336,8 @@ class ProjectGraphExecutor:
             module_type = node_data.get("moduleType")
             if self.artifact_writer is not None and module_type in {"screenshot", "download_file", "save_image", "list_export", "export_log", "table_export", "extract_table_data", "allure_generate_report", "ssh_connect", "ssh_upload_file", "ssh_download_file", "base64", "firecrawl_scrape", "face_recognition", "image_ocr"}:
                 current.artifacts = self.artifact_writer(node_id, visit, module_type)
-            await emit('nodeAttempt', {'status': 'started', 'executionContext': execution_context})
+            # R2-10: the acknowledged start fact carries whether the node may act outside the run.
+            await emit('nodeAttempt', {'status': 'started', 'executionContext': execution_context, 'sideEffect': node_side_effect(module_type, node_data)})
             self.cancellation.raise_if_cancelled()
             await emit('log', {'level': 'info', 'message': '开始执行节点'})
             inert = inert_keys(node_data, str(module_type or '')) if node_id not in self.inert_reported else []

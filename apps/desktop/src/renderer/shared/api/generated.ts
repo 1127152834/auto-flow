@@ -13914,6 +13914,8 @@ export type components = {
             /** Currentinputs */
             currentInputs?: components["schemas"]["TaskCurrentInputView"][];
             run: components["schemas"]["RunSnapshotView"];
+            /** Failurecategory */
+            failureCategory?: ("infrastructure" | "page" | "unknown" | "cancelled") | null;
             /** Datawrites */
             dataWrites?: components["schemas"]["TaskDataWriteView"][];
             cleanup: components["schemas"]["CleanupSummaryView"];

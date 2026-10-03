@@ -9,6 +9,7 @@ from typing import Any, get_args
 from sqlalchemy import String, cast, exists, func, or_, select
 from sqlalchemy.orm import Session, sessionmaker
 
+from autoflow.domain.project_runs.failure_category import AttemptFact, classify
 from autoflow.domain.project_runs.models import (
     BatchStatus,
     ProjectRunError,
@@ -17,7 +18,11 @@ from autoflow.domain.project_runs.models import (
     snapshot_to_dict,
     task_to_dict,
 )
-from autoflow.domain.workflows.runtime import CoreRunStatus, thaw_json
+from autoflow.domain.workflows.runtime import (
+    TERMINAL_STATUSES,
+    CoreRunStatus,
+    thaw_json,
+)
 from autoflow.infrastructure.database.environment_models import (
     ProjectEndOperationRow,
     ProjectEnvironmentInstanceRow,
@@ -441,6 +446,7 @@ class ProjectRunQueries:
                 ],
                 "nodeNames": node_names,
                 "run": _run(run),
+                "failureCategory": _failure_category(session, run),
                 "cleanup": _cleanup(session, project_id, task_id, run),
                 "end": _end(session, project_id, task_id),
                 "currentInputs": _current_inputs(session, project_id, snapshot),
@@ -1113,3 +1119,20 @@ def _run(run: Any) -> dict[str, Any]:
         "startedAt": run.started_at,
         "finishedAt": run.completed_at,
     }
+
+
+def _failure_category(session: Session, run: Any) -> str | None:
+    """Remediation M2 R2-13: computed from every acknowledged node-attempt fact of the run."""
+    if run.status not in TERMINAL_STATUSES:
+        return None
+    rows = session.execute(
+        select(WorkflowRunEventRow.node_visit_id, WorkflowRunEventRow.payload)
+        .where(WorkflowRunEventRow.run_id == run.run_id, WorkflowRunEventRow.kind == "nodeAttempt")
+        .order_by(WorkflowRunEventRow.sequence)
+    ).all()
+    facts = [
+        AttemptFact(str(visit), str(payload.get("status")), payload.get("sideEffect"))
+        for visit, payload in rows
+        if isinstance(payload, dict) and visit is not None
+    ]
+    return classify(run.status, thaw_json(run.error) if run.error else None, facts)

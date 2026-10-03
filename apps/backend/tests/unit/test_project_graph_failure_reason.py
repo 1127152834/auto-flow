@@ -99,3 +99,18 @@ async def test_whole_node_timeout_names_the_limit_instead_of_a_bare_headline():
     assert result['error']['message'] == '工作流节点执行超时：节点在 0.05 秒内未完成'
     error_logs = [event[3]['message'] for event in events if event[0] == 'log' and event[3].get('level') == 'error']
     assert error_logs == [result['error']['message']]
+
+
+@pytest.mark.asyncio
+async def test_started_attempts_carry_the_side_effect_declaration():
+    """R2-10: the acknowledged start fact says whether the node may act outside the run."""
+    document = {
+        'nodes': [
+            node('calc', 'set_variable', variableName='x', variableValue='1'),
+            node('act', 'run_command', command=''),
+        ],
+        'edges': [edge('calc', 'act')],
+    }
+    _, events = await run_document(document)
+    started = {event[1]: event[3].get('sideEffect') for event in events if event[0] == 'nodeAttempt' and event[3].get('status') == 'started'}
+    assert started == {'calc': 'none', 'act': 'possible'}

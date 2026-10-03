@@ -663,3 +663,50 @@ def test_task_directory_reports_the_current_or_final_node_and_latest_status_time
     assert listed["endNodeName"] == "打开网页"
     assert datetime.fromisoformat(listed["lastStatusAt"]) == succeeded_at
     factory.dispose()
+
+
+@pytest.mark.parametrize(
+    ("status", "facts", "expected"),
+    [
+        ("queued", [], None),
+        ("failed", [], "infrastructure"),
+        ("failed", [("read", "started", "none"), ("read", "failed", None)], "page"),
+        ("failed", [("click", "started", "possible"), ("click", "succeeded", None), ("read", "started", "none")], "unknown"),
+    ],
+)
+def test_task_detail_reports_the_failure_category_from_acknowledged_start_facts(tmp_path, status, facts, expected):
+    """Remediation M2 R2-13: whether a failed Task is safe to run again comes from run facts."""
+    from sqlalchemy import update
+
+    from autoflow.infrastructure.database.project_run_models import ProjectTaskRow
+    from autoflow.infrastructure.database.workflow_runtime_models import (
+        WorkflowRunEventRow,
+        WorkflowRunRow,
+    )
+
+    client, factory, project, automation, _ = client_for(tmp_path)
+    batch = client.post(
+        f"/api/v1/projects/{project.project_id}/automations/{automation.automation_id}/batches",
+        headers={"Idempotency-Key": str(uuid4())},
+        json=start_payload(automation),
+    ).json()["operation"]["result"]["batch"]
+    task_id = client.get(
+        f"/api/v1/projects/{project.project_id}/tasks", params={"batchId": batch["batchId"]}
+    ).json()["items"][0]["taskId"]
+    now = datetime.now(UTC)
+    with factory.begin() as session:
+        run_id = session.get(ProjectTaskRow, task_id).run_id
+        if status != "queued":
+            session.execute(update(WorkflowRunRow).where(WorkflowRunRow.id == run_id).values(status=status))
+        for sequence, (node, state, effect) in enumerate(facts, start=1):
+            payload = {"status": state, **({"sideEffect": effect} if effect else {})}
+            session.add(WorkflowRunEventRow(
+                run_id=run_id, sequence=sequence, event_id=str(uuid4()), execution_generation=1,
+                kind="nodeAttempt", node_id=node, node_visit_id=f"{node}-1", attempt=1,
+                occurred_at=now, payload=payload,
+            ))
+
+    detail = client.get(f"/api/v1/projects/{project.project_id}/tasks/{task_id}").json()
+
+    assert detail["failureCategory"] == expected
+    factory.dispose()
