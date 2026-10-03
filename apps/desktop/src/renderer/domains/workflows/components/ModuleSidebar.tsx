@@ -192,6 +192,8 @@ import {
   ShieldCheck,
   TextCursor,
   Database as DatabaseIcon,
+  Cookie,
+  HardDrive,
 } from 'lucide-react'
 import { TestReportIcon } from './icons/TestReportIcon'
 import { PanelResizer } from './PanelResizer'
@@ -223,6 +225,9 @@ const moduleIcons: Record<ModuleType, React.ElementType> = {
   click_element: MousePointerClick,
   hover_element: MousePointer,
   press_key: Keyboard,
+  web_cookie: Cookie,
+  web_storage: HardDrive,
+  web_intercept: Shield,
   input_text: Type,
   select_dropdown: ChevronDown,
   set_checkbox: CheckSquare,
@@ -878,6 +883,9 @@ const moduleKeywords: Record<ModuleType, string[]> = {
   click_element: ['点击', '单击', '双击', '右键', 'click', '按钮'],
   hover_element: ['悬停', '鼠标', '移动', 'hover', 'mouse', '移入', '经过', '停留'],
   press_key: ['按键', '回车', '键盘', 'enter', 'tab', 'key', 'press', '快捷键'],
+  web_cookie: ['cookie', '登录态', '会话', '网页 Cookie'],
+  web_storage: ['localstorage', 'sessionstorage', '本地存储', '会话存储', '存储'],
+  web_intercept: ['拦截', '模拟接口', 'mock', 'route', '请求头'],
   input_text: ['输入', '文本', '填写', 'input', 'text', '表单'],
   get_element_info: ['提取', '数据', '获取', '元素', '信息', 'get', 'element', '采集'],
   wait: ['等待', '延迟', '暂停', 'wait', 'delay', '时间', '固定'],

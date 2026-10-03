@@ -30,9 +30,9 @@ const nativeCategories = [
   {name:'项目能力',types:['project_data','project_manual','project_end']},
 ]
 const retained=[...nativeCategories,...categories.filter(c=>!excluded.has(c.name))].flatMap(c=>c.types.filter(t=>!extra.has(t)).map(type=>({type,category:c.name})))
-const nativeTypes = new Set(['press_key', 'proxy_change_ip', 'proxy_change_location', 'proxy_query', ...nativeCategories.flatMap(category=>category.types)])
+const nativeTypes = new Set(['press_key', 'web_cookie', 'web_storage', 'web_intercept', 'proxy_change_ip', 'proxy_change_location', 'proxy_query', ...nativeCategories.flatMap(category=>category.types)])
 const frozen = retained.filter(node => !nativeTypes.has(node.type))
-if(frozen.length!==213 || new Set(frozen.map(n=>n.type)).size!==213 || retained.length!==223 || new Set(retained.map(n=>n.type)).size!==223 || nativeTypes.size!==10)throw Error('Approved frozen/native node scope changed')
+if(frozen.length!==213 || new Set(frozen.map(n=>n.type)).size!==213 || retained.length!==226 || new Set(retained.map(n=>n.type)).size!==226 || nativeTypes.size!==13)throw Error('Approved frozen/native node scope changed')
 const files=fs.readdirSync(path.join(root,domain,'components/config-panels')).filter(f=>f.endsWith('.tsx')).map(f=>`${domain}/components/config-panels/${f}`)
 files.push(`${domain}/components/ConfigPanel.tsx`,`${domain}/editor-store.ts`)
 const evidence=new Map(retained.map(n=>[n.type,[]]))

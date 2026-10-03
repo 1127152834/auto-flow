@@ -12,10 +12,10 @@ execFileSync(process.execPath, ['scripts/inventory-studio-completion.mjs', '--ou
 const rows = JSON.parse(fs.readFileSync(path.join(directory, 'capabilities.json')))
 const dependency = type => rows.find(row => row.type === type).toolDependencies
 const prefix = 'apps/desktop/src/renderer/domains/workflows/components/'
-const nativeTypes = ['press_key','trace_mark','capture_diagnostics','save_trace_segment','proxy_change_ip','proxy_change_location','proxy_query','project_data','project_manual','project_end']
+const nativeTypes = ['press_key','web_cookie','web_storage','web_intercept','trace_mark','capture_diagnostics','save_trace_segment','proxy_change_ip','proxy_change_location','proxy_query','project_data','project_manual','project_end']
 test('retains the approved scope and resolves an imported alias to its actual component file', () => {
-  assert.equal(rows.length, 223)
-  assert.equal(new Set(rows.map(row => row.type)).size, 223)
+  assert.equal(rows.length, 226)
+  assert.equal(new Set(rows.map(row => row.type)).size, 226)
   assert.ok(dependency('open_page').resolved.includes(prefix + 'controls/select-native.tsx#SelectNative'))
   assert.ok(dependency('open_page').external.includes('@radix-ui/react-select#Trigger'))
   assert.deepEqual(dependency('open_page').unresolved, [])

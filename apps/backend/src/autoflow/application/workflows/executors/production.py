@@ -162,6 +162,7 @@ from .utility_tools import (
 )
 from .visual import VISUAL_EXECUTORS
 from .web_basic import WEB_BASIC_EXECUTORS
+from .web_state import WEB_STATE_EXECUTORS
 from .workflow_chain import RunWorkflowFileExecutor
 
 PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
@@ -300,6 +301,7 @@ PRODUCTION_EXECUTORS: tuple[type[ModuleExecutor], ...] = (
     NetworkMonitorWaitExecutor,
     NetworkMonitorStopExecutor,
     *WEB_BASIC_EXECUTORS,
+    *WEB_STATE_EXECUTORS,
     *ADVANCED_BROWSER_EXECUTORS,
     SwitchTabExecutor,
     ExtractTableDataExecutor,

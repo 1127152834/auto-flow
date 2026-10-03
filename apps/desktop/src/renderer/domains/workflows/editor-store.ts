@@ -433,6 +433,9 @@ export const moduleTypeLabels: Record<ModuleType, string> = {
   click_element: '点击元素',
   hover_element: '悬停元素',
   press_key: '按键',
+  web_cookie: '网页 Cookie',
+  web_storage: '网页存储',
+  web_intercept: '请求拦截',
   input_text: '输入文本',
   get_element_info: '提取数据',
   wait: '固定等待',
@@ -1084,6 +1087,9 @@ export const moduleDefaultTimeouts: Partial<Record<ModuleType, number>> = {
   click_element: 60,    // 60秒
   hover_element: 60,    // 60秒
   press_key: 30,
+  web_cookie: 30,
+  web_storage: 30,
+  web_intercept: 30,
   input_text: 60,       // 60秒
   get_element_info: 60, // 60秒
   proxy_change_ip: 0,

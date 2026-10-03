@@ -31,6 +31,8 @@ _READ_ONLY = frozenset({
     "switch_tab", "switch_iframe", "switch_to_main", "go_back", "go_forward", "element_change_trigger",
     "network_capture", "network_monitor_start", "network_monitor_stop", "network_monitor_wait",
     "download_file", "firecrawl_scrape", "firecrawl_map", "firecrawl_crawl",
+    # local browser state only (remediation M2 R2-28)
+    "web_cookie", "web_storage", "web_intercept",
 })
 _PROJECT_DATA_READS = frozenset({"inputs", "readRecord", "queryRecords", "queryTableSchema"})
 

@@ -561,6 +561,8 @@ class CloakBrowserWorkflowSession:
         self._closed = False
         self.proxy_relay: BrowserProxyRelay | None = None
         self.trace: Any = None
+        # Remediation M2 R2-28: request interception rules by URL pattern.
+        self._intercepts: dict[str, Any] = {}
         existing = self._synchronize_pages()
         if existing:
             self._current_id = existing[0].id
@@ -684,6 +686,35 @@ class CloakBrowserWorkflowSession:
         if self.trace is None:
             self.trace = WorkflowTrace(self._context, save, enabled=enabled, enhanced=enhanced)
             await self.trace.start()
+
+    async def cookies(self, urls: list[str] | None = None) -> list[dict[str, Any]]:
+        return list(await (self._context.cookies(urls) if urls else self._context.cookies()))
+
+    async def add_cookies(self, cookies: list[dict[str, Any]]) -> None:
+        await self._context.add_cookies(cookies)
+
+    async def clear_cookies(self, *, name: str | None = None, domain: str | None = None) -> None:
+        options = {key: value for key, value in (("name", name), ("domain", domain)) if value}
+        await self._context.clear_cookies(**options)
+
+    async def start_intercept(self, pattern: str, rule: dict[str, Any]) -> None:
+        await self.stop_intercept(pattern)
+
+        async def handle(route: Any) -> None:
+            if rule["action"] == "block":
+                await route.abort()
+            elif rule["action"] == "mock":
+                await route.fulfill(status=rule["status"], body=rule["body"], content_type=rule["contentType"])
+            else:
+                await route.continue_(headers={**route.request.headers, **rule["headers"]})
+
+        await self._context.route(pattern, handle)
+        self._intercepts[pattern] = handle
+
+    async def stop_intercept(self, pattern: str) -> None:
+        handler = self._intercepts.pop(pattern, None)
+        if handler is not None:
+            await self._context.unroute(pattern, handler)
 
     async def close(self) -> None:
         if self._closed:

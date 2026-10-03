@@ -12,7 +12,7 @@ const sourceModuleCategories = [
   {
     name: '网页元素交互',
     color: 'bg-indigo-500',
-    modules: ['click_element', 'hover_element', 'press_key', 'input_text', 'select_dropdown', 'set_checkbox', 'drag_element', 'scroll_page', 'handle_dialog', 'upload_file', 'inject_javascript'] as ModuleType[],
+    modules: ['click_element', 'hover_element', 'press_key', 'input_text', 'select_dropdown', 'set_checkbox', 'drag_element', 'scroll_page', 'handle_dialog', 'upload_file', 'inject_javascript', 'web_cookie', 'web_storage', 'web_intercept'] as ModuleType[],
   },
   {
     name: '网页元素查询',

@@ -10,7 +10,7 @@ from typing import Any
 DIAGNOSTIC_NODE_TYPES = frozenset({'trace_mark', 'capture_diagnostics', 'save_trace_segment'})
 
 # AutoFlow web primitives added by remediation M1 (R1-15); not part of the frozen WebRPA catalog.
-WEB_EXTENSION_NODE_TYPES = frozenset({'press_key'})
+WEB_EXTENSION_NODE_TYPES = frozenset({'press_key', 'web_cookie', 'web_storage', 'web_intercept'})
 
 PROJECT_NODE_TYPES = frozenset({'project_data', 'project_end', 'project_manual'})
 

@@ -9,16 +9,17 @@ const extensionModuleTypes = new Set<string>([
   ...proxyModuleTypes,
   ...diagnosticModuleTypes,
   'press_key', // remediation M1 R1-15
+  'web_cookie', 'web_storage', 'web_intercept', // remediation M2 R2-28
 ])
 
-it('keeps 213 frozen nodes plus the ten approved AutoFlow extensions', () => {
+it('keeps 213 frozen nodes plus the thirteen approved AutoFlow extensions', () => {
   const types = getAllAvailableModules()
     .filter(module => !module.isCustom)
     .map(module => module.type)
   const frozenTypes = types.filter(type => !extensionModuleTypes.has(type))
 
-  expect(types).toHaveLength(223)
-  expect(new Set(types).size).toBe(223)
+  expect(types).toHaveLength(226)
+  expect(new Set(types).size).toBe(226)
   expect(frozenTypes).toHaveLength(213)
   expect(new Set(frozenTypes).size).toBe(213)
   expect(types.filter(type => projectModuleTypes.includes(type as typeof projectModuleTypes[number]))).toEqual(projectModuleTypes)

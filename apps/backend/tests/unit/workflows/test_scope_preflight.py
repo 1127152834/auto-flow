@@ -103,7 +103,7 @@ def test_runtime_scope_matches_the_node_authority() -> None:
     assert len(APPROVED_NODE_TYPES) == 216
     assert {"proxy_query", "proxy_change_ip", "proxy_change_location"} <= APPROVED_NODE_TYPES
     assert len(APPROVED_NODE_TYPES | PROJECT_NODE_TYPES | DIAGNOSTIC_NODE_TYPES) == 222
-    assert WEB_EXTENSION_NODE_TYPES == frozenset({"press_key"})
+    assert WEB_EXTENSION_NODE_TYPES == frozenset({"press_key", "web_cookie", "web_storage", "web_intercept"})
     assert WEB_EXTENSION_NODE_TYPES.isdisjoint(
         APPROVED_NODE_TYPES | PROJECT_NODE_TYPES | DIAGNOSTIC_NODE_TYPES
     )
