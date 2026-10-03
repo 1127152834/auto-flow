@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 from fastapi import FastAPI
 
+from autoflow.adapters.http.processing_units import processing_units_router
 from autoflow.adapters.http.project_automations import project_automations_router
 from autoflow.adapters.http.project_data import project_data_router
 from autoflow.adapters.http.project_data_deletions import project_data_deletion_router
@@ -51,6 +52,7 @@ from autoflow.application.project_runs.coordinator import ProjectRunCoordinator
 from autoflow.application.project_runs.events import ProjectRunEvents
 from autoflow.application.project_runs.evidence import ProjectRunEvidence
 from autoflow.application.project_runs.interactions import ProjectRunInteractions
+from autoflow.application.project_runs.processing_units import ProcessingUnitService
 from autoflow.application.project_runs.queries import ProjectRunQueries
 from autoflow.application.project_runs.scheduler import ProjectBatchScheduler
 from autoflow.application.project_sync.bindings import SheetsBindingService
@@ -95,6 +97,7 @@ class ProjectHttpServices:
     sheets_columns: SheetsColumnService
     sheets_impacts: SheetsImpactService
     sync: SheetsSyncService
+    processing_units: ProcessingUnitService
 
 
 def register_project_routes(app: FastAPI, services: ProjectHttpServices) -> None:
@@ -107,6 +110,7 @@ def register_project_routes(app: FastAPI, services: ProjectHttpServices) -> None
     app.include_router(project_run_interactions_router(services.run_interactions, services.gate))
     app.include_router(project_pending_interactions_router(services.run_interactions))
     app.include_router(project_automations_router(services.automations))
+    app.include_router(processing_units_router(services.processing_units))
     app.include_router(project_records_router(services.records, services.queries))
     app.include_router(project_data_router(services.tables, services.catalog))
     app.include_router(

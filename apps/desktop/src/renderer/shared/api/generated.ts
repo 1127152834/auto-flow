@@ -1724,6 +1724,74 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{projectId}/automations/{automationId}/processing-units": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Units */
+        get: operations["list_units_api_v1_projects__projectId__automations__automationId__processing_units_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/automations/{automationId}/processing-units/{unitId}/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reset */
+        post: operations["reset_api_v1_projects__projectId__automations__automationId__processing_units__unitId__reset_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/automations/{automationId}/processing-units/{unitId}/skip": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Skip */
+        post: operations["skip_api_v1_projects__projectId__automations__automationId__processing_units__unitId__skip_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/automations/{automationId}/processing-units/{unitId}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resolve */
+        post: operations["resolve_api_v1_projects__projectId__automations__automationId__processing_units__unitId__resolve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{projectId}/tables/{tableId}/records": {
         parameters: {
             query?: never;
@@ -10304,6 +10372,76 @@ export type components = {
              */
             protocol: "http" | "socks5";
         };
+        /** ProcessingUnitChange */
+        ProcessingUnitChange: {
+            /** Expectedrevision */
+            expectedRevision: number;
+            /** Reason */
+            reason: string;
+        };
+        /** ProcessingUnitCommandResult */
+        ProcessingUnitCommandResult: {
+            operation: components["schemas"]["ProjectOperationView"];
+            unit: components["schemas"]["ProcessingUnitView"];
+        };
+        /** ProcessingUnitPage */
+        ProcessingUnitPage: {
+            /** Items */
+            items: components["schemas"]["ProcessingUnitView"][];
+            /** Nextafter */
+            nextAfter: string | null;
+        };
+        /** ProcessingUnitResolve */
+        ProcessingUnitResolve: {
+            /** Expectedrevision */
+            expectedRevision: number;
+            /** Reason */
+            reason: string;
+            /**
+             * Decision
+             * @enum {string}
+             */
+            decision: "confirmedSucceeded" | "confirmedNotPerformed" | "abandon";
+        };
+        /** ProcessingUnitView */
+        ProcessingUnitView: {
+            /** Unitid */
+            unitId: string;
+            /** Processinginputid */
+            processingInputId: string;
+            recordRef: components["schemas"]["DataRecordRef"];
+            /** Identitynamespace */
+            identityNamespace: string | null;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "pending" | "succeeded" | "failed_retryable" | "quarantined" | "needs_review" | "skipped";
+            /** Attempts */
+            attempts: number;
+            /** Processingcycle */
+            processingCycle: number;
+            /** Cycleattempts */
+            cycleAttempts: number;
+            /** Lastoutcome */
+            lastOutcome: ("succeeded" | "business" | "page" | "infrastructure" | "unknown" | "cancelled") | null;
+            /** Lasterror */
+            lastError: {
+                [key: string]: unknown;
+            } | null;
+            /** Lasttaskid */
+            lastTaskId: string | null;
+            /** Lastat */
+            lastAt: string | null;
+            /** Nexteligibleat */
+            nextEligibleAt: string | null;
+            /** Revision */
+            revision: number;
+            /** Review */
+            review: {
+                [key: string]: unknown;
+            } | null;
+        };
         /** ProfileArchiveCommand */
         ProfileArchiveCommand: {
             /** Requestid */
@@ -10792,7 +10930,7 @@ export type components = {
              * Kind
              * @enum {string}
              */
-            kind: "createProject" | "updateProject" | "createAutomation" | "updateAutomation" | "startBatch" | "stopBatch" | "forceStopBatch" | "followUpBatch" | "workflowInteraction" | "createTable" | "updateTable" | "mutateField" | "saveTableSchema" | "mutateStatus" | "createRecord" | "createRecords" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation" | "connectSheets" | "disconnectSheets" | "inspectSheets" | "changeSheetsBinding" | "initializeSheetsIdentity" | "createSheetsColumn" | "removeSheetsBinding" | "syncPull" | "syncPush" | "reconcileSync" | "archiveProject" | "restoreProject" | "deleteProject" | "deleteAutomation" | "deleteEnvironment" | "repairEndAssociation";
+            kind: "createProject" | "updateProject" | "createAutomation" | "updateAutomation" | "startBatch" | "stopBatch" | "forceStopBatch" | "followUpBatch" | "workflowInteraction" | "createTable" | "updateTable" | "mutateField" | "saveTableSchema" | "mutateStatus" | "createRecord" | "createRecords" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation" | "connectSheets" | "disconnectSheets" | "inspectSheets" | "changeSheetsBinding" | "initializeSheetsIdentity" | "createSheetsColumn" | "removeSheetsBinding" | "syncPull" | "syncPush" | "reconcileSync" | "archiveProject" | "restoreProject" | "deleteProject" | "deleteAutomation" | "deleteEnvironment" | "repairEndAssociation" | "changeProcessingUnit";
             /**
              * Status
              * @enum {string}
@@ -18968,7 +19106,7 @@ export interface operations {
             query?: {
                 page?: number;
                 pageSize?: number;
-                kind?: ("createProject" | "updateProject" | "createAutomation" | "updateAutomation" | "startBatch" | "stopBatch" | "forceStopBatch" | "followUpBatch" | "workflowInteraction" | "createTable" | "updateTable" | "mutateField" | "saveTableSchema" | "mutateStatus" | "createRecord" | "createRecords" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation" | "archiveProject" | "restoreProject" | "deleteProject" | "deleteAutomation") | null;
+                kind?: ("createProject" | "updateProject" | "createAutomation" | "updateAutomation" | "startBatch" | "stopBatch" | "forceStopBatch" | "followUpBatch" | "workflowInteraction" | "createTable" | "updateTable" | "mutateField" | "saveTableSchema" | "mutateStatus" | "createRecord" | "createRecords" | "updateRecord" | "setRecordStatus" | "deleteRecord" | "setRecordStatuses" | "cancelRecordStatuses" | "inspectExcel" | "importExcel" | "exportXlsx" | "reconcileOperation" | "archiveProject" | "restoreProject" | "deleteProject" | "deleteAutomation" | "changeProcessingUnit") | null;
                 status?: ("accepted" | "running" | "reconciling" | "succeeded" | "failed") | null;
                 resourceType?: ("project" | "table" | "field" | "status" | "record" | "automation" | "batch") | null;
             };
@@ -21177,6 +21315,294 @@ export interface operations {
             };
             /** @description Not Found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_units_api_v1_projects__projectId__automations__automationId__processing_units_get: {
+        parameters: {
+            query?: {
+                state?: ("pending" | "succeeded" | "failed_retryable" | "quarantined" | "needs_review" | "skipped") | null;
+                after?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                projectId: string;
+                automationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProcessingUnitPage"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    reset_api_v1_projects__projectId__automations__automationId__processing_units__unitId__reset_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                automationId: string;
+                unitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProcessingUnitChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProcessingUnitCommandResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    skip_api_v1_projects__projectId__automations__automationId__processing_units__unitId__skip_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                automationId: string;
+                unitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProcessingUnitChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProcessingUnitCommandResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    resolve_api_v1_projects__projectId__automations__automationId__processing_units__unitId__resolve_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                projectId: string;
+                automationId: string;
+                unitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProcessingUnitResolve"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProcessingUnitCommandResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -18,6 +18,7 @@ import { BatchLauncher } from '../../project-runs/components/BatchLauncher'
 import { safeProjectError } from '../../projects/presentation-error'
 import { createEnvironmentApi } from '../../environments/api'
 import { createExecutionSettingsApi } from '../../settings/executionApi'
+import { ProcessingUnitsPanel } from '../components/ProcessingUnitsPanel'
 
 export type AutomationDetailPageProps = {
   projectDefaults?: ProjectView['defaultResources'];
@@ -35,6 +36,7 @@ export function AutomationDetailPage(props: AutomationDetailPageProps) {
 }
 function Detail({ projectDefaults, workspaceKey, instanceId, projectId, automationId, client, disabled, readOnly, onCreated, onDeleted, onBatchCreated, onOpenStudio, registerLeaveGuard }: AutomationDetailPageProps) {
   const api = useMemo(() => createAutomationApi(client, projectId), [client, projectId])
+  const unitsApi = useMemo(() => automationId ? api.processingUnits(automationId) : null, [api, automationId])
   const resources = useMemo(() => createAutomationResourcesApi(client, projectId), [client, projectId])
   const prefix = [workspaceKey, instanceId, 'automations', projectId]
   const cache = useQueryClient()
@@ -136,6 +138,7 @@ function Detail({ projectDefaults, workspaceKey, instanceId, projectId, automati
       { label: '执行方式', value: `配置并发上限 ${Math.min(baseline.value.runPolicy.concurrency, baseline.value.runPolicy.maxLiveInstances)}` },
       { label: '环境', value: ({ newFromProfile: '每个任务创建临时环境', fixedEnvironment: '固定保存环境', inputEnvironment: '使用记录关联环境' } as Record<string, string>)[baseline.value.environmentPolicy.source] ?? baseline.value.environmentPolicy.source },
     ]}/> : null}
+    {automationId && result.data && baseline.value.inputPlan.inputs.some(input => input.required) ? <ProcessingUnitsPanel api={unitsApi!} disabled={disabled || readOnly}/> : null}
     {automationId && result.data && !readOnly ? <section aria-label="危险操作" className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-line bg-surface px-5 py-4"><div className="min-w-0"><h3 className="m-0 text-base font-semibold">删除自动化</h3><p className="m-0 mt-1 text-sm text-muted">删除前会读取真实影响范围；关联的工作流文档只解除关联，不会被删除。</p></div><Button variant="danger" disabled={disabled || command.locked()} onClick={() => setRemoving({ key: crypto.randomUUID() })}>删除自动化</Button></section> : null}
     {automationId ? <AutomationDeleteDialog open={Boolean(removing)} automation={automationId && result.data ? { automationId, name: result.data.name, managementRevision: result.data.managementRevision } : null} disabled={disabled} onOpenChange={open => { if (!open) setRemoving(null) }} onLoadImpact={() => {
       if (!automationId) return Promise.reject(new Error('缺少待删除的自动化'))

@@ -9,7 +9,7 @@ a new dataset generation or Sheets namespace is a new scope.
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, Literal
 
 from autoflow.domain.project_runs.input_selection import RecordRef
@@ -159,3 +159,77 @@ def _audit(action: str, reason: str, now: datetime, from_state: str) -> dict[str
     if not text or len(text) > MAX_REASON_CHARS:
         raise LedgerError("LEDGER_REASON_REQUIRED", "请填写原因（不超过 500 字）", 422)
     return {"action": action, "reason": text, "at": now.isoformat(), "fromState": from_state}
+
+
+OutcomeKind = Literal["succeeded", "business", "page", "infrastructure", "unknown", "cancelled"]
+CYCLE_REUSE_SECONDS = 60
+DEFAULT_RETRY_BUDGET = 3
+DEFAULT_BACKOFF_SECONDS: tuple[int, ...] = (60, 300, 1800)
+
+
+@dataclass(frozen=True)
+class TaskOutcome:
+    kind: OutcomeKind
+    task_id: str
+    run_id: str
+    error: dict[str, Any] | None
+
+
+def next_ledger_entry(
+    entry: LedgerEntry,
+    outcome: TaskOutcome,
+    *,
+    budget: int,
+    backoff: tuple[int, ...],
+    now: datetime,
+) -> LedgerEntry:
+    """Project one Task terminal onto its primary processing unit (R2-02/R2-04/R2-14).
+
+    Infrastructure failures that provably never started and safe cancellations
+    do not spend budget. An unknown outcome always needs a person; a unit already
+    waiting for review is never rewritten by another projection.
+    """
+    if entry.state == "needs_review":
+        return entry
+    last_error = None if outcome.kind == "succeeded" else outcome.error
+    if outcome.kind in {"infrastructure", "cancelled"}:
+        return replace(
+            entry, last_outcome=outcome.kind, last_error=last_error, last_task_id=outcome.task_id,
+            last_at=now, revision=entry.revision + 1,
+        )
+    cycle, cycle_attempts = entry.processing_cycle, entry.cycle_attempts
+    if entry.state == "succeeded":
+        # Only a confirmed success opens a new processing cycle (r2 循环预算).
+        cycle, cycle_attempts = cycle + 1, 0
+    used = cycle_attempts + 1
+    review = entry.review
+    state: LedgerState
+    next_at: datetime | None = None
+    if outcome.kind == "succeeded":
+        state, next_at = "succeeded", now + timedelta(seconds=CYCLE_REUSE_SECONDS)
+    elif outcome.kind == "business":
+        state = "skipped"
+    elif outcome.kind == "unknown":
+        state = "needs_review"
+        code = (outcome.error or {}).get("code")
+        review = {**(entry.review or {}), "unknown": {"taskId": outcome.task_id, "runId": outcome.run_id, "code": code}}
+    elif used >= max(1, budget):
+        state = "quarantined"
+    else:
+        state = "failed_retryable"
+        delay = backoff[min(used, len(backoff)) - 1] if backoff else 0
+        next_at = now + timedelta(seconds=delay)
+    return replace(
+        entry,
+        state=state,
+        attempts=entry.attempts + 1,
+        processing_cycle=cycle,
+        cycle_attempts=used,
+        last_outcome=outcome.kind,
+        last_error=last_error,
+        last_task_id=outcome.task_id,
+        last_at=now,
+        next_eligible_at=next_at,
+        revision=entry.revision + 1,
+        review=review,
+    )

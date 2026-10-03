@@ -168,6 +168,7 @@ def projects_router(
             "restoreProject",
             "deleteProject",
             "deleteAutomation",
+            "changeProcessingUnit",
         ]
         | None = None,
         status: Literal["accepted", "running", "reconciling", "succeeded", "failed"]

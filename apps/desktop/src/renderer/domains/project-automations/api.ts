@@ -1,6 +1,7 @@
 import type { StreamingApiClient } from '../../shared/api/client'
 import { createDataCommand, DataCommandUncertain, type DataCommandPolicy } from '../project-data/data-command'
 import { createOperationCommand } from '../project-data/operation-command'
+import type { ProcessingUnit } from './components/ProcessingUnitsPanel'
 import type { Automation, AutomationDeleteBody, AutomationDirectoryQuery, AutomationImpact, AutomationPage, AutomationUpdate, AutomationValidation, AutomationWrite } from './types'
 
 export { DataCommandUncertain as AutomationCommandUncertain } from '../project-data/data-command'
@@ -38,6 +39,14 @@ export function createAutomationApi(client: StreamingApiClient, projectId: strin
     resumeUpdate: (automationId: string, body: AutomationUpdate, key: string, policy?: DataCommandPolicy) => command(body, key, automationId, true, policy),
     /** Removal impact never blocks ordinary editing; the command re-checks the same facts. */
     impact: (automationId: string, action: 'delete' | 'unlinkWorkflow' = 'delete', signal?: AbortSignal) => client.request<AutomationImpact>(`${base}/${encode(automationId)}/impact?action=${action}`, { signal }),
+    /** Remediation M2 R2-06: rows processed one by one and the person's audited decisions. */
+    processingUnits: (automationId: string) => {
+      const units = `${base}/${encode(automationId)}/processing-units`
+      return {
+        list: (state: string | null, after: string | null) => client.request<{ items: ProcessingUnit[]; nextAfter: string | null }>(`${units}?limit=50${state ? `&state=${encode(state)}` : ''}${after ? `&after=${encode(after)}` : ''}`),
+        command: (unitId: string, action: 'reset' | 'skip' | 'resolve', body: object, key: string) => client.request<{ unit: ProcessingUnit }>(`${units}/${encode(unitId)}/${action}`, { method: 'POST', headers: { 'Idempotency-Key': key }, body }),
+      }
+    },
     remove: (automationId: string, body: AutomationDeleteBody, key: string, current: () => boolean = () => true) => operations.submit(`${base}/${encode(automationId)}`, body, key, 'deleteAutomation', current, 'DELETE'),
   }
 }

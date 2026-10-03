@@ -289,6 +289,7 @@ class ProjectOperationView(ApiModel):
         "deleteAutomation",
         "deleteEnvironment",
         "repairEndAssociation",
+        "changeProcessingUnit",
     ]
     status: Literal["accepted", "running", "reconciling", "succeeded", "failed"]
     status_revision: int

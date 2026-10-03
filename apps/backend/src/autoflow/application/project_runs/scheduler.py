@@ -13,6 +13,7 @@ from sqlalchemy import func, or_, select, text
 from sqlalchemy.orm import Session, sessionmaker
 
 from autoflow.application.project_runs.coordinator import ProjectRunCoordinator
+from autoflow.application.project_runs.outcomes import project_released_leases
 from autoflow.application.project_runs.resources import ProjectRunResourceResolver
 from autoflow.application.settings.runtime import QuiesceGate
 from autoflow.application.workflows.dispatcher import WorkflowRunDispatcher
@@ -1081,6 +1082,7 @@ class ProjectBatchScheduler:
                     )
                 )
             )
+            releasing = []
             for lease in rows:
                 run_status = session.scalar(
                     select(WorkflowRunRow.status).where(
@@ -1088,8 +1090,12 @@ class ProjectBatchScheduler:
                     )
                 )
                 if run_status in TERMINAL_STATUSES:
-                    lease.state = "released"
-                    lease.updated_at = lease.released_at = now
+                    releasing.append(lease)
+            # Remediation M2 Task 3: the ledger moves with the primary lease, exactly once.
+            project_released_leases(session, releasing, now)
+            for lease in releasing:
+                lease.state = "released"
+                lease.updated_at = lease.released_at = now
             self._commit(session)
 
     def _set_status(self, project_id: str, batch_id: str, target: str) -> None:

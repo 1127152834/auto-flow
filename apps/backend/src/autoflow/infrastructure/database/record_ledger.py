@@ -20,7 +20,9 @@ from autoflow.domain.project_runs.ledger import (
     LedgerEntry,
     LedgerError,
     LedgerScope,
+    TaskOutcome,
     new_entry,
+    next_ledger_entry,
     reset_entry,
     resolve_entry,
     skip_entry,
@@ -45,6 +47,12 @@ class SqlAlchemyRecordLedger:
     def get(self, scope: LedgerScope) -> LedgerEntry | None:
         row = self._row(scope)
         return None if row is None else _entry(row)
+
+    def by_id(self, automation_id: str, unit_id: str) -> StoredLedgerEntry | None:
+        row = self.session.get(AutomationRecordLedgerRow, unit_id)
+        if row is None or row.automation_id != automation_id:
+            return None
+        return StoredLedgerEntry(row.id, _entry(row))
 
     def ensure(self, scope: LedgerScope, now: datetime) -> LedgerEntry:
         row = self._row(scope)
@@ -92,6 +100,20 @@ class SqlAlchemyRecordLedger:
         current = self._required(scope)
         after = resolve_entry(current, expected_revision=expected_revision, decision=decision, reason=reason, now=now)
         return self._save(current, after, now)
+
+    def project(
+        self,
+        scope: LedgerScope,
+        outcome: TaskOutcome,
+        *,
+        budget: int,
+        backoff: tuple[int, ...],
+        now: datetime,
+    ) -> LedgerEntry:
+        """Apply one Task terminal to its unit (remediation M2 Task 3)."""
+        current = self.ensure(scope, now)
+        after = next_ledger_entry(current, outcome, budget=budget, backoff=backoff, now=now)
+        return current if after == current else self._save(current, after, now)
 
     def add_batch_unit(self, batch_id: str, scope: LedgerScope, task_id: str, now: datetime) -> None:
         """Record that a batch took in this primary unit; repeated attempts add nothing."""
