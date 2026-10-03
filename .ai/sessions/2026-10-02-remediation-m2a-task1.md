@@ -30,3 +30,16 @@ M2A Task 2（失败分类与整 Task 重放边界）→ Task 3（终态同事务
 - Task 3（98b1139a，计划 docs/superpowers/plans/2026-10-03-remediation-m2a-task3-projection.md）：终态在释放主处理输入租约的事务内投影到处理记录（恰好一次）；业务失败来自 End；processing-units HTTP 与人工 reset/skip/resolve；自动化详情页"处理记录"面板（组件测试覆盖，未在真实 Electron 中截图核对）。
 - 验证：项目范围回归 3772 过；失败为已知本机环境项，另 `test_real_project_batch_http[manual-stop]` 一次失败、重跑通过（时序偶发，未定位）。
 - 仍未接入领取：处理记录目前只记录与人工处理，领取行为不变（Task 4）。
+
+## 2026-10-03 续：M2 剩余任务（本机提交，未推送）
+来源：用户指示"继续完成这个里程碑的所有工作，不要停下来"。验证均在本机 Windows；macOS 由用户手动验证。
+- Task 12 定时/外部调用（8873ef78）：5 段时间表达式+时区，计划时刻为触发身份；重叠 skip/queue/parallel、错过 latestOnly/ignore；
+  外部调用密钥只显示一次（存哈希），同一事件编号只启动一次；后台轮询在线程中写库；自动化详情页"调度"面板。
+- Task 6 配置 schema 与 M2A 退出（86cd3c04）：从执行器源码推导读取键并生成快照/JSON；未知键运行前与节点开始时提示；
+  面板有后端不读的键冻结为只减不增清单；删除 M1 隐藏开关；G3 xfail 转正（黄金场景显式真实写入）。退出记录 docs/superpowers/plans/2026-10-03-remediation-m2a-task6-exit.md。
+- R2-23（2721dc06）：运行中不再修改表结构，预检与 sidecar 双重拒绝。
+- Task 7 + Task 10（3a869cf7）：流程签名/绑定/可重入迁移/工作流复用；节点输出稳定引用与必有/条件判定。
+- 发现并修正：调度与处理记录面板曾直接显示服务端原始错误（可能含内部标识），改走统一文案；
+  两个测试（debug_inputs、android_m4 head 固定值）是 M2B/M1 遗留未同步，已修正。
+- 本机已知环境失败（不影响结论）：符号链接权限、face_recognition/OCR 未安装、缺 reference/WebRPA 冻结源、RuntimeDiagnostics 日期断言、
+  settings 集成（真实 sidecar）。
