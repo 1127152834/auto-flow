@@ -36,7 +36,9 @@ async def real_cloak_context(tmp_path, monkeypatch):
 async def test_enter_on_an_element_submits_and_tab_moves_focus(real_cloak_context):
     page = real_cloak_context.pages[0] if real_cloak_context.pages else await real_cloak_context.new_page()
     await page.goto(FORM)
-    context = ExecutionContext(browser=CloakBrowserWorkflowSession(real_cloak_context))
+    # autofocus can land after goto returns; Tab must start from #q, not from <body>.
+    await page.wait_for_function("document.activeElement && document.activeElement.id === 'q'")
+    context =ExecutionContext(browser=CloakBrowserWorkflowSession(real_cloak_context))
     tab = await PressKeyExecutor().execute({"key": "Tab"}, context)
     assert tab.success, tab.error
     assert await page.evaluate("document.activeElement.id") == "next"
