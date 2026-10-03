@@ -7,7 +7,7 @@ from alembic.script import ScriptDirectory
 
 from autoflow.infrastructure.database import session as database_session
 
-EXPECTED_HEAD = "rm2_record_ledger"
+EXPECTED_HEAD = "rm2_preview_overlay"
 
 
 def config_for(database: Path) -> Config:

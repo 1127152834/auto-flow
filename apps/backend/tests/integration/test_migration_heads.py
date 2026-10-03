@@ -18,7 +18,8 @@ def _config(database: Path) -> Config:
 def test_studio_backend_history_has_one_merged_head(tmp_path: Path) -> None:
     scripts = ScriptDirectory.from_config(_config(tmp_path / "heads.sqlite3"))
 
-    assert scripts.get_heads() == ["rm2_record_ledger"]
+    assert scripts.get_heads() == ["rm2_preview_overlay"]
+    assert scripts.get_revision("rm2_preview_overlay").down_revision == "rm2_record_ledger"
     assert scripts.get_revision("rm2_record_ledger").down_revision == "rm1_app_settings"
     assert scripts.get_revision("rm1_app_settings").down_revision == "0025_merge_studio_credential_environment"
     assert scripts.get_revision("0025_merge_studio_credential_environment").down_revision == (
@@ -118,7 +119,7 @@ def test_android_pm9_merge_upgrades_each_published_head_without_losing_data(tmp_
 
     with sqlite3.connect(database) as connection:
         assert connection.execute("SELECT version_num FROM alembic_version").fetchall() == [
-            ("rm2_record_ledger",)
+            ("rm2_preview_overlay",)
         ]
         assert connection.execute("SELECT * FROM workflow_documents").fetchall() == before
         assert {row[1] for row in connection.execute("PRAGMA table_info(app_settings)")} == {
@@ -156,7 +157,7 @@ def test_integrated_workspace_history_is_recognized_and_preserved(
     with sqlite3.connect(database) as connection:
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchall() == [("rm2_record_ledger",)]
+        ).fetchall() == [("rm2_preview_overlay",)]
         assert connection.execute(
             "SELECT value FROM preserved_workspace_data"
         ).fetchall() == [("keep-me",)]
