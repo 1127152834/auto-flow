@@ -6,7 +6,7 @@
 | --- | --- | --- | --- |
 | M0 基准与守门 | [规格](../../docs/superpowers/specs/2026-09-30-remediation-m0-baseline-guardrails.md) | [计划](../../docs/superpowers/plans/2026-09-30-remediation-m0-baseline-guardrails.md) | 步骤级；Task1–9本地实现与独立评审完成；101行黄金通过，全量本地回归通过，远端CI仍待验收 |
 | M1 止血 | [规格](../../docs/superpowers/specs/2026-09-30-remediation-m1-stop-silent-failures.md) | [计划](../../docs/superpowers/plans/2026-09-30-remediation-m1-stop-silent-failures.md) | 步骤级；代码已并入默认分支（2026-10-02），golden 30 行已跑（G2 failure_reason_ratio 0.0，2026-10-02 查明为父进程丢弃节点原因并已修复，待重跑 golden 确认）；待 Mac 基准（AC1-09/10/13）后才能标 done |
-| M2A/B/C 可靠性、数据契约、扩展 | [规格](../../docs/superpowers/specs/2026-09-30-remediation-m2-business-model-reliability.md) | [计划](../../docs/superpowers/plans/2026-09-30-remediation-m2-business-model-reliability.md) | 任务级；分切片细化审查 |
+| M2A/B/C 可靠性、数据契约、扩展 | [规格](../../docs/superpowers/specs/2026-09-30-remediation-m2-business-model-reliability.md) | [计划](../../docs/superpowers/plans/2026-09-30-remediation-m2-business-model-reliability.md) | 任务级；分切片细化审查。2026-10-02 M2A Task 1 已细化（[步骤级](../../docs/superpowers/plans/2026-10-02-remediation-m2a-task1-ledger.md)）并本机实现：台账规则/表/仓储、主处理输入与启动门禁（未推送、未经 CI）；Task 2–6 未开始 |
 | M3 吞吐与性能 | [规格](../../docs/superpowers/specs/2026-09-30-remediation-m3-throughput.md) | [计划](../../docs/superpowers/plans/2026-09-30-remediation-m3-throughput.md) | 任务级；M2A/B 与原生基准后 |
 | M4 身份模型 | [规格](../../docs/superpowers/specs/2026-09-30-remediation-m4-identity.md) | [计划](../../docs/superpowers/plans/2026-09-30-remediation-m4-identity.md) | 任务级；M3 资源接口稳定后 |
 | M5A/B/C/D 体验 | [规格](../../docs/superpowers/specs/2026-09-30-remediation-m5-experience.md) | [计划](../../docs/superpowers/plans/2026-09-30-remediation-m5-experience.md) | 任务级；分别依赖 M1、M2A/B、M4 |
