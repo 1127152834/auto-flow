@@ -9,12 +9,10 @@ vi.hoisted(() => {
 import { ConfigPanel } from '../components/ConfigPanel'
 import { useWorkflowStore as store, type ErrorPolicy } from '../editor-store'
 import { mockRequest } from '../api/mock-server'
-import { featureFlags } from '../lib/featureFlags'
 Element.prototype.scrollIntoView = vi.fn()
 let id: string
-// These controls stay in the code but are hidden until M2 implements them (remediation M1 R1-01).
-beforeEach(() => { featureFlags.nodeRetryPolicy = true; store.getState().clearWorkflow(); store.getState().addNode('close_page', { x: 0, y: 0 }); id = store.getState().nodes[0].id })
-afterEach(() => { cleanup(); featureFlags.nodeRetryPolicy = false })
+beforeEach(() => { store.getState().clearWorkflow(); store.getState().addNode('close_page', { x: 0, y: 0 }); id = store.getState().nodes[0].id })
+afterEach(cleanup)
 const data = () => store.getState().nodes.find(n => n.id === id)!.data
 function labelled(text: string, role: 'combobox' | 'textbox') {
   return within(screen.getAllByText(text, { exact: true }).find(e => e.tagName === 'LABEL')!.parentElement!).getByRole(role)
@@ -32,28 +30,9 @@ function history(field: string, previous: unknown, next: unknown) {
   act(() => { store.getState().clearWorkflow(); expect(store.getState().importWorkflow(document)).toBe(true) })
   expect(data()[field]).toEqual(next)
 }
-it.each([['retry', '重试'], ['skip', '跳过该模块，继续执行'], ['stop', '停止工作流执行']])('ADV.timeoutAction.%s', (value, option) => {
-  const previous = value === 'retry' ? 'skip' : 'retry'; store.getState().updateNodeData(id, { timeoutAction: previous })
-  render(<ConfigPanel selectedNodeId={id} />); choose('运行超时后', option); history('timeoutAction', previous, value)
-})
-it.each([['stop', '停止工作流'], ['skip', '跳过该模块，继续执行']])('ADV.exhausted.%s', (value, option) => {
-  const previous = value === 'stop' ? 'skip' : 'stop'; store.getState().updateNodeData(id, { retryCount: 2, retryExhaustedAction: previous })
-  render(<ConfigPanel selectedNodeId={id} />); choose('重试耗尽后', option); history('retryExhaustedAction', previous, value)
-})
-it.each([['fixed', '固定间隔'], ['exponential', '指数退避（间隔翻倍）']])('ADV.backoff.%s', (value, option) => {
-  const previous = value === 'fixed' ? 'exponential' : 'fixed'; store.getState().updateNodeData(id, { retryCount: 2, retryDelay: 1, retryBackoff: previous })
-  render(<ConfigPanel selectedNodeId={id} />); choose('退避策略', option); history('retryBackoff', previous, value)
-})
-it('ADV.visibility preserves inactive delay/backoff and exposes them only with positive count/delay', () => {
-  store.getState().updateNodeData(id, { retryCount: 0, retryDelay: 0, retryBackoff: 'exponential' }); render(<ConfigPanel selectedNodeId={id} />)
-  expect(screen.queryByText('重试间隔（秒）')).toBeNull(); expect(screen.queryByText('退避策略')).toBeNull()
-  edit('重试次数', '2'); expect(screen.getByText('重试间隔（秒）')).toBeDefined(); expect(screen.queryByText('退避策略')).toBeNull()
-  edit('重试间隔（秒）', '1'); expect(screen.getByText('退避策略')).toBeDefined()
-  edit('重试次数', '0'); expect(screen.queryByText('退避策略')).toBeNull(); expect(data()).toMatchObject({ retryDelay: 1, retryBackoff: 'exponential' })
-})
-it.each([['timeout', '超时时间 (秒)', '1abc'], ['timeout', '超时时间 (秒)', '-1'], ['retryCount', '重试次数', '11'], ['retryCount', '重试次数', 'Infinity'], ['retryDelay', '重试间隔（秒）', '1abc']])('ADV.numeric.%s.%s.%s retains invalid drafts under existing NumberInput contract', (field, label, value) => {
-  store.getState().updateNodeData(id, { retryCount: 2, [field]: 3 }); render(<ConfigPanel selectedNodeId={id} />)
-  edit(label, value); const expected = value === '-1' ? -1 : value === '11' ? 11 : value
+it.each([['timeout', '超时时间 (秒)', '1abc'], ['timeout', '超时时间 (秒)', '-1']])('ADV.numeric.%s.%s.%s retains invalid drafts under existing NumberInput contract', (field, label, value) => {
+  store.getState().updateNodeData(id, { [field]: 3 }); render(<ConfigPanel selectedNodeId={id} />)
+  edit(label, value); const expected = value === '-1' ? -1 : value
   expect(labelled(label, 'textbox').getAttribute('aria-invalid')).toBe('true'); history(field, 3, expected)
 })
 it('ADV.policy-v2 shows an old error policy as a candidate and enabling it is undoable and saved', () => {
@@ -73,22 +52,12 @@ it('ADV.context does not send detached old field blur into a newly selected node
 })
 it('ADV.save persists shared fields through real mock save/load and re-render', async () => {
   render(<ConfigPanel selectedNodeId={id} />)
-  edit('节点备注', '高级配置验收'); edit('超时时间 (秒)', '12.5'); edit('重试次数', '3'); edit('重试间隔（秒）', '2'); choose('退避策略', '指数退避（间隔翻倍）'); choose('出错时', '原地重试当前模块')
+  edit('节点备注', '高级配置验收'); edit('超时时间 (秒)', '12.5'); choose('出错时', '原地重试当前模块')
   const expected = { ...data() }; const content = JSON.parse(store.getState().exportWorkflow())
   const saved = await mockRequest('http://autoflow-studio.mock/api/local-workflows/save-to-folder', { method: 'POST', body: JSON.stringify({ filename: 'advanced-fields', content }) }); expect(saved.status).toBe(200)
   const loaded = await (await mockRequest('http://autoflow-studio.mock/api/local-workflows/load/advanced-fields.json')).json()
   cleanup(); act(() => { store.getState().clearWorkflow(); expect(store.getState().importWorkflow(loaded.content)).toBe(true) }); render(<ConfigPanel selectedNodeId={id} />)
   expect(data()).toEqual(expected); expect((labelled('节点备注', 'textbox') as HTMLInputElement).value).toBe('高级配置验收')
-})
-it.each([['maxRetries', '出错处理重试次数'], ['interval', '出错处理间隔（秒）']] as const)('ADV.block.%s uses same draft-preserving numeric control', async (field, label) => {
-  const { BlockFlowView } = await import('../components/BlockFlowView')
-  store.getState().updateNodeData(id, { errorPolicy: { mode: 'retry-self', maxRetries: 1, interval: 0, onExhausted: 'stop' } })
-  render(<BlockFlowView />); fireEvent.click(screen.getByTitle('出错处理（原地重试 / 回流上层重试 / 跳过继续）'))
-  const input = screen.getByRole('textbox', { name: label })
-  fireEvent.change(input, { target: { value: '1abc' } }); fireEvent.blur(input)
-  expect(data().errorPolicy?.[field]).toBe('1abc'); expect(input.getAttribute('aria-invalid')).toBe('true')
-  fireEvent.change(input, { target: { value: '{retry_value}' } }); fireEvent.blur(input)
-  expect(data().errorPolicy?.[field]).toBe('{retry_value}')
 })
 it.each([
   ['maxRetries', '1abc'], ['maxRetries', ''], ['maxRetries', 0], ['maxRetries', 1.5], ['interval', 'Infinity'], ['interval', -1],

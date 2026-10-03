@@ -392,6 +392,8 @@ async def run_golden(
                             "maxTasks": 1,
                             "concurrency": 1,
                             "debugSelection": {input_spec["inputId"]: choice},
+                            # Golden rows are real processing (as in M0), not a preview try-out (R2-30).
+                            "executionMode": "realWrites",
                         },
                         202,
                     )
@@ -415,6 +417,16 @@ async def run_golden(
                     detail["outputs"] = (await api("GET", detail_path + "/outputs"))[
                         "items"
                     ]
+                    # M2 R2-02/R2-06: the processing record state of this row, read publicly.
+                    units = (await api("GET", automation_path + "/processing-units?limit=200"))["items"]
+                    detail["ledgerState"] = next(
+                        (
+                            unit["state"]
+                            for unit in units
+                            if _ref_key(unit["recordRef"]) == _ref_key(choice["recordRef"])
+                        ),
+                        None,
+                    )
                     pending.remove(batch_path)
                     return detail
 

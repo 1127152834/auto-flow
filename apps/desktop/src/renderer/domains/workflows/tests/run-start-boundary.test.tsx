@@ -207,7 +207,7 @@ it('warns about saved retry settings that do not run yet and still starts with v
   render(<Toolbar />)
   fireEvent.keyDown(window, { key: 'F5' })
   await waitFor(() => expect(workflowApi.execute).toHaveBeenCalledTimes(1))
-  expect(store.getState().logs.some(log => log.level === 'warning' && log.message === '以下设置尚未生效，运行时会被忽略：「打开首页」重试次数')).toBe(true)
+  expect(store.getState().logs.some(log => log.level === 'warning' && log.message === '以下旧设置不会自动生效，可在「出错时」查看转换建议并启用：「打开首页」重试次数')).toBe(true)
   expect(workflowApi.execute).toHaveBeenCalledWith(store.getState().id, expect.objectContaining({
     document: expect.objectContaining({ executionSemantics: 'autoflow-v2' }),
   }))

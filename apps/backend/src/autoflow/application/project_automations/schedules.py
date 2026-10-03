@@ -110,7 +110,7 @@ class AutomationScheduleService:
             if row.revision != expected_revision:
                 raise ProjectError("REVISION_CONFLICT", "调度已被修改，请刷新后再试", 409, {"currentRevision": row.revision})
             if value["kind"] != row.kind:
-                raise ProjectError("VALIDATION_ERROR", "不能改变触发方式，请新建调度", 422)
+                raise ProjectError("SCHEDULE_INVALID", "不能改变触发方式，请新建调度", 422)
             row.cron, row.timezone, row.overlap, row.missed = value["cron"], value["timezone"], value["overlap"], value["missed"]
             row.enabled, row.parameters = value["enabled"], value["parameters"]
             row.max_tasks, row.concurrency = value["maxTasks"], value["concurrency"]
@@ -162,7 +162,7 @@ class AutomationScheduleService:
         self, project_id: str, automation_id: str, schedule_id: str, secret: str | None, event_id: str
     ) -> dict[str, Any]:
         if not isinstance(event_id, str) or not event_id.strip() or len(event_id) > 200:
-            raise ProjectError("VALIDATION_ERROR", "需要来源事件编号", 422)
+            raise ProjectError("SCHEDULE_INVALID", "需要来源事件编号", 422)
         with self._factory() as session:
             row = _schedule(session, project_id, automation_id, schedule_id)
             expected = row.webhook_secret_hash
@@ -253,7 +253,7 @@ def _validated(payload: dict[str, Any]) -> dict[str, Any]:
     try:
         return validate_schedule(payload)
     except ScheduleError as error:
-        raise ProjectError("VALIDATION_ERROR", error.message, 422, {"fields": {error.field: error.message}}) from error
+        raise ProjectError("SCHEDULE_INVALID", error.message, 422, {"fields": {error.field: error.message}}) from error
 
 
 def _automation(session: Session, project_id: str, automation_id: str) -> ProjectAutomationRow:

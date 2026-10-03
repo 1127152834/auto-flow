@@ -8,6 +8,7 @@ const messages: Record<string, string> = {
   RUN_RESULT_NOT_FOUND: '运行结果不存在',
 
   REVISION_CONFLICT: '数据已更新，请读取最新内容后重试',
+  SCHEDULE_INVALID: '调度设置有误，请检查后重试', SCHEDULE_DISABLED: '调度已停用', WEBHOOK_SECRET_INVALID: '调用密钥不正确',
   VERSION_CONFLICT: '数据已更新，请读取最新内容后重试',
   RESOURCE_UNAVAILABLE: '所需资源暂不可用，请检查配置',
   NOT_FOUND: '资料暂不可用，请刷新后重试', RECORD_NOT_FOUND: '记录暂不可用，请刷新后重试',

@@ -37,5 +37,5 @@ const LABELS: Record<InertSettingKey, string> = {
 }
 
 export function describeInertSettings(found: InertNodeSettings[]): string {
-  return `以下设置尚未生效，运行时会被忽略：${found.map(item => `「${item.label}」${item.keys.map(key => LABELS[key]).join('、')}`).join('；')}`
+  return `以下旧设置不会自动生效，可在「出错时」查看转换建议并启用：${found.map(item => `「${item.label}」${item.keys.map(key => LABELS[key]).join('、')}`).join('；')}`
 }

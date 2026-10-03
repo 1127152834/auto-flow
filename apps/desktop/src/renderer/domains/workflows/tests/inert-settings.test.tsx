@@ -8,11 +8,10 @@ vi.hoisted(() => {
 })
 import { ConfigPanel } from '../components/ConfigPanel'
 import { useWorkflowStore as store } from '../editor-store'
-import { featureFlags } from '../lib/featureFlags'
 import { describeInertSettings, findInertSettings, inertKeys } from '../lib/inertSettings'
 
 Element.prototype.scrollIntoView = vi.fn()
-beforeEach(() => { featureFlags.nodeRetryPolicy = false; store.getState().clearWorkflow() })
+beforeEach(() => { store.getState().clearWorkflow() })
 afterEach(cleanup)
 
 it('hides the old retry and timeout actions, offers the old error policy only as a candidate, and keeps the timeout', () => {
@@ -40,7 +39,7 @@ it('reports only settings that would have changed behaviour', () => {
     { nodeId: 'a', label: '点击提交', keys: ['retryCount', 'retryDelay', 'timeoutAction'] },
     { nodeId: 'c', label: 'loop', keys: ['errorPolicy', 'onTimeout'] },
   ])
-  expect(describeInertSettings(found)).toBe('以下设置尚未生效，运行时会被忽略：「点击提交」重试次数、重试间隔、运行超时后；「loop」出错时、循环超时后')
+  expect(describeInertSettings(found)).toBe('以下旧设置不会自动生效，可在「出错时」查看转换建议并启用：「点击提交」重试次数、重试间隔、运行超时后；「loop」出错时、循环超时后')
 })
 
 it('treats null like an unset value, matching the backend rule', () => {

@@ -1,0 +1,3141 @@
+{
+ "commonKeys": [
+  "config",
+  "customName",
+  "disabled",
+  "errorPolicy",
+  "isHighlighted",
+  "isSubflow",
+  "label",
+  "moduleType",
+  "name",
+  "onTimeout",
+  "parameterValues",
+  "remark",
+  "retryBackoff",
+  "retryCount",
+  "retryDelay",
+  "retryExhaustedAction",
+  "subflowGroupId",
+  "subflowName",
+  "timeout",
+  "timeoutAction"
+ ],
+ "nodes": {
+  "ai_chat": {
+   "editorDefaults": [
+    "resultVariable"
+   ],
+   "panelOnly": [
+    "apiKey",
+    "apiUrl",
+    "model"
+   ],
+   "reads": [
+    "fallbackModelIds",
+    "fallbackModels",
+    "maxTokens",
+    "modelId",
+    "systemPrompt",
+    "temperature",
+    "timeoutSeconds",
+    "userPrompt",
+    "variableName"
+   ]
+  },
+  "ai_classify": {
+   "editorDefaults": [],
+   "panelOnly": [
+    "fields",
+    "inputList",
+    "maxWords",
+    "normalizeType",
+    "routes",
+    "style",
+    "targetFormat",
+    "targetLang"
+   ],
+   "reads": [
+    "categories",
+    "category",
+    "fallbackModelIds",
+    "fallbackModels",
+    "inputText",
+    "maxTokens",
+    "modelId",
+    "resultVariable",
+    "temperature",
+    "timeoutSeconds",
+    "variableName"
+   ]
+  },
+  "ai_dedup_semantic": {
+   "editorDefaults": [],
+   "panelOnly": [
+    "categories",
+    "fields",
+    "inputText",
+    "maxWords",
+    "normalizeType",
+    "routes",
+    "style",
+    "targetFormat",
+    "targetLang"
+   ],
+   "reads": [
+    "fallbackModelIds",
+    "fallbackModels",
+    "inputList",
+    "maxTokens",
+    "modelId",
+    "resultVariable",
+    "temperature",
+    "timeoutSeconds",
+    "variableName"
+   ]
+  },
+  "ai_element_selector": {
+   "editorDefaults": [],
+   "panelOnly": [
+    "apiKey",
+    "apiUrl",
+    "azureEndpoint",
+    "llmModel",
+    "llmProvider",
+    "verbose"
+   ],
+   "reads": [
+    "elementDescription",
+    "fallbackModelIds",
+    "fallbackModels",
+    "maxTokens",
+    "modelId",
+    "temperature",
+    "timeoutSeconds",
+    "url",
+    "variableName",
+    "waitTime"
+   ]
+  },
+  "ai_extract": {
+   "editorDefaults": [],
+   "panelOnly": [
+    "categories",
+    "inputList",
+    "maxWords",
+    "normalizeType",
+    "routes",
+    "style",
+    "targetFormat",
+    "targetLang"
+   ],
+   "reads": [
+    "fallbackModelIds",
+    "fallbackModels",
+    "fields",
+    "inputText",
+    "maxTokens",
+    "modelId",
+    "resultVariable",
+    "temperature",
+    "timeoutSeconds",
+    "variableName"
+   ]
+  },
+  "ai_generate_image": {
+   "editorDefaults": [],
+   "panelOnly": [
+    "ai",
+    "apiBase",
+    "apiKey",
+    "model"
+   ],
+   "reads": [
+    "modelId",
+    "n",
+    "negativePrompt",
+    "prompt",
+    "provider",
+    "quality",
+    "savePath",
+    "size",
+    "style",
+    "timeoutSeconds",
+    "variableName"
+   ]
+  },
+  "ai_generate_video": {
+   "editorDefaults": [],
+   "panelOnly": [
+    "ai",
+    "apiBase",
+    "apiKey",
+    "apiUrl"
+   ],
+   "reads": [
+    "aspectRatio",
+    "duration",
+    "fps",
+    "modelId",
+    "path",
+    "prompt",
+    "provider",
+    "savePath",
+    "timeoutSeconds",
+    "variableName"
+   ]
+  },
+  "ai_normalize": {
+   "editorDefaults": [],
+   "panelOnly": [
+    "categories",
+    "fields",
+    "inputList",
+    "maxWords",
+    "routes",
+    "style",
+    "targetLang"
+   ],
+   "reads": [
+    "fallbackModelIds",
+    "fallbackModels",
+    "inputText",
+    "maxTokens",
+    "modelId",
+    "normalizeType",
+    "resultVariable",
+    "targetFormat",
+    "temperature",
+    "timeoutSeconds",
+    "variableName"
+   ]
+  },
+  "ai_route": {
+   "editorDefaults": [],
+   "panelOnly": [
+    "categories",
+    "fields",
+    "inputList",
+    "maxWords",
+    "normalizeType",
+    "style",
+    "targetFormat",
+    "targetLang"
+   ],
+   "reads": [
+    "fallbackModelIds",
+    "fallbackModels",
+    "inputText",
+    "maxTokens",
+    "modelId",
+    "resultVariable",
+    "route",
+    "routes",
+    "temperature",
+    "timeoutSeconds",
+    "variableName"
+   ]
+  },
+  "ai_sentiment": {
+   "editorDefaults": [],
+   "panelOnly": [
+    "categories",
+    "fields",
+    "inputList",
+    "maxWords",
+    "normalizeType",
+    "routes",
+    "style",
+    "targetFormat",
+    "targetLang"
+   ],
+   "reads": [
+    "fallbackModelIds",
+    "fallbackModels",
+    "inputText",
+    "maxTokens",
+    "modelId",
+    "resultVariable",
+    "sentiment",
+    "temperature",
+    "timeoutSeconds",
+    "variableName",
+    "中性",
+    "正面",
+    "负面"
+   ]
+  },
+  "ai_smart_scraper": {
+   "editorDefaults": [],
+   "panelOnly": [
+    "apiKey",
+    "apiUrl",
+    "azureEndpoint",
+    "headless",
+    "llmModel",
+    "llmProvider",
+    "verbose"
+   ],
+   "reads": [
+    "fallbackModelIds",
+    "fallbackModels",
+    "maxTokens",
+    "modelId",
+    "prompt",
+    "temperature",
+    "timeoutSeconds",
+    "url",
+    "variableName",
+    "waitTime"
+   ]
+  },
+  "ai_summarize": {
+   "editorDefaults": [],
+   "panelOnly": [
+    "categories",
+    "fields",
+    "inputList",
+    "normalizeType",
+    "routes",
+    "targetFormat",
+    "targetLang"
+   ],
+   "reads": [
+    "fallbackModelIds",
+    "fallbackModels",
+    "inputText",
+    "maxTokens",
+    "maxWords",
+    "modelId",
+    "resultVariable",
+    "style",
+    "temperature",
+    "timeoutSeconds",
+    "variableName"
+   ]
+  },
+  "ai_translate": {
+   "editorDefaults": [],
+   "panelOnly": [
+    "categories",
+    "fields",
+    "inputList",
+    "maxWords",
+    "normalizeType",
+    "routes",
+    "style",
+    "targetFormat"
+   ],
+   "reads": [
+    "fallbackModelIds",
+    "fallbackModels",
+    "inputText",
+    "maxTokens",
+    "modelId",
+    "resultVariable",
+    "targetLang",
+    "temperature",
+    "timeoutSeconds",
+    "variableName"
+   ]
+  },
+  "ai_vision": {
+   "editorDefaults": [],
+   "panelOnly": [
+    "apiKey",
+    "apiUrl",
+    "model"
+   ],
+   "reads": [
+    "element",
+    "fallbackModelIds",
+    "fallbackModels",
+    "imageSelector",
+    "imageSource",
+    "imageUrl",
+    "imageVariable",
+    "maxTokens",
+    "modelId",
+    "resultVariable",
+    "screenshot",
+    "temperature",
+    "timeout",
+    "timeoutSeconds",
+    "userPrompt",
+    "variableName"
+   ]
+  },
+  "ai_vision_act": {
+   "editorDefaults": [],
+   "panelOnly": [
+    "apiKey",
+    "apiUrl",
+    "model"
+   ],
+   "reads": [
+    "action",
+    "button",
+    "fallbackModelIds",
+    "fallbackModels",
+    "instruction",
+    "maxTokens",
+    "modelId",
+    "resultVariable",
+    "right",
+    "temperature",
+    "timeoutSeconds",
+    "variableName"
+   ]
+  },
+  "allure_add_attachment": {
+   "editorDefaults": [],
+   "panelOnly": [
+    "attachmentType"
+   ],
+   "reads": [
+    "file",
+    "filePath",
+    "name",
+    "path"
+   ]
+  },
+  "allure_add_step": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "description",
+    "name",
+    "status",
+    "stepName"
+   ]
+  },
+  "allure_generate_report": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "autoOpen",
+    "auto_open_error",
+    "reportDir"
+   ]
+  },
+  "allure_init": {
+   "editorDefaults": [],
+   "panelOnly": [
+    "clean",
+    "resultsDir"
+   ],
+   "reads": [
+    "suiteName",
+    "testSuite"
+   ]
+  },
+  "allure_start_test": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "description",
+    "name",
+    "severity",
+    "testId",
+    "testName"
+   ]
+  },
+  "allure_stop_test": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "failMsg",
+    "message",
+    "status"
+   ]
+  },
+  "api_request": {
+   "editorDefaults": [
+    "resultVariable"
+   ],
+   "panelOnly": [],
+   "reads": [
+    "PATCH",
+    "POST",
+    "PUT",
+    "body",
+    "headers",
+    "json",
+    "query",
+    "raw",
+    "requestBody",
+    "requestCookies",
+    "requestHeaders",
+    "requestMethod",
+    "requestTimeout",
+    "requestUrl",
+    "variableName"
+   ]
+  },
+  "api_trigger": {
+   "editorDefaults": [],
+   "panelOnly": [
+    "apiTrigger"
+   ],
+   "reads": [
+    "PATCH",
+    "POST",
+    "PUT",
+    "apiUrl",
+    "body",
+    "checkInterval",
+    "conditionOperator",
+    "conditionPath",
+    "conditionValue",
+    "headers",
+    "method",
+    "query",
+    "saveToVariable",
+    "timeout"
+   ]
+  },
+  "assert_checkpoint": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "actualValue",
+    "checkType",
+    "elementCheck",
+    "ends_with",
+    "endswith",
+    "expectedText",
+    "expectedValue",
+    "expression",
+    "isEmpty",
+    "isNotEmpty",
+    "is_empty",
+    "is_not_empty",
+    "leftValue",
+    "matches",
+    "message",
+    "onFail",
+    "operator",
+    "regex",
+    "rightValue",
+    "selector",
+    "starts_with",
+    "startswith",
+    "variableName"
+   ]
+  },
+  "base64": {
+   "editorDefaults": [
+    "resultVariable"
+   ],
+   "panelOnly": [],
+   "reads": [
+    "ends_with",
+    "endswith",
+    "fileName",
+    "filePath",
+    "inputBase64",
+    "inputText",
+    "isEmpty",
+    "isNotEmpty",
+    "is_empty",
+    "is_not_empty",
+    "matches",
+    "operation",
+    "outputPath",
+    "regex",
+    "starts_with",
+    "startswith",
+    "variableName"
+   ]
+  },
+  "break_loop": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "ends_with",
+    "endswith",
+    "isEmpty",
+    "isNotEmpty",
+    "is_empty",
+    "is_not_empty",
+    "matches",
+    "regex",
+    "starts_with",
+    "startswith"
+   ]
+  },
+  "capture_diagnostics": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "correlation",
+    "description",
+    "diagnosticName",
+    "frame",
+    "includeConsole",
+    "includeDom",
+    "includeScreenshot",
+    "page",
+    "startMarker",
+    "target",
+    "variableName"
+   ]
+  },
+  "click_element": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "clickType",
+    "followNewTab",
+    "selector",
+    "selectorHints",
+    "timeout",
+    "waitForSelector"
+   ]
+  },
+  "close_page": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "selector",
+    "timeout_ms"
+   ]
+  },
+  "condition": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "condition",
+    "condition1",
+    "condition2",
+    "conditionType",
+    "element_exists",
+    "element_visible",
+    "ends_with",
+    "endswith",
+    "false",
+    "isEmpty",
+    "isNotEmpty",
+    "is_empty",
+    "is_not_empty",
+    "leftOperand",
+    "leftValue",
+    "logicOperator",
+    "matches",
+    "operator",
+    "regex",
+    "rightOperand",
+    "rightValue",
+    "starts_with",
+    "startswith",
+    "true"
+   ]
+  },
+  "continue_loop": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "ends_with",
+    "endswith",
+    "isEmpty",
+    "isNotEmpty",
+    "is_empty",
+    "is_not_empty",
+    "matches",
+    "regex",
+    "starts_with",
+    "startswith"
+   ]
+  },
+  "csv_generate": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "dataVariable",
+    "delimiter",
+    "includeHeader",
+    "listVariable",
+    "resultVariable"
+   ]
+  },
+  "csv_parse": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "csvContent",
+    "csvString",
+    "delimiter",
+    "hasHeader",
+    "resultVariable"
+   ]
+  },
+  "custom_module": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "customModuleId",
+    "parameterValues"
+   ]
+  },
+  "dict_deep_copy": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "dictVariable",
+    "resultVariable"
+   ]
+  },
+  "dict_filter": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "condition",
+    "dictVariable",
+    "exclude",
+    "filterKeys",
+    "filterMode",
+    "include",
+    "resultVariable"
+   ]
+  },
+  "dict_flatten": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "dictVariable",
+    "resultVariable",
+    "separator"
+   ]
+  },
+  "dict_get": {
+   "editorDefaults": [
+    "resultVariable"
+   ],
+   "panelOnly": [],
+   "reads": [
+    "defaultValue",
+    "dictKey",
+    "dictVariable",
+    "variableName"
+   ]
+  },
+  "dict_get_path": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "defaultValue",
+    "dictVariable",
+    "path",
+    "resultVariable"
+   ]
+  },
+  "dict_invert": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "dictVariable",
+    "resultVariable"
+   ]
+  },
+  "dict_keys": {
+   "editorDefaults": [
+    "resultVariable"
+   ],
+   "panelOnly": [],
+   "reads": [
+    "dictVariable",
+    "keyType",
+    "variableName"
+   ]
+  },
+  "dict_map_values": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "add",
+    "dictVariable",
+    "divide",
+    "expression",
+    "multiply",
+    "operand",
+    "operation",
+    "resultVariable",
+    "subtract"
+   ]
+  },
+  "dict_merge": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "dict1",
+    "dict2",
+    "dictVariables",
+    "resultVariable"
+   ]
+  },
+  "dict_operation": {
+   "editorDefaults": [
+    "resultVariable"
+   ],
+   "panelOnly": [],
+   "reads": [
+    "dictAction",
+    "dictKey",
+    "dictValue",
+    "dictVariable"
+   ]
+  },
+  "dict_sort": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "asc",
+    "desc",
+    "dictVariable",
+    "key",
+    "order",
+    "resultVariable",
+    "sortBy",
+    "sortOrder",
+    "value",
+    "值",
+    "升序",
+    "键",
+    "降序"
+   ]
+  },
+  "download_file": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "downloadMode",
+    "downloadUrl",
+    "fileName",
+    "savePath",
+    "timeout",
+    "triggerSelector",
+    "variableName"
+   ]
+  },
+  "drag_element": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "sourceSelector",
+    "targetPosition",
+    "targetSelector",
+    "timeout"
+   ]
+  },
+  "element_change_trigger": {
+   "editorDefaults": [],
+   "panelOnly": [
+    "checkInterval"
+   ],
+   "reads": [
+    "__PARAMS__",
+    "childList",
+    "observeType",
+    "saveChangeInfo",
+    "saveNewElementSelector",
+    "selector",
+    "timeout"
+   ]
+  },
+  "element_exists": {
+   "editorDefaults": [],
+   "panelOnly": [
+    "leftValue"
+   ],
+   "reads": [
+    "false",
+    "selector",
+    "timeout",
+    "true",
+    "元素不存在"
+   ]
+  },
+  "element_visible": {
+   "editorDefaults": [],
+   "panelOnly": [
+    "leftValue"
+   ],
+   "reads": [
+    "false",
+    "selector",
+    "timeout",
+    "true"
+   ]
+  },
+  "email_trigger": {
+   "editorDefaults": [],
+   "panelOnly": [
+    "emailTrigger"
+   ],
+   "reads": [
+    "checkInterval",
+    "emailAccount",
+    "emailPassword",
+    "emailPort",
+    "emailServer",
+    "fromFilter",
+    "saveToVariable",
+    "subjectFilter",
+    "timeout"
+   ]
+  },
+  "export_log": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "csv",
+    "includeDuration",
+    "includeLevel",
+    "includeTimestamp",
+    "json",
+    "logFormat",
+    "outputPath",
+    "resultVariable",
+    "txt"
+   ]
+  },
+  "extract_table_data": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "excelPath",
+    "exportToExcel",
+    "headerRow",
+    "includeHeader",
+    "tableSelector",
+    "variableName"
+   ]
+  },
+  "face_recognition": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "ch_sim",
+    "en",
+    "false",
+    "resultVariable",
+    "sourceImage",
+    "targetImage",
+    "tolerance",
+    "true",
+    "不匹配",
+    "匹配"
+   ]
+  },
+  "face_trigger": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "cameraIndex",
+    "checkInterval",
+    "saveToVariable",
+    "targetFaceImage",
+    "timeout",
+    "tolerance"
+   ]
+  },
+  "file_watcher_trigger": {
+   "editorDefaults": [],
+   "panelOnly": [
+    "fileTrigger"
+   ],
+   "reads": [
+    "any",
+    "created",
+    "deleted",
+    "filePattern",
+    "modified",
+    "saveToVariable",
+    "timeout",
+    "watchPath",
+    "watchType"
+   ]
+  },
+  "firecrawl_crawl": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "allowBackwardLinks",
+    "allowExternalLinks",
+    "excludePaths",
+    "formats",
+    "http",
+    "https",
+    "ignoreSitemap",
+    "includePaths",
+    "limit",
+    "markdown",
+    "maxDepth",
+    "noscript",
+    "onlyMainContent",
+    "script",
+    "style",
+    "url",
+    "variableName"
+   ]
+  },
+  "firecrawl_map": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "http",
+    "https",
+    "ignoreSitemap",
+    "includeSubdomains",
+    "limit",
+    "noscript",
+    "script",
+    "search",
+    "style",
+    "url",
+    "variableName"
+   ]
+  },
+  "firecrawl_scrape": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "excludeTags",
+    "formats",
+    "http",
+    "https",
+    "includeTags",
+    "markdown",
+    "noscript",
+    "onlyMainContent",
+    "script",
+    "style",
+    "timeout",
+    "url",
+    "variableName",
+    "waitFor"
+   ]
+  },
+  "foreach": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "dataSource",
+    "ends_with",
+    "endswith",
+    "indexVariable",
+    "isEmpty",
+    "isNotEmpty",
+    "is_empty",
+    "is_not_empty",
+    "itemVariable",
+    "listVariable",
+    "matches",
+    "regex",
+    "starts_with",
+    "startswith"
+   ]
+  },
+  "foreach_dict": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "dictVariable",
+    "ends_with",
+    "endswith",
+    "indexVariable",
+    "isEmpty",
+    "isNotEmpty",
+    "is_empty",
+    "is_not_empty",
+    "keyVariable",
+    "matches",
+    "regex",
+    "starts_with",
+    "startswith",
+    "valueVariable"
+   ]
+  },
+  "gesture_trigger": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "cameraIndex",
+    "confidenceThreshold",
+    "debugWindow",
+    "gestureName",
+    "saveToVariable",
+    "timeout"
+   ]
+  },
+  "get_child_elements": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "childSelector",
+    "parentSelector",
+    "timeout",
+    "variableName"
+   ]
+  },
+  "get_clipboard": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "variableName"
+   ]
+  },
+  "get_element_info": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "attribute",
+    "columnName",
+    "selector",
+    "selectorHints",
+    "timeout",
+    "variableName"
+   ]
+  },
+  "get_sibling_elements": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "elementSelector",
+    "false",
+    "includeSelf",
+    "siblingType",
+    "timeout",
+    "true",
+    "variableName"
+   ]
+  },
+  "get_time": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "customFormat",
+    "ends_with",
+    "endswith",
+    "isEmpty",
+    "isNotEmpty",
+    "is_empty",
+    "is_not_empty",
+    "matches",
+    "regex",
+    "starts_with",
+    "startswith",
+    "timeFormat",
+    "variableName"
+   ]
+  },
+  "go_back": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "selector",
+    "timeout_ms",
+    "waitUntil"
+   ]
+  },
+  "go_forward": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "selector",
+    "timeout_ms",
+    "waitUntil"
+   ]
+  },
+  "group": {
+   "editorDefaults": [],
+   "panelOnly": [
+    "color"
+   ],
+   "reads": []
+  },
+  "handle_dialog": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "dialogAction",
+    "promptText",
+    "saveMessage",
+    "selector",
+    "timeout_ms",
+    "取消",
+    "确认"
+   ]
+  },
+  "hex_to_cmyk": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "hexColor",
+    "resultVariable"
+   ]
+  },
+  "hotkey_trigger": {
+   "editorDefaults": [
+    "saveToVariable"
+   ],
+   "panelOnly": [],
+   "reads": [
+    "alt",
+    "backspace",
+    "caps_lock",
+    "capslock",
+    "cmd",
+    "ctrl",
+    "del",
+    "delete",
+    "down",
+    "end",
+    "enter",
+    "esc",
+    "escape",
+    "home",
+    "hotkey",
+    "insert",
+    "left",
+    "num_lock",
+    "numlock",
+    "page_down",
+    "page_up",
+    "pagedown",
+    "pageup",
+    "pause",
+    "print_screen",
+    "return",
+    "right",
+    "scroll_lock",
+    "shift",
+    "space",
+    "tab",
+    "timeout",
+    "up",
+    "win"
+   ]
+  },
+  "hover_element": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "force",
+    "hoverDuration",
+    "selector",
+    "selectorHints",
+    "timeout",
+    "timeout_ms"
+   ]
+  },
+  "image_ocr": {
+   "editorDefaults": [
+    "language"
+   ],
+   "panelOnly": [],
+   "reads": [
+    "OCR识别完成",
+    "ch_sim",
+    "en",
+    "endX",
+    "endY",
+    "imagePath",
+    "ocrMode",
+    "ocrType",
+    "region",
+    "resultVariable",
+    "startX",
+    "startY",
+    "区域OCR识别完成",
+    "区域坐标不能为空",
+    "区域尺寸必须大于0",
+    "坐标必须是数字"
+   ]
+  },
+  "image_trigger": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "checkInterval",
+    "confidence",
+    "imagePath",
+    "saveToVariable",
+    "searchRegion",
+    "timeout"
+   ]
+  },
+  "increment_decrement": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "ends_with",
+    "endswith",
+    "isEmpty",
+    "isNotEmpty",
+    "is_empty",
+    "is_not_empty",
+    "matches",
+    "operation",
+    "regex",
+    "starts_with",
+    "startswith",
+    "step",
+    "variableName"
+   ]
+  },
+  "infinite_loop": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "ends_with",
+    "endswith",
+    "indexVariable",
+    "isEmpty",
+    "isNotEmpty",
+    "is_empty",
+    "is_not_empty",
+    "matches",
+    "regex",
+    "starts_with",
+    "startswith"
+   ]
+  },
+  "inject_javascript": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "current",
+    "index",
+    "injectMode",
+    "javascriptCode",
+    "saveResult",
+    "selector",
+    "targetIndex",
+    "targetUrl",
+    "timeout_ms",
+    "undefined"
+   ]
+  },
+  "input_prompt": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "checkbox",
+    "count",
+    "defaultValue",
+    "file",
+    "folder",
+    "inputMode",
+    "maxLength",
+    "maxValue",
+    "minValue",
+    "promptMessage",
+    "promptTitle",
+    "required",
+    "selectOptions",
+    "select_single",
+    "slider_float",
+    "slider_int",
+    "string",
+    "timeout",
+    "type",
+    "variableName",
+    "文件",
+    "文件夹"
+   ]
+  },
+  "input_text": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "clearBefore",
+    "input",
+    "select",
+    "selector",
+    "selectorHints",
+    "text",
+    "textarea",
+    "timeout",
+    "typeSequential"
+   ]
+  },
+  "js_script": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "code",
+    "resultVariable"
+   ]
+  },
+  "json_parse": {
+   "editorDefaults": [
+    "resultVariable"
+   ],
+   "panelOnly": [],
+   "reads": [
+    "columnName",
+    "ends_with",
+    "endswith",
+    "isEmpty",
+    "isNotEmpty",
+    "is_empty",
+    "is_not_empty",
+    "jsonPath",
+    "matches",
+    "regex",
+    "sourceVariable",
+    "starts_with",
+    "startswith",
+    "variableName"
+   ]
+  },
+  "list_average": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "listVariable",
+    "resultVariable"
+   ]
+  },
+  "list_cartesian_product": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "list1",
+    "list2",
+    "listVariables",
+    "resultVariable"
+   ]
+  },
+  "list_chunk": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "chunkSize",
+    "listVariable",
+    "resultVariable"
+   ]
+  },
+  "list_count": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "listVariable",
+    "resultVariable",
+    "searchValue"
+   ]
+  },
+  "list_difference": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "list1",
+    "list1Variable",
+    "list2",
+    "list2Variable",
+    "resultVariable"
+   ]
+  },
+  "list_export": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "appendMode",
+    "encoding",
+    "listVariable",
+    "outputPath",
+    "separator"
+   ]
+  },
+  "list_filter": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "compareValue",
+    "condition",
+    "contains",
+    "equal",
+    "filterType",
+    "greater",
+    "less",
+    "listVariable",
+    "not_equal",
+    "resultVariable"
+   ]
+  },
+  "list_find": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "listVariable",
+    "resultVariable",
+    "searchValue"
+   ]
+  },
+  "list_flatten": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "depth",
+    "listVariable",
+    "resultVariable"
+   ]
+  },
+  "list_get": {
+   "editorDefaults": [
+    "resultVariable"
+   ],
+   "panelOnly": [],
+   "reads": [
+    "listIndex",
+    "listVariable",
+    "variableName"
+   ]
+  },
+  "list_intersection": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "list1",
+    "list1Variable",
+    "list2",
+    "list2Variable",
+    "resultVariable"
+   ]
+  },
+  "list_length": {
+   "editorDefaults": [
+    "resultVariable"
+   ],
+   "panelOnly": [],
+   "reads": [
+    "listVariable",
+    "variableName"
+   ]
+  },
+  "list_map": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "add",
+    "divide",
+    "expression",
+    "listVariable",
+    "multiply",
+    "operand",
+    "operation",
+    "power",
+    "resultVariable",
+    "subtract"
+   ]
+  },
+  "list_max": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "listVariable",
+    "resultVariable"
+   ]
+  },
+  "list_merge": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "list1",
+    "list2",
+    "listVariables",
+    "resultVariable"
+   ]
+  },
+  "list_min": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "listVariable",
+    "resultVariable"
+   ]
+  },
+  "list_operation": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "listAction",
+    "listIndex",
+    "listValue",
+    "listVariable",
+    "resultVariable"
+   ]
+  },
+  "list_remove_empty": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "listVariable",
+    "resultVariable"
+   ]
+  },
+  "list_reverse": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "listVariable",
+    "resultVariable"
+   ]
+  },
+  "list_sample": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "listVariable",
+    "resultVariable",
+    "sampleCount",
+    "sampleSize"
+   ]
+  },
+  "list_shuffle": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "listVariable",
+    "resultVariable"
+   ]
+  },
+  "list_slice": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "endIndex",
+    "listVariable",
+    "resultVariable",
+    "startIndex"
+   ]
+  },
+  "list_sort": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "listVariable",
+    "order",
+    "resultVariable",
+    "sortOrder",
+    "升序",
+    "降序"
+   ]
+  },
+  "list_sum": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "listVariable",
+    "resultVariable"
+   ]
+  },
+  "list_to_string_advanced": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "formatTemplate",
+    "listVariable",
+    "prefix",
+    "resultVariable",
+    "separator",
+    "suffix"
+   ]
+  },
+  "list_union": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "list1",
+    "list1Variable",
+    "list2",
+    "list2Variable",
+    "resultVariable"
+   ]
+  },
+  "list_unique": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "listVariable",
+    "resultVariable"
+   ]
+  },
+  "lock_screen": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": []
+  },
+  "loop": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "condition",
+    "count",
+    "endValue",
+    "ends_with",
+    "endswith",
+    "indexVariable",
+    "isEmpty",
+    "isNotEmpty",
+    "is_empty",
+    "is_not_empty",
+    "loopCount",
+    "loopType",
+    "matches",
+    "maxIterations",
+    "regex",
+    "startValue",
+    "starts_with",
+    "startswith",
+    "step",
+    "stepValue"
+   ]
+  },
+  "math_abs": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "numberValue",
+    "resultVariable",
+    "value"
+   ]
+  },
+  "math_base_convert": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "fromBase",
+    "numberValue",
+    "resultVariable",
+    "toBase",
+    "value"
+   ]
+  },
+  "math_clamp": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "max",
+    "maxValue",
+    "min",
+    "minValue",
+    "numberValue",
+    "resultVariable",
+    "value"
+   ]
+  },
+  "math_exp": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "numberValue",
+    "resultVariable",
+    "value"
+   ]
+  },
+  "math_factorial": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "numberValue",
+    "resultVariable",
+    "value"
+   ]
+  },
+  "math_floor": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "numberValue",
+    "resultVariable",
+    "value"
+   ]
+  },
+  "math_gcd": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "numbers",
+    "resultVariable",
+    "value1",
+    "value2"
+   ]
+  },
+  "math_lcm": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "numbers",
+    "resultVariable",
+    "value1",
+    "value2"
+   ]
+  },
+  "math_log": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "base",
+    "customBase",
+    "logType",
+    "numberValue",
+    "resultVariable",
+    "value"
+   ]
+  },
+  "math_modulo": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "dividend",
+    "divisor",
+    "resultVariable"
+   ]
+  },
+  "math_percentage": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "calcType",
+    "operation",
+    "resultVariable",
+    "value1",
+    "value2"
+   ]
+  },
+  "math_permutation": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "calcType",
+    "combination",
+    "n",
+    "permutation",
+    "r",
+    "resultVariable",
+    "排列",
+    "组合"
+   ]
+  },
+  "math_power": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "base",
+    "exponent",
+    "resultVariable"
+   ]
+  },
+  "math_random_advanced": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "count",
+    "decimals",
+    "int",
+    "lambda",
+    "max",
+    "maxValue",
+    "mean",
+    "min",
+    "minValue",
+    "randomType",
+    "resultVariable",
+    "stddev",
+    "type",
+    "uniform"
+   ]
+  },
+  "math_round": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "decimals",
+    "numberValue",
+    "resultVariable",
+    "value"
+   ]
+  },
+  "math_sqrt": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "numberValue",
+    "resultVariable",
+    "root",
+    "value"
+   ]
+  },
+  "math_trig": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "angleUnit",
+    "function",
+    "numberValue",
+    "resultVariable",
+    "trigType",
+    "unit",
+    "value",
+    "度",
+    "弧度"
+   ]
+  },
+  "md5_encrypt": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "encoding",
+    "inputText",
+    "outputFormat",
+    "resultVariable"
+   ]
+  },
+  "mouse_trigger": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "alt",
+    "backspace",
+    "caps_lock",
+    "capslock",
+    "cmd",
+    "ctrl",
+    "custom_gesture",
+    "del",
+    "delete",
+    "down",
+    "end",
+    "enter",
+    "esc",
+    "escape",
+    "gesturePattern",
+    "gestureTimeout",
+    "home",
+    "insert",
+    "left",
+    "left_gesture",
+    "middle_gesture",
+    "minGestureDistance",
+    "moveDistance",
+    "num_lock",
+    "numlock",
+    "page_down",
+    "page_up",
+    "pagedown",
+    "pageup",
+    "pause",
+    "print_screen",
+    "return",
+    "right",
+    "right_gesture",
+    "saveToVariable",
+    "scroll_lock",
+    "shift",
+    "space",
+    "tab",
+    "timeout",
+    "triggerType",
+    "up",
+    "win"
+   ]
+  },
+  "network_capture": {
+   "editorDefaults": [
+    "resultVariable"
+   ],
+   "panelOnly": [
+    "proxyPort",
+    "targetPorts",
+    "targetProcess"
+   ],
+   "reads": [
+    "all",
+    "captureDuration",
+    "captureMode",
+    "filterType",
+    "img",
+    "media",
+    "searchKeyword",
+    "variableName"
+   ]
+  },
+  "network_monitor_start": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "filterType",
+    "monitorId",
+    "urlPattern"
+   ]
+  },
+  "network_monitor_stop": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "monitorId",
+    "variableName"
+   ]
+  },
+  "network_monitor_wait": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "captureMode",
+    "monitorId",
+    "stopAfterCapture",
+    "timeout",
+    "urlPattern",
+    "variableName",
+    "第一个"
+   ]
+  },
+  "note": {
+   "editorDefaults": [],
+   "panelOnly": [
+    "content"
+   ],
+   "reads": []
+  },
+  "notify_telegram": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "body",
+    "botToken",
+    "chatId",
+    "message",
+    "timeout",
+    "title"
+   ]
+  },
+  "notify_webhook": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "PATCH",
+    "POST",
+    "PUT",
+    "body",
+    "headers",
+    "message",
+    "method",
+    "query",
+    "timeout",
+    "webhookUrl"
+   ]
+  },
+  "ocr_captcha": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "autoSubmit",
+    "imageSelector",
+    "inputSelector",
+    "resultVariable",
+    "selectorHints",
+    "submitSelector",
+    "timeout",
+    "variableName"
+   ]
+  },
+  "open_page": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "browserEnvironment",
+    "openMode",
+    "timeout",
+    "url",
+    "waitUntil"
+   ]
+  },
+  "page_load_complete": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "checkState",
+    "saveToVariable",
+    "已完成",
+    "未完成"
+   ]
+  },
+  "play_sound": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "beepCount",
+    "beepInterval"
+   ]
+  },
+  "press_key": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "element",
+    "focused",
+    "key",
+    "selector",
+    "targetType",
+    "timeout",
+    "timeout_ms"
+   ]
+  },
+  "print_log": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "logLevel",
+    "logMessage"
+   ]
+  },
+  "printer_call": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "colorMode",
+    "copies",
+    "duplex",
+    "filePath",
+    "orientation",
+    "paperSize",
+    "printerName"
+   ]
+  },
+  "probability_trigger": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "path1",
+    "path2",
+    "probability"
+   ]
+  },
+  "proxy_change_ip": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "PROXY_IP_SWITCH_FAILED",
+    "PROXY_LOCATION_SWITCH_FAILED",
+    "capture",
+    "confirmationTimeoutSeconds",
+    "current",
+    "failureMode",
+    "locationId",
+    "maxAttempts",
+    "operationId",
+    "proxyId",
+    "queued",
+    "raise",
+    "resultVariable",
+    "retryIntervalSeconds",
+    "running",
+    "specified",
+    "succeeded",
+    "target",
+    "unknown",
+    "warning",
+    "代理操作完成"
+   ]
+  },
+  "proxy_change_location": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "PROXY_IP_SWITCH_FAILED",
+    "PROXY_LOCATION_SWITCH_FAILED",
+    "capture",
+    "confirmationTimeoutSeconds",
+    "current",
+    "failureMode",
+    "locationId",
+    "maxAttempts",
+    "operationId",
+    "proxyId",
+    "queued",
+    "raise",
+    "resultVariable",
+    "retryIntervalSeconds",
+    "running",
+    "specified",
+    "succeeded",
+    "target",
+    "unknown",
+    "warning",
+    "代理操作完成"
+   ]
+  },
+  "proxy_query": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "PROXY_IP_SWITCH_FAILED",
+    "PROXY_LOCATION_SWITCH_FAILED",
+    "capture",
+    "confirmationTimeoutSeconds",
+    "current",
+    "failureMode",
+    "locationId",
+    "maxAttempts",
+    "operationId",
+    "proxyId",
+    "queued",
+    "raise",
+    "resultVariable",
+    "retryIntervalSeconds",
+    "running",
+    "specified",
+    "succeeded",
+    "target",
+    "unknown",
+    "warning",
+    "代理操作完成"
+   ]
+  },
+  "python_script": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "captureOutput",
+    "pythonPath",
+    "result",
+    "resultVariable",
+    "returnCodeVariable",
+    "scriptArgs",
+    "scriptContent",
+    "scriptMode",
+    "scriptPath",
+    "stderrVariable",
+    "stdoutVariable",
+    "timeout",
+    "useBuiltinPython",
+    "workingDir"
+   ]
+  },
+  "random_number": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "decimalPlaces",
+    "ends_with",
+    "endswith",
+    "isEmpty",
+    "isNotEmpty",
+    "is_empty",
+    "is_not_empty",
+    "matches",
+    "maxValue",
+    "minValue",
+    "randomType",
+    "regex",
+    "starts_with",
+    "startswith",
+    "variableName"
+   ]
+  },
+  "random_password_generator": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "excludeAmbiguous",
+    "includeDigits",
+    "includeLowercase",
+    "includeSymbols",
+    "includeUppercase",
+    "length",
+    "resultVariable"
+   ]
+  },
+  "refresh_page": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "selector",
+    "timeout_ms",
+    "waitUntil"
+   ]
+  },
+  "regex_extract": {
+   "editorDefaults": [
+    "resultVariable"
+   ],
+   "panelOnly": [],
+   "reads": [
+    "extractMode",
+    "ignoreCase",
+    "inputText",
+    "pattern",
+    "variableName"
+   ]
+  },
+  "rgb_to_cmyk": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "b",
+    "g",
+    "r",
+    "resultVariable"
+   ]
+  },
+  "rgb_to_hsv": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "b",
+    "g",
+    "r",
+    "resultVariable"
+   ]
+  },
+  "run_command": {
+   "editorDefaults": [
+    "resultVariable"
+   ],
+   "panelOnly": [],
+   "reads": [
+    "command",
+    "shell",
+    "timeout",
+    "variableName"
+   ]
+  },
+  "run_workflow_file": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "collectVariables",
+    "passVariables",
+    "resultVariable",
+    "stopOnFail",
+    "waitComplete",
+    "workflow",
+    "workflowFile"
+   ]
+  },
+  "save_image": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "savePath",
+    "selector",
+    "timeout",
+    "variableName"
+   ]
+  },
+  "save_trace_segment": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "correlation",
+    "description",
+    "diagnosticName",
+    "frame",
+    "includeConsole",
+    "includeDom",
+    "includeScreenshot",
+    "page",
+    "startMarker",
+    "target",
+    "variableName"
+   ]
+  },
+  "scheduled_task": {
+   "editorDefaults": [],
+   "panelOnly": [
+    "taskName"
+   ],
+   "reads": [
+    "delayHours",
+    "delayMinutes",
+    "delaySeconds",
+    "scheduleType",
+    "targetDate",
+    "targetTime"
+   ]
+  },
+  "screenshot": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "fileNamePattern",
+    "savePath",
+    "screenshotType",
+    "selector",
+    "timeout",
+    "variableName"
+   ]
+  },
+  "scroll_page": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "auto",
+    "direction",
+    "distance",
+    "scrollMode",
+    "selector",
+    "timeout",
+    "wheel"
+   ]
+  },
+  "select_dropdown": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "nth",
+    "selectBy",
+    "selector",
+    "timeout",
+    "value",
+    "values",
+    "浏览器定位器"
+   ]
+  },
+  "send_email": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "authCode",
+    "emailContent",
+    "emailSubject",
+    "recipientEmail",
+    "senderEmail",
+    "timeout"
+   ]
+  },
+  "set_checkbox": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "check",
+    "checked",
+    "selector",
+    "timeout",
+    "uncheck",
+    "勾选",
+    "取消勾选"
+   ]
+  },
+  "set_clipboard": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "clipboard_write_image",
+    "clipboard_write_text",
+    "contentType",
+    "imagePath",
+    "path",
+    "text",
+    "textContent",
+    "图片路径不能为空",
+    "文本内容不能为空"
+   ]
+  },
+  "set_variable": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "ends_with",
+    "endswith",
+    "isEmpty",
+    "isNotEmpty",
+    "is_empty",
+    "is_not_empty",
+    "matches",
+    "regex",
+    "starts_with",
+    "startswith",
+    "variableName",
+    "variableValue"
+   ]
+  },
+  "sha_encrypt": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "encoding",
+    "inputText",
+    "outputFormat",
+    "resultVariable",
+    "sha1",
+    "sha224",
+    "sha256",
+    "sha384",
+    "sha3_224",
+    "sha3_256",
+    "sha3_384",
+    "sha3_512",
+    "sha512",
+    "shaType"
+   ]
+  },
+  "share_file": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "B",
+    "GB",
+    "KB",
+    "MB",
+    "TB",
+    "filePath",
+    "port",
+    "resultVariable"
+   ]
+  },
+  "share_folder": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "B",
+    "GB",
+    "KB",
+    "MB",
+    "TB",
+    "allowWrite",
+    "folderPath",
+    "port",
+    "resultVariable",
+    "shareName",
+    "仅下载"
+   ]
+  },
+  "shutdown_system": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "action",
+    "delay",
+    "force"
+   ]
+  },
+  "slider_captcha": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "backgroundSelector",
+    "gapSelector",
+    "selectorHints",
+    "sliderSelector",
+    "targetDistance",
+    "timeout",
+    "trackSelector"
+   ]
+  },
+  "sound_trigger": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "checkInterval",
+    "saveToVariable",
+    "timeout",
+    "volumeThreshold"
+   ]
+  },
+  "ssh_connect": {
+   "editorDefaults": [],
+   "panelOnly": [
+    "ssh"
+   ],
+   "reads": [
+    "connectionName",
+    "host",
+    "keyFile",
+    "password",
+    "port",
+    "timeout",
+    "username"
+   ]
+  },
+  "ssh_disconnect": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "connectionName"
+   ]
+  },
+  "ssh_download_file": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "connectionName",
+    "localPath",
+    "remotePath"
+   ]
+  },
+  "ssh_execute_command": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "command",
+    "connectionName",
+    "errorVariable",
+    "exitCodeVariable",
+    "outputVariable",
+    "timeout",
+    "失败",
+    "成功"
+   ]
+  },
+  "ssh_upload_file": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "connectionName",
+    "localPath",
+    "remotePath"
+   ]
+  },
+  "start_screen_share": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "B",
+    "GB",
+    "KB",
+    "MB",
+    "TB",
+    "fps",
+    "port",
+    "quality",
+    "resultVariable",
+    "scale"
+   ]
+  },
+  "stat_median": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "listVariable",
+    "resultVariable"
+   ]
+  },
+  "stat_mode": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "listVariable",
+    "resultVariable"
+   ]
+  },
+  "stat_normalize": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "listVariable",
+    "method",
+    "newMax",
+    "newMin",
+    "resultVariable"
+   ]
+  },
+  "stat_percentile": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "listVariable",
+    "percentile",
+    "resultVariable"
+   ]
+  },
+  "stat_standardize": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "listVariable",
+    "resultVariable"
+   ]
+  },
+  "stat_stdev": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "listVariable",
+    "resultVariable"
+   ]
+  },
+  "stat_variance": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "listVariable",
+    "resultVariable"
+   ]
+  },
+  "stop_screen_share": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "B",
+    "GB",
+    "KB",
+    "MB",
+    "TB",
+    "port"
+   ]
+  },
+  "stop_share": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "B",
+    "GB",
+    "KB",
+    "MB",
+    "TB",
+    "port"
+   ]
+  },
+  "stop_workflow": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "ends_with",
+    "endswith",
+    "isEmpty",
+    "isNotEmpty",
+    "is_empty",
+    "is_not_empty",
+    "matches",
+    "regex",
+    "starts_with",
+    "startswith",
+    "stopReason"
+   ]
+  },
+  "string_case": {
+   "editorDefaults": [
+    "resultVariable"
+   ],
+   "panelOnly": [],
+   "reads": [
+    "caseMode",
+    "inputText",
+    "variableName"
+   ]
+  },
+  "string_concat": {
+   "editorDefaults": [
+    "resultVariable"
+   ],
+   "panelOnly": [],
+   "reads": [
+    "string1",
+    "string2",
+    "variableName"
+   ]
+  },
+  "string_join": {
+   "editorDefaults": [
+    "resultVariable"
+   ],
+   "panelOnly": [],
+   "reads": [
+    "listVariable",
+    "separator",
+    "variableName"
+   ]
+  },
+  "string_replace": {
+   "editorDefaults": [
+    "resultVariable"
+   ],
+   "panelOnly": [],
+   "reads": [
+    "inputText",
+    "replaceAll",
+    "replaceMode",
+    "replaceValue",
+    "searchValue",
+    "variableName"
+   ]
+  },
+  "string_split": {
+   "editorDefaults": [
+    "resultVariable"
+   ],
+   "panelOnly": [],
+   "reads": [
+    "inputText",
+    "maxSplit",
+    "separator",
+    "variableName"
+   ]
+  },
+  "string_substring": {
+   "editorDefaults": [
+    "resultVariable"
+   ],
+   "panelOnly": [],
+   "reads": [
+    "endIndex",
+    "inputText",
+    "startIndex",
+    "variableName"
+   ]
+  },
+  "string_trim": {
+   "editorDefaults": [
+    "resultVariable"
+   ],
+   "panelOnly": [],
+   "reads": [
+    "inputText",
+    "trimMode",
+    "variableName"
+   ]
+  },
+  "subflow": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "subflowGroupId",
+    "subflowName"
+   ]
+  },
+  "switch_iframe": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "iframeIndex",
+    "iframeName",
+    "iframeSelector",
+    "locateBy",
+    "selector",
+    "timeout_ms"
+   ]
+  },
+  "switch_tab": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "matchMode",
+    "saveIndexVariable",
+    "saveTitleVariable",
+    "saveUrlVariable",
+    "switchMode",
+    "tabIndex",
+    "tabTitle",
+    "tabUrl"
+   ]
+  },
+  "switch_to_main": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "selector",
+    "timeout_ms"
+   ]
+  },
+  "system_notification": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "duration",
+    "notifyMessage",
+    "notifyTitle",
+    "playSound"
+   ]
+  },
+  "table_add_column": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "columnName",
+    "defaultValue",
+    "false",
+    "true"
+   ]
+  },
+  "table_add_row": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "false",
+    "rowData",
+    "true"
+   ]
+  },
+  "table_clear": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "false",
+    "true"
+   ]
+  },
+  "table_delete_row": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "false",
+    "rowIndex",
+    "true"
+   ]
+  },
+  "table_export": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "csv",
+    "excel",
+    "exportFormat",
+    "false",
+    "fileNamePattern",
+    "savePath",
+    "sheetName",
+    "true",
+    "variableName"
+   ]
+  },
+  "table_get_cell": {
+   "editorDefaults": [
+    "resultVariable"
+   ],
+   "panelOnly": [],
+   "reads": [
+    "columnName",
+    "false",
+    "rowIndex",
+    "true",
+    "variableName"
+   ]
+  },
+  "table_set_cell": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "cellValue",
+    "columnName",
+    "false",
+    "rowIndex",
+    "true"
+   ]
+  },
+  "text_to_speech": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "lang",
+    "pitch",
+    "rate",
+    "text",
+    "volume"
+   ]
+  },
+  "timestamp_converter": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "datetimeFormat",
+    "inputValue",
+    "operation",
+    "resultVariable",
+    "timestampUnit"
+   ]
+  },
+  "trace_mark": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "correlation",
+    "description",
+    "diagnosticName",
+    "frame",
+    "includeConsole",
+    "includeDom",
+    "includeScreenshot",
+    "page",
+    "startMarker",
+    "target",
+    "variableName"
+   ]
+  },
+  "upload_file": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "filePath",
+    "selector",
+    "timeout"
+   ]
+  },
+  "url_encode_decode": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "encoding",
+    "inputText",
+    "operation",
+    "resultVariable"
+   ]
+  },
+  "use_opened_page": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "action",
+    "matchMode",
+    "pageIdentifier",
+    "selector",
+    "timeout_ms",
+    "url",
+    "waitUntil"
+   ]
+  },
+  "uuid_generator": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "name",
+    "namespace",
+    "removeHyphens",
+    "resultVariable",
+    "uppercase",
+    "uuidVersion"
+   ]
+  },
+  "wait": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "duration",
+    "ends_with",
+    "endswith",
+    "isEmpty",
+    "isNotEmpty",
+    "is_empty",
+    "is_not_empty",
+    "matches",
+    "navigation",
+    "regex",
+    "s",
+    "selector",
+    "starts_with",
+    "startswith",
+    "state",
+    "waitDuration",
+    "waitTime",
+    "waitTimeout",
+    "waitType",
+    "秒"
+   ]
+  },
+  "wait_element": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "attached",
+    "selector",
+    "selectorHints",
+    "timeout_ms",
+    "visible",
+    "waitCondition",
+    "waitTimeout"
+   ]
+  },
+  "wait_page_load": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "timeout",
+    "waitUntil"
+   ]
+  },
+  "web_cookie": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "clear",
+    "delete",
+    "domain",
+    "name",
+    "operation",
+    "path",
+    "url",
+    "value",
+    "variableName"
+   ]
+  },
+  "web_intercept": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "action",
+    "headers",
+    "mockBody",
+    "mockContentType",
+    "mockStatus",
+    "operation",
+    "urlPattern"
+   ]
+  },
+  "web_storage": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "area",
+    "get",
+    "getAll",
+    "key",
+    "operation",
+    "remove",
+    "set",
+    "value",
+    "variableName"
+   ]
+  },
+  "webhook_request": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "PATCH",
+    "POST",
+    "PUT",
+    "body",
+    "bodyType",
+    "cookies",
+    "cookiesVariable",
+    "followRedirects",
+    "headers",
+    "headersVariable",
+    "method",
+    "query",
+    "responseVariable",
+    "saveCookies",
+    "saveHeaders",
+    "saveResponse",
+    "saveStatus",
+    "statusVariable",
+    "timeout",
+    "url",
+    "verifySSL"
+   ]
+  },
+  "webhook_trigger": {
+   "editorDefaults": [],
+   "panelOnly": [],
+   "reads": [
+    "PATCH",
+    "POST",
+    "PUT",
+    "autoSetParams",
+    "body",
+    "headers",
+    "method",
+    "paramPrefix",
+    "query",
+    "responseBody",
+    "responseStatus",
+    "saveToVariable",
+    "timeout",
+    "validateHeaders",
+    "validateParams",
+    "webhookId"
+   ]
+  }
+ }
+}

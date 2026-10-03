@@ -94,21 +94,14 @@ async def test_g3_submits_each_row_exactly_once(
 
 
 async def test_lost_submission_has_needs_review_state(
-    tmp_path, valid_profile_values, real_cloak_page, request
+    tmp_path, valid_profile_values, real_cloak_page
 ):
+    """AC2-02: a submission whose response is lost is never retried automatically."""
     executable, _, _ = real_cloak_page
     with GoldenSite() as site:
         run = await _submit(
             tmp_path, executable, valid_profile_values, ["lose-state"], site
         )
-        # This safety/evidence assertion stays outside the isolated known gap.
         assert site.submissions("lose-state") == 1
         assert run.details[0]["task"]["status"] in {"failed", "interrupted"}
-        request.node.add_marker(
-            pytest.mark.xfail(
-                reason="M2 needs_review ledger is not implemented",
-                strict=True,
-                raises=AssertionError,
-            )
-        )
-        assert run.details[0].get("ledgerState") == "needs_review"
+        assert run.details[0]["ledgerState"] == "needs_review"

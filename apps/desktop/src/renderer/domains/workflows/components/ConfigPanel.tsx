@@ -4,7 +4,6 @@ import { ProjectLifecycleConfig } from './config-panels/ProjectLifecycleConfig'
 import { ProjectDataConfig } from './config-panels/ProjectDataConfig'
 import { ProxyControlConfig } from './config-panels/ProxyControlConfig'
 import { excludedModuleTypes } from '../lib/moduleCatalog'
-import { featureFlags } from '../lib/featureFlags'
 // Source: WebRPA@5ccb900e, components/workflow/ConfigPanel.tsx; see SOURCE.md for license and adaptation boundaries.
 import { useWorkflowStore, moduleTypeLabels, getModuleDefaultTimeout, getNodeConfigData, type NodeData } from '../editor-store'
 import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
@@ -14,7 +13,6 @@ import { emitAssistantUiEvent } from '../api/aiAssistantSkills'
 import { Input } from './controls/input'
 import { NumberInput } from './controls/number-input'
 import { Label } from './controls/label'
-import { SelectNative as Select } from './controls/select-native'
 import { Button } from './controls/button'
 import { VariableInput } from './controls/variable-input'
 import { Trash2, Crosshair, Loader2, Ban, ChevronLeft, ChevronRight, Settings, Sparkles, ScanSearch } from 'lucide-react'
@@ -1641,87 +1639,6 @@ export function ConfigPanel({ selectedNodeId: propSelectedNodeId }: ConfigPanelP
                       0 表示不限制超时，当前模块建议: {(getModuleDefaultTimeout(nodeData.moduleType as import('../types/index').ModuleType) / 1000).toFixed(0)}秒
                     </p>
                   </div>
-                  {featureFlags.nodeRetryPolicy && <div className="space-y-2">
-                    <Label htmlFor="timeoutAction">运行超时后</Label>
-                    <Select
-                      id="timeoutAction"
-                      value={(nodeData.timeoutAction as string) || 'retry'}
-                      onChange={(e) => handleChange('timeoutAction', e.target.value)}
-                    >
-                      <option value="retry">重试</option>
-                      <option value="skip">跳过该模块，继续执行</option>
-                      <option value="stop">停止工作流执行</option>
-                    </Select>
-                    <p className="text-xs text-muted-foreground">
-                      {(nodeData.timeoutAction as string) === 'skip' 
-                        ? '超时后跳过此模块，直接执行后续流程'
-                        : (nodeData.timeoutAction as string) === 'stop'
-                        ? '超时后立即停止整个工作流执行'
-                        : '超时后按重试次数进行重试'}
-                    </p>
-                  </div>}
-                  {featureFlags.nodeRetryPolicy && <div className="space-y-2">
-                    <Label htmlFor="retryCount">重试次数</Label>
-                    <NumberInput
-                      id="retryCount"
-                      value={(nodeData.retryCount as number) ?? 0}
-                      onChange={(v) => handleChange('retryCount', v)}
-                      defaultValue={0}
-                      min={0}
-                      max={10}
-                    />
-                  </div>}
-                  {featureFlags.nodeRetryPolicy && ((nodeData.retryCount as number) ?? 0) > 0 && (
-                    <div className="space-y-2">
-                      <Label htmlFor="retryExhaustedAction">重试耗尽后</Label>
-                      <Select
-                        id="retryExhaustedAction"
-                        value={(nodeData.retryExhaustedAction as string) || 'stop'}
-                        onChange={(e) => handleChange('retryExhaustedAction', e.target.value)}
-                      >
-                        <option value="stop">停止工作流</option>
-                        <option value="skip">跳过该模块，继续执行</option>
-                      </Select>
-                      <p className="text-xs text-muted-foreground">
-                        {(nodeData.retryExhaustedAction as string) === 'skip' 
-                          ? '重试次数用完后跳过此模块，继续执行后续流程'
-                          : '重试次数用完后停止整个工作流'}
-                      </p>
-                    </div>
-                  )}
-                  {featureFlags.nodeRetryPolicy && ((nodeData.retryCount as number) ?? 0) > 0 && (
-                    <div className="space-y-2">
-                      <Label htmlFor="retryDelay">重试间隔（秒）</Label>
-                      <NumberInput
-                        id="retryDelay"
-                        value={(nodeData.retryDelay as number) ?? 0}
-                        onChange={(v) => handleChange('retryDelay', v)}
-                        defaultValue={0}
-                        min={0}
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        每次重试前的等待时间，0 表示立即重试，可缓解被限流/页面未就绪。
-                      </p>
-                    </div>
-                  )}
-                  {featureFlags.nodeRetryPolicy && ((nodeData.retryCount as number) ?? 0) > 0 && ((nodeData.retryDelay as number) ?? 0) > 0 && (
-                    <div className="space-y-2">
-                      <Label htmlFor="retryBackoff">退避策略</Label>
-                      <Select
-                        id="retryBackoff"
-                        value={(nodeData.retryBackoff as string) || 'fixed'}
-                        onChange={(e) => handleChange('retryBackoff', e.target.value)}
-                      >
-                        <option value="fixed">固定间隔</option>
-                        <option value="exponential">指数退避（间隔翻倍）</option>
-                      </Select>
-                      <p className="text-xs text-muted-foreground">
-                        {(nodeData.retryBackoff as string) === 'exponential'
-                          ? '间隔随重试次数翻倍（如 2s → 4s → 8s），适合外部接口限流'
-                          : '每次重试都等待相同时间'}
-                      </p>
-                    </div>
-                  )}
                 </div>
 
                 {/* 变量使用提示 */}

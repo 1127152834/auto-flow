@@ -86,7 +86,28 @@ async def test_inert_retry_settings_are_reported_once_per_node():
     }
     assert (await executor.run({'document': document}))['status'] == 'succeeded'
     warnings = [event[3]['message'] for event in events if event[0] == 'log' and event[3].get('level') == 'warning']
-    assert warnings == ['「赋值」的以下设置尚未生效，运行时会被忽略：重试次数、运行超时后']
+    assert warnings == ['「赋值」的以下旧设置不会自动生效，可在「出错时」查看转换建议并启用：重试次数、运行超时后']
+
+
+@pytest.mark.asyncio
+async def test_settings_no_part_of_the_node_reads_are_reported_once():
+    """R2-11: a key the executor never reads (e.g. from another node type) is a visible warning."""
+    events = []
+
+    async def emit(*event):
+        events.append(event)
+
+    executor = ProjectGraphExecutor(None, {}, emit, lambda: False)
+    document = {
+        'nodes': [
+            node('loop', 'loop', count=2, indexVariable='i'),
+            node('set', 'set_variable', variableName='x', variableValue='{i}', label='赋值', selector='#old', remark='备注'),
+        ],
+        'edges': [{'id': 'e', 'source': 'loop', 'target': 'set', 'sourceHandle': 'loop'}],
+    }
+    assert (await executor.run({'document': document}))['status'] == 'succeeded'
+    warnings = [event[3]['message'] for event in events if event[0] == 'log' and event[3].get('level') == 'warning']
+    assert warnings == ['「赋值」有 1 项设置不会被运行读取（selector），可能来自其他版本或其他节点类型']
 
 
 @pytest.mark.asyncio

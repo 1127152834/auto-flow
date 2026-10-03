@@ -3,6 +3,7 @@ import { runProjectOnce, stopProjectOnce } from '../run-project-once'
 import {registerDocumentLeaveResource,requestDocumentLeave,getDocumentLeaveResources} from '../lib/documentLeave'
 import {stopStudioRun} from '../lib/stopStudioRun'
 import { describeInertSettings, findInertSettings } from '../lib/inertSettings'
+import { describeUnknownSettings, findUnknownSettings } from '../lib/unknownConfigKeys'
 import { requestSettingsClose } from '../lib/settingsLeave'
 import { saveCustomModuleEditing, restoreMainWorkflow, recoverCustomModuleEditing } from '../lib/customModuleEditing'
 import { useDraftProtection } from '../hooks/useDraftProtection'
@@ -356,6 +357,9 @@ export function Toolbar() {
     // 整改 M1 R1-02：保存过但后端尚未执行的设置，运行前明确提示（不阻止运行）
     const inertSettings = findInertSettings(nodes)
     if (inertSettings.length) addLog({ level: 'warning', message: describeInertSettings(inertSettings) })
+    // 整改 M2 R2-11：节点保存了执行器不会读取的设置时提示（不阻止运行）
+    const unknownSettings = findUnknownSettings(nodes)
+    if (unknownSettings.length) addLog({ level: 'warning', message: describeUnknownSettings(unknownSettings) })
 
     try {
       const currentWorkflowId = workflowId || sourceDocumentId

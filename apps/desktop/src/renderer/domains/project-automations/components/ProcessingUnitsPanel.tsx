@@ -3,6 +3,7 @@ import type { components } from '../../../shared/api/generated'
 import { Button } from '../../../shared/components/ui/button'
 import { Select } from '../../../shared/components/ui/select'
 import { Textarea } from '../../../shared/components/ui/textarea'
+import { safeProjectError } from '../../projects/presentation-error'
 
 export type ProcessingUnit = components['schemas']['ProcessingUnitView']
 type State = ProcessingUnit['state']
@@ -42,7 +43,7 @@ export function ProcessingUnitsPanel({ api, disabled = false }: { api: Processin
       const page = await api.list(state, after)
       setPages(current => after && current ? { items: [...current.items, ...page.items], nextAfter: page.nextAfter } : page)
     } catch (error) {
-      setLoadError(error instanceof Error ? error.message : '读取失败')
+      setLoadError(safeProjectError(error))
     }
   }, [api, state])
   useEffect(() => { void load(null) }, [load])
@@ -61,7 +62,7 @@ export function ProcessingUnitsPanel({ api, disabled = false }: { api: Processin
       setActing(null)
     } catch (error) {
       // The same request identity is kept so a retry cannot apply the change twice.
-      setCommandError(error instanceof Error ? error.message : '操作失败')
+      setCommandError(safeProjectError(error))
     } finally {
       setBusy(false)
     }

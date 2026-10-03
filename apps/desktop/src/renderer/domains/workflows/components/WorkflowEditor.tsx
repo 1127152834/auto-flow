@@ -21,7 +21,6 @@ import { DebugBar } from './DebugBar'
 import { useLayoutStore } from '../hooks/stores/layoutStore'
 import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
 import { reviewSelectorHeals } from '../lib/selectorHealing'
-import { featureFlags } from '../lib/featureFlags'
 import { importDroppedWorkflows } from '../lib/droppedWorkflows'
 import { useConfirm } from './controls/confirm-dialog'
 import { usePasswordPrompt } from './controls/password-prompt'
@@ -1699,7 +1698,7 @@ export function WorkflowEditor() {
                 const p = getNodeConfigData(n.data as NodeData).errorPolicy
                 // M2 R2-12: an enabled version-2 "goto" draws the same read-only red edge.
                 const active = activePolicy({ errorPolicy: p })
-                const reflowTarget = active?.onError === 'goto' ? active.gotoNodeId : featureFlags.nodeRetryPolicy && p && p.mode === 'retry-from' ? p.targetId : null
+                const reflowTarget = active?.onError === 'goto' ? active.gotoNodeId : null
                 const reflowTimes = active?.onError === 'goto' ? active.maxRetries : p?.maxRetries
                 if (reflowTarget && nodes.some((t) => t.id === reflowTarget)) {
                   return [{

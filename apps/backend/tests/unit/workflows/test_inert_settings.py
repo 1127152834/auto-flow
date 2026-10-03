@@ -27,7 +27,7 @@ def test_null_values_count_as_unset_like_the_studio_does():
 
 
 def test_description_names_the_node_and_settings():
-    assert describe_inert_keys("点击提交", ["retryCount", "timeoutAction"]) == "「点击提交」的以下设置尚未生效，运行时会被忽略：重试次数、运行超时后"
+    assert describe_inert_keys("点击提交", ["retryCount", "timeoutAction"]) == "「点击提交」的以下旧设置不会自动生效，可在「出错时」查看转换建议并启用：重试次数、运行超时后"
 
 
 def test_frontend_mirror_lists_the_same_keys():

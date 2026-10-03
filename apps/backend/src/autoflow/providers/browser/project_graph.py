@@ -8,6 +8,10 @@ from itertools import pairwise
 from time import monotonic
 from typing import Any
 
+from autoflow.application.workflows.config_schema import (
+    describe_unknown_keys,
+    unknown_config_keys,
+)
 from autoflow.application.workflows.event_translation import node_failure_message
 from autoflow.application.workflows.executors.base import ModuleExecutor, ModuleResult
 from autoflow.application.workflows.executors.production import (
@@ -233,6 +237,7 @@ class ProjectGraphExecutor:
         self.end_completed = False
         self.manual_outcome: str | None = None
         self.inert_reported: set[str] = set()
+        self.unknown_reported: set[str] = set()
 
     async def run(self, plan: Mapping[str, Any]) -> dict[str, object]:
         document = plan.get('document')
@@ -345,6 +350,11 @@ class ProjectGraphExecutor:
                 # Spec M1 R1-02: say once per node that saved retry / timeout settings are ignored.
                 self.inert_reported.add(node_id)
                 await emit('log', {'level': 'warning', 'message': describe_inert_keys(str(node_data.get('label') or module_type or node_id), inert)})
+            unknown = unknown_config_keys(node_data, str(module_type or '')) if node_id not in self.unknown_reported else []
+            if unknown:
+                # Spec M2 R2-11: settings no part of this node reads are reported once, never silently kept.
+                self.unknown_reported.add(node_id)
+                await emit('log', {'level': 'warning', 'message': describe_unknown_keys(str(node_data.get('label') or module_type or node_id), unknown)})
             self.cancellation.raise_if_cancelled()
             return
         if event['type'] != 'execution:node_complete':

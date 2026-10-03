@@ -4,6 +4,7 @@ import { Button } from '../../../shared/components/ui/button'
 import { Input } from '../../../shared/components/ui/input'
 import { Select } from '../../../shared/components/ui/select'
 import { Switch } from '../../../shared/components/ui/switch'
+import { safeProjectError } from '../../projects/presentation-error'
 
 export type Schedule = components['schemas']['ScheduleView']
 export type ScheduleTrigger = components['schemas']['ScheduleTriggerView']
@@ -34,7 +35,10 @@ const triggerStates: Record<ScheduleTrigger['state'], string> = {
   pending: '处理中', started: '已开始运行', skipped: '已跳过', queued: '排队等待', failed: '未能开始',
 }
 const blank: ScheduleWrite = { kind: 'cron', cron: '0 9 * * *', timezone: 'Asia/Shanghai', overlap: 'skip', missed: 'latestOnly', enabled: true, parameters: {}, concurrency: 1 }
-const message = (error: unknown) => error instanceof Error ? error.message : '操作失败'
+// Server messages can carry internal identities; only schedule validation text (authored for
+// people, e.g. why a time expression is invalid) is shown as is, everything else is mapped.
+const message = (error: unknown) => error instanceof Error && 'code' in error && error.code === 'SCHEDULE_INVALID' && error.message
+  ? error.message : safeProjectError(error)
 const writable = ({ kind, cron, timezone, overlap, missed, enabled, parameters, maxTasks, concurrency }: Schedule): ScheduleWrite =>
   ({ kind, cron, timezone, overlap, missed, enabled, parameters, maxTasks, concurrency })
 

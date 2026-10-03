@@ -12,8 +12,6 @@ import { getNodeConfigData, useWorkflowStore, moduleTypeLabels, type NodeData, t
 import { useNodeRunStore } from '../hooks/stores/nodeRunStore'
 import { moduleIcons, moduleCategories, moduleKeywords } from './ModuleSidebar'
 import { getBlockRowColorClasses } from './moduleColors'
-import { SelectNative } from './controls/select-native'
-import { NumberInput } from './controls/number-input'
 import { Plus, Search, Trash2, X, ChevronUp, ChevronDown, Ban, CheckCircle2, RotateCcw } from 'lucide-react'
 import type { ModuleType } from '../types/index'
 import {
@@ -23,7 +21,6 @@ import {
 } from './blockFlowModel'
 import { collectNodeVarNames } from '../lib/moduleDefaultVars'
 import { moduleMatchesQuery } from '../lib/pinyin'
-import { featureFlags } from '../lib/featureFlags'
 import { activePolicy, describePolicy } from '../lib/errorPolicy'
 
 // 模块条复制粘贴的会话级剪贴板（跨组件重渲染保留；存的是已换新 id 的快照，
@@ -118,7 +115,6 @@ export function BlockFlowView() {
   const selectNode = useWorkflowStore((s) => s.selectNode)
   const setGraph = useWorkflowStore((s) => s.setGraph)
   const toggleNodesDisabled = useWorkflowStore((s) => s.toggleNodesDisabled)
-  const updateNodeConfig = useWorkflowStore((s) => s.updateNodeConfig)
   const ensureGlobalVariables = useWorkflowStore((s) => s.ensureGlobalVariables)
   const runStatuses = useNodeRunStore((s) => s.statuses)
 
@@ -147,7 +143,6 @@ export function BlockFlowView() {
   const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number } | null>(null)
   const [dropActive, setDropActive] = useState(false)
   // 错误策略弹层（点击模块行的"出错处理"按钮打开）
-  const [errPopover, setErrPopover] = useState<{ nodeId: string; x: number; y: number } | null>(null)
   // 折叠的容器块 id 集合（循环体/条件分支/并行分支可点击收起，提升可读性）
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
   const toggleCollapse = (id: string) => setCollapsed((prev) => {
@@ -228,30 +223,7 @@ export function BlockFlowView() {
     // M2 R2-12: an enabled version-2 policy is always shown; old shapes stay hidden until enabled.
     const active = activePolicy({ errorPolicy: p })
     if (active) return describePolicy(active, nodeLabel)
-    if (!featureFlags.nodeRetryPolicy || !p || !p.mode || p.mode === 'stop') return ''
-    if (p.mode === 'continue') return '出错跳过'
-    if (p.mode === 'retry-self') return `出错重试 ${p.maxRetries ?? 1} 次`
-    if (p.mode === 'retry-from') return `出错回流「${p.targetId ? nodeLabel(p.targetId) : '上层'}」×${p.maxRetries ?? 1}`
     return ''
-  }
-  // 设置某节点错误策略（mode='stop' 视为清除）
-  const setPolicy = (nodeId: string, patch: Partial<ErrorPolicy>) => {
-    const raw = nodes.find((n) => n.id === nodeId)?.data
-    const cur = raw ? getNodeConfigData(raw).errorPolicy as ErrorPolicy | undefined : undefined
-    const base: ErrorPolicy = cur || { mode: 'stop' }
-    const next: ErrorPolicy = { maxRetries: 1, interval: 0, onExhausted: 'stop', ...base, ...patch }
-    if (next.mode === 'stop') {
-      updateNodeConfig(nodeId, { errorPolicy: undefined })
-    } else {
-      updateNodeConfig(nodeId, { errorPolicy: next })
-    }
-  }
-  // 回流目标候选：可见顺序里排在当前块之前的所有模块（不含自己）
-  const reflowCandidates = (nodeId: string): { id: string; label: string }[] => {
-    const ids = flatBlocks.map((b) => b.id)
-    const idx = ids.indexOf(nodeId)
-    const before = idx < 0 ? ids : ids.slice(0, idx)
-    return before.map((id) => ({ id, label: nodeLabel(id) }))
   }
 
   // 批量删除选中块
@@ -600,15 +572,6 @@ export function BlockFlowView() {
           {isCollapsed && childCount ? <span className="text-[10.5px] text-[hsl(var(--slate-400))] flex-shrink-0">· 已折叠 {childCount} 步</span> : null}
         </div>
         <div className="flex basis-full @[32rem]/blocks:basis-auto justify-end items-center gap-0.5 opacity-0 group-hover/row:opacity-100 focus-within:opacity-100 transition-opacity flex-shrink-0">
-          {featureFlags.nodeRetryPolicy && <button
-            onClick={(e) => {
-              e.stopPropagation()
-              const r = (e.currentTarget as HTMLElement).getBoundingClientRect()
-              setErrPopover({ nodeId: node.id, x: Math.min(r.left - 280, window.innerWidth - 320), y: r.bottom + 4 })
-            }}
-            className={'p-1 rounded-[6px] transition-colors hover:bg-[hsl(var(--warning-500)/0.12)] ' + (policyText(data.errorPolicy as ErrorPolicy) ? 'text-[hsl(var(--warning-600))]' : 'text-[hsl(var(--slate-400))] hover:text-[hsl(var(--warning-600))]')}
-            title="出错处理（原地重试 / 回流上层重试 / 跳过继续）"
-          ><RotateCcw className="w-3.5 h-3.5" /></button>}
           <button onClick={(e) => { e.stopPropagation(); handleMove(block.id, -1) }} className="p-1 rounded-[6px] text-[hsl(var(--slate-400))] hover:text-[hsl(var(--brand-600))] hover:bg-[hsl(var(--brand-50))] transition-colors" title="上移"><ChevronUp className="w-3.5 h-3.5" /></button>
           <button onClick={(e) => { e.stopPropagation(); handleMove(block.id, 1) }} className="p-1 rounded-[6px] text-[hsl(var(--slate-400))] hover:text-[hsl(var(--brand-600))] hover:bg-[hsl(var(--brand-50))] transition-colors" title="下移"><ChevronDown className="w-3.5 h-3.5" /></button>
           <button onClick={(e) => { e.stopPropagation(); toggleNodesDisabled([node.id]) }} className={'p-1 rounded-[6px] transition-colors hover:bg-[hsl(var(--slate-100))] ' + (disabled ? 'text-[hsl(var(--brand-600))]' : 'text-[hsl(var(--slate-400))] hover:text-[hsl(var(--slate-700))]')} title={disabled ? '启用 (Ctrl+D)' : '禁用 (Ctrl+D)'}><Ban className="w-3.5 h-3.5" /></button>
@@ -867,76 +830,6 @@ export function BlockFlowView() {
         </>,
         document.body,
       )}
-      {errPopover && (() => {
-        const nd = nodes.find((n) => n.id === errPopover.nodeId)
-        const pol: ErrorPolicy = (nd?.data?.errorPolicy as ErrorPolicy) || { mode: 'stop', maxRetries: 1, interval: 0, onExhausted: 'stop' }
-        const cands = reflowCandidates(errPopover.nodeId)
-        const left = Math.max(8, Math.min(errPopover.x, window.innerWidth - 320))
-        const top = Math.max(8, Math.min(errPopover.y, window.innerHeight - 380))
-        return createPortal(
-          <>
-            <div className="fixed inset-0 z-[9998]" onClick={() => setErrPopover(null)} />
-            <div className="fixed z-[9999] w-[300px] rounded-[12px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-pop-2xl p-3 animate-scale-in" style={{ left, top }} onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[12.5px] font-semibold text-[hsl(var(--slate-700))]">出错处理</span>
-                <button aria-label="关闭出错处理" onClick={() => setErrPopover(null)} className="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"><X className="w-3.5 h-3.5" /></button>
-              </div>
-              <div className="grid grid-cols-2 gap-1.5 mb-2">
-                {(([['stop', '失败即停'], ['continue', '跳过继续'], ['retry-self', '原地重试'], ['retry-from', '回流上层重试']]) as [ErrorPolicy['mode'], string][]).map(([m, lbl]) => (
-                  <button key={m} onClick={() => setPolicy(errPopover.nodeId, { mode: m })}
-                    className={'px-2 py-1.5 rounded-[7px] text-[11.5px] font-medium border transition-colors ' + (pol.mode === m ? 'bg-[hsl(var(--brand-500))] text-white border-[hsl(var(--brand-500))]' : 'bg-[hsl(var(--card))] text-[hsl(var(--slate-600))] border-[hsl(var(--border))] hover:bg-[hsl(var(--brand-50))]')}>{lbl}</button>
-                ))}
-              </div>
-              {(pol.mode === 'retry-self' || pol.mode === 'retry-from') && (
-                <div className="space-y-2">
-                  {pol.mode === 'retry-from' && (
-                    <div>
-                      <label className="text-[10.5px] text-[hsl(var(--muted-foreground))]">回流目标（出错后回到这里重跑）</label>
-                      <SelectNative className="mt-0.5" value={pol.targetId || ''} placeholder="选择上层模块…"
-                        onChange={(e) => setPolicy(errPopover.nodeId, { targetId: e.target.value })}>
-                        {cands.map((c, i) => <option key={c.id} value={c.id}>{`#${i + 1} ${c.label}`}</option>)}
-                      </SelectNative>
-                      {cands.length === 0 && <div className="text-[10px] text-[hsl(var(--warning-600))] mt-0.5">该模块之前没有可回流的模块</div>}
-                    </div>
-                  )}
-                  <div className="flex gap-2">
-                    <div className="flex-1">
-                      <label className="text-[10.5px] text-[hsl(var(--muted-foreground))]">重试次数</label>
-                      <NumberInput aria-label="出错处理重试次数" min={1} value={pol.maxRetries ?? 1}
-                        onChange={(value) => setPolicy(errPopover.nodeId, { maxRetries: value })}
-                        className="w-full mt-0.5 px-2 py-1 rounded-[6px] text-[12px] bg-[hsl(var(--background))] border border-[hsl(var(--border))]" />
-                    </div>
-                    <div className="flex-1">
-                      <label className="text-[10.5px] text-[hsl(var(--muted-foreground))]">间隔(秒)</label>
-                      <NumberInput aria-label="出错处理间隔（秒）" min={0} step={0.5} value={pol.interval ?? 0}
-                        onChange={(value) => setPolicy(errPopover.nodeId, { interval: value })}
-                        className="w-full mt-0.5 px-2 py-1 rounded-[6px] text-[12px] bg-[hsl(var(--background))] border border-[hsl(var(--border))]" />
-                    </div>
-                  </div>
-                  {pol.mode === 'retry-from' && (
-                    <div>
-                      <label className="text-[10.5px] text-[hsl(var(--muted-foreground))]">重试用尽后</label>
-                      <div className="flex gap-1.5 mt-0.5">
-                        {(([['stop', '停止流程'], ['continue', '继续往下']]) as ['stop' | 'continue', string][]).map(([v, lbl]) => (
-                          <button key={v} onClick={() => setPolicy(errPopover.nodeId, { onExhausted: v })}
-                            className={'flex-1 px-2 py-1 rounded-[6px] text-[11.5px] border transition-colors ' + ((pol.onExhausted || 'stop') === v ? 'bg-[hsl(var(--brand-500))] text-white border-[hsl(var(--brand-500))]' : 'bg-[hsl(var(--card))] text-[hsl(var(--slate-600))] border-[hsl(var(--border))] hover:bg-[hsl(var(--brand-50))]')}>{lbl}</button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-              <div className="mt-2 text-[10px] text-[hsl(var(--slate-400))] leading-relaxed">
-                {pol.mode === 'stop' && '默认：该模块出错时立即停止流程。'}
-                {pol.mode === 'continue' && '出错时记一条警告并继续执行后续模块。'}
-                {pol.mode === 'retry-self' && '出错时原地重跑当前模块，达到次数仍失败则按默认停止。'}
-                {pol.mode === 'retry-from' && '出错时回到所选上层模块，从那里重新往下执行（适合刷新页面/重新登录后重试）。'}
-              </div>
-            </div>
-          </>,
-          document.body,
-        )
-      })()}
     </div>
   )
 }

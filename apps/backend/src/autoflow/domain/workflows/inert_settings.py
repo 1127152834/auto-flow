@@ -1,7 +1,7 @@
 """Settings the Studio saves but the runtime does not execute yet (remediation M1, R1-02 / spec §5.1).
 
-Mirrors apps/desktop/src/renderer/domains/workflows/lib/inertSettings.ts; M2 replaces both with the
-real node error policy.
+Mirrors apps/desktop/src/renderer/domains/workflows/lib/inertSettings.ts. Since M2 R2-12 these old
+keys are only migration candidates for the version-2 node error policy; the hint points there.
 """
 
 from __future__ import annotations
@@ -46,4 +46,4 @@ def inert_keys(data: Mapping[str, Any], module_type: str) -> list[str]:
 
 
 def describe_inert_keys(label: str, keys: list[str]) -> str:
-    return f"「{label}」的以下设置尚未生效，运行时会被忽略：{'、'.join(LABELS[key] for key in keys)}"
+    return f"「{label}」的以下旧设置不会自动生效，可在「出错时」查看转换建议并启用：{'、'.join(LABELS[key] for key in keys)}"

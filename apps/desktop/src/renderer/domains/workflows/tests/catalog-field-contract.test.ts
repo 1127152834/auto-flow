@@ -26,7 +26,8 @@ const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../.
 execFileSync(process.execPath, ['scripts/inventory-studio-completion.mjs', '--output-dir', candidateDirectory], { cwd: repositoryRoot })
 const currentComponents = JSON.parse(readFileSync(join(candidateDirectory, 'component-tools.json'), 'utf8')) as CurrentComponent[]
 // Reviewed replacements, not an open-ended exclusion: managed model selection
-// and browser-only capture replaced these historical panel fields.
+// and browser-only capture replaced these historical panel fields; the unified
+// node error policy (remediation M2 R2-12) replaced the loop's old timeout action.
 const retiredPanelFields: Record<string, string[]> = {
   network_capture: ['proxyPort', 'targetPorts', 'targetProcess'],
   ai_chat: ['apiKey', 'apiUrl', 'model'],
@@ -36,6 +37,7 @@ const retiredPanelFields: Record<string, string[]> = {
   ai_generate_video: ['ai', 'apiBase', 'apiKey', 'apiUrl'],
   ai_smart_scraper: ['apiKey', 'apiUrl', 'azureEndpoint', 'headless', 'llmModel', 'llmProvider'],
   ai_element_selector: ['apiKey', 'apiUrl', 'azureEndpoint', 'llmModel', 'llmProvider'],
+  loop: ['onTimeout'],
 }
 
 const explicitInlineFields = new Map<string, string>([
@@ -112,6 +114,6 @@ it.each(entries)('$id matches its current or explicitly retired panel contract a
 
 it('accounts for exactly the reviewed historical panel replacements', () => {
   const retired = entries.filter(({ type, field }) => retiredPanelFields[type]?.includes(field))
-  expect(retired).toHaveLength(31)
-  expect(Object.values(retiredPanelFields).flat()).toHaveLength(31)
+  expect(retired).toHaveLength(32)
+  expect(Object.values(retiredPanelFields).flat()).toHaveLength(32)
 })
