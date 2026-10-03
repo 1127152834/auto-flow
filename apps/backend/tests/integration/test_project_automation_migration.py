@@ -24,7 +24,7 @@ def test_automation_upgrade_preserves_existing_rows_and_enforces_binding(
 ):
     database = tmp_path / "automation-migration.sqlite3"
     config = config_for(database)
-    assert ScriptDirectory.from_config(config).get_heads() == ["rm2_automation_schedules"]
+    assert ScriptDirectory.from_config(config).get_heads() == ["rm2_workflow_reuse"]
     before = {}
     if previous:
         command.upgrade(config, previous)
@@ -64,7 +64,7 @@ def test_automation_upgrade_preserves_existing_rows_and_enforces_binding(
         connection.execute("PRAGMA foreign_keys=ON")
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchone() == ("rm2_automation_schedules",)
+        ).fetchone() == ("rm2_workflow_reuse",)
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
         for table, rows in before.items():
             assert connection.execute(f"SELECT * FROM {table}").fetchall() == rows
@@ -96,10 +96,9 @@ def test_automation_upgrade_preserves_existing_rows_and_enforces_binding(
             # Use explicit columns so the test does not depend on physical ordering.
             insert = "INSERT INTO project_automations (id,project_id,workflow_id,name,name_key,search_text,description,management_revision,input_plan,parameter_schema,environment_policy,run_policy,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
             connection.execute(insert, values)
-            with pytest.raises(sqlite3.IntegrityError):
-                connection.execute(
-                    insert, ("second", *values[1:3], "B", "b", "b", *values[6:])
-                )
+            # Remediation M2 R2-18: a second automation of the project may reuse the workflow.
+            connection.execute(insert, ("second", *values[1:3], "B", "b", "b", *values[6:]))
+            assert connection.execute("SELECT count(*) FROM project_automations WHERE workflow_id='workflow-fixture'").fetchone() == (2,)
             with pytest.raises(sqlite3.IntegrityError):
                 connection.execute(
                     "DELETE FROM workflow_documents WHERE id='workflow-fixture'"
@@ -153,4 +152,4 @@ def test_empty_downgrade_roundtrip_and_nonempty_downgrade_preserves_data(tmp_pat
         )
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchone() == ("rm2_automation_schedules",)
+        ).fetchone() == ("rm2_workflow_reuse",)

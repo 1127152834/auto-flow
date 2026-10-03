@@ -16,6 +16,8 @@ def workflow_project_expression() -> ColumnElement[str]:
         select(ProjectAutomationRow.project_id)
         .where(ProjectAutomationRow.workflow_id == WorkflowDocumentRow.id)
         .correlate(WorkflowDocumentRow)
+        # Remediation M2 R2-18: several automations of one project may share a workflow.
+        .limit(1)
         .scalar_subquery()
     )
     return func.coalesce(

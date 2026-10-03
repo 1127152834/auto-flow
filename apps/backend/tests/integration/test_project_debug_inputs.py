@@ -108,7 +108,7 @@ async def test_selected_third_record_real_worker_writes_then_normal_run_selects_
         initial = debug_inputs(session, project, plan, {})
         candidate = debug_inputs(session, project, plan, {}, input_id=iid, search='third')['items'][0]
         choices = {**initial['selection'], iid: candidate['selection']}
-    batch, _, _ = coordinator.start(project, automation.automation_id, uid(), {'expectedAutomationRevision': 1, 'parameters': {}, 'maxTasks': 1, 'concurrency': 1, 'debugSelection': choices})
+    batch, _, _ = coordinator.start(project, automation.automation_id, uid(), {'expectedAutomationRevision': 1, 'parameters': {}, 'maxTasks': 1, 'concurrency': 1, 'debugSelection': choices, 'executionMode': 'realWrites'})
     assert ProjectBatchScheduler.claim_data_task(factory, project, batch.batch_id) == 'ready'
     task = coordinator.list_tasks(project, batch.batch_id)[0]
     capabilities = ProjectWorkerCapabilities(factory)

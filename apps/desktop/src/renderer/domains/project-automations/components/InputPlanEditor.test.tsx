@@ -236,3 +236,23 @@ it('keeps a valid processing input through edits and drops one that is no longer
   fireEvent.click(screen.getByRole('switch', { name: '必填输入 账号' }))
   expect(p.onChange).toHaveBeenLastCalledWith({ inputs: [input, { ...second, required: false }] })
 })
+
+it('binds data to the workflow signature and names what is still missing', async () => {
+  // Remediation M2 R2-18/20.
+  const signature = { inputs: [{ key: 'doc', name: '文档', fields: [{ key: 'title', name: '标题', type: 'string' as const, required: true, sensitive: false }] }] }
+  const user = userEvent.setup()
+  const p = props({ inputs: [{ ...input, fieldBindings: [{ inputFieldId: 'b1', inputFieldAlias: '标题', fieldRef: ref('t1', 'f1') }] }] })
+  const view = render(<InputPlanEditor {...p} signature={signature}/>)
+  expect(screen.getByRole('status')).toHaveTextContent('工作流需要的流程输入还没有绑定数据：文档')
+  await chooseOption(user, screen.getByRole('combobox', { name: '对应流程输入 资料' }), 'doc')
+  const chosen = p.onChange.mock.lastCall![0].inputs[0]
+  expect(chosen.signatureInput).toBe('doc')
+  view.rerender(<InputPlanEditor {...p} value={{ inputs: [chosen] }} signature={signature}/>)
+  expect(screen.getByText('流程输入「文档」还缺少字段：标题')).toBeVisible()
+  await chooseOption(user, screen.getByRole('combobox', { name: '对应流程字段 标题' }), 'title')
+  const complete = p.onChange.mock.lastCall![0].inputs[0]
+  expect(complete.fieldBindings[0].signatureField).toBe('title')
+  view.rerender(<InputPlanEditor {...p} value={{ inputs: [complete] }} signature={signature}/>)
+  expect(screen.queryByText(/还缺少字段/)).toBeNull()
+  expect(screen.queryByRole('status')).toBeNull()
+})

@@ -24,6 +24,19 @@ _VARIABLE_REFERENCE = re.compile(
 )
 
 
+# Remediation M2 R2-19: signature references ``input.<group>.<field>`` and ``$record.<field>``.
+_DOTTED_PATH = re.compile(r"^(input|\$record)((?:\.[^.{}\s\[\]]+)+)$")
+_DOTTED_REFERENCE = re.compile(r"\$?\{\s*((?:input|\$record|node)(?:\.[^.{}\s\[\]]+)+)\s*\}")
+# Remediation M2 R2-29: ``node.<nodeId>.<outputKey>`` reads the variable that output names.
+_NODE_PATH = re.compile(r"^node\.([^.{}\s\[\]]+)\.([^.{}\s\[\]]+)$")
+NODE_OUTPUTS = "\x00nodeOutputs"
+
+
+def _dotted_sensitive(name: str, sensitive_names: set[str]) -> bool:
+    # A whole group (``input.account``) is sensitive when any of its fields is.
+    return name in sensitive_names or any(item.startswith(name + ".") for item in sensitive_names)
+
+
 def references_variable(value: str) -> bool:
     return any(
         _VARIABLE_ACCESS_PATH.fullmatch(match.group(1).strip())
@@ -43,6 +56,8 @@ def references_sensitive_value(value: Any, sensitive_names: set[str]) -> bool:
     if not isinstance(value, str):
         return False
     if _CREDENTIAL_REFERENCE.search(value):
+        return True
+    if any(_dotted_sensitive(match.group(1), sensitive_names) for match in _DOTTED_REFERENCE.finditer(value)):
         return True
     return any(match.group(1) in sensitive_names for match in _VARIABLE_REFERENCE.finditer(value))
 
@@ -119,6 +134,22 @@ def resolve_value(
 
     def resolve_access_path(expression: str) -> Any:
         expression = resolve_nested(expression.strip(), max_depth=3)
+        node_output = _NODE_PATH.match(expression)
+        if node_output:
+            aliases = variables.get(NODE_OUTPUTS)
+            names = aliases.get(node_output.group(1)) if isinstance(aliases, Mapping) else None
+            name = names.get(node_output.group(2)) if isinstance(names, Mapping) else None
+            return variables[name] if isinstance(name, str) and name in variables else missing
+        dotted = _DOTTED_PATH.match(expression)
+        if dotted:
+            if dotted.group(1) not in variables:
+                return missing
+            current = variables[dotted.group(1)]
+            for part in dotted.group(2)[1:].split("."):
+                if not isinstance(current, Mapping) or part not in current:
+                    return missing
+                current = current[part]
+            return current
         match = _VARIABLE_ACCESS_PATH.match(expression)
         if not match:
             return missing

@@ -38,3 +38,31 @@ it('keeps the task input after its live definition is removed', () => {
   fireEvent.click(screen.getByRole('button', { name: '本次任务' }))
   expect(screen.getByText('frozen@example.test')).toBeDefined()
 })
+
+it('offers signature references for bound fields and converts old references on request', async () => {
+  // Remediation M2 R2-19/22.
+  const { projectReferences } = await import('../project-inputs')
+  const automation = useProjectInputs.getState().automation!
+  expect(projectReferences(automation, [])[0].name).toBe(`PROJECT_INPUTS['i']['values']['f']`)
+  const bound = { ...automation, inputPlan: { inputs: automation.inputPlan.inputs.map(input => ({ ...input, signatureInput: 'account', fieldBindings: input.fieldBindings.map(binding => ({ ...binding, signatureField: 'email' })) })) } }
+  expect(projectReferences(bound, [])[0].name).toBe('input.account.email')
+  const original = useProjectInputs.getState().convertToSignature
+  const convertToSignature = vi.fn(async () => undefined)
+  useProjectInputs.setState({ convertToSignature })
+  render(<ProjectInputPanel />)
+  fireEvent.click(screen.getByRole('button', { name: '转换为流程输入' }))
+  expect(convertToSignature).toHaveBeenCalledOnce()
+  cleanup()
+  useProjectInputs.setState({ automation: bound as never })
+  render(<ProjectInputPanel />)
+  expect(screen.queryByRole('button', { name: '转换为流程输入' })).toBeNull()
+  useProjectInputs.setState({ convertToSignature: original })
+})
+
+it('does not convert while the workflow has unsaved changes', async () => {
+  useWorkflowStore.setState({ hasUnsavedChanges: true })
+  const { convertToSignature } = useProjectInputs.getState()
+  await convertToSignature()
+  expect(useProjectInputs.getState().error).toBe('请先保存工作流，再转换为流程输入')
+  useWorkflowStore.setState({ hasUnsavedChanges: false })
+})

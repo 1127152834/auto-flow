@@ -1024,8 +1024,10 @@ class WorkflowRunDispatcher:
         }
 
     def _project_input_context(self, run: CoreRun) -> dict[str, Any]:
+        from autoflow.domain.project_automations.rules import processing_input
         from autoflow.domain.workflows.project_inputs import input_context
         from autoflow.infrastructure.database.project_run_models import (
+            ProjectBatchRow,
             ProjectTaskInputSnapshotRow,
             ProjectTaskRow,
         )
@@ -1036,7 +1038,10 @@ class WorkflowRunDispatcher:
             snapshot = session.scalar(select(ProjectTaskInputSnapshotRow).where(ProjectTaskInputSnapshotRow.task_id == task.id))
             if snapshot is None:
                 return {}
-            return input_context(snapshot.inputs, snapshot.parameters)
+            batch = session.get(ProjectBatchRow, task.batch_id)
+            plan = ((batch.frozen_request or {}).get('automation') or {}).get('inputPlan') if batch else None
+            primary = processing_input(plan) if isinstance(plan, dict) else None
+            return input_context(snapshot.inputs, snapshot.parameters, primary if isinstance(primary, str) else None)
 
     @staticmethod
     def _variables(content: Any, run: CoreRun) -> dict[str, Any]:

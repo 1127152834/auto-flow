@@ -23,6 +23,8 @@ class InputFieldBinding(ApiModel):
     input_field_id: str
     input_field_alias: str
     field_ref: DataFieldRef
+    # Remediation M2 R2-20: the workflow signature field this binding supplies.
+    signature_field: StrictStr | None = None
 
 
 class RecordSlotRelation(ApiModel):
@@ -59,6 +61,8 @@ class InputDefinition(ApiModel):
     fixed_record: DataRecordRef | None = None
     relation: InputRelation | None = None
     field_bindings: list[InputFieldBinding]
+    # Remediation M2 R2-20: the workflow signature input this data input supplies.
+    signature_input: StrictStr | None = None
     filter: dict[str, JsonValue]
     order_by: list[dict[str, str]]
 

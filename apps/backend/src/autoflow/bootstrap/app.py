@@ -20,6 +20,7 @@ from autoflow.adapters.http.execution_settings import execution_settings_router
 from autoflow.adapters.http.image_assets import image_assets_router
 from autoflow.adapters.http.local_workflows import local_workflows_router
 from autoflow.adapters.http.openapi import configure_openapi
+from autoflow.adapters.http.signature_migration import signature_migration_router
 from autoflow.adapters.http.studio_credentials import studio_credentials_router
 from autoflow.adapters.http.studio_retention import studio_retention_router
 from autoflow.adapters.http.workflow_bundles import workflow_bundles_router
@@ -92,6 +93,7 @@ from autoflow.application.workflows.schedule_notifications import (
 )
 from autoflow.application.workflows.schedules import WorkflowScheduleService
 from autoflow.application.workflows.service import WorkflowService
+from autoflow.application.workflows.signature_migration import SignatureMigration
 from autoflow.application.workflows.webdav import WebDavWorkflowService
 from autoflow.bootstrap.android import CurrentAndroidRunBoundary, android_service
 from autoflow.bootstrap.config import Settings
@@ -716,6 +718,7 @@ def create_app(
     app.include_router(studio_credentials_router(studio_credentials))
     app.include_router(studio_retention_router(studio_retention))
     app.include_router(workflow_schedules_router(workflow_schedules))
+    app.include_router(signature_migration_router(SignatureMigration(session_factory)))
     app.include_router(android_router(android))
     app.include_router(android_management_router(EnvironmentCheckService(android.runtime), android_operations, android_images, android_resources, android_backups, android, android_bulk, android_cleanup, android_resources, observations=android_observations))
     app.include_router(android_management_internal_router(android_resources, lambda: android.management.workspace_identity))

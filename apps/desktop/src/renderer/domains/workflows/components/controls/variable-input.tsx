@@ -1,4 +1,5 @@
 import { useProjectInputs, projectReferences, registerProjectReference } from '../../project-inputs'
+import { outputAvailability } from '../../lib/nodeOutputs'
 // Source: WebRPA@5ccb900e, components/ui/variable-input.tsx; see SOURCE.md for license and adaptation boundaries.
 import * as React from 'react'
 import { cn } from '../../lib/utils'
@@ -44,6 +45,10 @@ const VariableInput = React.forwardRef<HTMLInputElement | HTMLTextAreaElement, V
     const projectFields = useProjectInputs(state => state.fields)
     const globalVariables = useWorkflowStore((state) => state.variables)
     const nodes = useWorkflowStore((state) => state.nodes)
+    const edges = useWorkflowStore((state) => state.edges)
+    const selectedNodeId = useWorkflowStore((state) => state.selectedNodeId)
+    // 整改 M2 R2-29：当前节点之前可用的节点输出，按稳定标识引用，改名不失效
+    const nodeOutputs = React.useMemo(() => selectedNodeId ? outputAvailability(nodes, edges, selectedNodeId) : [], [nodes, edges, selectedNodeId])
     
     // 收集所有变量（全局变量 + 模块定义的变量 + 内置隐含变量）
     const allVariables = React.useMemo(() => {
@@ -118,8 +123,9 @@ const VariableInput = React.forwardRef<HTMLInputElement | HTMLTextAreaElement, V
       })
       
       for (const reference of projectReferences(projectAutomation, projectFields)) variableMap.set(reference.name, { name: reference.name, value: undefined, type: (reference.type === 'date' ? 'string' : reference.type) as Variable['type'], scope: 'local', description: reference.label })
+      for (const output of nodeOutputs) variableMap.set(output.reference, { name: output.reference, value: undefined, type: 'string', scope: 'local', description: `「${output.label}」的${output.name}${output.required ? '' : '（可能为空，使用前请判断）'}` })
       return Array.from(variableMap.values())
-    }, [globalVariables, nodes, projectAutomation, projectFields])
+    }, [globalVariables, nodes, projectAutomation, projectFields, nodeOutputs])
     
     const [showSuggestions, setShowSuggestions] = React.useState(false)
     const [selectedIndex, setSelectedIndex] = React.useState(0)
@@ -206,6 +212,9 @@ const VariableInput = React.forwardRef<HTMLInputElement | HTMLTextAreaElement, V
 
     const insertVariable = (varName: string) => {
       registerProjectReference(varName)
+      // A stable output reference needs the source node to name its variable explicitly.
+      const output = nodeOutputs.find(item => item.reference === varName && !item.named)
+      if (output) useWorkflowStore.getState().updateNodeConfig(output.nodeId, { [output.key]: output.variable })
       const input = inputRef.current
       if (!input) return
 
@@ -360,7 +369,7 @@ const VariableInput = React.forwardRef<HTMLInputElement | HTMLTextAreaElement, V
                   onMouseEnter={() => setSelectedIndex(index)}
                 >
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-blue-600">{variable.name.startsWith('PROJECT_') ? variable.description : variable.name}</span>
+                    <span className="font-mono text-blue-600">{variable.name.startsWith('PROJECT_') || variable.name.startsWith('node.') ? variable.description : variable.name}</span>
                     <span className={cn('text-xs', getTypeColor(variable.type))}>
                       ({variable.type})
                     </span>

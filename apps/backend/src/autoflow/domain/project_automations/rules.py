@@ -14,6 +14,7 @@ from autoflow.domain.project_data.query import (
 )
 from autoflow.domain.projects.models import ProjectError
 from autoflow.domain.workflows.references import is_workflow_id
+from autoflow.domain.workflows.signature import KEY as SIGNATURE_KEY
 
 
 def validate_write(
@@ -75,9 +76,16 @@ def _input_plan(value: Any, project_id: str | None) -> dict[str, Any]:
         if (
             not isinstance(item, dict)
             or not required <= set(item)
-            or set(item) - required - {"fixedRecord", "relation"}
+            or set(item) - required - {"fixedRecord", "relation", "signatureInput"}
         ):
             raise validation_error(path, "Invalid input definition")
+        # Remediation M2 R2-20: optional link to the workflow signature; absent means not bound.
+        if item.get("signatureInput") is None:
+            item.pop("signatureInput", None)
+        elif not isinstance(item["signatureInput"], str) or not SIGNATURE_KEY.match(item["signatureInput"]):
+            raise validation_error(f"{path}.signatureInput", "Must be a workflow input key")
+        elif any(other.get("signatureInput") == item["signatureInput"] for other in inputs.values()):
+            raise validation_error(f"{path}.signatureInput", "Each workflow input is bound once")
         input_id = _uuid(item.get("inputId"), f"{path}.inputId")
         if input_id in inputs:
             raise validation_error(f"{path}.inputId", "Must be unique")
@@ -193,12 +201,19 @@ def _field_bindings(value, path, project_id, table_id, generation):
     fields: set[str] = set()
     for index, binding in enumerate(value):
         current = f"{path}.fieldBindings.{index}"
-        if not isinstance(binding, dict) or set(binding) != {
+        if not isinstance(binding, dict) or not {"inputFieldId", "inputFieldAlias", "fieldRef"} <= set(binding) or set(binding) - {
             "inputFieldId",
             "inputFieldAlias",
             "fieldRef",
+            "signatureField",
         }:
             raise validation_error(current, "Invalid field binding")
+        if binding.get("signatureField") is None:
+            binding.pop("signatureField", None)
+        elif not isinstance(binding["signatureField"], str) or not SIGNATURE_KEY.match(binding["signatureField"]):
+            raise validation_error(f"{current}.signatureField", "Must be a workflow input field key")
+        elif sum(other.get("signatureField") == binding["signatureField"] for other in value) > 1:
+            raise validation_error(f"{current}.signatureField", "Each workflow field is bound once")
         field_id = _uuid(binding["inputFieldId"], f"{current}.inputFieldId")
         if field_id in fields:
             raise validation_error(f"{current}.inputFieldId", "Must be unique")

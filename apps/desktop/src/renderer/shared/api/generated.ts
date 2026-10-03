@@ -5999,6 +5999,40 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/migrations/signature-report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Signature Report */
+        get: operations["signature_report_api_v1_migrations_signature_report_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/migrations/signature": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Apply Signature Migration */
+        post: operations["apply_signature_migration_api_v1_migrations_signature_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 };
 export type webhooks = Record<string, never>;
 export type components = {
@@ -9508,6 +9542,8 @@ export type components = {
             relation?: (components["schemas"]["RecordSlotRelation"] | components["schemas"]["FieldEqualsRelation"] | components["schemas"]["SameRecordRelation"]) | null;
             /** Fieldbindings */
             fieldBindings: components["schemas"]["InputFieldBinding"][];
+            /** Signatureinput */
+            signatureInput?: string | null;
             /** Filter */
             filter: {
                 [key: string]: components["schemas"]["JsonValue"];
@@ -9538,6 +9574,8 @@ export type components = {
             /** Inputfieldalias */
             inputFieldAlias: string;
             fieldRef: components["schemas"]["DataFieldRef"];
+            /** Signaturefield */
+            signatureField?: string | null;
         };
         /** InputPlan */
         InputPlan: {
@@ -12497,6 +12535,28 @@ export type components = {
             /** Unbound */
             unbound: boolean;
         };
+        /** SignatureMigrationItem */
+        SignatureMigrationItem: {
+            /** Workflowid */
+            workflowId: string;
+            /** Workflowname */
+            workflowName: string;
+            /** Automationids */
+            automationIds: string[];
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "migrated" | "notNeeded" | "ambiguous" | "migratable" | "partial";
+            /** Reason */
+            reason: string;
+            /** Legacyreferences */
+            legacyReferences: number;
+            /** Rewritten */
+            rewritten?: number | null;
+            /** Remaining */
+            remaining?: number | null;
+        };
         /** SourceDefaultProxy */
         SourceDefaultProxy: {
             /**
@@ -14528,6 +14588,7 @@ export type components = {
             checksum: string;
             /** Browserenvironmentversion */
             browserEnvironmentVersion?: number | null;
+            signature?: components["schemas"]["WorkflowSignature"] | null;
             validation: components["schemas"]["WorkflowCatalogValidation"];
             /**
              * Createdat
@@ -14563,6 +14624,7 @@ export type components = {
             checksum: string;
             /** Browserenvironmentversion */
             browserEnvironmentVersion?: number | null;
+            signature?: components["schemas"]["WorkflowSignature"] | null;
             validation: components["schemas"]["WorkflowCatalogValidation"];
             /**
              * Createdat
@@ -14647,6 +14709,36 @@ export type components = {
              * @enum {string}
              */
             event: "input_prompt_result" | "js_script_claim" | "js_script_result";
+        };
+        /** WorkflowSignature */
+        WorkflowSignature: {
+            /** Inputs */
+            inputs: components["schemas"]["WorkflowSignatureInput"][];
+        };
+        /** WorkflowSignatureField */
+        WorkflowSignatureField: {
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "string" | "number" | "boolean" | "date" | "any";
+            /** Required */
+            required: boolean;
+            /** Sensitive */
+            sensitive: boolean;
+        };
+        /** WorkflowSignatureInput */
+        WorkflowSignatureInput: {
+            /** Key */
+            key: string;
+            /** Name */
+            name: string;
+            /** Fields */
+            fields: components["schemas"]["WorkflowSignatureField"][];
         };
         /** WorkflowStopRequest */
         WorkflowStopRequest: {
@@ -34987,6 +35079,111 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    signature_report_api_v1_migrations_signature_report_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignatureMigrationItem"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    apply_signature_migration_api_v1_migrations_signature_post: {
+        parameters: {
+            query?: {
+                workflowId?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignatureMigrationItem"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
                 };
             };
         };

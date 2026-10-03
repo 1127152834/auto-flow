@@ -15,6 +15,7 @@ from autoflow.domain.workflows.document import (
     WorkflowSummaryPage,
 )
 from autoflow.domain.workflows.errors import WorkflowDocumentError
+from autoflow.domain.workflows.signature import keep_signature
 
 from .core_workflows import _canonical_document_shape
 from .projects import guard_project
@@ -216,7 +217,8 @@ class SqlAlchemyWorkflowDocuments:
                     },
                 )
             row.name = draft.name
-            row.document = copy.deepcopy(draft.document)
+            # Remediation M2 R2-18: saving from an older editor must not drop the workflow signature.
+            row.document = keep_signature(row.document, copy.deepcopy(draft.document))
             if project_id is not None:
                 row.document = {**row.document, "projectId": project_id}
             row.layout = copy.deepcopy(draft.layout)

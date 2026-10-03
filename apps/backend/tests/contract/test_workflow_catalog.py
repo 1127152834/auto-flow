@@ -65,6 +65,7 @@ def test_list_and_detail_return_stored_identity_checksum_and_real_validation(tmp
         "name": ready_record.name,
         "revision": ready_record.revision,
         "browserEnvironmentVersion": None,
+        "signature": None,
         "checksum": hashlib.sha256(
             canonical_json(ready_record.document).encode()
         ).hexdigest(),

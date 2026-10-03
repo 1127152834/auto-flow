@@ -18,6 +18,8 @@ from functools import cache
 from pathlib import Path
 from typing import Any
 
+from autoflow.domain.workflows.outputs import declared_outputs
+
 from .config_schema_debt import EDITOR_DEFAULT_KEYS, PANEL_ONLY_KEYS
 from .executors.base import ModuleExecutor
 
@@ -148,12 +150,14 @@ def describe_unknown_keys(label: str, keys: list[str]) -> str:
     return f"「{label}」有 {len(keys)} 项设置不会被运行读取（{'、'.join(keys)}），可能来自其他版本或其他节点类型"
 
 
-def export_schema() -> dict[str, dict[str, list[str]]]:
+def export_schema() -> dict[str, dict[str, Any]]:
     return {
         module_type: {
             "reads": sorted(keys),
             "panelOnly": sorted(PANEL_ONLY_KEYS.get(module_type, ())),
             "editorDefaults": sorted(EDITOR_DEFAULT_KEYS.get(module_type, ())),
+            # Remediation M2 R2-29: the minimal output contract of this node type.
+            "outputs": declared_outputs(module_type, keys),
         }
         for module_type, keys in sorted(production_config_schema().items())
     }

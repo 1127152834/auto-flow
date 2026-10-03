@@ -9,7 +9,12 @@ from datetime import UTC, datetime
 from typing import Any, Literal, Protocol, SupportsIndex
 
 from .browser import BrowserRequestWatchPort, BrowserSessionPort
-from .variables import CredentialReader, references_sensitive_value, resolve_value
+from .variables import (
+    NODE_OUTPUTS,
+    CredentialReader,
+    references_sensitive_value,
+    resolve_value,
+)
 
 
 class _TaskLocalStack(list[dict[str, Any]]):
@@ -300,6 +305,8 @@ class ProjectEndState:
 class ExecutionContext:
     variables: dict[str, Any] = field(default_factory=dict)
     project_input_context: dict[str, Any] = field(default_factory=dict)
+    # Remediation M2 R2-29: nodeId → outputKey → variable name, for ``{node.X.k}`` references.
+    node_outputs: dict[str, dict[str, str]] = field(default_factory=dict)
     sensitive_variables: set[str] = field(default_factory=set)
     browser: BrowserSessionPort | None = None
     browser_initializer: Callable[[ExecutionContext, dict[str, Any]], Awaitable[BrowserSessionPort]] | None = None
@@ -389,12 +396,23 @@ class ExecutionContext:
         self._node_sensitive_context.set(True)
 
     def resolve_value(self, value: Any, *, preserve_types: bool = False) -> Any:
-        if references_sensitive_value(value, self.sensitive_variables):
+        if references_sensitive_value(value, self._sensitive_names()):
             self.mark_sensitive_use()
-        return copy.deepcopy(resolve_value(value, {**self.variables, **self.project_input_context}, self.credentials, preserve_types=preserve_types))
+        return copy.deepcopy(resolve_value(value, {**self.variables, **self.project_input_context, NODE_OUTPUTS: self.node_outputs}, self.credentials, preserve_types=preserve_types))
+
+    def _sensitive_names(self) -> set[str]:
+        if not self.node_outputs:
+            return self.sensitive_variables
+        aliases = {
+            f"node.{node_id}.{key}"
+            for node_id, outputs in self.node_outputs.items()
+            for key, name in outputs.items()
+            if name in self.sensitive_variables
+        }
+        return self.sensitive_variables | aliases
 
     def resolve_value_with_sensitivity(self, value: Any) -> tuple[Any, bool]:
-        sensitive = references_sensitive_value(value, self.sensitive_variables)
+        sensitive = references_sensitive_value(value, self._sensitive_names())
         return self.resolve_value(value), sensitive
 
     def set_variable(

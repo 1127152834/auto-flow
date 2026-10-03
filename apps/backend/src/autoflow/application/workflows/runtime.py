@@ -20,6 +20,10 @@ from autoflow.domain.workflows.error_semantics import (
 )
 from autoflow.domain.workflows.execution import ExecutionContext
 from autoflow.domain.workflows.graph import ExecutionGraph, WorkflowNode, parse_workflow
+from autoflow.domain.workflows.outputs import node_output_names
+from autoflow.domain.workflows.outputs import (
+    reference_issues as output_reference_issues,
+)
 from autoflow.domain.workflows.parallel_graph import structured_fork
 from autoflow.domain.workflows.project_end import normalize_project_end
 from autoflow.domain.workflows.scope import WorkflowScopeIssue, validate_workflow_scope
@@ -124,9 +128,14 @@ class WorkflowRuntime:
             if isinstance(nodes, list)
             else []
         )
-        return validate_workflow_scope(
+        issues = validate_workflow_scope(
             source_nodes,
             runnable_node_types=self._registry.get_all_types(),
+        )
+        # Remediation M2 R2-29: a stable output reference must point at an existing, named output.
+        return issues + tuple(
+            WorkflowScopeIssue(node_id, "nodeOutputReference", "NODE_OUTPUT_REFERENCE_INVALID", message, "")
+            for node_id, message in output_reference_issues(source_nodes)
         )
 
     def requires_browser(self, document: Mapping[str, Any]) -> bool:
@@ -176,6 +185,9 @@ class WorkflowRuntime:
         if issues:
             return WorkflowRuntimeResult(False, (), issues)
         _, graph = parse_workflow(document)
+        nodes = document.get("nodes", [])
+        if isinstance(nodes, list):
+            context.node_outputs = {**context.node_outputs, **node_output_names(nodes)}
         if start_node_id is not None and graph.get_node(start_node_id) is None:
             issue = WorkflowScopeIssue(
                 start_node_id,

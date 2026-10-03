@@ -18,7 +18,7 @@ from .models import Base
 class ProjectAutomationRow(Base):
     __tablename__ = "project_automations"
     __table_args__ = (
-        UniqueConstraint("workflow_id", name="uq_project_automations_workflow"),
+        Index("ix_project_automations_workflow", "workflow_id"),
         UniqueConstraint(
             "project_id", "name_key", name="uq_project_automations_project_name"
         ),

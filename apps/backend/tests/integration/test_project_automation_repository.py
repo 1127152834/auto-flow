@@ -213,17 +213,18 @@ def test_atomic_idempotent_create_update_cas_and_snapshot(tmp_path):
         assert session.scalar(select(ProjectAutomationRow)).name == "Beta"
 
 
-def test_workflow_unique_parent_scope_and_archive_guard(tmp_path):
+def test_workflow_reuse_parent_scope_and_archive_guard(tmp_path):
     _engine, factory, service, project_id, workflow_id = setup(tmp_path)
     created, _, _ = service.create(
         project_id, "00000000-0000-0000-0000-000000000011", write(workflow_id)
     )
-    with pytest.raises(ProjectError):
-        service.create(
-            project_id,
-            "00000000-0000-0000-0000-000000000012",
-            write(workflow_id, "Other"),
-        )
+    # Remediation M2 R2-18: another automation of the same project may reuse the workflow.
+    other, _, _ = service.create(
+        project_id,
+        "00000000-0000-0000-0000-000000000012",
+        write(workflow_id, "Other"),
+    )
+    assert other.workflow_id == created.workflow_id
     assert (
         service.automations.get(
             "00000000-0000-0000-0000-000000000099", created.automation_id

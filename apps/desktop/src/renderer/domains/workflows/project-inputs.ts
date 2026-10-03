@@ -3,7 +3,7 @@ import { create } from 'zustand'
 import type { components } from '../../shared/api/generated'
 import { ApiClientError, type ApiClient } from '../../shared/api/client'
 import { createProjectRunsApi } from '../project-runs/api'
-import { apiRequest } from './api'
+import { apiRequest, workflowApi } from './api'
 import { getStudioOpenContext } from './api/config'
 import { getStudioTransportRevision } from './api/transport'
 
@@ -40,6 +40,8 @@ interface ProjectInputState {
   preview(choices?: DebugSelection): Promise<DebugInputs | null>
   candidates(inputId: string, cursor: string | null, search: string): Promise<DebugInputs>
   choose(inputId: string, choice: DebugSelection[string]): Promise<void>
+  /** Remediation M2 R2-22: convert this workflow's old input references to workflow inputs. */
+  convertToSignature(): Promise<void>
 }
 export const useProjectInputs = create<ProjectInputState>((set, get) => ({
   automation: null, fields: [], tables: [], statuses: [], debug: null, task: null, taskDefinition: null, batchId: null, busy: false, error: null, notice: null, epoch: 0, realWrites: false,
@@ -82,6 +84,19 @@ export const useProjectInputs = create<ProjectInputState>((set, get) => ({
     for (const id of descendants(automation, inputId)) delete choices[id]
     return projectRequest<DebugInputs>(`${projectRoot(automation.projectId)}/automations/${automation.automationId}/debug-inputs`, { method: 'POST', body: { expectedAutomationRevision: automation.managementRevision, choices, inputId, cursor, search } })
   },
+  async convertToSignature() {
+    const { automation } = get()
+    if (!automation) return
+    if (useWorkflowStore.getState().hasUnsavedChanges) { set({ error: '请先保存工作流，再转换为流程输入' }); return }
+    set({ busy: true, error: null, notice: null })
+    try {
+      const [result] = await projectRequest<Schema['SignatureMigrationItem'][]>(`/api/v1/migrations/signature?workflowId=${encodeURIComponent(automation.workflowId)}`, { method: 'POST' })
+      const reloaded = await workflowApi.get(automation.workflowId)
+      if (reloaded.success && reloaded.data) useWorkflowStore.getState().importWorkflow(reloaded.data)
+      await get().load()
+      set({ notice: !result ? '没有需要转换的引用' : result.status === 'migrated' ? (result.remaining ? `已转换为流程输入；${result.remaining} 处引用使用记录身份或版本等信息，保留旧格式` : '已转换为流程输入') : result.reason })
+    } catch (error) { set({ busy: false, error: String(error) }) }
+  },
   async choose(inputId, choice) {
     const { automation, debug } = get()
     if (!automation) return
@@ -102,10 +117,15 @@ function descendants(automation: ProjectAutomation, id: string) {
 export function inputReference(inputId: string, fieldId?: string) {
   return `PROJECT_INPUTS['${inputId}']${fieldId ? `['values']['${fieldId}']` : ''}`
 }
+type BoundInput = ProjectAutomation['inputPlan']['inputs'][number]
+/** Remediation M2 R2-19: a field bound to the workflow signature is referenced by its stable keys. */
+export function bindingReference(input: BoundInput, binding: BoundInput['fieldBindings'][number]) {
+  return input.signatureInput && binding.signatureField ? `input.${input.signatureInput}.${binding.signatureField}` : inputReference(input.inputId, binding.inputFieldId)
+}
 export function projectReferences(automation: ProjectAutomation | null, fields: Schema['DataFieldView'][]) {
   if (!automation) return []
   return [
-    ...automation.inputPlan.inputs.flatMap(input => input.fieldBindings.map(binding => ({ name: inputReference(input.inputId, binding.inputFieldId), label: `${input.alias} → ${binding.inputFieldAlias}`, type: fields.find(field => field.ref.fieldId === binding.fieldRef.fieldId)?.type ?? 'string', source: '项目数据' }))),
+    ...automation.inputPlan.inputs.flatMap(input => input.fieldBindings.map(binding => ({ name: bindingReference(input, binding), label: `${input.alias} → ${binding.inputFieldAlias}`, type: fields.find(field => field.ref.fieldId === binding.fieldRef.fieldId)?.type ?? 'string', source: '项目数据' }))),
     ...automation.parameterSchema.map(parameter => ({ name: `PROJECT_PARAMETERS['${parameter.parameterId}']`, label: `固定参数 → ${parameter.name}`, type: parameter.type, source: '项目参数' })),
   ]
 }

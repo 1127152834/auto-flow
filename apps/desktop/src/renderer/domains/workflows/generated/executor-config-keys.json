@@ -26,6 +26,14 @@
    "editorDefaults": [
     "resultVariable"
    ],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [
     "apiKey",
     "apiUrl",
@@ -45,6 +53,20 @@
   },
   "ai_classify": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    },
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [
     "fields",
     "inputList",
@@ -71,6 +93,20 @@
   },
   "ai_dedup_semantic": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    },
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [
     "categories",
     "fields",
@@ -96,6 +132,14 @@
   },
   "ai_element_selector": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [
     "apiKey",
     "apiUrl",
@@ -119,6 +163,20 @@
   },
   "ai_extract": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    },
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [
     "categories",
     "inputList",
@@ -144,6 +202,14 @@
   },
   "ai_generate_image": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [
     "ai",
     "apiBase",
@@ -166,6 +232,14 @@
   },
   "ai_generate_video": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [
     "ai",
     "apiBase",
@@ -187,6 +261,20 @@
   },
   "ai_normalize": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    },
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [
     "categories",
     "fields",
@@ -212,6 +300,20 @@
   },
   "ai_route": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    },
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [
     "categories",
     "fields",
@@ -238,6 +340,20 @@
   },
   "ai_sentiment": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    },
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [
     "categories",
     "fields",
@@ -267,6 +383,14 @@
   },
   "ai_smart_scraper": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [
     "apiKey",
     "apiUrl",
@@ -291,6 +415,20 @@
   },
   "ai_summarize": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    },
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [
     "categories",
     "fields",
@@ -316,6 +454,20 @@
   },
   "ai_translate": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    },
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [
     "categories",
     "fields",
@@ -341,6 +493,26 @@
   },
   "ai_vision": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    },
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    },
+    {
+     "availability": "afterSuccess",
+     "key": "imageVariable",
+     "name": "图片",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [
     "apiKey",
     "apiUrl",
@@ -367,6 +539,20 @@
   },
   "ai_vision_act": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    },
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [
     "apiKey",
     "apiUrl",
@@ -389,6 +575,7 @@
   },
   "allure_add_attachment": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [
     "attachmentType"
    ],
@@ -401,6 +588,7 @@
   },
   "allure_add_step": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "description",
@@ -411,6 +599,7 @@
   },
   "allure_generate_report": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "autoOpen",
@@ -420,6 +609,7 @@
   },
   "allure_init": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [
     "clean",
     "resultsDir"
@@ -431,6 +621,7 @@
   },
   "allure_start_test": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "description",
@@ -442,6 +633,7 @@
   },
   "allure_stop_test": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "failMsg",
@@ -452,6 +644,14 @@
   "api_request": {
    "editorDefaults": [
     "resultVariable"
+   ],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
    ],
    "panelOnly": [],
    "reads": [
@@ -474,6 +674,14 @@
   },
   "api_trigger": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "saveToVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [
     "apiTrigger"
    ],
@@ -496,6 +704,14 @@
   },
   "assert_checkpoint": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "actualValue",
@@ -527,6 +743,14 @@
    "editorDefaults": [
     "resultVariable"
    ],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "ends_with",
@@ -550,6 +774,7 @@
   },
   "break_loop": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "ends_with",
@@ -566,6 +791,14 @@
   },
   "capture_diagnostics": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "correlation",
@@ -583,6 +816,7 @@
   },
   "click_element": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "clickType",
@@ -595,6 +829,7 @@
   },
   "close_page": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "selector",
@@ -603,6 +838,7 @@
   },
   "condition": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "condition",
@@ -633,6 +869,7 @@
   },
   "continue_loop": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "ends_with",
@@ -649,6 +886,20 @@
   },
   "csv_generate": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    },
+    {
+     "availability": "afterSuccess",
+     "key": "dataVariable",
+     "name": "数据",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "dataVariable",
@@ -660,6 +911,14 @@
   },
   "csv_parse": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "csvContent",
@@ -671,6 +930,7 @@
   },
   "custom_module": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "customModuleId",
@@ -679,6 +939,14 @@
   },
   "dict_deep_copy": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "dictVariable",
@@ -687,6 +955,14 @@
   },
   "dict_filter": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "condition",
@@ -700,6 +976,14 @@
   },
   "dict_flatten": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "dictVariable",
@@ -711,6 +995,14 @@
    "editorDefaults": [
     "resultVariable"
    ],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "defaultValue",
@@ -721,6 +1013,14 @@
   },
   "dict_get_path": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "defaultValue",
@@ -731,6 +1031,14 @@
   },
   "dict_invert": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "dictVariable",
@@ -741,6 +1049,14 @@
    "editorDefaults": [
     "resultVariable"
    ],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "dictVariable",
@@ -750,6 +1066,14 @@
   },
   "dict_map_values": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "add",
@@ -765,6 +1089,14 @@
   },
   "dict_merge": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "dict1",
@@ -777,6 +1109,7 @@
    "editorDefaults": [
     "resultVariable"
    ],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "dictAction",
@@ -787,6 +1120,14 @@
   },
   "dict_sort": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "asc",
@@ -806,6 +1147,14 @@
   },
   "download_file": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "downloadMode",
@@ -819,6 +1168,7 @@
   },
   "drag_element": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "sourceSelector",
@@ -829,6 +1179,20 @@
   },
   "element_change_trigger": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "saveNewElementSelector",
+     "name": "新元素选择器",
+     "sensitive": false
+    },
+    {
+     "availability": "afterSuccess",
+     "key": "saveChangeInfo",
+     "name": "变化信息",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [
     "checkInterval"
    ],
@@ -844,6 +1208,7 @@
   },
   "element_exists": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [
     "leftValue"
    ],
@@ -857,6 +1222,7 @@
   },
   "element_visible": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [
     "leftValue"
    ],
@@ -869,6 +1235,14 @@
   },
   "email_trigger": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "saveToVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [
     "emailTrigger"
    ],
@@ -886,6 +1260,14 @@
   },
   "export_log": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "csv",
@@ -901,6 +1283,14 @@
   },
   "extract_table_data": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "excelPath",
@@ -913,6 +1303,14 @@
   },
   "face_recognition": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "ch_sim",
@@ -929,6 +1327,14 @@
   },
   "face_trigger": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "saveToVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "cameraIndex",
@@ -941,6 +1347,14 @@
   },
   "file_watcher_trigger": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "saveToVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [
     "fileTrigger"
    ],
@@ -958,6 +1372,14 @@
   },
   "firecrawl_crawl": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "allowBackwardLinks",
@@ -981,6 +1403,14 @@
   },
   "firecrawl_map": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "http",
@@ -998,6 +1428,14 @@
   },
   "firecrawl_scrape": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "excludeTags",
@@ -1018,6 +1456,20 @@
   },
   "foreach": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "loopBody",
+     "key": "itemVariable",
+     "name": "当前元素",
+     "sensitive": false
+    },
+    {
+     "availability": "loopBody",
+     "key": "indexVariable",
+     "name": "当前序号",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "dataSource",
@@ -1038,6 +1490,26 @@
   },
   "foreach_dict": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "loopBody",
+     "key": "indexVariable",
+     "name": "当前序号",
+     "sensitive": false
+    },
+    {
+     "availability": "loopBody",
+     "key": "keyVariable",
+     "name": "当前键",
+     "sensitive": false
+    },
+    {
+     "availability": "loopBody",
+     "key": "valueVariable",
+     "name": "当前值",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "dictVariable",
@@ -1058,6 +1530,14 @@
   },
   "gesture_trigger": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "saveToVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "cameraIndex",
@@ -1070,6 +1550,14 @@
   },
   "get_child_elements": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "childSelector",
@@ -1080,6 +1568,14 @@
   },
   "get_clipboard": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "variableName"
@@ -1087,6 +1583,14 @@
   },
   "get_element_info": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "attribute",
@@ -1099,6 +1603,14 @@
   },
   "get_sibling_elements": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "elementSelector",
@@ -1112,6 +1624,14 @@
   },
   "get_time": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "customFormat",
@@ -1131,6 +1651,7 @@
   },
   "go_back": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "selector",
@@ -1140,6 +1661,7 @@
   },
   "go_forward": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "selector",
@@ -1149,6 +1671,7 @@
   },
   "group": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [
     "color"
    ],
@@ -1156,6 +1679,7 @@
   },
   "handle_dialog": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "dialogAction",
@@ -1169,6 +1693,14 @@
   },
   "hex_to_cmyk": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "hexColor",
@@ -1179,6 +1711,7 @@
    "editorDefaults": [
     "saveToVariable"
    ],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "alt",
@@ -1219,6 +1752,7 @@
   },
   "hover_element": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "force",
@@ -1232,6 +1766,14 @@
   "image_ocr": {
    "editorDefaults": [
     "language"
+   ],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
    ],
    "panelOnly": [],
    "reads": [
@@ -1255,6 +1797,14 @@
   },
   "image_trigger": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "saveToVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "checkInterval",
@@ -1267,6 +1817,14 @@
   },
   "increment_decrement": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "ends_with",
@@ -1286,6 +1844,14 @@
   },
   "infinite_loop": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "loopBody",
+     "key": "indexVariable",
+     "name": "当前序号",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "ends_with",
@@ -1303,6 +1869,14 @@
   },
   "inject_javascript": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "saveResult",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "current",
@@ -1319,6 +1893,14 @@
   },
   "input_prompt": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "checkbox",
@@ -1347,6 +1929,7 @@
   },
   "input_text": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "clearBefore",
@@ -1362,6 +1945,14 @@
   },
   "js_script": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "code",
@@ -1371,6 +1962,14 @@
   "json_parse": {
    "editorDefaults": [
     "resultVariable"
+   ],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
    ],
    "panelOnly": [],
    "reads": [
@@ -1392,6 +1991,14 @@
   },
   "list_average": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "listVariable",
@@ -1400,6 +2007,14 @@
   },
   "list_cartesian_product": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "list1",
@@ -1410,6 +2025,14 @@
   },
   "list_chunk": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "chunkSize",
@@ -1419,6 +2042,14 @@
   },
   "list_count": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "listVariable",
@@ -1428,6 +2059,14 @@
   },
   "list_difference": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "list1",
@@ -1439,6 +2078,7 @@
   },
   "list_export": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "appendMode",
@@ -1450,6 +2090,14 @@
   },
   "list_filter": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "compareValue",
@@ -1466,6 +2114,14 @@
   },
   "list_find": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "listVariable",
@@ -1475,6 +2131,14 @@
   },
   "list_flatten": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "depth",
@@ -1486,6 +2150,14 @@
    "editorDefaults": [
     "resultVariable"
    ],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "listIndex",
@@ -1495,6 +2167,14 @@
   },
   "list_intersection": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "list1",
@@ -1508,6 +2188,14 @@
    "editorDefaults": [
     "resultVariable"
    ],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "listVariable",
@@ -1516,6 +2204,14 @@
   },
   "list_map": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "add",
@@ -1532,6 +2228,14 @@
   },
   "list_max": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "listVariable",
@@ -1540,6 +2244,14 @@
   },
   "list_merge": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "list1",
@@ -1550,6 +2262,14 @@
   },
   "list_min": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "listVariable",
@@ -1558,6 +2278,14 @@
   },
   "list_operation": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "listAction",
@@ -1569,6 +2297,14 @@
   },
   "list_remove_empty": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "listVariable",
@@ -1577,6 +2313,14 @@
   },
   "list_reverse": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "listVariable",
@@ -1585,6 +2329,14 @@
   },
   "list_sample": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "listVariable",
@@ -1595,6 +2347,14 @@
   },
   "list_shuffle": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "listVariable",
@@ -1603,6 +2363,14 @@
   },
   "list_slice": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "endIndex",
@@ -1613,6 +2381,14 @@
   },
   "list_sort": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "listVariable",
@@ -1625,6 +2401,14 @@
   },
   "list_sum": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "listVariable",
@@ -1633,6 +2417,14 @@
   },
   "list_to_string_advanced": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "formatTemplate",
@@ -1645,6 +2437,14 @@
   },
   "list_union": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "list1",
@@ -1656,6 +2456,14 @@
   },
   "list_unique": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "listVariable",
@@ -1664,11 +2472,20 @@
   },
   "lock_screen": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": []
   },
   "loop": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "loopBody",
+     "key": "indexVariable",
+     "name": "当前序号",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "condition",
@@ -1695,6 +2512,14 @@
   },
   "math_abs": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "numberValue",
@@ -1704,6 +2529,14 @@
   },
   "math_base_convert": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "fromBase",
@@ -1715,6 +2548,14 @@
   },
   "math_clamp": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "max",
@@ -1728,6 +2569,14 @@
   },
   "math_exp": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "numberValue",
@@ -1737,6 +2586,14 @@
   },
   "math_factorial": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "numberValue",
@@ -1746,6 +2603,14 @@
   },
   "math_floor": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "numberValue",
@@ -1755,6 +2620,14 @@
   },
   "math_gcd": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "numbers",
@@ -1765,6 +2638,14 @@
   },
   "math_lcm": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "numbers",
@@ -1775,6 +2656,14 @@
   },
   "math_log": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "base",
@@ -1787,6 +2676,14 @@
   },
   "math_modulo": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "dividend",
@@ -1796,6 +2693,14 @@
   },
   "math_percentage": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "calcType",
@@ -1807,6 +2712,14 @@
   },
   "math_permutation": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "calcType",
@@ -1821,6 +2734,14 @@
   },
   "math_power": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "base",
@@ -1830,6 +2751,14 @@
   },
   "math_random_advanced": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "count",
@@ -1850,6 +2779,14 @@
   },
   "math_round": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "decimals",
@@ -1860,6 +2797,14 @@
   },
   "math_sqrt": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "numberValue",
@@ -1870,6 +2815,14 @@
   },
   "math_trig": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "angleUnit",
@@ -1885,6 +2838,14 @@
   },
   "md5_encrypt": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "encoding",
@@ -1895,6 +2856,14 @@
   },
   "mouse_trigger": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "saveToVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "alt",
@@ -1946,6 +2915,14 @@
    "editorDefaults": [
     "resultVariable"
    ],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [
     "proxyPort",
     "targetPorts",
@@ -1964,6 +2941,7 @@
   },
   "network_monitor_start": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "filterType",
@@ -1973,6 +2951,14 @@
   },
   "network_monitor_stop": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "monitorId",
@@ -1981,6 +2967,14 @@
   },
   "network_monitor_wait": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "captureMode",
@@ -1994,6 +2988,7 @@
   },
   "note": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [
     "content"
    ],
@@ -2001,6 +2996,7 @@
   },
   "notify_telegram": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "body",
@@ -2013,6 +3009,7 @@
   },
   "notify_webhook": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "PATCH",
@@ -2029,6 +3026,20 @@
   },
   "ocr_captcha": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    },
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "autoSubmit",
@@ -2043,6 +3054,7 @@
   },
   "open_page": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "browserEnvironment",
@@ -2054,6 +3066,14 @@
   },
   "page_load_complete": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "saveToVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "checkState",
@@ -2064,6 +3084,7 @@
   },
   "play_sound": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "beepCount",
@@ -2072,6 +3093,7 @@
   },
   "press_key": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "element",
@@ -2085,6 +3107,7 @@
   },
   "print_log": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "logLevel",
@@ -2093,6 +3116,7 @@
   },
   "printer_call": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "colorMode",
@@ -2106,6 +3130,7 @@
   },
   "probability_trigger": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "path1",
@@ -2115,6 +3140,14 @@
   },
   "proxy_change_ip": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "PROXY_IP_SWITCH_FAILED",
@@ -2142,6 +3175,14 @@
   },
   "proxy_change_location": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "PROXY_IP_SWITCH_FAILED",
@@ -2169,6 +3210,14 @@
   },
   "proxy_query": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "PROXY_IP_SWITCH_FAILED",
@@ -2196,6 +3245,32 @@
   },
   "python_script": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    },
+    {
+     "availability": "afterSuccess",
+     "key": "stdoutVariable",
+     "name": "标准输出",
+     "sensitive": false
+    },
+    {
+     "availability": "afterSuccess",
+     "key": "stderrVariable",
+     "name": "错误输出",
+     "sensitive": false
+    },
+    {
+     "availability": "afterSuccess",
+     "key": "returnCodeVariable",
+     "name": "返回码",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "captureOutput",
@@ -2216,6 +3291,14 @@
   },
   "random_number": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "decimalPlaces",
@@ -2237,6 +3320,14 @@
   },
   "random_password_generator": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "excludeAmbiguous",
@@ -2250,6 +3341,7 @@
   },
   "refresh_page": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "selector",
@@ -2260,6 +3352,14 @@
   "regex_extract": {
    "editorDefaults": [
     "resultVariable"
+   ],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
    ],
    "panelOnly": [],
    "reads": [
@@ -2272,6 +3372,14 @@
   },
   "rgb_to_cmyk": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "b",
@@ -2282,6 +3390,14 @@
   },
   "rgb_to_hsv": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "b",
@@ -2294,6 +3410,14 @@
    "editorDefaults": [
     "resultVariable"
    ],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "command",
@@ -2304,6 +3428,14 @@
   },
   "run_workflow_file": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "collectVariables",
@@ -2317,6 +3449,14 @@
   },
   "save_image": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "savePath",
@@ -2327,6 +3467,14 @@
   },
   "save_trace_segment": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "correlation",
@@ -2344,6 +3492,7 @@
   },
   "scheduled_task": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [
     "taskName"
    ],
@@ -2358,6 +3507,14 @@
   },
   "screenshot": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "fileNamePattern",
@@ -2370,6 +3527,7 @@
   },
   "scroll_page": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "auto",
@@ -2383,6 +3541,7 @@
   },
   "select_dropdown": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "nth",
@@ -2396,6 +3555,7 @@
   },
   "send_email": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "authCode",
@@ -2408,6 +3568,7 @@
   },
   "set_checkbox": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "check",
@@ -2421,6 +3582,7 @@
   },
   "set_clipboard": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "clipboard_write_image",
@@ -2436,6 +3598,14 @@
   },
   "set_variable": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "ends_with",
@@ -2454,6 +3624,14 @@
   },
   "sha_encrypt": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "encoding",
@@ -2474,6 +3652,14 @@
   },
   "share_file": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "B",
@@ -2488,6 +3674,14 @@
   },
   "share_folder": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "B",
@@ -2505,6 +3699,7 @@
   },
   "shutdown_system": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "action",
@@ -2514,6 +3709,7 @@
   },
   "slider_captcha": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "backgroundSelector",
@@ -2527,6 +3723,14 @@
   },
   "sound_trigger": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "saveToVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "checkInterval",
@@ -2537,6 +3741,7 @@
   },
   "ssh_connect": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [
     "ssh"
    ],
@@ -2552,6 +3757,7 @@
   },
   "ssh_disconnect": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "connectionName"
@@ -2559,6 +3765,7 @@
   },
   "ssh_download_file": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "connectionName",
@@ -2568,6 +3775,26 @@
   },
   "ssh_execute_command": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "outputVariable",
+     "name": "结果",
+     "sensitive": false
+    },
+    {
+     "availability": "afterSuccess",
+     "key": "errorVariable",
+     "name": "错误",
+     "sensitive": false
+    },
+    {
+     "availability": "afterSuccess",
+     "key": "exitCodeVariable",
+     "name": "退出码",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "command",
@@ -2582,6 +3809,7 @@
   },
   "ssh_upload_file": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "connectionName",
@@ -2591,6 +3819,14 @@
   },
   "start_screen_share": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "B",
@@ -2607,6 +3843,14 @@
   },
   "stat_median": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "listVariable",
@@ -2615,6 +3859,14 @@
   },
   "stat_mode": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "listVariable",
@@ -2623,6 +3875,14 @@
   },
   "stat_normalize": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "listVariable",
@@ -2634,6 +3894,14 @@
   },
   "stat_percentile": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "listVariable",
@@ -2643,6 +3911,14 @@
   },
   "stat_standardize": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "listVariable",
@@ -2651,6 +3927,14 @@
   },
   "stat_stdev": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "listVariable",
@@ -2659,6 +3943,14 @@
   },
   "stat_variance": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "listVariable",
@@ -2667,6 +3959,7 @@
   },
   "stop_screen_share": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "B",
@@ -2679,6 +3972,7 @@
   },
   "stop_share": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "B",
@@ -2691,6 +3985,7 @@
   },
   "stop_workflow": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "ends_with",
@@ -2710,6 +4005,14 @@
    "editorDefaults": [
     "resultVariable"
    ],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "caseMode",
@@ -2720,6 +4023,14 @@
   "string_concat": {
    "editorDefaults": [
     "resultVariable"
+   ],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
    ],
    "panelOnly": [],
    "reads": [
@@ -2732,6 +4043,14 @@
    "editorDefaults": [
     "resultVariable"
    ],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "listVariable",
@@ -2742,6 +4061,14 @@
   "string_replace": {
    "editorDefaults": [
     "resultVariable"
+   ],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
    ],
    "panelOnly": [],
    "reads": [
@@ -2757,6 +4084,14 @@
    "editorDefaults": [
     "resultVariable"
    ],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "inputText",
@@ -2768,6 +4103,14 @@
   "string_substring": {
    "editorDefaults": [
     "resultVariable"
+   ],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
    ],
    "panelOnly": [],
    "reads": [
@@ -2781,6 +4124,14 @@
    "editorDefaults": [
     "resultVariable"
    ],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "inputText",
@@ -2790,6 +4141,7 @@
   },
   "subflow": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "subflowGroupId",
@@ -2798,6 +4150,7 @@
   },
   "switch_iframe": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "iframeIndex",
@@ -2810,6 +4163,7 @@
   },
   "switch_tab": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "matchMode",
@@ -2824,6 +4178,7 @@
   },
   "switch_to_main": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "selector",
@@ -2832,6 +4187,7 @@
   },
   "system_notification": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "duration",
@@ -2842,6 +4198,7 @@
   },
   "table_add_column": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "columnName",
@@ -2852,6 +4209,7 @@
   },
   "table_add_row": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "false",
@@ -2861,6 +4219,7 @@
   },
   "table_clear": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "false",
@@ -2869,6 +4228,7 @@
   },
   "table_delete_row": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "false",
@@ -2878,6 +4238,14 @@
   },
   "table_export": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "csv",
@@ -2895,6 +4263,14 @@
    "editorDefaults": [
     "resultVariable"
    ],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "columnName",
@@ -2906,6 +4282,7 @@
   },
   "table_set_cell": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "cellValue",
@@ -2917,6 +4294,7 @@
   },
   "text_to_speech": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "lang",
@@ -2928,6 +4306,14 @@
   },
   "timestamp_converter": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "datetimeFormat",
@@ -2939,6 +4325,14 @@
   },
   "trace_mark": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "correlation",
@@ -2956,6 +4350,7 @@
   },
   "upload_file": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "filePath",
@@ -2965,6 +4360,14 @@
   },
   "url_encode_decode": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "encoding",
@@ -2975,6 +4378,7 @@
   },
   "use_opened_page": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "action",
@@ -2988,6 +4392,14 @@
   },
   "uuid_generator": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "resultVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "name",
@@ -3000,6 +4412,7 @@
   },
   "wait": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "duration",
@@ -3026,6 +4439,7 @@
   },
   "wait_element": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "attached",
@@ -3039,6 +4453,7 @@
   },
   "wait_page_load": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "timeout",
@@ -3047,6 +4462,14 @@
   },
   "web_cookie": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": true
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "clear",
@@ -3062,6 +4485,7 @@
   },
   "web_intercept": {
    "editorDefaults": [],
+   "outputs": [],
    "panelOnly": [],
    "reads": [
     "action",
@@ -3075,6 +4499,14 @@
   },
   "web_storage": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "variableName",
+     "name": "结果",
+     "sensitive": true
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "area",
@@ -3090,6 +4522,32 @@
   },
   "webhook_request": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "responseVariable",
+     "name": "响应",
+     "sensitive": false
+    },
+    {
+     "availability": "afterSuccess",
+     "key": "headersVariable",
+     "name": "响应头",
+     "sensitive": false
+    },
+    {
+     "availability": "afterSuccess",
+     "key": "cookiesVariable",
+     "name": "Cookie",
+     "sensitive": false
+    },
+    {
+     "availability": "afterSuccess",
+     "key": "statusVariable",
+     "name": "状态码",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "PATCH",
@@ -3117,6 +4575,14 @@
   },
   "webhook_trigger": {
    "editorDefaults": [],
+   "outputs": [
+    {
+     "availability": "afterSuccess",
+     "key": "saveToVariable",
+     "name": "结果",
+     "sensitive": false
+    }
+   ],
    "panelOnly": [],
    "reads": [
     "PATCH",

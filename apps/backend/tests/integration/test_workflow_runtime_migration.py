@@ -11,7 +11,7 @@ from alembic.script import ScriptDirectory
 
 from autoflow.infrastructure.database import session as database_session
 
-EXPECTED_HEAD = "rm2_automation_schedules"
+EXPECTED_HEAD = "rm2_workflow_reuse"
 
 
 def _config(path: Path) -> Config:

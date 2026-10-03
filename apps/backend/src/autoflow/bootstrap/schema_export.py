@@ -12,6 +12,7 @@ from autoflow.adapters.http.execution_settings import execution_settings_router
 from autoflow.adapters.http.image_assets import image_assets_router
 from autoflow.adapters.http.local_workflows import local_workflows_router
 from autoflow.adapters.http.openapi import configure_openapi
+from autoflow.adapters.http.signature_migration import signature_migration_router
 from autoflow.adapters.http.studio_credentials import studio_credentials_router
 from autoflow.adapters.http.studio_retention import studio_retention_router
 from autoflow.adapters.http.workflow_bundles import workflow_bundles_router
@@ -80,6 +81,7 @@ def export_schema(*, api_version: str = 'v1') -> dict[str, Any]:
     app.include_router(studio_credentials_router(unavailable))
     app.include_router(studio_retention_router(unavailable))
     app.include_router(workflow_schedules_router(unavailable))
+    app.include_router(signature_migration_router(unavailable))
     return app.openapi()
 
 

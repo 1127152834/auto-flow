@@ -581,6 +581,7 @@ class SqlAlchemyProjectInputGroups:
                 "tableDisplay": table.name,
                 "recordRef": _record_ref(ref),
                 "fieldMappings": _mutable(item.get("fieldBindings", [])),
+                **({"signatureInput": item["signatureInput"]} if isinstance(item.get("signatureInput"), str) else {}),
                 "values": [
                     {
                         "fieldId": field.id,

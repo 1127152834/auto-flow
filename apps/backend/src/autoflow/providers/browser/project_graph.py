@@ -31,6 +31,11 @@ from autoflow.domain.workflows.execution import (
 from autoflow.domain.workflows.inert_settings import describe_inert_keys, inert_keys
 from autoflow.domain.workflows.project_end import normalize_project_end
 from autoflow.domain.workflows.side_effects import node_side_effect
+from autoflow.domain.workflows.signature import (
+    document_signature,
+    parse_signature,
+    sensitive_references,
+)
 from autoflow.domain.workflows.variables import CredentialReader, references_variable
 from autoflow.infrastructure.filesystem.workflow_table_workbook import (
     OpenpyxlTableWorkbookRenderer,
@@ -250,6 +255,11 @@ class ProjectGraphExecutor:
                 'edges': [{'id': f'edge-{index}', 'source': source, 'target': target} for index, (source, target) in enumerate(pairwise(identities))],
             }
         self.nodes = {node['id']: node['data'] for node in document['nodes']}
+        signature, _ = parse_signature(document_signature(document))
+        if signature is not None:
+            # Remediation M2 R2-21: the signature decides which input values stay masked.
+            record_group = self.context.project_input_context.get('$recordInput')
+            self.context.sensitive_variables |= sensitive_references(signature, record_group if isinstance(record_group, str) else None)
         registry = _ProjectRegistry(self.capability)
         workflows = plan.get('workflowDependencies')
         nested = _WorkerNestedWorkflows(
@@ -298,7 +308,13 @@ class ProjectGraphExecutor:
         if result.success and not self.context.stop_workflow and any(node.get('moduleType') == 'project_end' for node in self.nodes.values()) and not self.end_completed:
             return {'status': 'failed', 'error': {'code': 'WORKFLOW_END_NOT_REACHED', 'message': '执行分支未到达 End，环境收尾未完成'}}
         if not result.success and self.error is None:
-            self.error = {'code': 'WORKFLOW_NODE_INVALID', 'message': '工作流包含不可执行的节点'}
+            issue = result.issues[0] if result.issues else None
+            # Remediation rule 2: keep the preflight's own reason instead of a generic headline.
+            self.error = (
+                {'code': issue.code, 'message': issue.message, 'nodeId': issue.node_id}
+                if issue is not None and issue.code == 'NODE_OUTPUT_REFERENCE_INVALID'
+                else {'code': 'WORKFLOW_NODE_INVALID', 'message': f'工作流包含不可执行的节点：{issue.message}' if issue is not None and issue.message else '工作流包含不可执行的节点'}
+            )
         return {'status': self.manual_outcome or ('succeeded' if result.success else 'failed'), 'error': self.error}
 
     def for_context(self, context: ExecutionContext) -> _ProjectEventSink:

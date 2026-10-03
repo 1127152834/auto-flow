@@ -13,6 +13,7 @@ from autoflow.domain.workflows.models import (
     canonical_json,
 )
 from autoflow.domain.workflows.run_validation import prepare_run
+from autoflow.domain.workflows.signature import document_signature, parse_signature
 
 from .errors import browser_error_responses
 from .schemas import ApiModel
@@ -31,12 +32,32 @@ class WorkflowCatalogValidation(ApiModel):
     issues: list[WorkflowCatalogIssue]
 
 
+class WorkflowSignatureField(ApiModel):
+    key: str
+    name: str
+    type: Literal["string", "number", "boolean", "date", "any"]
+    required: bool
+    sensitive: bool
+
+
+class WorkflowSignatureInput(ApiModel):
+    key: str
+    name: str
+    fields: list[WorkflowSignatureField]
+
+
+class WorkflowSignature(ApiModel):
+    inputs: list[WorkflowSignatureInput]
+
+
 class WorkflowCatalogItem(ApiModel):
     workflow_id: str
     name: str
     revision: int
     checksum: str
     browser_environment_version: int | None = None
+    # Remediation M2 R2-18: the inputs a workflow needs, for binding automation data; None when undeclared.
+    signature: WorkflowSignature | None = None
     validation: WorkflowCatalogValidation
     created_at: datetime
     updated_at: datetime
@@ -96,12 +117,20 @@ def _item(record: WorkflowRecord) -> WorkflowCatalogItem:
             )
         ]
     runnable = not issues
+    signature, signature_issues = parse_signature(document_signature(record.document))
     return WorkflowCatalogItem(
         workflow_id=record.workflow_id,
         name=record.name,
         revision=record.revision,
         browser_environment_version=record.document.get("content", record.document).get("browserEnvironmentVersion"),
         checksum=hashlib.sha256(canonical_json(record.document).encode()).hexdigest(),
+        signature=WorkflowSignature(inputs=[
+            WorkflowSignatureInput(key=item.key, name=item.name, fields=[
+                WorkflowSignatureField(key=field.key, name=field.name, type=field.type, required=field.required, sensitive=field.sensitive)  # type: ignore[arg-type]
+                for field in item.fields
+            ])
+            for item in signature.inputs
+        ]) if signature is not None and not signature_issues else None,
         validation=WorkflowCatalogValidation(
             status="ready" if runnable else "blocked",
             runnable=runnable,
