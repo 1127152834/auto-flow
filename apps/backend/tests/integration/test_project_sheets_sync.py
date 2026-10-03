@@ -573,14 +573,17 @@ def test_partial_verification_read_loss_preserves_original_commands(tmp_path):
         assert response.status_code == 202, response.text
         assert len(sync_operations(sheets, "confirmed")) == 1
         unknown, = sync_operations(sheets, "unknown")
-        assert unknown["record"]["recordKey"]["value"] == "B-2"
+        # Edits made within one clock tick share created_at, so the push order
+        # (and which verification read is lost) falls back to the random id.
+        lost_key = unknown["record"]["recordKey"]["value"]
+        assert lost_key in {"A-1", "B-2"}
         writes = transport.changes()
         assert transport.grid("数据")[1:] == [["A-1", "A-1-v2"], ["B-2", "B-2-v2"]]
         replay = sheets.client.post(sheets.url("/sync/push"), headers=identity, json=body)
         assert replay.status_code == 202 and replay.json() == response.json()
         assert transport.changes() == writes
-        current = next(r for r in sheets.records() if r["ref"]["recordKey"]["value"] == "B-2")
-        edit_title(sheets, current, "B-2-v3")
+        current = next(r for r in sheets.records() if r["ref"]["recordKey"]["value"] == lost_key)
+        edit_title(sheets, current, lost_key + "-v3")
         recovered = sheets.client.post(
             sheets.url(f"/sync-operations/{unknown['syncOperationId']}/reconcile"),
             headers=new_key(), json={"expectedStatusRevision": unknown["statusRevision"]},
