@@ -215,3 +215,24 @@ it('uses a semantic label when a saved record slot is unavailable', () => {
   expect(screen.getByRole('combobox', { name: '记录槽 归档' })).toHaveTextContent('记录槽已失效')
   expect(document.body.textContent).not.toContain(internal)
 })
+
+// Remediation M2 §2: which required input is processed row by row.
+const second = { ...input, inputId: 'i2', alias: '账号', tableId: 't2', datasetGeneration: 'g-t2' }
+
+it('asks which required input is processed row by row only when several are required', async () => {
+  const single = render(<InputPlanEditor {...props({ inputs: [input, { ...second, required: false }] })}/>)
+  expect(screen.queryByRole('combobox', { name: '逐行处理的数据' })).toBeNull()
+  single.unmount()
+  const p = props({ inputs: [input, second] }); render(<InputPlanEditor {...p}/>)
+  expect(screen.getByText('有多份必填数据，请选择批量运行时逐行处理哪一份；其他数据只作参考，不会被逐行消耗。')).toBeVisible()
+  await chooseOption(userEvent.setup(), screen.getByRole('combobox', { name: '逐行处理的数据' }), 'i2')
+  expect(p.onChange).toHaveBeenLastCalledWith({ inputs: [input, second], processingInputId: 'i2' })
+})
+
+it('keeps a valid processing input through edits and drops one that is no longer required', () => {
+  const p = props({ inputs: [input, second], processingInputId: 'i2' }); render(<InputPlanEditor {...p}/>)
+  fireEvent.change(screen.getByRole('textbox', { name: '输入别名 资料' }), { target: { value: '资料2' } })
+  expect(p.onChange).toHaveBeenLastCalledWith({ inputs: [{ ...input, alias: '资料2' }, second], processingInputId: 'i2' })
+  fireEvent.click(screen.getByRole('switch', { name: '必填输入 账号' }))
+  expect(p.onChange).toHaveBeenLastCalledWith({ inputs: [input, { ...second, required: false }] })
+})

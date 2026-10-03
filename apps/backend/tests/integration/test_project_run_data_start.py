@@ -112,11 +112,20 @@ def _input(project_id: str, table: dict, field: dict, alias: str):
     }
 
 
+def _two_input_plan(people: dict, emails: dict, choose: bool) -> dict:
+    # Remediation M2 §2: two required inputs need an explicit row-by-row input.
+    plan: dict = {"inputs": [people, emails]}
+    if choose:
+        plan["processingInputId"] = people["inputId"]
+    return plan
+
+
 def _setup(
     tmp_path,
     resolve_create_record_targets=None,
     resolve_status_input_ids=None,
     resolve_data_capability_manifest=None,
+    choose_processing_input=True,
 ):
     path = tmp_path / "data-run.sqlite3"
     migrate_database(path)
@@ -139,12 +148,11 @@ def _setup(
             "name": "首条三表链",
             "description": "",
             "workflowId": workflow.workflow_id,
-            "inputPlan": {
-                "inputs": [
-                    _input(project_id, people, people_field, "人员"),
-                    _input(project_id, emails, email_field, "邮箱"),
-                ]
-            },
+            "inputPlan": _two_input_plan(
+                _input(project_id, people, people_field, "人员"),
+                _input(project_id, emails, email_field, "邮箱"),
+                choose_processing_input,
+            ),
             "parameterSchema": [],
             "environmentPolicy": {"source": "newFromProfile"},
             "runPolicy": {
@@ -588,7 +596,7 @@ def test_optional_no_match_keeps_batch_runnable_and_freezes_unavailable_reason(
     with factory() as session:
         row = session.get(ProjectAutomationRow, automation.automation_id)
         assert row is not None
-        row.input_plan = {"inputs": [*automation.input_plan["inputs"], optional]}
+        row.input_plan = {**automation.input_plan, "inputs": [*automation.input_plan["inputs"], optional]}
         session.commit()
 
     preview = coordinator.preview_inputs(
@@ -655,7 +663,7 @@ def test_invalid_optional_input_blocks_preview_and_claim_without_task_facts(
     with factory() as session:
         row = session.get(ProjectAutomationRow, automation.automation_id)
         assert row is not None
-        row.input_plan = {"inputs": [*automation.input_plan["inputs"], optional]}
+        row.input_plan = {**automation.input_plan, "inputs": [*automation.input_plan["inputs"], optional]}
         session.commit()
 
     preview = coordinator.preview_inputs(
@@ -813,7 +821,7 @@ def test_ambiguous_relation_blocks_preview_and_claim_without_durable_run_facts(
                 "targetFieldRef": email_input["fieldBindings"][0]["fieldRef"],
             },
         }
-        automation_row.input_plan = {"inputs": [people_input, related]}
+        automation_row.input_plan = {"inputs": [people_input, related], "processingInputId": people_input["inputId"]}
         session.commit()
     DataRecordService(SqlAlchemyProjectDataRecords(factory)).create(
         project_id,
@@ -856,4 +864,31 @@ def test_ambiguous_relation_blocks_preview_and_claim_without_durable_run_facts(
         assert stored is not None and stored.claim_gate_state == "closed"
         assert stored.selection_outcome["status"] == "ambiguous"
         assert stored.selection_outcome["issueInputIds"]
+    factory.dispose()
+
+
+def test_two_required_inputs_without_a_processing_input_cannot_start(tmp_path):
+    factory, project_id, automation, coordinator = _setup(tmp_path, choose_processing_input=False)
+    with pytest.raises(ProjectRunError) as refused:
+        coordinator.start(project_id, automation.automation_id, uid(), {
+            "expectedAutomationRevision": automation.management_revision,
+            "parameters": {}, "maxTasks": 1, "concurrency": 1,
+        })
+    assert refused.value.code == "PROCESSING_INPUT_REQUIRED"
+    assert refused.value.status == 409
+    with factory() as session:
+        assert session.scalar(select(func.count()).select_from(ProjectBatchRow)) == 0
+    factory.dispose()
+
+
+def test_start_freezes_the_processing_input(tmp_path):
+    factory, project_id, automation, coordinator = _setup(tmp_path)
+    batch = coordinator.start(project_id, automation.automation_id, uid(), {
+        "expectedAutomationRevision": automation.management_revision,
+        "parameters": {}, "maxTasks": 1, "concurrency": 1,
+    })[0]
+    chosen = automation.input_plan["processingInputId"]
+    with factory() as session:
+        frozen = session.get(ProjectBatchRow, batch.batch_id).frozen_request
+    assert frozen["automation"]["inputPlan"]["processingInputId"] == chosen
     factory.dispose()

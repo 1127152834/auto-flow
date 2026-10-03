@@ -1070,6 +1070,7 @@ def test_missing_qa_status_grant_rejects_start_without_durable_run_facts(tmp_pat
         row = session.get(ProjectAutomationRow, automation.automation_id)
         assert row is not None
         row.input_plan = {
+            **row.input_plan,
             "inputs": [
                 {**item, "alias": f"输入 {index + 1}"}
                 for index, item in enumerate(row.input_plan["inputs"])

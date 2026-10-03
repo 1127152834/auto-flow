@@ -41,7 +41,10 @@ export function InputPlanEditor({ value, onChange, tables, disabled = false, err
   useEffect(() => { setFilterDrafts({}) }, [resetKey])
   const filterDirty = value.inputs.some(input => filterDrafts[input.inputId])
   useEffect(() => { draftCallback.current?.({ dirty: filterDirty, valid: !filterDirty }) }, [filterDirty])
-  const replace = (index: number, next: InputDefinition) => onChange({ inputs: value.inputs.map((input, itemIndex) => itemIndex === index ? next : input) })
+  // A processing input is kept only while it still names a required input (remediation M2 §2).
+  const commit = (inputs: InputDefinition[], chosen = value.processingInputId) => onChange(chosen && inputs.some(input => input.inputId === chosen && input.required) ? { inputs, processingInputId: chosen } : { inputs })
+  const replace = (index: number, next: InputDefinition) => commit(value.inputs.map((input, itemIndex) => itemIndex === index ? next : input))
+  const requiredInputs = value.inputs.filter(input => input.required)
   const referencedBy = (inputId: string) => value.inputs.find(input => input.mode === 'related' && input.relation?.sourceInputId === inputId)
   const requiredBy = (inputId: string) => value.inputs.find(candidate => {
     if (!candidate.required) return false
@@ -57,10 +60,11 @@ export function InputPlanEditor({ value, onChange, tables, disabled = false, err
   const add = () => {
     const table = tables[0]
     if (!table) return
-    onChange({ inputs: [...value.inputs, { inputId: crypto.randomUUID(), alias: '', tableId: table.id, datasetGeneration: table.datasetGeneration, mode: 'independent', required: false, fieldBindings: [], filter: emptyFilter(), orderBy: [] }] })
+    commit([...value.inputs, { inputId: crypto.randomUUID(), alias: '', tableId: table.id, datasetGeneration: table.datasetGeneration, mode: 'independent', required: false, fieldBindings: [], filter: emptyFilter(), orderBy: [] }])
   }
   return <section className="grid gap-4">
     <div className="flex flex-wrap items-center justify-between gap-3"><div><h3 className="m-0 text-base font-semibold">项目数据输入</h3><p className="mt-1 text-sm text-muted">{value.inputs.length ? '启动前会重新检查完整输入组并原子领取。' : '当前自动化不读取项目数据，可以直接使用参数启动。'}</p></div><Button size="sm" disabled={disabled || !tables.length} onClick={add}>添加数据输入</Button></div>
+    {requiredInputs.length > 1 ? <div className="grid gap-2 rounded-control border border-line bg-surface-subtle p-3"><p className="m-0 text-sm text-muted">有多份必填数据，请选择批量运行时逐行处理哪一份；其他数据只作参考，不会被逐行消耗。</p><Select className="max-w-sm" aria-label="逐行处理的数据" value={value.processingInputId ?? null} options={requiredInputs.map(input => ({ value: input.inputId, label: input.alias || '未命名输入', disabled: false }))} clearable={false} disabled={disabled} errorMessage={errors.processingInputId} onValueChange={inputId => { if (inputId) commit(value.inputs, inputId) }}/></div> : null}
     {value.inputs.map((input, index) => {
       const table = tables.find(item => item.id === input.tableId)
       const reference = referencedBy(input.inputId)
@@ -105,7 +109,7 @@ export function InputPlanEditor({ value, onChange, tables, disabled = false, err
       const capabilities = sourceInput ? relationCapabilities(sourceInput) : { sameRecord: false, fieldEquals: false, recordSlot: false }
       return <article key={input.inputId} className="grid min-w-0 gap-3 rounded-control border border-line bg-surface p-3" tabIndex={inputErrors.length ? -1 : undefined} aria-invalid={inputErrors.length ? true : undefined}>
         {inputErrors.length ? <p role="alert" className="m-0 text-sm text-danger">{inputErrors[0][1]}</p> : null}
-        <div className="flex min-w-0 flex-wrap items-start justify-between gap-3"><Input className="max-w-sm" aria-label={`输入别名 ${input.alias}`} value={input.alias} disabled={disabled} onChange={event => replace(index, { ...input, alias: event.target.value })}/><Button size="sm" variant="ghost" aria-label={`移除输入 ${input.alias}`} disabled={disabled || Boolean(reference)} onClick={() => onChange({ inputs: value.inputs.filter((_, itemIndex) => itemIndex !== index) })}>移除输入</Button></div>
+        <div className="flex min-w-0 flex-wrap items-start justify-between gap-3"><Input className="max-w-sm" aria-label={`输入别名 ${input.alias}`} value={input.alias} disabled={disabled} onChange={event => replace(index, { ...input, alias: event.target.value })}/><Button size="sm" variant="ghost" aria-label={`移除输入 ${input.alias}`} disabled={disabled || Boolean(reference)} onClick={() => commit(value.inputs.filter((_, itemIndex) => itemIndex !== index))}>移除输入</Button></div>
         {reference ? <p className="m-0 text-sm text-warning">此输入正被“{reference.alias}”引用，不能更换数据表或移除。</p> : null}
         <div className="grid min-w-0 gap-3 sm:grid-cols-2">
           <Select aria-label={`数据表 ${input.alias}`} value={input.tableId} options={choices(tables, input.tableId, item => item.id, item => item.name, '数据表已失效')} clearable={false} disabled={disabled || Boolean(reference) || input.mode === 'related'} errorMessage={tableError} onValueChange={tableId => {

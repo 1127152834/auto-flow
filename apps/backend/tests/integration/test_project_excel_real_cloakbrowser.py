@@ -179,7 +179,7 @@ async def test_excel_multi_input_status_progression_and_same_batch_reclaim(
                 workflow = {'name': '推进状态' if change_status else '最终态复用', 'variables': [], 'nodes': nodes, 'edges': [{'id': str(uuid4()), 'source': left['id'], 'target': right['id']} for left, right in pairwise(nodes)]}
                 automation = await post(prefix + '/automations', {
                     'name': '推进状态' if change_status else '最终态复用', 'description': '',
-                    'parameterSchema': [], 'inputPlan': {'inputs': [selected, account_input]},
+                    'parameterSchema': [], 'inputPlan': {'inputs': [selected, account_input], 'processingInputId': selected['inputId']},
                     'environmentPolicy': {'source': 'newFromProfile', 'profileId': profile.id, 'proxyOverride': {'mode': 'none'}, 'modelProviderId': None},
                     'runPolicy': {'maxTasks': 3, 'concurrency': 1, 'maxLiveInstances': 1, 'continueAfterFailure': False, 'automaticExecutionTimeoutSeconds': 60, 'manualDeadlineSeconds': 120},
                 })

@@ -599,6 +599,7 @@ async def test_true_no_match_finishes_without_task_facts(data_services):
         row = session.get(ProjectAutomationRow, automation.automation_id)
         source, other = row.input_plan["inputs"]
         row.input_plan = {
+            **row.input_plan,
             "inputs": [
                 {
                     **source,

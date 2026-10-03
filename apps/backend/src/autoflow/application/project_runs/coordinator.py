@@ -16,6 +16,7 @@ from autoflow.domain.project_automations.models import (
     AutomationRecord,
     automation_to_dict,
 )
+from autoflow.domain.project_automations.rules import AMBIGUOUS, processing_input
 from autoflow.domain.project_data.capabilities import TableCapabilityGrant
 from autoflow.domain.project_runs.models import (
     Batch,
@@ -462,6 +463,14 @@ class ProjectRunCoordinator:
         """Atomically accept a Batch, its operation row and any fixed tasks."""
         project_id = project.id
         has_data_inputs = bool(automation.input_plan.get("inputs"))
+        # Remediation M2 §2: never guess the row-by-row input from input order.
+        chosen_input = processing_input(automation.input_plan)
+        if chosen_input is AMBIGUOUS:
+            raise ProjectRunError(
+                "PROCESSING_INPUT_REQUIRED",
+                "这个自动化有多份必填数据，请先在自动化设置里选择逐行处理哪一份",
+                409,
+            )
         declared_table_grants = self._validate_capability_manifest(
             session,
             automation,
@@ -514,7 +523,7 @@ class ProjectRunCoordinator:
         )
         frozen = _json_dates(
             {
-                "automation": _json_dates(automation_to_dict(automation)),
+                "automation": _json_dates(_with_processing_input(automation_to_dict(automation), chosen_input)),
                 "parameters": thaw_json(start.parameters),
                 "maxTasks": start.max_tasks,
                 "concurrency": start.concurrency,
@@ -925,3 +934,10 @@ def _canonical_data_grants(
                 raise ProjectRunError('CAPABILITY_FACTS_INCOMPLETE', '结构操作必须明确选择字段', 422)
             grants.append(grant)
     return grants
+
+
+def _with_processing_input(value: dict[str, Any], chosen: object) -> dict[str, Any]:
+    """Freeze the resolved row-by-row input so later edits cannot reinterpret the batch."""
+    if not isinstance(chosen, str):
+        return value
+    return {**value, "inputPlan": {**value["inputPlan"], "processingInputId": chosen}}
