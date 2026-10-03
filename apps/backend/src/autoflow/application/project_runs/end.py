@@ -205,6 +205,11 @@ class ProjectRunEnd:
                     "CAPABILITY_SCOPE_DENIED", "End 缺少项目能力绑定", 403
                 )
             wants_retain = config.get("retainEnvironment", False)
+            if wants_retain and binding.get("executionMode") == "previewWrites":
+                # R2-30: a preview never saves a login environment or links it to records.
+                raise ProjectError(
+                    "PREVIEW_CANNOT_SAVE_ENVIRONMENT", "预览运行不会保存登录状态，请用真实写入运行", 409
+                )
             targets: list[dict[str, Any]] = []
             if wants_retain:
                 selected = config.get("inputIds")

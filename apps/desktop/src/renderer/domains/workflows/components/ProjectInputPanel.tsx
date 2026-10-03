@@ -9,7 +9,7 @@ type View = 'definition' | 'debug' | 'task'
 const text = (value: unknown) => value === undefined ? '未提供' : value === null ? '空值' : typeof value === 'object' ? JSON.stringify(value) : String(value)
 const types: Record<string, string> = { string: '文本', number: '数字', boolean: '布尔', date: '日期' }
 export function ProjectInputPanel() {
-  const { automation, fields, tables, statuses, debug, task, taskDefinition, busy, error, notice, preview, choose } = useProjectInputs()
+  const { automation, fields, tables, statuses, debug, task, taskDefinition, busy, error, notice, preview, choose, realWrites, setRealWrites } = useProjectInputs()
   const running = useWorkflowStore(state => state.executionStatus === 'running')
   const [view, setView] = useState<View>('definition'), [selected, setSelected] = useState<string | null>(null)
   const [picker, setPicker] = useState(false), [copyError, setCopyError] = useState('')
@@ -25,6 +25,7 @@ export function ProjectInputPanel() {
     <header className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><strong>项目数据 · {automation.name}</strong><p className="mb-0 text-xs text-muted">{view === 'task' ? task ? `本次任务 #${task.task.taskOrdinal} · ${task.task.status}` : '尚未执行任务' : '输入与参数由当前自动化配置'}</p></div><div className="flex gap-2"><Button size="sm" disabled={busy || running || hasPendingProjectRun()} onClick={() => void useProjectInputs.getState().load().catch(() => {})}>刷新输入定义</Button>{([['definition', '输入定义'], ['debug', '调试输入'], ['task', '本次任务']] as const).map(([id, title]) => <Button size="sm" key={id} aria-pressed={view === id} onClick={() => { setView(id); if (id === 'debug' && !debug && !busy) void preview() }}>{title}</Button>)}</div></header>
     {error && <div role="alert" className="text-danger">{error}{hasPendingProjectRun() && <Button size="sm" onClick={() => void runProjectOnce().catch(() => {})}>核验本次运行</Button>}</div>}
     {notice && <p role="status">{notice}</p>}
+    <label className="mb-3 flex items-start gap-2 text-xs"><input type="checkbox" aria-label="运行一次时真实写入项目数据" checked={realWrites} disabled={busy || running} onChange={event => setRealWrites(event.target.checked)}/><span>运行一次时真实写入项目数据<br/><span className="text-muted">{realWrites ? '会真实修改记录、状态和处理进度。' : '默认只预览：本次写入只在这次运行里可见，不改动真实数据和登录状态；网页上的点击、提交仍会真实执行。'}</span></span></label>
     {copyError && <p role="status">{copyError}</p>}
     <div className="grid min-h-56 flex-1 grid-cols-[12rem_minmax(0,1fr)] rounded-control border border-line">
       <nav aria-label="输入对象" className="border-r border-line p-3"><p className="text-xs text-muted">输入对象</p>{definition.inputPlan.inputs.map(item => <button type="button" key={item.inputId} aria-pressed={inputId === item.inputId} onClick={() => setSelected(item.inputId)} className={`mb-1 block w-full rounded-control p-3 text-left ${inputId === item.inputId ? 'bg-clay-soft text-clay' : ''}`}>{item.alias}<small className="ml-2 text-muted">{item.required ? '必需' : '可选'}</small></button>)}<button type="button" className={`mt-3 w-full border-t border-line p-3 text-left ${!input ? 'bg-clay-soft text-clay' : ''}`} onClick={() => setSelected('parameters')}>固定参数</button></nav>

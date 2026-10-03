@@ -53,6 +53,7 @@ from autoflow.domain.project_runs.input_selection import (
     RecordRef,
 )
 from autoflow.domain.projects.models import ProjectError, ProjectOperation
+from autoflow.domain.workflows.runtime import thaw_json
 from autoflow.infrastructure.database.models import ProjectOperationRow
 from autoflow.infrastructure.database.project_claims import (
     _lease_key,
@@ -81,6 +82,7 @@ from autoflow.infrastructure.database.project_data_models import (
 from autoflow.infrastructure.database.project_data_records import (
     SqlAlchemyProjectDataRecords,
 )
+from autoflow.infrastructure.database.project_preview import PreviewOverlay
 from autoflow.infrastructure.database.project_run_models import (
     ProjectRecordLeaseRow,
     ProjectTaskInputSnapshotRow,
@@ -142,6 +144,7 @@ class SqlAlchemyProjectDataCapabilities:
                     409,
                 )
             allowed_status_inputs = set(raw_status_inputs)
+            preview = binding.get("executionMode") == "previewWrites"
             refs = frozenset(
                 _ref(item["recordRef"])
                 for item in snapshot.inputs
@@ -238,6 +241,7 @@ class SqlAlchemyProjectDataCapabilities:
                 frozenset(read_grants),
                 frozenset(write_grants),
                 frozenset(table_grants),
+                preview=preview,
             )
 
     def read_record(
@@ -260,13 +264,7 @@ class SqlAlchemyProjectDataCapabilities:
                 False,
             )
             fields = records._fields(session, table)
-            row = records._required_record(
-                session,
-                scope.project_id,
-                request.record_ref.table_id,
-                request.record_ref.dataset_generation,
-                request.record_ref.record_key,
-            )
+            row = self._record_for(session, scope, records, request.record_ref)
             field_ids = tuple(request.field_ids)
             value = _projected_snapshot(records._snapshot(row, fields), field_ids)
             self._record_read(session, scope, request.read_purpose, field_ids, value)
@@ -372,6 +370,8 @@ class SqlAlchemyProjectDataCapabilities:
                         )
                     )
                 )
+                if scope.preview:
+                    rows = _preview_rows(session, scope, rows, request.table_id, request.dataset_generation)
                 rows = [
                     row
                     for row in rows
@@ -492,6 +492,18 @@ class SqlAlchemyProjectDataCapabilities:
             lease_mode = scope.authorize_set_status(
                 command, current_execution_generation=run.execution_generation
             )
+            if scope.preview:
+                records = SqlAlchemyProjectDataRecords(self._factory)
+                table = records._table(session, scope.project_id, command.record_ref.table_id,
+                                       command.record_ref.dataset_generation, True)
+                fields = records._fields(session, table)
+                self._record_for(session, scope, records, command.record_ref)
+                PreviewOverlay(session, scope.run_id).write(
+                    command.record_ref, self._real_or_none(session, scope, records, command.record_ref),
+                    status_id=command.status_id,
+                )
+                return self._preview_result(session, scope, records, fields, command.record_ref,
+                                            "setRecordStatus", command.operation_id, command.request_digest)
             row = SqlAlchemyProjectDataRecords._required_record(
                 SqlAlchemyProjectDataRecords(self._factory),
                 session,
@@ -617,6 +629,14 @@ class SqlAlchemyProjectDataCapabilities:
                 True,
             )
             fields = records._fields(session, table)
+            if scope.preview:
+                current = self._record_for(session, scope, records, command.record_ref)
+                canonical = records._validate(fields, dict(command.changes), False)
+                overlay = PreviewOverlay(session, scope.run_id)
+                overlay.write(command.record_ref, self._real_or_none(session, scope, records, command.record_ref),
+                              values={**current.values_json, **canonical})
+                return self._preview_result(session, scope, records, fields, command.record_ref,
+                                            "updateRecord", command.operation_id, command.request_digest)
             row = records._required_record(
                 session,
                 scope.project_id,
@@ -633,7 +653,22 @@ class SqlAlchemyProjectDataCapabilities:
                 lease_mode,
                 expected_content=command.expected_content_revision,
             )
-            if (
+            if command.expected_content_revision is None:
+                # R2-24: only the fields this Task changes must still hold what the Task last saw.
+                # (A first write after a query opens its cursor at the current revision, so the
+                # revision alone cannot tell whether someone else changed the row since the read.)
+                baseline = self._task_view(session, scope, task, command.record_ref, lease_mode)
+                clashes = [
+                    {"fieldId": field_id, "currentValue": row.values_json.get(field_id), "attemptedValue": value}
+                    for field_id, value in command.changes.items()
+                    if row.values_json.get(field_id, _ABSENT) != baseline.get(field_id, _ABSENT)
+                ]
+                if clashes:
+                    raise ProjectError(
+                        "FIELD_CONFLICT", "要写入的字段已被其他人修改", 409,
+                        {"fields": _thaw_values(clashes), "currentRevision": row.content_revision, "retryable": False},
+                    )
+            elif (
                 row.content_revision != command.expected_content_revision
                 or cursor.content_revision != command.expected_content_revision
             ):
@@ -681,6 +716,75 @@ class SqlAlchemyProjectDataCapabilities:
             self._commit(session)
             return after, False
 
+    @staticmethod
+    def _real_or_none(session: Session, scope: TaskCapabilityScope, records: Any, ref: RecordRef) -> DataRecordRow | None:
+        try:
+            row: DataRecordRow = records._required_record(
+                session, scope.project_id, ref.table_id, ref.dataset_generation, ref.record_key
+            )
+        except ProjectError:
+            return None
+        return row
+
+    @classmethod
+    def _record_for(cls, session: Session, scope: TaskCapabilityScope, records: Any, ref: RecordRef) -> DataRecordRow:
+        """The real row, or in preview the row as this run's overlay sees it."""
+        if not scope.preview:
+            row: DataRecordRow = records._required_record(
+                session, scope.project_id, ref.table_id, ref.dataset_generation, ref.record_key
+            )
+            return row
+        view = PreviewOverlay(session, scope.run_id).view(ref, cls._real_or_none(session, scope, records, ref))
+        if view is None:
+            raise ProjectError("RECORD_NOT_FOUND", "Record not found", 404)
+        return view
+
+    def _preview_result(
+        self, session: Session, scope: TaskCapabilityScope, records: Any, fields: Any, ref: RecordRef,
+        kind: str, operation_id: str, digest: str,
+    ) -> tuple[dict[str, Any], bool]:
+        after = records._snapshot(self._record_for(session, scope, records, ref), fields)
+        session.add(_operation_row(_completed_operation(scope, operation_id, kind, digest, after)))
+        self._commit(session)
+        return after, False
+
+    @staticmethod
+    def _task_view(
+        session: Session, scope: TaskCapabilityScope, task: ProjectTaskRow, ref: RecordRef, lease_mode: str
+    ) -> dict[str, Any]:
+        """The row as this Task last knew it: its own latest write, else what it claimed or read."""
+        ref_payload = _ref_payload(ref)
+        own = session.scalars(
+            select(ProjectOperationRow)
+            .where(ProjectOperationRow.project_id == scope.project_id,
+                   ProjectOperationRow.kind.in_(("updateRecord", "createRecord")),
+                   ProjectOperationRow.status == "succeeded")
+            .order_by(ProjectOperationRow.created_at.desc(), ProjectOperationRow.id.desc())
+        )
+        for operation in own:
+            resource = operation.resource or {}
+            if resource.get("taskId") == scope.task_id and resource.get("recordRef") == ref_payload:
+                return _values_by_field((operation.result or {}).get("values"))
+        if lease_mode == "existing":
+            snapshot = session.scalar(
+                select(ProjectTaskInputSnapshotRow).where(ProjectTaskInputSnapshotRow.task_id == task.id)
+            )
+            for item in (snapshot.inputs if snapshot else None) or []:
+                if isinstance(item, dict) and item.get("recordRef") == ref_payload:
+                    return _values_by_field(item.get("values"))
+        evidence = session.scalar(
+            select(ProjectTaskRecordReadRow)
+            .where(
+                ProjectTaskRecordReadRow.task_id == scope.task_id,
+                ProjectTaskRecordReadRow.table_id == ref.table_id,
+                ProjectTaskRecordReadRow.dataset_generation == ref.dataset_generation,
+                ProjectTaskRecordReadRow.key_type == ref.record_key.type,
+                ProjectTaskRecordReadRow.key_value == ref.record_key.value,
+            )
+            .order_by(ProjectTaskRecordReadRow.created_at.desc())
+        )
+        return _values_by_field((evidence.snapshot or {}).get("values") if evidence else None)
+
     def delete_record(
         self, scope: TaskCapabilityScope, command: DeleteProjectRecordCommand
     ) -> tuple[dict[str, Any], bool]:
@@ -711,6 +815,16 @@ class SqlAlchemyProjectDataCapabilities:
                 True,
             )
             fields = records._fields(session, table)
+            if scope.preview:
+                before = records._snapshot(self._record_for(session, scope, records, command.record_ref), fields)
+                PreviewOverlay(session, scope.run_id).write(
+                    command.record_ref, self._real_or_none(session, scope, records, command.record_ref), deleted=True,
+                )
+                session.add(_operation_row(_completed_operation(
+                    scope, command.operation_id, "deleteRecord", command.request_digest, {"ref": before["ref"], "deleted": True},
+                )))
+                self._commit(session)
+                return {"ref": before["ref"], "deleted": True}, False
             row = records._required_record(
                 session,
                 scope.project_id,
@@ -821,6 +935,12 @@ class SqlAlchemyProjectDataCapabilities:
             )
             fields = records._fields(session, table)
             canonical = records._validate(fields, dict(command.values), True)
+            if scope.preview:
+                ref = PreviewOverlay(session, scope.run_id).create(
+                    command.project_id, command.table_id, command.dataset_generation, canonical
+                )
+                return self._preview_result(session, scope, records, fields, ref,
+                                            "createRecord", command.operation_id, command.request_digest)
             identity = table.identity
             if identity.get("mode") == "system":
                 key = system_record_key()
@@ -1755,6 +1875,32 @@ def _revision_conflict(expected: int, current: int) -> ProjectError:
         409,
         {"expectedRevision": expected, "currentRevision": current, "retryable": False},
     )
+
+
+_ABSENT = object()
+
+
+def _preview_rows(
+    session: Session, scope: TaskCapabilityScope, rows: list[DataRecordRow], table_id: str, generation: str
+) -> list[DataRecordRow]:
+    overlay = PreviewOverlay(session, scope.run_id)
+    viewed = []
+    for row in rows:
+        ref = RecordRef(row.project_id, row.table_id, row.dataset_generation, RecordKey(row.key_type, row.key_value))  # type: ignore[arg-type]
+        view = overlay.view(ref, row)
+        if view is not None:
+            viewed.append(view)
+    return viewed + overlay.created_rows(table_id, generation)
+
+
+def _values_by_field(values: Any) -> dict[str, Any]:
+    if not isinstance(values, list):
+        return {}
+    return {item["fieldId"]: item.get("value") for item in values if isinstance(item, dict) and "fieldId" in item}
+
+
+def _thaw_values(clashes: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [{key: thaw_json(value) for key, value in clash.items()} for clash in clashes]
 
 
 def _content_revision_conflict(expected: int, current: int) -> ProjectError:

@@ -33,13 +33,17 @@ interface ProjectInputState {
   error: string | null
   notice: string | null
   epoch: number
+  /** Remediation M2 R2-30: the trial run previews project data writes unless this is chosen. */
+  realWrites: boolean
+  setRealWrites(value: boolean): void
   load(): Promise<void>
   preview(choices?: DebugSelection): Promise<DebugInputs | null>
   candidates(inputId: string, cursor: string | null, search: string): Promise<DebugInputs>
   choose(inputId: string, choice: DebugSelection[string]): Promise<void>
 }
 export const useProjectInputs = create<ProjectInputState>((set, get) => ({
-  automation: null, fields: [], tables: [], statuses: [], debug: null, task: null, taskDefinition: null, batchId: null, busy: false, error: null, notice: null, epoch: 0,
+  automation: null, fields: [], tables: [], statuses: [], debug: null, task: null, taskDefinition: null, batchId: null, busy: false, error: null, notice: null, epoch: 0, realWrites: false,
+  setRealWrites: value => set({ realWrites: value }),
   async load() {
     const context = getStudioOpenContext(), epoch = get().epoch + 1, transport = getStudioTransportRevision()
     const previous = get()

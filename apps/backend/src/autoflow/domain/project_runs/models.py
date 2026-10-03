@@ -17,6 +17,7 @@ BatchStatus = Literal[
     "accepted",
     "running",
     "blocked",
+    "paused",
     "draining",
     "stopping",
     "reconciling",
@@ -47,6 +48,8 @@ class BatchStart:
     max_tasks: int | None
     concurrency: int
     environment_override: Mapping[str, Any] | None
+    # Remediation M2 R2-30: previewWrites keeps project data writes in a run-private overlay.
+    execution_mode: str = "realWrites"
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "parameters", _freeze_mapping(self.parameters))

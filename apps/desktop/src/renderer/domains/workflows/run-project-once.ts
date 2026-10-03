@@ -27,7 +27,7 @@ export async function runProjectOnce() {
   } else {
     const debug = state.debug ?? await state.preview()
     if (!debug || debug.selectionStatus !== 'ready') { useWorkflowStore.getState().setBottomPanelTab('project'); throw new Error('请先准备完整的调试输入') }
-    command = { key: crypto.randomUUID(), body: { expectedAutomationRevision: automation.managementRevision, parameters: {}, maxTasks: 1, concurrency: 1, debugSelection: debug.selection }, automationId: automation.automationId, projectId: automation.projectId, workflowId: automation.workflowId }
+    command = { key: crypto.randomUUID(), body: { expectedAutomationRevision: automation.managementRevision, parameters: {}, maxTasks: 1, concurrency: 1, debugSelection: debug.selection, executionMode: state.realWrites ? 'realWrites' : 'previewWrites' }, automationId: automation.automationId, projectId: automation.projectId, workflowId: automation.workflowId }
     sessionStorage.setItem(key, JSON.stringify(command))
   }
   const transport = getStudioTransportRevision(), epoch = state.epoch

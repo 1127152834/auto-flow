@@ -21,6 +21,7 @@ def validate_batch_start(
         raise _error("form", "请求必须是对象")
     allowed = {
         "debugSelection",
+        "executionMode",
         "expectedAutomationRevision",
         "parameters",
         "maxTasks",
@@ -98,12 +99,17 @@ def validate_batch_start(
             else "environmentPolicy.inputId"
         )
         raise _error(field, "记录关联环境需要数据输入")
+    # R2-30: the trial-run entry previews by default; real writes must be chosen explicitly.
+    mode = payload.get("executionMode", "previewWrites" if "debugSelection" in payload else "realWrites")
+    if mode not in {"previewWrites", "realWrites"}:
+        raise _error("executionMode", "必须是 previewWrites 或 realWrites")
     return BatchStart(
         expected_automation_revision=revision,
         parameters=parameters,
         max_tasks=max_tasks,
         concurrency=concurrency,
         environment_override=deepcopy(environment_override),
+        execution_mode=mode,
     )
 
 

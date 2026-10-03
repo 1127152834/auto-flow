@@ -18,6 +18,8 @@ class BatchStartRequest(ApiModel):
     max_tasks: StrictInt | None = Field(None, ge=1, le=100)
     concurrency: StrictInt | None = Field(None, ge=1, le=100)
     environment_override: EnvironmentPolicy | None = None
+    # Remediation M2 R2-30: defaults to previewWrites with debugSelection, realWrites otherwise.
+    execution_mode: Literal["previewWrites", "realWrites"] | None = None
 
     def payload(self) -> dict[str, Any]:
         return self.model_dump(by_alias=True, exclude_unset=True)
@@ -233,6 +235,10 @@ class TaskDetail(ApiModel):
     data_writes: list[TaskDataWriteView] = Field(default_factory=list)
     cleanup: CleanupSummaryView
     end: TaskEndView | None = None
+
+
+class BatchResumeRequest(ApiModel):
+    expected_status_revision: StrictInt = Field(ge=1)
 
 
 class BatchStopRequest(ApiModel):

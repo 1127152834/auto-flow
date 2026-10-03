@@ -237,7 +237,8 @@ class UpdateProjectRecordCommand:
     execution_generation: int
     record_ref: RecordRef
     changes: Mapping[str, Any]
-    expected_content_revision: int
+    # Remediation M2 R2-24: None lets the Task write against its own view of the row.
+    expected_content_revision: int | None = None
 
     def __post_init__(self) -> None:
         _uuid(self.operation_id, "operationId")
@@ -245,7 +246,8 @@ class UpdateProjectRecordCommand:
         _record_ref(self.record_ref, "recordRef")
         changes = _freeze_field_values(self.changes, "changes", allow_empty=False)
         object.__setattr__(self, "changes", changes)
-        _positive_integer(self.expected_content_revision, "expectedContentRevision")
+        if self.expected_content_revision is not None:
+            _positive_integer(self.expected_content_revision, "expectedContentRevision")
 
     @property
     def request_payload(self) -> dict[str, Any]:
@@ -573,6 +575,8 @@ class TaskCapabilityScope:
     record_read_grants: frozenset[RecordReadGrant] = field(default_factory=frozenset)
     record_write_grants: frozenset[RecordWriteGrant] = field(default_factory=frozenset)
     table_grants: frozenset[TableCapabilityGrant] = field(default_factory=frozenset)
+    # Remediation M2 R2-30: frozen by the parent from the run request; a worker cannot change it.
+    preview: bool = False
 
     def __post_init__(self) -> None:
         _uuid(self.project_id, "projectId")

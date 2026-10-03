@@ -585,11 +585,13 @@ class ProjectRunCoordinator:
                 "createRecordTargets": create_record_targets,
                 "tableGrants": table_grants,
                 "statusInputIds": status_input_ids,
+                "executionMode": start.execution_mode,
             }
             if has_data_capability
             else None
         )
         frozen["dataCapabilityBinding"] = data_capability_binding
+        frozen["executionMode"] = start.execution_mode
         if follow_up is not None:
             frozen["followUp"] = follow_up
         selection_outcome: dict[str, Any] | None = (

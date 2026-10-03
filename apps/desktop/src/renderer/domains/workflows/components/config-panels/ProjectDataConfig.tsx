@@ -113,7 +113,7 @@ export function ProjectDataConfig({ data, onChange }: { data: NodeData; onChange
     onChange('bindingProjectId', automation.projectId)
     onChange('tableGrant', { tableId: input.tableId, datasetGeneration: input.datasetGeneration, operations: [operation], fieldIds: ids, readPurposes: readPurposes(operation) })
     onChange('argumentsValid', true)
-    onChange('arguments', { recordRef: `{${ref}['recordRef']}`, ...(operation === 'readRecord' ? { fieldIds: ids, readPurpose: 'condition' } : operation === 'setRecordStatus' ? { expectedStatusRevision: `{${ref}['statusRevision']}`, statusId: null } : { expectedContentRevision: `{${ref}['contentRevision']}`, changes: {} }) })
+    onChange('arguments', { recordRef: `{${ref}['recordRef']}`, ...(operation === 'readRecord' ? { fieldIds: ids, readPurpose: 'condition' } : operation === 'setRecordStatus' ? { expectedStatusRevision: `{${ref}['statusRevision']}`, statusId: null } : { changes: {} }) })
   }
   return <div className="space-y-4">
     <p className="text-sm text-muted-foreground">从项目自动化批次运行。使用任务的输入快照和数据权限，表发生重建时需要重新选择。</p>
@@ -191,7 +191,8 @@ function initialArguments(operation: string, table: Schema['DataTableView']): Re
     case 'queryTableSchema': return { ...identity, fieldIds: [] }
     case 'queryRecords': return { ...identity, fieldIds: [], readPurpose: 'condition', filter: null, orderBy: [], cursor: null, limit: 100 }
     case 'readRecord': return { recordRef, fieldIds: [], readPurpose: 'condition' }
-    case 'updateRecord': return { recordRef, changes: {}, expectedContentRevision }
+    // Remediation M2 R2-24: new update nodes write without a version; conflicts are checked per field.
+    case 'updateRecord': return { recordRef, changes: {} }
     case 'deleteRecord': return { recordRef, expectedContentRevision, expectedStatusRevision: "{record['statusRevision']}", expectedLinkRevision: "{record['linkRevision']}" }
     case 'setRecordStatus': return { recordRef, statusId: null, expectedStatusRevision: "{record['statusRevision']}" }
     default: return { ...identity, fieldId: operation === 'addField' || operation === 'ensureField' ? crypto.randomUUID() : '', definition: { key: '', name: '', type: 'string', required: false, validation: {} }, ...(operation === 'previewFieldChange' ? {} : { expectedTableRevision: table.tableRevision }), ...(operation === 'addField' || operation === 'ensureField' ? { hasDefault: false, default: null } : operation === 'modifyField' ? { expectedFieldRevision: 1, impactRevision: "{preview['impactRevision']}" } : {}) }
