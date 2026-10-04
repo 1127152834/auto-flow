@@ -75,6 +75,7 @@ class PersistentEnvironment:
     created_from_source: str = "newFromProfile"
     created_from_task_id: str | None = None
     identity_package: dict[str, Any] | None = field(default=None, repr=False)
+    keep_browser_cache: bool = False
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -94,6 +95,7 @@ class PersistentEnvironment:
             "createdFromSource": self.created_from_source,
             "createdFromTaskId": self.created_from_task_id,
             "browserConfiguration": browser_configuration(self.identity_package),
+            "keepBrowserCache": self.keep_browser_cache,
         }
 
 

@@ -21,6 +21,9 @@ def test_fresh_migrated_database_matches_registered_metadata(tmp_path):
     config.set_main_option("sqlalchemy.url", f"sqlite:///{database}")
     with warnings.catch_warnings():
         warnings.simplefilter("error", SAWarning)
+        # M3 claim indexes order by expressions, which SQLAlchemy cannot reflect; their use is
+        # guarded by the CI claim budget (bench_claims --budget-ms 20) instead.
+        warnings.filterwarnings("ignore", "Skipped unsupported reflection of expression-based index", SAWarning)
         command.check(config)
     with sqlite3.connect(database) as connection:
         tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")}

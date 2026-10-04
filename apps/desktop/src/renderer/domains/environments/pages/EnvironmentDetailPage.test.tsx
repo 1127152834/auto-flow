@@ -34,6 +34,8 @@ function harness(options: { blockers?: unknown[]; impacts?: unknown[]; operation
   const request = vi.fn(async (path: string, init?: { method?: string; headers?: Record<string, string>; body?: unknown }) => {
     calls.push({ path, init })
     if (path.endsWith('/impact?action=delete')) return { impactRevision: 4, impacts, blockers }
+    if (path.endsWith('/storage')) return { generations: [], retainedBytes: 4 * 1024 * 1024, reclaimableBytes: 12 * 1024 * 1024 }
+    if (path.endsWith(`/environments/${environmentId}`) && init?.method === 'PATCH') return { ...environment, keepBrowserCache: (init.body as { keepBrowserCache: boolean }).keepBrowserCache }
     if (path.endsWith(`/environments/${environmentId}`) && init?.method === 'DELETE') return { operation, outcome: 'deleted' }
     if (path.endsWith(`/environments/${environmentId}`)) return { environment, activeInstance: null, linkedRecordCount: 2 }
     if (path.includes('/profiles')) return { items: [{ id: 'profile-1', name: '公开版默认配置' }] }
@@ -88,4 +90,12 @@ it('separates an accepted command from a finished deletion instead of claiming t
   await user.click((await screen.findAllByRole('button', { name: '删除环境' })).at(-1)!)
   expect(await screen.findByText('删除命令已被接受但尚未结束，请稍后重新打开环境页面核对结果。')).toBeVisible()
   expect(screen.queryByRole('heading', { name: '删除结果' })).toBeNull()
+})
+
+it('shows reclaimable history apart from what is in use and lets the environment keep its browser cache', async () => {
+  const { calls } = harness()
+  expect(await screen.findByText(/共占用 16.0 MB：4.0 MB 是当前版本和仍在使用的版本，12.0 MB 是可回收的历史版本/)).toBeVisible()
+  await userEvent.click(screen.getByRole('switch', { name: '保存时保留浏览器缓存' }))
+  const patch = calls.find(call => call.init?.method === 'PATCH')
+  expect(patch?.init?.body).toEqual({ expectedMetadataRevision: 5, keepBrowserCache: true })
 })

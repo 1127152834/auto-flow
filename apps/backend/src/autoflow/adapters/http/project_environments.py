@@ -20,6 +20,7 @@ from .project_environment_schemas import (
     EnvironmentPatch,
     EnvironmentRepairRequest,
     EnvironmentSaveRequest,
+    EnvironmentStorageView,
     EnvironmentView,
     MaintenanceDiscardRequest,
     MaintenanceStartRequest,
@@ -82,6 +83,14 @@ def project_environments_router(service: EnvironmentService) -> APIRouter:
             "activeInstance": instance.to_dict() if instance else None,
             "linkedRecordCount": linked,
         }
+
+    @router.get(
+        "/environments/{environmentId}/storage",
+        response_model=EnvironmentStorageView,
+        responses=browser_error_responses(401, 404, 422),
+    )
+    def environment_storage(projectId: UUID, environmentId: UUID) -> dict[str, Any]:
+        return service.storage(str(projectId), str(environmentId))
 
     @router.get(
         "/environments/{environmentId}/impact",

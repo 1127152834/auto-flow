@@ -5,6 +5,7 @@ import type { StreamingApiClient } from '../../../shared/api/client'
 import { notify } from '../../../shared/components/Toaster'
 import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogTitle } from '../../../shared/components/ui/alert-dialog'
 import { Button } from '../../../shared/components/ui/button'
+import { Switch } from '../../../shared/components/ui/switch'
 import { createProfilesApi } from '../../profiles/api'
 import { safeProjectError } from '../../projects/presentation-error'
 import type { ProjectRoute } from '../../projects/types'
@@ -12,6 +13,7 @@ import { createEnvironmentApi } from '../api'
 import { EnvironmentConfigurationEditor } from '../components/EnvironmentConfigurationEditor'
 import { EnvironmentRenameDrawer, type EnvironmentRenameDraft } from '../components/EnvironmentRenameDrawer'
 
+const megabytes = (bytes: number) => `${(bytes / 1024 / 1024).toFixed(1)} MB`
 const stamp = (value: string) => new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
 const facts = (items: { [key: string]: unknown }[]) => items.map(item => ({ code: String(item.code ?? ''), message: String(item.message ?? '') }))
 const blockersOf = (items: { [key: string]: unknown }[]) => items.map(item => ({ state: String(item.state ?? ''), message: String(item.message ?? item.code ?? '') }))
@@ -58,6 +60,11 @@ export function EnvironmentDetailPage({ workspaceKey, instanceId, projectId, env
     enabled: !disabled,
     staleTime: 60_000,
   })
+  const storage = useQuery({
+    queryKey: [...prefix, 'storage', environmentId],
+    queryFn: ({ signal }) => api.storage(environmentId, signal),
+    enabled: !disabled,
+  })
   const environment = detail.data?.environment
   const [editing, setEditing] = useState(false)
   const [configuring, setConfiguring] = useState(false)
@@ -78,6 +85,14 @@ export function EnvironmentDetailPage({ workspaceKey, instanceId, projectId, env
       setEditing(false)
       void cache.invalidateQueries({ queryKey: prefix })
     },
+  })
+  const cachePolicy = useMutation({
+    mutationFn: (keepBrowserCache: boolean) => api.patch(environmentId, {
+      expectedMetadataRevision: environment!.ref.metadataRevision,
+      keepBrowserCache,
+    }, crypto.randomUUID()),
+    onSuccess: () => void cache.invalidateQueries({ queryKey: prefix }),
+    onError: error => notify({ title: safeProjectError(error), tone: 'error' }),
   })
   const maintenance = useMutation({
     mutationFn: () => api.startMaintenance(environmentId, environment!.ref.contentGeneration, crypto.randomUUID()),
@@ -206,6 +221,17 @@ export function EnvironmentDetailPage({ workspaceKey, instanceId, projectId, env
         {busy ? <p className="m-0 text-sm text-muted">关闭当前浏览器后可修改实例设置。</p> : null}
       </section>
     </div>
+    <section className="grid gap-3 rounded-card border border-line bg-surface p-5" aria-label="存储空间">
+      <h3 className="m-0 text-base">存储空间</h3>
+      {storage.isError ? <p role="alert" className="m-0 text-sm">无法读取占用空间。{safeProjectError(storage.error)}</p> : null}
+      {storage.data ? <p className="m-0 text-sm">
+        共占用 {megabytes(storage.data.retainedBytes + storage.data.reclaimableBytes)}：{megabytes(storage.data.retainedBytes)} 是当前版本和仍在使用的版本，{megabytes(storage.data.reclaimableBytes)} 是可回收的历史版本（每次保存后只留最近 3 个）。
+      </p> : null}
+      <label className="flex items-center justify-between gap-4 text-sm">
+        <span><strong className="block">保存时保留浏览器缓存</strong><small className="text-muted">默认不保存网页、脚本和显卡缓存，下次打开会重新下载。个别网站的登录依赖缓存时再打开，保存会变慢、占用更多空间。</small></span>
+        <Switch aria-label="保存时保留浏览器缓存" checked={environment.keepBrowserCache ?? false} disabled={disabled || readOnly || cachePolicy.isPending} onCheckedChange={checked => cachePolicy.mutate(checked)} />
+      </label>
+    </section>
     <p className="m-0 text-xs text-muted">技术信息：内容代次 {environment.ref.contentGeneration} · 元数据修订 {environment.ref.metadataRevision}</p>
     <EnvironmentRenameDrawer
       open={editing}

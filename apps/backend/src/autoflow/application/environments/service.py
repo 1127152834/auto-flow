@@ -116,6 +116,12 @@ class EnvironmentService:
         environment, instance = self.environments.get_with_instance(project_id, environment_id)
         return environment, instance, self.environments.linked_record_count(project_id, environment_id)
 
+    def storage(self, project_id: str, environment_id: str) -> dict[str, Any]:
+        from .retention import generation_usage
+
+        self.environments.get_with_instance(project_id, environment_id)  # 404 outside the project
+        return generation_usage(self, environment_id)
+
     def impact(self, project_id: str, environment_id: str, action: str):
         self._project(project_id)
         return self.environments.delete_impact(project_id, environment_id, action)
@@ -177,8 +183,17 @@ class EnvironmentService:
                 422,
                 {"fields": {"expectedMetadataRevision": "Must be a positive integer"}},
             )
-        patch = validate_metadata(payload.get("name"), payload.get("notes"))
-        if set(payload) - {"name", "notes", "expectedMetadataRevision"}:
+        patch: dict[str, Any] = {}
+        if "keepBrowserCache" not in payload or "name" in payload or "notes" in payload:
+            patch.update(validate_metadata(payload.get("name"), payload.get("notes")))
+        if "keepBrowserCache" in payload:
+            if type(payload["keepBrowserCache"]) is not bool:
+                raise environment_error(
+                    "VALIDATION_ERROR", "Invalid environment metadata", 422,
+                    {"fields": {"keepBrowserCache": "Must be a boolean"}},
+                )
+            patch["keepBrowserCache"] = payload["keepBrowserCache"]
+        if set(payload) - {"name", "notes", "keepBrowserCache", "expectedMetadataRevision"}:
             raise environment_error(
                 "VALIDATION_ERROR",
                 "Unexpected field",

@@ -37,6 +37,7 @@ class EnvironmentView(ApiModel):
     created_from_task_id: str | None = None
     linked_record_count: int = 0
     browser_configuration: EnvironmentBrowserConfiguration | None = None
+    keep_browser_cache: bool = False
 
 
 class EnvironmentInstanceView(ApiModel):
@@ -68,6 +69,18 @@ class EnvironmentDeleteRequest(ApiModel):
 
     def payload(self):
         return self.model_dump(by_alias=True)
+
+
+class EnvironmentGenerationUsage(ApiModel):
+    generation: int
+    bytes: int
+    kept_for: Literal["current", "instance", "task", "batch", "publishing", "history"]
+
+
+class EnvironmentStorageView(ApiModel):
+    generations: list[EnvironmentGenerationUsage]
+    retained_bytes: int
+    reclaimable_bytes: int
 
 
 class EnvironmentImpactView(ApiModel):
@@ -147,6 +160,7 @@ class EnvironmentPatch(ApiModel):
     notes: str | None = None
     browser_configuration: EnvironmentBrowserConfiguration | None = None
     expected_content_generation: int | None = None
+    keep_browser_cache: bool | None = None
 
     def payload(self) -> dict:
         data: dict[str, Any] = {"expectedMetadataRevision": self.expected_metadata_revision}
@@ -158,6 +172,8 @@ class EnvironmentPatch(ApiModel):
             data["browserConfiguration"] = self.browser_configuration.model_dump(by_alias=True)
         if self.expected_content_generation is not None:
             data["expectedContentGeneration"] = self.expected_content_generation
+        if self.keep_browser_cache is not None:
+            data["keepBrowserCache"] = self.keep_browser_cache
         return data
 
 

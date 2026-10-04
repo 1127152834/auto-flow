@@ -18,6 +18,7 @@ const environment = {
   createdFromSource: 'newFromProfile',
   createdFromTaskId: '22222222-2222-4222-8222-222222222222',
   linkedRecordCount: 3,
+  keepBrowserCache: false,
 }
 
 it('lists persistent environments and keeps empty and error states distinct', () => {

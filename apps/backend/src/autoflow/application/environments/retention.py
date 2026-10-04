@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from datetime import UTC, datetime
 from typing import Any
 from uuid import NAMESPACE_URL, uuid4, uuid5
@@ -32,6 +33,63 @@ from autoflow.domain.projects.models import ProjectError
 from autoflow.domain.workflows.runtime import WorkflowRuntimeError
 
 END_TERMINAL_PHASES = frozenset({"completed", "saved_unlinked", "failed"})
+# Remediation M3 R3-10: unreferenced history kept besides every referenced generation.
+KEEP_UNREFERENCED_GENERATIONS = 3
+_logger = logging.getLogger(__name__)
+
+
+def _retention_plan(current: int, references: dict[int, str], on_disk: list[int], keep: int) -> tuple[dict[int, str], list[int]]:
+    reasons = dict(references)
+    for generation in on_disk:
+        if generation > current:
+            reasons.setdefault(generation, "publishing")  # written to disk, database not yet switched
+    unreferenced = sorted((generation for generation in on_disk if generation not in reasons), reverse=True)
+    for generation in unreferenced[:keep]:
+        reasons[generation] = "history"
+    return reasons, unreferenced[keep:]
+
+
+def prune_generations(service, environment_id: str, *, keep: int = KEEP_UNREFERENCED_GENERATIONS) -> list[int]:
+    """Remove old unreferenced generations: mark under the write lock, re-check references, then delete."""
+    store = service.store
+
+    def take_out(current: int | None, references: dict[int, str]) -> list[int]:
+        if current is None:
+            return []
+        _reasons, doomed = _retention_plan(current, references, store.generations(environment_id), keep)
+        removed = []
+        for generation in doomed:
+            try:
+                store.trash_generation(environment_id, generation)
+            except OSError as error:  # an open file on Windows; the next save tries again
+                _logger.warning("环境 %s 的第 %s 代暂时无法清理：%s", environment_id, generation, error)
+                continue
+            removed.append(generation)
+        return removed
+
+    removed = service.environments.with_generation_references(environment_id, take_out, lock=True)
+    store.purge_trash()
+    return removed
+
+
+def generation_usage(service, environment_id: str) -> dict[str, Any]:
+    """Disk use split into what references keep and what is reclaimable history."""
+    store = service.store
+
+    def measure(current: int | None, references: dict[int, str]) -> dict[str, Any]:
+        on_disk = store.generations(environment_id)
+        reasons, _doomed = _retention_plan(current or 0, references, on_disk, len(on_disk))
+        rows = [
+            {"generation": generation, "bytes": store.generation_bytes(environment_id, generation), "keptFor": reasons[generation]}
+            for generation in on_disk
+        ]
+        return {
+            "generations": rows,
+            "retainedBytes": sum(row["bytes"] for row in rows if row["keptFor"] != "history"),
+            "reclaimableBytes": sum(row["bytes"] for row in rows if row["keptFor"] == "history"),
+        }
+
+    return service.environments.with_generation_references(environment_id, measure)
 
 
 def save_environment(service, project_id: str, key: str, payload: dict[str, Any], *, parent_end=None):
@@ -107,7 +165,10 @@ def save_environment(service, project_id: str, key: str, payload: dict[str, Any]
             assert source is not None  # validate_save rejects update without a source.
             publication_target = service.store.generation_dir(source.environment_id, source.content_generation + 1)
         service.environments.set_instance_state(instance_id, "saving")
-        digest = service.store.stage_candidate(save_id, instance_id, identity_package=instance.identity_package)
+        digest = service.store.stage_candidate(
+            save_id, instance_id, identity_package=instance.identity_package,
+            keep_browser_cache=mode == "update" and environment is not None and environment.keep_browser_cache,
+        )
         service.environments.record_save(
             save_id,
             project_id,
@@ -208,6 +269,11 @@ def save_environment(service, project_id: str, key: str, payload: dict[str, Any]
         done = service.environments.complete_operation(accepted, outcome, outcome.get("error"), datetime.now(UTC))
         if instance.environment_id:
             service.environments.release_occupancy(instance.environment_id, instance_id)
+        if mode == "update":
+            try:
+                prune_generations(service, environment_id)
+            except Exception as cleanup_error:  # noqa: BLE001 -- the save stands; cleanup retries on the next save
+                _logger.warning("保存后清理环境 %s 的旧版本失败：%s", environment_id, cleanup_error)
         return outcome, done, False
     except (ProjectError, WorkflowRuntimeError, OSError) as cause:
         error: ProjectError | WorkflowRuntimeError

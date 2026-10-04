@@ -46,6 +46,7 @@ from autoflow.infrastructure.database.project_data_models import (
     DataRecordRow,
 )
 from autoflow.infrastructure.database.project_run_models import (
+    ProjectBatchRow,
     ProjectRecordLeaseRow,
     ProjectTaskRecordCursorRow,
     ProjectTaskRow,
@@ -137,7 +138,7 @@ class SqlAlchemyEnvironments:
         self,
         project_id: str,
         environment_id: str,
-        patch: dict[str, str],
+        patch: dict[str, Any],
         expected_revision: int,
         operation: ProjectOperation,
     ):
@@ -174,6 +175,8 @@ class SqlAlchemyEnvironments:
                 row.name_key = patch["name"].casefold()
             if "notes" in patch:
                 row.notes = patch["notes"]
+            if "keepBrowserCache" in patch:
+                row.keep_browser_cache = patch["keepBrowserCache"]
             row.metadata_revision += 1
             row.updated_at = now
             try:
@@ -371,6 +374,25 @@ class SqlAlchemyEnvironments:
             inputs=inputs,
             environments={row.id: _environment(row) for row in environments},
         )
+
+    def with_generation_references(
+        self, environment_id: str, action: Callable[[int | None, dict[int, str]], Any], *, lock: bool = False,
+    ) -> Any:
+        """Call ``action(current, references)`` with the generations something still points at.
+
+        With ``lock`` the write lock is held for the call, so no reference can be committed
+        between the check and what ``action`` does to the files (M3 R3-10).
+        """
+        with self._session_factory() as session:
+            if lock:
+                session.execute(text("BEGIN IMMEDIATE"))
+            try:
+                row = session.get(ProjectEnvironmentRow, environment_id)
+                if row is None or row.state == "deleted":
+                    return action(None, {})
+                return action(row.content_generation, _generation_references(session, row))
+            finally:
+                session.rollback()
 
     def acquire_save_source(self, project_id: str, instance_id: str, expected_generation: int) -> PersistentEnvironment:
         """Closed retained copies must reacquire the source before publishing."""
@@ -1300,6 +1322,46 @@ class SqlAlchemyEnvironments:
             )
 
 
+# Instance states whose work copy no longer needs its source generation.
+_RELEASED_INSTANCE_STATES = ("closed", "cleaned")
+_BATCH_TERMINAL = ("completed", "stopped", "failed", "interrupted")
+
+
+def _generation_references(session: Session, row: ProjectEnvironmentRow) -> dict[int, str]:
+    """Generations of one environment held by the current pointer, live instances, or frozen requests."""
+    references = {row.content_generation: "current"}
+    for generation in session.scalars(
+        select(ProjectEnvironmentInstanceRow.source_content_generation).where(
+            ProjectEnvironmentInstanceRow.environment_id == row.id,
+            ProjectEnvironmentInstanceRow.state.not_in(_RELEASED_INSTANCE_STATES),
+            ProjectEnvironmentInstanceRow.source_content_generation.is_not(None),
+        )
+    ):
+        if generation is not None:
+            references.setdefault(generation, "instance")
+    # Frozen Tasks and batches keep the generation they were started with until they end.
+    frozen = (
+        ("task", select(WorkflowRunRow.resource_request).where(WorkflowRunRow.status.not_in(TERMINAL_STATUSES))),
+        ("batch", select(ProjectBatchRow.frozen_request).where(ProjectBatchRow.status.not_in(_BATCH_TERMINAL))),
+    )
+    for reason, query in frozen:
+        for document in session.scalars(query):
+            for generation in _frozen_generations(document, row.id):
+                references.setdefault(generation, reason)
+    return references
+
+
+def _frozen_generations(value: Any, environment_id: str):
+    if isinstance(value, dict):
+        if value.get("environmentId") == environment_id and type(value.get("contentGeneration")) is int:
+            yield value["contentGeneration"]
+        for item in value.values():
+            yield from _frozen_generations(item, environment_id)
+    elif isinstance(value, list):
+        for item in value:
+            yield from _frozen_generations(item, environment_id)
+
+
 def _environment(row: ProjectEnvironmentRow) -> PersistentEnvironment:
     return PersistentEnvironment(
         EnvironmentRef(
@@ -1315,6 +1377,7 @@ def _environment(row: ProjectEnvironmentRow) -> PersistentEnvironment:
         row.created_from_source,
         row.created_from_task_id,
         row.identity_package,
+        bool(row.keep_browser_cache),
     )
 
 

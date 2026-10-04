@@ -8,6 +8,7 @@ import socket
 import sys
 from pathlib import Path
 from typing import Any, cast
+from uuid import uuid4
 
 from autoflow.domain.environments.identity import request_from_identity
 from autoflow.domain.workflows.runtime import WorkflowRuntimeError
@@ -58,17 +59,28 @@ class EnvironmentStore:
             raise WorkflowRuntimeError("ENVIRONMENT_IDENTITY_UNVERIFIED", "环境内容与身份资料不一致", 409)
         return self.prepare_instance(instance_id, source)
 
-    def stage_candidate(self, save_operation_id: str, instance_id: str, *, identity_package: dict[str, Any] | None = None) -> str:
-        return self._stage_candidate(save_operation_id, self.instance_dir(instance_id), identity_package)
+    def stage_candidate(
+        self, save_operation_id: str, instance_id: str, *, identity_package: dict[str, Any] | None = None,
+        keep_browser_cache: bool = False,
+    ) -> str:
+        """Stage an instance for saving; browser caches are left behind unless the environment keeps them."""
+        return self._stage_candidate(
+            save_operation_id, self.instance_dir(instance_id), identity_package,
+            exclude=_RUNTIME_LOCK_NAMES if keep_browser_cache else _RUNTIME_LOCK_NAMES | BROWSER_CACHE_NAMES,
+        )
 
     def stage_configuration(self, save_operation_id: str, environment_id: str, generation: int, identity_package: dict[str, Any]) -> str:
         return self._stage_candidate(save_operation_id, self.generation_dir(environment_id, generation), identity_package)
 
-    def _stage_candidate(self, save_operation_id: str, source: Path, identity_package: dict[str, Any] | None) -> str:
+    def _stage_candidate(
+        self, save_operation_id: str, source: Path, identity_package: dict[str, Any] | None,
+        exclude: frozenset[str] | set[str] = frozenset(),
+    ) -> str:
         candidate = self.root / "candidates" / candidate_directory_name(save_operation_id)
         if candidate.exists():
             shutil.rmtree(candidate)
-        shutil.copytree(source, candidate, ignore=_ignore_runtime_locks)
+        ignored = exclude | _RUNTIME_LOCK_NAMES
+        shutil.copytree(source, candidate, ignore=lambda _directory, names: {name for name in names if name in ignored})
         _clear_runtime_locks(candidate)
         (candidate / ".digest-version").write_text("2", encoding="utf-8")
         # The host's database is authoritative, not a file a browser could alter.
@@ -121,6 +133,27 @@ class EnvironmentStore:
             encoding="utf-8",
         )
         return digest
+
+    def generations(self, environment_id: str) -> list[int]:
+        directory = self.root / "environments" / environment_id / "generations"
+        if not directory.is_dir():
+            return []
+        return sorted(int(path.name) for path in directory.iterdir() if path.is_dir() and path.name.isdecimal())
+
+    def trash_generation(self, environment_id: str, generation: int) -> None:
+        """Take a generation out of the addressable store in one rename; ``purge_trash`` deletes it later."""
+        trash = self.root / "trash"
+        trash.mkdir(exist_ok=True)
+        self.generation_dir(environment_id, generation).rename(trash / f"{environment_id}-{generation}-{uuid4().hex}")
+
+    def purge_trash(self) -> None:
+        trash = self.root / "trash"
+        if trash.is_dir():
+            for path in trash.iterdir():
+                shutil.rmtree(path, ignore_errors=True)
+
+    def generation_bytes(self, environment_id: str, generation: int) -> int:
+        return sum(path.stat().st_size for path in self.generation_dir(environment_id, generation).rglob("*") if path.is_file())
 
     def discard_candidate(self, save_operation_id: str) -> None:
         candidate = self.root / "candidates" / candidate_directory_name(save_operation_id)
@@ -192,6 +225,24 @@ _RUNTIME_LOCK_NAMES = {
     "DevToolsActivePort",
     "lockfile",
 }
+
+
+# Remediation M3 R3-09: rebuildable Chromium caches are not saved with an environment.
+# Service Worker data stays (sites keep logins there); an environment may keep every cache instead.
+BROWSER_CACHE_NAMES = frozenset({
+    "Cache",
+    "Code Cache",
+    "GPUCache",
+    "GrShaderCache",
+    "GraphiteDawnCache",
+    "ShaderCache",
+    "DawnCache",
+    "DawnGraphiteCache",
+    "DawnWebGPUCache",
+    "Crashpad",
+    "component_crx_cache",
+    "optimization_guide_model_store",
+})
 
 
 def _ignore_runtime_locks(_directory: str, names: list[str]) -> set[str]:

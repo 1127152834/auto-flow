@@ -14,6 +14,7 @@ export type EnvironmentOperation = Schema['EnvironmentOperationView']
 export type EnvironmentPatch = Schema['EnvironmentPatch']
 export type EnvironmentEndRequest = Schema['EnvironmentEndRequest']
 export type EnvironmentImpact = Schema['EnvironmentImpactView']
+export type EnvironmentStorage = Schema['EnvironmentStorageView']
 export type EnvironmentDeleteBody = Schema['EnvironmentDeleteRequest']
 export type ManualItem = Schema['ManualItemView']
 export type ManualSort = 'expiresAt' | '-updatedAt'
@@ -52,6 +53,7 @@ export function createEnvironmentApi(client: StreamingApiClient, projectId: stri
       return client.request<EnvironmentPage>(`${base}/environments?q=${encode(query.query)}&page=${query.page}&pageSize=${query.pageSize}&sort=${encode(query.sort)}${state}`, { signal })
     },
     get: (environmentId: string, signal?: AbortSignal) => client.request<EnvironmentDetail>(`${base}/environments/${encode(environmentId)}`, { signal }),
+    storage: (environmentId: string, signal?: AbortSignal) => client.request<EnvironmentStorage>(`${base}/environments/${encode(environmentId)}/storage`, { signal }),
     getInstance: (instanceId: string, signal?: AbortSignal) => client.request<EnvironmentInstance>(`${base}/environment-instances/${encode(instanceId)}`, { signal }),
     listInstances: (query: { page: number; pageSize: number; state?: string; taskId?: string }, signal?: AbortSignal) => {
       const state = query.state ? `&state=${encode(query.state)}` : ''
