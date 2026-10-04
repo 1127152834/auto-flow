@@ -477,7 +477,7 @@ def test_repository_continues_after_each_bounded_candidate_window(
     factory.dispose()
 
 
-def test_repository_reports_physical_page_continuation_before_true_no_match(
+def test_pushed_down_filter_finds_the_match_without_paging(
     tmp_path, monkeypatch
 ):
     path = tmp_path / "scan-continuation.sqlite3"
@@ -511,8 +511,9 @@ def test_repository_reports_physical_page_continuation_before_true_no_match(
             {"inputs": [definition]},
             candidate_offsets={definition["inputId"]: 2},
         )
-    assert first.status == "scanBudgetExceeded"
-    assert first.continuation_input_ids == (definition["inputId"],)
-    assert continued.status == "ready"
-    assert continued.inputs[0].value["values"][0]["value"] == "R3"
+    # Remediation M3 R3-01: the filter now runs in SQL, so the only match is on the first page
+    # instead of after paging through non-matching rows; past it nothing is left.
+    assert first.status == "ready"
+    assert first.inputs[0].value["values"][0]["value"] == "R3"
+    assert continued.status == "noMatch"
     factory.dispose()

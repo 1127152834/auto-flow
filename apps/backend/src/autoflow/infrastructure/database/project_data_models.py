@@ -163,6 +163,10 @@ class DataStatusRow(Base):
     )
 
 
+CLAIM_KEY_RANK = "(CASE key_type WHEN 'text' THEN 0 WHEN 'integer' THEN 1 ELSE 2 END)"
+CLAIM_KEY_NUMBER = "(CASE WHEN key_type = 'integer' THEN CAST(key_value AS INTEGER) END)"
+
+
 class DataRecordRow(Base):
     __tablename__ = "project_data_records"
     __table_args__ = (
@@ -211,6 +215,23 @@ class DataRecordRow(Base):
             "table_id",
             "dataset_generation",
             "status_id",
+        ),
+        # Remediation M3 R3-01: claim order without sorting the table (see rm3_claim_indexes).
+        *(
+            sa.Index(
+                name,
+                "dataset_generation",
+                *leading,
+                sa.text(CLAIM_KEY_RANK),
+                sa.text(CLAIM_KEY_NUMBER),
+                "key_value",
+                sqlite_where=sa.text("deleted = 0"),
+            )
+            for name, leading in (
+                ("ix_project_data_records_claim_key", ()),
+                ("ix_project_data_records_claim_created", ("created_at",)),
+                ("ix_project_data_records_claim_updated", ("updated_at",)),
+            )
         ),
     )
     project_id: Mapped[str] = mapped_column(sa.String(36), nullable=False)

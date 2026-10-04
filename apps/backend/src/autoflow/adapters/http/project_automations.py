@@ -143,6 +143,7 @@ def project_automations_router(service: ProjectAutomationService) -> APIRouter:
             "issues": [issue.__dict__ for issue in value.issues],
             "capabilityRequirements": value.capability_requirements,
             "checkedAt": value.checked_at,
+            "notices": [issue.__dict__ for issue in value.notices],
         }
 
     return router

@@ -18,6 +18,28 @@ SelectionStatus = Literal[
 InputMode = Literal["independent", "fixedRecord", "related"]
 UnavailableReason = Literal["no_match", "busy"]
 MAX_CANDIDATE_EVALUATIONS = 10_000
+MIN_CANDIDATE_PAGE = 64
+
+
+def candidate_page_sizes(input_plan: dict[str, Any], concurrency: int) -> dict[str, int]:
+    """Rows read per claim for each input (remediation M3 R3-02).
+
+    An independent input that no other input relates to only needs enough candidates to skip the
+    rows held by running tasks: concurrency x 4 (at least 64). Inputs other inputs depend on keep
+    the full page so relation matching sees the same candidates as before.
+    """
+    inputs = [item for item in input_plan.get("inputs", []) if isinstance(item, dict)]
+    sources = {
+        item["relation"].get("sourceInputId")
+        for item in inputs
+        if isinstance(item.get("relation"), dict)
+    }
+    small = min(MAX_CANDIDATE_EVALUATIONS, max(MIN_CANDIDATE_PAGE, 4 * max(1, concurrency)))
+    return {
+        item["inputId"]: small if item.get("mode") == "independent" and item["inputId"] not in sources else MAX_CANDIDATE_EVALUATIONS
+        for item in inputs
+        if isinstance(item.get("inputId"), str)
+    }
 
 
 @dataclass(frozen=True)

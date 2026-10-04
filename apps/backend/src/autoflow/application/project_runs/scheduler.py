@@ -33,7 +33,10 @@ from autoflow.application.settings.runtime import QuiesceGate
 from autoflow.application.workflows.dispatcher import WorkflowRunDispatcher
 from autoflow.application.workflows.runtime import WorkflowRuntimeService
 from autoflow.domain.project_runs.circuit_breaker import evaluate as evaluate_breaker
-from autoflow.domain.project_runs.input_selection import MAX_CANDIDATE_EVALUATIONS
+from autoflow.domain.project_runs.input_selection import (
+    MAX_CANDIDATE_EVALUATIONS,
+    candidate_page_sizes,
+)
 from autoflow.domain.project_runs.models import ProjectRunError, batch_to_dict
 from autoflow.domain.projects.models import ProjectError, ProjectOperation
 from autoflow.domain.workflows.runtime import (
@@ -91,6 +94,7 @@ def _next_candidate_offsets(
     input_plan: dict[str, Any],
     current: dict[str, int],
     continuation_input_ids: tuple[str, ...],
+    page_sizes: dict[str, int] | None = None,
 ) -> dict[str, int] | None:
     """Advance one physical candidate page at a time without skipping page pairs."""
     continuations = set(continuation_input_ids)
@@ -102,7 +106,7 @@ def _next_candidate_offsets(
         if input_id not in continuations:
             continue
         result = dict(current)
-        result[input_id] = result.get(input_id, 0) + MAX_CANDIDATE_EVALUATIONS
+        result[input_id] = result.get(input_id, 0) + (page_sizes or {}).get(input_id, MAX_CANDIDATE_EVALUATIONS)
         for earlier in ordered[:index]:
             result[earlier] = 0
         return result
@@ -633,6 +637,7 @@ class ProjectBatchScheduler:
                 project_id,
                 prepared["inputPlan"],
                 candidate_offsets=prepared["candidateOffsets"],
+                candidate_page_sizes=prepared.get("candidatePageSizes"),
                 ledger_policy=batch_ledger_policy(
                     prepared["automationId"], {"automation": prepared["frozenAutomation"]}, datetime.now(UTC)
                 ),
@@ -775,6 +780,7 @@ class ProjectBatchScheduler:
                 **attempt,
                 "inputPlan": input_plan,
                 "candidateOffsets": valid_offsets,
+                "candidatePageSizes": candidate_page_sizes(input_plan, int(row.frozen_request.get("concurrency") or 1)),
                 "parameters": row.frozen_request["parameters"],
                 "resourceRequest": row.frozen_request["resourceRequest"],
                 "preparedContentId": row.prepared_content_id,
@@ -903,6 +909,7 @@ class ProjectBatchScheduler:
                     prepared["inputPlan"],
                     offsets,
                     selection.continuation_input_ids,
+                    prepared.get("candidatePageSizes"),
                 )
                 has_continuation = next_offsets is not None
                 row.selection_outcome = {

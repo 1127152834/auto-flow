@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from datetime import datetime
 from typing import Any
 
@@ -71,6 +71,8 @@ class AutomationValidation:
     issues: list[ValidationIssue]
     capability_requirements: list[dict[str, Any]]
     checked_at: datetime
+    # Remediation M3 R3-01: non-blocking hints, e.g. inputs whose claim cannot use an index.
+    notices: list[ValidationIssue] = field(default_factory=list)
 
 
 def automation_to_dict(value: AutomationRecord) -> dict[str, Any]:

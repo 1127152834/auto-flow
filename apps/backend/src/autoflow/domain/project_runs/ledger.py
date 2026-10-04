@@ -259,6 +259,11 @@ _ALLOWED: dict[str, frozenset[str]] = {
 }
 
 
+def allowed_states(mode: str) -> frozenset[str]:
+    """States a processing record may be in for a unit to be claimed in this mode."""
+    return _ALLOWED.get(mode, frozenset())
+
+
 def claim_eligibility(entry: LedgerEntry | None, mode: str, now: datetime) -> Eligibility:
     """Whether a primary unit may be claimed (R2-03).
 

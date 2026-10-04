@@ -25,7 +25,7 @@ def test_claim_benchmark_measures_both_orderings_and_actual_row_count(tmp_path):
         factory.dispose()
     metrics = bench_claims.run(200)
     assert metrics["rows"] == (200, "count")
-    for name in ("claim_ms_key_order", "claim_ms_field_order"):
+    for name in ("claim_ms_key_order", "claim_ms_created_order", "claim_ms_field_filter", "claim_ms_field_order_full_scan"):
         assert metrics[name][0] > 0
         assert metrics[name][1] == "ms"
 

@@ -271,6 +271,7 @@ class ProjectAutomationService:
             issues,
             capabilities,
             now,
+            scan_notices(automation.input_plan),
         )
 
     def _project(self, project_id):
@@ -313,3 +314,25 @@ def _operation(key, kind, project_id, automation_id, canonical, now):
         now,
         None,
     )
+
+
+def scan_notices(input_plan: dict[str, Any]) -> list[ValidationIssue]:
+    """Inputs filtered or sorted by a field are checked row by row when claiming (M3 R3-01)."""
+
+    def by_field(node: Any) -> bool:
+        if not isinstance(node, dict):
+            return False
+        if node.get("type") == "compare":
+            return True
+        return any(by_field(child) for child in node.get("items", [])) or by_field(node.get("item"))
+
+    notices = []
+    for index, item in enumerate(input_plan.get("inputs", [])):
+        sorted_by_field = any("fieldId" in order for order in item.get("orderBy", []))
+        if by_field(item.get("filter")) or sorted_by_field:
+            notices.append(ValidationIssue(
+                ["inputPlan", "inputs", str(index)],
+                "CLAIM_SCAN_REQUIRED",
+                f"「{item.get('alias') or '数据输入'}」按字段筛选或排序，数据很多时每次领取需要逐行检查，会慢一些",
+            ))
+    return notices

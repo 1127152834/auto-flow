@@ -7,7 +7,7 @@ from alembic.script import ScriptDirectory
 
 from autoflow.infrastructure.database import session as database_session
 
-EXPECTED_HEAD = "rm2_workflow_reuse"
+EXPECTED_HEAD = "rm3_claim_indexes"
 
 
 def config_for(database: Path) -> Config:

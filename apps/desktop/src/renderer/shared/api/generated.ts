@@ -6867,6 +6867,8 @@ export type components = {
              * Format: date-time
              */
             checkedAt: string;
+            /** Notices */
+            notices?: components["schemas"]["AutomationValidationIssue"][];
         };
         /** AutomationView */
         AutomationView: {

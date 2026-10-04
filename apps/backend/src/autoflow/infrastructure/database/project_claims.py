@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import Any, cast
 from uuid import uuid4
 
-from sqlalchemy import Integer, and_, case, func, or_, select, text
+from sqlalchemy import Integer, and_, case, func, literal, or_, select, text
 from sqlalchemy import cast as sql_cast
 from sqlalchemy.orm import Session
 
@@ -42,15 +42,22 @@ from autoflow.domain.project_runs.input_selection import (
     SourceLeaseKey,
     select_required_inputs,
 )
-from autoflow.domain.project_runs.ledger import LedgerEntry, claim_eligibility
+from autoflow.domain.project_runs.ledger import (
+    LedgerEntry,
+    allowed_states,
+    claim_eligibility,
+)
 from autoflow.domain.projects.models import ProjectError
 from autoflow.infrastructure.database.project_data_models import (
+    CLAIM_KEY_NUMBER,
+    CLAIM_KEY_RANK,
     DataFieldRow,
     DataGenerationRow,
     DataRecordRow,
     DataStatusRow,
     DataTableRow,
 )
+from autoflow.infrastructure.database.project_filter_sql import translate_filter
 from autoflow.infrastructure.database.project_run_models import (
     ProjectRecordLeaseRow,
     ProjectTaskRecordCursorRow,
@@ -80,6 +87,7 @@ class SqlAlchemyProjectInputGroups:
         candidate_offsets: dict[str, int] | None = None,
         candidate_restriction: dict[str, list[RecordRef]] | None = None,
         ledger_policy: LedgerClaimPolicy | None = None,
+        candidate_page_sizes: dict[str, int] | None = None,
     ) -> InputSelection:
         raw_inputs = input_plan.get("inputs") if isinstance(input_plan, dict) else None
         if not isinstance(raw_inputs, list):
@@ -102,6 +110,7 @@ class SqlAlchemyProjectInputGroups:
                     item,
                     definitions,
                     offset=(candidate_offsets or {}).get(item["inputId"], 0),
+                    page_size=(candidate_page_sizes or {}).get(item["inputId"], MAX_CANDIDATE_EVALUATIONS),
                     restriction=restriction.get(item["inputId"]),
                     ledger=ledger_policy
                     if ledger_policy is not None and ledger_policy.processing_input_id == item["inputId"]
@@ -413,6 +422,7 @@ class SqlAlchemyProjectInputGroups:
         omit_candidates: bool = False,
         restriction: list[RecordRef] | None = None,
         ledger: LedgerClaimPolicy | None = None,
+        page_size: int = MAX_CANDIDATE_EVALUATIONS,
     ) -> InputCandidates:
         input_id = item["inputId"]
         table_id, generation = item.get("tableId"), item.get("datasetGeneration")
@@ -498,8 +508,13 @@ class SqlAlchemyProjectInputGroups:
             DataRecordRow.project_id == project_id,
             DataRecordRow.table_id == table_id,
             DataRecordRow.dataset_generation == generation,
-            DataRecordRow.deleted.is_(False),
+            # Literal "= 0" so SQLite can use the partial claim indexes (rm3_claim_indexes).
+            text("project_data_records.deleted = 0"),
         )
+        # Remediation M3 R3-01: narrow in SQL; the Python checks below stay authoritative.
+        query = query.where(translate_filter(filter_value).clause)
+        if ledger is not None and table.source_kind != "sheets":
+            query = query.where(_ledger_gate(ledger, project_id, table_id, generation))
         rows: list[DataRecordRow]
         if omit_candidates or restriction == []:
             rows = []
@@ -534,26 +549,22 @@ class SqlAlchemyProjectInputGroups:
                 field_types,
                 status_order,
                 offset,
+                page_size,
             )
         has_more = (
             exact_record_ref is None
             and not omit_candidates
             and restriction is None
-            and len(rows) > MAX_CANDIDATE_EVALUATIONS
+            and len(rows) > page_size
         )
-        rows = rows[:MAX_CANDIDATE_EVALUATIONS]
+        rows = rows[:page_size]
         rows = [
             row for row in rows if matches(filter_value, row.values_json, row.status_id)
         ]
-        active = set(
-            self.session.scalars(
-                select(ProjectRecordLeaseRow.lease_key).where(
-                    ProjectRecordLeaseRow.state.in_(("held", "reconciling")),
-                )
-            )
-        )
-        entries = ledger_entries(self.session, ledger, table_id, generation) if ledger else {}
+        page_keys = [row.key_value for row in rows]
+        entries = ledger_entries(self.session, ledger, table_id, generation, page_keys) if ledger else {}
         candidates: list[Candidate] = []
+        resolved: list[tuple[DataRecordRow, RecordRef, SourceLeaseKey, Any]] = []
         for row in rows:
             ref = RecordRef(
                 project_id,
@@ -570,6 +581,10 @@ class SqlAlchemyProjectInputGroups:
                 return InputCandidates(
                     input_id, (), str(error), required=required, mode=mode, **definition
                 )
+            resolved.append((row, ref, lease, source_identity))
+        # Remediation M3 R3-02: look up active leases by key through the partial unique index.
+        active = _active_lease_keys(self.session, [_lease_key(lease) for _, _, lease, _ in resolved])
+        for row, ref, lease, source_identity in resolved:
             if ledger is not None:
                 # Remediation M2 R2-03: only the primary input is filtered by its processing record.
                 namespace = lease.identity_namespace if isinstance(lease, SheetsLeaseKey) else ""
@@ -1060,8 +1075,13 @@ def _ordered_candidate_rows(
     field_types: dict[str, str],
     status_order: dict[str, tuple[int, str]],
     offset: int,
+    page_size: int = MAX_CANDIDATE_EVALUATIONS,
 ) -> list[DataRecordRow]:
     """Apply the same domain ordering before cutting a bounded candidate page."""
+    native = native_claim_order(order, field_types, status_order)
+    if native is not None:
+        # Remediation M3 R3-01: plain SQL order (system fields are served by the claim indexes).
+        return list(session.scalars(query.order_by(*native).offset(offset).limit(page_size + 1)))
     statement = query
     raw = cast(
         sqlite3.Connection,
@@ -1123,12 +1143,59 @@ def _ordered_candidate_rows(
             )
         return list(
             session.scalars(
-                statement.offset(offset).limit(MAX_CANDIDATE_EVALUATIONS + 1)
+                statement.offset(offset).limit(page_size + 1)
             )
         )
     finally:
         raw.create_function("autoflow_claim_sort", 6, None)
         raw.create_collation("AUTOFLOW_CLAIM", None)
+
+
+_CLAIM_KEY_COLUMNS = (f"{CLAIM_KEY_RANK}", f"{CLAIM_KEY_NUMBER}", "key_value")
+_SYSTEM_COLUMNS = {"createdAt": ("created_at",), "updatedAt": ("updated_at",), "recordKey": _CLAIM_KEY_COLUMNS}
+_MAX_SAFE_INTEGER = 9007199254740991
+
+
+def native_claim_order(
+    order: list[dict[str, str]],
+    field_types: dict[str, str] | None = None,
+    status_order: dict[str, tuple[int, str]] | None = None,
+) -> list[Any] | None:
+    """SQL ORDER BY equal to ``_claim_collation``, or None when a date field needs Python.
+
+    Mirrors the collation term by term: missing values and values of the wrong type sort last in
+    either direction, incomparable values tie, statuses follow their configured position, and
+    every order ends with ascending record key order.
+    """
+    terms: list[Any] = []
+    for item in order:
+        descending = item["direction"] == "desc"
+        if "fieldId" in item:
+            kind = (field_types or {}).get(item["fieldId"])
+            if kind not in {"string", "number", "boolean"}:
+                return None
+            path = literal('$."' + item["fieldId"].replace('"', '""') + '"')
+            value_type = func.json_type(DataRecordRow.values_json, path)
+            value = func.json_extract(DataRecordRow.values_json, path)
+            compatible_value = {
+                "string": value_type == "text",
+                "number": or_(value_type == "real", and_(value_type == "integer", func.abs(value) <= _MAX_SAFE_INTEGER)),
+                "boolean": value_type.in_(("true", "false")),
+            }[kind]
+            missing = case((or_(value_type.is_(None), value_type == "null"), 1), else_=0)
+            invalid = case((compatible_value, 0), else_=1)
+            typed = case((compatible_value, value), else_=None)
+            terms += [missing.asc(), invalid.asc(), typed.desc() if descending else typed.asc()]
+        elif item["systemField"] == "status":
+            positions = sorted((status_order or {}).items(), key=lambda pair: pair[1])
+            rank = case(
+                *((DataRecordRow.status_id == status_id, index) for index, (status_id, _) in enumerate(positions)),
+                else_=None,
+            ) if positions else literal(None)
+            terms += [case((rank.is_(None), 1), else_=0).asc(), rank.desc() if descending else rank.asc()]
+        else:
+            terms += [text(f"{column} {'DESC' if descending else 'ASC'}") for column in _SYSTEM_COLUMNS[item["systemField"]]]
+    return [*terms, *(text(f"{column} ASC") for column in _CLAIM_KEY_COLUMNS)]
 
 
 def _claim_collation(
@@ -1236,18 +1303,57 @@ class LedgerClaimPolicy:
 
 
 def ledger_entries(
-    session: Session, policy: LedgerClaimPolicy, table_id: str, generation: str
+    session: Session,
+    policy: LedgerClaimPolicy,
+    table_id: str,
+    generation: str,
+    key_values: list[str] | None = None,
 ) -> dict[tuple[str, str, str], LedgerEntry]:
-    rows = session.scalars(
-        select(AutomationRecordLedgerRow).where(
-            AutomationRecordLedgerRow.automation_id == policy.automation_id,
-            AutomationRecordLedgerRow.processing_input_id == policy.processing_input_id,
-            AutomationRecordLedgerRow.table_id == table_id,
-            AutomationRecordLedgerRow.dataset_generation == generation,
-        )
+    statement = select(AutomationRecordLedgerRow).where(
+        AutomationRecordLedgerRow.automation_id == policy.automation_id,
+        AutomationRecordLedgerRow.processing_input_id == policy.processing_input_id,
+        AutomationRecordLedgerRow.table_id == table_id,
+        AutomationRecordLedgerRow.dataset_generation == generation,
     )
+    if key_values is not None:
+        statement = statement.where(AutomationRecordLedgerRow.key_value.in_(key_values))
+    rows = session.scalars(statement)
     entries = {}
     for row in rows:
         entry = ledger_entry(row)
         entries[(row.key_type, row.key_value, row.identity_namespace)] = entry
     return entries
+
+
+def _active_lease_keys(session: Session, keys: list[str]) -> set[str]:
+    found: set[str] = set()
+    for start in range(0, len(keys), 900):
+        found.update(session.scalars(
+            select(ProjectRecordLeaseRow.lease_key).where(
+                ProjectRecordLeaseRow.lease_key.in_(keys[start:start + 900]),
+                ProjectRecordLeaseRow.state.in_(("held", "reconciling")),
+            )
+        ))
+    return found
+
+
+def _ledger_gate(policy: LedgerClaimPolicy, project_id: str, table_id: str, generation: str) -> Any:
+    """Rows whose processing record can never be claimed in this mode, excluded in SQL (R3-01).
+
+    Time-dependent waiting stays in ``claim_eligibility``; local tables only (Sheets rows carry a
+    namespace that is checked in Python).
+    """
+    allowed = allowed_states(policy.mode)
+    same_unit = and_(
+        AutomationRecordLedgerRow.automation_id == policy.automation_id,
+        AutomationRecordLedgerRow.processing_input_id == policy.processing_input_id,
+        AutomationRecordLedgerRow.project_id == project_id,
+        AutomationRecordLedgerRow.table_id == table_id,
+        AutomationRecordLedgerRow.dataset_generation == generation,
+        AutomationRecordLedgerRow.key_type == DataRecordRow.key_type,
+        AutomationRecordLedgerRow.key_value == DataRecordRow.key_value,
+        AutomationRecordLedgerRow.identity_namespace == "",
+    )
+    if policy.mode == "retryFailed":
+        return select(AutomationRecordLedgerRow.id).where(same_unit, AutomationRecordLedgerRow.state.in_(allowed)).exists()
+    return ~select(AutomationRecordLedgerRow.id).where(same_unit, AutomationRecordLedgerRow.state.not_in(allowed)).exists()

@@ -204,6 +204,7 @@ class AutomationValidationView(ApiModel):
     issues: list[AutomationValidationIssue]
     capability_requirements: list[CapabilityRequirement]
     checked_at: datetime
+    notices: list[AutomationValidationIssue] = Field(default_factory=list)
 
 
 class AutomationDeleteRequest(ApiModel):
