@@ -41,6 +41,8 @@ pytestmark = [pytest.mark.golden, pytest.mark.asyncio]
 SCENARIO = "native-batch-v1"
 ROWS = int(os.environ.get("AUTOFLOW_NATIVE_BATCH_ROWS", "200"))
 CONCURRENCY = 2
+# Remediation M3 R3-07: perTask (the M2B baseline) or pool; recorded in the manifest's execution profile.
+SESSION_MODE = os.environ.get("AUTOFLOW_NATIVE_BATCH_SESSION_MODE", "perTask")
 BATCH_UNITS = 100  # the per-batch unit limit; more rows run as consecutive batches
 TERMINAL = {"completed", "failed", "interrupted", "stopped"}
 
@@ -61,7 +63,7 @@ async def test_native_batch_processes_every_row_once_and_isolates_gone_rows(
     manifest = build_manifest(
         SCENARIO,
         {"rows": len(values), "valuesSha256": hashlib.sha256(json.dumps(values).encode()).hexdigest()},
-        execution_profile="ledger-batches-writeback-v1",
+        execution_profile="ledger-batches-writeback-v1" + ("-pool" if SESSION_MODE == "pool" else ""),
         browser_kernel=kernel.name,
         concurrency=CONCURRENCY,
         repetitions=5,
@@ -122,6 +124,7 @@ async def test_native_batch_processes_every_row_once_and_isolates_gone_rows(
                         "maxTasks": BATCH_UNITS, "concurrency": CONCURRENCY, "maxLiveInstances": CONCURRENCY,
                         "continueAfterFailure": False, "automaticExecutionTimeoutSeconds": 60, "manualDeadlineSeconds": 120,
                         "claimMode": "unprocessed", "failurePolicy": "thresholds", "retryBudget": 3, "retryBackoffSeconds": [1, 1],
+                        **({"sessionMode": "pool"} if SESSION_MODE == "pool" else {}),
                     },
                 }, 201)
                 workflow_path = f"/api/workflows/{automation['workflowId']}"

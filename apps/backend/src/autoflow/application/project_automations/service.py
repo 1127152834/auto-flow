@@ -16,7 +16,11 @@ from autoflow.domain.project_automations.ports import (
     AutomationResourceQuery,
     ProjectAutomations,
 )
-from autoflow.domain.project_automations.rules import validate_write, validation_error
+from autoflow.domain.project_automations.rules import (
+    session_pool_blockers,
+    validate_write,
+    validation_error,
+)
 from autoflow.domain.projects.models import ProjectError, ProjectOperation
 from autoflow.domain.projects.ports import Projects
 from autoflow.domain.workflows.models import WorkflowError
@@ -183,6 +187,11 @@ class ProjectAutomationService:
         try:
             workflow = self.workflow_service.get(automation.workflow_id)
             prepare_run(workflow.document)
+            if automation.run_policy.get("sessionMode") == "pool":
+                issues.extend(
+                    ValidationIssue(["runPolicy", "sessionMode"], "SESSION_POOL_UNSUPPORTED", f"不能复用浏览器：{reason}")
+                    for reason in session_pool_blockers(workflow.document)
+                )
         except WorkflowError as error:
             workflow_blocked = True
             if getattr(error, "issues", None):
@@ -257,6 +266,7 @@ class ProjectAutomationService:
             "WORKFLOW_NOT_FOUND",
             "WORKFLOW_UNAVAILABLE",
             "CAPABILITY_UNAVAILABLE",
+            "SESSION_POOL_UNSUPPORTED",
         }
         status = (
             "blocked"

@@ -53,6 +53,9 @@ WorkerStatus = Literal["succeeded", "failed", "cancelled", "timed_out"]
 # Remediation M3 R3-04: workers are started with v2 (event batches); every command they receive must
 # carry the same version or the worker ignores it. v1 messages from older workers are still read.
 WORKER_PROTOCOL_VERSION = 2
+# Remediation M3 R3-06: a pooled worker serves at most this many runs, idles at most this long.
+POOL_MAX_RUNS = 50
+POOL_IDLE_SECONDS = 120.0
 
 class WorkflowWorkerError(Exception):
     def __init__(self, code: str, message: str, details: dict[str, Any] | None = None) -> None:
@@ -67,6 +70,7 @@ class WorkerOutcome:
     status: WorkerStatus
     error: dict[str, str] | None
     cleanup_confirmed: bool
+    reusable: bool = False
 
 
 @dataclass
@@ -93,6 +97,11 @@ class _Worker:
     stderr: StderrSink | None = None
     stderr_task: asyncio.Task[None] | None = None
     secrets: list[str] = field(default_factory=list)
+    # Remediation M3 R3-06: a pooled process outlives its run and keeps its browser.
+    session_key: str | None = None
+    runs: int = 0
+    parked: bool = False
+    stderr_relative: str | None = None  # a pooled process keeps one log, under its first run
 
 
 def project_workflow_worker_command() -> tuple[str, ...]:
@@ -136,6 +145,8 @@ class ProjectWorkflowWorkerManager:
         self._proxy_service = proxy_service
         self._closed = False
         self._lock = asyncio.Lock()
+        self._idle: dict[str, list[_Worker]] = {}
+        self._retiring: set[asyncio.Future[None]] = set()
 
     def set_capacity(self, capacity: int) -> None:
         """Live-browser limit; lowering it never stops running workers."""
@@ -153,23 +164,43 @@ class ProjectWorkflowWorkerManager:
         on_event: Callable[[dict[str, Any]], Awaitable[None]],
         model_bindings: list[dict[str, Any]] | None = None,
         on_events: Callable[[list[dict[str, Any]]], Awaitable[None]] | None = None,
+        session_key: str | None = None,
     ) -> WorkerOutcome:
         if str(UUID(run_id)) != run_id or execution_generation < 1:
             raise _protocol_error()
         current = asyncio.current_task()
         assert current is not None
+        evicted: _Worker | None = None
         async with self._lock:
             if self._closed:
                 raise WorkflowWorkerError("WORKFLOW_WORKER_UNAVAILABLE", "运行服务正在关闭")
-            if run_id in self._workers or len(self._workers) >= self._capacity:
+            reused = self._take_idle(session_key) if session_key is not None else None
+            if reused is None and len(self._workers) + self._idle_count() >= self._capacity and self._idle_count():
+                evicted = self._take_any_idle()  # an idle browser yields its slot to work that needs one
+            if run_id in self._workers or (reused is None and len(self._workers) + self._idle_count() >= self._capacity):
+                if reused is not None:
+                    self._park(reused)
                 raise WorkflowWorkerError("WORKFLOW_WORKER_BUSY", "当前已有浏览器运行或清理尚未完成")
-            worker = _Worker(
-                run_id, execution_generation,
-                self._root / run_id / f"generation-{execution_generation}",
+            artifact = (
                 self._artifact_root / run_id / f"generation-{execution_generation}",
                 f"runs/{run_id}/generation-{execution_generation}",
-                executable.resolve(strict=True) if executable is not None else None, current,
             )
+            if reused is not None:
+                worker = reused
+                worker.run_id, worker.generation, worker.task = run_id, execution_generation, current
+                worker.artifact_directory, worker.relative_artifact_directory = artifact
+                worker.ready = worker.stop_requested = worker.parked = False
+                worker.cleanup = worker.capability = worker.credential_read = None
+                worker.write_lock, worker.secrets = asyncio.Lock(), []
+            else:
+                worker = _Worker(
+                    run_id, execution_generation,
+                    self._root / "pool" / uuid4().hex if session_key is not None
+                    else self._root / run_id / f"generation-{execution_generation}",
+                    *artifact,
+                    executable.resolve(strict=True) if executable is not None else None, current,
+                    session_key=session_key,
+                )
             self._workers[run_id] = worker
             if self._proxy_service is not None:
                 worker.proxy_requests = ProxyWorkerRequests(
@@ -179,11 +210,14 @@ class ProjectWorkflowWorkerManager:
                     execution_generation,
                     WORKER_PROTOCOL_VERSION,
                 )
+        if evicted is not None:
+            await self._retire(evicted)
         try:
-            worker.directory.mkdir(parents=True, exist_ok=False)
-            worker.created_directory = True
-            worker.artifact_directory.mkdir(parents=True, exist_ok=True)
-            worker.artifact_directory.resolve(strict=True).relative_to(self._artifact_root)
+            if reused is not None:
+                await asyncio.to_thread(self._artifact_directory_ready, worker)
+                return await self._serve(worker, execution_plan, parameters, variables, browser, on_event, on_events, model_bindings)
+            # Remediation M3 AC3-02: directory creation is slow enough on Windows to stall the loop.
+            await asyncio.to_thread(self._run_directories_ready, worker)
             env = workflow_environment({**os.environ, **self._worker_env})
             env.pop("CLOAKBROWSER_LICENSE_KEY", None)
             env.pop("CLOAKBROWSER_BINARY_PATH", None)
@@ -221,6 +255,8 @@ class ProjectWorkflowWorkerManager:
             self._start_stderr(worker)
             self._capture_birth(worker)
             await self._attach_job(worker, job_name)
+            if session_key is not None:
+                return await self._serve(worker, execution_plan, parameters, variables, browser, on_event, on_events, model_bindings)
             await self._send(worker, {
                 "type": "start", "protocolVersion": WORKER_PROTOCOL_VERSION, "runId": run_id,
                 "executionGeneration": execution_generation,
@@ -263,7 +299,107 @@ class ProjectWorkflowWorkerManager:
             return outcome
         finally:
             # Cancellation and callback failure still have to finish owned cleanup.
-            await self._cleanup(worker)
+            if not worker.parked:
+                await self._cleanup(worker)
+
+    async def _serve(
+        self, worker: _Worker, execution_plan: dict[str, Any], parameters: dict[str, Any],
+        variables: dict[str, Any], browser: dict[str, Any],
+        on_event: Callable[[dict[str, Any]], Awaitable[None]],
+        on_events: Callable[[list[dict[str, Any]]], Awaitable[None]] | None,
+        model_bindings: list[dict[str, Any]] | None,
+    ) -> WorkerOutcome:
+        """One run on a pooled process; a clean, reusable finish parks it for the next run."""
+        assert worker.process is not None and worker.process.stdin is not None
+        worker.runs += 1
+        await self._send(worker, {
+            "type": "start", "protocolVersion": WORKER_PROTOCOL_VERSION, "runId": worker.run_id,
+            "executionGeneration": worker.generation, "pooled": True,
+            "artifactDirectory": str(worker.artifact_directory),
+            "artifactRelativeDirectory": worker.relative_artifact_directory,
+            "executionPlan": execution_plan, "parameters": parameters,
+            "variables": variables, "browser": browser, "modelBindings": model_bindings or [],
+        })
+        outcome = await self._exchange(worker, on_event, on_events)
+        worker.ready = False
+        if (outcome.reusable and outcome.status in {"succeeded", "failed"} and not worker.stop_requested
+                and worker.process.returncode is None and worker.runs < POOL_MAX_RUNS and not self._closed):
+            if worker.proxy_requests is not None:
+                await worker.proxy_requests.close()
+                worker.proxy_requests = None
+            async with self._lock:
+                if self._workers.get(worker.run_id) is worker:
+                    self._workers.pop(worker.run_id)
+                self._park(worker)
+            return outcome
+        # Not parked: the process ends now; a clean finish waits for a shutdown, anything else exits itself.
+        if outcome.reusable and worker.process.returncode is None:
+            await self._write(worker, {"type": "shutdown"})
+        worker.process.stdin.close()
+        try:
+            await asyncio.wait_for(worker.process.wait(), self._termination_timeout)
+        except TimeoutError:
+            worker.stop_requested = True
+        await self._cleanup(worker)
+        return outcome
+
+    def _run_directories_ready(self, worker: _Worker) -> None:
+        worker.directory.mkdir(parents=True, exist_ok=False)
+        worker.created_directory = True  # set where it was made, so a cancelled await still cleans it up
+        self._artifact_directory_ready(worker)
+
+    def _artifact_directory_ready(self, worker: _Worker) -> None:
+        worker.artifact_directory.mkdir(parents=True, exist_ok=True)
+        worker.artifact_directory.resolve(strict=True).relative_to(self._artifact_root)
+
+    def _idle_count(self) -> int:
+        return sum(len(items) for items in self._idle.values())
+
+    def _park(self, worker: _Worker) -> None:
+        assert worker.session_key is not None
+        worker.parked = True
+        self._idle.setdefault(worker.session_key, []).append(worker)
+        asyncio.get_running_loop().call_later(POOL_IDLE_SECONDS, self._expire, worker)
+
+    def _take_idle(self, key: str) -> _Worker | None:
+        items = self._idle.get(key, [])
+        while items:
+            worker = items.pop()
+            if worker.process is not None and worker.process.returncode is None:
+                return worker
+            self._background(self._retire(worker))  # died while idle
+        return None
+
+    def _take_any_idle(self) -> _Worker | None:
+        for items in self._idle.values():
+            if items:
+                return items.pop(0)
+        return None
+
+    def _expire(self, worker: _Worker) -> None:
+        items = self._idle.get(worker.session_key or "", [])
+        if worker in items and worker.parked:
+            items.remove(worker)
+            self._background(self._retire(worker))
+
+    def _background(self, work: Awaitable[None]) -> None:
+        task = asyncio.ensure_future(work)
+        self._retiring.add(task)
+        task.add_done_callback(self._retiring.discard)
+
+    async def _retire(self, worker: _Worker) -> None:
+        """End an idle pooled process: ask it to close its browser, then clean up what it owned."""
+        worker.parked = False
+        worker.cleanup = None
+        process = worker.process
+        if process is not None and process.returncode is None and process.stdin is not None:
+            try:
+                await self._write(worker, {"type": "shutdown"})
+                process.stdin.close()
+                await asyncio.wait_for(process.wait(), self._termination_timeout)
+            except Exception:  # noqa: BLE001 -- the owned-process cleanup below still kills it
+                worker.stop_requested = True
+        await self._cleanup(worker)
 
     def _start_stderr(self, worker: _Worker) -> None:
         """Keep draining stderr for the whole life of the process; a full pipe would stall it."""
@@ -271,6 +407,7 @@ class ProjectWorkflowWorkerManager:
         if process is None or process.stderr is None or worker.stderr_task is not None:
             return
         worker.stderr = StderrSink(worker.artifact_directory / STDERR_LOG_NAME)
+        worker.stderr_relative = f"{worker.relative_artifact_directory}/{STDERR_LOG_NAME}"
         worker.stderr_task = asyncio.create_task(worker.stderr.drain(process.stderr))
 
     async def _finish_stderr(self, worker: _Worker, wait: float) -> None:
@@ -305,7 +442,7 @@ class ProjectWorkflowWorkerManager:
         if sink.write_failed:
             details["diagnosticLogUnavailable"] = "write_failed"
         elif sink.written_bytes:
-            details["diagnosticLog"] = f"{worker.relative_artifact_directory}/{STDERR_LOG_NAME}"
+            details["diagnosticLog"] = worker.stderr_relative
         else:
             details["diagnosticLogUnavailable"] = "no_output"
         if sink.dropped or sink.truncated:
@@ -452,7 +589,7 @@ class ProjectWorkflowWorkerManager:
                 if status not in {"succeeded", "failed", "cancelled", "timed_out"}:
                     raise _protocol_error()
                 error = None if status == "succeeded" else _terminal_error(status, message.get("error"), worker.secrets)
-                return WorkerOutcome(cast(WorkerStatus, status), error, True)
+                return WorkerOutcome(cast(WorkerStatus, status), error, True, message.get("reusable") is True)
             elif message.get("type") == "error":
                 raise WorkflowWorkerError("WORKFLOW_CLEANUP_FAILED", "执行进程未确认完成，需核验清理结果")
             else:
@@ -687,7 +824,12 @@ class ProjectWorkflowWorkerManager:
 
     async def shutdown(self) -> None:
         self._closed = True
-        results = await asyncio.gather(*(self.force_stop(identity) for identity in tuple(self._workers)), return_exceptions=True)
+        idle = [worker for items in self._idle.values() for worker in items]
+        self._idle.clear()
+        results = await asyncio.gather(
+            *(self.force_stop(identity) for identity in tuple(self._workers)),
+            *(self._retire(worker) for worker in idle), *tuple(self._retiring), return_exceptions=True,
+        )
         for result in results:
             if isinstance(result, BaseException):
                 raise result

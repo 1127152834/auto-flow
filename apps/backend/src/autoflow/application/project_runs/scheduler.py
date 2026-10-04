@@ -63,7 +63,10 @@ from autoflow.infrastructure.database.project_run_models import (
     ProjectTaskInputSnapshotRow,
     ProjectTaskRow,
 )
-from autoflow.infrastructure.database.project_runs import SqlAlchemyProjectRuns
+from autoflow.infrastructure.database.project_runs import (
+    SqlAlchemyProjectRuns,
+    batch_record,
+)
 from autoflow.infrastructure.database.projects import (
     _json_dates,
     _operation,
@@ -250,9 +253,13 @@ class ProjectBatchScheduler:
             # Remediation M3 R3-08: every batch gets one slot per pass, higher priorities pass first,
             # and passes repeat while someone still started a task (round robin, no starvation).
             try:
+                # At most as many passes as tasks can run at once: a tick fills free slots once,
+                # even when off-loop reads let short tasks finish between passes.
                 for group in self._fair_rounds():
                     pending = group
-                    while pending:
+                    passes_left = max(1, _core_limits(self._core)[0])
+                    while pending and passes_left > 0:
+                        passes_left -= 1
                         started: list[tuple[str, str]] = []
                         for project_id, batch_id in pending:
                             with self._gate.mutation() as admitted:
@@ -292,25 +299,11 @@ class ProjectBatchScheduler:
 
     async def _advance(self, project_id: str, batch_id: str) -> None:
         await self._cleanup_terminal_instances(project_id, batch_id)
-        self._release_terminal_leases(project_id, batch_id)
-        with self._factory() as session:
-            repository = SqlAlchemyProjectRuns(session)
-            batch = repository.batch(project_id, batch_id)
-            tasks = repository.list_tasks(project_id, batch_id)
-            project = ProjectRunCoordinator._project(session, project_id)
-            project_active = project.lifecycle_state == "active"
-            stop_kinds = set(
-                session.scalars(
-                    select(ProjectOperationRow.kind).where(
-                        ProjectOperationRow.project_id == project_id,
-                        ProjectOperationRow.kind.in_(["stopBatch", "forceStopBatch"]),
-                        ProjectOperationRow.status == "running",
-                        ProjectOperationRow.resource["batchId"].as_string() == batch_id,
-                    )
-                )
-            )
-            stop_requested = bool(stop_kinds)
-            force_requested = "forceStopBatch" in stop_kinds
+        # Remediation M3 AC3-02: the tick's database reads and short writes run off the event loop.
+        await asyncio.to_thread(self._release_terminal_leases, project_id, batch_id)
+        batch, tasks, project_active, stop_kinds = await asyncio.to_thread(self._load, project_id, batch_id)
+        stop_requested = bool(stop_kinds)
+        force_requested = "forceStopBatch" in stop_kinds
         if (
             batch.frozen_request.get("automation", {})
             .get("inputPlan", {})
@@ -364,8 +357,7 @@ class ProjectBatchScheduler:
                         expected_status_revision=current.status_revision,
                         execution_generation=current.execution_generation,
                     )
-            with self._factory() as session:
-                tasks = SqlAlchemyProjectRuns(session).list_tasks(project_id, batch_id)
+            tasks = await asyncio.to_thread(self._list_tasks, project_id, batch_id)
         active = [task for task in tasks if task.status not in TERMINAL_STATUSES]
         if not active:
             result = (
@@ -430,6 +422,32 @@ class ProjectBatchScheduler:
                 raise
         self._set_status(project_id, batch_id, "running")
 
+    def _load(self, project_id: str, batch_id: str) -> tuple[Any, list[Any], bool, set[str]]:
+        with self._factory() as session:
+            repository = SqlAlchemyProjectRuns(session)
+            tasks = repository.list_tasks(project_id, batch_id)
+            batch = batch_record(repository.batch_row(project_id, batch_id)).project_counts(tasks)
+            project = ProjectRunCoordinator._project(session, project_id)
+            stop_kinds = set(
+                session.scalars(
+                    select(ProjectOperationRow.kind).where(
+                        ProjectOperationRow.project_id == project_id,
+                        ProjectOperationRow.kind.in_(["stopBatch", "forceStopBatch"]),
+                        ProjectOperationRow.status == "running",
+                        ProjectOperationRow.resource["batchId"].as_string() == batch_id,
+                    )
+                )
+            )
+            return batch, tasks, project.lifecycle_state == "active", stop_kinds
+
+    def _list_tasks(self, project_id: str, batch_id: str) -> list[Any]:
+        with self._factory() as session:
+            return SqlAlchemyProjectRuns(session).list_tasks(project_id, batch_id)
+
+    def _counts(self, batch_id: str, automation_id: str) -> Any:
+        with self._factory() as session:
+            return _capacity_counts(session, batch_id, automation_id)
+
     async def _advance_data(
         self,
         project_id: str,
@@ -449,7 +467,7 @@ class ProjectBatchScheduler:
         if batch.status == "paused" and not stopping:
             # R2-16: a paused batch claims nothing until a person resumes or stops it.
             return
-        if not stopping and _uses_thresholds(batch.frozen_request) and self._trip_breaker(project_id, batch_id):
+        if not stopping and _uses_thresholds(batch.frozen_request) and await asyncio.to_thread(self._trip_breaker, project_id, batch_id):
             return
         if stopping or (failed and not continue_after_failure):
             self._close_claim_gate(project_id, batch_id)
@@ -467,8 +485,7 @@ class ProjectBatchScheduler:
                 stopping=stopping,
                 force_requested=force_requested,
             )
-            with self._factory() as session:
-                tasks = SqlAlchemyProjectRuns(session).list_tasks(project_id, batch_id)
+            tasks = await asyncio.to_thread(self._list_tasks, project_id, batch_id)
 
         active = [task for task in tasks if task.status not in TERMINAL_STATUSES]
         if not stopping and not (failed and not continue_after_failure):
@@ -484,8 +501,7 @@ class ProjectBatchScheduler:
                     "maxLiveInstances", 1
                 )
             )
-            with self._factory() as session:
-                counts = _capacity_counts(session, batch_id, batch.automation_id)
+            counts = await asyncio.to_thread(self._counts, batch_id, batch.automation_id)
             core_capacity, core_live_capacity = _core_limits(self._core)
             slots = max(
                 0,
@@ -516,10 +532,7 @@ class ProjectBatchScheduler:
                     break
                 if self._claims_left is not None:
                     self._claims_left -= 1
-                with self._factory() as session:
-                    tasks = SqlAlchemyProjectRuns(session).list_tasks(
-                        project_id, batch_id
-                    )
+                tasks = await asyncio.to_thread(self._list_tasks, project_id, batch_id)
                 active = [
                     task for task in tasks if task.status not in TERMINAL_STATUSES
                 ]
@@ -1158,6 +1171,14 @@ class ProjectBatchScheduler:
 
     def _trip_breaker(self, project_id: str, batch_id: str) -> bool:
         """R2-15: pause the batch when its technical failures cross a threshold."""
+        # Judge in a read transaction first; the write lock is only taken to pause, and the
+        # verdict is checked again under it (M3 AC3-02: this held the lock on every tick).
+        with self._factory() as session:
+            row = SqlAlchemyProjectRuns(session).batch_row(project_id, batch_id)
+            if row.status in BATCH_TERMINAL or row.status in {"paused", "stopping"}:
+                return row.status == "paused"
+            if evaluate_breaker(batch_history(session, batch_id, last_resume(session, project_id, batch_id))) is None:
+                return False
         with self._factory() as session:
             session.execute(text("BEGIN IMMEDIATE"))
             row = SqlAlchemyProjectRuns(session).batch_row(project_id, batch_id)

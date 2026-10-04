@@ -1,3 +1,5 @@
+import asyncio
+import logging
 import sqlite3
 from pathlib import Path
 
@@ -35,6 +37,41 @@ def checkpoint_wal(factory: sessionmaker[Session]) -> None:
         busy, _, _ = session.execute(text("PRAGMA wal_checkpoint(TRUNCATE)")).one()
         if busy:
             raise RuntimeError("SQLite WAL checkpoint is busy")
+
+
+class WalCheckpointer:
+    """Remediation M3 AC3-02: PASSIVE checkpoints off the event loop keep the WAL short.
+
+    SQLite's automatic checkpoint runs inside whichever commit crosses 1000 pages; when that
+    commit is on the event loop it copies and syncs the database there. Checkpointing once a
+    second from a thread means commits rarely cross the limit (the automatic one stays as a net).
+    PASSIVE never waits for readers or writers.
+    """
+
+    def __init__(self, factory: sessionmaker[Session], interval: float = 1.0) -> None:
+        self._factory, self._interval = factory, interval
+        self._task: asyncio.Task[None] | None = None
+
+    async def start(self) -> None:
+        self._task = asyncio.create_task(self._run())
+
+    async def stop(self) -> None:
+        if self._task is not None:
+            self._task.cancel()
+            await asyncio.gather(self._task, return_exceptions=True)
+            self._task = None
+
+    async def _run(self) -> None:
+        while True:
+            await asyncio.sleep(self._interval)
+            try:
+                await asyncio.to_thread(self._checkpoint)
+            except Exception as error:  # noqa: BLE001 -- the automatic checkpoint still covers it
+                logging.getLogger(__name__).warning("SQLite 后台检查点失败：%s", error)
+
+    def _checkpoint(self) -> None:
+        with self._factory() as session:
+            session.execute(text("PRAGMA wal_checkpoint(PASSIVE)"))
 
 
 def create_session_factory(path: Path):

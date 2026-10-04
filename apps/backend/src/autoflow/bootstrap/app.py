@@ -182,6 +182,7 @@ from autoflow.infrastructure.database.project_sync_impacts import (
 from autoflow.infrastructure.database.projects import SqlAlchemyProjects
 from autoflow.infrastructure.database.proxy_options import SqlAlchemyProxyOptions
 from autoflow.infrastructure.database.session import (
+    WalCheckpointer,
     checkpoint_wal,
     create_session_factory,
     migrate_database,
@@ -313,6 +314,8 @@ def create_app(
     loop_lag = LoopLagMonitor()
     app.state.loop_lag = loop_lag
     app.router.add_event_handler("startup", loop_lag.start)
+    wal_checkpointer = WalCheckpointer(session_factory)
+    app.router.add_event_handler("startup", wal_checkpointer.start)
     configure_openapi(app, api_version=settings.api_version)
     install_error_handlers(app)
     quiesce_gate = QuiesceGate()
@@ -685,6 +688,7 @@ def create_app(
             finally:
                 try:
                     await loop_lag.stop()
+                    await wal_checkpointer.stop()
                 finally:
                     try:
                         checkpoint_wal(session_factory)

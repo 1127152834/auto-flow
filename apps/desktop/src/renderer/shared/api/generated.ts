@@ -11881,6 +11881,8 @@ export type components = {
             retryBackoffSeconds?: number[] | null;
             /** Failurepolicy */
             failurePolicy?: "thresholds" | null;
+            /** Sessionmode */
+            sessionMode?: ("perTask" | "pool") | null;
         };
         /** RunSnapshotView */
         RunSnapshotView: {

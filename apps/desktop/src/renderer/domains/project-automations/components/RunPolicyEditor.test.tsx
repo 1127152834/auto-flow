@@ -56,7 +56,7 @@ it('honors disabled and external field errors', () => {
   expect(screen.getByRole('alert')).toHaveTextContent('服务端拒绝该任务数')
   expect(screen.getByLabelText('最大任务数')).toBeDisabled()
   expect(screen.getByLabelText('单任务超时（分钟）')).toBeDisabled()
-  expect(screen.getByRole('switch')).toBeDisabled()
+  for (const toggle of screen.getAllByRole('switch')) expect(toggle).toBeDisabled()
   expect(screen.getByLabelText('最大任务数')).toHaveAccessibleDescription('服务端拒绝该任务数')
 })
 
@@ -173,4 +173,14 @@ it('switches a data automation to pausing on failure thresholds and back to the 
   expect(screen.queryByRole('switch', { name: '任务失败后继续下一个任务' })).toBeNull()
   fireEvent.click(screen.getByRole('switch', { name: '失败过多时自动暂停批次' }))
   expect(onChange).toHaveBeenLastCalledWith({ ...policy, failurePolicy: null })
+})
+
+it('offers browser reuse only to automations that start from a fresh profile', () => {
+  const onChange = vi.fn()
+  const { rerender } = render(<RunPolicyEditor value={policy} onChange={onChange} />)
+  fireEvent.click(screen.getByRole('switch', { name: '任务之间复用浏览器' }))
+  expect(onChange).toHaveBeenLastCalledWith({ ...policy, sessionMode: 'pool' })
+  rerender(<RunPolicyEditor value={policy} onChange={onChange} freshBrowser={false} />)
+  expect(screen.getByRole('switch', { name: '任务之间复用浏览器' })).toBeDisabled()
+  expect(screen.getByText('使用已保存的登录环境时，每个任务都要用自己的浏览器。')).toBeVisible()
 })

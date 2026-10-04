@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 
 from autoflow.domain.project_automations.rules import processing_input
 from autoflow.domain.project_data.identity import RecordKey
-from autoflow.domain.project_runs.circuit_breaker import FinishedTask
+from autoflow.domain.project_runs.circuit_breaker import FinishedTask, needs_older
 from autoflow.domain.project_runs.failure_category import AttemptFact, classify
 from autoflow.domain.project_runs.input_selection import RecordRef
 from autoflow.domain.project_runs.ledger import (
@@ -159,14 +159,18 @@ def batch_history(session: Session, batch_id: str, since: datetime | None) -> li
         .where(ProjectTaskRow.batch_id == batch_id, WorkflowRunRow.status.in_(TERMINAL_STATUSES))
         .order_by(WorkflowRunRow.completed_at, WorkflowRunRow.id)
     ).all()
-    history = []
-    for task, run in rows:
+    # Newest first, and only as far back as the breaker can still see (M3: this ran over the
+    # whole batch on every tick); the returned tail is oldest first like the full history.
+    newest_first: list[FinishedTask] = []
+    for task, run in reversed(rows):
         if since is not None and run.completed_at is not None and _aware(run.completed_at) <= since:
             continue
         outcome = task_outcome(session, task, run)
         code = (outcome.error or {}).get("code") if outcome.error else None
-        history.append(FinishedTask(task.id, outcome.kind, code if isinstance(code, str) else None))
-    return history
+        newest_first.append(FinishedTask(task.id, outcome.kind, code if isinstance(code, str) else None))
+        if not needs_older(newest_first):
+            break
+    return newest_first[::-1]
 
 
 def _aware(value: datetime) -> datetime:

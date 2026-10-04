@@ -48,3 +48,26 @@ def test_business_and_unknown_do_not_count_toward_technical_thresholds():
     assert reason is not None and reason.kind == "sameErrorStreak"  # 10 page "A" with non-technical outcomes skipped
     assert evaluate(many(20, "business")) is None
     assert evaluate(many(20, "unknown", "X")) is None
+
+
+def test_the_bounded_tail_gives_the_same_verdict_as_the_full_history():
+    """M3: batch history stops reading once no older task can change the verdict."""
+    import random
+
+    from autoflow.domain.project_runs.circuit_breaker import FinishedTask, evaluate, needs_older
+
+    kinds = ["succeeded", "page", "infrastructure", "business", "unknown", "cancelled"]
+    for seed in range(2000):
+        rng = random.Random(seed)
+        # Few kinds and codes per seed, so long streaks (the hard case) are common.
+        seed_kinds, seed_codes = rng.sample(kinds, rng.randint(1, 3)), rng.sample([None, "A", "B"], rng.randint(1, 2))
+        history = [
+            FinishedTask(f"t{index}", rng.choice(seed_kinds), rng.choice(seed_codes))
+            for index in range(rng.randint(0, 80))
+        ]
+        newest_first = []
+        for task in reversed(history):
+            newest_first.append(task)
+            if not needs_older(newest_first):
+                break
+        assert evaluate(newest_first[::-1]) == evaluate(history), seed

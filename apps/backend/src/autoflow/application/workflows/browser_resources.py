@@ -176,7 +176,7 @@ class WorkflowBrowserResources:
             browser = browser_worker_payload(run_id, profile, proxy, license_key)
             browser['headless'] = profile.spec.headless
             user_data_dir = str(work_directory) if work_directory is not None else request.get("userDataDir")
-            if work_directory is None and self._environment_directory is not None:
+            if work_directory is None and self._environment_directory is not None and request.get("sessionMode") != "pool":
                 directory = self._environment_directory(run_id)
                 if directory is not None:
                     user_data_dir = str(directory)

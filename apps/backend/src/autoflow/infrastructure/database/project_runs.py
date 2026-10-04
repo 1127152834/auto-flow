@@ -13,8 +13,9 @@ from autoflow.domain.project_runs.models import (
     TaskInputSnapshot,
 )
 from autoflow.infrastructure.database.workflow_runtime import (
-    SqlAlchemyWorkflowRuntimeRepository,
+    _run,  # the repository's row mapping
 )
+from autoflow.infrastructure.database.workflow_runtime_models import WorkflowRunRow
 
 from .project_run_models import (
     ProjectBatchRow,
@@ -37,15 +38,31 @@ class SqlAlchemyProjectRuns:
 
     def list_tasks(self, project_id: str, batch_id: str) -> list[Task]:
         self.batch_row(project_id, batch_id)
-        rows = self.session.scalars(
-            select(ProjectTaskRow)
-            .where(
-                ProjectTaskRow.project_id == project_id,
-                ProjectTaskRow.batch_id == batch_id,
+        # Remediation M3 AC3-02: one query for the columns a task projection uses. Loading whole
+        # run rows decoded their JSON for every task, several times per scheduler tick.
+        rows = self.session.execute(
+            select(
+                ProjectTaskRow.id, ProjectTaskRow.run_id, ProjectTaskRow.run_request_id,
+                ProjectTaskRow.created_at, ProjectTaskRow.ordinal, ProjectTaskInputSnapshotRow.id,
+                WorkflowRunRow.run_request_id, WorkflowRunRow.status, WorkflowRunRow.status_revision,
+                WorkflowRunRow.completed_at,
             )
+            .outerjoin(ProjectTaskInputSnapshotRow, ProjectTaskInputSnapshotRow.task_id == ProjectTaskRow.id)
+            .outerjoin(WorkflowRunRow, WorkflowRunRow.id == ProjectTaskRow.run_id)
+            .where(ProjectTaskRow.project_id == project_id, ProjectTaskRow.batch_id == batch_id)
             .order_by(ProjectTaskRow.ordinal)
         ).all()
-        return [self.task(project_id, row.id) for row in rows]
+        tasks = []
+        for task_id, run_id, run_request_id, created_at, ordinal, snapshot_id, core_request_id, status, revision, completed_at in rows:
+            if snapshot_id is None or status is None:
+                raise ProjectRunError("RUN_FACTS_INCOMPLETE", "任务证据不完整，需要核验", 409)
+            if core_request_id != run_request_id:
+                raise ProjectRunError("RUN_IDENTITY_MISMATCH", "核心运行身份与项目任务不一致", 409)
+            tasks.append(Task(
+                task_id, project_id, batch_id, run_id, run_request_id, snapshot_id, status, revision,
+                aware(created_at), aware(completed_at) if completed_at is not None else None, ordinal,
+            ))
+        return tasks
 
     def task(self, project_id: str, task_id: str) -> Task:
         row = self.session.get(ProjectTaskRow, task_id)
@@ -56,9 +73,10 @@ class SqlAlchemyProjectRuns:
                 ProjectTaskInputSnapshotRow.task_id == row.id
             )
         )
-        run = SqlAlchemyWorkflowRuntimeRepository(self.session).get_run(
-            run_id=row.run_id
-        )
+        return self._task(row, snapshot, self.session.get(WorkflowRunRow, row.run_id))
+
+    def _task(self, row: ProjectTaskRow, snapshot: ProjectTaskInputSnapshotRow | None, run_row: WorkflowRunRow | None) -> Task:
+        run = _run(run_row) if run_row is not None else None
         if snapshot is None or run is None:
             raise ProjectRunError(
                 "RUN_FACTS_INCOMPLETE", "任务证据不完整，需要核验", 409

@@ -87,7 +87,7 @@ class _Input:
         try:
             while True:
                 message = _read_jsonl(self.stdin)
-                if self.credentials is not None:
+                if self.credentials is not None and message.get("type") not in {"start", "shutdown"}:
                     if type(message.get("executionGeneration")) is not int or message.get("executionGeneration") != self.generation:
                         raise ProtocolFailure
                     if message.get("type") == "credential:result":
@@ -225,6 +225,8 @@ def run_worker(stopped: Event, stdin: TextIO = sys.stdin, stdout: TextIO = sys.s
             protocol_metadata={"protocolVersion": command["protocolVersion"], "executionGeneration": generation},
         )
         input_stream.start()
+        if command.get("pooled") is True:
+            return asyncio.run(_serve(command, stopped, input_stream, stdout))
         return asyncio.run(_run(command, stopped, input_stream, stdout))
     except BaseException:  # noqa: BLE001 -- stdout is a secret-free protocol.
         _write(stdout, {"type": "error", "code": "WORKFLOW_WORKER_FAILED", "message": "工作流执行进程失败"})
@@ -234,7 +236,52 @@ def run_worker(stopped: Event, stdin: TextIO = sys.stdin, stdout: TextIO = sys.s
             input_stream.credentials.close()
 
 
-async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, stdout: TextIO) -> int:
+async def _serve(command: dict[str, Any], stopped: Event, incoming: _Input, stdout: TextIO) -> int:
+    """Remediation M3 R3-06/R3-07: run consecutive starts in one process and one browser.
+
+    Every run rebuilds its credentials reader, command bus, relay and artifact location; only the
+    browser process survives, and each run gets a fresh isolated context in it. Anything other
+    than a clean, reusable finish ends the process (the parent never reuses it either).
+    """
+    from autoflow.providers.browser.pooled_browser import PooledBrowser
+
+    pool = PooledBrowser()
+    try:
+        while True:
+            _use_run_directories(command)
+            pool.reusable = False
+            code = await _run(command, stopped, incoming, stdout, pool=pool)
+            if incoming.credentials is not None:
+                incoming.credentials.close()
+                incoming.credentials = None
+            if not pool.reusable or stopped.is_set():
+                return code
+            command = await incoming.next()
+            if command.get("type") == "shutdown":
+                return 0
+            if command.get("pooled") is not True:
+                raise ProtocolFailure
+            run_id, generation = _validate_start(command)
+            incoming.generation = generation
+            incoming.credentials = _WorkerCredentialReader(
+                stopped, stdout, run_id,
+                protocol_metadata={"protocolVersion": command["protocolVersion"], "executionGeneration": generation},
+            )
+    finally:
+        with contextlib.suppress(Exception):
+            await pool.close()
+
+
+def _use_run_directories(command: dict[str, Any]) -> None:
+    """A pooled worker learns each run's artifact location from its start, not its environment."""
+    directory, relative = command.get("artifactDirectory"), command.get("artifactRelativeDirectory")
+    if not isinstance(directory, str) or not isinstance(relative, str):
+        raise ProtocolFailure
+    os.environ["AUTOFLOW_WORKFLOW_ARTIFACT_DIR"] = directory
+    os.environ["AUTOFLOW_WORKFLOW_ARTIFACT_RELATIVE_DIR"] = relative
+
+
+async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, stdout: TextIO, *, pool: Any = None) -> int:
     run_id, generation = _validate_start(command)
     plan = command["executionPlan"]
     document = plan.get("document")
@@ -418,11 +465,12 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
             launch_persistent_context_async,
         )
         user_data_dir = browser.get("userDataDir")
-        launching = asyncio.create_task(
-            launch_persistent_context_async(user_data_dir=user_data_dir, **launch)
-            if isinstance(user_data_dir, str) and user_data_dir
-            else launch_context_async(**launch)
-        )
+        if isinstance(user_data_dir, str) and user_data_dir:
+            launching = asyncio.create_task(launch_persistent_context_async(user_data_dir=user_data_dir, **launch))
+        elif pool is not None:
+            launching = asyncio.create_task(pool.new_context(launch))
+        else:
+            launching = asyncio.create_task(launch_context_async(**launch))
         launch_cancel = asyncio.create_task(control.wait_cancelled())
         try:
             done, _ = await asyncio.wait(
@@ -485,6 +533,7 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
 
     result: dict[str, object] = {"status": "failed", "error": {"code": "WORKFLOW_WORKER_FAILED", "message": "工作流执行进程失败"}}
     cleanup_failed = False
+    reusable = pool is not None
     try:
         with relay_guard as stack:
             relay = stack.enter_context(BrowserProxyRelay(proxy)) if proxy else None
@@ -544,7 +593,10 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
         try:
             if context is not None:
                 with open(os.devnull, "w", encoding="utf-8") as sink, redirect_stdout(sink), redirect_stderr(sink):  # noqa: ASYNC230
-                    await context.close()
+                    if pool is not None and pool.browser is not None and context.browser is pool.browser:
+                        reusable = await pool.release(context)
+                    else:
+                        await context.close()
         except Exception:  # noqa: BLE001
             cleanup_failed = True
         try:
@@ -566,7 +618,13 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
             ),
         )
     else:
-        _write(stdout, _envelope(command, "finished", status=result["status"], error=result["error"], cleanupConfirmed=True))
+        reusable = reusable and result["status"] in {"succeeded", "failed"} and not control.cancelled
+        if pool is not None:
+            pool.reusable = reusable
+        _write(stdout, _envelope(
+            command, "finished", status=result["status"], error=result["error"], cleanupConfirmed=True,
+            **({"reusable": reusable} if pool is not None else {}),
+        ))
     return 0 if not cleanup_failed and result["status"] in {"succeeded", "cancelled"} else 1
 
 

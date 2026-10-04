@@ -13,6 +13,7 @@ from autoflow.domain.environments.identity import request_from_identity
 from autoflow.domain.environments.models import ResolvedEnvironmentSource
 from autoflow.domain.profiles.errors import KernelNotInstalled, ProfileNotFound
 from autoflow.domain.project_automations.models import AutomationRecord
+from autoflow.domain.project_automations.rules import session_pool_blockers
 from autoflow.domain.project_runs.models import ProjectRunError
 from autoflow.domain.workflows.browser_environment import node_browser_environments
 from autoflow.domain.workflows.runtime import WorkflowRuntimeError
@@ -64,6 +65,13 @@ class ProjectRunResourceResolver:
                 **timing,
             }
 
+        # Remediation M3 R3-07: re-checked against the workflow frozen for this start.
+        pooled = automation.run_policy.get("sessionMode") == "pool"
+        if pooled:
+            blockers = session_pool_blockers(document) if document is not None else []
+            if blockers:
+                raise _field_error("runPolicy.sessionMode", f"不能复用浏览器：{blockers[0]}")
+            timing = {**timing, "sessionMode": "pool"}
         nodes = node_browser_environments(document) if document is not None else None
         if nodes is not None:
             frozen = freeze_node_browser_resources(self._browser, self._environments, automation.project_id, nodes, project_defaults, model_provider_id)

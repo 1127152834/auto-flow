@@ -36,6 +36,16 @@ class PauseReason:
     code: str | None = None
 
 
+def needs_older(newest_first: Sequence[FinishedTask]) -> bool:
+    """Whether an older task could still change ``evaluate``: the window is short or a streak is unbroken."""
+    if len(newest_first) < WINDOW:
+        return True
+    relevant = [task for task in newest_first if task.kind not in _IGNORED]
+    infrastructure_open = all(task.kind == "infrastructure" for task in relevant)
+    same_open = all(task.kind in _TECHNICAL and task.code is not None for task in relevant) and len({task.code for task in relevant}) <= 1
+    return infrastructure_open or same_open
+
+
 def evaluate(history: Sequence[FinishedTask]) -> PauseReason | None:
     """``history`` is ordered oldest first and holds only tasks finished since the last resume."""
     relevant = [task for task in history if task.kind not in _IGNORED]

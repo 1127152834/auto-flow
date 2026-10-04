@@ -291,3 +291,43 @@ def test_run_policy_accepts_explicit_claim_settings(extra, valid):
     else:
         with pytest.raises(ProjectError):
             validate_write(candidate)
+
+
+@pytest.mark.parametrize(("mode", "source", "valid"), [
+    ("perTask", "newFromProfile", True), ("pool", "newFromProfile", True),
+    ("perIdentity", "newFromProfile", False),  # M4; never exposed early (R3-07)
+    ("pool", "fixedEnvironment", False),
+])
+def test_session_mode_pool_is_limited_to_fresh_profiles(mode, source, valid):
+    candidate = payload()
+    candidate["runPolicy"] = {**candidate["runPolicy"], "sessionMode": mode}
+    candidate["environmentPolicy"] = {"source": source, **({"environmentId": "00000000-0000-0000-0000-0000000000e1"} if source == "fixedEnvironment" else {})}
+    if valid:
+        assert validate_write(candidate)["runPolicy"]["sessionMode"] == mode
+    else:
+        with pytest.raises(ProjectError):
+            validate_write(candidate)
+
+
+def test_workflows_that_keep_their_own_browser_cannot_use_the_pool():
+    from autoflow.domain.project_automations.rules import session_pool_blockers
+
+    plain = {"nodes": [{"id": "a", "data": {"moduleType": "open_page"}},
+                       {"id": "e", "data": {"moduleType": "project_end", "retainEnvironment": False}}]}
+    assert session_pool_blockers(plain) == []
+    saving = {"nodes": [{"id": "e", "data": {"moduleType": "project_end", "retainEnvironment": True}}]}
+    manual = {"nodes": [{"id": "m", "data": {"moduleType": "project_manual"}}]}
+    assert session_pool_blockers(saving) == ["流程结束时会保存浏览器环境"]
+    assert session_pool_blockers(manual) == ["流程包含人工处理节点，需要保留任务自己的浏览器"]
+
+
+@pytest.mark.parametrize(("declaration", "blocked"), [
+    ({"source": "profile", "profileId": "p1"}, False),
+    ({"source": "fixedEnvironment", "environmentId": "e1"}, True),
+])
+def test_node_browsers_may_pool_unless_they_load_a_saved_environment(declaration, blocked):
+    from autoflow.domain.project_automations.rules import session_pool_blockers
+
+    document = {"schemaVersion": 3, "browserEnvironmentVersion": 1, "nodes": [
+        {"id": "open", "data": {"moduleType": "open_page", "browserEnvironment": declaration}}]}
+    assert session_pool_blockers(document) == (["流程的节点使用了已保存的登录环境"] if blocked else [])

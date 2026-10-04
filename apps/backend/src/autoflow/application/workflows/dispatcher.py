@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
+import json
 import logging
 from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import dataclass, field
@@ -550,7 +552,10 @@ class WorkflowRunDispatcher:
                 with self._gate.mutation() as admitted:
                     if not admitted:
                         raise WorkflowRuntimeError('WORKFLOW_ADMISSION_CLOSED', '运行准入已关闭', 503)
-                    request = prepare()
+                    # Remediation M3 AC3-02: reserving the task's environment instance reads and writes the database.
+                    request = await asyncio.to_thread(prepare)
+                    if current.resource_request.get("sessionMode") == "pool":
+                        request = {**request, "sessionMode": "pool"}  # a pooled browser takes no work copy
                     owner.lease = await self._resources.acquire(request, current.run_id)
                     owner.browser_command_id = command_id
             return {'browser': dict(owner.lease.browser), 'executablePath': str(owner.lease.executable)}
@@ -622,6 +627,8 @@ class WorkflowRunDispatcher:
                             # Remediation M3 R3-04: batch-capable workers commit process events together.
                             **({"on_events": lambda events: self._commit_events(current, content, events)}
                                if getattr(self._worker, "supports_event_batches", False) else {}),
+                            # Remediation M3 R3-07: pooled runs reuse a browser launched for the same identity.
+                            **({"session_key": key} if (key := _session_key(current.resource_request)) else {}),
                             model_bindings=model_bindings,
                         )
                 except TimeoutError:
@@ -1092,3 +1099,15 @@ class WorkflowRunDispatcher:
 
 def _aware(value: datetime) -> datetime:
     return value if value.tzinfo is not None else value.replace(tzinfo=UTC)
+
+
+def _session_key(request: Mapping[str, Any]) -> str | None:
+    """Runs frozen with the same browser request go to the same pooled worker.
+
+    Only an affinity hint: the worker compares the actual launch options and relaunches its
+    browser when they differ (a proxy pool's next proxy, for example), so a key never shares
+    a browser that would launch differently.
+    """
+    if request.get("sessionMode") != "pool":
+        return None
+    return hashlib.sha256(json.dumps(request, sort_keys=True, default=str).encode()).hexdigest()

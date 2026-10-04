@@ -48,7 +48,40 @@ def validate_write(
             "environmentPolicy.inputId", "Must reference an input in inputPlan"
         )
     result["runPolicy"] = _run_policy(result["runPolicy"])
+    if result["runPolicy"].get("sessionMode") == "pool" and result["environmentPolicy"]["source"] != "newFromProfile":
+        raise validation_error("runPolicy.sessionMode", "复用浏览器只适用于按浏览器配置新建、不带登录数据的采集")
     return result
+
+
+SESSION_MODES = ("perTask", "pool")
+
+
+def session_pool_blockers(document: dict[str, Any]) -> list[str]:
+    """Why a workflow cannot reuse a pooled browser (M3 R3-07): it needs its own browser profile."""
+    from autoflow.domain.workflows.browser_environment import node_browser_environments
+    from autoflow.domain.workflows.project_end import normalize_project_end
+
+    content = document.get("content", document)
+    reasons = []
+    nodes = node_browser_environments(document) or {}
+    if any(item.get("source") in {"fixedEnvironment", "inputEnvironment"} for item in nodes.values()):
+        reasons.append("流程的节点使用了已保存的登录环境")
+    for node in content.get("nodes", []) if isinstance(content.get("nodes"), list) else []:
+        data = node.get("data") if isinstance(node, dict) else None
+        if not isinstance(data, dict):
+            continue
+        module = data.get("moduleType")
+        config = data.get("config", data)
+        if module == "project_manual":
+            reasons.append("流程包含人工处理节点，需要保留任务自己的浏览器")
+        elif module == "project_end" and isinstance(config, dict):
+            try:
+                retain = normalize_project_end(config)["retainEnvironment"]
+            except (TypeError, ValueError):
+                retain = True
+            if retain:
+                reasons.append("流程结束时会保存浏览器环境")
+    return list(dict.fromkeys(reasons))
 
 
 def _input_plan(value: Any, project_id: str | None) -> dict[str, Any]:
@@ -600,13 +633,16 @@ def _run_policy(value: Any) -> dict[str, Any]:
         "automaticExecutionTimeoutSeconds",
         "manualDeadlineSeconds",
     }
-    optional = {"claimMode", "retryBudget", "retryBackoffSeconds", "failurePolicy"}
+    optional = {"claimMode", "retryBudget", "retryBackoffSeconds", "failurePolicy", "sessionMode"}
     if not isinstance(value, dict) or not required <= set(value) or set(value) - required - optional:
         raise validation_error("runPolicy", "A complete run policy is required")
     # Remediation M2 R2-03/R2-04: how rows are claimed and retried; absent means the legacy cycle mode.
     if "claimMode" in value and value["claimMode"] not in {"unprocessed", "cycle", "retryFailed"}:
         raise validation_error("runPolicy.claimMode", "Must be unprocessed, cycle or retryFailed")
     # R2-15: thresholds pause the batch; absent keeps the legacy continueAfterFailure behaviour.
+    # Remediation M3 R3-07: perTask (default) or pool; perIdentity arrives with M4.
+    if "sessionMode" in value and value["sessionMode"] not in SESSION_MODES:
+        raise validation_error("runPolicy.sessionMode", "Must be perTask or pool")
     if "failurePolicy" in value and value["failurePolicy"] != "thresholds":
         raise validation_error("runPolicy.failurePolicy", "Must be thresholds")
     if "retryBudget" in value and (type(value["retryBudget"]) is not int or not 1 <= value["retryBudget"] <= 20):
