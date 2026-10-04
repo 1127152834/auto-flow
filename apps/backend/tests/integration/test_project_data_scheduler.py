@@ -840,9 +840,10 @@ async def test_max_live_instances_and_core_capacity_apply_across_batches(
     core = CapacityCore(factory, capacity=3)
     scheduler = ProjectBatchScheduler(factory, core, QuiesceGate())
     await scheduler.tick()
-    assert len(coordinator.list_tasks(project, first.batch_id)) == 2
-    assert coordinator.list_tasks(project, second.batch_id) == []
-    assert coordinator.get_batch(project, second.batch_id).status == "blocked"
+    # The automation's two live instances are shared across its batches; since M3 R3-08 the
+    # batches take turns instead of the older one holding both.
+    assert len(coordinator.list_tasks(project, first.batch_id)) == 1
+    assert len(coordinator.list_tasks(project, second.batch_id)) == 1
 
 
 def test_claim_rechecks_project_lifecycle_inside_commit(data_services):

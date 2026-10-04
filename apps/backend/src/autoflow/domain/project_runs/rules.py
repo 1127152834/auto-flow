@@ -27,6 +27,7 @@ def validate_batch_start(
         "maxTasks",
         "concurrency",
         "environmentOverride",
+        "priority",
     }
     required = {"expectedAutomationRevision", "parameters"}
     if set(payload) - allowed or required - set(payload):
@@ -103,7 +104,11 @@ def validate_batch_start(
     mode = payload.get("executionMode", "previewWrites" if "debugSelection" in payload else "realWrites")
     if mode not in {"previewWrites", "realWrites"}:
         raise _error("executionMode", "必须是 previewWrites 或 realWrites")
+    priority = payload.get("priority", "normal")
+    if priority not in BATCH_PRIORITIES:
+        raise _error("priority", "必须是 high、normal 或 low")
     return BatchStart(
+        priority=priority,
         expected_automation_revision=revision,
         parameters=parameters,
         max_tasks=max_tasks,
@@ -111,6 +116,9 @@ def validate_batch_start(
         environment_override=deepcopy(environment_override),
         execution_mode=mode,
     )
+
+
+BATCH_PRIORITIES = ("high", "normal", "low")
 
 
 def _parameters(definitions: list[dict[str, Any]], supplied: Any) -> dict[str, Any]:

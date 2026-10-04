@@ -129,6 +129,9 @@ class ProjectBatchScheduler:
         self._resource_resolver = resource_resolver
         # One sidecar owns this database; serialize dispatch selection and stop admission.
         self._lock = asyncio.Lock()
+        # Remediation M3 R3-08: per-pass start budget (None outside a fair tick) and round-robin offset.
+        self._claims_left: int | None = None
+        self._last_served: str | None = None
         self._wake = asyncio.Event()
         self._loop: asyncio.Task[None] | None = None
         self._closed = False
@@ -182,14 +185,36 @@ class ProjectBatchScheduler:
         return all(allowed for allowed, _value in states), available_at
 
     def _batch_ids(self) -> list[tuple[str, str]]:
+        return [(project_id, batch_id) for project_id, batch_id, _priority in self._batches()]
+
+    def _batches(self) -> list[tuple[str, str, str]]:
         with self._factory() as session:
-            return list(
-                session.execute(
-                    select(ProjectBatchRow.project_id, ProjectBatchRow.id)
-                    .where(ProjectBatchRow.status.not_in(BATCH_TERMINAL))
-                    .order_by(ProjectBatchRow.created_at, ProjectBatchRow.id)
-                ).tuples()
-            )
+            rows = session.execute(
+                select(ProjectBatchRow.project_id, ProjectBatchRow.id, ProjectBatchRow.frozen_request)
+                .where(ProjectBatchRow.status.not_in(BATCH_TERMINAL))
+                .order_by(ProjectBatchRow.created_at, ProjectBatchRow.id)
+            ).tuples()
+            return [
+                (project_id, batch_id, str((frozen or {}).get("priority") or "normal"))
+                for project_id, batch_id, frozen in rows
+            ]
+
+    def _fair_rounds(self) -> list[list[tuple[str, str]]]:
+        """Batches grouped by priority (high first), oldest first, then starting after the batch
+        that last got a slot so equals take turns across ticks."""
+        batches = self._batches()
+        groups: list[list[tuple[str, str]]] = []
+        for priority in ("high", "normal", "low"):
+            group = [
+                (project_id, batch_id)
+                for project_id, batch_id, value in batches
+                if (value if value in {"high", "low"} else "normal") == priority
+            ]
+            if group:
+                served = [index for index, (_project, batch_id) in enumerate(group) if batch_id == self._last_served]
+                offset = served[0] + 1 if served else 0
+                groups.append(group[offset:] + group[:offset])
+        return groups
 
     async def _run(self) -> None:
         while not self._closed:
@@ -222,11 +247,25 @@ class ProjectBatchScheduler:
         async with self._lock:
             if self._closed:
                 return
-            for project_id, batch_id in self._batch_ids():
-                with self._gate.mutation() as admitted:
-                    if not admitted:
-                        return
-                    await self._advance(project_id, batch_id)
+            # Remediation M3 R3-08: every batch gets one slot per pass, higher priorities pass first,
+            # and passes repeat while someone still started a task (round robin, no starvation).
+            try:
+                for group in self._fair_rounds():
+                    pending = group
+                    while pending:
+                        started: list[tuple[str, str]] = []
+                        for project_id, batch_id in pending:
+                            with self._gate.mutation() as admitted:
+                                if not admitted:
+                                    return
+                                self._claims_left = 1
+                                await self._advance(project_id, batch_id)
+                                if self._claims_left == 0:
+                                    started.append((project_id, batch_id))
+                                    self._last_served = batch_id
+                        pending = started
+            finally:
+                self._claims_left = None
 
     async def _claim_off_loop(self, project_id: str, batch_id: str) -> str:
         """Run one claim in a worker thread and keep the tick (and its lock) until it settles.
@@ -348,6 +387,8 @@ class ProjectBatchScheduler:
         if stopping or (failed and not continue_after_failure):
             return
         queued = [task for task in active if task.status == "queued"]
+        if self._claims_left is not None:
+            queued = queued[: self._claims_left]
         for task in queued:
             with self._factory() as session:
                 repository = SqlAlchemyProjectRuns(session)
@@ -369,6 +410,8 @@ class ProjectBatchScheduler:
                     for item in current_tasks
                 ) else "blocked")
                 return
+            if self._claims_left is not None:
+                self._claims_left -= 1
             current = self._core.query_run(task.run_id)
             try:
                 await self._core.dispatch(
@@ -457,6 +500,8 @@ class ProjectBatchScheduler:
             if slots == 0 and not active:
                 self._set_status(project_id, batch_id, "blocked")
                 return
+            if self._claims_left is not None:
+                slots = min(slots, self._claims_left)
             claim_outcome = "idle"
             for _ in range(slots):
                 if target is not None and self._limit_spent(batch_id, tasks, int(target)):
@@ -469,6 +514,8 @@ class ProjectBatchScheduler:
                 claim_outcome = await self._claim_off_loop(project_id, batch_id)
                 if claim_outcome != "ready":
                     break
+                if self._claims_left is not None:
+                    self._claims_left -= 1
                 with self._factory() as session:
                     tasks = SqlAlchemyProjectRuns(session).list_tasks(
                         project_id, batch_id

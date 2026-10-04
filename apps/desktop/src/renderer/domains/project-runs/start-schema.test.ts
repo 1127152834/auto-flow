@@ -38,3 +38,10 @@ it('accepts manually entered parameter-only concurrency', () => {
   expect(toBatchStartRequest(draft, [], 7)).toMatchObject({ concurrency: 2 })
   expect(toBatchStartRequest(draft, [], 7, { dataBatch: true })).toMatchObject({ concurrency: 2 })
 })
+
+it('sends a non-default batch priority and omits the default (remediation M3 R3-08)', () => {
+  const draft = { ...createBatchStartDraft([], 2), concurrency: '1' }
+  expect(toBatchStartRequest({ ...draft, priority: 'high' }, [], 3)).toMatchObject({ priority: 'high' })
+  expect(toBatchStartRequest({ ...draft, priority: 'normal' }, [], 3)).not.toHaveProperty('priority')
+  expect(toBatchStartRequest(draft, [], 3)).not.toHaveProperty('priority')
+})

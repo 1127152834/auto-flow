@@ -5,7 +5,7 @@ export type ParameterDefinition = Schema['ParameterDefinition']
 export type EnvironmentPolicy = Omit<Schema['AutomationUpdate'], 'expectedManagementRevision'>['environmentPolicy']
 export type JsonScalar = string | number | boolean | null
 export type ParameterDraftValue = JsonScalar | { raw: string }
-export type BatchStartDraft = { parameters: Record<string, ParameterDraftValue>; maxTasks: string; unlimited?: boolean; concurrency?: string; environmentOverride?: EnvironmentPolicy }
+export type BatchStartDraft = { parameters: Record<string, ParameterDraftValue>; maxTasks: string; unlimited?: boolean; concurrency?: string; environmentOverride?: EnvironmentPolicy; priority?: 'high' | 'normal' | 'low' }
 export type BatchStartRequest = { expectedAutomationRevision: number; parameters: Record<string, JsonScalar>; maxTasks?: number | null; concurrency?: number; environmentOverride?: EnvironmentPolicy }
 export type StartErrors = Record<string, string>
 
@@ -38,5 +38,5 @@ export function toBatchStartRequest(draft: BatchStartDraft, definitions: Paramet
   if (Object.keys(validateBatchStartDraft(draft, definitions, options)).length) return null
   const types = new Map(definitions.map(item => [item.parameterId, item.type]))
   const parameters = Object.fromEntries(Object.entries(draft.parameters).map(([id, value]) => [id, types.get(id) === 'number' && value && typeof value === 'object' ? Number(value.raw) : value])) as Record<string, JsonScalar>
-  return { expectedAutomationRevision, parameters, maxTasks: draft.unlimited ? null : Number(draft.maxTasks), concurrency: Number(draft.concurrency ?? '1'), ...(draft.environmentOverride ? { environmentOverride: structuredClone(draft.environmentOverride) } : {}) }
+  return { expectedAutomationRevision, parameters, maxTasks: draft.unlimited ? null : Number(draft.maxTasks), concurrency: Number(draft.concurrency ?? '1'), ...(draft.priority && draft.priority !== 'normal' ? { priority: draft.priority } : {}), ...(draft.environmentOverride ? { environmentOverride: structuredClone(draft.environmentOverride) } : {}) }
 }

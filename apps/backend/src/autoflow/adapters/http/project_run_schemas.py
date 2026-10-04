@@ -20,6 +20,8 @@ class BatchStartRequest(ApiModel):
     environment_override: EnvironmentPolicy | None = None
     # Remediation M2 R2-30: defaults to previewWrites with debugSelection, realWrites otherwise.
     execution_mode: Literal["previewWrites", "realWrites"] | None = None
+    # Remediation M3 R3-08: scheduling priority among running batches.
+    priority: Literal["high", "normal", "low"] | None = None
 
     def payload(self) -> dict[str, Any]:
         return self.model_dump(by_alias=True, exclude_unset=True)

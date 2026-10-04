@@ -592,6 +592,7 @@ class ProjectRunCoordinator:
         )
         frozen["dataCapabilityBinding"] = data_capability_binding
         frozen["executionMode"] = start.execution_mode
+        frozen["priority"] = start.priority
         if follow_up is not None:
             frozen["followUp"] = follow_up
         selection_outcome: dict[str, Any] | None = (

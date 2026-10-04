@@ -2317,6 +2317,23 @@ export type paths = {
         patch: operations["patch_environment_api_v1_projects__projectId__environments__environmentId__patch"];
         trace?: never;
     };
+    "/api/v1/projects/{projectId}/environments/{environmentId}/storage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Environment Storage */
+        get: operations["environment_storage_api_v1_projects__projectId__environments__environmentId__storage_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{projectId}/environments/{environmentId}/impact": {
         parameters: {
             query?: never;
@@ -7133,6 +7150,8 @@ export type components = {
             environmentOverride?: (components["schemas"]["NewFromProfile"] | components["schemas"]["FixedEnvironment"] | components["schemas"]["InputEnvironment"]) | null;
             /** Executionmode */
             executionMode?: ("previewWrites" | "realWrites") | null;
+            /** Priority */
+            priority?: ("high" | "normal" | "low") | null;
         };
         /** BatchStopRequest */
         BatchStopRequest: {
@@ -8599,6 +8618,18 @@ export type components = {
                 [key: string]: unknown;
             };
         };
+        /** EnvironmentGenerationUsage */
+        EnvironmentGenerationUsage: {
+            /** Generation */
+            generation: number;
+            /** Bytes */
+            bytes: number;
+            /**
+             * Keptfor
+             * @enum {string}
+             */
+            keptFor: "current" | "instance" | "task" | "batch" | "publishing" | "history";
+        };
         /** EnvironmentImpactView */
         EnvironmentImpactView: {
             /** Impactrevision */
@@ -8776,6 +8807,8 @@ export type components = {
             browserConfiguration?: components["schemas"]["EnvironmentBrowserConfiguration"] | null;
             /** Expectedcontentgeneration */
             expectedContentGeneration?: number | null;
+            /** Keepbrowsercache */
+            keepBrowserCache?: boolean | null;
         };
         /** EnvironmentProfile */
         EnvironmentProfile: {
@@ -8898,6 +8931,15 @@ export type components = {
             /** Recordtargets */
             recordTargets?: components["schemas"]["RecordTargetWrite"][];
         };
+        /** EnvironmentStorageView */
+        EnvironmentStorageView: {
+            /** Generations */
+            generations: components["schemas"]["EnvironmentGenerationUsage"][];
+            /** Retainedbytes */
+            retainedBytes: number;
+            /** Reclaimablebytes */
+            reclaimableBytes: number;
+        };
         /** EnvironmentView */
         EnvironmentView: {
             ref: components["schemas"]["EnvironmentRefView"];
@@ -8934,6 +8976,11 @@ export type components = {
              */
             linkedRecordCount: number;
             browserConfiguration?: components["schemas"]["EnvironmentBrowserConfiguration"] | null;
+            /**
+             * Keepbrowsercache
+             * @default false
+             */
+            keepBrowserCache: boolean;
         };
         /** ErrorResponse */
         ErrorResponse: {
@@ -25300,6 +25347,65 @@ export interface operations {
             };
             /** @description Locked */
             423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+        };
+    };
+    environment_storage_api_v1_projects__projectId__environments__environmentId__storage_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+                environmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnvironmentStorageView"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BrowserErrorEnvelope"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

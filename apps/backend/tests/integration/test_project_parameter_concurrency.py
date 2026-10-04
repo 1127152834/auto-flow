@@ -277,14 +277,20 @@ async def test_scheduler_dispatches_two_production_workers_with_exclusive_record
     gates = {}
     original_run = worker.run
     async def hold_first_event(**kwargs):
-        persist = kwargs['on_event']
-        async def on_event(event):
-            await persist(event)
-            identity = event['runId']
+        persist, persist_batch = kwargs['on_event'], kwargs.get('on_events')
+        async def hold(identity):
             if identity not in gates:
                 gates[identity] = asyncio.Event()
                 await gates[identity].wait()
-        return await original_run(**{**kwargs, 'on_event': on_event})
+        async def on_event(event):
+            await persist(event)
+            await hold(event['runId'])
+        async def on_events(events):
+            # Protocol v2 commits process events in batches (M3 R3-04).
+            await persist_batch(events)
+            await hold(events[0]['runId'])
+        hooks = {'on_event': on_event, **({'on_events': on_events} if persist_batch else {})}
+        return await original_run(**{**kwargs, **hooks})
     monkeypatch.setattr(worker, 'run', hold_first_event)
     async def cleanup(_run):
         pass
