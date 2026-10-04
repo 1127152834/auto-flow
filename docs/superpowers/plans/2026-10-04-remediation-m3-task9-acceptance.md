@@ -1,0 +1,49 @@
+# M3 Task 9：里程碑验收
+
+- 日期：2026-10-04；状态：AC3-02 未达标，M3 未退出（等待用户决定写路径方案）
+- 规格：[M3 规格](../specs/2026-09-30-remediation-m3-throughput.md)；分支 codex/architecture-baseline，本机提交，未推送
+- 环境：Windows 11、32 逻辑核、CloakBrowser chromium-146.0.7680.177.5；macOS 由用户手动验证
+
+## 验收清单
+
+| 条目 | 要求 | 结果 | 证据 |
+|---|---|---|---|
+| AC3-01 | 已索引筛选/排序领取 100,000 行 < 20 ms | 达标：键序 4.8 ms、创建时间 6.6 ms；需逐行扫描的字段排序 272 ms 另报并在自动化检查中提示 | [Task 1/2](2026-10-03-remediation-m3-task1-2-claims.md)，CI `bench_claims --budget-ms 20` |
+| AC3-02 | 领取期间及黄金场景全程主循环 p99 < 50 ms | 领取期间达标（12 ms）；native-batch-v1 池化 200 行 5 样本 p99 48.8–62.0 ms，中位 54.6 ms，**未达标** | 下文 |
+| AC3-03 | G4 框架开销 < 5 ms/节点 | 达标：约 1.2 ms/节点（5,000 节点） | [Task 4](2026-10-03-remediation-m3-task4-events.md) |
+| AC3-04 | 首节点：新浏览器 < 3 s，复用 < 300 ms | 达标：2,185 ms / 90 ms | [Task 5/6](2026-10-04-remediation-m3-task5-6-session-pool.md) |
+| AC3-05 | native-batch-v1 吞吐中位数 ≥ M2B × 5，失败/unknown 不回退 | 达标：85.0 行/分钟（M2B 13.39 的 6.3 倍）；5 样本均 198 成功 / 2 隔离 / 204 次尝试，与基线一致 | 下文 |
+| AC3-06 | 环境恢复+保存 < 2 s；100 次运行占用 ≤ 单环境 × 4；被引用版本不误删 | 达标：0.95 s；当前+3 个历史；冻结任务的版本 100 次保存后仍可恢复 | [Task 8](2026-10-04-remediation-m3-task8-environment-store.md) |
+| AC3-07 | 并发 1,000 次随机领取：不重复、不遗漏、不死循环 | 达标：26 场景 1,052 次领取 | `test_claim_randomized.py` |
+| AC3-08 | 事件批量崩溃注入不丢状态事实、不重复 | 达标 | `test_worker_event_batches.py` |
+
+## AC3-05 / AC3-02 正式样本（提交 65965f30，池化，200 行，并发 2，机器空闲 CPU 3%）
+
+| 样本 | 成功行/分钟 | 循环延迟 p99 |
+|---|---|---|
+| 1 | 90.21 | 48.8 ms |
+| 2 | 88.11 | 50.5 ms |
+| 3 | 84.90 | 62.0 ms |
+| 4 | 85.00 | 61.9 ms |
+| 5 | 83.69 | 54.6 ms |
+| 中位数 | 85.00 | 54.6 ms |
+
+比较策略变化：执行配置为 `ledger-batches-writeback-v1-pool`（M2B 基线为不复用浏览器），数据、故障、并发、内核相同。
+同一提交在外部负载下（另一 Codex 会话备份进程，CPU 87%）测得 47–101 行/分钟、p99 70–134 ms，不作为验收。
+
+## AC3-02 剩余原因
+
+卡顿探针（空闲机器，单样本 68 次 > 50 ms 停顿）：约一半来自派发器在事件循环上提交运行状态转换
+（`transition_run`、终态时 `interactions.finish` 触发的 flush、提交），表现为等待 SQLite 写锁——同时有事件批量、领取、
+租约释放等线程中的写事务。查询本身很小（`project_operations` 400 行级全表扫描 < 1 ms）。
+
+可选方案（需用户决定，R3-03 要求"按测量报告确认后迁移写路径"）：
+1. 单一 `DatabaseWriter` 线程承接全部写事务（R3-03 原方案），循环只提交请求、等待结果；
+2. 派发器状态转换（23 个调用点）改为 `asyncio.to_thread`，保留现有短事务与 CAS；
+3. 接受当前结果并记录偏离。
+
+## 未定位事项
+
+- 一次 3 样本运行中出现 1 次失败，输出未保留；之后 1 次单独、10 次完整样本均未复现。
+- `test_two_actual_workers_keep_ack_cancellation_and_cleanup_owned_by_run`、`test_native_windows_pre_ready_cleanup_confirms_all_descendants[timeout]`
+  在高负载时失败，干净 HEAD 副本同样失败，空闲时通过——判定为环境时序，未改代码。

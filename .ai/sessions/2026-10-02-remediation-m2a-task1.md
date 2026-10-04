@@ -43,3 +43,13 @@ M2A Task 2（失败分类与整 Task 重放边界）→ Task 3（终态同事务
   两个测试（debug_inputs、android_m4 head 固定值）是 M2B/M1 遗留未同步，已修正。
 - 本机已知环境失败（不影响结论）：符号链接权限、face_recognition/OCR 未安装、缺 reference/WebRPA 冻结源、RuntimeDiagnostics 日期断言、
   settings 集成（真实 sidecar）。
+
+## 2026-10-04 续：M3 吞吐与性能（本机提交，未推送）
+来源：用户指示"继续实施m3"；Task 5/6 方案由用户 2026-10-04 选定"长驻 worker 带浏览器"。验证均在本机 Windows。
+- Task 1/2（aa9712f5）领取下推到 SQL；Task 4（62881181）worker 协议 v2 事件批量；Task 3（8b075eb4）消除循环阻塞；
+  Task 7（54632935）批次优先级与同级轮转；Task 8（1e8692d0）环境保存排除缓存、引用守卫的版本清理；
+  Task 5/6（65965f30）池化 worker 复用浏览器进程（每任务新隔离上下文），并修复吞吐提升后暴露的循环阻塞。
+- 验收（confirmed，docs/superpowers/plans/2026-10-04-remediation-m3-task9-acceptance.md）：AC3-01/03/04/05/06/07/08 达标；
+  AC3-05 吞吐 85.0 行/分钟（M2B 6.3 倍）。AC3-02 未达标（黄金场景 p99 中位 54.6 ms），剩余为派发器状态转换在循环上等写锁，
+  写路径迁移方案待用户决定，M3 未退出。
+- 测量注意：本机有其他会话（Codex 备份）时 CPU 可达 87%，吞吐与延迟数字失真；正式样本须在空闲时采集并记录负载。
