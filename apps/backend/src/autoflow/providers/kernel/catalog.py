@@ -119,7 +119,7 @@ def parse_licensed_catalog(releases: Iterable[object]) -> list[KernelRelease]:
     return _sort_releases(parsed)
 
 
-def scan_installed_kernels(root: Path, *, platform: str) -> list[InstalledKernel]:
+def scan_installed_kernels(root: Path, *, platform: str, with_size: bool = True) -> list[InstalledKernel]:
     if platform not in _SUPPORTED_PLATFORMS.values():
         raise KernelPlatformUnsupported()
     try:
@@ -145,7 +145,8 @@ def scan_installed_kernels(root: Path, *, platform: str) -> list[InstalledKernel
                 edition="licensed" if match.group("pro") else "public",
                 version=match.group("version"),
                 executable_path=resolved_executable,
-                size=_directory_size(directory),
+                # Walking a kernel tree takes seconds; callers that only need presence skip it (M3).
+                size=_directory_size(directory) if with_size else 0,
             )
         )
     return sorted(installed, key=lambda item: _version_key(item.version), reverse=True)

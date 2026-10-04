@@ -1134,4 +1134,11 @@ async def _wait_until_cancelled(context: ExecutionContext) -> None:
         await asyncio.sleep(0.02)
 
 
-from .core_runtime import WorkflowRuntimeService  # noqa: F401
+def __getattr__(name: str) -> Any:
+    # Remediation M3 R3-06: the database-backed service is re-exported lazily so the workflow worker,
+    # which only needs the runtime, does not import SQLAlchemy/Alembic at start (about 1.3 s).
+    if name == "WorkflowRuntimeService":
+        from .core_runtime import WorkflowRuntimeService
+
+        return WorkflowRuntimeService
+    raise AttributeError(name)

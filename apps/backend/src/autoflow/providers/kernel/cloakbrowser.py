@@ -69,9 +69,15 @@ class CloakBrowserCatalogProvider:
     def installed(self) -> list[InstalledKernel]:
         return scan_installed_kernels(self._kernels_dir, platform=self._platform)
 
+    def installed_without_size(self) -> list[InstalledKernel]:
+        """Installed kernels for runtime resolution; sizing the trees takes seconds (remediation M3)."""
+        return scan_installed_kernels(self._kernels_dir, platform=self._platform, with_size=False)
+
     def is_installed(self, edition: str, version: str) -> bool:
+        # Checked when each task resolves its browser: presence only, without sizing the tree.
         return any(
-            item.edition == edition and item.version == version for item in self.installed()
+            item.edition == edition and item.version == version
+            for item in self.installed_without_size()
         )
 
     async def catalog(self) -> KernelCatalog:

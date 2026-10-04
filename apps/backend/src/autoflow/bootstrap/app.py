@@ -370,7 +370,7 @@ def create_app(
     test_browser_workers.release_proxy = proxy_runtime.workflow.release
     profile_test_browser = ProfileTestBrowserService(
         profile_service,
-        catalog_provider.installed,
+        catalog_provider.installed_without_size,
         proxy_runtime.resolve_profile,
         license_store.read,
         test_browser_workers,
@@ -383,7 +383,7 @@ def create_app(
     workflow_services = build_workflow_services(
         session_factory,
         profiles=profile_service,
-        installed_kernels=catalog_provider.installed,
+        installed_kernels=catalog_provider.installed_without_size,
         resolve_proxy=proxy_runtime.resolve_profile,
         proxy_service=proxy_runtime.workflow,
         read_license=license_store.read,
@@ -472,8 +472,8 @@ def create_app(
     # launcher must read the same inventory; a bare lookup without an
     # ``installed()`` list still falls back to the real catalog.
     kernel_inventory = getattr(
-        installed_kernel_lookup or catalog_provider, "installed", None
-    ) or catalog_provider.installed
+        installed_kernel_lookup, "installed", None
+    ) or catalog_provider.installed_without_size
     environment_browser = EnvironmentBrowserLauncher(
         profile_service, kernel_inventory, environment_store,
         resource_provider=lambda: app.state.project_workflow_resources,
@@ -523,7 +523,8 @@ def create_app(
         app,
         session_factory=session_factory,
         profiles=profile_service,
-        installed=catalog_provider.installed,
+        # Remediation M3: per-task kernel resolution needs presence, not the size of each tree.
+        installed=catalog_provider.installed_without_size,
         resolve_proxy=proxy_runtime.resolve_profile,
         proxy_service=proxy_runtime.workflow,
         read_license=license_store.read,

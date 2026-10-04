@@ -264,13 +264,17 @@ class ProjectWorkerCapabilities:
             command = model(**values)
         except (TypeError, KeyError, ValueError) as error:
             raise ProjectError('CAPABILITY_REQUEST_INVALID', '执行能力参数无效', 422) from error
-        scope = _node_data_scope(
-            self.data.scope(project_id, task_id, run_id),
-            config,
-            project_id,
-            request["operation"],
-        )
-        result = getattr(self.data, method)(scope, command)
+        def execute() -> Any:
+            scope = _node_data_scope(
+                self.data.scope(project_id, task_id, run_id),
+                config,
+                project_id,
+                request["operation"],
+            )
+            return getattr(self.data, method)(scope, command)
+
+        # Remediation rule 3 / M3 AC3-02: record reads and writes wait for SQLite off the event loop.
+        result = await asyncio.to_thread(execute)
         # Mutation authority does not imply permission to read the record's
         # other fields. The full snapshot remains in the durable operation.
         value = result[0] if isinstance(result, tuple) else result
