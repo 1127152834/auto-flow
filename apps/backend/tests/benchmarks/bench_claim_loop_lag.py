@@ -11,6 +11,7 @@ import tempfile
 import time
 from pathlib import Path
 
+from autoflow.domain.project_runs.input_selection import candidate_page_sizes
 from autoflow.infrastructure.database.project_claims import SqlAlchemyProjectInputGroups
 from autoflow.infrastructure.observability import LoopLagMonitor
 
@@ -27,7 +28,10 @@ async def _run(rows: int, threaded: bool) -> dict[str, tuple[float, Unit]]:
 
         def claim() -> str:
             with factory() as session:
-                return SqlAlchemyProjectInputGroups(session).select_required(project_id, plan).status
+                # The scheduler's candidate page for a batch with concurrency 2 (M3 R3-02).
+                return SqlAlchemyProjectInputGroups(session).select_required(
+                    project_id, plan, candidate_page_sizes=candidate_page_sizes(plan, 2)
+                ).status
 
         monitor = LoopLagMonitor(interval=HEARTBEAT_SECONDS)
         await monitor.start()

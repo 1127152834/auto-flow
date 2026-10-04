@@ -50,6 +50,10 @@ def _without_partial_secret(line: str, secrets: Iterable[str]) -> str:
 WorkerStatus = Literal["succeeded", "failed", "cancelled", "timed_out"]
 
 
+# Remediation M3 R3-04: workers are started with v2 (event batches); every command they receive must
+# carry the same version or the worker ignores it. v1 messages from older workers are still read.
+WORKER_PROTOCOL_VERSION = 2
+
 class WorkflowWorkerError(Exception):
     def __init__(self, code: str, message: str, details: dict[str, Any] | None = None) -> None:
         super().__init__(message)
@@ -100,6 +104,8 @@ def project_workflow_worker_command() -> tuple[str, ...]:
 class ProjectWorkflowWorkerManager:
     """Run-owned browser workers; a commit callback gates every event ACK."""
 
+    supports_event_batches = True
+
     def __init__(
         self, temp_dir: Path, *, command: tuple[str, ...] | None = None,
         worker_env: dict[str, str] | None = None, start_timeout: float = 90,
@@ -146,6 +152,7 @@ class ProjectWorkflowWorkerManager:
         variables: dict[str, Any], browser: dict[str, Any], executable: Path | None,
         on_event: Callable[[dict[str, Any]], Awaitable[None]],
         model_bindings: list[dict[str, Any]] | None = None,
+        on_events: Callable[[list[dict[str, Any]]], Awaitable[None]] | None = None,
     ) -> WorkerOutcome:
         if str(UUID(run_id)) != run_id or execution_generation < 1:
             raise _protocol_error()
@@ -170,6 +177,7 @@ class ProjectWorkflowWorkerManager:
                     lambda response: self._send(worker, response),
                     lambda: self._workers.get(run_id) is worker and not worker.stop_requested and worker.cleanup is None,
                     execution_generation,
+                    WORKER_PROTOCOL_VERSION,
                 )
         try:
             worker.directory.mkdir(parents=True, exist_ok=False)
@@ -214,13 +222,13 @@ class ProjectWorkflowWorkerManager:
             self._capture_birth(worker)
             await self._attach_job(worker, job_name)
             await self._send(worker, {
-                "type": "start", "protocolVersion": 1, "runId": run_id,
+                "type": "start", "protocolVersion": WORKER_PROTOCOL_VERSION, "runId": run_id,
                 "executionGeneration": execution_generation,
                 "executionPlan": execution_plan, "parameters": parameters,
                 "variables": variables, "browser": browser,
                 "modelBindings": model_bindings or [],
             })
-            outcome = await self._exchange(worker, on_event)
+            outcome = await self._exchange(worker, on_event, on_events)
             assert worker.process is not None and worker.process.stdin is not None
             # No more commands follow the terminal envelope. Release the worker's
             # sole stdin reader before waiting for interpreter/process shutdown.
@@ -343,6 +351,7 @@ class ProjectWorkflowWorkerManager:
     async def _exchange(
         self, worker: _Worker,
         on_event: Callable[[dict[str, Any]], Awaitable[None]],
+        on_events: Callable[[list[dict[str, Any]]], Awaitable[None]] | None = None,
     ) -> WorkerOutcome:
         while True:
             message = (
@@ -365,14 +374,30 @@ class ProjectWorkflowWorkerManager:
                     raise _protocol_error()
                 worker.proxy_requests.receive(message)
                 continue
-            if message.get("type") == "event":
-                event = message.get("event")
-                if (not isinstance(event, dict) or type(event.get("executionGeneration")) is not int
-                    or event.get("runId") != worker.run_id
-                    or event.get("executionGeneration") != worker.generation
-                    or not isinstance(event.get("eventId"), str) or not event["eventId"]
-                    or "sequence" in event):
+            if message.get("type") == "eventBatch":
+                # Remediation M3 R3-04: process events committed together, one ACK for the batch.
+                events = message.get("events")
+                batch_id = message.get("batchId")
+                if (message.get("protocolVersion") != 2 or not isinstance(batch_id, str) or not batch_id
+                        or not isinstance(events, list) or not events or len(events) > 1000):
                     raise _protocol_error()
+                for event in events:
+                    self._check_event(worker, event)
+                if on_events is not None:
+                    await on_events(events)
+                else:
+                    for event in events:
+                        await on_event(event)
+                if worker.proxy_requests is not None:
+                    for event in events:
+                        worker.proxy_requests.observe(event)
+                await self._send(worker, {
+                    "type": "events_committed", "batchId": batch_id,
+                    "executionGeneration": worker.generation,
+                })
+                continue
+            if message.get("type") == "event":
+                event = self._check_event(worker, message.get("event"))
                 await on_event(event)
                 if worker.proxy_requests is not None:
                     worker.proxy_requests.observe(event)
@@ -405,7 +430,7 @@ class ProjectWorkflowWorkerManager:
                     raise _protocol_error()
                 value = await self._read_credential(worker, name, field_name)
                 await self._send(worker, {
-                    "type": "credential:result", "protocolVersion": 1,
+                    "type": "credential:result", "protocolVersion": WORKER_PROTOCOL_VERSION,
                     "runId": worker.run_id, "executionGeneration": worker.generation,
                     "requestId": request_id, "value": value,
                 })
@@ -432,6 +457,16 @@ class ProjectWorkflowWorkerManager:
                 raise WorkflowWorkerError("WORKFLOW_CLEANUP_FAILED", "执行进程未确认完成，需核验清理结果")
             else:
                 raise _protocol_error()
+
+    @staticmethod
+    def _check_event(worker: _Worker, event: Any) -> dict[str, Any]:
+        if (not isinstance(event, dict) or type(event.get("executionGeneration")) is not int
+            or event.get("runId") != worker.run_id
+            or event.get("executionGeneration") != worker.generation
+            or not isinstance(event.get("eventId"), str) or not event["eventId"]
+            or "sequence" in event):
+            raise _protocol_error()
+        return event
 
     async def _capability_while_alive(self, worker: _Worker, message: dict[str, Any]) -> Any:
         assert self._on_capability is not None and worker.process is not None
@@ -462,7 +497,7 @@ class ProjectWorkflowWorkerManager:
             raise _protocol_error() from None
         if (not isinstance(value, dict) or type(value.get("protocolVersion")) is not int
             or type(value.get("executionGeneration")) is not int
-            or value.get("protocolVersion") != 1
+            or value.get("protocolVersion") not in {1, 2}
             or value.get("runId") != worker.run_id
             or value.get("executionGeneration") != worker.generation):
             raise _protocol_error()
@@ -534,7 +569,7 @@ class ProjectWorkflowWorkerManager:
             or not isinstance(command.get("commandId"), str) or not command["commandId"]
             or not isinstance(command.get("requestId"), str) or not command["requestId"]):
             raise _protocol_error()
-        await self._send(worker, {**command, "protocolVersion": 1, "runId": run_id,
+        await self._send(worker, {**command, "protocolVersion": WORKER_PROTOCOL_VERSION, "runId": run_id,
                                   "executionGeneration": execution_generation})
 
     async def _send_stop(self, worker: _Worker) -> None:

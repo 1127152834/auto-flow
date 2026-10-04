@@ -16,6 +16,7 @@ class CredentialReader(Protocol):
 _CREDENTIAL_REFERENCE = re.compile(
     r"\{\{\s*(?:cred|凭据)\s*[:：]\s*([^{}]+?)\s*\}\}"
 )
+CREDENTIAL_REFERENCE = _CREDENTIAL_REFERENCE  # public name for callers outside this module
 _VARIABLE_NAME = r"(?:[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}|[a-zA-Z_\u4e00-\u9fa5][a-zA-Z0-9_\u4e00-\u9fa5]*)"
 _VARIABLE_ACCESS_PATH = re.compile(rf"^({_VARIABLE_NAME})((?:\[[^\]]+\])*)$")
 _VARIABLE_REFERENCE = re.compile(

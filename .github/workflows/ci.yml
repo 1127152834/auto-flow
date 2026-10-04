@@ -144,6 +144,8 @@ jobs:
           uv run --directory apps/backend python -m tests.benchmarks.bench_claims --rows 100000 --budget-ms 20
           uv run --directory apps/backend python -m tests.benchmarks.bench_runtime_overhead --iterations 1000
           uv run --directory apps/backend python -m tests.benchmarks.bench_event_commit --events 1000
+          # Remediation M3 AC3-03: G4 through the real worker process and event persistence.
+          uv run --directory apps/backend python -m tests.benchmarks.bench_worker_overhead --iterations 1000
       - uses: actions/upload-artifact@v4
         if: always()
         with:

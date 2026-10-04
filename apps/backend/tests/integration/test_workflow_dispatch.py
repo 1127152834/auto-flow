@@ -231,13 +231,23 @@ async def test_stopping_event_is_acked_until_force_revokes_generation(runtime):
     run, _ = create_queued_run(runtime)
     release = asyncio.Event()
     worker = SyntheticWorker(blocked=release)
+
+    async def ignore_graceful_stop(run_id):
+        # A worker that keeps running after the graceful request; only force ends it.
+        worker.stop_calls.append(run_id)
+
+    worker.stop = ignore_graceful_stop
     dispatcher = make_dispatcher(
         runtime, worker, SyntheticResources(), now=lambda: NOW
     )
     running = await dispatcher.dispatch(
         run.run_id, expected_status_revision=1, execution_generation=0
     )
-    await asyncio.sleep(0)
+    # Event commits now run off the loop (M3 rule 3): wait until the worker's first event is in.
+    for _ in range(200):
+        if worker.calls and dispatcher.query_run(run.run_id).last_sequence > running.last_sequence:
+            break
+        await asyncio.sleep(0.01)
     stopping = await dispatcher.cancel(
         run.run_id,
         expected_status_revision=running.status_revision,

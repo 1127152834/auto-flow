@@ -619,6 +619,9 @@ class WorkflowRunDispatcher:
                             on_event=lambda event: self._commit_event(
                                 current, content, event
                             ),
+                            # Remediation M3 R3-04: batch-capable workers commit process events together.
+                            **({"on_events": lambda events: self._commit_events(current, content, events)}
+                               if getattr(self._worker, "supports_event_batches", False) else {}),
                             model_bindings=model_bindings,
                         )
                 except TimeoutError:
@@ -848,13 +851,34 @@ class WorkflowRunDispatcher:
     async def _commit_event(
         self, run: CoreRun, content: Any, event: dict[str, Any]
     ) -> None:
+        await self._commit_events(run, content, [event])
+
+    async def _commit_events(
+        self, run: CoreRun, content: Any, events: list[dict[str, Any]]
+    ) -> None:
+        """Commit events in one transaction off the event loop; returning is the worker's ACK.
+
+        Remediation M3 R3-04 / rule 3: process-event batches share a commit, and SQLite work no
+        longer blocks the loop. Event identities keep replays idempotent.
+        """
+        try:
+            observed = await asyncio.to_thread(self._persist_events, run, content, events)
+        except Exception:
+            for event in events:
+                self._discard_uncommitted_artifact(run, event)
+            raise
+        for event in observed:
+            self.interactions.observe(event)
+
+    def _persist_events(
+        self, run: CoreRun, content: Any, events: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
         current = self._get_run(run.run_id)
         if (
             current.execution_generation != run.execution_generation
             or current.status not in {"running", "finishing", "stopping"}
         ):
             raise WorkflowRuntimeError("EXECUTION_GENERATION_REVOKED", "执行代次已失效")
-        node_id = event.get("nodeId")
         known = set(content.execution_plan.get("orderedNodeIds", ()))
         for snapshot in content.execution_plan.get("customModuleDependencies", {}).values():
             if isinstance(snapshot, Mapping) and isinstance(snapshot.get("workflow"), Mapping):
@@ -868,20 +892,30 @@ class WorkflowRunDispatcher:
                     node["id"] for node in snapshot.get("nodes", ())
                     if isinstance(node, Mapping) and isinstance(node.get("id"), str)
                 )
-        if node_id is not None and node_id not in known:
-            raise WorkflowRuntimeError("RUN_EVENT_NODE_UNKNOWN", "事件引用了未知节点")
-        value = self.interactions.public_event(dict(event))
-        value.pop("sequence", None)
-        try:
-            with self._sessions() as session:
-                persisted = SqlAlchemyWorkflowRuntimeRepository(session).append_event(value)
-                self.interactions.confirm(session, value)
-                session.commit()  # returning is the worker manager's ACK boundary
-            if persisted.sequence > current.last_sequence:
-                self.interactions.observe(event)
-        except Exception:
-            self._discard_uncommitted_artifact(run, event)
-            raise
+        for event in events:
+            node_id = event.get("nodeId")
+            if node_id is not None and node_id not in known:
+                raise WorkflowRuntimeError("RUN_EVENT_NODE_UNKNOWN", "事件引用了未知节点")
+        values = []
+        for event in events:
+            value = self.interactions.public_event(dict(event))
+            value.pop("sequence", None)
+            values.append(value)
+        for attempt in range(5):
+            try:
+                with self._sessions() as session:
+                    repository = SqlAlchemyWorkflowRuntimeRepository(session)
+                    persisted = repository.append_events(values) if len(values) > 1 else [repository.append_event(values[0])]
+                    for value in values:
+                        self.interactions.confirm(session, value)
+                    session.commit()  # returning is the worker manager's ACK boundary
+                break
+            except WorkflowRuntimeError as error:
+                # Off the loop, an event commit can race a status change on the loop thread;
+                # the sequence CAS fails cleanly and the same identities are retried.
+                if error.code != "RUN_EVENT_SEQUENCE_CONFLICT" or attempt == 4:
+                    raise
+        return [event for event, stored in zip(events, persisted, strict=True) if stored.sequence > current.last_sequence]
 
     def _discard_uncommitted_artifact(
         self, run: CoreRun, event: dict[str, Any]

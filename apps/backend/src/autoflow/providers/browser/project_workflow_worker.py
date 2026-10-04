@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import hashlib
 import json
 import os
@@ -15,6 +16,7 @@ from uuid import uuid4
 
 from autoflow.application.workflows.runtime import WorkflowRuntime
 from autoflow.domain.project_runs.worker_commands import project_command_id
+from autoflow.domain.workflows.variables import CREDENTIAL_REFERENCE
 from autoflow.infrastructure.filesystem.project_workflow_artifacts import (
     ProjectArtifactWriter,
 )
@@ -32,6 +34,10 @@ from autoflow.providers.integrations.gateway import WorkflowIntegrationGateway
 from autoflow.providers.model import WorkflowModelGateway
 
 PROTOCOL_VERSION = 1
+# Remediation M3 R3-04: v2 adds eventBatch for process events; v1 workers stay supported one version.
+SUPPORTED_PROTOCOL_VERSIONS = frozenset({1, 2})
+BATCH_MAX_EVENTS = 100
+BATCH_MAX_SECONDS = 0.2
 MAX_JSONL_BYTES = 1024 * 1024
 MAX_EVENT_JSONL_BYTES = 16 * 1024 * 1024
 MAX_SCREENSHOT_BYTES = 20 * 1024 * 1024
@@ -66,6 +72,10 @@ class _Input:
         self.messages: queue.Queue[dict[str, Any] | BaseException] = queue.Queue()
         self.credentials: _WorkerCredentialReader | None = None
         self.generation: int | None = None
+        # Remediation M3 R3-06: the reader thread wakes the loop instead of a 10 ms poll
+        # (about 15.6 ms on Windows timers), which every ACK used to wait for.
+        self._loop: asyncio.AbstractEventLoop | None = None
+        self._arrived: asyncio.Event | None = None
 
     def first(self) -> dict[str, Any]:
         return _read_jsonl(self.stdin)
@@ -86,20 +96,40 @@ class _Input:
                     if message.get("type") == "stop":
                         self.credentials.close()
                 self.messages.put(message)
+                self._wake()
         except BaseException as exc:  # noqa: BLE001
             if self.credentials is not None:
                 self.credentials.close()
             self.messages.put(exc)
+            self._wake()
+
+    def _wake(self) -> None:
+        loop, arrived = self._loop, self._arrived
+        if loop is not None and arrived is not None:
+            try:
+                loop.call_soon_threadsafe(arrived.set)
+            except RuntimeError:  # the loop already closed during shutdown
+                pass
 
     async def next(self) -> dict[str, Any]:
         # The stdin reader remains the only blocking thread. Cancelling a
         # to_thread(queue.get) would leave an abandoned consumer stealing ACKs.
+        if self._arrived is None:
+            self._arrived = asyncio.Event()
+            self._loop = asyncio.get_running_loop()
         while True:
             try:
                 item = self.messages.get_nowait()
                 break
             except queue.Empty:
-                await asyncio.sleep(0.01)
+                self._arrived.clear()
+                try:  # re-check after clearing so a message put in between is not missed
+                    item = self.messages.get_nowait()
+                    break
+                except queue.Empty:
+                    # Woken by the reader thread; the timeout is only a safety net for a missed wake.
+                    with contextlib.suppress(TimeoutError):
+                        await asyncio.wait_for(self._arrived.wait(), 0.05)
         if isinstance(item, BaseException):
             raise ProtocolFailure from item
         return item
@@ -119,6 +149,7 @@ class _Control:
         self.failure: ProtocolFailure | None = None
         self.pending: dict[str, asyncio.Future[None]] = {}
         self.capabilities: dict[str, asyncio.Future[dict[str, Any]]] = {}
+        self.batches: dict[str, asyncio.Future[None]] = {}
 
     @property
     def cancelled(self) -> bool:
@@ -146,6 +177,14 @@ class _Control:
                     if not capability_waiter.done():
                         capability_waiter.set_result(message)
                     continue
+                if message.get("type") == "events_committed":
+                    batch_id = message.get("batchId")
+                    if batch_id not in self.batches:
+                        raise ProtocolFailure
+                    batch_waiter = self.batches.pop(batch_id)
+                    if not batch_waiter.done():
+                        batch_waiter.set_result(None)
+                    continue
                 event_id = message.get("eventId")
                 if message.get("type") != "event_committed" or event_id not in self.pending:
                     raise ProtocolFailure
@@ -156,10 +195,11 @@ class _Control:
             raise
         except Exception as error:  # noqa: BLE001 -- EOF and invalid control fail closed.
             self.failure = error if isinstance(error, ProtocolFailure) else ProtocolFailure()
-            for waiter in self.pending.values():
+            for waiter in [*self.pending.values(), *self.batches.values()]:
                 if not waiter.done():
                     waiter.set_result(None)
             self.pending.clear()
+            self.batches.clear()
             for capability_waiter in self.capabilities.values():
                 if not capability_waiter.done():
                     capability_waiter.set_exception(self.failure)
@@ -182,7 +222,7 @@ def run_worker(stopped: Event, stdin: TextIO = sys.stdin, stdout: TextIO = sys.s
         input_stream.generation = generation
         input_stream.credentials = _WorkerCredentialReader(
             stopped, stdout, run_id,
-            protocol_metadata={"protocolVersion": PROTOCOL_VERSION, "executionGeneration": generation},
+            protocol_metadata={"protocolVersion": command["protocolVersion"], "executionGeneration": generation},
         )
         input_stream.start()
         return asyncio.run(_run(command, stopped, input_stream, stdout))
@@ -225,7 +265,7 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
     relay_context = ExitStack()
     command_bus = _WorkerCommandBus(
         asyncio.get_running_loop(), stopped, stdout, command,
-        protocol_metadata={"protocolVersion": PROTOCOL_VERSION, "executionGeneration": generation},
+        protocol_metadata={"protocolVersion": command["protocolVersion"], "executionGeneration": generation},
     )
     if isinstance(incoming, _Input) and incoming.credentials is not None:
         command_bus.credentials = incoming.credentials
@@ -236,13 +276,63 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
     relay_guard = _CleanupGuard(relay_context)
     exchange_lock = asyncio.Lock()
 
-    async def send_event(kind: str, node_id: str, visit: str, payload: dict[str, object]) -> None:
-        event_id = uuid4().hex
-        event = {
-            "eventId": event_id, "runId": run_id, "executionGeneration": generation,
+    batching = command["protocolVersion"] >= 2
+    buffered: list[dict[str, Any]] = []
+    side_effects: dict[str, object] = {}
+    # Nodes whose start may be buffered: known here, and not reading credentials (a credential is
+    # only released after the node's start is committed). Unknown (e.g. nested) nodes stay synchronous.
+    plain_nodes = {
+        str(node.get("id")) for node in document.get("nodes", [])
+        if isinstance(node, dict) and not CREDENTIAL_REFERENCE.search(json.dumps(node.get("data", {}), ensure_ascii=False))
+    }
+
+    def make_event(kind: str, node_id: str, visit: str, payload: dict[str, object]) -> dict[str, Any]:
+        return {
+            "eventId": uuid4().hex, "runId": run_id, "executionGeneration": generation,
             "kind": kind, "nodeId": node_id, "nodeVisitId": visit, "attempt": 1,
             "occurredAt": datetime.now(UTC).isoformat().replace("+00:00", "Z"), "payload": payload,
         }
+
+    def deferrable(kind: str, node_id: str, visit: str, payload: dict[str, object]) -> bool:
+        """Process events may wait in a batch; state events are committed and ACKed one by one.
+
+        A node that may act outside the run keeps its attempt facts synchronous: they are the
+        replay gate before its action (R2-10). Artifacts and interactions are state too.
+        """
+        if kind == "nodeAttempt":
+            if payload.get("status") == "started":
+                side_effects[visit] = payload.get("sideEffect") if node_id in plain_nodes else "unknown"
+            return side_effects.get(visit) == "none"
+        return kind in {"log", "output"}
+
+    async def flush() -> None:
+        """Send buffered process events as one batch and wait for its single ACK (caller holds the lock)."""
+        if not buffered:
+            return
+        events = list(buffered)
+        buffered.clear()
+        message = _envelope(command, "eventBatch", batchId=uuid4().hex, events=events)
+        if _jsonl_size(message) > MAX_EVENT_JSONL_BYTES:
+            # Too large together: fall back to one ACKed event at a time (each still size-checked).
+            for event in events:
+                await send_event(event)
+            return
+        control.check_parent()
+        waiter = asyncio.get_running_loop().create_future()
+        control.batches[cast(str, message["batchId"])] = waiter
+        _write(stdout, message)
+        await asyncio.shield(waiter)
+        control.check_parent()
+
+    async def flush_periodically() -> None:
+        while True:
+            await asyncio.sleep(BATCH_MAX_SECONDS)
+            if buffered:
+                async with exchange_lock:
+                    await flush()
+
+    async def send_event(event: dict[str, Any]) -> None:
+        event_id = event["eventId"]
         message = _envelope(command, "event", event=event)
         output_too_large = _jsonl_size(message) > MAX_EVENT_JSONL_BYTES
         if output_too_large:
@@ -268,13 +358,22 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
 
     async def emit(kind: str, node_id: str, visit: str, payload: dict[str, object]) -> None:
         async with exchange_lock:
-            await send_event(kind, node_id, visit, payload)
+            event = make_event(kind, node_id, visit, payload)
+            if batching and deferrable(kind, node_id, visit, payload):
+                buffered.append(event)
+                if len(buffered) >= BATCH_MAX_EVENTS:
+                    await flush()
+                return
+            # A state event never overtakes earlier process events.
+            await flush()
+            await send_event(event)
 
     async def capability(node_id: str, visit: str, operation: str, arguments: dict[str, Any]) -> dict[str, Any]:
         command_id = project_command_id(run_id, generation, visit)
         async with exchange_lock:
             if control.cancelled:
                 raise asyncio.CancelledError
+            await flush()
             closed = False
             if operation in {'end', 'manualComplete'}:
                 if context is not None:
@@ -420,7 +519,16 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
 
                     proxy_probe=relay.probe if relay is not None else None,
                 )
-                result = await executor.run(command["executionPlan"])
+                flusher = asyncio.create_task(flush_periodically()) if batching else None
+                try:
+                    result = await executor.run(command["executionPlan"])
+                finally:
+                    if flusher is not None:
+                        flusher.cancel()
+                        await asyncio.gather(flusher, return_exceptions=True)
+                # Every buffered process event is committed before the terminal envelope.
+                async with exchange_lock:
+                    await flush()
                 control.check_parent()
     except asyncio.CancelledError:
         if control.failure is not None:
@@ -463,7 +571,7 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
 
 
 def _validate_start(command: dict[str, Any]) -> tuple[str, int]:
-    if command.get("type") != "start" or command.get("protocolVersion") != PROTOCOL_VERSION:
+    if command.get("type") != "start" or command.get("protocolVersion") not in SUPPORTED_PROTOCOL_VERSIONS:
         raise ProtocolFailure
     run_id, generation = command.get("runId"), command.get("executionGeneration")
     if not isinstance(run_id, str) or not run_id or type(generation) is not int:
@@ -568,7 +676,7 @@ def _artifact_directory(command: dict[str, Any]) -> tuple[Path, PurePosixPath]:
 
 
 def _envelope(command: dict[str, Any], kind: str, **values: object) -> dict[str, object]:
-    return {"type": kind, "protocolVersion": PROTOCOL_VERSION, "runId": command["runId"], "executionGeneration": command["executionGeneration"], **values}
+    return {"type": kind, "protocolVersion": command["protocolVersion"], "runId": command["runId"], "executionGeneration": command["executionGeneration"], **values}
 
 
 def _read_jsonl(stdin: TextIO) -> dict[str, Any]:

@@ -15,9 +15,12 @@ class ProxyWorkerRequests:
         send,
         alive,
         generation: int = 0,
+        protocol_version: int = 1,
     ):
         self.service, self.owner, self.send, self.alive = service, owner, send, alive
         self.generation = generation
+        # Replies carry the version the worker was started with, or it ignores them.
+        self.protocol_version = protocol_version
         self.nodes: dict[str, set[str]] = {}
         self.visits: set[tuple[str, str]] = set()
         self.tasks: dict[str, asyncio.Task] = {}
@@ -125,7 +128,7 @@ class ProxyWorkerRequests:
                 }
                 if self.generation:
                     response.update(
-                        protocolVersion=1, executionGeneration=self.generation
+                        protocolVersion=self.protocol_version, executionGeneration=self.generation
                     )
                 self.receipts[request_id] = (dict(payload), response)
             if active():
@@ -143,7 +146,7 @@ class ProxyWorkerRequests:
                             "protocolError": True,
                             **(
                                 {
-                                    "protocolVersion": 1,
+                                    "protocolVersion": self.protocol_version,
                                     "executionGeneration": self.generation,
                                 }
                                 if self.generation

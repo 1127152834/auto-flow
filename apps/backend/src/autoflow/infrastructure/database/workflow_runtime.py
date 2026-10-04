@@ -393,6 +393,85 @@ class SqlAlchemyWorkflowRuntimeRepository:
         self._session.expire(row)
         return event
 
+    def append_events(self, values: list[dict[str, Any]]) -> list[RunEvent]:
+        """Append a batch of process events with one sequence CAS (remediation M3 R3-04).
+
+        Same facts as calling ``append_event`` per value: already stored identities are returned
+        (and must match), new ones get consecutive sequences. Artifacts keep the single path,
+        which also records their artifact rows.
+        """
+        if not values or any(value.get("kind") == "artifact" or "sequence" in value for value in values):
+            return [self.append_event(value) for value in values]
+        run_id = str(values[0]["runId"])
+        if any(str(value["runId"]) != run_id for value in values):
+            raise WorkflowRuntimeError("RUN_EVENT_CONFLICT", "批量事件属于不同运行")
+        ids = [str(value["eventId"]) for value in values]
+        existing = {
+            row.event_id: _event(row)
+            for row in self._session.scalars(
+                select(WorkflowRunEventRow).where(WorkflowRunEventRow.run_id == run_id, WorkflowRunEventRow.event_id.in_(ids))
+            )
+        }
+        row = self._session.get(WorkflowRunRow, run_id)
+        if row is None:
+            raise WorkflowRuntimeError("RUN_NOT_FOUND", "运行不存在", 404)
+        self._session.refresh(row)
+        previous_sequence = row.last_sequence
+        assigned = previous_sequence
+        results: list[RunEvent] = []
+        fresh: list[RunEvent] = []
+        seen: set[str] = set()
+        for value in values:
+            event_id = str(value["eventId"])
+            if event_id in existing:
+                stored = existing[event_id]
+                if event_identity_digest(stored) != _event_dict_digest(value, assigned_sequence=stored.sequence):
+                    raise WorkflowRuntimeError("RUN_EVENT_CONFLICT", "事件身份已用于另一内容")
+                results.append(stored)
+                continue
+            if event_id in seen:
+                raise WorkflowRuntimeError("RUN_EVENT_CONFLICT", "同一批次重复的事件身份")
+            seen.add(event_id)
+            assigned += 1
+            event = _event_from_value(value, assigned_sequence=assigned)
+            fresh.append(event)
+            results.append(event)
+        if not fresh:
+            return results
+        generation = fresh[0].execution_generation
+        if any(event.execution_generation != generation for event in fresh):
+            raise WorkflowRuntimeError("EXECUTION_GENERATION_REVOKED", "执行代次已失效")
+        try:
+            self._ensure_physical_transaction()
+            with self._session.begin_nested():
+                result = self._session.execute(
+                    update(WorkflowRunRow)
+                    .where(
+                        WorkflowRunRow.id == run_id,
+                        WorkflowRunRow.execution_generation == generation,
+                        WorkflowRunRow.last_sequence == previous_sequence,
+                    )
+                    .values(last_sequence=assigned)
+                    .execution_options(synchronize_session=False)
+                )
+                if getattr(result, "rowcount", 0) != 1:
+                    raise _EventAppendRace
+                self._session.add_all([_event_row(event) for event in fresh])
+                self._session.flush()
+        except OperationalError as error:
+            if not _is_sqlite_contention(error):
+                raise
+            self._session.expire_all()
+            raise WorkflowRuntimeError("RUN_EVENT_SEQUENCE_CONFLICT", "运行事件序号正在由另一写入分配") from error
+        except (IntegrityError, _EventAppendRace):
+            self._session.expire_all()
+            current = self._session.get(WorkflowRunRow, run_id)
+            if current is not None and current.execution_generation != generation:
+                raise WorkflowRuntimeError("EXECUTION_GENERATION_REVOKED", "执行代次已失效") from None
+            raise WorkflowRuntimeError("RUN_EVENT_SEQUENCE_CONFLICT", "另一事件已占用当前运行序号") from None
+        self._session.expire(row)
+        return results
+
     def _ensure_physical_transaction(self) -> None:
         connection = self._session.connection()
         if connection.dialect.name != "sqlite":
