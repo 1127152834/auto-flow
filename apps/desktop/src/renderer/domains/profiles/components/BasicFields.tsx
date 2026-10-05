@@ -8,7 +8,7 @@ export function BasicFields() {
   return <section aria-labelledby="profile-basic-fields" className="grid gap-5">
     <div>
       <h2 id="profile-basic-fields" className="m-0 text-lg font-semibold text-ink">基础信息</h2>
-      <p className="mb-0 mt-1 text-sm text-muted">名称用于识别配置；指纹种子由 AutoFlow 维护。</p>
+      <p className="mb-0 mt-1 text-sm text-muted">名称用于识别配置；指纹种子由 AutoFlow 维护。按身份运行的任务改用身份自己的指纹，这里的设置作为模板。</p>
     </div>
     <div className="grid gap-4 sm:grid-cols-2">
       <FormField label="名称" htmlFor="profile-name" error={errors.name?.message}>
