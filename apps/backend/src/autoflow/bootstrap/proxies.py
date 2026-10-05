@@ -1,3 +1,4 @@
+import asyncio
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from functools import cached_property
@@ -17,6 +18,8 @@ from autoflow.application.proxies.groups import ResolveProxyForProfile
 from autoflow.application.proxies.remote_controls import ProxyRemoteControls
 from autoflow.application.proxies.workflow import WorkflowProxyService
 from autoflow.bootstrap.http_routes import ProxyHttpServices, register_proxy_routes
+from autoflow.domain.identities.proxy_binding import Member, choose_member
+from autoflow.domain.identities.proxy_binding import bind as bind_member
 from autoflow.domain.profiles.errors import (
     ProxyUnavailable,
 )
@@ -24,6 +27,7 @@ from autoflow.domain.profiles.models import Profile, ProfileBrowserProxy
 from autoflow.domain.projects.ports import ProjectResourceReferences
 from autoflow.domain.proxies.errors import ProxyError
 from autoflow.infrastructure.credentials.system import SystemCredentialStore
+from autoflow.infrastructure.database.identities import SqlAlchemyIdentities
 from autoflow.infrastructure.database.proxies import (
     SqlAlchemyProxyUnitOfWork,
 )
@@ -97,14 +101,41 @@ def configure_proxy_management(
     register_proxy_routes(app, ProxyHttpServices(application, remote, resolve))
     configure_proxy_validation(app)
 
+    identities = SqlAlchemyIdentities(session_factory)
+
+    def sticky_member(identity_id: str, pool_id: str) -> Any:
+        """Remediation M4 R4-04: the identity's own pool member, bound on first use."""
+        for _attempt in range(4):
+            binding = identities.proxy_binding(identity_id)
+            with SqlAlchemyProxyUnitOfWork(session_factory) as uow:
+                candidates = uow.repository.list_group_candidates(pool_id)
+            members = [
+                Member(item.id, item.region, item.credential_available and item.health.state != "unhealthy")
+                for item in candidates
+            ]
+            choice = choose_member(binding, pool_id, members)
+            if choice.outcome in {"confirm", "unavailable"} or choice.member_id is None:
+                raise ProxyUnavailable(choice.reason or "身份的代理不可用")
+            chosen = next(item for item in candidates if item.id == choice.member_id)
+            if choice.outcome in {"bind", "replace"}:
+                member = next(item for item in members if item.member_id == chosen.id)
+                if not identities.swap_proxy_binding(identity_id, binding, bind_member(pool_id, member, binding)):
+                    continue  # another run bound it first; use what it stored
+            return chosen
+        raise ProxyUnavailable("身份的代理绑定频繁变化，请重试")
+
     async def resolve_profile(
-        profile: Profile, request_id: str
+        profile: Profile, request_id: str, identity_id: str | None = None,
     ) -> ProfileBrowserProxy | None:
         spec = profile.spec
         if spec.proxy_mode == "none":
             return None
         try:
-            if spec.proxy_mode == "pool":
+            if spec.proxy_mode == "pool" and identity_id is not None:
+                if spec.proxy_pool_id is None:
+                    raise ProxyUnavailable
+                projection = await asyncio.to_thread(sticky_member, identity_id, spec.proxy_pool_id)
+            elif spec.proxy_mode == "pool":
                 if spec.proxy_pool_id is None:
                     raise ProxyUnavailable
                 projection = await ResolveProxyForProfile(

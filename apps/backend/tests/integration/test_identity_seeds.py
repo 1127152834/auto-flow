@@ -84,3 +84,26 @@ def test_launch_accepts_the_identity_seed_range():
     assert f"--fingerprint={SEED_MAX}" in browser_launch_options({**base, "fingerprintSeed": SEED_MAX}, headless=True)["args"]
     with pytest.raises(ValueError):
         browser_launch_options({**base, "fingerprintSeed": SEED_MAX + 1}, headless=True)
+
+
+def test_concurrent_first_runs_bind_the_proxy_member_once(identities):
+    identity = identities.create(PROJECT, "代理账号")
+    results: list[bool] = []
+    lock = threading.Lock()
+
+    def bind(member: str) -> None:
+        stored = identities.swap_proxy_binding(identity.identity_id, None, {"poolId": "p", "memberId": member, "region": "上海", "policy": "sameRegion"})
+        with lock:
+            results.append(stored)
+
+    threads = [threading.Thread(target=bind, args=(f"m{index}",)) for index in range(6)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+    assert results.count(True) == 1
+    stored = identities.proxy_binding(identity.identity_id)
+    assert stored["poolId"] == "p" and stored["memberId"].startswith("m")
+    # Replacing needs the binding the caller saw; a stale view is refused.
+    assert not identities.swap_proxy_binding(identity.identity_id, None, {"poolId": "p", "memberId": "late"})
+    assert identities.swap_proxy_binding(identity.identity_id, stored, {**stored, "memberId": "next"})

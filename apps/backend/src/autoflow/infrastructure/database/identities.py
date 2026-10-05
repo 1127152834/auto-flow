@@ -165,6 +165,26 @@ class SqlAlchemyIdentities:
             session.delete(row)
             session.commit()
 
+    def proxy_binding(self, identity_id: str) -> dict[str, Any] | None:
+        with self._factory() as session:
+            row = session.get(IdentityRow, identity_id)
+            if row is None:
+                raise ProjectError("IDENTITY_NOT_FOUND", "身份不存在", 404)
+            return dict(row.proxy_binding) if row.proxy_binding else None
+
+    def swap_proxy_binding(self, identity_id: str, expected: dict[str, Any] | None, binding: dict[str, Any]) -> bool:
+        """Store a binding only if nobody changed it meanwhile; concurrent first runs bind once."""
+        with self._factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            row = session.get(IdentityRow, identity_id)
+            if row is None:
+                raise ProjectError("IDENTITY_NOT_FOUND", "身份不存在", 404)
+            if (dict(row.proxy_binding) if row.proxy_binding else None) != expected:
+                return False
+            row.proxy_binding, row.updated_at = dict(binding), datetime.now(UTC)
+            session.commit()
+            return True
+
     @staticmethod
     def _row(session: Session, project_id: str, identity_id: str) -> IdentityRow:
         row = session.get(IdentityRow, identity_id)

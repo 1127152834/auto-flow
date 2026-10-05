@@ -14,7 +14,7 @@ from autoflow.domain.environments.identity import (
 )
 from autoflow.domain.kernels.errors import LicenseInvalid
 from autoflow.domain.kernels.models import InstalledKernel, KernelEdition, KernelRef
-from autoflow.domain.profiles.errors import KernelNotInstalled
+from autoflow.domain.profiles.errors import KernelNotInstalled, ProxyUnavailable
 from autoflow.domain.profiles.models import Profile, ProfileBrowserProxy, ProfileSpec
 from autoflow.domain.profiles.ports import ProfileUsageGuard
 from autoflow.domain.workflows.runtime import WorkflowRuntimeError
@@ -53,7 +53,7 @@ class WorkflowBrowserResources:
     def __init__(
         self, profiles: ProfileService,
         installed_kernels: Callable[[], Sequence[InstalledKernel]],
-        resolve_proxy: Callable[[Profile, str], Awaitable[ProfileBrowserProxy | None]],
+        resolve_proxy: Callable[..., Awaitable[ProfileBrowserProxy | None]],
         read_license: Callable[[], str | None], usage_guard: ProfileUsageGuard,
         kernel_guard: Callable[[KernelRef], AbstractContextManager[None]],
         environment_directory: Callable[[str], Path | None] | None = None,
@@ -168,7 +168,17 @@ class WorkflowBrowserResources:
             guards.enter_context(self.guard(profile_id, kernel))
             self._profiles.get(profile_id)  # The frozen source must still exist.
             executable = self._kernel(profile.spec).executable_path
-            proxy = await self._resolve_proxy(profile, run_id)
+            identity = request.get("identity")
+            identity_id = identity.get("identityId") if isinstance(identity, Mapping) else None
+            try:
+                proxy = await (
+                    self._resolve_proxy(profile, run_id, identity_id=identity_id) if identity_id
+                    else self._resolve_proxy(profile, run_id)
+                )
+            except ProxyUnavailable as error:
+                # Rule 2: the identity's proxy reason (e.g. no member in its region) reaches the run.
+                reason = str(error) or "所选代理暂不可用"
+                raise WorkflowRuntimeError("PROXY_UNAVAILABLE", f"代理不可用：{reason}", 409) from error
             if self._release_proxy is not None:
                 guards.callback(self._release_proxy, run_id)
             license_key = self._read_license() if profile.spec.browser_edition == 'licensed' else None
