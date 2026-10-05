@@ -569,7 +569,8 @@ def test_windows_job_verifies_same_process_handle_and_only_live_owner_assigns(mo
     def assign(job, process):
         calls.append(('assign', process, job))
         return True
-    kernel = SimpleNamespace(OpenProcess=lambda *_: 9001, IsProcessInJob=membership, AssignProcessToJobObject=assign, CloseHandle=lambda value: calls.append(('close', value)))
+    kernel = SimpleNamespace(OpenProcess=lambda *_: 9001, IsProcessInJob=membership, AssignProcessToJobObject=assign, CloseHandle=lambda value: calls.append(('close', value)),
+                             QueryInformationJobObject=lambda *_: False)
     def read(_kernel, process):
         calls.append(('birth', process))
         return birth
@@ -634,6 +635,7 @@ def test_windows_job_rechecks_exact_membership_when_parent_and_child_join_race(m
         # The other participant assigned between the first check and this call.
         AssignProcessToJobObject=lambda *_: False,
         CloseHandle=lambda handle: calls.append(('close', handle)),
+        QueryInformationJobObject=lambda *_: False,  # accounting unavailable: no wait for a first member
     )
     monkeypatch.setattr(module, '_api', lambda: kernel)
     monkeypatch.setattr(module, '_windows_handle_birth', lambda *_: 123)

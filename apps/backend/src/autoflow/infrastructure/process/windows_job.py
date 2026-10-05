@@ -113,9 +113,10 @@ def create_worker_job() -> int | None:
         if not kernel.IsProcessInJob(current, handle, ctypes.byref(member)):
             raise OSError("Worker Job membership unavailable")
         # The supervisor may have assigned this same process after our check.
-        if (not member.value and not kernel.AssignProcessToJobObject(handle, current)
-            and (not kernel.IsProcessInJob(current, handle, ctypes.byref(member)) or not member.value)):
-            raise OSError("Worker could not join parent Job")
+        if not member.value and not kernel.AssignProcessToJobObject(handle, current):
+            error = ctypes.get_last_error()
+            if not kernel.IsProcessInJob(current, handle, ctypes.byref(member)) or not member.value:
+                raise OSError(f"Worker could not join parent Job (WinError {error})")
         return int(handle)
     except BaseException:
         kernel.CloseHandle(handle)
@@ -179,6 +180,10 @@ def _verified_process(
         if not member.value:
             if not owned_launcher:
                 raise OSError("Worker process does not own this Job: not a member")
+            # A venv launcher keeps its real interpreter in the launcher's own Job. Once the launcher
+            # sits in this Job, that interpreter can no longer join it (nested-Job rules, WinError 5),
+            # so let the interpreter join first; the launcher's Job then nests under this one.
+            _await_first_member(kernel, job)
             # The worker can win the same membership race in the other direction.
             if (not kernel.AssignProcessToJobObject(job, process)
                 and (not kernel.IsProcessInJob(process, job, ctypes.byref(member)) or not member.value)):
@@ -268,6 +273,24 @@ def cleanup_worker_job(
         if process:
             kernel.CloseHandle(process)
         kernel.CloseHandle(job)
+
+
+def _await_first_member(kernel: Any, job: int, timeout: float = 5.0) -> None:
+    """Wait until some process has joined the Job; give up quietly after ``timeout``."""
+    from ctypes import wintypes
+
+    class Accounting(ctypes.Structure):
+        _fields_ = [("times", ctypes.c_int64 * 4), ("page_faults", wintypes.DWORD),
+                    ("total", wintypes.DWORD), ("active", wintypes.DWORD), ("terminated", wintypes.DWORD)]
+
+    deadline = time.monotonic() + timeout
+    info = Accounting()
+    while time.monotonic() < deadline:
+        if not kernel.QueryInformationJobObject(job, 1, ctypes.byref(info), ctypes.sizeof(info), None):
+            return
+        if info.total:
+            return
+        time.sleep(0.01)
 
 
 def _job_member_handles(kernel: Any, job: int, deadline: float) -> list[int]:
