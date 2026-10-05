@@ -15,6 +15,7 @@ import { createEnvironmentApi, type EnvironmentInstance, type EnvironmentQuery, 
 import { EnvironmentDirectory } from '../components/EnvironmentDirectory'
 import { ManualDirectory } from '../components/ManualDirectory'
 import { ProjectDefaultsPanel } from '../components/ProjectDefaultsPanel'
+import { IdentityDirectory } from '../../identities/IdentityDirectory'
 
 export type EnvironmentWorkspacePageProps = {
   workspaceKey: string
@@ -27,7 +28,7 @@ export type EnvironmentWorkspacePageProps = {
   onNavigate(route: ProjectRoute): void
 }
 
-type View = 'running' | 'manual' | 'saved' | 'defaults'
+type View = 'running' | 'manual' | 'saved' | 'identities' | 'defaults'
 const stamp = (value: number) => new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
 const clock = (value: string | null) => value ? new Intl.DateTimeFormat('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(value)) : '—'
 const minutesLeft = (expiresAt: string | null) => {
@@ -41,6 +42,7 @@ const sections: Record<View, { title: string; note: string }> = {
   running: { title: '当前现场', note: '' },
   manual: { title: '等待人工现场', note: '保留浏览器、输入和租约；现场保留期间仍占用运行容量。' },
   saved: { title: '持久环境', note: '工作流结束节点明确保存的记录，不是正在运行的会话。' },
+  identities: { title: '身份', note: '每个账号一个身份：固定的浏览器指纹、地区和登录状态。' },
   defaults: { title: '新建环境默认设置', note: '设置新建环境使用的模板和代理。' },
 }
 const sorts = [
@@ -117,6 +119,7 @@ function Workspace({ workspaceKey, instanceId, projectId, project, client, disab
     { value: 'running' as View, label: '运行环境', count: running.data ? runningItems.length : null },
     { value: 'manual' as View, label: '等待人工', count: manual.data ? manual.data.total : null },
     { value: 'saved' as View, label: '持久环境', count: saved.data ? saved.data.total : null },
+    { value: 'identities' as View, label: '身份', count: null },
     { value: 'defaults' as View, label: '新建环境默认设置', count: null },
   ]
   const section = sections[view]
@@ -190,6 +193,9 @@ function Workspace({ workspaceKey, instanceId, projectId, project, client, disab
             onRetry={() => void saved.refetch()}
           />
           {saved.data ? <Pagination showPage offset={(saved.data.page - 1) * saved.data.pageSize} limit={saved.data.pageSize} total={saved.data.total} count={saved.data.items.length} disabled={saved.isFetching} onOffsetChange={offset => setQuery(current => ({ ...current, page: Math.floor(offset / current.pageSize) + 1 }))} /> : null}
+        </TabsContent>
+        <TabsContent value="identities">
+          <IdentityDirectory client={client} projectId={projectId} scope={[workspaceKey, instanceId]} disabled={actionsDisabled} />
         </TabsContent>
         <TabsContent value="defaults">
           <ProjectDefaultsPanel key={`${workspaceKey}:${instanceId}:${projectId}`} project={project} client={client} workspaceKey={workspaceKey} instanceId={instanceId} readOnly={readOnly || disabled} />

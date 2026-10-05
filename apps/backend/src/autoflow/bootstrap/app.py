@@ -35,6 +35,7 @@ from autoflow.application.android.fleet import AndroidFleet
 from autoflow.application.android.images import AndroidImageService
 from autoflow.application.android.observations import DeviceObservationService
 from autoflow.application.environments.service import EnvironmentService
+from autoflow.application.identities.service import IdentityService
 from autoflow.application.kernels.service import KernelService
 from autoflow.application.models.service import ModelService
 from autoflow.application.profiles.service import ProfileService
@@ -128,6 +129,7 @@ from autoflow.infrastructure.database.android_operations import (
 from autoflow.infrastructure.database.android_resources import AndroidResourceRepository
 from autoflow.infrastructure.database.app_settings import SqlAlchemyAppSettings
 from autoflow.infrastructure.database.environments import SqlAlchemyEnvironments
+from autoflow.infrastructure.database.identities import SqlAlchemyIdentities
 from autoflow.infrastructure.database.kernel_operations import (
     SqlAlchemyKernelOperationRepository,
 )
@@ -753,6 +755,7 @@ def create_app(
     app.state.project_lifecycle_coordinator = project_lifecycle_coordinator
     app.router.add_event_handler("startup", project_lifecycle_coordinator.startup)
     register_project_routes(app, ProjectHttpServices(
+        identities=IdentityService(SqlAlchemyIdentities(session_factory), ProjectService(SqlAlchemyProjects(session_factory))),
         processing_units=ProcessingUnitService(session_factory),
         schedules=automation_schedules,
         run_interactions=project_workflow_dispatcher.interactions,
