@@ -114,7 +114,7 @@ def create_worker_job() -> int | None:
             raise OSError("Worker Job membership unavailable")
         # The supervisor may have assigned this same process after our check.
         if not member.value and not kernel.AssignProcessToJobObject(handle, current):
-            error = ctypes.get_last_error()
+            error = getattr(ctypes, "get_last_error", lambda: 0)()  # portable tests exercise this on POSIX
             if not kernel.IsProcessInJob(current, handle, ctypes.byref(member)) or not member.value:
                 raise OSError(f"Worker could not join parent Job (WinError {error})")
         return int(handle)
