@@ -25,6 +25,7 @@ from autoflow.application.workflows.executors.web_basic import (
     UseOpenedPageExecutor,
     WaitElementExecutor,
 )
+from autoflow.application.workflows.executors.web_state import WEB_STATE_EXECUTORS
 from autoflow.domain.workflows.browser import BrowserSessionPort
 from autoflow.domain.workflows.execution import ExecutionContext
 from autoflow.domain.workflows.scope import WEB_EXTENSION_NODE_TYPES
@@ -152,7 +153,8 @@ def test_differential_checkout_is_the_declared_frozen_commit() -> None:
 def test_web_basic_executor_list_contains_exactly_the_approved_family() -> None:
     # Extensions added by the remediation (no frozen counterpart) are checked by
     # their own tests; the frozen family must stay exactly the approved one.
-    registered = {executor().module_type for executor in WEB_BASIC_EXECUTORS}
+    # Cookie, storage and interception nodes register as their own family (WEB_STATE_EXECUTORS).
+    registered = {executor().module_type for executor in (*WEB_BASIC_EXECUTORS, *WEB_STATE_EXECUTORS)}
     assert registered - WEB_EXTENSION_NODE_TYPES == set(EXECUTORS)
     assert registered & WEB_EXTENSION_NODE_TYPES == WEB_EXTENSION_NODE_TYPES
 
