@@ -4,7 +4,11 @@ from uuid import uuid4
 
 import pytest
 
-from tests.integration.test_project_parameter_concurrency import configure, core_services, until
+from tests.integration.test_project_parameter_concurrency import (
+    configure,
+    core_services,
+    until,
+)
 from tests.integration.test_project_run_start import setup, start_payload
 
 

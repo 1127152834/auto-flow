@@ -17,7 +17,9 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
-from autoflow.infrastructure.process.project_workflow_worker import ProjectWorkflowWorkerManager
+from autoflow.infrastructure.process.project_workflow_worker import (
+    ProjectWorkflowWorkerManager,
+)
 
 from .report import Unit, build_manifest, write_report
 

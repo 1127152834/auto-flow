@@ -54,7 +54,11 @@ def test_the_bounded_tail_gives_the_same_verdict_as_the_full_history():
     """M3: batch history stops reading once no older task can change the verdict."""
     import random
 
-    from autoflow.domain.project_runs.circuit_breaker import FinishedTask, evaluate, needs_older
+    from autoflow.domain.project_runs.circuit_breaker import (
+        FinishedTask,
+        evaluate,
+        needs_older,
+    )
 
     kinds = ["succeeded", "page", "infrastructure", "business", "unknown", "cancelled"]
     for seed in range(2000):

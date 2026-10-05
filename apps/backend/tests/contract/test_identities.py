@@ -16,7 +16,10 @@ from autoflow.application.projects.service import ProjectService
 from autoflow.infrastructure.database.identities import SqlAlchemyIdentities
 from autoflow.infrastructure.database.models import ProjectRow
 from autoflow.infrastructure.database.projects import SqlAlchemyProjects
-from autoflow.infrastructure.database.session import create_session_factory, migrate_database
+from autoflow.infrastructure.database.session import (
+    create_session_factory,
+    migrate_database,
+)
 
 PROJECT = "00000000-0000-4000-8000-0000000000bb"
 BASE = f"/api/v1/projects/{PROJECT}/identities"

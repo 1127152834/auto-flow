@@ -10,7 +10,9 @@ from uuid import uuid4
 import pytest
 
 from autoflow.infrastructure.process import project_workflow_worker as manager_module
-from autoflow.infrastructure.process.project_workflow_worker import ProjectWorkflowWorkerManager
+from autoflow.infrastructure.process.project_workflow_worker import (
+    ProjectWorkflowWorkerManager,
+)
 
 
 def _plan(count: int = 3, *, wait: str | None = None) -> dict[str, Any]:

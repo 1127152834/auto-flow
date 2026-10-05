@@ -14,7 +14,10 @@ from pathlib import Path
 
 import pytest
 
-from autoflow.providers.browser.pooled_browser import SUPPORTED_CLOAKBROWSER, PooledBrowser
+from autoflow.providers.browser.pooled_browser import (
+    SUPPORTED_CLOAKBROWSER,
+    PooledBrowser,
+)
 
 PAGE = b"""<!doctype html><title>pool</title><script>
 window.leave = async () => {
