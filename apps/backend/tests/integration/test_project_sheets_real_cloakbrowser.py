@@ -301,11 +301,11 @@ def test_real_archive_waits_for_run_save_and_unknown_sheet_outcome(
         saves = []
         original_stage = app.state.environment_service.store.stage_candidate
 
-        def stage_after_archive(save_id, instance_id, *, identity_package=None):
+        def stage_after_archive(save_id, instance_id, **options):
             saves.append((save_id, instance_id))
             entered.set()
             assert release.wait(60), 'test must release accepted save after archive starts'
-            return original_stage(save_id, instance_id, identity_package=identity_package)
+            return original_stage(save_id, instance_id, **options)
 
         monkeypatch.setattr(app.state.environment_service.store, 'stage_candidate', stage_after_archive)
         try:

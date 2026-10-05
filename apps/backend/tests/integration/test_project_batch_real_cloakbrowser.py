@@ -850,7 +850,12 @@ async def test_real_project_batch_http(
                                 assert force_worker.process.returncode is None
                                 assert force_worker.birth is not None
                                 assert process_birth(force_worker.process.pid) == force_worker.birth
-                                current = (await client.get(prefix + f'/batches/{batch_id}')).json()
+                                # The run reaches "stopping" in its own committed transition (M3 moved it off the loop).
+                                for _ in range(200):
+                                    current = (await client.get(prefix + f'/batches/{batch_id}')).json()
+                                    if current['forceStopAvailableAt']:
+                                        break
+                                    await asyncio.sleep(.05)
                                 assert current['forceStopAllowed'] is False and current['forceStopAvailableAt']
                                 denied = await client.post(prefix + f'/batches/{batch_id}/force-stop', headers={'Idempotency-Key': str(uuid4())}, json={
                                     'expectedStatusRevision': current['batch']['statusRevision'], 'reason': '宽限期内拒绝',
