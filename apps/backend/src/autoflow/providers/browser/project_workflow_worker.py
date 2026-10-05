@@ -514,7 +514,9 @@ async def _run(command: dict[str, Any], stopped: Event, incoming: _Incoming, std
         initialized_visit = execution.current_execution_id
         reply = await capability(execution.current_node_id, initialized_visit, 'initializeBrowser', {})
         if 'error' in reply:
-            raise WorkflowRuntimeError(reply['error']['code'], '浏览器环境初始化失败', 409)
+            # Rule 2: the parent's reason (proxy, identity region...) stays with the failure.
+            detail = reply['error'].get('message')
+            raise WorkflowRuntimeError(reply['error']['code'], f'浏览器环境初始化失败：{detail}' if isinstance(detail, str) and detail else '浏览器环境初始化失败', 409)
         granted = reply['result']
         executable = Path(granted['executablePath'])
         if not executable.is_absolute() or not executable.is_file():

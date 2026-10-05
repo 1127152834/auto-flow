@@ -11,7 +11,12 @@ from autoflow.domain.environments.identity import profile_from_request
 from autoflow.domain.projects.models import ProjectError
 from autoflow.infrastructure.database.identities import SqlAlchemyIdentities
 from autoflow.infrastructure.database.identity_models import IdentityRow
-from tests.contract.test_project_environments import PROFILE, _closed_instance, _project, make
+from tests.contract.test_project_environments import (
+    PROFILE,
+    _closed_instance,
+    _project,
+    make,
+)
 
 POLICY = {"source": "inputIdentity", "inputId": "accounts"}
 

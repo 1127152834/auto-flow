@@ -82,6 +82,11 @@ class ResourcePort(Protocol):
 
 
 Recovery = Callable[[CoreRun], Awaitable[None]]
+# Resource refusals raised before any worker or browser exists: safe to end the run as failed.
+PRE_START_RESOURCE_FAILURES = frozenset({
+    "PROXY_UNAVAILABLE", "IDENTITY_REGION_MISMATCH", "IDENTITY_REGION_UNVERIFIED",
+    "WORKFLOW_RESOURCE_INVALID", "WORKFLOW_RESOURCE_UNSUPPORTED",
+})
 UNKNOWN_RESULT_ERROR = {
     "code": "WORKFLOW_RESULT_UNKNOWN",
     "message": "执行结果不明确，已撤销旧执行写入权限",
@@ -588,9 +593,25 @@ class WorkflowRunDispatcher:
                         )
                     return
                 if "browser.cloakbrowser" in content.capability_requirements and dispatched.resource_request.get("browser") != "node":
-                    lease = await self._resources.acquire(
-                        dispatched.resource_request, dispatched.run_id
-                    )
+                    try:
+                        lease = await self._resources.acquire(
+                            dispatched.resource_request, dispatched.run_id
+                        )
+                    except WorkflowRuntimeError as error:
+                        if error.code not in PRE_START_RESOURCE_FAILURES:
+                            raise
+                        # Remediation M4 R4-05: nothing ran and nothing is held, so the run fails
+                        # with its reason instead of becoming an unknown result to reconcile.
+                        current = self._get_run(dispatched.run_id)
+                        if current.status == "stopping":
+                            await self._atransition_current(current.run_id, current.execution_generation, "cancelled")
+                        elif current.status == "running":
+                            finishing = await self._atransition(current, "finishing")
+                            await self._atransition_current(
+                                finishing.run_id, finishing.execution_generation, "failed",
+                                error={"code": error.code, "message": error.message},
+                            )
+                        return
                     owner.lease = lease
                 current = self._get_run(dispatched.run_id)
                 if (

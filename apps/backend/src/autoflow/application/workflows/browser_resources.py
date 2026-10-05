@@ -1,17 +1,22 @@
 from __future__ import annotations
 
+import asyncio
+import logging
+import time
 from collections.abc import Awaitable, Callable, Iterator, Mapping, Sequence
 from contextlib import AbstractContextManager, ExitStack, contextmanager, nullcontext
 from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 from threading import RLock
 from typing import Any, cast
+from urllib.parse import quote
 
 from autoflow.application.profiles.service import ProfileService
 from autoflow.domain.environments.identity import (
     profile_from_request,
     request_from_identity,
 )
+from autoflow.domain.identities.region import check_exit, may_start
 from autoflow.domain.kernels.errors import LicenseInvalid
 from autoflow.domain.kernels.models import InstalledKernel, KernelEdition, KernelRef
 from autoflow.domain.profiles.errors import KernelNotInstalled, ProxyUnavailable
@@ -60,8 +65,12 @@ class WorkflowBrowserResources:
         group_guard: Callable[[], AbstractContextManager[None]] = nullcontext,
         license_guard: Callable[[], AbstractContextManager[None]] = nullcontext,
         release_proxy: Callable[[str], None] | None = None,
+        locate_exit: Callable[[str | None], tuple[str | None, str | None]] | None = None,
     ) -> None:
         self._profiles = profiles
+        # Remediation M4 R4-05: (timezone, exit ip) behind a proxy URL, cached for ten minutes.
+        self._locate_exit = locate_exit or _locate_exit_with_geoip
+        self._exit_cache: dict[str, tuple[float, tuple[str | None, str | None]]] = {}
         self._installed = installed_kernels
         self._resolve_proxy = resolve_proxy
         self._read_license = read_license
@@ -179,6 +188,7 @@ class WorkflowBrowserResources:
                 # Rule 2: the identity's proxy reason (e.g. no member in its region) reaches the run.
                 reason = str(error) or "所选代理暂不可用"
                 raise WorkflowRuntimeError("PROXY_UNAVAILABLE", f"代理不可用：{reason}", 409) from error
+            await self._check_exit_region(identity, proxy)
             if self._release_proxy is not None:
                 guards.callback(self._release_proxy, run_id)
             license_key = self._read_license() if profile.spec.browser_edition == 'licensed' else None
@@ -202,6 +212,30 @@ class WorkflowBrowserResources:
             guards.close()
             raise
 
+    async def _check_exit_region(self, identity: object, proxy: ProfileBrowserProxy | None) -> None:
+        """Remediation M4 R4-05: an identity with a fixed timezone only starts behind a matching exit."""
+        if not isinstance(identity, Mapping) or not isinstance(identity.get("region"), Mapping):
+            return
+        region = dict(identity["region"])
+        if not region.get("timezone"):
+            return
+        key = proxy.proxy_id or proxy.server if proxy is not None else "direct"
+        cached = self._exit_cache.get(key)
+        now = time.monotonic()
+        if cached is not None and now - cached[0] < EXIT_CACHE_SECONDS:
+            timezone, exit_ip = cached[1]
+        else:
+            url = _proxy_url(proxy) if proxy is not None else None
+            timezone, exit_ip = await asyncio.to_thread(self._locate_exit, url)
+            if timezone:  # an unlocated exit is not cached; the next run looks again
+                self._exit_cache[key] = (now, (timezone, exit_ip))
+        check = check_exit(region, timezone, exit_ip)
+        if not may_start(check, region):
+            code = "IDENTITY_REGION_MISMATCH" if check.outcome == "mismatched" else "IDENTITY_REGION_UNVERIFIED"
+            raise WorkflowRuntimeError(code, check.message or "身份地区校验未通过", 409)
+        if check.outcome in {"mismatched", "unverified"}:
+            _logger.warning("身份地区校验提示（按策略继续）：%s", check.message)
+
     def _kernel(self, spec: ProfileSpec) -> InstalledKernel:
         for kernel in self._installed():
             if kernel.edition == spec.browser_edition and kernel.version == spec.browser_version:
@@ -221,3 +255,26 @@ def _with_identity(profile: Profile, identity: object) -> Profile:
         locale=region.get("locale") or profile.spec.locale,
     )
     return replace(profile, spec=spec, fingerprint_seed=identity["seed"])
+
+
+EXIT_CACHE_SECONDS = 600.0
+_logger = logging.getLogger(__name__)
+
+
+def _proxy_url(proxy: ProfileBrowserProxy) -> str:
+    scheme, _, address = proxy.server.partition("://")
+    if not proxy.username:
+        return proxy.server
+    return f"{scheme}://{quote(proxy.username, safe='')}:{quote(proxy.password, safe='')}@{address}"
+
+
+def _locate_exit_with_geoip(proxy_url: str | None) -> tuple[str | None, str | None]:
+    """Exit timezone and IP through the proxy, from CloakBrowser's GeoLite2 lookup; never raises."""
+    try:
+        from cloakbrowser import geoip  # type: ignore[import-untyped]
+
+        timezone, _locale, exit_ip = geoip.resolve_proxy_geo_with_ip(proxy_url)
+    except Exception as error:  # noqa: BLE001 -- an unlocated exit is handled by the identity policy
+        _logger.warning("出口地区检测失败：%s", type(error).__name__)
+        return None, None
+    return timezone, exit_ip

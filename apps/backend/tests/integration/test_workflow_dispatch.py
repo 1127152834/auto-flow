@@ -1086,3 +1086,36 @@ async def test_pause_dispatch_refuses_new_runs_with_its_reason_until_cleared(run
         await workers.stop(run.run_id)
         await dispatcher.wait_idle()
     finally: await dispatcher.shutdown()
+
+
+class RefusingResources(SyntheticResources):
+    def __init__(self, code):
+        super().__init__()
+        self.code = code
+
+    async def acquire(self, request, run_request_id):
+        self.requests.append((dict(request), run_request_id))
+        raise WorkflowRuntimeError(self.code, "出口 IP 203.0.113.9 位于 America/New_York，与身份地区 Asia/Shanghai 不一致", 409)
+
+
+@pytest.mark.asyncio
+async def test_a_pre_start_resource_refusal_fails_the_run_with_its_reason(runtime):
+    """Remediation M4 R4-05: no worker started, so the reason ends the run instead of an unknown result."""
+    run, _ = create_queued_run(runtime)
+    worker = SyntheticWorker()
+    dispatcher = make_dispatcher(runtime, worker, RefusingResources("IDENTITY_REGION_MISMATCH"))
+    await dispatcher.dispatch(run.run_id, expected_status_revision=1, execution_generation=0)
+    await asyncio.wait_for(dispatcher.wait_idle(), timeout=5)
+    final = dispatcher._get_run(run.run_id)
+    assert final.status == "failed" and not worker.calls
+    assert dict(final.error) == {"code": "IDENTITY_REGION_MISMATCH", "message": "出口 IP 203.0.113.9 位于 America/New_York，与身份地区 Asia/Shanghai 不一致"}
+
+
+@pytest.mark.asyncio
+async def test_other_resource_errors_still_go_through_reconciliation(runtime):
+    run, _ = create_queued_run(runtime)
+    worker = SyntheticWorker()
+    dispatcher = make_dispatcher(runtime, worker, RefusingResources("WORKFLOW_CLEANUP_FAILED"))
+    await dispatcher.dispatch(run.run_id, expected_status_revision=1, execution_generation=0)
+    await asyncio.wait_for(dispatcher.wait_idle(), timeout=5)
+    assert dispatcher._get_run(run.run_id).status in {"reconciling", "interrupted"}
