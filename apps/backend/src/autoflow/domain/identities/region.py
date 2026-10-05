@@ -7,7 +7,7 @@ located is "unverified" — the identity's policy decides whether that may still
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal
+from typing import Any, Literal
 
 MismatchPolicy = Literal["reject", "warn"]
 
@@ -18,7 +18,7 @@ class RegionCheck:
     message: str | None = None
 
 
-def check_exit(region: dict | None, exit_timezone: str | None, exit_ip: str | None) -> RegionCheck:
+def check_exit(region: dict[str, Any] | None, exit_timezone: str | None, exit_ip: str | None) -> RegionCheck:
     expected = (region or {}).get("timezone")
     if not expected:
         return RegionCheck("unconstrained")
@@ -32,11 +32,11 @@ def check_exit(region: dict | None, exit_timezone: str | None, exit_ip: str | No
     )
 
 
-def may_start(check: RegionCheck, region: dict | None) -> bool:
+def may_start(check: RegionCheck, region: dict[str, Any] | None) -> bool:
     """Mismatch rejects by default; an unverifiable exit warns and continues by default."""
     policies = region or {}
     if check.outcome == "mismatched":
-        return policies.get("mismatchPolicy", "reject") == "warn"
+        return bool(policies.get("mismatchPolicy", "reject") == "warn")
     if check.outcome == "unverified":
-        return policies.get("unverifiedPolicy", "warn") == "warn"
+        return bool(policies.get("unverifiedPolicy", "warn") == "warn")
     return True

@@ -165,6 +165,22 @@ class SqlAlchemyIdentities:
             session.delete(row)
             session.commit()
 
+    def link_record(
+        self, project_id: str, table_id: str, dataset_generation: str, key_type: str, key_value: str, identity_id: str,
+    ) -> bool:
+        """Point a row at its identity unless it already names one (a person's choice is kept)."""
+        from .project_data_models import DataRecordRow
+
+        with self._factory() as session:
+            row = session.get(DataRecordRow, (dataset_generation, key_type, key_value))
+            if row is None or row.project_id != project_id or row.table_id != table_id or row.deleted:
+                return False
+            if row.current_identity_id is not None:
+                return row.current_identity_id == identity_id
+            row.current_identity_id, row.updated_at = identity_id, datetime.now(UTC)
+            session.commit()
+            return True
+
     def proxy_binding(self, identity_id: str) -> dict[str, Any] | None:
         with self._factory() as session:
             row = session.get(IdentityRow, identity_id)

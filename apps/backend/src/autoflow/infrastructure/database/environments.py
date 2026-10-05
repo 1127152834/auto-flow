@@ -3,7 +3,7 @@ from __future__ import annotations
 import builtins
 import hashlib
 import json
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from typing import Any, cast
@@ -18,6 +18,7 @@ from autoflow.domain.environments.models import (
     EnvironmentRef,
     ManualStatus,
     PersistentEnvironment,
+    ResolvedEnvironmentSource,
 )
 from autoflow.domain.environments.rules import (
     LIVE_INSTANCE_STATES,
@@ -1356,7 +1357,7 @@ def _generation_references(session: Session, row: ProjectEnvironmentRow) -> dict
     return references
 
 
-def _frozen_generations(value: Any, environment_id: str):
+def _frozen_generations(value: Any, environment_id: str) -> Iterator[int]:
     if isinstance(value, dict):
         if value.get("environmentId") == environment_id and type(value.get("contentGeneration")) is int:
             yield value["contentGeneration"]
@@ -1384,7 +1385,7 @@ def _give_identity_its_login(session: Session, identity_id: str | None, environm
 def _resolve_identity(
     session: Session, project_id: str, policy: dict[str, Any], inputs: dict[str, dict[str, Any]],
     environments: dict[str, PersistentEnvironment], default_profile: str | None,
-):
+) -> ResolvedEnvironmentSource:
     """Remediation M4 R4-03: run as the record's identity — its saved login if it has one,
     otherwise a fresh browser from its template; either way with the identity's seed and region."""
     from autoflow.infrastructure.database.identity_models import (

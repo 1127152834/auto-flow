@@ -63,7 +63,11 @@ class IdentityService:
                 created += 1
             else:
                 kept += 1
-            identities.append({"recordKey": key, "identityId": existing.identity_id})
+            linked = False
+            generation, key_type = payload.get("datasetGeneration"), row.get("keyType")
+            if isinstance(generation, str) and isinstance(key_type, str):
+                linked = self.identities.link_record(project_id, table_id, generation, key_type, key, existing.identity_id)
+            identities.append({"recordKey": key, "identityId": existing.identity_id, "linked": linked})
         return {"created": created, "kept": kept, "identities": identities}
 
     def rename(self, project_id: str, identity_id: str, payload: dict[str, Any]) -> dict[str, Any]:

@@ -45,7 +45,7 @@ class ProxyWorkerRequests:
             for child in value:
                 self._scan(child)
 
-    def observe(self, event):
+    def observe(self, event: dict[str, Any]) -> None:
         node = event.get("nodeId")
         visit = event.get("executionId", event.get("nodeVisitId"))
         if not isinstance(node, str) or not isinstance(visit, str):
@@ -157,7 +157,7 @@ class ProxyWorkerRequests:
                 except Exception:  # noqa: BLE001,S110 -- worker shutdown also cancels its pending futures.
                     pass
 
-    async def close(self):
+    async def close(self) -> None:
         tasks = list(self.tasks.values())
         for task in tasks:
             task.cancel()

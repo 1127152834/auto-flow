@@ -49,7 +49,7 @@ def _retention_plan(current: int, references: dict[int, str], on_disk: list[int]
     return reasons, unreferenced[keep:]
 
 
-def prune_generations(service, environment_id: str, *, keep: int = KEEP_UNREFERENCED_GENERATIONS) -> list[int]:
+def prune_generations(service: Any, environment_id: str, *, keep: int = KEEP_UNREFERENCED_GENERATIONS) -> list[int]:
     """Remove old unreferenced generations: mark under the write lock, re-check references, then delete."""
     store = service.store
 
@@ -67,12 +67,12 @@ def prune_generations(service, environment_id: str, *, keep: int = KEEP_UNREFERE
             removed.append(generation)
         return removed
 
-    removed = service.environments.with_generation_references(environment_id, take_out, lock=True)
+    removed: list[int] = service.environments.with_generation_references(environment_id, take_out, lock=True)
     store.purge_trash()
     return removed
 
 
-def generation_usage(service, environment_id: str) -> dict[str, Any]:
+def generation_usage(service: Any, environment_id: str) -> dict[str, Any]:
     """Disk use split into what references keep and what is reclaimable history."""
     store = service.store
 
@@ -89,7 +89,8 @@ def generation_usage(service, environment_id: str) -> dict[str, Any]:
             "reclaimableBytes": sum(row["bytes"] for row in rows if row["keptFor"] == "history"),
         }
 
-    return service.environments.with_generation_references(environment_id, measure)
+    usage: dict[str, Any] = service.environments.with_generation_references(environment_id, measure)
+    return usage
 
 
 def save_environment(service, project_id: str, key: str, payload: dict[str, Any], *, parent_end=None):

@@ -9,7 +9,7 @@ not promise the same exit IP; that is checked separately before launch (R4-05).
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal
+from typing import Any, Literal
 
 Policy = Literal["sameRegion", "confirm", "never"]
 POLICIES: tuple[Policy, ...] = ("sameRegion", "confirm", "never")
@@ -30,7 +30,7 @@ class Choice:
     reason: str | None = None
 
 
-def choose_member(binding: dict | None, pool_id: str, members: list[Member]) -> Choice:
+def choose_member(binding: dict[str, Any] | None, pool_id: str, members: list[Member]) -> Choice:
     """Pick the member for this run; ``bind``/``replace`` mean the binding must be stored."""
     usable = [member for member in members if member.usable]
     bound = binding if isinstance(binding, dict) and binding.get("poolId") == pool_id else None
@@ -53,6 +53,6 @@ def choose_member(binding: dict | None, pool_id: str, members: list[Member]) -> 
     return Choice("replace", same[0].member_id)
 
 
-def bind(pool_id: str, member: Member, previous: dict | None) -> dict:
+def bind(pool_id: str, member: Member, previous: dict[str, Any] | None) -> dict[str, Any]:
     policy = previous.get("policy") if isinstance(previous, dict) and previous.get("policy") in POLICIES else DEFAULT_POLICY
     return {"poolId": pool_id, "memberId": member.member_id, "region": member.region, "policy": policy}

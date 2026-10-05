@@ -42,7 +42,7 @@ class PooledBrowser:
             cloak._install_license_guard_async(context, denial_path)
         if self._human.get("humanize"):
             import cloakbrowser.human.config as human_config  # type: ignore[import-untyped]
-            from cloakbrowser import human  # type: ignore[import-untyped]
+            from cloakbrowser import human
             human.patch_context_async(context, human_config.resolve_config(self._human.get("human_preset", "default"), self._human.get("human_config")))
         return context
 

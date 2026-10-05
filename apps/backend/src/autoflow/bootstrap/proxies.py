@@ -3,7 +3,7 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 from fastapi import FastAPI
 
@@ -107,7 +107,7 @@ def configure_proxy_management(
         """Remediation M4 R4-04: the identity's own pool member, bound on first use."""
         for _attempt in range(4):
             binding = identities.proxy_binding(identity_id)
-            with SqlAlchemyProxyUnitOfWork(session_factory) as uow:
+            with cast(Any, SqlAlchemyProxyUnitOfWork)(session_factory) as uow:
                 candidates = uow.repository.list_group_candidates(pool_id)
             members = [
                 Member(item.id, item.region, item.credential_available and item.health.state != "unhealthy")

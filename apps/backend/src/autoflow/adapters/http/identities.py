@@ -55,10 +55,13 @@ class IdentityRegenerate(ApiModel):
 class IdentityRowRequest(ApiModel):
     record_key: StrictStr
     name: StrictStr
+    # With datasetGeneration, the row is linked to its identity (unless it already names one).
+    key_type: StrictStr | None = None
 
 
 class IdentityBatchCreate(ApiModel):
     table_id: StrictStr
+    dataset_generation: StrictStr | None = None
     template_profile_id: StrictStr | None = None
     rows: list[IdentityRowRequest] = Field(min_length=1, max_length=1000)
 
@@ -66,6 +69,7 @@ class IdentityBatchCreate(ApiModel):
 class IdentityBatchLink(ApiModel):
     record_key: str
     identity_id: str
+    linked: bool = False
 
 
 class IdentityBatchResult(ApiModel):

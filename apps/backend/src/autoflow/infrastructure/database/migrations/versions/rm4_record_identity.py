@@ -9,6 +9,7 @@ re-generated. An environment without an identity package gets a new seed and say
 import json
 import secrets
 from datetime import UTC, datetime
+from typing import Any
 from uuid import uuid4
 
 import sqlalchemy as sa
@@ -45,12 +46,12 @@ def upgrade() -> None:
     )).all()
     for environment_id, project_id, name, profile_id, raw_package in environments:
         package = _json(raw_package)
-        frozen = package.get("frozenConfiguration") if isinstance(package.get("frozenConfiguration"), dict) else {}
-        spec = frozen.get("profileSpec") if isinstance(frozen.get("profileSpec"), dict) else {}
-        seed = frozen.get("fingerprintSeed")
-        missing = not (type(seed) is int and SEED_MIN <= seed <= SEED_MAX)
-        if missing:
-            seed = _fresh_seed(registry)
+        frozen = _mapping(package.get("frozenConfiguration"))
+        spec = _mapping(frozen.get("profileSpec"))
+        raw_seed = frozen.get("fingerprintSeed")
+        kept = raw_seed if isinstance(raw_seed, int) and not isinstance(raw_seed, bool) and SEED_MIN <= raw_seed <= SEED_MAX else None
+        missing = kept is None
+        seed: int = kept if kept is not None else _fresh_seed(registry)
         if seed in registry:
             registry_id = registry[seed]
             if registry_id in used:
@@ -96,7 +97,7 @@ def downgrade() -> None:
     op.drop_column("identities", "origin")
 
 
-def _json(value: object) -> dict:
+def _json(value: object) -> dict[str, Any]:
     if isinstance(value, dict):
         return value
     try:
@@ -104,6 +105,10 @@ def _json(value: object) -> dict:
     except ValueError:
         return {}
     return parsed if isinstance(parsed, dict) else {}
+
+
+def _mapping(value: object) -> dict[str, Any]:
+    return value if isinstance(value, dict) else {}
 
 
 def _fresh_seed(registry: dict[int, str]) -> int:
