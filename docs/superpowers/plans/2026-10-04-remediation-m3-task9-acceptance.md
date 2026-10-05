@@ -47,6 +47,7 @@
 - 一次 3 样本运行中出现 1 次失败，输出未保留；之后 1 次单独、10 次完整样本均未复现。
 - `test_two_actual_workers_keep_ack_cancellation_and_cleanup_owned_by_run`、`test_native_windows_pre_ready_cleanup_confirms_all_descendants[timeout]`
   在高负载时失败，干净 HEAD 副本同样失败，空闲时通过——判定为环境时序，未改代码。
+  - superseded（2026-10-05）：`two_actual_workers` 的根因是 venv 启动器与运行 Job 的加入顺序（WinError 5），已在 `windows_job._verified_process` 修复，见 M4 步骤计划 S10。
 
 ## 决定与最终样本
 

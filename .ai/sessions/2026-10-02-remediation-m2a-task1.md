@@ -54,3 +54,11 @@ M2A Task 2（失败分类与整 Task 重放边界）→ Task 3（终态同事务
 - 2026-10-04 用户选定"状态转换移到线程"后（confirmed）：AC3-02 p99 中位 25.8 ms、AC3-05 228.63 行/分钟（M2B 17.1 倍），
   AC3-01 至 AC3-08 全部达标，M3 退出；未推送，AOCI 条目维护范围待用户批准。
 - 测量注意：本机有其他会话（Codex 备份）时 CPU 可达 87%，吞吐与延迟数字失真；正式样本须在空闲时采集并记录负载。
+
+## 2026-10-05 续：M4 身份模型（S1–S7 已推送；S10 进行中）
+来源：用户 2026-10-05 授权"都由你来决定"（推送、AOCI、M4 次序由我决定；macOS 仅逻辑审查，实机由用户验证）。
+- S1–S7 提交并推送到 0aa045b8（正常推送，未强推、未开 PR）。S8 perIdentity 推迟，设计与决策见
+  docs/superpowers/plans/2026-10-05-remediation-m4-s8-per-identity-design.md、.ai/decisions/2026-10-05-m4-template-seed-and-per-identity.md。
+- S10 黄金场景 G1（confirmed，本机 Windows + CloakBrowser 146）：10 行 119 秒、30 行 364 秒通过；
+  发现 5 个缺陷并修复（详见 M4 步骤计划 S10），另修复 CI 偶发的 Windows Job 加入顺序问题（WinError 5）。
+- 未完成：G1 代理夹具（AC4-03/04）、S8（AC4-07）、S9 界面改名（随 M5 5C）、AOCI 条目维护（本会话 aoci MCP 不可用）。

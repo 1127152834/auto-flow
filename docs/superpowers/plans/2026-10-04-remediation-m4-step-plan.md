@@ -78,6 +78,22 @@
 ### S10 黄金场景 G1 与验收（Task 10）
 
 - G1 站点（登录、资料页、2% 密码错误）、本地 SOCKS 代理夹具（可注入断开与出口变化）；`tests/golden/test_g1_accounts.py`；AC4-01..07。
+- 进展（2026-10-05，confirmed）：G1 站点与登录/资料页/错误账号已实现，代理夹具未做（出口地区由替身返回"无法确认"）。
+  Windows 本机真实 CloakBrowser 146：10 行 119 秒通过，30 行 364 秒通过（AC4-01 指纹按身份稳定、AC4-02 错误账号只登录一次且记一次失败）。
+- G1 暴露并已修复的问题（各有回归测试）：
+  1. 批次启动拒绝 `inputIdentity` 来源（`test_running_as_record_identities_is_a_valid_start_that_needs_a_data_input`）。
+  2. End 业务结果不能由变量决定，需要两个 End 才能区分成功/失败；现在可引用变量，运行时必须解析为 succeeded/failed（`test_end_business_result_may_come_from_a_variable`）。
+  3. End 判定的业务失败被归为"结果未知"（`task_outcome` 现识别 `END_BUSINESS_FAILED`）。
+  4. 通过表授权改写已领取的行时忽略领取快照，误报字段冲突（`test_a_claimed_row_written_through_a_table_grant_uses_the_claim_as_its_baseline`）。
+  5. 循环模式下同一批次会再次领取已处理且冷却到期的行，批次永不结束（`test_a_cycle_batch_takes_each_row_once_even_when_it_becomes_due_again`）。
+- 同期修复的 CI 偶发：Windows 下 venv 启动器先被挂入运行 Job 时，真实解释器无法再加入（嵌套 Job 规则，WinError 5）；
+  监督进程现在先等解释器自加入，再挂启动器。本机 8 路并发复现约 60% 失败 → 修复后 16/16 通过。
+- 基准（native-batch-v1，pool，200 行，并发 2，5 次重复，Windows 本机 CPU 空闲，同一 CloakBrowser 146；结果在本地 results/，不入库）：
+  - HEAD 0aa045b8（S1–S7，不含上述修复）：吞吐 136.4/212.7/213.5/211.0/215.5 行/分钟，中位 212.7；循环延迟 p99 23.8–27.7 ms。
+  - 加上述修复后两轮：131.0/198.5/193.7/136.6/218.3 与 228.2/—/213.8/133.9/210.5，中位 198.5、约 212；p99 25.0–29.2 ms。
+  - 结论：修复在噪声内，无可测开销（native-batch 用 unprocessed 模式，不走循环门控）。S5 时一轮中位 228.6 高于 HEAD 的 212.7，
+    差距在 S6/S7 之后、本次修复之前已存在；单轮样本、样本间有约 135 的慢样本，不足以判定为回归，待空闲机器多轮复测。
+- 剩余：代理夹具与 AC4-03/04 的 G1 覆盖、AC4-07（依赖 S8）；End 业务结果引用变量目前只有后端与 G1 使用，配置界面尚未提供变量入口（随 S9）。
 
 ## 测量与环境
 
