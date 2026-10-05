@@ -44,22 +44,34 @@ async def test_project_file_watcher_event_and_cleanup(tmp_path: Path, action: st
     try:
         running = await dispatcher.dispatch(queued.run_id, expected_status_revision=queued.status_revision,
                                             execution_generation=queued.execution_generation)
-        if action in {"created", "modified", "deleted", "cancel"}:
+        if action in {"created", "modified", "deleted"}:
             await _wait_for_started(factory, queued.run_id)
-            # Retain the empty/old baseline through the source's initial snapshot.
-            await asyncio.sleep(.3)
+            # The watcher takes its baseline some time after the run starts (seconds on a loaded runner),
+            # so one change made at a guessed moment can land inside the baseline and never fire.
+            # Keep changing the file until the run ends; the first change after the baseline fires.
+            baseline_mtime = target.stat().st_mtime if target.exists() else 0
             (watched / "ignored.log").write_text("must not trigger", encoding="utf-8")
-            if action == "created":
-                target.write_text("after", encoding="utf-8")
-            elif action == "modified":
-                previous = target.stat().st_mtime
-                target.write_text("after", encoding="utf-8")
-                os.utime(target, (previous + 2, previous + 2))
-            elif action == "deleted":
-                target.unlink()
-            else:
-                await dispatcher.cancel(running.run_id, expected_status_revision=running.status_revision,
-                                        execution_generation=running.execution_generation)
+            idle = asyncio.ensure_future(dispatcher.wait_idle())
+            try:
+                async with asyncio.timeout(30):
+                    step = 0
+                    while not idle.done():
+                        step += 1
+                        if action == "modified":
+                            target.write_text(f"after-{step}", encoding="utf-8")
+                            os.utime(target, (baseline_mtime + 2 * step, baseline_mtime + 2 * step))
+                        elif target.exists():
+                            target.unlink()
+                        else:
+                            target.write_text("after", encoding="utf-8")
+                        await asyncio.wait({idle}, timeout=.3)
+            finally:
+                idle.cancel()
+        elif action == "cancel":
+            await _wait_for_started(factory, queued.run_id)
+            await asyncio.sleep(.3)
+            await dispatcher.cancel(running.run_id, expected_status_revision=running.status_revision,
+                                    execution_generation=running.execution_generation)
         await asyncio.wait_for(dispatcher.wait_idle(), 10)
         with factory() as session:
             repository = SqlAlchemyWorkflowRuntimeRepository(session)
