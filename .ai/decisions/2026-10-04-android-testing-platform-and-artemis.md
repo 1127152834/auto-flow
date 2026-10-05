@@ -1,7 +1,7 @@
 # 安卓模块定位为测试工程平台，首切片集成 ARTEMIS
 
 - 日期：2026-10-04
-- 状态：confirmed（定位与范围，用户对话确认）；proposed（规格细节与 S1 是否提前解冻，待用户审阅）
+- 状态：confirmed（定位、范围、规格与 S1 提前解冻，用户 2026-10-04 确认）；实施计划待审阅
 - 来源：用户与 Claude 讨论；规格 [2026-10-04-android-module-audit-and-ai-testing-design.md](../../docs/superpowers/specs/2026-10-04-android-module-audit-and-ai-testing-design.md)
 
 ## 已确认
@@ -14,7 +14,8 @@
 
 - 子项目 S1–S7（见规格 §5），S1 = AI 测试工具 + 外接设备。
 - ARTEMIS 运行在独立 Python 3.12 环境（后端为 3.11），经桥接脚本调用；不使用其 Web 控制台、MCP 与一键安装脚本。
-- 待决定 D1：S1 是否在整改 M6 前单独解冻。
+- D1 已确认：S1 在整改 M6 前单独解冻实施；S2–S7 维持整改后顺序。
+- 实施计划：[2026-10-04-android-s1-ai-testing.md](../../docs/superpowers/plans/2026-10-04-android-s1-ai-testing.md)
 
 ## 验证方式
 
