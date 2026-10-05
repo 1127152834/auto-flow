@@ -93,6 +93,12 @@ class _ProjectEndNode(ModuleExecutor):
         arguments = {'recordTargets': targets}
         if references_variable(frozen.get('name', '保留环境')):
             arguments['name'] = context.resolve_value(frozen['name'], preserve_types=True)
+        declared_result = frozen.get('businessResult', 'succeeded')
+        if declared_result not in {'succeeded', 'failed'}:
+            resolved_result = context.resolve_value(declared_result, preserve_types=True)
+            if resolved_result not in {'succeeded', 'failed'}:
+                return ModuleResult(False, error=f'End 业务结果解析为 {resolved_result!r}，必须是 succeeded 或 failed')
+            arguments['businessResult'] = resolved_result
         reply = await self.request(node_id, visit, 'end', arguments)
         if 'error' in reply:
             return ModuleResult(False, error=reply['error']['code'], data={'projectErrorCode': reply['error']['code']})

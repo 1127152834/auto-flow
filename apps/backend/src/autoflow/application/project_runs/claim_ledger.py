@@ -21,7 +21,10 @@ from autoflow.domain.project_runs.ledger import (
     claim_eligibility,
     scope_for,
 )
-from autoflow.infrastructure.database.project_claims import LedgerClaimPolicy
+from autoflow.infrastructure.database.project_claims import (
+    CYCLE_MODES,
+    LedgerClaimPolicy,
+)
 from autoflow.infrastructure.database.record_ledger import SqlAlchemyRecordLedger
 from autoflow.infrastructure.database.record_ledger_models import (
     AutomationRecordLedgerRow,
@@ -29,7 +32,9 @@ from autoflow.infrastructure.database.record_ledger_models import (
 )
 
 
-def batch_ledger_policy(automation_id: str, frozen_request: dict[str, Any], now: datetime) -> LedgerClaimPolicy | None:
+def batch_ledger_policy(
+    automation_id: str, frozen_request: dict[str, Any], now: datetime, batch_id: str | None = None,
+) -> LedgerClaimPolicy | None:
     if frozen_request.get("executionMode") == "previewWrites":
         return None  # R2-30: a preview never consumes or gates processing records
     automation = frozen_request.get("automation") or {}
@@ -37,7 +42,7 @@ def batch_ledger_policy(automation_id: str, frozen_request: dict[str, Any], now:
     if not isinstance(chosen, str):
         return None
     mode = (automation.get("runPolicy") or {}).get("claimMode") or LEGACY_CLAIM_MODE
-    return LedgerClaimPolicy(automation_id, chosen, mode, now)
+    return LedgerClaimPolicy(automation_id, chosen, mode, now, batch_id)
 
 
 def batch_unit_count(session: Session, batch_id: str) -> int:
@@ -106,7 +111,18 @@ def primary_eligible(session: Session, policy: LedgerClaimPolicy, selection: Any
     scope = _primary_scope(policy, selection)
     if scope is None:
         return True
-    return claim_eligibility(SqlAlchemyRecordLedger(session).get(scope), policy.mode, policy.now) == "eligible"
+    ledger = SqlAlchemyRecordLedger(session)
+    row = ledger._row(scope)
+    if (policy.batch_id is not None and policy.mode in CYCLE_MODES and row is not None
+            and row.state != "failed_retryable" and _in_batch(session, policy.batch_id, row.id)):
+        return False  # one pass per batch (Sheets rows are checked here, not in SQL)
+    return claim_eligibility(ledger.get(scope), policy.mode, policy.now) == "eligible"
+
+
+def _in_batch(session: Session, batch_id: str, ledger_id: str) -> bool:
+    return session.scalar(
+        select(ProjectBatchUnitRow.id).where(ProjectBatchUnitRow.batch_id == batch_id, ProjectBatchUnitRow.ledger_id == ledger_id)
+    ) is not None
 
 
 def admit_primary(

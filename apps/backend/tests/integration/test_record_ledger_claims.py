@@ -153,6 +153,24 @@ async def test_cycle_reuses_successes_only_after_they_are_due(tmp_path):
 
 
 @pytest.mark.asyncio
+async def test_a_cycle_batch_takes_each_row_once_even_when_it_becomes_due_again(tmp_path, monkeypatch):
+    """Found by G1: a due success was taken again by the same batch, which then never ended."""
+    from autoflow.domain.project_runs import ledger
+
+    monkeypatch.setattr(ledger, "CYCLE_REUSE_SECONDS", 0)
+    world = World(tmp_path, claimMode="cycle")
+    world.add_person("李四")
+    first = world.start(max_tasks=10)
+    await world.settle(rounds=10)
+    assert sorted(world.processed_people(first.batch_id)) == ["张三", "李四"]
+    assert world.batch(first.batch_id).status == "completed"
+    second = world.start(max_tasks=10)
+    await world.settle(rounds=10)
+    assert sorted(world.processed_people(second.batch_id)) == ["张三", "李四"], "the next batch takes them again"
+    world.factory.dispose()
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize("mode", ["unprocessed", "cycle", "retryFailed"])
 async def test_blocked_units_are_never_claimed_in_any_mode(tmp_path, mode):
     world = World(tmp_path, claimMode="unprocessed")

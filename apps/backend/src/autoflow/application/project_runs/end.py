@@ -99,7 +99,7 @@ class ProjectRunEnd:
         args = request.get("arguments")
         if (
             not isinstance(args, dict)
-            or set(args) not in ({"recordTargets"}, {"recordTargets", "name"})
+            or not {"recordTargets"} <= set(args) <= {"recordTargets", "name", "businessResult"}
             or not isinstance(args["recordTargets"], list)
             or len(args["recordTargets"]) > 100
         ):
@@ -175,6 +175,12 @@ class ProjectRunEnd:
             ):
                 raise ProjectError("CAPABILITY_SCOPE_DENIED", "End 名称必须匹配冻结配置", 403)
             name = validate_metadata(name=name)["name"]
+            frozen_result = config.get("businessResult", "succeeded")
+            business_result = request["arguments"].get("businessResult", frozen_result)
+            if business_result not in {"succeeded", "failed"} or (
+                frozen_result in {"succeeded", "failed"} and business_result != frozen_result
+            ):
+                raise ProjectError("CAPABILITY_SCOPE_DENIED", "End 业务结果必须匹配冻结配置", 403)
             declared_targets = config.get("recordTargets", [])
             if isinstance(declared_targets, list):
                 if request["arguments"]["recordTargets"] != declared_targets:
@@ -345,7 +351,7 @@ class ProjectRunEnd:
                 "expectedUseGeneration": instance.instance_use_generation
                 if instance
                 else 0,
-                "businessResult": config.get("businessResult", "succeeded"),
+                "businessResult": business_result,
                 "retainEnvironment": retain,
                 "workerEnd": True,
                 "workerRequest": request,

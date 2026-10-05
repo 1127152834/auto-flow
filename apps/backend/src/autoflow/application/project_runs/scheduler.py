@@ -699,7 +699,7 @@ class ProjectBatchScheduler:
                 candidate_offsets=prepared["candidateOffsets"],
                 candidate_page_sizes=prepared.get("candidatePageSizes"),
                 ledger_policy=batch_ledger_policy(
-                    prepared["automationId"], {"automation": prepared["frozenAutomation"]}, datetime.now(UTC)
+                    prepared["automationId"], {"automation": prepared["frozenAutomation"]}, datetime.now(UTC), batch_id,
                 ),
                 **({"candidate_restriction": pinned} if pinned else {}),
                 identity_input_id=_identity_input(prepared["frozenAutomation"]),
@@ -943,7 +943,7 @@ class ProjectBatchScheduler:
                 }
                 ProjectBatchScheduler._commit(session)
                 return "capacityFull"
-            ledger_policy = batch_ledger_policy(row.automation_id, row.frozen_request, datetime.now(UTC))
+            ledger_policy = batch_ledger_policy(row.automation_id, row.frozen_request, datetime.now(UTC), row.id)
             if selection.status == "ready":
                 selection = SqlAlchemyProjectInputGroups(session).revalidate_selected(
                     project_id,

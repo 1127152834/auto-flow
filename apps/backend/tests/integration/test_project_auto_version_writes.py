@@ -104,3 +104,26 @@ def test_replaying_the_same_versionless_command_returns_the_original_result(two_
     first, replayed_first = service.update_record(scope, command)
     again, replayed = service.update_record(scope, command)
     assert (replayed_first, replayed) == (False, True) and again == first
+
+
+def test_a_claimed_row_written_through_a_table_grant_uses_the_claim_as_its_baseline(capability_context):  # noqa: F811
+    """Found by G1 (M4): a cycle run rewriting a claimed row's field was refused as a field conflict."""
+    from sqlalchemy import select
+
+    from autoflow.infrastructure.database.project_run_models import (
+        ProjectTaskInputSnapshotRow,
+    )
+
+    factory, project_id, task, *_rest = capability_context
+    with factory() as session:
+        snapshot = session.scalar(select(ProjectTaskInputSnapshotRow).where(ProjectTaskInputSnapshotRow.task_id == task.task_id))
+        claimed = snapshot.inputs[0]
+    ref = _record_ref(project_id, {"ref": claimed["recordRef"]})
+    field_id = claimed["values"][0]["fieldId"]
+    scope = TaskCapabilityScope(
+        project_id, task.task_id, task.run_id, 1, frozenset(), frozenset(), frozenset(), frozenset(),
+        frozenset({TableCapabilityGrant(ref.table_id, ref.dataset_generation, frozenset({"updateRecord"}),
+                                        frozenset({field_id}), frozenset({"workflow"}))}),
+    )
+    result, _ = _service(factory).update_record(scope, UpdateProjectRecordCommand(uid(), 1, ref, {field_id: "第二轮"}))
+    assert value_of(result, field_id) == "第二轮"

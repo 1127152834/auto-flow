@@ -70,6 +70,7 @@ from autoflow.infrastructure.database.project_sync_sends import require_source_i
 from autoflow.infrastructure.database.record_ledger import ledger_entry
 from autoflow.infrastructure.database.record_ledger_models import (
     AutomationRecordLedgerRow,
+    ProjectBatchUnitRow,
 )
 
 
@@ -1306,6 +1307,8 @@ class LedgerClaimPolicy:
     processing_input_id: str
     mode: str
     now: datetime
+    # The claiming batch: in cycle modes a unit it already took in is not taken again (found by G1).
+    batch_id: str | None = None
 
 
 def ledger_entries(
@@ -1356,6 +1359,10 @@ def _identity_health_gate() -> Any:
     )
 
 
+# Legacy cycles may take a row again within a batch (their limit counts Tasks); ledger cycles count units.
+CYCLE_MODES = frozenset({"cycle"})
+
+
 def _ledger_gate(policy: LedgerClaimPolicy, project_id: str, table_id: str, generation: str) -> Any:
     """Rows whose processing record can never be claimed in this mode, excluded in SQL (R3-01).
 
@@ -1375,4 +1382,16 @@ def _ledger_gate(policy: LedgerClaimPolicy, project_id: str, table_id: str, gene
     )
     if policy.mode == "retryFailed":
         return select(AutomationRecordLedgerRow.id).where(same_unit, AutomationRecordLedgerRow.state.in_(allowed)).exists()
-    return ~select(AutomationRecordLedgerRow.id).where(same_unit, AutomationRecordLedgerRow.state.not_in(allowed)).exists()
+    gate = ~select(AutomationRecordLedgerRow.id).where(same_unit, AutomationRecordLedgerRow.state.not_in(allowed)).exists()
+    if policy.batch_id is not None and policy.mode in CYCLE_MODES:
+        # One pass per batch: a row this batch already handled waits for the next batch, unless it
+        # is waiting for a retry inside this batch (R2-05).
+        taken = (
+            select(ProjectBatchUnitRow.id)
+            .join(AutomationRecordLedgerRow, AutomationRecordLedgerRow.id == ProjectBatchUnitRow.ledger_id)
+            .where(ProjectBatchUnitRow.batch_id == policy.batch_id, same_unit,
+                   AutomationRecordLedgerRow.state != "failed_retryable")
+            .exists()
+        )
+        gate = and_(gate, ~taken)
+    return gate

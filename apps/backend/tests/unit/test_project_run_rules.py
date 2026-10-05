@@ -197,6 +197,18 @@ def test_start_accepts_fixed_environment_and_rejects_input_source_without_data()
     assert "environmentOverride.inputId" in error.value.details["fields"]
 
 
+def test_running_as_record_identities_is_a_valid_start_that_needs_a_data_input():
+    """M4 R4-03, found by G1: batch start refused the identity source the editor offers."""
+    identity = {"source": "inputIdentity", "inputId": "00000000-0000-0000-0000-000000000011",
+                "profileId": "00000000-0000-0000-0000-000000000012"}
+    with pytest.raises(ProjectRunError) as error:
+        validate_batch_start(automation(), request(environmentOverride=identity))
+    assert "environmentOverride.inputId" in error.value.details["fields"]
+    with_input = automation(inputs=[{"inputId": identity["inputId"]}])
+    started = validate_batch_start(with_input, request(environmentOverride=identity), allow_data_inputs=True)
+    assert started.environment_override == identity
+
+
 def test_environment_override_cannot_bypass_the_project_input_gate():
     with pytest.raises(ProjectRunError) as error:
         validate_batch_start(

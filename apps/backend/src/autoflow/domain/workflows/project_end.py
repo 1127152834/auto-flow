@@ -4,6 +4,8 @@ import re
 from collections.abc import Mapping
 from typing import Any
 
+from autoflow.domain.workflows.variables import references_variable
+
 
 def normalize_project_end(config: Mapping[str, Any]) -> dict[str, Any]:
     """Return the flat PM9 contract without rewriting a frozen document."""
@@ -32,8 +34,11 @@ def normalize_project_end(config: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def validate_project_end(config: Mapping[str, Any]) -> None:
-    if config.get("businessResult", "succeeded") not in {"succeeded", "failed"}:
-        raise ValueError("End 业务结果必须为成功或失败")
+    result = config.get("businessResult", "succeeded")
+    # Remediation M4 R4-07: a variable (e.g. the login outcome) may decide the result at run time;
+    # it must then resolve to succeeded or failed.
+    if result not in {"succeeded", "failed"} and not (isinstance(result, str) and references_variable(result)):
+        raise ValueError("End 业务结果必须为成功、失败或引用一个变量")
     if type(config.get("retainEnvironment", False)) is not bool:
         raise ValueError("End 保留环境必须为布尔值")
     if config.get("saveMode", "auto") not in {"auto", "save_as"}:

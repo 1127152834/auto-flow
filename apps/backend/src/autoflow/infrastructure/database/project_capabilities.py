@@ -765,13 +765,6 @@ class SqlAlchemyProjectDataCapabilities:
             resource = operation.resource or {}
             if resource.get("taskId") == scope.task_id and resource.get("recordRef") == ref_payload:
                 return _values_by_field((operation.result or {}).get("values"))
-        if lease_mode == "existing":
-            snapshot = session.scalar(
-                select(ProjectTaskInputSnapshotRow).where(ProjectTaskInputSnapshotRow.task_id == task.id)
-            )
-            for item in (snapshot.inputs if snapshot else None) or []:
-                if isinstance(item, dict) and item.get("recordRef") == ref_payload:
-                    return _values_by_field(item.get("values"))
         evidence = session.scalar(
             select(ProjectTaskRecordReadRow)
             .where(
@@ -783,7 +776,18 @@ class SqlAlchemyProjectDataCapabilities:
             )
             .order_by(ProjectTaskRecordReadRow.created_at.desc())
         )
-        return _values_by_field((evidence.snapshot or {}).get("values") if evidence else None)
+        if evidence is not None:
+            return _values_by_field((evidence.snapshot or {}).get("values"))
+        # A record this Task claimed: its input snapshot is what the Task saw, whichever grant writes
+        # it (workflow nodes write through a table grant). Found by G1 (M4 S10): cycle runs that
+        # rewrite a field were refused as conflicts because the claim snapshot was ignored.
+        snapshot = session.scalar(
+            select(ProjectTaskInputSnapshotRow).where(ProjectTaskInputSnapshotRow.task_id == task.id)
+        )
+        for item in (snapshot.inputs if snapshot else None) or []:
+            if isinstance(item, dict) and item.get("recordRef") == ref_payload:
+                return _values_by_field(item.get("values"))
+        return {}
 
     def delete_record(
         self, scope: TaskCapabilityScope, command: DeleteProjectRecordCommand

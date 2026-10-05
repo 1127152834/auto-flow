@@ -231,6 +231,66 @@ async def test_end_name_admission_is_frozen_validated_and_durable(capability_con
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize('frozen, arguments, expected', [
+    ('failed', {}, 'failed'),
+    ('{outcome}', {'businessResult': 'failed'}, 'failed'),
+    ('{outcome}', {'businessResult': 'succeeded'}, 'succeeded'),
+    ('{outcome}', {'businessResult': 'maybe'}, 'CAPABILITY_SCOPE_DENIED'),
+    ('succeeded', {'businessResult': 'failed'}, 'CAPABILITY_SCOPE_DENIED'),
+])
+async def test_end_business_result_may_come_from_a_variable(capability_context, tmp_path, frozen, arguments, expected):
+    """M4 R4-07: one End decides success or business failure from the run's own variable."""
+    from sqlalchemy import select
+
+    from autoflow.infrastructure.database.environment_models import (
+        ProjectEndOperationRow,
+    )
+
+    factory, _project, task, *_rest = capability_context
+    _prepare(factory, task, False)
+    visit = uuid4().hex
+    with factory.begin() as session:
+        run = session.get(WorkflowRunRow, task.run_id)
+        session.get(WorkflowPreparedContentRow, run.prepared_content_id).execution_plan = _plan(False, businessResult=frozen)
+        SqlAlchemyWorkflowRuntimeRepository(session).append_event({
+            'eventId': uuid4().hex, 'runId': task.run_id, 'executionGeneration': 1,
+            'kind': 'nodeAttempt', 'nodeId': 'end', 'nodeVisitId': visit, 'attempt': 1,
+            'occurredAt': datetime.now(UTC).isoformat(), 'payload': {'status': 'started'},
+        })
+    capabilities = ProjectWorkerCapabilities(factory, _environments(factory, tmp_path))
+    request = {
+        'commandId': project_command_id(task.run_id, 1, visit),
+        'nodeId': 'end', 'nodeVisitId': visit, 'attempt': 1,
+        'operation': 'end', 'browserClosed': True,
+        'arguments': {'recordTargets': [], **arguments},
+    }
+    if expected not in {'succeeded', 'failed'}:
+        with pytest.raises(ProjectError) as denied:
+            await capabilities.handle(task.run_id, 1, request)
+        assert denied.value.code == expected
+        return
+    await capabilities.handle(task.run_id, 1, request)
+    with factory() as session:
+        assert session.scalar(select(ProjectEndOperationRow)).intended_result['businessResult'] == expected
+        if expected == 'failed':
+            # The dispatcher fails such a run with END_BUSINESS_FAILED; it is a business verdict, not unknown.
+            from types import SimpleNamespace
+
+            from autoflow.application.project_runs.outcomes import task_outcome
+
+            run = SimpleNamespace(id=task.run_id, status='failed', error={'code': 'END_BUSINESS_FAILED'})
+            assert task_outcome(session, SimpleNamespace(id=task.task_id), run).kind == 'business'
+
+
+def test_end_business_result_accepts_only_outcomes_or_a_variable():
+    from autoflow.domain.workflows.project_end import validate_project_end
+
+    validate_project_end({'businessResult': '{outcome}'})
+    with pytest.raises(ValueError):
+        validate_project_end({'businessResult': 'maybe'})
+
+
+@pytest.mark.asyncio
 async def test_end_host_derives_targets_and_rejects_read_only_input(capability_context, tmp_path):
     from sqlalchemy import select
     from sqlalchemy.orm.attributes import flag_modified

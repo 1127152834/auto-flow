@@ -86,20 +86,20 @@ def validate_batch_start(
             ) from error
     effective_environment = environment_override or automation.environment_policy
     source = effective_environment.get("source")
-    if source not in {"newFromProfile", "fixedEnvironment", "inputEnvironment"}:
+    if source not in {"newFromProfile", "fixedEnvironment", "inputEnvironment", "inputIdentity"}:
         field = (
             "environmentOverride.source"
             if environment_override is not None
             else "environmentPolicy.source"
         )
         raise _error(field, "无效的环境来源")
-    if source == "inputEnvironment" and not automation.input_plan.get("inputs"):
+    if source in {"inputEnvironment", "inputIdentity"} and not automation.input_plan.get("inputs"):
         field = (
             "environmentOverride.inputId"
             if environment_override is not None
             else "environmentPolicy.inputId"
         )
-        raise _error(field, "记录关联环境需要数据输入")
+        raise _error(field, "记录关联环境需要数据输入" if source == "inputEnvironment" else "按记录的身份运行需要数据输入")
     # R2-30: the trial-run entry previews by default; real writes must be chosen explicitly.
     mode = payload.get("executionMode", "previewWrites" if "debugSelection" in payload else "realWrites")
     if mode not in {"previewWrites", "realWrites"}:

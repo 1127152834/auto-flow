@@ -60,7 +60,8 @@ def run_failure_category(session: Session, run_id: str, status: str) -> str | No
 
 def task_outcome(session: Session, task: ProjectTaskRow, run: WorkflowRunRow) -> TaskOutcome:
     error = run.error if isinstance(run.error, dict) else None
-    if run.status == "succeeded":
+    end_failed_business = run.status == "failed" and (error or {}).get("code") == "END_BUSINESS_FAILED"
+    if run.status == "succeeded" or end_failed_business:
         end = session.scalar(
             select(ProjectEndOperationRow)
             .where(ProjectEndOperationRow.task_id == task.id)
@@ -68,7 +69,12 @@ def task_outcome(session: Session, task: ProjectTaskRow, run: WorkflowRunRow) ->
             .limit(1)
         )
         failed = end is not None and (end.intended_result or {}).get("businessResult") == "failed"
-        return TaskOutcome("business" if failed else "succeeded", task.id, run.id, error)
+        if failed:
+            # The dispatcher ends a business failure as a failed run (END_BUSINESS_FAILED); it is
+            # still the workflow's own verdict, not an unknown result (found by G1, M4 S10).
+            return TaskOutcome("business", task.id, run.id, error)
+        if run.status == "succeeded":
+            return TaskOutcome("succeeded", task.id, run.id, error)
     category = run_failure_category(session, run.id, run.status) or "unknown"
     return TaskOutcome(category, task.id, run.id, error)  # type: ignore[arg-type]
 
