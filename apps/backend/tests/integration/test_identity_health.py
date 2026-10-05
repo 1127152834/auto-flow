@@ -14,8 +14,16 @@ from autoflow.infrastructure.database.identity_models import IdentityRow
 from autoflow.infrastructure.database.project_claims import SqlAlchemyProjectInputGroups
 from autoflow.infrastructure.database.project_data_models import DataRecordRow
 from autoflow.infrastructure.database.projects import SqlAlchemyProjects
-from autoflow.infrastructure.database.session import create_session_factory, migrate_database
-from tests.integration.test_project_input_groups import _add_record, _empty_table, _input, uid
+from autoflow.infrastructure.database.session import (
+    create_session_factory,
+    migrate_database,
+)
+from tests.integration.test_project_input_groups import (
+    _add_record,
+    _empty_table,
+    _input,
+    uid,
+)
 
 
 @pytest.fixture
