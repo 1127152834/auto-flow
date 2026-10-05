@@ -110,14 +110,35 @@ def project_released_leases(
             continue
         policy = automation.get("runPolicy") or {}
         scope = scope_for(batch.automation_id, chosen, ref, _namespace(primary.lease_key))
+        outcome = task_outcome(session, task, run)
+        _record_identity_health(session, run, outcome.kind, now)
         ledger.project(
             scope,
-            task_outcome(session, task, run),
+            outcome,
             budget=int(policy.get("retryBudget", DEFAULT_RETRY_BUDGET)),
             backoff=tuple(policy.get("retryBackoffSeconds", DEFAULT_BACKOFF_SECONDS)),
             now=now,
         )
         ledger.add_batch_unit(batch.id, scope, task.id, now)
+
+
+def _record_identity_health(session: Session, run: WorkflowRunRow, kind: str, now: datetime) -> None:
+    """Remediation M4 R4-07: a business failure (e.g. a wrong password) counts against the identity;
+    a success clears the count. The batch itself keeps going either way."""
+    from autoflow.infrastructure.database.identity_models import IdentityRow
+
+    identity = (run.resource_request or {}).get("identity")
+    identity_id = identity.get("identityId") if isinstance(identity, dict) else None
+    row = session.get(IdentityRow, identity_id) if isinstance(identity_id, str) else None
+    if row is None or kind not in {"business", "succeeded"}:
+        return
+    health = dict(row.health or {})
+    if kind == "business":
+        health["consecutiveFailures"] = int(health.get("consecutiveFailures") or 0) + 1
+    else:
+        health["consecutiveFailures"] = 0
+        health["lastLoginSuccessAt"] = now.isoformat()
+    row.health, row.updated_at = health, now
 
 
 def _record_ref(value: Any) -> RecordRef | None:

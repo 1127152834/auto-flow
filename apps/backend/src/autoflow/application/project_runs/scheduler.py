@@ -702,6 +702,7 @@ class ProjectBatchScheduler:
                     prepared["automationId"], {"automation": prepared["frozenAutomation"]}, datetime.now(UTC)
                 ),
                 **({"candidate_restriction": pinned} if pinned else {}),
+                identity_input_id=_identity_input(prepared["frozenAutomation"]),
             )
         result = ProjectBatchScheduler._commit_data_claim(
             factory,
@@ -1644,3 +1645,11 @@ def _stops_on_failure(frozen_request: dict[str, Any]) -> bool:
         return False
     policy = (frozen_request.get("automation") or {}).get("runPolicy") or {}
     return not policy.get("continueAfterFailure", False)
+
+
+def _identity_input(automation: dict[str, Any]) -> str | None:
+    """The input whose rows run as their identity (M4 R4-07: those rows wait while it is unhealthy)."""
+    policy = automation.get("environmentPolicy") if isinstance(automation, dict) else None
+    if isinstance(policy, dict) and policy.get("source") == "inputIdentity" and isinstance(policy.get("inputId"), str):
+        return str(policy["inputId"])
+    return None

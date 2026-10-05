@@ -88,6 +88,7 @@ class SqlAlchemyProjectInputGroups:
         candidate_restriction: dict[str, list[RecordRef]] | None = None,
         ledger_policy: LedgerClaimPolicy | None = None,
         candidate_page_sizes: dict[str, int] | None = None,
+        identity_input_id: str | None = None,
     ) -> InputSelection:
         raw_inputs = input_plan.get("inputs") if isinstance(input_plan, dict) else None
         if not isinstance(raw_inputs, list):
@@ -115,6 +116,7 @@ class SqlAlchemyProjectInputGroups:
                     ledger=ledger_policy
                     if ledger_policy is not None and ledger_policy.processing_input_id == item["inputId"]
                     else None,
+                    identity_gate=identity_input_id == item["inputId"],
                 )
             )
         selection = self._validate_selected_values(select_required_inputs(sources))
@@ -423,6 +425,7 @@ class SqlAlchemyProjectInputGroups:
         restriction: list[RecordRef] | None = None,
         ledger: LedgerClaimPolicy | None = None,
         page_size: int = MAX_CANDIDATE_EVALUATIONS,
+        identity_gate: bool = False,
     ) -> InputCandidates:
         input_id = item["inputId"]
         table_id, generation = item.get("tableId"), item.get("datasetGeneration")
@@ -515,6 +518,8 @@ class SqlAlchemyProjectInputGroups:
         query = query.where(translate_filter(filter_value).clause)
         if ledger is not None and table.source_kind != "sheets":
             query = query.where(_ledger_gate(ledger, project_id, table_id, generation))
+        if identity_gate:
+            query = query.where(_identity_health_gate())
         rows: list[DataRecordRow]
         if omit_candidates or restriction == []:
             rows = []
@@ -1336,6 +1341,19 @@ def _active_lease_keys(session: Session, keys: list[str]) -> set[str]:
             )
         ))
     return found
+
+
+UNHEALTHY_LOGIN_FAILURES = 3
+
+
+def _identity_health_gate() -> Any:
+    """Remediation M4 R4-07: rows whose identity is banned or keeps failing to log in wait for a person."""
+    return text(
+        "(project_data_records.current_identity_id IS NULL OR NOT EXISTS ("
+        "SELECT 1 FROM identities AS gate_identity WHERE gate_identity.id = project_data_records.current_identity_id "
+        "AND (COALESCE(json_extract(gate_identity.health, '$.banned'), 0) = 1 "
+        f"OR COALESCE(json_extract(gate_identity.health, '$.consecutiveFailures'), 0) >= {UNHEALTHY_LOGIN_FAILURES})))"
+    )
 
 
 def _ledger_gate(policy: LedgerClaimPolicy, project_id: str, table_id: str, generation: str) -> Any:
