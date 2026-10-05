@@ -19,6 +19,11 @@ from autoflow.infrastructure.process.workflow_worker import WorkerOutcome
 from tests.fixtures.workflow_runs import NOW, SyntheticResources, create_queued_run
 
 
+def _events(runtime, run_id):
+    with runtime() as session:
+        return SqlAlchemyWorkflowRuntimeRepository(session).list_events(run_id, after_sequence=0, limit=50)
+
+
 class SyntheticWorker:
     def __init__(
         self, *, outcome="succeeded", fail=None, cleanup_fail=False, blocked=None
@@ -635,9 +640,11 @@ async def test_force_and_reconcile_are_serialized_until_cleanup_finishes(runtime
         )
     )
     await asyncio.sleep(0)
+    # The force stop fences the run (committed off the event loop) before its cleanup finishes.
+    while dispatcher._get_run(run.run_id).status != "reconciling":
+        await asyncio.sleep(0.001)
     reconciling = asyncio.create_task(dispatcher.reconcile(run.run_id))
     await asyncio.sleep(0)
-    assert dispatcher._get_run(run.run_id).status == "reconciling"
     assert not reconciling.done()
     worker_gate.set()
     assert (await forcing).status == "interrupted"
@@ -824,7 +831,8 @@ async def test_live_manual_continuation_keeps_owner_and_excludes_wait_from_budge
     worker = SyntheticWorker(blocked=release)
     dispatcher = make_dispatcher(runtime, worker, SyntheticResources())
     await dispatcher.dispatch(run.run_id, expected_status_revision=1, execution_generation=0)
-    while not worker.calls:
+    # A manual pause comes from the worker after its events are committed; wait for that.
+    while not any(event.event_id == "event-1" for event in _events(runtime, run.run_id)):
         await asyncio.sleep(.001)
     dispatcher.pause_manual(run.run_id, 1)
     await asyncio.sleep(2.1)

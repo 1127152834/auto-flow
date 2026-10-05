@@ -218,7 +218,7 @@ class WorkflowRunDispatcher:
                 if run.status == "queued":
                     continue
                 fenced = (
-                    self._transition(run, "reconciling")
+                    await self._atransition(run, "reconciling")
                     if run.status != "reconciling"
                     else run
                 )
@@ -228,7 +228,7 @@ class WorkflowRunDispatcher:
                     continue
                 if await self._finish_end(fenced.run_id, recovering=True):
                     continue
-                self._transition_current(
+                await self._atransition_current(
                     fenced.run_id,
                     fenced.execution_generation,
                     "interrupted",
@@ -278,7 +278,7 @@ class WorkflowRunDispatcher:
                     raise WorkflowRuntimeError(
                         "WORKFLOW_ADMISSION_CLOSED", "运行准入已关闭", 503
                     )
-                run = self._transition_identity(
+                run = await self._atransition_identity(
                     run_id, "running", expected_status_revision, execution_generation
                 )
             owner = _RunOwner(run_id, run.execution_generation)
@@ -334,11 +334,11 @@ class WorkflowRunDispatcher:
                         "EXECUTION_GENERATION_REVOKED", "执行代次已失效"
                     )
                 return current
-            run = self._transition_identity(
+            run = await self._atransition_identity(
                 run_id, "stopping", expected_status_revision, execution_generation
             )
             if run.execution_generation == 0:  # queued: no resource or worker ever existed
-                return self._transition_current(run_id, 0, "cancelled")
+                return await self._atransition_current(run_id, 0, "cancelled")
             await self._worker.stop(run_id)
             return self._get_run(run_id)
 
@@ -362,7 +362,7 @@ class WorkflowRunDispatcher:
             run_id, expected_status_revision, execution_generation
         )
         fenced = (
-            self._transition_identity(
+            await self._atransition_identity(
                 run_id, "reconciling", expected_status_revision, execution_generation
             )
             if run.status != "reconciling"
@@ -402,7 +402,7 @@ class WorkflowRunDispatcher:
             return self._get_run(run_id)
         if owner is not None:
             self._release_lease(owner)
-        result = self._transition_current(
+        result = await self._atransition_current(
             run_id,
             fenced.execution_generation,
             "interrupted",
@@ -474,7 +474,7 @@ class WorkflowRunDispatcher:
             return self._get_run(run_id)
         if owner is not None:
             self._release_lease(owner)
-        result = self._transition_current(
+        result = await self._atransition_current(
             run_id,
             run.execution_generation,
             "interrupted",
@@ -502,7 +502,7 @@ class WorkflowRunDispatcher:
         for owner in owners:
             run = self._get_run(owner.run_id)
             if not run.terminal and run.status != "reconciling":
-                self._transition(run, "reconciling")
+                await self._atransition(run, "reconciling")
             if owner.task is not None:
                 owner.task.cancel()
         errors: list[Exception] = []
@@ -579,10 +579,10 @@ class WorkflowRunDispatcher:
                 except ModelError as error:
                     current = self._get_run(dispatched.run_id)
                     if current.status == "stopping":
-                        self._transition_current(current.run_id, current.execution_generation, "cancelled")
+                        await self._atransition_current(current.run_id, current.execution_generation, "cancelled")
                     elif current.status == "running":
-                        finishing = self._transition(current, "finishing")
-                        self._transition_current(
+                        finishing = await self._atransition(current, "finishing")
+                        await self._atransition_current(
                             finishing.run_id, finishing.execution_generation, "failed",
                             error={"code": error.code, "message": error.message},
                         )
@@ -599,7 +599,7 @@ class WorkflowRunDispatcher:
                 ):
                     self._release_lease(owner)
                     if current.status == "stopping":
-                        self._transition_current(
+                        await self._atransition_current(
                             current.run_id, current.execution_generation, "cancelled"
                         )
                     return
@@ -657,17 +657,17 @@ class WorkflowRunDispatcher:
             ):
                 return
             if current.status == "stopping" or outcome.status == "cancelled":
-                self._transition_current(
+                await self._atransition_current(
                     current.run_id, current.execution_generation, "cancelled"
                 )
                 return
             finishing = (
                 current
                 if current.status == "finishing"
-                else self._transition(current, "finishing")
+                else await self._atransition(current, "finishing")
             )
             target: CoreRunStatus = outcome.status
-            self._transition_current(
+            await self._atransition_current(
                 finishing.run_id,
                 finishing.execution_generation,
                 target,
@@ -687,7 +687,7 @@ class WorkflowRunDispatcher:
                 raise
             if current.terminal:
                 return
-            fenced = self._transition(current, "reconciling")
+            fenced = await self._atransition(current, "reconciling")
             try:
                 if owner.lease is None:
                     await self._recover_orphan(fenced)
@@ -706,7 +706,7 @@ class WorkflowRunDispatcher:
                 unhandled = True
                 return
             self._release_lease(owner)
-            self._transition_current(
+            await self._atransition_current(
                 fenced.run_id,
                 fenced.execution_generation,
                 "interrupted",
@@ -765,7 +765,7 @@ class WorkflowRunDispatcher:
                 "INSTANCE_OWNERSHIP_UNKNOWN",
             }:
                 raise RuntimeError("End browser ownership remains unknown") from error
-            self._transition_current(
+            await self._atransition_current(
                 run_id,
                 current.execution_generation,
                 "failed",
@@ -784,7 +784,7 @@ class WorkflowRunDispatcher:
             if outcome.get("complete") and business == "succeeded"
             else "failed"
         )
-        self._transition_current(
+        await self._atransition_current(
             run_id,
             current.execution_generation,
             target,
@@ -977,6 +977,14 @@ class WorkflowRunDispatcher:
     def _transition_identity(
         self, run_id: str, target: CoreRunStatus, revision: int, generation: int
     ) -> CoreRun:
+        changed = self._write_transition_identity(run_id, target, revision, generation)
+        if changed.status == "reconciling":
+            self._on_fenced(run_id)
+        return changed
+
+    def _write_transition_identity(
+        self, run_id: str, target: CoreRunStatus, revision: int, generation: int
+    ) -> CoreRun:
         with self._sessions() as session:
             repository = SqlAlchemyWorkflowRuntimeRepository(session)
             before = repository.get_run(run_id=run_id)
@@ -992,8 +1000,6 @@ class WorkflowRunDispatcher:
                 changed = repository.get_run(run_id=run_id) or changed
             self.interactions.finish(session, changed)
             session.commit()
-            if changed.status == "reconciling":
-                self._on_fenced(run_id)
             return changed
 
     def _transition(self, run: CoreRun, target: CoreRunStatus) -> CoreRun:
@@ -1007,6 +1013,35 @@ class WorkflowRunDispatcher:
         generation: int,
         target: CoreRunStatus,
         error: dict[str, Any] | None = None,
+    ) -> CoreRun:
+        changed = self._write_transition_current(run_id, generation, target, error)
+        if changed.status == "reconciling":
+            self._on_fenced(run_id)
+        return changed
+
+    # Remediation M3 AC3-02: the coroutines commit run transitions from a thread. Each one
+    # waited on the SQLite write lock held by event, claim and lease writers, on the loop.
+    async def _atransition(self, run: CoreRun, target: CoreRunStatus) -> CoreRun:
+        return await self._atransition_identity(run.run_id, target, run.status_revision, run.execution_generation)
+
+    async def _atransition_identity(
+        self, run_id: str, target: CoreRunStatus, revision: int, generation: int
+    ) -> CoreRun:
+        changed = await asyncio.to_thread(self._write_transition_identity, run_id, target, revision, generation)
+        if changed.status == "reconciling":
+            self._on_fenced(run_id)
+        return changed
+
+    async def _atransition_current(
+        self, run_id: str, generation: int, target: CoreRunStatus, error: dict[str, Any] | None = None,
+    ) -> CoreRun:
+        changed = await asyncio.to_thread(self._write_transition_current, run_id, generation, target, error)
+        if changed.status == "reconciling":
+            self._on_fenced(run_id)
+        return changed
+
+    def _write_transition_current(
+        self, run_id: str, generation: int, target: CoreRunStatus, error: dict[str, Any] | None = None,
     ) -> CoreRun:
         current = self._get_run(run_id)
         with self._sessions() as session:
@@ -1024,8 +1059,6 @@ class WorkflowRunDispatcher:
                 changed = repository.get_run(run_id=run_id) or changed
             self.interactions.finish(session, changed)
             session.commit()
-            if changed.status == "reconciling":
-                self._on_fenced(run_id)
             return changed
 
     def _nonterminal_runs(self) -> list[CoreRun]:
