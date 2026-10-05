@@ -139,7 +139,7 @@ flowchart LR
 
 ### 6.3 ARTEMIS 集成方式
 
-- **安装**：在 `android_runtime_root()/tools/artemis/` 下用 uv 创建 Python 3.12 环境，安装**固定提交**的 ARTEMIS（提交哈希写在代码常量中，升级需改代码并回归）。不运行 `start.sh`；adb/scrcpy 用 AutoFlow 已有的。安装是一次持久操作（复用 operations 表，`action=ai_tool_install`），失败把 uv 输出末尾 50 行透传给用户。
+- **安装**：在 `android_runtime_root()/tools/artemis/` 下用 uv 创建 Python 3.12 环境，安装**固定提交**的 ARTEMIS（提交哈希写在代码常量中，升级需改代码并回归）。不运行 `start.sh`；adb/scrcpy 用 AutoFlow 已有的。前置条件为本机已有 `uv`（缺失时工具状态显示"需要先安装 uv"，随包内置 uv 留待后续）。已安装状态由工具目录内 `installed.json` 记录的提交判断，安装中状态只在进程内保存（同一时间只允许一次安装）；失败把 uv 输出末尾 50 行透传给用户。
 - **调用**：后端用 `asyncio.create_subprocess_exec` 在该环境运行一个随 AutoFlow 发布的小脚本 `artemis_bridge.py`：脚本内用 `artemis-client` 执行任务，把步骤、截图路径、最终结果按 JSON 行写到 stdout。后端逐行读取并落库。**桥接脚本是唯一接触 ARTEMIS API 的地方**，上游接口变化只改它。
 - **环境变量**：`ARTEMIS_HELPER_AUTO_INSTALL=false`；模型提供方地址与密钥由 `application/models` 按用户所选 ProviderProfile 解析后只注入子进程环境，不写盘、不写日志。
 - **辅助 APK**：首次在某设备运行前检查是否已安装；未安装时界面提示"需要在该设备安装测试辅助组件"，用户确认后经桥接脚本执行 `artemis helper install`。拒绝则不运行（ARTEMIS 自带 UIAutomator2 后备是否可用由 T0 核实，核实前不依赖它）。
@@ -151,18 +151,18 @@ flowchart LR
 ### 6.4 控制权
 
 - 托管设备：`OwnerKind` 增加 `aiTest`。发起时按现有控制会话规则获取独占（设备须 `ready` 且 `control=idle`），沿用代次栅栏与心跳；结束、失败、取消都释放。人工会话进行中时拒绝，返回明确原因。
-- 外接设备：AutoFlow 不拥有生命周期，用进程内按序列号的互斥锁防止同一设备并发两个测试；界面注明"外接设备可能被其他程序同时操作"。
+- 外接设备：AutoFlow 不拥有生命周期，用进程内按序列号的互斥锁防止同一设备并发两个测试；当前被 AutoFlow 托管连接的序列号不出现在外接列表，也不能以外接方式运行；界面注明"外接设备可能被其他程序同时操作"。
 - 画面：托管设备运行期间工作台以只读方式显示画面（复用 scrcpy `--no-control`），并提供"停止并接管"。外接设备在 S1 只显示测试步骤截图、只提供"停止"；实时画面与手动操控留到 S2（外接设备纳入运行时端口后）。
 
 ### 6.5 数据与接口
 
-新表 `android_ai_test_runs`（迁移前缀遵循整改期 `rm<N>_` 约定）：
+新表 `android_ai_test_runs`（迁移前缀遵循整改期 `rm<N>_` 约定；除索引列外其余字段存于 JSON `payload`，与现有安卓表一致）：
 
 | 字段 | 说明 |
 | --- | --- |
 | `id`, `request_id`（唯一，幂等） | |
 | `device_kind`（`managed`/`external`）, `device_id`, `serial` | 托管设备存 id，外接设备存序列号 |
-| `instruction`, `mode`（`flash`/`pro`）, `model_profile`, `model_key`, `max_steps`, `timeout_seconds` | 全部由后端读取并传入工具 |
+| `instruction`, `mode`（`flash`/`pro`）, `model_id`, `model_key`, `max_steps`, `timeout_seconds` | 全部由后端读取并传入工具 |
 | `state`, `error_code`, `error_message` | 失败原因原文（去除凭据） |
 | `steps_json`（截断保留最近 200 步）, `artifacts_dir`, `trace_id`, `succeeded` | |
 | `tool_version`, `created_at`, `started_at`, `finished_at` | |
@@ -180,6 +180,7 @@ flowchart LR
 | GET | `/runs?deviceKind=&deviceId=&serial=&cursor=` | 历史 |
 | GET | `/runs/{id}` | 详情（含步骤） |
 | POST | `/runs/{id}/cancel` | 停止 |
+| POST | `/helper` | 在指定设备安装测试辅助组件（用户确认后调用） |
 | GET | `/runs/{id}/artifacts/{name}` | 截图/日志/报告，路径限定在运行目录内 |
 | DELETE | `/runs/{id}` | 删除记录与产物（界面二次确认） |
 
