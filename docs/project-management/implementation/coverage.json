@@ -1206,7 +1206,7 @@
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_automation_repository.py",
-            "symbol": "test_workflow_unique_parent_scope_and_archive_guard",
+            "symbol": "test_workflow_reuse_parent_scope_and_archive_guard",
             "scope": "工作流唯一父项目、跨项目隔离及归档准入",
             "level": "automated_integration"
           }
@@ -4557,7 +4557,7 @@
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_input_groups.py",
-            "symbol": "test_repository_reports_physical_page_continuation_before_true_no_match",
+            "symbol": "test_pushed_down_filter_finds_the_match_without_paging",
             "scope": "预算结束返回 scanBudgetExceeded，继续能找到 R3",
             "level": "automated_integration"
           }
@@ -8176,20 +8176,20 @@
           {
             "file": "apps/backend/tests/integration/test_project_batch_real_cloakbrowser.py",
             "symbol": "test_real_project_batch_http",
-            "scope": "data-delete-field / data-delete-field-conflict 两参数：实际 worker 预览/删除成功；预览后实际 HTTP 新增字段导致提交拒绝，此前 createRecord 保留、未重复保存 End。任务详情包含已确认删除事实。",
+            "scope": "（整改 M2B R2-23 起运行中不再删除字段，data-delete-field 两参数已移除）其余真实 worker 批次场景。",
             "level": "automated_real_worker"
           },
           {
-            "file": "apps/desktop/src/renderer/domains/workflows/tests/project-data-config.test.tsx",
-            "testName": "previews a field removal and grants that target only after confirmation",
-            "scope": "明确目标、完整候选预览、确认后仅授权所选字段；配置预览不删除数据",
-            "level": "automated_component"
+            "file": "apps/backend/tests/unit/test_workflow_run_validation.py",
+            "symbol": "test_runs_no_longer_change_table_structure",
+            "scope": "整改 M2B R2-23：运行中删除/修改字段的节点在运行前预检即被拒绝并指向数据页；字段删除只在数据页维护（原节点内删除字段 UI 已移除）",
+            "level": "automated_unit"
           },
           {
-            "file": "apps/desktop/src/renderer/domains/workflows/tests/project-data-config.test.tsx",
-            "testName": "blocks field deletion confirmation while source mapping remains",
-            "scope": "来源映射 blocker 展示具体原因并禁用确认，不授予删除字段权限",
-            "level": "automated_component"
+            "file": "apps/backend/tests/integration/test_project_capability_rpc.py",
+            "symbol": "test_worker_cannot_change_table_structure_even_with_a_forged_request",
+            "scope": "整改 M2B R2-23：伪造的运行中改表结构请求被 sidecar 拒绝",
+            "level": "automated_integration"
           }
         ],
         "gaps": [
@@ -15092,7 +15092,7 @@
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_automation_repository.py",
-            "symbol": "test_workflow_unique_parent_scope_and_archive_guard",
+            "symbol": "test_workflow_reuse_parent_scope_and_archive_guard",
             "scope": "工作流唯一父项目、跨项目隔离及归档准入",
             "level": "automated_integration"
           }
@@ -16379,7 +16379,7 @@
         "checks": [
           {
             "file": "apps/backend/tests/integration/test_project_automation_repository.py",
-            "symbol": "test_workflow_unique_parent_scope_and_archive_guard",
+            "symbol": "test_workflow_reuse_parent_scope_and_archive_guard",
             "scope": "工作流唯一父项目、跨项目隔离及归档准入",
             "level": "automated_integration"
           }
