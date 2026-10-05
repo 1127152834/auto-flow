@@ -245,6 +245,8 @@ class DataRecordRow(Base):
     )
     status_id: Mapped[str | None] = mapped_column(sa.String(36))
     current_environment_id: Mapped[str | None] = mapped_column(sa.String(36))
+    # Remediation M4 R4-03: the record's account identity; current_environment_id stays for older readers.
+    current_identity_id: Mapped[str | None] = mapped_column(sa.String(36))
     content_revision: Mapped[int] = mapped_column(sa.Integer(), nullable=False)
     status_revision: Mapped[int] = mapped_column(sa.Integer(), nullable=False)
     link_revision: Mapped[int] = mapped_column(sa.Integer(), nullable=False)

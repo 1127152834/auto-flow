@@ -36,5 +36,7 @@ class IdentityRow(Base):
         ForeignKey("project_environments.id", ondelete="RESTRICT"), unique=True,
     )
     health: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    # Migration evidence (rm4_record_identity): the environment it came from and whether its seed was missing.
+    origin: Mapped[dict[str, Any] | None] = mapped_column(JSON(none_as_null=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

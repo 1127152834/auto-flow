@@ -11,7 +11,7 @@ from alembic.script import ScriptDirectory
 
 from autoflow.infrastructure.database import session as database_session
 
-EXPECTED_HEAD = "rm4_identities"
+EXPECTED_HEAD = "rm4_record_identity"
 
 
 def _config(path: Path) -> Config:
@@ -382,7 +382,9 @@ def test_0009_upgrade_preserves_shared_facts_and_maps_legacy_provenance(tmp_path
     with sqlite3.connect(database) as connection:
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
         for table, rows in preserved.items():
-            assert connection.execute(f"SELECT * FROM {table}").fetchall() == rows
+            # Later migrations append columns; the columns that existed before keep their values.
+            after = connection.execute(f"SELECT * FROM {table}").fetchall()
+            assert [row[: len(rows[0])] for row in after] == rows if rows else after == []
         assert (
             connection.execute("SELECT * FROM workflow_run_artifacts").fetchall()
             == artifact_before

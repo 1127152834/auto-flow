@@ -1,10 +1,12 @@
 import asyncio
 import logging
 import sqlite3
+from datetime import UTC, datetime
 from pathlib import Path
 
 from alembic import command
 from alembic.config import Config
+from alembic.script import ScriptDirectory
 from sqlalchemy import create_engine, event, text
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session, sessionmaker
@@ -16,10 +18,41 @@ def _url(path: Path) -> str:
     return f"sqlite:///{path}"
 
 
+BACKUPS_KEPT = 5
+
+
 def migrate_database(path: Path) -> None:
     config = Config(str(Path(__file__).with_name("alembic.ini")))
     config.set_main_option("sqlalchemy.url", _url(path))
+    _backup_before_upgrade(path, config)
     command.upgrade(config, "head")
+
+
+def _backup_before_upgrade(path: Path, config: Config) -> None:
+    """Copy an existing database before any schema change (remediation M4 R4-10).
+
+    Uses SQLite's online backup so a WAL database is copied consistently; keeps the newest five.
+    A database already at head is not copied.
+    """
+    if not path.exists():
+        return
+    head = ScriptDirectory.from_config(config).get_current_head()
+    with sqlite3.connect(path) as source:
+        try:
+            row = source.execute("SELECT version_num FROM alembic_version").fetchone()
+        except sqlite3.OperationalError:
+            row = None
+        current = row[0] if row else None
+        if current is None or current == head:
+            return
+        directory = path.parent / "backups"
+        directory.mkdir(exist_ok=True)
+        stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+        target = directory / f"{path.stem}-{current}-{stamp}.sqlite3"
+        with sqlite3.connect(target) as destination:
+            source.backup(destination)
+    for old in sorted(directory.glob(f"{path.stem}-*.sqlite3"))[:-BACKUPS_KEPT]:
+        old.unlink(missing_ok=True)
 
 
 SQLITE_PRAGMAS = (

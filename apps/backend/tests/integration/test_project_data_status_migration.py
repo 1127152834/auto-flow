@@ -57,14 +57,11 @@ def test_status_upgrade_preserves_records_and_enforces_active_names(tmp_path, ex
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
 
-        ).fetchone() == ("rm4_identities",)
+        ).fetchone() == ("rm4_record_identity",)
 
-        assert (
-            connection.execute(
-                "SELECT * FROM project_data_records ORDER BY key_value"
-            ).fetchall()
-            == before
-        )
+        # Later migrations append columns; the columns that existed before keep their values.
+        after = connection.execute("SELECT * FROM project_data_records ORDER BY key_value").fetchall()
+        assert [row[: len(before[0])] for row in after] == before if before else after == []
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
         if not existing:
             seed_project(connection)
@@ -155,4 +152,4 @@ def test_downgrade_preserves_live_data_but_refuses_to_resurrect_deleted_status(
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
 
-        ).fetchone() == ("rm4_identities",)
+        ).fetchone() == ("rm4_record_identity",)
