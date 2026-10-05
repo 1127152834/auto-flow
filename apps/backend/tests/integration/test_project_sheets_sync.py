@@ -836,3 +836,24 @@ def test_source_read_time_survives_push_and_failed_pull_and_excludes_retired_bin
             session.get(SheetsBindingRow, sheets.table).binding_epoch += 1
         retired = sheets.client.get(sheets.url("/sync")).json()
         assert "lastPulledAt" not in retired["summary"] and "latestPull" not in retired
+
+
+def test_edits_in_the_same_clock_tick_are_pushed_in_the_order_they_were_made(tmp_path, monkeypatch):
+    """Windows' 15.6 ms clock gives neighbouring edits one created_at; a random id must not decide the order."""
+    from sqlalchemy import update
+
+    from autoflow.application.project_sync import outbound
+    from autoflow.infrastructure.database.project_sync_models import SyncOperationRow
+
+    monkeypatch.setattr(outbound, "MAX_PUSH_RECORDS", 1)
+    transport = FakeSheetsTransport({"数据": [["编号", "标题"], ["A-1", "a"], ["B-2", "b"]]})
+    with open_sheets_table(tmp_path, transport, COLUMNS) as sheets:
+        pull(sheets)
+        for record in sheets.records():
+            edit_title(sheets, record, record["ref"]["recordKey"]["value"] + "-v2")
+        with sheets.client.app.state.session_factory.begin() as session:
+            same_tick = session.scalars(select(SyncOperationRow.created_at)).first()
+            session.execute(update(SyncOperationRow).where(SyncOperationRow.status == "pending").values(created_at=same_tick))
+        assert push(sheets).status_code == 202
+        confirmed, = sync_operations(sheets, "confirmed")
+        assert confirmed["record"]["recordKey"]["value"] == "A-1"

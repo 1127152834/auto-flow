@@ -1077,7 +1077,9 @@ class SqlAlchemyProjectSync:
                     SyncOperationRow.binding_epoch == binding.binding_epoch,
                     SyncOperationRow.status == "pending",
                 )
-                .order_by(SyncOperationRow.created_at, SyncOperationRow.id)
+                # rowid is insertion order: edits made within one clock tick (15.6 ms on Windows)
+                # still go out in the order they were made, not in random-UUID order.
+                .order_by(SyncOperationRow.created_at, text("rowid"))
                 .limit(limit)
             ).all()
             for row in rows:
