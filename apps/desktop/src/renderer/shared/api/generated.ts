@@ -9550,6 +9550,8 @@ export type components = {
         IdentityBatchCreate: {
             /** Tableid */
             tableId: string;
+            /** Datasetgeneration */
+            datasetGeneration?: string | null;
             /** Templateprofileid */
             templateProfileId?: string | null;
             /** Rows */
@@ -9561,6 +9563,11 @@ export type components = {
             recordKey: string;
             /** Identityid */
             identityId: string;
+            /**
+             * Linked
+             * @default false
+             */
+            linked: boolean;
         };
         /** IdentityBatchResult */
         IdentityBatchResult: {
@@ -9614,6 +9621,8 @@ export type components = {
             recordKey: string;
             /** Name */
             name: string;
+            /** Keytype */
+            keyType?: string | null;
         };
         /** IdentityView */
         IdentityView: {
