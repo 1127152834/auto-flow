@@ -7,7 +7,7 @@ from alembic.script import ScriptDirectory
 
 from autoflow.infrastructure.database import session as database_session
 
-EXPECTED_HEAD = "rm3_environment_cache"
+EXPECTED_HEAD = "rm4_identities"
 
 
 def config_for(database: Path) -> Config:

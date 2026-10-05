@@ -10,6 +10,7 @@ from pathlib import Path
 from threading import Event, Thread
 from typing import Any, TextIO
 
+from autoflow.domain.identities.seeds import valid_seed
 from autoflow.providers.browser.proxy_relay import BrowserProxyRelay
 
 _FORBIDDEN_ARGS = (
@@ -102,7 +103,7 @@ def browser_launch_options(
     command: dict[str, Any], *, headless: bool
 ) -> dict[str, Any]:
     seed = command.get("fingerprintSeed")
-    if type(seed) is not int or not 10000 <= seed <= 99999:
+    if not valid_seed(seed):  # Remediation M4: identities use the wider range the kernel accepts
         raise ValueError("fingerprintSeed is invalid")
     expert_args = _string_list(command, "expertArgs")
     if any(

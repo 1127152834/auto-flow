@@ -5,6 +5,7 @@ from autoflow.infrastructure.database import (  # noqa: F401
     android_models,
     app_settings,
     environment_models,
+    identity_models,
     preview_models,
     project_automation_models,
     project_data_models,

@@ -23,7 +23,7 @@ def test_workflow_command_migration_is_durable_and_preserves_documents(
     database = tmp_path / "workflow-commands.sqlite3"
     config = config_for(database)
     assert ScriptDirectory.from_config(config).get_heads() == [
-        "rm3_environment_cache"
+        "rm4_identities"
     ]
     preserved: tuple | None = None
     if existing:
@@ -50,7 +50,7 @@ def test_workflow_command_migration_is_durable_and_preserves_documents(
     with sqlite3.connect(database) as connection:
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchall() == [("rm3_environment_cache",)]
+        ).fetchall() == [("rm4_identities",)]
         columns = {
             row[1]: row[2]
             for row in connection.execute(
