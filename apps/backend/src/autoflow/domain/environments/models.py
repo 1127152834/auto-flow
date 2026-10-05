@@ -149,6 +149,8 @@ class ResolvedEnvironmentSource:
     environment_ref: EnvironmentRef | None
     profile_id: str
     identity_package: dict[str, Any]
+    # Remediation M4 R4-03: the account identity whose seed and region the browser takes.
+    identity: dict[str, Any] | None = None
 
 
 @dataclass(frozen=True)

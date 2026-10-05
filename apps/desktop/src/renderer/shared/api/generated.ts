@@ -6872,7 +6872,7 @@ export type components = {
             /** Parameterschema */
             parameterSchema: components["schemas"]["ParameterDefinition"][];
             /** Environmentpolicy */
-            environmentPolicy: components["schemas"]["NewFromProfile"] | components["schemas"]["FixedEnvironment"] | components["schemas"]["InputEnvironment"];
+            environmentPolicy: components["schemas"]["NewFromProfile"] | components["schemas"]["FixedEnvironment"] | components["schemas"]["InputEnvironment"] | components["schemas"]["InputIdentity"];
             runPolicy: components["schemas"]["RunPolicy"];
         };
         /** AutomationDeleteRequest */
@@ -6931,7 +6931,7 @@ export type components = {
             /** Parameterschema */
             parameterSchema: components["schemas"]["ParameterDefinition"][];
             /** Environmentpolicy */
-            environmentPolicy: components["schemas"]["NewFromProfile"] | components["schemas"]["FixedEnvironment"] | components["schemas"]["InputEnvironment"];
+            environmentPolicy: components["schemas"]["NewFromProfile"] | components["schemas"]["FixedEnvironment"] | components["schemas"]["InputEnvironment"] | components["schemas"]["InputIdentity"];
             runPolicy: components["schemas"]["RunPolicy"];
             /** Workflowid */
             workflowId: string;
@@ -6984,7 +6984,7 @@ export type components = {
             /** Parameterschema */
             parameterSchema: components["schemas"]["ParameterDefinition"][];
             /** Environmentpolicy */
-            environmentPolicy: components["schemas"]["NewFromProfile"] | components["schemas"]["FixedEnvironment"] | components["schemas"]["InputEnvironment"];
+            environmentPolicy: components["schemas"]["NewFromProfile"] | components["schemas"]["FixedEnvironment"] | components["schemas"]["InputEnvironment"] | components["schemas"]["InputIdentity"];
             runPolicy: components["schemas"]["RunPolicy"];
             /** Workflowid */
             workflowId: string;
@@ -7234,7 +7234,7 @@ export type components = {
             /** Concurrency */
             concurrency?: number | null;
             /** Environmentoverride */
-            environmentOverride?: (components["schemas"]["NewFromProfile"] | components["schemas"]["FixedEnvironment"] | components["schemas"]["InputEnvironment"]) | null;
+            environmentOverride?: (components["schemas"]["NewFromProfile"] | components["schemas"]["FixedEnvironment"] | components["schemas"]["InputEnvironment"] | components["schemas"]["InputIdentity"]) | null;
             /** Executionmode */
             executionMode?: ("previewWrites" | "realWrites") | null;
             /** Priority */
@@ -9813,6 +9813,25 @@ export type components = {
             fieldRef: components["schemas"]["DataFieldRef"];
             /** Signaturefield */
             signatureField?: string | null;
+        };
+        /**
+         * InputIdentity
+         * @description Remediation M4 R4-03: run as the identity linked to the task's input record.
+         */
+        InputIdentity: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            source: "inputIdentity";
+            /** Inputid */
+            inputId: string;
+            /** Profileid */
+            profileId?: string | null;
+            /** Proxyoverride */
+            proxyOverride?: (components["schemas"]["SourceDefaultProxy"] | components["schemas"]["NoProxy"] | components["schemas"]["FixedProxy"] | components["schemas"]["PoolProxy"]) | null;
+            /** Modelproviderid */
+            modelProviderId?: string | null;
         };
         /** InputPlan */
         InputPlan: {

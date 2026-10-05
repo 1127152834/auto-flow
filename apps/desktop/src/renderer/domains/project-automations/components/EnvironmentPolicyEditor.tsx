@@ -32,7 +32,8 @@ export function EnvironmentPolicyEditor({ value, onChange, disabled = false, nod
   const isNew = value.source === 'newFromProfile'
   const profileSpecified = isNew && Object.hasOwn(value, 'profileId')
   const proxyMode: ProxyMode = value.proxyOverride?.mode ?? 'inherit'
-  const inputAlias = value.source === 'inputEnvironment' ? inputs.find(input => input.inputId === value.inputId)?.alias.trim() : undefined
+  const byInput = value.source === 'inputEnvironment' || value.source === 'inputIdentity'
+  const inputAlias = byInput ? inputs.find(input => input.inputId === value.inputId)?.alias.trim() : undefined
   const changeProxyMode = (mode: ProxyMode) => {
     const base = withoutProxy(value)
     if (mode === 'inherit') onChange(base)
@@ -86,13 +87,13 @@ export function EnvironmentPolicyEditor({ value, onChange, disabled = false, nod
         const shared = { ...(value.proxyOverride ? { proxyOverride: value.proxyOverride } : {}), ...(Object.hasOwn(value, 'modelProviderId') ? { modelProviderId: value.modelProviderId } : {}) }
         if (source === 'newFromProfile') onChange({ source, ...shared })
         if (source === 'fixedEnvironment') onChange({ source, environmentId: value.source === 'fixedEnvironment' ? value.environmentId : environments[0]?.id ?? '', ...shared })
-        if (source === 'inputEnvironment') onChange({ source, inputId: value.source === 'inputEnvironment' ? value.inputId : inputs[0]?.inputId ?? '', ...shared })
+        if (source === 'inputEnvironment' || source === 'inputIdentity') onChange({ source, inputId: byInput ? value.inputId : inputs[0]?.inputId ?? '', ...shared })
       }} options={[
-        {value:'newFromProfile',label:'每个任务创建临时环境'}, {value:'fixedEnvironment',label:'固定保存环境',disabled:disabled && value.source !== 'fixedEnvironment'}, {value:'inputEnvironment',label:'使用记录关联环境',disabled:disabled && value.source !== 'inputEnvironment'},
+        {value:'newFromProfile',label:'每个任务创建临时环境'}, {value:'fixedEnvironment',label:'固定保存环境',disabled:disabled && value.source !== 'fixedEnvironment'}, {value:'inputEnvironment',label:'使用记录关联环境',disabled:disabled && value.source !== 'inputEnvironment'}, {value:'inputIdentity',label:'使用记录关联的身份',disabled:disabled && value.source !== 'inputIdentity'},
       ]}/>
       {value.source === 'fixedEnvironment' ? <Select aria-label="保存环境" value={value.environmentId || null} options={options(environments, value.environmentId, '已保存的环境引用暂不可用')} clearable={false} disabled={disabled} errorMessage={errors.environmentId} onValueChange={environmentId => environmentId && onChange({ ...value, source: 'fixedEnvironment', environmentId })}/> : null}
-      {value.source === 'inputEnvironment' ? (inputs.length ? <Select aria-label="关联数据输入" value={value.inputId || null} options={inputs.map(input => ({ value: input.inputId, label: input.alias.trim() || '未命名输入' }))} clearable={false} disabled={disabled} errorMessage={errors.inputId} onValueChange={inputId => inputId && onChange({ ...value, source: 'inputEnvironment', inputId })}/> : <p className="m-0 text-sm text-warning">{inputAlias || '已保存的数据输入引用暂不可用'}</p>) : null}
-      <p className="m-0 text-sm text-muted">{value.source === 'newFromProfile' ? '任务结束后关闭并清理临时环境，除非明确保留。' : '任务固定当前保存环境的内容代次，执行中不会切换。'}</p>
+      {byInput ? (inputs.length ? <Select aria-label="关联数据输入" value={value.inputId || null} options={inputs.map(input => ({ value: input.inputId, label: input.alias.trim() || '未命名输入' }))} clearable={false} disabled={disabled} errorMessage={errors.inputId} onValueChange={inputId => inputId && onChange({ ...value, inputId } as Policy)}/> : <p className="m-0 text-sm text-warning">{inputAlias || '已保存的数据输入引用暂不可用'}</p>) : null}
+      <p className="m-0 text-sm text-muted">{value.source === 'newFromProfile' ? '任务结束后关闭并清理临时环境，除非明确保留。' : value.source === 'inputIdentity' ? '每条数据用它关联的身份运行：固定的指纹和地区，有已保存的登录就沿用。' : '任务固定当前保存环境的内容，执行中不会切换。'}</p>
       </div>
     </div>
     {projectDefaults ? <AutomationResourceSummary policy={value} projectDefaults={projectDefaults} profiles={profiles.flatMap(profile => profile.browserVersion && profile.browserEdition && profile.proxyMode ? [{ ...profile, browserVersion: profile.browserVersion, browserEdition: profile.browserEdition, proxyMode: profile.proxyMode }] : [])} proxies={proxies} pools={pools} models={modelProviders}/> : null}

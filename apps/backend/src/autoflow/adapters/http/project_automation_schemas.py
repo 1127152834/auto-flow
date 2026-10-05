@@ -126,8 +126,18 @@ class InputEnvironment(ApiModel):
     model_provider_id: str | None = None
 
 
+class InputIdentity(ApiModel):
+    """Remediation M4 R4-03: run as the identity linked to the task's input record."""
+
+    source: Literal["inputIdentity"]
+    input_id: str
+    profile_id: str | None = None
+    proxy_override: ProxySelection | None = None
+    model_provider_id: str | None = None
+
+
 EnvironmentPolicy = Annotated[
-    NewFromProfile | FixedEnvironment | InputEnvironment,
+    NewFromProfile | FixedEnvironment | InputEnvironment | InputIdentity,
     Field(discriminator="source"),
 ]
 

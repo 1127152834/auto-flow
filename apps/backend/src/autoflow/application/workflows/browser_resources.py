@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Awaitable, Callable, Iterator, Mapping, Sequence
 from contextlib import AbstractContextManager, ExitStack, contextmanager, nullcontext
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 from threading import RLock
 from typing import Any, cast
@@ -160,6 +160,7 @@ class WorkflowBrowserResources:
             profile = profile_from_request(identity_request)
         else:
             profile = profile_from_request(request)
+        profile = _with_identity(profile, request.get("identity"))
         profile_id = profile.id
         guards = ExitStack()
         try:
@@ -196,3 +197,17 @@ class WorkflowBrowserResources:
             if kernel.edition == spec.browser_edition and kernel.version == spec.browser_version:
                 return kernel
         raise KernelNotInstalled
+
+
+def _with_identity(profile: Profile, identity: object) -> Profile:
+    """Remediation M4 R4-03: an identity's own seed and region replace the template's."""
+    if not isinstance(identity, Mapping) or type(identity.get("seed")) is not int:
+        return profile
+    raw_region = identity.get("region")
+    region: Mapping[str, Any] = raw_region if isinstance(raw_region, Mapping) else {}
+    spec = replace(
+        profile.spec,
+        timezone=region.get("timezone") or profile.spec.timezone,
+        locale=region.get("locale") or profile.spec.locale,
+    )
+    return replace(profile, spec=spec, fingerprint_seed=identity["seed"])

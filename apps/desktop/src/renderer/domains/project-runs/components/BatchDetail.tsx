@@ -10,7 +10,7 @@ export type BatchDetailProps = { detail: Detail; automationName?: string; onBack
 
 const terminal = new Set(['completed', 'failed', 'stopped', 'interrupted'])
 const endReasons: Record<string, string> = { completed: '本批次任务已结束', stopped: '批次已按停止请求结束', failed: '批次运行失败', interrupted: '批次运行被中断' }
-const environmentLabels: Record<string, string> = { newFromProfile: '按浏览器配置新建环境', fixedEnvironment: '使用固定环境', inputEnvironment: '随项目数据输入选择环境' }
+const environmentLabels: Record<string, string> = { newFromProfile: '按浏览器配置新建环境', fixedEnvironment: '使用固定环境', inputEnvironment: '随项目数据输入选择环境', inputIdentity: '随项目数据输入选择身份' }
 const record = (value: unknown): JsonRecord => value && typeof value === 'object' && !Array.isArray(value) ? value as JsonRecord : {}
 const issueText = (value: string) => {
   const exact: Record<string, string> = {

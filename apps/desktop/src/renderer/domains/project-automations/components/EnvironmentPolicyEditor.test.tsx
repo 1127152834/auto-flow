@@ -142,3 +142,14 @@ it('node mode retains model selection while removing conflicting browser policy 
  expect(screen.getByRole('combobox',{name:'模型提供方'})).toBeTruthy()
  expect(screen.getByText(/浏览器实例由工作流的打开网页节点/)).toBeTruthy()
 })
+
+it('runs each row as its linked identity, choosing the data input like a linked environment', async () => {
+  const p = props(), user = userEvent.setup()
+  const inputs = [{ inputId: 'input-a', alias: '账号表' }]
+  const view = render(<EnvironmentPolicyEditor {...p} inputs={inputs} />)
+  await user.click(screen.getByRole('radio', { name: '使用记录关联的身份' }))
+  expect(p.onChange).toHaveBeenLastCalledWith({ source: 'inputIdentity', inputId: 'input-a' })
+  view.rerender(<EnvironmentPolicyEditor {...p} inputs={inputs} value={{ source: 'inputIdentity', inputId: 'input-a' }} />)
+  expect(screen.getByRole('combobox', { name: '关联数据输入' })).toHaveAttribute('data-choice-value', 'input-a')
+  expect(screen.getByText('每条数据用它关联的身份运行：固定的指纹和地区，有已保存的登录就沿用。')).toBeVisible()
+})

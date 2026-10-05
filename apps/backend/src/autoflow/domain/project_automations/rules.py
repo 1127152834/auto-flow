@@ -41,7 +41,7 @@ def validate_write(
     result["inputPlan"] = _input_plan(result["inputPlan"], project_id)
     result["parameterSchema"] = _parameters(result["parameterSchema"])
     result["environmentPolicy"] = _environment(result["environmentPolicy"])
-    if result["environmentPolicy"]["source"] == "inputEnvironment" and result[
+    if result["environmentPolicy"]["source"] in {"inputEnvironment", "inputIdentity"} and result[
         "environmentPolicy"
     ]["inputId"] not in {item["inputId"] for item in result["inputPlan"]["inputs"]}:
         raise validation_error(
@@ -566,6 +566,7 @@ def _environment(value: Any) -> dict[str, Any]:
         "newFromProfile",
         "fixedEnvironment",
         "inputEnvironment",
+        "inputIdentity",
     }:
         raise validation_error("environmentPolicy", "Invalid environment source")
     allowed = {
@@ -587,12 +588,21 @@ def _environment(value: Any) -> dict[str, Any]:
             "proxyOverride",
             "modelProviderId",
         },
+        # Remediation M4 R4-03: profileId is the fallback template for identities without one.
+        "inputIdentity": {
+            "source",
+            "inputId",
+            "profileId",
+            "proxyOverride",
+            "modelProviderId",
+        },
     }[value["source"]]
     if set(value) - allowed:
         raise validation_error("environmentPolicy", "Unexpected field")
     required_ref = {
         "fixedEnvironment": "environmentId",
         "inputEnvironment": "inputId",
+        "inputIdentity": "inputId",
     }.get(value["source"])
     if required_ref:
         _uuid(value.get(required_ref), f"environmentPolicy.{required_ref}")

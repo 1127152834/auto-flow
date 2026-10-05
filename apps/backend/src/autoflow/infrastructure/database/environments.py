@@ -368,11 +368,15 @@ class SqlAlchemyEnvironments:
             ProjectEnvironmentRow.project_id == project_id,
             ProjectEnvironmentRow.state != "deleted",
         )).all()
+        known = {row.id: _environment(row) for row in environments}
+        default_profile = (project.default_resources or {}).get("profileId")
+        if isinstance(policy, dict) and policy.get("source") == "inputIdentity":
+            return _resolve_identity(session, project_id, policy, inputs or {}, known, default_profile)
         return resolve_environment_source(
             policy, project_id=project_id,
-            project_default_profile_id=(project.default_resources or {}).get("profileId"),
+            project_default_profile_id=default_profile,
             inputs=inputs,
-            environments={row.id: _environment(row) for row in environments},
+            environments=known,
         )
 
     def with_generation_references(
@@ -581,6 +585,7 @@ class SqlAlchemyEnvironments:
                 row.current_environment_id = result.environment_id
                 row.link_revision = result.link_revision
                 row.updated_at = now
+                _give_identity_its_login(session, row.current_identity_id, result.environment_id, now)
             session.commit()
 
     @staticmethod
@@ -1360,6 +1365,63 @@ def _frozen_generations(value: Any, environment_id: str):
     elif isinstance(value, list):
         for item in value:
             yield from _frozen_generations(item, environment_id)
+
+
+def _give_identity_its_login(session: Session, identity_id: str | None, environment_id: str | None, now: datetime) -> None:
+    """Remediation M4 R4-03: a login saved for a record belongs to that record's identity,
+    unless the identity already has its own (then the record link alone changes)."""
+    from autoflow.infrastructure.database.identity_models import IdentityRow
+
+    if identity_id is None or environment_id is None:
+        return
+    identity = session.get(IdentityRow, identity_id)
+    taken = session.scalar(select(IdentityRow.id).where(IdentityRow.environment_id == environment_id))
+    if identity is not None and identity.environment_id is None and taken is None:
+        identity.environment_id = environment_id
+        identity.updated_at = now
+
+
+def _resolve_identity(
+    session: Session, project_id: str, policy: dict[str, Any], inputs: dict[str, dict[str, Any]],
+    environments: dict[str, PersistentEnvironment], default_profile: str | None,
+):
+    """Remediation M4 R4-03: run as the record's identity — its saved login if it has one,
+    otherwise a fresh browser from its template; either way with the identity's seed and region."""
+    from autoflow.infrastructure.database.identity_models import (
+        IdentityRow,
+        SeedRegistryRow,
+    )
+
+    snapshot = inputs.get(policy.get("inputId") or "")
+    if snapshot is None:
+        raise environment_error(
+            "VALIDATION_ERROR", "Identity input is missing", 422,
+            {"fields": {"environmentPolicy.inputId": "Must reference a task input"}},
+        )
+    identity_id = snapshot.get("currentIdentityId")
+    found = session.execute(
+        select(IdentityRow, SeedRegistryRow.seed_value)
+        .join(SeedRegistryRow, SeedRegistryRow.id == IdentityRow.seed_id)
+        .where(IdentityRow.id == identity_id, IdentityRow.project_id == project_id)
+    ).first() if isinstance(identity_id, str) else None
+    if found is None:
+        raise environment_error(
+            "IDENTITY_REQUIRED", "这条数据还没有关联身份，请先在数据中为它选择身份", 409,
+            {"domainCode": "identity_required"},
+        )
+    row, seed = found
+    identity = {"identityId": row.id, "seed": int(seed), "region": dict(row.region or {})}
+    if row.environment_id and row.environment_id in environments:
+        resolved = resolve_environment_source(
+            {"source": "fixedEnvironment", "environmentId": row.environment_id}, project_id=project_id,
+            project_default_profile_id=default_profile, environments=environments,
+        )
+    else:
+        resolved = resolve_environment_source(
+            {"source": "newFromProfile", "profileId": row.template_profile_id or policy.get("profileId")},
+            project_id=project_id, project_default_profile_id=default_profile,
+        )
+    return replace(resolved, identity=identity)
 
 
 def _environment(row: ProjectEnvironmentRow) -> PersistentEnvironment:

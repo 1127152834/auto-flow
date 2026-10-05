@@ -138,7 +138,7 @@ function Detail({ projectDefaults, workspaceKey, instanceId, projectId, automati
       { label: '工作流', value: workflows.data?.items.find(item => item.workflowId === baseline.value.workflowId)?.name ?? '尚未读取' },
       { label: '浏览器配置', value: profiles.data?.items.find(item => item.id === ('profileId' in baseline.value.environmentPolicy ? baseline.value.environmentPolicy.profileId : projectDefaults?.profileId))?.name ?? '继承项目配置' },
       { label: '执行方式', value: `配置并发上限 ${Math.min(baseline.value.runPolicy.concurrency, baseline.value.runPolicy.maxLiveInstances)}` },
-      { label: '环境', value: ({ newFromProfile: '每个任务创建临时环境', fixedEnvironment: '固定保存环境', inputEnvironment: '使用记录关联环境' } as Record<string, string>)[baseline.value.environmentPolicy.source] ?? baseline.value.environmentPolicy.source },
+      { label: '环境', value: ({ newFromProfile: '每个任务创建临时环境', fixedEnvironment: '固定保存环境', inputEnvironment: '使用记录关联环境', inputIdentity: '使用记录关联的身份' } as Record<string, string>)[baseline.value.environmentPolicy.source] ?? baseline.value.environmentPolicy.source },
     ]}/> : null}
     {automationId && result.data && baseline.value.inputPlan.inputs.some(input => input.required) ? <ProcessingUnitsPanel api={unitsApi!} disabled={disabled || readOnly}/> : null}
     {automationId && result.data && schedulesApi ? <SchedulesPanel api={schedulesApi} disabled={disabled || readOnly}/> : null}

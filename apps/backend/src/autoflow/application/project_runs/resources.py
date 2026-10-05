@@ -78,7 +78,7 @@ class ProjectRunResourceResolver:
             return {'browser': 'node', 'nodeBrowserEnvironments': frozen, 'modelProviderId': model_provider_id, **timing}
 
         source = policy.get("source")
-        if source not in {"newFromProfile", "fixedEnvironment", "inputEnvironment"}:
+        if source not in {"newFromProfile", "fixedEnvironment", "inputEnvironment", "inputIdentity"}:
             raise _field_error("environmentPolicy.source", "无效的环境来源")
         proxy = _effective_proxy(policy, project_defaults)
         profile_id = policy.get("profileId") or project_defaults.get("profileId")
@@ -88,7 +88,7 @@ class ProjectRunResourceResolver:
                 raise _field_error("environmentPolicy.source", "保存环境尚未接入")
             pinned = self._environments.resolve(automation.project_id, policy)
             profile_id = pinned.profile_id
-        elif source == "inputEnvironment":
+        elif source in {"inputEnvironment", "inputIdentity"}:
             if self._environments is None:
                 raise _field_error("environmentPolicy.source", "保存环境尚未接入")
             if inputs is None:
@@ -107,10 +107,12 @@ class ProjectRunResourceResolver:
             raise _field_error("environmentPolicy.profileId", "请选择浏览器配置")
 
         request = (
-            request_from_identity(pinned.identity_package) if pinned is not None
+            request_from_identity(pinned.identity_package) if pinned is not None and pinned.environment_ref is not None
             else self._freeze_profile(profile_id, proxy, model_provider_id)
         )
-        if pinned is not None:
+        if pinned is not None and pinned.identity is not None:
+            request = {**request, "identity": pinned.identity}
+        if pinned is not None and pinned.environment_ref is not None:
             request = {
                 **request,
                 "browser": "persistent",
@@ -124,15 +126,24 @@ class ProjectRunResourceResolver:
         self, pending: dict[str, Any], selected: ResolvedEnvironmentSource,
     ) -> dict[str, Any]:
         """Freeze the source selected and reserved by the Task claim transaction."""
+        timing = {
+            "manualDeadlineSeconds": pending["manualDeadlineSeconds"],
+            "automaticExecutionTimeoutSeconds": pending["automaticExecutionTimeoutSeconds"],
+        }
+        identity = {"identity": selected.identity} if selected.identity is not None else {}
+        if selected.environment_ref is None:
+            # Remediation M4: an identity without a saved login starts from its template profile.
+            fresh = self._freeze_profile(selected.profile_id, pending.get("proxy"), pending.get("modelProviderId"))
+            return {**fresh, **identity, **timing}
         request = request_from_identity(selected.identity_package)
         return {
             **request,
             "browser": "persistent",
-            "environmentRef": selected.environment_ref.to_dict() if selected.environment_ref else None,
+            "environmentRef": selected.environment_ref.to_dict(),
             "identityPackage": selected.identity_package,
             "modelProviderId": pending.get("modelProviderId"),
-            "manualDeadlineSeconds": pending["manualDeadlineSeconds"],
-            "automaticExecutionTimeoutSeconds": pending["automaticExecutionTimeoutSeconds"],
+            **identity,
+            **timing,
         }
 
     def _freeze_profile(

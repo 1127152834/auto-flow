@@ -609,6 +609,7 @@ class SqlAlchemyProjectInputGroups:
                 "statusId": row.status_id,
                 "recordSlots": _mutable(row.record_slots),
                 "currentEnvironmentId": row.current_environment_id,
+                "currentIdentityId": row.current_identity_id,
                 "sourceSummary": {"kind": table.source_kind, "name": table.name},
                 **({"sourceIdentity": source_identity} if source_identity else {}),
                 "contentRevision": row.content_revision,
