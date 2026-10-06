@@ -78,10 +78,10 @@ class AndroidDeviceService:
             self.previews[device_id] = (monotonic(), data)
             return data
 
-    def claim(self, device_id: str, run_id: str) -> dict[str, Any]:
+    def claim(self, device_id: str, run_id: str, control: str = "workflow") -> dict[str, Any]:
         self.runtime.lock()
         try:
-            self.device = self.repository.claim(device_id, run_id)
+            self.device = self.repository.claim(device_id, run_id, control=control)
             self.stopping = False
             self.handoff = None
             self.continued = asyncio.Event()

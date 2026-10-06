@@ -521,3 +521,31 @@ async def test_restarted_install_verifies_package_without_disconnected_adb():
     assert result["state"] == "recovery_required"
     assert resources.get("session", "s")["appReceipts"]["req"]["state"] == "succeeded"
     assert "pendingCommand" not in device
+
+
+def _serial_session(serial, state):
+    runtime = type("Runtime", (), {"serial": serial})() if serial is not None else object()
+    return {"view": {"state": state}, "context": type("Context", (), {"runtime": runtime})()}
+
+
+def test_connected_serials_only_lists_open_sessions_with_serial():
+    console = AndroidConsole(None, None, None, None)
+    console.sessions.update(a=_serial_session("emu-1", "connected"), b=_serial_session("emu-2", "closed"),
+                            c=_serial_session("", "connected"), d=_serial_session(None, "connected"))
+    assert console.connected_serials() == {"emu-1"}
+
+
+@pytest.mark.asyncio
+async def test_console_refuses_device_used_by_ai_test():
+    class Devices:
+        def get(self, _device_id):
+            return {"control": "ai_test"}
+
+    class Resources:
+        def get(self, *_):
+            raise AndroidError("X", "x", 404)
+
+    console = AndroidConsole(Devices(), None, Resources(), None)
+    with pytest.raises(AndroidError) as error:
+        await console.create({"requestId": "r", "deviceId": "d", "access": "manual"})
+    assert error.value.code == "ANDROID_AI_TEST_OWNS_DEVICE"

@@ -25,10 +25,10 @@ class MemoryDeviceRepository:
     def save(self, device: dict[str, Any]) -> None:
         self.records[device["deviceId"]] = deepcopy(device)
 
-    def claim(self, device_id: str, run_id: str) -> dict[str, Any]:
+    def claim(self, device_id: str, run_id: str, control: str = "workflow") -> dict[str, Any]:
         device = self.get(device_id)
         if device.get("control") != "idle":
             raise AndroidError("ANDROID_BUSY", "设备已占用")
-        device.update(ownerRunId=run_id, control="workflow")
+        device.update(ownerRunId=run_id, control=control)
         self.save(device)
         return device

@@ -113,3 +113,24 @@ def test_management_list_fails_closed_before_first_observation() -> None:
     assert item["runtimeState"] == "unknown"
     assert item["stale"] is True
     assert "start" not in item["allowedActions"]
+
+
+def test_ai_test_control_is_projected_as_ai_test_owner():
+    class _AiDevices:
+        runtime = _Runtime()
+
+        def __init__(self):
+            self.repository = type("Repository", (), {"list": lambda _self: [{
+                "deviceId": "44444444-4444-4444-8444-444444444444", "name": "测试设备", "generation": 3,
+                "androidStatus": "ready", "control": "ai_test", "ownerRunId": "ai-run",
+                "deleted": False, "creationConfig": {},
+            }]})()
+
+    app = FastAPI()
+    install_error_handlers(app)
+    devices = _AiDevices()
+    app.include_router(android_management_router(EnvironmentCheckService(devices.runtime), devices=devices))
+    with TestClient(app) as client:
+        item = client.get("/api/v1/android/management/devices").json()["items"][0]
+    assert item["owner"] == {"kind": "aiTest", "id": "ai-run"}
+    assert item["allowedActions"] == ["view_ai_test"]

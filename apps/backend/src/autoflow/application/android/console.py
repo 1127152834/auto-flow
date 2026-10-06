@@ -89,6 +89,13 @@ class AndroidConsole:
         session["seen"] = monotonic()
         return cast(dict[str, Any], session["view"])
 
+    def connected_serials(self) -> set[str]:
+        serials = (
+            getattr(getattr(s["context"], "runtime", None), "serial", None)
+            for s in self.sessions.values() if s["view"]["state"] != "closed"
+        )
+        return {x for x in serials if x}
+
     async def create(self, request: dict[str, Any]) -> dict[str, Any]:
         async with self.lock:
             identifier = request["requestId"]
@@ -118,6 +125,8 @@ class AndroidConsole:
                 raise AndroidError(
                     "ANDROID_CONSOLE_BUSY", "此设备已有控制台，请回到已打开的控制台"
                 )
+            if self.devices.get(request["deviceId"]).get("control") == "ai_test":
+                raise AndroidError("ANDROID_AI_TEST_OWNS_DEVICE", "AI 测试正在使用设备，请先停止测试")
             context = self.runs.device_context(request["deviceId"])
             owned = context is None
             if owned:

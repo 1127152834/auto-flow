@@ -123,7 +123,7 @@ def _management_device(device: dict[str, Any], observation: Any | None = None, *
         device_id=str(device["deviceId"]),
         revision=public_device_revision(device.get("generation")),
         runtime_state=cast(RuntimeState, runtime_state),
-        owner_kind="manualSession" if control in manual_controls else ("legacyWorkflow" if device.get("ownerRunId") else "none"),
+        owner_kind="manualSession" if control in manual_controls else "aiTest" if control == "ai_test" else ("legacyWorkflow" if device.get("ownerRunId") else "none"),
         owner_id=device.get("ownerRunId"),
         control=control or "idle",
         operation_action=operation.get("action"),

@@ -12098,7 +12098,7 @@ export type components = {
             /** Failurepolicy */
             failurePolicy?: "thresholds" | null;
             /** Sessionmode */
-            sessionMode?: ("perTask" | "pool") | null;
+            sessionMode?: ("perTask" | "pool" | "perIdentity") | null;
         };
         /** RunSnapshotView */
         RunSnapshotView: {

@@ -7,7 +7,7 @@ from .schemas import ApiModel
 
 
 class OwnerRead(ApiModel):
-    kind: Literal["none", "manualSession", "legacyWorkflow", "unknown"]
+    kind: Literal["none", "manualSession", "legacyWorkflow", "aiTest", "unknown"]
     id: str | None = None
 
 

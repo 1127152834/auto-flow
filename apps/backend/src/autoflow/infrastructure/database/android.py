@@ -30,7 +30,7 @@ class SqlAlchemyDeviceRepository:
         with self.sessions.begin() as session:
             session.merge(AndroidDeviceRow(id=device["deviceId"], owner_run_id=device.get("ownerRunId"), payload=deepcopy(device)))
 
-    def claim(self, device_id: str, run_id: str) -> dict[str, Any]:
+    def claim(self, device_id: str, run_id: str, control: str = "workflow") -> dict[str, Any]:
         with self.sessions.begin() as session:
             row = session.get(AndroidDeviceRow, device_id)
             if row is None:
@@ -41,7 +41,7 @@ class SqlAlchemyDeviceRepository:
             require_restored(device)
             if device.get("control") != "idle":
                 raise AndroidError("ANDROID_BUSY", "设备已占用或需要恢复")
-            device.update(ownerRunId=run_id, control="workflow", generation=device.get("generation", 0) + 1)
+            device.update(ownerRunId=run_id, control=control, generation=device.get("generation", 0) + 1)
             result = session.execute(update(AndroidDeviceRow).where(
                 AndroidDeviceRow.id == device_id, AndroidDeviceRow.owner_run_id.is_(None),
             ).values(owner_run_id=run_id, payload=device))

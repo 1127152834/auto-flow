@@ -60,3 +60,13 @@ def test_management_device_schema_uses_camel_case_without_runtime_secrets() -> N
     payload = result.model_dump(by_alias=True)
     assert payload["deviceId"] == "device"
     assert "containerId" not in payload
+
+
+def test_ai_test_owner_blocks_every_mutation_and_shows_label() -> None:
+    facts = DeviceFacts(device_id="device", runtime_state="ready", owner_kind="aiTest", control="ai_test")
+
+    policy = policy_for(facts)
+
+    assert display_state(facts) == "AI 测试中"
+    assert policy.allowed_actions == ("view_ai_test",)
+    assert policy.blocked_reasons == {a: "AI 测试进行中，请先停止测试" for a in ("start", "stop", "restart", "delete", "restore", "open", "backup")}

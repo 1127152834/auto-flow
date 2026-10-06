@@ -15,10 +15,10 @@ class Repository:
     def save(self, device):
         self.device = deepcopy(device)
 
-    def claim(self, device_id, run_id):
+    def claim(self, device_id, run_id, control="workflow"):
         if self.device["ownerRunId"]:
             raise AndroidError("ANDROID_BUSY", "busy")
-        self.device.update(ownerRunId=run_id, control="workflow")
+        self.device.update(ownerRunId=run_id, control=control)
         return deepcopy(self.device)
 
     def list(self):

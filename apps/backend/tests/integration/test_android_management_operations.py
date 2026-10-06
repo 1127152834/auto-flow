@@ -202,3 +202,14 @@ async def test_verification_allows_confirmed_permanent_disposal_of_pending_resto
     assert result.state == 'succeeded'
     assert devices.get('d')['deleted'] is True
     assert devices.get('d')['restoreState'] == 'pending'
+
+
+def test_repository_claim_can_mark_device_as_ai_test(repository):
+    devices = SqlAlchemyDeviceRepository(repository.sessions)
+    devices.save({"deviceId": "d-ai", "generation": 1, "ownerRunId": None, "control": "idle", "androidStatus": "ready"})
+
+    claimed = devices.claim("d-ai", "ai-run", control="ai_test")
+
+    assert claimed["control"] == "ai_test"
+    assert devices.get("d-ai")["control"] == "ai_test"
+    assert devices.get("d-ai")["ownerRunId"] == "ai-run"

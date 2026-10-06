@@ -2,8 +2,8 @@ from dataclasses import dataclass, field
 from typing import Literal
 
 RuntimeState = Literal["stopped", "starting", "ready", "retained", "missing", "unknown"]
-OwnerKind = Literal["none", "manualSession", "legacyWorkflow", "unknown"]
-ControlState = Literal["idle", "managing", "manual", "opening_manual", "closing_manual", "recovery_required"]
+OwnerKind = Literal["none", "manualSession", "legacyWorkflow", "aiTest", "unknown"]
+ControlState = Literal["idle", "managing", "manual", "opening_manual", "closing_manual", "ai_test", "recovery_required"]
 OperationState = Literal[
     "queued",
     "running",

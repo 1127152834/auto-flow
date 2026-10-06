@@ -38,6 +38,8 @@ def display_state(facts: DeviceFacts) -> str:
         return _OPERATION_LABELS.get(facts.operation_action, "操作中")
     if facts.restore_pending:
         return "恢复数据待核实"
+    if facts.owner_kind == "aiTest" or facts.control == "ai_test":
+        return "AI 测试中"
     if facts.last_error or facts.control == "recovery_required" or facts.owner_kind in {"unknown", "legacyWorkflow"}:
         return "待核实"
     if facts.owner_kind == "manualSession" or facts.control in {"manual", "opening_manual", "closing_manual"}:
@@ -61,6 +63,8 @@ def policy_for(facts: DeviceFacts) -> ActionPolicy:
     if facts.restore_pending:
         allowed = ("verify", "delete") if facts.owner_kind == "none" and facts.control == "idle" and not facts.stale and facts.runtime_state == "stopped" else ("verify",)
         return ActionPolicy(allowed, _blocked(("start", "restart", "restore", "open", "backup"), "数据恢复尚未完成或核实；目标只能核实后永久删除"))
+    if facts.owner_kind == "aiTest" or facts.control == "ai_test":
+        return ActionPolicy(("view_ai_test",), _blocked(("start", "stop", "restart", "delete", "restore", "open", "backup"), "AI 测试进行中，请先停止测试"))
     if facts.owner_kind in {"unknown", "legacyWorkflow"} or facts.control == "recovery_required" or facts.stale or facts.runtime_state == "unknown":
         return ActionPolicy(("verify",), _blocked(all_mutations, "设备状态或归属尚未核实"))
     if facts.owner_kind == "manualSession" or facts.control in {"manual", "opening_manual", "closing_manual"}:
