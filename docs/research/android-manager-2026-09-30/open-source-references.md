@@ -25,6 +25,7 @@
 | [Playwright Android（实验）](https://playwright.dev/docs/api/class-android) | R4-04 设备内 Chrome | 官方标注为实验功能；支持 Chrome for Android 与 WebView；要求设备或模拟器、已认证的 adb、设备上 Chrome 87+、chrome://flags 开启命令行模式；不支持裸 USB；截图时设备必须唤醒 | 通过 adb 驱动设备 Chrome 的能力边界与限制清单 | 官方文档页面描述的是该接口本身；**Python 版是否提供该接口本次未核实**（执行进程是 Python），E4 Task 4 的调研必须先确认；备选是 adb 转发 `chrome_devtools_remote` + `connect_over_cdp` |
 | [gnirehtet](https://github.com/Genymobile/gnirehtet)（Genymobile） | R3-05 每设备独立代理 | 反向共享：设备流量经电脑转发（本次依据项目所属与已知用途，未逐条核实当前版本与许可证） | 在宿主侧给每台设备接身份绑定的代理，代理断开则设备断网而非直连 | 与模拟器自带的 HTTP 代理参数对比后再选；写入 E3 Task 5 的设计 |
 | [bundletool](https://github.com/google/bundletool)（Google） | R3-06 分包安装 | 处理 AAB / APKS | APKS 分包安装路径 | XAPK 是第三方打包格式，需单独解析 |
+| [ARTEMIS](https://github.com/google/artemis)（Google，Apache-2.0） | S1 AI 测试 | 固定提交 `351ca8422f7b5b54e80a9c1ce03a222e02415b6b`（2026-10-06 已集成）；按用户模型驱动安卓设备完成自然语言测试任务，输出步骤与截图 | 已作为 S1「AI 测试」工具集成：AutoFlow 按固定提交安装到应用数据目录，经桥接进程（`artemis_bridge`）以 JSON 行协议驱动并回收步骤、截图与 logcat | 步骤事件通道（IPC）尚未在真实设备上验证（真机验收 blocked）；仅支持 openai / openai-compatible / gemini / anthropic 四类模型；升级固定提交前须重跑桥接测试 |
 
 ## 对计划的影响
 
