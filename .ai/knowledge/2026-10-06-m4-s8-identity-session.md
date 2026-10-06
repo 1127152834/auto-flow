@@ -34,3 +34,26 @@
 - 任务视图：持有中显示"保留中"，已被后续任务接走的旧任务显示 notRequired（不再误报"临时环境已释放"）。
 - 增补列 `held_batch_id`（迁移 rm4_instance_identity 内，尚未推送）：持有时记批次，免去门禁与重新附着对任务表的 join。
 - 测试：`tests/integration/test_identity_hold.py`（14 个），相关回归 298 passed（唯一失败为本机符号链接权限）。尚无调用方：End 在 S8-4 才会持有。
+
+## S8-3 释放：保存一次再清理（2026-10-06）
+
+- `EnvironmentService.release_identity_instance`：`begin_identity_release`（BEGIN IMMEDIATE 内 `identity_held`→`closing`，与重新附着互斥）→
+  `runtime_lock_present` 非等待核实（有锁则停在 `closing`、身份保持占用、记日志，由扫描重试）→ `closed` →
+  `retain_on_release` 且目录存在才保存（缺目录记日志、不发布空版本）→ 清理。
+- 保存复用 `save_environment`，幂等键 `identity-release:{实例}:{使用代次}`：崩溃后重放同一操作，不会出现第二个环境；
+  有环境走 update（版本只 +1，不是每任务 +1），没有走 save_as，名称 = 身份名（≤29 字）+ "·" + 身份 id 前 6 位，
+  并通过 `linkIdentityId` 把首个登录挂到身份上（否则下一个任务会从模板重新开始）。
+- 保存失败：`STORAGE_FAILED`/`SAVE_GENERATION_CONFLICT` 及其他保存阶段错误 → `retained_unsaved`（副本保留、身份解锁、原因写日志）；
+  项目暂时不可写 → 稍后重试；`OSError` → 稍后重试（同一键重放）。
+- `release_due_identity_instances`：空闲超时、持有批次已结束、或释放到一半（`closing`/`closed`/有未完成保存操作的 `saving`）；
+  只处理 `active_run_id` 为空的身份实例，不碰任何运行中或普通任务副本。尚未接入调度器（S8-5）。
+- 测试：`tests/integration/test_identity_release.py`（11 个）。
+- 基准（`bench_identity_session`，同一 45 MB 夹具、3 次中位、CPU 空闲，仅文件工作，不含浏览器启动与数据库更新）：
+
+| 任务数 k | perTask（每任务恢复+保存） | perIdentity（恢复 1 次 + 保存 1 次） |
+|---|---|---|
+| 1 | 3880 ms | 3158 ms |
+| 3 | 5394 ms | 3151 ms |
+| 10 | 16332 ms | 2845 ms |
+
+  k=10 时环境文件工作减少约 5.7 倍；k=1 的差异是磁盘缓存噪声。perIdentity 的 k 个任务之间只剩一次数据库更新。

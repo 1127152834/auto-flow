@@ -555,6 +555,77 @@ class SqlAlchemyEnvironments:
         session.flush()
         return _instance(row)
 
+    def begin_identity_release(self, project_id: str, instance_id: str) -> EnvironmentInstance | None:
+        """Claim an identity's held copy for release, or continue one that was interrupted.
+
+        Returns None when the instance is not an identity's release candidate - a task has taken it, it was
+        already cleaned, or it is a save a person started. A held copy moves to ``closing``; one found in
+        ``closing``/``closed``/``saving`` (a release that did not finish) is returned as it is.
+        """
+        with self._session_factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            row = session.get(ProjectEnvironmentInstanceRow, instance_id)
+            if row is None or row.project_id != project_id or row.identity_id is None or row.active_run_id is not None:
+                return None
+            if row.state == "identity_held":
+                row.state, row.updated_at = "closing", datetime.now(UTC)
+            elif row.state == "saving":
+                key = identity_release_key(row.id, row.instance_use_generation)
+                unfinished = session.scalar(select(ProjectOperationRow.id).where(
+                    ProjectOperationRow.idempotency_key == key, ProjectOperationRow.status.in_(("accepted", "running", "reconciling")),
+                ))
+                if unfinished is None:
+                    return None
+            elif row.state not in {"closing", "closed"}:
+                return None
+            session.commit()
+            return _instance(row)
+
+    def due_identity_instances(self, *, idle_seconds: float, limit: int, now: datetime | None = None) -> builtins.list[EnvironmentInstance]:
+        """Held copies to release: idle too long, kept by a batch that has ended, or a release to finish."""
+        now = now or datetime.now(UTC)
+        with self._session_factory() as session:
+            ended = select(ProjectBatchRow.id).where(ProjectBatchRow.status.in_(("completed", "stopped", "failed", "interrupted")))
+            rows = session.scalars(select(ProjectEnvironmentInstanceRow).where(
+                ProjectEnvironmentInstanceRow.identity_id.is_not(None),
+                ProjectEnvironmentInstanceRow.active_run_id.is_(None),
+                or_(
+                    (ProjectEnvironmentInstanceRow.state == "identity_held") & or_(
+                        ProjectEnvironmentInstanceRow.updated_at < now - timedelta(seconds=idle_seconds),
+                        ProjectEnvironmentInstanceRow.held_batch_id.in_(ended),
+                    ),
+                    ProjectEnvironmentInstanceRow.state.in_(("closing", "closed", "saving")),
+                ),
+            ).order_by(ProjectEnvironmentInstanceRow.updated_at, ProjectEnvironmentInstanceRow.id))
+            due = []
+            for row in rows:
+                if row.state == "saving":
+                    key = identity_release_key(row.id, row.instance_use_generation)
+                    if session.scalar(select(ProjectOperationRow.id).where(
+                        ProjectOperationRow.idempotency_key == key, ProjectOperationRow.status.in_(("accepted", "running", "reconciling")),
+                    )) is None:
+                        continue
+                due.append(_instance(row))
+                if len(due) >= limit:
+                    break
+            return due
+
+    def identity_save_name(self, identity_id: str) -> str:
+        """Name for the environment an identity's login is first saved as; the id suffix keeps it unique."""
+        from autoflow.infrastructure.database.identity_models import IdentityRow
+
+        with self._session_factory() as session:
+            identity = session.get(IdentityRow, identity_id)
+            name = identity.name if identity is not None else "身份"
+        return f"{name[:29]}·{identity_id[:6]}"
+
+    def give_identity_login(self, identity_id: str, environment_id: str) -> None:
+        """Point an identity at its first saved login (never replaces one it already has)."""
+        with self._session_factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            _give_identity_its_login(session, identity_id, environment_id, datetime.now(UTC))
+            session.commit()
+
     def set_instance_state(self, instance_id: str, state: str) -> EnvironmentInstance:
         with self._session_factory() as session:
             row = session.get(ProjectEnvironmentInstanceRow, instance_id)
@@ -1547,6 +1618,11 @@ def live_identity_instances(
         for identity, instance, state, held_batch in session.execute(query)
         if not (state == "identity_held" and reusable_in_batch is not None and held_batch == reusable_in_batch)
     }
+
+
+def identity_release_key(instance_id: str, use_generation: int) -> str:
+    """Idempotency key of the one save that releases an identity's instance; a retry replays it."""
+    return f"identity-release:{instance_id}:{use_generation}"
 
 
 def _identity_busy(identity_id: str, instance_id: str | None) -> ProjectError:

@@ -213,6 +213,9 @@ def save_environment(service, project_id: str, key: str, payload: dict[str, Any]
                 created_from_task_id=instance.active_task_id,
                 authority=payload.get("workerAuthority"),
             )
+            if payload.get("linkIdentityId"):
+                # Remediation M4 S8-3: the login an identity's tasks built belongs to that identity.
+                service.environments.give_identity_login(payload["linkIdentityId"], saved.ref.environment_id)
         else:
             if source is None:
                 raise environment_error(

@@ -9,7 +9,7 @@ from sqlalchemy import func, select
 
 from autoflow.infrastructure.database.project_data_models import DataRecordRow
 
-from . import bench_claim_loop_lag, bench_claims, report
+from . import bench_claim_loop_lag, bench_claims, bench_identity_session, report
 
 pytestmark = pytest.mark.benchmark
 
@@ -213,3 +213,9 @@ def test_claim_loop_lag_benchmark_keeps_the_loop_responsive():
     timer_floor_ms = 16 if sys.platform == "win32" else 0
     assert metrics["loop_lag_p50_ms"][0] < 10 + timer_floor_ms
     assert metrics["loop_lag_max_ms"][0] < 250  # AC1-09
+
+
+def test_identity_session_benchmark_saves_once_for_many_tasks():
+    metrics = bench_identity_session.run(1, task_counts=(1, 2))
+    assert set(metrics) == {f"environment_ms_{mode}_k{count}" for mode in ("perTask", "perIdentity") for count in (1, 2)}
+    assert all(value > 0 and unit == "ms" for value, unit in metrics.values())
