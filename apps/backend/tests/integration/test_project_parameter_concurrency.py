@@ -501,3 +501,20 @@ async def test_parallel_browser_tasks_copy_one_template_and_cancel_independently
             event.set()
         await core.shutdown()
         factory.dispose()
+
+
+def test_batches_made_in_the_same_clock_tick_are_served_in_the_order_they_were_made(tmp_path):
+    """created_at ties on a coarse clock (Windows); a random id must not decide who is oldest."""
+    from sqlalchemy import update
+
+    from autoflow.infrastructure.database.project_run_models import ProjectBatchRow
+
+    factory, _, _, coordinator, _, project, automation = setup(tmp_path)
+    configure(factory, automation, instances=1)
+    batches = [coordinator.start(project.project_id, automation.automation_id, str(uuid4()), start_payload(automation))[0] for _ in range(6)]
+    with factory.begin() as session:
+        stamp = session.get(ProjectBatchRow, batches[0].batch_id).created_at
+        session.execute(update(ProjectBatchRow).values(created_at=stamp))
+    _workers, _core, scheduler = core_services(factory)
+    assert [batch_id for _project, batch_id in scheduler._batch_ids()] == [batch.batch_id for batch in batches]
+    factory.dispose()

@@ -202,7 +202,8 @@ class ProjectBatchScheduler:
             rows = session.execute(
                 select(ProjectBatchRow.project_id, ProjectBatchRow.id, ProjectBatchRow.frozen_request)
                 .where(ProjectBatchRow.status.not_in(BATCH_TERMINAL))
-                .order_by(ProjectBatchRow.created_at, ProjectBatchRow.id)
+                # rowid is creation order: batches made in one clock tick (15.6 ms on Windows) stay first-come first-served.
+                .order_by(ProjectBatchRow.created_at, text("rowid"))
             ).tuples()
             return [
                 (project_id, batch_id, str((frozen or {}).get("priority") or "normal"))

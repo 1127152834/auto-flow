@@ -610,7 +610,7 @@ class SqlAlchemyEnvironments:
                 ProjectEnvironmentInstanceRow.active_run_id.is_(None),
                 or_(
                     (ProjectEnvironmentInstanceRow.state == "identity_held") & or_(
-                        ProjectEnvironmentInstanceRow.updated_at < now - timedelta(seconds=idle_seconds),
+                        ProjectEnvironmentInstanceRow.updated_at <= now - timedelta(seconds=idle_seconds),  # <=: an idle limit of 0 must hold on a coarse clock
                         ProjectEnvironmentInstanceRow.held_batch_id.in_(ended),
                     ),
                     ProjectEnvironmentInstanceRow.state.in_(("closing", "closed", "saving")),
