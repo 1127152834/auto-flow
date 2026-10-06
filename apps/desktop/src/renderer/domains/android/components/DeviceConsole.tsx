@@ -34,6 +34,8 @@ export type ConsoleProps = {
   api?: FleetApi
   deviceApi?: AndroidApi
   aiTestApi?: AiTestApi
+  /** Switches the visible tab whenever a new request object arrives. */
+  requestedTab?: { label: string } | null
   run?: DeviceRun
   apps?: Apps
   image?: string
@@ -66,6 +68,7 @@ export function DeviceConsole(p: ConsoleProps) {
     sessionRef = useRef(p.session),
     failed = useRef(false)
   sessionRef.current = p.session
+  useEffect(() => { if (p.requestedTab) setTab(p.requestedTab.label) }, [p.requestedTab])
   useEffect(() => {
     sessionRef.current = p.session
     return () => { sessionRef.current = null }

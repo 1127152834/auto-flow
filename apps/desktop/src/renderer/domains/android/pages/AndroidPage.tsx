@@ -78,6 +78,7 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
     [selected, setSelected] = useState<string | null>(null),
     [source, setSource] = useState<AndroidDevice>()
   const [tool, setTool] = useState<Tool>('environment')
+  const [detailTab, setDetailTab] = useState<{ label: string } | null>(null)
   // Keep visited tools mounted so unknown mutations retain their original request receipts.
   const [visitedTools, setVisitedTools] = useState<Tool[]>([])
   const openTool = (next: Tool) => {
@@ -263,7 +264,16 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
       await sessionStatus.refetch()
       return
     }
-    const owner = managementDevices.data?.items.find((item) => item.deviceId === d.deviceId)?.owner
+    const ownerOf = (items?: ManagementDevicePage['items']) => items?.find((item) => item.deviceId === d.deviceId)?.owner
+    let owner = ownerOf(managementDevices.data?.items)
+    // A just-finished test may still be cached as the owner; re-read before deciding.
+    if (owner?.kind === 'aiTest') owner = ownerOf((await managementDevices.refetch()).data?.items)
+    if (epoch !== openingEpoch.current) return
+    if (owner?.kind === 'aiTest') {
+      // The AI test holds the device: show its panel and never open a console session over it.
+      setDetailTab({ label: 'AI 测试' })
+      return
+    }
     if (owner?.kind === 'manualSession' && owner.id) {
       await perform(async () => {
         const existing = await fleet.readSession(owner.id!)
@@ -502,6 +512,7 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
           api={fleet}
           deviceApi={api}
           aiTestApi={aiTest}
+          requestedTab={detailTab}
           run={undefined}
           apps={apps.data}
           onBack={() => void leaveDetail()}

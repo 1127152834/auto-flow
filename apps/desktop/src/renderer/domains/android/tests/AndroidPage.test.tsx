@@ -801,3 +801,21 @@ it('opens external devices from the board and shows the AI test panel without ta
   await userEvent.click(screen.getByRole('button', { name: '返回资源看板' }))
   expect(await screen.findByRole('heading', { name: '安卓模拟器' })).toBeVisible()
 })
+
+it('views a running AI test from the board without opening a console session', async () => {
+  const fallback = mocks.client.request.getMockImplementation()!
+  const running = { id: 'run-1', requestId: 'q', deviceKind: 'managed', deviceId: devices[0].deviceId, state: 'running', createdAt: '2026-10-06T00:00:00Z', instruction: '打开设置', mode: 'flash', modelId: 'm', maxSteps: 5, timeoutSeconds: 60, steps: [], artifacts: [] }
+  mocks.client.request.mockImplementation(async (path: string, init?: { method?: string }) => {
+    if (path === '/api/v1/android/management/devices?limit=50') return { items: [{ deviceId: devices[0].deviceId, revision: devices[0].generation, name: devices[0].name, runtimeState: 'ready', owner: { kind: 'aiTest', id: 'run-1' }, observedAt: null, stale: false, specSnapshot: devices[0], latestOperation: null, allowedActions: ['view_ai_test'], blockedReasons: {} }], total: 1, nextCursor: null }
+    if (path === '/api/v1/android/ai-tests/tool') return { state: 'ready', version: '1' }
+    if (path.startsWith('/api/v1/android/ai-tests/runs?')) return { items: [running], nextCursor: null }
+    if (path === '/api/v1/android/ai-tests/runs/run-1') return running
+    return fallback(path, init)
+  })
+  mocks.client.stream.mockResolvedValue({ blob: async () => new Blob(['png']) })
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: `查看${devices[0].name} AI 测试` }))
+  expect(await screen.findByRole('button', { name: '停止并接管' })).toBeVisible()
+  expect(screen.getByRole('button', { name: 'AI 测试' })).toHaveAttribute('aria-current', 'page')
+  expect(mocks.client.request.mock.calls.some(([path, init]) => path.endsWith('/sessions') && init?.method === 'POST')).toBe(false)
+})

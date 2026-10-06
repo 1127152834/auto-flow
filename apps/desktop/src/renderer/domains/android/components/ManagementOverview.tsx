@@ -94,7 +94,8 @@ export function ManagementOverview({ api, previewApi, instanceId = 'default', on
     const blocked = [...new Set(Object.values(device.blockedReasons ?? {}).filter(Boolean))]
     const operational = !staleSnapshot && !device.stale && device.runtimeState !== 'unknown'
     const ownedSession = operational && device.owner.kind === 'manualSession' && Boolean(device.owner.id)
-    const openable = operational && device.runtimeState === 'ready' && (device.allowedActions.includes('open') || ownedSession && device.allowedActions.includes('return_to_console'))
+    const viewAiTest = operational && device.allowedActions.includes('view_ai_test')
+    const openable = operational &&device.runtimeState === 'ready' && (device.allowedActions.includes('open') || ownedSession && device.allowedActions.includes('return_to_console'))
     const operationId = typeof device.latestOperation?.operationId === 'string' ? device.latestOperation.operationId : typeof device.latestOperation?.operation_id === 'string' ? device.latestOperation.operation_id : typeof device.latestOperation?.id === 'string' ? device.latestOperation.id : undefined
     const requestId = typeof device.latestOperation?.requestId === 'string' ? device.latestOperation.requestId : typeof device.latestOperation?.request_id === 'string' ? device.latestOperation.request_id : undefined
     const spec = device.specSnapshot ?? {}
@@ -140,7 +141,8 @@ export function ManagementOverview({ api, previewApi, instanceId = 'default', on
         {blocked.length > 0 && <div className="am-device-blocked" role="status">{blocked.map(reason => <p key={reason}>阻塞原因：{reason}</p>)}</div>}
         <div className="am-device-actions">
           {onManage && primaryAction && <Action primary disabled={primaryAction !== 'verify' && !operational} onClick={() => manage(primaryAction)}>{actionLabel(primaryAction)}</Action>}
-          {onOpen && <Action primary={!primaryAction} disabled={!openable} onClick={() => onOpen(device.deviceId)} aria-label={ownedSession ? `查看${device.name}控制会话` : `打开${device.name}`}>{ownedSession ? '查看控制会话' : '打开设备'}</Action>}
+          {onOpen && viewAiTest && <Action primary={!primaryAction} onClick={() => onOpen(device.deviceId)} aria-label={`查看${device.name} AI 测试`}>查看 AI 测试</Action>}
+          {onOpen && !viewAiTest && <Action primary={!primaryAction} disabled={!openable} onClick={() => onOpen(device.deviceId)} aria-label={ownedSession ? `查看${device.name}控制会话` : `打开${device.name}`}>{ownedSession ? '查看控制会话' : '打开设备'}</Action>}
         </div>
       </div>
       <div className="am-device-more" onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setMenu(null) }} onKeyDown={event => { if (event.key === 'Escape') { setMenu(null); menuTrigger.current?.focus() } }}>
