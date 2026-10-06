@@ -23,6 +23,7 @@ ARTEMIS_COMMIT = "351ca8422f7b5b54e80a9c1ce03a222e02415b6b"
 _ARCHIVE_URL = f"https://github.com/google/artemis/archive/{ARTEMIS_COMMIT}.zip"
 _STDOUT_LIMIT = 16 * 1024 * 1024
 _HELPER_TIMEOUT = 600
+_DRAIN_SECONDS = 2
 
 Downloader = Callable[[str, Path], None]
 Runner = Callable[[list[str], Callable[[str], None]], Awaitable[int]]
@@ -40,7 +41,7 @@ class ModelEnv:
     provider_kind: str
     base_url: str | None
     model_key: str
-    secret: str = field(repr=False, default="")
+    secret: str = field(repr=False)
 
 
 def _download(url: str, dest: Path) -> None:
@@ -56,9 +57,20 @@ async def _run_command(command: list[str], on_output: Callable[[str], None]) -> 
         stderr=asyncio.subprocess.STDOUT,
     )
     assert process.stdout is not None
-    async for raw in process.stdout:
-        on_output(raw.decode("utf-8", "replace").rstrip())
-    return await process.wait()
+    try:
+        async for raw in process.stdout:
+            on_output(raw.decode("utf-8", "replace").rstrip())
+        return await process.wait()
+    except BaseException:
+        await _stop(process)
+        raise
+
+
+async def _exited(process: asyncio.subprocess.Process) -> None:
+    """Return once the process has exited. process.wait() also waits for pipe EOF, which a
+    detached grandchild holding the pipes can delay forever, so poll returncode instead."""
+    while process.returncode is None:
+        await asyncio.sleep(0.05)
 
 
 def _kill_tree(pid: int) -> None:
@@ -154,14 +166,14 @@ class ArtemisTool:
             collected.append(line)
             on_output(line)
 
+        archive = self.tool_dir / "artemis.zip"
         try:
             src = self.tool_dir / "src"
             self.tool_dir.mkdir(parents=True, exist_ok=True)
-            archive = self.tool_dir / "artemis.zip"
+            (self.tool_dir / "installed.json").unlink(missing_ok=True)
             emit(f"下载 {_ARCHIVE_URL}")
             await asyncio.to_thread(self._downloader, _ARCHIVE_URL, archive)
             await asyncio.to_thread(_extract, archive, src)
-            archive.unlink(missing_ok=True)
             python = str(self._venv_python)
             steps = [
                 [uv, "venv", "--python", "3.12", str(self._venv)],
@@ -184,6 +196,7 @@ class ArtemisTool:
             self._failed = message
             raise AndroidError("AI_TOOL_INSTALL_FAILED", message, 502) from exc
         finally:
+            archive.unlink(missing_ok=True)
             self._installing = False
         return self.status()
 
@@ -238,47 +251,60 @@ class ArtemisTool:
 
         async def pump_stdout() -> None:
             nonlocal result
-            async for raw in stdout:
-                try:
-                    event = json.loads(raw.decode("utf-8", "replace"))
-                except ValueError:
-                    continue
-                kind = event.get("type") if isinstance(event, dict) else None
-                if not isinstance(kind, str):
-                    continue
-                if kind == "result":
-                    result = event
-                elif kind != "helper":
-                    await on_event(event)
-            await process.wait()
+            try:
+                async for raw in stdout:
+                    try:
+                        event = json.loads(raw.decode("utf-8", "replace"))
+                    except ValueError:
+                        continue
+                    kind = event.get("type") if isinstance(event, dict) else None
+                    if not isinstance(kind, str):
+                        continue
+                    if kind == "result":
+                        result = event
+                    elif kind != "helper":
+                        await on_event(event)
+            except ValueError:  # a single output line exceeded the reader limit
+                stderr_tail.append("桥接进程输出了过长的一行，已结束")
+                _kill_tree(process.pid)
 
-        err_task = asyncio.create_task(pump_stderr())
-        out_task = asyncio.create_task(pump_stdout())
-        cancel_task = asyncio.create_task(cancel.wait())
-        try:
+        async def feed() -> None:
             try:
                 stdin.write(instruction.encode("utf-8"))
                 await stdin.drain()
                 stdin.close()
             except OSError:
                 pass  # child died early; its exit code and stderr explain why
+
+        err_task = asyncio.create_task(pump_stderr())
+        out_task = asyncio.create_task(pump_stdout())
+        cancel_task = asyncio.create_task(cancel.wait())
+        feed_task = asyncio.create_task(feed())
+        wait_task = asyncio.create_task(_exited(process))
+        readers = (out_task, err_task)
+        try:
             done, _ = await asyncio.wait(
-                {out_task, cancel_task}, timeout=timeout_seconds, return_when=asyncio.FIRST_COMPLETED
+                {wait_task, cancel_task}, timeout=timeout_seconds, return_when=asyncio.FIRST_COMPLETED
             )
-            if out_task not in done:
+            if wait_task not in done:
                 await _stop(process)
                 if cancel_task in done:
                     raise AndroidError("AI_TEST_CANCELLED", "测试已停止", 409)
                 raise AndroidError("AI_TEST_TIMEOUT", f"测试超过 {timeout_seconds} 秒未完成，已结束", 504)
-            out_task.result()
-            await asyncio.wait_for(err_task, 5)
+            # Process exited; a detached grandchild may still hold the pipes, so drain only briefly.
+            await asyncio.wait(readers, timeout=_DRAIN_SECONDS)
         except BaseException:
             await _stop(process)
             raise
         finally:
-            for task in (out_task, err_task, cancel_task):
+            tasks = (*readers, cancel_task, feed_task, wait_task)
+            for task in tasks:
                 task.cancel()
-            await asyncio.gather(out_task, err_task, cancel_task, return_exceptions=True)
+            await asyncio.gather(*tasks, return_exceptions=True)
+            # Release pipe handles a surviving grandchild may still hold open.
+            transport = getattr(process, "_transport", None)
+            if transport is not None and process.returncode is not None:
+                transport.close()
         if process.returncode != 0 or result is None:
             text = "\n".join(stderr_tail) or f"桥接进程退出码 {process.returncode}，未返回结果"
             raise AndroidError("AI_TEST_PROCESS_FAILED", redact(text, [model.secret]), 502)
@@ -296,6 +322,9 @@ class ArtemisTool:
         )
         try:
             out, err = await asyncio.wait_for(process.communicate(), _HELPER_TIMEOUT)
+        except TimeoutError:
+            await _stop(process)
+            raise AndroidError("AI_TEST_HELPER_FAILED", "辅助组件操作超时", 502) from None
         except BaseException:
             await _stop(process)
             raise

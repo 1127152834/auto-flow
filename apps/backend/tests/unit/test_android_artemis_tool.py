@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import json
 import shutil
 import sys
@@ -9,6 +10,7 @@ import psutil
 import pytest
 
 from autoflow.domain.android.ports import AndroidError
+from autoflow.providers.android import artemis_tool
 from autoflow.providers.android.artemis_tool import (
     ARTEMIS_COMMIT,
     ArtemisTool,
@@ -169,3 +171,53 @@ async def test_install_download_failure(tmp_path):
     with pytest.raises(AndroidError) as err:
         await tool.install(lambda _: None)
     assert "no network" in err.value.message
+
+
+@pytest.mark.asyncio
+async def test_detached_grandchild_holding_pipes_does_not_block_result(tool, tmp_path, monkeypatch):
+    import time
+
+    monkeypatch.setenv("FAKE_MODE", "grandchild")
+    monkeypatch.setenv("FAKE_PID_FILE", str(tmp_path / "pid"))
+    started = time.monotonic()
+    try:
+        result = await tool.run(**kwargs(tmp_path))
+    finally:
+        if (tmp_path / "pid").exists():
+            with contextlib.suppress(psutil.NoSuchProcess):
+                psutil.Process(int((tmp_path / "pid").read_text())).kill()
+    assert result["succeeded"] is True and time.monotonic() - started < 15
+
+
+@pytest.mark.asyncio
+async def test_unread_stdin_times_out(tool, tmp_path, monkeypatch):
+    monkeypatch.setenv("FAKE_MODE", "noread")
+    with pytest.raises(AndroidError) as err:
+        await tool.run(**kwargs(tmp_path, instruction="测" * 4000, timeout_seconds=1))
+    assert err.value.code == "AI_TEST_TIMEOUT"
+
+
+@pytest.mark.asyncio
+async def test_helper_timeout_is_typed(tool, monkeypatch):
+    monkeypatch.setenv("FAKE_MODE", "hang")
+    monkeypatch.setattr(artemis_tool, "_HELPER_TIMEOUT", 1)
+    with pytest.raises(AndroidError) as err:
+        await tool.helper("s", install=False)
+    assert err.value.code == "AI_TEST_HELPER_FAILED"
+
+
+@pytest.mark.asyncio
+async def test_reinstall_failure_clears_stale_marker(tmp_path):
+    async def ok(cmd, on_output):
+        return 0
+
+    async def bad(cmd, on_output):
+        return 1
+
+    tool = ArtemisTool(tmp_path, bridge=BRIDGE, uv="uv", downloader=_fake_zip, runner=ok)
+    (tool.tool_dir / ".venv").mkdir(parents=True)
+    assert (await tool.install(lambda _: None)).state == "ready"
+    tool._runner = bad
+    with pytest.raises(AndroidError):
+        await tool.install(lambda _: None)
+    assert tool.status().state == "failed" and not (tool.tool_dir / "artemis.zip").exists()
