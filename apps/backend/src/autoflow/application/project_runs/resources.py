@@ -65,13 +65,14 @@ class ProjectRunResourceResolver:
                 **timing,
             }
 
-        # Remediation M3 R3-07: re-checked against the workflow frozen for this start.
-        pooled = automation.run_policy.get("sessionMode") == "pool"
-        if pooled:
-            blockers = session_pool_blockers(document) if document is not None else []
+        # Remediation M3 R3-07 / M4 S8-6: re-checked against the workflow frozen for this start.
+        session_mode = automation.run_policy.get("sessionMode")
+        if session_mode in {"pool", "perIdentity"}:
+            blockers = session_pool_blockers(document, session_mode) if document is not None else []
             if blockers:
-                raise _field_error("runPolicy.sessionMode", f"不能复用浏览器：{blockers[0]}")
-            timing = {**timing, "sessionMode": "pool"}
+                prefix = "不能复用浏览器" if session_mode == "pool" else "不能与同账号任务共用浏览器"
+                raise _field_error("runPolicy.sessionMode", f"{prefix}：{blockers[0]}")
+            timing = {**timing, "sessionMode": session_mode}
         nodes = node_browser_environments(document) if document is not None else None
         if nodes is not None:
             frozen = freeze_node_browser_resources(self._browser, self._environments, automation.project_id, nodes, project_defaults, model_provider_id)
@@ -129,6 +130,8 @@ class ProjectRunResourceResolver:
         timing = {
             "manualDeadlineSeconds": pending["manualDeadlineSeconds"],
             "automaticExecutionTimeoutSeconds": pending["automaticExecutionTimeoutSeconds"],
+            # Both return paths below must carry it, or the mode silently falls back to one browser per task.
+            **({"sessionMode": pending["sessionMode"]} if "sessionMode" in pending else {}),
         }
         identity = {"identity": selected.identity} if selected.identity is not None else {}
         if selected.environment_ref is None:

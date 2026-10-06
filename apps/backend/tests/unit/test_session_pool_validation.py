@@ -32,3 +32,17 @@ def test_validation_blocks_a_pool_whose_workflow_saves_its_environment(monkeypat
     assert result.status == status
     if status == "blocked":
         assert [issue.code for issue in result.issues] == ["SESSION_POOL_UNSUPPORTED"]
+
+
+@pytest.mark.parametrize(("nodes", "status"), [
+    ([{"id": "e", "data": {"moduleType": "project_end", "retainEnvironment": True}}], "ready"),
+    ([{"id": "m", "data": {"moduleType": "project_manual"}}], "blocked"),
+])
+def test_validation_for_a_browser_shared_per_account(monkeypatch, nodes, status):
+    monkeypatch.setattr(module, "prepare_run", lambda _document: None)
+    fakes = _Fakes({"nodes": nodes}, "perIdentity")
+    result = ProjectAutomationService(fakes, fakes, fakes, fakes, fakes).validation("p", "a")
+    assert result.status == status
+    if status == "blocked":
+        assert [issue.code for issue in result.issues] == ["SESSION_POOL_UNSUPPORTED"]
+        assert "同账号" in result.issues[0].message

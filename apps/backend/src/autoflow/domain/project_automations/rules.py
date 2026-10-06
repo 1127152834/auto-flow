@@ -48,20 +48,38 @@ def validate_write(
             "environmentPolicy.inputId", "Must reference an input in inputPlan"
         )
     result["runPolicy"] = _run_policy(result["runPolicy"])
-    if result["runPolicy"].get("sessionMode") == "pool" and result["environmentPolicy"]["source"] != "newFromProfile":
-        raise validation_error("runPolicy.sessionMode", "复用浏览器只适用于按浏览器配置新建、不带登录数据的采集")
+    session_source_error(result["runPolicy"].get("sessionMode"), result["environmentPolicy"]["source"], "runPolicy.sessionMode")
     return result
 
 
-SESSION_MODES = ("perTask", "pool")
+SESSION_MODES = ("perTask", "pool", "perIdentity")
 
 
-def session_pool_blockers(document: dict[str, Any]) -> list[str]:
-    """Why a workflow cannot reuse a pooled browser (M3 R3-07): it needs its own browser profile."""
+def session_source_error(mode: Any, source: str, field: str) -> None:
+    """Which environment sources a session mode may be combined with (M3 R3-07; M4 S8-6)."""
+    if mode == "pool" and source != "newFromProfile":
+        raise validation_error(field, "复用浏览器只适用于按浏览器配置新建、不带登录数据的采集")
+    if mode == "perIdentity" and source != "inputIdentity":
+        raise validation_error(field, "同一账号共用浏览器只适用于按记录的身份运行")
+
+
+def session_pool_blockers(document: dict[str, Any], mode: str = "pool") -> list[str]:
+    """Why a workflow cannot share a browser between tasks (M3 R3-07; per account: M4 S8-6)."""
     from autoflow.domain.workflows.browser_environment import node_browser_environments
     from autoflow.domain.workflows.project_end import normalize_project_end
 
     content = document.get("content", document)
+    if mode == "perIdentity":
+        # Saving the login is what this mode is for. Node-level browsers ignore the automation's identity
+        # source, and a person waiting inside a task would need the account's browser kept open (not in v1).
+        reasons = []
+        if node_browser_environments(document) is not None:
+            reasons.append("流程的节点自带浏览器环境，不会使用账号自己的浏览器")
+        for node in content.get("nodes", []) if isinstance(content.get("nodes"), list) else []:
+            data = node.get("data") if isinstance(node, dict) else None
+            if isinstance(data, dict) and data.get("moduleType") == "project_manual":
+                reasons.append("流程包含人工处理节点，暂不支持与同账号任务共用浏览器")
+        return list(dict.fromkeys(reasons))
     reasons = []
     nodes = node_browser_environments(document) or {}
     if any(item.get("source") in {"fixedEnvironment", "inputEnvironment"} for item in nodes.values()):
@@ -650,9 +668,9 @@ def _run_policy(value: Any) -> dict[str, Any]:
     if "claimMode" in value and value["claimMode"] not in {"unprocessed", "cycle", "retryFailed"}:
         raise validation_error("runPolicy.claimMode", "Must be unprocessed, cycle or retryFailed")
     # R2-15: thresholds pause the batch; absent keeps the legacy continueAfterFailure behaviour.
-    # Remediation M3 R3-07: perTask (default) or pool; perIdentity arrives with M4.
+    # Remediation M3 R3-07: perTask (default) or pool; M4 S8-6: perIdentity shares one browser per account.
     if "sessionMode" in value and value["sessionMode"] not in SESSION_MODES:
-        raise validation_error("runPolicy.sessionMode", "Must be perTask or pool")
+        raise validation_error("runPolicy.sessionMode", "Must be perTask, pool or perIdentity")
     if "failurePolicy" in value and value["failurePolicy"] != "thresholds":
         raise validation_error("runPolicy.failurePolicy", "Must be thresholds")
     if "retryBudget" in value and (type(value["retryBudget"]) is not int or not 1 <= value["retryBudget"] <= 20):

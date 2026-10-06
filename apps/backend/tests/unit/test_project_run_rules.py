@@ -326,3 +326,28 @@ def test_unlimited_start_requires_a_required_data_input(required):
 @pytest.mark.parametrize("concurrency", [1, 2, 100])
 def test_parameter_batch_accepts_bounded_concurrency(concurrency):
     assert validate_batch_start(automation(), request(concurrency=concurrency)).concurrency == concurrency
+
+
+@pytest.mark.parametrize(("session_mode", "override", "refused"), [
+    ("perIdentity", {"source": "newFromProfile"}, True),   # a start may not undo "one browser per account"
+    ("perIdentity", None, False),
+    ("pool", {"source": "fixedEnvironment", "environmentId": "00000000-0000-0000-0000-000000000010"}, True),
+    ("pool", {"source": "newFromProfile"}, False),
+])
+def test_a_start_override_cannot_break_the_session_mode(session_mode, override, refused):
+    from dataclasses import replace
+
+    base = automation()
+    base = replace(base, run_policy={**base.run_policy, "sessionMode": session_mode})
+    if session_mode == "perIdentity":
+        base = replace(base, environment_policy={"source": "inputIdentity", "inputId": "input-1",
+                                                 "profileId": "00000000-0000-0000-0000-000000000012"},
+                       input_plan={"inputs": [{"inputId": "input-1", "required": False}]})
+    payload = request(**({"environmentOverride": override} if override else {}))
+    allow = session_mode == "perIdentity"
+    if refused:
+        with pytest.raises(ProjectRunError) as error:
+            validate_batch_start(base, payload, allow_data_inputs=allow)
+        assert any("source" in field for field in error.value.details["fields"])
+    else:
+        validate_batch_start(base, payload, allow_data_inputs=allow)

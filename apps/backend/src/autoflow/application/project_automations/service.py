@@ -187,10 +187,12 @@ class ProjectAutomationService:
         try:
             workflow = self.workflow_service.get(automation.workflow_id)
             prepare_run(workflow.document)
-            if automation.run_policy.get("sessionMode") == "pool":
+            session_mode = automation.run_policy.get("sessionMode")
+            if session_mode in {"pool", "perIdentity"}:
+                prefix = "不能复用浏览器" if session_mode == "pool" else "不能与同账号任务共用浏览器"
                 issues.extend(
-                    ValidationIssue(["runPolicy", "sessionMode"], "SESSION_POOL_UNSUPPORTED", f"不能复用浏览器：{reason}")
-                    for reason in session_pool_blockers(workflow.document)
+                    ValidationIssue(["runPolicy", "sessionMode"], "SESSION_POOL_UNSUPPORTED", f"{prefix}：{reason}")
+                    for reason in session_pool_blockers(workflow.document, session_mode)
                 )
         except WorkflowError as error:
             workflow_blocked = True

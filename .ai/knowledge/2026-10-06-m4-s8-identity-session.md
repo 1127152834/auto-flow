@@ -83,3 +83,17 @@
   有未完成保存操作的 `saving` 的重试。重启后保留副本在持久化意义上始终静止，首轮按同样规则处理；
   有运行锁（残留浏览器）则既不保存也不被复用，停在 `closing`，锁消失后释放。
 - 测试：`tests/integration/test_identity_sweep.py`（7 个）。
+
+## S8-6 配置面（后端）：sessionMode=perIdentity 的保存、启动与冻结（2026-10-06）
+
+- 保存：HTTP 契约 `RunPolicy.sessionMode` 加 `perIdentity`（`generated.ts` 由 `npm run openapi:generate` 重新生成，一行变化；
+  本机 `uv run` 会因 dlib 无法同步，用 `UV_NO_SYNC=1` 运行生成脚本）。`session_source_error` 统一规则：pool 只配"按浏览器配置新建"，
+  perIdentity 只配"按记录的身份运行"，错误文案用业务语言。
+- 校验：`session_pool_blockers(document, mode)`——perIdentity 下"结束时保存环境"不再是阻断项（那正是这个模式的用途），
+  节点自带浏览器环境、人工处理节点（v1 不支持）阻断；pool 的规则与文案不变。`validation` 对两种模式都检查，状态为 blocked。
+- 启动：`validate_batch_start` 现在读 `sessionMode`：启动覆盖不能把 perIdentity 改回别的环境来源，也补上了 pool + 覆盖的既有缺口。
+  协调器对所有非默认会话模式都把冻结工作流传给资源解析（原来只在节点模式才传，非节点模式下启动时从不重检阻断项）。
+- 冻结：`freeze_input_environment` 的两条返回路径原先都丢 `sessionMode`——inputIdentity 必然走这条路径，perIdentity 会静默退化为
+  perTask；现在带上并有断言测试。运行期不需要再改：`_session_key` 只认 pool，perIdentity 走每任务一个 worker（v1 预期）。
+- 测试：规则、校验、批次启动、冻结共 7 个新增失败用例转绿；相关回归 235 passed。
+- 批次级整链路（真实 End、hold/重新附着/释放）用 G1 的 perIdentity 变体验收（S8-7），不另建假 worker 装配。

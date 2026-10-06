@@ -5,7 +5,7 @@ from copy import deepcopy
 from typing import Any
 
 from autoflow.domain.project_automations.models import AutomationRecord
-from autoflow.domain.project_automations.rules import _environment
+from autoflow.domain.project_automations.rules import _environment, session_source_error
 from autoflow.domain.projects.models import ProjectError
 
 from .models import BatchStart, ProjectRunError
@@ -100,6 +100,14 @@ def validate_batch_start(
             else "environmentPolicy.inputId"
         )
         raise _error(field, "记录关联环境需要数据输入" if source == "inputEnvironment" else "按记录的身份运行需要数据输入")
+    # Remediation M4 S8-6: a start's override may not undo what the automation's session mode needs.
+    try:
+        session_source_error(
+            automation.run_policy.get("sessionMode"), str(source),
+            "environmentOverride.source" if environment_override is not None else "environmentPolicy.source",
+        )
+    except ProjectError as error:
+        raise _error(next(iter(error.details["fields"])), next(iter(error.details["fields"].values()))) from error
     # R2-30: the trial-run entry previews by default; real writes must be chosen explicitly.
     mode = payload.get("executionMode", "previewWrites" if "debugSelection" in payload else "realWrites")
     if mode not in {"previewWrites", "realWrites"}:
