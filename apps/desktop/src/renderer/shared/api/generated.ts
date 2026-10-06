@@ -5289,6 +5289,144 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/android/ai-tests/tool": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Tool */
+        get: operations["tool_api_v1_android_ai_tests_tool_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/ai-tests/tool/install": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Install Tool */
+        post: operations["install_tool_api_v1_android_ai_tests_tool_install_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/ai-tests/external-devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** External Devices */
+        get: operations["external_devices_api_v1_android_ai_tests_external_devices_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/ai-tests/helper": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Install Helper */
+        post: operations["install_helper_api_v1_android_ai_tests_helper_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/ai-tests/runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Runs */
+        get: operations["runs_api_v1_android_ai_tests_runs_get"];
+        put?: never;
+        /** Start */
+        post: operations["start_api_v1_android_ai_tests_runs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/ai-tests/runs/{run_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Run */
+        get: operations["get_run_api_v1_android_ai_tests_runs__run_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Run */
+        delete: operations["delete_run_api_v1_android_ai_tests_runs__run_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/ai-tests/runs/{run_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel */
+        post: operations["cancel_api_v1_android_ai_tests_runs__run_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/android/ai-tests/runs/{run_id}/artifacts/{name}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Artifact */
+        get: operations["artifact_api_v1_android_ai_tests_runs__run_id__artifacts__name__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/local-workflows/default-folder": {
         parameters: {
             query?: never;
@@ -6243,6 +6381,136 @@ export type components = {
              * Format: date-time
              */
             occurredAt: string;
+        };
+        /** AiTestHelperInstall */
+        AiTestHelperInstall: {
+            /**
+             * Devicekind
+             * @enum {string}
+             */
+            deviceKind: "managed" | "external";
+            /** Deviceid */
+            deviceId?: string | null;
+            /** Serial */
+            serial?: string | null;
+        };
+        /** AiTestHelperRead */
+        AiTestHelperRead: {
+            /** Installed */
+            installed: boolean;
+        };
+        /** AiTestRunCreate */
+        AiTestRunCreate: {
+            /** Requestid */
+            requestId: string;
+            /**
+             * Devicekind
+             * @enum {string}
+             */
+            deviceKind: "managed" | "external";
+            /** Deviceid */
+            deviceId?: string | null;
+            /** Serial */
+            serial?: string | null;
+            /** Instruction */
+            instruction: string;
+            /** Mode */
+            mode: string;
+            /** Modelid */
+            modelId: string;
+            /** Maxsteps */
+            maxSteps: number;
+            /** Timeoutseconds */
+            timeoutSeconds: number;
+        };
+        /** AiTestRunPageRead */
+        AiTestRunPageRead: {
+            /** Items */
+            items: components["schemas"]["AiTestRunRead"][];
+            /** Nextcursor */
+            nextCursor?: string | null;
+        };
+        /** AiTestRunRead */
+        AiTestRunRead: {
+            /** Id */
+            id: string;
+            /** Requestid */
+            requestId: string;
+            /**
+             * Devicekind
+             * @enum {string}
+             */
+            deviceKind: "managed" | "external";
+            /** Deviceid */
+            deviceId?: string | null;
+            /** Serial */
+            serial?: string | null;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "queued" | "running" | "succeeded" | "failed" | "cancelled" | "needs_verification";
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /** Startedat */
+            startedAt?: string | null;
+            /** Finishedat */
+            finishedAt?: string | null;
+            /** Instruction */
+            instruction: string;
+            /** Mode */
+            mode: string;
+            /** Modelid */
+            modelId: string;
+            /** Modelkey */
+            modelKey?: string | null;
+            /** Maxsteps */
+            maxSteps: number;
+            /** Timeoutseconds */
+            timeoutSeconds: number;
+            /** Toolversion */
+            toolVersion?: string | null;
+            /** Steps */
+            steps?: components["schemas"]["AiTestStepRead"][];
+            /** Succeeded */
+            succeeded?: boolean | null;
+            /** Traceid */
+            traceId?: string | null;
+            /** Artifacts */
+            artifacts?: string[];
+            /** Errorcode */
+            errorCode?: string | null;
+            /** Errormessage */
+            errorMessage?: string | null;
+        };
+        /** AiTestStepRead */
+        AiTestStepRead: {
+            /** Index */
+            index?: number | null;
+            /** Summary */
+            summary?: string | null;
+            /** Screenshot */
+            screenshot?: string | null;
+        };
+        /** AiToolInstall */
+        AiToolInstall: {
+            /** Requestid */
+            requestId: string;
+        };
+        /** AiToolStatusRead */
+        AiToolStatusRead: {
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "missing_prerequisite" | "not_installed" | "installing" | "ready" | "failed";
+            /** Version */
+            version?: string | null;
+            /** Message */
+            message?: string | null;
         };
         /** AllocationCreate */
         AllocationCreate: {
@@ -9273,6 +9541,17 @@ export type components = {
         ExpectedRevision: {
             /** Expected Revision */
             expected_revision: number;
+        };
+        /** ExternalDeviceRead */
+        ExternalDeviceRead: {
+            /** Serial */
+            serial: string;
+            /** State */
+            state: string;
+            /** Model */
+            model?: string | null;
+            /** Product */
+            product?: string | null;
         };
         /** FailureDestination */
         FailureDestination: {
@@ -34014,6 +34293,302 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SessionRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    tool_api_v1_android_ai_tests_tool_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiToolStatusRead"];
+                };
+            };
+        };
+    };
+    install_tool_api_v1_android_ai_tests_tool_install_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AiToolInstall"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiToolStatusRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    external_devices_api_v1_android_ai_tests_external_devices_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalDeviceRead"][];
+                };
+            };
+        };
+    };
+    install_helper_api_v1_android_ai_tests_helper_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AiTestHelperInstall"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiTestHelperRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    runs_api_v1_android_ai_tests_runs_get: {
+        parameters: {
+            query: {
+                deviceKind: "managed" | "external";
+                deviceId?: string | null;
+                serial?: string | null;
+                cursor?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiTestRunPageRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    start_api_v1_android_ai_tests_runs_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AiTestRunCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiTestRunRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_run_api_v1_android_ai_tests_runs__run_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiTestRunRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_run_api_v1_android_ai_tests_runs__run_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_api_v1_android_ai_tests_runs__run_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiTestRunRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    artifact_api_v1_android_ai_tests_runs__run_id__artifacts__name__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */

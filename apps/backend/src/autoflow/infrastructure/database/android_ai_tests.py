@@ -131,7 +131,7 @@ class AiTestRepository:
             try:
                 stamp, last_id = json.loads(base64.urlsafe_b64decode(cursor.encode()))
                 at = _utc(stamp)
-            except (ValueError, TypeError):
+            except (ValueError, TypeError, AttributeError):
                 raise AndroidError("ANDROID_INVALID_CURSOR", "分页游标无效", 400) from None
             query = query.where(or_(
                 AndroidAiTestRow.created_at < at,

@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from autoflow.adapters.http.android import android_router
+from autoflow.adapters.http.android_ai_tests import android_ai_tests_router
 from autoflow.adapters.http.android_fleet import android_fleet_router
 from autoflow.adapters.http.android_management import (
     android_management_internal_router,
@@ -26,6 +27,7 @@ from autoflow.adapters.http.studio_retention import studio_retention_router
 from autoflow.adapters.http.workflow_bundles import workflow_bundles_router
 from autoflow.adapters.http.workflow_catalog import workflow_catalog_router
 from autoflow.adapters.http.workflow_schedules import workflow_schedules_router
+from autoflow.application.android.ai_tests import AiTestService
 from autoflow.application.android.backups import AndroidBackupService
 from autoflow.application.android.bulk import AndroidBulkService
 from autoflow.application.android.cleanup import CleanupService
@@ -123,6 +125,7 @@ from autoflow.domain.profiles.ports import (
     ProfileUsageGuard,
 )
 from autoflow.infrastructure.credentials.cloakbrowser import CloakBrowserLicenseStore
+from autoflow.infrastructure.database.android_ai_tests import AiTestRepository
 from autoflow.infrastructure.database.android_operations import (
     SqlAlchemyAndroidOperationRepository,
 )
@@ -201,6 +204,7 @@ from autoflow.infrastructure.database.workflow_schedules import (
 )
 from autoflow.infrastructure.database.workflows import SqlAlchemyWorkflowRepository
 from autoflow.infrastructure.events.kernel_events import KernelEventBroker
+from autoflow.infrastructure.filesystem.android_paths import android_runtime_root
 from autoflow.infrastructure.filesystem.environment_store import EnvironmentStore
 from autoflow.infrastructure.filesystem.kernel_installations import (
     FilesystemKernelInstallationStore,
@@ -217,6 +221,7 @@ from autoflow.infrastructure.observability import LoopLagMonitor
 from autoflow.infrastructure.process.hardware import memory_pressure, system_hardware
 from autoflow.infrastructure.process.kernel_worker import KernelWorkerManager
 from autoflow.infrastructure.process.test_browser_worker import TestBrowserWorkerManager
+from autoflow.providers.android.artemis_tool import ArtemisTool
 from autoflow.providers.android.image_catalog import ImageCatalog
 from autoflow.providers.android.stream import AndroidStream
 from autoflow.providers.browser.environment_browser import EnvironmentBrowserLauncher
@@ -445,7 +450,16 @@ def create_app(
     android_console = AndroidConsole(
         android, android_runs, android_resources, AndroidStream
     )
+    ai_tests = AiTestService(
+        AiTestRepository(session_factory),
+        ArtemisTool(android_runtime_root()),
+        android,
+        model_service,
+        android_console.connected_serials,
+        android_runtime_root() / "ai-tests",
+    )
     app.state.android_service = android
+    app.state.ai_tests = ai_tests
     app.state.android_fleet = android_fleet
     app.state.android_console = android_console
     app.state.android_operations = android_operations
@@ -456,6 +470,7 @@ def create_app(
     app.router.add_event_handler("startup", android_console.start)
     app.router.add_event_handler("startup", android_observations.start)
     app.router.add_event_handler("startup", android_bulk.start)
+    app.router.add_event_handler("startup", ai_tests.recover)
 
     environment_store = EnvironmentStore(paths.workspace / "environments")
 
@@ -671,6 +686,7 @@ def create_app(
                 android_console.shutdown(),
                 android_observations.shutdown(),
                 android_bulk.shutdown(),
+                ai_tests.shutdown(),
                 close_project_workflows(),
                 test_browser_workers.shutdown(),
                 kernel_worker_manager.shutdown(),
@@ -730,6 +746,7 @@ def create_app(
     app.include_router(android_management_router(EnvironmentCheckService(android.runtime), android_operations, android_images, android_resources, android_backups, android, android_bulk, android_cleanup, android_resources, observations=android_observations))
     app.include_router(android_management_internal_router(android_resources, lambda: android.management.workspace_identity))
     app.include_router(android_fleet_router(android_fleet, android_console))
+    app.include_router(android_ai_tests_router(ai_tests))
     project_workflow_service = WorkflowService(
         SqlAlchemyWorkflowRepository(session_factory)
     )
