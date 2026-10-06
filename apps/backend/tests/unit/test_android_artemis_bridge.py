@@ -26,6 +26,15 @@ FAKE_CLI = textwrap.dedent(
             "AUTOFLOW_MODEL_SECRET", "ADB_DEVICE_SERIAL")},
     }), "utf-8")
     print("banner: Activated local ADB server endpoint")
+    if mode == "leak":
+        key = os.environ["OPENAI_API_KEY"]
+        print("debug: using key " + key)
+        d = traces / sid
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "run_outcome.json").write_text(json.dumps({"task_status": "completed", "tests": {"failed": 0}, "k": key}))
+        for name in ("report.html", "events.jsonl", "notes.md", "trace.log", "summary.txt"):
+            (d / name).write_text("before " + key + " after", "utf-8")
+        sys.exit(0)
     if mode == "crash":
         print("Traceback: DeviceNotFoundError " + os.environ.get("OPENAI_API_KEY", ""), file=sys.stderr)
         sys.exit(1)
@@ -226,3 +235,20 @@ def test_traversal_screenshot_and_foreign_session_are_ignored(harness, capsys):
     assert events[0]["screenshot"] is None and events[0]["summary"] == "step 1"
     assert [e["type"] for e in events] == ["step", "result"]
     assert not list(art.glob("step-*"))
+
+
+def test_every_text_artifact_is_redacted(harness, monkeypatch, capsys):
+    monkeypatch.setattr(
+        artemis_bridge, "_collect_logcat",
+        lambda serial, artifacts: bool((artifacts / "logcat.txt").write_text("E/net: auth " + SECRET)),
+    )
+    code, art, _ = harness("leak")
+    events, _ = lines(capsys)
+    assert code == 0 and events[-1]["succeeded"] is True
+    names = set(events[-1]["artifacts"])
+    assert {"artemis-stdout.txt", "artemis-report.html", "artemis-events.jsonl", "artemis-notes.md",
+            "artemis-trace.log", "artemis-summary.txt", "artemis-run_outcome.json", "logcat.txt"} <= names
+    for path in art.rglob("*"):
+        if path.is_file():
+            assert SECRET.encode() not in path.read_bytes(), path.name
+    assert (art / "artemis-notes.md").read_text("utf-8") == "before *** after"

@@ -45,6 +45,7 @@ _AGENT_NODES = (
 )
 _UTIL_NODES = ("outputter", "hopper", "video_analyzer", "object_detector")
 _STDERR_LINES = 50
+_TEXT_SUFFIXES = frozenset({".txt", ".json", ".jsonl", ".html", ".log", ".md"})
 _DRAIN_SECONDS = 2
 
 
@@ -55,6 +56,16 @@ def _emit(event: dict[str, Any]) -> None:
 
 def _redact(text: str, secret: str) -> str:
     return text.replace(secret, "***") if len(secret) >= 4 else text
+
+
+def _scrub_file(path: Path, secret: str) -> None:
+    """Artifacts are downloadable: strip the model secret from every text file before reporting it."""
+    if len(secret) < 4 or path.suffix.lower() not in _TEXT_SUFFIXES or not path.is_file():
+        return
+    data = path.read_bytes()
+    needle = secret.encode("utf-8")
+    if needle in data:
+        path.write_bytes(data.replace(needle, b"***"))
 
 
 def _artemis_command() -> list[str]:
@@ -338,6 +349,8 @@ def _run_in(
                 produced.append(f"artemis-{item.name}")
     if _collect_logcat(args.serial, artifacts):
         produced.append("logcat.txt")
+    for name in produced:
+        _scrub_file(artifacts / name, secret)
 
     if not succeeded:
         sys.stderr.write(_redact(f"{error}\n", secret))
