@@ -98,6 +98,8 @@ async def list_external_devices(
         except OSError:
             pass
         raise AndroidError("ANDROID_ADB_TIMEOUT", "adb 无响应", 504)
+    except OSError as exc:  # after TimeoutError (an OSError subclass); e.g. PermissionError: keep the OS reason visible
+        raise AndroidError("ANDROID_ADB_FAILED", f"无法启动 adb：{exc.strerror or exc}", 502) from None
 
     # Check exit code
     if proc.returncode != 0:

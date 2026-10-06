@@ -104,6 +104,21 @@ async def test_list_external_devices_adb_missing(tmp_path):
 
 
 @pytest.mark.asyncio
+async def test_list_external_devices_spawn_error_keeps_the_reason(monkeypatch):
+    """Any other spawn failure (e.g. PermissionError) is a 502 carrying the OS reason, not a bare 500."""
+
+    async def refuse(*_args, **_kwargs):
+        raise PermissionError(13, "拒绝访问")
+
+    monkeypatch.setattr("asyncio.create_subprocess_exec", refuse)
+    with pytest.raises(AndroidError) as exc:
+        await list_external_devices(set(), adb="adb")
+
+    assert (exc.value.code, exc.value.status) == ("ANDROID_ADB_FAILED", 502)
+    assert "拒绝访问" in exc.value.message
+
+
+@pytest.mark.asyncio
 async def test_list_external_devices_adb_timeout(tmp_path):
     """Raise AndroidError on adb timeout."""
     fake_adb = tmp_path / "slow_adb.py"
