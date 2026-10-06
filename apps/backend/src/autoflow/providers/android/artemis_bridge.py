@@ -15,6 +15,7 @@ import argparse
 import json
 import os
 import queue
+import re
 import shutil
 import socket
 import sqlite3
@@ -145,15 +146,22 @@ class _Steps:
         self._seen: set[str] = set()
         self.count = 0
 
+    def _id(self, step: dict[str, Any]) -> str:
+        return str(step.get("step_id") or f"n{step.get('step_number', self.count + 1)}")
+
+    def is_new(self, step: dict[str, Any]) -> bool:
+        return self._id(step) not in self._seen
+
     def emit(self, step: dict[str, Any]) -> None:
-        step_id = str(step.get("step_id") or f"n{step.get('step_number', self.count + 1)}")
-        if step_id in self._seen:
+        if not self.is_new(step):
             return
-        self._seen.add(step_id)
+        self._seen.add(self._id(step))
         self.count += 1
         image = step.get("post_image_name") or step.get("pre_image_name")
         screenshot = None
-        source = self._images / f"{image}.jpg" if image else None
+        # Only a bare hash-like name is trusted; anything with separators or ".." is ignored.
+        safe = isinstance(image, str) and re.fullmatch(r"[\w-]+", image) is not None
+        source = self._images / f"{image}.jpg" if safe else None
         if source is not None and source.is_file():
             screenshot = f"step-{self.count:03d}.jpg"
             shutil.copyfile(source, self._artifacts / screenshot)
@@ -225,6 +233,16 @@ def _run(args: argparse.Namespace) -> int:
     artifacts = Path(args.artifacts).resolve()
     artifacts.mkdir(parents=True, exist_ok=True)
     work = Path(tempfile.mkdtemp(prefix=".work-", dir=artifacts))
+    try:
+        return _run_in(args, work, artifacts, provider, key_env, kind, secret, model, base_url, instruction)
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
+def _run_in(
+    args: argparse.Namespace, work: Path, artifacts: Path, provider: str, key_env: str,
+    kind: str, secret: str, model: str, base_url: str, instruction: str,
+) -> int:
     traces = work / "traces"
     session_id = str(uuid.uuid4())
     config = work / "artemis.jsonc"
@@ -272,7 +290,7 @@ def _run(args: argparse.Namespace) -> int:
                 data = event.get("data")
                 if event.get("event_type") != "step_recorded" or not isinstance(data, dict):
                     return
-                if data.get("session_id") not in (None, session_id):
+                if data.get("session_id") != session_id or not steps.is_new(data):
                     return
                 if steps.count >= args.max_steps:
                     over_budget = True
@@ -320,7 +338,6 @@ def _run(args: argparse.Namespace) -> int:
                 produced.append(f"artemis-{item.name}")
     if _collect_logcat(args.serial, artifacts):
         produced.append("logcat.txt")
-    shutil.rmtree(work, ignore_errors=True)
 
     if not succeeded:
         sys.stderr.write(_redact(f"{error}\n", secret))

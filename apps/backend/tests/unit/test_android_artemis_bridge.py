@@ -39,11 +39,19 @@ FAKE_CLI = textwrap.dedent(
             "action_taken": {}, "pre_image_name": pre, "post_image_name": post}}
 
     steps = [step(1, "aaa", "bbb"), step(2, "bbb", ""), step(3, "ccc")]
-    if mode in ("ok", "blocked", "slow"):
+    if mode in ("ok", "blocked", "slow", "dup", "evil"):
         s = socket.create_connection(("127.0.0.1", int(os.environ["ARTEMIS_IPC_PORT"])))
         send = [{"event_type": "session_started", "data": {}}, steps[0], steps[0], steps[1]]
         if mode == "slow":
             send.append(steps[2])
+        if mode == "dup":
+            send = [steps[0], steps[0], steps[0]]
+        if mode == "evil":
+            (traces / "secret.jpg").write_bytes(b"secret")
+            bad = step(1, "../secret")
+            foreign = step(9, "aaa")
+            foreign["data"]["session_id"] = "someone-else"
+            send = [bad, foreign]
         s.sendall("".join(json.dumps(e) + "\\n" for e in send).encode())
         if mode == "slow":
             time.sleep(60)
@@ -201,3 +209,20 @@ def test_helper_failure_exits_nonzero_with_reason(tmp_path, monkeypatch, capsys)
     assert artemis_bridge.main(["helper-install", "--serial", "S"]) == 1
     out, err = capsys.readouterr()
     assert out == "" and "no device" in err
+
+
+def test_resent_step_after_limit_does_not_kill_the_run(harness, capsys):
+    code, _, _ = harness("dup", max_steps=1)
+    events, _ = lines(capsys)
+    assert code == 0
+    assert [e["type"] for e in events] == ["step", "result"]
+    assert events[-1]["succeeded"] is True
+
+
+def test_traversal_screenshot_and_foreign_session_are_ignored(harness, capsys):
+    code, art, _ = harness("evil")
+    events, _ = lines(capsys)
+    assert code == 0
+    assert events[0]["screenshot"] is None and events[0]["summary"] == "step 1"
+    assert [e["type"] for e in events] == ["step", "result"]
+    assert not list(art.glob("step-*"))
