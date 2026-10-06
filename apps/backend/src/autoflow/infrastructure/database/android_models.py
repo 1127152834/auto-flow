@@ -47,3 +47,21 @@ class AndroidOperationRow(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class AndroidAiTestRow(Base):
+    __tablename__ = "android_ai_test_runs"
+    __table_args__ = (
+        Index("ix_android_ai_test_runs_device_created", "device_kind", "device_id", "serial", "created_at"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    request_id: Mapped[str] = mapped_column(String(128), nullable=False, unique=True)
+    device_kind: Mapped[str] = mapped_column(String(16), nullable=False)
+    device_id: Mapped[str | None] = mapped_column(String(36))
+    serial: Mapped[str | None] = mapped_column(String(128))
+    state: Mapped[str] = mapped_column(String(32), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)

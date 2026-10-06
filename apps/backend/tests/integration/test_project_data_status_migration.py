@@ -57,7 +57,7 @@ def test_status_upgrade_preserves_records_and_enforces_active_names(tmp_path, ex
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
 
-        ).fetchone() == ("rm4_record_identity",)
+        ).fetchone() == ("rm4_android_ai_tests",)
 
         # Later migrations append columns; the columns that existed before keep their values.
         after = connection.execute("SELECT * FROM project_data_records ORDER BY key_value").fetchall()
@@ -152,4 +152,4 @@ def test_downgrade_preserves_live_data_but_refuses_to_resurrect_deleted_status(
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
 
-        ).fetchone() == ("rm4_record_identity",)
+        ).fetchone() == ("rm4_android_ai_tests",)
