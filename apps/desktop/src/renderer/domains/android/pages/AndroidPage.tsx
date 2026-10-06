@@ -4,6 +4,7 @@ import { useApi } from '../../../app/ApiProvider'
 import { ApiClientError } from '../../../shared/api/client'
 import { androidApi, type AndroidDevice, type DeviceCommand } from '../api'
 import { fleetApi, type ConsoleSession, type Profile } from '../fleet-api'
+import { aiTestApi } from '../ai-test-api'
 import { androidManagementApi, type ManagementDevicePage } from '../management-api'
 import { CreateInstances } from '../components/CreateInstances'
 import { DeviceConsole } from '../components/DeviceConsole'
@@ -67,7 +68,8 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
   const { client, instanceId } = useApi(),
     api = useMemo(() => androidApi(client), [client]),
     managementApi = useMemo(() => androidManagementApi(client), [client]),
-    fleet = useMemo(() => fleetApi(client), [client])
+    fleet = useMemo(() => fleetApi(client), [client]),
+    aiTest = useMemo(() => aiTestApi(client), [client])
   const queryClient = useQueryClient()
   const [page, setPage] = useState<'board' | 'create' | 'detail' | 'maintenance' | 'tools'>('board'),
     [selected, setSelected] = useState<string | null>(null),
@@ -491,6 +493,7 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
           session={session?.deviceId === device.deviceId ? session : null}
           api={fleet}
           deviceApi={api}
+          aiTestApi={aiTest}
           run={undefined}
           apps={apps.data}
           onBack={() => void leaveDetail()}

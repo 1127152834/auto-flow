@@ -26,11 +26,14 @@ import { isCurrentConsoleResponse, isVerifiedAppFailure, type Apps, type Console
 import { Action, Badge, Dot, Phone, Toggle } from './PrototypeControls'
 import { AndroidVideo } from './AndroidVideo'
 import { ApplicationsPanel } from './ApplicationsPanel'
+import { AiTestPanel } from './AiTestPanel'
+import type { AiTestApi } from '../ai-test-api'
 export type ConsoleProps = {
   device: AndroidDevice
   session: ConsoleSession | null
   api?: FleetApi
   deviceApi?: AndroidApi
+  aiTestApi?: AiTestApi
   run?: DeviceRun
   apps?: Apps
   image?: string
@@ -370,7 +373,7 @@ export function DeviceConsole(p: ConsoleProps) {
       </header>
       <div className="ad-detail-surface">
         <nav className="ad-detail-tabs" aria-label="设备详情">
-          {['控制台', '应用', '环境配置'].map((label) => (
+          {['控制台', '应用', ...(p.aiTestApi ? ['AI 测试'] : []), '环境配置'].map((label) => (
             <button key={label} aria-current={tab === label ? 'page' : undefined} onClick={() => setTab(label)}>
               {label}
             </button>
@@ -624,6 +627,15 @@ export function DeviceConsole(p: ConsoleProps) {
             {application}
             {p.api && <ApplicationsPanel api={p.api} apps={p.apps} session={p.session} onSession={p.onSession} onRefresh={p.onRefresh} />}
           </section>
+        ) : tab === 'AI 测试' && p.aiTestApi ? (
+          <AiTestPanel
+            api={p.aiTestApi}
+            target={{ deviceKind: 'managed', deviceId: p.device.deviceId }}
+            onTakeOver={() => {
+              setTab('控制台')
+              if (!(p.session && p.session.state !== 'closed')) p.onOpen()
+            }}
+          />
         ) : (
           <section className="ad-secondary">
             {information}
