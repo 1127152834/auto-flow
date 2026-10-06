@@ -85,6 +85,7 @@ class AiTestService:
         self._install_error: str | None = None
         self._install_output: deque[str] = deque(maxlen=50)
         self._starting: dict[str, asyncio.Event] = {}  # request id -> set when that start() returns
+        self._shutting_down = False
 
     # -- tool -------------------------------------------------------------
 
@@ -314,7 +315,7 @@ class AiTestService:
 
         async def finish(target: AiTestState, **changes: Any) -> None:
             nonlocal state
-            if state in TERMINAL_STATES:
+            if state not in ("queued", "running"):
                 return  # already finalized (e.g. cancelled while the terminal write was in flight)
             state = transition(state, target)
             # Free the device first: whoever sees the final state may immediately rerun or take over.
@@ -352,7 +353,11 @@ class AiTestService:
                 else:
                     raise
             except asyncio.CancelledError:
-                await finish("cancelled", succeeded=False)
+                if self._shutting_down and state == "running":
+                    # The user did not stop it: the app is closing, so the outcome is unknown (spec §6.7).
+                    await finish("needs_verification", errorMessage=_INTERRUPTED)
+                else:
+                    await finish("cancelled", succeeded=False)
                 raise
         except Exception as exc:  # noqa: BLE001 -- a run must never stay "running" after its task ends
             message = redact(str(exc) or type(exc).__name__, [model.secret])
@@ -382,6 +387,7 @@ class AiTestService:
             )
 
     async def shutdown(self) -> None:
+        self._shutting_down = True
         tasks: list[asyncio.Task[None]] = list(self._tasks.values())
         if self._install_task is not None:
             tasks.append(self._install_task)

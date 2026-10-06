@@ -423,7 +423,10 @@ async def test_shutdown_cancels_running_tasks(env: dict[str, Any]) -> None:
     while not tool.runs:
         await asyncio.sleep(0.01)
     await service.shutdown()
-    assert env["repo"].get(record["id"])["state"] == "cancelled"
+    final = env["repo"].get(record["id"])
+    # The user never pressed stop: an app shutdown leaves the outcome unknown (spec §6.7).
+    assert final["state"] == "needs_verification"
+    assert final["errorMessage"] == "程序中断，无法确定测试是否完成"
     assert env["devices"].contexts[0].cleanups == 1 and not service._tasks
 
 
