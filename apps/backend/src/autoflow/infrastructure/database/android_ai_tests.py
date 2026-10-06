@@ -92,6 +92,13 @@ class AiTestRepository:
                 raise _not_found()
             return _public(row)
 
+    def get_by_request(self, request_id: str) -> dict[str, Any] | None:
+        with self.sessions() as session:
+            row = session.scalars(
+                select(AndroidAiTestRow).where(AndroidAiTestRow.request_id == request_id)
+            ).first()
+            return None if row is None else _public(row)
+
     def update(self, run_id: str, **changes: Any) -> dict[str, Any]:
         with self.sessions.begin() as session:
             row = session.get(AndroidAiTestRow, run_id)

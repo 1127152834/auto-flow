@@ -38,6 +38,13 @@ def test_create_is_idempotent_and_detects_conflict(repo: AiTestRepository) -> No
     assert (err.value.code, err.value.status) == ("ANDROID_REQUEST_CONFLICT", 409)
 
 
+def test_get_by_request(repo: AiTestRepository) -> None:
+    assert repo.get_by_request("req-1") is None
+    repo.create(run(1))
+    found = repo.get_by_request("req-1")
+    assert found is not None and found["id"] == "run-1" and found["requestDigest"] == "digest-1"
+
+
 def test_get_missing_and_update_splits_columns_and_payload(repo: AiTestRepository) -> None:
     with pytest.raises(AndroidError) as err:
         repo.get("nope")
