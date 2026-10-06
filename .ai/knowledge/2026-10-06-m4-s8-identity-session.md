@@ -21,3 +21,16 @@
 
   差异在单次样本噪声内（约 5–15%，key_order 的绝对差 1 ms）；身份路径每次领取多一条按（项目，状态）索引的查询，未单独测量。
 - 测试：`tests/integration/test_identity_exclusivity.py`（24 个含迁移 head），相关回归 289 passed。
+
+## S8-2 持有与重新附着（2026-10-06）
+
+- 状态 `identity_held` = 工作副本保留、浏览器已关闭、没有任务在跑、身份仍被独占。只能从 `closed`（已确认浏览器退出）进入，
+  所以保留副本在构造上是静止的，不存在"撕裂的登录状态"。持有时清空 `active_run_id`（使终态清理的 JOIN 看不到它）、
+  记录 `held_batch_id`；不进 `LIVE_INSTANCE_STATES`（没有浏览器），进 `BUSY_INSTANCE_STATES`（项目归档/删除不得 rmtree 它）。
+- 重新附着在领取事务内一条路径完成：同批次、同环境代次、`runtime_lock_present` 为假（重启后残留浏览器锁则拒绝）、有活动名额；
+  通过后直接置 `active`（绝不写 `reserved`，否则 `attach_task_instance` 会 rmtree 后重新恢复，销毁登录状态），
+  `instance_use_generation` +1（今天首次让旧 End/保存授权被代次围栏拒绝），占用持有者改为新任务。
+- 领取门禁：持有该身份的批次可继续，其他批次、`active`/`closed` 的实例仍让行等待。
+- 任务视图：持有中显示"保留中"，已被后续任务接走的旧任务显示 notRequired（不再误报"临时环境已释放"）。
+- 增补列 `held_batch_id`（迁移 rm4_instance_identity 内，尚未推送）：持有时记批次，免去门禁与重新附着对任务表的 join。
+- 测试：`tests/integration/test_identity_hold.py`（14 个），相关回归 298 passed（唯一失败为本机符号链接权限）。尚无调用方：End 在 S8-4 才会持有。

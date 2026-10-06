@@ -77,6 +77,7 @@ class ProjectEnvironmentInstanceRow(Base):
     identity_package: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
     identity_id: Mapped[str | None] = mapped_column(String(36))
     retain_on_release: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default=text("0"))
+    held_batch_id: Mapped[str | None] = mapped_column(String(36))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 

@@ -20,6 +20,8 @@ InstanceState = Literal[
     "cleaned",
     "cleanup_failed",
     "unknown",
+    # Remediation M4 S8-2: between an identity's tasks the work copy stays, the browser is closed.
+    "identity_held",
 ]
 EnvironmentSource = Literal["newFromProfile", "fixedEnvironment", "inputEnvironment"]
 SaveMode = Literal["update", "save_as"]
@@ -119,6 +121,7 @@ class EnvironmentInstance:
     # Remediation M4 S8-1: the identity this instance works for; at most one unreleased instance each.
     identity_id: str | None = None
     retain_on_release: bool = False
+    held_batch_id: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {

@@ -91,6 +91,7 @@ class SqlAlchemyProjectInputGroups:
         ledger_policy: LedgerClaimPolicy | None = None,
         candidate_page_sizes: dict[str, int] | None = None,
         identity_input_id: str | None = None,
+        identity_batch_id: str | None = None,
     ) -> InputSelection:
         raw_inputs = input_plan.get("inputs") if isinstance(input_plan, dict) else None
         if not isinstance(raw_inputs, list):
@@ -120,6 +121,7 @@ class SqlAlchemyProjectInputGroups:
                     else None,
                     identity_gate=identity_input_id == item["inputId"],
                     identity_busy_gate=identity_input_id == item["inputId"],
+                    identity_batch_id=identity_batch_id,
                 )
             )
         selection = self._validate_selected_values(select_required_inputs(sources))
@@ -242,6 +244,7 @@ class SqlAlchemyProjectInputGroups:
         prepared: InputSelection,
         *,
         identity_input_id: str | None = None,
+        identity_batch_id: str | None = None,
     ) -> InputSelection:
         """Recheck the exact prepared records without rescanning tables under a write lock."""
         raw_inputs = input_plan.get("inputs") if isinstance(input_plan, dict) else None
@@ -270,6 +273,7 @@ class SqlAlchemyProjectInputGroups:
                 omit_candidates=item["inputId"] not in selected,
                 # The identity may have been taken since preparation; health is not rechecked here.
                 identity_busy_gate=identity_input_id == item["inputId"],
+                identity_batch_id=identity_batch_id,
             )
             for item in raw_inputs
         ]
@@ -434,6 +438,7 @@ class SqlAlchemyProjectInputGroups:
         page_size: int = MAX_CANDIDATE_EVALUATIONS,
         identity_gate: bool = False,
         identity_busy_gate: bool = False,
+        identity_batch_id: str | None = None,
     ) -> InputCandidates:
         input_id = item["inputId"]
         table_id, generation = item.get("tableId"), item.get("datasetGeneration")
@@ -598,7 +603,10 @@ class SqlAlchemyProjectInputGroups:
         # Remediation M3 R3-02: look up active leases by key through the partial unique index.
         active = _active_lease_keys(self.session, [_lease_key(lease) for _, _, lease, _ in resolved])
         # Remediation M4 R4-06: a row whose identity is working in an instance waits, like a leased row.
-        busy_identities = live_identity_instances(self.session, project_id=project_id) if identity_busy_gate else {}
+        busy_identities = (
+            live_identity_instances(self.session, project_id=project_id, reusable_in_batch=identity_batch_id)
+            if identity_busy_gate else {}
+        )
         for row, ref, lease, source_identity in resolved:
             if ledger is not None:
                 # Remediation M2 R2-03: only the primary input is filtered by its processing record.

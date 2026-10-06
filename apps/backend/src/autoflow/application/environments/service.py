@@ -564,6 +564,7 @@ class EnvironmentService:
         policy: dict[str, Any],
         inputs: dict[str, dict[str, Any]] | None = None,
         *, resource_request: dict[str, Any] | None = None, instance_id: str | None = None,
+        session_mode: str | None = None, batch_id: str | None = None,
     ) -> EnvironmentInstance:
         resolved = self.environments.resolve_source_in_session(session, project_id, policy, inputs)
         from autoflow.domain.environments.identity import identity_from_request
@@ -585,6 +586,14 @@ class EnvironmentService:
             occupy_environment(reference.environment_id, instance.instance_id, "task", task_id, None)
             if reference else None
         )
+        if session_mode == "perIdentity":
+            # Remediation M4 S8-2: the identity's held copy goes to its next task as it is.
+            held = self.environments.reattach_identity_instance(
+                session, instance, batch_id=batch_id, max_live_instances=self._max_live_instances,
+                quiescent=lambda held_id: not self.store.runtime_lock_present(held_id),
+            )
+            if held is not None:
+                return held
         return self.environments.reserve_instance_in_session(
             session, instance, occupancy, max_live_instances=self._max_live_instances,
         )

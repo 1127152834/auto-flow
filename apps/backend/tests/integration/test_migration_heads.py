@@ -185,7 +185,7 @@ def test_instance_identity_migration_adds_the_columns_and_the_live_identity_inde
     database_session.migrate_database(database)
     with sqlite3.connect(database) as connection:
         columns = {row[1]: row for row in connection.execute("PRAGMA table_info(project_environment_instances)")}
-        assert "identity_id" in columns and columns["retain_on_release"][3] == 1 and columns["retain_on_release"][4] == "0"
+        assert "identity_id" in columns and "held_batch_id" in columns and columns["retain_on_release"][3] == 1 and columns["retain_on_release"][4] == "0"
         index = connection.execute(
             "SELECT sql FROM sqlite_master WHERE name = 'uq_project_environment_instances_live_identity'"
         ).fetchone()

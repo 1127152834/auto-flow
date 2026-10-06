@@ -75,6 +75,7 @@ BUSY_INSTANCE_STATES = (
     "closing",
     "saving",
     "cleaning",
+    "identity_held",  # an identity's work copy kept between tasks (M4 S8-2)
 )
 # Rows owned by the project through a parent key instead of a `project_id` column.
 _EXTRA_PURGES = (

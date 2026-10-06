@@ -703,6 +703,7 @@ class ProjectBatchScheduler:
                 ),
                 **({"candidate_restriction": pinned} if pinned else {}),
                 identity_input_id=_identity_input(prepared["frozenAutomation"]),
+                identity_batch_id=batch_id,
             )
         result = ProjectBatchScheduler._commit_data_claim(
             factory,
@@ -950,6 +951,7 @@ class ProjectBatchScheduler:
                     prepared["inputPlan"],
                     selection,
                     identity_input_id=_identity_input(prepared["frozenAutomation"]),
+                    identity_batch_id=batch_id,
                 )
             if (
                 selection.status == "ready"
@@ -1142,6 +1144,7 @@ class ProjectBatchScheduler:
                     session, project_id, task_id, run.run_id, policy,
                     {item["inputId"]: item for item in inputs if item.get("inputId")},
                     resource_request=resource_request,
+                    session_mode=resource_request.get("sessionMode"), batch_id=batch_id,
                 )
             row.selection_outcome = {
                 "status": "ready",

@@ -488,6 +488,73 @@ class SqlAlchemyEnvironments:
                     result.append(_instance(row))
             return result
 
+    def hold_identity_instance(
+        self, project_id: str, instance_id: str, expected_use_generation: int, *, batch_id: str | None, retain: bool,
+    ) -> EnvironmentInstance:
+        """Keep a quiet work copy for its identity's next task (remediation M4 S8-2).
+
+        Only a ``closed`` instance - its browser confirmed closed - may be held; the run no longer owns it,
+        so the earlier task's run id is cleared. Repeating the call (a lost End response) is harmless.
+        """
+        with self._session_factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            row = session.get(ProjectEnvironmentInstanceRow, instance_id)
+            if (
+                row is None or row.project_id != project_id or row.identity_id is None
+                or row.instance_use_generation != expected_use_generation
+                or row.state not in {"closed", "identity_held"}
+            ):
+                raise environment_error("INSTANCE_OWNERSHIP_UNKNOWN", "环境实例归属不一致，无法为身份保留", 409)
+            if row.state == "closed":
+                row.state, row.active_run_id, row.held_batch_id = "identity_held", None, batch_id
+            row.retain_on_release = bool(row.retain_on_release or retain)
+            row.updated_at = datetime.now(UTC)
+            session.commit()
+            return _instance(row)
+
+    def reattach_identity_instance(
+        self, session: Session, record: EnvironmentInstance, *, batch_id: str | None,
+        max_live_instances: int | None, quiescent: Callable[[str], bool],
+    ) -> EnvironmentInstance | None:
+        """Give the identity's held copy to its next task, or None when it holds none.
+
+        Runs inside the claim transaction. The copy is taken as it is - never restored - after checking that
+        it is the same environment generation, that its browser is really gone, and that a live slot is free.
+        """
+        if record.identity_id is None:
+            return None
+        row = session.scalar(select(ProjectEnvironmentInstanceRow).where(
+            ProjectEnvironmentInstanceRow.identity_id == record.identity_id,
+            ProjectEnvironmentInstanceRow.state == "identity_held",
+            ProjectEnvironmentInstanceRow.project_id == record.project_id,
+        ))
+        if row is None:
+            return None
+        if batch_id is None or row.held_batch_id != batch_id:
+            raise _identity_busy(record.identity_id, row.id)
+        if row.environment_id != record.environment_id or row.source_content_generation != record.source_content_generation:
+            raise _identity_busy(record.identity_id, row.id)  # held for another environment generation: wait for release
+        if max_live_instances is not None:
+            live = session.scalar(select(func.count()).select_from(ProjectEnvironmentInstanceRow).where(
+                ProjectEnvironmentInstanceRow.state.in_(tuple(LIVE_INSTANCE_STATES))))
+            check_live_capacity(int(live or 0), max_live_instances)
+        if not quiescent(row.id):
+            raise environment_error("INSTANCE_NOT_QUIESCENT", "身份保留的浏览器目录仍被占用，需核验后再用", 409)
+        row.state, row.held_batch_id = "active", None
+        row.active_task_id, row.active_run_id = record.active_task_id, record.active_run_id
+        row.instance_use_generation += 1
+        row.profile_id, row.source = record.profile_id, record.source
+        row.identity_package = record.identity_package or {}
+        row.updated_at = datetime.now(UTC)
+        if row.environment_id is not None:
+            occupancy = session.get(ProjectEnvironmentOccupancyRow, row.environment_id)
+            if occupancy is None or occupancy.instance_id != row.id:
+                raise environment_error("INSTANCE_OWNERSHIP_UNKNOWN", "身份保留实例的环境占用已失效", 409)
+            occupancy.holder_kind = "task"
+            occupancy.holder_id = cast(str, record.active_task_id)  # a re-attached copy always has its task
+        session.flush()
+        return _instance(row)
+
     def set_instance_state(self, instance_id: str, state: str) -> EnvironmentInstance:
         with self._session_factory() as session:
             row = session.get(ProjectEnvironmentInstanceRow, instance_id)
@@ -1457,9 +1524,17 @@ def _environment(row: ProjectEnvironmentRow) -> PersistentEnvironment:
 
 def live_identity_instances(
     session: Session, *, project_id: str | None = None, identity_ids: builtins.list[str] | None = None,
+    reusable_in_batch: str | None = None,
 ) -> dict[str, str]:
-    """Identity id -> the unreleased instance it works in (remediation M4 S8-1, R4-06)."""
-    query = select(ProjectEnvironmentInstanceRow.identity_id, ProjectEnvironmentInstanceRow.id).where(
+    """Identity id -> the unreleased instance it works in (remediation M4 S8-1, R4-06).
+
+    An instance the identity merely *holds* between tasks (S8-2) is not counted for the batch that
+    holds it: that batch's next task re-attaches it.
+    """
+    query = select(
+        ProjectEnvironmentInstanceRow.identity_id, ProjectEnvironmentInstanceRow.id,
+        ProjectEnvironmentInstanceRow.state, ProjectEnvironmentInstanceRow.held_batch_id,
+    ).where(
         ProjectEnvironmentInstanceRow.identity_id.is_not(None),
         ProjectEnvironmentInstanceRow.state.not_in(tuple(IDENTITY_RELEASED_STATES)),
     )
@@ -1467,7 +1542,11 @@ def live_identity_instances(
         query = query.where(ProjectEnvironmentInstanceRow.project_id == project_id)
     if identity_ids is not None:
         query = query.where(ProjectEnvironmentInstanceRow.identity_id.in_(identity_ids))
-    return {str(identity): instance for identity, instance in session.execute(query)}
+    return {
+        str(identity): instance
+        for identity, instance, state, held_batch in session.execute(query)
+        if not (state == "identity_held" and reusable_in_batch is not None and held_batch == reusable_in_batch)
+    }
 
 
 def _identity_busy(identity_id: str, instance_id: str | None) -> ProjectError:
@@ -1495,6 +1574,7 @@ def _instance(row: ProjectEnvironmentInstanceRow) -> EnvironmentInstance:
         row.identity_package or None,
         row.identity_id,
         bool(row.retain_on_release),
+        row.held_batch_id,
     )
 
 
@@ -1514,6 +1594,7 @@ def _instance_row(record: EnvironmentInstance) -> ProjectEnvironmentInstanceRow:
         identity_package=record.identity_package or {},
         identity_id=record.identity_id,
         retain_on_release=record.retain_on_release,
+        held_batch_id=record.held_batch_id,
         created_at=record.created_at,
         updated_at=record.updated_at,
     )

@@ -501,7 +501,11 @@ _CLEANUP_INSTANCE_STATUS: dict[str, str] = {
     "cleaned": "succeeded",
     "cleanup_failed": "failed",
     "unknown": "unknown",
+    "identity_held": "pending",
 }
+
+_SHARED_HELD_MESSAGE = "账号浏览器目录由同账号的任务共用，保留中，登录状态将在释放时保存。"
+_SHARED_MOVED_ON_MESSAGE = "账号浏览器目录由同账号的任务共用，不随本任务清理。"
 
 _CLEANUP_MESSAGES: dict[str, str] = {
     "pending": "环境现场仍在使用，任务结束后再关闭并清理。",
@@ -535,8 +539,14 @@ def _cleanup(
             ProjectEnvironmentInstanceRow.id,
         )
     )
+    shared = thaw_json(run.resource_request).get("sessionMode") == "perIdentity"
     if instance is not None:
+        if instance.state == "identity_held":
+            return {"status": "pending", "operationId": None, "message": _SHARED_HELD_MESSAGE}
         return _cleanup_view(_CLEANUP_INSTANCE_STATUS.get(instance.state, "unknown"))
+    if shared and run.terminal:
+        # A later task of the same account took the work copy over; it is not cleaned with this task.
+        return {"status": "notRequired", "operationId": None, "message": _SHARED_MOVED_ON_MESSAGE}
     if thaw_json(run.resource_request).get("browser") == "none":
         return {"status": "notRequired", "operationId": None, "message": None}
     if run.status == "reconciling":
