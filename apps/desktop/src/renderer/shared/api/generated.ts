@@ -5410,6 +5410,23 @@ export type paths = {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/android/ai-tests/runs/{run_id}/screen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Screen */
+        get: operations["screen_api_v1_android_ai_tests_runs__run_id__screen_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/android/ai-tests/runs/{run_id}/artifacts/{name}": {
         parameters: {
             query?: never;
@@ -34557,6 +34574,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AiTestRunRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    screen_api_v1_android_ai_tests_runs__run_id__screen_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 当前设备画面（只读） */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/png": unknown;
                 };
             };
             /** @description Validation Error */

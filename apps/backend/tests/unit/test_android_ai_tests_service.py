@@ -103,6 +103,13 @@ class FakeTool:
 class FakeRuntime:
     def __init__(self) -> None:
         self.serial: str | None = None
+        self.commands: list[tuple[str, float]] = []
+
+    async def command(self, operation: str, args: dict[str, Any], timeout: float) -> bytes:
+        if not self.serial:
+            raise AndroidError("ANDROID_DISCONNECTED", "安卓设备未连接", 503)
+        self.commands.append((operation, timeout))
+        return b"PNG-live"
 
 
 class FakeContext:
@@ -678,6 +685,32 @@ async def test_device_is_released_before_the_terminal_state_is_written(env: dict
     await settle(service)
     assert len(seen) == 1 and seen[0][1] == "idle"  # a rerun or take-over right after the final state succeeds
     assert devices.contexts[0].cleanups == 1
+
+
+@pytest.mark.asyncio
+async def test_live_screen_only_for_a_running_managed_test(env: dict[str, Any]) -> None:
+    service, tool = env["service"], env["tool"]
+    tool.behaviour, tool.gate = "wait", asyncio.Event()
+    record = await service.start(request())
+    while not tool.runs:
+        await asyncio.sleep(0.01)
+    assert await service.screen(record["id"]) == b"PNG-live"
+    assert env["devices"].contexts[0].runtime.commands == [("android_screenshot", 5)]
+    tool.gate.set()
+    await settle(service)
+    with pytest.raises(AndroidError) as finished:
+        await service.screen(record["id"])
+    assert (finished.value.code, finished.value.status) == ("AI_TEST_STATE_CONFLICT", 409)
+
+    tool.gate = asyncio.Event()
+    outside = await service.start(external(2))
+    while len(tool.runs) < 2:
+        await asyncio.sleep(0.01)
+    with pytest.raises(AndroidError) as external_run:
+        await service.screen(outside["id"])
+    assert external_run.value.code == "AI_TEST_STATE_CONFLICT"
+    tool.gate.set()
+    await settle(service)
 
 
 @pytest.mark.asyncio

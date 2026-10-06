@@ -70,6 +70,22 @@ function Steps({ api, run }: { api: AiTestApi; run: AiTestRun }) {
   </ol>
 }
 
+function LiveScreen({ api, runId, visible }: { api: AiTestApi; runId: string; visible: boolean }) {
+  const shot = useQuery({ queryKey: ['android-ai-screen', runId], queryFn: () => api.screenBlob(runId), refetchInterval: visible ? 2000 : false, gcTime: 0 })
+  const [url, setUrl] = useState<string | null>(null)
+  useEffect(() => {
+    if (!shot.data) return
+    const created = URL.createObjectURL(shot.data)
+    setUrl(created)
+    return () => URL.revokeObjectURL(created)
+  }, [shot.data])
+  return <figure className="m-0 grid gap-1">
+    <figcaption className="text-xs text-muted">实时画面（只读）</figcaption>
+    {url ? <img src={url} alt="实时画面（只读）" className="max-h-96 w-fit rounded-control border border-line object-contain" />
+      : <p className="m-0 text-sm text-muted">{shot.isError ? message(shot.error, '暂时无法读取设备画面') : '正在读取设备画面…'}</p>}
+  </figure>
+}
+
 function Artifacts({ api, run }: { api: AiTestApi; run: AiTestRun }) {
   const save = async (name: string) => {
     const url = URL.createObjectURL(await api.artifactBlob(run.id, name))
@@ -202,6 +218,7 @@ export function AiTestPanel({ api, target, onTakeOver }: Props) {
 
     {run ? <div className="grid gap-3 rounded-control border border-line bg-surface p-3" aria-label="当前测试">
       <div className="flex flex-wrap items-center gap-2"><Badge>{STATE_TEXT[run.state]}</Badge><span className="text-sm text-ink">{run.instruction}</span></div>
+      {run.state === 'running' && target.deviceKind === 'managed' ? <LiveScreen api={api} runId={run.id} visible={visible} /> : null}
       <Steps api={api} run={run} />
       {running ? <div className="flex gap-2">
         <Button onClick={() => void stop(false)}>停止</Button>

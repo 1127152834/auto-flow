@@ -10,7 +10,7 @@ from collections.abc import Awaitable, Callable, Iterator
 from dataclasses import asdict
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 from uuid import uuid4
 
 from autoflow.application.android.devices import AndroidDeviceService
@@ -41,6 +41,7 @@ SUPPORTED_PROVIDER_KINDS = frozenset({"openai", "openai-compatible", "gemini", "
 _FIXED_URL_KINDS = frozenset({"gemini", "anthropic"})  # ARTEMIS cannot point these at another endpoint
 _INTERRUPTED = "程序中断，无法确定测试是否完成"
 _PASSTHROUGH_CODES = frozenset({"AI_TEST_TIMEOUT", "AI_TEST_PROCESS_FAILED"})
+_SCREEN_TIMEOUT = 5
 
 
 def _now() -> str:
@@ -80,6 +81,7 @@ class AiTestService:
         self._tasks: dict[str, asyncio.Task[None]] = {}
         self._cancels: dict[str, asyncio.Event] = {}
         self._managed_serials: dict[str, str] = {}  # run id -> adb serial while a managed run holds it
+        self._contexts: dict[str, AndroidDeviceService] = {}  # run id -> held managed device context
         self._external_busy: set[str] = set()
         self._install_task: asyncio.Task[None] | None = None
         self._install_error: str | None = None
@@ -234,6 +236,7 @@ class AiTestService:
             assert device_id is not None
             context, adb_serial = await self._open_managed(device_id, run_id)
             self._managed_serials[run_id] = adb_serial
+            self._contexts[run_id] = context
         else:
             assert serial is not None
             await self._check_external(serial)
@@ -284,6 +287,7 @@ class AiTestService:
 
     async def _release(self, run_id: str, context: AndroidDeviceService | None, serial: str | None) -> None:
         self._managed_serials.pop(run_id, None)
+        self._contexts.pop(run_id, None)
         if serial is not None:
             self._external_busy.discard(serial)
         if context is not None:
@@ -377,6 +381,17 @@ class AiTestService:
         if event is not None:
             event.set()
         return record
+
+    async def screen(self, run_id: str) -> bytes:
+        """Read-only live view (spec §6.4): one PNG through the running managed test's own connection."""
+        record = await asyncio.to_thread(self.repository.get, run_id)
+        context = self._contexts.get(run_id)
+        if record["state"] != "running" or context is None:
+            raise AndroidError("AI_TEST_STATE_CONFLICT", "测试未在设备工作台中运行，无法查看实时画面", 409)
+        try:  # adb exec-out screencap -p runs as a subprocess, off the event loop
+            return cast(bytes, await context.runtime.command("android_screenshot", {}, _SCREEN_TIMEOUT))
+        except TimeoutError:
+            raise AndroidError("AI_TEST_SCREEN_TIMEOUT", "读取实时画面超时", 504) from None
 
     async def recover(self) -> None:
         """Mark runs interrupted by a restart; their devices are recovered by AndroidDeviceService.recover."""

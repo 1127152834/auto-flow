@@ -47,6 +47,12 @@ class FakeService:
         self.calls.append(("cancel", run_id))
         return self.repository.get(run_id)
 
+    async def screen(self, run_id: str) -> bytes:
+        self.calls.append(("screen", run_id))
+        if run_id != "run-1":
+            raise AndroidError("AI_TEST_STATE_CONFLICT", "测试未在设备工作台中运行，无法查看实时画面", 409)
+        return b"PNG-live"
+
 
 def _run(n: int, **extra: Any) -> dict[str, Any]:
     return {
@@ -185,3 +191,43 @@ def test_delete_logs_cleanup_failure_but_removes_record(
         assert client.delete(f"{BASE}/runs/run-2").status_code == 204
     assert "locked" in caplog.text and "run-2" in caplog.text
     assert client.get(f"{BASE}/runs/run-2").status_code == 404
+
+
+def test_live_screen_is_png_or_state_conflict(env: tuple[TestClient, FakeService]) -> None:
+    client, service = env
+    ok = client.get(f"{BASE}/runs/run-1/screen")
+    assert ok.status_code == 200 and ok.headers["content-type"] == "image/png" and ok.content == b"PNG-live"
+    assert ok.headers["cache-control"] == "no-store"
+    refused = client.get(f"{BASE}/runs/run-2/screen")
+    assert refused.status_code == 409 and refused.json()["error"]["code"] == "AI_TEST_STATE_CONFLICT"
+
+
+def test_app_recovers_ai_tests_before_serving_and_shuts_them_down(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import asyncio
+
+    from autoflow.application.android.ai_tests import AiTestService
+    from autoflow.bootstrap.app import create_app
+    from autoflow.bootstrap.config import Settings
+
+    events: list[str] = []
+
+    async def recover(self: AiTestService) -> None:
+        await asyncio.sleep(0)  # only an awaited handler gets past this point
+        events.append("recovered")
+
+    async def shutdown(self: AiTestService) -> None:
+        await asyncio.sleep(0)
+        events.append("shut down")
+
+    monkeypatch.setenv("AUTOFLOW_ANDROID_RUNTIME_ROOT", str(tmp_path / "android"))
+    monkeypatch.setattr(AiTestService, "recover", recover)
+    monkeypatch.setattr(AiTestService, "shutdown", shutdown)
+    app = create_app(Settings(data_dir=str(tmp_path / "data"), instance_id="t", instance_token="secret",
+                              host_token="host-secret"))
+    assert isinstance(app.state.ai_tests, AiTestService) and events == []
+    with TestClient(app, headers={"x-autoflow-token": "secret"}) as client:
+        assert events == ["recovered"]  # startup finished recovery before the first request
+        assert client.get(f"{BASE}/runs/missing").status_code == 404
+    assert events == ["recovered", "shut down"]

@@ -33,6 +33,8 @@ export const aiTestApi = (client: StreamingApiClient) => ({
   artifactUrl: artifactPath,
   // Artifacts need the auth header, so the page reads them as blobs instead of linking the URL directly.
   artifactBlob: async (id: string, name: string) => (await client.stream(artifactPath(id, name))).blob(),
+  // Read-only live view of a running managed test: one PNG per call.
+  screenBlob: async (id: string) => (await client.stream(`${runPath(id)}/screen`)).blob(),
   modelOptions: () => createModelApi(client).listOptions(),
 })
 export type AiTestApi = ReturnType<typeof aiTestApi>

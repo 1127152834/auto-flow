@@ -181,6 +181,13 @@ def android_ai_tests_router(service: AiTestService) -> APIRouter:
     async def cancel(run_id: str) -> Any:
         return _read(await service.cancel(run_id))
 
+    @router.get(
+        "/runs/{run_id}/screen", response_class=Response,
+        responses={200: {"content": {"image/png": {}}, "description": "当前设备画面（只读）"}},
+    )
+    async def screen(run_id: str) -> Response:
+        return Response(await service.screen(run_id), media_type="image/png", headers={"Cache-Control": "no-store"})
+
     @router.delete("/runs/{run_id}", status_code=204)
     async def delete_run(run_id: str) -> Response:
         run = await asyncio.to_thread(service.repository.get, run_id)

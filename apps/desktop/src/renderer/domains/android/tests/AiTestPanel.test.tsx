@@ -18,7 +18,7 @@ const run = (patch: Partial<AiTestRun> = {}): AiTestRun => ({
   maxSteps: 30, timeoutSeconds: 600, steps: [], artifacts: [], ...patch,
 })
 
-function setup(over: Partial<Record<keyof AiTestApi, unknown>> = {}, props: { onTakeOver?: () => void } = {}) {
+function setup(over: Partial<Record<keyof AiTestApi, unknown>> = {}, props: { onTakeOver?: () => void; target?: typeof target | { deviceKind: 'external'; serial: string } } = {}) {
   const api = {
     tool: vi.fn().mockResolvedValue({ state: 'ready', version: '1' }),
     installTool: vi.fn().mockResolvedValue({ state: 'ready' }),
@@ -31,10 +31,11 @@ function setup(over: Partial<Record<keyof AiTestApi, unknown>> = {}, props: { on
     remove: vi.fn().mockResolvedValue(undefined),
     artifactUrl: vi.fn((id: string, name: string) => `/x/${id}/${name}`),
     artifactBlob: vi.fn().mockRejectedValue(new Error('no blob')),
+    screenBlob: vi.fn().mockRejectedValue(new Error('no screen')),
     modelOptions: vi.fn().mockResolvedValue({ items: [{ id: 'm1', providerId: 'p', providerName: '供应商', modelKey: 'gpt-x', displayName: '示例模型', tagsJson: [] }], total: 1 }),
     ...over,
   } as unknown as AiTestApi
-  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AiTestPanel api={api} target={target} {...props} /></QueryClientProvider>)
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AiTestPanel api={api} target={props.target ?? target} onTakeOver={props.onTakeOver} /></QueryClientProvider>)
   return api
 }
 
@@ -158,4 +159,37 @@ it('adds an AI test tab to the device console and opens manual control after tak
   await userEvent.click(await screen.findByRole('button', { name: '停止并接管' }))
   await waitFor(() => expect(onOpen).toHaveBeenCalledTimes(1))
   expect(screen.queryByRole('region', { name: 'AI 测试' })).toBeNull()
+})
+
+it('shows a read-only live screen for a running managed test and refreshes it every 2 seconds while visible', async () => {
+  vi.useFakeTimers({ shouldAdvanceTime: true })
+  const visibility = vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible')
+  vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:live')
+  vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined)
+  const screenBlob = vi.fn().mockResolvedValue(new Blob(['png']))
+  setup({ runs: vi.fn().mockResolvedValue({ items: [run({ state: 'running', finishedAt: null })], nextCursor: null }), screenBlob })
+  expect(await screen.findByRole('img', { name: '实时画面（只读）' })).toHaveAttribute('src', 'blob:live')
+  expect(screenBlob).toHaveBeenCalledWith('run-1')
+  const first = screenBlob.mock.calls.length
+  await act(async () => { await vi.advanceTimersByTimeAsync(2100) })
+  expect(screenBlob.mock.calls.length).toBeGreaterThan(first)
+  visibility.mockReturnValue('hidden')
+  act(() => { document.dispatchEvent(new Event('visibilitychange')) })
+  const hidden = screenBlob.mock.calls.length
+  await act(async () => { await vi.advanceTimersByTimeAsync(6000) })
+  expect(screenBlob.mock.calls.length).toBe(hidden)
+})
+
+it('shows no live screen for an external device or a finished run', async () => {
+  const screenBlob = vi.fn().mockResolvedValue(new Blob(['png']))
+  const going = run({ state: 'running', finishedAt: null, deviceKind: 'external', deviceId: null, serial: 'emulator-5554' })
+  setup({ runs: vi.fn().mockResolvedValue({ items: [going], nextCursor: null }), run: vi.fn().mockResolvedValue(going), screenBlob },
+    { target: { deviceKind: 'external', serial: 'emulator-5554' } })
+  await screen.findByRole('button', { name: '停止' })
+  cleanup()
+  setup({ runs: vi.fn().mockResolvedValue({ items: [run()], nextCursor: null }), run: vi.fn().mockResolvedValue(run()), screenBlob })
+  await userEvent.click(await screen.findByRole('button', { name: '查看' }))
+  await screen.findByLabelText('当前测试')
+  expect(screen.queryByRole('img', { name: '实时画面（只读）' })).toBeNull()
+  expect(screenBlob).not.toHaveBeenCalled()
 })
