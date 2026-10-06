@@ -301,6 +301,10 @@ async function checkStandaloneStudio(browserVersion) {
   ], edges: [] })
   await click('工作流工作台编排并运行浏览器自动化流程')
   const studioTarget = await poll(async () => (await (await fetch(`${desktop.debugOrigin}/json/list`)).json()).find(target => target.type === 'page' && target.url.includes('view=automation-studio')), 'standalone Studio window')
+    .catch(async error => {
+      const targets = await (await fetch(`${desktop.debugOrigin}/json/list`)).json()
+      throw new Error(`${error.message}; windows: ${JSON.stringify(targets.map(target => [target.type, target.url]))}`)
+    })
   studio = await connectCdp(studioTarget.webSocketDebuggerUrl)
   try {
     await prepareStudioView()
