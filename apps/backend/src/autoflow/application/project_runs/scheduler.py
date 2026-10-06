@@ -126,9 +126,13 @@ class ProjectBatchScheduler:
         gate: QuiesceGate,
         environments: Any | None = None,
         resource_resolver: ProjectRunResourceResolver | None = None,
+        identity_idle_seconds: float = 120,
     ):
         self._factory, self._core, self._gate = factory, core, gate
         self._environments = environments
+        # Remediation M4 S8-5: how long an identity's held work copy may sit unused before it is saved and cleaned.
+        self._identity_idle_seconds = identity_idle_seconds
+        self._release_task: asyncio.Task[None] | None = None
         self._resource_resolver = resource_resolver
         # One sidecar owns this database; serialize dispatch selection and stop admission.
         self._lock = asyncio.Lock()
@@ -157,6 +161,9 @@ class ProjectBatchScheduler:
         if self._loop is not None:
             await self._loop
             self._loop = None
+        if self._release_task is not None:
+            await asyncio.gather(self._release_task, return_exceptions=True)
+            self._release_task = None
         if self._unsubscribe_core is not None:
             self._unsubscribe_core()
             self._unsubscribe_core = None
@@ -247,6 +254,9 @@ class ProjectBatchScheduler:
                     if not admitted:
                         return
                     await asyncio.to_thread(self._environments.cleanup_terminal_tasks)
+            # Not behind the "no active run" test above: while any batch keeps runs going, an identity copy
+            # a finished or idle batch holds would otherwise stay taken for ever.
+            self._start_identity_release()
         async with self._lock:
             if self._closed:
                 return
@@ -273,6 +283,29 @@ class ProjectBatchScheduler:
                         pending = started
             finally:
                 self._claims_left = None
+
+    def _start_identity_release(self) -> None:
+        """Release due identity copies in the background; one sweep at a time (remediation M4 S8-5)."""
+        if self._release_task is not None and not self._release_task.done():
+            return
+        self._release_task = asyncio.ensure_future(self._release_idle_identities())
+
+    async def _release_idle_identities(self) -> None:
+        environments = self._environments
+        if environments is None:
+            return
+        try:
+            with self._gate.mutation() as admitted:
+                if not admitted:
+                    return
+                # Copying and deleting a profile directory is file work: never on the event loop (AGENTS rule 3).
+                released = await asyncio.to_thread(
+                    environments.release_due_identity_instances, idle_seconds=self._identity_idle_seconds,
+                )
+            if released:
+                self.wake()  # a batch waiting for one of these identities can claim its row now
+        except Exception:  # noqa: BLE001 -- retried by the next tick; the copies stay as they are
+            _LOG.exception("Identity copy release failed")
 
     async def _claim_off_loop(self, project_id: str, batch_id: str) -> str:
         """Run one claim in a worker thread and keep the tick (and its lock) until it settles.

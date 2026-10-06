@@ -71,3 +71,15 @@
 - 测试：`tests/integration/test_identity_end.py`（11 个；去掉 End 改动后 3 个红）；相关回归 278 passed（唯一失败为本机符号链接权限）。
 - 已知上限：End 已受理但进程在 hold 之前崩溃时，实例仍 `active`，被未决 retain 操作保护、身份保持占用，需人工处理
   （与现有"中断的保留型 End"同语义）。
+
+## S8-5 释放扫描接入调度器（2026-10-06）
+
+- `ProjectBatchScheduler.tick` 在终态清理之后启动后台协程 `_release_idle_identities`：同一时刻只有一个在飞；
+  在 `QuiesceGate.mutation()` 内用 `asyncio.to_thread` 调 `release_due_identity_instances`（目录拷贝与 rmtree 不上事件循环，规则 3）；
+  释放数 > 0 时 `wake()`，让在等该身份的批次立刻重试而不是等 30 秒。`shutdown()` 等待在飞的扫描，不遗留线程。
+- 关键：扫描不放进终态清理的 `if active is None` 分支——那个分支只在没有任何运行时才执行，放进去的话只要一直有别的批次在跑，
+  已结束批次的保留实例就永远不释放、身份永久被占。
+- 触发条件（在 `due_identity_instances`）：空闲超过 120 秒（`identity_idle_seconds`）；持有批次已终态；`closing`/`closed`/
+  有未完成保存操作的 `saving` 的重试。重启后保留副本在持久化意义上始终静止，首轮按同样规则处理；
+  有运行锁（残留浏览器）则既不保存也不被复用，停在 `closing`，锁消失后释放。
+- 测试：`tests/integration/test_identity_sweep.py`（7 个）。
