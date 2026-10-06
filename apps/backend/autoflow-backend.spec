@@ -28,6 +28,8 @@ torchvision_binaries = (
 datas = [
     ('src/autoflow/adapters/http/module-required-fields.json', 'autoflow/adapters/http'),
     ('src/autoflow/infrastructure/filesystem/profile_environment.json', 'autoflow/infrastructure/filesystem'),
+    # Run by path inside the ARTEMIS venv, never imported, so it must ship as a plain file next to artemis_tool.py.
+    ('src/autoflow/providers/android/artemis_bridge.py', 'autoflow/providers/android'),
     ('src/autoflow/infrastructure/database/alembic.ini', 'autoflow/infrastructure/database'),
     ('src/autoflow/infrastructure/database/migrations', 'autoflow/infrastructure/database/migrations'),
     *collect_data_files('tzdata'),
