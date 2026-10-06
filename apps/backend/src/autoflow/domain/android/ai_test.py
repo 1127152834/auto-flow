@@ -33,14 +33,15 @@ class AiTestRequest:
 
 def validate_request(raw: dict[str, Any]) -> AiTestRequest:
     """Validate and parse an AI test request from raw dict (camelCase keys)."""
-    # Extract fields with camelCase keys
-    instruction = raw.get("instruction", "").strip()
-    mode = raw.get("mode")
-    model_id = raw.get("modelId", "").strip()
-    max_steps = raw.get("maxSteps")
-    timeout_seconds = raw.get("timeoutSeconds")
-
-    # Validate instruction
+    # Extract and validate instruction
+    instruction_raw = raw.get("instruction")
+    if not isinstance(instruction_raw, str):
+        raise AndroidError(
+            "AI_TEST_INSTRUCTION_INVALID",
+            "指令必须是文本",
+            422,
+        )
+    instruction = instruction_raw.strip()
     if not instruction or len(instruction) > 4000:
         raise AndroidError(
             "AI_TEST_INSTRUCTION_INVALID",
@@ -48,19 +49,26 @@ def validate_request(raw: dict[str, Any]) -> AiTestRequest:
             422,
         )
 
+    # Extract and validate model_id
+    model_id_raw = raw.get("modelId")
+    if not isinstance(model_id_raw, str) or not model_id_raw.strip():
+        raise AndroidError(
+            "AI_TEST_MODEL_REQUIRED",
+            "必须指定运行的 AI 模型",
+            422,
+        )
+    model_id = model_id_raw.strip()
+
+    # Extract other fields
+    mode = raw.get("mode")
+    max_steps = raw.get("maxSteps")
+    timeout_seconds = raw.get("timeoutSeconds")
+
     # Validate mode
     if mode not in ("flash", "pro"):
         raise AndroidError(
             "AI_TEST_MODE_INVALID",
             "运行模式必须是 flash 或 pro",
-            422,
-        )
-
-    # Validate model_id
-    if not model_id:
-        raise AndroidError(
-            "AI_TEST_MODEL_REQUIRED",
-            "必须指定运行的 AI 模型",
             422,
         )
 
@@ -113,16 +121,21 @@ def transition(current: AiTestState, target: AiTestState) -> AiTestState:
 
 
 def redact(text: str, secrets: Iterable[str], max_lines: int = 50) -> str:
-    """Take the tail max_lines and replace each secret with ***."""
+    """Take the tail max_lines and replace each secret with ***.
+
+    Secrets are replaced longest-first to avoid substring leakage.
+    """
     lines = text.splitlines()
     # Take the last max_lines
     tail_lines = lines[-max_lines:] if len(lines) > max_lines else lines
 
     result = "\n".join(tail_lines)
 
-    # Replace each secret (skip empty strings)
-    for secret in secrets:
-        if secret:
-            result = result.replace(secret, "***")
+    # Replace each secret longest-first (skip empty strings)
+    # Sort by length descending to replace longer secrets first
+    non_empty_secrets = [s for s in secrets if s]
+    sorted_secrets = sorted(non_empty_secrets, key=len, reverse=True)
+    for secret in sorted_secrets:
+        result = result.replace(secret, "***")
 
     return result

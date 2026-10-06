@@ -171,3 +171,54 @@ def test_redact_custom_max_lines() -> None:
     assert len(out.splitlines()) == 10
     assert "line90" in out
     assert "line0" not in out
+
+
+def test_instruction_must_be_string() -> None:
+    """null instruction raises AI_TEST_INSTRUCTION_INVALID, not AttributeError."""
+    with pytest.raises(AndroidError) as excinfo:
+        validate_request(ok(instruction=None))
+    assert excinfo.value.code == "AI_TEST_INSTRUCTION_INVALID"
+
+    with pytest.raises(AndroidError) as excinfo:
+        validate_request(ok(instruction=123))
+    assert excinfo.value.code == "AI_TEST_INSTRUCTION_INVALID"
+
+
+def test_model_id_must_be_string() -> None:
+    """null modelId raises AI_TEST_MODEL_REQUIRED, not AttributeError."""
+    with pytest.raises(AndroidError) as excinfo:
+        validate_request(ok(modelId=None))
+    assert excinfo.value.code == "AI_TEST_MODEL_REQUIRED"
+
+    with pytest.raises(AndroidError) as excinfo:
+        validate_request(ok(modelId=123))
+    assert excinfo.value.code == "AI_TEST_MODEL_REQUIRED"
+
+
+def test_bool_max_steps_rejected() -> None:
+    """bool maxSteps raises AI_TEST_STEPS_INVALID."""
+    with pytest.raises(AndroidError) as excinfo:
+        validate_request(ok(maxSteps=True))
+    assert excinfo.value.code == "AI_TEST_STEPS_INVALID"
+
+    with pytest.raises(AndroidError) as excinfo:
+        validate_request(ok(maxSteps=False))
+    assert excinfo.value.code == "AI_TEST_STEPS_INVALID"
+
+
+def test_bool_timeout_rejected() -> None:
+    """bool timeoutSeconds raises AI_TEST_TIMEOUT_INVALID."""
+    with pytest.raises(AndroidError) as excinfo:
+        validate_request(ok(timeoutSeconds=True))
+    assert excinfo.value.code == "AI_TEST_TIMEOUT_INVALID"
+
+
+def test_redact_longest_secret_first() -> None:
+    """Substring secrets are replaced longest-first to avoid leakage."""
+    # If we replace "abc" before "abcdef", we'd get "***def"
+    text = "abcdef is secret"
+    out = redact(text, ["abc", "abcdef"])
+    assert "abcdef" not in out
+    assert "abc" not in out
+    assert "def" not in out  # No substring leakage
+    assert out == "*** is secret"
