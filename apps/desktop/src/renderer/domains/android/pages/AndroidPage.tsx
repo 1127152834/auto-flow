@@ -186,8 +186,18 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
           : sessionStatus.data,
       )
   }, [sessionStatus.data, sessionChanging])
+  const markSessionClosed = (id: string) => {
+    if (currentSession.current?.id === id)
+      currentSession.current = { ...currentSession.current, state: 'closed', latestOperation: '控制会话已结束' }
+    setSession((previous) => previous && previous.id === id && previous.state !== 'closed'
+      ? { ...previous, state: 'closed', latestOperation: '控制会话已结束' } : previous)
+  }
+  const isSessionGone = (cause: unknown) =>
+    cause instanceof ApiClientError && (cause.status === 410 || cause.code === 'ANDROID_SESSION_STALE')
   useEffect(() => {
     if (!sessionStatus.error || !session || sessionChanging) return
+    // The server already ended this session (e.g. a managed AI test took the device): it is closed, not unknown.
+    if (isSessionGone(sessionStatus.error)) { markSessionClosed(session.id); return }
     setSession((previous) => previous && previous.id === session.id && previous.state === 'connected'
       ? { ...previous, state: 'unknown', latestOperation: '控制会话状态待核实' }
       : previous)
@@ -288,7 +298,9 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
       return
     }
     await perform(async () => {
-      if (session && session.state !== 'closed' && session.endpoint !== 'native') await fleet.action(session, 'end')
+      if (session && session.state !== 'closed' && session.endpoint !== 'native') {
+        try { await fleet.action(session, 'end') } catch (cause) { if (!isSessionGone(cause)) throw cause }
+      }
       if (epoch !== openingEpoch.current) return
       if (pendingOpen.current?.deviceId !== d.deviceId)
         pendingOpen.current = { deviceId: d.deviceId, requestId: crypto.randomUUID() }
@@ -524,6 +536,7 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
             if (changing) await queryClient.cancelQueries({ queryKey: ['android', instanceId, 'session', session.id] })
           }}
           onOpen={() => void open(device)}
+          onAiTestStarted={() => { if (session) markSessionClosed(session.id) }}
           onManage={(action) => manage(device, action)}
           onRefresh={refresh}
         />

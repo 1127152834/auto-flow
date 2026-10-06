@@ -45,6 +45,7 @@ export type ConsoleProps = {
   onSession(s: ConsoleSession): void
   onTransition?(changing: boolean): Promise<void> | void
   onOpen(): void
+  onAiTestStarted?(): void
   onManage(action: string): void
   onRefresh(): void
 }
@@ -634,6 +635,7 @@ export function DeviceConsole(p: ConsoleProps) {
           <AiTestPanel
             api={p.aiTestApi}
             target={{ deviceKind: 'managed', deviceId: p.device.deviceId }}
+            onStarted={p.onAiTestStarted}
             onTakeOver={() => {
               setTab('控制台')
               if (!(p.session && p.session.state !== 'closed')) p.onOpen()

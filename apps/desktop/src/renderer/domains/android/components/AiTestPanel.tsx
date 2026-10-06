@@ -12,7 +12,7 @@ import { Select } from '../../../shared/components/ui/select'
 import { Textarea } from '../../../shared/components/ui/textarea'
 import type { AiTestApi, AiTestRun, AiTestRunCreate, AiTestTarget } from '../ai-test-api'
 
-type Props = { api: AiTestApi; target: AiTestTarget; onTakeOver?: () => void }
+type Props = { api: AiTestApi; target: AiTestTarget; onTakeOver?: () => void; onStarted?: () => void }
 type Draft = Pick<AiTestRunCreate, 'instruction' | 'mode' | 'modelId' | 'maxSteps' | 'timeoutSeconds'>
 
 const STATE_TEXT: Record<AiTestRun['state'], string> = {
@@ -99,7 +99,7 @@ function Artifacts({ api, run }: { api: AiTestApi; run: AiTestRun }) {
   </div>
 }
 
-export function AiTestPanel({ api, target, onTakeOver }: Props) {
+export function AiTestPanel({ api, target, onTakeOver, onStarted }: Props) {
   const queryClient = useQueryClient(), visible = useVisible()
   const targetKey = `${target.deviceKind}:${target.deviceId ?? target.serial ?? ''}`
   const tool = useQuery({ queryKey: ['android-ai-tool'], queryFn: api.tool, refetchInterval: (q) => q.state.data?.state === 'installing' && visible ? 2000 : false })
@@ -141,6 +141,7 @@ export function AiTestPanel({ api, target, onTakeOver }: Props) {
       queryClient.setQueryData(['android-ai-run', started.id], started)
       setActiveId(started.id)
       void refreshHistory()
+      onStarted?.()
     } catch (cause) {
       if (!retried && cause instanceof ApiClientError && cause.code === 'AI_TEST_HELPER_REQUIRED') setHelperFor(input)
       else setError(message(cause, '无法开始测试'))

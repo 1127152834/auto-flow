@@ -819,3 +819,47 @@ it('views a running AI test from the board without opening a console session', a
   expect(screen.getByRole('button', { name: 'AI 测试' })).toHaveAttribute('aria-current', 'page')
   expect(mocks.client.request.mock.calls.some(([path, init]) => path.endsWith('/sessions') && init?.method === 'POST')).toBe(false)
 })
+
+it('treats a heartbeat 410 as a closed session, not an unknown one', async () => {
+  const fallback = mocks.client.request.getMockImplementation()!
+  mocks.client.request.mockImplementation(async (path: string, init?: { method?: string }) => {
+    if (path.endsWith('/heartbeat')) throw new ApiClientError('会话已结束', 410, 'ANDROID_SESSION_EXPIRED')
+    return fallback(path, init)
+  })
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: /打开测试设备 01/ }))
+  await waitFor(() => expect(mocks.client.request.mock.calls.some(([path]) => path.endsWith('/heartbeat'))).toBe(true))
+  await waitFor(() => expect(screen.queryByRole('heading', { name: '手动控制中' })).not.toBeInTheDocument())
+  expect(screen.queryByText(/控制会话状态未知/)).not.toBeInTheDocument()
+})
+
+it('drops the console session when a managed AI test starts and opens a new one on take-over', async () => {
+  const fallback = mocks.client.request.getMockImplementation()!
+  let run: Record<string, unknown> | null = null
+  const base = { id: 'run-1', requestId: 'q', deviceKind: 'managed', deviceId: devices[0].deviceId, createdAt: '2026-10-06T00:00:00Z', instruction: '打开设置', mode: 'flash', modelId: 'm', maxSteps: 5, timeoutSeconds: 60, steps: [], artifacts: [] }
+  mocks.client.request.mockImplementation(async (path: string, init?: { method?: string }) => {
+    if (path === '/api/v1/android/ai-tests/tool') return { state: 'ready', version: '1' }
+    if (path === '/api/v1/models/options') return { items: [{ id: 'm', displayName: '模型 M' }] }
+    if (path === '/api/v1/android/ai-tests/runs' && init?.method === 'POST') return (run = { ...base, state: 'running' })
+    if (path.startsWith('/api/v1/android/ai-tests/runs?')) return { items: run ? [run] : [], nextCursor: null }
+    if (path === '/api/v1/android/ai-tests/runs/run-1/cancel') return (run = { ...base, state: 'cancelled' })
+    if (path === '/api/v1/android/ai-tests/runs/run-1') return run
+    // The backend ended the console session when the test started.
+    if (run && path.endsWith('/heartbeat')) throw new ApiClientError('会话已结束', 410, 'ANDROID_SESSION_EXPIRED')
+    return fallback(path, init)
+  })
+  mocks.client.stream.mockResolvedValue({ blob: async () => new Blob(['png']) })
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: /打开测试设备 01/ }))
+  await screen.findByRole('heading', { name: '手动控制中' })
+  const sessionPosts = () => mocks.client.request.mock.calls.filter(([path, init]) => path.endsWith('/sessions') && init?.method === 'POST').length
+  expect(sessionPosts()).toBe(1)
+  await userEvent.click(screen.getByRole('button', { name: 'AI 测试' }))
+  await userEvent.type(await screen.findByLabelText('测试指令'), '打开设置')
+  await userEvent.click(await screen.findByRole('button', { name: '开始测试' }))
+  await screen.findByRole('button', { name: '停止并接管' })
+  await new Promise((resolve) => setTimeout(resolve, 50))
+  expect(screen.queryByText(/控制会话状态未知/)).not.toBeInTheDocument()
+  await userEvent.click(screen.getByRole('button', { name: '停止并接管' }))
+  await waitFor(() => expect(sessionPosts()).toBe(2))
+})
