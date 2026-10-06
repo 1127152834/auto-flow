@@ -53,6 +53,11 @@ class ProjectEnvironmentInstanceRow(Base):
             "project_id",
             "state",
         ),
+        # Remediation M4 S8-1: one unreleased instance per identity (see rm4_instance_identity).
+        Index(
+            "uq_project_environment_instances_live_identity", "identity_id", unique=True,
+            sqlite_where=text("identity_id IS NOT NULL AND state NOT IN ('cleaned', 'retained_unsaved')"),
+        ),
     )
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     project_id: Mapped[str] = mapped_column(
@@ -70,6 +75,8 @@ class ProjectEnvironmentInstanceRow(Base):
     maintenance_operation_id: Mapped[str | None] = mapped_column(String(36))
     profile_id: Mapped[str] = mapped_column(String(36), nullable=False)
     identity_package: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    identity_id: Mapped[str | None] = mapped_column(String(36))
+    retain_on_release: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default=text("0"))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 

@@ -21,6 +21,7 @@ from autoflow.domain.environments.models import (
     ResolvedEnvironmentSource,
 )
 from autoflow.domain.environments.rules import (
+    IDENTITY_RELEASED_STATES,
     LIVE_INSTANCE_STATES,
     MANUAL_TERMINAL,
     check_live_capacity,
@@ -331,6 +332,10 @@ class SqlAlchemyEnvironments:
         occupancy: EnvironmentOccupancy | None, *, max_live_instances: int | None = None,
     ) -> EnvironmentInstance:
         self._project(session, record.project_id)
+        if record.identity_id is not None:  # before anything is added: the query may autoflush
+            taken = live_identity_instances(session, identity_ids=[record.identity_id])
+            if record.identity_id in taken:
+                raise _identity_busy(record.identity_id, taken[record.identity_id])
         if max_live_instances is not None:
             count = session.scalar(select(func.count()).select_from(
                 ProjectEnvironmentInstanceRow
@@ -357,7 +362,13 @@ class SqlAlchemyEnvironments:
                     )
                 )
         session.add(_instance_row(record))
-        session.flush()
+        try:
+            session.flush()
+        except IntegrityError as error:  # lost a race for the identity to another transaction
+            if record.identity_id is None or "identity" not in str(error.orig):
+                raise
+            taken = live_identity_instances(session, identity_ids=[record.identity_id])
+            raise _identity_busy(record.identity_id, taken.get(record.identity_id)) from error
         return record
 
     def resolve_source_in_session(
@@ -1444,6 +1455,28 @@ def _environment(row: ProjectEnvironmentRow) -> PersistentEnvironment:
     )
 
 
+def live_identity_instances(
+    session: Session, *, project_id: str | None = None, identity_ids: builtins.list[str] | None = None,
+) -> dict[str, str]:
+    """Identity id -> the unreleased instance it works in (remediation M4 S8-1, R4-06)."""
+    query = select(ProjectEnvironmentInstanceRow.identity_id, ProjectEnvironmentInstanceRow.id).where(
+        ProjectEnvironmentInstanceRow.identity_id.is_not(None),
+        ProjectEnvironmentInstanceRow.state.not_in(tuple(IDENTITY_RELEASED_STATES)),
+    )
+    if project_id is not None:
+        query = query.where(ProjectEnvironmentInstanceRow.project_id == project_id)
+    if identity_ids is not None:
+        query = query.where(ProjectEnvironmentInstanceRow.identity_id.in_(identity_ids))
+    return {str(identity): instance for identity, instance in session.execute(query)}
+
+
+def _identity_busy(identity_id: str, instance_id: str | None) -> ProjectError:
+    return environment_error(
+        "ENVIRONMENT_BUSY", "该身份正在被另一个任务使用", 423,
+        {"holderKind": "identity", "holderId": identity_id, "instanceId": instance_id, "retryable": True},
+    )
+
+
 def _instance(row: ProjectEnvironmentInstanceRow) -> EnvironmentInstance:
     return EnvironmentInstance(
         row.id,
@@ -1460,6 +1493,8 @@ def _instance(row: ProjectEnvironmentInstanceRow) -> EnvironmentInstance:
         _aware(row.created_at),
         _aware(row.updated_at),
         row.identity_package or None,
+        row.identity_id,
+        bool(row.retain_on_release),
     )
 
 
@@ -1477,6 +1512,8 @@ def _instance_row(record: EnvironmentInstance) -> ProjectEnvironmentInstanceRow:
         maintenance_operation_id=record.maintenance_operation_id,
         profile_id=record.profile_id,
         identity_package=record.identity_package or {},
+        identity_id=record.identity_id,
+        retain_on_release=record.retain_on_release,
         created_at=record.created_at,
         updated_at=record.updated_at,
     )

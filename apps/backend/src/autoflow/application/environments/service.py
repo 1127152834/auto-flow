@@ -306,6 +306,7 @@ class EnvironmentService:
             now,
             now,
             deepcopy(resolved.identity_package) if resolved.identity_package.get("schemaVersion") else None,
+            _identity_id(resolved),
         )
         occupancy = None
         if resolved.environment_ref is not None:
@@ -578,6 +579,7 @@ class EnvironmentService:
             instance_id or str(uuid4()), project_id, reference.environment_id if reference else None,
             "reserved", resolved.source, reference.content_generation if reference else None,
             1, task_id, run_id, None, resolved.profile_id, now, now, deepcopy(identity),
+            _identity_id(resolved),
         )
         occupancy = (
             occupy_environment(reference.environment_id, instance.instance_id, "task", task_id, None)
@@ -823,3 +825,8 @@ def _operation(key, kind, project_id, environment_id, canonical, now):
         now,
         None,
     )
+
+
+def _identity_id(resolved: Any) -> str | None:
+    identity = getattr(resolved, "identity", None)
+    return identity.get("identityId") if isinstance(identity, dict) else None

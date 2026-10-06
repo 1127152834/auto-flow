@@ -139,6 +139,7 @@ class SqlAlchemyIdentities:
             seed = randint(SEED_MIN, SEED_MAX)
             with self._factory() as session:
                 row = self._row(session, project_id, identity_id)
+                _require_unused(session, identity_id)
                 try:
                     registry = SeedRegistryRow(id=str(uuid4()), seed_value=seed, legacy_shared=False, created_at=datetime.now(UTC))
                     session.add(registry)
@@ -160,6 +161,7 @@ class SqlAlchemyIdentities:
     def delete(self, project_id: str, identity_id: str) -> None:
         with self._factory() as session:
             row = self._row(session, project_id, identity_id)
+            _require_unused(session, identity_id)
             if row.environment_id is not None:
                 raise ProjectError("IDENTITY_HAS_ENVIRONMENT", "身份仍保存着登录环境，请先删除该环境", 409)
             session.delete(row)
@@ -248,3 +250,11 @@ def _identity(row: IdentityRow, seed: int) -> Identity:
 
 def _aware(value: datetime) -> datetime:
     return value if value.tzinfo is not None else value.replace(tzinfo=UTC)
+
+
+def _require_unused(session: Session, identity_id: str) -> None:
+    """A running task works in the identity's browser; changing its seed or removing it now would tear that run."""
+    from .environments import live_identity_instances
+
+    if live_identity_instances(session, identity_ids=[identity_id]):
+        raise ProjectError("IDENTITY_IN_USE", "该身份正在被任务使用，请等任务结束后再操作", 409)

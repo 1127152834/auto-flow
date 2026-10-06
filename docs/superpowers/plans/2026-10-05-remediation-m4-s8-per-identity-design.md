@@ -1,6 +1,6 @@
 # M4 S8：perIdentity 会话设计
 
-- 日期：2026-10-05；状态：proposed（实施方决策：先完成 S9/S10 其余部分，再按本设计实施）
+- 日期：2026-10-05；状态：superseded（第 2–4 条被 [2026-10-06 决定](../../../.ai/decisions/2026-10-06-m4-s8-per-identity-v1-keep-instance.md) 取代：v1 保留实例、不保留浏览器；其余条目仍有效）
 - 规格：[M4 规格](../specs/2026-09-30-remediation-m4-identity.md) R4-12、AC4-07
 
 ## 为什么单独设计

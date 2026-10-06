@@ -11,7 +11,7 @@ from alembic.script import ScriptDirectory
 
 from autoflow.infrastructure.database import session as database_session
 
-EXPECTED_HEAD = "rm4_record_identity"
+EXPECTED_HEAD = "rm4_instance_identity"
 
 
 def _config(path: Path) -> Config:

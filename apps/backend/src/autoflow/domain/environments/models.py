@@ -116,6 +116,9 @@ class EnvironmentInstance:
     updated_at: datetime
 
     identity_package: dict[str, Any] | None = field(default=None, repr=False)
+    # Remediation M4 S8-1: the identity this instance works for; at most one unreleased instance each.
+    identity_id: str | None = None
+    retain_on_release: bool = False
 
     def to_dict(self) -> dict[str, Any]:
         return {

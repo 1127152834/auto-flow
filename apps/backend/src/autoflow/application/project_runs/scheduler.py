@@ -949,6 +949,7 @@ class ProjectBatchScheduler:
                     project_id,
                     prepared["inputPlan"],
                     selection,
+                    identity_input_id=_identity_input(prepared["frozenAutomation"]),
                 )
             if (
                 selection.status == "ready"
