@@ -244,7 +244,8 @@ async def test_accounts_run_as_their_own_identities(tmp_path, valid_profile_valu
             for _cycle in range(CYCLES):
                 accepted = await api("POST", automation_path + "/batches", {
                     "expectedAutomationRevision": automation["managementRevision"], "parameters": {},
-                    "maxTasks": min(ROWS, 100), "concurrency": CONCURRENCY, "executionMode": "realWrites",
+                    # A task limit is at most 100; beyond that one batch per cycle takes every row (unlimited).
+                    "maxTasks": None if ROWS > 100 else ROWS, "concurrency": CONCURRENCY, "executionMode": "realWrites",
                 }, 202)
                 batch_path = prefix + f"/batches/{accepted['operation']['result']['batch']['batchId']}"
                 async with asyncio.timeout(1800):
