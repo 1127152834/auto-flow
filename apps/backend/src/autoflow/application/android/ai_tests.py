@@ -10,7 +10,7 @@ from collections.abc import Awaitable, Callable, Iterator
 from dataclasses import asdict
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 from uuid import uuid4
 
 from autoflow.application.android.devices import AndroidDeviceService
@@ -389,7 +389,7 @@ class AiTestService:
         if record["state"] != "running" or context is None:
             raise AndroidError("AI_TEST_STATE_CONFLICT", "测试未在设备工作台中运行，无法查看实时画面", 409)
         try:  # adb exec-out screencap -p runs as a subprocess, off the event loop
-            return cast(bytes, await context.runtime.command("android_screenshot", {}, _SCREEN_TIMEOUT))
+            return await context.runtime.command("android_screenshot", {}, _SCREEN_TIMEOUT)
         except TimeoutError:
             raise AndroidError("AI_TEST_SCREEN_TIMEOUT", "读取实时画面超时", 504) from None
 
