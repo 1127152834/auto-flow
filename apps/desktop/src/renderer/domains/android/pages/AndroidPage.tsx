@@ -197,7 +197,7 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
   useEffect(() => {
     if (!sessionStatus.error || !session || sessionChanging) return
     // The server already ended this session (e.g. a managed AI test took the device): it is closed, not unknown.
-    if (isSessionGone(sessionStatus.error)) { markSessionClosed(session.id); return }
+    if (sessionStatus.error instanceof ApiClientError && sessionStatus.error.status === 410) { markSessionClosed(session.id); return }
     setSession((previous) => previous && previous.id === session.id && previous.state === 'connected'
       ? { ...previous, state: 'unknown', latestOperation: '控制会话状态待核实' }
       : previous)

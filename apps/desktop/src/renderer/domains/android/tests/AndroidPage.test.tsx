@@ -863,3 +863,14 @@ it('drops the console session when a managed AI test starts and opens a new one 
   await userEvent.click(screen.getByRole('button', { name: '停止并接管' }))
   await waitFor(() => expect(sessionPosts()).toBe(2))
 })
+
+it('keeps the session unknown when a heartbeat reports a stale identity (409)', async () => {
+  const fallback = mocks.client.request.getMockImplementation()!
+  mocks.client.request.mockImplementation(async (path: string, init?: { method?: string }) => {
+    if (path.endsWith('/heartbeat')) throw new ApiClientError('控制权已变化', 409, 'ANDROID_SESSION_STALE')
+    return fallback(path, init)
+  })
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: /打开测试设备 01/ }))
+  await waitFor(() => expect(document.querySelector('.ad-console-status')).toHaveTextContent('控制会话状态未知'))
+})
