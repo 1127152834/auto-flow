@@ -5,6 +5,7 @@ import contextlib
 import hashlib
 import json
 import logging
+from collections import deque
 from collections.abc import Callable, Iterator
 from dataclasses import asdict
 from datetime import UTC, datetime
@@ -79,11 +80,17 @@ class AiTestService:
         self._managed_serials: dict[str, str] = {}  # run id -> adb serial while a managed run holds it
         self._external_busy: set[str] = set()
         self._install_task: asyncio.Task[None] | None = None
+        self._install_error: str | None = None
+        self._install_output: deque[str] = deque(maxlen=50)
+        self._starting: dict[str, asyncio.Event] = {}  # request id -> set when that start() returns
 
     # -- tool -------------------------------------------------------------
 
     async def tool_status(self) -> ToolStatus:
-        return await asyncio.to_thread(self.tool.status)
+        status = await asyncio.to_thread(self.tool.status)
+        if self._install_error and status.state == "not_installed":
+            return ToolStatus("failed", None, self._install_error)
+        return status
 
     async def install_tool(self, request_id: str) -> dict[str, Any]:
         if self._install_task is None or self._install_task.done():
@@ -94,11 +101,16 @@ class AiTestService:
         return asdict(await self.tool_status())
 
     async def _install(self, request_id: str) -> None:
+        self._install_error = None
+        self._install_output.clear()
         try:
-            # The tool keeps the redacted tail of the output as its failure message.
-            await self.tool.install(lambda line: None)
-        except AndroidError as exc:
+            await self.tool.install(self._install_output.append)
+        except AndroidError as exc:  # the tool already reports its own failures in status()
             logger.warning("AI test tool install %s failed: %s", request_id, exc.message)
+        except Exception as exc:  # noqa: BLE001 -- any failure must reach the user-visible status.
+            self._install_output.append(f"{type(exc).__name__}: {exc}")
+            self._install_error = redact("\n".join(self._install_output), [])
+            logger.warning("AI test tool install %s failed: %s", request_id, self._install_error)
 
     async def _require_tool(self) -> None:
         if (await self.tool_status()).state != "ready":
@@ -132,7 +144,14 @@ class AiTestService:
 
     async def _open_managed(self, device_id: str, run_id: str) -> tuple[AndroidDeviceService, str]:
         context = self.devices.context(device_id)
-        await asyncio.to_thread(context.claim, device_id, run_id, "ai_test")
+        claim = asyncio.ensure_future(asyncio.to_thread(context.claim, device_id, run_id, "ai_test"))
+        try:
+            await asyncio.shield(claim)
+        except asyncio.CancelledError:
+            await asyncio.wait({claim})  # the thread still finishes; release what it took
+            if not claim.cancelled() and claim.exception() is None:
+                await context.cleanup()
+            raise
         try:
             await context.connect()
             serial = getattr(context.runtime, "serial", None)
@@ -146,7 +165,7 @@ class AiTestService:
     async def install_helper(self, device_kind: str, device_id: str | None, serial: str | None) -> bool:
         await self._require_tool()
         if device_kind == "managed" and device_id:
-            context, adb_serial = await self._open_managed(device_id, f"helper-{uuid4().hex}")
+            context, adb_serial = await self._open_managed(device_id, str(uuid4()))
             try:
                 return await self.tool.helper(adb_serial, install=True)
             finally:
@@ -163,11 +182,22 @@ class AiTestService:
     # -- runs -------------------------------------------------------------
 
     async def start(self, request: dict[str, Any]) -> dict[str, Any]:
-        parsed = validate_request(request)
-        request_id, kind = request.get("requestId"), request.get("deviceKind")
-        device_id, serial = request.get("deviceId"), request.get("serial")
+        request_id = request.get("requestId")
         if not isinstance(request_id, str) or not request_id.strip():
             raise AndroidError("AI_TEST_REQUEST_INVALID", "缺少请求编号", 422)
+        # Serialize starts of one request so a double submit claims the device once and replays.
+        while (busy := self._starting.get(request_id)) is not None:
+            await busy.wait()
+        done = self._starting[request_id] = asyncio.Event()
+        try:
+            return await self._start(request_id, request)
+        finally:
+            del self._starting[request_id]
+            done.set()
+
+    async def _start(self, request_id: str, request: dict[str, Any]) -> dict[str, Any]:
+        parsed = validate_request(request)
+        kind, device_id, serial = request.get("deviceKind"), request.get("deviceId"), request.get("serial")
         if not (kind == "managed" and isinstance(device_id, str) and device_id) and not (
             kind == "external" and isinstance(serial, str) and serial
         ):
@@ -211,7 +241,7 @@ class AiTestService:
                 if not await self.tool.helper(adb_serial, install=False):
                     raise AndroidError("AI_TEST_HELPER_REQUIRED", "需要在该设备安装测试辅助组件", 409)
                 artifacts = self.artifacts_root / run_id
-                record = await asyncio.to_thread(self.repository.create, {
+                record = await self._create({
                     "id": run_id, "requestId": request_id, "deviceKind": kind, "deviceId": device_id,
                     "serial": serial, "state": "queued", "createdAt": _now(), "startedAt": None, "finishedAt": None,
                     "instruction": parsed.instruction, "mode": parsed.mode, "modelId": parsed.model_id,
@@ -219,7 +249,7 @@ class AiTestService:
                     "timeoutSeconds": parsed.timeout_seconds, "requestDigest": digest,
                     "artifactsDir": str(artifacts), "toolVersion": ARTEMIS_COMMIT, "steps": [],
                     "succeeded": None, "traceId": None, "artifacts": [], "errorCode": None, "errorMessage": None,
-                })
+                }, run_id)
                 if record["id"] != run_id:  # lost a race with the same request: the other start owns the run
                     raise _Duplicate(record)
         except _Duplicate as dup:
@@ -234,6 +264,19 @@ class AiTestService:
             self._execute(record, parsed, model, adb_serial, artifacts, context, cancel)
         )
         return record
+
+    async def _create(self, run: dict[str, Any], run_id: str) -> dict[str, Any]:
+        create = asyncio.ensure_future(asyncio.to_thread(self.repository.create, run))
+        try:
+            return await asyncio.shield(create)
+        except asyncio.CancelledError:
+            await asyncio.wait({create})
+            if not create.cancelled() and create.exception() is None and create.result()["id"] == run_id:
+                await asyncio.to_thread(  # no task will ever run it: close the row instead of leaving it queued
+                    self.repository.update, run_id, state="failed", finishedAt=_now(), succeeded=False,
+                    errorCode="AI_TEST_INTERNAL", errorMessage="启动被取消",
+                )
+            raise
 
     async def _release(self, run_id: str, context: AndroidDeviceService | None, serial: str | None) -> None:
         self._managed_serials.pop(run_id, None)
@@ -257,6 +300,8 @@ class AiTestService:
 
         async def finish(target: AiTestState, **changes: Any) -> None:
             nonlocal state
+            if state in TERMINAL_STATES:
+                return  # already finalized (e.g. cancelled while the terminal write was in flight)
             state = transition(state, target)
             await asyncio.to_thread(self.repository.update, run_id, state=state, finishedAt=_now(), **changes)
 
@@ -316,19 +361,17 @@ class AiTestService:
         return record
 
     async def recover(self) -> None:
+        """Mark runs interrupted by a restart; their devices are recovered by AndroidDeviceService.recover."""
         for run in await asyncio.to_thread(self.repository.unfinished):
             # Direct marking: the run's process is gone, so no normal transition applies.
             await asyncio.to_thread(
                 self.repository.update, run["id"], state="needs_verification", errorMessage=_INTERRUPTED,
             )
-        repository = self.devices.repository
-        for device in await asyncio.to_thread(repository.list):
-            if device.get("control") == "ai_test":
-                device.update(control="idle", ownerRunId=None)
-                await asyncio.to_thread(repository.save, device)
 
     async def shutdown(self) -> None:
-        tasks = list(self._tasks.values())
+        tasks: list[asyncio.Task[None]] = list(self._tasks.values())
+        if self._install_task is not None:
+            tasks.append(self._install_task)
         for task in tasks:
             task.cancel()
         await asyncio.gather(*tasks, return_exceptions=True)

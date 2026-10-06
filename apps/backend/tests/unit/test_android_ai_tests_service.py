@@ -1,5 +1,6 @@
 import asyncio
 import json
+import threading
 from pathlib import Path
 from typing import Any
 
@@ -26,14 +27,25 @@ class RecordingRepository(AiTestRepository):
     def __init__(self, sessions: Any) -> None:
         super().__init__(sessions)
         self.writes: list[str] = []
+        self.gate: threading.Event | None = None
+        self.gate_on = ""  # "create" or a state name whose update blocks
+        self.entered = threading.Event()
+
+    def _maybe_block(self, point: str) -> None:
+        if self.gate is not None and self.gate_on == point:
+            self.entered.set()
+            self.gate.wait(5)
 
     def create(self, run: dict[str, Any]) -> dict[str, Any]:
         self.writes.append(json.dumps(run, ensure_ascii=False))
+        self._maybe_block("create")
         return super().create(run)
 
     def update(self, run_id: str, **changes: Any) -> dict[str, Any]:
         self.writes.append(json.dumps(changes, ensure_ascii=False))
-        return super().update(run_id, **changes)
+        result = super().update(run_id, **changes)
+        self._maybe_block(str(changes.get("state")))
+        return result
 
     def append_step(self, run_id: str, step: dict[str, Any]) -> None:
         self.writes.append(json.dumps(step, ensure_ascii=False))
@@ -101,6 +113,9 @@ class FakeContext:
         self.cleanups = 0
 
     def claim(self, device_id: str, run_id: str, control: str = "workflow") -> dict[str, Any]:
+        if self.devices.claim_gate is not None:
+            self.devices.claim_entered.set()
+            self.devices.claim_gate.wait(5)
         device = self.devices.store[device_id]
         if device["control"] != "idle":
             raise AndroidError("ANDROID_BUSY", "设备已占用或需要恢复")
@@ -136,6 +151,8 @@ class FakeDevices:
         self.repository = FakeDeviceRepository(self.store)
         self.contexts: list[FakeContext] = []
         self.connect_error = False
+        self.claim_gate: threading.Event | None = None
+        self.claim_entered = threading.Event()
 
     def context(self, device_id: str) -> FakeContext:
         ctx = FakeContext(self, device_id)
@@ -380,18 +397,17 @@ async def test_secret_never_written_to_repository(env: dict[str, Any], caplog: p
 
 
 @pytest.mark.asyncio
-async def test_recover_marks_unfinished_and_resets_ai_test_devices(env: dict[str, Any]) -> None:
+async def test_recover_marks_unfinished_and_leaves_devices_to_device_recovery(env: dict[str, Any]) -> None:
     repo, devices = env["repo"], env["devices"]
     repo.create({"id": "r1", "requestId": "q1", "deviceKind": "managed", "deviceId": "dev-1", "serial": None,
                  "state": "running", "createdAt": "2026-10-01T00:00:00+00:00", "requestDigest": "d"})
     devices.store["dev-1"].update(control="ai_test", ownerRunId="r1")
-    devices.store["dev-2"] = {"deviceId": "dev-2", "control": "workflow", "ownerRunId": "w1"}
     await env["service"].recover()
     final = repo.get("r1")
     assert final["state"] == "needs_verification"
     assert final["errorMessage"] == "程序中断，无法确定测试是否完成"
-    assert devices.store["dev-1"]["control"] == "idle" and devices.store["dev-1"]["ownerRunId"] is None
-    assert devices.store["dev-2"]["control"] == "workflow"
+    # AndroidDeviceService.recover owns the device: it must still see the orphaned owner.
+    assert devices.store["dev-1"]["control"] == "ai_test" and devices.store["dev-1"]["ownerRunId"] == "r1"
 
 
 @pytest.mark.asyncio
@@ -416,3 +432,105 @@ async def test_install_tool_runs_once_at_a_time(env: dict[str, Any]) -> None:
     tool.install_gate.set()
     await service._install_task
     assert (await service.tool_status()).state == "ready"
+
+
+async def _wait_thread(event: threading.Event) -> None:
+    while not event.is_set():
+        await asyncio.sleep(0.01)
+
+
+@pytest.mark.asyncio
+async def test_helper_claim_run_id_fits_owner_column(env: dict[str, Any]) -> None:
+    await env["service"].install_helper("managed", "dev-1", None)
+    (ctx,) = env["devices"].contexts
+    assert len(ctx.claims[0][1]) <= 36
+
+
+class BrokenInstallTool(FakeTool):
+    async def install(self, on_output: Any) -> ToolStatus:
+        on_output("准备中")
+        raise RuntimeError("disk full")
+
+
+@pytest.mark.asyncio
+async def test_unexpected_install_error_surfaces_in_status_and_log(
+    env: dict[str, Any], caplog: pytest.LogCaptureFixture,
+) -> None:
+    tool = BrokenInstallTool()
+    tool.state = "not_installed"
+    service = AiTestService(env["repo"], tool, env["devices"], env["models"], set, env["db"].parent / "a")
+    await service.install_tool("i-1")
+    await asyncio.gather(service._install_task, return_exceptions=True)
+    status = await service.tool_status()
+    assert status.state == "failed" and status.message and "disk full" in status.message
+    assert "disk full" in caplog.text
+
+
+@pytest.mark.asyncio
+async def test_shutdown_cancels_install(env: dict[str, Any]) -> None:
+    service, tool = env["service"], env["tool"]
+    tool.state = "not_installed"
+    await service.install_tool("i-1")
+    task = service._install_task
+    await service.shutdown()
+    assert task is not None and task.done()
+
+
+@pytest.mark.asyncio
+async def test_start_cancelled_during_claim_releases_device(env: dict[str, Any]) -> None:
+    devices = env["devices"]
+    devices.claim_gate = threading.Event()
+    task = asyncio.create_task(env["service"].start(request()))
+    await _wait_thread(devices.claim_entered)
+    task.cancel()
+    await asyncio.sleep(0.05)
+    devices.claim_gate.set()
+    with pytest.raises(asyncio.CancelledError):
+        await task
+    (ctx,) = devices.contexts
+    assert len(ctx.claims) == 1 and ctx.cleanups == 1
+    assert devices.store["dev-1"]["control"] == "idle"
+
+
+@pytest.mark.asyncio
+async def test_start_cancelled_during_create_leaves_no_queued_row(env: dict[str, Any]) -> None:
+    repo, devices = env["repo"], env["devices"]
+    repo.gate, repo.gate_on = threading.Event(), "create"
+    task = asyncio.create_task(env["service"].start(request()))
+    await _wait_thread(repo.entered)
+    task.cancel()
+    await asyncio.sleep(0.05)
+    repo.gate.set()
+    with pytest.raises(asyncio.CancelledError):
+        await task
+    assert repo.unfinished() == []
+    row = repo.get_by_request("req-1")
+    assert row is not None and (row["state"], row["errorCode"], row["errorMessage"]) == (
+        "failed", "AI_TEST_INTERNAL", "启动被取消")
+    assert devices.contexts[0].cleanups == 1 and devices.store["dev-1"]["control"] == "idle"
+    assert not env["tool"].runs
+
+
+@pytest.mark.asyncio
+async def test_cancel_during_terminal_write_does_not_raise_from_task(env: dict[str, Any]) -> None:
+    service, repo = env["service"], env["repo"]
+    repo.gate, repo.gate_on = threading.Event(), "succeeded"
+    record = await service.start(request())
+    task = service._tasks[record["id"]]
+    await _wait_thread(repo.entered)
+    task.cancel()
+    await asyncio.sleep(0.05)
+    repo.gate.set()
+    await asyncio.gather(task, return_exceptions=True)
+    assert task.cancelled()  # not an AI_TEST_STATE_CONFLICT escaping the task
+    assert repo.get(record["id"])["state"] == "succeeded"
+    assert env["devices"].contexts[0].cleanups == 1
+
+
+@pytest.mark.asyncio
+async def test_concurrent_same_request_claims_once(env: dict[str, Any]) -> None:
+    service = env["service"]
+    first, second = await asyncio.gather(service.start(request()), service.start(request()))
+    assert first["id"] == second["id"]
+    await settle(service)
+    assert len(env["devices"].contexts) == 1 and len(env["tool"].runs) == 1

@@ -279,3 +279,17 @@ def test_current_runtime_boundary_rejects_retired_workflow_takeover():
     with pytest.raises(AndroidError) as error:
         boundary.request_takeover("device")
     assert error.value.code == "ANDROID_TAKEOVER_UNAVAILABLE"
+
+
+@pytest.mark.asyncio
+async def test_startup_recovery_returns_orphaned_ai_test_device_to_idle():
+    runtime, repo = Runtime(), Repository()
+    repo.device.update(control="ai_test", ownerRunId="dead-ai-run", processes={"scrcpy": {"pid": 1, "birth": 2.0}})
+    service = AndroidDeviceService(repo, runtime)
+
+    await service.recover()
+
+    runtime.recover.assert_awaited_once()  # the runtime kills persisted processes and checks spawnPending
+    assert runtime.recover.await_args.args[0]["processes"] == {"scrcpy": {"pid": 1, "birth": 2.0}}
+    assert repo.device["control"] == "idle" and repo.device["ownerRunId"] is None
+    assert not runtime.locked
