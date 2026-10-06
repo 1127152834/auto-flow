@@ -456,6 +456,7 @@ def create_app(
         android,
         model_service,
         android_console.connected_serials,
+        android_console.close_for_device,
         android_runtime_root() / "ai-tests",
     )
     app.state.android_service = android

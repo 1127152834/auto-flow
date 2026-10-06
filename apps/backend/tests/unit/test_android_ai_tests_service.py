@@ -186,10 +186,15 @@ def env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
         seen.append(set(managed))
         return [d for d in external if d["serial"] not in managed]
 
+    closed: list[str] = []
+
+    async def closer(device_id: str) -> None:
+        closed.append(device_id)
+
     monkeypatch.setattr(ai_tests, "list_external_devices", fake_list)
-    service = AiTestService(repo, tool, devices, models, lambda: set(console), tmp_path / "artifacts")
+    service = AiTestService(repo, tool, devices, models, lambda: set(console), closer, tmp_path / "artifacts")
     return {"service": service, "repo": repo, "tool": tool, "devices": devices, "models": models,
-            "console": console, "seen": seen, "db": tmp_path / "ai.sqlite3"}
+            "console": console, "seen": seen, "db": tmp_path / "ai.sqlite3", "closer": closer, "closed": closed}
 
 
 def request(n: int = 1, **extra: Any) -> dict[str, Any]:
@@ -458,7 +463,7 @@ async def test_unexpected_install_error_surfaces_in_status_and_log(
 ) -> None:
     tool = BrokenInstallTool()
     tool.state = "not_installed"
-    service = AiTestService(env["repo"], tool, env["devices"], env["models"], set, env["db"].parent / "a")
+    service = AiTestService(env["repo"], tool, env["devices"], env["models"], set, env["closer"], env["db"].parent / "a")
     await service.install_tool("i-1")
     await asyncio.gather(service._install_task, return_exceptions=True)
     status = await service.tool_status()
@@ -534,3 +539,121 @@ async def test_concurrent_same_request_claims_once(env: dict[str, Any]) -> None:
     assert first["id"] == second["id"]
     await settle(service)
     assert len(env["devices"].contexts) == 1 and len(env["tool"].runs) == 1
+
+
+class _RuntimeLocks:
+    def __init__(self) -> None:
+        self.held: set[str] = set()
+
+
+class _DeviceRuntime:
+    """Runtime-layer fake: per-device lock, adb serial after connect, recovery on cleanup."""
+
+    def __init__(self, locks: _RuntimeLocks, device_id: str = "") -> None:
+        self.locks, self.device_id = locks, device_id
+        self.serial: str | None = None
+
+    def for_device(self, device_id: str) -> "_DeviceRuntime":
+        return _DeviceRuntime(self.locks, device_id)
+
+    def lock(self) -> None:
+        if self.device_id in self.locks.held:
+            raise AndroidError("ANDROID_BUSY", "设备运行时已被锁定")
+        self.locks.held.add(self.device_id)
+
+    def unlock(self) -> None:
+        self.locks.held.discard(self.device_id)
+
+    async def connect(self, device: dict[str, Any], save: Any) -> None:
+        self.serial = "127.0.0.1:41234"
+
+    async def disconnect(self) -> None:
+        self.serial = None
+
+    async def recover(self, device: dict[str, Any], preserve_command: bool = False) -> None:
+        return None
+
+    def window_open(self) -> bool:
+        return False
+
+    async def close_window(self) -> None:
+        return None
+
+
+class _DeviceStore:
+    def __init__(self) -> None:
+        self.devices = {"dev-1": {"deviceId": "dev-1", "control": "idle", "ownerRunId": None,
+                                  "generation": 1, "width": 720, "height": 1280}}
+
+    def get(self, device_id: str) -> dict[str, Any]:
+        return dict(self.devices[device_id])
+
+    def list(self) -> list[dict[str, Any]]:
+        return [dict(d) for d in self.devices.values()]
+
+    def save(self, device: dict[str, Any]) -> None:
+        self.devices[device["deviceId"]] = dict(device)
+
+    def claim(self, device_id: str, run_id: str, control: str = "workflow") -> dict[str, Any]:
+        device = self.get(device_id)
+        if device["control"] != "idle":
+            raise AndroidError("ANDROID_BUSY", "设备已占用或需要恢复")
+        device.update(ownerRunId=run_id, control=control, generation=device["generation"] + 1)
+        self.save(device)
+        return device
+
+
+class _Stream:
+    error = None
+    width, height = 720, 1280
+
+    def __init__(self, runtime: Any) -> None:
+        self.closed = False
+
+    async def start(self) -> None:
+        return None
+
+    async def close(self) -> None:
+        self.closed = True
+
+
+class _NoRuns:
+    def device_context(self, device_id: str) -> None:
+        return None
+
+
+class _SessionStore:
+    def save(self, kind: str, item: dict[str, Any]) -> None:
+        return None
+
+    def get(self, kind: str, identifier: str) -> dict[str, Any]:
+        raise AndroidError("ANDROID_NOT_FOUND", "无", 404)
+
+
+@pytest.mark.asyncio
+async def test_managed_start_ends_the_open_console_session_first(env: dict[str, Any]) -> None:
+    from autoflow.application.android.console import AndroidConsole
+    from autoflow.application.android.devices import AndroidDeviceService
+
+    store, locks = _DeviceStore(), _RuntimeLocks()
+    devices = AndroidDeviceService(store, _DeviceRuntime(locks))  # type: ignore[arg-type]
+    console = AndroidConsole(devices, _NoRuns(), _SessionStore(), _Stream)
+    view = await console.create({"requestId": "s-1", "deviceId": "dev-1", "access": "readonly"})
+    assert view["state"] == "connected" and store.devices["dev-1"]["control"] == "workflow"
+    service = AiTestService(env["repo"], env["tool"], devices, env["models"], console.connected_serials,
+                            console.close_for_device, env["db"].parent / "artifacts")
+
+    record = await service.start(request())
+
+    assert console.sessions["s-1"]["view"]["state"] == "closed"
+    assert store.devices["dev-1"]["control"] == "ai_test" and store.devices["dev-1"]["ownerRunId"] == record["id"]
+    await settle(service)
+    assert env["repo"].get(record["id"])["state"] == "succeeded"
+    assert store.devices["dev-1"]["control"] == "idle" and not locks.held
+
+
+@pytest.mark.asyncio
+async def test_external_start_does_not_touch_consoles(env: dict[str, Any]) -> None:
+    await env["service"].start(external())
+    await settle(env["service"])
+    assert env["closed"] == []

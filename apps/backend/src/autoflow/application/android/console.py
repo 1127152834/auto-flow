@@ -96,6 +96,30 @@ class AndroidConsole:
         )
         return {x for x in serials if x}
 
+    async def close_for_device(self, device_id: str) -> None:
+        """End any open session on this device the same way the user's "end" does, releasing its claim."""
+        async with self.lock:
+            for session in list(self.sessions.values()):
+                if session["view"]["deviceId"] != device_id:
+                    continue
+                async with session["lock"]:
+                    view, context = session["view"], session["context"]
+                    if view["state"] == "closed":
+                        continue
+                    try:
+                        await self._close_stream(session)
+                        if session["owned"]:
+                            await context.cleanup()
+                        elif context.device and (view["endpoint"] == "native" or view["access"] == "manual"):
+                            # Leaving a workflow's view does not stop the workflow.
+                            await context.runtime.close_window()
+                            context.device["control"] = "workflow"
+                            context._save()
+                    except BaseException:
+                        view["state"] = "recovery_required"
+                        raise
+                    view["state"] = "closed"
+
     async def create(self, request: dict[str, Any]) -> dict[str, Any]:
         async with self.lock:
             identifier = request["requestId"]

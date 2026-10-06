@@ -6,7 +6,7 @@ import hashlib
 import json
 import logging
 from collections import deque
-from collections.abc import Callable, Iterator
+from collections.abc import Awaitable, Callable, Iterator
 from dataclasses import asdict
 from datetime import UTC, datetime
 from pathlib import Path
@@ -70,10 +70,12 @@ class AiTestService:
         devices: AndroidDeviceService,
         models: ModelService,
         console_serials: Callable[[], set[str]],
+        close_console: Callable[[str], Awaitable[None]],
         artifacts_root: Path,
     ) -> None:
         self.repository, self.tool, self.devices, self.models = repository, tool, devices, models
         self.console_serials = console_serials
+        self.close_console = close_console  # ends the device's console session so the test can claim it
         self.artifacts_root = artifacts_root
         self._tasks: dict[str, asyncio.Task[None]] = {}
         self._cancels: dict[str, asyncio.Event] = {}
@@ -143,6 +145,7 @@ class AiTestService:
             raise
 
     async def _open_managed(self, device_id: str, run_id: str) -> tuple[AndroidDeviceService, str]:
+        await self.close_console(device_id)
         context = self.devices.context(device_id)
         claim = asyncio.ensure_future(asyncio.to_thread(context.claim, device_id, run_id, "ai_test"))
         try:
