@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import mimetypes
 import shutil
 from datetime import datetime
@@ -16,6 +17,7 @@ from autoflow.domain.android.ports import AndroidError
 from .schemas import ApiModel
 
 DeviceKind = Literal["managed", "external"]
+logger = logging.getLogger(__name__)
 
 
 class AiToolStatusRead(ApiModel):
@@ -107,6 +109,28 @@ def _artifact_missing() -> AndroidError:
     return AndroidError("AI_TEST_ARTIFACT_NOT_FOUND", "测试产物不存在", 404)
 
 
+_DELETABLE_STATES = TERMINAL_STATES | {"needs_verification"}
+
+
+def _remove_dir(path: Path) -> None:
+    def log(_func: Any, failed: str, exc_info: Any) -> None:
+        logger.warning("AI test artifacts cleanup failed for %s: %s", failed, exc_info[1])
+
+    if path.exists():
+        shutil.rmtree(path, onerror=log)  # the record is already deleted; report leftovers instead of hiding them
+
+
+def _resolve_artifact(artifacts_root: Path, run_id: str, name: str) -> Path:
+    root = artifacts_root.resolve()
+    run_dir = (root / run_id).resolve()
+    if run_dir.parent != root:  # run_id must be a plain directory name directly under the root
+        raise _artifact_missing()
+    target = (run_dir / name).resolve()
+    if not (target.is_relative_to(run_dir) and target.is_file()):
+        raise _artifact_missing()
+    return target
+
+
 def android_ai_tests_router(service: AiTestService) -> APIRouter:
     router = APIRouter(prefix="/api/v1/android/ai-tests", tags=["android-ai-tests"])
 
@@ -160,21 +184,16 @@ def android_ai_tests_router(service: AiTestService) -> APIRouter:
     @router.delete("/runs/{run_id}", status_code=204)
     async def delete_run(run_id: str) -> Response:
         run = await asyncio.to_thread(service.repository.get, run_id)
-        if run["state"] not in TERMINAL_STATES:
-            raise AndroidError("AI_TEST_STATE_CONFLICT", "测试仍在进行或待确认，无法删除", 409)
+        if run["state"] not in _DELETABLE_STATES:
+            raise AndroidError("AI_TEST_STATE_CONFLICT", "测试仍在进行，无法删除", 409)
         await asyncio.to_thread(service.repository.delete, run_id)
-        await asyncio.to_thread(shutil.rmtree, service.artifacts_root / run["id"], ignore_errors=True)
+        await asyncio.to_thread(_remove_dir, service.artifacts_root / run["id"])
         return Response(status_code=204)
 
     @router.get("/runs/{run_id}/artifacts/{name:path}")
     async def artifact(run_id: str, name: str) -> FileResponse:
-        root = service.artifacts_root.resolve()
-        run_dir = (root / run_id).resolve()
-        if run_dir.parent != root:  # run_id must be a plain directory name directly under the root
-            raise _artifact_missing()
-        target = (run_dir / name).resolve()
-        if not (target.is_relative_to(run_dir) and await asyncio.to_thread(Path.is_file, target)):
-            raise _artifact_missing()
+        await asyncio.to_thread(service.repository.get, run_id)  # only runs with a record are served
+        target = await asyncio.to_thread(_resolve_artifact, service.artifacts_root, run_id, name)
         return FileResponse(target, media_type=mimetypes.guess_type(target.name)[0] or "application/octet-stream")
 
     return router

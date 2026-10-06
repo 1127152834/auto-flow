@@ -119,28 +119,69 @@ def test_invalid_cursor_is_422(env: tuple[TestClient, FakeService], cursor: str)
 
 def test_artifact_download_and_traversal(env: tuple[TestClient, FakeService]) -> None:
     client, service = env
+    service.repository.create(_run(1))
     run_dir = service.artifacts_root / "run-1"
     run_dir.mkdir(parents=True)
     (run_dir / "s1.png").write_bytes(b"png")
     (service.artifacts_root / "secret.txt").write_text("nope")
     ok = client.get(f"{BASE}/runs/run-1/artifacts/s1.png")
     assert ok.status_code == 200 and ok.content == b"png" and ok.headers["content-type"] == "image/png"
-    for name in ("..%2Fsecret.txt", "..%2F..%2Fx", "%2Fetc%2Fpasswd", "missing.png", "%2E%2E%2Fsecret.txt"):
+    names = ("..%2Fsecret.txt", "..%2F..%2Fx", "%2Fetc%2Fpasswd", "missing.png", "%2E%2E%2Fsecret.txt",
+             "..%5Csecret.txt", "C:%5Cx", "C:%2Fx", "%2E%2E")
+    for name in names:
         response = client.get(f"{BASE}/runs/run-1/artifacts/{name}")
         assert response.status_code == 404, name
         assert response.json()["error"]["code"] == "AI_TEST_ARTIFACT_NOT_FOUND", name
-    assert client.get(f"{BASE}/runs/run-1/artifacts/../../x").status_code == 404
+
+
+def test_artifact_rejects_traversing_run_id_and_unrecorded_directories(env: tuple[TestClient, FakeService]) -> None:
+    client, service = env
+    service.artifacts_root.mkdir(parents=True)
+    (service.artifacts_root / "secret.txt").write_text("nope")
+    orphan = service.artifacts_root / "orphan"
+    orphan.mkdir()
+    (orphan / "a.png").write_bytes(b"x")
+    for run_id in ("..", "%2E%2E", "..%5C..", "orphan"):
+        response = client.get(f"{BASE}/runs/{run_id}/artifacts/secret.txt")
+        assert response.status_code == 404, run_id
+    response = client.get(f"{BASE}/runs/orphan/artifacts/a.png")
+    assert response.status_code == 404 and response.json()["error"]["code"] == "AI_TEST_NOT_FOUND"
+    # a recorded run whose id escapes the artifacts root is still refused by the directory check
+    service.repository.create(_run(5, id=".."))
+    response = client.get(f"{BASE}/runs/%2E%2E/artifacts/secret.txt")
+    assert response.status_code == 404
 
 
 def test_delete_rejects_active_and_removes_finished(env: tuple[TestClient, FakeService]) -> None:
     client, service = env
     service.repository.create(_run(1, state="running"))
     service.repository.create(_run(2))
+    service.repository.create(_run(3, state="queued"))
+    service.repository.create(_run(4, state="needs_verification"))
     done_dir = service.artifacts_root / "run-2"
     done_dir.mkdir(parents=True)
     (done_dir / "a.png").write_bytes(b"x")
-    conflict = client.delete(f"{BASE}/runs/run-1")
-    assert conflict.status_code == 409 and conflict.json()["error"]["code"] == "AI_TEST_STATE_CONFLICT"
+    for active in ("run-1", "run-3"):
+        conflict = client.delete(f"{BASE}/runs/{active}")
+        assert conflict.status_code == 409 and conflict.json()["error"]["code"] == "AI_TEST_STATE_CONFLICT"
     assert client.delete(f"{BASE}/runs/run-2").status_code == 204
     assert not done_dir.exists() and client.get(f"{BASE}/runs/run-2").status_code == 404
     assert client.delete(f"{BASE}/runs/run-2").status_code == 404
+    assert client.delete(f"{BASE}/runs/run-4").status_code == 204  # interrupted runs can be cleared
+
+
+def test_delete_logs_cleanup_failure_but_removes_record(
+    env: tuple[TestClient, FakeService], monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture,
+) -> None:
+    client, service = env
+    service.repository.create(_run(2))
+    (service.artifacts_root / "run-2").mkdir(parents=True)
+
+    def broken(path: str, onerror: Any = None, **_: Any) -> None:
+        onerror(None, path, (OSError, OSError("locked"), None))
+
+    monkeypatch.setattr("autoflow.adapters.http.android_ai_tests.shutil.rmtree", broken)
+    with caplog.at_level("WARNING"):
+        assert client.delete(f"{BASE}/runs/run-2").status_code == 204
+    assert "locked" in caplog.text and "run-2" in caplog.text
+    assert client.get(f"{BASE}/runs/run-2").status_code == 404
