@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+import os
 import tempfile
 import time
 import uuid
@@ -136,7 +137,10 @@ def main() -> None:
         # Only combinations served by an index carry the budget; full scans are reported, not hidden.
         slow = {name: value for name, (value, _unit) in metrics.items() if name in INDEXED and value is not None and value > arguments.budget_ms}
         if slow:
-            raise SystemExit(f"claim budget {arguments.budget_ms} ms exceeded: {slow}")
+            message = f"claim budget {arguments.budget_ms} ms exceeded: {slow}"
+            if os.environ.get("GITHUB_ACTIONS"):
+                print(f"::error title=claim budget::{message}")  # an annotation, readable without the raw log
+            raise SystemExit(message)
 
 
 if __name__ == "__main__":

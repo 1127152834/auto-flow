@@ -138,6 +138,8 @@ jobs:
         env:
           PYTHONPATH: src
         run: |
+          # A failure names its command as an annotation (visible without the raw log).
+          trap 'echo "::error title=Offline benchmarks::failed: ${BASH_COMMAND}"' ERR
           uv run --directory apps/backend pytest -q -m benchmark tests/benchmarks
           uv run --directory apps/backend python -m tests.benchmarks.bench_claims --rows 10000
           # Remediation M3 AC3-01: indexed claims on 100,000 rows stay under 20 ms.
@@ -190,20 +192,21 @@ jobs:
           if (!executable || !(await stat(executable)).isFile()) throw new Error('packaged sidecar executable not found')
           console.log(`smoking ${executable}`)
           const result = spawnSync(process.execPath, ['scripts/smoke-sidecar.mjs', '--executable', executable], { stdio: 'inherit' })
-          if (result.status !== 0) process.exit(result.status ?? 1)
+          if (result.status !== 0) { console.log('::error title=packaged smoke::smoke-sidecar failed'); process.exit(result.status ?? 1) }
           const project = spawnSync(process.execPath, ['scripts/smoke-project-management.mjs', '--executable', executable, '--runtime-kernel', process.env.PM9_BROWSER_EXECUTABLE, '--output-dir', 'artifacts/pm9/packaged'], { stdio: 'inherit' })
-          if (project.status !== 0) process.exit(project.status ?? 1)
+          if (project.status !== 0) { console.log('::error title=packaged smoke::smoke-project-management failed'); process.exit(project.status ?? 1) }
           const combinations = spawnSync(process.execPath, ['scripts/smoke-project-business-combinations.mjs', '--executable', executable, '--runtime-kernel', process.env.PM9_BROWSER_EXECUTABLE, '--output-dir', 'artifacts/pm9/packaged'], { stdio: 'inherit' })
-          if (combinations.status !== 0) process.exit(combinations.status ?? 1)
+          if (combinations.status !== 0) { console.log('::error title=packaged smoke::smoke-project-business-combinations failed'); process.exit(combinations.status ?? 1) }
           const projectDesktopExecutable = resolve(dirname(executable), process.platform === 'win32' ? '../../AutoFlow.exe' : '../../MacOS/AutoFlow')
           const projectDesktop = spawnSync(process.execPath, ['scripts/smoke-project-management-desktop.mjs', '--executable', projectDesktopExecutable, '--runtime-kernel', process.env.PM9_BROWSER_EXECUTABLE, '--output-dir', 'artifacts/pm9/packaged'], { stdio: 'inherit' })
-          if (projectDesktop.status !== 0) process.exit(projectDesktop.status ?? 1)
+          if (projectDesktop.status !== 0) { console.log('::error title=packaged smoke::smoke-project-management-desktop failed'); process.exit(projectDesktop.status ?? 1) }
           const browser = spawnSync(process.execPath, ['scripts/smoke-browser-management.mjs', '--executable', executable], { stdio: 'inherit' })
-          if (browser.status !== 0) process.exit(browser.status ?? 1)
+          if (browser.status !== 0) { console.log('::error title=packaged smoke::smoke-browser-management failed'); process.exit(browser.status ?? 1) }
           const desktop = resolve(dirname(executable), process.platform === 'win32' ? '../../AutoFlow.exe' : '../../MacOS/AutoFlow')
           const desktopResult = spawnSync(process.execPath, ['scripts/smoke-desktop.mjs', '--executable', desktop], { stdio: 'inherit' })
-          if (desktopResult.status !== 0) process.exit(desktopResult.status ?? 1)
+          if (desktopResult.status !== 0) { console.log('::error title=packaged smoke::smoke-desktop failed'); process.exit(desktopResult.status ?? 1) }
           const browserDesktop = spawnSync(process.execPath, ['scripts/smoke-browser-management-desktop.mjs', '--executable', desktop], { stdio: 'inherit' })
+          if (browserDesktop.status !== 0) console.log('::error title=packaged smoke::smoke-browser-management-desktop failed')
           process.exitCode = browserDesktop.status ?? 1
           NODE
       - name: Build installer artifact

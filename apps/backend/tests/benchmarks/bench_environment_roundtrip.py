@@ -84,7 +84,10 @@ def main() -> None:
     )
     slim = metrics["roundtrip_ms_slim"][0]
     if arguments.budget_ms is not None and slim is not None and slim > arguments.budget_ms:
-        raise SystemExit(f"environment round trip {slim:.0f} ms exceeds {arguments.budget_ms:.0f} ms")
+        message = f"environment round trip {slim:.0f} ms exceeds {arguments.budget_ms:.0f} ms"
+        if os.environ.get("GITHUB_ACTIONS"):
+            print(f"::error title=environment round trip::{message}")  # an annotation, readable without the raw log
+        raise SystemExit(message)
 
 
 if __name__ == "__main__":
