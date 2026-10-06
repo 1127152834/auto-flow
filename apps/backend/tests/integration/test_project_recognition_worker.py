@@ -122,7 +122,8 @@ async def test_project_recognition_uses_real_models_files_branches_and_cleanup(t
                 failure = next(e for e in events if e.kind == 'nodeAttempt' and e.node_id == 'ocr' and e.payload.get('status') == 'failed')
                 assert failure.payload['error']['code'] == 'WORKFLOW_NODE_TIMEOUT'
             if scenario in {'stop', 'ocr_stop'}:
-                assert monotonic() - started < 3
+                # Guards against waiting out the 60 s node timeout; slow Intel runners measured 3.07 s.
+                assert monotonic() - started < 8
     finally:
         await dispatcher.shutdown()
         factory.dispose()
