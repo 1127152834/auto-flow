@@ -24,13 +24,14 @@ type Props = {
   instanceId?: string
   onCreate?(): void
   onEnvironment?(): void
+  onExternal?(): void
   onOpen?(deviceId: string): void
   onMaintain?(deviceId: string): void
   onEndControl?(deviceId: string, sessionId: string): void
   onManage?(deviceId: string, action: string, operationId?: string, requestId?: string): void
 }
 
-export function ManagementOverview({ api, previewApi, instanceId = 'default', onCreate, onEnvironment, onOpen, onMaintain, onEndControl, onManage }: Props) {
+export function ManagementOverview({ api, previewApi, instanceId = 'default', onCreate, onEnvironment, onExternal, onOpen, onMaintain, onEndControl, onManage }: Props) {
   const [view, setView] = useState<'board' | 'list'>('board')
   const [menu, setMenu] = useState<string | null>(null)
   const menuTrigger = useRef<HTMLButtonElement>(null)
@@ -154,7 +155,7 @@ export function ManagementOverview({ api, previewApi, instanceId = 'default', on
     </article>
   }
   return <section aria-label="安卓管理实例" className="am-management-board">
-    <header className="ad-page-heading"><div><h1>安卓模拟器</h1><p>管理设备，查看运行状态与保留的数据。</p></div><div>{onEnvironment && <Action onClick={onEnvironment}><GearSix size={20} />环境配置</Action>}{onCreate && <Action primary onClick={onCreate}><Plus size={20} />创建实例</Action>}</div></header>
+    <header className="ad-page-heading"><div><h1>安卓模拟器</h1><p>管理设备，查看运行状态与保留的数据。</p></div><div>{onExternal && <Action onClick={onExternal}>外接设备</Action>}{onEnvironment && <Action onClick={onEnvironment}><GearSix size={20} />环境配置</Action>}{onCreate && <Action primary onClick={onCreate}><Plus size={20} />创建实例</Action>}</div></header>
     {staleSnapshot && <p role="alert" className="am-connection-alert">连接已断开，正在显示快照陈旧的旧数据；恢复连接后才能执行操作。</p>}
     <div className="am-board-surface">
       <div className="am-board-toolbar"><div className="ad-segments"><Action primary={view === 'list'} aria-pressed={view === 'list'} onClick={() => setView('list')}>实例列表</Action><Action primary={view === 'board'} aria-pressed={view === 'board'} onClick={() => setView('board')}>资源看板</Action></div><span>{page.total} 台设备 · {page.items.filter(device => group(device) === 0).length} 台可用</span><select aria-label="筛选模板" value={template} onChange={event => setTemplate(event.target.value)}><option value="">全部环境</option>{templateOptions.map(option => <option key={option.id} value={option.id}>{option.name}</option>)}</select></div>

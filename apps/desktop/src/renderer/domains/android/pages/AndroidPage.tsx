@@ -8,6 +8,8 @@ import { aiTestApi } from '../ai-test-api'
 import { androidManagementApi, type ManagementDevicePage } from '../management-api'
 import { CreateInstances } from '../components/CreateInstances'
 import { DeviceConsole } from '../components/DeviceConsole'
+import { ExternalDevices } from '../components/ExternalDevices'
+import { AiTestPanel } from '../components/AiTestPanel'
 import { Action } from '../components/PrototypeControls'
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '../../../shared/components/ui/dialog'
 import { RuntimeDiagnostics } from '../components/RuntimeDiagnostics'
@@ -71,7 +73,8 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
     fleet = useMemo(() => fleetApi(client), [client]),
     aiTest = useMemo(() => aiTestApi(client), [client])
   const queryClient = useQueryClient()
-  const [page, setPage] = useState<'board' | 'create' | 'detail' | 'maintenance' | 'tools'>('board'),
+  const [externalSerial, setExternalSerial] = useState<string | null>(null),
+    [page, setPage] = useState<'board' | 'create' | 'detail' | 'external' | 'maintenance' | 'tools'>('board'),
     [selected, setSelected] = useState<string | null>(null),
     [source, setSource] = useState<AndroidDevice>()
   const [tool, setTool] = useState<Tool>('environment')
@@ -470,6 +473,11 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
             refresh()
           }}
         />
+      ) : page === 'external' ? (
+        <div className="space-y-5">
+          <Action onClick={() => externalSerial ? setExternalSerial(null) : setPage('board')}>{externalSerial ? '返回设备列表' : '返回资源看板'}</Action>
+          {externalSerial ? <AiTestPanel api={aiTest} target={{ deviceKind: 'external', serial: externalSerial }} /> : <ExternalDevices api={aiTest} onSelect={setExternalSerial} />}
+        </div>
       ) : page === 'maintenance' && device ? (
         <div className="space-y-5">
           <Action onClick={() => setPage('board')}>返回资源看板</Action>
@@ -525,6 +533,7 @@ export function AndroidPage({ connected = true, registerLeaveGuard }: { connecte
           previewApi={api}
           instanceId={instanceId}
           onEnvironment={() => openTool('environment')}
+          onExternal={() => { setExternalSerial(null); setPage('external') }}
           onCreate={() => {
             setSource(undefined)
             setPage('create')

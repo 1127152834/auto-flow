@@ -782,3 +782,22 @@ it('preserves an unknown check receipt when reconnecting the same backend with a
     mocks.client = originalClient
   }
 })
+
+it('opens external devices from the board and shows the AI test panel without take-over', async () => {
+  const fallback = mocks.client.request.getMockImplementation()!
+  mocks.client.request.mockImplementation(async (path: string, init?: { method?: string }) => {
+    if (path === '/api/v1/android/ai-tests/external-devices') return [{ serial: 'emulator-5554', state: 'device', model: 'Pixel 8' }]
+    if (path === '/api/v1/android/ai-tests/tool') return { state: 'ready', version: '1' }
+    if (path.startsWith('/api/v1/android/ai-tests/runs')) return { items: [], nextCursor: null }
+    return fallback(path, init)
+  })
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><AndroidPage /></QueryClientProvider>)
+  await userEvent.click(await screen.findByRole('button', { name: '外接设备' }))
+  await userEvent.click(await screen.findByRole('button', { name: '选择 emulator-5554' }))
+  expect(await screen.findByLabelText('测试指令')).toBeVisible()
+  expect(screen.queryByRole('button', { name: '停止并接管' })).not.toBeInTheDocument()
+  await userEvent.click(screen.getByRole('button', { name: '返回设备列表' }))
+  expect(await screen.findByRole('button', { name: '选择 emulator-5554' })).toBeVisible()
+  await userEvent.click(screen.getByRole('button', { name: '返回资源看板' }))
+  expect(await screen.findByRole('heading', { name: '安卓模拟器' })).toBeVisible()
+})
