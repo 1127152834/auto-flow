@@ -555,6 +555,25 @@ class SqlAlchemyEnvironments:
         session.flush()
         return _instance(row)
 
+    def identity_return_batch(self, instance_id: str) -> str | None:
+        """The batch a finished run's copy goes back to its identity in, or None when it must be discarded.
+
+        Only a perIdentity run that ended ``failed`` or ``cancelled`` qualifies: the worker confirmed its own
+        clean-up, so the copy was closed cleanly. ``timed_out``/``interrupted`` rest on inference or a revoked
+        grant and are never given back.
+        """
+        with self._session_factory() as session:
+            row = session.get(ProjectEnvironmentInstanceRow, instance_id)
+            if row is None or row.identity_id is None or row.active_run_id is None or row.active_task_id is None:
+                return None
+            run = session.get(WorkflowRunRow, row.active_run_id)
+            task = session.get(ProjectTaskRow, row.active_task_id)
+            if run is None or task is None or run.status not in {"failed", "cancelled"}:
+                return None
+            if (run.resource_request or {}).get("sessionMode") != "perIdentity":
+                return None
+            return task.batch_id
+
     def begin_identity_release(self, project_id: str, instance_id: str) -> EnvironmentInstance | None:
         """Claim an identity's held copy for release, or continue one that was interrupted.
 

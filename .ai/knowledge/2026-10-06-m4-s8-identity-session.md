@@ -57,3 +57,17 @@
 | 10 | 16332 ms | 2845 ms |
 
   k=10 时环境文件工作减少约 5.7 倍；k=1 的差异是磁盘缓存噪声。perIdentity 的 k 个任务之间只剩一次数据库更新。
+
+## S8-4 End 改为"持有"，失败运行把副本还给身份（2026-10-06）
+
+- perIdentity 的 End（运行 `sessionMode` 为 perIdentity 且实例带身份）不再保存/关闭：worker 仍在发 End 前关闭浏览器
+  （协议不变），`quiesce` 确认静止后 `hold_identity_instance`。End 想要保存与否记入 `retain_on_release`（跨任务取 OR，
+  之后一次 End 不保存不会撤回）。`recordTargets` 被忽略（台账 `targets=[]`），身份靠 `IdentityRow.environment_id` 带登录；
+  仍保留预览运行拒绝保存。只有持有型 End 的载荷多 `holdForIdentity`/`batchId` 两个键，其他 End 形状不变。
+- 失败/取消的 perIdentity 运行（worker 已确认清理）：终态清理改走 `dispose_terminal_instance`，`quiesce` 通过后交还给身份
+  （`retain=False`，不新增保存意图）；`timed_out`/`interrupted`（清理确认靠推断或授权被撤）仍丢弃且不保存。
+  `quiesce` 不过则副本留在原状态、身份保持占用，下一轮重试，不会降级为丢弃。
+- 两处终态清理（`cleanup_terminal_tasks`、调度器 `_cleanup_terminal_instances`）统一调用 `dispose_terminal_instance`。
+- 测试：`tests/integration/test_identity_end.py`（11 个；去掉 End 改动后 3 个红）；相关回归 278 passed（唯一失败为本机符号链接权限）。
+- 已知上限：End 已受理但进程在 hold 之前崩溃时，实例仍 `active`，被未决 retain 操作保护、身份保持占用，需人工处理
+  （与现有"中断的保留型 End"同语义）。

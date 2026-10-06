@@ -389,6 +389,36 @@ class EnvironmentService:
                 self.environments.release_occupancy(environment_id, instance_id)
             self.environments.set_instance_state(instance_id, "cleaned")
 
+    def hold_identity_instance(
+        self, project_id: str, instance_id: str, expected_use_generation: int, *, batch_id: str | None, retain: bool,
+    ) -> EnvironmentInstance:
+        with self._lifecycle_lock(instance_id):
+            return self.environments.hold_identity_instance(
+                project_id, instance_id, expected_use_generation, batch_id=batch_id, retain=retain,
+            )
+
+    def dispose_terminal_instance(self, project_id: str, instance_id: str, environment_id: str | None) -> None:
+        """Finish a terminal task's copy: give it back to its identity when that is safe, otherwise clean it.
+
+        The identity case keeps the login changes of the tasks before it, which a failed or cancelled task
+        must not take down with it. It never saves; a copy whose browser is not confirmed closed is left as it
+        is and retried on the next pass, with the identity still taken.
+        """
+        with self._lifecycle_lock(instance_id):
+            batch_id = self.environments.identity_return_batch(instance_id)
+            if batch_id is None:
+                self.close_instance(project_id, instance_id, environment_id)
+                return
+            try:
+                closed = self.quiesce_instance(project_id, instance_id)
+                self.environments.hold_identity_instance(
+                    project_id, instance_id, closed.instance_use_generation, batch_id=batch_id, retain=False,
+                )
+            except ProjectError as error:
+                logging.getLogger(__name__).warning(
+                    "身份 %s 的任务副本暂时无法交还给身份（%s：%s），下一轮再试", instance_id, error.code, error.message,
+                )
+
     def release_identity_instance(self, project_id: str, instance_id: str) -> bool:
         """Save an identity's held copy once if a task asked for it, then clean it (remediation M4 S8-3).
 
@@ -460,7 +490,7 @@ class EnvironmentService:
                 if not self.environments.disposable_task_instances(candidate.instance_id):
                     continue
                 try:
-                    self.close_instance(candidate.project_id, candidate.instance_id, candidate.environment_id)
+                    self.dispose_terminal_instance(candidate.project_id, candidate.instance_id, candidate.environment_id)
                 except (OSError, ProjectError):
                     self.environments.set_instance_state(candidate.instance_id, "cleanup_failed")
                     logging.getLogger(__name__).exception(

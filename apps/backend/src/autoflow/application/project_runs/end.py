@@ -216,8 +216,19 @@ class ProjectRunEnd:
                 raise ProjectError(
                     "PREVIEW_CANNOT_SAVE_ENVIRONMENT", "预览运行不会保存登录状态，请用真实写入运行", 409
                 )
+            instance = self.environments.environments.find_instance_by_task(
+                task.project_id, task.id
+            )
+            # Remediation M4 S8-4: a perIdentity task keeps its work copy for the identity's next task. The
+            # login is saved once when the identity is released, and it belongs to the identity, so no
+            # record is linked here.
+            hold = (
+                instance is not None
+                and instance.identity_id is not None
+                and (run.resource_request or {}).get("sessionMode") == "perIdentity"
+            )
             targets: list[dict[str, Any]] = []
-            if wants_retain:
+            if wants_retain and not hold:
                 selected = config.get("inputIds")
                 inputs = snapshot.inputs
                 if selected is not None and set(selected) - {
@@ -308,9 +319,6 @@ class ProjectRunEnd:
                             "replaceAllowed": config.get("replaceAllowed", False),
                         }
                     )
-            instance = self.environments.environments.find_instance_by_task(
-                task.project_id, task.id
-            )
             if wants_retain and (
                 instance is None
                 or instance.active_run_id != run_id
@@ -319,7 +327,7 @@ class ProjectRunEnd:
                 raise ProjectError(
                     "ENVIRONMENT_UNAVAILABLE", "End 没有可保留的任务环境", 409
                 )
-            if wants_retain:
+            if wants_retain and not hold:
                 from autoflow.domain.environments.rules import bind_targets
 
                 bind_targets(
@@ -355,6 +363,8 @@ class ProjectRunEnd:
                 "retainEnvironment": retain,
                 "workerEnd": True,
                 "workerRequest": request,
+                # Only a held End carries these, so every other End keeps its exact shape.
+                **({"holdForIdentity": True, "batchId": task.batch_id} if hold else {}),
             }
             now = datetime.now(UTC)
             operation = self.environments._command(

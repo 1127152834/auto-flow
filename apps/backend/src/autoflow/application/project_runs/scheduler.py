@@ -1296,7 +1296,7 @@ class ProjectBatchScheduler:
                 continue
             # Terminal Run means worker cleanup was confirmed; the environment
             # service still verifies native ownership before deleting its copy.
-            await asyncio.to_thread(self._environments.close_instance, project_id, instance.id, instance.environment_id)
+            await asyncio.to_thread(self._environments.dispose_terminal_instance, project_id, instance.id, instance.environment_id)
 
     def _release_terminal_leases(self, project_id: str, batch_id: str) -> None:
         with self._factory() as session:
