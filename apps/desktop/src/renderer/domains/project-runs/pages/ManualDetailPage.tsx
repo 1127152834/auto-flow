@@ -20,7 +20,7 @@ import { presentRunFailure } from '../presentation'
 export type ManualDetailPageProps = { workspaceKey: string; instanceId: string; projectId: string; client: StreamingApiClient; disabled: boolean; readOnly: boolean; onNavigate(route: ProjectRoute): void; manualItemId: string }
 const statuses: Record<string, string> = { waiting: '等待人工', resume_requested: '已请求继续', resolved: '已处理', expired: '已超时', lost: '已丢失', cancelled: '已取消' }
 const taskStatuses: Record<string, string> = { queued: '排队中', running: '运行中', waiting_manual: '等待人工', resume_queued: '等待恢复', finishing: '正在结束', stopping: '正在停止', reconciling: '正在核对', succeeded: '成功', failed: '失败', cancelled: '已取消', timed_out: '已超时', interrupted: '已中断' }
-const instanceStates: Record<string, string> = { active: '运行中', waiting_manual: '等待人工', retained_unsaved: '保留（未保存）', closed: '已关闭', cleaned: '已清理' }
+const instanceStates: Record<string, string> = { active: '运行中', waiting_manual: '等待人工', retained_unsaved: '保留（未保存）', identity_held: '账号保留中', closed: '已关闭', cleaned: '已清理' }
 const short = (value: string) => value.slice(0, 8)
 const stamp = (value: string | null | undefined) => value ? new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : '—'
 const remaining = (expiresAt: string | null | undefined) => {

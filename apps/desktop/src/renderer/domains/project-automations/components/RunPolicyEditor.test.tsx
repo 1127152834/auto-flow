@@ -175,12 +175,31 @@ it('switches a data automation to pausing on failure thresholds and back to the 
   expect(onChange).toHaveBeenLastCalledWith({ ...policy, failurePolicy: null })
 })
 
-it('offers browser reuse only to automations that start from a fresh profile', () => {
+it('offers each browser session only to the environment source it fits', async () => {
   const onChange = vi.fn()
-  const { rerender } = render(<RunPolicyEditor value={policy} onChange={onChange} />)
-  fireEvent.click(screen.getByRole('switch', { name: '任务之间复用浏览器' }))
+  const open = async (source: string, mode?: RunPolicy['sessionMode']) => {
+    const view = render(<RunPolicyEditor value={{ ...policy, ...(mode ? { sessionMode: mode } : {}) }} onChange={onChange} environmentSource={source} />)
+    const control = screen.getByRole('combobox', { name: '浏览器会话' })
+    control.focus()
+    await userEvent.setup().keyboard('{ArrowDown}')
+    const state = Object.fromEntries(screen.getAllByRole('option').map(option => [option.getAttribute('data-choice-value'), option.getAttribute('aria-disabled') === 'true']))
+    view.unmount()
+    return state
+  }
+  expect(await open('newFromProfile')).toEqual({ perTask: false, pool: false, perIdentity: true })
+  expect(await open('inputIdentity')).toEqual({ perTask: false, pool: true, perIdentity: false })
+  expect(await open('fixedEnvironment')).toEqual({ perTask: false, pool: true, perIdentity: true })
+})
+
+it('chooses the browser session and explains it in business words', async () => {
+  const onChange = vi.fn()
+  const { rerender } = render(<RunPolicyEditor value={policy} onChange={onChange} environmentSource="newFromProfile" />)
+  expect(screen.getByRole('combobox', { name: '浏览器会话' })).toHaveTextContent('每个任务使用独立浏览器')
+  await chooseOption(userEvent.setup(), screen.getByRole('combobox', { name: '浏览器会话' }), 'pool')
   expect(onChange).toHaveBeenLastCalledWith({ ...policy, sessionMode: 'pool' })
-  rerender(<RunPolicyEditor value={policy} onChange={onChange} freshBrowser={false} />)
-  expect(screen.getByRole('switch', { name: '任务之间复用浏览器' })).toBeDisabled()
+  rerender(<RunPolicyEditor value={{ ...policy, sessionMode: 'perIdentity' }} onChange={onChange} environmentSource="inputIdentity" />)
+  expect(screen.getByRole('combobox', { name: '浏览器会话' })).toHaveTextContent('同一账号共用浏览器并保留登录状态')
+  expect(screen.getByText(/账号凭据和数据变量不会带到下一个任务/)).toBeVisible()
+  rerender(<RunPolicyEditor value={policy} onChange={onChange} environmentSource="fixedEnvironment" />)
   expect(screen.getByText('使用已保存的登录环境时，每个任务都要用自己的浏览器。')).toBeVisible()
 })

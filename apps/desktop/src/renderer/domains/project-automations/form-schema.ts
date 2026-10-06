@@ -40,6 +40,8 @@ export function validateAutomationForm(value: AutomationFormValues): AutomationF
     if (!Number.isInteger(policy[key]) || policy[key] < 1 || policy[key] > 100) errors[`runPolicy.${key}`] = '必须是 1–100 的整数'
   }
   const environment = value.environmentPolicy
+  if (policy.sessionMode === 'pool' && environment.source !== 'newFromProfile') errors['runPolicy.sessionMode'] = '复用浏览器只适用于按浏览器配置新建的采集'
+  if (policy.sessionMode === 'perIdentity' && environment.source !== 'inputIdentity') errors['runPolicy.sessionMode'] = '同一账号共用浏览器只适用于按记录的身份运行'
   if (environment.source === 'newFromProfile' && Object.hasOwn(environment, 'profileId') && !environment.profileId) errors['environmentPolicy.profileId'] = '请选择浏览器配置'
   const proxy = environment.proxyOverride
   if (proxy?.mode === 'fixed' && !proxy.proxyId) errors['environmentPolicy.proxyOverride'] = '请选择固定代理'

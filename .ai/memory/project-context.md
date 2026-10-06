@@ -1,5 +1,7 @@
 # 项目上下文
 
+2026-10-06 M4 身份模型与 perIdentity（confirmed 本机 Windows 范围，分支 codex/architecture-baseline）：身份、种子登记、按记录的身份运行、粘性代理、出口地区核验、健康门禁（S1–S7）、黄金场景 G1（真实 CloakBrowser，30 行）已完成；S8 perIdentity v1 采用“保留实例、不保留浏览器”（决定 `.ai/decisions/2026-10-06-m4-s8-per-identity-v1-keep-instance.md`，取代 2026-10-05 设计稿第 2–4 条）：同身份同一时刻只有一个未释放实例并让领取等待（S8-1）、`identity_held` 持有与同批次重新附着（S8-2）、释放时保存一次再清理（S8-3）、End 持有且失败/取消运行交还副本（S8-4）、调度器释放扫描（S8-5）、`sessionMode=perIdentity` 的保存/校验/启动/冻结与前端选择（S8-6/S8-7）。真实浏览器验收 G2（5 账号×4 行与 3×3 均通过）。AC4-07 措辞：“复用同一 worker”改为“复用同一实例”，worker/浏览器保活（S8b）仅在基准证明启动浏览器是主要成本时才做。验证细节与基准见 `.ai/knowledge/2026-10-06-m4-s8-identity-session.md`；M4 退出前仍缺 G1 代理夹具（AC4-03/04）、AOCI 条目维护（aoci MCP 不可用）与用户 macOS 手测。
+
 2026-09-30 M0实施（in_progress）：文档547a0785后在受管codex/remediation-m0工作树开始；M0本地实现、101行真实黄金验证与独立评审已完成，全后端回归已通过，远端CI验收仍未完成。来源与验证见 [实施记录](../sessions/2026-09-30-remediation-m0-implementation.md)。后续阶段按用户持续授权细化审查后自主实施，不再逐阶段确认。
 
 2026-09-30 整改方案 r2（confirmed 文档修订；实现未开始）：用户要求按评审修订 M0–M6。拆分 M2A/B/C、前置最小输出与后端预览契约、perIdentity 移至 M4、M5 先业务后视觉；M0 区分受控正确性基准与 M2B 原生吞吐基准。旧原型验证/固定排期声明已 superseded。当前阶段与依据见 [索引](../plans/2026-09-30-remediation-program.md) 和 [决策](../decisions/2026-09-30-remediation-program.md)。本次没有修改业务代码，也没有完成任何里程碑的运行验收。

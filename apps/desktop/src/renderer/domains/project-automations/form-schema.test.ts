@@ -55,3 +55,16 @@ it('defaults new automations to continue after failure and preserves explicit sa
   expect(automationToForm(saved).runPolicy.continueAfterFailure).toBe(false)
   expect(normalizeAutomation(saved).runPolicy.continueAfterFailure).toBe(false)
 })
+
+it('refuses a browser session the environment source cannot use', () => {
+  const base = { ...emptyAutomationForm('11111111-1111-4111-8111-111111111111'), name: '资料整理' }
+  const withSession = (sessionMode: 'perTask' | 'pool' | 'perIdentity', source: 'newFromProfile' | 'inputIdentity') => validateAutomationForm({
+    ...base, runPolicy: { ...base.runPolicy, sessionMode },
+    environmentPolicy: source === 'inputIdentity' ? { source, inputId: 'input-1' } as typeof base.environmentPolicy : { source },
+  })['runPolicy.sessionMode']
+  expect(withSession('perIdentity', 'inputIdentity')).toBeUndefined()
+  expect(withSession('perIdentity', 'newFromProfile')).toContain('按记录的身份运行')
+  expect(withSession('pool', 'newFromProfile')).toBeUndefined()
+  expect(withSession('pool', 'inputIdentity')).toContain('复用浏览器')
+  expect(withSession('perTask', 'inputIdentity')).toBeUndefined()
+})
