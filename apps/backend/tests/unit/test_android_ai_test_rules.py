@@ -6,9 +6,6 @@ import pytest
 
 from autoflow.domain.android.ai_test import (
     TERMINAL_STATES,
-    AiTestMode,
-    AiTestRequest,
-    AiTestState,
     redact,
     transition,
     validate_request,

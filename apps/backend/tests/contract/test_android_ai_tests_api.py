@@ -200,6 +200,7 @@ def test_live_screen_is_png_or_state_conflict(env: tuple[TestClient, FakeService
     assert ok.headers["cache-control"] == "no-store"
     refused = client.get(f"{BASE}/runs/run-2/screen")
     assert refused.status_code == 409 and refused.json()["error"]["code"] == "AI_TEST_STATE_CONFLICT"
+    assert service.calls == [("screen", "run-1"), ("screen", "run-2")]
 
 
 def test_app_recovers_ai_tests_before_serving_and_shuts_them_down(
