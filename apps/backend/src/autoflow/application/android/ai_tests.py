@@ -300,12 +300,25 @@ class AiTestService:
     ) -> None:
         run_id = record["id"]
         state: AiTestState = "queued"
+        released = False
+
+        async def release() -> None:
+            nonlocal released
+            if released:
+                return
+            released = True
+            try:
+                await self._release(run_id, context, None if context else serial)
+            except Exception:  # cleanup marks the device for recovery itself
+                logger.exception("AI test %s device cleanup failed", run_id)
 
         async def finish(target: AiTestState, **changes: Any) -> None:
             nonlocal state
             if state in TERMINAL_STATES:
                 return  # already finalized (e.g. cancelled while the terminal write was in flight)
             state = transition(state, target)
+            # Free the device first: whoever sees the final state may immediately rerun or take over.
+            await release()
             await asyncio.to_thread(self.repository.update, run_id, state=state, finishedAt=_now(), **changes)
 
         async def on_event(event: dict[str, Any]) -> None:
@@ -349,10 +362,7 @@ class AiTestService:
         finally:
             self._tasks.pop(run_id, None)
             self._cancels.pop(run_id, None)
-            try:
-                await self._release(run_id, context, None if context else serial)
-            except Exception:  # cleanup marks the device for recovery itself
-                logger.exception("AI test %s device cleanup failed", run_id)
+            await release()
 
     async def cancel(self, run_id: str) -> dict[str, Any]:
         record = await asyncio.to_thread(self.repository.get, run_id)

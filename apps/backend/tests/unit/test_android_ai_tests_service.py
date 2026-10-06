@@ -653,6 +653,31 @@ async def test_managed_start_ends_the_open_console_session_first(env: dict[str, 
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("behaviour", ["succeed", "timeout", "crash", "cancel"])
+async def test_device_is_released_before_the_terminal_state_is_written(env: dict[str, Any], behaviour: str) -> None:
+    service, repo, tool, devices = env["service"], env["repo"], env["tool"], env["devices"]
+    tool.behaviour = "wait" if behaviour == "cancel" else behaviour
+    tool.gate = asyncio.Event() if behaviour == "cancel" else tool.gate
+    seen: list[tuple[str, str]] = []
+    original = repo.update
+
+    def update(run_id: str, **changes: Any) -> dict[str, Any]:
+        if changes.get("state") in {"succeeded", "failed", "cancelled"}:
+            seen.append((changes["state"], devices.store["dev-1"]["control"]))
+        return original(run_id, **changes)
+
+    repo.update = update  # type: ignore[method-assign]
+    record = await service.start(request())
+    if behaviour == "cancel":
+        while not tool.runs:
+            await asyncio.sleep(0.01)
+        await service.cancel(record["id"])
+    await settle(service)
+    assert len(seen) == 1 and seen[0][1] == "idle"  # a rerun or take-over right after the final state succeeds
+    assert devices.contexts[0].cleanups == 1
+
+
+@pytest.mark.asyncio
 async def test_external_start_does_not_touch_consoles(env: dict[str, Any]) -> None:
     await env["service"].start(external())
     await settle(env["service"])
