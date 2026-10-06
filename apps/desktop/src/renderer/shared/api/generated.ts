@@ -10724,7 +10724,7 @@ export type components = {
              * Kind
              * @enum {string}
              */
-            kind: "none" | "manualSession" | "legacyWorkflow" | "unknown";
+            kind: "none" | "manualSession" | "legacyWorkflow" | "aiTest" | "unknown";
             /** Id */
             id?: string | null;
         };
@@ -12098,7 +12098,7 @@ export type components = {
             /** Failurepolicy */
             failurePolicy?: "thresholds" | null;
             /** Sessionmode */
-            sessionMode?: ("perTask" | "pool" | "perIdentity") | null;
+            sessionMode?: ("perTask" | "pool") | null;
         };
         /** RunSnapshotView */
         RunSnapshotView: {
