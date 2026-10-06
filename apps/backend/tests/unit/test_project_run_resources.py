@@ -271,3 +271,28 @@ def test_input_environment_defers_profile_until_claim_and_uses_selected_source(d
     assert request["environmentRef"]["contentGeneration"] == 3
     assert request["automaticExecutionTimeoutSeconds"] == 12.5
     assert "environmentResolution" not in request
+
+
+@pytest.mark.parametrize("has_login", [False, True])
+def test_the_session_mode_survives_freezing_the_identity_the_claim_selected(has_login):
+    """Remediation M4 S8-6: both freeze paths used to drop sessionMode, so perIdentity silently ran as perTask."""
+    from dataclasses import replace
+
+    from autoflow.domain.environments.models import (
+        EnvironmentRef,
+        ResolvedEnvironmentSource,
+    )
+
+    browser = BrowserResources()
+    resolver = ProjectRunResourceResolver(ResourceQuery(), browser, object())
+    base = automation({"source": "inputIdentity", "inputId": "input-1", "profileId": "template-profile"})
+    base = replace(base, run_policy={**base.run_policy, "sessionMode": "perIdentity"})
+    pending = resolver(base, DEFAULTS)
+    assert pending["sessionMode"] == "perIdentity" and pending["environmentResolution"] == "atTaskStart"
+    selected = ResolvedEnvironmentSource(
+        "inputIdentity", EnvironmentRef("project-1", "environment-1", 3, 1) if has_login else None, "template-profile",
+        saved_identity("template-profile") if has_login else {},
+        identity={"identityId": "identity-1", "seed": 12345, "region": {}},
+    )
+    request = resolver.freeze_input_environment(pending, selected)
+    assert request["sessionMode"] == "perIdentity" and request["identity"]["identityId"] == "identity-1"

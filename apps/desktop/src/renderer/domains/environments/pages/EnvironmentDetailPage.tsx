@@ -18,7 +18,7 @@ const stamp = (value: string) => new Intl.DateTimeFormat('zh-CN', { dateStyle: '
 const facts = (items: { [key: string]: unknown }[]) => items.map(item => ({ code: String(item.code ?? ''), message: String(item.message ?? '') }))
 const blockersOf = (items: { [key: string]: unknown }[]) => items.map(item => ({ state: String(item.state ?? ''), message: String(item.message ?? item.code ?? '') }))
 const environmentStates: Record<string, string> = { ready: '就绪', unavailable: '不可用', deleting: '删除中', deleted: '已删除' }
-const instanceStates: Record<string, string> = { reserved: '已预约', starting: '启动中', active: '自动运行', closing: '停止中', saving: '保存中', cleaning: '清理中', retained_unsaved: '待处理保存', closed: '已结束', cleaned: '已清理', failed: '启动失败' }
+const instanceStates: Record<string, string> = { reserved: '已预约', starting: '启动中', active: '自动运行', closing: '停止中', saving: '保存中', cleaning: '清理中', retained_unsaved: '待处理保存', identity_held: '账号保留中', closed: '已结束', cleaned: '已清理', failed: '启动失败' }
 const sources: Record<string, string> = { newFromProfile: '按浏览器配置新建', fixedEnvironment: '来自已有持久环境', inputEnvironment: '来自记录关联的环境' }
 const statePill = (state: string) => <span className={`inline-flex items-center rounded-control border px-2 py-0.5 text-xs ${state === 'ready' ? 'border-sage/40 bg-sage-soft text-sage-strong' : state === 'unavailable' ? 'border-warning/40 bg-warning-soft text-warning' : 'border-line bg-surface-subtle text-muted'}`}>{environmentStates[state] ?? state}</span>
 

@@ -155,7 +155,7 @@ class RunPolicy(ApiModel):
     retry_backoff_seconds: list[StrictInt] | None = Field(default=None, min_length=1, max_length=10)
     failure_policy: Literal["thresholds"] | None = None
     # Remediation M3 R3-07; omitted means perTask.
-    session_mode: Literal["perTask", "pool"] | None = None
+    session_mode: Literal["perTask", "pool", "perIdentity"] | None = None
 
 
 class CapabilityRequirement(ApiModel):

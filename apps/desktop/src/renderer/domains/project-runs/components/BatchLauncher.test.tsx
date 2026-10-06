@@ -144,3 +144,9 @@ it.each(['23', ''])('preserves explicit task count %s across save and resets for
   view.rerender(<BatchLauncher {...p} savedAutomation={{ ...savedAutomation, automationId: 'different' }}/>)
   expect(screen.getByLabelText('本次任务数')).toHaveValue('2')
 })
+it('does not offer a temporary environment to an automation that runs as the identities of its records', () => {
+  const identity = { ...automation, environmentPolicy: { source: 'inputIdentity' as const, inputId: 'input-1', profileId: 'profile' }, runPolicy: { ...automation.runPolicy, sessionMode: 'perIdentity' as const } }
+  render(<BatchLauncher {...props(vi.fn(), { savedAutomation: identity })}/>)
+  expect(screen.getByRole('radio', { name: '每个任务创建临时环境' })).toBeDisabled()
+  expect(screen.getByText('按记录的身份运行时，环境来自每条数据关联的账号，本次不能改成临时环境')).toBeVisible()
+})

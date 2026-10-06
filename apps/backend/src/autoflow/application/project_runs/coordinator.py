@@ -509,7 +509,11 @@ class ProjectRunCoordinator:
         from autoflow.domain.workflows.project_inputs import validate_references
         field_types = {field.id: field.type for field in session.scalars(select(DataFieldRow).where(DataFieldRow.project_id == project_id))}
         validate_references(document, automation, field_types)
-        resources = self._resolve_resources(effective, dict(project.default_resources), document=document) if node_browser_environments(document) is not None else self._resolve_resources(effective, dict(project.default_resources))
+        resources = (
+            self._resolve_resources(effective, dict(project.default_resources), document=document)
+            if node_browser_environments(document) is not None or automation.run_policy.get("sessionMode") in {"pool", "perIdentity"}
+            else self._resolve_resources(effective, dict(project.default_resources))
+        )
         if not has_data_inputs and any(node.get('environmentResolution') == 'atTaskStart' for node in resources.get('nodeBrowserEnvironments', {}).values()):
             raise ProjectRunError('VALIDATION_ERROR', '输入环境节点需要自动化声明输入', 422)
         now, batch_id, operation_id = datetime.now(UTC), str(uuid4()), str(uuid4())

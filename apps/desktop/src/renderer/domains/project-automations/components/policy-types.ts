@@ -21,8 +21,8 @@ export type RunPolicy = {
   retryBudget?: number | null
   retryBackoffSeconds?: number[] | null
   failurePolicy?: 'thresholds' | null
-  /** Remediation M3 R3-07: reuse one browser process across tasks (fresh profiles only). */
-  sessionMode?: 'perTask' | 'pool' | null
+  /** M3 R3-07: reuse one browser process across tasks (fresh profiles only); M4 S8: one browser directory per account. */
+  sessionMode?: 'perTask' | 'pool' | 'perIdentity' | null
 }
 
 export type FieldErrors = Record<string, string | undefined>

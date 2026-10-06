@@ -132,3 +132,9 @@ it('switches the empty current scene to a plain statement instead of a zero coun
   expect(screen.queryByRole('heading', { name: /需要人工处理/ })).not.toBeInTheDocument()
   expect(screen.queryByRole('heading', { name: /自动运行/ })).not.toBeInTheDocument()
 })
+
+it('shows an account whose browser directory is kept between tasks as such', async () => {
+  renderPage([{ ...instance, instanceId: '00000000-0000-4000-8000-00000000000d', state: 'identity_held', activeRunId: null }])
+  expect(await screen.findByText('账号保留中')).toBeVisible()
+  expect(screen.queryByText('identity_held')).toBeNull()
+})

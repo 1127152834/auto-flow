@@ -4,7 +4,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision = "rm4_android_ai_tests"
-down_revision = "rm4_record_identity"
+down_revision = "rm4_instance_identity"
 branch_labels = None
 depends_on = None
 

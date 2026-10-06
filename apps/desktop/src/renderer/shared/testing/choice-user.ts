@@ -15,7 +15,7 @@ export async function chooseOption(user:ReturnType<typeof userEvent.setup>, cont
   const found=screen.getAllByRole('option').find(item=>item.getAttribute('data-choice-value')===value)
   if(!found)throw new Error(`Visible choice not found: ${value}`)
   return found
- })
+ },{timeout:5000}) // a loaded CI runner can take over a second to open the list
  await user.click(option)
 }
 

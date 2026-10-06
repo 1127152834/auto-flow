@@ -42,7 +42,10 @@ from autoflow.domain.environments.rules import (
 )
 from autoflow.domain.projects.models import ProjectError, ProjectOperation
 from autoflow.domain.workflows.runtime import WorkflowRuntimeError
-from autoflow.infrastructure.database.environments import SqlAlchemyEnvironments
+from autoflow.infrastructure.database.environments import (
+    SqlAlchemyEnvironments,
+    identity_release_key,
+)
 from autoflow.infrastructure.filesystem.environment_store import EnvironmentStore
 
 
@@ -306,6 +309,7 @@ class EnvironmentService:
             now,
             now,
             deepcopy(resolved.identity_package) if resolved.identity_package.get("schemaVersion") else None,
+            _identity_id(resolved),
         )
         occupancy = None
         if resolved.environment_ref is not None:
@@ -385,6 +389,100 @@ class EnvironmentService:
                 self.environments.release_occupancy(environment_id, instance_id)
             self.environments.set_instance_state(instance_id, "cleaned")
 
+    def hold_identity_instance(
+        self, project_id: str, instance_id: str, expected_use_generation: int, *, batch_id: str | None, retain: bool,
+    ) -> EnvironmentInstance:
+        with self._lifecycle_lock(instance_id):
+            return self.environments.hold_identity_instance(
+                project_id, instance_id, expected_use_generation, batch_id=batch_id, retain=retain,
+            )
+
+    def dispose_terminal_instance(self, project_id: str, instance_id: str, environment_id: str | None) -> None:
+        """Finish a terminal task's copy: give it back to its identity when that is safe, otherwise clean it.
+
+        The identity case keeps the login changes of the tasks before it, which a failed or cancelled task
+        must not take down with it. It never saves; a copy whose browser is not confirmed closed is left as it
+        is and retried on the next pass, with the identity still taken.
+        """
+        with self._lifecycle_lock(instance_id):
+            batch_id = self.environments.identity_return_batch(instance_id)
+            if batch_id is None:
+                self.close_instance(project_id, instance_id, environment_id)
+                return
+            try:
+                closed = self.quiesce_instance(project_id, instance_id)
+                self.environments.hold_identity_instance(
+                    project_id, instance_id, closed.instance_use_generation, batch_id=batch_id, retain=False,
+                )
+            except ProjectError as error:
+                logging.getLogger(__name__).warning(
+                    "身份 %s 的任务副本暂时无法交还给身份（%s：%s），下一轮再试", instance_id, error.code, error.message,
+                )
+
+    def release_identity_instance(self, project_id: str, instance_id: str) -> bool:
+        """Save an identity's held copy once if a task asked for it, then clean it (remediation M4 S8-3).
+
+        False means "not finished, try again later": the copy is not releasable, its browser may still be open,
+        or the project cannot take a save right now. A failed save keeps the copy for a person
+        (``retained_unsaved``) and frees the identity; the reason is logged. Nothing is saved from a copy
+        whose browser is not confirmed gone.
+        """
+        log = logging.getLogger(__name__)
+        with self._lifecycle_lock(instance_id):
+            instance = self.environments.begin_identity_release(project_id, instance_id)
+            if instance is None:
+                return False
+            if self.store.runtime_lock_present(instance_id):
+                log.warning("身份 %s 的保留浏览器目录仍被占用（运行锁存在），暂不保存也不清理：%s", instance.identity_id, instance_id)
+                return False
+            if instance.state != "closed":
+                instance = self.environments.set_instance_state(instance_id, "closed")
+            directory = self.store.root / "instances" / instance_id
+            if instance.retain_on_release and not directory.is_dir():
+                log.warning("身份 %s 的工作副本目录已不存在，没有可保存的登录状态：%s", instance.identity_id, instance_id)
+            elif instance.retain_on_release:
+                try:
+                    self._save_identity_copy(instance)
+                except (ProjectError, WorkflowRuntimeError) as error:
+                    if error.code in {"PROJECT_CLOSING", "LIFECYCLE_CONFLICT", "PROJECT_NOT_FOUND"}:
+                        log.warning("项目暂时不能保存身份 %s 的登录状态，稍后重试：%s", instance.identity_id, error.message)
+                        return False
+                    log.warning("身份 %s 的登录状态保存失败（%s：%s），工作副本保留给人工处理", instance.identity_id, error.code, error.message)
+                    self.environments.set_instance_state(instance_id, "retained_unsaved")
+                except OSError as error:
+                    log.warning("身份 %s 的登录状态保存时出错（%s），稍后重试", instance.identity_id, error)
+                    return False
+            current = self.environments.get_instance(project_id, instance_id)
+            if current.state == "retained_unsaved":
+                return True
+            self.close_instance(project_id, instance_id, current.environment_id)
+            return True
+
+    def _save_identity_copy(self, instance: EnvironmentInstance) -> None:
+        identity_id = str(instance.identity_id)
+        payload: dict[str, Any] = {
+            "instanceId": instance.instance_id,
+            "expectedUseGeneration": instance.instance_use_generation,
+            "executionGeneration": 1,
+        }
+        if instance.environment_id is None:
+            payload.update(mode="save_as", name=self.environments.identity_save_name(identity_id), linkIdentityId=identity_id)
+        else:
+            payload.update(mode="update", expectedContentGeneration=instance.source_content_generation)
+        save_environment(
+            self, instance.project_id, identity_release_key(instance.instance_id, instance.instance_use_generation), payload,
+        )
+
+    def release_due_identity_instances(self, *, idle_seconds: float = 120, limit: int = 3, now: datetime | None = None) -> int:
+        """Release identity copies that are idle, belong to a finished batch, or were left half released."""
+        released = 0
+        for candidate in self.environments.due_identity_instances(idle_seconds=idle_seconds, limit=limit, now=now):
+            try:
+                released += int(self.release_identity_instance(candidate.project_id, candidate.instance_id))
+            except Exception:
+                logging.getLogger(__name__).exception("身份保留实例释放失败：%s", candidate.instance_id)
+        return released
+
     def cleanup_terminal_tasks(self) -> None:
         for candidate in self.environments.disposable_task_instances():
             with self._lifecycle_lock(candidate.instance_id):
@@ -392,7 +490,7 @@ class EnvironmentService:
                 if not self.environments.disposable_task_instances(candidate.instance_id):
                     continue
                 try:
-                    self.close_instance(candidate.project_id, candidate.instance_id, candidate.environment_id)
+                    self.dispose_terminal_instance(candidate.project_id, candidate.instance_id, candidate.environment_id)
                 except (OSError, ProjectError):
                     self.environments.set_instance_state(candidate.instance_id, "cleanup_failed")
                     logging.getLogger(__name__).exception(
@@ -563,6 +661,7 @@ class EnvironmentService:
         policy: dict[str, Any],
         inputs: dict[str, dict[str, Any]] | None = None,
         *, resource_request: dict[str, Any] | None = None, instance_id: str | None = None,
+        session_mode: str | None = None, batch_id: str | None = None,
     ) -> EnvironmentInstance:
         resolved = self.environments.resolve_source_in_session(session, project_id, policy, inputs)
         from autoflow.domain.environments.identity import identity_from_request
@@ -578,11 +677,20 @@ class EnvironmentService:
             instance_id or str(uuid4()), project_id, reference.environment_id if reference else None,
             "reserved", resolved.source, reference.content_generation if reference else None,
             1, task_id, run_id, None, resolved.profile_id, now, now, deepcopy(identity),
+            _identity_id(resolved),
         )
         occupancy = (
             occupy_environment(reference.environment_id, instance.instance_id, "task", task_id, None)
             if reference else None
         )
+        if session_mode == "perIdentity":
+            # Remediation M4 S8-2: the identity's held copy goes to its next task as it is.
+            held = self.environments.reattach_identity_instance(
+                session, instance, batch_id=batch_id, max_live_instances=self._max_live_instances,
+                quiescent=lambda held_id: not self.store.runtime_lock_present(held_id),
+            )
+            if held is not None:
+                return held
         return self.environments.reserve_instance_in_session(
             session, instance, occupancy, max_live_instances=self._max_live_instances,
         )
@@ -823,3 +931,8 @@ def _operation(key, kind, project_id, environment_id, canonical, now):
         now,
         None,
     )
+
+
+def _identity_id(resolved: Any) -> str | None:
+    identity = getattr(resolved, "identity", None)
+    return identity.get("identityId") if isinstance(identity, dict) else None

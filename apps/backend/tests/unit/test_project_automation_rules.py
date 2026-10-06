@@ -295,18 +295,35 @@ def test_run_policy_accepts_explicit_claim_settings(extra, valid):
 
 @pytest.mark.parametrize(("mode", "source", "valid"), [
     ("perTask", "newFromProfile", True), ("pool", "newFromProfile", True),
-    ("perIdentity", "newFromProfile", False),  # M4; never exposed early (R3-07)
-    ("pool", "fixedEnvironment", False),
+    ("pool", "fixedEnvironment", False), ("pool", "inputIdentity", False),
+    # Remediation M4 S8-6: sharing one browser per account only makes sense when tasks run as the record's identity.
+    ("perIdentity", "inputIdentity", True),
+    ("perIdentity", "newFromProfile", False), ("perIdentity", "fixedEnvironment", False), ("perIdentity", "inputEnvironment", False),
 ])
-def test_session_mode_pool_is_limited_to_fresh_profiles(mode, source, valid):
+def test_session_mode_is_limited_to_the_sources_it_makes_sense_for(mode, source, valid):
+    input_id = "00000000-0000-0000-0000-0000000000a1"
     candidate = payload()
     candidate["runPolicy"] = {**candidate["runPolicy"], "sessionMode": mode}
-    candidate["environmentPolicy"] = {"source": source, **({"environmentId": "00000000-0000-0000-0000-0000000000e1"} if source == "fixedEnvironment" else {})}
+    environment = {"source": source}
+    if source == "fixedEnvironment":
+        environment["environmentId"] = "00000000-0000-0000-0000-0000000000e1"
+    if source in {"inputIdentity", "inputEnvironment"}:
+        environment["inputId"] = input_id
+        candidate["inputPlan"] = {"inputs": [data_input(input_id, "00000000-0000-0000-0000-0000000000b1", "00000000-0000-0000-0000-0000000000c1")]}
+    candidate["environmentPolicy"] = environment
     if valid:
         assert validate_write(candidate)["runPolicy"]["sessionMode"] == mode
     else:
-        with pytest.raises(ProjectError):
+        with pytest.raises(ProjectError) as refused:
             validate_write(candidate)
+        assert "runPolicy.sessionMode" in refused.value.details["fields"]
+
+
+def test_an_unknown_session_mode_is_refused():
+    candidate = payload()
+    candidate["runPolicy"] = {**candidate["runPolicy"], "sessionMode": "forever"}
+    with pytest.raises(ProjectError):
+        validate_write(candidate)
 
 
 def test_workflows_that_keep_their_own_browser_cannot_use_the_pool():
@@ -331,3 +348,16 @@ def test_node_browsers_may_pool_unless_they_load_a_saved_environment(declaration
     document = {"schemaVersion": 3, "browserEnvironmentVersion": 1, "nodes": [
         {"id": "open", "data": {"moduleType": "open_page", "browserEnvironment": declaration}}]}
     assert session_pool_blockers(document) == (["流程的节点使用了已保存的登录环境"] if blocked else [])
+
+
+def test_what_blocks_sharing_a_browser_per_account():
+    from autoflow.domain.project_automations.rules import session_pool_blockers
+
+    saving = {"nodes": [{"id": "e", "data": {"moduleType": "project_end", "retainEnvironment": True}}]}
+    assert session_pool_blockers(saving, "perIdentity") == [], "saving the login is what this mode is for"
+    manual = {"nodes": [{"id": "m", "data": {"moduleType": "project_manual"}}]}
+    assert len(session_pool_blockers(manual, "perIdentity")) == 1
+    node_browser = {"schemaVersion": 3, "browserEnvironmentVersion": 1, "nodes": [
+        {"id": "open", "data": {"moduleType": "open_page", "browserEnvironment": {"source": "profile", "profileId": "p1"}}}]}
+    assert len(session_pool_blockers(node_browser, "perIdentity")) == 1, "node browsers ignore the automation's identity source"
+    assert session_pool_blockers(node_browser) == [], "the pool's own rules are unchanged"

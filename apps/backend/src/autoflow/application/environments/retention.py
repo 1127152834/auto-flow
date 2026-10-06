@@ -213,6 +213,9 @@ def save_environment(service, project_id: str, key: str, payload: dict[str, Any]
                 created_from_task_id=instance.active_task_id,
                 authority=payload.get("workerAuthority"),
             )
+            if payload.get("linkIdentityId"):
+                # Remediation M4 S8-3: the login an identity's tasks built belongs to that identity.
+                service.environments.give_identity_login(payload["linkIdentityId"], saved.ref.environment_id)
         else:
             if source is None:
                 raise environment_error(
@@ -418,8 +421,9 @@ def end_task(service, project_id: str, key: str, payload: dict[str, Any]):
             accepted.operation_id, datetime.now(UTC),
         )
 
+    hold = payload.get("holdForIdentity") is True and bool(payload["instanceId"])
     try:
-        if not wants_retain:
+        if not wants_retain or hold:
             if ledger["phase"] not in END_TERMINAL_PHASES:
                 if ledger["phase"] == "accepted":
                     record("prechecking")
@@ -427,7 +431,14 @@ def end_task(service, project_id: str, key: str, payload: dict[str, Any]):
                     if payload["instanceId"]:
                         service.quiesce_instance(project_id, payload["instanceId"])
                     record("quiescing")
-                if payload["instanceId"]:
+                if hold:
+                    # The browser is confirmed closed; keep the copy for the identity's next task and
+                    # remember whether this End asked for the login to be saved (done at release).
+                    service.hold_identity_instance(
+                        project_id, payload["instanceId"], payload["expectedUseGeneration"],
+                        batch_id=payload.get("batchId"), retain=wants_retain,
+                    )
+                elif payload["instanceId"]:
                     current = service.environments.get_instance(project_id, payload["instanceId"])
                     service.close_instance(project_id, payload["instanceId"], current.environment_id)
                 record("completed")

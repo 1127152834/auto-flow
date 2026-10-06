@@ -19,8 +19,9 @@ def test_studio_backend_history_has_one_merged_head(tmp_path: Path) -> None:
     scripts = ScriptDirectory.from_config(_config(tmp_path / "heads.sqlite3"))
 
     assert scripts.get_heads() == ["rm4_android_ai_tests"]
-    assert scripts.get_revision("rm4_android_ai_tests").down_revision == "rm4_record_identity"
+    assert scripts.get_revision("rm4_android_ai_tests").down_revision == "rm4_instance_identity"
     assert scripts.get_revision("rm4_record_identity").down_revision == "rm4_identities"
+    assert scripts.get_revision("rm4_instance_identity").down_revision == "rm4_record_identity"
     assert scripts.get_revision("rm4_identities").down_revision == "rm3_environment_cache"
     assert scripts.get_revision("rm3_environment_cache").down_revision == "rm3_claim_indexes"
     assert scripts.get_revision("rm3_claim_indexes").down_revision == "rm2_workflow_reuse"
@@ -177,3 +178,16 @@ def test_integrated_workspace_history_is_recognized_and_preserved(
         assert connection.execute(
             "SELECT name FROM sqlite_master WHERE type='table' AND name='android_operations'"
         ).fetchone()
+
+
+def test_instance_identity_migration_adds_the_columns_and_the_live_identity_index(tmp_path):
+    """Remediation M4 S8-1: an existing database gets identity_id, retain_on_release and the partial unique index."""
+    database = tmp_path / "instances.sqlite3"
+    database_session.migrate_database(database)
+    with sqlite3.connect(database) as connection:
+        columns = {row[1]: row for row in connection.execute("PRAGMA table_info(project_environment_instances)")}
+        assert "identity_id" in columns and "held_batch_id" in columns and columns["retain_on_release"][3] == 1 and columns["retain_on_release"][4] == "0"
+        index = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE name = 'uq_project_environment_instances_live_identity'"
+        ).fetchone()
+        assert index is not None and "UNIQUE" in index[0] and "NOT IN ('cleaned', 'retained_unsaved')" in index[0]

@@ -58,7 +58,7 @@ const states = [
   { value: 'deleting', label: '删除中' },
 ]
 const sources: Record<string, string> = { newFromProfile: '按浏览器配置新建', fixedEnvironment: '固定持久环境', inputEnvironment: '使用记录关联环境' }
-const instanceStates: Record<string, string> = { reserved: '已预约', starting: '启动中', active: '自动运行', closing: '停止中', saving: '保存中', cleaning: '清理中', retained_unsaved: '待处理保存' }
+const instanceStates: Record<string, string> = { reserved: '已预约', starting: '启动中', active: '自动运行', closing: '停止中', saving: '保存中', cleaning: '清理中', retained_unsaved: '待处理保存', identity_held: '账号保留中' }
 const instanceTones: Record<string, string> = {
   active: 'border-sage/40 bg-sage-soft text-sage-strong',
   saving: 'border-clay/30 bg-clay-soft text-clay',
@@ -89,7 +89,7 @@ function Workspace({ workspaceKey, instanceId, projectId, project, client, disab
     enabled: !disabled,
     refetchInterval: 4000,
   })
-  const liveStates = new Set(['reserved', 'starting', 'active', 'closing', 'saving', 'cleaning', 'retained_unsaved'])
+  const liveStates = new Set(['reserved', 'starting', 'active', 'closing', 'saving', 'cleaning', 'retained_unsaved', 'identity_held'])
   const runningItems = (running.data?.items ?? []).filter(item => liveStates.has(item.state))
   const manual = useQuery({
     queryKey: [...prefix, 'manual'],

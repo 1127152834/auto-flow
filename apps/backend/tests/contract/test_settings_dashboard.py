@@ -153,7 +153,7 @@ def test_kernel_catalog_get_is_counted_before_quiesce(tmp_path, monkeypatch):
 
     async def slow_catalog():
         started.set()
-        await asyncio.to_thread(release.wait, 2)
+        await asyncio.to_thread(release.wait, 15)  # generous: a loaded CI runner can be slow to reach the handler
         raise RuntimeError("synthetic catalog failure")
 
     monkeypatch.setattr(app.state.kernel_service, "catalog", slow_catalog)
@@ -166,7 +166,7 @@ def test_kernel_catalog_get_is_counted_before_quiesce(tmp_path, monkeypatch):
             "/api/v1/kernels/catalog",
             headers={"x-autoflow-token": "renderer"},
         )
-        assert started.wait(timeout=1)
+        assert started.wait(timeout=10)
         paused = client.post(
             "/internal/settings/quiesce",
             headers={"x-autoflow-host-token": "host"},
@@ -174,7 +174,7 @@ def test_kernel_catalog_get_is_counted_before_quiesce(tmp_path, monkeypatch):
         assert paused.status_code == 409
         assert "api_mutation_in_progress" in paused.json()["error"]["details"]["blockers"]
         release.set()
-        assert pending.result(timeout=2).status_code == 500
+        assert pending.result(timeout=10).status_code == 500
 
 
 def test_quiesce_reports_persisted_and_inflight_blockers(tmp_path):

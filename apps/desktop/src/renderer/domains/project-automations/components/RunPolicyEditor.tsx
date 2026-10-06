@@ -15,9 +15,21 @@ export type RunPolicyEditorProps = {
   onDraftStateChange?(state: DraftState): void
   /** Remediation M1 R1-11: machine-wide running-browser limit, when known. */
   machineLimit?: number | null
-  /** Browser reuse needs a browser created from a profile; saved environments keep their own. */
-  freshBrowser?: boolean
+  /** Which environment source the automation uses; it decides which browser sessions can be offered. */
+  environmentSource?: string
 }
+
+const sessionOptions = (source: string) => [
+  { value: 'perTask', label: '每个任务使用独立浏览器', disabled: false },
+  { value: 'pool', label: '任务之间复用浏览器（不登录的采集）', disabled: source !== 'newFromProfile' },
+  { value: 'perIdentity', label: '同一账号共用浏览器并保留登录状态', disabled: source !== 'inputIdentity' },
+]
+
+const sessionHint = (mode: string, source: string) => mode === 'pool'
+  ? '适合不需要登录的采集：浏览器只启动一次，每个任务仍使用全新的隔离页面，互不共享 Cookie 和缓存。流程会保存环境或需要人工处理时不能开启。'
+  : mode === 'perIdentity'
+    ? '同一账号的任务共用一个浏览器目录并保留登录状态；账号凭据和数据变量不会带到下一个任务；登录状态在空闲一段时间或批次结束后保存一次。流程需要人工处理或节点自带浏览器环境时不能开启。'
+    : source === 'newFromProfile' || source === 'inputIdentity' ? '每个任务启动自己的浏览器，互不影响。' : '使用已保存的登录环境时，每个任务都要用自己的浏览器。'
 
 const claimModeOptions = [
   { value: 'unprocessed', label: '只处理还没处理过的数据', disabled: false },
@@ -25,7 +37,7 @@ const claimModeOptions = [
   { value: 'retryFailed', label: '只重试失败的数据', disabled: false },
 ]
 
-export function RunPolicyEditor({ value, onChange, dataBatch = false, disabled = false, errors = {}, resetKey, onDraftStateChange, machineLimit, freshBrowser = true }: RunPolicyEditorProps) {
+export function RunPolicyEditor({ value, onChange, dataBatch = false, disabled = false, errors = {}, resetKey, onDraftStateChange, machineLimit, environmentSource = 'newFromProfile' }: RunPolicyEditorProps) {
   const [maxTasksDraft, setMaxTasksDraft] = useState(String(value.maxTasks ?? ''))
   const [timeoutDraft, setTimeoutDraft] = useState(String(value.automaticExecutionTimeoutSeconds / 60))
   const pendingMaxTasks = useRef<number | undefined>(undefined), pendingTimeout = useRef<number | undefined>(undefined)
@@ -108,10 +120,9 @@ export function RunPolicyEditor({ value, onChange, dataBatch = false, disabled =
       <Switch aria-label="任务失败后继续下一个任务" checked={value.continueAfterFailure} disabled={disabled} onCheckedChange={continueAfterFailure => onChange({ ...value, continueAfterFailure })}/>
       任务失败后继续下一个任务</span>
     </label> : null}
-    <label className="grid gap-2 text-sm md:grid-cols-[11rem_minmax(0,1fr)] md:items-start [&>:not(:first-child)]:md:col-start-2"><span className="pt-2 font-medium">浏览器会话</span><span className="flex items-center gap-3">
-      <Switch aria-label="任务之间复用浏览器" checked={value.sessionMode === 'pool'} disabled={disabled || (!freshBrowser && value.sessionMode !== 'pool')} onCheckedChange={on => onChange({ ...value, sessionMode: on ? 'pool' : 'perTask' })}/>
-      任务之间复用浏览器</span>
-      {errors.sessionMode ? <span role="alert" className="text-xs text-danger">{errors.sessionMode}</span> : <span className="text-xs text-muted">{freshBrowser ? '适合不需要登录的采集：浏览器只启动一次，每个任务仍使用全新的隔离页面，互不共享 Cookie 和缓存。流程会保存环境或需要人工处理时不能开启。' : '使用已保存的登录环境时，每个任务都要用自己的浏览器。'}</span>}
+    <label className="grid gap-2 text-sm md:grid-cols-[11rem_minmax(0,1fr)] md:items-start [&>:not(:first-child)]:md:col-start-2"><span className="pt-2 font-medium">浏览器会话</span>
+      <Select className="max-w-96" aria-label="浏览器会话" value={value.sessionMode ?? 'perTask'} clearable={false} disabled={disabled} options={sessionOptions(environmentSource)} onValueChange={mode => { if (mode) onChange({ ...value, sessionMode: mode as NonNullable<RunPolicy['sessionMode']> }) }}/>
+      {errors.sessionMode ? <span role="alert" className="text-xs text-danger">{errors.sessionMode}</span> : <span className="text-xs text-muted">{sessionHint(value.sessionMode ?? 'perTask', environmentSource)}</span>}
     </label>
     <label className="grid gap-2 text-sm md:grid-cols-[11rem_minmax(0,1fr)] md:items-start [&>:not(:first-child)]:md:col-start-2"><span className="pt-2 font-medium">单任务超时 <span className="text-danger">*</span></span>
       <span className="flex max-w-72 items-center gap-2"><Input type="text" inputMode="decimal" aria-label="单任务超时（分钟）" value={timeoutDraft} disabled={disabled} aria-invalid={Boolean(timeoutError)} aria-describedby={timeoutError ? timeoutErrorId : undefined} onChange={event => {

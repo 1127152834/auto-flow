@@ -21,6 +21,7 @@ from autoflow.domain.environments.models import (
     ResolvedEnvironmentSource,
 )
 from autoflow.domain.environments.rules import (
+    IDENTITY_RELEASED_STATES,
     LIVE_INSTANCE_STATES,
     MANUAL_TERMINAL,
     check_live_capacity,
@@ -331,6 +332,10 @@ class SqlAlchemyEnvironments:
         occupancy: EnvironmentOccupancy | None, *, max_live_instances: int | None = None,
     ) -> EnvironmentInstance:
         self._project(session, record.project_id)
+        if record.identity_id is not None:  # before anything is added: the query may autoflush
+            taken = live_identity_instances(session, identity_ids=[record.identity_id])
+            if record.identity_id in taken:
+                raise _identity_busy(record.identity_id, taken[record.identity_id])
         if max_live_instances is not None:
             count = session.scalar(select(func.count()).select_from(
                 ProjectEnvironmentInstanceRow
@@ -357,7 +362,13 @@ class SqlAlchemyEnvironments:
                     )
                 )
         session.add(_instance_row(record))
-        session.flush()
+        try:
+            session.flush()
+        except IntegrityError as error:  # lost a race for the identity to another transaction
+            if record.identity_id is None or "identity" not in str(error.orig):
+                raise
+            taken = live_identity_instances(session, identity_ids=[record.identity_id])
+            raise _identity_busy(record.identity_id, taken.get(record.identity_id)) from error
         return record
 
     def resolve_source_in_session(
@@ -476,6 +487,163 @@ class SqlAlchemyEnvironments:
                 if not protected:
                     result.append(_instance(row))
             return result
+
+    def hold_identity_instance(
+        self, project_id: str, instance_id: str, expected_use_generation: int, *, batch_id: str | None, retain: bool,
+    ) -> EnvironmentInstance:
+        """Keep a quiet work copy for its identity's next task (remediation M4 S8-2).
+
+        Only a ``closed`` instance - its browser confirmed closed - may be held; the run no longer owns it,
+        so the earlier task's run id is cleared. Repeating the call (a lost End response) is harmless.
+        """
+        with self._session_factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            row = session.get(ProjectEnvironmentInstanceRow, instance_id)
+            if (
+                row is None or row.project_id != project_id or row.identity_id is None
+                or row.instance_use_generation != expected_use_generation
+                or row.state not in {"closed", "identity_held"}
+            ):
+                raise environment_error("INSTANCE_OWNERSHIP_UNKNOWN", "环境实例归属不一致，无法为身份保留", 409)
+            if row.state == "closed":
+                row.state, row.active_run_id, row.held_batch_id = "identity_held", None, batch_id
+            row.retain_on_release = bool(row.retain_on_release or retain)
+            row.updated_at = datetime.now(UTC)
+            session.commit()
+            return _instance(row)
+
+    def reattach_identity_instance(
+        self, session: Session, record: EnvironmentInstance, *, batch_id: str | None,
+        max_live_instances: int | None, quiescent: Callable[[str], bool],
+    ) -> EnvironmentInstance | None:
+        """Give the identity's held copy to its next task, or None when it holds none.
+
+        Runs inside the claim transaction. The copy is taken as it is - never restored - after checking that
+        it is the same environment generation, that its browser is really gone, and that a live slot is free.
+        """
+        if record.identity_id is None:
+            return None
+        row = session.scalar(select(ProjectEnvironmentInstanceRow).where(
+            ProjectEnvironmentInstanceRow.identity_id == record.identity_id,
+            ProjectEnvironmentInstanceRow.state == "identity_held",
+            ProjectEnvironmentInstanceRow.project_id == record.project_id,
+        ))
+        if row is None:
+            return None
+        if batch_id is None or row.held_batch_id != batch_id:
+            raise _identity_busy(record.identity_id, row.id)
+        if row.environment_id != record.environment_id or row.source_content_generation != record.source_content_generation:
+            raise _identity_busy(record.identity_id, row.id)  # held for another environment generation: wait for release
+        if max_live_instances is not None:
+            live = session.scalar(select(func.count()).select_from(ProjectEnvironmentInstanceRow).where(
+                ProjectEnvironmentInstanceRow.state.in_(tuple(LIVE_INSTANCE_STATES))))
+            check_live_capacity(int(live or 0), max_live_instances)
+        if not quiescent(row.id):
+            raise environment_error("INSTANCE_NOT_QUIESCENT", "身份保留的浏览器目录仍被占用，需核验后再用", 409)
+        row.state, row.held_batch_id = "active", None
+        row.active_task_id, row.active_run_id = record.active_task_id, record.active_run_id
+        row.instance_use_generation += 1
+        row.profile_id, row.source = record.profile_id, record.source
+        row.identity_package = record.identity_package or {}
+        row.updated_at = datetime.now(UTC)
+        if row.environment_id is not None:
+            occupancy = session.get(ProjectEnvironmentOccupancyRow, row.environment_id)
+            if occupancy is None or occupancy.instance_id != row.id:
+                raise environment_error("INSTANCE_OWNERSHIP_UNKNOWN", "身份保留实例的环境占用已失效", 409)
+            occupancy.holder_kind = "task"
+            occupancy.holder_id = cast(str, record.active_task_id)  # a re-attached copy always has its task
+        session.flush()
+        return _instance(row)
+
+    def identity_return_batch(self, instance_id: str) -> str | None:
+        """The batch a finished run's copy goes back to its identity in, or None when it must be discarded.
+
+        Only a perIdentity run that ended ``failed`` or ``cancelled`` qualifies: the worker confirmed its own
+        clean-up, so the copy was closed cleanly. ``timed_out``/``interrupted`` rest on inference or a revoked
+        grant and are never given back.
+        """
+        with self._session_factory() as session:
+            row = session.get(ProjectEnvironmentInstanceRow, instance_id)
+            if row is None or row.identity_id is None or row.active_run_id is None or row.active_task_id is None:
+                return None
+            run = session.get(WorkflowRunRow, row.active_run_id)
+            task = session.get(ProjectTaskRow, row.active_task_id)
+            if run is None or task is None or run.status not in {"failed", "cancelled"}:
+                return None
+            if (run.resource_request or {}).get("sessionMode") != "perIdentity":
+                return None
+            return task.batch_id
+
+    def begin_identity_release(self, project_id: str, instance_id: str) -> EnvironmentInstance | None:
+        """Claim an identity's held copy for release, or continue one that was interrupted.
+
+        Returns None when the instance is not an identity's release candidate - a task has taken it, it was
+        already cleaned, or it is a save a person started. A held copy moves to ``closing``; one found in
+        ``closing``/``closed``/``saving`` (a release that did not finish) is returned as it is.
+        """
+        with self._session_factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            row = session.get(ProjectEnvironmentInstanceRow, instance_id)
+            if row is None or row.project_id != project_id or row.identity_id is None or row.active_run_id is not None:
+                return None
+            if row.state == "identity_held":
+                row.state, row.updated_at = "closing", datetime.now(UTC)
+            elif row.state == "saving":
+                key = identity_release_key(row.id, row.instance_use_generation)
+                unfinished = session.scalar(select(ProjectOperationRow.id).where(
+                    ProjectOperationRow.idempotency_key == key, ProjectOperationRow.status.in_(("accepted", "running", "reconciling")),
+                ))
+                if unfinished is None:
+                    return None
+            elif row.state not in {"closing", "closed"}:
+                return None
+            session.commit()
+            return _instance(row)
+
+    def due_identity_instances(self, *, idle_seconds: float, limit: int, now: datetime | None = None) -> builtins.list[EnvironmentInstance]:
+        """Held copies to release: idle too long, kept by a batch that has ended, or a release to finish."""
+        now = now or datetime.now(UTC)
+        with self._session_factory() as session:
+            ended = select(ProjectBatchRow.id).where(ProjectBatchRow.status.in_(("completed", "stopped", "failed", "interrupted")))
+            rows = session.scalars(select(ProjectEnvironmentInstanceRow).where(
+                ProjectEnvironmentInstanceRow.identity_id.is_not(None),
+                ProjectEnvironmentInstanceRow.active_run_id.is_(None),
+                or_(
+                    (ProjectEnvironmentInstanceRow.state == "identity_held") & or_(
+                        ProjectEnvironmentInstanceRow.updated_at <= now - timedelta(seconds=idle_seconds),  # <=: an idle limit of 0 must hold on a coarse clock
+                        ProjectEnvironmentInstanceRow.held_batch_id.in_(ended),
+                    ),
+                    ProjectEnvironmentInstanceRow.state.in_(("closing", "closed", "saving")),
+                ),
+            ).order_by(ProjectEnvironmentInstanceRow.updated_at, ProjectEnvironmentInstanceRow.id))
+            due = []
+            for row in rows:
+                if row.state == "saving":
+                    key = identity_release_key(row.id, row.instance_use_generation)
+                    if session.scalar(select(ProjectOperationRow.id).where(
+                        ProjectOperationRow.idempotency_key == key, ProjectOperationRow.status.in_(("accepted", "running", "reconciling")),
+                    )) is None:
+                        continue
+                due.append(_instance(row))
+                if len(due) >= limit:
+                    break
+            return due
+
+    def identity_save_name(self, identity_id: str) -> str:
+        """Name for the environment an identity's login is first saved as; the id suffix keeps it unique."""
+        from autoflow.infrastructure.database.identity_models import IdentityRow
+
+        with self._session_factory() as session:
+            identity = session.get(IdentityRow, identity_id)
+            name = identity.name if identity is not None else "身份"
+        return f"{name[:29]}·{identity_id[:6]}"
+
+    def give_identity_login(self, identity_id: str, environment_id: str) -> None:
+        """Point an identity at its first saved login (never replaces one it already has)."""
+        with self._session_factory() as session:
+            session.execute(text("BEGIN IMMEDIATE"))
+            _give_identity_its_login(session, identity_id, environment_id, datetime.now(UTC))
+            session.commit()
 
     def set_instance_state(self, instance_id: str, state: str) -> EnvironmentInstance:
         with self._session_factory() as session:
@@ -1444,6 +1612,45 @@ def _environment(row: ProjectEnvironmentRow) -> PersistentEnvironment:
     )
 
 
+def live_identity_instances(
+    session: Session, *, project_id: str | None = None, identity_ids: builtins.list[str] | None = None,
+    reusable_in_batch: str | None = None,
+) -> dict[str, str]:
+    """Identity id -> the unreleased instance it works in (remediation M4 S8-1, R4-06).
+
+    An instance the identity merely *holds* between tasks (S8-2) is not counted for the batch that
+    holds it: that batch's next task re-attaches it.
+    """
+    query = select(
+        ProjectEnvironmentInstanceRow.identity_id, ProjectEnvironmentInstanceRow.id,
+        ProjectEnvironmentInstanceRow.state, ProjectEnvironmentInstanceRow.held_batch_id,
+    ).where(
+        ProjectEnvironmentInstanceRow.identity_id.is_not(None),
+        ProjectEnvironmentInstanceRow.state.not_in(tuple(IDENTITY_RELEASED_STATES)),
+    )
+    if project_id is not None:
+        query = query.where(ProjectEnvironmentInstanceRow.project_id == project_id)
+    if identity_ids is not None:
+        query = query.where(ProjectEnvironmentInstanceRow.identity_id.in_(identity_ids))
+    return {
+        str(identity): instance
+        for identity, instance, state, held_batch in session.execute(query)
+        if not (state == "identity_held" and reusable_in_batch is not None and held_batch == reusable_in_batch)
+    }
+
+
+def identity_release_key(instance_id: str, use_generation: int) -> str:
+    """Idempotency key of the one save that releases an identity's instance; a retry replays it."""
+    return f"identity-release:{instance_id}:{use_generation}"
+
+
+def _identity_busy(identity_id: str, instance_id: str | None) -> ProjectError:
+    return environment_error(
+        "ENVIRONMENT_BUSY", "该身份正在被另一个任务使用", 423,
+        {"holderKind": "identity", "holderId": identity_id, "instanceId": instance_id, "retryable": True},
+    )
+
+
 def _instance(row: ProjectEnvironmentInstanceRow) -> EnvironmentInstance:
     return EnvironmentInstance(
         row.id,
@@ -1460,6 +1667,9 @@ def _instance(row: ProjectEnvironmentInstanceRow) -> EnvironmentInstance:
         _aware(row.created_at),
         _aware(row.updated_at),
         row.identity_package or None,
+        row.identity_id,
+        bool(row.retain_on_release),
+        row.held_batch_id,
     )
 
 
@@ -1477,6 +1687,9 @@ def _instance_row(record: EnvironmentInstance) -> ProjectEnvironmentInstanceRow:
         maintenance_operation_id=record.maintenance_operation_id,
         profile_id=record.profile_id,
         identity_package=record.identity_package or {},
+        identity_id=record.identity_id,
+        retain_on_release=record.retain_on_release,
+        held_batch_id=record.held_batch_id,
         created_at=record.created_at,
         updated_at=record.updated_at,
     )

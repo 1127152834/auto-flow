@@ -46,6 +46,8 @@ LIVE_INSTANCE_STATES = frozenset(
     }
 )
 OPENABLE_INSTANCE_STATES = frozenset({"reserved", "starting", "active", "waiting_manual"})
+# An identity's instance stays its own until the work copy is gone or handed to a person (S8-1).
+IDENTITY_RELEASED_STATES = frozenset({"cleaned", "retained_unsaved"})
 
 
 def environment_error(
