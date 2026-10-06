@@ -50,6 +50,11 @@ export async function checkBusinessCombinations(baseUrl, token, browserVersion) 
     const accepted = await api(`${prefix}/automations/${automation.automationId}/batches`, { expectedAutomationRevision: automation.managementRevision, parameters: {}, maxTasks: policy.maxTasks, concurrency: policy.concurrency })
     return accepted.operation.result.batch.batchId
   }
+  async function blockedBy(flow, inputPlan = { inputs: [] }) {
+    const automation = await api(prefix + '/automations', { name: randomUUID(), description: '', inputPlan, parameterSchema: [], environmentPolicy: environment, runPolicy })
+    await api(`/api/workflows/${automation.workflowId}`, { ...flow, id: automation.workflowId, projectId: project.projectId, expectedRevision: 1, clientRequestId: randomUUID() }, 'PUT')
+    return api(`${prefix}/automations/${automation.automationId}/validation`)
+  }
   async function wait(check, label) {
     for (let i = 0; i < 480; i++) {
       const result = await check()
@@ -97,6 +102,7 @@ export async function checkBusinessCombinations(baseUrl, token, browserVersion) 
       const beforePerson = (await records(person)).items[0]
       assert.ok(beforePerson.currentEnvironmentId, 'person must begin with an existing environment association')
       const firstInputs = { inputs: [input(person, '人员', verified.statusId), input(email, '邮箱', pending.statusId)] }
+      firstInputs.processingInputId = firstInputs.inputs[1].inputId // the consumed email row is processed one by one; the person row is shared
       const registration = await workflow('共享人员注册新账号', [
         readInputs(), node('login', 'open_page', { url: site + '/login' }),
         data('register', email, 'setRecordStatus', { recordRef: "{frozen[1]['recordRef']}", statusId: registered.statusId, expectedStatusRevision: "{frozen[1]['statusRevision']}", expectedContentRevisionWhenDerived: "{frozen[1]['contentRevision']}" }),
@@ -121,7 +127,7 @@ export async function checkBusinessCombinations(baseUrl, token, browserVersion) 
       personInput.mode = 'related'
       personInput.relation = { type: 'fieldEquals', sourceInputId: accountInput.inputId, sourceFieldRef: fieldRef(account), targetFieldRef: fieldRef(person) }
       const restore = await workflow('按账号环境和人员编号继续', [readInputs(), node('open', 'open_page', { url: site + '/account' }), node('read', 'get_element_info', { selector: '#auth', attribute: 'text', variableName: 'login' }), end()])
-      const restoredTask = await completed(await start(restore, { inputs: [accountInput, personInput] }, { source: 'inputEnvironment', inputId: accountInput.inputId, proxyOverride: { mode: 'none' }, modelProviderId: null }))
+      const restoredTask = await completed(await start(restore, { inputs: [accountInput, personInput], processingInputId: accountInput.inputId }, { source: 'inputEnvironment', inputId: accountInput.inputId, proxyOverride: { mode: 'none' }, modelProviderId: null }))
       const detail = await api(`${prefix}/tasks/${restoredTask.task.taskId}`)
       assert.deepEqual(detail.inputSnapshot.inputs.map(item => item.recordRef), [a1.ref, p1.ref])
       assert.equal(detail.run.resourceRequest.profileId, profile.id, 'restore must freeze the selected environment profile')
@@ -198,11 +204,11 @@ export async function checkBusinessCombinations(baseUrl, token, browserVersion) 
   assert.equal((await api(`${prefix}/manual-items/${cancelledManual.manualItemId}`)).status, 'cancelled')
   assert.equal((await api(`${prefix}/tasks/${checkpoint.taskId}`)).run.status, 'waiting_manual')
   assert.equal((await records(target)).total, 0, 'cancelled Run must not execute later write')
-  const addedFieldId = randomUUID()
-  const newer = await start(await workflow('T1 运行中加列增行并写状态', [
+  // M2B: a run no longer changes table structure. The column is added from the data page while T2 is
+  // still suspended on the contract it prepared before the column existed.
+  const added = (await api(`${prefix}/tables/${source.tableId}/fields`, { definition: { key: 'receipt', name: '回执', type: 'string', required: false, validation: {} }, sourceColumnPolicy: 'localOnly', expectedTableRevision: 3 })).field
+  const newer = await start(await workflow('T1 运行中增行并写状态', [
     node('open', 'open_page', { url: 'about:blank' }),
-    data('ensure', source, 'ensureField', { tableId: source.tableId, datasetGeneration: source.datasetGeneration, fieldId: addedFieldId, definition: { key: 'receipt', name: '回执', type: 'string', required: false, validation: {} }, hasDefault: false, default: null, expectedTableRevision: 3 }),
-    data('reuse', source, 'ensureField', { tableId: source.tableId, datasetGeneration: source.datasetGeneration, fieldId: randomUUID(), definition: { key: 'receipt', name: '回执', type: 'string', required: false, validation: {} }, hasDefault: false, default: null, expectedTableRevision: 4 }),
     data('create', target, 'createRecord', { tableId: target.tableId, datasetGeneration: target.datasetGeneration, values: { [target.fieldId]: 'created-by-T1' } }),
     query('row-1'), update('new-task-written'),
     data('status', source, 'setRecordStatus', { recordRef: "{query['items'][0]['ref']}", statusId: status.statusId, expectedStatusRevision: "{query['items'][0]['statusRevision']}", expectedContentRevisionWhenDerived: "{update['contentRevision']}" }), end(),
@@ -216,27 +222,20 @@ export async function checkBusinessCombinations(baseUrl, token, browserVersion) 
   assert.equal(t2WaitingAfter.run.status, 'waiting_manual', 'T1 must finish while old-contract T2 is still suspended')
   assert.equal((await api(`${prefix}/manual-items/${checkpoint.manualItemId}`)).status, 'waiting')
   assert.notEqual(t1.task.runId, t2WaitingAfter.run.runId)
-  const t1Outputs = (await api(`${prefix}/tasks/${t1.task.taskId}/outputs`)).items
-  const ensured = t1Outputs.find(output => output.name === 'ensure').value
-  const reused = t1Outputs.find(output => output.name === 'reuse').value
-  assert.equal(ensured.created, true)
-  assert.equal(reused.created, false)
-  assert.deepEqual(reused.field.ref, ensured.field.ref)
-  assert.equal(reused.tableRevision, ensured.tableRevision, 'identical ensure must not advance schema revision')
-  const beforeConflict = { fields: await api(`${prefix}/tables/${source.tableId}/fields`), rows: await records(source) }
-  const conflicting = await completed(await start(await workflow('异型同键不得覆盖回执字段', [
+  const beforeBlocked = { fields: await api(`${prefix}/tables/${source.tableId}/fields`), rows: await records(source) }
+  const blocked = await blockedBy(await workflow('旧的运行中加列节点被拦截', [
     node('open', 'open_page', { url: 'about:blank' }),
-    data('conflict', source, 'ensureField', { tableId: source.tableId, datasetGeneration: source.datasetGeneration, fieldId: randomUUID(), definition: { key: 'receipt', name: '回执', type: 'number', required: false, validation: {} }, hasDefault: false, default: null, expectedTableRevision: ensured.tableRevision }), end(),
-  ])), 'failed')
-  assert.equal(conflicting.attempts.find(attempt => attempt.nodeId === 'conflict').error.code, 'FIELD_DEFINITION_CONFLICT')
-  assert.equal(conflicting.attempts.some(attempt => attempt.nodeId === 'end'), false)
-  assert.deepEqual(await api(`${prefix}/tables/${source.tableId}/fields`), beforeConflict.fields)
-  assert.deepEqual(await records(source), beforeConflict.rows)
+    data('ensure', source, 'ensureField', { tableId: source.tableId, datasetGeneration: source.datasetGeneration, fieldId: randomUUID(), definition: { key: 'other', name: '其他', type: 'string', required: false, validation: {} }, hasDefault: false, default: null, expectedTableRevision: 4 }), end(),
+  ]))
+  assert.equal(blocked.runnable, false)
+  assert.ok(blocked.issues.some(issue => issue.code === 'PROJECT_STRUCTURE_OPERATION_REMOVED'), JSON.stringify(blocked.issues))
+  assert.deepEqual(await api(`${prefix}/tables/${source.tableId}/fields`), beforeBlocked.fields)
+  assert.deepEqual(await records(source), beforeBlocked.rows)
   assert.equal((await api(`${prefix}/tasks/${checkpoint.taskId}`)).run.status, 'waiting_manual')
   await api(`${prefix}/manual-items/${checkpoint.manualItemId}/resume`, { checkpointRevision: checkpoint.checkpointRevision, expectedStatusRevision: checkpoint.statusRevision })
   const t2 = await completed(old)
   const fields = await api(`${prefix}/tables/${source.tableId}/fields`)
-  assert.equal(fields.items.filter(field => field.ref.fieldId === addedFieldId && field.key === 'receipt').length, 1)
+  assert.equal(fields.items.filter(field => field.ref.fieldId === added.ref.fieldId && field.key === 'receipt').length, 1)
   assert.equal(fields.items.filter(field => field.key === 'receipt').length, 1)
   const created = await records(target)
   assert.equal(created.total, 1, 'createRecord must have exactly one effect')
@@ -252,9 +251,9 @@ export async function checkBusinessCombinations(baseUrl, token, browserVersion) 
     projectId: project.projectId,
     sharedPersonChain: await sharedPersonChain(),
     concurrentRecordClaims: await concurrentRecordClaims(),
-    checks: ['Cancelling a second live Run preserves T2 checkpoint/browser and executes no cancelled write', 'T1 started and completed while old-contract T2 remained waiting_manual in its original Run', 'T1 ensured a persistent field, created exactly one second-table record, queried/updated content and explicitly set status before T2 resumed', 'T2 then queried and wrote using its prepared old field contract; manual node executed once'],
+    checks: ['Cancelling a second live Run preserves T2 checkpoint/browser and executes no cancelled write', 'T1 started and completed while old-contract T2 remained waiting_manual in its original Run', 'T1 created exactly one second-table record, queried/updated content and explicitly set status after a data-page column was added and before T2 resumed', 'T2 then queried and wrote using its prepared old field contract; manual node executed once'],
     taskIds: [t1.task.taskId, t2.task.taskId],
-    schemaEnsure: { status: 'passed', createdFieldRef: ensured.field.ref, reusedFieldRef: reused.field.ref, tableRevision: ensured.tableRevision, conflictingTaskId: conflicting.task.taskId, conflictCode: 'FIELD_DEFINITION_CONFLICT', checks: ['same-definition ensure returns the original field ID without another column or schema revision', 'another real Task requesting the same key with a different type fails without changing fields or values', 'T2 remains waiting in its original Run through both ensure and conflict, then writes its original field'], limits: ['writing the newly returned field is not asserted by this scenario'] },
+    structureEdit: { status: 'passed', createdFieldRef: added.ref, blockedCode: 'PROJECT_STRUCTURE_OPERATION_REMOVED', checks: ['the column is added from the data page while T2 stays waiting in its original Run', 'a workflow that still changes table structure at run time is refused by validation and changes no field or value', 'T2 then writes using the field contract it prepared'], limits: ['writing the newly added field is not asserted by this scenario'] },
     concurrency: { status: 'passed', overlapStartedAt, t1CompletedAt, waitingRunId: t2WaitingAfter.run.runId, completedRunId: t1.task.runId, waitingStateBefore: t2WaitingBefore.run.status, waitingStateAfter: t2WaitingAfter.run.status },
     remaining: ['Sheets structure/value phases require authorized live resources', 'Excel source byte preservation belongs to separate native import/export evidence', 'Conflict and partial-success combinations remain separate evidence'],
   }
