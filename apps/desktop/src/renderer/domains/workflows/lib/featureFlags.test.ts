@@ -65,4 +65,14 @@ describe('featureFlags', () => {
     })
     expect(() => setFlag('newStudioLayout', true)).not.toThrow()
   })
+
+  it('tagInput 默认关闭，三个来源按 URL > 环境变量 > localStorage 生效', () => {
+    expect(isEnabled('tagInput')).toBe(false)
+    localStorage.setItem('autoflow.flags.tagInput', 'true')
+    expect(isEnabled('tagInput')).toBe(true)
+    vi.stubEnv('VITE_FLAG_TAG_INPUT', '0')
+    expect(isEnabled('tagInput')).toBe(false)
+    window.history.replaceState(null, '', '/?flag.tagInput=1')
+    expect(isEnabled('tagInput')).toBe(true)
+  })
 })

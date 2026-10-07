@@ -4,6 +4,7 @@
  */
 const FLAGS = {
   newStudioLayout: { storageKey: 'autoflow.flags.newStudioLayout', env: 'VITE_FLAG_NEW_STUDIO_LAYOUT' },
+  tagInput: { storageKey: 'autoflow.flags.tagInput', env: 'VITE_FLAG_TAG_INPUT' },
 } as const
 
 export type FlagName = keyof typeof FLAGS
