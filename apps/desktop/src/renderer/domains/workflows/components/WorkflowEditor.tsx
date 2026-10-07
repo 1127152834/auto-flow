@@ -25,7 +25,7 @@ import { importDroppedWorkflows } from '../lib/droppedWorkflows'
 import { useConfirm } from './controls/confirm-dialog'
 import { usePasswordPrompt } from './controls/password-prompt'
 import { ModuleNode } from './ModuleNode'
-import { QuickModulePicker } from './QuickModulePicker'
+import { QuickModulePicker, shouldOpenQuickPickerOnSlash } from './QuickModulePicker'
 import { getAllAvailableModules } from './ModuleSidebar'
 import { pinyinMatch } from '../lib/pinyin'
 import { useModuleStatsStore } from '../hooks/stores/moduleStatsStore'
@@ -1313,13 +1313,13 @@ export function WorkflowEditor() {
     
     // 检测双击
     if (timeSinceLastClick < doubleClickThreshold) {
-      // 双击：唤出快速模块选择器（仅显示收藏）
+      // 双击：唤出快速添加面板（最近与常用置顶，全部模块可搜索）
       event.preventDefault()
       setQuickPickerPosition({
         x: event.clientX,
         y: event.clientY
       })
-      setQuickPickerFavoritesOnly(true) // 仅显示收藏
+      setQuickPickerFavoritesOnly(false)
       setShowQuickPicker(true)
       lastPaneClickTimeRef.current = 0 // 重置，避免三击触发
     } else {
@@ -1342,6 +1342,24 @@ export function WorkflowEditor() {
     setShowQuickPicker(true)
   }, [])
   
+  // "/" 键在画布上唤出快速添加面板（输入框/代码编辑器内不触发）
+  useEffect(() => {
+    const onSlash = (event: KeyboardEvent) => {
+      if (useLayoutStore.getState().editorViewMode === 'block') return
+      if (!shouldOpenQuickPickerOnSlash(event, { pickerOpen: showQuickPicker, canvasEl: reactFlowWrapper.current })) return
+      event.preventDefault()
+      const rect = reactFlowWrapper.current?.getBoundingClientRect()
+      setQuickPickerPosition({
+        x: rect ? rect.left + rect.width / 2 : window.innerWidth / 2,
+        y: rect ? rect.top + rect.height / 2 : window.innerHeight / 2,
+      })
+      setQuickPickerFavoritesOnly(false)
+      setShowQuickPicker(true)
+    }
+    window.addEventListener('keydown', onSlash)
+    return () => window.removeEventListener('keydown', onSlash)
+  }, [showQuickPicker])
+
   // 处理快速模块选择
   const { incrementUsage } = useModuleStatsStore()
   const handleQuickModuleSelect = useCallback((moduleType: ModuleType, customModuleId?: string) => {

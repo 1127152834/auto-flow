@@ -11,7 +11,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { X, Search, Star } from 'lucide-react'
 import { cn } from '../lib/utils'
-import { useModuleStatsStore } from '../hooks/stores/moduleStatsStore'
+import { useModuleStatsStore, QUICK_LIST_LIMIT } from '../hooks/stores/moduleStatsStore'
 import { moduleMatchesQuery } from '../lib/pinyin'
 import { moduleKeywords } from './ModuleSidebar'
 import type { ModuleType } from '../types/index'
@@ -32,6 +32,21 @@ interface QuickModulePickerProps {
   favoritesOnly?: boolean
 }
 
+/** "/" 键是否应唤出快速添加面板：画布上无输入焦点、无修饰键、面板未打开 */
+export function shouldOpenQuickPickerOnSlash(
+  event: Pick<KeyboardEvent, 'key' | 'ctrlKey' | 'metaKey' | 'altKey' | 'target' | 'defaultPrevented' | 'isComposing'>,
+  opts: { pickerOpen: boolean; canvasEl: HTMLElement | null },
+): boolean {
+  if (event.key !== '/' || opts.pickerOpen || event.defaultPrevented || event.isComposing) return false
+  if (event.ctrlKey || event.metaKey || event.altKey) return false
+  const target = event.target as HTMLElement | null
+  if (!target || typeof target.closest !== 'function') return false
+  if (target.isContentEditable || target.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])')) return false
+  if (target.closest('.monaco-editor, .cm-editor, [role="textbox"]')) return false
+  if (target.closest('[role="dialog"], [data-dialog-portal], [data-radix-popper-content-wrapper], .ai-assistant-panel')) return false
+  return target === document.body || (!!opts.canvasEl && opts.canvasEl.contains(target))
+}
+
 const PANEL_WIDTH = 480
 const PANEL_HEIGHT = 540
 
@@ -45,7 +60,8 @@ export function QuickModulePicker({
 }: QuickModulePickerProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
-  const { getStats, toggleFavorite, getSortedModules, stats } = useModuleStatsStore()
+  const listRef = useRef<HTMLDivElement>(null)
+  const { getStats, toggleFavorite, getSortedModules, getQuickList, stats } = useModuleStatsStore()
 
   // 重置搜索 + 自动聚焦
   useEffect(() => {
@@ -113,6 +129,26 @@ export function QuickModulePicker({
     return result
   }, [groupedByCategory, searchTerm, favoritesOnly, getStats, stats])
 
+  // 最近与常用：仅内置模块，空搜索时置顶
+  const quickModules = useMemo(() => {
+    if (favoritesOnly || searchTerm.trim()) return []
+    const builtin = availableModules.filter((m) => !m.isCustom)
+    const types = getQuickList(builtin.map((m) => m.type), QUICK_LIST_LIMIT)
+    return types.map((type) => builtin.find((m) => m.type === type)!)
+  }, [availableModules, favoritesOnly, searchTerm, getQuickList, stats])
+
+  // 方向键在搜索框与模块项之间移动焦点
+  const handleArrowNav = (e: React.KeyboardEvent) => {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
+    const items = Array.from(listRef.current?.querySelectorAll<HTMLElement>('[data-quick-item]') ?? [])
+    if (items.length === 0) return
+    const idx = items.indexOf(document.activeElement as HTMLElement)
+    const next = e.key === 'ArrowDown' ? idx + 1 : idx - 1
+    e.preventDefault()
+    if (next < 0) inputRef.current?.focus()
+    else items[Math.min(next, items.length - 1)].focus()
+  }
+
   // 计算位置（避开屏幕边缘）
   const positionStyle = useMemo(() => {
     if (!isOpen) return { display: 'none' as const }
@@ -133,6 +169,52 @@ export function QuickModulePicker({
       onSelectModule(module.type)
     }
     onClose()
+  }
+
+  const renderRow = (module: typeof availableModules[number], keyPrefix: string) => {
+    const moduleStats = getStats(module.type)
+    const Icon = module.icon
+    return (
+      <div
+        key={keyPrefix + module.type + (module.customModuleId || '')}
+        role="button"
+        data-quick-item
+        tabIndex={0}
+        onClick={() => handleModuleClick(module)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            // 事件来自行内的收藏按钮时交给按钮自己处理，避免误添加模块
+            if (e.target !== e.currentTarget) return
+            e.preventDefault()
+            handleModuleClick(module)
+          } else {
+            handleArrowNav(e)
+          }
+        }}
+        className="w-full flex items-center gap-2.5 px-2 h-8 rounded text-left hover:bg-[hsl(var(--brand-50))] group transition-colors has-hover-only cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.4)]"
+      >
+        <Icon className="w-4 h-4 text-[hsl(var(--muted-foreground))] flex-shrink-0 group-hover:text-[hsl(var(--brand-600))]" />
+        <span className="flex-1 text-[12.5px] text-[hsl(var(--foreground))] truncate">
+          {module.label}
+        </span>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            toggleFavorite(module.type)
+          }}
+          className={cn(
+            'p-1 rounded transition-colors flex-shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.4)] focus-visible:opacity-100',
+            moduleStats.isFavorite
+              ? 'text-[hsl(45_93%_47%)]'
+              : 'text-[hsl(var(--slate-300))] opacity-0 group-hover:opacity-100 hover:text-[hsl(45_93%_47%)]',
+          )}
+          title={moduleStats.isFavorite ? '取消收藏' : '收藏'}
+        >
+          <Star className={cn('w-3.5 h-3.5', moduleStats.isFavorite && 'fill-current')} />
+        </button>
+      </div>
+    )
   }
 
   if (!isOpen) return null
@@ -158,7 +240,7 @@ export function QuickModulePicker({
         {/* 头部 */}
         <div className="flex items-center justify-between px-4 h-10 border-b border-[hsl(var(--border))]">
           <h3 className="text-[13px] font-semibold text-[hsl(var(--foreground))]">
-            {favoritesOnly ? '收藏的模块' : '快速选择模块'}
+            {favoritesOnly ? '收藏的模块' : '快速添加模块'}
           </h3>
           <button
             onClick={onClose}
@@ -178,6 +260,7 @@ export function QuickModulePicker({
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleArrowNav}
               placeholder="搜索模块（支持拼音）"
               className="w-full h-8 pl-8 pr-3 text-[13px] border border-[hsl(var(--border))] rounded bg-[hsl(var(--card))] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))] focus:outline-none focus:border-[hsl(var(--brand-500))] focus:ring-2 focus:ring-[hsl(var(--brand-500)/0.18)]"
             />
@@ -185,7 +268,15 @@ export function QuickModulePicker({
         </div>
 
         {/* 模块列表 */}
-        <div className="flex-1 overflow-y-auto py-2">
+        <div ref={listRef} className="flex-1 overflow-y-auto py-2">
+          {quickModules.length > 0 && (
+            <section aria-label="最近与常用" className="px-2 pb-2">
+              <div className="text-[10.5px] font-semibold text-[hsl(var(--muted-foreground))] tracking-wider px-2 py-1">
+                最近与常用
+              </div>
+              <div>{quickModules.map((m) => renderRow(m, 'quick:'))}</div>
+            </section>
+          )}
           {filteredCategories.length === 0 ? (
             <div className="text-center py-12 text-[12.5px] text-[hsl(var(--muted-foreground))]">
               {favoritesOnly ? (
@@ -206,46 +297,7 @@ export function QuickModulePicker({
                   {category}
                 </div>
                 <div>
-                  {modules.map((module) => {
-                    const moduleStats = getStats(module.type)
-                    const Icon = module.icon
-                    return (
-                      <div
-                        key={module.type + (module.customModuleId || '')}
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => handleModuleClick(module)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault()
-                            handleModuleClick(module)
-                          }
-                        }}
-                        className="w-full flex items-center gap-2.5 px-2 h-8 rounded text-left hover:bg-[hsl(var(--brand-50))] group transition-colors has-hover-only cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--brand-500)/0.4)]"
-                      >
-                        <Icon className="w-4 h-4 text-[hsl(var(--muted-foreground))] flex-shrink-0 group-hover:text-[hsl(var(--brand-600))]" />
-                        <span className="flex-1 text-[12.5px] text-[hsl(var(--foreground))] truncate">
-                          {module.label}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            toggleFavorite(module.type)
-                          }}
-                          className={cn(
-                            'p-1 rounded transition-colors flex-shrink-0',
-                            moduleStats.isFavorite
-                              ? 'text-[hsl(45_93%_47%)]'
-                              : 'text-[hsl(var(--slate-300))] opacity-0 group-hover:opacity-100 hover:text-[hsl(45_93%_47%)]',
-                          )}
-                          title={moduleStats.isFavorite ? '取消收藏' : '收藏'}
-                        >
-                          <Star className={cn('w-3.5 h-3.5', moduleStats.isFavorite && 'fill-current')} />
-                        </button>
-                      </div>
-                    )
-                  })}
+                  {modules.map((module) => renderRow(module, category))}
                 </div>
               </div>
             ))
@@ -256,7 +308,7 @@ export function QuickModulePicker({
         <div className="px-3 py-2 border-t border-[hsl(var(--border))] text-[10.5px] text-[hsl(var(--muted-foreground))] text-center">
           {favoritesOnly
             ? '双击画布 = 收藏的模块 · 右键画布 = 全部模块'
-            : '支持拼音搜索 · Esc 关闭'}
+            : '支持拼音搜索 · 方向键选择 · Esc 关闭'}
         </div>
       </div>
     </>

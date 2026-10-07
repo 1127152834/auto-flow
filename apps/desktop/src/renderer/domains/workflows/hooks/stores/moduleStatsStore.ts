@@ -27,7 +27,13 @@ interface ModuleStatsStore {
   
   // 获取排序后的模块列表
   getSortedModules: (modules: ModuleType[]) => ModuleType[]
+
+  // 最近与常用：按最近使用与使用频次综合排序，仅内置模块，默认上限 12
+  getQuickList: (allowed?: ModuleType[], limit?: number) => ModuleType[]
 }
+
+export const QUICK_LIST_LIMIT = 12
+const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : 0)
 
 const defaultStats: ModuleStats = {
   usageCount: 0,
@@ -105,9 +111,32 @@ export const useModuleStatsStore = create<ModuleStatsStore>()(
           return statsB.lastUsed - statsA.lastUsed
         })
       },
+
+      getQuickList: (allowed, limit = QUICK_LIST_LIMIT) => {
+        const allow = allowed ? new Set<string>(allowed) : null
+        const used = Object.entries(get().stats)
+          .filter(([type, st]) => st && typeof st === 'object' && type !== 'custom_module' && (!allow || allow.has(type)))
+          .map(([type, st]) => ({ type, count: num(st?.usageCount), last: num(st?.lastUsed) }))
+          .filter((m) => m.count > 0 || m.last > 0)
+        // 综合名次 = 最近使用名次 + 使用频次名次，越小越靠前；并列时更近使用者在前
+        const byRecent = [...used].sort((a, b) => b.last - a.last)
+        const byCount = [...used].sort((a, b) => b.count - a.count)
+        const score = (m: { type: string }) => byRecent.findIndex((x) => x.type === m.type) + byCount.findIndex((x) => x.type === m.type)
+        return used
+          .map((m) => ({ ...m, score: score(m) }))
+          .sort((a, b) => a.score - b.score || b.last - a.last)
+          .slice(0, limit)
+          .map((m) => m.type as ModuleType)
+      },
     }),
     {
       name: 'module-stats-storage',
+      // 旧数据或损坏数据：stats 不是对象时回退为空，其余字段保留
+      merge: (persisted, current) => {
+        const stats = (persisted as { stats?: unknown } | null)?.stats
+        const ok = stats && typeof stats === 'object' && !Array.isArray(stats)
+        return { ...current, stats: ok ? (stats as ModuleStatsStore['stats']) : current.stats }
+      },
     }
   )
 )
