@@ -31,6 +31,7 @@ export interface StudioCommandContext {
     recorder: () => void
     globalConfig: () => void
     variableTracking: () => void
+    inputOutput: () => void
     documentation: () => void
     assistant: () => void
     undo: () => void
@@ -53,6 +54,7 @@ export function buildStudioCommands({ automation, importing, canUndo, canRedo, v
     { id: 'recorder', label: '录制', keywords: '网页智能录制 录制生成节点', disabled: false, run: a.recorder },
     { id: 'global-config', label: '全局配置', keywords: '设置 配置', disabled: false, run: a.globalConfig },
     { id: 'variable-tracking', label: '变量追踪', keywords: '变量 调试', disabled: false, run: a.variableTracking },
+    { id: 'input-output', label: '输入与输出', keywords: '输入 输出 签名 字段 参数 样例', disabled: false, run: a.inputOutput },
     { id: 'documentation', label: '教学文档', keywords: '帮助 教程 文档', disabled: false, run: a.documentation },
     { id: 'assistant', label: 'AI 小助手', keywords: 'ai 助手 小助手', shortcut: 'Ctrl+J', disabled: false, run: a.assistant },
     { id: 'switch-view', label: target === 'block' ? '切换到模块条' : '切换到流程图', keywords: '视图 流程图 模块条', disabled: false, run: () => a.switchView(target) },

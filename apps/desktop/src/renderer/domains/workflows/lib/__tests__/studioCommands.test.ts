@@ -5,7 +5,7 @@ const noop = () => {}
 const baseActions: StudioCommandContext['actions'] = {
   newWorkflow: noop, save: noop, open: noop, exportDialog: noop, importBundle: noop, scheduledTasks: noop,
   autoBrowser: noop, recorder: noop, globalConfig: noop, variableTracking: noop, documentation: noop,
-  assistant: noop, undo: noop, redo: noop, switchView: noop,
+  assistant: noop, undo: noop, redo: noop, switchView: noop, inputOutput: noop,
 }
 
 function ctx(over: Partial<Omit<StudioCommandContext, 'actions'>> = {}, actions: Partial<StudioCommandContext['actions']> = {}): StudioCommandContext {
@@ -19,9 +19,19 @@ describe('studioCommands', () => {
     expect(new Set(list.map(c => c.id)).size).toBe(list.length)
     expect(list.map(c => c.label)).toEqual(expect.arrayContaining([
       '新建', '保存', '打开', '导出', '导入整包', '计划任务', '自动化浏览器', '录制', '全局配置',
-      '变量追踪', '教学文档', 'AI 小助手', '撤销', '重做',
+      '变量追踪', '输入与输出', '教学文档', 'AI 小助手', '撤销', '重做',
     ]))
     expect(list.some(c => c.id === 'switch-view')).toBe(true)
+  })
+
+  it('runs the 输入与输出 action and stays available in automation mode', () => {
+    const inputOutput = vi.fn()
+    const c = byId(ctx({ automation: true }, { inputOutput }))
+    expect(c['input-output'].label).toBe('输入与输出')
+    expect(c['input-output'].disabled).toBe(false)
+    c['input-output'].run()
+    expect(inputOutput).toHaveBeenCalledOnce()
+    expect(filterCommands(Object.values(c), '签名').map(x => x.id)).toContain('input-output')
   })
 
   it('disables new/open/import in automation mode like the toolbar buttons', () => {

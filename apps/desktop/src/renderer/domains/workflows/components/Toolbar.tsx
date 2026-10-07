@@ -17,6 +17,8 @@ import { findExcludedModuleType } from '../lib/moduleCatalog'
 import { onAssistantUiEvent } from '../api/aiAssistantSkills'
 import { snapshotKey } from '../lib/snapshotKey'
 import { staticNumberIssues } from '../lib/staticNumberPreflight'
+import { signatureForSave } from '../lib/signatureSave'
+import { InputOutputPanel } from './InputOutputPanel'
 // Source: WebRPA@5ccb900e, components/workflow/Toolbar.tsx; see SOURCE.md for license and adaptation boundaries.
 import { studioFetch, getStudioTransportRevision } from '../api/transport'
 import { useWorkflowStore } from '../editor-store'
@@ -75,6 +77,7 @@ import {
   ChevronDown,
   Video,
   X,
+  ArrowRightLeft,
 } from 'lucide-react'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import {
@@ -128,6 +131,7 @@ export function Toolbar() {
   const [showLocalWorkflow, setShowLocalWorkflow] = useState(false)
   const [showLocalFiles, setShowLocalFiles] = useState(false)
   const [showVariableTracking, setShowVariableTracking] = useState(false)
+  const [showInputOutput, setShowInputOutput] = useState(false)
   const [showScreenshotNameDialog, setShowScreenshotNameDialog] = useState(false)
   const [screenshotAsset, setScreenshotAsset] = useState<any>(null)
   const [isScreenshotting, setIsScreenshotting] = useState(false)
@@ -273,6 +277,12 @@ export function Toolbar() {
     try {
       if (sessionStorage.getItem('editingCustomModuleId')) return await saveCustomModuleEditing()
       captureProjectReferenceTypes()
+      const signatureCheck = signatureForSave()
+      if (!signatureCheck.ok) {
+        setSaveError({ documentId: sourceDocument, message: signatureCheck.message })
+        if (!skipConfirm) addLog({ level: 'error', message: signatureCheck.message })
+        return false
+      }
       const workflowData = JSON.parse(exportWorkflow())
       requireActive()
       const savedContent = snapshotKey(JSON.stringify(workflowData))
@@ -869,6 +879,12 @@ export function Toolbar() {
       addLog({ level: 'warning', message: '工作流没有任何节点，无法导出' })
       return
     }
+    const signatureCheck = signatureForSave()
+    if (!signatureCheck.ok) {
+      addLog({ level: 'error', message: signatureCheck.message })
+      return
+    }
+    const signaturePart = signatureCheck.signature ? { signature: signatureCheck.signature } : {}
 
     try {
       // 先创建或更新工作流
@@ -897,6 +913,7 @@ export function Toolbar() {
             type: v.type,
             scope: v.scope,
           })),
+          ...signaturePart,
         })
 
         if (createResult.error || !createResult.data?.id) {
@@ -930,6 +947,7 @@ export function Toolbar() {
             type: v.type,
             scope: v.scope,
           })),
+          ...signaturePart,
         })
         if (updateResult.error) {
           addLog({ level: 'error', message: `更新工作流失败: ${updateResult.error}` })
@@ -969,6 +987,11 @@ export function Toolbar() {
       addLog({ level: 'warning', message: '工作流没有任何节点，无法导出' })
       return
     }
+    const signatureCheck = signatureForSave()
+    if (!signatureCheck.ok) {
+      addLog({ level: 'error', message: signatureCheck.message })
+      return
+    }
     try {
       let currentWorkflowId = workflowId
       const payload = {
@@ -976,6 +999,7 @@ export function Toolbar() {
         nodes: nodes.map(n => ({ id: n.id, type: n.data.moduleType, position: n.position, data: n.data, style: n.style })),
         edges: edges.map(e => ({ id: e.id, source: e.source, target: e.target, sourceHandle: e.sourceHandle, targetHandle: e.targetHandle })),
         variables: variables.map(v => ({ name: v.name, value: v.value, type: v.type, scope: v.scope })),
+        ...(signatureCheck.signature ? { signature: signatureCheck.signature } : {}),
       }
       if (!currentWorkflowId) {
         const createResult = await workflowApi.create(payload)
@@ -1495,6 +1519,8 @@ export function Toolbar() {
         onClose={() => setShowVariableTracking(false)}
       />
 
+      <InputOutputPanel open={showInputOutput} onOpenChange={setShowInputOutput} />
+
       {/* 功能模块包管理 */}
       
 
@@ -1563,6 +1589,7 @@ export function Toolbar() {
       recorder: () => setShowRecorder(true),
       globalConfig: () => setShowGlobalConfig(true),
       variableTracking: () => setShowVariableTracking(true),
+      inputOutput: () => setShowInputOutput(true),
       documentation: () => setShowDocumentation(true),
       assistant: toggleAIAssistant,
       undo,
@@ -1709,6 +1736,9 @@ export function Toolbar() {
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => setShowGlobalConfig(true)}>
               <Settings className="w-4 h-4 mr-2" />全局配置
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setShowInputOutput(true)}>
+              <ArrowRightLeft className="w-4 h-4 mr-2" />输入与输出
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setShowVariableTracking(true)}>
               <Activity className="w-4 h-4 mr-2" />变量追踪
@@ -2017,6 +2047,10 @@ export function Toolbar() {
             <DropdownMenuItem onClick={() => setShowGlobalConfig(true)}>
               <Settings className="w-4 h-4 mr-2 text-[hsl(var(--warning-600))]" />
               全局配置
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setShowInputOutput(true)}>
+              <ArrowRightLeft className="w-4 h-4 mr-2 text-[hsl(var(--info-500))]" />
+              输入与输出
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setShowVariableTracking(true)}>
               <Activity className="w-4 h-4 mr-2 text-[hsl(var(--info-500))]" />
