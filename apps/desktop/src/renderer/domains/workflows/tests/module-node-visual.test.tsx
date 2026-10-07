@@ -14,7 +14,7 @@ vi.mock('@xyflow/react', async (importOriginal) => {
 })
 vi.mock('../lib/nodeIssues', () => ({ useNodeIssues: () => issues.list }))
 
-import { ModuleNode } from '../components/ModuleNode'
+import { ModuleNode, accentThemeColor } from '../components/ModuleNode'
 import { getBlockRowColorClasses } from '../components/moduleColors'
 import { useNodeRunStore } from '../hooks/stores/nodeRunStore'
 
@@ -40,12 +40,20 @@ afterEach(() => cleanup())
 describe('节点视觉', () => {
   it('两行结构：标题 14px、摘要 13px，分支标签不小于 12px', () => {
     renderNode()
-    expect(screen.getByText('点击元素').className).toContain('text-sm')
+    expect(screen.getByText('点击元素').className).toContain('text-[14px]')
     expect(screen.getByText('#submit').className).toContain('text-[13px]')
     cleanup()
     renderNode({ moduleType: 'condition', label: '判断' })
-    expect(screen.getByText('是').className).toContain('text-xs')
+    expect(screen.getByText('是').className).toContain('text-[12px]')
     expect(document.body.innerHTML).not.toContain('9.5px')
+  })
+
+  it('accentThemeColor 把 border-<色系>-<色阶> 转成主题变量，其他写法不转换', () => {
+    const cls = (hue: string, shade: number) => ['border', hue, shade].join('-')
+    expect(accentThemeColor(cls('amber', 600))).toBe('var(--color-amber-600)')
+    expect(accentThemeColor(cls('indigo', 800))).toBe('var(--color-indigo-800)')
+    expect(accentThemeColor('border-line')).toBeUndefined()
+    expect(accentThemeColor('')).toBeUndefined()
   })
 
   it('类别色只出现在左侧细色条，节点本体用中性表面', () => {
@@ -53,7 +61,9 @@ describe('节点视觉', () => {
     const bar = screen.getByTestId('node-accent-bar')
     const { borderClass } = getBlockRowColorClasses('click_element')
     expect(bar.className).toContain('border-l-4')
-    expect(bar.className).toContain(borderClass)
+    // 颜色内联为主题变量：Studio 的全局 border-color 规则会压过普通边框颜色类
+    expect(bar.style.borderLeftColor).toBe(accentThemeColor(borderClass))
+    expect(bar.style.borderLeftColor).toMatch(/^var\(--color-[a-z]+-\d+\)$/)
     expect(root().className).toContain('bg-surface')
     expect(root().className).not.toMatch(/bg-(blue|indigo|purple|violet|pink|rose|orange|amber|green|emerald|teal|cyan|sky|slate|gray)-\d/)
   })
