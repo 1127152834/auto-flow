@@ -66,10 +66,6 @@ textarea[data-af-control] { resize: vertical; }
 }
 @keyframes af-spin { to { transform: rotate(360deg); } }
 .af-spinner { animation: af-spin var(--motion-spinner) linear infinite; }
-:root[data-motion="reduce"] .af-spinner { animation: none !important; }
-@media (prefers-reduced-motion: reduce) {
-  :root:not([data-motion="full"]) .af-spinner { animation: none !important; }
-}
 
 /* A 32px target surrounds the 18px choice mark; Radix owns state and keyboard behavior. */
 .af-choice {
@@ -163,7 +159,6 @@ textarea[data-af-control] { resize: vertical; }
 @keyframes af-overlay-out { to { opacity: 0; } }
 .af-popup-motion[data-state="open"], .af-tooltip-motion[data-state="delayed-open"], .af-tooltip-motion[data-state="instant-open"] { animation: af-overlay-in 150ms ease-out; }
 .af-popup-motion[data-state="closed"], .af-tooltip-motion[data-state="closed"] { animation: af-overlay-out 100ms ease-in; }
-:root[data-motion="reduce"] .af-popup-motion, :root[data-motion="reduce"] .af-tooltip-motion { animation: none; }
-@media (prefers-reduced-motion: reduce) { :root:not([data-motion="full"]) .af-popup-motion, :root:not([data-motion="full"]) .af-tooltip-motion { animation: none; } }
+:root[data-motion="reduce"] .af-popup-motion, :root[data-motion="reduce"] .af-tooltip-motion, :root[data-motion="off"] .af-popup-motion, :root[data-motion="off"] .af-tooltip-motion { animation: none; }
 [data-tone="error"].toast-enter, [data-tone="error"].toast-exit { border-color: var(--color-danger); }
 [data-tone="success"].toast-enter, [data-tone="success"].toast-exit { border-color: var(--color-success); }

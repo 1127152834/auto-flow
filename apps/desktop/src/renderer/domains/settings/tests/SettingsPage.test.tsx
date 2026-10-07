@@ -11,7 +11,7 @@ choiceTestEnvironment()
 
 afterEach(cleanup)
 const snapshot: DesktopSettingsSnapshot = {
-  preferences: { zoom: 100, motion: 'system' },
+  preferences: { zoom: 100, motion: 'full' },
   workspace: { path: '/Users/demo/AutoFlow/workspace', previousPath: '/Users/demo/old', paths: { workspace: '/Users/demo/AutoFlow/workspace', database: '/Users/demo/AutoFlow/workspace/data/autoflow.sqlite3', profiles: '/Users/demo/AutoFlow/workspace/workspace/profiles', kernels: '/Users/demo/AutoFlow/workspace/data/kernels', logs: '/Users/demo/AutoFlow/workspace/logs' }, blocked: false, blockers: [], recovery: null, needsSelection: false },
   service: { state: 'ready', apiVersion: 'v1', baseUrl: 'http://127.0.0.1:4500', message: null },
   runtime: { appVersion: '0.1.0', electronVersion: '41', chromeVersion: '140', nodeVersion: '24', platform: 'macos', arch: 'arm64', backendVersion: '0.1.0', pythonVersion: '3.11', sqliteVersion: '3.50' },
@@ -39,7 +39,18 @@ it('renders real service information and persists preferences', async () => {
   expect(await screen.findByText('运行正常')).toBeInTheDocument()
   expect(screen.getByText('v1')).toBeInTheDocument()
   await chooseOption(user, screen.getByLabelText('界面缩放'), '110')
-  expect(api.setPreferences).toHaveBeenCalledWith({ zoom: 110, motion: 'system' })
+  expect(api.setPreferences).toHaveBeenCalledWith({ zoom: 110, motion: 'full' })
+})
+
+it.each([['减少', 'reduce'], ['关闭', 'off']])('offers 完整/减少/关闭 motion and saves %s', async (_label, value) => {
+  const api = bridge()
+  const user = userEvent.setup()
+  render(<SettingsPage bridge={api} restartService={vi.fn()} />)
+  const motion = await screen.findByLabelText('界面动效')
+  expect(choiceValue(motion)).toBe('full')
+  await chooseOption(user, motion, value)
+  expect(api.setPreferences).toHaveBeenCalledWith({ zoom: 100, motion: value })
+  expect(screen.queryByText('跟随系统')).not.toBeInTheDocument()
 })
 
 it('confirms a selected workspace and reports the service change', async () => {
@@ -106,7 +117,7 @@ it('does not let polling overwrite a preference while its save is pending', asyn
   await chooseOption(user, zoom, '110')
   await new Promise(resolve => window.setTimeout(resolve, 1100))
   expect(choiceValue(zoom)).toBe('110')
-  resolveSave({ ok: true, value: { zoom: 110, motion: 'system' } })
+  resolveSave({ ok: true, value: { zoom: 110, motion: 'full' } })
   await waitFor(() => expect(zoom).toBeEnabled())
 })
 

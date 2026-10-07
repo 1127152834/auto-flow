@@ -298,13 +298,6 @@ button:disabled {
 .animate-soft-float     { animation: softFloat 3.2s var(--ease-in-out) infinite; }
 .animate-spin-smooth    { animation: spinSmooth 800ms linear infinite; }
 
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
 
 /* ============================================================
    滚动条（更细腻、品牌化）

@@ -50,6 +50,8 @@ it('exposes runtime notifications with a removable listener and synchronizes pre
   expect(listener).toHaveBeenCalledOnce()
   ipc.emit('autoflow:preferences-changed', {}, { motion: 'reduce', zoom: 100 })
   expect(document.documentElement.dataset.motion).toBe('reduce')
+  ipc.emit('autoflow:preferences-changed', {}, { motion: 'off', zoom: 100 })
+  expect(document.documentElement.dataset.motion).toBe('off')
 })
 
 

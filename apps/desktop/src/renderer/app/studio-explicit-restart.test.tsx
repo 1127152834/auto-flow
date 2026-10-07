@@ -17,7 +17,7 @@ afterEach(() => { cleanup(); restore?.(); store.getState().clearWorkflow(); vi.u
 
 it('explicit host restart connects the replacement runtime while the mounted Studio draft survives without start replay', async () => {
   let instanceId = 'before-restart'
-  const runtime = (): DesktopRuntimeContext => ({ workspaceKey: '/workspace-a', sidecar: { state: 'ready', apiVersion: 'v1', port: 43127, baseUrl: 'http://127.0.0.1:43127', token: instanceId, instanceId }, preferences: { zoom: 100, motion: 'system' }, operation: 'idle' })
+  const runtime = (): DesktopRuntimeContext => ({ workspaceKey: '/workspace-a', sidecar: { state: 'ready', apiVersion: 'v1', port: 43127, baseUrl: 'http://127.0.0.1:43127', token: instanceId, instanceId }, preferences: { zoom: 100, motion: 'full' }, operation: 'idle' })
   const restartSidecar = vi.fn(async () => { instanceId = 'after-restart'; return runtime().sidecar })
   vi.stubGlobal('autoflow', { getRuntimeContext: vi.fn(async () => runtime()), onRuntimeContextChanged: vi.fn(() => vi.fn()), restartSidecar })
   const healthTokens: string[] = []

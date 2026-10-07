@@ -3,7 +3,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import type { DesktopRuntimeContext } from '../../shared/runtime'
 import { useDesktopSession } from './useDesktopSession'
 
-const context = (workspaceKey = '/workspace-a', instanceId = 'a'): DesktopRuntimeContext => ({ workspaceKey, sidecar: { state: 'ready', apiVersion: 'v1', port: 43127, baseUrl: 'http://127.0.0.1:43127', token: instanceId, instanceId }, preferences: { zoom: 100, motion: 'system' }, operation: 'idle' })
+const context = (workspaceKey = '/workspace-a', instanceId = 'a'): DesktopRuntimeContext => ({ workspaceKey, sidecar: { state: 'ready', apiVersion: 'v1', port: 43127, baseUrl: 'http://127.0.0.1:43127', token: instanceId, instanceId }, preferences: { zoom: 100, motion: 'full' }, operation: 'idle' })
 let changed: (context: DesktopRuntimeContext) => void
 const health = (instanceId: string) => Response.json({ status: 'ok', apiVersion: 'v1', instanceId })
 

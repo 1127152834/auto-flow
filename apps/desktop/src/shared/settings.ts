@@ -1,5 +1,5 @@
 /** Desktop-only contracts shared by main, preload and renderer. No secrets. */
-export type UiPreferences = { zoom: 90 | 100 | 110 | 125; motion: 'system' | 'reduce' | 'full' }
+export type UiPreferences = { zoom: 90 | 100 | 110 | 125; motion: 'full' | 'reduce' | 'off' }
 export type SettingsDirectory = 'workspace' | 'database' | 'profiles' | 'kernels' | 'logs'
 export type DesktopResult<T> = { ok: true; value: T } | { ok: false; error: { code: string; message: string } }
 export type DesktopSettingsSnapshot = {

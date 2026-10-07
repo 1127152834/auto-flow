@@ -17,7 +17,7 @@ const runtime = (instanceId: string, port: number): DesktopRuntimeContext => ({
     token: `token-${instanceId}`,
     instanceId,
   },
-  preferences: { zoom: 100, motion: 'system' },
+  preferences: { zoom: 100, motion: 'full' },
   operation: 'idle',
 })
 

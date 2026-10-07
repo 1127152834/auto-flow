@@ -167,7 +167,7 @@ it('cleans up a failed load so a later click can retry', async () => {
     }
   } }))
   vi.resetModules()
-  const fail = new (await import('./automation-studio')).StudioWindowController({ mainSenderId: () => 7, preferences: () => ({ zoom: 100, motion: 'system' }), preloadPath: '/preload/index.js', rendererFile: '/renderer/index.html', rendererUrl: 'http://localhost:5173' })
+  const fail = new (await import('./automation-studio')).StudioWindowController({ mainSenderId: () => 7, preferences: () => ({ zoom: 100, motion: 'full' }), preloadPath: '/preload/index.js', rendererFile: '/renderer/index.html', rendererUrl: 'http://localhost:5173' })
   await expect(fail.open(event())).rejects.toThrow('无法打开工作流工作台，请重试')
   expect(FakeWindow.instances[0]?.destroyed).toBe(true)
   await fail.open(event())
@@ -254,7 +254,7 @@ it('does not treat a crashed renderer as approval to leave',async()=>{
 })
 it('keeps the source window on workspace failure and opens an isolated partition only after success',async()=>{
  let partition='persist:workspace-a'
- const controller=new (await import('./automation-studio')).StudioWindowController({mainSenderId:()=>7,preferences:()=>({zoom:100,motion:'system'}),preloadPath:'/preload',rendererFile:'/studio.html',workspacePartition:()=>partition})
+ const controller=new (await import('./automation-studio')).StudioWindowController({mainSenderId:()=>7,preferences:()=>({zoom:100,motion:'full'}),preloadPath:'/preload',rendererFile:'/studio.html',workspacePartition:()=>partition})
  await controller.open(event(),{workspaceKey:'workspace-a',instanceId:'instance-a',projectId:'project-a',workflowId:'workflow-a'});const source=FakeWindow.instances[0]!
  await controller.finishWorkspaceTransition(false)
  expect(source.destroyed).toBe(false)

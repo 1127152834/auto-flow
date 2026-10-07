@@ -3,7 +3,7 @@ import { isTrustedRenderer, protectRendererNavigation } from './ipc/renderer-sec
 import {createHash} from 'node:crypto'
 import { execFile } from 'node:child_process'
 import { realpathSync } from 'node:fs'
-import { app, BrowserWindow, clipboard, dialog, globalShortcut, ipcMain, nativeImage, Notification, shell } from 'electron'
+import { app, BrowserWindow, clipboard, dialog, globalShortcut, ipcMain, nativeImage, Notification, shell, systemPreferences } from 'electron'
 import { join } from 'node:path'
 import { SidecarSupervisor } from './sidecar/supervisor'
 import { resolvePackagedSidecarPath, resolvePlatformPaths } from './platform/paths'
@@ -57,7 +57,7 @@ const studio = new StudioWindowController({
     const path=settings?.getRuntimeContext().workspaceKey
     return `persist:studio-${createHash('sha256').update(path?realpathSync(path):'uninitialized').digest('hex')}`
   },
-  preferences: () => settings?.getPreferences() ?? { zoom: 100, motion: 'system' },
+  preferences: () => settings?.getPreferences() ?? { zoom: 100, motion: 'full' },
   preloadPath: join(__dirname, '../preload/index.js'),
   rendererFile: join(__dirname, '../renderer/studio.html'),
   rendererUrl: rendererUrl ? studioEntryUrl : undefined,
@@ -223,7 +223,7 @@ app.on('second-instance', () => { if (mainWindow) { if (mainWindow.isMinimized()
 app.whenReady().then(async () => {
   if (!primaryInstance) return
   settings = new SettingsController({
-    store: new DesktopSettingsStore(app.getPath('userData')),
+    store: new DesktopSettingsStore(app.getPath('userData'), () => systemPreferences.getAnimationSettings().prefersReducedMotion),
     createSidecar: dataDir => new SidecarSupervisor({
       onStatus: status => { if (status.state !== 'ready' && settings?.getPublicStatus().state !== 'ready') studioHotkeys?.clear() },
       instanceId: `${process.pid}-${Date.now()}`,

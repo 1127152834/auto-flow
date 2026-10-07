@@ -8,20 +8,24 @@ export class SettingsError extends Error {
 }
 export type StoredSettings = { schemaVersion: 1; currentPath: string; previousPath: string | null; preferences: UiPreferences }
 export const WORKSPACE_MARKER = '.autoflow-workspace.json'
-export const DEFAULT_PREFERENCES: UiPreferences = { zoom: 100, motion: 'system' }
+export const DEFAULT_PREFERENCES: UiPreferences = { zoom: 100, motion: 'full' }
 
 export function validatePreferences(value: unknown): UiPreferences {
   if (!value || typeof value !== 'object') throw new SettingsError('INVALID_PREFERENCES', '界面偏好格式无效')
   const p = value as Record<string, unknown>
-  if (![90, 100, 110, 125].includes(Number(p.zoom)) || typeof p.zoom !== 'number' || !['system', 'reduce', 'full'].includes(String(p.motion)) || Object.keys(p).some(key => !['zoom', 'motion'].includes(key))) throw new SettingsError('INVALID_PREFERENCES', '请选择支持的缩放比例与动效模式')
+  if (![90, 100, 110, 125].includes(Number(p.zoom)) || typeof p.zoom !== 'number' || !['full', 'reduce', 'off'].includes(String(p.motion)) || Object.keys(p).some(key => !['zoom', 'motion'].includes(key))) throw new SettingsError('INVALID_PREFERENCES', '请选择支持的缩放比例与动效模式')
   return { zoom: p.zoom, motion: p.motion } as UiPreferences
 }
 
-function readSettings(path: string): StoredSettings {
+export const MOTION_MODES = ['full', 'reduce', 'off']
+
+function readSettings(path: string, prefersReducedMotion: () => boolean = () => false): { settings: StoredSettings; migrated: boolean } {
   if (lstatSync(path).isSymbolicLink() || lstatSync(path).size > 65_536) throw new Error('Invalid settings file')
   const value = JSON.parse(readFileSync(path, 'utf8')) as StoredSettings
   if (value.schemaVersion !== 1 || typeof value.currentPath !== 'string' || !value.currentPath || resolve(value.currentPath) !== value.currentPath || (value.previousPath !== null && (typeof value.previousPath !== 'string' || resolve(value.previousPath) !== value.previousPath))) throw new Error('Invalid settings schema')
-  return { schemaVersion: 1, currentPath: value.currentPath, previousPath: value.previousPath, preferences: validatePreferences(value.preferences) }
+  const raw = (value.preferences ?? {}) as unknown as Record<string, unknown>
+  const motion = raw.motion === 'system' ? (prefersReducedMotion() ? 'reduce' : 'full') : MOTION_MODES.includes(String(raw.motion)) ? raw.motion : 'full'
+  return { settings: { schemaVersion: 1, currentPath: value.currentPath, previousPath: value.previousPath, preferences: validatePreferences({ ...raw, motion }) }, migrated: motion !== raw.motion }
 }
 
 export function writeAtomic(path: string, contents: string): void {
@@ -78,7 +82,7 @@ export function initializeWorkspace(path: string): void {
 
 export class DesktopSettingsStore {
   readonly path: string
-  constructor(readonly userData: string) { mkdirSync(userData, { recursive: true }); this.path = join(userData, 'desktop-settings.json') }
+  constructor(readonly userData: string, private readonly prefersReducedMotion: () => boolean = () => false) { mkdirSync(userData, { recursive: true }); this.path = join(userData, 'desktop-settings.json') }
 
   load(): { settings: StoredSettings; recovery: string | null; needsSelection: boolean } {
     const defaults: StoredSettings = { schemaVersion: 1, currentPath: realpathSync(this.userData), previousPath: null, preferences: { ...DEFAULT_PREFERENCES } }
@@ -90,9 +94,13 @@ export class DesktopSettingsStore {
       this.save(defaults)
       return { settings: defaults, recovery: null, needsSelection: false }
     }
-    try { return { settings: readSettings(this.path), recovery: null, needsSelection: false } } catch { /* Try the last valid backup without overwriting evidence. */ }
     try {
-      const settings = readSettings(`${this.path}.bak`)
+      const { settings, migrated } = readSettings(this.path, this.prefersReducedMotion)
+      if (migrated) this.save(settings)
+      return { settings, recovery: null, needsSelection: false }
+    } catch { /* Try the last valid backup without overwriting evidence. */ }
+    try {
+      const settings = readSettings(`${this.path}.bak`, this.prefersReducedMotion).settings
       if (existsSync(this.path)) {
         if (lstatSync(this.path).isSymbolicLink()) throw new Error('Invalid settings path')
         copyFileSync(this.path, `${this.path}.corrupt-${randomUUID()}`)

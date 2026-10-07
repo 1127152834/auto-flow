@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { SidecarStatus } from '../sidecar/supervisor'
 import type { UiPreferences } from '../../shared/settings'
 import { SettingsController, type ManagedSidecar, type SettingsControllerOptions } from './controller'
-import { DesktopSettingsStore, WORKSPACE_MARKER, inspectWorkspace } from './store'
+import { DesktopSettingsStore, WORKSPACE_MARKER, inspectWorkspace, validatePreferences } from './store'
 
 const roots: string[] = []
 const temporary = (name: string) => {
@@ -86,6 +86,20 @@ describe('desktop settings storage', () => {
     expect(() => inspectWorkspace(root)).toThrowError(expect.objectContaining({ code: 'INVALID_WORKSPACE' }))
   })
 
+  it.each([['system', true, 'reduce'], ['system', false, 'full'], ['bogus', true, 'full'], ['off', true, 'off']])('migrates stored motion %s (system reduced=%s) to %s and writes it back', (stored, reduced, expected) => {
+    const root = temporary('motion-migrate')
+    const initial = new DesktopSettingsStore(root).load().settings
+    writeFileSync(join(root, 'desktop-settings.json'), JSON.stringify({ ...initial, preferences: { zoom: 110, motion: stored } }))
+    const loaded = new DesktopSettingsStore(root, () => reduced).load()
+    expect(loaded.settings.preferences).toEqual({ zoom: 110, motion: expected })
+    expect(JSON.parse(readFileSync(join(root, 'desktop-settings.json'), 'utf8')).preferences.motion).toBe(expected)
+  })
+
+  it('rejects unsupported motion values from the settings UI', () => {
+    expect(() => validatePreferences({ zoom: 100, motion: 'system' })).toThrow()
+    expect(validatePreferences({ zoom: 100, motion: 'off' })).toEqual({ zoom: 100, motion: 'off' })
+  })
+
   it('persists preferences and restores a corrupt primary from backup', () => {
     const root = temporary('backup')
     const store = new DesktopSettingsStore(root)
@@ -94,7 +108,7 @@ describe('desktop settings storage', () => {
     writeFileSync(store.path, '{broken')
     const recovered = new DesktopSettingsStore(root).load()
     expect(recovered.recovery).toContain('备份恢复')
-    expect(recovered.settings.preferences).toEqual({ zoom: 100, motion: 'system' })
+    expect(recovered.settings.preferences).toEqual({ zoom: 100, motion: 'full' })
     expect(readFileSync(store.path, 'utf8')).toContain('"zoom": 100')
   })
 
@@ -172,8 +186,8 @@ describe('workspace and preference controller', () => {
     const h = harness({ applyPreferences: value => applied.push(value) })
     vi.spyOn(h.store, 'save').mockImplementation(() => { throw new Error('disk full') })
     await expectCode(h.controller.setPreferences({ zoom: 110, motion: 'reduce' }), 'PREFERENCES_SAVE_FAILED')
-    expect(applied).toEqual([{ zoom: 110, motion: 'reduce' }, { zoom: 100, motion: 'system' }])
-    expect(h.controller.getPreferences()).toEqual({ zoom: 100, motion: 'system' })
+    expect(applied).toEqual([{ zoom: 110, motion: 'reduce' }, { zoom: 100, motion: 'full' }])
+    expect(h.controller.getPreferences()).toEqual({ zoom: 100, motion: 'full' })
   })
 
   it('handles chooser cancellation and current-path selection as no-ops', async () => {

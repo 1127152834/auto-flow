@@ -7,7 +7,7 @@ import { App } from './App'
 
 const ready = (token = 'test', instanceId = 'test', port = 43127) => ({ state: 'ready' as const, apiVersion: 'v1' as const, port, baseUrl: `http://127.0.0.1:${port}`, token, instanceId })
 const settings: DesktopSettingsSnapshot = {
-  preferences: { zoom: 100, motion: 'system' }, workspace: { path: '/tmp/autoflow', previousPath: null, paths: { workspace: '/tmp/autoflow', database: '/tmp/autoflow/data/autoflow.sqlite3', profiles: '/tmp/autoflow/workspace/profiles', kernels: '/tmp/autoflow/data/kernels', logs: '/tmp/autoflow/logs' }, blocked: false, blockers: [], recovery: null, needsSelection: false },
+  preferences: { zoom: 100, motion: 'full' }, workspace: { path: '/tmp/autoflow', previousPath: null, paths: { workspace: '/tmp/autoflow', database: '/tmp/autoflow/data/autoflow.sqlite3', profiles: '/tmp/autoflow/workspace/profiles', kernels: '/tmp/autoflow/data/kernels', logs: '/tmp/autoflow/logs' }, blocked: false, blockers: [], recovery: null, needsSelection: false },
   service: { state: 'stopped', apiVersion: null, baseUrl: null, message: '服务离线' }, runtime: { appVersion: '0.1.0', electronVersion: '41', chromeVersion: '140', nodeVersion: '24', platform: 'macos', arch: 'arm64', backendVersion: null, pythonVersion: null, sqliteVersion: null }, operation: 'idle',
 }
 const dashboard = { profiles: 4, enabledProxies: 3, proxyGroups: 2, installedKernels: 1, modelProviders: 2, models: 6, generatedAt: '2026-09-12T00:00:00Z' }

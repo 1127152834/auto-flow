@@ -27,7 +27,7 @@ class FakeWindow extends EventEmitter {
   constructor(readonly options?: {webPreferences?: {partition?: string}}) { super(); FakeWindow.instances.push(this) }
 }
 
-const runtime = (): DesktopRuntimeContext => ({ workspaceKey: '/workspace-a', sidecar: { state: 'ready', apiVersion: 'v1', baseUrl: 'http://127.0.0.1:43127', token: 'public-token', port: 43127, instanceId: 'instance-a' }, preferences: { zoom: 100, motion: 'system' }, operation: 'idle' })
+const runtime = (): DesktopRuntimeContext => ({ workspaceKey: '/workspace-a', sidecar: { state: 'ready', apiVersion: 'v1', baseUrl: 'http://127.0.0.1:43127', token: 'public-token', port: 43127, instanceId: 'instance-a' }, preferences: { zoom: 100, motion: 'full' }, operation: 'idle' })
 let context: DesktopRuntimeContext
 let handlers: Map<string, (event: DesktopIpcEvent, ...args: unknown[]) => unknown>
 let app: EventEmitter & { quit: Mock<() => void> }
