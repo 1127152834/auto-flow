@@ -19,7 +19,8 @@ import { Keyboard, ChevronDown, ChevronUp, FileJson, AlertTriangle, Boxes, Searc
 import { getNodeConfigData, useWorkflowStore, type NodeData } from '../editor-store'
 import { DebugBar } from './DebugBar'
 import { useLayoutStore } from '../hooks/stores/layoutStore'
-import { useGlobalConfigStore } from '../hooks/stores/globalConfigStore'
+import { useGlobalConfigStore, resolveMinimapVisible } from '../hooks/stores/globalConfigStore'
+import { isEnabled } from '../lib/featureFlags'
 import { reviewSelectorHeals } from '../lib/selectorHealing'
 import { importDroppedWorkflows } from '../lib/droppedWorkflows'
 import { useConfirm } from './controls/confirm-dialog'
@@ -1603,6 +1604,8 @@ export function WorkflowEditor() {
 
   // 画布周围小组件显示开关（全局配置，默认全部显示）
   const canvasWidgets = useGlobalConfigStore((s) => s.config.system.canvasWidgets)
+  const [newLayout] = useState(() => isEnabled('newStudioLayout'))
+  const minimapVisible = useGlobalConfigStore((s) => resolveMinimapVisible(s.config, newLayout))
 
   return (
     <div className="h-full w-full flex flex-col">
@@ -1789,7 +1792,7 @@ export function WorkflowEditor() {
           >
             <Background gap={20} size={1.2} color="hsl(var(--slate-300))" />
             {canvasWidgets?.controls !== false && <Controls />}
-            {canvasWidgets?.minimap !== false && <MiniMap 
+            {minimapVisible && <MiniMap 
               nodeColor={(node) => {
                 // 分组/便签是“容器/背景”节点，在缩略图里用半透明填充，
                 // 这样即使它绘制在内部子模块之上，子模块也能透出来显示（不被灰色盖住）。
@@ -1821,7 +1824,7 @@ export function WorkflowEditor() {
         </main>
         
         {/* 右侧配置面板 */}
-        <ConfigPanel selectedNodeId={selectedNodeId} />
+        {(!newLayout || selectedNodeId) && <ConfigPanel selectedNodeId={selectedNodeId} />}
         
         {/* 快速模块选择器 */}
         <QuickModulePicker

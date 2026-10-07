@@ -29,6 +29,7 @@ export interface GlobalConfig {
     checkUpdateOnStartup: boolean  // 启动时是否检查更新
     autoDetectClipboardScreenshot: boolean  // 自动识别剪贴板截图
     showAIAssistantButton: boolean  // 显示右下角AI小助手入口按钮
+    minimapExplicit?: boolean  // 用户是否显式设置过小地图开关（新布局下未设置过则默认关闭）
     // 画布周围小组件显示开关（默认全部显示）
     canvasWidgets: {
       moduleCount: boolean   // 模块数量
@@ -206,6 +207,7 @@ const defaultConfig: GlobalConfig = {
     checkUpdateOnStartup: true,  // 默认开启启动时检查更新
     autoDetectClipboardScreenshot: true,  // 默认开启自动识别剪贴板截图
     showAIAssistantButton: true,  // 默认显示AI小助手入口按钮
+    minimapExplicit: false,
     canvasWidgets: {
       moduleCount: true,
       moduleSearch: true,
@@ -328,6 +330,12 @@ function assistantConfig(value: unknown): GlobalConfig['aiAssistant'] {
   }
 }
 
+/** 小地图是否显示：新布局下，用户从未显式设置过则默认关闭；旧布局保持原默认值 */
+export function resolveMinimapVisible(config: GlobalConfig, newLayout: boolean): boolean {
+  if (newLayout && !config.system.minimapExplicit) return false
+  return config.system.canvasWidgets?.minimap !== false
+}
+
 export const useGlobalConfigStore = create<GlobalConfigState>()(
   persist(
     (set, get) => ({
@@ -339,10 +347,13 @@ export const useGlobalConfigStore = create<GlobalConfigState>()(
       },
 
       updateSystemConfig: (systemConfig) => {
+        const current = get().config.system
+        const touchedMinimap = systemConfig.canvasWidgets?.minimap !== undefined
+          && systemConfig.canvasWidgets.minimap !== current.canvasWidgets.minimap
         set({
           config: {
             ...get().config,
-            system: { ...get().config.system, ...systemConfig },
+            system: { ...current, ...systemConfig, ...(touchedMinimap ? { minimapExplicit: true } : {}) },
           },
         })
       },
@@ -540,6 +551,16 @@ export const useGlobalConfigStore = create<GlobalConfigState>()(
     {
       name: 'autoflow-studio-mock-global-config',
       partialize: (state) => ({config: state.config}),
+      version: 1,
+      // v0 -> v1：旧数据里 minimap=false 只可能来自用户操作，标为显式；true 与默认值无法区分，按未设置处理
+      migrate: (persisted, version) => {
+        const state = persisted as {config?: {system?: Record<string, any>}}
+        if (version < 1 && state?.config?.system) {
+          const system = state.config.system
+          system.minimapExplicit = system.canvasWidgets?.minimap === false
+        }
+        return state as unknown as GlobalConfigState
+      },
       // 数据迁移：确保旧数据兼容新结构
       merge: (persistedState, currentState) => {
         const persisted = persistedState as GlobalConfigState

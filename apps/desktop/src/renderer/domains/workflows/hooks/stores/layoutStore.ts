@@ -23,6 +23,8 @@ interface LayoutState {
   leftCollapsed: boolean
   /** 底部面板模式：状态条 / 展开（默认展开，保持旧行为） */
   bottomMode: 'status' | 'expanded'
+  /** 用户是否手动选过底部模式；未选过时新布局按状态条显示 */
+  bottomModeChosen: boolean
 
   setLeftWidth: (w: number) => void
   setRightWidth: (w: number) => void
@@ -41,6 +43,7 @@ const DEFAULTS = {
   aiAssistantWidth: 440,
   leftCollapsed: false,
   bottomMode: 'expanded' as 'status' | 'expanded',
+  bottomModeChosen: false,
 }
 
 const LIMITS = {
@@ -62,13 +65,14 @@ export const useLayoutStore = create<LayoutState>()(
       editorViewMode: 'flow',
       leftCollapsed: DEFAULTS.leftCollapsed,
       bottomMode: DEFAULTS.bottomMode,
+      bottomModeChosen: DEFAULTS.bottomModeChosen,
       setLeftWidth: (w) => set({ leftWidth: clamp(w, LIMITS.left.min, LIMITS.left.max) }),
       setRightWidth: (w) => set({ rightWidth: clamp(w, LIMITS.right.min, LIMITS.right.max) }),
       setBottomHeight: (h) => set({ bottomHeight: clamp(h, LIMITS.bottom.min, LIMITS.bottom.max) }),
       setAiAssistantWidth: (w) => set({ aiAssistantWidth: clamp(w, LIMITS.aiAssistant.min, LIMITS.aiAssistant.max) }),
       setEditorViewMode: (m) => set({ editorViewMode: m }),
       setLeftCollapsed: (c) => set({ leftCollapsed: c }),
-      setBottomMode: (m) => set({ bottomMode: m }),
+      setBottomMode: (m) => set({ bottomMode: m, bottomModeChosen: true }),
       resetLayout: () => set({ ...DEFAULTS }),
     }),
     {

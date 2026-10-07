@@ -40,6 +40,8 @@ import { TracePanel } from './TracePanel'
 import { RunResultsPanel } from './RunResultsPanel'
 import { PanelResizer } from './PanelResizer'
 import { useLayoutStore, LAYOUT_LIMITS } from '../hooks/stores/layoutStore'
+import { isEnabled } from '../lib/featureFlags'
+import { RUNNING_BOTTOM_RATIO, STATUS_BAR_HEIGHT } from '../lib/studioLayoutMetrics'
 import { DialogPortal } from './controls/dialog-portal'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableScroll } from '../../../shared/components/ui/table'
 
@@ -580,6 +582,35 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
   const [draftBottomHeight, setDraftBottomHeight] = useState<number | null>(null)
   const effectiveBottomHeight = draftBottomHeight ?? bottomHeight
 
+  const [newLayout] = useState(() => isEnabled('newStudioLayout'))
+  const bottomMode = useLayoutStore((s) => s.bottomModeChosen ? s.bottomMode : 'status')
+  const setBottomMode = useLayoutStore((s) => s.setBottomMode)
+  const running = useWorkflowStore((s) => s.executionStatus) === 'running'
+  const [runCollapsed, setRunCollapsed] = useState(false)
+  useEffect(() => { if (!running) setRunCollapsed(false) }, [running])
+  const runningExpand = newLayout && running && !runCollapsed && bottomMode === 'status'
+
+  if (newLayout && bottomMode === 'status' && !runningExpand) {
+    const last = logs[logs.length - 1]
+    return (
+      <footer
+        className="border-t border-[hsl(var(--border))] bg-[hsl(var(--card))]"
+        style={{ height: STATUS_BAR_HEIGHT }}
+      >
+        <button
+          type="button"
+          aria-expanded={false}
+          aria-label="展开日志面板"
+          onClick={() => setBottomMode('expanded')}
+          className="flex h-full w-full items-center gap-2 px-3 text-left text-xs text-muted-foreground hover:bg-muted"
+        >
+          <ChevronUp className="h-3.5 w-3.5 shrink-0" />
+          <span className="truncate">{last ? last.message : '暂无运行日志'}</span>
+        </button>
+      </footer>
+    )
+  }
+
   return (
     <motion.footer
       initial={{ opacity: 0, y: 20 }}
@@ -589,11 +620,11 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
         'relative border-t border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-[0_-4px_12px_-6px_rgb(15_23_42_/_0.06)]',
       )}
       style={{
-        height: isCollapsed ? 40 : effectiveBottomHeight,
+        height: isCollapsed ? 40 : runningExpand ? `${RUNNING_BOTTOM_RATIO * 100}vh` : effectiveBottomHeight,
         transition: draftBottomHeight === null ? 'height 300ms cubic-bezier(0.25,1,0.5,1)' : 'none',
       }}
     >
-      {!isCollapsed && (
+      {!isCollapsed && !runningExpand && (
         <PanelResizer
           direction="vertical"
           side="top"
@@ -847,7 +878,7 @@ export function LogPanel({ onLogClick }: LogPanelProps) {
               </Button>
             </>
           )}
-          <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setIsCollapsed(!isCollapsed)} title={isCollapsed ? '展开' : '收起'}>
+          <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => newLayout ? (setRunCollapsed(true), setBottomMode('status')) : setIsCollapsed(!isCollapsed)} title={isCollapsed ? '展开' : '收起'}>
             {isCollapsed ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </Button>
         </div>

@@ -198,6 +198,7 @@ import {
 import { TestReportIcon } from './icons/TestReportIcon'
 import { PanelResizer } from './PanelResizer'
 import { useLayoutStore, LAYOUT_LIMITS } from '../hooks/stores/layoutStore'
+import { isEnabled } from '../lib/featureFlags'
 
 // 收藏模块现在统一由 moduleStatsStore 管理，不再使用单独的 localStorage
 
@@ -1799,7 +1800,12 @@ function ModuleSidebarRaw() {
   const [activeTab, setActiveTab] = useState<'builtin' | 'custom'>('builtin')
   const [searchQuery, setSearchQuery] = useState('')
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
-  const [isCollapsed, setIsCollapsed] = useState(false)
+  const [newLayout] = useState(() => isEnabled('newStudioLayout'))
+  const [localCollapsed, setLocalCollapsed] = useState(false)
+  const storedCollapsed = useLayoutStore((s) => s.leftCollapsed)
+  const setStoredCollapsed = useLayoutStore((s) => s.setLeftCollapsed)
+  const isCollapsed = newLayout ? storedCollapsed : localCollapsed
+  const setIsCollapsed = newLayout ? setStoredCollapsed : setLocalCollapsed
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [showManageDialog, setShowManageDialog] = useState(false)
@@ -1978,6 +1984,8 @@ function ModuleSidebarRaw() {
           className="flex flex-col items-center py-3 gap-2.5 hover:bg-[hsl(var(--brand-50))] transition-colors h-full w-full"
           onClick={() => setIsCollapsed(false)}
           title="展开模块列表"
+          aria-label="展开模块列表"
+          aria-expanded={false}
         >
           <span className="flex items-center justify-center w-8 h-8 rounded-control bg-gradient-to-br from-[hsl(var(--brand-500))] to-[hsl(var(--brand-700))] text-white shadow-brand-glow">
             <ChevronRight className="w-4 h-4" />
@@ -2018,6 +2026,8 @@ function ModuleSidebarRaw() {
                 onClick={() => setIsCollapsed(true)}
                 className="p-1.5 rounded-control text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--brand-700))] hover:bg-[hsl(var(--brand-50))] transition-all hover:shadow-xs active:scale-90"
                 title="收起"
+                aria-label="收起模块列表"
+                aria-expanded
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
