@@ -153,7 +153,7 @@ try {
     const metadata = await api(runtime, '/system/module-required-fields')
     assert.equal(metadata.coveredModules.length, 213)
     assert.equal(metadata.coveredModules.includes('notify_discord'), false)
-    const missing = "document.body.innerText.includes('个必填项未填写')"
+    const missing = "document.body.innerText.includes('项必填未填')"
     const loaded = "!document.body.innerText.includes('正在读取必填字段规则') && !document.body.innerText.includes('必填字段规则未加载') && !document.body.innerText.includes('此节点尚未提供必填字段规则')"
     await addFromQuickPicker(studio, 0, '打开网页')
     await click(studio, '', '.react-flow__node')
@@ -173,7 +173,7 @@ try {
     await waitFor(studio, `${loaded} && !(${missing})`, 'navigation mode has no selector requirement')
     await addFromQuickPicker(studio, 2, '发送邮件')
     await click(studio, '发送邮件', '.react-flow__node')
-    await waitFor(studio, `${loaded} && document.body.innerText.includes('有 3 个必填项未填写')`, 'previously uncovered email rule')
+    await waitFor(studio, `${loaded} && document.body.innerText.includes('3 项必填未填')`, 'previously uncovered email rule')
     await capture(studio, join(evidenceDir, 'required-field-rules.png'))
     checkpoint('真实字段接口覆盖213：空URL/填写、等待三模式及邮件源规则经实际UI核验；未执行外部邮件')
     await click(studio, '新建')
